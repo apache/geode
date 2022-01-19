@@ -25,9 +25,9 @@ public class HistogramStats {
   /** stat type description */
   private static final String hist_typeDesc = "A bucketed histogram of values with unit ";
 
-  private final int statCounterIndex[];
+  private final int[] statCounterIndex;
 
-  private final long bp[];
+  private final long[] bp;
 
   private final Statistics stats;
 
@@ -40,12 +40,12 @@ public class HistogramStats {
    */
   public HistogramStats(String name, String unit, StatisticsFactory factory, long[] breakPoints,
       boolean largerIsBetter) {
-    this.bp = breakPoints;
-    StatisticDescriptor[] fieldDescriptors = new StatisticDescriptor[this.bp.length * 2];
+    bp = breakPoints;
+    StatisticDescriptor[] fieldDescriptors = new StatisticDescriptor[bp.length * 2];
     int k = 0;
-    for (int bucketNumber = 0; bucketNumber < this.bp.length; bucketNumber++) {
+    for (int bucketNumber = 0; bucketNumber < bp.length; bucketNumber++) {
       String desc =
-          (bucketNumber < this.bp.length - 1 ? "ForLTE" : "ForGT") + this.bp[bucketNumber];
+          (bucketNumber < bp.length - 1 ? "ForLTE" : "ForGT") + bp[bucketNumber];
       fieldDescriptors[k] = factory.createIntCounter("BucketCount" + desc,
           "Number of data points in Bucket " + bucketNumber, "count", !largerIsBetter);
       k++;
@@ -55,28 +55,28 @@ public class HistogramStats {
     }
     StatisticsType hist_type = factory.createType("HistogramWith" + breakPoints.length + "Buckets",
         hist_typeDesc + unit + " for " + breakPoints.length + " breakpoints", fieldDescriptors);
-    this.statCounterIndex = new int[this.bp.length * 2];
+    statCounterIndex = new int[bp.length * 2];
     k = 0;
-    for (int bucketNumber = 0; bucketNumber < this.bp.length; bucketNumber++) {
+    for (int bucketNumber = 0; bucketNumber < bp.length; bucketNumber++) {
       String desc =
-          (bucketNumber < this.bp.length - 1 ? "ForLTE" : "ForGT") + this.bp[bucketNumber];
-      this.statCounterIndex[k] = hist_type.nameToId("BucketCount" + desc);
+          (bucketNumber < bp.length - 1 ? "ForLTE" : "ForGT") + bp[bucketNumber];
+      statCounterIndex[k] = hist_type.nameToId("BucketCount" + desc);
       k++;
-      this.statCounterIndex[k] = hist_type.nameToId("BucketTotal" + desc);
+      statCounterIndex[k] = hist_type.nameToId("BucketTotal" + desc);
       k++;
     }
-    this.stats = factory.createAtomicStatistics(hist_type, name, 0L);
+    stats = factory.createAtomicStatistics(hist_type, name, 0L);
   }
 
   public void endOp(long delta) {
-    int index = this.statCounterIndex.length - 2;
-    for (int i = 0; i < this.bp.length; i++) {
-      if (delta <= this.bp[i]) {
+    int index = statCounterIndex.length - 2;
+    for (int i = 0; i < bp.length; i++) {
+      if (delta <= bp[i]) {
         index = i * 2;
         break;
       }
     }
-    this.stats.incInt(this.statCounterIndex[index], 1);
-    this.stats.incLong(this.statCounterIndex[index + 1], delta);
+    stats.incInt(statCounterIndex[index], 1);
+    stats.incLong(statCounterIndex[index + 1], delta);
   }
 }

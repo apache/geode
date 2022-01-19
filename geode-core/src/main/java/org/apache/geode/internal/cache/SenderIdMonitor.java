@@ -72,13 +72,13 @@ public class SenderIdMonitor implements ProfileListener, InitializationListener 
    * Needs to be called if this region's gateways or asyncEventIds change.
    */
   public void update() {
-    if (!this.advisor.pollIsInitialized()) {
+    if (!advisor.pollIsInitialized()) {
       return;
     }
     final Set<String> gatewaySenderIds = region.getGatewaySenderIds();
     final Set<String> visibleAsyncEventQueueIds = region.getVisibleAsyncEventQueueIds();
     final AtomicBoolean foundIllegalState = new AtomicBoolean();
-    this.advisor.accept((advisor, profile, idx, count, aggregate) -> {
+    advisor.accept((advisor, profile, idx, count, aggregate) -> {
       if (profile instanceof CacheProfile) {
         final CacheProfile cp = (CacheProfile) profile;
         if (!gatewaySenderIds.equals(cp.gatewaySenderIds)) {

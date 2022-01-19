@@ -29,7 +29,7 @@ public class TabularResultModelRowAssert<T> extends TabularResultModelSliceAsser
    * verifies the expected number of values in the row
    */
   public final TabularResultModelRowAssert<T> hasSize(int expected) {
-    assertThat(this.values).hasSize(expected);
+    assertThat(values).hasSize(expected);
     return this;
   }
 }

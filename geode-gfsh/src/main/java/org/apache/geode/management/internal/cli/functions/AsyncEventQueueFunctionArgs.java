@@ -24,22 +24,22 @@ public class AsyncEventQueueFunctionArgs implements Serializable {
 
   private static final long serialVersionUID = -6524494645663740872L;
 
-  private String asyncEventQueueId;
-  private boolean isParallel;
-  private boolean enableBatchConflation;
-  private int batchSize;
-  private int batchTimeInterval;
-  private boolean persistent;
-  private String diskStoreName;
-  private boolean diskSynchronous;
-  private int maxQueueMemory;
-  private int dispatcherThreads;
-  private String orderPolicy;
-  private String[] gatewayEventFilters;
-  private String gatewaySubstitutionFilter;
-  private String listenerClassName;
-  private Properties listenerProperties;
-  private boolean forwardExpirationDestroy;
+  private final String asyncEventQueueId;
+  private final boolean isParallel;
+  private final boolean enableBatchConflation;
+  private final int batchSize;
+  private final int batchTimeInterval;
+  private final boolean persistent;
+  private final String diskStoreName;
+  private final boolean diskSynchronous;
+  private final int maxQueueMemory;
+  private final int dispatcherThreads;
+  private final String orderPolicy;
+  private final String[] gatewayEventFilters;
+  private final String gatewaySubstitutionFilter;
+  private final String listenerClassName;
+  private final Properties listenerProperties;
+  private final boolean forwardExpirationDestroy;
 
   public AsyncEventQueueFunctionArgs(String asyncEventQueueId, boolean isParallel,
       boolean enableBatchConflation, int batchSize, int batchTimeInterval, boolean persistent,

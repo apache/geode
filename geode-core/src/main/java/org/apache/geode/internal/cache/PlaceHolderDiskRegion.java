@@ -50,18 +50,18 @@ public class PlaceHolderDiskRegion extends AbstractDiskRegion
    */
   PlaceHolderDiskRegion(DiskRegionView drv) {
     super(drv);
-    this.name = drv.getName();
+    name = drv.getName();
   }
 
   @Override
   public String getName() {
-    return this.name;
+    return name;
   }
 
   @Override
   public String getPrName() {
     assert isBucket();
-    String bn = PartitionedRegionHelper.getBucketName(this.name);
+    String bn = PartitionedRegionHelper.getBucketName(name);
     return PartitionedRegionHelper.getPRPath(bn);
   }
 
@@ -77,11 +77,9 @@ public class PlaceHolderDiskRegion extends AbstractDiskRegion
 
   @Override
   public String toString() {
-    StringBuffer sb = new StringBuffer();
-    sb.append("name=").append(this.name).append(" id=").append(getId())
+    return "name=" + name + " id=" + getId()
     // .append(" ").append(super.toString())
     ;
-    return sb.toString();
   }
 
   // DiskRecoveryStore methods
@@ -222,7 +220,7 @@ public class PlaceHolderDiskRegion extends AbstractDiskRegion
   @Override
   public EvictionController getExistingController(InternalRegionArguments internalArgs) {
     if (isBucket()) {
-      return this.getDiskStore().getOrCreatePRLRUStats(this);
+      return getDiskStore().getOrCreatePRLRUStats(this);
     }
     return null;
   }

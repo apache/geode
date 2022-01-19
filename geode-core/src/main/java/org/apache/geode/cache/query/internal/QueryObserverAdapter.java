@@ -137,7 +137,7 @@ public class QueryObserverAdapter implements QueryObserver {
    */
   @Override
   public void beforeCartesianOfGroupJunctionsInAnAllGroupJunctionOfType_AND(
-      Collection[] grpResults) {};
+      Collection[] grpResults) {}
 
   /**
    * Asif : Invoked just after the cartesian of the SelectResults obtained from GroupJunctions, is
@@ -147,7 +147,7 @@ public class QueryObserverAdapter implements QueryObserver {
    *
    */
   @Override
-  public void afterCartesianOfGroupJunctionsInAnAllGroupJunctionOfType_AND() {};
+  public void afterCartesianOfGroupJunctionsInAnAllGroupJunctionOfType_AND() {}
 
   /**
    * Asif :Invoked just before the cartesian of the SelectResults obtained from GroupJunctions, is
@@ -162,7 +162,7 @@ public class QueryObserverAdapter implements QueryObserver {
    */
   @Override
   public void beforeCartesianOfGroupJunctionsInCompositeGroupJunctionOfType_AND(
-      Collection[] grpResults) {};
+      Collection[] grpResults) {}
 
   /**
    * Asif :Invoked just before the cartesian of the SelectResults obtained from GroupJunctions, is

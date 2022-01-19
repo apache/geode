@@ -68,7 +68,7 @@ public class RootRegionResponse extends AdminResponse {
 
       String[] temp = new String[0];
       m.regions = (String[]) regionNames.toArray(temp);
-      m.userAttrs = (String[]) userAttributes.toArray(temp);;
+      m.userAttrs = (String[]) userAttributes.toArray(temp);
 
     } catch (CancelException ignore) {
       /* no cache yet */
@@ -79,10 +79,10 @@ public class RootRegionResponse extends AdminResponse {
   }
 
   public Region[] getRegions(RemoteGemFireVM vm) {
-    if (this.regions.length > 0) {
-      Region[] roots = new Region[this.regions.length];
-      for (int i = 0; i < this.regions.length; i++) {
-        roots[i] = new AdminRegion(this.regions[i], vm, this.userAttrs[i]);
+    if (regions.length > 0) {
+      Region[] roots = new Region[regions.length];
+      for (int i = 0; i < regions.length; i++) {
+        roots[i] = new AdminRegion(regions[i], vm, userAttrs[i]);
       }
       return roots;
     } else {
@@ -99,20 +99,20 @@ public class RootRegionResponse extends AdminResponse {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.regions, out);
-    DataSerializer.writeObject(this.userAttrs, out);
+    DataSerializer.writeObject(regions, out);
+    DataSerializer.writeObject(userAttrs, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.regions = DataSerializer.readObject(in);
-    this.userAttrs = DataSerializer.readObject(in);
+    regions = DataSerializer.readObject(in);
+    userAttrs = DataSerializer.readObject(in);
   }
 
   @Override
   public String toString() {
-    return "RootRegionResponse from " + this.getRecipient();
+    return "RootRegionResponse from " + getRecipient();
   }
 }

@@ -43,22 +43,22 @@ public class PdxUnreadData implements PdxUnreadFields {
   public void initialize(UnreadPdxType unreadType, PdxReaderImpl reader) {
     this.unreadType = unreadType;
     int[] indexes = unreadType.getUnreadFieldIndexes();
-    this.unreadData = new byte[indexes.length][];
+    unreadData = new byte[indexes.length][];
     int i = 0;
     for (int idx : indexes) {
 
       ByteSource field = reader.getRaw(idx);
 
       // Copy the unread data into a new byte array
-      this.unreadData[i] = new byte[field.capacity()];
+      unreadData[i] = new byte[field.capacity()];
       field.position(0);
-      field.get(this.unreadData[i]);
+      field.get(unreadData[i]);
       i++;
     }
   }
 
   public UnreadPdxType getUnreadType() {
-    return this.unreadType;
+    return unreadType;
   }
 
   /**
@@ -79,18 +79,18 @@ public class PdxUnreadData implements PdxUnreadFields {
     if (isEmpty()) {
       return;
     }
-    int[] indexes = this.unreadType.getUnreadFieldIndexes();
+    int[] indexes = unreadType.getUnreadFieldIndexes();
     int i = 0;
-    while (i < this.unreadData.length) {
+    while (i < unreadData.length) {
       int idx = indexes[i];
-      byte[] data = this.unreadData[i];
-      PdxField ft = this.unreadType.getPdxFieldByIndex(idx);
+      byte[] data = unreadData[i];
+      PdxField ft = unreadType.getPdxFieldByIndex(idx);
       try {
         writer.writeRawField(ft, data);
       } catch (PdxFieldAlreadyExistsException ex) {
         // fix for bug 43133
         throw new PdxFieldAlreadyExistsException(
-            "Check the toData and fromData for " + this.unreadType.getClassName()
+            "Check the toData and fromData for " + unreadType.getClassName()
                 + " to see if the field \"" + ft.getFieldName() + "\" is spelled differently.");
       }
       i++;
@@ -116,6 +116,6 @@ public class PdxUnreadData implements PdxUnreadFields {
   }
 
   public boolean isEmpty() {
-    return this.unreadData == null;
+    return unreadData == null;
   }
 }

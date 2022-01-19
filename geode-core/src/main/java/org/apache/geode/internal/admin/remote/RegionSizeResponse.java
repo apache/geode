@@ -55,12 +55,12 @@ public class RegionSizeResponse extends AdminResponse implements Cancellable {
     if (cancelled) {
       return;
     }
-    this.entryCount = nameSet.size();
+    entryCount = nameSet.size();
     Set subRegions = r.subregions(false);
     if (cancelled) {
       return;
     }
-    this.subregionCount = subRegions.size();
+    subregionCount = subRegions.size();
   }
 
   @Override
@@ -70,11 +70,11 @@ public class RegionSizeResponse extends AdminResponse implements Cancellable {
 
   // instance methods
   public int getEntryCount() {
-    return this.entryCount;
+    return entryCount;
   }
 
   public int getSubregionCount() {
-    return this.subregionCount;
+    return subregionCount;
   }
 
   @Override
@@ -94,12 +94,12 @@ public class RegionSizeResponse extends AdminResponse implements Cancellable {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.entryCount = in.readInt();
-    this.subregionCount = in.readInt();
+    entryCount = in.readInt();
+    subregionCount = in.readInt();
   }
 
   @Override
   public String toString() {
-    return "RegionSizeResponse from " + this.getRecipient();
+    return "RegionSizeResponse from " + getRecipient();
   }
 }

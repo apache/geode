@@ -164,7 +164,7 @@ public class ConfiguredDataSourceProperties implements Serializable {
    *
    */
   public void setUser(String usr) {
-    this.user = usr;
+    user = usr;
   }
 
   /**
@@ -172,7 +172,7 @@ public class ConfiguredDataSourceProperties implements Serializable {
    *
    */
   public void setPassword(String passwd) {
-    this.password = passwd;
+    password = passwd;
   }
 
   /**
@@ -180,7 +180,7 @@ public class ConfiguredDataSourceProperties implements Serializable {
    *
    */
   public void setJDBCDriver(String confDriver) {
-    this.jdbcDriver = confDriver;
+    jdbcDriver = confDriver;
   }
 
   /**

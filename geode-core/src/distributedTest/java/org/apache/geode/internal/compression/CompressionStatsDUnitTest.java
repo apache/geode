@@ -257,7 +257,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
     assertEquals(0, stats.region2TotalDecompressions);
 
     stats.vmTotalPostCompressedBytes = getTotalPostCompressedBytesOnVm(vm, null);
-    assertEquals(10000, stats.vmTotalPostCompressedBytes);;
+    assertEquals(10000, stats.vmTotalPostCompressedBytes);
 
     stats.region1TotalPostCompressedBytes = getTotalPostCompressedBytesOnVm(vm, REGION_NAME);
     assertEquals(5000, stats.region1TotalPostCompressedBytes);

@@ -27,6 +27,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import javax.xml.XMLConstants;
@@ -211,7 +212,8 @@ public class XmlUtilsJUnitTest {
   @Test
   public void testCreateAndUpgradeDocumentFromXml() throws Exception {
     Document doc = XmlUtils.createAndUpgradeDocumentFromXml(IOUtils.toString(
-        this.getClass().getResourceAsStream("SharedConfigurationJUnitTest.xml"), "UTF-8"));
+        getClass().getResourceAsStream("SharedConfigurationJUnitTest.xml"),
+        StandardCharsets.UTF_8));
 
     String schemaLocation = XmlUtils.getAttribute(doc.getDocumentElement(),
         W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION, W3C_XML_SCHEMA_INSTANCE_NS_URI);
@@ -223,7 +225,7 @@ public class XmlUtilsJUnitTest {
         XmlUtils.getAttribute(doc.getDocumentElement(), "version"));
   }
 
-  private static String CLUSTER8_XML =
+  private static final String CLUSTER8_XML =
       "<cache xsi:schemaLocation=\"http://schema.pivotal.io/gemfire/cache http://schema.pivotal.io/gemfire/cache/cache-8.1.xsd\"\n"
           + "       version=\"8.1\"\n" + "       xmlns=\"http://schema.pivotal.io/gemfire/cache\"\n"
           + "       xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">\n"
@@ -231,10 +233,11 @@ public class XmlUtilsJUnitTest {
           + "        <region-attributes scope=\"distributed-ack\" data-policy=\"replicate\"/>\n"
           + "    </region>\n" + "</cache>";
 
-  private static String CLUSTER9_XML = "<cache xmlns=\"http://geode.apache.org/schema/cache\"\n"
-      + "       xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-      + "       xsi:schemaLocation=\"http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd\"\n"
-      + "       version=\"1.0\"></cache>";
+  private static final String CLUSTER9_XML =
+      "<cache xmlns=\"http://geode.apache.org/schema/cache\"\n"
+          + "       xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+          + "       xsi:schemaLocation=\"http://geode.apache.org/schema/cache http://geode.apache.org/schema/cache/cache-1.0.xsd\"\n"
+          + "       version=\"1.0\"></cache>";
 
   @Test
   public void testUpgradeSchemaFromGemfireNamespace() throws Exception {

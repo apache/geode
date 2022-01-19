@@ -30,9 +30,9 @@ public class NonLocalRegionEntryWithStats extends NonLocalRegionEntry {
   public NonLocalRegionEntryWithStats(RegionEntry re, LocalRegion br, boolean allowTombstones) {
     super(re, br, allowTombstones);
     try {
-      this.lastAccessed = re.getLastAccessed();
-      this.hitCount = re.getHitCount();
-      this.missCount = re.getMissCount();
+      lastAccessed = re.getLastAccessed();
+      hitCount = re.getHitCount();
+      missCount = re.getMissCount();
     } catch (InternalStatisticsDisabledException unexpected) {
       Assert.assertTrue(false, "Unexpected " + unexpected);
     }
@@ -45,17 +45,17 @@ public class NonLocalRegionEntryWithStats extends NonLocalRegionEntry {
 
   @Override
   public long getLastAccessed() throws StatisticsDisabledException {
-    return this.lastAccessed;
+    return lastAccessed;
   }
 
   @Override
   public long getHitCount() throws StatisticsDisabledException {
-    return this.hitCount;
+    return hitCount;
   }
 
   @Override
   public long getMissCount() throws StatisticsDisabledException {
-    return this.missCount;
+    return missCount;
   }
 
   public NonLocalRegionEntryWithStats() {
@@ -65,16 +65,16 @@ public class NonLocalRegionEntryWithStats extends NonLocalRegionEntry {
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
-    out.writeLong(this.lastAccessed);
-    out.writeLong(this.hitCount);
-    out.writeLong(this.missCount);
+    out.writeLong(lastAccessed);
+    out.writeLong(hitCount);
+    out.writeLong(missCount);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.lastAccessed = in.readLong();
-    this.hitCount = in.readLong();
-    this.missCount = in.readLong();
+    lastAccessed = in.readLong();
+    hitCount = in.readLong();
+    missCount = in.readLong();
   }
 }

@@ -45,7 +45,7 @@ public class LuceneEventListener implements AsyncEventListener {
 
   private static LuceneExceptionObserver exceptionObserver = exception -> {
   };
-  private InternalCache cache;
+  private final InternalCache cache;
 
   private static final Logger logger = LogService.getLogger();
 
@@ -78,7 +78,7 @@ public class LuceneEventListener implements AsyncEventListener {
 
   protected boolean process(final List<AsyncEvent> events) {
     // Try to get a PDX instance if possible, rather than a deserialized object
-    Boolean initialPdxReadSerialized = this.cache.getPdxReadSerializedOverride();
+    Boolean initialPdxReadSerialized = cache.getPdxReadSerializedOverride();
     cache.setPdxReadSerializedOverride(true);
 
     Set<IndexRepository> affectedRepos = new HashSet<>();

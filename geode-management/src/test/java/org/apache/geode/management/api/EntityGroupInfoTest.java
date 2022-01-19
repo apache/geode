@@ -25,7 +25,7 @@ import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class EntityGroupInfoTest {
-  private ObjectMapper mapper = GeodeJsonMapper.getMapper();
+  private final ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
   @Test
   public void jsonTest() throws Exception {

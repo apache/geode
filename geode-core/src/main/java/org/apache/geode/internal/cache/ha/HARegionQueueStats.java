@@ -170,7 +170,7 @@ public class HARegionQueueStats {
    * @param name The name of the <code>Statistics</code>
    */
   public HARegionQueueStats(StatisticsFactory factory, String name) {
-    this._stats = factory.createAtomicStatistics(_type, "ClientSubscriptionStats-" + name);
+    _stats = factory.createAtomicStatistics(_type, "ClientSubscriptionStats-" + name);
   }
 
   // /////////////////// Instance Methods /////////////////////
@@ -179,7 +179,7 @@ public class HARegionQueueStats {
    * Closes the <code>HARegionQueueStats</code>.
    */
   public void close() {
-    this._stats.close();
+    _stats.close();
   }
 
   /**
@@ -188,14 +188,14 @@ public class HARegionQueueStats {
    * @return the current value of the "eventsQueued" stat
    */
   public long getEventsEnqued() {
-    return this._stats.getLong(_eventsQueuedId);
+    return _stats.getLong(_eventsQueuedId);
   }
 
   /**
    * Increments the "eventsQueued" stat by 1.
    */
   public void incEventsEnqued() {
-    this._stats.incLong(_eventsQueuedId, 1);
+    _stats.incLong(_eventsQueuedId, 1);
   }
 
   /**
@@ -204,14 +204,14 @@ public class HARegionQueueStats {
    * @return the current value of the "eventsConflated" stat
    */
   public long getEventsConflated() {
-    return this._stats.getLong(_eventsConflatedId);
+    return _stats.getLong(_eventsConflatedId);
   }
 
   /**
    * Increments the "eventsConflated" stat by 1.
    */
   public void incEventsConflated() {
-    this._stats.incLong(_eventsConflatedId, 1);
+    _stats.incLong(_eventsConflatedId, 1);
   }
 
   /**
@@ -220,14 +220,14 @@ public class HARegionQueueStats {
    * @return the current value of the "markerEventsConflated" stat
    */
   public long getMarkerEventsConflated() {
-    return this._stats.getLong(_markerEventsConflatedId);
+    return _stats.getLong(_markerEventsConflatedId);
   }
 
   /**
    * Increments the "markerEventsConflated" stat by 1.
    */
   public void incMarkerEventsConflated() {
-    this._stats.incLong(_markerEventsConflatedId, 1);
+    _stats.incLong(_markerEventsConflatedId, 1);
   }
 
   /**
@@ -236,14 +236,14 @@ public class HARegionQueueStats {
    * @return the current value of the "eventsRemoved" stat
    */
   public long getEventsRemoved() {
-    return this._stats.getLong(_eventsRemovedId);
+    return _stats.getLong(_eventsRemovedId);
   }
 
   /**
    * Increments the "eventsRemoved" stat by 1.
    */
   public void incEventsRemoved() {
-    this._stats.incLong(_eventsRemovedId, 1);
+    _stats.incLong(_eventsRemovedId, 1);
   }
 
   /**
@@ -252,14 +252,14 @@ public class HARegionQueueStats {
    * @return the current value of the "eventsTaken" stat
    */
   public long getEventsTaken() {
-    return this._stats.getLong(_eventsTakenId);
+    return _stats.getLong(_eventsTakenId);
   }
 
   /**
    * Increments the "eventsTaken" stat by 1.
    */
   public void incEventsTaken() {
-    this._stats.incLong(_eventsTakenId, 1);
+    _stats.incLong(_eventsTakenId, 1);
   }
 
   /**
@@ -268,14 +268,14 @@ public class HARegionQueueStats {
    * @return the current value of the "eventsExpired" stat
    */
   public long getEventsExpired() {
-    return this._stats.getLong(_eventsExpiredId);
+    return _stats.getLong(_eventsExpiredId);
   }
 
   /**
    * Increments the "eventsExpired" stat by 1.
    */
   public void incEventsExpired() {
-    this._stats.incLong(_eventsExpiredId, 1);
+    _stats.incLong(_eventsExpiredId, 1);
   }
 
   /**
@@ -284,14 +284,14 @@ public class HARegionQueueStats {
    * @return the current value of the "eventsRemovedByQrm" stat
    */
   public long getEventsRemovedByQrm() {
-    return this._stats.getLong(_eventsRemovedByQrmId);
+    return _stats.getLong(_eventsRemovedByQrmId);
   }
 
   /**
    * Increments the "eventsRemovedByQrm" stat by 1.
    */
   public void incEventsRemovedByQrm() {
-    this._stats.incLong(_eventsRemovedByQrmId, 1);
+    _stats.incLong(_eventsRemovedByQrmId, 1);
   }
 
   /**
@@ -300,21 +300,21 @@ public class HARegionQueueStats {
    * @return the current value of the "threadIdentifiers" stat
    */
   public int getThreadIdentiferCount() {
-    return this._stats.getInt(_threadIdentifiersId);
+    return _stats.getInt(_threadIdentifiersId);
   }
 
   /**
    * Increments the "threadIdentifiers" stat by 1.
    */
   public void incThreadIdentifiers() {
-    this._stats.incInt(_threadIdentifiersId, 1);
+    _stats.incInt(_threadIdentifiersId, 1);
   }
 
   /**
    * Decrements the "threadIdentifiers" stat by 1.
    */
   public void decThreadIdentifiers() {
-    this._stats.incInt(_threadIdentifiersId, -1);
+    _stats.incInt(_threadIdentifiersId, -1);
   }
 
   /**
@@ -323,14 +323,14 @@ public class HARegionQueueStats {
    * @return the current value of the "eventsDispatched" stat
    */
   public long getEventsDispatched() {
-    return this._stats.getLong(_eventsDispatched);
+    return _stats.getLong(_eventsDispatched);
   }
 
   /**
    * Increments the "eventsDispatched" stat by 1.
    */
   public void incEventsDispatched() {
-    this._stats.incLong(_eventsDispatched, 1);
+    _stats.incLong(_eventsDispatched, 1);
   }
 
   /**
@@ -339,14 +339,14 @@ public class HARegionQueueStats {
    * @return the current value of the "numVoidRemovals" stat
    */
   public long getNumVoidRemovals() {
-    return this._stats.getLong(_numVoidRemovals);
+    return _stats.getLong(_numVoidRemovals);
   }
 
   /**
    * Increments the "numVoidRemovals" stat by 1.
    */
   public void incNumVoidRemovals() {
-    this._stats.incLong(_numVoidRemovals, 1);
+    _stats.incLong(_numVoidRemovals, 1);
   }
 
   /**
@@ -355,14 +355,14 @@ public class HARegionQueueStats {
    * @return the current value of the "numSequenceViolated" stat
    */
   public long getNumSequenceViolated() {
-    return this._stats.getLong(_numSequenceViolated);
+    return _stats.getLong(_numSequenceViolated);
   }
 
   /**
    * Increments the "numSequenceViolated" stat by 1.
    */
   public void incNumSequenceViolated() {
-    this._stats.incLong(_numSequenceViolated, 1);
+    _stats.incLong(_numSequenceViolated, 1);
   }
 
   /**
@@ -371,7 +371,7 @@ public class HARegionQueueStats {
    * @return true if the stats instance has been closed.
    */
   public boolean isClosed() {
-    return this._stats.isClosed();
+    return _stats.isClosed();
   }
 
 }

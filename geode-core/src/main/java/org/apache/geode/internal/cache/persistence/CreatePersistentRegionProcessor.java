@@ -49,6 +49,6 @@ public class CreatePersistentRegionProcessor extends CreateRegionProcessor {
   @Override
   public CacheDistributionAdvisor.InitialImageAdvice getInitialImageAdvice(
       CacheDistributionAdvisor.InitialImageAdvice previousAdvice) {
-    return this.persistenceAdvisor.getInitialImageAdvice(previousAdvice, recoverFromDisk);
+    return persistenceAdvisor.getInitialImageAdvice(previousAdvice, recoverFromDisk);
   }
 }

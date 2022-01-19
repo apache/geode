@@ -76,7 +76,7 @@ public class PartitionedRegionGetSomeKeys {
           partitionedRegion.checkReadiness();
           logger.debug(
               "Test hook getSomeKeys caught a ForceReattemptException for bucketId={}{}{}. Moving on to another bucket",
-              partitionedRegion.getPRId(), partitionedRegion.BUCKET_ID_SEPARATOR, bucketId,
+              partitionedRegion.getPRId(), PartitionedRegion.BUCKET_ID_SEPARATOR, bucketId,
               movinOn);
           continue;
         } catch (PRLocallyDestroyedException ignore) {

@@ -367,7 +367,7 @@ public class LogLevelTest {
 
   @Test
   public void getLogWriterLevel_null_throwsIllegalArgumentException() {
-    assertThatThrownBy(() -> LogLevel.getLogWriterLevel((String) null))
+    assertThatThrownBy(() -> LogLevel.getLogWriterLevel(null))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("LevelName cannot be null");
   }

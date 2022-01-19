@@ -56,8 +56,8 @@ public class QueueConnectionRequest extends ServerLocationRequest {
 
     proxyId = ClientProxyMembershipID.readCanonicalized(in);
     redundantCopies = DataSerializer.readPrimitiveInt(in);
-    this.excludedServers = SerializationHelper.readServerLocationSet(in);
-    this.findDurable = in.readBoolean();
+    excludedServers = SerializationHelper.readServerLocationSet(in);
+    findDurable = in.readBoolean();
   }
 
   @Override
@@ -66,8 +66,8 @@ public class QueueConnectionRequest extends ServerLocationRequest {
     super.toData(out, context);
     context.getSerializer().writeObject(proxyId, out);
     DataSerializer.writePrimitiveInt(redundantCopies, out);
-    SerializationHelper.writeServerLocationSet(this.excludedServers, out);
-    out.writeBoolean(this.findDurable);
+    SerializationHelper.writeServerLocationSet(excludedServers, out);
+    out.writeBoolean(findDurable);
   }
 
   public Set getExcludedServers() {
@@ -83,7 +83,7 @@ public class QueueConnectionRequest extends ServerLocationRequest {
   }
 
   public boolean isFindDurable() {
-    return this.findDurable;
+    return findDurable;
   }
 
   @Override

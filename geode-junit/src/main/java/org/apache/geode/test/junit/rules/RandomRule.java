@@ -15,7 +15,6 @@
 package org.apache.geode.test.junit.rules;
 
 import static java.util.Arrays.asList;
-import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.StreamSupport.stream;
 
@@ -24,6 +23,7 @@ import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.security.SecureRandom;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.runner.Description;
@@ -278,7 +278,7 @@ public class RandomRule extends SecureRandom implements GsRandom, SerializableTe
   }
 
   private <T> List<T> requireNonNulls(List<T> list) {
-    list.forEach(t -> requireNonNull(t));
+    list.forEach(Objects::requireNonNull);
     return list;
   }
 

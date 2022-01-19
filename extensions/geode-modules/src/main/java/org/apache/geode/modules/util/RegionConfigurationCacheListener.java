@@ -26,30 +26,30 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 public class RegionConfigurationCacheListener
     extends CacheListenerAdapter<String, RegionConfiguration> implements Declarable {
 
-  private Cache cache;
+  private final Cache cache;
 
   RegionConfigurationCacheListener() {
-    this.cache = CacheFactory.getAnyInstance();
+    cache = CacheFactory.getAnyInstance();
   }
 
   @Override
   public void afterCreate(EntryEvent<String, RegionConfiguration> event) {
     RegionConfiguration configuration = event.getNewValue();
-    if (this.cache.getLogger().fineEnabled()) {
-      this.cache.getLogger().fine(
+    if (cache.getLogger().fineEnabled()) {
+      cache.getLogger().fine(
           "RegionConfigurationCacheListener received afterCreate for region " + event.getKey());
     }
     // Create region
     // this is a replicate region, and many VMs can be doing create region
     // simultaneously, so ignore the RegionExistsException
     try {
-      Region region = RegionHelper.createRegion(this.cache, configuration);
-      if (this.cache.getLogger().fineEnabled()) {
-        this.cache.getLogger().fine("RegionConfigurationCacheListener created region: " + region);
+      Region region = RegionHelper.createRegion(cache, configuration);
+      if (cache.getLogger().fineEnabled()) {
+        cache.getLogger().fine("RegionConfigurationCacheListener created region: " + region);
       }
     } catch (RegionExistsException exists) {
       // ignore
-      this.cache.getLogger().fine("Region with configuration " + configuration + " existed");
+      cache.getLogger().fine("Region with configuration " + configuration + " existed");
     }
   }
 
@@ -65,7 +65,7 @@ public class RegionConfigurationCacheListener
   public void afterRegionCreate(RegionEvent<String, RegionConfiguration> event) {
     StringBuilder builder1 = new StringBuilder(), builder2 = new StringBuilder();
     Region<String, RegionConfiguration> region = event.getRegion();
-    if (this.cache.getLogger().fineEnabled()) {
+    if (cache.getLogger().fineEnabled()) {
       builder1 = new StringBuilder();
       int regionSize = region.size();
       if (regionSize > 0) {
@@ -81,27 +81,27 @@ public class RegionConfigurationCacheListener
       }
     }
     for (RegionConfiguration configuration : region.values()) {
-      if (this.cache.getLogger().fineEnabled()) {
+      if (cache.getLogger().fineEnabled()) {
         builder1.append("\t").append(configuration);
       }
       try {
-        Region createRegion = RegionHelper.createRegion(this.cache, configuration);
-        if (this.cache.getLogger().fineEnabled()) {
+        Region createRegion = RegionHelper.createRegion(cache, configuration);
+        if (cache.getLogger().fineEnabled()) {
           builder2.append("\t").append(createRegion);
         }
       } catch (RegionExistsException exists) {
         // could have been concurrently created by another function
-        if (this.cache.getLogger().fineEnabled()) {
+        if (cache.getLogger().fineEnabled()) {
           builder2.append("\t").append(" region existed");
         }
       }
 
     }
 
-    if (this.cache.getLogger().fineEnabled()) {
-      this.cache.getLogger().fine(builder1.toString());
+    if (cache.getLogger().fineEnabled()) {
+      cache.getLogger().fine(builder1.toString());
       if (builder2.length() != 0) {
-        this.cache.getLogger().fine(builder2.toString());
+        cache.getLogger().fine(builder2.toString());
       }
     }
   }

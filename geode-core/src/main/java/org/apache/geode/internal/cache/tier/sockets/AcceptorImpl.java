@@ -941,8 +941,8 @@ public class AcceptorImpl implements Acceptor, Runnable {
     if (tmpSel == null) {
       try {
         tmpSel = Selector.open();
-      } catch (IOException ignore) {
-        logger.warn("Could not check for stuck keys.", ignore);
+      } catch (IOException e) {
+        logger.warn("Could not check for stuck keys.", e);
         return;
       }
 
@@ -1194,7 +1194,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
     String name = serverSock.getLocalSocketAddress().toString();
     try {
       name = LocalHostUtil.getCanonicalLocalHostName() + "-" + name;
-    } catch (Exception e) {
+    } catch (Exception ignored) {
     }
     return name;
   }

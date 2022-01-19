@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.TypeMismatchException;
 
@@ -32,7 +31,7 @@ public interface Indexable {
    * @return IndexInfo object , if any, associated with the CompiledValue
    */
   IndexInfo[] getIndexInfo(ExecutionContext context)
-      throws TypeMismatchException, AmbiguousNameException, NameResolutionException;
+      throws TypeMismatchException, NameResolutionException;
 
   /**
    *

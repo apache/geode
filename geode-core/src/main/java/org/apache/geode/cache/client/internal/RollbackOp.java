@@ -42,7 +42,7 @@ public class RollbackOp {
   }
 
   private static class RollbackOpImpl extends AbstractOp {
-    private int txId;
+    private final int txId;
 
     protected RollbackOpImpl(int txId) {
       super(MessageType.ROLLBACK, 1);
@@ -52,7 +52,7 @@ public class RollbackOp {
 
     @Override
     public String toString() {
-      return "Rollback(txId=" + this.txId + ")";
+      return "Rollback(txId=" + txId + ")";
     }
 
     @Override

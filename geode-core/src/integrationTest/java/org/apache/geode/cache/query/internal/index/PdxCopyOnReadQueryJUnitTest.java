@@ -42,7 +42,7 @@ public class PdxCopyOnReadQueryJUnitTest {
 
   @Test
   public void testCopyOnReadPdxSerialization() throws Exception {
-    List<String> classes = new ArrayList<String>();
+    List<String> classes = new ArrayList<>();
     classes.add(PortfolioPdx.class.getCanonicalName());
     ReflectionBasedAutoSerializer serializer =
         new ReflectionBasedAutoSerializer(classes.toArray(new String[0]));

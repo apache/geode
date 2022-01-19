@@ -92,7 +92,7 @@ public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
     assertEquals(regionName, getRegionNameFromListener(vm3, regionName));
 
     // Get all buckets and keys removed from VM1 and VM2
-    Map<Integer, List<Integer>> allBucketsAndKeysRemoved = new HashMap<Integer, List<Integer>>();
+    Map<Integer, List<Integer>> allBucketsAndKeysRemoved = new HashMap<>();
     allBucketsAndKeysRemoved.putAll(getBucketsAndKeysRemoved(vm1, regionName));
     allBucketsAndKeysRemoved.putAll(getBucketsAndKeysRemoved(vm2, regionName));
 
@@ -141,14 +141,14 @@ public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
 
     // Eliminate the duplicate, prevent afterSecondary being called multiple times on the same
     // bucket
-    Set<Integer> afterSecondaryCalledForVM1Set = new HashSet<Integer>(afterSecondaryCalledForVM1);
+    Set<Integer> afterSecondaryCalledForVM1Set = new HashSet<>(afterSecondaryCalledForVM1);
     afterSecondaryCalledForVM1.removeAll(afterSecondaryCalledForVM1Set);
     assertTrue(
         "afterSecondary invoked more than once for bucket "
             + (afterSecondaryCalledForVM1.isEmpty() ? " " : afterSecondaryCalledForVM1.get(0)),
         afterSecondaryCalledForVM1.isEmpty());
 
-    Set<Integer> afterSecondaryCalledForVM2Set = new HashSet<Integer>(afterSecondaryCalledForVM2);
+    Set<Integer> afterSecondaryCalledForVM2Set = new HashSet<>(afterSecondaryCalledForVM2);
     afterSecondaryCalledForVM2.removeAll(afterSecondaryCalledForVM2Set);
     assertTrue(
         "afterSecondary invoked more than once for bucket "
@@ -329,41 +329,41 @@ public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
     private final Map<Integer, List<Integer>> bucketsAndKeysAdded;
 
     public TestPartitionListener() {
-      this.primariesCreated = new ArrayList<>();
+      primariesCreated = new ArrayList<>();
       afterSecondaryCalled = new ArrayList<>();
-      this.bucketsAndKeysRemoved = new HashMap<Integer, List<Integer>>();
-      this.bucketsAndKeysAdded = new HashMap<Integer, List<Integer>>();
+      bucketsAndKeysRemoved = new HashMap<>();
+      bucketsAndKeysAdded = new HashMap<>();
     }
 
     public Map<Integer, List<Integer>> getBucketsAndKeysRemoved() {
-      return this.bucketsAndKeysRemoved;
+      return bucketsAndKeysRemoved;
     }
 
     public Map<Integer, List<Integer>> getBucketsAndKeysAdded() {
-      return this.bucketsAndKeysAdded;
+      return bucketsAndKeysAdded;
     }
 
     public List<Integer> getPrimariesCreated() {
-      return this.primariesCreated;
+      return primariesCreated;
     }
 
     public String getRegionName() {
-      return this.regionName;
+      return regionName;
     }
 
     @Override
     public void afterRegionCreate(Region<?, ?> region) {
-      this.regionName = region.getName();
+      regionName = region.getName();
     }
 
     @Override
     public void afterPrimary(int bucketId) {
-      this.primariesCreated.add(bucketId);
+      primariesCreated.add(bucketId);
     }
 
     @Override
     public void afterSecondary(int bucketId) {
-      this.afterSecondaryCalled.add(bucketId);
+      afterSecondaryCalled.add(bucketId);
     }
 
     public List<Integer> getAfterSecondaryCallbackBucketIds() {
@@ -376,12 +376,12 @@ public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
       // If the keys collection is not empty, create a serializable list to hold
       // them and add them to the keys removed.
       if (!keysCol.isEmpty()) {
-        List<Integer> keysList = new ArrayList<Integer>();
+        List<Integer> keysList = new ArrayList<>();
         for (Integer key : keysCol) {
           keysList.add(key);
         }
         Collections.sort(keysList);
-        this.bucketsAndKeysRemoved.put(bucketId, keysList);
+        bucketsAndKeysRemoved.put(bucketId, keysList);
       }
     }
 
@@ -391,12 +391,12 @@ public class PartitionListenerDUnitTest extends JUnit4CacheTestCase {
       // If the keys collection is not empty, create a serializable list to hold
       // them and add them to the keys added.
       if (!keysCol.isEmpty()) {
-        List<Integer> keysList = new ArrayList<Integer>();
+        List<Integer> keysList = new ArrayList<>();
         for (Integer key : keysCol) {
           keysList.add(key);
         }
         Collections.sort(keysList);
-        this.bucketsAndKeysAdded.put(bucketId, keysList);
+        bucketsAndKeysAdded.put(bucketId, keysList);
       }
     }
   }

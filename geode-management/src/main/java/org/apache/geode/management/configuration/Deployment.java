@@ -49,7 +49,7 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> implement
 
   public Deployment(Deployment deployment, File jarFile) {
     this(deployment.getFileName(), deployment.getDeployedBy(), deployment.deployedTime);
-    this.file = jarFile;
+    file = jarFile;
   }
 
   @JsonIgnore

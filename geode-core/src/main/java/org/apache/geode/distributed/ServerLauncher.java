@@ -129,7 +129,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
         "A Geode launcher used to start, stop and determine a Server's status.");
     help.put(Command.START.getName(), String.format(
         "Starts a Server running in the current working directory listening on the default port (%s) bound to all IP addresses available to the localhost.  The Server must be given a member name in the Geode cluster.  The default server-bind-address and server-port may be overridden using the corresponding command-line options.",
-        String.valueOf(getDefaultServerPort())));
+        getDefaultServerPort()));
     help.put(Command.STATUS.getName(),
         "Displays the status of a Server given any combination of the member name/ID, PID, or the directory in which the Server is running.");
     help.put(Command.STOP.getName(),
@@ -161,7 +161,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
         "An option to specify the hostname or IP address to send to clients so they can connect to this Server. The default is to use the IP address to which the Server is bound.");
     help.put("server-port", String.format(
         "Specifies the port on which the Server is listening for client requests. Defaults to %s.",
-        String.valueOf(getDefaultServerPort())));
+        getDefaultServerPort()));
     helpMap = Collections.unmodifiableMap(help);
   }
 

@@ -54,7 +54,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     VM managing = getManagingNode();
     VM puneLocator = Host.getLocator();
 
-    int dsIdPort = puneLocator.invoke(() -> WANManagementDUnitTest.getLocatorPort());
+    int dsIdPort = puneLocator.invoke(WANManagementDUnitTest::getLocatorPort);
 
     Integer nyPort = nyLocator.invoke(() -> WANTestBase.createFirstRemoteLocator(12, dsIdPort));
 
@@ -79,7 +79,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     nyReceiver.invoke(() -> WANTestBase.createCache(nyPort));
     nyReceiver.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null,
         1, 100, false));
-    nyReceiver.invoke(() -> WANTestBase.createReceiver());
+    nyReceiver.invoke(WANTestBase::createReceiver);
 
     WANTestBase.startSenderInVMs("pn", puneSender, managing);
 
@@ -95,12 +95,12 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     WANTestBase.stopGatewaySender(puneSender);
     WANTestBase.startGatewaySender(puneSender);
 
-    DistributedMember puneMember = puneSender.invoke(() -> WANTestBase.getMember());
+    DistributedMember puneMember = puneSender.invoke(WANTestBase::getMember);
 
     WANTestBase.checkProxySender(managing, puneMember);
     WANTestBase.checkSenderNavigationAPIS(managing, puneMember);
 
-    nyReceiver.invoke(() -> WANTestBase.stopReceivers());
+    nyReceiver.invoke(WANTestBase::stopReceivers);
 
     WANTestBase.checkSenderMBean(puneSender, getTestMethodName() + "_PR", false);
     WANTestBase.checkSenderMBean(managing, getTestMethodName() + "_PR", false);
@@ -115,7 +115,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     VM puneSender = getManagedNodeList().get(2);
     VM puneLocator = Host.getLocator();
 
-    int dsIdPort = puneLocator.invoke(() -> WANManagementDUnitTest.getLocatorPort());
+    int dsIdPort = puneLocator.invoke(WANManagementDUnitTest::getLocatorPort);
 
     Integer nyPort = nyLocator.invoke(() -> WANTestBase.createFirstRemoteLocator(12, dsIdPort));
 
@@ -134,7 +134,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     nyReceiver.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null,
         1, 100, false));
 
-    nyReceiver.invoke(() -> WANTestBase.createReceiver());
+    nyReceiver.invoke(WANTestBase::createReceiver);
 
     puneSender.invoke(() -> WANTestBase.startSender("pn"));
 
@@ -145,7 +145,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
 
     WANTestBase.checkReceiverMBean(nyReceiver);
 
-    nyReceiver.invoke(() -> WANTestBase.stopReceivers());
+    nyReceiver.invoke(WANTestBase::stopReceivers);
 
     WANTestBase.checkSenderMBean(puneSender, getTestMethodName() + "_PR", false);
 
@@ -154,7 +154,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
 
     puneSender.invoke(() -> WANTestBase.checkQueueSize("pn", 10));
 
-    nyReceiver.invoke(() -> WANTestBase.startReceivers());
+    nyReceiver.invoke(WANTestBase::startReceivers);
 
     WANTestBase.checkSenderMBean(puneSender, getTestMethodName() + "_PR", true);
 
@@ -171,7 +171,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     VM managing = getManagingNode();
     VM puneLocator = Host.getLocator();
 
-    int dsIdPort = puneLocator.invoke(() -> WANManagementDUnitTest.getLocatorPort());
+    int dsIdPort = puneLocator.invoke(WANManagementDUnitTest::getLocatorPort);
 
     Integer nyPort = nyLocator.invoke(() -> WANTestBase.createFirstRemoteLocator(12, dsIdPort));
 
@@ -180,7 +180,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     nyReceiver.invoke(() -> WANTestBase.createCache(nyPort));
     nyReceiver.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null,
         1, 100, false));
-    nyReceiver.invoke(() -> WANTestBase.createReceiver());
+    nyReceiver.invoke(WANTestBase::createReceiver);
 
     // keep a larger batch to minimize number of exception occurrences in the
     // log
@@ -201,7 +201,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     WANTestBase.checkSenderMBean(puneSender, getTestMethodName() + "_PR", true);
     WANTestBase.checkReceiverMBean(nyReceiver);
 
-    DistributedMember nyMember = nyReceiver.invoke(() -> WANTestBase.getMember());
+    DistributedMember nyMember = nyReceiver.invoke(WANTestBase::getMember);
 
     WANTestBase.checkProxyReceiver(managing, nyMember);
     WANTestBase.checkReceiverNavigationAPIS(managing, nyMember);
@@ -217,7 +217,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     VM managing = getManagingNode();
     VM puneLocator = Host.getLocator();
 
-    int dsIdPort = puneLocator.invoke(() -> WANManagementDUnitTest.getLocatorPort());
+    int dsIdPort = puneLocator.invoke(WANManagementDUnitTest::getLocatorPort);
 
     Integer nyPort = nyLocator.invoke(() -> WANTestBase.createFirstRemoteLocator(12, dsIdPort));
 
@@ -238,12 +238,12 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     WANTestBase.createCacheInVMs(nyPort, nyReceiver);
     nyReceiver.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null,
         1, 100, false));
-    nyReceiver.invoke(() -> WANTestBase.createReceiver());
+    nyReceiver.invoke(WANTestBase::createReceiver);
 
     WANTestBase.checkAsyncQueueMBean(puneSender, true);
     WANTestBase.checkAsyncQueueMBean(managing, true);
 
-    DistributedMember puneMember = puneSender.invoke(() -> WANTestBase.getMember());
+    DistributedMember puneMember = puneSender.invoke(WANTestBase::getMember);
 
     WANTestBase.checkProxyAsyncQueue(managing, puneMember, true);
 
@@ -255,7 +255,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     VM managerVm = getManagingNode();
     VM locatorVm = Host.getLocator();
 
-    int locatorPort = locatorVm.invoke(() -> WANManagementDUnitTest.getLocatorPort());
+    int locatorPort = locatorVm.invoke(WANManagementDUnitTest::getLocatorPort);
 
     memberVM.invoke(() -> WANTestBase.createCache(locatorPort));
     managerVm.invoke(() -> WANTestBase.createManagementCache(locatorPort));
@@ -271,7 +271,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     // Verify AsyncEventQueueMXBean exists
     WANTestBase.checkAsyncQueueMBean(memberVM, true);
     WANTestBase.checkAsyncQueueMBean(managerVm, true);
-    DistributedMember member = memberVM.invoke(() -> WANTestBase.getMember());
+    DistributedMember member = memberVM.invoke(WANTestBase::getMember);
     WANTestBase.checkProxyAsyncQueue(managerVm, member, true);
 
     // Destroy AsyncEventQueue
@@ -290,7 +290,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     VM managing = getManagingNode();
     VM sender = getManagedNodeList().get(0);
 
-    int dsIdPort = locator.invoke(() -> WANManagementDUnitTest.getLocatorPort());
+    int dsIdPort = locator.invoke(WANManagementDUnitTest::getLocatorPort);
 
     sender.invoke(() -> WANTestBase.createCache(dsIdPort));
     managing.invoke(() -> WANTestBase.createManagementCache(dsIdPort));
@@ -323,7 +323,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     VM managing = getManagingNode();
     VM puneLocator = Host.getLocator();
 
-    int dsIdPort = puneLocator.invoke(() -> WANManagementDUnitTest.getLocatorPort());
+    int dsIdPort = puneLocator.invoke(WANManagementDUnitTest::getLocatorPort);
 
     Integer nyPort = nyLocator.invoke(() -> WANTestBase.createFirstRemoteLocator(12, dsIdPort));
 
@@ -342,7 +342,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
         100, false));
 
     WANTestBase.createCacheInVMs(nyPort, nyReceiver);
-    nyReceiver.invoke(() -> WANTestBase.createReceiver());
+    nyReceiver.invoke(WANTestBase::createReceiver);
     nyReceiver.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null,
         1, 100, false));
 
@@ -360,7 +360,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     WANTestBase.stopGatewaySender(puneSender);
     WANTestBase.startGatewaySender(puneSender);
 
-    DistributedMember puneMember = puneSender.invoke(() -> WANTestBase.getMember());
+    DistributedMember puneMember = puneSender.invoke(WANTestBase::getMember);
 
     WANTestBase.checkRemoteClusterStatus(managing, puneMember);
 

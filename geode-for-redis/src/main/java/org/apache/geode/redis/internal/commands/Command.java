@@ -67,7 +67,7 @@ public class Command {
     } catch (Exception e) {
       type = RedisCommandType.UNKNOWN;
     }
-    this.commandType = type;
+    commandType = type;
   }
 
   public boolean isSupported() {
@@ -88,7 +88,7 @@ public class Command {
    * @return List of command elements in form of {@link List}
    */
   public List<byte[]> getProcessedCommand() {
-    return this.commandElems;
+    return commandElems;
   }
 
   /**
@@ -105,7 +105,7 @@ public class Command {
    * @return List of command elements in form of {@link List}
    */
   public List<RedisKey> getProcessedCommandKeys() {
-    return this.commandElems.stream().map(RedisKey::new).collect(Collectors.toList());
+    return commandElems.stream().map(RedisKey::new).collect(Collectors.toList());
   }
 
   /**
@@ -114,7 +114,7 @@ public class Command {
    * @return The command type
    */
   public RedisCommandType getCommandType() {
-    return this.commandType;
+    return commandType;
   }
 
   /**
@@ -125,11 +125,11 @@ public class Command {
    *         commands indicating a key
    */
   public byte[] getBytesKey() {
-    if (this.commandElems.size() > 1) {
-      if (this.keyBytes == null) {
-        this.keyBytes = this.commandElems.get(1);
+    if (commandElems.size() > 1) {
+      if (keyBytes == null) {
+        keyBytes = commandElems.get(1);
       }
-      return this.keyBytes;
+      return keyBytes;
     } else {
       return null;
     }
@@ -143,25 +143,25 @@ public class Command {
    *         commands indicating a key
    */
   public String getStringKey() {
-    if (this.commandElems.size() > 1) {
-      if (this.keyBytes == null) {
-        this.keyBytes = this.commandElems.get(1);
-        this.keyString = bytesToString(this.keyBytes);
-      } else if (this.keyString == null) {
-        this.keyString = bytesToString(this.keyBytes);
+    if (commandElems.size() > 1) {
+      if (keyBytes == null) {
+        keyBytes = commandElems.get(1);
+        keyString = bytesToString(keyBytes);
+      } else if (keyString == null) {
+        keyString = bytesToString(keyBytes);
       }
-      return this.keyString;
+      return keyString;
     } else {
       return null;
     }
   }
 
   public RedisKey getKey() {
-    if (this.commandElems.size() > 1) {
-      if (this.keyBytes == null) {
-        this.keyBytes = this.commandElems.get(1);
+    if (commandElems.size() > 1) {
+      if (keyBytes == null) {
+        keyBytes = commandElems.get(1);
       }
-      return new RedisKey(this.keyBytes);
+      return new RedisKey(keyBytes);
     } else {
       return null;
     }
@@ -173,7 +173,7 @@ public class Command {
       return "AUTH command with " + (commandElems.size() - 1) + " argument(s)";
     } else {
       StringBuilder b = new StringBuilder();
-      for (byte[] rawCommand : this.commandElems) {
+      for (byte[] rawCommand : commandElems) {
         b.append(getHexEncodedString(rawCommand));
         b.append(' ');
       }

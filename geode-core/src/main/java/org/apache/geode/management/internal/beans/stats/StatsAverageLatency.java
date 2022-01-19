@@ -18,11 +18,11 @@ import org.apache.geode.management.internal.beans.MetricsCalculator;
 
 public class StatsAverageLatency {
 
-  private String numberKey;
-  private String timeKey;
-  private StatType numKeyType;
+  private final String numberKey;
+  private final String timeKey;
+  private final StatType numKeyType;
 
-  private MBeanStatsMonitor monitor;
+  private final MBeanStatsMonitor monitor;
 
   public StatsAverageLatency(String numberKey, StatType numKeyType, String timeKey,
       MBeanStatsMonitor monitor) {

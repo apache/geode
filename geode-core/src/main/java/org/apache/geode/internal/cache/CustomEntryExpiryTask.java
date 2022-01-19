@@ -29,18 +29,18 @@ public class CustomEntryExpiryTask extends EntryExpiryTask {
   public CustomEntryExpiryTask(LocalRegion region, RegionEntry re, ExpirationAttributes ttlAtts,
       ExpirationAttributes idleAtts) {
     super(region, re);
-    this.ttlAttr = ttlAtts;
-    this.idleAttr = idleAtts;
+    ttlAttr = ttlAtts;
+    idleAttr = idleAtts;
   }
 
   @Override
   protected ExpirationAttributes getTTLAttributes() {
-    return this.ttlAttr;
+    return ttlAttr;
   }
 
   @Override
   protected ExpirationAttributes getIdleAttributes() {
-    return this.idleAttr;
+    return idleAttr;
   }
 
 }

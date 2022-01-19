@@ -183,7 +183,7 @@ public class ManagementUtilsDUnitTest {
   public void getRegionsAssociatedMembersInvalidRegion() {
     locator.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      Set<String> regions = new HashSet<String>();
+      Set<String> regions = new HashSet<>();
       regions.add(SEPARATOR + "asdfghjkl");
 
       members = ManagementUtils.getQueryRegionsAssociatedMembers(regions, cache, true);
@@ -198,7 +198,7 @@ public class ManagementUtilsDUnitTest {
   public void getRegionsAssociatedMembersInvalidRegions() {
     locator.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      Set<String> regions = new HashSet<String>();
+      Set<String> regions = new HashSet<>();
       regions.add(SEPARATOR + "asdfghjkl");
       regions.add(SEPARATOR + "asdfghjklmn");
 
@@ -214,7 +214,7 @@ public class ManagementUtilsDUnitTest {
   public void getRegionsAssociatedMembersInvalidAndValidRegions() {
     locator.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
-      Set<String> regions = new HashSet<String>();
+      Set<String> regions = new HashSet<>();
       regions.add(SEPARATOR + "asdfghjkl");
       regions.add(SEPARATOR + "commonRegion");
 

@@ -39,31 +39,31 @@ public class LuceneIndexStatsMonitor extends MBeanStatsMonitor {
 
   private void configureMetrics() {
 
-    this.queryRateAverageLatency =
+    queryRateAverageLatency =
         new StatsAverageLatency(StatsKey.QUERIES, StatType.INT_TYPE, StatsKey.QUERY_TIME, this);
 
-    this.updateRateAverageLatency =
+    updateRateAverageLatency =
         new StatsAverageLatency(StatsKey.UPDATES, StatType.INT_TYPE, StatsKey.UPDATE_TIME, this);
 
-    this.commitRateAverageLatency =
+    commitRateAverageLatency =
         new StatsAverageLatency(StatsKey.COMMITS, StatType.INT_TYPE, StatsKey.COMMIT_TIME, this);
   }
 
   protected LuceneIndexMetrics getIndexMetrics(LuceneIndex index) {
     int queryExecutions = getStatistic(StatsKey.QUERIES).intValue();
     long queryExecutionTime = getStatistic(StatsKey.QUERY_TIME).longValue();
-    long queryRateAverageLatencyValue = this.queryRateAverageLatency.getAverageLatency();
+    long queryRateAverageLatencyValue = queryRateAverageLatency.getAverageLatency();
     int queryExecutionsInProgress = getStatistic(StatsKey.QUERIES_IN_PROGRESS).intValue();
     long queryExecutionTotalHits = getStatistic(StatsKey.QUERIES_TOTAL_HITS).longValue();
 
     int updates = getStatistic(StatsKey.UPDATES).intValue();
     long updateTime = getStatistic(StatsKey.UPDATE_TIME).longValue();
-    long updateRateAverageLatencyValue = this.updateRateAverageLatency.getAverageLatency();
+    long updateRateAverageLatencyValue = updateRateAverageLatency.getAverageLatency();
     int updatesInProgress = getStatistic(StatsKey.UPDATES_IN_PROGRESS).intValue();
 
     int commits = getStatistic(StatsKey.COMMITS).intValue();
     long commitTime = getStatistic(StatsKey.COMMIT_TIME).longValue();
-    long commitRateAverageLatencyValue = this.commitRateAverageLatency.getAverageLatency();
+    long commitRateAverageLatencyValue = commitRateAverageLatency.getAverageLatency();
     int commitsInProgress = getStatistic(StatsKey.COMMITS_IN_PROGRESS).intValue();
 
     int documents = getStatistic(StatsKey.DOCUMENTS).intValue();

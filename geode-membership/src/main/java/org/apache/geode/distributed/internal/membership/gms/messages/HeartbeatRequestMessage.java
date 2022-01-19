@@ -35,7 +35,7 @@ public class HeartbeatRequestMessage<ID extends MemberIdentifier> extends Abstra
 
   public HeartbeatRequestMessage(ID neighbour, int id) {
     requestId = id;
-    this.target = neighbour;
+    target = neighbour;
   }
 
   public HeartbeatRequestMessage() {}

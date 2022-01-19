@@ -278,14 +278,11 @@ public class LegacyClasspathServiceImpl implements ClasspathService {
 
   @Override
   public String toString() {
-    final StringBuilder stringBuilder = new StringBuilder(getClass().getName());
-    stringBuilder.append("@").append(System.identityHashCode(this)).append("{");
-    stringBuilder.append("excludeTCCL=").append(excludeTCCL);
-    stringBuilder.append(", jarDeployer=").append(jarDeploymentService);
-    stringBuilder.append(", classLoaders=[");
-    stringBuilder
-        .append(getClassLoaders().stream().map(ClassLoader::toString).collect(joining(", ")));
-    stringBuilder.append("]}");
-    return stringBuilder.toString();
+    return getClass().getName() + "@" + System.identityHashCode(this) + "{"
+        + "excludeTCCL=" + excludeTCCL
+        + ", jarDeployer=" + jarDeploymentService
+        + ", classLoaders=["
+        + getClassLoaders().stream().map(ClassLoader::toString).collect(joining(", "))
+        + "]}";
   }
 }

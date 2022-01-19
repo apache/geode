@@ -84,101 +84,101 @@ public class Invalidate70Test {
 
   @Before
   public void setUp() throws Exception {
-    this.invalidate = (Invalidate70) Invalidate70.getCommand();
+    invalidate = (Invalidate70) Invalidate70.getCommand();
 
     MockitoAnnotations.initMocks(this);
 
-    when(this.authzRequest.invalidateAuthorize(any(), any(), any()))
+    when(authzRequest.invalidateAuthorize(any(), any(), any()))
         .thenReturn(mock(InvalidateOperationContext.class));
 
-    when(this.cache.getRegion(isA(String.class))).thenReturn(mock(LocalRegion.class));
-    when(this.cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
+    when(cache.getRegion(isA(String.class))).thenReturn(mock(LocalRegion.class));
+    when(cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
 
-    when(this.callbackArgPart.getObject()).thenReturn(CALLBACK_ARG);
+    when(callbackArgPart.getObject()).thenReturn(CALLBACK_ARG);
 
-    when(this.eventPart.getSerializedForm()).thenReturn(EVENT);
+    when(eventPart.getSerializedForm()).thenReturn(EVENT);
 
-    when(this.keyPart.getStringOrObject()).thenReturn(KEY_STRING);
+    when(keyPart.getStringOrObject()).thenReturn(KEY_STRING);
 
-    when(this.message.getNumberOfParts()).thenReturn(4);
-    when(this.message.getPart(eq(0))).thenReturn(this.regionNamePart);
-    when(this.message.getPart(eq(1))).thenReturn(this.keyPart);
-    when(this.message.getPart(eq(2))).thenReturn(this.eventPart);
-    when(this.message.getPart(eq(3))).thenReturn(this.callbackArgPart);
+    when(message.getNumberOfParts()).thenReturn(4);
+    when(message.getPart(eq(0))).thenReturn(regionNamePart);
+    when(message.getPart(eq(1))).thenReturn(keyPart);
+    when(message.getPart(eq(2))).thenReturn(eventPart);
+    when(message.getPart(eq(3))).thenReturn(callbackArgPart);
 
-    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
+    when(regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
-    when(this.serverConnection.getCache()).thenReturn(this.cache);
-    when(this.serverConnection.getCacheServerStats()).thenReturn(mock(CacheServerStats.class));
-    when(this.serverConnection.getAuthzRequest()).thenReturn(this.authzRequest);
-    when(this.serverConnection.getCachedRegionHelper()).thenReturn(mock(CachedRegionHelper.class));
-    when(this.serverConnection.getReplyMessage()).thenReturn(this.responseMessage);
-    when(this.serverConnection.getErrorResponseMessage()).thenReturn(this.errorResponseMessage);
-    when(this.serverConnection.getClientVersion()).thenReturn(KnownVersion.CURRENT);
+    when(serverConnection.getCache()).thenReturn(cache);
+    when(serverConnection.getCacheServerStats()).thenReturn(mock(CacheServerStats.class));
+    when(serverConnection.getAuthzRequest()).thenReturn(authzRequest);
+    when(serverConnection.getCachedRegionHelper()).thenReturn(mock(CachedRegionHelper.class));
+    when(serverConnection.getReplyMessage()).thenReturn(responseMessage);
+    when(serverConnection.getErrorResponseMessage()).thenReturn(errorResponseMessage);
+    when(serverConnection.getClientVersion()).thenReturn(KnownVersion.CURRENT);
   }
 
   @Test
   public void noSecurityShouldSucceed() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(false);
+    when(securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.invalidate.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    invalidate.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.responseMessage).send(this.serverConnection);
+    verify(responseMessage).send(serverConnection);
   }
 
   @Test
   public void integratedSecurityShouldSucceedIfAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(true);
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.invalidate.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    invalidate.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.securityService).authorize(Resource.DATA, Operation.WRITE, REGION_NAME, KEY_STRING);
-    verify(this.responseMessage).send(this.serverConnection);
+    verify(securityService).authorize(Resource.DATA, Operation.WRITE, REGION_NAME, KEY_STRING);
+    verify(responseMessage).send(serverConnection);
   }
 
   @Test
   public void integratedSecurityShouldFailIfNotAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(true);
-    doThrow(new NotAuthorizedException("")).when(this.securityService).authorize(Resource.DATA,
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(true);
+    doThrow(new NotAuthorizedException("")).when(securityService).authorize(Resource.DATA,
         Operation.WRITE, REGION_NAME, KEY_STRING);
 
-    this.invalidate.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    invalidate.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.securityService).authorize(Resource.DATA, Operation.WRITE, REGION_NAME, KEY_STRING);
-    verify(this.errorResponseMessage).send(this.serverConnection);
+    verify(securityService).authorize(Resource.DATA, Operation.WRITE, REGION_NAME, KEY_STRING);
+    verify(errorResponseMessage).send(serverConnection);
   }
 
   @Test
   public void oldSecurityShouldSucceedIfAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(false);
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.invalidate.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    invalidate.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.authzRequest).invalidateAuthorize(eq(REGION_NAME), eq(KEY_STRING),
+    verify(authzRequest).invalidateAuthorize(eq(REGION_NAME), eq(KEY_STRING),
         eq(CALLBACK_ARG));
-    verify(this.responseMessage).send(this.serverConnection);
+    verify(responseMessage).send(serverConnection);
   }
 
   @Test
   public void oldSecurityShouldFailIfNotAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(false);
-    doThrow(new NotAuthorizedException("")).when(this.authzRequest)
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(false);
+    doThrow(new NotAuthorizedException("")).when(authzRequest)
         .invalidateAuthorize(eq(REGION_NAME), eq(KEY_STRING), eq(CALLBACK_ARG));
 
-    this.invalidate.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    invalidate.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.authzRequest).invalidateAuthorize(eq(REGION_NAME), eq(KEY_STRING),
+    verify(authzRequest).invalidateAuthorize(eq(REGION_NAME), eq(KEY_STRING),
         eq(CALLBACK_ARG));
 
     ArgumentCaptor<NotAuthorizedException> argument =
         ArgumentCaptor.forClass(NotAuthorizedException.class);
-    verify(this.errorResponseMessage).addObjPart(argument.capture());
+    verify(errorResponseMessage).addObjPart(argument.capture());
     assertThat(argument.getValue()).isExactlyInstanceOf(NotAuthorizedException.class);
-    verify(this.errorResponseMessage).send(this.serverConnection);
+    verify(errorResponseMessage).send(serverConnection);
   }
 
 }

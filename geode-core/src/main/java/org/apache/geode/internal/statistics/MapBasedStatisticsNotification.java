@@ -40,17 +40,17 @@ public class MapBasedStatisticsNotification implements StatisticsNotification {
 
   @Override
   public long getTimeStamp() {
-    return this.millisTimeStamp;
+    return millisTimeStamp;
   }
 
   @Override
   public Type getType() {
-    return this.type;
+    return type;
   }
 
   @Override
   public Iterator<StatisticId> iterator() {
-    return this.stats.keySet().iterator();
+    return stats.keySet().iterator();
   }
 
   @Override
@@ -70,7 +70,7 @@ public class MapBasedStatisticsNotification implements StatisticsNotification {
 
   @Override
   public Number getValue(StatisticId statId) throws StatisticNotFoundException {
-    Number value = this.stats.get(statId);
+    Number value = stats.get(statId);
     if (value == null) {
       throw new StatisticNotFoundException(
           statId.getStatisticDescriptor().getName() + " not found in notification");
@@ -80,12 +80,10 @@ public class MapBasedStatisticsNotification implements StatisticsNotification {
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder(getClass().getName());
-    sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("millisTimeStamp=").append(this.millisTimeStamp);
-    sb.append(", type=").append(this.type);
-    sb.append(", stats=").append(this.stats);
-    sb.append("}");
-    return sb.toString();
+    return getClass().getName() + "@" + System.identityHashCode(this) + "{"
+        + "millisTimeStamp=" + millisTimeStamp
+        + ", type=" + type
+        + ", stats=" + stats
+        + "}";
   }
 }

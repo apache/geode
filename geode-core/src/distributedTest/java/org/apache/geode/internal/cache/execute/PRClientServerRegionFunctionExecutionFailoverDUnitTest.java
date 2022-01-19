@@ -440,7 +440,7 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     region = cache.createRegion(regionName, attr.create());
     assertNotNull(region);
     logger
-        .info("Partitioned Region " + regionName + " created Successfully :" + region.toString());
+        .info("Partitioned Region " + regionName + " created Successfully :" + region);
     return port;
   }
 
@@ -468,7 +468,7 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     region = cache.createRegion(regionName, attrs);
     assertNotNull(region);
     logger
-        .info("Distributed Region " + regionName + " created Successfully :" + region.toString());
+        .info("Distributed Region " + regionName + " created Successfully :" + region);
   }
 
   public static void putIntoRegion() {

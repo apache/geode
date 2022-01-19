@@ -139,7 +139,7 @@ public class MockSubscriber extends JedisPubSub {
     if (client == null) {
       throw new JedisConnectionException("JedisPubSub is not subscribed to a Jedis instance.");
     } else {
-      this.client.ping(message);
+      client.ping(message);
     }
   }
 

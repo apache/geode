@@ -208,7 +208,7 @@ public abstract class AbstractDataSource implements Serializable, DataSource, Au
       String error =
           String.format(
               "Cannot create a connection with the user, %s, as it doesnt match the existing user named %s, or the password was incorrect.",
-              new Object[] {clUser, clPass});
+              clUser, clPass);
       throw new SQLException(error);
     }
   }

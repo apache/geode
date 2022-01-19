@@ -119,6 +119,8 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -131,7 +133,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
   private enum forop {
     CREATE, UPDATE, DESTROY
-  };
+  }
 
   protected static final String OTHER_REGION = "OtherRegion";
 
@@ -311,7 +313,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     Properties p = getDistributedSystemProperties();
     // p.setProperty(LOG_LEVEL, "finer");
     p.setProperty(OFF_HEAP_MEMORY_SIZE, "1m");
-    this.getSystem(p);
+    getSystem(p);
   }
 
   private void createSubscriptionRegion(boolean isOffHeap, String regionName, int copies,
@@ -362,13 +364,13 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     }
 
     private void onEvent(EntryEvent event) {
-      this.eventCount++;
+      eventCount++;
     }
 
     public int getEventCount() {
-      return this.eventCount;
+      return eventCount;
     }
-  };
+  }
 
   private int getClientCacheListnerEventCount(String regionName) {
     Region r = getCache().getRegion(regionName);
@@ -429,8 +431,8 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     }
 
     cCache.close();
-    datastore1.invoke(() -> closeCache());
-    datastore2.invoke(() -> closeCache());
+    datastore1.invoke(JUnit4CacheTestCase::closeCache);
+    datastore2.invoke(JUnit4CacheTestCase::closeCache);
 
     if (!exceptionThrown) {
       fail("expected TransactionException to be thrown since two pools were used");
@@ -562,8 +564,8 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     accessor.invoke(verifyExists);
     datastore.invoke(verifyExists);
 
-    accessor.invoke(() -> closeCache());
-    accessor.invoke(() -> disconnectFromDS());
+    accessor.invoke(JUnit4CacheTestCase::closeCache);
+    accessor.invoke(JUnit4DistributedTestCase::disconnectFromDS);
 
     SerializableCallable verifyExpired = new SerializableCallable("verify txstate is expired") {
       @Override
@@ -627,10 +629,10 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     doTxOps(r, pr);
 
     final DistributedMember myId = cCache.getDistributedSystem().getDistributedMember();
-    final DistributedMember accessorId = (DistributedMember) accessor
-        .invoke(() -> ClientServerTransactionDUnitTest.getVMDistributedMember());
-    final DistributedMember accessor2Id = (DistributedMember) accessor2
-        .invoke(() -> ClientServerTransactionDUnitTest.getVMDistributedMember());
+    final DistributedMember accessorId = accessor
+        .invoke(ClientServerTransactionDUnitTest::getVMDistributedMember);
+    final DistributedMember accessor2Id = accessor2
+        .invoke(ClientServerTransactionDUnitTest::getVMDistributedMember);
 
     SerializableCallable verifyExists =
         new SerializableCallable("verify txstate for client exists") {
@@ -667,12 +669,12 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     final DistributedMember proxy = (DistributedMember) datastore.invoke(getProxyServer);
 
     if (proxy.equals(accessorId)) {
-      accessor.invoke(() -> closeCache());
-      accessor.invoke(() -> disconnectFromDS());
+      accessor.invoke(JUnit4CacheTestCase::closeCache);
+      accessor.invoke(JUnit4DistributedTestCase::disconnectFromDS);
     } else {
       assertTrue(proxy.equals(accessor2Id));
-      accessor2.invoke(() -> closeCache());
-      accessor2.invoke(() -> disconnectFromDS());
+      accessor2.invoke(JUnit4CacheTestCase::closeCache);
+      accessor2.invoke(JUnit4DistributedTestCase::disconnectFromDS);
     }
 
     doTxOps(r, pr);
@@ -2343,7 +2345,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         try {
           mgr.setWriter(new ClientTxWriter());
           fail("expected exception not thrown");
-        } catch (IllegalStateException e) {
+        } catch (IllegalStateException ignored) {
         }
         Region<CustId, Customer> pr = getGemfireCache().getRegion(CUSTOMER);
         pr.getAttributesMutator().addCacheListener(new ClientListener());
@@ -2629,13 +2631,10 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         assertNull(pr.get(custId));
         assertNull(r.get(10));
         final CountDownLatch latch = new CountDownLatch(1);
-        Thread t = new Thread(new Runnable() {
-          @Override
-          public void run() {
-            mgr.resume(txId);
-            mgr.commit();
-            latch.countDown();
-          }
+        Thread t = new Thread(() -> {
+          mgr.resume(txId);
+          mgr.commit();
+          latch.countDown();
         });
         t.start();
         latch.await();
@@ -2862,7 +2861,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         try {
           getCache().getCacheTransactionManager().commit();
           fail("expected exception not thrown");
-        } catch (TransactionInDoubtException e) {
+        } catch (TransactionInDoubtException ignored) {
         }
         Region<CustId, Customer> pr = getCache().getRegion(CUSTOMER);
         assertFalse(pr.containsKey(key));
@@ -2974,7 +2973,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     String regionName;
 
     public CreateReplicateRegion(String replicateRegionName) {
-      this.regionName = replicateRegionName;
+      regionName = replicateRegionName;
     }
 
     @Override
@@ -3068,18 +3067,15 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         assertTrue(mgr.isHostedTxInProgress((TXId) txId));
         TXStateProxyImpl txProxy = (TXStateProxyImpl) mgr.getHostedTXState((TXId) txId);
         final TXState txState = (TXState) txProxy.getRealDeal(null, null);
-        txState.setAfterSend(new Runnable() {
-          @Override
-          public void run() {
-            getCache().getLogger().info("SWAP:closing cache");
-            System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "no-flush-on-close", "true");
-            try {
-              mgr.removeHostedTXState((TXId) txState.getTransactionId());
-              getCache().close();
-            } finally {
-              System.getProperties()
-                  .remove(GeodeGlossary.GEMFIRE_PREFIX + "no-flush-on-close");
-            }
+        txState.setAfterSend(() -> {
+          getCache().getLogger().info("SWAP:closing cache");
+          System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "no-flush-on-close", "true");
+          try {
+            mgr.removeHostedTXState((TXId) txState.getTransactionId());
+            getCache().close();
+          } finally {
+            System.getProperties()
+                .remove(GeodeGlossary.GEMFIRE_PREFIX + "no-flush-on-close");
           }
         });
         return null;
@@ -3163,18 +3159,15 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       assertTrue(mgr.isHostedTxInProgress((TXId) txId));
       TXStateProxyImpl txProxy = (TXStateProxyImpl) mgr.getHostedTXState((TXId) txId);
       final TXState txState = (TXState) txProxy.getRealDeal(null, null);
-      txState.setAfterSend(new Runnable() {
-        @Override
-        public void run() {
-          getCache().getLogger().info("server is now closing its cache");
-          System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "no-flush-on-close", "true");
-          try {
-            mgr.removeHostedTXState((TXId) txState.getTransactionId());
-            DistributedTestUtils.crashDistributedSystem(getCache().getDistributedSystem());
-          } finally {
-            System.getProperties()
-                .remove(GeodeGlossary.GEMFIRE_PREFIX + "no-flush-on-close");
-          }
+      txState.setAfterSend(() -> {
+        getCache().getLogger().info("server is now closing its cache");
+        System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "no-flush-on-close", "true");
+        try {
+          mgr.removeHostedTXState((TXId) txState.getTransactionId());
+          DistributedTestUtils.crashDistributedSystem(getCache().getDistributedSystem());
+        } finally {
+          System.getProperties()
+              .remove(GeodeGlossary.GEMFIRE_PREFIX + "no-flush-on-close");
         }
       });
       return null;
@@ -3215,32 +3208,26 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         final Region r = getCache().getRegion(CUSTOMER);
         final CountDownLatch outer = new CountDownLatch(1);
         final CountDownLatch inner = new CountDownLatch(1);
-        Thread t = new Thread(new Runnable() {
-          @Override
-          public void run() {
-            TXManagerImpl mgr = (TXManagerImpl) getCache().getCacheTransactionManager();
-            mgr.begin();
-            r.put(new CustId(1), new Customer("name1", "address1"));
-            Map<CustId, Customer> m = new HashMap<CustId, Customer>();
-            m.put(new CustId(2), new Customer("name2", "address2"));
-            r.putAll(m);
-            TXStateProxyImpl tx = (TXStateProxyImpl) mgr.getTXState();
-            TransactionId txId = mgr.suspend();
-            ClientTXStateStub txStub = (ClientTXStateStub) tx.getRealDeal(null, null);
-            txStub.setAfterLocalLocks(new Runnable() {
-              @Override
-              public void run() {
-                try {
-                  inner.countDown();
-                  outer.await();
-                } catch (InterruptedException e) {
-                  e.printStackTrace();
-                }
-              }
-            });
-            mgr.resume(txId);
-            mgr.commit();
-          }
+        Thread t = new Thread(() -> {
+          TXManagerImpl mgr = (TXManagerImpl) getCache().getCacheTransactionManager();
+          mgr.begin();
+          r.put(new CustId(1), new Customer("name1", "address1"));
+          Map<CustId, Customer> m = new HashMap<>();
+          m.put(new CustId(2), new Customer("name2", "address2"));
+          r.putAll(m);
+          TXStateProxyImpl tx = (TXStateProxyImpl) mgr.getTXState();
+          TransactionId txId = mgr.suspend();
+          ClientTXStateStub txStub = (ClientTXStateStub) tx.getRealDeal(null, null);
+          txStub.setAfterLocalLocks(() -> {
+            try {
+              inner.countDown();
+              outer.await();
+            } catch (InterruptedException e) {
+              e.printStackTrace();
+            }
+          });
+          mgr.resume(txId);
+          mgr.commit();
         });
         t.start();
         inner.await();
@@ -3578,7 +3565,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         PartitionedRegion r = (PartitionedRegion) getCache().getRegion(CUSTOMER);
         CustId cust = null;
         DistributedMember myId = getCache().getDistributedSystem().getDistributedMember();
-        List<CustId> keys = new ArrayList<CustId>();
+        List<CustId> keys = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
           cust = new CustId(i);
           int bucketId = PartitionedRegionHelper.getHashKey(r, cust);
@@ -3684,7 +3671,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         try {
           mgr.resume(txId);
           fail("expected exception not thrown");
-        } catch (IllegalStateException expected) {
+        } catch (IllegalStateException ignored) {
         }
         assertNull(r.get(new CustId(101)));
         return txId;
@@ -3824,7 +3811,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     final int port1 = createRegionsAndStartServer(server1, true);
     final int port2 = createRegionsAndStartServer(server2, true);
 
-    final Integer troubleKey = Integer.valueOf(1234);
+    final Integer troubleKey = 1234;
     // add cacheListener to throw exception on server1
     class ExceptionWriter extends CacheWriterAdapter<Integer, String> {
       @Override
@@ -4006,7 +3993,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       public Object call() throws Exception {
         Region r = getCache().getRegion(regionName);
         PartitionedRegion pr = (PartitionedRegion) r;
-        List<String> server1Keys = new ArrayList<String>();
+        List<String> server1Keys = new ArrayList<>();
         for (int i = 0; i < 100; i++) {
           String key = "k" + i;
           // pr.put(key, "v" + i);
@@ -4142,12 +4129,8 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     final String regionName = "SubscriptionPr";
 
-    server1.invoke(() -> {
-      configureOffheapSystemProperty();
-    });
-    server2.invoke(() -> {
-      configureOffheapSystemProperty();
-    });
+    server1.invoke(this::configureOffheapSystemProperty);
+    server2.invoke(this::configureOffheapSystemProperty);
 
     final int port1 = createRegionsAndStartServer(server1, false);
     // Create PR
@@ -4185,7 +4168,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     server2.invoke(() -> {
       BucketRegion br =
           ((PartitionedRegion) getCache().getRegion(regionName)).getBucketRegion("KEY-1");
-      AbstractRegionMap arm = (AbstractRegionMap) ((LocalRegion) br).entries;
+      AbstractRegionMap arm = (AbstractRegionMap) br.entries;
       arm.setARMLockTestHook(new ARMLockTestHookAdapter() {
         @Override
         public void beforeLock(InternalRegion owner, CacheEvent event) {
@@ -4291,12 +4274,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       public Object call() throws Exception {
         final CountDownLatch latch1 = new CountDownLatch(1);
         final CountDownLatch latch2 = new CountDownLatch(1);
-        Thread t1 = new Thread(new Runnable() {
-          @Override
-          public void run() {
-            doJTATx1(regionName, latch1, latch2);
-          }
-        });
+        Thread t1 = new Thread(() -> doJTATx1(regionName, latch1, latch2));
         t1.start();
         doJTATx2(regionName, latch1, latch2);
         t1.join();
@@ -4436,7 +4414,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     Region<Integer, String> region = getCache().getRegion(regionName);
     txMgr.begin();
     region.put(2, "NEWVALUE");
-    Thread.currentThread().sleep(100);
+    Thread.sleep(100);
     txMgr.commit();
   }
 

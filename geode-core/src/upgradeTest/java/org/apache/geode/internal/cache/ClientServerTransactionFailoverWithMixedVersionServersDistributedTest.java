@@ -132,9 +132,9 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
     server2.invoke(() -> createServerRegion(1, true, false));
     server3.invoke(() -> createServerRegion(1, true, false));
     server4.invoke(() -> createServerRegion(1, true, false));
-    client.invoke(() -> createClientRegion());
+    client.invoke(this::createClientRegion);
 
-    ClientProxyMembershipID clientProxyMembershipID = client.invoke(() -> getClientId());
+    ClientProxyMembershipID clientProxyMembershipID = client.invoke(this::getClientId);
 
     int numOfTransactions = 12;
     int numOfOperations = 12;
@@ -161,12 +161,12 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
   }
 
   private void setupPartiallyRolledVersion() throws Exception {
-    locator.invoke(() -> startLocator());
+    locator.invoke(this::startLocator);
     server1.invoke(() -> createCacheServer(server1Log));
     server2.invoke(() -> createCacheServer(server2Log));
     server3.invoke(() -> createCacheServer(server3Log));
     server4.invoke(() -> createCacheServer(server4Log));
-    client.invoke(() -> createClientCache());
+    client.invoke(this::createClientCache);
 
     // roll locator
     locator = rollLocatorToCurrent(locator);
@@ -211,9 +211,9 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
 
   private VM rollLocatorToCurrent(VM oldLocator) {
     // Roll the locator
-    oldLocator.invoke(() -> stopLocator());
+    oldLocator.invoke(this::stopLocator);
     VM rollLocator = host.getVM(VersionManager.CURRENT_VERSION, oldLocator.getId());
-    rollLocator.invoke(() -> startLocator());
+    rollLocator.invoke(this::startLocator);
     return rollLocator;
   }
 
@@ -389,9 +389,9 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
     server2.invoke(() -> createServerRegion(1, true, true));
     server3.invoke(() -> createServerRegion(1, true, true));
     server4.invoke(() -> createServerRegion(1, true, true));
-    client.invoke(() -> createClientRegion());
+    client.invoke(this::createClientRegion);
 
-    ClientProxyMembershipID clientProxyMembershipID = client.invoke(() -> getClientId());
+    ClientProxyMembershipID clientProxyMembershipID = client.invoke(this::getClientId);
 
     int numOfTransactions = 12;
     int numOfOperations = 1;
@@ -401,7 +401,7 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
 
     unregisterClientMultipleTimes(clientProxyMembershipID);
 
-    server1.invoke(() -> verifyTransactionAreExpired());
+    server1.invoke(this::verifyTransactionAreExpired);
   }
 
   private void doUnfinishedTransactions(int numOfTransactions, int numOfOperations)

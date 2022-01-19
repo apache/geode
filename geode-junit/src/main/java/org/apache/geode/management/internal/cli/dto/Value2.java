@@ -30,10 +30,10 @@ public class Value2 implements Serializable {
   private double areaInSqKm;
 
   public Value2(int i) {
-    this.stateName = "stateName" + i;
-    this.capitalCity = "capitalCity" + i;
-    this.population = i * 1000;
-    this.areaInSqKm = i;
+    stateName = "stateName" + i;
+    capitalCity = "capitalCity" + i;
+    population = i * 1000;
+    areaInSqKm = i;
   }
 
   public Value2() {}
@@ -84,11 +84,9 @@ public class Value2 implements Serializable {
   }
 
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(" Value2 [ stateName : ").append(stateName).append(" capitalCity : ")
-        .append(capitalCity).append(" population : ").append(population).append(" areaInSqKm : ")
-        .append(areaInSqKm).append(" ]");
-    return sb.toString();
+    return " Value2 [ stateName : " + stateName + " capitalCity : "
+        + capitalCity + " population : " + population + " areaInSqKm : "
+        + areaInSqKm + " ]";
   }
 
 }

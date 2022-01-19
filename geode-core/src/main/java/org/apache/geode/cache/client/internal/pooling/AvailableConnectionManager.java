@@ -145,7 +145,7 @@ public class AvailableConnectionManager {
       }
       Connection pooledConnection = (Connection) o;
       if (predicate.test(pooledConnection)) {
-        this.connectionThatMatched = pooledConnection;
+        connectionThatMatched = pooledConnection;
         return true;
       }
       return false;
@@ -157,7 +157,7 @@ public class AvailableConnectionManager {
     }
 
     public Connection getConnectionThatMatched() {
-      return this.connectionThatMatched;
+      return connectionThatMatched;
     }
   }
 }

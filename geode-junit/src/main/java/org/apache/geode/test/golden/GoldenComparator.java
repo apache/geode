@@ -38,7 +38,7 @@ public abstract class GoldenComparator {
 
   // TODO: private static final boolean ALLOW_EXTRA_WHITESPACE = true;
 
-  private String[] expectedProblemLines;
+  private final String[] expectedProblemLines;
 
   protected GoldenComparator(final String[] expectedProblemLines) {
     this.expectedProblemLines = expectedProblemLines;
@@ -96,7 +96,7 @@ public abstract class GoldenComparator {
   protected abstract boolean compareLines(final String actualLine, final String goldenLine);
 
   private List<String> readLines(final BufferedReader reader) throws IOException {
-    final List<String> listOfLines = new ArrayList<String>();
+    final List<String> listOfLines = new ArrayList<>();
     String line = null;
     do {
       line = reader.readLine();
@@ -128,10 +128,10 @@ public abstract class GoldenComparator {
 
   private void checkLineFor(final int lineCount, final String line, final String problem) {
     if (line != null && line.toLowerCase().contains(problem)) {
-      if (this.expectedProblemLines != null && this.expectedProblemLines.length > 0) {
-        for (int i = 0; i < this.expectedProblemLines.length; i++) {
+      if (expectedProblemLines != null && expectedProblemLines.length > 0) {
+        for (final String expectedProblemLine : expectedProblemLines) {
           debug("Comparing \" + line + \" against expected \" + this.expectedProblemLines[i] + \"");
-          if (compareLines(line, this.expectedProblemLines[i])) {
+          if (compareLines(line, expectedProblemLine)) {
             return;
           }
         }

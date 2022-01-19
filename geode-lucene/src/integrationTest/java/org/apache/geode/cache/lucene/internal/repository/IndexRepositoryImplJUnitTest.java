@@ -70,7 +70,7 @@ public class IndexRepositoryImplJUnitTest {
 
   private IndexRepositoryImpl repo;
   private HeterogeneousLuceneSerializer mapper;
-  private StandardAnalyzer analyzer = new StandardAnalyzer();
+  private final StandardAnalyzer analyzer = new StandardAnalyzer();
   private IndexWriter writer;
   private Region region;
   private Region userRegion;
@@ -255,7 +255,7 @@ public class IndexRepositoryImplJUnitTest {
 
   private void checkQuery(String queryTerm, String queryField, Object... expectedKeys)
       throws IOException, ParseException {
-    Set<Object> expectedSet = new HashSet<Object>();
+    Set<Object> expectedSet = new HashSet<>();
     expectedSet.addAll(Arrays.asList(expectedKeys));
 
     QueryParser parser = new QueryParser(queryField, analyzer);
@@ -268,7 +268,7 @@ public class IndexRepositoryImplJUnitTest {
 
   private static class KeyCollector implements IndexResultCollector {
 
-    Set<Object> results = new HashSet<Object>();
+    Set<Object> results = new HashSet<>();
 
     @Override
     public void collect(Object key, float score) {
@@ -290,7 +290,7 @@ public class IndexRepositoryImplJUnitTest {
    * A wrapper around a byte array that implements equals, for comparison checks.
    */
   private static class ByteWrapper implements Serializable {
-    private byte[] bytes;
+    private final byte[] bytes;
 
 
     public ByteWrapper(byte[] bytes) {
@@ -318,10 +318,7 @@ public class IndexRepositoryImplJUnitTest {
         return false;
       }
       ByteWrapper other = (ByteWrapper) obj;
-      if (!Arrays.equals(bytes, other.bytes)) {
-        return false;
-      }
-      return true;
+      return Arrays.equals(bytes, other.bytes);
     }
   }
 

@@ -26,7 +26,7 @@ public class Disconnect {
 
   public static void disconnectAllFromDS() {
     disconnectFromDS();
-    invokeInEveryVM("disconnectFromDS", () -> disconnectFromDS());
+    invokeInEveryVM("disconnectFromDS", Disconnect::disconnectFromDS);
   }
 
   /**

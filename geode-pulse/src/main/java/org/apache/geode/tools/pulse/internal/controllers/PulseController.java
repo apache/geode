@@ -285,11 +285,7 @@ public class PulseController {
         regionJSON.put("fullPath", region.getFullPath());
         regionJSON.put("regionType", region.getRegionType());
 
-        if (region.getRegionType().contains("PARTITION")) {
-          regionJSON.put("isPartition", true);
-        } else {
-          regionJSON.put("isPartition", false);
-        }
+        regionJSON.put("isPartition", region.getRegionType().contains("PARTITION"));
 
         regionJSON.put("memberCount", region.getMemberCount());
         List<String> regionsMembers = region.getMemberName();
@@ -348,7 +344,7 @@ public class PulseController {
         action = ACTION_VIEW;
       }
 
-      if (action.toLowerCase().equalsIgnoreCase(ACTION_DELETE)) {
+      if (action.equalsIgnoreCase(ACTION_DELETE)) {
         String queryId = request.getParameter(QUERYSTRING_PARAM_QUERYID);
         if (StringUtils.isNotBlank(queryId)) {
 

@@ -94,7 +94,7 @@ public class HARegionJUnitTest {
     factory.setDataPolicy(DataPolicy.REPLICATE);
     factory.setScope(Scope.DISTRIBUTED_ACK);
     ExpirationAttributes ea = new ExpirationAttributes(2000, ExpirationAction.LOCAL_INVALIDATE);
-    factory.setStatisticsEnabled(true);;
+    factory.setStatisticsEnabled(true);
     factory.setCacheListener(new CacheListenerAdapter() {
       @Override
       public void afterInvalidate(EntryEvent event) {}

@@ -31,7 +31,7 @@ import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
 public class ObjectTraverser {
   @MakeNotStatic
   private static final Map<Class, FieldSet> FIELD_CACHE =
-      new CopyOnWriteWeakHashMap<Class, FieldSet>();
+      new CopyOnWriteWeakHashMap<>();
   @Immutable
   private static final FieldSet NON_PRIMATIVE_ARRAY = new FieldSet(null, null);
 
@@ -95,8 +95,8 @@ public class ObjectTraverser {
   }
 
   private static FieldSet buildFieldSet(Class clazz) {
-    ArrayList<Field> staticFields = new ArrayList<Field>();
-    ArrayList<Field> nonPrimativeFields = new ArrayList<Field>();
+    ArrayList<Field> staticFields = new ArrayList<>();
+    ArrayList<Field> nonPrimativeFields = new ArrayList<>();
 
     while (clazz != null) {
       if (clazz.isArray()) {
@@ -109,8 +109,7 @@ public class ObjectTraverser {
       }
 
       Field[] fields = clazz.getDeclaredFields();
-      for (int i = 0; i < fields.length; i++) {
-        Field field = fields[i];
+      for (Field field : fields) {
         Class fieldType = field.getType();
         // skip static fields if we've already counted them once
         if (!fieldType.isPrimitive()) {
@@ -144,10 +143,10 @@ public class ObjectTraverser {
 
 
   private static class VisitStack {
-    private ReferenceOpenHashSet seen = new ReferenceOpenHashSet();
-    private LinkedList stack = new LinkedList();
-    private Visitor visitor;
-    private boolean includeStatics;
+    private final ReferenceOpenHashSet seen = new ReferenceOpenHashSet();
+    private final LinkedList stack = new LinkedList();
+    private final Visitor visitor;
+    private final boolean includeStatics;
 
     VisitStack(Visitor visitor, boolean includeStatics) {
       this.visitor = visitor;

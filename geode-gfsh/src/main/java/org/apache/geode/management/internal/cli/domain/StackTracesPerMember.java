@@ -32,14 +32,14 @@ public class StackTracesPerMember implements Serializable {
   }
 
   public String getMemberNameOrId() {
-    return this.memberNameOrId;
+    return memberNameOrId;
   }
 
   public Instant getTimestamp() {
-    return this.timestamp;
+    return timestamp;
   }
 
   public byte[] getStackTraces() {
-    return this.stackTraces;
+    return stackTraces;
   }
 }

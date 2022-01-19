@@ -22,7 +22,7 @@ import org.apache.geode.test.version.VersionManager;
 
 public class StandAloneDUnitEnv extends DUnitEnv {
 
-  private MasterRemote master;
+  private final MasterRemote master;
 
   public StandAloneDUnitEnv(MasterRemote master) {
     this.master = master;

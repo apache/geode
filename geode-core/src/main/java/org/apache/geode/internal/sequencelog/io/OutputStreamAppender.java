@@ -32,9 +32,10 @@ import org.apache.geode.internal.sequencelog.Transition;
  *
  */
 public class OutputStreamAppender {
-  private IdentityHashMap<Object, Integer> writtenObjects = new IdentityHashMap<Object, Integer>();
-  private HashMap<String, Integer> writtenStrings = new HashMap<String, Integer>();
-  private DataOutputStream outputStream;
+  private final IdentityHashMap<Object, Integer> writtenObjects =
+      new IdentityHashMap<>();
+  private final HashMap<String, Integer> writtenStrings = new HashMap<>();
+  private final DataOutputStream outputStream;
 
   private int nextInt = 0;
 
@@ -46,8 +47,8 @@ public class OutputStreamAppender {
   }
 
   public OutputStreamAppender(OutputStream out) throws FileNotFoundException {
-    this.outputStream = new DataOutputStream(new BufferedOutputStream(out, 256));
-    writtenObjects.put(null, Integer.valueOf(-1));
+    outputStream = new DataOutputStream(new BufferedOutputStream(out, 256));
+    writtenObjects.put(null, -1);
   }
 
   public void write(Transition edge) throws IOException {
@@ -85,22 +86,22 @@ public class OutputStreamAppender {
   private int canonalize(Object object) throws IOException {
     Integer id = writtenObjects.get(object);
     if (id != null) {
-      return id.intValue();
+      return id;
     }
     String toString = object.toString();
     id = writtenStrings.get(toString);
     if (id != null) {
-      return id.intValue();
+      return id;
     }
 
-    id = Integer.valueOf(nextInt++);
+    id = nextInt++;
 
     outputStream.write(STRING_RECORD);
     outputStream.writeUTF(toString);
 
     writtenObjects.put(object, id);
     writtenStrings.put(toString, id);
-    return id.intValue();
+    return id;
   }
 
   public void close() {

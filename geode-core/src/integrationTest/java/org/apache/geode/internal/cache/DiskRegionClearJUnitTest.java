@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.Iterator;
 import java.util.Properties;
 
 import org.junit.After;
@@ -76,8 +75,8 @@ public class DiskRegionClearJUnitTest {
   public void tearDown() throws Exception {
     try {
       if (cache != null && !cache.isClosed()) {
-        for (Iterator itr = cache.rootRegions().iterator(); itr.hasNext();) {
-          Region root = (Region) itr.next();
+        for (final Region<?, ?> region : cache.rootRegions()) {
+          Region root = (Region) region;
           // String name = root.getName();
           if (root.isDestroyed() || root instanceof HARegion) {
             continue;
@@ -113,7 +112,7 @@ public class DiskRegionClearJUnitTest {
     DiskRegion dr = ((LocalRegion) testRegion).getDiskRegion();
     assertEquals(0, dr.getStats().getNumEntriesInVM());
     // put a value in the region
-    testRegion.put(new Long(1), new Long(1));
+    testRegion.put(1L, 1L);
     assertEquals(1, dr.getStats().getNumEntriesInVM());
     testRegion.clear();
     assertEquals(0, dr.getStats().getNumEntriesInVM());
@@ -144,7 +143,7 @@ public class DiskRegionClearJUnitTest {
     // warm up
     LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = true;
     for (long i = 0; i < 100; i++) {
-      testRegion.put(new Long(i), new Long(i));
+      testRegion.put(i, i);
     }
     Thread thread = new Thread(new Thread2());
     thread.start();
@@ -171,7 +170,7 @@ public class DiskRegionClearJUnitTest {
   public void testRecreateRegionAndCacheNegative() throws Exception {
     LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = false;
     for (long i = 0; i < 100; i++) {
-      testRegion.put(new Long(i), new Long(i));
+      testRegion.put(i, i);
     }
     testRegion.clear();
     assertEquals(0, testRegion.size());
@@ -196,11 +195,11 @@ public class DiskRegionClearJUnitTest {
   public void testRecreateRegionAndCachePositive() {
     LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = false;
     for (long i = 0; i < 1000; i++) {
-      testRegion.put(new Long(i), new Long(i));
+      testRegion.put(i, i);
     }
     testRegion.clear();
     for (long i = 0; i < 1000; i++) {
-      testRegion.put(new Long(i), new Long(i));
+      testRegion.put(i, i);
     }
     assertEquals(1000, testRegion.size());
     cache.close();
@@ -222,7 +221,7 @@ public class DiskRegionClearJUnitTest {
     @Override
     public void run() {
       for (long i = 0; i < 100; i++) {
-        testRegion.put(new Long(i), new Long(i));
+        testRegion.put(i, i);
       }
       counter++;
     }

@@ -53,8 +53,8 @@ public class LoadMonitor implements ConnectionListener {
   public LoadMonitor(ServerLoadProbe probe, int maxConnections, long pollInterval,
       int forceUpdateFrequency, CacheServerAdvisor advisor) {
     this.probe = probe;
-    this.metrics = new ServerMetricsImpl(maxConnections);
-    this.pollingThread = new PollingThread(pollInterval, forceUpdateFrequency);
+    metrics = new ServerMetricsImpl(maxConnections);
+    pollingThread = new PollingThread(pollInterval, forceUpdateFrequency);
     lastLoad = getLoad();
     this.advisor = advisor;
   }
@@ -66,18 +66,18 @@ public class LoadMonitor implements ConnectionListener {
   public void start(ServerLocation location, CacheServerStats cacheServerStats) {
     probe.open();
     this.location = location;
-    this.pollingThread.start();
-    this.stats = cacheServerStats;
-    this.stats.setLoad(lastLoad);
+    pollingThread.start();
+    stats = cacheServerStats;
+    stats.setLoad(lastLoad);
   }
 
   /**
    * Stops the load monitor
    */
   public void stop() {
-    this.pollingThread.close();
+    pollingThread.close();
     try {
-      this.pollingThread.join(5000);
+      pollingThread.join(5000);
     } catch (InterruptedException e) {
       logger.warn("Interrupted waiting for polling thread to finish");
       Thread.currentThread().interrupt();
@@ -119,9 +119,9 @@ public class LoadMonitor implements ConnectionListener {
 
   @Override
   public void queueAdded(ClientProxyMembershipID id) {
-    synchronized (this.clientIds) {
+    synchronized (clientIds) {
       metrics.incQueueCount();
-      this.clientIds.add(id);
+      clientIds.add(id);
     }
   }
 
@@ -131,7 +131,7 @@ public class LoadMonitor implements ConnectionListener {
   }
 
   protected ServerLoad getLoad() {
-    ServerLoad load = this.probe.getLoad(metrics);
+    ServerLoad load = probe.getLoad(metrics);
     if (load == null) {
       load = new ServerLoad();
     }
@@ -149,7 +149,7 @@ public class LoadMonitor implements ConnectionListener {
       super("Cache Server Load Polling Thread");
       this.pollInterval = pollInterval;
       this.forceUpdateFrequency = forceUpdateFrequency;
-      this.setDaemon(true);
+      setDaemon(true);
     }
 
     public void close() {

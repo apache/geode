@@ -134,12 +134,12 @@ public class EncryptorImpl implements Encryptor {
 
   private byte appSecureMode = (byte) 0;
 
-  private LogWriter logWriter;
+  private final LogWriter logWriter;
 
 
   EncryptorImpl(EncryptorImpl encryptor) {
-    this.appSecureMode = encryptor.appSecureMode;
-    this.logWriter = encryptor.logWriter;
+    appSecureMode = encryptor.appSecureMode;
+    logWriter = encryptor.logWriter;
   }
 
   public EncryptorImpl(LogWriter logWriter) {
@@ -279,14 +279,14 @@ public class EncryptorImpl implements Encryptor {
 
   @Override
   public byte[] decryptBytes(byte[] data) throws Exception {
-    if (this.appSecureMode == CREDENTIALS_DHENCRYPT) {
+    if (appSecureMode == CREDENTIALS_DHENCRYPT) {
       String algo = null;
-      if (this.clientSKAlgo != null) {
-        algo = this.clientSKAlgo;
+      if (clientSKAlgo != null) {
+        algo = clientSKAlgo;
       } else {
         algo = dhSKAlgo;
       }
-      Cipher c = getDecryptCipher(algo, this.clientPublicKey);
+      Cipher c = getDecryptCipher(algo, clientPublicKey);
       return decryptBytes(data, c);
     } else {
       return data;
@@ -297,14 +297,14 @@ public class EncryptorImpl implements Encryptor {
 
   @Override
   public byte[] encryptBytes(byte[] data) throws Exception {
-    if (this.appSecureMode == CREDENTIALS_DHENCRYPT) {
+    if (appSecureMode == CREDENTIALS_DHENCRYPT) {
       String algo = null;
-      if (this.clientSKAlgo != null) {
-        algo = this.clientSKAlgo;
+      if (clientSKAlgo != null) {
+        algo = clientSKAlgo;
       } else {
         algo = dhSKAlgo;
       }
-      return encryptBytes(data, getEncryptCipher(algo, this.clientPublicKey));
+      return encryptBytes(data, getEncryptCipher(algo, clientPublicKey));
     } else {
       return data;
     }
@@ -360,7 +360,7 @@ public class EncryptorImpl implements Encryptor {
       }
       // Credentials with encryption indicator
       heapdos.writeByte(CREDENTIALS_DHENCRYPT);
-      this.appSecureMode = CREDENTIALS_DHENCRYPT;
+      appSecureMode = CREDENTIALS_DHENCRYPT;
       heapdos.writeBoolean(requireAuthentication);
       // Send the symmetric encryption algorithm name
       DataSerializer.writeString(dhSKAlgo, heapdos);
@@ -411,14 +411,14 @@ public class EncryptorImpl implements Encryptor {
         X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(keyBytes);
         KeyFactory keyFact = KeyFactory.getInstance("DH");
         // PublicKey pubKey = keyFact.generatePublic(x509KeySpec);
-        this.clientPublicKey = keyFact.generatePublic(x509KeySpec);
+        clientPublicKey = keyFact.generatePublic(x509KeySpec);
 
         try (HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT)) {
           // Add the challenge string
           DataSerializer.writeByteArray(serverChallenge, hdos);
           // byte[] encBytes = encrypt.doFinal(hdos.toByteArray());
           byte[] encBytes =
-              encryptBytes(hdos.toByteArray(), getEncryptCipher(dhSKAlgo, this.clientPublicKey));
+              encryptBytes(hdos.toByteArray(), getEncryptCipher(dhSKAlgo, clientPublicKey));
           DataSerializer.writeByteArray(encBytes, dos);
         }
       }
@@ -494,7 +494,7 @@ public class EncryptorImpl implements Encryptor {
         X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(keyBytes);
         KeyFactory keyFact = KeyFactory.getInstance("DH");
         // PublicKey pubKey = keyFact.generatePublic(x509KeySpec);
-        this.clientPublicKey = keyFact.generatePublic(x509KeySpec);
+        clientPublicKey = keyFact.generatePublic(x509KeySpec);
 
 
 
@@ -506,7 +506,7 @@ public class EncryptorImpl implements Encryptor {
 
           // byte[] encBytes = encrypt.doFinal(hdos.toByteArray());
           byte[] encBytes =
-              encryptBytes(hdos.toByteArray(), getEncryptCipher(dhSKAlgo, this.clientPublicKey));
+              encryptBytes(hdos.toByteArray(), getEncryptCipher(dhSKAlgo, clientPublicKey));
           DataSerializer.writeByteArray(encBytes, dos);
         } finally {
           hdos.close();
@@ -525,11 +525,11 @@ public class EncryptorImpl implements Encryptor {
 
   void readEncryptedCredentials(DataInputStream dis, DataOutputStream dos, DistributedSystem system,
       boolean requireAuthentication) throws Exception {
-    this.appSecureMode = CREDENTIALS_DHENCRYPT;
+    appSecureMode = CREDENTIALS_DHENCRYPT;
     boolean sendAuthentication = dis.readBoolean();
     InternalLogWriter securityLogWriter = (InternalLogWriter) system.getSecurityLogWriter();
     // Get the symmetric encryption algorithm to be used
-    this.clientSKAlgo = DataSerializer.readString(dis);
+    clientSKAlgo = DataSerializer.readString(dis);
     // Get the public key of the other side
     byte[] keyBytes = DataSerializer.readByteArray(dis);
     byte[] challenge = null;
@@ -538,7 +538,7 @@ public class EncryptorImpl implements Encryptor {
       // Generate PublicKey from encoded form
       X509EncodedKeySpec x509KeySpec = new X509EncodedKeySpec(keyBytes);
       KeyFactory keyFact = KeyFactory.getInstance("DH");
-      this.clientPublicKey = keyFact.generatePublic(x509KeySpec);
+      clientPublicKey = keyFact.generatePublic(x509KeySpec);
 
       // Send the public key to other side
       keyBytes = dhPublicKey.getEncoded();
@@ -580,7 +580,7 @@ public class EncryptorImpl implements Encryptor {
 
       // Read and decrypt the credentials
       byte[] encBytes = DataSerializer.readByteArray(dis);
-      Cipher c = getDecryptCipher(this.clientSKAlgo, this.clientPublicKey);
+      Cipher c = getDecryptCipher(clientSKAlgo, clientPublicKey);
       byte[] credentialBytes = decryptBytes(encBytes, c);
       ByteArrayDataInput dinp = new ByteArrayDataInput(credentialBytes);
       // credentials = DataSerializer.readProperties(dinp);//Hitesh: we don't send in handshake

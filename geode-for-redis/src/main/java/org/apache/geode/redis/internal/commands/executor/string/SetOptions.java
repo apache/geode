@@ -34,7 +34,7 @@ public class SetOptions extends BaseSetOptions {
 
   public SetOptions(Exists exists, long expiration, boolean keepTTL, boolean inTransaction) {
     super(exists);
-    this.expirationMillis = expiration;
+    expirationMillis = expiration;
     this.keepTTL = keepTTL;
     this.inTransaction = inTransaction;
   }

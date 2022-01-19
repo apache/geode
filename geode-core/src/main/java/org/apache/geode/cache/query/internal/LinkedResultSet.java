@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -67,7 +66,7 @@ public class LinkedResultSet extends java.util.LinkedHashSet
     if (!(other instanceof LinkedResultSet)) {
       return false;
     }
-    if (!this.elementType.equals(((LinkedResultSet) other).elementType)) {
+    if (!elementType.equals(((LinkedResultSet) other).elementType)) {
       return false;
     }
     return super.equals(other);
@@ -75,7 +74,7 @@ public class LinkedResultSet extends java.util.LinkedHashSet
 
   @Override
   public int hashCode() {
-    return this.elementType.hashCode();
+    return elementType.hashCode();
   }
 
   @Override
@@ -99,7 +98,7 @@ public class LinkedResultSet extends java.util.LinkedHashSet
 
   @Override
   public CollectionType getCollectionType() {
-    return new CollectionTypeImpl(Ordered.class, this.elementType);
+    return new CollectionTypeImpl(Ordered.class, elementType);
   }
 
   @Override
@@ -116,9 +115,9 @@ public class LinkedResultSet extends java.util.LinkedHashSet
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     int size = in.readInt();
-    this.elementType = (ObjectType) context.getDeserializer().readObject(in);
+    elementType = context.getDeserializer().readObject(in);
     for (int j = size; j > 0; j--) {
-      this.add(context.getDeserializer().readObject(in));
+      add(context.getDeserializer().readObject(in));
     }
   }
 
@@ -126,10 +125,10 @@ public class LinkedResultSet extends java.util.LinkedHashSet
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     // how do we serialize the comparator?
-    out.writeInt(this.size());
-    context.getSerializer().writeObject(this.elementType, out);
-    for (Iterator i = this.iterator(); i.hasNext();) {
-      context.getSerializer().writeObject(i.next(), out);
+    out.writeInt(size());
+    context.getSerializer().writeObject(elementType, out);
+    for (final Object o : this) {
+      context.getSerializer().writeObject(o, out);
     }
   }
 

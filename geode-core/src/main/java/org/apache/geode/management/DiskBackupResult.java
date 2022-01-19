@@ -26,12 +26,12 @@ public class DiskBackupResult {
   /**
    * Returns the name of the directory
    */
-  private String diskDirectory;
+  private final String diskDirectory;
 
   /**
    * whether the bacup operation was successful or not
    */
-  private boolean offilne;
+  private final boolean offilne;
 
   /**
    * This constructor is to be used by internal JMX framework only. User should not try to create an
@@ -42,7 +42,7 @@ public class DiskBackupResult {
   })
   public DiskBackupResult(String diskDirectory, boolean offline) {
     this.diskDirectory = diskDirectory;
-    this.offilne = offline;
+    offilne = offline;
   }
 
   /**

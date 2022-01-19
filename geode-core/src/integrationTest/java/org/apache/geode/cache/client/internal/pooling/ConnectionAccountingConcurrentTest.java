@@ -113,7 +113,7 @@ public class ConnectionAccountingConcurrentTest {
   @Test
   public void destroyAndIsUnderMinimum(ParallelExecutor executor) throws Exception {
     ConnectionAccounting accountant = new ConnectionAccounting(2, 4);
-    repeat(() -> accountant.create(), count);
+    repeat(accountant::create, count);
 
     executor.inParallel(() -> {
       if (accountant.destroyAndIsUnderMinimum(1)) {
@@ -133,7 +133,7 @@ public class ConnectionAccountingConcurrentTest {
     final int overfillMax = Math.max(count, 4);
     final int max = overfillMax / 2;
     ConnectionAccounting accountant = new ConnectionAccounting(1, max);
-    repeat(() -> accountant.create(), overfillMax);
+    repeat(accountant::create, overfillMax);
 
     executor.inParallel(() -> {
       if (accountant.tryDestroy()) {
@@ -151,7 +151,7 @@ public class ConnectionAccountingConcurrentTest {
     final int overfillMax = Math.max(count, 4);
     final int max = overfillMax / 2;
     ConnectionAccounting accountant = new ConnectionAccounting(1, max);
-    repeat(() -> accountant.create(), overfillMax);
+    repeat(accountant::create, overfillMax);
 
     executor.inParallel(() -> {
       if (accountant.tryDestroy()) {
@@ -173,7 +173,7 @@ public class ConnectionAccountingConcurrentTest {
     final int max = overfill / 4;
     final int overfillMax = overfill + max;
     ConnectionAccounting accountant = new ConnectionAccounting(1, max);
-    repeat(() -> accountant.create(), overfill);
+    repeat(accountant::create, overfill);
 
     executor.inParallel(() -> {
       if (accountant.tryDestroy()) {
@@ -187,9 +187,7 @@ public class ConnectionAccountingConcurrentTest {
       }
     }, max);
 
-    executor.inParallel(() -> {
-      accountant.create();
-    }, max);
+    executor.inParallel(accountant::create, max);
 
     executor.inParallel(() -> {
       if (accountant.tryCreate()) {

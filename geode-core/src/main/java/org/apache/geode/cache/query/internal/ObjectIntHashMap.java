@@ -231,10 +231,10 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
    * load factor (0.75).
    */
   public ObjectIntHashMap(HashingStrategy hs) {
-    this.loadFactor = DEFAULT_LOAD_FACTOR;
+    loadFactor = DEFAULT_LOAD_FACTOR;
     threshold = (int) (DEFAULT_INITIAL_CAPACITY * DEFAULT_LOAD_FACTOR);
     table = new Entry[DEFAULT_INITIAL_CAPACITY];
-    this.hashingStrategy = (hs == null) ? new IntHashMapStrategy() : hs;
+    hashingStrategy = (hs == null) ? new IntHashMapStrategy() : hs;
     init();
   }
 
@@ -434,8 +434,7 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
   }
 
   private void putAllForCreate(ObjectIntHashMap m) {
-    for (Iterator i = m.entrySet().iterator(); i.hasNext();) {
-      Entry e = (Entry) i.next();
+    for (Entry e : m.entrySet()) {
       putForCreate(e.getKey(), e.getValue());
     }
   }
@@ -520,8 +519,7 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
       }
     }
 
-    for (Iterator i = m.entrySet().iterator(); i.hasNext();) {
-      Entry e = (Entry) i.next();
+    for (Entry e : m.entrySet()) {
       put(e.getKey(), e.getValue());
     }
   }
@@ -627,8 +625,8 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
   public boolean containsValue(int value) {
 
     Entry[] tab = table;
-    for (int i = 0; i < tab.length; i++) {
-      for (Entry e = tab[i]; e != null; e = e.next) {
+    for (final Entry entry : tab) {
+      for (Entry e = entry; e != null; e = e.next) {
         if (value == e.value) {
           return true;
         }
@@ -695,9 +693,7 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
     }
 
     try {
-      Iterator<Entry> i = entrySet().iterator();
-      while (i.hasNext()) {
-        Entry e = i.next();
+      for (final Entry e : entrySet()) {
         Object key = e.getKey();
         int value = e.getValue();
         if (!(m.containsKey(key))) {
@@ -733,9 +729,8 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
    */
   public int hashCode() {
     int h = 0;
-    Iterator<Entry> i = entrySet().iterator();
-    while (i.hasNext()) {
-      h += i.next().hashCode();
+    for (final Entry entry : entrySet()) {
+      h += entry.hashCode();
     }
     return h;
   }
@@ -812,15 +807,13 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
       if (k1 == k2 || (k1 != null && hashingStrategy.equals(k1, k2))) {
         int v1 = getValue();
         int v2 = e.getValue();
-        if (v1 == v2) {
-          return true;
-        }
+        return v1 == v2;
       }
       return false;
     }
 
     public int hashCode() {
-      return this.hash ^ value;
+      return hash ^ value;
     }
 
     public String toString() {
@@ -877,7 +870,6 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
       if (size > 0) { // advance to first entry
         Entry[] t = table;
         while (index < t.length && (next = t[index++]) == null) {
-          ;
         }
       }
     }
@@ -899,7 +891,6 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
       if ((next = e.next) == null) {
         Entry[] t = table;
         while (index < t.length && (next = t[index++]) == null) {
-          ;
         }
       }
       current = e;
@@ -916,7 +907,7 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
       }
       Object k = current.key;
       current = null;
-      ObjectIntHashMap.this.removeEntryForKey(k);
+      removeEntryForKey(k);
       expectedModCount = modCount;
     }
 
@@ -983,7 +974,7 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
 
     @Override
     public boolean remove(Object o) {
-      return ObjectIntHashMap.this.removeEntryForKey(o) != null;
+      return removeEntryForKey(o) != null;
     }
 
     @Override
@@ -1093,8 +1084,8 @@ public class ObjectIntHashMap implements Cloneable, Serializable {
 
     // Read the keys and values, and put the mappings in the IntHashMap
     for (int i = 0; i < size; i++) {
-      Object key = (Object) s.readObject();
-      int value = (int) s.readInt();
+      Object key = s.readObject();
+      int value = s.readInt();
       putForCreate(key, value);
     }
   }

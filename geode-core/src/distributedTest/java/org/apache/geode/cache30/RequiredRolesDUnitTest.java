@@ -29,7 +29,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
@@ -73,7 +72,7 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
    */
   @Test
   public void testRequiredRolesInLoss() throws Exception {
-    String name = this.getUniqueName();
+    String name = getUniqueName();
 
     final String roleA = name + "-A";
     final String roleC = name + "-C";
@@ -82,8 +81,8 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
     // assign names to 4 vms...
     final String[] requiredRoles = {roleA, roleC, roleD};
     Set requiredRolesSet = new HashSet();
-    for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(InternalRole.getRole(requiredRoles[i]));
+    for (final String requiredRole : requiredRoles) {
+      requiredRolesSet.add(InternalRole.getRole(requiredRole));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 
@@ -122,8 +121,8 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
     assertEquals(true, missingRoles.containsAll(requiredRolesSet));
 
     // assert isPresent is false on each missing role...
-    for (Iterator iter = missingRoles.iterator(); iter.hasNext();) {
-      Role role = (Role) iter.next();
+    for (final Object missingRole : missingRoles) {
+      Role role = (Role) missingRole;
       assertEquals(false, role.isPresent());
     }
   }
@@ -133,7 +132,7 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
    */
   @Test
   public void testWaitForRequiredRoles() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int vm0 = 0;
     final int vm1 = 1;
     final int vm2 = 2;
@@ -182,18 +181,15 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
     assertMissingRoles(name, requiredRoles);
 
     // create thread to call waitForRequiredRoles
-    Runnable runWaitForRequiredRoles = new Runnable() {
-      @Override
-      public void run() {
-        startTestWaitForRequiredRoles = true;
-        try {
-          rolesTestWaitForRequiredRoles = waitForRequiredRoles(region, -1);
-        } catch (InterruptedException e) {
-          currentThread().interrupt();
-          failTestWaitForRequiredRoles = true;
-        }
-        finishTestWaitForRequiredRoles = true;
+    Runnable runWaitForRequiredRoles = () -> {
+      startTestWaitForRequiredRoles = true;
+      try {
+        rolesTestWaitForRequiredRoles = waitForRequiredRoles(region, -1);
+      } catch (InterruptedException e) {
+        currentThread().interrupt();
+        failTestWaitForRequiredRoles = true;
       }
+      finishTestWaitForRequiredRoles = true;
     };
 
     // assert thread is waiting
@@ -202,7 +198,7 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
     WaitCriterion ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        return RequiredRolesDUnitTest.this.startTestWaitForRequiredRoles;
+        return startTestWaitForRequiredRoles;
       }
 
       @Override
@@ -211,8 +207,8 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
       }
     };
     GeodeAwaitility.await().untilAsserted(ev);
-    assertTrue(this.startTestWaitForRequiredRoles);
-    assertFalse(this.finishTestWaitForRequiredRoles);
+    assertTrue(startTestWaitForRequiredRoles);
+    assertFalse(finishTestWaitForRequiredRoles);
 
     // create region in vms and assert impact on threadA
     SerializableRunnable create = new CacheSerializableRunnable("Create Region") {
@@ -227,21 +223,21 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
 
     // create region in vm0... no gain for no role
     getHost(0).getVM(vm0).invoke(create);
-    assertFalse(this.finishTestWaitForRequiredRoles);
+    assertFalse(finishTestWaitForRequiredRoles);
 
     // create region in vm1... gain for 1st instance of redundant role
     getHost(0).getVM(vm1).invoke(create);
-    assertFalse(this.finishTestWaitForRequiredRoles);
+    assertFalse(finishTestWaitForRequiredRoles);
 
     // create region in vm2... no gain for 2nd instance of redundant role
     getHost(0).getVM(vm2).invoke(create);
-    assertFalse(this.finishTestWaitForRequiredRoles);
+    assertFalse(finishTestWaitForRequiredRoles);
 
     // create region in vm3... gain for 2 roles
     getHost(0).getVM(vm3).invoke(create);
     join(threadA, 30 * 1000);
-    assertTrue(this.finishTestWaitForRequiredRoles);
-    assertTrue(this.rolesTestWaitForRequiredRoles.isEmpty());
+    assertTrue(finishTestWaitForRequiredRoles);
+    assertTrue(rolesTestWaitForRequiredRoles.isEmpty());
 
     // assert loss is fired...
     SerializableRunnable destroy = new CacheSerializableRunnable("Destroy Region") {
@@ -256,34 +252,34 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
     getHost(0).getVM(vm0).invoke(destroy);
 
     // assert new call to RequiredRoles doesn't wait (no role in vm0)
-    this.startTestWaitForRequiredRoles = false;
-    this.finishTestWaitForRequiredRoles = false;
+    startTestWaitForRequiredRoles = false;
+    finishTestWaitForRequiredRoles = false;
     threadA = new Thread(group, runWaitForRequiredRoles);
     threadA.start();
     join(threadA, 30 * 1000);
-    assertTrue(this.startTestWaitForRequiredRoles);
-    assertTrue(this.finishTestWaitForRequiredRoles);
-    assertTrue(this.rolesTestWaitForRequiredRoles.isEmpty());
+    assertTrue(startTestWaitForRequiredRoles);
+    assertTrue(finishTestWaitForRequiredRoles);
+    assertTrue(rolesTestWaitForRequiredRoles.isEmpty());
 
     // destroy region in vm1... nothing happens in 1st removal of redundant role
     getHost(0).getVM(vm1).invoke(destroy);
 
     // assert new call to RequiredRoles doesn't wait (redundant role in vm1)
-    this.startTestWaitForRequiredRoles = false;
-    this.finishTestWaitForRequiredRoles = false;
+    startTestWaitForRequiredRoles = false;
+    finishTestWaitForRequiredRoles = false;
     threadA = new Thread(group, runWaitForRequiredRoles);
     threadA.start();
     join(threadA, 30 * 1000);
-    assertTrue(this.startTestWaitForRequiredRoles);
-    assertTrue(this.finishTestWaitForRequiredRoles);
-    assertTrue(this.rolesTestWaitForRequiredRoles.isEmpty());
+    assertTrue(startTestWaitForRequiredRoles);
+    assertTrue(finishTestWaitForRequiredRoles);
+    assertTrue(rolesTestWaitForRequiredRoles.isEmpty());
 
     // destroy region in vm2... 2nd removal of redundant role is loss
     getHost(0).getVM(vm2).invoke(destroy);
 
     // assert new call to RequiredRoles does wait (lost role in vm2)
-    this.startTestWaitForRequiredRoles = false;
-    this.finishTestWaitForRequiredRoles = false;
+    startTestWaitForRequiredRoles = false;
+    finishTestWaitForRequiredRoles = false;
     threadA = new Thread(group, runWaitForRequiredRoles);
     threadA.start();
 
@@ -291,7 +287,7 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
     ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        return RequiredRolesDUnitTest.this.startTestWaitForRequiredRoles;
+        return startTestWaitForRequiredRoles;
       }
 
       @Override
@@ -300,16 +296,16 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
       }
     };
     GeodeAwaitility.await().untilAsserted(ev);
-    assertTrue(this.startTestWaitForRequiredRoles);
-    assertFalse(this.finishTestWaitForRequiredRoles);
+    assertTrue(startTestWaitForRequiredRoles);
+    assertFalse(finishTestWaitForRequiredRoles);
     assertMissingRoles(name, vmRoles[vm2]);
 
     // end the wait and make sure no roles are missing
     getHost(0).getVM(vm2).invoke(create);
     join(threadA, 30 * 1000);
-    assertTrue(this.startTestWaitForRequiredRoles);
-    assertTrue(this.finishTestWaitForRequiredRoles);
-    assertTrue(this.rolesTestWaitForRequiredRoles.isEmpty());
+    assertTrue(startTestWaitForRequiredRoles);
+    assertTrue(finishTestWaitForRequiredRoles);
+    assertTrue(rolesTestWaitForRequiredRoles.isEmpty());
     assertMissingRoles(name, new String[] {});
 
     assertFalse(failTestWaitForRequiredRoles);
@@ -320,7 +316,7 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
    */
   @Test
   public void testIsRoleInRegionMembership() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int vm0 = 0;
     final int vm1 = 1;
     final int vm2 = 2;
@@ -368,8 +364,8 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
     // assert each role is missing
     final Set requiredRolesSet =
         region.getAttributes().getMembershipAttributes().getRequiredRoles();
-    for (Iterator iter = requiredRolesSet.iterator(); iter.hasNext();) {
-      Role role = (Role) iter.next();
+    for (final Object o1 : requiredRolesSet) {
+      Role role = (Role) o1;
       assertFalse(RequiredRoles.isRoleInRegionMembership(region, role));
     }
 
@@ -385,8 +381,8 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
 
     // create region in vm0... no gain for no role
     Host.getHost(0).getVM(vm0).invoke(create);
-    for (Iterator iter = requiredRolesSet.iterator(); iter.hasNext();) {
-      Role role = (Role) iter.next();
+    for (final Object element : requiredRolesSet) {
+      Role role = (Role) element;
       assertFalse(RequiredRoles.isRoleInRegionMembership(region, role));
     }
 
@@ -421,15 +417,15 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
 
     // destroy region in vm0... no loss of any role
     Host.getHost(0).getVM(vm0).invoke(destroy);
-    for (Iterator iter = requiredRolesSet.iterator(); iter.hasNext();) {
-      Role role = (Role) iter.next();
+    for (final Object item : requiredRolesSet) {
+      Role role = (Role) item;
       assertTrue(RequiredRoles.isRoleInRegionMembership(region, role));
     }
 
     // destroy region in vm1... nothing happens in 1st removal of redundant role
     Host.getHost(0).getVM(vm1).invoke(destroy);
-    for (Iterator iter = requiredRolesSet.iterator(); iter.hasNext();) {
-      Role role = (Role) iter.next();
+    for (final Object value : requiredRolesSet) {
+      Role role = (Role) value;
       assertTrue(RequiredRoles.isRoleInRegionMembership(region, role));
     }
 
@@ -442,8 +438,8 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
 
     // destroy region in vm3... two more roles are in loss
     Host.getHost(0).getVM(vm3).invoke(destroy);
-    for (Iterator iter = requiredRolesSet.iterator(); iter.hasNext();) {
-      Role role = (Role) iter.next();
+    for (final Object o : requiredRolesSet) {
+      Role role = (Role) o;
       assertFalse(RequiredRoles.isRoleInRegionMembership(region, role));
     }
   }

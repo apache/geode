@@ -52,7 +52,7 @@ public class LoaderHelperImpl implements LoaderHelper {
     this.key = key;
     this.aCallbackArgument = aCallbackArgument;
     this.netSearchAllowed = netSearchAllowed;
-    this.netLoadAllowed = true;
+    netLoadAllowed = true;
     this.searcher = searcher;
   }
 
@@ -86,7 +86,7 @@ public class LoaderHelperImpl implements LoaderHelper {
   @Override
   public Object netSearch(final boolean doNetLoad) throws CacheLoaderException, TimeoutException {
 
-    if (this.region.getAttributes().getScope().isLocal()) {
+    if (region.getAttributes().getScope().isLocal()) {
       throw new CacheLoaderException(NET_SEARCH_LOCAL);
     }
 
@@ -98,17 +98,17 @@ public class LoaderHelperImpl implements LoaderHelper {
 
     try {
       if (removeSearcher) {
-        searcher.initialize((LocalRegion) this.region, this.key, this.aCallbackArgument);
+        searcher.initialize((LocalRegion) region, key, aCallbackArgument);
       }
       Object obj = null;
 
-      if (this.netSearchAllowed) {
+      if (netSearchAllowed) {
         obj = searcher.doNetSearch();
         if (searcher.resultIsSerialized()) {
           obj = EntryEventImpl.deserialize((byte[]) obj);
         }
       }
-      if (doNetLoad && obj == null && this.netLoadAllowed) {
+      if (doNetLoad && obj == null && netLoadAllowed) {
         obj = searcher.doNetLoad();
         if (searcher.resultIsSerialized()) {
           obj = EntryEventImpl.deserialize((byte[]) obj);
@@ -134,7 +134,7 @@ public class LoaderHelperImpl implements LoaderHelper {
    */
   @Override
   public Object getKey() {
-    return this.key;
+    return key;
   }
 
   /**

@@ -63,8 +63,8 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
     // If local cache is enabled, create the local region fronting the session region
     // and set it as the operating region; otherwise, use the session region directly
     // as the operating region.
-    this.operatingRegion = getSessionManager().getEnableLocalCache() ? createOrRetrieveLocalRegion()
-        : this.sessionRegion;
+    operatingRegion = getSessionManager().getEnableLocalCache() ? createOrRetrieveLocalRegion()
+        : sessionRegion;
 
     // Create or retrieve the statistics
     createStatistics();
@@ -96,7 +96,7 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
     } else {
       // Execute the member touch function on all the server(s)
       Execution execution = getExecutionForFunctionOnMembersWithArguments(
-          new Object[] {this.sessionRegion.getFullPath(), sessionIds});
+          new Object[] {sessionRegion.getFullPath(), sessionIds});
       collector = execution.execute(TouchReplicatedRegionEntriesFunction.ID);
     }
 
@@ -132,7 +132,7 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
 
   @Override
   public GemFireCache getCache() {
-    return this.cache;
+    return cache;
   }
 
   /**
@@ -166,7 +166,7 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
     // Attempt to retrieve the region
     // If it already exists, validate it
     // If it doesn't already exist, create it
-    Region region = this.cache.getRegion(getSessionManager().getRegionName());
+    Region region = cache.getRegion(getSessionManager().getRegionName());
     if (region == null) {
       // Create the region
       region = createRegionUsingHelper(configuration);
@@ -182,7 +182,7 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
     }
 
     // Set the session region
-    this.sessionRegion = region;
+    sessionRegion = region;
   }
 
   void validateRegionUsingRegionhelper(RegionConfiguration configuration, Region region) {
@@ -195,16 +195,16 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
 
   private Region<String, HttpSession> createOrRetrieveLocalRegion() {
     // Attempt to retrieve the fronting region
-    String frontingRegionName = this.sessionRegion.getName() + "_local";
-    Region<String, HttpSession> frontingRegion = this.cache.getRegion(frontingRegionName);
+    String frontingRegionName = sessionRegion.getName() + "_local";
+    Region<String, HttpSession> frontingRegion = cache.getRegion(frontingRegionName);
     if (frontingRegion == null) {
       // Create the region factory
       RegionFactory<String, HttpSession> factory =
-          this.cache.createRegionFactory(RegionShortcut.LOCAL_HEAP_LRU);
+          cache.createRegionFactory(RegionShortcut.LOCAL_HEAP_LRU);
 
       // Add the cache loader and writer
-      factory.setCacheLoader(new LocalSessionCacheLoader(this.sessionRegion));
-      factory.setCacheWriter(new LocalSessionCacheWriter(this.sessionRegion));
+      factory.setCacheLoader(new LocalSessionCacheLoader(sessionRegion));
+      factory.setCacheWriter(new LocalSessionCacheWriter(sessionRegion));
 
       // Set the expiration time, action and listener if necessary
       int maxInactiveInterval = getSessionManager().getMaxInactiveInterval();
@@ -258,7 +258,7 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
   }
 
   private void reinitialize(InternalCache reconnectedCache) {
-    this.cache = reconnectedCache;
+    cache = reconnectedCache;
     initialize();
   }
 }

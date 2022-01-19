@@ -76,85 +76,85 @@ public class ContainsKey66Test {
 
   @Before
   public void setUp() throws Exception {
-    this.containsKey66 = new ContainsKey66();
+    containsKey66 = new ContainsKey66();
     MockitoAnnotations.initMocks(this);
 
-    when(this.region.containsKey(eq(REGION_NAME))).thenReturn(true);
+    when(region.containsKey(eq(REGION_NAME))).thenReturn(true);
 
-    when(this.cache.getRegion(isA(String.class))).thenReturn(this.region);
+    when(cache.getRegion(isA(String.class))).thenReturn(region);
 
-    when(this.serverConnection.getCache()).thenReturn(this.cache);
-    when(this.serverConnection.getCacheServerStats()).thenReturn(this.cacheServerStats);
-    when(this.serverConnection.getErrorResponseMessage()).thenReturn(this.errorResponseMessage);
-    when(this.serverConnection.getResponseMessage()).thenReturn(this.responseMessage);
-    when(this.serverConnection.getAuthzRequest()).thenReturn(this.authzRequest);
-    when(this.serverConnection.getClientVersion()).thenReturn(KnownVersion.CURRENT);
+    when(serverConnection.getCache()).thenReturn(cache);
+    when(serverConnection.getCacheServerStats()).thenReturn(cacheServerStats);
+    when(serverConnection.getErrorResponseMessage()).thenReturn(errorResponseMessage);
+    when(serverConnection.getResponseMessage()).thenReturn(responseMessage);
+    when(serverConnection.getAuthzRequest()).thenReturn(authzRequest);
+    when(serverConnection.getClientVersion()).thenReturn(KnownVersion.CURRENT);
 
-    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
+    when(regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
-    when(this.keyPart.getStringOrObject()).thenReturn(KEY);
-    when(this.modePart.getInt()).thenReturn(0);
+    when(keyPart.getStringOrObject()).thenReturn(KEY);
+    when(modePart.getInt()).thenReturn(0);
 
-    when(this.message.getPart(eq(0))).thenReturn(this.regionNamePart);
-    when(this.message.getPart(eq(1))).thenReturn(this.keyPart);
-    when(this.message.getPart(eq(2))).thenReturn(this.modePart);
+    when(message.getPart(eq(0))).thenReturn(regionNamePart);
+    when(message.getPart(eq(1))).thenReturn(keyPart);
+    when(message.getPart(eq(2))).thenReturn(modePart);
   }
 
   @Test
   public void noSecurityShouldSucceed() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(false);
+    when(securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.containsKey66.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    containsKey66.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.responseMessage).send(this.serverConnection);
+    verify(responseMessage).send(serverConnection);
   }
 
   @Test
   public void integratedSecurityShouldSucceedIfAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(true);
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.containsKey66.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    containsKey66.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME, KEY);
-    verify(this.responseMessage).send(this.serverConnection);
+    verify(securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME, KEY);
+    verify(responseMessage).send(serverConnection);
   }
 
   @Test
   public void integratedSecurityShouldFailIfNotAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(true);
-    doThrow(new NotAuthorizedException("")).when(this.securityService).authorize(Resource.DATA,
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(true);
+    doThrow(new NotAuthorizedException("")).when(securityService).authorize(Resource.DATA,
         Operation.READ, REGION_NAME, KEY);
 
-    this.containsKey66.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    containsKey66.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME, KEY);
-    verify(this.errorResponseMessage).send(eq(this.serverConnection));
+    verify(securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME, KEY);
+    verify(errorResponseMessage).send(eq(serverConnection));
   }
 
   @Test
   public void oldSecurityShouldSucceedIfAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(false);
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.containsKey66.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    containsKey66.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.authzRequest).containsKeyAuthorize(eq(REGION_NAME), eq(KEY));
-    verify(this.responseMessage).send(this.serverConnection);
+    verify(authzRequest).containsKeyAuthorize(eq(REGION_NAME), eq(KEY));
+    verify(responseMessage).send(serverConnection);
   }
 
   @Test
   public void oldSecurityShouldFailIfNotAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(false);
-    doThrow(new NotAuthorizedException("")).when(this.authzRequest)
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(false);
+    doThrow(new NotAuthorizedException("")).when(authzRequest)
         .containsKeyAuthorize(eq(REGION_NAME), eq(KEY));
 
-    this.containsKey66.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    containsKey66.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.authzRequest).containsKeyAuthorize(eq(REGION_NAME), eq(KEY));
-    verify(this.errorResponseMessage).send(eq(this.serverConnection));
+    verify(authzRequest).containsKeyAuthorize(eq(REGION_NAME), eq(KEY));
+    verify(errorResponseMessage).send(eq(serverConnection));
   }
 
 }

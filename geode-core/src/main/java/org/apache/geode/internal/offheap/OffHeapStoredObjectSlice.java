@@ -24,22 +24,22 @@ public class OffHeapStoredObjectSlice extends OffHeapStoredObject {
 
   public OffHeapStoredObjectSlice(OffHeapStoredObject objectChunk, int position, int limit) {
     super(objectChunk);
-    this.offset = objectChunk.getBaseDataOffset() + position;
-    this.capacity = limit - position;
+    offset = objectChunk.getBaseDataOffset() + position;
+    capacity = limit - position;
   }
 
   @Override
   public int getDataSize() {
-    return this.capacity;
+    return capacity;
   }
 
   @Override
   protected long getBaseDataAddress() {
-    return super.getBaseDataAddress() + this.offset;
+    return super.getBaseDataAddress() + offset;
   }
 
   @Override
   protected int getBaseDataOffset() {
-    return this.offset;
+    return offset;
   }
 }

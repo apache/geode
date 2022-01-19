@@ -93,8 +93,8 @@ public class ThreadUtils {
   public static void dumpStackTrace(final Thread thread, final StackTraceElement[] stackTrace) {
     StringBuilder msg = new StringBuilder();
     msg.append("Thread=<").append(thread).append("> stackDump:\n");
-    for (int i = 0; i < stackTrace.length; i++) {
-      msg.append("\t").append(stackTrace[i]).append("\n");
+    for (final StackTraceElement stackTraceElement : stackTrace) {
+      msg.append("\t").append(stackTraceElement).append("\n");
     }
     logger.info(msg.toString());
   }

@@ -123,7 +123,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
         new AtomicReference<>();
     futureAtomicReference.set(CompletableFuture.supplyAsync(() -> {
       while (futureAtomicReference.get() == null || !futureAtomicReference.get().isCancelled()) {
-        ClusterManagementOperationResult<A, V> result = this.get(opType, opId);
+        ClusterManagementOperationResult<A, V> result = get(opType, opId);
         if (result.getOperationEnd() != null) {
           return result;
         }

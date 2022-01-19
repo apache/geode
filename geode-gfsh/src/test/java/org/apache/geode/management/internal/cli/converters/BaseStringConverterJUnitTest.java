@@ -37,7 +37,7 @@ public class BaseStringConverterJUnitTest {
   @ClassRule
   public static GfshParserRule parser = new GfshParserRule();
 
-  private static String[] allMemberNames = {"candidate1", "candidate2"};
+  private static final String[] allMemberNames = {"candidate1", "candidate2"};
 
   private BaseStringConverter converter;
 

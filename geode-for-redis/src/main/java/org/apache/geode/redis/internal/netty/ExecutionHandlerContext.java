@@ -126,14 +126,14 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.pubsub = pubsub;
     this.allowUnsupportedSupplier = allowUnsupportedSupplier;
     this.redisStats = redisStats;
-    this.redisUsername = username;
-    this.client = new Client(channel, pubsub);
+    redisUsername = username;
+    client = new Client(channel, pubsub);
     this.serverPort = serverPort;
     this.member = member;
     this.securityService = securityService;
-    this.scanCursor = new BigInteger("0");
-    this.sscanCursor = new BigInteger("0");
-    this.channelId = channel.id();
+    scanCursor = new BigInteger("0");
+    sscanCursor = new BigInteger("0");
+    channelId = channel.id();
     redisStats.addClient();
 
     channel.closeFuture().addListener(future -> logout());

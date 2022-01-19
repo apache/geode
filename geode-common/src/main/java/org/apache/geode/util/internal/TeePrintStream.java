@@ -29,14 +29,13 @@ public class TeePrintStream extends PrintStream {
   }
 
   public TeeOutputStream getTeeOutputStream() {
-    return this.teeOut;
+    return teeOut;
   }
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-    sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("teeOutputStream=").append(this.teeOut);
-    return sb.append("}").toString();
+    return getClass().getSimpleName() + "@" + System.identityHashCode(this) + "{"
+        + "teeOutputStream=" + teeOut
+        + "}";
   }
 }

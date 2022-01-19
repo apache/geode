@@ -43,8 +43,8 @@ import org.apache.geode.management.internal.cli.shell.OperationInvoker;
  */
 public class GfshParseResult extends ParseResult {
   private String userInput;
-  private String commandName;
-  private Map<String, Object> paramValueMap = new HashMap<>();
+  private final String commandName;
+  private final Map<String, Object> paramValueMap = new HashMap<>();
 
   /**
    * Creates a GfshParseResult instance to represent parsing outcome.
@@ -135,6 +135,6 @@ public class GfshParseResult extends ParseResult {
 
   @Override
   public String toString() {
-    return this.userInput;
+    return userInput;
   }
 }

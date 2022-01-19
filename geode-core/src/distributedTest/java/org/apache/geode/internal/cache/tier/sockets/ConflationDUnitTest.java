@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static java.lang.Thread.yield;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
@@ -82,7 +81,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
   private static final String REGION_NAME2 = "ConflationDUnitTest_region2";
   static final String MARKER = "markerKey";
 
-  private static HashMap statMap = new HashMap();
+  private static final HashMap statMap = new HashMap();
 
   @Override
   public final void postSetUp() throws Exception {
@@ -91,7 +90,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     final Host host = Host.getHost(0);
     vm0 = host.getVM(0);
     vm2 = host.getVM(2);
-    PORT = ((Integer) vm0.invoke(() -> ConflationDUnitTest.createServerCache())).intValue();
+    PORT = vm0.invoke(ConflationDUnitTest::createServerCache);
   }
 
   private Cache createCache(Properties props) throws Exception {
@@ -111,25 +110,25 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
   public void testNotMoreMessagesSent() throws Exception {
     vm0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart());
     Host host = Host.getHost(0);
-    createClientCache1CommonWriterTest3(NetworkUtils.getServerHostName(host), new Integer(PORT));
+    createClientCache1CommonWriterTest3(NetworkUtils.getServerHostName(host), PORT);
     vm2.invoke(() -> ConflationDUnitTest.createClientCache2CommonWriterTest3(
-        NetworkUtils.getServerHostName(host), new Integer(PORT)));
-    vm2.invoke(() -> ConflationDUnitTest.setClientServerObserverForBeforeInterestRecovery());
-    vm2.invoke(() -> ConflationDUnitTest.setAllCountersZero());
-    vm2.invoke(() -> ConflationDUnitTest.assertAllCountersZero());
-    vm2.invoke(() -> ConflationDUnitTest.registerInterest());
+        NetworkUtils.getServerHostName(host), PORT));
+    vm2.invoke(ConflationDUnitTest::setClientServerObserverForBeforeInterestRecovery);
+    vm2.invoke(ConflationDUnitTest::setAllCountersZero);
+    vm2.invoke(ConflationDUnitTest::assertAllCountersZero);
+    vm2.invoke(ConflationDUnitTest::registerInterest);
     create();
     put200();
     createMarker();
-    vm2.invoke(() -> ConflationDUnitTest.waitForMarker());
-    vm2.invoke(() -> ConflationDUnitTest.assertValue());
-    vm2.invoke(() -> ConflationDUnitTest.destroyMarker());
+    vm2.invoke(ConflationDUnitTest::waitForMarker);
+    vm2.invoke(ConflationDUnitTest::assertValue);
+    vm2.invoke(ConflationDUnitTest::destroyMarker);
     destroy();
     createMarker();
-    vm2.invoke(() -> ConflationDUnitTest.waitForMarker());
-    vm2.invoke(() -> ConflationDUnitTest.assertCounterSizesLessThan200());
-    vm0.invoke(() -> ConflationDUnitTest.getStatsOnServer());
-    vm0.invoke(() -> ConflationDUnitTest.assertConflationStatus());
+    vm2.invoke(ConflationDUnitTest::waitForMarker);
+    vm2.invoke(ConflationDUnitTest::assertCounterSizesLessThan200);
+    vm0.invoke(ConflationDUnitTest::getStatsOnServer);
+    vm0.invoke(ConflationDUnitTest::assertConflationStatus);
   }
 
   /**
@@ -148,7 +147,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
    * @return created pool
    */
   private static Pool createPool(String host, String name, Integer port, boolean enableQueue) {
-    return PoolManager.createFactory().addServer(host, port.intValue())
+    return PoolManager.createFactory().addServer(host, port)
         .setSubscriptionEnabled(enableQueue).setSubscriptionRedundancy(-1).setReadTimeout(10000)
         .setSocketBufferSize(32768).setMinConnections(3)
         // .setRetryInterval(10000)
@@ -454,7 +453,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     WaitCriterion ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        yield(); // TODO is this necessary?
+        Thread.yield(); // TODO is this necessary?
         return counterCreate == 2;
       }
 
@@ -469,7 +468,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        yield(); // TODO is this necessary?
+        Thread.yield(); // TODO is this necessary?
         return counterDestroy == 2;
       }
 
@@ -483,7 +482,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        yield(); // TODO is this necessary?
+        Thread.yield(); // TODO is this necessary?
         return counterUpdate <= 200;
       }
 
@@ -537,10 +536,10 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
   public static void assertConflationStatus() {
     assertNotNull(statMap);
     Long confCount = (Long) statMap.get("eventsConflated");
-    assertTrue("No Conflation found: eventsConflated value is " + confCount.longValue(),
-        confCount.longValue() > (0));
-    assertTrue("Error in Conflation found: eventsConflated value is " + confCount.longValue(),
-        confCount.longValue() <= (200));
+    assertTrue("No Conflation found: eventsConflated value is " + confCount,
+        confCount > (0));
+    assertTrue("Error in Conflation found: eventsConflated value is " + confCount,
+        confCount <= (200));
   }
 
 
@@ -563,7 +562,7 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
     server.setNotifyBySubscription(true);
     server.setSocketBufferSize(32768);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   /**
@@ -701,8 +700,8 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
         assertNotNull(region);
         HARegionQueue haRegionQueue = HAHelper.getRegionQueue(region);
         statMap.put("eventsConflated",
-            new Long(HAHelper.getRegionQueueStats(haRegionQueue).getEventsConflated()));
-        LogWriterUtils.getLogWriter().info("new Stats Map  : " + statMap.toString());
+            HAHelper.getRegionQueueStats(haRegionQueue).getEventsConflated());
+        LogWriterUtils.getLogWriter().info("new Stats Map  : " + statMap);
 
       }
     }
@@ -786,8 +785,8 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
   public final void preTearDown() throws Exception {
     // close client
     closeCache();
-    vm2.invoke(() -> ConflationDUnitTest.closeCache());
+    vm2.invoke(ConflationDUnitTest::closeCache);
     // close server
-    vm0.invoke(() -> ConflationDUnitTest.closeCache());
+    vm0.invoke(ConflationDUnitTest::closeCache);
   }
 }

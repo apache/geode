@@ -38,12 +38,12 @@ public class ManagementResourceRepo {
   /**
    * Map containing member to Monitoring region mapping.
    */
-  private Map<DistributedMember, Region<String, Object>> monitoringRegionMap;
+  private final Map<DistributedMember, Region<String, Object>> monitoringRegionMap;
 
   /**
    * Map containing member to Notification region mapping.
    */
-  private Map<DistributedMember, Region<NotificationKey, Notification>> notifRegionMap;
+  private final Map<DistributedMember, Region<NotificationKey, Notification>> notifRegionMap;
 
   /**
    * local monitoring region
@@ -56,9 +56,9 @@ public class ManagementResourceRepo {
   private Region<NotificationKey, Notification> localNotificationRegion;
 
   public ManagementResourceRepo() {
-    monitoringRegionMap = new ConcurrentHashMap<DistributedMember, Region<String, Object>>();
+    monitoringRegionMap = new ConcurrentHashMap<>();
     notifRegionMap =
-        new ConcurrentHashMap<DistributedMember, Region<NotificationKey, Notification>>();
+        new ConcurrentHashMap<>();
   }
 
   /**

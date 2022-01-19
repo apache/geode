@@ -76,7 +76,7 @@ public abstract class KeyValueOperationContext extends KeyOperationContext {
    */
   public byte[] getSerializedValue() {
     if (isObject()) {
-      Object tmp = this.value;
+      Object tmp = value;
       if (tmp instanceof byte[]) {
         return (byte[]) tmp;
       }
@@ -98,7 +98,7 @@ public abstract class KeyValueOperationContext extends KeyOperationContext {
     if (blob != null) {
       return EntryEventImpl.deserialize(blob);
     }
-    return this.value;
+    return value;
   }
 
   /**
@@ -112,7 +112,7 @@ public abstract class KeyValueOperationContext extends KeyOperationContext {
    * @since GemFire 6.5
    */
   public Object getValue() {
-    return this.value;
+    return value;
   }
 
   /**
@@ -121,7 +121,7 @@ public abstract class KeyValueOperationContext extends KeyOperationContext {
    * @return true when the value is an object; false when it is a raw byte array
    */
   public boolean isObject() {
-    return this.isObject;
+    return isObject;
   }
 
   /**

@@ -33,7 +33,7 @@ public class ExplicitMoveDirector extends RebalanceDirectorAdapter {
   private final InternalDistributedMember source;
   private final InternalDistributedMember target;
   private final Object key;
-  private InternalDistributedSystem ds;
+  private final InternalDistributedSystem ds;
 
 
   public ExplicitMoveDirector(Object key, int bucketId, DistributedMember source,
@@ -42,7 +42,7 @@ public class ExplicitMoveDirector extends RebalanceDirectorAdapter {
     this.bucketId = bucketId;
     this.source = (InternalDistributedMember) source;
     this.target = (InternalDistributedMember) target;
-    this.ds = (InternalDistributedSystem) distributedSystem;
+    ds = (InternalDistributedSystem) distributedSystem;
   }
 
   @Override

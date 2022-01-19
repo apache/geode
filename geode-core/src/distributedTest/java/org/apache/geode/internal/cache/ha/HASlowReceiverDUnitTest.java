@@ -86,21 +86,21 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
     serverVM2 = host.getVM(2);
     clientVM = host.getVM(3);
 
-    PORT0 = createServerCache().intValue();
+    PORT0 = createServerCache();
     PORT1 =
-        ((Integer) serverVM1.invoke(() -> HASlowReceiverDUnitTest.createServerCache())).intValue();
+        serverVM1.invoke(() -> HASlowReceiverDUnitTest.createServerCache());
     PORT2 =
-        ((Integer) serverVM2.invoke(() -> HASlowReceiverDUnitTest.createServerCache())).intValue();
+        serverVM2.invoke(() -> HASlowReceiverDUnitTest.createServerCache());
   }
 
   @Override
   public final void preTearDown() throws Exception {
-    clientVM.invoke(() -> HASlowReceiverDUnitTest.closeCache());
+    clientVM.invoke(HASlowReceiverDUnitTest::closeCache);
 
     // then close the servers
     closeCache();
-    serverVM1.invoke(() -> HASlowReceiverDUnitTest.closeCache());
-    serverVM2.invoke(() -> HASlowReceiverDUnitTest.closeCache());
+    serverVM1.invoke(HASlowReceiverDUnitTest::closeCache);
+    serverVM2.invoke(HASlowReceiverDUnitTest::closeCache);
     disconnectAllFromDS();
   }
 
@@ -118,7 +118,7 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static Integer createServerCache(String ePolicy) throws Exception {
-    return createServerCache(ePolicy, new Integer(1));
+    return createServerCache(ePolicy, 1);
   }
 
   public static Integer createServerCache(String ePolicy, Integer cap) throws Exception {
@@ -141,10 +141,10 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
     server1.setMaximumMessageCount(200);
     if (ePolicy != null) {
       server1.getClientSubscriptionConfig().setEvictionPolicy(ePolicy);
-      server1.getClientSubscriptionConfig().setCapacity(cap.intValue());
+      server1.getClientSubscriptionConfig().setCapacity(cap);
     }
     server1.start();
-    return new Integer(server1.getPort());
+    return server1.getPort();
   }
 
   public static void createClientCache(String host, Integer port1, Integer port2, Integer port3,
@@ -159,12 +159,12 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
     AttributesFactory factory = new AttributesFactory();
     PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer("localhost", port1)
         .addServer("localhost", port2).addServer("localhost", port3).setSubscriptionEnabled(true)
-        .setSubscriptionRedundancy(rLevel.intValue()).setMinConnections(6).setReadTimeout(20000)
+        .setSubscriptionRedundancy(rLevel).setMinConnections(6).setReadTimeout(20000)
         .setPingInterval(1000).setRetryAttempts(5).create("HASlowReceiverDUnitTestPool");
 
     factory.setScope(Scope.LOCAL);
     factory.setPoolName(p.getName());
-    if (addListener.booleanValue()) {
+    if (addListener) {
       factory.addCacheListener(new CacheListenerAdapter() {
         @Override
         public void afterUpdate(EntryEvent event) {
@@ -218,7 +218,7 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
     try {
       Region r = cache.getRegion(SEPARATOR + regionName);
       assertNotNull(r);
-      for (long i = 0; i < num.longValue(); i++) {
+      for (long i = 0; i < num; i++) {
         r.create("k" + i, "v" + i);
       }
     } catch (Exception ex) {
@@ -231,8 +231,8 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
       // check for slow client queue is removed or not.
       assertTrue(
           "Expected redundant count (" + pool.getRedundantNames().size() + ") to become "
-              + redundantServers.intValue(),
-          pool.getRedundantNames().size() == redundantServers.intValue());
+              + redundantServers,
+          pool.getRedundantNames().size() == redundantServers);
     });
   }
 
@@ -243,8 +243,8 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
     Host host = Host.getHost(0);
     clientVM.invoke(
         () -> HASlowReceiverDUnitTest.createClientCache(NetworkUtils.getServerHostName(host),
-            new Integer(PORT0), new Integer(PORT1), new Integer(PORT2), new Integer(2)));
-    clientVM.invoke(() -> HASlowReceiverDUnitTest.registerInterest());
+            PORT0, PORT1, PORT2, 2));
+    clientVM.invoke(HASlowReceiverDUnitTest::registerInterest);
     // add expected socket exception string
     final IgnoredException ex1 =
         IgnoredException.addIgnoredException(SocketException.class.getName());
@@ -260,7 +260,7 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
     });
 
     // verify that we get reconnected
-    clientVM.invoke(() -> HASlowReceiverDUnitTest.checkRedundancyLevel(new Integer(2)));
+    clientVM.invoke(() -> HASlowReceiverDUnitTest.checkRedundancyLevel(2));
 
     ex1.remove();
     ex2.remove();
@@ -271,7 +271,7 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
       @Override
       public void afterQueueDestroyMessage() {
-        clientVM.invoke(() -> HASlowReceiverDUnitTest.checkRedundancyLevel(new Integer(0)));
+        clientVM.invoke(() -> HASlowReceiverDUnitTest.checkRedundancyLevel(0));
         isUnresponsiveClientRemoved = true;
         PoolImpl.AFTER_QUEUE_DESTROY_MESSAGE_FLAG = false;
       }

@@ -65,10 +65,10 @@ public class StatisticsTypeFactoryImpl implements StatisticsTypeFactory {
    */
   public StatisticsType addType(StatisticsType t) {
     StatisticsType result = t;
-    synchronized (this.statTypes) {
+    synchronized (statTypes) {
       StatisticsType currentValue = findType(result.getName());
       if (currentValue == null) {
-        this.statTypes.put(result.getName(), result);
+        statTypes.put(result.getName(), result);
       } else if (result.equals(currentValue)) {
         result = currentValue;
       } else {
@@ -87,7 +87,7 @@ public class StatisticsTypeFactoryImpl implements StatisticsTypeFactory {
 
   @Override
   public StatisticsType findType(String name) {
-    return (StatisticsType) this.statTypes.get(name);
+    return (StatisticsType) statTypes.get(name);
   }
 
   @Override

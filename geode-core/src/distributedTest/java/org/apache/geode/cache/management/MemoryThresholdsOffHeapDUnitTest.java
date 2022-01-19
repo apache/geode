@@ -27,7 +27,6 @@ import static org.junit.Assert.fail;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -89,6 +88,7 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.OffHeapTest;
 
 /**
@@ -101,14 +101,14 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
 
   final String expectedEx = "Member: .*? above .*? critical threshold";
   final String addExpectedExString =
-      "<ExpectedException action=add>" + this.expectedEx + "</ExpectedException>";
+      "<ExpectedException action=add>" + expectedEx + "</ExpectedException>";
   final String removeExpectedExString =
-      "<ExpectedException action=remove>" + this.expectedEx + "</ExpectedException>";
+      "<ExpectedException action=remove>" + expectedEx + "</ExpectedException>";
   final String expectedBelow = "Member: .*? below .*? critical threshold";
   final String addExpectedBelow =
-      "<ExpectedException action=add>" + this.expectedBelow + "</ExpectedException>";
+      "<ExpectedException action=add>" + expectedBelow + "</ExpectedException>";
   final String removeExpectedBelow =
-      "<ExpectedException action=remove>" + this.expectedBelow + "</ExpectedException>";
+      "<ExpectedException action=remove>" + expectedBelow + "</ExpectedException>";
 
   @Override
   public final void postSetUpClientServerTestCase() throws Exception {
@@ -118,17 +118,15 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
 
   @Override
   protected void preTearDownClientServerTestCase() throws Exception {
-    Invoke.invokeInEveryVM(this.resetResourceManager);
+    Invoke.invokeInEveryVM(resetResourceManager);
   }
 
-  private SerializableCallable resetResourceManager = new SerializableCallable() {
+  private final SerializableCallable resetResourceManager = new SerializableCallable() {
     @Override
     public Object call() throws Exception {
-      InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getInternalResourceManager();
+      InternalResourceManager irm = getCache().getInternalResourceManager();
       Set<ResourceListener<?>> listeners = irm.getResourceListeners(ResourceType.OFFHEAP_MEMORY);
-      Iterator<ResourceListener<?>> it = listeners.iterator();
-      while (it.hasNext()) {
-        ResourceListener<?> l = it.next();
+      for (final ResourceListener<?> l : listeners) {
         if (l instanceof TestMemoryThresholdListener) {
           ((TestMemoryThresholdListener) l).resetThresholdCalls();
         }
@@ -174,9 +172,9 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
 
       @Override
       public Object call() throws Exception {
-        getCache().getLogger().fine(MemoryThresholdsOffHeapDUnitTest.this.addExpectedExString);
+        getCache().getLogger().fine(addExpectedExString);
         getRootRegion().getSubregion(regionName).destroy("oh3");
-        getCache().getLogger().fine(MemoryThresholdsOffHeapDUnitTest.this.removeExpectedExString);
+        getCache().getLogger().fine(removeExpectedExString);
         return null;
       }
     });
@@ -191,9 +189,9 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
 
       @Override
       public Object call() throws Exception {
-        getCache().getLogger().fine(MemoryThresholdsOffHeapDUnitTest.this.addExpectedBelow);
+        getCache().getLogger().fine(addExpectedBelow);
         getRootRegion().getSubregion(regionName).destroy("oh2");
-        getCache().getLogger().fine(MemoryThresholdsOffHeapDUnitTest.this.removeExpectedBelow);
+        getCache().getLogger().fine(removeExpectedBelow);
         return null;
       }
     });
@@ -277,7 +275,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     server2.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getInternalResourceManager();
+        InternalResourceManager irm = getCache().getInternalResourceManager();
         assertEquals(0, irm.getStats().getOffHeapEvictionStartEvents());
         assertEquals(0, irm.getStats().getOffHeapCriticalEvents());
         assertEquals(0, irm.getStats().getOffHeapCriticalThreshold());
@@ -531,8 +529,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final String rName = getUniqueName();
 
     // Make sure the desired VMs will have a fresh DS.
-    AsyncInvocation d1 = replicate1.invokeAsync(() -> disconnectFromDS());
-    AsyncInvocation d2 = replicate2.invokeAsync(() -> disconnectFromDS());
+    AsyncInvocation d1 = replicate1.invokeAsync(JUnit4DistributedTestCase::disconnectFromDS);
+    AsyncInvocation d2 = replicate2.invokeAsync(JUnit4DistributedTestCase::disconnectFromDS);
     d1.join();
     assertFalse(d1.exceptionOccurred());
     d2.join();
@@ -583,8 +581,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
               @Override
               public String load(LoaderHelper<Integer, String> helper) throws CacheLoaderException {
                 Integer expectedInvocations = (Integer) helper.getArgument();
-                final int actualInvocations = this.numLoaderInvocations.getAndIncrement();
-                if (expectedInvocations.intValue() != actualInvocations) {
+                final int actualInvocations = numLoaderInvocations.getAndIncrement();
+                if (expectedInvocations != actualInvocations) {
                   throw new CacheLoaderException("Expected " + expectedInvocations
                       + " invocations, actual is " + actualInvocations);
                 }
@@ -600,8 +598,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
                 ((InternalResourceManager) getCache().getResourceManager()).getOffHeapMonitor();
             assertFalse(ohmm.getState().isCritical());
             {
-              Integer k = new Integer(1);
-              assertEquals(k.toString(), r.get(k, new Integer(expectedInvocations++)));
+              Integer k = 1;
+              assertEquals(k.toString(), r.get(k, expectedInvocations++));
             }
 
             r.put("oh1", new byte[838860]);
@@ -620,8 +618,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
             };
             Wait.waitForCriterion(wc, 30 * 1000, 10, true);
             {
-              Integer k = new Integer(2);
-              assertEquals(k.toString(), r.get(k, new Integer(expectedInvocations++)));
+              Integer k = 2;
+              assertEquals(k.toString(), r.get(k, expectedInvocations++));
             }
 
             r.destroy("oh3");
@@ -638,10 +636,10 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
             };
             Wait.waitForCriterion(wc, 30 * 1000, 10, true);
             {
-              Integer k = new Integer(3);
-              assertEquals(k.toString(), r.get(k, new Integer(expectedInvocations++)));
+              Integer k = 3;
+              assertEquals(k.toString(), r.get(k, expectedInvocations++));
             }
-            return new Integer(expectedInvocations);
+            return expectedInvocations;
           }
         });
 
@@ -650,13 +648,13 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
           @Override
           public void run2() throws CacheException {
             Region r = getCache().getRegion(rName);
-            Integer i1 = new Integer(1);
+            Integer i1 = 1;
             assertTrue(r.containsKey(i1));
             assertNotNull(r.getEntry(i1));
-            Integer i2 = new Integer(2);
+            Integer i2 = 2;
             assertFalse(r.containsKey(i2));
             assertNull(r.getEntry(i2));
-            Integer i3 = new Integer(3);
+            Integer i3 = 3;
             assertTrue(r.containsKey(i3));
             assertNotNull(r.getEntry(i3));
           }
@@ -672,10 +670,10 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
             ((InternalResourceManager) getCache().getResourceManager()).getOffHeapMonitor();
         assertFalse(ohmm.getState().isCritical());
 
-        int expectedInvocations = expected.intValue();
+        int expectedInvocations = expected;
         {
-          Integer k = new Integer(4);
-          assertEquals(k.toString(), r.get(k, new Integer(expectedInvocations++)));
+          Integer k = 4;
+          assertEquals(k.toString(), r.get(k, expectedInvocations++));
         }
 
         // Place in a critical state for the next test
@@ -693,8 +691,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         };
         Wait.waitForCriterion(wc, 30 * 1000, 10, true);
         {
-          Integer k = new Integer(5);
-          assertEquals(k.toString(), r.get(k, new Integer(expectedInvocations++)));
+          Integer k = 5;
+          assertEquals(k.toString(), r.get(k, expectedInvocations++));
         }
 
         r.destroy("oh3");
@@ -711,10 +709,10 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         };
         Wait.waitForCriterion(wc, 30 * 1000, 10, true);
         {
-          Integer k = new Integer(6);
-          assertEquals(k.toString(), r.get(k, new Integer(expectedInvocations++)));
+          Integer k = 6;
+          assertEquals(k.toString(), r.get(k, expectedInvocations++));
         }
-        return new Integer(expectedInvocations);
+        return expectedInvocations;
       }
     });
 
@@ -726,13 +724,13 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
           @Override
           public void run2() throws CacheException {
             Region<Integer, String> r = getCache().getRegion(rName);
-            Integer i4 = new Integer(4);
+            Integer i4 = 4;
             assertTrue(r.containsKey(i4));
             assertNotNull(r.getEntry(i4));
-            Integer i5 = new Integer(5);
+            Integer i5 = 5;
             assertFalse(r.containsKey(i5));
             assertNull(r.getEntry(i5));
-            Integer i6 = new Integer(6);
+            Integer i6 = 6;
             assertTrue(r.containsKey(i6));
             assertNotNull(r.getEntry(i6));
           }
@@ -742,21 +740,22 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
   }
 
 
-  private SerializableRunnable addExpectedException = new SerializableRunnable("addExpectedEx") {
-    @Override
-    public void run() {
-      getCache().getLogger().fine(addExpectedExString);
-      getCache().getLogger().fine(addExpectedBelow);
-    };
-  };
+  private final SerializableRunnable addExpectedException =
+      new SerializableRunnable("addExpectedEx") {
+        @Override
+        public void run() {
+          getCache().getLogger().fine(addExpectedExString);
+          getCache().getLogger().fine(addExpectedBelow);
+        }
+      };
 
-  private SerializableRunnable removeExpectedException =
+  private final SerializableRunnable removeExpectedException =
       new SerializableRunnable("removeExpectedException") {
         @Override
         public void run() {
           getCache().getLogger().fine(removeExpectedExString);
           getCache().getLogger().fine(removeExpectedBelow);
-        };
+        }
       };
 
   @Test
@@ -793,7 +792,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
       throws Exception {
     final Host host = Host.getHost(0);
     final VM accessor = host.getVM(0);
-    final VM servers[] = new VM[3];
+    final VM[] servers = new VM[3];
     servers[0] = host.getVM(1);
     servers[1] = host.getVM(2);
     servers[2] = host.getVM(3);
@@ -859,7 +858,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
             boolean keyFoundOnSickMember = false;
             boolean caughtException = false;
             for (int i = 0; i < 20; i++) {
-              Integer key = Integer.valueOf(i);
+              Integer key = i;
               int hKey = PartitionedRegionHelper.getHashKey(pr, null, key, null, null);
               Set<InternalDistributedMember> owners = pr.getRegionAdvisor().getBucketOwners(hKey);
               final boolean hasCriticalOwners = owners.removeAll(criticalMembers);
@@ -902,10 +901,10 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     SerializableCallable getMyId = new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        return ((GemFireCacheImpl) getCache()).getMyId();
+        return getCache().getMyId();
       }
     };
-    final Set<VM> criticalServers = new HashSet<VM>();
+    final Set<VM> criticalServers = new HashSet<>();
     for (final VM server : servers) {
       DistributedMember member = (DistributedMember) server.invoke(getMyId);
       if (criticalMembers.contains(member)) {
@@ -989,8 +988,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
 
     // Make sure the desired VMs will have a fresh DS. TODO: convert these from AsyncInvocation to
     // invoke
-    accessor.invoke(() -> disconnectFromDS());
-    ds1.invoke(() -> disconnectFromDS());
+    accessor.invoke(JUnit4DistributedTestCase::disconnectFromDS);
+    ds1.invoke(JUnit4DistributedTestCase::disconnectFromDS);
 
     ds1.invoke("establishcConnectivity", () -> {
       getSystem();
@@ -1009,28 +1008,28 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
           @Override
           public Object call() throws Exception {
             Region<Integer, String> r = getCache().getRegion(rName);
-            Integer k = new Integer(1);
-            Integer expectedInvocations0 = new Integer(expectedInvocations.getAndIncrement());
+            Integer k = 1;
+            Integer expectedInvocations0 = expectedInvocations.getAndIncrement();
             assertEquals(k.toString(), r.get(k, expectedInvocations0)); // should load for new key
             assertTrue(r.containsKey(k));
-            Integer expectedInvocations1 = new Integer(expectedInvocations.get());
+            Integer expectedInvocations1 = expectedInvocations.get();
             assertEquals(k.toString(), r.get(k, expectedInvocations1)); // no load
             assertEquals(k.toString(), r.get(k, expectedInvocations1)); // no load
             return expectedInvocations1;
           }
         });
-    expectedInvocations.set(ex.intValue());
+    expectedInvocations.set(ex);
 
     ex = (Integer) ds1
         .invoke(new SerializableCallable("Invoke loader from datastore, non-critical") {
           @Override
           public Object call() throws Exception {
             Region<Integer, String> r = getCache().getRegion(rName);
-            Integer k = new Integer(2);
-            Integer expectedInvocations1 = new Integer(expectedInvocations.getAndIncrement());
+            Integer k = 2;
+            Integer expectedInvocations1 = expectedInvocations.getAndIncrement();
             assertEquals(k.toString(), r.get(k, expectedInvocations1)); // should load for new key
             assertTrue(r.containsKey(k));
-            Integer expectedInvocations2 = new Integer(expectedInvocations.get());
+            Integer expectedInvocations2 = expectedInvocations.get();
             assertEquals(k.toString(), r.get(k, expectedInvocations2)); // no load
             assertEquals(k.toString(), r.get(k, expectedInvocations2)); // no load
             String oldVal = r.remove(k);
@@ -1039,7 +1038,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
             return expectedInvocations2;
           }
         });
-    expectedInvocations.set(ex.intValue());
+    expectedInvocations.set(ex);
 
     accessor.invoke(addExpectedException);
     ds1.invoke(addExpectedException);
@@ -1074,37 +1073,37 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
             };
             Wait.waitForCriterion(wc, 30 * 1000, 10, true);
 
-            final Integer k = new Integer(2); // reload with same key again and again
-            final Integer expectedInvocations3 = new Integer(expectedInvocations.getAndIncrement());
+            final Integer k = 2; // reload with same key again and again
+            final Integer expectedInvocations3 = expectedInvocations.getAndIncrement();
             assertEquals(k.toString(), pr.get(k, expectedInvocations3)); // load
             assertFalse(pr.containsKey(k));
-            Integer expectedInvocations4 = new Integer(expectedInvocations.getAndIncrement());
+            Integer expectedInvocations4 = expectedInvocations.getAndIncrement();
             assertEquals(k.toString(), pr.get(k, expectedInvocations4)); // load
             assertFalse(pr.containsKey(k));
-            Integer expectedInvocations5 = new Integer(expectedInvocations.get());
+            Integer expectedInvocations5 = expectedInvocations.get();
             assertEquals(k.toString(), pr.get(k, expectedInvocations5)); // load
             assertFalse(pr.containsKey(k));
             return expectedInvocations5;
           }
         });
-    expectedInvocations.set(ex.intValue());
+    expectedInvocations.set(ex);
 
     ex = (Integer) accessor.invoke(new SerializableCallable(
         "During critical state on datastore, assert accesor load behavior") {
       @Override
       public Object call() throws Exception {
-        final Integer k = new Integer(2); // reload with same key again and again
-        Integer expectedInvocations6 = new Integer(expectedInvocations.incrementAndGet());
+        final Integer k = 2; // reload with same key again and again
+        Integer expectedInvocations6 = expectedInvocations.incrementAndGet();
         Region<Integer, String> r = getCache().getRegion(rName);
         assertEquals(k.toString(), r.get(k, expectedInvocations6)); // load
         assertFalse(r.containsKey(k));
-        Integer expectedInvocations7 = new Integer(expectedInvocations.incrementAndGet());
+        Integer expectedInvocations7 = expectedInvocations.incrementAndGet();
         assertEquals(k.toString(), r.get(k, expectedInvocations7)); // load
         assertFalse(r.containsKey(k));
         return expectedInvocations7;
       }
     });
-    expectedInvocations.set(ex.intValue());
+    expectedInvocations.set(ex);
 
     ex = (Integer) ds1.invoke(
         new SerializableCallable("Set safe state on datastore, assert local load behavior") {
@@ -1128,14 +1127,14 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
             };
             Wait.waitForCriterion(wc, 30 * 1000, 10, true);
 
-            Integer k = new Integer(3); // same key as previously used, this time is should stick
-            Integer expectedInvocations8 = new Integer(expectedInvocations.incrementAndGet());
+            Integer k = 3; // same key as previously used, this time is should stick
+            Integer expectedInvocations8 = expectedInvocations.incrementAndGet();
             assertEquals(k.toString(), r.get(k, expectedInvocations8)); // last load for 3
             assertTrue(r.containsKey(k));
             return expectedInvocations8;
           }
         });
-    expectedInvocations.set(ex.intValue());
+    expectedInvocations.set(ex);
 
     accessor.invoke(new SerializableCallable(
         "Data store in safe state, assert load behavior, accessor sets critical state, assert load behavior") {
@@ -1144,8 +1143,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         final OffHeapMemoryMonitor ohmm =
             ((InternalResourceManager) getCache().getResourceManager()).getOffHeapMonitor();
         assertFalse(ohmm.getState().isCritical());
-        Integer k = new Integer(4);
-        Integer expectedInvocations9 = new Integer(expectedInvocations.incrementAndGet());
+        Integer k = 4;
+        Integer expectedInvocations9 = expectedInvocations.incrementAndGet();
         final PartitionedRegion r = (PartitionedRegion) getCache().getRegion(rName);
         assertEquals(k.toString(), r.get(k, expectedInvocations9)); // load for 4
         assertTrue(r.containsKey(k));
@@ -1172,8 +1171,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         };
         Wait.waitForCriterion(wc, 30 * 1000, 10, true);
 
-        k = new Integer(5);
-        Integer expectedInvocations10 = new Integer(expectedInvocations.incrementAndGet());
+        k = 5;
+        Integer expectedInvocations10 = expectedInvocations.incrementAndGet();
         assertEquals(k.toString(), r.get(k, expectedInvocations10)); // load for key 5
         assertTrue(r.containsKey(k));
         assertEquals(k.toString(), r.get(k, expectedInvocations10)); // no load
@@ -1205,7 +1204,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     getSystem(getOffHeapProperties());
     InternalResourceManager irm = (InternalResourceManager) getCache().getResourceManager();
     irm.setCriticalOffHeapPercentage(90f);
-    AttributesFactory<Integer, String> af = new AttributesFactory<Integer, String>();
+    AttributesFactory<Integer, String> af = new AttributesFactory<>();
     if (!accessor) {
       af.setCacheLoader(new CacheLoader<Integer, String>() {
         final AtomicInteger numLoaderInvocations = new AtomicInteger(0);
@@ -1213,8 +1212,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         @Override
         public String load(LoaderHelper<Integer, String> helper) throws CacheLoaderException {
           Integer expectedInvocations = (Integer) helper.getArgument();
-          final int actualInvocations = this.numLoaderInvocations.getAndIncrement();
-          if (expectedInvocations.intValue() != actualInvocations) {
+          final int actualInvocations = numLoaderInvocations.getAndIncrement();
+          if (expectedInvocations != actualInvocations) {
             throw new CacheLoaderException("Expected " + expectedInvocations
                 + " invocations, actual is " + actualInvocations + " for key " + helper.getKey());
           }
@@ -1243,7 +1242,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final VM vm = host.getVM(2);
     final String rName = getUniqueName();
 
-    vm.invoke(() -> disconnectFromDS());
+    vm.invoke(JUnit4DistributedTestCase::disconnectFromDS);
 
     vm.invoke(new CacheSerializableRunnable("test LocalRegion load passthrough when critical") {
       @Override
@@ -1270,7 +1269,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         int expectedInvocations = 0;
         assertEquals(expectedInvocations++, numLoaderInvocations.get());
         {
-          Integer k = new Integer(1);
+          Integer k = 1;
           assertEquals(k.toString(), r.get(k));
         }
         assertEquals(expectedInvocations++, numLoaderInvocations.get());
@@ -1296,7 +1295,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         };
         Wait.waitForCriterion(wc, 30 * 1000, 10, true);
         {
-          Integer k = new Integer(2);
+          Integer k = 2;
           assertEquals(k.toString(), r.get(k));
         }
         assertEquals(expectedInvocations++, numLoaderInvocations.get());
@@ -1322,7 +1321,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         Wait.waitForCriterion(wc, 30 * 1000, 10, true);
 
         {
-          Integer k = new Integer(3);
+          Integer k = 3;
           assertEquals(k.toString(), r.get(k));
         }
         assertEquals(expectedInvocations++, numLoaderInvocations.get());
@@ -1345,7 +1344,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
   }
 
   private AttributesFactory<Integer, String> getLocalRegionAttributesFactory() {
-    AttributesFactory<Integer, String> af = new AttributesFactory<Integer, String>();
+    AttributesFactory<Integer, String> af = new AttributesFactory<>();
     af.setScope(Scope.LOCAL);
     af.setOffHeap(true);
     return af;
@@ -1358,14 +1357,14 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
    */
   public static List<Integer> createRanges(int... startEnds) {
     assert startEnds.length % 2 == 0;
-    ArrayList<Integer> ret = new ArrayList<Integer>();
+    ArrayList<Integer> ret = new ArrayList<>();
     for (int si = 0; si < startEnds.length; si++) {
       final int start = startEnds[si++];
       final int end = startEnds[si];
       assert end >= start;
       ret.ensureCapacity(ret.size() + ((end - start) + 1));
       for (int i = start; i <= end; i++) {
-        ret.add(new Integer(i));
+        ret.add(i);
       }
     }
     return ret;
@@ -1423,7 +1422,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
       public Object call() throws Exception {
         Region r = getRootRegion().getSubregion(regionName);
         try {
-          r.put(Integer.valueOf(0), "value-1");
+          r.put(0, "value-1");
           if (catchServerException || catchLowMemoryException) {
             fail("An expected ResourceException was not thrown");
           }
@@ -1451,9 +1450,9 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
       @Override
       public Object call() throws Exception {
         Region r = getRootRegion().getSubregion(regionName);
-        Map<Integer, String> temp = new HashMap<Integer, String>();
+        Map<Integer, String> temp = new HashMap<>();
         for (int i = rng.start; i < rng.end; i++) {
-          Integer k = Integer.valueOf(i);
+          Integer k = i;
           temp.put(k, "value-" + i);
         }
         try {
@@ -1507,7 +1506,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     final long bytesUsedAfterSmallKey = (long) server.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getInternalResourceManager();
+        InternalResourceManager irm = getCache().getInternalResourceManager();
         final OffHeapMemoryMonitor ohm = irm.getOffHeapMonitor();
         assertTrue(ohm.getState().isNormal());
         getCache().getLogger().fine(addExpectedExString);
@@ -1601,10 +1600,10 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     server.invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getInternalResourceManager();
+        InternalResourceManager irm = getCache().getInternalResourceManager();
         final OffHeapMemoryMonitor ohm = irm.getOffHeapMonitor();
         assertTrue(ohm.getState().isCritical());
-        getCache().getLogger().fine(MemoryThresholdsOffHeapDUnitTest.this.addExpectedBelow);
+        getCache().getLogger().fine(addExpectedBelow);
         OffHeapMemoryMonitorObserverImpl _testHook = new OffHeapMemoryMonitorObserverImpl();
         ohm.testHook = _testHook;
         try {
@@ -1625,7 +1624,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
           }
         };
         Wait.waitForCriterion(wc, 30000, 9, true);
-        getCache().getLogger().fine(MemoryThresholdsOffHeapDUnitTest.this.removeExpectedBelow);
+        getCache().getLogger().fine(removeExpectedBelow);
         return;
       }
     });
@@ -1698,10 +1697,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
       if (expected_bytesUsed != updateStateAndSendEventBeforeProcess_bytesUsed) {
         return false;
       }
-      if (!expected_memoryState.equals(updateStateAndSendEventBeforeProcess_event.getState())) {
-        return false;
-      }
-      return true;
+      return expected_memoryState.equals(updateStateAndSendEventBeforeProcess_event.getState());
     }
 
     public synchronized void validateUpdateStateAndSendEventBeforeProcess(long expected_bytesUsed,
@@ -1719,7 +1715,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
       @Override
       public Object call() throws Exception {
         TestMemoryThresholdListener listener = new TestMemoryThresholdListener();
-        InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getInternalResourceManager();
+        InternalResourceManager irm = getCache().getInternalResourceManager();
         irm.addResourceListener(ResourceType.OFFHEAP_MEMORY, listener);
         assertTrue(irm.getResourceListeners(ResourceType.OFFHEAP_MEMORY).contains(listener));
         return null;
@@ -1810,15 +1806,13 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         Set<ResourceListener<?>> listeners = getGemfireCache().getInternalResourceManager()
             .getResourceListeners(ResourceType.OFFHEAP_MEMORY);
         TestMemoryThresholdListener tmp_listener = null;
-        Iterator<ResourceListener<?>> it = listeners.iterator();
-        while (it.hasNext()) {
-          ResourceListener<?> l = it.next();
+        for (final ResourceListener<?> l : listeners) {
           if (l instanceof TestMemoryThresholdListener) {
             tmp_listener = (TestMemoryThresholdListener) l;
             break;
           }
         }
-        final TestMemoryThresholdListener listener = tmp_listener == null ? null : tmp_listener;
+        final TestMemoryThresholdListener listener = tmp_listener;
         switch (state) {
           case CRITICAL:
             if (useWaitCriterion) {
@@ -1920,7 +1914,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     vm.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        InternalResourceManager irm = ((GemFireCacheImpl) getCache()).getInternalResourceManager();
+        InternalResourceManager irm = getCache().getInternalResourceManager();
         final ResourceAdvisor ra = irm.getResourceAdvisor();
         WaitCriterion wc = new WaitCriterion() {
           @Override

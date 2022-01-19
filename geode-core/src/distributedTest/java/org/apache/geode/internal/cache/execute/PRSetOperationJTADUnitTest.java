@@ -102,7 +102,7 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
-    Invoke.invokeInEveryVM(() -> verifyNoTxState());
+    Invoke.invokeInEveryVM(this::verifyNoTxState);
   }
 
   @Test
@@ -128,7 +128,7 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
 
   private void setupAndLoadRegion(boolean disableSetOpToStartJTA) {
     createRegion(disableSetOpToStartJTA);
-    dataStore1.invoke(() -> loadRegion());
+    dataStore1.invoke(this::loadRegion);
   }
 
   private void createRegion(boolean disableSetOpToStartJTA) {
@@ -145,7 +145,7 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
 
   private void loadRegion() {
     Region<Long, String> region = basicGetCache().getRegion(SEPARATOR + REGION_NAME);
-    testData.forEach((k, v) -> region.put(k, v));
+    testData.forEach(region::put);
   }
 
   private void verifyRegionKeysetWithJTA(boolean disableSetOpToStartJTA) {
@@ -177,7 +177,7 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
     try {
       userTX.begin();
       Collection<Long> set = region.keySet();
-      set.forEach((key) -> assertTrue(testData.keySet().contains(key)));
+      set.forEach((key) -> assertTrue(testData.containsKey(key)));
       testData.keySet().forEach((key) -> assertTrue(set.contains(key)));
     } finally {
       validateTXManager(disableSetOpToStartJTA, isAccessor);
@@ -195,7 +195,7 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
     try {
       userTX.begin();
       Collection<String> set = region.values();
-      set.forEach((value) -> assertTrue(testData.values().contains(value)));
+      set.forEach((value) -> assertTrue(testData.containsValue(value)));
       testData.values().forEach((value) -> assertTrue(set.contains(value)));
     } finally {
       validateTXManager(disableSetOpToStartJTA, isAccessor);
@@ -214,8 +214,8 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
       userTX.begin();
       Collection<Map.Entry<Long, String>> set = region.entrySet();
       set.forEach((entry) -> {
-        assertTrue(testData.values().contains(entry.getValue()));
-        assertTrue(testData.keySet().contains(entry.getKey()));
+        assertTrue(testData.containsValue(entry.getValue()));
+        assertTrue(testData.containsKey(entry.getKey()));
       });
       testData.entrySet().forEach((entry) -> assertTrue(set.contains(entry)));
     } finally {
@@ -261,7 +261,7 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
 
   private void createPR(boolean isAccessor) {
     basicGetCache().createRegionFactory(RegionShortcut.PARTITION)
-        .setPartitionAttributes(new PartitionAttributesFactory<Long, String>().setTotalNumBuckets(3)
+        .setPartitionAttributes(new PartitionAttributesFactory<>().setTotalNumBuckets(3)
             .setLocalMaxMemory(isAccessor ? 0 : 1).create())
         .create(REGION_NAME);
   }
@@ -271,8 +271,8 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
     boolean disableSetOpToStartJTA = false;
     setupRegion(disableSetOpToStartJTA);
 
-    accessor.invoke(() -> verifyRegionValuesWhenSetOperationStartsJTA());
-    dataStore1.invoke(() -> verifyRegionValuesWhenSetOperationStartsJTA());
+    accessor.invoke(this::verifyRegionValuesWhenSetOperationStartsJTA);
+    dataStore1.invoke(this::verifyRegionValuesWhenSetOperationStartsJTA);
   }
 
   private void setupRegion(boolean disableSetOpToStartJTA) {
@@ -280,7 +280,7 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
     dataStore1.invoke(() -> createCache(disableSetOpToStartJTA));
     accessor.invoke(() -> createPR(true));
     dataStore1.invoke(() -> createPR(false));
-    dataStore1.invoke(() -> loadRegion());
+    dataStore1.invoke(this::loadRegion);
   }
 
 
@@ -291,11 +291,11 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
     try {
       userTX.begin();
       Collection<String> set = region.values();
-      set.forEach((value) -> assertTrue(testData.values().contains(value)));
+      set.forEach((value) -> assertTrue(testData.containsValue(value)));
       testData.values().forEach((value) -> assertTrue(set.contains(value)));
       assertEquals(testData.size(), set.size());
       region.put(5L, "newValue");
-      set.forEach((value) -> assertTrue(modifiedData.values().contains(value)));
+      set.forEach((value) -> assertTrue(modifiedData.containsValue(value)));
       modifiedData.values().forEach((value) -> assertTrue(set.contains(value)));
       assertEquals(modifiedData.size(), set.size());
     } finally {
@@ -308,8 +308,8 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
     boolean disableSetOpToStartJTA = true;
     setupRegion(disableSetOpToStartJTA);
 
-    accessor.invoke(() -> verifyRegionValuesWhenSetOperationDoesNotStartJTA());
-    dataStore1.invoke(() -> verifyRegionValuesWhenSetOperationDoesNotStartJTA());
+    accessor.invoke(this::verifyRegionValuesWhenSetOperationDoesNotStartJTA);
+    dataStore1.invoke(this::verifyRegionValuesWhenSetOperationDoesNotStartJTA);
   }
 
 
@@ -320,7 +320,7 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
     try {
       userTX.begin();
       Collection<String> set = region.values();
-      set.forEach((value) -> assertTrue(testData.values().contains(value)));
+      set.forEach((value) -> assertTrue(testData.containsValue(value)));
       testData.values().forEach((value) -> assertTrue(set.contains(value)));
       assertEquals(testData.size(), set.size());
       region.put(5L, "newValue");
@@ -346,10 +346,10 @@ public class PRSetOperationJTADUnitTest extends JUnit4CacheTestCase {
   private void doTestTxFunction(boolean disableSetOpToStartJTA) {
     setupAndLoadRegion(disableSetOpToStartJTA);
 
-    accessor.invoke(() -> registerFunction());
-    dataStore1.invoke(() -> registerFunction());
-    dataStore2.invoke(() -> registerFunction());
-    dataStore3.invoke(() -> registerFunction());
+    accessor.invoke(this::registerFunction);
+    dataStore1.invoke(this::registerFunction);
+    dataStore2.invoke(this::registerFunction);
+    dataStore3.invoke(this::registerFunction);
 
     accessor.invoke(() -> doTxFunction(disableSetOpToStartJTA));
     dataStore1.invoke(() -> doTxFunction(disableSetOpToStartJTA));

@@ -42,10 +42,10 @@ public class BindDistributedSystemJUnitTest {
 
   @After
   public void tearDown() {
-    if (this.system != null) {
-      this.system.disconnect();
+    if (system != null) {
+      system.disconnect();
     }
-    this.system = null;
+    system = null;
   }
 
   // public void testBindToAddressNull() throws Exception {
@@ -66,12 +66,12 @@ public class BindDistributedSystemJUnitTest {
     props.setProperty(BIND_ADDRESS, bindTo);
     props.setProperty(START_LOCATOR,
         "localhost[" + AvailablePortHelper.getRandomAvailableTCPPort() + "]");
-    this.system = org.apache.geode.distributed.DistributedSystem.connect(props);
+    system = org.apache.geode.distributed.DistributedSystem.connect(props);
 
-    assertEquals(true, this.system.isConnected());
+    assertEquals(true, system.isConnected());
 
     // Because of fix for bug 31409
-    this.system.disconnect();
+    system.disconnect();
 
   }
 

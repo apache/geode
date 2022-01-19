@@ -73,7 +73,7 @@ public class MX4JServerSocketFactory implements mx4j.tools.adaptor.AdaptorServer
     if (ciphers == null || ciphers.length() == 0) {
       ciphers = DistributionConfig.DEFAULT_SSL_CIPHERS;
     }
-    this.socketCreator = SocketCreatorFactory.createNonDefaultInstance(useSSL, needClientAuth,
+    socketCreator = SocketCreatorFactory.createNonDefaultInstance(useSSL, needClientAuth,
         protocols, ciphers, gfsecurityProps);
   }
 
@@ -121,10 +121,10 @@ public class MX4JServerSocketFactory implements mx4j.tools.adaptor.AdaptorServer
   public ServerSocket createServerSocket(int port) throws IOException {
     ServerSocket sock = null;
     if ("".equals(bindAddress)) {
-      sock = socketCreator.forCluster().createServerSocket(port, this.backlog);
+      sock = socketCreator.forCluster().createServerSocket(port, backlog);
     } else {
-      sock = socketCreator.forCluster().createServerSocket(port, this.backlog,
-          toInetAddress(this.bindAddress));
+      sock = socketCreator.forCluster().createServerSocket(port, backlog,
+          toInetAddress(bindAddress));
     }
 
     if (logger.isDebugEnabled()) {

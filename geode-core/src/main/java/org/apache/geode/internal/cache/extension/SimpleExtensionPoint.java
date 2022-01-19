@@ -29,7 +29,7 @@ import org.apache.geode.internal.util.CollectionUtils;
 // UnitTest SimpleExtensionPointJUnitTest
 public class SimpleExtensionPoint<T> implements ExtensionPoint<T> {
 
-  protected final ArrayList<Extension<T>> extensions = new ArrayList<Extension<T>>();
+  protected final ArrayList<Extension<T>> extensions = new ArrayList<>();
 
   protected final Iterable<Extension<T>> iterable =
       CollectionUtils.unmodifiableIterable(extensions);

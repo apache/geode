@@ -220,9 +220,7 @@ public class DistributedRule extends AbstractDistributedRule {
 
     private static void doTearDown() {
       tearDownInVM();
-      invokeInEveryVM(() -> {
-        tearDownInVM();
-      });
+      invokeInEveryVM(TearDown::tearDownInVM);
       invokeInLocator(() -> {
         DistributionMessageObserver.setInstance(null);
         unregisterInstantiatorsInThisVM();

@@ -25,7 +25,7 @@ public class OrderedTombstoneMapJUnitTest {
 
   @Test
   public void test() {
-    OrderedTombstoneMap<String> map = new OrderedTombstoneMap<String>();
+    OrderedTombstoneMap<String> map = new OrderedTombstoneMap<>();
 
     DiskStoreID id1 = DiskStoreID.random();
     DiskStoreID id2 = DiskStoreID.random();

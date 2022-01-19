@@ -51,7 +51,7 @@ public abstract class AbstractJdbcCallback implements CacheCallback {
 
   private synchronized void initialize(Region<?, ?> region) {
     if (sqlHandler == null) {
-      this.cache = (InternalCache) region.getRegionService();
+      cache = (InternalCache) region.getRegionService();
       JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
       TableMetaDataManager tableMetaDataManager = new TableMetaDataManager();
       sqlHandler = createSqlHandler(cache, region.getName(), tableMetaDataManager, service);

@@ -52,7 +52,7 @@ public class SampleCollectorTest {
   @Before
   public void setUp() throws Exception {
     final long startTime = System.currentTimeMillis();
-    this.manager = new TestStatisticsManager(1, getClass().getSimpleName(), startTime);
+    manager = new TestStatisticsManager(1, getClass().getSimpleName(), startTime);
 
     final StatArchiveHandlerConfig mockStatArchiveHandlerConfig =
         mock(StatArchiveHandlerConfig.class,
@@ -67,31 +67,31 @@ public class SampleCollectorTest {
         .thenReturn(getClass().getSimpleName());
 
     final StatisticsSampler sampler = new TestStatisticsSampler(manager);
-    this.sampleCollector = new SampleCollector(sampler);
-    this.sampleCollector.initialize(mockStatArchiveHandlerConfig, NanoTimer.getTime(),
+    sampleCollector = new SampleCollector(sampler);
+    sampleCollector.initialize(mockStatArchiveHandlerConfig, NanoTimer.getTime(),
         new MainWithChildrenRollingFileHandler());
   }
 
   @After
   public void tearDown() throws Exception {
-    if (this.sampleCollector != null) {
-      this.sampleCollector.close();
-      this.sampleCollector = null;
+    if (sampleCollector != null) {
+      sampleCollector.close();
+      sampleCollector = null;
     }
-    this.manager = null;
+    manager = null;
   }
 
   @Test
   public void testAddHandlerBeforeSample() {
     TestSampleHandler handler = new TestSampleHandler();
-    this.sampleCollector.addSampleHandler(handler);
+    sampleCollector.addSampleHandler(handler);
 
     StatisticDescriptor[] statsST1 = new StatisticDescriptor[] {
         manager.createIntCounter("ST1_1_name", "ST1_1_desc", "ST1_1_units")};
     StatisticsType ST1 = manager.createType("ST1_name", "ST1_desc", statsST1);
     Statistics st1_1 = manager.createAtomicStatistics(ST1, "st1_1_text", 1);
 
-    this.sampleCollector.sample(NanoTimer.getTime());
+    sampleCollector.sample(NanoTimer.getTime());
 
     assertEquals(3, handler.getNotificationCount());
     List<Info> notifications = handler.getNotifications();
@@ -157,27 +157,27 @@ public class SampleCollectorTest {
     st1_2.incInt("ST1_1_name", 1);
     st2_1.incInt("ST2_1_name", 1);
     long sampleTime = NanoTimer.getTime();
-    this.sampleCollector.sample(sampleTime);
+    sampleCollector.sample(sampleTime);
 
     st1_1.incInt("ST1_1_name", 2);
     st2_1.incInt("ST2_1_name", 1);
     sampleTime += NanoTimer.millisToNanos(1000);
-    this.sampleCollector.sample(sampleTime);
+    sampleCollector.sample(sampleTime);
 
     st1_1.incInt("ST1_1_name", 1);
     st1_1.incInt("ST1_1_name", 2);
     sampleTime += NanoTimer.millisToNanos(1000);
-    this.sampleCollector.sample(sampleTime);
+    sampleCollector.sample(sampleTime);
 
     TestSampleHandler handler = new TestSampleHandler();
-    this.sampleCollector.addSampleHandler(handler);
+    sampleCollector.addSampleHandler(handler);
 
     assertEquals("TestSampleHandler = " + handler, 0, handler.getNotificationCount());
 
     st1_2.incInt("ST1_1_name", 1);
     st2_1.incInt("ST2_1_name", 1);
     sampleTime += NanoTimer.millisToNanos(1000);
-    this.sampleCollector.sample(sampleTime);
+    sampleCollector.sample(sampleTime);
 
     assertEquals(6, handler.getNotificationCount());
     List<Info> notifications = handler.getNotifications();
@@ -297,7 +297,7 @@ public class SampleCollectorTest {
 
   @Test
   public void testGetStatMonitorHandlerAfterClose() {
-    this.sampleCollector.close();
+    sampleCollector.close();
     try {
       /* StatMonitorHandler handler = */ SampleCollector.getStatMonitorHandler();
       fail(
@@ -311,7 +311,7 @@ public class SampleCollectorTest {
   public void testGetStatMonitorHandlerBeforeAndAfterClose() {
     StatMonitorHandler handler = SampleCollector.getStatMonitorHandler();
     assertNotNull(handler);
-    this.sampleCollector.close();
+    sampleCollector.close();
     try {
       handler = SampleCollector.getStatMonitorHandler();
       fail(
@@ -323,7 +323,7 @@ public class SampleCollectorTest {
 
   @Test
   public void testGetStatArchiveHandler() {
-    StatArchiveHandler handler = this.sampleCollector.getStatArchiveHandler();
+    StatArchiveHandler handler = sampleCollector.getStatArchiveHandler();
     assertNotNull(handler);
   }
 }

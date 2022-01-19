@@ -75,7 +75,7 @@ public abstract class NonDistinctOrderByTestImplementation {
 
   @Test
   public void testOrderByWithIndexResultDefaultProjection() throws Exception {
-    String queries[] = {
+    String[] queries = {
         // Test case No. IUMR021
         "SELECT   * FROM " + SEPARATOR + "portfolio1 pf1 where ID > 10 order by ID desc ",
         "SELECT   * FROM " + SEPARATOR + "portfolio1 pf1 where ID > 10 order by ID asc ",
@@ -104,13 +104,13 @@ public abstract class NonDistinctOrderByTestImplementation {
         "SELECT   *  FROM " + SEPARATOR
             + "portfolio1 pf1 where ID > 0 order by ID desc, pkid desc "};
 
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Position.resetCounter();
     // Create Regions
 
-    Region r1 = this.createRegion("portfolio1", Portfolio.class);
+    Region r1 = createRegion("portfolio1", Portfolio.class);
 
     for (int i = 1; i < 200; ++i) {
       Portfolio pf = new Portfolio(i);
@@ -132,7 +132,7 @@ public abstract class NonDistinctOrderByTestImplementation {
     }
     // Create Indexes
 
-    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
+    createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
 
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
@@ -188,7 +188,7 @@ public abstract class NonDistinctOrderByTestImplementation {
 
   @Test
   public void testOrderByWithIndexResultWithProjection() throws Exception {
-    String queries[] = {
+    String[] queries = {
         // Test case No. IUMR021
         "SELECT   shortID, description FROM " + SEPARATOR
             + "portfolio1 pf1 where ID > 10 order by shortID desc ",
@@ -224,13 +224,13 @@ public abstract class NonDistinctOrderByTestImplementation {
             + "portfolio1 pf1 where ID != 10 order by shortID desc limit 10",
 
     };
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Position.resetCounter();
     // Create Regions
 
-    Region r1 = this.createRegion("portfolio1", Portfolio.class);
+    Region r1 = createRegion("portfolio1", Portfolio.class);
 
     for (int i = 1; i < 200; ++i) {
       Portfolio pf = new Portfolio(i);
@@ -252,7 +252,7 @@ public abstract class NonDistinctOrderByTestImplementation {
     }
     // Create Indexes
 
-    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
+    createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
 
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
@@ -306,7 +306,7 @@ public abstract class NonDistinctOrderByTestImplementation {
 
   @Test
   public void testMultiColOrderByWithIndexResultDefaultProjection() throws Exception {
-    String queries[] = {
+    String[] queries = {
         // Test case No. IUMR021
         "SELECT   * FROM " + SEPARATOR + "portfolio1 pf1 where ID > 10 order by ID desc, pkid asc ",
         "SELECT   * FROM " + SEPARATOR + "portfolio1 pf1 where ID > 10 order by ID asc, pkid desc ",
@@ -339,12 +339,12 @@ public abstract class NonDistinctOrderByTestImplementation {
             + "portfolio1 pf1 where ID != 10 order by ID desc, pkid desc limit 10",
 
     };
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Position.resetCounter();
     // Create Regions
-    Region r1 = this.createRegion("portfolio1", Portfolio.class);
+    Region r1 = createRegion("portfolio1", Portfolio.class);
 
     for (int i = 1; i < 200; ++i) {
       Portfolio pf = new Portfolio(i);
@@ -366,7 +366,7 @@ public abstract class NonDistinctOrderByTestImplementation {
     }
     // Create Indexes
 
-    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
+    createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
 
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
@@ -415,7 +415,7 @@ public abstract class NonDistinctOrderByTestImplementation {
 
   @Test
   public void testMultiColOrderByWithIndexResultWithProjection() throws Exception {
-    String queries[] = {
+    String[] queries = {
         // Test case No. IUMR021
         "SELECT   ID, description, createTime, pkid FROM " + SEPARATOR
             + "portfolio1 pf1 where ID > 10 order by ID desc, pkid desc ",
@@ -451,13 +451,13 @@ public abstract class NonDistinctOrderByTestImplementation {
             + "portfolio1 pf1 where ID != 10 order by ID desc, pkid desc limit 10",
 
     };
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Position.resetCounter();
     // Create Regions
 
-    Region r1 = this.createRegion("portfolio1", Portfolio.class);
+    Region r1 = createRegion("portfolio1", Portfolio.class);
 
     for (int i = 1; i < 200; ++i) {
       Portfolio pf = new Portfolio(i);
@@ -479,7 +479,7 @@ public abstract class NonDistinctOrderByTestImplementation {
     }
     // Create Indexes
 
-    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
+    createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
 
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
@@ -528,7 +528,7 @@ public abstract class NonDistinctOrderByTestImplementation {
 
   @Test
   public void testMultiColOrderByWithMultiIndexResultDefaultProjection() throws Exception {
-    String queries[] = {
+    String[] queries = {
         // Test case No. IUMR021
         "SELECT   * FROM " + SEPARATOR
             + "portfolio1 pf1 where pkid = '12' and ID > 10 order by ID desc, pkid asc ",
@@ -564,13 +564,13 @@ public abstract class NonDistinctOrderByTestImplementation {
             + "portfolio1 pf1 where pkid > '9' and ID != 10 order by ID desc, pkid desc limit 10",
 
     };
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Position.resetCounter();
     // Create Regions
 
-    Region r1 = this.createRegion("portfolio1", Portfolio.class);
+    Region r1 = createRegion("portfolio1", Portfolio.class);
 
     for (int i = 1; i < 200; ++i) {
       Portfolio pf = new Portfolio(i);
@@ -592,8 +592,8 @@ public abstract class NonDistinctOrderByTestImplementation {
     }
     // Create Indexes
 
-    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
-    this.createIndex("PKIDIndexPf1", IndexType.FUNCTIONAL, "pkid", SEPARATOR + "portfolio1");
+    createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
+    createIndex("PKIDIndexPf1", IndexType.FUNCTIONAL, "pkid", SEPARATOR + "portfolio1");
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -618,9 +618,8 @@ public abstract class NonDistinctOrderByTestImplementation {
           fail("Index is NOT uesd");
         }
 
-        Iterator itr = observer.indexesUsed.iterator();
-        while (itr.hasNext()) {
-          String indexUsed = itr.next().toString();
+        for (final Object o : observer.indexesUsed) {
+          String indexUsed = o.toString();
           if (!(indexUsed).equals("IDIndexPf1")) {
             fail("<IDIndexPf1> was expected but found " + indexUsed);
           }
@@ -644,7 +643,7 @@ public abstract class NonDistinctOrderByTestImplementation {
 
   @Test
   public void testMultiColOrderByWithMultiIndexResultProjection() throws Exception {
-    String queries[] = {
+    String[] queries = {
         // Test case No. IUMR021
         "SELECT   ID, description, createTime, pkid FROM " + SEPARATOR
             + "portfolio1 pf1 where pkid = '12' and ID > 10 order by ID desc, pkid asc ",
@@ -682,13 +681,13 @@ public abstract class NonDistinctOrderByTestImplementation {
 
     };
 
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Position.resetCounter();
     // Create Regions
 
-    Region r1 = this.createRegion("portfolio1", Portfolio.class);
+    Region r1 = createRegion("portfolio1", Portfolio.class);
 
     for (int i = 1; i < 200; ++i) {
       Portfolio pf = new Portfolio(i);
@@ -710,8 +709,8 @@ public abstract class NonDistinctOrderByTestImplementation {
     }
     // Create Indexes
 
-    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
-    this.createIndex("PKIDIndexPf1", IndexType.FUNCTIONAL, "pkid", SEPARATOR + "portfolio1");
+    createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
+    createIndex("PKIDIndexPf1", IndexType.FUNCTIONAL, "pkid", SEPARATOR + "portfolio1");
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -734,9 +733,8 @@ public abstract class NonDistinctOrderByTestImplementation {
         }
         assertTrue(!limitQuery || rcw.size() <= limit);
 
-        Iterator itr = observer.indexesUsed.iterator();
-        while (itr.hasNext()) {
-          String indexUsed = itr.next().toString();
+        for (final Object o : observer.indexesUsed) {
+          String indexUsed = o.toString();
           if (!(indexUsed).equals("IDIndexPf1")) {
             fail("<IDIndexPf1> was expected but found " + indexUsed);
           }
@@ -760,7 +758,7 @@ public abstract class NonDistinctOrderByTestImplementation {
 
   @Test
   public void testLimitNotAppliedIfOrderByNotUsingIndex() throws Exception {
-    String queries[] = {
+    String[] queries = {
         // Test case No. IUMR021
         "SELECT    description, pkid FROM " + SEPARATOR
             + "portfolio1 pf1 where pkid = '12' and ID > 10  order by pkid asc ",
@@ -797,13 +795,13 @@ public abstract class NonDistinctOrderByTestImplementation {
 
     };
 
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Position.resetCounter();
     // Create Regions
 
-    Region r1 = this.createRegion("portfolio1", Portfolio.class);
+    Region r1 = createRegion("portfolio1", Portfolio.class);
 
     for (int i = 1; i < 200; ++i) {
       Portfolio pf = new Portfolio(i);
@@ -825,7 +823,7 @@ public abstract class NonDistinctOrderByTestImplementation {
     }
     // Create Indexes
 
-    this.createIndex("PKIDIndexPf1", IndexType.FUNCTIONAL, "pkid", SEPARATOR + "portfolio1");
+    createIndex("PKIDIndexPf1", IndexType.FUNCTIONAL, "pkid", SEPARATOR + "portfolio1");
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -849,9 +847,8 @@ public abstract class NonDistinctOrderByTestImplementation {
 
         // assertTrue(!limitQuery || !observer.limitAppliedAtIndex);
 
-        Iterator itr = observer.indexesUsed.iterator();
-        while (itr.hasNext()) {
-          String indexUsed = itr.next().toString();
+        for (final Object o : observer.indexesUsed) {
+          String indexUsed = o.toString();
           if (!(indexUsed).equals("PKIDIndexPf1")) {
             fail("<PKIDIndexPf1> was expected but found " + indexUsed);
           }
@@ -880,7 +877,7 @@ public abstract class NonDistinctOrderByTestImplementation {
     // order by field
     // its null values are reported first and then the values in ascending
     // order.
-    String queries[] = {"SELECT   * FROM " + SEPARATOR + "portfolio1 pf1 order by pkid", // 0 null
+    String[] queries = {"SELECT   * FROM " + SEPARATOR + "portfolio1 pf1 order by pkid", // 0 null
         // values are
         // first in the
         // order.
@@ -916,14 +913,14 @@ public abstract class NonDistinctOrderByTestImplementation {
             + "portfolio1 pf1 where ID > 0 order by pkid, ID desc", // 11
     };
 
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
 
     // Create Regions
     final int size = 9;
     final int numNullValues = 3;
-    Region r1 = this.createRegion("portfolio1", Portfolio.class);
+    Region r1 = createRegion("portfolio1", Portfolio.class);
     for (int i = 1; i <= size; i++) {
       Portfolio pf = new Portfolio(i);
       // Add numNullValues null values.
@@ -1089,7 +1086,7 @@ public abstract class NonDistinctOrderByTestImplementation {
       list = results.asList();
       for (int i = 1; i <= size; i++) {
         Struct vals = (Struct) list.get((i - 1));
-        int id = ((Integer) vals.get("ID")).intValue();
+        int id = (Integer) vals.get("ID");
         String pkid = (String) vals.get("pkid");
 
         // ID should be one of 1, 2, 3 because of distinct
@@ -1118,7 +1115,7 @@ public abstract class NonDistinctOrderByTestImplementation {
 
       for (int i = 1; i <= list.size(); i++) {
         Struct vals = (Struct) list.get((i - 1));
-        int id = ((Integer) vals.get("ID")).intValue();
+        int id = (Integer) vals.get("ID");
         String pkid = (String) vals.get("pkid");
 
         if (i <= numNullValues) {
@@ -1145,7 +1142,7 @@ public abstract class NonDistinctOrderByTestImplementation {
 
       for (int i = 1; i <= list.size(); i++) {
         Struct vals = (Struct) list.get((i - 1));
-        int id = ((Integer) vals.get("ID")).intValue();
+        int id = (Integer) vals.get("ID");
         String pkid = (String) vals.get("pkid");
 
         if (i <= numNullValues) {
@@ -1172,7 +1169,7 @@ public abstract class NonDistinctOrderByTestImplementation {
 
       for (int i = 1; i <= list.size(); i++) {
         Struct vals = (Struct) list.get((i - 1));
-        int id = ((Integer) vals.get("ID")).intValue();
+        int id = (Integer) vals.get("ID");
         String pkid = (String) vals.get("pkid");
 
         if (i <= numNullValues) {
@@ -1201,7 +1198,7 @@ public abstract class NonDistinctOrderByTestImplementation {
     // order by field
     // its null values are reported first and then the values in ascending
     // order.
-    String queries[] =
+    String[] queries =
         {"SELECT   * FROM " + SEPARATOR + "portfolio1 pf1 where ID > 0 order by pkid", // 0
             // null
             // values
@@ -1245,14 +1242,14 @@ public abstract class NonDistinctOrderByTestImplementation {
             "SELECT   ID, pkid FROM " + SEPARATOR + "portfolio1 pf1 where ID > 0 order by pkid", // 9
         };
 
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
 
     // Create Regions
     final int size = 9;
     final int numNullValues = 3;
-    Region r1 = this.createRegion("portfolio1", Portfolio.class);
+    Region r1 = createRegion("portfolio1", Portfolio.class);
     for (int i = 1; i <= size; i++) {
       Portfolio pf = new Portfolio(i);
       // Add numNullValues null values.
@@ -1264,8 +1261,8 @@ public abstract class NonDistinctOrderByTestImplementation {
     }
 
     // Create Indexes
-    this.createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
-    this.createIndex("PKIDIndexPf1", IndexType.FUNCTIONAL, "pkid", SEPARATOR + "portfolio1");
+    createIndex("IDIndexPf1", IndexType.FUNCTIONAL, "ID", SEPARATOR + "portfolio1");
+    createIndex("PKIDIndexPf1", IndexType.FUNCTIONAL, "pkid", SEPARATOR + "portfolio1");
 
     Query q = null;
     SelectResults results = null;
@@ -1405,7 +1402,7 @@ public abstract class NonDistinctOrderByTestImplementation {
       list = results.asList();
       for (int i = 1; i <= size; i++) {
         Struct strct = (Struct) list.get(i - 1);
-        int id = ((Integer) strct.getFieldValues()[0]).intValue();
+        int id = (Integer) strct.getFieldValues()[0];
         // ID should be one of 1, 2, 3 because of distinct
         if (i <= numNullValues) {
           if (!(id == 1 || id == 2 || id == 3)) {
@@ -1426,7 +1423,7 @@ public abstract class NonDistinctOrderByTestImplementation {
       list = results.asList();
       for (int i = 1; i <= list.size(); i++) {
         Struct strct = (Struct) list.get(i - 1);
-        int id = ((Integer) strct.getFieldValues()[0]).intValue();
+        int id = (Integer) strct.getFieldValues()[0];
         if (id != (numNullValues + i)) {
           fail(" Value of ID is not as expected, " + id);
         }
@@ -1440,7 +1437,7 @@ public abstract class NonDistinctOrderByTestImplementation {
       list = results.asList();
       for (int i = 1; i <= size; i++) {
         Struct vals = (Struct) list.get((i - 1));
-        int id = ((Integer) vals.get("ID")).intValue();
+        int id = (Integer) vals.get("ID");
         String pkid = (String) vals.get("pkid");
 
         // ID should be one of 1, 2, 3 because of distinct
@@ -1469,7 +1466,7 @@ public abstract class NonDistinctOrderByTestImplementation {
 
       for (int i = 1; i <= list.size(); i++) {
         Struct vals = (Struct) list.get((i - 1));
-        int id = ((Integer) vals.get("ID")).intValue();
+        int id = (Integer) vals.get("ID");
         String pkid = (String) vals.get("pkid");
 
         if (i <= numNullValues) {
@@ -1495,7 +1492,7 @@ public abstract class NonDistinctOrderByTestImplementation {
 
   @Test
   public void testOrderByForUndefined() throws Exception {
-    String queries[] =
+    String[] queries =
         {"SELECT  position1.secId FROM " + SEPARATOR + "test ORDER BY position1.secId", // 0
             "SELECT  position1.secId FROM " + SEPARATOR + "test ORDER BY position1.secId desc", // 1
             "SELECT  position1.secId FROM " + SEPARATOR
@@ -1506,7 +1503,7 @@ public abstract class NonDistinctOrderByTestImplementation {
             "SELECT  position1.secId, ID FROM " + SEPARATOR
                 + "test ORDER BY position1.secId desc, ID",// 5
         };
-    Region r1 = this.createRegion("test", Portfolio.class);
+    Region r1 = createRegion("test", Portfolio.class);
     for (int i = 0; i < 10; i++) {
       Portfolio pf = new Portfolio(i);
       if (i % 2 == 0) {
@@ -1549,8 +1546,8 @@ public abstract class NonDistinctOrderByTestImplementation {
       }
     }
 
-    this.createIndex("secIndex", "position1.secId", r1.getFullPath());
-    this.createIndex("IDIndex", "ID", r1.getFullPath());
+    createIndex("secIndex", "position1.secId", r1.getFullPath());
+    createIndex("IDIndex", "ID", r1.getFullPath());
 
     for (int i = 0; i < queries.length; i++) {
       try {
@@ -1613,7 +1610,7 @@ public abstract class NonDistinctOrderByTestImplementation {
 
     @Override
     public void limitAppliedAtIndexLevel(Index index, int limit, Collection indexResult) {
-      this.limitAppliedAtIndex = true;
+      limitAppliedAtIndex = true;
     }
 
   }

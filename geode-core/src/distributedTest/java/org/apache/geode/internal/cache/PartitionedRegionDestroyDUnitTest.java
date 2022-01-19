@@ -46,7 +46,7 @@ import org.apache.geode.test.dunit.cache.CacheTestCase;
 
 public class PartitionedRegionDestroyDUnitTest extends CacheTestCase {
 
-  private static volatile CountDownLatch signalLatch = new CountDownLatch(1);
+  private static final CountDownLatch signalLatch = new CountDownLatch(1);
 
   private String prNamePrefix;
   private int numberOfRegions;
@@ -77,10 +77,10 @@ public class PartitionedRegionDestroyDUnitTest extends CacheTestCase {
 
   @Test
   public void testDestroyRegion() throws Exception {
-    vm0.invoke(() -> createPartitionedRegions());
-    vm1.invoke(() -> createPartitionedRegions());
-    vm2.invoke(() -> createPartitionedRegions());
-    vm3.invoke(() -> createPartitionedRegions());
+    vm0.invoke(this::createPartitionedRegions);
+    vm1.invoke(this::createPartitionedRegions);
+    vm2.invoke(this::createPartitionedRegions);
+    vm3.invoke(this::createPartitionedRegions);
 
     vm1.invoke(() -> {
       try (IgnoredException ie = addIgnoredException(RegionDestroyedException.class)) {
@@ -102,7 +102,7 @@ public class PartitionedRegionDestroyDUnitTest extends CacheTestCase {
         Cache cache = getCache();
 
         // Grab the regions right away, before they get destroyed by the other thread
-        PartitionedRegion regions[] = new PartitionedRegion[numberOfRegions];
+        PartitionedRegion[] regions = new PartitionedRegion[numberOfRegions];
         for (int i = 0; i < numberOfRegions; i++) {
           regions[i] = (PartitionedRegion) cache.getRegion(SEPARATOR + prNamePrefix + i);
           assertThat(regions[i]).isNotNull();
@@ -152,10 +152,10 @@ public class PartitionedRegionDestroyDUnitTest extends CacheTestCase {
 
     asyncVM2.await();
 
-    vm0.invoke(() -> validateMetaDataAfterDestroy());
-    vm1.invoke(() -> validateMetaDataAfterDestroy());
-    vm2.invoke(() -> validateMetaDataAfterDestroy());
-    vm3.invoke(() -> validateMetaDataAfterDestroy());
+    vm0.invoke(this::validateMetaDataAfterDestroy);
+    vm1.invoke(this::validateMetaDataAfterDestroy);
+    vm2.invoke(this::validateMetaDataAfterDestroy);
+    vm3.invoke(this::validateMetaDataAfterDestroy);
   }
 
   private void createPartitionedRegions() {

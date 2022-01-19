@@ -151,7 +151,7 @@ public class QueryServiceXmlIntegrationTest {
 
   private String getFilePath(String fileName) throws IOException {
     URL url = getClass().getResource(fileName);
-    File cacheXmlFile = this.temporaryFolder.newFile(fileName);
+    File cacheXmlFile = temporaryFolder.newFile(fileName);
     FileUtils.copyURLToFile(url, cacheXmlFile);
 
     return cacheXmlFile.getAbsolutePath();

@@ -49,7 +49,7 @@ public class OneTaskOnlyExecutor {
   private final ThreadsMonitoring threadMonitoring;
   private final ScheduledExecutorService ex;
   private ScheduledFuture<?> future = null;
-  private ConflatedTaskListener listener;
+  private final ConflatedTaskListener listener;
 
   public OneTaskOnlyExecutor(ScheduledExecutorService ex, ThreadsMonitoring tMonitoring) {
     this(ex, new ConflatedTaskListenerAdapter(), tMonitoring);
@@ -59,7 +59,7 @@ public class OneTaskOnlyExecutor {
       ThreadsMonitoring tMonitoring) {
     this.ex = ex;
     this.listener = listener;
-    this.threadMonitoring = tMonitoring;
+    threadMonitoring = tMonitoring;
   }
 
   /**
@@ -110,7 +110,7 @@ public class OneTaskOnlyExecutor {
           future.cancel(false);
           listener.taskDropped();
         }
-        future = ex.schedule(new DelegatingCallable<T>(callable), delay, unit);
+        future = ex.schedule(new DelegatingCallable<>(callable), delay, unit);
       } else {
         listener.taskDropped();
       }
@@ -174,13 +174,13 @@ public class OneTaskOnlyExecutor {
   }
 
   protected void beforeExecute() {
-    if (this.threadMonitoring != null) {
+    if (threadMonitoring != null) {
       threadMonitoring.startMonitor(ThreadsMonitoring.Mode.OneTaskOnlyExecutor);
     }
   }
 
   protected void afterExecute() {
-    if (this.threadMonitoring != null) {
+    if (threadMonitoring != null) {
       threadMonitoring.endMonitor();
     }
   }

@@ -89,13 +89,13 @@ public class RootRegionsExcludesHARegionsRegressionTest implements Serializable 
     regionName = uniqueName + "_region";
     hostName = getHostName();
 
-    port = server.invoke(() -> createServer());
-    client.invoke(() -> createCacheClient());
+    port = server.invoke(this::createServer);
+    client.invoke(this::createCacheClient);
   }
 
   @Test
   public void rootRegionsExcludesHARegions() {
-    server.invoke(() -> validateRootRegions());
+    server.invoke(this::validateRootRegions);
   }
 
   private int createServer() throws IOException {

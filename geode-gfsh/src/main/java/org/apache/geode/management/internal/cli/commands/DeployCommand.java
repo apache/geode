@@ -151,7 +151,7 @@ public class DeployCommand extends GfshCommand {
 
         // this deploys the jars to all the matching servers
         ResultCollector<?, ?> resultCollector =
-            executeFunction(this.deployFunction,
+            executeFunction(deployFunction,
                 new Object[] {jarNames, remoteStreams}, member);
 
         @SuppressWarnings("unchecked")
@@ -233,7 +233,7 @@ public class DeployCommand extends GfshCommand {
       // check if user wants to upload with the computed file size
       String message =
           "\nDeploying files: " + result.getFormattedFileList() + "\nTotal file size is: "
-              + this.numFormatter.format((double) result.computeFileSizeTotal() / ONE_MB)
+              + numFormatter.format((double) result.computeFileSizeTotal() / ONE_MB)
               + "MB\n\nContinue? ";
 
       if (readYesNo(message, Response.YES) == Response.NO) {

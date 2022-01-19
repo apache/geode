@@ -43,7 +43,7 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
   public MultiAttrDefinitionImpl(String name, StatisticInfo[] statInfo) {
     super();
     setStatisticInfo(statInfo);
-    this._name = name;
+    _name = name;
     _id = getName().toUpperCase().hashCode();
   }
 
@@ -77,18 +77,18 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
     }
     boolean result = false;
 
-    for (int i = 0; i < statisticInfo.length; i++) {
+    for (final StatisticInfo info : statisticInfo) {
 
-      if (statisticInfo[i] != null) {
-        Statistics[] temp = factory.findStatisticsByTextId(statisticInfo[i].getStatisticsTextId());
+      if (info != null) {
+        Statistics[] temp = factory.findStatisticsByTextId(info.getStatisticsTextId());
 
         if (temp == null || temp.length == 0) {
           return false;
         }
 
         StatisticDescriptor[] temp1 = temp[0].getType().getStatistics();
-        for (int j = 0; j < temp1.length; j++) {
-          if (statisticInfo[i].getStatisticName().equals(temp1[j].getName())) {
+        for (final StatisticDescriptor statisticDescriptor : temp1) {
+          if (info.getStatisticName().equals(statisticDescriptor.getName())) {
             result = true;
             break;
           }
@@ -104,12 +104,12 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
 
   @Override // GemStoneAddition
   public String toString() {
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
     buffer.append("Name:" + getName() + "\n");
     buffer.append("Attributes:\n");
     if (statisticInfo != null) {
-      for (int i = 0; i < statisticInfo.length; i++) {
-        buffer.append(statisticInfo[i].toString() + "\n");
+      for (final StatisticInfo info : statisticInfo) {
+        buffer.append(info.toString() + "\n");
       }
     }
 
@@ -118,12 +118,10 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
 
   @Override
   public String getStringRepresentation() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("StatAlertDefinition [\n");
-    buffer.append(toString());
-    buffer.append("]");
 
-    return buffer.toString();
+    return "StatAlertDefinition [\n"
+        + this
+        + "]";
   }
 
   /**
@@ -143,7 +141,7 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
    */
   @Override
   public void setName(String name) {
-    this._name = name;
+    _name = name;
   }
 
   @Override
@@ -196,7 +194,7 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
   }
 
   protected StatAlert getAlert(Number[] val) {
-    return new StatAlert(this.getId(), val);
+    return new StatAlert(getId(), val);
   }
 
   @Override
@@ -211,15 +209,15 @@ public class MultiAttrDefinitionImpl implements StatAlertDefinition {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this._name, out);
-    DataSerializer.writePrimitiveInt(this._id, out);
-    DataSerializer.writeObjectArray(this.statisticInfo, out);
+    DataSerializer.writeString(_name, out);
+    DataSerializer.writePrimitiveInt(_id, out);
+    DataSerializer.writeObjectArray(statisticInfo, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this._name = DataSerializer.readString(in);
-    this._id = DataSerializer.readPrimitiveInt(in);
-    this.statisticInfo = (StatisticInfo[]) DataSerializer.readObjectArray(in);
+    _name = DataSerializer.readString(in);
+    _id = DataSerializer.readPrimitiveInt(in);
+    statisticInfo = (StatisticInfo[]) DataSerializer.readObjectArray(in);
   }
 }

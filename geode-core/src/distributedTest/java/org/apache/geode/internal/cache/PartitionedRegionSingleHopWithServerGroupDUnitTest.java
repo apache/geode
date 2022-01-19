@@ -749,8 +749,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     PartitionedRegionSingleHopWithServerGroupDUnitTest.testRegion = regionFactory.create(PR_NAME);
     assertThat(PartitionedRegionSingleHopWithServerGroupDUnitTest.testRegion).isNotNull();
     logger.info("Partitioned Region " + PR_NAME + " created Successfully :"
-        + PartitionedRegionSingleHopWithServerGroupDUnitTest.testRegion
-            .toString());
+        + PartitionedRegionSingleHopWithServerGroupDUnitTest.testRegion);
 
     // creating colocated Regions
     customerRegion = createColocatedRegion(CUSTOMER, null, redundantCopies, numBuckets,
@@ -787,7 +786,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     regionFactory.setConcurrencyChecksEnabled(true);
     Region<K, V> region = regionFactory.create(regionName);
     assertThat(region).isNotNull();
-    logger.info("Partitioned Region " + regionName + " created Successfully :" + region.toString());
+    logger.info("Partitioned Region " + regionName + " created Successfully :" + region);
     return region;
   }
 
@@ -870,7 +869,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     Region<K, V> region = regionFactory.create(regionName);
     assertThat(region).isNotNull();
     logger
-        .info("Partitioned Region " + regionName + " created Successfully :" + region.toString());
+        .info("Partitioned Region " + regionName + " created Successfully :" + region);
     return region;
   }
 
@@ -956,7 +955,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     factory.setPoolName(poolName);
     Region<K, V> region = factory.create(regionName);
     assertThat(region).isNotNull();
-    logger.info("Distributed Region " + regionName + " created Successfully :" + region.toString());
+    logger.info("Distributed Region " + regionName + " created Successfully :" + region);
     return region;
   }
 
@@ -1005,7 +1004,7 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
     Region<K, V> tmpRegion = factory.create(regionName);
     assertThat(tmpRegion).isNotNull();
     logger.info(
-        "Distributed Region " + regionName + " created Successfully :" + tmpRegion.toString());
+        "Distributed Region " + regionName + " created Successfully :" + tmpRegion);
     return tmpRegion;
   }
 

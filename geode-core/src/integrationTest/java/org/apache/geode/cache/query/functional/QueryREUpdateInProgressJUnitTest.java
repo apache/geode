@@ -20,7 +20,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.Iterator;
 import java.util.Set;
 
 import org.junit.After;
@@ -440,9 +439,8 @@ public class QueryREUpdateInProgressJUnitTest {
     }
 
     // Set all RegionEntries to be updateInProgress.
-    Iterator entryItr = reg.entrySet().iterator();
-    while (entryItr.hasNext()) {
-      Region.Entry nonTxEntry = (Region.Entry) entryItr.next();
+    for (final Object o : reg.entrySet()) {
+      Region.Entry nonTxEntry = (Region.Entry) o;
       RegionEntry entry = ((NonTXEntry) nonTxEntry).getRegionEntry();
       entry.setUpdateInProgress(true);
       assertTrue(entry.isUpdateInProgress());

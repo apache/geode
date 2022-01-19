@@ -17,10 +17,10 @@ package com.examples.ds;
 public class Company {
 
   /** The name of this company */
-  private String name;
+  private final String name;
 
   /** The address of this company */
-  private Address address;
+  private final Address address;
 
   /**
    * Creates a new company
@@ -31,11 +31,11 @@ public class Company {
   }
 
   public String getName() {
-    return this.name;
+    return name;
   }
 
   public Address getAddress() {
-    return this.address;
+    return address;
   }
 
 }

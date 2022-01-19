@@ -51,7 +51,7 @@ public class Geode3544JUnitTest {
     }
 
     public EmpProfile(long in_data) {
-      this.data = in_data;
+      data = in_data;
     }
 
     public long getData() {
@@ -74,9 +74,9 @@ public class Geode3544JUnitTest {
     public EmpData(long in_data, short in_empId, Integer in_empNumber, long in_empAccount) {
       super(in_data);
 
-      this.empId = in_empId;
-      this.empNumber = in_empNumber;
-      this.empAccount = in_empAccount;
+      empId = in_empId;
+      empNumber = in_empNumber;
+      empAccount = in_empAccount;
 
     }
 
@@ -85,7 +85,7 @@ public class Geode3544JUnitTest {
         return true;
       }
       if (other instanceof EmpData) {
-        return this.getEmpId() == (((EmpData) other).getEmpId());
+        return getEmpId() == (((EmpData) other).getEmpId());
       }
       return true;
     }

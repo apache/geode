@@ -57,7 +57,7 @@ public class LuceneManagementDUnitTest extends ManagementTestBase {
 
     // Verify MBean is created in each managed node
     for (VM vm : getManagedNodeList()) {
-      vm.invoke(() -> verifyMBean());
+      vm.invoke(this::verifyMBean);
     }
 
     // Verify MBean proxies are created in the managing node
@@ -267,14 +267,14 @@ public class LuceneManagementDUnitTest extends ManagementTestBase {
     private String field0;
 
     public TestObject(String value) {
-      this.field0 = value;
+      field0 = value;
     }
 
     public TestObject() {}
 
     public String toString() {
-      return new StringBuilder().append(getClass().getSimpleName()).append("[").append("field0=")
-          .append(this.field0).append("]").toString();
+      return getClass().getSimpleName() + "[" + "field0="
+          + field0 + "]";
     }
 
     @Override

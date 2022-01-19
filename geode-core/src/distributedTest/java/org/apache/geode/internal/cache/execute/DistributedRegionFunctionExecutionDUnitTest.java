@@ -209,7 +209,7 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
     empty.invoke(() -> populateRegion(200));
 
     normal.invoke(() -> {
-      Throwable thrown = catchThrowable(() -> executeDistributedRegionFunction());
+      Throwable thrown = catchThrowable(this::executeDistributedRegionFunction);
 
       assertThat(thrown)
           .isInstanceOf(FunctionException.class)
@@ -231,7 +231,7 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
 
     empty.invoke(() -> populateRegion(200));
 
-    replicate1.invoke(() -> executeDistributedRegionFunction());
+    replicate1.invoke(this::executeDistributedRegionFunction);
   }
 
   @Test
@@ -328,7 +328,7 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
 
     empty.invoke(() -> populateRegion(200));
 
-    replicate1.invoke(() -> executeResultWithExceptionFunction());
+    replicate1.invoke(this::executeResultWithExceptionFunction);
   }
 
   @Test
@@ -345,7 +345,7 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
 
     empty.invoke(() -> populateRegion(200));
 
-    replicate1.invoke(() -> executeNoLastResultFunction());
+    replicate1.invoke(this::executeNoLastResultFunction);
   }
 
   @Test
@@ -485,7 +485,7 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
     empty.invoke(() -> populateRegion(200));
 
     AsyncInvocation<List<Boolean>> executeFunctionHaInEmptyVM =
-        empty.invokeAsync(() -> executeDistributedRegionFunction());
+        empty.invokeAsync(this::executeDistributedRegionFunction);
 
     replicate2.invoke(() -> {
       createCache(getDistributedSystemProperties());
@@ -634,10 +634,10 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
       populateClientRegion(200);
     });
 
-    replicate2.invoke(() -> stopServerHA());
+    replicate2.invoke(this::stopServerHA);
 
     AsyncInvocation<List<Boolean>> executeFunctionHaInClientVm =
-        client.invokeAsync(() -> executeDistributedRegionFunction());
+        client.invokeAsync(this::executeDistributedRegionFunction);
 
     replicate2.invoke(() -> {
       startServerHA();
@@ -648,7 +648,7 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
       LATCH.get().await(getTimeout().toMillis(), MILLISECONDS);
     });
 
-    emptyServer1.invoke(() -> closeCacheHA());
+    emptyServer1.invoke(this::closeCacheHA);
 
     List<Boolean> result = executeFunctionHaInClientVm.get();
 
@@ -689,7 +689,7 @@ public class DistributedRegionFunctionExecutionDUnitTest implements Serializable
 
       // add expected exception
       try (IgnoredException ie = addIgnoredException(FunctionException.class)) {
-        Throwable thrown = catchThrowable(() -> executeDistributedRegionFunction());
+        Throwable thrown = catchThrowable(this::executeDistributedRegionFunction);
 
         assertThat(thrown)
             .isInstanceOf(FunctionException.class)

@@ -57,9 +57,9 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
     this.region = region;
     if (regionEntry instanceof NonLocalRegionEntry) {
       this.regionEntry = (NonLocalRegionEntry) regionEntry;
-      this.startedLocal = false;
+      startedLocal = false;
     } else {
-      this.startedLocal = true;
+      startedLocal = true;
       // note we always make these non-local now to handle PR buckets moving
       // out from under this Region.Entry.
       if (regionEntry.hasStats()) {
@@ -78,7 +78,7 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
    * @since GemFire 6.0
    */
   public boolean wasInitiallyLocal() {
-    return this.startedLocal;
+    return startedLocal;
   }
 
   @Override
@@ -100,7 +100,7 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
   }
 
   public Object getRawValue(boolean forceCopy) {
-    Object v = this.regionEntry.getValue(null);
+    Object v = regionEntry.getValue(null);
     if (v == null) {
       return null;
     }
@@ -166,16 +166,16 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
 
   @Override
   public boolean isDestroyed() {
-    if (this.entryDestroyed) {
+    if (entryDestroyed) {
       return true;
     }
     if (region.isDestroyed()) {
-      this.entryDestroyed = true;
-    } else if (this.regionEntry.isRemoved()) {
-      this.entryDestroyed = true;
+      entryDestroyed = true;
+    } else if (regionEntry.isRemoved()) {
+      entryDestroyed = true;
     }
     // else the entry is somewhere else and we don't know if it's destroyed
-    return this.entryDestroyed;
+    return entryDestroyed;
   }
 
   @Override
@@ -192,7 +192,7 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
           String.format("Statistics disabled for region ' %s '",
               region.getFullPath()));
     }
-    return new CacheStatisticsImpl(this.regionEntry, region);
+    return new CacheStatisticsImpl(regionEntry, region);
   }
 
   @Override
@@ -201,18 +201,18 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
       return false;
     }
     EntrySnapshot ent = (EntrySnapshot) obj;
-    return this.regionEntry.getKey().equals(ent.getKey());
+    return regionEntry.getKey().equals(ent.getKey());
   }
 
   @Override
   public int hashCode() {
-    return this.regionEntry.getKey().hashCode();
+    return regionEntry.getKey().hashCode();
   }
 
   @Override
   public Object setValue(Object arg) {
-    Object returnValue = region.put(this.getKey(), arg);
-    this.regionEntry.setCachedValue(arg);
+    Object returnValue = region.put(getKey(), arg);
+    regionEntry.setCachedValue(arg);
     return returnValue;
   }
 
@@ -230,11 +230,11 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
 
   @Override
   public String toString() {
-    if (this.isDestroyed()) {
+    if (isDestroyed()) {
       return "EntrySnapshot(#destroyed#" + regionEntry.getKey() + "; version="
-          + this.getVersionTag() + ")";
+          + getVersionTag() + ")";
     } else {
-      return "EntrySnapshot(" + this.regionEntry + ")";
+      return "EntrySnapshot(" + regionEntry + ")";
     }
   }
 
@@ -245,7 +245,7 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
    * @return the underlying RegionEntry for this Entry
    */
   public RegionEntry getRegionEntry() {
-    return this.regionEntry;
+    return regionEntry;
   }
 
   // ////////////////////////////////////
@@ -264,35 +264,35 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
 
   public EntrySnapshot(DataInput in, LocalRegion region)
       throws IOException, ClassNotFoundException {
-    this.fromData(in);
+    fromData(in);
     this.region = region;
   }
 
   public void setRegion(LocalRegion r) {
-    this.region = r;
+    region = r;
   }
 
   public void setRegionEntry(NonLocalRegionEntry re) {
-    this.regionEntry = re;
+    regionEntry = re;
   }
 
   // when externalized, we write the state of a non-local RegionEntry so it
   // can be reconstituted anywhere
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeBoolean(this.regionEntry instanceof NonLocalRegionEntryWithStats);
-    this.regionEntry.toData(out);
+    out.writeBoolean(regionEntry instanceof NonLocalRegionEntryWithStats);
+    regionEntry.toData(out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.startedLocal = false;
+    startedLocal = false;
     boolean hasStats = in.readBoolean();
     if (hasStats) {
-      this.regionEntry = new NonLocalRegionEntryWithStats();
+      regionEntry = new NonLocalRegionEntryWithStats();
     } else {
-      this.regionEntry = new NonLocalRegionEntry();
+      regionEntry = new NonLocalRegionEntry();
     }
-    this.regionEntry.fromData(in);
+    regionEntry.fromData(in);
   }
 }

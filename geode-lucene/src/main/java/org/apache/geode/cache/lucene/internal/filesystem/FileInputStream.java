@@ -36,11 +36,11 @@ class FileInputStream extends SeekableInputStream {
   }
 
   public FileInputStream(FileInputStream other) {
-    this.file = other.file;
-    this.chunk = other.chunk;
-    this.chunkId = other.chunkId;
-    this.chunkPosition = other.chunkPosition;
-    this.open = other.open;
+    file = other.file;
+    chunk = other.chunk;
+    chunkId = other.chunkId;
+    chunkPosition = other.chunkPosition;
+    open = other.open;
   }
 
   @Override
@@ -64,8 +64,8 @@ class FileInputStream extends SeekableInputStream {
     int targetChunk = (int) (position / file.getChunkSize());
     int targetPosition = (int) (position % file.getChunkSize());
 
-    if (targetChunk != (this.chunkId - 1)) {
-      chunk = file.getFileSystem().getChunk(this.file, targetChunk);
+    if (targetChunk != (chunkId - 1)) {
+      chunk = file.getFileSystem().getChunk(file, targetChunk);
       chunkId = targetChunk + 1;
       chunkPosition = targetPosition;
     } else {
@@ -143,7 +143,7 @@ class FileInputStream extends SeekableInputStream {
   }
 
   private void nextChunk() {
-    chunk = file.getFileSystem().getChunk(this.file, chunkId++);
+    chunk = file.getFileSystem().getChunk(file, chunkId++);
     chunkPosition = 0;
   }
 

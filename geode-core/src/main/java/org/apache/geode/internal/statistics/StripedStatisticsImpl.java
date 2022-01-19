@@ -37,11 +37,11 @@ public class StripedStatisticsImpl extends StatisticsImpl {
 
     StatisticsTypeImpl realType = (StatisticsTypeImpl) type;
 
-    this.longCount = realType.getLongStatCount();
-    this.longAdders =
+    longCount = realType.getLongStatCount();
+    longAdders =
         Stream.generate(LongAdder::new).limit(realType.getLongStatCount())
             .toArray(LongAdder[]::new);
-    this.doubleAdders =
+    doubleAdders =
         Stream.generate(DoubleAdder::new).limit(realType.getDoubleStatCount())
             .toArray(DoubleAdder[]::new);
   }
@@ -56,7 +56,7 @@ public class StripedStatisticsImpl extends StatisticsImpl {
   }
 
   private int getOffsetFromDoubleId(int id) {
-    return id - this.longCount;
+    return id - longCount;
   }
 
   @Override

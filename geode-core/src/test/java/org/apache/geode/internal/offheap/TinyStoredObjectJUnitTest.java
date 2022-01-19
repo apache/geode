@@ -39,7 +39,7 @@ public class TinyStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
 
   @Override
   public Object getValue() {
-    return Integer.valueOf(123456789);
+    return 123456789;
   }
 
   @Override
@@ -133,7 +133,7 @@ public class TinyStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
   @Test
   public void twoAddressesAreNotEqualIfTheyAreNotTypeDataAsAddress() {
     TinyStoredObject address1 = new TinyStoredObject(10001L);
-    Long address2 = new Long(10002L);
+    Long address2 = 10002L;
 
     assertEquals("Two addresses are not equal if encoding address is not same", false,
         address1.equals(address2));

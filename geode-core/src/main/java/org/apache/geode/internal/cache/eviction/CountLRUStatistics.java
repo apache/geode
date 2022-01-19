@@ -63,52 +63,52 @@ public class CountLRUStatistics implements EvictionStats {
   private final Statistics stats;
 
   public CountLRUStatistics(StatisticsFactory factory, String name) {
-    this.stats = factory.createAtomicStatistics(statType, "LRUStatistics-" + name);
+    stats = factory.createAtomicStatistics(statType, "LRUStatistics-" + name);
   }
 
   @Override
   public Statistics getStatistics() {
-    return this.stats;
+    return stats;
   }
 
   @Override
   public void close() {
-    this.stats.close();
+    stats.close();
   }
 
   @Override
   public void incEvictions() {
-    this.stats.incLong(evictionsId, 1);
+    stats.incLong(evictionsId, 1);
   }
 
   @Override
   public void updateCounter(long delta) {
-    this.stats.incLong(counterId, delta);
+    stats.incLong(counterId, delta);
   }
 
   @Override
   public void incDestroys() {
-    this.stats.incLong(destroysId, 1);
+    stats.incLong(destroysId, 1);
   }
 
   @Override
   public void setLimit(long newValue) {
-    this.stats.setLong(limitId, newValue);
+    stats.setLong(limitId, newValue);
   }
 
   @Override
   public void setCounter(long newValue) {
-    this.stats.setLong(counterId, newValue);
+    stats.setLong(counterId, newValue);
   }
 
   @Override
   public void incEvaluations(long delta) {
-    this.stats.incLong(evaluationsId, delta);
+    stats.incLong(evaluationsId, delta);
   }
 
   @Override
   public void incGreedyReturns(long delta) {
-    this.stats.incLong(greedyReturnsId, delta);
+    stats.incLong(greedyReturnsId, delta);
   }
 
 }

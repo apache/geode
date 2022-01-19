@@ -112,19 +112,19 @@ public class RuleAndClassRuleTest {
     }
 
     private void beforeClass() {
-      this.beforeClassInvoked = true;
+      beforeClassInvoked = true;
     }
 
     private void afterClass() {
-      this.afterClassInvoked = true;
+      afterClassInvoked = true;
     }
 
     private void before() {
-      this.beforeInvoked = true;
+      beforeInvoked = true;
     }
 
     private void after() {
-      this.afterInvoked = true;
+      afterInvoked = true;
     }
   }
 

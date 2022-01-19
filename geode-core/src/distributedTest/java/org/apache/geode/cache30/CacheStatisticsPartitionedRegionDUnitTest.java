@@ -63,7 +63,7 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
    */
   @Test
   public void testHitMissCount() throws CacheException {
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     Object key = "KEY"; // value exists
     Object key2 = "KEY2"; // no entry
     Object key3 = "KEY3"; // entry, invalid
@@ -135,10 +135,10 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
   @Test
   public void testTimeStats() throws CacheException, InterruptedException {
     final long ESTAT_RES = 100; // the resolution, in ms, of entry stats
-    String name = this.getUniqueName();
-    Object key1 = Integer.valueOf(1);
-    Object key2 = Integer.valueOf(2);
-    Object missingKey = Integer.valueOf(999);
+    String name = getUniqueName();
+    Object key1 = 1;
+    Object key2 = 2;
+    Object missingKey = 999;
     Object value = "VALUE";
     long before;
     long after;
@@ -269,11 +269,11 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
    */
   @Test
   public void testDistributedStats() {
-    final String name = this.getUniqueName();
-    final Object key0 = Integer.valueOf(0);
-    final Object key1 = Integer.valueOf(1);
-    final Object key2 = Integer.valueOf(2);
-    final Object key3 = Integer.valueOf(3);
+    final String name = getUniqueName();
+    final Object key0 = 0;
+    final Object key1 = 1;
+    final Object key2 = 2;
+    final Object key3 = 3;
     final Object value = "VALUE";
     final Object value1 = "VALUE1";
     final Object value2 = "VALUE2";
@@ -444,7 +444,7 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
    */
   @Test
   public void testDisabledStatistics() throws CacheException {
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     Object key = "KEY";
     Object value = "VALUE";
 
@@ -452,13 +452,13 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
     factory.setStatisticsEnabled(false);
     Region region = createPartitionedRegion(name, factory.create());
 
-    assertThatThrownBy(() -> region.getStatistics())
+    assertThatThrownBy(region::getStatistics)
         .isInstanceOf(StatisticsDisabledException.class);
 
     region.put(key, value);
     Region.Entry entry = region.getEntry(key);
 
-    assertThatThrownBy(() -> entry.getStatistics()).isInstanceOf(StatisticsDisabledException.class);
+    assertThatThrownBy(entry::getStatistics).isInstanceOf(StatisticsDisabledException.class);
   }
 
   /**
@@ -466,9 +466,9 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
    */
   @Test
   public void testProxyRegionStats() throws CacheException {
-    String name = this.getUniqueName();
-    Object key = Integer.valueOf(0);
-    Object missingKey = Integer.valueOf(999);
+    String name = getUniqueName();
+    Object key = 0;
+    Object missingKey = 999;
     Object value = "VALUE";
 
     // Create the PARTITION_PROXY region

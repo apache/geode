@@ -28,7 +28,7 @@ public class UniquePortSupplier {
   private final Set<Integer> usedPorts = new HashSet<>();
 
   public UniquePortSupplier() {
-    supplier = () -> AvailablePortHelper.getRandomAvailableTCPPort();
+    supplier = AvailablePortHelper::getRandomAvailableTCPPort;
   }
 
   public UniquePortSupplier(IntSupplier supplier) {

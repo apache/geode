@@ -48,21 +48,21 @@ public class VMDistributedTest extends DistributedTestCase {
   public void testInvokeStaticBoolean() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
-    assertEquals(BOOLEAN_VALUE, (boolean) vm.invoke(() -> remoteBooleanMethod()));
+    assertEquals(BOOLEAN_VALUE, vm.invoke(VMDistributedTest::remoteBooleanMethod));
   }
 
   @Test
   public void testInvokeStaticByte() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
-    assertEquals(BYTE_VALUE, (byte) vm.invoke(() -> remoteByteMethod()));
+    assertEquals(BYTE_VALUE, (byte) vm.invoke(VMDistributedTest::remoteByteMethod));
   }
 
   @Test
   public void testInvokeStaticLong() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
-    assertEquals(LONG_VALUE, (long) vm.invoke(() -> remoteLongMethod()));
+    assertEquals(LONG_VALUE, (long) vm.invoke(VMDistributedTest::remoteLongMethod));
   }
 
   @Test
@@ -89,39 +89,39 @@ public class VMDistributedTest extends DistributedTestCase {
     final Host host = Host.getHost(0);
     final VM vm = host.getVM(0);
     // Assert class static invocation works
-    AsyncInvocation a1 = vm.invokeAsync(() -> getAndIncStaticCount());
+    AsyncInvocation a1 = vm.invokeAsync(VMDistributedTest::getAndIncStaticCount);
     a1.join();
-    assertEquals(new Integer(0), a1.getReturnValue());
+    assertEquals(0, a1.getReturnValue());
     // Assert class static invocation with args works
-    a1 = vm.invokeAsync(() -> incrementStaticCount(new Integer(2)));
+    a1 = vm.invokeAsync(() -> incrementStaticCount(2));
     a1.join();
-    assertEquals(new Integer(3), a1.getReturnValue());
+    assertEquals(3, a1.getReturnValue());
     // Assert that previous values are not returned when invoking method w/ no return val
-    a1 = vm.invokeAsync(() -> incStaticCount());
+    a1 = vm.invokeAsync(VMDistributedTest::incStaticCount);
     a1.join();
     assertNull(a1.getReturnValue());
     // Assert that previous null returns are over-written
-    a1 = vm.invokeAsync(() -> getAndIncStaticCount());
+    a1 = vm.invokeAsync(VMDistributedTest::getAndIncStaticCount);
     a1.join();
-    assertEquals(new Integer(4), a1.getReturnValue());
+    assertEquals(4, a1.getReturnValue());
 
     // Assert object method invocation works with zero arg method
     final VMTestObject o = new VMTestObject(0);
     a1 = vm.invokeAsync(o, "incrementAndGet", new Object[] {});
     a1.join();
-    assertEquals(new Integer(1), a1.getReturnValue());
+    assertEquals(1, a1.getReturnValue());
     // Assert object method invocation works with no return
-    a1 = vm.invokeAsync(o, "set", new Object[] {new Integer(3)});
+    a1 = vm.invokeAsync(o, "set", new Object[] {3});
     a1.join();
     assertNull(a1.getReturnValue());
   }
 
   private static Integer getAndIncStaticCount() {
-    return new Integer(COUNTER.getAndIncrement());
+    return COUNTER.getAndIncrement();
   }
 
   private static Integer incrementStaticCount(Integer inc) {
-    return new Integer(COUNTER.addAndGet(inc.intValue()));
+    return COUNTER.addAndGet(inc);
   }
 
   private static void incStaticCount() {
@@ -193,15 +193,15 @@ public class VMDistributedTest extends DistributedTestCase {
     }
 
     public Integer get() {
-      return new Integer(val.get());
+      return val.get();
     }
 
     public Integer incrementAndGet() {
-      return new Integer(val.incrementAndGet());
+      return val.incrementAndGet();
     }
 
     public void set(Integer newVal) {
-      val.set(newVal.intValue());
+      val.set(newVal);
     }
   }
 }

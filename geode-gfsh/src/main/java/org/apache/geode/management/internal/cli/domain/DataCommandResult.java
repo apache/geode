@@ -333,7 +333,7 @@ public class DataCommandResult implements Serializable {
   }
 
   public void setErorr(Throwable erorr) {
-    this.error = erorr;
+    error = erorr;
   }
 
   public String getErrorString() {
@@ -431,7 +431,7 @@ public class DataCommandResult implements Serializable {
 
         if (locations != null) {
           if (locations.size() == 1) {
-            Object array[] = locations.get(0);
+            Object[] array = locations.get(0);
             boolean found = (Boolean) array[1];
             if (found) {
               totalLocations++;
@@ -517,13 +517,13 @@ public class DataCommandResult implements Serializable {
         data.addData("Message", infoString);
       }
       if (inputQuery != null) {
-        if (this.limit > 0) {
-          data.addData("Limit", this.limit);
+        if (limit > 0) {
+          data.addData("Limit", limit);
         }
-        if (this.selectResult != null) {
-          data.addData(NUM_ROWS, this.selectResult.size());
-          if (this.queryTraceString != null) {
-            data.addData("Query Trace", this.queryTraceString);
+        if (selectResult != null) {
+          data.addData(NUM_ROWS, selectResult.size());
+          if (queryTraceString != null) {
+            data.addData("Query Trace", queryTraceString);
           }
           buildTable(table, 0, selectResult.size());
         }
@@ -578,7 +578,7 @@ public class DataCommandResult implements Serializable {
     private ArrayList<Object[]> locations = null;
 
     public void addLocation(Object[] locationArray) {
-      if (this.locations == null) {
+      if (locations == null) {
         locations = new ArrayList<>();
       }
 
@@ -655,12 +655,12 @@ public class DataCommandResult implements Serializable {
 
   public static class SelectResultRow implements Serializable {
     private static final long serialVersionUID = 1L;
-    private int type;
+    private final int type;
     private final Map<String, String> columnValues;
 
     public SelectResultRow(int type, Object value) {
       this.type = type;
-      this.columnValues = createColumnValues(value);
+      columnValues = createColumnValues(value);
     }
 
     public Map<String, String> getColumnValues() {
@@ -744,12 +744,12 @@ public class DataCommandResult implements Serializable {
       return;
     }
 
-    if (this.locateEntryLocations == null) {
+    if (locateEntryLocations == null) {
       locateEntryLocations = new ArrayList<>();
     }
 
     if (result == null) {// self-transform result from single to aggregate when numMember==1
-      if (this.locateEntryResult != null) {
+      if (locateEntryResult != null) {
         locateEntryLocations.add(locateEntryResult);
       }
       return;
@@ -767,7 +767,7 @@ public class DataCommandResult implements Serializable {
     }
 
     if (result.hasResultForAggregation) {
-      this.operationCompletedSuccessfully = true;
+      operationCompletedSuccessfully = true;
       infoString = result.infoString;
       if (result.locateEntryResult != null) {
         locateEntryLocations.add(result.locateEntryResult);

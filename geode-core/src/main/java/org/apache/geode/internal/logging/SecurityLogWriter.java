@@ -68,7 +68,7 @@ public class SecurityLogWriter extends LogWriterImpl implements InternalLogWrite
    */
   @Override
   public void put(final int messageLevel, final String message, final Throwable throwable) {
-    realLogWriter.put(messageLevel, new StringBuilder(SECURITY_PREFIX)
-        .append(levelToString(messageLevel)).append(" ").append(message).toString(), throwable);
+    realLogWriter.put(messageLevel, SECURITY_PREFIX
+        + levelToString(messageLevel) + " " + message, throwable);
   }
 }

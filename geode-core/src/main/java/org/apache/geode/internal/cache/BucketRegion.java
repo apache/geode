@@ -1235,7 +1235,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   public static class PrimaryMoveReadLockAcquired implements Serializable {
-  };
+  }
 
   private boolean wasPrimaryLockedPreviously(EntryEventImpl event) {
     return event.getCallbackArgument() instanceof PrimaryMoveReadLockAcquired;
@@ -1669,10 +1669,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     boolean needsPrEvent = (partitionedRegion.isInitialized() && callDispatchListenerEvent
         && partitionedRegion.shouldDispatchListenerEvent())
         || CacheClientNotifier.singletonHasClientProxies();
-    if (!needsPrEvent) {
-      return true;
-    }
-    return false;
+    return !needsPrEvent;
   }
 
   @Override

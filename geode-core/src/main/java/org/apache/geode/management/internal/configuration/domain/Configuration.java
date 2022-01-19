@@ -188,11 +188,11 @@ public class Configuration implements VersionedDataSerializable {
   }
 
   public void fromDataPre_GEODE_1_12_0_0(DataInput in) throws IOException, ClassNotFoundException {
-    this.configName = DataSerializer.readString(in);
-    this.cacheXmlFileName = DataSerializer.readString(in);
-    this.cacheXmlContent = DataSerializer.readString(in);
-    this.propertiesFileName = DataSerializer.readString(in);
-    this.gemfireProperties = DataSerializer.readProperties(in);
+    configName = DataSerializer.readString(in);
+    cacheXmlFileName = DataSerializer.readString(in);
+    cacheXmlContent = DataSerializer.readString(in);
+    propertiesFileName = DataSerializer.readString(in);
+    gemfireProperties = DataSerializer.readProperties(in);
     HashSet<String> jarNames = DataSerializer.readHashSet(in);
     jarNames.stream()
         .map(x -> new Deployment(x, null, null))

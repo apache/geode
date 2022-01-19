@@ -139,7 +139,7 @@ public class PutOp {
 
   protected static class PutOpImpl extends AbstractOp {
 
-    private Object key;
+    private final Object key;
 
 
     private LocalRegion region;
@@ -148,21 +148,21 @@ public class PutOp {
      * the operation will have either a region or a regionName. Names seem to be used by unit tests
      * to exercise operations without creating a real region
      */
-    private String regionName;
+    private final String regionName;
 
-    private Object value;
+    private final Object value;
 
     private boolean deltaSent = false;
 
-    private EntryEventImpl event;
+    private final EntryEventImpl event;
 
-    private Object callbackArg;
+    private final Object callbackArg;
 
-    private boolean prSingleHopEnabled;
+    private final boolean prSingleHopEnabled;
 
-    private boolean requireOldValue;
+    private final boolean requireOldValue;
 
-    private Object expectedOldValue;
+    private final Object expectedOldValue;
 
 
     public PutOpImpl(String regionName, Object key, Object value, byte[] deltaBytes,
@@ -314,7 +314,7 @@ public class PutOp {
 
     void checkForDeltaConflictAndSetVersionTag(VersionTag versionTag, Connection connection)
         throws Exception {
-      RegionEntry regionEntry = ((EntryEventImpl) event).getRegionEntry();
+      RegionEntry regionEntry = event.getRegionEntry();
       if (regionEntry == null) {
         event.setVersionTag(versionTag);
         return;

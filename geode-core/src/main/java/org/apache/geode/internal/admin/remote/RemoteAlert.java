@@ -48,7 +48,7 @@ public class RemoteAlert implements Alert {
     this.date = date;
     this.connectionName = connectionName;
     {
-      StringBuffer tmpSourceId = new StringBuffer();
+      StringBuilder tmpSourceId = new StringBuilder();
 
       tmpSourceId.append(threadName);
       if (tmpSourceId.length() > 0) {
@@ -56,16 +56,16 @@ public class RemoteAlert implements Alert {
       }
       tmpSourceId.append("tid=0x");
       tmpSourceId.append(Long.toHexString(tid));
-      this.sourceId = tmpSourceId.toString();
+      sourceId = tmpSourceId.toString();
     }
     {
-      StringBuffer tmpMessage = new StringBuffer();
+      StringBuilder tmpMessage = new StringBuilder();
       tmpMessage.append(msg);
       if (tmpMessage.length() > 0) {
         tmpMessage.append('\n');
       }
       tmpMessage.append(exceptionText);
-      this.message = tmpMessage.toString();
+      message = tmpMessage.toString();
     }
     this.sender = sender;
   }
@@ -128,7 +128,7 @@ public class RemoteAlert implements Alert {
 
     final int level = LogLevel.getLogWriterLevel(st.nextToken());
 
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append(st.nextToken());
     sb.append(" ");
     sb.append(st.nextToken());
@@ -142,13 +142,13 @@ public class RemoteAlert implements Alert {
 
     } catch (ParseException ex) {
       throw new IllegalArgumentException(
-          String.format("Invalidate timestamp: %s", sb.toString()));
+          String.format("Invalidate timestamp: %s", sb));
     }
 
     // Assume that the connection name is only one token...
     final String connectionName = st.nextToken();
 
-    sb = new StringBuffer();
+    sb = new StringBuilder();
     while (st.hasMoreTokens()) {
       sb.append(st.nextToken());
       sb.append(" ");

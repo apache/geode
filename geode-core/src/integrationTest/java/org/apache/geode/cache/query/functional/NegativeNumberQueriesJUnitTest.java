@@ -55,7 +55,7 @@ public class NegativeNumberQueriesJUnitTest {
   private DistributedSystem ds;
   private QueryService qs;
 
-  private int cnt = 1;
+  private final int cnt = 1;
 
   @Before
   public void setUp() throws Exception {

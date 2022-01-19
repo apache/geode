@@ -49,7 +49,7 @@ public interface AuthInitialize extends CacheCallback {
    *
    */
   default void init(LogWriter systemLogger, LogWriter securityLogger)
-      throws AuthenticationFailedException {};
+      throws AuthenticationFailedException {}
 
   /**
    *

@@ -37,7 +37,7 @@ public class LuceneTestSerializer implements LuceneSerializer {
   }
 
   public Properties getProperties() {
-    return this.props;
+    return props;
   }
 
   @Override

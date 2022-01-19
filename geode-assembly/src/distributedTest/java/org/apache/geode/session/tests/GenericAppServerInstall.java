@@ -67,7 +67,7 @@ public class GenericAppServerInstall extends ContainerInstall {
     }
   }
 
-  private GenericAppServerVersion version;
+  private final GenericAppServerVersion version;
 
   public GenericAppServerInstall(String name, GenericAppServerVersion version,
       ConnectionType connType, IntSupplier portSupplier) throws IOException, InterruptedException {

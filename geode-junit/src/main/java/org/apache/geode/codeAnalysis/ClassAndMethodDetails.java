@@ -89,7 +89,7 @@ public class ClassAndMethodDetails implements Comparable {
   public static String convertForStoring(ClassAndMethods cam) {
     StringBuilder sb = new StringBuilder(150);
     sb.append(cam.dclass.fullyQualifiedName());
-    List<CompiledMethod> methods = new ArrayList<CompiledMethod>(cam.methods.values());
+    List<CompiledMethod> methods = new ArrayList<>(cam.methods.values());
     Collections.sort(methods);
     sb.append(',').append(methods.size()).append("\n");
     for (CompiledMethod method : methods) {
@@ -115,6 +115,6 @@ public class ClassAndMethodDetails implements Comparable {
 
   @Override
   public int compareTo(Object other) {
-    return this.className.compareTo(((ClassAndMethodDetails) other).className);
+    return className.compareTo(((ClassAndMethodDetails) other).className);
   }
 }

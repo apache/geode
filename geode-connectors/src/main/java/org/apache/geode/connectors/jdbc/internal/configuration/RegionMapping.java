@@ -73,7 +73,7 @@ public class RegionMapping extends CacheElement {
     this.tableName = tableName;
     this.dataSourceName = dataSourceName;
     this.ids = ids;
-    this.specifiedIds = !StringUtils.isEmpty(ids);
+    specifiedIds = !StringUtils.isEmpty(ids);
     this.catalog = catalog;
     this.schema = schema;
   }
@@ -143,11 +143,11 @@ public class RegionMapping extends CacheElement {
   }
 
   public List<FieldMapping> getFieldMappings() {
-    return this.fieldMappings;
+    return fieldMappings;
   }
 
   public void addFieldMapping(FieldMapping value) {
-    this.fieldMappings.add(value);
+    fieldMappings.add(value);
   }
 
   @Override

@@ -58,7 +58,7 @@ public class ClientRegionGetRegressionTest implements Serializable {
   private int port;
   private VM server;
   private static DUnitBlackboard blackboard;
-  private String key = "KEY-1";
+  private final String key = "KEY-1";
 
   private static DUnitBlackboard getBlackboard() {
     if (blackboard == null) {
@@ -89,7 +89,7 @@ public class ClientRegionGetRegressionTest implements Serializable {
     uniqueName = getClass().getSimpleName() + "_" + testName.getMethodName();
     regionName = uniqueName + "_region";
 
-    port = server.invoke(() -> createServerCache());
+    port = server.invoke(this::createServerCache);
     createClientCache();
   }
 

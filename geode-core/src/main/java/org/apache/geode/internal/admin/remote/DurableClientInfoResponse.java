@@ -71,26 +71,26 @@ public class DurableClientInfoResponse extends AdminResponse {
   }
 
   boolean getResultBoolean() {
-    return this.returnVal;
+    return returnVal;
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeBoolean(this.returnVal);
+    out.writeBoolean(returnVal);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.returnVal = in.readBoolean();
+    returnVal = in.readBoolean();
   }
 
   @Override
   public String toString() {
-    return "DurableClientInfoResponse from " + this.getSender();
+    return "DurableClientInfoResponse from " + getSender();
   }
 
   @Override

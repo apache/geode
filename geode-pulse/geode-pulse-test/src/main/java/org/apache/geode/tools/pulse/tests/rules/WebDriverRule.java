@@ -33,7 +33,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 public class WebDriverRule extends ExternalResource {
   private WebDriver driver;
   static final int MAX_RETRIES = 10;
-  private String pulseUrl;
+  private final String pulseUrl;
   private String username;
   private String password;
 
@@ -48,7 +48,7 @@ public class WebDriverRule extends ExternalResource {
   }
 
   public WebDriver getDriver() {
-    return this.driver;
+    return driver;
   }
 
   public String getPulseURL() {

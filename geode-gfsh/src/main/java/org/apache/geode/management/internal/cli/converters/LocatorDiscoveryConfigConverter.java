@@ -35,7 +35,7 @@ public class LocatorDiscoveryConfigConverter extends BaseStringConverter {
 
   @Override
   public Set<String> getCompletionValues() {
-    final Set<String> locatorIdsAndNames = new TreeSet<String>();
+    final Set<String> locatorIdsAndNames = new TreeSet<>();
 
     final Gfsh gfsh = Gfsh.getCurrentInstance();
 

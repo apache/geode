@@ -132,7 +132,7 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
 
     @Override
     public int getProcessorId() {
-      return this.processorId;
+      return processorId;
     }
 
     @Override
@@ -140,12 +140,8 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
       final TXOriginatorRecoveryMessage msg = this;
 
       try {
-        dm.getExecutors().getWaitingThreadPool().execute(new Runnable() {
-          @Override
-          public void run() {
-            processTXOriginatorRecoveryMessage(dm, msg);
-          }
-        });
+        dm.getExecutors().getWaitingThreadPool().execute(
+            () -> processTXOriginatorRecoveryMessage(dm, msg));
       } catch (RejectedExecutionException e) {
         logger.debug("Rejected processing of <{}>", msg, e);
       }
@@ -239,27 +235,25 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.txLockId = (TXLockId) DataSerializer.readObject(in);
-      this.processorId = in.readInt();
+      txLockId = DataSerializer.readObject(in);
+      processorId = in.readInt();
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeObject(this.txLockId, out);
-      out.writeInt(this.processorId);
+      DataSerializer.writeObject(txLockId, out);
+      out.writeInt(processorId);
     }
 
     @Override
     public String toString() {
-      StringBuffer buff = new StringBuffer();
-      buff.append("TXOriginatorRecoveryMessage (txLockId='");
-      buff.append(this.txLockId);
-      buff.append("'; processorId=");
-      buff.append(this.processorId);
-      buff.append(")");
-      return buff.toString();
+      return "TXOriginatorRecoveryMessage (txLockId='"
+          + txLockId
+          + "'; processorId="
+          + processorId
+          + ")";
     }
   }
 
@@ -291,7 +285,7 @@ public class TXOriginatorRecoveryProcessor extends ReplyProcessor21 {
     @Override
     public String toString() {
       return "TXOriginatorRecoveryReplyMessage (processorId=" + super.processorId + "; txLockId="
-          + this.txLockId + "; sender=" + getSender() + ")";
+          + txLockId + "; sender=" + getSender() + ")";
     }
   }
 

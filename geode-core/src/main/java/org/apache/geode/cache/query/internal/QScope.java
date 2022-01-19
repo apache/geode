@@ -42,7 +42,7 @@ class QScope {
   }
 
   void setLimit(RuntimeIterator iter) {
-    this.limit = iter;
+    limit = iter;
   }
 
   RuntimeIterator getLimit() {

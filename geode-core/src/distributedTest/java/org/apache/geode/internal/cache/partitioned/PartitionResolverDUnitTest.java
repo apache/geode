@@ -87,12 +87,12 @@ public class PartitionResolverDUnitTest extends JUnit4CacheTestCase {
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.DISTRIBUTED_ACK);
     af = new AttributesFactory();
-    af.setPartitionAttributes(new PartitionAttributesFactory<CustId, Customer>()
+    af.setPartitionAttributes(new PartitionAttributesFactory<>()
         .setTotalNumBuckets(4).setLocalMaxMemory(isAccessor ? 0 : 1)
         .setPartitionResolver(new CountingResolver("CountingResolverCust"))
         .setRedundantCopies(redundantCopies).create());
     getCache().createRegion(CUSTOMER, af.create());
-    af.setPartitionAttributes(new PartitionAttributesFactory<OrderId, Order>().setTotalNumBuckets(4)
+    af.setPartitionAttributes(new PartitionAttributesFactory<>().setTotalNumBuckets(4)
         .setLocalMaxMemory(isAccessor ? 0 : 1)
         .setPartitionResolver(new CountingResolver("CountingResolverOrder"))
         .setRedundantCopies(redundantCopies).setColocatedWith(CUSTOMER).create());
@@ -473,9 +473,8 @@ public class PartitionResolverDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         Region r = PartitionRegionHelper.getLocalData(getGemfireCache().getRegion(CUSTOMER));
-        Iterator it = r.keySet().iterator();
-        while (it.hasNext()) {
-          if (it.next().equals(new CustId(6))) {
+        for (final Object o : r.keySet()) {
+          if (o.equals(new CustId(6))) {
             return 1;
           }
         }

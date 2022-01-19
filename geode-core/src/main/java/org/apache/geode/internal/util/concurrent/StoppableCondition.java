@@ -50,7 +50,7 @@ public class StoppableCondition implements java.io.Serializable {
    **/
   StoppableCondition(Condition c, CancelCriterion stopper) {
     Assert.assertTrue(stopper != null);
-    this.condition = c;
+    condition = c;
     this.stopper = stopper;
   }
 

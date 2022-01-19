@@ -28,26 +28,26 @@ public class RegionDescriptionPerMember implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private int size = 0;
-  private RegionAttributesInfo regionAttributesInfo;
-  private String hostingMember;
-  private String name;
+  private final RegionAttributesInfo regionAttributesInfo;
+  private final String hostingMember;
+  private final String name;
   private boolean isAccessor = false;
 
   public RegionDescriptionPerMember(Region<?, ?> region, String hostingMember) {
-    this.regionAttributesInfo = new RegionAttributesInfo(region.getAttributes());
+    regionAttributesInfo = new RegionAttributesInfo(region.getAttributes());
     this.hostingMember = hostingMember;
-    this.size = region.size();
-    this.name = region.getFullPath().substring(1);
+    size = region.size();
+    name = region.getFullPath().substring(1);
 
     // For the replicated proxy
-    if ((this.regionAttributesInfo.getDataPolicy().equals(DataPolicy.EMPTY)
-        && this.regionAttributesInfo.getScope().equals(Scope.DISTRIBUTED_ACK))) {
+    if ((regionAttributesInfo.getDataPolicy().equals(DataPolicy.EMPTY)
+        && regionAttributesInfo.getScope().equals(Scope.DISTRIBUTED_ACK))) {
       setAccessor(true);
     }
 
     // For the partitioned proxy
-    if (this.regionAttributesInfo.getPartitionAttributesInfo() != null
-        && this.regionAttributesInfo.getPartitionAttributesInfo().getLocalMaxMemory() == 0) {
+    if (regionAttributesInfo.getPartitionAttributesInfo() != null
+        && regionAttributesInfo.getPartitionAttributesInfo().getLocalMaxMemory() == 0) {
       setAccessor(true);
     }
   }
@@ -57,24 +57,24 @@ public class RegionDescriptionPerMember implements Serializable {
   }
 
   public int getSize() {
-    return this.size;
+    return size;
   }
 
   public String getName() {
-    return this.name;
+    return name;
   }
 
   public Scope getScope() {
-    return this.regionAttributesInfo.getScope();
+    return regionAttributesInfo.getScope();
   }
 
   public DataPolicy getDataPolicy() {
-    return this.regionAttributesInfo.getDataPolicy();
+    return regionAttributesInfo.getDataPolicy();
   }
 
   public Map<String, String> getNonDefaultRegionAttributes() {
-    this.regionAttributesInfo.getNonDefaultAttributes().put("size", Integer.toString(this.size));
-    return this.regionAttributesInfo.getNonDefaultAttributes();
+    regionAttributesInfo.getNonDefaultAttributes().put("size", Integer.toString(size));
+    return regionAttributesInfo.getNonDefaultAttributes();
   }
 
   public Map<String, String> getNonDefaultEvictionAttributes() {

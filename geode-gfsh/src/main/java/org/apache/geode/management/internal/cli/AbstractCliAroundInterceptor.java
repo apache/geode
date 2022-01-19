@@ -28,22 +28,22 @@ public abstract class AbstractCliAroundInterceptor implements CliAroundIntercept
   protected enum Response {
     YES("yes"), NO("no");
 
-    private String text;
+    private final String text;
 
-    private Response(String string) {
-      this.text = string;
+    Response(String string) {
+      text = string;
     }
 
     public String toString() {
-      return this.text;
+      return text;
     }
 
     public String toUpperPrompt() {
-      return this.text.substring(0, 1).toUpperCase();
+      return text.substring(0, 1).toUpperCase();
     }
 
     public String toLowerPrompt() {
-      return this.text.substring(0, 1).toLowerCase();
+      return text.substring(0, 1).toLowerCase();
     }
 
     public static Response fromString(final String text) {

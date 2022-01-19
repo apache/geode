@@ -121,41 +121,41 @@ public class Services<ID extends MemberIdentifier> implements DataSerializableFi
    * a timer used for membership tasks
    */
   public Timer getTimer() {
-    return this.timer;
+    return timer;
   }
 
   public boolean isStopped() {
-    return this.stopped;
+    return stopped;
   }
 
   /**
    * for testing only - create a non-functional Services object with a Stopper
    */
   public Services() {
-    this.cancelCriterion = new Stopper();
-    this.stats = null;
-    this.config = null;
-    this.manager = null;
-    this.joinLeave = null;
-    this.healthMon = null;
-    this.messenger = null;
-    this.auth = null;
-    this.serializer = null;
-    this.memberFactory = null;
+    cancelCriterion = new Stopper();
+    stats = null;
+    config = null;
+    manager = null;
+    joinLeave = null;
+    healthMon = null;
+    messenger = null;
+    auth = null;
+    serializer = null;
+    memberFactory = null;
   }
 
   public Services(Manager<ID> membershipManager, MembershipStatistics stats,
       final Authenticator<ID> authenticator, MembershipConfig membershipConfig,
       DSFIDSerializer serializer, MemberIdentifierFactory<ID> memberFactory,
       final TcpClient locatorClient, final TcpSocketCreator socketCreator) {
-    this.cancelCriterion = new Stopper();
+    cancelCriterion = new Stopper();
     this.stats = stats;
-    this.config = membershipConfig;
-    this.manager = membershipManager;
-    this.joinLeave = new GMSJoinLeave<>(locatorClient);
-    this.healthMon = new GMSHealthMonitor<>(socketCreator);
-    this.messenger = new JGroupsMessenger<>();
-    this.auth = authenticator;
+    config = membershipConfig;
+    manager = membershipManager;
+    joinLeave = new GMSJoinLeave<>(locatorClient);
+    healthMon = new GMSHealthMonitor<>(socketCreator);
+    messenger = new JGroupsMessenger<>();
+    auth = authenticator;
     this.serializer = serializer;
     this.memberFactory = memberFactory;
   }
@@ -190,10 +190,10 @@ public class Services<ID extends MemberIdentifier> implements DataSerializableFi
    * Initialize services - do this before invoking start()
    */
   public void init() throws MembershipConfigurationException {
-    this.messenger.init(this);
-    this.manager.init(this);
-    this.joinLeave.init(this);
-    this.healthMon.init(this);
+    messenger.init(this);
+    manager.init(this);
+    joinLeave.init(this);
+    healthMon.init(this);
   }
 
   /**
@@ -205,17 +205,17 @@ public class Services<ID extends MemberIdentifier> implements DataSerializableFi
     try {
       logger.info("Starting membership services");
       logger.debug("starting Messenger");
-      this.messenger.start();
+      messenger.start();
       logger.debug("starting JoinLeave");
-      this.joinLeave.start();
+      joinLeave.start();
       logger.debug("starting HealthMonitor");
-      this.healthMon.start();
+      healthMon.start();
       logger.debug("starting Manager");
-      this.manager.start();
-      this.messenger.started();
-      this.joinLeave.started();
-      this.healthMon.started();
-      this.manager.started();
+      manager.start();
+      messenger.started();
+      joinLeave.started();
+      healthMon.started();
+      manager.started();
 
       if (membershipLocator != null) {
         /*
@@ -224,7 +224,7 @@ public class Services<ID extends MemberIdentifier> implements DataSerializableFi
          * later in this method
          */
         final MembershipLocatorImpl locatorImpl =
-            (MembershipLocatorImpl) this.membershipLocator;
+            (MembershipLocatorImpl) membershipLocator;
         locatorImpl.setServices(this);
       }
 
@@ -235,16 +235,16 @@ public class Services<ID extends MemberIdentifier> implements DataSerializableFi
       throw e;
     } finally {
       if (!started) {
-        this.manager.stop();
-        this.healthMon.stop();
-        this.joinLeave.stop();
-        this.messenger.stop();
-        this.timer.cancel();
+        manager.stop();
+        healthMon.stop();
+        joinLeave.stop();
+        messenger.stop();
+        timer.cancel();
       }
     }
 
     try {
-      this.manager.joinDistributedSystem();
+      manager.joinDistributedSystem();
     } catch (Throwable e) {
       stop();
       throw e;
@@ -252,33 +252,33 @@ public class Services<ID extends MemberIdentifier> implements DataSerializableFi
   }
 
   public void setLocalAddress(ID address) {
-    this.messenger.setLocalAddress(address);
-    this.joinLeave.setLocalAddress(address);
-    this.healthMon.setLocalAddress(address);
-    this.manager.setLocalAddress(address);
+    messenger.setLocalAddress(address);
+    joinLeave.setLocalAddress(address);
+    healthMon.setLocalAddress(address);
+    manager.setLocalAddress(address);
   }
 
   public void emergencyClose() {
-    if (this.stopping) {
+    if (stopping) {
       return;
     }
-    this.stopping = true;
+    stopping = true;
     logger.info("Stopping membership services");
-    this.timer.cancel();
+    timer.cancel();
     try {
-      this.joinLeave.emergencyClose();
+      joinLeave.emergencyClose();
     } finally {
       try {
-        this.healthMon.emergencyClose();
+        healthMon.emergencyClose();
       } finally {
         try {
-          this.messenger.emergencyClose();
+          messenger.emergencyClose();
         } finally {
           try {
-            this.manager.emergencyClose();
+            manager.emergencyClose();
           } finally {
-            this.cancelCriterion.cancel("Membership services are shut down");
-            this.stopped = true;
+            cancelCriterion.cancel("Membership services are shut down");
+            stopped = true;
           }
         }
       }
@@ -286,28 +286,28 @@ public class Services<ID extends MemberIdentifier> implements DataSerializableFi
   }
 
   public void stop() {
-    if (this.stopping) {
+    if (stopping) {
       return;
     }
     logger.info("Stopping membership services");
-    this.stopping = true;
+    stopping = true;
     try {
-      this.timer.cancel();
+      timer.cancel();
     } finally {
       try {
-        this.joinLeave.stop();
+        joinLeave.stop();
       } finally {
         try {
-          this.healthMon.stop();
+          healthMon.stop();
         } finally {
           try {
-            this.messenger.stop();
+            messenger.stop();
           } finally {
             try {
-              this.manager.stop();
+              manager.stop();
             } finally {
-              this.cancelCriterion.cancel("Membership services are shut down");
-              this.stopped = true;
+              cancelCriterion.cancel("Membership services are shut down");
+              stopped = true;
             }
           }
         }
@@ -316,37 +316,37 @@ public class Services<ID extends MemberIdentifier> implements DataSerializableFi
   }
 
   public Authenticator<ID> getAuthenticator() {
-    return this.auth;
+    return auth;
   }
 
   public void installView(GMSMembershipView<ID> v) {
-    if (this.locator != null) {
-      this.locator.installView(v);
+    if (locator != null) {
+      locator.installView(v);
     }
-    this.healthMon.installView(v);
-    this.messenger.installView(v);
-    this.manager.installView(v);
+    healthMon.installView(v);
+    messenger.installView(v);
+    manager.installView(v);
   }
 
   public void memberSuspected(ID initiator,
       ID suspect, String reason) {
     try {
-      this.joinLeave.memberSuspected(initiator, suspect, reason);
+      joinLeave.memberSuspected(initiator, suspect, reason);
     } finally {
       try {
-        this.healthMon.memberSuspected(initiator, suspect, reason);
+        healthMon.memberSuspected(initiator, suspect, reason);
       } finally {
         try {
-          this.messenger.memberSuspected(initiator, suspect, reason);
+          messenger.memberSuspected(initiator, suspect, reason);
         } finally {
-          this.manager.memberSuspected(initiator, suspect, reason);
+          manager.memberSuspected(initiator, suspect, reason);
         }
       }
     }
   }
 
   public Manager<ID> getManager() {
-    return this.manager;
+    return manager;
   }
 
   public void setLocators(final Locator<ID> locator,
@@ -360,23 +360,23 @@ public class Services<ID extends MemberIdentifier> implements DataSerializableFi
   }
 
   public JoinLeave<ID> getJoinLeave() {
-    return this.joinLeave;
+    return joinLeave;
   }
 
   public HealthMonitor<ID> getHealthMonitor() {
-    return this.healthMon;
+    return healthMon;
   }
 
   public MembershipConfig getConfig() {
-    return this.config;
+    return config;
   }
 
   public Messenger<ID> getMessenger() {
-    return this.messenger;
+    return messenger;
   }
 
   public MembershipStatistics getStatistics() {
-    return this.stats;
+    return stats;
   }
 
   public MemberIdentifierFactory<ID> getMemberFactory() {
@@ -384,19 +384,19 @@ public class Services<ID extends MemberIdentifier> implements DataSerializableFi
   }
 
   public Stopper getCancelCriterion() {
-    return this.cancelCriterion;
+    return cancelCriterion;
   }
 
   public void setShutdownCause(Exception e) {
-    this.shutdownCause = e;
+    shutdownCause = e;
   }
 
   public Exception getShutdownCause() {
-    return this.shutdownCause;
+    return shutdownCause;
   }
 
   public boolean isShutdownDueToForcedDisconnect() {
-    return this.shutdownCause instanceof MemberDisconnectedException;
+    return shutdownCause instanceof MemberDisconnectedException;
   }
 
   public boolean isAutoReconnectEnabled() {
@@ -404,21 +404,21 @@ public class Services<ID extends MemberIdentifier> implements DataSerializableFi
   }
 
   public DSFIDSerializer getSerializer() {
-    return this.serializer;
+    return serializer;
   }
 
   public class Stopper {
     volatile String reasonForStopping = null;
 
     public void cancel(String reason) {
-      this.reasonForStopping = reason;
+      reasonForStopping = reason;
     }
 
     public String cancelInProgress() {
-      if (Services.this.shutdownCause != null) {
-        return Services.this.shutdownCause.toString();
+      if (shutdownCause != null) {
+        return shutdownCause.toString();
       }
-      return this.reasonForStopping;
+      return reasonForStopping;
     }
 
     public RuntimeException generateCancelledException(Throwable e) {

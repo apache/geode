@@ -41,15 +41,15 @@ public class CommandRequest {
   @VisibleForTesting
   public CommandRequest(final Map<String, String> env) {
     this.env = env;
-    this.fileList = null;
-    this.parseResult = null;
+    fileList = null;
+    parseResult = null;
     downloadFile = false;
   }
 
   public CommandRequest(final Map<String, String> env, final List<File> fileList) {
     this.env = env;
     this.fileList = fileList;
-    this.parseResult = null;
+    parseResult = null;
     downloadFile = false;
   }
 
@@ -62,7 +62,7 @@ public class CommandRequest {
     this.parseResult = parseResult;
 
     CliMetaData metaData = parseResult.getMethod().getDeclaredAnnotation(CliMetaData.class);
-    this.downloadFile = (metaData != null && metaData.isFileDownloadOverHttp());
+    downloadFile = (metaData != null && metaData.isFileDownloadOverHttp());
   }
 
 

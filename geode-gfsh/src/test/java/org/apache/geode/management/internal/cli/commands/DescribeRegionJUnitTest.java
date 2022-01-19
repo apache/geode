@@ -46,7 +46,7 @@ public class DescribeRegionJUnitTest {
   public static GfshParserRule gfsh = new GfshParserRule();
 
   private DescribeRegionCommand command;
-  private static String COMMAND = "describe region";
+  private static final String COMMAND = "describe region";
   private List<RegionDescriptionPerMember> functionResults;
   private static final String regionName = "testRegion";
 
@@ -137,7 +137,7 @@ public class DescribeRegionJUnitTest {
         .containsEntry("Data Policy", "normal")
         .extracting(DescribeRegionJUnitTest::extractHostingMembers)
         .asList()
-        .containsExactlyInAnyOrder("mockA", "mockB");;
+        .containsExactlyInAnyOrder("mockA", "mockB");
     commandAssert.hasTableSection("non-default-1").hasRowSize(3).hasColumns()
         .containsExactly("Type", "Name", "Value")
         .hasAnyRow().containsExactly("Region", "regKey", "regVal")

@@ -34,9 +34,9 @@ public class LocatorListResponse extends ServerLocationResponse {
   public LocatorListResponse() {}
 
   public LocatorListResponse(List<ServerLocation> locators, boolean isBalanced) {
-    this.controllers = locators;
+    controllers = locators;
     if (locators != null && !locators.isEmpty()) {
-      this.locatorsFound = true;
+      locatorsFound = true;
     }
     this.isBalanced = isBalanced;
   }
@@ -44,17 +44,17 @@ public class LocatorListResponse extends ServerLocationResponse {
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.controllers = SerializationHelper.readServerLocationList(in);
-    this.isBalanced = in.readBoolean();
-    if (this.controllers != null && !this.controllers.isEmpty()) {
-      this.locatorsFound = true;
+    controllers = SerializationHelper.readServerLocationList(in);
+    isBalanced = in.readBoolean();
+    if (controllers != null && !controllers.isEmpty()) {
+      locatorsFound = true;
     }
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    SerializationHelper.writeServerLocationList(this.controllers, out);
+    SerializationHelper.writeServerLocationList(controllers, out);
     out.writeBoolean(isBalanced);
   }
 
@@ -64,7 +64,7 @@ public class LocatorListResponse extends ServerLocationResponse {
    * @return list of controllers
    */
   public List<ServerLocation> getLocators() {
-    return this.controllers;
+    return controllers;
   }
 
   /**
@@ -89,7 +89,7 @@ public class LocatorListResponse extends ServerLocationResponse {
 
   @Override
   public boolean hasResult() {
-    return this.locatorsFound;
+    return locatorsFound;
   }
 
 }

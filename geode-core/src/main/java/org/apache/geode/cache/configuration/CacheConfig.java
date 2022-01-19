@@ -362,7 +362,7 @@ public class CacheConfig {
    *
    */
   public void setCacheTransactionManager(CacheTransactionManagerType value) {
-    this.cacheTransactionManager = value;
+    cacheTransactionManager = value;
   }
 
   /**
@@ -384,7 +384,7 @@ public class CacheConfig {
    *
    */
   public void setDynamicRegionFactory(DynamicRegionFactoryType value) {
-    this.dynamicRegionFactory = value;
+    dynamicRegionFactory = value;
   }
 
   /**
@@ -412,9 +412,9 @@ public class CacheConfig {
    */
   public List<GatewayHub> getGatewayHubs() {
     if (gatewayHubs == null) {
-      gatewayHubs = new ArrayList<GatewayHub>();
+      gatewayHubs = new ArrayList<>();
     }
-    return this.gatewayHubs;
+    return gatewayHubs;
   }
 
   /**
@@ -444,7 +444,7 @@ public class CacheConfig {
     if (gatewaySenders == null) {
       gatewaySenders = new ArrayList<>();
     }
-    return this.gatewaySenders;
+    return gatewaySenders;
   }
 
   /**
@@ -466,7 +466,7 @@ public class CacheConfig {
    *
    */
   public void setGatewayReceiver(GatewayReceiverConfig value) {
-    this.gatewayReceiver = value;
+    gatewayReceiver = value;
   }
 
   /**
@@ -488,7 +488,7 @@ public class CacheConfig {
    *
    */
   public void setGatewayConflictResolver(DeclarableType value) {
-    this.gatewayConflictResolver = value;
+    gatewayConflictResolver = value;
   }
 
   /**
@@ -516,9 +516,9 @@ public class CacheConfig {
    */
   public List<AsyncEventQueue> getAsyncEventQueues() {
     if (asyncEventQueues == null) {
-      asyncEventQueues = new ArrayList<AsyncEventQueue>();
+      asyncEventQueues = new ArrayList<>();
     }
-    return this.asyncEventQueues;
+    return asyncEventQueues;
   }
 
   /**
@@ -546,9 +546,9 @@ public class CacheConfig {
    */
   public List<CacheServer> getCacheServers() {
     if (cacheServers == null) {
-      cacheServers = new ArrayList<CacheServer>();
+      cacheServers = new ArrayList<>();
     }
-    return this.cacheServers;
+    return cacheServers;
   }
 
   /**
@@ -576,9 +576,9 @@ public class CacheConfig {
    */
   public List<PoolType> getPools() {
     if (pools == null) {
-      pools = new ArrayList<PoolType>();
+      pools = new ArrayList<>();
     }
-    return this.pools;
+    return pools;
   }
 
   /**
@@ -608,7 +608,7 @@ public class CacheConfig {
     if (diskStores == null) {
       diskStores = new ArrayList<>();
     }
-    return this.diskStores;
+    return diskStores;
   }
 
   /**
@@ -630,7 +630,7 @@ public class CacheConfig {
    *
    */
   public void setPdx(PdxType value) {
-    this.pdx = value;
+    pdx = value;
   }
 
   /**
@@ -658,9 +658,9 @@ public class CacheConfig {
    */
   public List<RegionAttributesType> getRegionAttributes() {
     if (regionAttributes == null) {
-      regionAttributes = new ArrayList<RegionAttributesType>();
+      regionAttributes = new ArrayList<>();
     }
-    return this.regionAttributes;
+    return regionAttributes;
   }
 
   /**
@@ -719,9 +719,9 @@ public class CacheConfig {
    */
   public List<RegionConfig> getRegions() {
     if (regions == null) {
-      regions = new ArrayList<RegionConfig>();
+      regions = new ArrayList<>();
     }
-    return this.regions;
+    return regions;
   }
 
   /**
@@ -743,7 +743,7 @@ public class CacheConfig {
    *
    */
   public void setFunctionService(FunctionServiceType value) {
-    this.functionService = value;
+    functionService = value;
   }
 
   /**
@@ -765,7 +765,7 @@ public class CacheConfig {
    *
    */
   public void setResourceManager(ResourceManagerType value) {
-    this.resourceManager = value;
+    resourceManager = value;
   }
 
   /**
@@ -787,7 +787,7 @@ public class CacheConfig {
    *
    */
   public void setSerializationRegistration(SerializationRegistrationType value) {
-    this.serializationRegistration = value;
+    serializationRegistration = value;
   }
 
   /**
@@ -815,9 +815,9 @@ public class CacheConfig {
    */
   public List<String> getBackups() {
     if (backups == null) {
-      backups = new ArrayList<String>();
+      backups = new ArrayList<>();
     }
-    return this.backups;
+    return backups;
   }
 
   /**
@@ -839,7 +839,7 @@ public class CacheConfig {
    *
    */
   public void setInitializer(DeclarableType value) {
-    this.initializer = value;
+    initializer = value;
   }
 
   /**
@@ -868,9 +868,9 @@ public class CacheConfig {
    */
   public List<CacheElement> getCustomCacheElements() {
     if (cacheElements == null) {
-      cacheElements = new ArrayList<CacheElement>();
+      cacheElements = new ArrayList<>();
     }
-    return this.cacheElements;
+    return cacheElements;
   }
 
   /**
@@ -892,7 +892,7 @@ public class CacheConfig {
    *
    */
   public void setCopyOnRead(Boolean value) {
-    this.copyOnRead = value;
+    copyOnRead = value;
   }
 
   /**
@@ -914,7 +914,7 @@ public class CacheConfig {
    *
    */
   public void setIsServer(Boolean value) {
-    this.isServer = value;
+    isServer = value;
   }
 
   /**
@@ -936,7 +936,7 @@ public class CacheConfig {
    *
    */
   public void setLockTimeout(String value) {
-    this.lockTimeout = value;
+    lockTimeout = value;
   }
 
   /**
@@ -958,7 +958,7 @@ public class CacheConfig {
    *
    */
   public void setLockLease(String value) {
-    this.lockLease = value;
+    lockLease = value;
   }
 
   /**
@@ -980,7 +980,7 @@ public class CacheConfig {
    *
    */
   public void setMessageSyncInterval(String value) {
-    this.messageSyncInterval = value;
+    messageSyncInterval = value;
   }
 
   /**
@@ -1002,7 +1002,7 @@ public class CacheConfig {
    *
    */
   public void setSearchTimeout(String value) {
-    this.searchTimeout = value;
+    searchTimeout = value;
   }
 
   /**
@@ -1028,7 +1028,7 @@ public class CacheConfig {
    *
    */
   public void setVersion(String value) {
-    this.version = value;
+    version = value;
   }
 
   // this supports looking for sub regions
@@ -1213,9 +1213,9 @@ public class CacheConfig {
      */
     public List<DeclarableType> getGatewayEventFilters() {
       if (gatewayEventFilters == null) {
-        gatewayEventFilters = new ArrayList<DeclarableType>();
+        gatewayEventFilters = new ArrayList<>();
       }
-      return this.gatewayEventFilters;
+      return gatewayEventFilters;
     }
 
     /**
@@ -1237,7 +1237,7 @@ public class CacheConfig {
      *
      */
     public void setGatewayEventSubstitutionFilter(DeclarableType value) {
-      this.gatewayEventSubstitutionFilter = value;
+      gatewayEventSubstitutionFilter = value;
     }
 
     /**
@@ -1259,7 +1259,7 @@ public class CacheConfig {
      *
      */
     public void setAsyncEventListener(DeclarableType value) {
-      this.asyncEventListener = value;
+      asyncEventListener = value;
     }
 
     /**
@@ -1282,7 +1282,7 @@ public class CacheConfig {
      *
      */
     public void setId(String value) {
-      this.id = value;
+      id = value;
     }
 
     /**
@@ -1304,7 +1304,7 @@ public class CacheConfig {
      *
      */
     public void setParallel(Boolean value) {
-      this.parallel = value;
+      parallel = value;
     }
 
     /**
@@ -1326,7 +1326,7 @@ public class CacheConfig {
      *
      */
     public void setBatchSize(String value) {
-      this.batchSize = value;
+      batchSize = value;
     }
 
     /**
@@ -1348,7 +1348,7 @@ public class CacheConfig {
      *
      */
     public void setBatchTimeInterval(String value) {
-      this.batchTimeInterval = value;
+      batchTimeInterval = value;
     }
 
     /**
@@ -1370,7 +1370,7 @@ public class CacheConfig {
      *
      */
     public void setEnableBatchConflation(Boolean value) {
-      this.enableBatchConflation = value;
+      enableBatchConflation = value;
     }
 
     /**
@@ -1392,7 +1392,7 @@ public class CacheConfig {
      *
      */
     public void setMaximumQueueMemory(String value) {
-      this.maximumQueueMemory = value;
+      maximumQueueMemory = value;
     }
 
     /**
@@ -1414,7 +1414,7 @@ public class CacheConfig {
      *
      */
     public void setPersistent(Boolean value) {
-      this.persistent = value;
+      persistent = value;
     }
 
     /**
@@ -1436,7 +1436,7 @@ public class CacheConfig {
      *
      */
     public void setDiskStoreName(String value) {
-      this.diskStoreName = value;
+      diskStoreName = value;
     }
 
     /**
@@ -1458,7 +1458,7 @@ public class CacheConfig {
      *
      */
     public void setDiskSynchronous(Boolean value) {
-      this.diskSynchronous = value;
+      diskSynchronous = value;
     }
 
     /**
@@ -1480,7 +1480,7 @@ public class CacheConfig {
      *
      */
     public void setDispatcherThreads(String value) {
-      this.dispatcherThreads = value;
+      dispatcherThreads = value;
     }
 
     /**
@@ -1502,7 +1502,7 @@ public class CacheConfig {
      *
      */
     public void setOrderPolicy(String value) {
-      this.orderPolicy = value;
+      orderPolicy = value;
     }
 
     /**
@@ -1528,7 +1528,7 @@ public class CacheConfig {
      *
      */
     public void setForwardExpirationDestroy(Boolean value) {
-      this.forwardExpirationDestroy = value;
+      forwardExpirationDestroy = value;
     }
 
   }
@@ -1579,7 +1579,7 @@ public class CacheConfig {
      *
      */
     public void setTcpNoDelay(Boolean value) {
-      this.tcpNoDelay = value;
+      tcpNoDelay = value;
     }
 
   }
@@ -1726,9 +1726,9 @@ public class CacheConfig {
      */
     public List<Gateway> getGateway() {
       if (gateways == null) {
-        gateways = new ArrayList<Gateway>();
+        gateways = new ArrayList<>();
       }
-      return this.gateways;
+      return gateways;
     }
 
     /**
@@ -1750,7 +1750,7 @@ public class CacheConfig {
      *
      */
     public void setId(String value) {
-      this.id = value;
+      id = value;
     }
 
     /**
@@ -1772,7 +1772,7 @@ public class CacheConfig {
      *
      */
     public void setBindAddress(String value) {
-      this.bindAddress = value;
+      bindAddress = value;
     }
 
     /**
@@ -1794,7 +1794,7 @@ public class CacheConfig {
      *
      */
     public void setMaximumTimeBetweenPings(String value) {
-      this.maximumTimeBetweenPings = value;
+      maximumTimeBetweenPings = value;
     }
 
     /**
@@ -1816,7 +1816,7 @@ public class CacheConfig {
      *
      */
     public void setPort(String value) {
-      this.port = value;
+      port = value;
     }
 
     /**
@@ -1838,7 +1838,7 @@ public class CacheConfig {
      *
      */
     public void setSocketBufferSize(String value) {
-      this.socketBufferSize = value;
+      socketBufferSize = value;
     }
 
     /**
@@ -1860,7 +1860,7 @@ public class CacheConfig {
      *
      */
     public void setStartupPolicy(String value) {
-      this.startupPolicy = value;
+      startupPolicy = value;
     }
 
     /**
@@ -1882,7 +1882,7 @@ public class CacheConfig {
      *
      */
     public void setManualStart(Boolean value) {
-      this.manualStart = value;
+      manualStart = value;
     }
 
     /**
@@ -1904,7 +1904,7 @@ public class CacheConfig {
      *
      */
     public void setMaxConnections(BigInteger value) {
-      this.maxConnections = value;
+      maxConnections = value;
     }
 
 
@@ -2024,9 +2024,9 @@ public class CacheConfig {
        */
       public List<GatewayEndpoint> getGatewayEndpoints() {
         if (gatewayEndpoints == null) {
-          gatewayEndpoints = new ArrayList<GatewayEndpoint>();
+          gatewayEndpoints = new ArrayList<>();
         }
-        return this.gatewayEndpoints;
+        return gatewayEndpoints;
       }
 
       /**
@@ -2054,9 +2054,9 @@ public class CacheConfig {
        */
       public List<DeclarableType> getGatewayListeners() {
         if (gatewayListeners == null) {
-          gatewayListeners = new ArrayList<DeclarableType>();
+          gatewayListeners = new ArrayList<>();
         }
-        return this.gatewayListeners;
+        return gatewayListeners;
       }
 
       /**
@@ -2078,7 +2078,7 @@ public class CacheConfig {
        *
        */
       public void setGatewayQueue(CacheConfig.GatewayHub.Gateway.GatewayQueue value) {
-        this.gatewayQueue = value;
+        gatewayQueue = value;
       }
 
       /**
@@ -2100,7 +2100,7 @@ public class CacheConfig {
        *
        */
       public void setEarlyAck(Boolean value) {
-        this.earlyAck = value;
+        earlyAck = value;
       }
 
       /**
@@ -2122,7 +2122,7 @@ public class CacheConfig {
        *
        */
       public void setId(String value) {
-        this.id = value;
+        id = value;
       }
 
       /**
@@ -2144,7 +2144,7 @@ public class CacheConfig {
        *
        */
       public void setSocketBufferSize(String value) {
-        this.socketBufferSize = value;
+        socketBufferSize = value;
       }
 
       /**
@@ -2166,7 +2166,7 @@ public class CacheConfig {
        *
        */
       public void setSocketReadTimeout(String value) {
-        this.socketReadTimeout = value;
+        socketReadTimeout = value;
       }
 
       /**
@@ -2188,7 +2188,7 @@ public class CacheConfig {
        *
        */
       public void setConcurrencyLevel(String value) {
-        this.concurrencyLevel = value;
+        concurrencyLevel = value;
       }
 
       /**
@@ -2210,7 +2210,7 @@ public class CacheConfig {
        *
        */
       public void setOrderPolicy(String value) {
-        this.orderPolicy = value;
+        orderPolicy = value;
       }
 
 
@@ -2265,7 +2265,7 @@ public class CacheConfig {
          *
          */
         public void setHost(String value) {
-          this.host = value;
+          host = value;
         }
 
         /**
@@ -2287,7 +2287,7 @@ public class CacheConfig {
          *
          */
         public void setId(String value) {
-          this.id = value;
+          id = value;
         }
 
         /**
@@ -2309,7 +2309,7 @@ public class CacheConfig {
          *
          */
         public void setPort(String value) {
-          this.port = value;
+          port = value;
         }
 
       }
@@ -2383,7 +2383,7 @@ public class CacheConfig {
          *
          */
         public void setAlertThreshold(String value) {
-          this.alertThreshold = value;
+          alertThreshold = value;
         }
 
         /**
@@ -2405,7 +2405,7 @@ public class CacheConfig {
          *
          */
         public void setBatchConflation(Boolean value) {
-          this.batchConflation = value;
+          batchConflation = value;
         }
 
         /**
@@ -2427,7 +2427,7 @@ public class CacheConfig {
          *
          */
         public void setBatchSize(String value) {
-          this.batchSize = value;
+          batchSize = value;
         }
 
         /**
@@ -2449,7 +2449,7 @@ public class CacheConfig {
          *
          */
         public void setBatchTimeInterval(String value) {
-          this.batchTimeInterval = value;
+          batchTimeInterval = value;
         }
 
         /**
@@ -2471,7 +2471,7 @@ public class CacheConfig {
          *
          */
         public void setEnablePersistence(Boolean value) {
-          this.enablePersistence = value;
+          enablePersistence = value;
         }
 
         /**
@@ -2493,7 +2493,7 @@ public class CacheConfig {
          *
          */
         public void setDiskStoreName(String value) {
-          this.diskStoreName = value;
+          diskStoreName = value;
         }
 
         /**
@@ -2515,7 +2515,7 @@ public class CacheConfig {
          *
          */
         public void setRollOplogs(Boolean value) {
-          this.rollOplogs = value;
+          rollOplogs = value;
         }
 
         /**
@@ -2537,7 +2537,7 @@ public class CacheConfig {
          *
          */
         public void setMaximumQueueMemory(String value) {
-          this.maximumQueueMemory = value;
+          maximumQueueMemory = value;
         }
 
         /**
@@ -2559,7 +2559,7 @@ public class CacheConfig {
          *
          */
         public void setOverflowDirectory(String value) {
-          this.overflowDirectory = value;
+          overflowDirectory = value;
         }
 
       }
@@ -2686,7 +2686,7 @@ public class CacheConfig {
       if (gatewayEventFilters == null) {
         gatewayEventFilters = new ArrayList<>();
       }
-      return this.gatewayEventFilters;
+      return gatewayEventFilters;
     }
 
     public boolean areGatewayEventFiltersUpdated() {
@@ -2712,7 +2712,7 @@ public class CacheConfig {
      *
      */
     public void setGatewayEventSubstitutionFilter(DeclarableType value) {
-      this.gatewayEventSubstitutionFilter = value;
+      gatewayEventSubstitutionFilter = value;
     }
 
     /**
@@ -2742,7 +2742,7 @@ public class CacheConfig {
       if (gatewayTransportFilters == null) {
         gatewayTransportFilters = new ArrayList<>();
       }
-      return this.gatewayTransportFilters;
+      return gatewayTransportFilters;
     }
 
     /**
@@ -2764,7 +2764,7 @@ public class CacheConfig {
      *
      */
     public void setId(String value) {
-      this.id = value;
+      id = value;
     }
 
     /**
@@ -2786,7 +2786,7 @@ public class CacheConfig {
      *
      */
     public void setRemoteDistributedSystemId(String value) {
-      this.remoteDistributedSystemId = value;
+      remoteDistributedSystemId = value;
     }
 
     public Boolean mustGroupTransactionEvents() {
@@ -2795,7 +2795,7 @@ public class CacheConfig {
 
 
     public void setGroupTransactionEvents(Boolean value) {
-      this.groupTransactionEvents = value;
+      groupTransactionEvents = value;
     }
 
     /**
@@ -2817,7 +2817,7 @@ public class CacheConfig {
      *
      */
     public void setParallel(Boolean value) {
-      this.parallel = value;
+      parallel = value;
     }
 
     /**
@@ -2839,7 +2839,7 @@ public class CacheConfig {
      *
      */
     public void setManualStart(Boolean value) {
-      this.manualStart = value;
+      manualStart = value;
     }
 
     /**
@@ -2861,7 +2861,7 @@ public class CacheConfig {
      *
      */
     public void setSocketBufferSize(String value) {
-      this.socketBufferSize = value;
+      socketBufferSize = value;
     }
 
     /**
@@ -2883,7 +2883,7 @@ public class CacheConfig {
      *
      */
     public void setSocketReadTimeout(String value) {
-      this.socketReadTimeout = value;
+      socketReadTimeout = value;
     }
 
     /**
@@ -2905,7 +2905,7 @@ public class CacheConfig {
      *
      */
     public void setEnableBatchConflation(Boolean value) {
-      this.enableBatchConflation = value;
+      enableBatchConflation = value;
     }
 
     /**
@@ -2927,7 +2927,7 @@ public class CacheConfig {
      *
      */
     public void setBatchSize(String value) {
-      this.batchSize = value;
+      batchSize = value;
     }
 
     /**
@@ -2949,7 +2949,7 @@ public class CacheConfig {
      *
      */
     public void setBatchTimeInterval(String value) {
-      this.batchTimeInterval = value;
+      batchTimeInterval = value;
     }
 
     /**
@@ -2971,7 +2971,7 @@ public class CacheConfig {
      *
      */
     public void setEnablePersistence(Boolean value) {
-      this.enablePersistence = value;
+      enablePersistence = value;
     }
 
     /**
@@ -2993,7 +2993,7 @@ public class CacheConfig {
      *
      */
     public void setDiskStoreName(String value) {
-      this.diskStoreName = value;
+      diskStoreName = value;
     }
 
     /**
@@ -3015,7 +3015,7 @@ public class CacheConfig {
      *
      */
     public void setDiskSynchronous(Boolean value) {
-      this.diskSynchronous = value;
+      diskSynchronous = value;
     }
 
     /**
@@ -3037,7 +3037,7 @@ public class CacheConfig {
      *
      */
     public void setMaximumQueueMemory(String value) {
-      this.maximumQueueMemory = value;
+      maximumQueueMemory = value;
     }
 
     /**
@@ -3059,7 +3059,7 @@ public class CacheConfig {
      *
      */
     public void setAlertThreshold(String value) {
-      this.alertThreshold = value;
+      alertThreshold = value;
     }
 
     /**
@@ -3081,7 +3081,7 @@ public class CacheConfig {
      *
      */
     public void setDispatcherThreads(String value) {
-      this.dispatcherThreads = value;
+      dispatcherThreads = value;
     }
 
     /**
@@ -3103,7 +3103,7 @@ public class CacheConfig {
      *
      */
     public void setOrderPolicy(String value) {
-      this.orderPolicy = value;
+      orderPolicy = value;
     }
 
     /**
@@ -3114,7 +3114,7 @@ public class CacheConfig {
      *
      */
     public void setEnforceThreadsConnectSameReceiver(Boolean value) {
-      this.enforceThreadsConnectSameReceiver = value;
+      enforceThreadsConnectSameReceiver = value;
     }
 
     /**
@@ -3125,7 +3125,7 @@ public class CacheConfig {
      *
      */
     public Boolean getEnforceThreadsConnectSameReceiver() {
-      return this.enforceThreadsConnectSameReceiver;
+      return enforceThreadsConnectSameReceiver;
     }
   }
 

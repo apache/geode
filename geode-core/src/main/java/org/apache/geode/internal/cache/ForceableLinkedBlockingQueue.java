@@ -174,7 +174,7 @@ public class ForceableLinkedBlockingQueue<E> extends AbstractQueue<E>
   private void enqueue(E x) {
     // assert putLock.isHeldByCurrentThread();
     // assert last.next == null;
-    last = last.next = new Node<E>(x);
+    last = last.next = new Node<>(x);
   }
 
   /**
@@ -236,7 +236,7 @@ public class ForceableLinkedBlockingQueue<E> extends AbstractQueue<E>
       throw new IllegalArgumentException();
     }
     this.capacity = capacity;
-    last = head = new Node<E>(null);
+    last = head = new Node<>(null);
   }
 
 
@@ -882,7 +882,7 @@ public class ForceableLinkedBlockingQueue<E> extends AbstractQueue<E>
     s.defaultReadObject();
 
     count.set(0);
-    last = head = new Node<E>(null);
+    last = head = new Node<>(null);
 
     // Read in all elements and place in queue
     for (;;) {

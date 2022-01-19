@@ -163,16 +163,16 @@ public class CreateBucketMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.bucketId = in.readInt();
-    this.bucketSize = in.readInt();
+    bucketId = in.readInt();
+    bucketSize = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.bucketId);
-    out.writeInt(this.bucketSize);
+    out.writeInt(bucketId);
+    out.writeInt(bucketSize);
   }
 
 
@@ -184,8 +184,8 @@ public class CreateBucketMessage extends PartitionMessage {
   @Override
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
-    buff.append("; bucketId=").append(this.bucketId).append("; bucketSize=")
-        .append(this.bucketSize);
+    buff.append("; bucketId=").append(bucketId).append("; bucketSize=")
+        .append(bucketSize);
   }
 
   @Override
@@ -244,7 +244,7 @@ public class CreateBucketMessage extends PartitionMessage {
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE,
             "CreateBucketReplyMessage process invoking reply processor with processorId:"
-                + this.processorId);
+                + processorId);
       }
 
       if (processor == null) {
@@ -289,8 +289,8 @@ public class CreateBucketMessage extends PartitionMessage {
 
     @Override
     public String toString() {
-      return new StringBuffer().append("CreateBucketReplyMessage ").append("processorid=")
-          .append(this.processorId).toString();
+      return "CreateBucketReplyMessage " + "processorid="
+          + processorId;
     }
   }
 
@@ -314,8 +314,7 @@ public class CreateBucketMessage extends PartitionMessage {
     public void process(DistributionMessage msg) {
       try {
         if (msg instanceof CreateBucketReplyMessage) {
-          CreateBucketReplyMessage reply = (CreateBucketReplyMessage) msg;
-          this.msg = reply;
+          this.msg = (CreateBucketReplyMessage) msg;
           if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
             logger.trace(LogMarker.DM_VERBOSE, "NodeResponse return value is ");
           }
@@ -362,7 +361,7 @@ public class CreateBucketMessage extends PartitionMessage {
         }
         e.handleCause();
       }
-      CreateBucketReplyMessage message = this.msg;
+      CreateBucketReplyMessage message = msg;
       if (message == null) {
         return null;
       } else {

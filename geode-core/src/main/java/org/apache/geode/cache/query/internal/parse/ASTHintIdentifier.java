@@ -41,6 +41,6 @@ public class ASTHintIdentifier extends GemFireAST {
   @Override
   public void compile(QCompiler compiler) {
     super.compile(compiler);
-    compiler.setHintIdentifier(this.getText());
+    compiler.setHintIdentifier(getText());
   }
 }

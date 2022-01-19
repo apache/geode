@@ -53,7 +53,7 @@ public class CacheRegionsReliablityStatsCheckDUnitTest extends JUnit4CacheTestCa
     final String regionLimitedAccess = "regionLimitedAccess";
     final String regionFullAccess = "regionFullAccess";
     // final String regionNameRoleA = "roleA";
-    String requiredRoles[] = {rr1};
+    String[] requiredRoles = {rr1};
     Cache myCache = getCache();
 
     MembershipAttributes ra =

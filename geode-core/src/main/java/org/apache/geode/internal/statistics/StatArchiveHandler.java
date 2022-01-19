@@ -79,7 +79,7 @@ public class StatArchiveHandler implements SampleHandler {
   public StatArchiveHandler(StatArchiveHandlerConfig config, SampleCollector sampleCollector,
       RollingFileHandler rollingFileHandler) {
     this.config = config;
-    this.collector = sampleCollector;
+    collector = sampleCollector;
     this.rollingFileHandler = rollingFileHandler;
   }
 
@@ -105,24 +105,24 @@ public class StatArchiveHandler implements SampleHandler {
   }
 
   private void handleArchiverException(GemFireException ex) {
-    if (this.archiver.getSampleCount() > 0) {
+    if (archiver.getSampleCount() > 0) {
       StringWriter sw = new StringWriter();
       ex.printStackTrace(new PrintWriter(sw, true));
       logger.warn(LogMarker.STATISTICS_MARKER, "Statistic archiver shutting down because: {}", sw);
     }
     try {
-      this.archiver.close();
-    } catch (GemFireException ignore) {
-      if (this.archiver.getSampleCount() > 0) {
+      archiver.close();
+    } catch (GemFireException e) {
+      if (archiver.getSampleCount() > 0) {
         logger.warn(LogMarker.STATISTICS_MARKER, "Statistic archiver shutdown failed because: {}",
-            ignore.getMessage());
+            e.getMessage());
       }
     }
-    if (this.archiver.getSampleCount() == 0 && this.archiveId != -1) {
+    if (archiver.getSampleCount() == 0 && archiveId != -1) {
       // dec since we didn't use the file and close deleted it.
-      this.archiveId--;
+      archiveId--;
     }
-    this.archiver = null;
+    archiver = null;
   }
 
   @Override
@@ -163,7 +163,7 @@ public class StatArchiveHandler implements SampleHandler {
         }
       } else {
         // Check to see if archiving is enabled.
-        if (!this.config.getArchiveFileName().getPath().equals("")) {
+        if (!config.getArchiveFileName().getPath().equals("")) {
           // It is enabled so we must not have an archiver due to an exception.
           // So try to recreate the archiver. See bug 46917.
           try {
@@ -176,7 +176,7 @@ public class StatArchiveHandler implements SampleHandler {
   }
 
   void assertInitialized() {
-    if (archiver == null && !this.config.getArchiveFileName().getPath().equals("")) {
+    if (archiver == null && !config.getArchiveFileName().getPath().equals("")) {
       throw new IllegalStateException("This " + this + " was not initialized");
     }
   }
@@ -230,20 +230,18 @@ public class StatArchiveHandler implements SampleHandler {
    * Returns the configuration for this handler.
    */
   public StatArchiveHandlerConfig getStatArchiveHandlerConfig() {
-    return this.config;
+    return config;
   }
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder(getClass().getName());
-    sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("config=").append(this.config);
-    sb.append(", archiveDir=").append(this.archiveDir);
-    sb.append(", mainArchiveId=").append(this.mainArchiveId);
-    sb.append(", archiveId=").append(this.archiveId);
-    sb.append(", archiver=").append(this.archiver);
-    sb.append("}");
-    return sb.toString();
+    return getClass().getName() + "@" + System.identityHashCode(this) + "{"
+        + "config=" + config
+        + ", archiveDir=" + archiveDir
+        + ", mainArchiveId=" + mainArchiveId
+        + ", archiveId=" + archiveId
+        + ", archiver=" + archiver
+        + "}";
   }
 
   /**
@@ -262,7 +260,7 @@ public class StatArchiveHandler implements SampleHandler {
   }
 
   protected boolean isArchiving() {
-    return this.archiver != null && this.archiver.bytesWritten() > 0;
+    return archiver != null && archiver.bytesWritten() > 0;
   }
 
   /**
@@ -282,7 +280,7 @@ public class StatArchiveHandler implements SampleHandler {
    *
    */
   private void changeArchiveFile(boolean resetHandler, long nanosTimeStamp) {
-    changeArchiveFile(this.config.getArchiveFileName(), resetHandler, nanosTimeStamp);
+    changeArchiveFile(config.getArchiveFileName(), resetHandler, nanosTimeStamp);
   }
 
   /**
@@ -309,13 +307,13 @@ public class StatArchiveHandler implements SampleHandler {
     boolean archiveClosed = false;
     if (newFile.getPath().equals("")) {
       // disable archiving
-      if (!this.disabledArchiving) {
-        this.disabledArchiving = true;
+      if (!disabledArchiving) {
+        disabledArchiving = true;
         logger.info(LogMarker.STATISTICS_MARKER, "Disabling statistic archival.");
       }
     } else {
-      this.disabledArchiving = false;
-      if (this.config.getArchiveFileSizeLimit() != 0) {
+      disabledArchiving = false;
+      if (config.getArchiveFileSizeLimit() != 0) {
         // To fix bug 51133 need to always write to newFile.
         // Need to close any existing archive and then rename it
         // to getRollingArchiveName(newFile).
@@ -327,21 +325,21 @@ public class StatArchiveHandler implements SampleHandler {
                 logger.trace(LogMarker.STATISTICS_VERBOSE,
                     "StatArchiveHandler#changeArchiveFile removing handler");
               }
-              this.collector.removeSampleHandler(this);
+              collector.removeSampleHandler(this);
             }
             try {
               archiver.close();
-            } catch (GemFireException ignore) {
+            } catch (GemFireException e) {
               logger.warn(LogMarker.STATISTICS_MARKER,
                   "Statistic archive close failed because: {}",
-                  ignore.getMessage());
+                  e.getMessage());
             }
           }
         }
       }
       if (newFile.exists()) {
         File oldFile;
-        if (this.config.getArchiveFileSizeLimit() != 0) {
+        if (config.getArchiveFileSizeLimit() != 0) {
           oldFile = getRollingArchiveName(newFile, archiveClosed);
         } else {
           oldFile = getRenameArchiveName(newFile);
@@ -355,21 +353,21 @@ public class StatArchiveHandler implements SampleHandler {
         }
       } else {
         if (!newFile.getAbsoluteFile().getParentFile().equals(archiveDir)) {
-          this.archiveDir = newFile.getAbsoluteFile().getParentFile();
-          if (!this.archiveDir.exists()) {
-            this.archiveDir.mkdirs();
+          archiveDir = newFile.getAbsoluteFile().getParentFile();
+          if (!archiveDir.exists()) {
+            archiveDir.mkdirs();
           }
         }
-        if (this.config.getArchiveFileSizeLimit() != 0) {
+        if (config.getArchiveFileSizeLimit() != 0) {
           initMainArchiveId(newFile);
         }
       }
       try {
         StatArchiveDescriptor archiveDescriptor = new StatArchiveDescriptor.Builder()
-            .setArchiveName(newFile.getAbsolutePath()).setSystemId(this.config.getSystemId())
-            .setSystemStartTime(this.config.getSystemStartTime())
-            .setSystemDirectoryPath(this.config.getSystemDirectoryPath())
-            .setProductDescription(this.config.getProductDescription()).build();
+            .setArchiveName(newFile.getAbsolutePath()).setSystemId(config.getSystemId())
+            .setSystemStartTime(config.getSystemStartTime())
+            .setSystemDirectoryPath(config.getSystemDirectoryPath())
+            .setProductDescription(config.getProductDescription()).build();
         newArchiver = new StatArchiveWriter(archiveDescriptor);
         newArchiver.initialize(nanosTimeStamp);
       } catch (GemFireIOException ex) {
@@ -383,7 +381,7 @@ public class StatArchiveHandler implements SampleHandler {
     synchronized (this) {
       if (archiveClosed) {
         if (archiver != null) {
-          removeOldArchives(newFile, this.config.getArchiveDiskSpaceLimit());
+          removeOldArchives(newFile, config.getArchiveDiskSpaceLimit());
         }
       } else {
         if (resetHandler) {
@@ -391,17 +389,17 @@ public class StatArchiveHandler implements SampleHandler {
             logger.trace(LogMarker.STATISTICS_VERBOSE,
                 "StatArchiveHandler#changeArchiveFile removing handler");
           }
-          this.collector.removeSampleHandler(this);
+          collector.removeSampleHandler(this);
         }
         if (archiver != null) {
           try {
             archiver.close();
-          } catch (GemFireException ignore) {
+          } catch (GemFireException e) {
             logger.warn(LogMarker.STATISTICS_MARKER,
                 "Statistic archive close failed because: {}",
-                ignore.getMessage());
+                e.getMessage());
           }
-          removeOldArchives(newFile, this.config.getArchiveDiskSpaceLimit());
+          removeOldArchives(newFile, config.getArchiveDiskSpaceLimit());
         }
       }
       archiver = newArchiver;
@@ -410,7 +408,7 @@ public class StatArchiveHandler implements SampleHandler {
           logger.trace(LogMarker.STATISTICS_VERBOSE,
               "StatArchiveHandler#changeArchiveFile adding handler");
         }
-        this.collector.addSampleHandler(this);
+        collector.addSampleHandler(this);
       }
     }
   }
@@ -449,13 +447,13 @@ public class StatArchiveHandler implements SampleHandler {
         if (!archiveDir.exists()) {
           archiveDir.mkdirs();
         }
-        mainArchiveId = this.rollingFileHandler.calcNextMainId(archiveDir, false);
+        mainArchiveId = rollingFileHandler.calcNextMainId(archiveDir, false);
         mainArchiveIdCalculated = true;
       }
       if (mainArchiveId == 0) {
         mainArchiveId = 1;
       }
-      archiveId = this.rollingFileHandler.calcNextChildId(archive, mainArchiveId);
+      archiveId = rollingFileHandler.calcNextChildId(archive, mainArchiveId);
       if (archiveId > 0) {
         archiveId--;
       }
@@ -463,14 +461,14 @@ public class StatArchiveHandler implements SampleHandler {
     File result = null;
     do {
       archiveId++;
-      StringBuffer buf = new StringBuffer(archive.getPath());
+      StringBuilder buf = new StringBuilder(archive.getPath());
       int insertIdx = buf.lastIndexOf(".");
       if (insertIdx == -1) {
-        buf.append(this.rollingFileHandler.formatId(mainArchiveId))
-            .append(this.rollingFileHandler.formatId(archiveId));
+        buf.append(rollingFileHandler.formatId(mainArchiveId))
+            .append(rollingFileHandler.formatId(archiveId));
       } else {
-        buf.insert(insertIdx, this.rollingFileHandler.formatId(archiveId));
-        buf.insert(insertIdx, this.rollingFileHandler.formatId(mainArchiveId));
+        buf.insert(insertIdx, rollingFileHandler.formatId(archiveId));
+        buf.insert(insertIdx, rollingFileHandler.formatId(mainArchiveId));
       }
       result = new File(buf.toString());
     } while (result.exists());
@@ -482,10 +480,9 @@ public class StatArchiveHandler implements SampleHandler {
         // strip the extension off
         markerName = markerName.substring(0, dotIdx);
       }
-      StringBuffer buf = new StringBuffer(markerName);
-      buf.append(this.rollingFileHandler.formatId(mainArchiveId))
-          .append(this.rollingFileHandler.formatId(0)).append(".marker");
-      File marker = new File(buf.toString());
+      final String buf = markerName + rollingFileHandler.formatId(mainArchiveId)
+          + rollingFileHandler.formatId(0) + ".marker";
+      File marker = new File(buf);
       if (marker.exists()) {
         if (!marker.delete()) {
           // could not delete it; nothing to be done
@@ -503,10 +500,9 @@ public class StatArchiveHandler implements SampleHandler {
         // strip the extension off
         markerName = markerName.substring(0, dotIdx);
       }
-      StringBuffer buf = new StringBuffer(markerName);
-      buf.append(this.rollingFileHandler.formatId(mainArchiveId))
-          .append(this.rollingFileHandler.formatId(0)).append(".marker");
-      File marker = new File(buf.toString());
+      final String buf = markerName + rollingFileHandler.formatId(mainArchiveId)
+          + rollingFileHandler.formatId(0) + ".marker";
+      File marker = new File(buf);
       if (!marker.exists()) {
         try {
           if (!marker.createNewFile()) {
@@ -539,7 +535,7 @@ public class StatArchiveHandler implements SampleHandler {
       if (!archiveDir.exists()) {
         archiveDir.mkdirs();
       }
-      mainArchiveId = this.rollingFileHandler.calcNextMainId(archiveDir, false);
+      mainArchiveId = rollingFileHandler.calcNextMainId(archiveDir, false);
       mainArchiveId++;
       mainArchiveIdCalculated = true;
     }
@@ -555,10 +551,9 @@ public class StatArchiveHandler implements SampleHandler {
       // strip the extension off
       markerName = markerName.substring(0, dotIdx);
     }
-    StringBuffer buf = new StringBuffer(markerName);
-    buf.append(this.rollingFileHandler.formatId(mainArchiveId))
-        .append(this.rollingFileHandler.formatId(0)).append(".marker");
-    File marker = new File(buf.toString());
+    final String buf = markerName + rollingFileHandler.formatId(mainArchiveId)
+        + rollingFileHandler.formatId(0) + ".marker";
+    File marker = new File(buf);
     if (!marker.exists()) {
       try {
         if (!marker.createNewFile()) {
@@ -582,7 +577,7 @@ public class StatArchiveHandler implements SampleHandler {
    */
   File getRenameArchiveName(File archive) {
     File dir = archive.getAbsoluteFile().getParentFile();
-    int previousMainId = this.rollingFileHandler.calcNextMainId(dir, false);
+    int previousMainId = rollingFileHandler.calcNextMainId(dir, false);
     if (previousMainId == 0) {
       previousMainId = 1;
     }
@@ -590,14 +585,14 @@ public class StatArchiveHandler implements SampleHandler {
     File result = null;
     do {
       previousMainId++;
-      StringBuffer buf = new StringBuffer(archive.getPath());
+      StringBuilder buf = new StringBuilder(archive.getPath());
       int insertIdx = buf.lastIndexOf(".");
       if (insertIdx == -1) {
-        buf.append(this.rollingFileHandler.formatId(previousMainId))
-            .append(this.rollingFileHandler.formatId(1));
+        buf.append(rollingFileHandler.formatId(previousMainId))
+            .append(rollingFileHandler.formatId(1));
       } else {
-        buf.insert(insertIdx, this.rollingFileHandler.formatId(1));
-        buf.insert(insertIdx, this.rollingFileHandler.formatId(previousMainId));
+        buf.insert(insertIdx, rollingFileHandler.formatId(1));
+        buf.insert(insertIdx, rollingFileHandler.formatId(previousMainId));
       }
       result = new File(buf.toString());
     } while (result.exists());
@@ -617,7 +612,7 @@ public class StatArchiveHandler implements SampleHandler {
       return;
     }
     File archiveDir = archiveFile.getAbsoluteFile().getParentFile();
-    this.rollingFileHandler.checkDiskSpace("archive", archiveFile, spaceLimit, archiveDir,
+    rollingFileHandler.checkDiskSpace("archive", archiveFile, spaceLimit, archiveDir,
         getOrCreateLogWriter());
   }
 

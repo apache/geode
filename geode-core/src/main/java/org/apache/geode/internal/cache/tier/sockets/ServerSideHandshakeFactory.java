@@ -88,7 +88,7 @@ class ServerSideHandshakeFactory {
       SocketAddress sa = socket.getRemoteSocketAddress();
       String sInfo = "";
       if (sa != null) {
-        sInfo = " Client: " + sa.toString() + ".";
+        sInfo = " Client: " + sa + ".";
       }
       throw new UnsupportedVersionException(
           KnownVersion.unsupportedVersionMessage(clientVersionOrdinal) + sInfo);

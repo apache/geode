@@ -52,7 +52,7 @@ public class RemoveHealthListenerRequest extends AdminRequest {
    */
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    return RemoveHealthListenerResponse.create(dm, this.getSender(), this.id);
+    return RemoveHealthListenerResponse.create(dm, getSender(), id);
   }
 
   @Override
@@ -64,18 +64,18 @@ public class RemoveHealthListenerRequest extends AdminRequest {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.id);
+    out.writeInt(id);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.id = in.readInt();
+    id = in.readInt();
   }
 
   @Override
   public String toString() {
-    return "RemoveHealthListenerRequest from " + this.getRecipient() + " id=" + this.id;
+    return "RemoveHealthListenerRequest from " + getRecipient() + " id=" + id;
   }
 }

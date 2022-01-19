@@ -29,47 +29,47 @@ public class ConfigSource implements Serializable {
 
   public enum Type {
     API, SYSTEM_PROPERTY, FILE, SECURE_FILE, XML, RUNTIME, LAUNCHER
-  };
+  }
 
   private final Type type;
   private final String description;
 
   private ConfigSource(Type t) {
-    this.type = t;
+    type = t;
     switch (t) {
       case API:
-        this.description = "api";
+        description = "api";
         break;
       case SYSTEM_PROPERTY:
-        this.description = "system property";
+        description = "system property";
         break;
       case FILE:
-        this.description = "file";
+        description = "file";
         break;
       case SECURE_FILE:
-        this.description = "secure file";
+        description = "secure file";
         break;
       case XML:
-        this.description = "cache.xml";
+        description = "cache.xml";
         break;
       case RUNTIME:
-        this.description = "runtime modification";
+        description = "runtime modification";
         break;
       case LAUNCHER:
-        this.description = "launcher";
+        description = "launcher";
         break;
       default:
-        this.description = "";
+        description = "";
     }
   }
 
   private ConfigSource(String fileName, boolean secure) {
     if (secure) {
-      this.type = Type.SECURE_FILE;
-      this.description = (fileName == null) ? "secure file" : fileName;
+      type = Type.SECURE_FILE;
+      description = (fileName == null) ? "secure file" : fileName;
     } else {
-      this.type = Type.FILE;
-      this.description = (fileName == null) ? "file" : fileName;
+      type = Type.FILE;
+      description = (fileName == null) ? "file" : fileName;
     }
   }
 
@@ -77,11 +77,11 @@ public class ConfigSource implements Serializable {
    * @return returns the type of this source
    */
   public Type getType() {
-    return this.type;
+    return type;
   }
 
   public String getDescription() {
-    return this.description;
+    return description;
   }
 
   @Immutable
@@ -146,6 +146,6 @@ public class ConfigSource implements Serializable {
 
   @Override
   public String toString() {
-    return this.description;
+    return description;
   }
 }

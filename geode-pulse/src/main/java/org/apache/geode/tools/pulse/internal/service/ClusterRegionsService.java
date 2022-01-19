@@ -63,7 +63,7 @@ public class ClusterRegionsService implements PulseService {
   }
 
   // Comparator based upon regions entry count
-  private static Comparator<Cluster.Region> regionEntryCountComparator = (r1, r2) -> {
+  private static final Comparator<Cluster.Region> regionEntryCountComparator = (r1, r2) -> {
     long r1Cnt = r1.getSystemRegionEntryCount();
     long r2Cnt = r2.getSystemRegionEntryCount();
     return Long.compare(r1Cnt, r2Cnt);

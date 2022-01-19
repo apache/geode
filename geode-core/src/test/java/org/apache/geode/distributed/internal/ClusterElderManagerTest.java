@@ -159,7 +159,7 @@ public class ClusterElderManagerTest {
     assertThatInterruptableRunnableWaits(() -> {
       try {
         clusterElderManager.waitForElder(member0);
-      } catch (InterruptedException e) {
+      } catch (InterruptedException ignored) {
       }
     });
   }
@@ -283,7 +283,7 @@ public class ClusterElderManagerTest {
     assertThatInterruptableRunnableWaits(() -> {
       try {
         clusterElderManager.getElderState(true);
-      } catch (InterruptedException e) {
+      } catch (InterruptedException ignored) {
       }
     });
 

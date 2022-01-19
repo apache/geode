@@ -133,7 +133,7 @@ public class ServerDenyList {
 
 
   private class ExpireDenyListTask extends PoolTask {
-    private ServerLocation location;
+    private final ServerLocation location;
 
     ExpireDenyListTask(ServerLocation location) {
       this.location = location;

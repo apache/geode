@@ -311,8 +311,8 @@ public class XmlUtils {
    *
    */
   public static class XPathContext implements NamespaceContext {
-    private HashMap<String, String> prefixToUri = new HashMap<>();
-    private HashMap<String, String> uriToPrefix = new HashMap<>();
+    private final HashMap<String, String> prefixToUri = new HashMap<>();
+    private final HashMap<String, String> uriToPrefix = new HashMap<>();
 
 
     public XPathContext() {}
@@ -322,8 +322,8 @@ public class XmlUtils {
     }
 
     public void addNamespace(String prefix, String uri) {
-      this.prefixToUri.put(prefix, uri);
-      this.uriToPrefix.put(uri, prefix);
+      prefixToUri.put(prefix, uri);
+      uriToPrefix.put(uri, prefix);
     }
 
     @Override
@@ -458,7 +458,7 @@ public class XmlUtils {
     // update the schemaLocation attribute
     Node schemaLocationAttr = root.getAttributeNodeNS(W3C_XML_SCHEMA_INSTANCE_NS_URI,
         W3C_XML_SCHEMA_INSTANCE_ATTRIBUTE_SCHEMA_LOCATION);
-    String xsiPrefix = findPrefix(root, W3C_XML_SCHEMA_INSTANCE_NS_URI);;
+    String xsiPrefix = findPrefix(root, W3C_XML_SCHEMA_INSTANCE_NS_URI);
     Map<String, String> uriToLocation = new HashMap<>();
     if (schemaLocationAttr != null) {
       uriToLocation = buildSchemaLocationMap(schemaLocationAttr.getNodeValue());

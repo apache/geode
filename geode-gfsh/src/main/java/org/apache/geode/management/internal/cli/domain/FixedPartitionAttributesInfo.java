@@ -23,22 +23,22 @@ import org.apache.geode.cache.FixedPartitionAttributes;
 public class FixedPartitionAttributesInfo implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  private boolean isPrimary;
-  private String partitionName;
-  private int numBuckets;
+  private final boolean isPrimary;
+  private final String partitionName;
+  private final int numBuckets;
 
   public FixedPartitionAttributesInfo(FixedPartitionAttributes fpa) {
-    this.numBuckets = fpa.getNumBuckets();
-    this.partitionName = fpa.getPartitionName();
-    this.isPrimary = fpa.isPrimary();
+    numBuckets = fpa.getNumBuckets();
+    partitionName = fpa.getPartitionName();
+    isPrimary = fpa.isPrimary();
   }
 
   public boolean equals(Object obj) {
     if (obj instanceof FixedPartitionAttributesInfo) {
       FixedPartitionAttributesInfo fpaInfo = (FixedPartitionAttributesInfo) obj;
-      return this.numBuckets == fpaInfo.getNumBuckets()
-          && StringUtils.equals(this.partitionName, fpaInfo.getPartitionName())
-          && this.isPrimary == fpaInfo.isPrimary();
+      return numBuckets == fpaInfo.getNumBuckets()
+          && StringUtils.equals(partitionName, fpaInfo.getPartitionName())
+          && isPrimary == fpaInfo.isPrimary();
 
     } else {
       return false;
@@ -51,15 +51,15 @@ public class FixedPartitionAttributesInfo implements Serializable {
   }
 
   public int getNumBuckets() {
-    return this.numBuckets;
+    return numBuckets;
   }
 
   public String getPartitionName() {
-    return this.partitionName;
+    return partitionName;
   }
 
   public boolean isPrimary() {
-    return this.isPrimary;
+    return isPrimary;
   }
 
 }

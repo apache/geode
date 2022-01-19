@@ -67,7 +67,7 @@ public class LoginTimeOutDUnitTest extends JUnit4DistributedTestCase {
   private static String readFile(String filename) throws IOException {
     BufferedReader br = new BufferedReader(new FileReader(filename));
     String nextLine = "";
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     while ((nextLine = br.readLine()) != null) {
       sb.append(nextLine);
       //
@@ -118,7 +118,7 @@ public class LoginTimeOutDUnitTest extends JUnit4DistributedTestCase {
     int n1 = str.indexOf(search);
     logger.debug("Start Index = " + n1);
     int n2 = str.indexOf(last_search, n1);
-    StringBuffer sbuff = new StringBuffer(str);
+    StringBuilder sbuff = new StringBuilder(str);
     logger.debug("END Index = " + n2);
     String modified_str = sbuff.replace(n1, n2, new_str).toString();
     return modified_str;
@@ -216,7 +216,7 @@ public class LoginTimeOutDUnitTest extends JUnit4DistributedTestCase {
   public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    Object o[] = new Object[1];
+    Object[] o = new Object[1];
     o[0] = getUniqueName();
     vm0.invoke(LoginTimeOutDUnitTest.class, "init", o);
   }
@@ -226,12 +226,12 @@ public class LoginTimeOutDUnitTest extends JUnit4DistributedTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     try {
-      vm0.invoke(() -> LoginTimeOutDUnitTest.destroyTable());
+      vm0.invoke(LoginTimeOutDUnitTest::destroyTable);
     } catch (Exception e) {
       if ((e instanceof RMIException) || (e instanceof SQLException)) {
         // sometimes we have lock timeout problems destroying the table in
         // this test
-        vm0.invoke(() -> disconnectFromDS());
+        vm0.invoke(JUnit4DistributedTestCase::disconnectFromDS);
       }
     }
   }
@@ -243,8 +243,8 @@ public class LoginTimeOutDUnitTest extends JUnit4DistributedTestCase {
   public void testLoginTimeOut() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    AsyncInvocation test1 = vm0.invokeAsync(() -> LoginTimeOutDUnitTest.runTest1());
-    AsyncInvocation test2 = vm0.invokeAsync(() -> LoginTimeOutDUnitTest.runTest2());
+    AsyncInvocation test1 = vm0.invokeAsync(LoginTimeOutDUnitTest::runTest1);
+    AsyncInvocation test2 = vm0.invokeAsync(LoginTimeOutDUnitTest::runTest2);
     ThreadUtils.join(test2, 120 * 1000);
     if (test2.exceptionOccurred()) {
       Assert.fail("asyncObj failed", test2.getException());

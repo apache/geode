@@ -34,7 +34,6 @@ import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.internal.cache.PartitionedRegionDataStore.BucketVisitor;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
@@ -79,10 +78,10 @@ public class PRCustomPartitioningDistributedTest implements Serializable {
 
   @Test
   public void testPartitionedRegionOperationsCustomPartitioning() {
-    datastoreVM0.invoke(() -> createPartitionedRegionWithPartitionResolver());
-    datastoreVM1.invoke(() -> createPartitionedRegionWithPartitionResolver());
-    datastoreVM2.invoke(() -> createPartitionedRegionWithPartitionResolver());
-    accessorVM3.invoke(() -> createPartitionedRegionAccessorWithPartitionResolver());
+    datastoreVM0.invoke(this::createPartitionedRegionWithPartitionResolver);
+    datastoreVM1.invoke(this::createPartitionedRegionWithPartitionResolver);
+    datastoreVM2.invoke(this::createPartitionedRegionWithPartitionResolver);
+    accessorVM3.invoke(this::createPartitionedRegionAccessorWithPartitionResolver);
 
     datastoreVM0.invoke(() -> doPutOperations(regionName, 2100, listOfKeysInVM1));
     datastoreVM1.invoke(() -> doPutOperations(regionName, 2200, listOfKeysInVM2));
@@ -130,19 +129,16 @@ public class PRCustomPartitioningDistributedTest implements Serializable {
       assertThat(containsKeyInSomeBucket(partitionedRegion, key)).isTrue();
     }
 
-    partitionedRegion.getDataStore().visitBuckets(new BucketVisitor() {
-      @Override
-      public void visit(Integer bucketId, Region region) {
-        Set<Object> bucketKeys = partitionedRegion.getBucketKeys(bucketId);
-        for (Object key : bucketKeys) {
-          EntryOperation<Date, Integer> entryOperation =
-              new EntryOperationImpl(partitionedRegion, null, key, null, null);
-          PartitionResolver<Date, Integer> partitionResolver =
-              partitionedRegion.getPartitionResolver();
-          Object routingObject = partitionResolver.getRoutingObject(entryOperation);
-          int routingObjectHashCode = routingObject.hashCode() % TOTAL_NUM_BUCKETS;
-          assertThat(routingObjectHashCode).isEqualTo(bucketId);
-        }
+    partitionedRegion.getDataStore().visitBuckets((bucketId, region) -> {
+      Set<Object> bucketKeys = partitionedRegion.getBucketKeys(bucketId);
+      for (Object key : bucketKeys) {
+        EntryOperation<Date, Integer> entryOperation =
+            new EntryOperationImpl(partitionedRegion, null, key, null, null);
+        PartitionResolver<Date, Integer> partitionResolver =
+            partitionedRegion.getPartitionResolver();
+        Object routingObject = partitionResolver.getRoutingObject(entryOperation);
+        int routingObjectHashCode = routingObject.hashCode() % TOTAL_NUM_BUCKETS;
+        assertThat(routingObjectHashCode).isEqualTo(bucketId);
       }
     });
   }

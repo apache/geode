@@ -69,7 +69,7 @@ public class RemoteClearMessage extends RemoteOperationMessageWithDirectReply {
   }
 
   public void distribute() throws RemoteOperationException {
-    RemoteOperationResponse p = (RemoteOperationResponse) this.processor;
+    RemoteOperationResponse p = (RemoteOperationResponse) processor;
 
     Set<?> failures = region.getDistributionManager().putOutgoing(this);
     if (failures != null && failures.size() > 0) {
@@ -97,7 +97,7 @@ public class RemoteClearMessage extends RemoteOperationMessageWithDirectReply {
   }
 
   @Override
-  protected void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
   }
 
@@ -179,10 +179,8 @@ public class RemoteClearMessage extends RemoteOperationMessageWithDirectReply {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
-      sb.append("RemoteClearReplyMessage ").append("processorid=").append(this.processorId)
-          .append(" reply to sender ").append(this.getSender());
-      return sb.toString();
+      return "RemoteClearReplyMessage " + "processorid=" + processorId
+          + " reply to sender " + getSender();
     }
   }
 }

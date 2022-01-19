@@ -102,10 +102,10 @@ You can use the `getDeserializedValue` method to obtain cache values for entries
 public boolean processEvents(@SuppressWarnings("rawtypes") List<AsyncEvent> list)   
  {  
      logger.log (Level.INFO, String.format("Size of List<GatewayEvent> = %s", list.size()));  
-     List<JdbcBatch> newEntries = new ArrayList<JdbcBatch>();  
+     List<JdbcBatch> newEntries = new ArrayList<>();
        
-     List<JdbcBatch> updatedEntries = new ArrayList<JdbcBatch>();  
-     List<String> destroyedEntries = new ArrayList<String>();  
+     List<JdbcBatch> updatedEntries = new ArrayList<>();
+     List<String> destroyedEntries = new ArrayList<>();
      int possibleDuplicates = 0;  
        
      for (@SuppressWarnings("rawtypes") AsyncEvent ge: list)  

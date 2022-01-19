@@ -72,7 +72,7 @@ public final class UnrestrictedMethodAuthorizer implements MethodInvocationAutho
    */
   public UnrestrictedMethodAuthorizer(Cache cache) {
     Objects.requireNonNull(cache, NULL_CACHE_MESSAGE);
-    this.restrictedMethodAuthorizer = new RestrictedMethodAuthorizer(cache);
+    restrictedMethodAuthorizer = new RestrictedMethodAuthorizer(cache);
   }
 
   /**

@@ -43,7 +43,7 @@ public class AlterAsyncEventQueueCommandTest {
   private AlterAsyncEventQueueCommand command;
   private InternalConfigurationPersistenceService service;
   private Region configRegion;
-  private Set<String> groupSet = new HashSet<>();
+  private final Set<String> groupSet = new HashSet<>();
 
   @Before
   public void setUp() {

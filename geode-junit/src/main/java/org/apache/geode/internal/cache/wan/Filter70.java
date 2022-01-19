@@ -28,10 +28,7 @@ public class Filter70 implements GatewayEventFilter, Serializable {
 
   @Override
   public boolean beforeEnqueue(GatewayQueueEvent event) {
-    if ((Long) event.getKey() >= 0 && (Long) event.getKey() < 500) {
-      return false;
-    }
-    return true;
+    return (Long) event.getKey() < 0 || (Long) event.getKey() >= 500;
   }
 
   @Override
@@ -62,7 +59,7 @@ public class Filter70 implements GatewayEventFilter, Serializable {
       return false;
     }
     Filter70 filter = (Filter70) obj;
-    return this.Id.equals(filter.Id);
+    return Id.equals(filter.Id);
   }
 
   @Override

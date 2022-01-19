@@ -86,7 +86,7 @@ public class CqNameToOpHashMapIntegrationTest {
             new ClientUpdateMessageImpl.CqNameToOpHashMap(cqNamesSize);
 
         for (int j = 0; j < cqNamesSize; j++) {
-          String cqNamesKey = DataSerializer.<String>readObject(inputStream);
+          String cqNamesKey = DataSerializer.readObject(inputStream);
           Integer cqNamesValue = DataSerializer.<Integer>readObject(inputStream);
           reconstructedCqNameToOpHashMap.add(cqNamesKey, cqNamesValue);
         }

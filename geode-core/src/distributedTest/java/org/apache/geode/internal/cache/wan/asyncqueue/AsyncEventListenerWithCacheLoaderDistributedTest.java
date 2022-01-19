@@ -126,9 +126,9 @@ public class AsyncEventListenerWithCacheLoaderDistributedTest implements Seriali
    */
   @Test // serial, ReplicateRegion, CacheLoader, RegressionTest
   public void testReplicatedSerialAsyncEventQueueWithCacheLoader() {
-    vm0.invoke(() -> createCache());
-    vm1.invoke(() -> createCache());
-    vm2.invoke(() -> createCache());
+    vm0.invoke(this::createCache);
+    vm1.invoke(this::createCache);
+    vm2.invoke(this::createCache);
 
     vm0.invoke(() -> createAsyncEventQueue(asyncEventQueueId, new SpyAsyncEventListener(), 100,
         dispatcherThreadCount, 100, false));
@@ -162,8 +162,8 @@ public class AsyncEventListenerWithCacheLoaderDistributedTest implements Seriali
    */
   @Test // parallel, PartitionedRegion, CacheLoader, RegressionTest
   public void testParallelAsyncEventQueueWithCacheLoader() {
-    vm0.invoke(() -> createCache());
-    vm1.invoke(() -> createCache());
+    vm0.invoke(this::createCache);
+    vm1.invoke(this::createCache);
 
     vm0.invoke(() -> createAsyncEventQueue(asyncEventQueueId, new SpyAsyncEventListener(), 100,
         dispatcherThreadCount, 100, true));

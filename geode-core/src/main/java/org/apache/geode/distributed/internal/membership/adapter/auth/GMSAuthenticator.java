@@ -62,7 +62,7 @@ public class GMSAuthenticator implements Authenticator<InternalDistributedMember
    */
   @Override
   public String authenticate(InternalDistributedMember member, Properties credentials) {
-    return authenticate(member, credentials, this.securityProps);
+    return authenticate(member, credentials, securityProps);
   }
 
   /**
@@ -146,7 +146,7 @@ public class GMSAuthenticator implements Authenticator<InternalDistributedMember
       String authMethod = securityProps.getProperty(SECURITY_PEER_AUTH_INIT);
       securityLogWriter.warning(
           String.format("Failed to obtain credentials using AuthInitialize [%s]. %s",
-              new Object[] {authMethod, e.getLocalizedMessage()}));
+              authMethod, e.getLocalizedMessage()));
       return null;
     }
   }
@@ -167,7 +167,7 @@ public class GMSAuthenticator implements Authenticator<InternalDistributedMember
    * For testing only.
    */
   Properties getSecurityProps() {
-    return this.securityProps;
+    return securityProps;
   }
 
 }

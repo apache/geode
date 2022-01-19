@@ -71,7 +71,7 @@ public class JoinQueriesIntegrationTest {
       this.pkid = pkid;
       this.id = id;
       this.joinId = joinId;
-      this.name = "name" + pkid;
+      name = "name" + pkid;
     }
 
     public String toString() {

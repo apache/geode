@@ -77,7 +77,7 @@ public class DiskManagementDUnitTest implements Serializable {
 
   @Before
   public void before() throws Exception {
-    this.diskDir = this.temporaryFolder.newFolder("diskDir");
+    diskDir = temporaryFolder.newFolder("diskDir");
   }
 
   /**
@@ -86,12 +86,12 @@ public class DiskManagementDUnitTest implements Serializable {
    */
   @Test
   public void testDiskCompact() throws Exception {
-    for (VM memberVM : this.memberVMs) {
+    for (VM memberVM : memberVMs) {
       createPersistentRegion(memberVM);
       makeDiskCompactable(memberVM);
     }
 
-    for (VM memberVM : this.memberVMs) {
+    for (VM memberVM : memberVMs) {
       compactAllDiskStores(memberVM);
     }
   }
@@ -102,12 +102,12 @@ public class DiskManagementDUnitTest implements Serializable {
    */
   @Test
   public void testDiskCompactRemote() throws Exception {
-    for (VM memberVM : this.memberVMs) {
+    for (VM memberVM : memberVMs) {
       createPersistentRegion(memberVM);
       makeDiskCompactable(memberVM);
     }
 
-    compactDiskStoresRemote(this.managerVM, this.memberVMs.length);
+    compactDiskStoresRemote(managerVM, memberVMs.length);
   }
 
   /**
@@ -115,7 +115,7 @@ public class DiskManagementDUnitTest implements Serializable {
    */
   @Test
   public void testDiskOps() throws Exception {
-    for (VM memberVM : this.memberVMs) {
+    for (VM memberVM : memberVMs) {
       createPersistentRegion(memberVM);
       makeDiskCompactable(memberVM);
       invokeFlush(memberVM);
@@ -126,12 +126,12 @@ public class DiskManagementDUnitTest implements Serializable {
 
   @Test
   public void testDiskBackupAllMembers() throws Exception {
-    for (VM memberVM : this.memberVMs) {
+    for (VM memberVM : memberVMs) {
       createPersistentRegion(memberVM);
       makeDiskCompactable(memberVM);
     }
 
-    backupAllMembers(this.managerVM, this.memberVMs.length);
+    backupAllMembers(managerVM, memberVMs.length);
   }
 
   /**
@@ -139,16 +139,16 @@ public class DiskManagementDUnitTest implements Serializable {
    */
   @Test
   public void testMissingMembers() throws Exception {
-    VM memberVM1 = this.memberVMs[0];
-    VM memberVM2 = this.memberVMs[1];
+    VM memberVM1 = memberVMs[0];
+    VM memberVM2 = memberVMs[1];
 
     createPersistentRegion(memberVM1);
     createPersistentRegion(memberVM2);
 
     putAnEntry(memberVM1);
 
-    this.managerVM.invoke("checkForMissingDiskStores", () -> {
-      ManagementService service = this.managementTestRule.getManagementService();
+    managerVM.invoke("checkForMissingDiskStores", () -> {
+      ManagementService service = managementTestRule.getManagementService();
       DistributedSystemMXBean distributedSystemMXBean = service.getDistributedSystemMXBean();
       PersistentMemberDetails[] missingDiskStores = distributedSystemMXBean.listMissingDiskStores();
 
@@ -164,7 +164,7 @@ public class DiskManagementDUnitTest implements Serializable {
     AsyncInvocation creatingPersistentRegionAsync = createPersistentRegionAsync(memberVM1);
 
     memberVM1.invoke(() -> GeodeAwaitility.await().until(() -> {
-      GemFireCacheImpl cache = (GemFireCacheImpl) this.managementTestRule.getCache();
+      GemFireCacheImpl cache = (GemFireCacheImpl) managementTestRule.getCache();
       PersistentMemberManager persistentMemberManager = cache.getPersistentMemberManager();
       Map<String, Set<PersistentMemberID>> regions = persistentMemberManager.getWaitingRegions();
       return !regions.isEmpty();
@@ -172,8 +172,8 @@ public class DiskManagementDUnitTest implements Serializable {
 
     assertThat(creatingPersistentRegionAsync.isAlive()).isTrue();
 
-    this.managerVM.invoke("revokeMissingDiskStore", () -> {
-      ManagementService service = this.managementTestRule.getManagementService();
+    managerVM.invoke("revokeMissingDiskStore", () -> {
+      ManagementService service = managementTestRule.getManagementService();
       DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
       PersistentMemberDetails[] missingDiskStores = bean.listMissingDiskStores();
 
@@ -188,7 +188,7 @@ public class DiskManagementDUnitTest implements Serializable {
 
     // Check to make sure we recovered the old value of the entry.
     memberVM1.invoke("check for the entry", () -> {
-      Cache cache = this.managementTestRule.getCache();
+      Cache cache = managementTestRule.getCache();
       Region region = cache.getRegion(REGION_NAME);
       assertThat(region.get("A")).isEqualTo("B");
     });
@@ -199,12 +199,12 @@ public class DiskManagementDUnitTest implements Serializable {
    */
   private void invokeFlush(final VM memberVM) {
     memberVM.invoke("invokeFlush", () -> {
-      Cache cache = this.managementTestRule.getCache();
+      Cache cache = managementTestRule.getCache();
       DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
       String name = "testFlush_" + ProcessUtils.identifyPid();
       DiskStore diskStore = diskStoreFactory.create(name);
 
-      ManagementService service = this.managementTestRule.getManagementService();
+      ManagementService service = managementTestRule.getManagementService();
       DiskStoreMXBean diskStoreMXBean = service.getLocalDiskStoreMBean(name);
       assertThat(diskStoreMXBean).isNotNull();
       assertThat(diskStoreMXBean.getName()).isEqualTo(diskStore.getName());
@@ -218,12 +218,12 @@ public class DiskManagementDUnitTest implements Serializable {
    */
   private void invokeForceRoll(final VM memberVM) {
     memberVM.invoke("invokeForceRoll", () -> {
-      Cache cache = this.managementTestRule.getCache();
+      Cache cache = managementTestRule.getCache();
       DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
       String name = "testForceRoll_" + ProcessUtils.identifyPid();
       DiskStore diskStore = diskStoreFactory.create(name);
 
-      ManagementService service = this.managementTestRule.getManagementService();
+      ManagementService service = managementTestRule.getManagementService();
       DiskStoreMXBean diskStoreMXBean = service.getLocalDiskStoreMBean(name);
       assertThat(diskStoreMXBean).isNotNull();
       assertThat(diskStoreMXBean.getName()).isEqualTo(diskStore.getName());
@@ -237,13 +237,13 @@ public class DiskManagementDUnitTest implements Serializable {
    */
   private void invokeForceCompaction(final VM memberVM) {
     memberVM.invoke("invokeForceCompaction", () -> {
-      Cache cache = this.managementTestRule.getCache();
+      Cache cache = managementTestRule.getCache();
       DiskStoreFactory dsf = cache.createDiskStoreFactory();
       dsf.setAllowForceCompaction(true);
       String name = "testForceCompaction_" + ProcessUtils.identifyPid();
       DiskStore diskStore = dsf.create(name);
 
-      ManagementService service = this.managementTestRule.getManagementService();
+      ManagementService service = managementTestRule.getManagementService();
       DiskStoreMXBean diskStoreMXBean = service.getLocalDiskStoreMBean(name);
       assertThat(diskStoreMXBean).isNotNull();
       assertThat(diskStoreMXBean.getName()).isEqualTo(diskStore.getName());
@@ -257,7 +257,7 @@ public class DiskManagementDUnitTest implements Serializable {
    */
   private void makeDiskCompactable(final VM memberVM) throws Exception {
     memberVM.invoke("makeDiskCompactable", () -> {
-      Cache cache = this.managementTestRule.getCache();
+      Cache cache = managementTestRule.getCache();
       Region region = cache.getRegion(REGION_NAME);
       region.put("key1", "value1");
       region.put("key2", "value2");
@@ -272,7 +272,7 @@ public class DiskManagementDUnitTest implements Serializable {
    */
   private void compactAllDiskStores(final VM memberVM) throws Exception {
     memberVM.invoke("compactAllDiskStores", () -> {
-      ManagementService service = this.managementTestRule.getManagementService();
+      ManagementService service = managementTestRule.getManagementService();
       MemberMXBean memberMXBean = service.getMemberMXBean();
       String[] compactedDiskStores = memberMXBean.compactAllDiskStores();
       assertThat(compactedDiskStores).hasSize(1);
@@ -284,9 +284,9 @@ public class DiskManagementDUnitTest implements Serializable {
    */
   private void backupAllMembers(final VM managerVM, final int memberCount) {
     managerVM.invoke("backupAllMembers", () -> {
-      ManagementService service = this.managementTestRule.getManagementService();
+      ManagementService service = managementTestRule.getManagementService();
       DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
-      File backupDir = this.temporaryFolder.newFolder("backupDir");
+      File backupDir = temporaryFolder.newFolder("backupDir");
 
       DiskBackupStatus status = bean.backupAllMembers(backupDir.getAbsolutePath(), null);
 
@@ -300,10 +300,10 @@ public class DiskManagementDUnitTest implements Serializable {
    */
   private void compactDiskStoresRemote(final VM managerVM, final int memberCount) {
     managerVM.invoke("compactDiskStoresRemote", () -> {
-      Set<DistributedMember> otherMemberSet = this.managementTestRule.getOtherNormalMembers();
+      Set<DistributedMember> otherMemberSet = managementTestRule.getOtherNormalMembers();
       assertThat(otherMemberSet.size()).isEqualTo(memberCount);
 
-      SystemManagementService service = this.managementTestRule.getSystemManagementService();
+      SystemManagementService service = managementTestRule.getSystemManagementService();
 
       for (DistributedMember member : otherMemberSet) {
         MemberMXBean memberMXBean = awaitMemberMXBeanProxy(member);
@@ -319,7 +319,7 @@ public class DiskManagementDUnitTest implements Serializable {
 
   private void updateTheEntry(final VM memberVM, final String value) {
     memberVM.invoke("updateTheEntry", () -> {
-      Cache cache = this.managementTestRule.getCache();
+      Cache cache = managementTestRule.getCache();
       Region region = cache.getRegion(REGION_NAME);
       region.put("A", value);
     });
@@ -327,7 +327,7 @@ public class DiskManagementDUnitTest implements Serializable {
 
   private void putAnEntry(final VM memberVM) {
     memberVM.invoke("putAnEntry", () -> {
-      Cache cache = this.managementTestRule.getCache();
+      Cache cache = managementTestRule.getCache();
       Region region = cache.getRegion(REGION_NAME);
       region.put("A", "B");
     });
@@ -335,7 +335,7 @@ public class DiskManagementDUnitTest implements Serializable {
 
   private void closeCache(final VM memberVM) {
     memberVM.invoke("closeRegion", () -> {
-      Cache cache = this.managementTestRule.getCache();
+      Cache cache = managementTestRule.getCache();
       Region region = cache.getRegion(REGION_NAME);
       cache.close();
     });
@@ -350,7 +350,7 @@ public class DiskManagementDUnitTest implements Serializable {
     return memberVM.invokeAsync("createPersistentRegionAsync", () -> {
       File dir = new File(diskDir, String.valueOf(ProcessUtils.identifyPid()));
 
-      Cache cache = this.managementTestRule.getCache();
+      Cache cache = managementTestRule.getCache();
 
       DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
       diskStoreFactory.setDiskDirs(new File[] {dir});
@@ -370,7 +370,7 @@ public class DiskManagementDUnitTest implements Serializable {
 
   private void verifyRecoveryStats(final VM memberVM, final boolean localRecovery) {
     memberVM.invoke("verifyRecoveryStats", () -> {
-      Cache cache = this.managementTestRule.getCache();
+      Cache cache = managementTestRule.getCache();
       Region region = cache.getRegion(REGION_NAME);
       DistributedRegion distributedRegion = (DistributedRegion) region;
       DiskRegionStats stats = distributedRegion.getDiskRegion().getStats();
@@ -386,7 +386,7 @@ public class DiskManagementDUnitTest implements Serializable {
   }
 
   private MemberMXBean awaitMemberMXBeanProxy(final DistributedMember member) {
-    SystemManagementService service = this.managementTestRule.getSystemManagementService();
+    SystemManagementService service = managementTestRule.getSystemManagementService();
     ObjectName objectName = service.getMemberMBeanName(member);
     GeodeAwaitility.await()
         .untilAsserted(

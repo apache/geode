@@ -56,8 +56,8 @@ public class TopEntriesCollectorManager
   }
 
   public TopEntriesCollectorManager(String id, int resultLimit) {
-    this.limit = resultLimit <= 0 ? LuceneQueryFactory.DEFAULT_LIMIT : resultLimit;
-    this.id = id == null ? String.valueOf(this.hashCode()) : id;
+    limit = resultLimit <= 0 ? LuceneQueryFactory.DEFAULT_LIMIT : resultLimit;
+    this.id = id == null ? String.valueOf(hashCode()) : id;
     logger.debug("Max count of entries to be produced by {} is {}", id, limit);
   }
 
@@ -76,20 +76,17 @@ public class TopEntriesCollectorManager
     final EntryScoreComparator scoreComparator = new TopEntries().new EntryScoreComparator();
 
     // orders a entry with higher score above a doc with lower score
-    Comparator<ListScanner> entryListComparator = new Comparator<ListScanner>() {
-      @Override
-      public int compare(ListScanner l1, ListScanner l2) {
-        EntryScore o1 = l1.peek();
-        EntryScore o2 = l2.peek();
-        return scoreComparator.compare(o1, o2);
-      }
+    Comparator<ListScanner> entryListComparator = (l1, l2) -> {
+      EntryScore o1 = l1.peek();
+      EntryScore o2 = l2.peek();
+      return scoreComparator.compare(o1, o2);
     };
 
     // The queue contains iterators for all bucket results. The queue puts the entry with the
     // highest score at the head
     // using score comparator.
     PriorityQueue<ListScanner> entryListsPriorityQueue;
-    entryListsPriorityQueue = new PriorityQueue<ListScanner>(collectors.size(),
+    entryListsPriorityQueue = new PriorityQueue<>(collectors.size(),
         Collections.reverseOrder(entryListComparator));
 
     for (IndexResultCollector collector : collectors) {
@@ -122,7 +119,7 @@ public class TopEntriesCollectorManager
    * Utility class to iterate on hits without modifying it
    */
   static class ListScanner {
-    private List<EntryScore> hits;
+    private final List<EntryScore> hits;
     private int index = 0;
 
     ListScanner(List<EntryScore> hits) {

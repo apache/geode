@@ -38,7 +38,7 @@ public class CompactResponse extends AdminResponse {
   public CompactResponse() {}
 
   public CompactResponse(InternalDistributedMember sender, PersistentID persistentId) {
-    this.setRecipient(sender);
+    setRecipient(sender);
     this.persistentId = persistentId;
   }
 
@@ -61,7 +61,7 @@ public class CompactResponse extends AdminResponse {
   }
 
   public CompactResponse(InternalDistributedMember sender) {
-    this.setRecipient(sender);
+    setRecipient(sender);
   }
 
   @Override

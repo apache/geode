@@ -34,7 +34,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -97,7 +96,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
-    Invoke.invokeInEveryVM((() -> cleanup()));
+    Invoke.invokeInEveryVM((ClientMembershipDUnitTest::cleanup));
   }
 
   public static void cleanup() {
@@ -108,10 +107,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
   private void waitForAcceptsInProgressToBe(final int target) throws Exception {
     await().timeout(300, TimeUnit.SECONDS).until(() -> {
       int actual = getAcceptsInProgress();
-      if (actual == getAcceptsInProgress()) {
-        return true;
-      }
-      return false;
+      return actual == getAcceptsInProgress();
     });
   }
 
@@ -742,7 +738,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     ClientMembership.registerClientMembershipListener(listener);
 
     final VM vm0 = Host.getHost(0).getVM(0);
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int[] ports = new int[1];
 
     // create BridgeServer in vm0...
@@ -764,10 +760,10 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     // gather details for later creation of ConnectionPool...
     ports[0] = vm0.invoke("getTestClientMembershipEventsInClient_port",
-        () -> ClientMembershipDUnitTest.getTestClientMembershipEventsInClient_port());
+        ClientMembershipDUnitTest::getTestClientMembershipEventsInClient_port);
     assertTrue(ports[0] != 0);
 
-    DistributedMember serverMember = (DistributedMember) vm0.invoke("get distributed member",
+    DistributedMember serverMember = vm0.invoke("get distributed member",
         () -> getSystem().getDistributedMember());
 
     String serverMemberId = serverMember.toString();
@@ -950,7 +946,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     ClientMembership.registerClientMembershipListener(listener);
 
     final VM vm0 = Host.getHost(0).getVM(0);
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int[] ports = new int[1];
 
     // create BridgeServer in controller vm...
@@ -1059,9 +1055,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         System.out.println("[testClientMembershipEventsInServer] Stop bridge client");
         getRootRegion().getSubregion(name).close();
         Map m = PoolManager.getAll();
-        Iterator mit = m.values().iterator();
-        while (mit.hasNext()) {
-          Pool p = (Pool) mit.next();
+        for (final Object o : m.values()) {
+          Pool p = (Pool) o;
           p.destroy();
         }
       }
@@ -1119,9 +1114,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
           System.out.println("[testClientMembershipEventsInServer] Stop bridge client");
           getRootRegion().getSubregion(name).close();
           Map m = PoolManager.getAll();
-          Iterator mit = m.values().iterator();
-          while (mit.hasNext()) {
-            Pool p = (Pool) mit.next();
+          for (final Object o : m.values()) {
+            Pool p = (Pool) o;
             p.destroy();
           }
         }
@@ -1245,7 +1239,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
    */
   @Test
   public void testGetConnectedClients() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int[] ports = new int[1];
 
     IgnoredException.addIgnoredException("ConnectException");
@@ -1303,10 +1297,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         if (connectedClients == null) {
           return false;
         }
-        if (connectedClients.size() != expectedClientCount) {
-          return false;
-        }
-        return true;
+        return connectedClients.size() == expectedClientCount;
       });
     }
 
@@ -1315,13 +1306,13 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertEquals(clientMemberIds.size(), connectedClients.size());
     System.out
         .println("connectedClients: " + connectedClients + "; clientMemberIds: " + clientMemberIds);
-    for (Iterator iter = connectedClients.keySet().iterator(); iter.hasNext();) {
-      String connectedClient = (String) iter.next();
+    for (final Object o : connectedClients.keySet()) {
+      String connectedClient = (String) o;
       System.out.println("[testGetConnectedClients] checking for client " + connectedClient);
       assertTrue(clientMemberIds.contains(connectedClient));
       Object[] result = (Object[]) connectedClients.get(connectedClient);
       System.out.println("[testGetConnectedClients] result: "
-          + (result == null ? "none" : String.valueOf(result[0]) + "; connections=" + result[1]));
+          + (result == null ? "none" : result[0] + "; connections=" + result[1]));
     }
   }
 
@@ -1332,7 +1323,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
   @Test
   public void testGetConnectedServers() throws Exception {
     final Host host = Host.getHost(0);
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int[] ports = new int[host.getVMCount()];
 
     for (int i = 0; i < host.getVMCount(); i++) {
@@ -1364,7 +1355,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
             "[testGetConnectedServers] serverMemberId=" + getSystem().getDistributedMember());
       });
       ports[whichVM] = vm.invoke("getTestGetConnectedServers_port",
-          () -> ClientMembershipDUnitTest.getTestGetConnectedServers_port());
+          ClientMembershipDUnitTest::getTestGetConnectedServers_port);
       assertTrue(ports[whichVM] != 0);
     }
 
@@ -1401,10 +1392,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       if (connectedServers == null) {
         return false;
       }
-      if (connectedServers.size() != expectedVMCount) {
-        return false;
-      }
-      return true;
+      return connectedServers.size() == expectedVMCount;
     });
 
     assertEquals(host.getVMCount(), PoolManager.getAll().size());
@@ -1412,8 +1400,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     Map connectedServers = InternalClientMembership.getConnectedServers();
     assertNotNull(connectedServers);
     assertEquals(host.getVMCount(), connectedServers.size());
-    for (Iterator iter = connectedServers.keySet().iterator(); iter.hasNext();) {
-      String connectedServer = (String) iter.next();
+    for (final Object o : connectedServers.keySet()) {
+      String connectedServer = (String) o;
       System.out.println("[testGetConnectedServers]  value for connectedServer: "
           + connectedServers.get(connectedServer));
     }
@@ -1441,7 +1429,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
   @Test
   public void testGetNotifiedClients() throws Exception {
     final Host host = Host.getHost(0);
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int[] ports = new int[host.getVMCount()];
 
     for (int i = 0; i < host.getVMCount(); i++) {
@@ -1474,7 +1462,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         }
       });
       ports[whichVM] = vm.invoke("getTestGetNotifiedClients_port",
-          () -> ClientMembershipDUnitTest.getTestGetNotifiedClients_port());
+          ClientMembershipDUnitTest::getTestGetNotifiedClients_port);
       assertTrue(ports[whichVM] != 0);
     }
 
@@ -1522,13 +1510,13 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         // }
       });
       clientCounts[whichVM] = vm.invoke("getTestGetNotifiedClients_clientCount",
-          () -> ClientMembershipDUnitTest.getTestGetNotifiedClients_clientCount());
+          ClientMembershipDUnitTest::getTestGetNotifiedClients_clientCount);
     }
 
     // only one server should have a notifier for this client...
     int totalClientCounts = 0;
-    for (int i = 0; i < clientCounts.length; i++) {
-      totalClientCounts += clientCounts[i];
+    for (final int clientCount : clientCounts) {
+      totalClientCounts += clientCount;
     }
     // this assertion fails because the count is 4
     // assertIndexDetailsEquals(1, totalClientCounts);
@@ -1549,7 +1537,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
   // Simple DistributedMember implementation
   static class TestDistributedMember implements DistributedMember {
 
-    private String host;
+    private final String host;
 
     public TestDistributedMember(String host) {
       this.host = host;
@@ -1562,7 +1550,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     @Override
     public String getHost() {
-      return this.host;
+      return host;
     }
 
     @Override
@@ -1577,7 +1565,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     @Override
     public String getId() {
-      return this.host;
+      return host;
     }
 
     @Override

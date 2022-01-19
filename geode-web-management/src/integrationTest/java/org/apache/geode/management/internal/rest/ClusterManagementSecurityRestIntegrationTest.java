@@ -61,7 +61,7 @@ public class ClusterManagementSecurityRestIntegrationTest {
 
   private LocatorWebContext context;
 
-  private static List<TestContext> testContexts = new ArrayList<>();
+  private static final List<TestContext> testContexts = new ArrayList<>();
   private static ObjectMapper mapper;
 
   @BeforeClass

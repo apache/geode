@@ -254,20 +254,16 @@ public class PartitionedRegionHelper {
               throw new CacheWriterException(
                   String.format(
                       "New PartitionedRegionConfig %s does not have newer version than previous %s",
-                      new Object[] {newConf, oldConf}));
+                      newConf, oldConf));
             }
           }
         });
       }
 
       // Create anonymous stats holder for Partitioned Region meta data
-      final HasCachePerfStats prMetaStatsHolder = new HasCachePerfStats() {
-        @Override
-        public CachePerfStats getCachePerfStats() {
-          return new CachePerfStats(cache.getDistributedSystem(), "RegionStats-partitionMetaData",
+      final HasCachePerfStats prMetaStatsHolder =
+          () -> new CachePerfStats(cache.getDistributedSystem(), "RegionStats-partitionMetaData",
               cache.getStatisticsClock());
-        }
-      };
 
       factory.setIsUsedForPartitionedRegionAdmin(true);
       factory.setInternalRegion(true);
@@ -320,7 +316,7 @@ public class PartitionedRegionHelper {
         return;
       }
 
-      final ArrayList<String> ks = new ArrayList<String>(rootReg.keySet());
+      final ArrayList<String> ks = new ArrayList<>(rootReg.keySet());
       if (ks.size() > 1) {
         Collections.shuffle(ks, PartitionedRegion.RANDOM);
       }
@@ -376,13 +372,10 @@ public class PartitionedRegionHelper {
           // we have determined the node to remove (Which includes the
           // serial number).
           cache.getDistributionManager().getExecutors().getPrMetaDataCleanupThreadPool()
-              .execute(new Runnable() {
-                @Override
-                public void run() {
-                  cleanPartitionedRegionMetaDataForNode(cache, node1, prConf, prName);
-                  if (postCleanupTask != null) {
-                    postCleanupTask.run();
-                  }
+              .execute(() -> {
+                cleanPartitionedRegionMetaDataForNode(cache, node1, prConf, prName);
+                if (postCleanupTask != null) {
+                  postCleanupTask.run();
                 }
               });
           runPostCleanUp = false;
@@ -902,7 +895,7 @@ public class PartitionedRegionHelper {
   }
 
   private static Set<String> getAllAvailablePartitions(PartitionedRegion region) {
-    Set<String> partitionSet = new HashSet<String>();
+    Set<String> partitionSet = new HashSet<>();
     List<FixedPartitionAttributesImpl> localFPAs = region.getFixedPartitionAttributesImpl();
     if (localFPAs != null) {
       for (FixedPartitionAttributesImpl fpa : localFPAs) {
@@ -920,7 +913,7 @@ public class PartitionedRegionHelper {
 
   public static Set<FixedPartitionAttributes> getAllFixedPartitionAttributes(
       PartitionedRegion region) {
-    Set<FixedPartitionAttributes> fpaSet = new HashSet<FixedPartitionAttributes>();
+    Set<FixedPartitionAttributes> fpaSet = new HashSet<>();
     List<FixedPartitionAttributesImpl> localFPAs = region.getFixedPartitionAttributesImpl();
     if (localFPAs != null) {
       fpaSet.addAll(localFPAs);

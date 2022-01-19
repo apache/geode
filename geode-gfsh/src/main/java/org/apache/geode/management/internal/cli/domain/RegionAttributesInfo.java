@@ -83,7 +83,7 @@ public class RegionAttributesInfo implements Serializable {
   private String entryIdleTimeoutAction = ExpirationAction.INVALIDATE.toString();
   private String regionIdleTimeoutAction = ExpirationAction.INVALIDATE.toString();
 
-  private boolean offHeap;
+  private final boolean offHeap;
   private String customExpiryIdleTimeoutClass = null;
   private String customExpiryTTLClass = null;
 
@@ -149,7 +149,7 @@ public class RegionAttributesInfo implements Serializable {
 
     // TODO: The cacheListeners should be added one by one by delimited by a "\n"
     if (cacheListeners.length > 0) {
-      cacheListenerClassNames = new ArrayList<String>();
+      cacheListenerClassNames = new ArrayList<>();
       for (CacheListener<?, ?> cacheListener : cacheListeners) {
         cacheListenerClassNames.add(cacheListener.getClass().getCanonicalName());
       }

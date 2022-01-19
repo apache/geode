@@ -20,7 +20,7 @@ import java.util.List;
 import org.apache.geode.security.TestSecurityManager;
 
 public class UserPermissions {
-  private TestSecurityManager manager = new TestSecurityManager();
+  private final TestSecurityManager manager = new TestSecurityManager();
   public HashMap<String, List<String>> queryPermissions;
 
   public UserPermissions() {

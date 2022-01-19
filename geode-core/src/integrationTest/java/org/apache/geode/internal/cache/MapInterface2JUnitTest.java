@@ -84,7 +84,7 @@ public class MapInterface2JUnitTest {
     try {
       rgn.clear();
       fail("expected exception not thrownn");
-    } catch (UnsupportedOperationInTransactionException e) {
+    } catch (UnsupportedOperationInTransactionException ignored) {
     }
     if (rgn.size() == 0) {
       fail("The region size is zero even after throwing exception");
@@ -126,14 +126,14 @@ public class MapInterface2JUnitTest {
     }
     try {
       synchronized (this) {
-        if (!this.afterClearCallbackOccurred) {
-          this.wait(10000);
+        if (!afterClearCallbackOccurred) {
+          wait(10000);
         }
       }
     } catch (InterruptedException ie) {
       fail(ie.toString());
     }
-    if (!this.afterClearCallbackOccurred) {
+    if (!afterClearCallbackOccurred) {
       fail("afterClear Callback not issued");
     }
   }
@@ -157,7 +157,7 @@ public class MapInterface2JUnitTest {
 
         try {
           synchronized (MapInterface2JUnitTest.this) {
-            MapInterface2JUnitTest.this.mainThreadProceed = true;
+            mainThreadProceed = true;
             MapInterface2JUnitTest.this.notify();
           }
           event.getRegion().getCache().getLogger().info("*******Main THread Notified *********");
@@ -179,27 +179,21 @@ public class MapInterface2JUnitTest {
         }
       }
     });
-    Thread th = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        region.clear();
-      }
-
-    });
+    Thread th = new Thread(region::clear);
 
     th.start();
     try {
       synchronized (this) {
-        if (!this.mainThreadProceed) {
+        if (!mainThreadProceed) {
           region.getCache().getLogger().info("*******Main THread is going in wait********");
-          this.wait();
+          wait();
         }
       }
       region.getCache().getLogger().info("*******Main THread coming out of wait*********");
       region.put("test", "test");
       fail("The put operation should not have succeeded");
     } catch (org.apache.geode.cache.TimeoutException cwe) {
-      assertTrue("The test correctly encounetred a TimeoutException" + cwe.toString(), true);
+      assertTrue("The test correctly encounetred a TimeoutException" + cwe, true);
     } catch (InterruptedException ie) {
       fail("The main thread experienced Interruption" + ie);
     } finally {
@@ -229,7 +223,7 @@ public class MapInterface2JUnitTest {
 
         try {
           synchronized (MapInterface2JUnitTest.this) {
-            MapInterface2JUnitTest.this.mainThreadProceed = true;
+            mainThreadProceed = true;
             MapInterface2JUnitTest.this.notify();
           }
           event.getRegion().getCache().getLogger().info("*******Main THread Notified *********");
@@ -240,20 +234,14 @@ public class MapInterface2JUnitTest {
         }
       }
     });
-    Thread th = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        region.clear();
-      }
-
-    });
+    Thread th = new Thread(region::clear);
 
     th.start();
     try {
       synchronized (this) {
-        if (!this.mainThreadProceed) {
+        if (!mainThreadProceed) {
           region.getCache().getLogger().info("*******Main THread is going in wait********");
-          this.wait();
+          wait();
         }
       }
       region.getCache().getLogger().info("*******Main THread coming out of wait*********");

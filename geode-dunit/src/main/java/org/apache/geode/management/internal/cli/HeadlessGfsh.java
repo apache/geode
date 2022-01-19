@@ -52,8 +52,8 @@ public class HeadlessGfsh implements ResultHandler {
 
   public static final String ERROR_RESULT = "_$_ERROR_RESULT";
 
-  private HeadlessGfshShell shell;
-  private LinkedBlockingQueue<Object> queue = new LinkedBlockingQueue<>();
+  private final HeadlessGfshShell shell;
+  private final LinkedBlockingQueue<Object> queue = new LinkedBlockingQueue<>();
   private long timeout;
   public String outputString = null;
 
@@ -66,12 +66,12 @@ public class HeadlessGfsh implements ResultHandler {
       throws IOException {
     this.timeout = timeout;
     System.setProperty("jline.terminal", GfshUnsupportedTerminal.class.getName());
-    this.shell = new HeadlessGfshShell(name, this, parentDir);
-    this.shell.setEnvProperty(Gfsh.ENV_APP_RESULT_VIEWER, "non-basic");
+    shell = new HeadlessGfshShell(name, this, parentDir);
+    shell.setEnvProperty(Gfsh.ENV_APP_RESULT_VIEWER, "non-basic");
 
     if (envProps != null) {
       for (String key : envProps.stringPropertyNames()) {
-        this.shell.setEnvProperty(key, envProps.getProperty(key));
+        shell.setEnvProperty(key, envProps.getProperty(key));
       }
     }
 
@@ -79,13 +79,13 @@ public class HeadlessGfsh implements ResultHandler {
     // ConsoleReader which is
     // created in a separate thread during start()
     CountDownLatch shellStarted = new CountDownLatch(1);
-    this.shell.addShellStatusListener((oldStatus, newStatus) -> {
+    shell.addShellStatusListener((oldStatus, newStatus) -> {
       if (newStatus.getStatus() == Status.STARTED) {
         shellStarted.countDown();
       }
     });
 
-    this.shell.start();
+    shell.start();
 
     try {
       shellStarted.await();
@@ -192,7 +192,7 @@ public class HeadlessGfsh implements ResultHandler {
 
   public static class HeadlessGfshShell extends Gfsh {
 
-    private ResultHandler handler;
+    private final ResultHandler handler;
     private final Lock lock = new ReentrantLock();
     private final Condition endOfShell = lock.newCondition();
     private ByteArrayOutputStream output = null;
@@ -265,7 +265,7 @@ public class HeadlessGfsh implements ResultHandler {
           endOfShell.await();
         } catch (InterruptedException ignore) {
         }
-        this.exitShellRequest = ExitShellRequest.NORMAL_EXIT;
+        exitShellRequest = ExitShellRequest.NORMAL_EXIT;
         setShellStatus(Status.SHUTTING_DOWN);
       } finally {
         lock.unlock();
@@ -324,8 +324,8 @@ public class HeadlessGfsh implements ResultHandler {
    * HeadlessGfshConfig for tests. Taken from TestableGfsh
    */
   static class HeadlessGfshConfig extends GfshConfig {
-    private File parentDir;
-    private String fileNamePrefix;
+    private final File parentDir;
+    private final String fileNamePrefix;
     private String generatedHistoryFileName = null;
 
     public HeadlessGfshConfig(String name, String parentDir) throws IOException {

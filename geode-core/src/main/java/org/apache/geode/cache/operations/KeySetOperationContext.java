@@ -58,14 +58,14 @@ public class KeySetOperationContext extends OperationContext {
    */
   @Override
   public boolean isPostOperation() {
-    return this.postOperation;
+    return postOperation;
   }
 
   /**
    * Set the post-operation flag to true.
    */
   public void setPostOperation() {
-    this.postOperation = true;
+    postOperation = true;
   }
 
   /**
@@ -74,7 +74,7 @@ public class KeySetOperationContext extends OperationContext {
    * @return the set of keys
    */
   public Set getKeySet() {
-    return this.keySet;
+    return keySet;
   }
 
   /**

@@ -66,27 +66,27 @@ public class PingTest {
 
   @Before
   public void setUp() throws Exception {
-    this.ping = (Ping) Ping.getCommand();
+    ping = (Ping) Ping.getCommand();
     MockitoAnnotations.initMocks(this);
 
-    when(this.ping.getClientHealthMonitor()).thenReturn(clientHealthMonitor);
-    when(this.message.getNumberOfParts()).thenReturn(1);
-    when(this.message.getPart(eq(0))).thenReturn(this.targetServerPart);
-    when(this.serverConnection.getCache()).thenReturn(this.cache);
-    when(this.serverConnection.getReplyMessage()).thenReturn(this.replyMessage);
-    when(this.cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
+    when(ping.getClientHealthMonitor()).thenReturn(clientHealthMonitor);
+    when(message.getNumberOfParts()).thenReturn(1);
+    when(message.getPart(eq(0))).thenReturn(targetServerPart);
+    when(serverConnection.getCache()).thenReturn(cache);
+    when(serverConnection.getReplyMessage()).thenReturn(replyMessage);
+    when(cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
   }
 
   @Test
   public void testTargetServerAndCurrentServerIDAreEquals() throws Exception {
 
     myID = new InternalDistributedMember(new ServerLocation("localhost", 1));
-    when(this.cache.getMyId()).thenReturn(this.myID);
+    when(cache.getMyId()).thenReturn(myID);
     targetServer = new InternalDistributedMember(new ServerLocation("localhost", 1));
-    when(this.targetServerPart.getObject()).thenReturn(targetServer);
-    this.ping.cmdExecute(this.message, this.serverConnection, null, 0);
+    when(targetServerPart.getObject()).thenReturn(targetServer);
+    ping.cmdExecute(message, serverConnection, null, 0);
 
-    verify(this.replyMessage).send(this.serverConnection);
+    verify(replyMessage).send(serverConnection);
     verify(ping, times(1)).getClientHealthMonitor();
   }
 
@@ -95,15 +95,15 @@ public class PingTest {
       throws Exception {
 
     myID = new InternalDistributedMember(new ServerLocation("localhost", 1));
-    when(this.cache.getMyId()).thenReturn(this.myID);
+    when(cache.getMyId()).thenReturn(myID);
     targetServer = new InternalDistributedMember(new ServerLocation("localhost", 2));
-    when(this.targetServerPart.getObject()).thenReturn(targetServer);
-    when(this.cache.getDistributionManager()).thenReturn(this.distributionManager);
-    when(this.distributionManager.isCurrentMember(targetServer)).thenReturn(true);
+    when(targetServerPart.getObject()).thenReturn(targetServer);
+    when(cache.getDistributionManager()).thenReturn(distributionManager);
+    when(distributionManager.isCurrentMember(targetServer)).thenReturn(true);
 
-    this.ping.cmdExecute(this.message, this.serverConnection, null, 0);
+    ping.cmdExecute(message, serverConnection, null, 0);
 
-    verify(this.replyMessage).send(this.serverConnection);
+    verify(replyMessage).send(serverConnection);
     verify(ping, times(0)).getClientHealthMonitor();
   }
 
@@ -112,17 +112,17 @@ public class PingTest {
       throws Exception {
 
     myID = new InternalDistributedMember(new ServerLocation("localhost", 1));
-    when(this.cache.getMyId()).thenReturn(this.myID);
+    when(cache.getMyId()).thenReturn(myID);
     targetServer = new InternalDistributedMember(new ServerLocation("localhost", 2));
-    when(this.targetServerPart.getObject()).thenReturn(targetServer);
-    when(this.cache.getDistributionManager()).thenReturn(this.distributionManager);
-    when(this.distributionManager.isCurrentMember(targetServer)).thenReturn(false);
-    when(this.serverConnection.getErrorResponseMessage()).thenReturn(this.errorResponseMessage);
+    when(targetServerPart.getObject()).thenReturn(targetServer);
+    when(cache.getDistributionManager()).thenReturn(distributionManager);
+    when(distributionManager.isCurrentMember(targetServer)).thenReturn(false);
+    when(serverConnection.getErrorResponseMessage()).thenReturn(errorResponseMessage);
 
-    this.ping.cmdExecute(this.message, this.serverConnection, null, 0);
+    ping.cmdExecute(message, serverConnection, null, 0);
 
-    verify(this.errorResponseMessage, times(1)).send(this.serverConnection);
-    verify(this.replyMessage, times(0)).send(this.serverConnection);
+    verify(errorResponseMessage, times(1)).send(serverConnection);
+    verify(replyMessage, times(0)).send(serverConnection);
     verify(ping, times(0)).getClientHealthMonitor();
   }
 
@@ -130,16 +130,16 @@ public class PingTest {
   public void testTargetServerAndCurrentServerAreEqualsButWithDifferentViewId() throws Exception {
     myID = new InternalDistributedMember(new ServerLocation("localhost", 1));
     myID.setVmViewId(1);
-    when(this.cache.getMyId()).thenReturn(this.myID);
+    when(cache.getMyId()).thenReturn(myID);
     targetServer = new InternalDistributedMember(new ServerLocation("localhost", 1));
     targetServer.setVmViewId(2);
-    when(this.targetServerPart.getObject()).thenReturn(targetServer);
-    when(this.serverConnection.getErrorResponseMessage()).thenReturn(this.errorResponseMessage);
+    when(targetServerPart.getObject()).thenReturn(targetServer);
+    when(serverConnection.getErrorResponseMessage()).thenReturn(errorResponseMessage);
 
-    this.ping.cmdExecute(this.message, this.serverConnection, null, 0);
+    ping.cmdExecute(message, serverConnection, null, 0);
 
-    verify(this.errorResponseMessage, times(1)).send(this.serverConnection);
-    verify(this.replyMessage, times(0)).send(this.serverConnection);
+    verify(errorResponseMessage, times(1)).send(serverConnection);
+    verify(replyMessage, times(0)).send(serverConnection);
     verify(ping, times(0)).getClientHealthMonitor();
   }
 }

@@ -70,7 +70,7 @@ public class TxnManagerMultiThreadDUnitTest extends JUnit4DistributedTestCase {
   private static String readFile(String filename) throws IOException {
     BufferedReader br = new BufferedReader(new FileReader(filename));
     String nextLine = "";
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     while ((nextLine = br.readLine()) != null) {
       sb.append(nextLine);
     }
@@ -114,7 +114,7 @@ public class TxnManagerMultiThreadDUnitTest extends JUnit4DistributedTestCase {
      */
     int n1 = str.indexOf(search);
     int n2 = str.indexOf(last_search, n1);
-    StringBuffer sbuff = new StringBuffer(str);
+    StringBuilder sbuff = new StringBuilder(str);
     String modified_str = sbuff.replace(n1, n2, new_str).toString();
     return modified_str;
   }
@@ -156,7 +156,7 @@ public class TxnManagerMultiThreadDUnitTest extends JUnit4DistributedTestCase {
      */
     int n1 = str.indexOf(search);
     int n2 = str.indexOf(last_search, n1);
-    StringBuffer sbuff = new StringBuffer(str);
+    StringBuilder sbuff = new StringBuilder(str);
     String modified_str = sbuff.replace(n1, n2, new_str).toString();
     return modified_str;
   }
@@ -285,7 +285,7 @@ public class TxnManagerMultiThreadDUnitTest extends JUnit4DistributedTestCase {
   @Override
   public final void postSetUp() throws java.lang.Exception {
     VM vm0 = Host.getHost(0).getVM(0);
-    Object o[] = new Object[1];
+    Object[] o = new Object[1];
     o[0] = "TxnManagerMultiThreadDUnitTest";
     Object tableName = vm0.invoke(TxnManagerMultiThreadDUnitTest.class, "init", o);
     // setting the table name using the CacheUtils method setTableName
@@ -296,7 +296,7 @@ public class TxnManagerMultiThreadDUnitTest extends JUnit4DistributedTestCase {
     vm0.invoke(CacheUtils.class, "setTableName", o);
     // delete the rows which are inseted in CacheUtils.init by calling delRows
     // method
-    vm0.invoke(() -> TxnManagerMultiThreadDUnitTest.delRows());
+    vm0.invoke(TxnManagerMultiThreadDUnitTest::delRows);
   }
 
   public static void delRows() {
@@ -324,7 +324,7 @@ public class TxnManagerMultiThreadDUnitTest extends JUnit4DistributedTestCase {
     VM vm0 = Host.getHost(0).getVM(0);
     // get tableName to pass to destroyTable
     String tableName = CacheUtils.getTableName();
-    Object o[] = new Object[1];
+    Object[] o = new Object[1];
     o[0] = tableName;
     // call the destroyTable method of the same class
     // that takes care of destroying table, closing cache, disconnecting from
@@ -387,12 +387,12 @@ public class TxnManagerMultiThreadDUnitTest extends JUnit4DistributedTestCase {
   public void test1AllCommit() throws Exception {
     VM vm0 = Host.getHost(0).getVM(0);
     AsyncInvocation asyncObj1 =
-        vm0.invokeAsync(() -> TxnManagerMultiThreadDUnitTest.callCommitThreads());
+        vm0.invokeAsync(TxnManagerMultiThreadDUnitTest::callCommitThreads);
     ThreadUtils.join(asyncObj1, 30 * 1000);
     if (asyncObj1.exceptionOccurred()) {
       Assert.fail("asyncObj1 failed", asyncObj1.getException());
     }
-    vm0.invoke(() -> TxnManagerMultiThreadDUnitTest.getNumberOfRows());
+    vm0.invoke(TxnManagerMultiThreadDUnitTest::getNumberOfRows);
   }
 
   /**
@@ -420,12 +420,12 @@ public class TxnManagerMultiThreadDUnitTest extends JUnit4DistributedTestCase {
   public void test3Commit2Rollback() throws Exception {
     VM vm0 = Host.getHost(0).getVM(0);
     AsyncInvocation asyncObj1 =
-        vm0.invokeAsync(() -> TxnManagerMultiThreadDUnitTest.callCommitandRollbackThreads());
+        vm0.invokeAsync(TxnManagerMultiThreadDUnitTest::callCommitandRollbackThreads);
     ThreadUtils.join(asyncObj1, 30 * 1000);
     if (asyncObj1.exceptionOccurred()) {
       Assert.fail("asyncObj1 failed", asyncObj1.getException());
     }
-    vm0.invoke(() -> TxnManagerMultiThreadDUnitTest.getNumberOfRows());
+    vm0.invoke(TxnManagerMultiThreadDUnitTest::getNumberOfRows);
   }
 
   public static void callCommitandRollbackThreads() {

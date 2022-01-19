@@ -39,7 +39,7 @@ public class LeaveRequestMessage<ID extends MemberIdentifier> extends AbstractGM
       ID id, String reason) {
     super();
     setRecipients(coords);
-    this.memberID = id;
+    memberID = id;
     this.reason = reason;
   }
 
@@ -47,7 +47,7 @@ public class LeaveRequestMessage<ID extends MemberIdentifier> extends AbstractGM
       String reason) {
     super();
     setRecipient(coord);
-    this.memberID = id;
+    memberID = id;
     this.reason = reason;
   }
 

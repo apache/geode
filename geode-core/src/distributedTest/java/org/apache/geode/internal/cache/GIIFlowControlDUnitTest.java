@@ -52,8 +52,8 @@ public class GIIFlowControlDUnitTest extends JUnit4CacheTestCase {
 
   protected static final String REGION_NAME = "region";
   private static final long MAX_WAIT = 10 * 1000;
-  private static int origChunkSize = InitialImageOperation.CHUNK_SIZE_IN_BYTES;
-  private static int origNumChunks = InitialImageOperation.CHUNK_PERMITS;
+  private static final int origChunkSize = InitialImageOperation.CHUNK_SIZE_IN_BYTES;
+  private static final int origNumChunks = InitialImageOperation.CHUNK_PERMITS;
   protected static FlowControlObserver observer;
 
   public GIIFlowControlDUnitTest() {
@@ -326,7 +326,8 @@ public class GIIFlowControlDUnitTest extends JUnit4CacheTestCase {
         vm0.invoke(new SerializableRunnable("check for in progress messages") {
           @Override
           public void run() {
-            final DMStats stats = getSystem().getDMStats();
+            getSystem();
+            final DMStats stats = getDMStats();
             assertEquals(2, stats.getInitialImageMessagesInFlight());
           }
         });

@@ -44,7 +44,7 @@ public class JmxCredentialTypeTest {
   @Test
   public void testWithNonStringCredential() throws Exception {
     Map<String, Object> env = new HashMap<>();
-    env.put(JMXConnector.CREDENTIALS, new Integer(0));
+    env.put(JMXConnector.CREDENTIALS, 0);
     if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9)) {
       assertThatThrownBy(() -> connectionRule.connect("localhost", locator.getJmxPort(), env))
           .hasMessageContaining("filter status: REJECTED");

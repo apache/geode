@@ -118,30 +118,30 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
     // client 2 VM
     client2 = getHost(0).getVM(3);
 
-    PORT1 = ((Integer) server1.invoke(() -> createServerCache(new Boolean(false)))).intValue();
+    PORT1 = server1.invoke(() -> createServerCache(Boolean.FALSE));
 
     server1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart());
-    server1.invoke(() -> makeDispatcherSlow());
-    server1.invoke(() -> setQRMslow());
+    server1.invoke(this::makeDispatcherSlow);
+    server1.invoke(this::setQRMslow);
 
-    PORT2 = ((Integer) server2.invoke(() -> createServerCache(new Boolean(true)))).intValue();
+    PORT2 = server2.invoke(() -> createServerCache(Boolean.TRUE));
 
-    client1.invoke(() -> CacheServerTestUtil.disableShufflingOfEndpoints());
-    client2.invoke(() -> CacheServerTestUtil.disableShufflingOfEndpoints());
-    client1.invoke(() -> createClientCache(serverHostName, new Integer(PORT1), new Integer(PORT2),
-        new Boolean(false)));
-    client2.invoke(() -> createClientCache(serverHostName, new Integer(PORT1), new Integer(PORT2),
-        new Boolean(true)));
+    client1.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
+    client2.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
+    client1.invoke(() -> createClientCache(serverHostName, PORT1, PORT2,
+        Boolean.FALSE));
+    client2.invoke(() -> createClientCache(serverHostName, PORT1, PORT2,
+        Boolean.TRUE));
   }
 
   @Override
   public final void preTearDown() throws Exception {
-    client1.invoke(() -> closeCache());
-    client2.invoke(() -> closeCache());
+    client1.invoke(this::closeCache);
+    client2.invoke(this::closeCache);
     // close server
-    server1.invoke(() -> resetQRMslow());
-    server1.invoke(() -> closeCache());
-    server2.invoke(() -> closeCache());
+    server1.invoke(this::resetQRMslow);
+    server1.invoke(this::closeCache);
+    server2.invoke(this::closeCache);
   }
 
   @Test
@@ -303,7 +303,7 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
-    if (isListenerPresent.booleanValue() == true) {
+    if (isListenerPresent == true) {
       CacheListener serverListener = new HAServerListener();
       factory.setCacheListener(serverListener);
     }
@@ -315,13 +315,13 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   private void createClientCache(String hostName, Integer port1, Integer port2,
       Boolean isListenerPresent) throws CqException, CqExistsException, RegionNotFoundException {
-    int PORT1 = port1.intValue();
-    int PORT2 = port2.intValue();
+    int PORT1 = port1;
+    int PORT2 = port2;
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
@@ -330,7 +330,7 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
     factory.setScope(Scope.DISTRIBUTED_ACK);
     ClientServerTestCase.configureConnectionPool(factory, hostName, new int[] {PORT1, PORT2}, true,
         -1, 2, null);
-    if (isListenerPresent.booleanValue() == true) {
+    if (isListenerPresent == true) {
       CacheListener clientListener = new HAClientListener();
       factory.setCacheListener(clientListener);
     }
@@ -441,14 +441,11 @@ public class HADispatcherDUnitTest extends JUnit4DistributedTestCase {
       // This should have been replaced by listener on the HARegion and doing wait for event arrival
       // in that.
       while (true) {
-        for (Iterator iter_prox =
-            server.getAcceptor().getCacheClientNotifier().getClientProxies().iterator(); iter_prox
-                .hasNext();) {
-          CacheClientProxy proxy = (CacheClientProxy) iter_prox.next();
+        for (CacheClientProxy proxy : server.getAcceptor().getCacheClientNotifier()
+            .getClientProxies()) {
           HARegion regionForQueue = (HARegion) proxy.getHARegion();
 
-          for (Iterator itr = regionForQueue.values().iterator(); itr.hasNext();) {
-            Object obj = itr.next();
+          for (Object obj : regionForQueue.values()) {
             if (obj instanceof HAEventWrapper) {
               Conflatable confObj = (Conflatable) obj;
               if (KEY1.equals(confObj.getKeyToConflate())

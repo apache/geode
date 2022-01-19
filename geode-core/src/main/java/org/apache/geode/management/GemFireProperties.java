@@ -1644,11 +1644,11 @@ public class GemFireProperties {
   }
 
   public void setDistributedTransactions(boolean value) {
-    this.distributedTransactions = value;
+    distributedTransactions = value;
   }
 
   public boolean getDistributedTransactions() {
-    return this.distributedTransactions;
+    return distributedTransactions;
   }
 
   public String getJmxSSLAlias() {
@@ -1705,7 +1705,7 @@ public class GemFireProperties {
 
   public void setSecurableCommunicationChannel(
       final SecurableCommunicationChannel[] sslEnabledComponents) {
-    this.securableCommunicationChannels = sslEnabledComponents;
+    securableCommunicationChannels = sslEnabledComponents;
   }
 
   public String getSSLProtocols() {

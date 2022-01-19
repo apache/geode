@@ -33,7 +33,7 @@ public class DiskStatsJUnitTest extends MBeanStatsTestCase {
 
   private DiskStoreStats diskStoreStats;
 
-  private static long testStartTime = NanoTimer.getTime();
+  private static final long testStartTime = NanoTimer.getTime();
 
   @Override
   public void init() {

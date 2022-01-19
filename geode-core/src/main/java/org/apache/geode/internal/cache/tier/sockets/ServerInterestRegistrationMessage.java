@@ -46,7 +46,7 @@ public class ServerInterestRegistrationMessage extends HighPriorityDistributionM
   ServerInterestRegistrationMessage(ClientProxyMembershipID clientId,
       ClientInterestMessageImpl clientInterestMessage) {
     this.clientId = clientId;
-    this.clientMessage = clientInterestMessage;
+    clientMessage = clientInterestMessage;
   }
 
   public ServerInterestRegistrationMessage() {
@@ -79,16 +79,16 @@ public class ServerInterestRegistrationMessage extends HighPriorityDistributionM
     try {
       CacheClientNotifier clientNotifier = CacheClientNotifier.getInstance();
       if (clientNotifier != null) {
-        CacheClientProxy proxy = clientNotifier.getClientProxy(this.clientId);
+        CacheClientProxy proxy = clientNotifier.getClientProxy(clientId);
         // If this VM contains a proxy for the requested proxy id, forward the
         // message on to the proxy for processing
         if (proxy != null) {
-          proxy.processInterestMessage(this.clientMessage);
+          proxy.processInterestMessage(clientMessage);
         }
       }
     } finally {
       ReplyMessage reply = new ReplyMessage();
-      reply.setProcessorId(this.processorId);
+      reply.setProcessorId(processorId);
       reply.setRecipient(getSender());
       try {
         dm.putOutgoing(reply);
@@ -107,19 +107,19 @@ public class ServerInterestRegistrationMessage extends HighPriorityDistributionM
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.processorId);
-    InternalDataSerializer.invokeToData(this.clientId, out);
-    InternalDataSerializer.invokeToData(this.clientMessage, out);
+    out.writeInt(processorId);
+    InternalDataSerializer.invokeToData(clientId, out);
+    InternalDataSerializer.invokeToData(clientMessage, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.processorId = in.readInt();
-    this.clientId = new ClientProxyMembershipID();
-    InternalDataSerializer.invokeFromData(this.clientId, in);
-    this.clientMessage = new ClientInterestMessageImpl();
-    InternalDataSerializer.invokeFromData(this.clientMessage, in);
+    processorId = in.readInt();
+    clientId = new ClientProxyMembershipID();
+    InternalDataSerializer.invokeFromData(clientId, in);
+    clientMessage = new ClientInterestMessageImpl();
+    InternalDataSerializer.invokeFromData(clientMessage, in);
   }
 }

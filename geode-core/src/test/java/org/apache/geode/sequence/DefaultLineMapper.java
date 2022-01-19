@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
  *
  */
 public class DefaultLineMapper implements LineMapper {
-  private static Pattern MEMBER_ID_RE =
+  private static final Pattern MEMBER_ID_RE =
       Pattern.compile(".*\\((\\d+)(:admin)?(:loner)?\\).*:\\d+(/\\d+|.*:.*)");
 
   @Override

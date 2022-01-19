@@ -19,7 +19,7 @@ import org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListe
 public interface WanLocatorDiscoverer {
 
   int WAN_LOCATOR_CONNECTION_TIMEOUT =
-      Integer.getInteger("WANLocator.CONNECTION_TIMEOUT", 50000).intValue();
+      Integer.getInteger("WANLocator.CONNECTION_TIMEOUT", 50000);
 
   /**
    * For WAN 70 Exchange the locator information within the distributed system

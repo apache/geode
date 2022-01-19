@@ -188,7 +188,7 @@ public class ClusterConfigLocatorRestartDUnitTest {
     // Start another member. This should fail because it should require cluster configuration in
     // order to startup
     assertThatThrownBy(
-        () -> this.rule.startServerVM(4, properties, locator1.getPort(), locator0.getPort()))
+        () -> rule.startServerVM(4, properties, locator1.getPort(), locator0.getPort()))
             .hasCauseInstanceOf(
                 GemFireConfigException.class);
 

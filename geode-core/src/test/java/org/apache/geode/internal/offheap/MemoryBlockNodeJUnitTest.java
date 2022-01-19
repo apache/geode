@@ -45,7 +45,7 @@ public class MemoryBlockNodeJUnitTest {
   private MemoryAllocatorImpl ma;
   private OutOfOffHeapMemoryListener ooohml;
   private OffHeapMemoryStats stats;
-  private Slab[] slabs = {new SlabImpl((int) OffHeapStorage.MIN_SLAB_SIZE),
+  private final Slab[] slabs = {new SlabImpl((int) OffHeapStorage.MIN_SLAB_SIZE),
       new SlabImpl((int) OffHeapStorage.MIN_SLAB_SIZE * 2)};
   private StoredObject storedObject = null;
 
@@ -66,7 +66,7 @@ public class MemoryBlockNodeJUnitTest {
   public void setUp() {
     ooohml = mock(OutOfOffHeapMemoryListener.class);
     stats = mock(OffHeapMemoryStats.class);
-    ma = (MemoryAllocatorImpl) MemoryAllocatorImpl.createForUnitTest(ooohml, stats, slabs);
+    ma = MemoryAllocatorImpl.createForUnitTest(ooohml, stats, slabs);
   }
 
   @After
@@ -75,7 +75,7 @@ public class MemoryBlockNodeJUnitTest {
   }
 
   private Object getValue() {
-    return Long.valueOf(Long.MAX_VALUE);
+    return Long.MAX_VALUE;
   }
 
   private StoredObject createValueAsUnserializedStoredObject(Object value) {
@@ -102,7 +102,7 @@ public class MemoryBlockNodeJUnitTest {
   }
 
   private StoredObject createChunk(byte[] v, boolean isSerialized, boolean isCompressed) {
-    StoredObject chunk = (StoredObject) ma.allocateAndInitialize(v, isSerialized, isCompressed);
+    StoredObject chunk = ma.allocateAndInitialize(v, isSerialized, isCompressed);
     return chunk;
   }
 
@@ -349,7 +349,6 @@ public class MemoryBlockNodeJUnitTest {
         .isEqualTo("CacheClosedException:Unit test forced exception");
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void getDataValueCatchesClassNotFoundException() throws Exception {
     Object obj = getValue();
@@ -361,7 +360,7 @@ public class MemoryBlockNodeJUnitTest {
     }).when(spyStoredObject).getRawBytes();
     ByteArrayOutputStream errContent = new ByteArrayOutputStream();
     System.setErr(new PrintStream(errContent));
-    MemoryBlock mb = new MemoryBlockNode(ma, (MemoryBlock) spyStoredObject);
+    MemoryBlock mb = new MemoryBlockNode(ma, spyStoredObject);
     softly.assertThat(mb.getDataValue()).isEqualTo("ClassNotFoundException:null");
   }
 

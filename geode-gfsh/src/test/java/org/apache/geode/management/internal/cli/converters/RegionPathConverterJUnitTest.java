@@ -35,7 +35,7 @@ public class RegionPathConverterJUnitTest {
   public static GfshParserRule parser = new GfshParserRule();
   private static RegionPathConverter converter;
 
-  private static String[] allRegionPaths =
+  private static final String[] allRegionPaths =
       {SEPARATOR + "region1", SEPARATOR + "region2", SEPARATOR + "rg3"};
 
   @BeforeClass

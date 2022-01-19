@@ -28,7 +28,7 @@ import org.apache.geode.util.internal.GeodeJsonMapper;
 public class RegionTest {
 
   private Region regionConfig;
-  private static ObjectMapper mapper = GeodeJsonMapper.getMapper();
+  private static final ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
   @Before
   public void before() {

@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.offheap;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -56,22 +55,19 @@ public interface LifecycleListener {
   void beforeClose(MemoryAllocatorImpl allocator);
 
   static void invokeBeforeClose(MemoryAllocatorImpl allocator) {
-    for (Iterator<LifecycleListener> iter = lifecycleListeners.iterator(); iter.hasNext();) {
-      LifecycleListener listener = iter.next();
+    for (LifecycleListener listener : lifecycleListeners) {
       listener.beforeClose(allocator);
     }
   }
 
   static void invokeAfterReuse(MemoryAllocatorImpl allocator) {
-    for (Iterator<LifecycleListener> iter = lifecycleListeners.iterator(); iter.hasNext();) {
-      LifecycleListener listener = iter.next();
+    for (LifecycleListener listener : lifecycleListeners) {
       listener.afterReuse(allocator);
     }
   }
 
   static void invokeAfterCreate(MemoryAllocatorImpl allocator) {
-    for (Iterator<LifecycleListener> iter = lifecycleListeners.iterator(); iter.hasNext();) {
-      LifecycleListener listener = iter.next();
+    for (LifecycleListener listener : lifecycleListeners) {
       listener.afterCreate(allocator);
     }
   }
@@ -98,5 +94,5 @@ public interface LifecycleListener {
    * Following should be private but java 8 does not support that.
    */
   @MakeNotStatic
-  List<LifecycleListener> lifecycleListeners = new CopyOnWriteArrayList<LifecycleListener>();
+  List<LifecycleListener> lifecycleListeners = new CopyOnWriteArrayList<>();
 }

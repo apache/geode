@@ -105,11 +105,11 @@ public class BucketCreationCrashRegressionTest implements Serializable {
     hostName = getHostName();
     locatorLog = new File(temporaryFolder.newFolder(uniqueName), "locator.log");
 
-    locatorPort = locator.invoke(() -> startLocator());
+    locatorPort = locator.invoke(this::startLocator);
     assertThat(locatorPort).isGreaterThan(0);
 
-    server1.invoke(() -> createServerCache());
-    server2.invoke(() -> createServerCache());
+    server1.invoke(this::createServerCache);
+    server2.invoke(this::createServerCache);
 
     // cluster should ONLY have 3 members (our 2 servers and 1 locator)
     assertThat(server1.invoke(() -> cacheRule.getCache().getDistributionManager()
@@ -133,21 +133,21 @@ public class BucketCreationCrashRegressionTest implements Serializable {
   @Test
   public void putShouldNotHangAfterBucketCrashesBeforePrimarySelection() {
     server1.invoke(
-        () -> handleBeforeProcessMessage(ManageBucketReplyMessage.class, () -> crashServer()));
-    server1.invoke(() -> createPartitionedRegion());
+        () -> handleBeforeProcessMessage(ManageBucketReplyMessage.class, this::crashServer));
+    server1.invoke(this::createPartitionedRegion);
 
     // Create a couple of buckets in VM0. This will make sure
     // the next bucket we create will be created in VM 1.
     server1.invoke(() -> putData(0, 2, "a"));
 
-    server2.invoke(() -> createPartitionedRegion());
+    server2.invoke(this::createPartitionedRegion);
 
     // Trigger a bucket creation in VM1, which should cause server1 to close it's cache.
     assertThatThrownBy(() -> server1.invoke(() -> putData(3, 4, "a")))
         .isInstanceOf(RMIException.class)
         .hasCauseInstanceOf(DistributedSystemDisconnectedException.class);
 
-    assertThat(server2.invoke(() -> getBucketList())).containsExactly(3);
+    assertThat(server2.invoke(this::getBucketList)).containsExactly(3);
 
     // This shouldn't hang, because the bucket creation should finish,.
     server2.invoke(() -> putData(3, 4, "a"));
@@ -160,14 +160,14 @@ public class BucketCreationCrashRegressionTest implements Serializable {
   @Test
   public void putShouldNotHangAfterServerWithBucketCrashes() {
     server2.invoke(() -> handleBeforeProcessMessage(ManageBucketMessage.class,
-        () -> server1.invoke(() -> crashServer())));
-    server1.invoke(() -> createPartitionedRegion());
+        () -> server1.invoke(this::crashServer)));
+    server1.invoke(this::createPartitionedRegion);
 
     // Create a couple of buckets in VM0. This will make sure
     // the next bucket we create will be created in VM 1.
     server1.invoke(() -> putData(0, 2, "a"));
 
-    server2.invoke(() -> createPartitionedRegion());
+    server2.invoke(this::createPartitionedRegion);
 
     // Trigger a bucket creation in VM1, which should cause server1 to close it's cache.
     assertThatThrownBy(() -> server1.invoke(() -> putData(3, 4, "a")))
@@ -175,7 +175,7 @@ public class BucketCreationCrashRegressionTest implements Serializable {
         .hasCauseInstanceOf(DistributedSystemDisconnectedException.class);
 
     await()
-        .untilAsserted(() -> assertThat(server2.invoke(() -> getBucketList())).containsExactly(3));
+        .untilAsserted(() -> assertThat(server2.invoke(this::getBucketList)).containsExactly(3));
 
     // This shouldn't hang, because the bucket creation should finish.
     server2.invoke(() -> putData(3, 4, "a"));

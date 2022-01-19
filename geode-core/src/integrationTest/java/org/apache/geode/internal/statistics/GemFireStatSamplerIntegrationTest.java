@@ -562,7 +562,6 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     system = (InternalDistributedSystem) DistributedSystem.connect(props);
   }
 
-  @SuppressWarnings("deprecation")
   private void disconnect() {
     if (system != null) {
       system.disconnect();

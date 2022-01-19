@@ -74,7 +74,7 @@ public class ProxyRegion implements Region {
   public void clear() {
     try {
       preOp();
-      this.realRegion.clear();
+      realRegion.clear();
     } finally {
       postOp();
     }
@@ -84,7 +84,7 @@ public class ProxyRegion implements Region {
   public void close() {
     try {
       preOp();
-      this.realRegion.close();
+      realRegion.close();
     } finally {
       postOp();
     }
@@ -94,7 +94,7 @@ public class ProxyRegion implements Region {
   public boolean containsKey(Object key) {
     try {
       preOp();
-      return this.realRegion.containsKey(key);
+      return realRegion.containsKey(key);
     } finally {
       postOp();
     }
@@ -104,7 +104,7 @@ public class ProxyRegion implements Region {
   public boolean containsKeyOnServer(Object key) {
     try {
       preOp();
-      return this.realRegion.containsKeyOnServer(key);
+      return realRegion.containsKeyOnServer(key);
     } finally {
       postOp();
     }
@@ -114,7 +114,7 @@ public class ProxyRegion implements Region {
   public int sizeOnServer() {
     try {
       preOp();
-      return this.realRegion.sizeOnServer();
+      return realRegion.sizeOnServer();
     } finally {
       postOp();
     }
@@ -124,7 +124,7 @@ public class ProxyRegion implements Region {
   public boolean isEmptyOnServer() {
     try {
       preOp();
-      return this.realRegion.isEmptyOnServer();
+      return realRegion.isEmptyOnServer();
     } finally {
       postOp();
     }
@@ -134,7 +134,7 @@ public class ProxyRegion implements Region {
   public boolean containsValue(Object value) {
     try {
       preOp();
-      return this.realRegion.containsValue(value);
+      return realRegion.containsValue(value);
     } finally {
       postOp();
     }
@@ -144,7 +144,7 @@ public class ProxyRegion implements Region {
   public boolean containsValueForKey(Object key) {
     try {
       preOp();
-      return this.realRegion.containsValueForKey(key);
+      return realRegion.containsValueForKey(key);
     } finally {
       postOp();
     }
@@ -155,7 +155,7 @@ public class ProxyRegion implements Region {
       throws TimeoutException, EntryExistsException, CacheWriterException {
     try {
       preOp();
-      this.realRegion.create(key, value);
+      realRegion.create(key, value);
     } finally {
       postOp();
     }
@@ -166,7 +166,7 @@ public class ProxyRegion implements Region {
       throws TimeoutException, EntryExistsException, CacheWriterException {
     try {
       preOp();
-      this.realRegion.create(key, value, callbackArgument);
+      realRegion.create(key, value, callbackArgument);
     } finally {
       postOp();
     }
@@ -183,7 +183,7 @@ public class ProxyRegion implements Region {
       throws TimeoutException, EntryNotFoundException, CacheWriterException {
     try {
       preOp();
-      return this.realRegion.destroy(key);
+      return realRegion.destroy(key);
     } finally {
       postOp();
     }
@@ -194,7 +194,7 @@ public class ProxyRegion implements Region {
       throws TimeoutException, EntryNotFoundException, CacheWriterException {
     try {
       preOp();
-      return this.realRegion.destroy(key, callbackArgument);
+      return realRegion.destroy(key, callbackArgument);
     } finally {
       postOp();
     }
@@ -204,7 +204,7 @@ public class ProxyRegion implements Region {
   public void destroyRegion() throws CacheWriterException, TimeoutException {
     try {
       preOp();
-      this.realRegion.destroyRegion();
+      realRegion.destroyRegion();
     } finally {
       postOp();
     }
@@ -214,7 +214,7 @@ public class ProxyRegion implements Region {
   public void destroyRegion(Object callbackArgument) throws CacheWriterException, TimeoutException {
     try {
       preOp();
-      this.realRegion.destroyRegion(callbackArgument);
+      realRegion.destroyRegion(callbackArgument);
     } finally {
       postOp();
     }
@@ -224,7 +224,7 @@ public class ProxyRegion implements Region {
   public Set entrySet(boolean recursive) {
     try {
       preOp();
-      return this.realRegion.entrySet(recursive);
+      return realRegion.entrySet(recursive);
     } finally {
       postOp();
     }
@@ -234,7 +234,7 @@ public class ProxyRegion implements Region {
   public Set entrySet() {
     try {
       preOp();
-      return this.realRegion.entrySet();
+      return realRegion.entrySet();
     } finally {
       postOp();
     }
@@ -245,7 +245,7 @@ public class ProxyRegion implements Region {
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     try {
       preOp();
-      return this.realRegion.existsValue(queryPredicate);
+      return realRegion.existsValue(queryPredicate);
     } finally {
       postOp();
     }
@@ -260,7 +260,7 @@ public class ProxyRegion implements Region {
   public Object get(Object key) throws CacheLoaderException, TimeoutException {
     try {
       preOp();
-      return this.realRegion.get(key);
+      return realRegion.get(key);
     } finally {
       postOp();
     }
@@ -271,7 +271,7 @@ public class ProxyRegion implements Region {
       throws TimeoutException, CacheLoaderException {
     try {
       preOp();
-      return this.realRegion.get(key, callbackArgument);
+      return realRegion.get(key, callbackArgument);
     } finally {
       postOp();
     }
@@ -286,7 +286,7 @@ public class ProxyRegion implements Region {
   public Map getAll(Collection keys, Object callback) {
     try {
       preOp();
-      return this.realRegion.getAll(keys, callback);
+      return realRegion.getAll(keys, callback);
     } finally {
       postOp();
     }
@@ -309,11 +309,11 @@ public class ProxyRegion implements Region {
 
   @Override
   public RegionService getRegionService() {
-    return this.proxyCache;
+    return proxyCache;
   }
 
   public ProxyCache getAuthenticatedCache() {
-    return this.proxyCache;
+    return proxyCache;
   }
 
   @Override
@@ -325,7 +325,7 @@ public class ProxyRegion implements Region {
   public Entry getEntry(Object key) {
     try {
       preOp();
-      return this.realRegion.getEntry(key);
+      return realRegion.getEntry(key);
     } finally {
       postOp();
     }
@@ -333,7 +333,7 @@ public class ProxyRegion implements Region {
 
   @Override
   public String getFullPath() {
-    return this.realRegion.getFullPath();
+    return realRegion.getFullPath();
   }
 
   @Override
@@ -348,12 +348,12 @@ public class ProxyRegion implements Region {
 
   @Override
   public String getName() {
-    return this.realRegion.getName();
+    return realRegion.getName();
   }
 
   @Override
   public Region getParentRegion() {
-    return this.realRegion.getParentRegion();
+    return realRegion.getParentRegion();
   }
 
   @Override
@@ -363,25 +363,25 @@ public class ProxyRegion implements Region {
 
   @Override
   public CacheStatistics getStatistics() throws StatisticsDisabledException {
-    return this.realRegion.getStatistics();
+    return realRegion.getStatistics();
   }
 
   @Override
   public Region getSubregion(String path) {
-    Region region = this.realRegion.getSubregion(path);
-    return region != null ? new ProxyRegion(this.proxyCache, region, statisticsClock) : null;
+    Region region = realRegion.getSubregion(path);
+    return region != null ? new ProxyRegion(proxyCache, region, statisticsClock) : null;
   }
 
   @Override
   public Object getUserAttribute() {
-    return this.realRegion.getUserAttribute();
+    return realRegion.getUserAttribute();
   }
 
   @Override
   public void invalidate(Object key) throws TimeoutException, EntryNotFoundException {
     try {
       preOp();
-      this.realRegion.invalidate(key);
+      realRegion.invalidate(key);
     } finally {
       postOp();
     }
@@ -392,7 +392,7 @@ public class ProxyRegion implements Region {
       throws TimeoutException, EntryNotFoundException {
     try {
       preOp();
-      this.realRegion.invalidate(key, callbackArgument);
+      realRegion.invalidate(key, callbackArgument);
     } finally {
       postOp();
     }
@@ -402,7 +402,7 @@ public class ProxyRegion implements Region {
   public void invalidateRegion() throws TimeoutException {
     try {
       preOp();
-      this.realRegion.invalidateRegion();
+      realRegion.invalidateRegion();
     } finally {
       postOp();
     }
@@ -412,7 +412,7 @@ public class ProxyRegion implements Region {
   public void invalidateRegion(Object callbackArgument) throws TimeoutException {
     try {
       preOp();
-      this.realRegion.invalidateRegion(callbackArgument);
+      realRegion.invalidateRegion(callbackArgument);
     } finally {
       postOp();
     }
@@ -420,19 +420,19 @@ public class ProxyRegion implements Region {
 
   @Override
   public boolean isDestroyed() {
-    return this.realRegion.isDestroyed();
+    return realRegion.isDestroyed();
   }
 
   @Override
   public boolean isEmpty() {
-    return this.realRegion.isEmpty();
+    return realRegion.isEmpty();
   }
 
   @Override
   public Set keySetOnServer() {
     try {
       preOp();
-      return this.realRegion.keySetOnServer();
+      return realRegion.keySetOnServer();
     } finally {
       postOp();
     }
@@ -442,7 +442,7 @@ public class ProxyRegion implements Region {
   public Set keySet() {
     try {
       preOp();
-      return this.realRegion.keySet();
+      return realRegion.keySet();
     } finally {
       postOp();
     }
@@ -512,7 +512,7 @@ public class ProxyRegion implements Region {
   public Object put(Object key, Object value) throws TimeoutException, CacheWriterException {
     try {
       preOp();
-      return this.realRegion.put(key, value);
+      return realRegion.put(key, value);
     } finally {
       postOp();
     }
@@ -523,7 +523,7 @@ public class ProxyRegion implements Region {
       throws TimeoutException, CacheWriterException {
     try {
       preOp();
-      return this.realRegion.put(key, value, callbackArgument);
+      return realRegion.put(key, value, callbackArgument);
     } finally {
       postOp();
     }
@@ -538,7 +538,7 @@ public class ProxyRegion implements Region {
   public void putAll(Map map, Object callbackArg) {
     try {
       preOp();
-      this.realRegion.putAll(map, callbackArg);
+      realRegion.putAll(map, callbackArg);
     } finally {
       postOp();
     }
@@ -549,7 +549,7 @@ public class ProxyRegion implements Region {
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     try {
       preOp();
-      return this.realRegion.query(queryPredicate);
+      return realRegion.query(queryPredicate);
     } finally {
       postOp();
     }
@@ -621,7 +621,7 @@ public class ProxyRegion implements Region {
   public Object remove(Object key) {
     try {
       preOp();
-      return this.realRegion.remove(key);
+      return realRegion.remove(key);
     } finally {
       postOp();
     }
@@ -637,7 +637,7 @@ public class ProxyRegion implements Region {
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     try {
       preOp();
-      return this.realRegion.selectValue(queryPredicate);
+      return realRegion.selectValue(queryPredicate);
     } finally {
       postOp();
     }
@@ -652,7 +652,7 @@ public class ProxyRegion implements Region {
   public int size() {
     try {
       preOp();
-      return this.realRegion.size();
+      return realRegion.size();
     } finally {
       postOp();
     }
@@ -660,7 +660,7 @@ public class ProxyRegion implements Region {
 
   @Override
   public Set subregions(boolean recursive) {
-    return this.realRegion.subregions(recursive);
+    return realRegion.subregions(recursive);
   }
 
   @Override
@@ -677,7 +677,7 @@ public class ProxyRegion implements Region {
   public Collection values() {
     try {
       preOp();
-      return this.realRegion.values();
+      return realRegion.values();
     } finally {
       postOp();
     }
@@ -689,14 +689,14 @@ public class ProxyRegion implements Region {
   }
 
   private void preOp() {
-    if (this.proxyCache.isClosed()) {
+    if (proxyCache.isClosed()) {
       throw proxyCache.getCacheClosedException("Cache is closed for this user.");
     }
-    UserAttributes.userAttributes.set(this.proxyCache.getUserAttributes());
+    UserAttributes.userAttributes.set(proxyCache.getUserAttributes());
   }
 
   private void postOp() {
-    this.proxyCache.setUserAttributes(UserAttributes.userAttributes.get());
+    proxyCache.setUserAttributes(UserAttributes.userAttributes.get());
     UserAttributes.userAttributes.set(null);
   }
 
@@ -713,7 +713,7 @@ public class ProxyRegion implements Region {
   public Object putIfAbsent(Object key, Object value) {
     try {
       preOp();
-      return this.realRegion.putIfAbsent(key, value);
+      return realRegion.putIfAbsent(key, value);
     } finally {
       postOp();
     }
@@ -728,7 +728,7 @@ public class ProxyRegion implements Region {
   public boolean remove(Object key, Object value) {
     try {
       preOp();
-      return this.realRegion.remove(key, value);
+      return realRegion.remove(key, value);
     } finally {
       postOp();
     }
@@ -743,7 +743,7 @@ public class ProxyRegion implements Region {
   public Object replace(Object key, Object value) {
     try {
       preOp();
-      return this.realRegion.replace(key, value);
+      return realRegion.replace(key, value);
     } finally {
       postOp();
     }
@@ -759,7 +759,7 @@ public class ProxyRegion implements Region {
   public boolean replace(Object key, Object oldValue, Object newValue) {
     try {
       preOp();
-      return this.realRegion.replace(key, oldValue, newValue);
+      return realRegion.replace(key, oldValue, newValue);
     } finally {
       postOp();
     }
@@ -779,7 +779,7 @@ public class ProxyRegion implements Region {
   public void removeAll(Collection keys, Object aCallbackArgument) {
     try {
       preOp();
-      this.realRegion.removeAll(keys, aCallbackArgument);
+      realRegion.removeAll(keys, aCallbackArgument);
     } finally {
       postOp();
     }

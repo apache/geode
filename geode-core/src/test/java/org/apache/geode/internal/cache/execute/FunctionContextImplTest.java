@@ -29,7 +29,7 @@ public class FunctionContextImplTest {
   public void executeWithNullCacheInstanceThrowsCacheClosedException() {
     FunctionContextImpl context = new FunctionContextImpl(null, null, null, null);
 
-    Throwable thrown = catchThrowable(() -> context.getCache());
+    Throwable thrown = catchThrowable(context::getCache);
 
     assertThat(thrown)
         .isInstanceOf(CacheClosedException.class)

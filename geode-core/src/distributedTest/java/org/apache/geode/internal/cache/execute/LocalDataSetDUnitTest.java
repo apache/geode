@@ -22,7 +22,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.junit.Test;
@@ -145,9 +144,8 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
     public void execute(FunctionContext context) {
       Region localRegion =
           PartitionRegionHelper.getLocalDataForContext((RegionFunctionContext) context);
-      Iterator it = localRegion.keySet().iterator();
-      while (it.hasNext()) {
-        LogWriterUtils.getLogWriter().info("LocalKeys:" + it.next());
+      for (final Object o : localRegion.keySet()) {
+        LogWriterUtils.getLogWriter().info("LocalKeys:" + o);
       }
       context.getResultSender().lastResult(Boolean.TRUE);
     }
@@ -181,9 +179,9 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
 
   public Integer getHookInvoked() {
     if (invoked) {
-      return Integer.valueOf(1);
+      return 1;
     }
-    return Integer.valueOf(0);
+    return 0;
   }
 
   protected static class ReadHook implements Runnable {
@@ -196,7 +194,7 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void executeFunctions() {
-    dataStore1.invoke(() -> LocalDataSetDUnitTest.executeFunction());
+    dataStore1.invoke(LocalDataSetDUnitTest::executeFunction);
 
   }
 
@@ -204,7 +202,7 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
     try {
       FunctionService.onRegion(customerPR).execute("LocalDataSetFunction" + true).getResult();
       FunctionService.onRegion(customerPR).execute("LocalDataSetFunction" + false).getResult();
-      Set<String> filter = new HashSet<String>();
+      Set<String> filter = new HashSet<>();
       filter.add("YOYO-CUST-KEY-" + 0);
       FunctionService.onRegion(customerPR).withFilter(filter).execute("LocalDataSetFunction" + true)
           .getResult();
@@ -225,9 +223,9 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void registerFunctions() {
-    dataStore1.invoke(() -> LocalDataSetDUnitTest.registerFunction());
-    dataStore2.invoke(() -> LocalDataSetDUnitTest.registerFunction());
-    dataStore3.invoke(() -> LocalDataSetDUnitTest.registerFunction());
+    dataStore1.invoke(LocalDataSetDUnitTest::registerFunction);
+    dataStore2.invoke(LocalDataSetDUnitTest::registerFunction);
+    dataStore3.invoke(LocalDataSetDUnitTest::registerFunction);
   }
 
   public static void registerFunction() {
@@ -238,10 +236,10 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void registerIteratorFunctionOnAll() {
-    accessor.invoke(() -> LocalDataSetDUnitTest.registerIteratorFunction());
-    dataStore1.invoke(() -> LocalDataSetDUnitTest.registerIteratorFunction());
-    dataStore2.invoke(() -> LocalDataSetDUnitTest.registerIteratorFunction());
-    dataStore3.invoke(() -> LocalDataSetDUnitTest.registerIteratorFunction());
+    accessor.invoke(LocalDataSetDUnitTest::registerIteratorFunction);
+    dataStore1.invoke(LocalDataSetDUnitTest::registerIteratorFunction);
+    dataStore2.invoke(LocalDataSetDUnitTest::registerIteratorFunction);
+    dataStore3.invoke(LocalDataSetDUnitTest::registerIteratorFunction);
   }
 
   public static void registerIteratorFunction() {
@@ -250,10 +248,10 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
   }
 
   public static void createCacheInAllVms() {
-    dataStore1.invoke(() -> LocalDataSetDUnitTest.createCacheInVm());
-    dataStore2.invoke(() -> LocalDataSetDUnitTest.createCacheInVm());
-    dataStore3.invoke(() -> LocalDataSetDUnitTest.createCacheInVm());
-    accessor.invoke(() -> LocalDataSetDUnitTest.createCacheInVm());
+    dataStore1.invoke(LocalDataSetDUnitTest::createCacheInVm);
+    dataStore2.invoke(LocalDataSetDUnitTest::createCacheInVm);
+    dataStore3.invoke(LocalDataSetDUnitTest::createCacheInVm);
+    accessor.invoke(LocalDataSetDUnitTest::createCacheInVm);
   }
 
   public static void createCacheInVm() {
@@ -270,10 +268,10 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
   }
 
   private static void createCustomerPR() {
-    Object args[] =
-        new Object[] {"CustomerPR", new Integer(1), new Integer(0), new Integer(10), null};
+    Object[] args =
+        new Object[] {"CustomerPR", 1, 0, 10, null};
     accessor.invoke(LocalDataSetDUnitTest.class, "createPR", args);
-    args = new Object[] {"CustomerPR", new Integer(1), new Integer(50), new Integer(10), null};
+    args = new Object[] {"CustomerPR", 1, 50, 10, null};
     dataStore1.invoke(LocalDataSetDUnitTest.class, "createPR", args);
     dataStore2.invoke(LocalDataSetDUnitTest.class, "createPR", args);
     dataStore3.invoke(LocalDataSetDUnitTest.class, "createPR", args);
@@ -281,20 +279,20 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
   }
 
   private static void createOrderPR() {
-    Object args[] =
-        new Object[] {"OrderPR", new Integer(1), new Integer(0), new Integer(10), "CustomerPR"};
+    Object[] args =
+        new Object[] {"OrderPR", 1, 0, 10, "CustomerPR"};
     accessor.invoke(LocalDataSetDUnitTest.class, "createPR", args);
-    args = new Object[] {"OrderPR", new Integer(1), new Integer(50), new Integer(10), "CustomerPR"};
+    args = new Object[] {"OrderPR", 1, 50, 10, "CustomerPR"};
     dataStore1.invoke(LocalDataSetDUnitTest.class, "createPR", args);
     dataStore2.invoke(LocalDataSetDUnitTest.class, "createPR", args);
     dataStore3.invoke(LocalDataSetDUnitTest.class, "createPR", args);
   }
 
   private static void createShipmentPR() {
-    Object args[] =
-        new Object[] {"ShipmentPR", new Integer(1), new Integer(0), new Integer(10), "OrderPR"};
+    Object[] args =
+        new Object[] {"ShipmentPR", 1, 0, 10, "OrderPR"};
     accessor.invoke(LocalDataSetDUnitTest.class, "createPR", args);
-    args = new Object[] {"ShipmentPR", new Integer(1), new Integer(50), new Integer(10), "OrderPR"};
+    args = new Object[] {"ShipmentPR", 1, 50, 10, "OrderPR"};
     dataStore1.invoke(LocalDataSetDUnitTest.class, "createPR", args);
     dataStore2.invoke(LocalDataSetDUnitTest.class, "createPR", args);
     dataStore3.invoke(LocalDataSetDUnitTest.class, "createPR", args);
@@ -304,8 +302,8 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
       Integer localMaxMemory, Integer totalNumBuckets, String colocatedWith) {
 
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
-    PartitionAttributes prAttr = paf.setRedundantCopies(redundancy.intValue())
-        .setLocalMaxMemory(localMaxMemory.intValue()).setTotalNumBuckets(totalNumBuckets.intValue())
+    PartitionAttributes prAttr = paf.setRedundantCopies(redundancy)
+        .setLocalMaxMemory(localMaxMemory).setTotalNumBuckets(totalNumBuckets)
         .setColocatedWith(colocatedWith).setPartitionResolver(new LDSPartitionResolver()).create();
     AttributesFactory attr = new AttributesFactory();
     attr.setPartitionAttributes(prAttr);
@@ -336,7 +334,7 @@ public class LocalDataSetDUnitTest extends JUnit4CacheTestCase {
   }
 
   private static void putInPRs() {
-    accessor.invoke(() -> LocalDataSetDUnitTest.put());
+    accessor.invoke(LocalDataSetDUnitTest::put);
   }
 
   public static void put() {
@@ -356,7 +354,7 @@ class LDSPartitionResolver implements PartitionResolver {
 
   @Override
   public String getName() {
-    return this.getClass().getName();
+    return getClass().getName();
   }
 
   @Override
@@ -390,15 +388,15 @@ class LDSRoutingObject implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.value = DataSerializer.readString(in);
+    value = DataSerializer.readString(in);
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.value, out);
+    DataSerializer.writeString(value, out);
   }
 
   public int hashCode() {
-    return Integer.parseInt(this.value);
+    return Integer.parseInt(value);
   }
 }

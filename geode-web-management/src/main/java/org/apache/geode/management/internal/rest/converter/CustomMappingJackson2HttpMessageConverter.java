@@ -50,7 +50,7 @@ public class CustomMappingJackson2HttpMessageConverter extends MappingJackson2Ht
     protected BufferingHttpOutputMessageWrapper(final HttpOutputMessage httpOutputMessage) {
       Assert.notNull(httpOutputMessage, "The HttpOutputMessage instance to wrap must not be null!");
       this.httpOutputMessage = httpOutputMessage;
-      this.outputStream = new ByteArrayOutputStream(INITIAL_BYTE_ARRAY_BUFFER_SIZE);
+      outputStream = new ByteArrayOutputStream(INITIAL_BYTE_ARRAY_BUFFER_SIZE);
     }
 
     @Override

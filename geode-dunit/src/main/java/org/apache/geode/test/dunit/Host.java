@@ -192,12 +192,10 @@ public abstract class Host implements Serializable {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("Host ");
-    sb.append(getHostName());
-    sb.append(" with ");
-    sb.append(getVMCount());
-    sb.append(" VMs");
-    return sb.toString();
+    return "Host " + getHostName()
+        + " with "
+        + getVMCount()
+        + " VMs";
   }
 
   @Override

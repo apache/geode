@@ -55,13 +55,13 @@ public class SnapshotResultMessage extends PooledDistributionMessage implements 
   }
 
   public CacheSnapshot getSnapshot() {
-    return this.results;
+    return results;
   }
 
   // called by console to verify these results are for the snapshot
   // currently being processed
   public int getSnapshotId() {
-    return this.snapshotId;
+    return snapshotId;
   }
 
   @Override
@@ -73,16 +73,16 @@ public class SnapshotResultMessage extends PooledDistributionMessage implements 
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.results, out);
-    out.writeInt(this.snapshotId);
+    DataSerializer.writeObject(results, out);
+    out.writeInt(snapshotId);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.results = (CacheSnapshot) DataSerializer.readObject(in);
-    this.snapshotId = in.readInt();
+    results = DataSerializer.readObject(in);
+    snapshotId = in.readInt();
   }
 
 

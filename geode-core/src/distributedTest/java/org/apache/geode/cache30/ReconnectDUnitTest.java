@@ -58,7 +58,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
@@ -408,7 +407,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
             try {
               ds.waitUntilReconnected(getTimeout().toMillis(), MILLISECONDS);
               savedSystem = ds.getReconnectedSystem();
-              locator = (InternalLocator) getLocator();
+              locator = getLocator();
               assertTrue("Expected system to be restarted", ds.getReconnectedSystem() != null);
               assertTrue("Expected system to be running", ds.getReconnectedSystem().isConnected());
               assertTrue("Expected there to be a locator", locator != null);
@@ -800,7 +799,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     // final boolean receivedPut[] = new boolean[1];
 
     final Integer[] numReconnect = new Integer[1];
-    numReconnect[0] = new Integer(-1);
+    numReconnect[0] = -1;
     final String myKey = "MyKey";
     final String myValue = "MyValue";
     final String regionName = "MyRegion";
@@ -874,7 +873,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         if (!roleLossAsync.isAlive()) {
           return true;
         }
-        int tries = vm0.invoke(() -> ReconnectDUnitTest.reconnectTries());
+        int tries = vm0.invoke(ReconnectDUnitTest::reconnectTries);
         return tries != 0;
       }
 
@@ -927,8 +926,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         WaitCriterion ev = new WaitCriterion() {
           @Override
           public boolean done() {
-            return otherVM.invoke(() -> ReconnectDUnitTest.isInitialRolePlayerStarted())
-                .booleanValue();
+            return otherVM.invoke(ReconnectDUnitTest::isInitialRolePlayerStarted);
           }
 
           @Override
@@ -986,9 +984,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
             }
 
             Set keyValuePair = myRegion.entrySet();
-            Iterator it = keyValuePair.iterator();
-            while (it.hasNext()) {
-              keyValue = (Region.Entry) it.next();
+            for (final Object o : keyValuePair) {
+              keyValue = (Region.Entry) o;
               key = keyValue.getKey();
               value = keyValue.getValue();
             }
@@ -1014,7 +1011,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
           } catch (CancelException ecc) {
             // ignor the exception because the cache can be closed/null some times
             // while in reconnect.
-          } catch (RegionDestroyedException rex) {
+          } catch (RegionDestroyedException ignored) {
 
           } finally {
             System.out.println("waiting for reconnect.  Current status is '" + excuse + "'");
@@ -1223,7 +1220,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         System.out.println("STARTED THE REQUIREDROLES CACHE");
         initialRolePlayerStarted = true;
 
-        while (!otherVM.invoke(() -> ReconnectDUnitTest.isInitialized()).booleanValue()) {
+        while (!otherVM.invoke(ReconnectDUnitTest::isInitialized)) {
           try {
             Thread.sleep(15);
           } catch (InterruptedException ignor) {
@@ -1307,7 +1304,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     @Override
     public void init(Properties props) {
       throw new RuntimeException("Cause parsing to fail");
-    };
+    }
   }
 
   /**

@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -50,8 +49,8 @@ public class GemcachedBinaryClientJUnitTest extends GemcachedDevelopmentJUnitTes
   }
 
   @Override
-  protected MemcachedClient createMemcachedClient() throws IOException, UnknownHostException {
-    List<InetSocketAddress> addrs = new ArrayList<InetSocketAddress>();
+  protected MemcachedClient createMemcachedClient() throws IOException {
+    List<InetSocketAddress> addrs = new ArrayList<>();
     addrs.add(new InetSocketAddress(InetAddress.getLocalHost(), PORT));
     MemcachedClient client = new MemcachedClient(new BinaryConnectionFactory(), addrs);
     return client;

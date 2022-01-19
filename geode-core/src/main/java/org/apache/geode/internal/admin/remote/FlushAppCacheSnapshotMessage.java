@@ -68,6 +68,6 @@ public class FlushAppCacheSnapshotMessage extends PooledDistributionMessage {
 
   @Override
   public String toString() {
-    return "FlushAppCacheSnapshotMessage from " + this.getSender();
+    return "FlushAppCacheSnapshotMessage from " + getSender();
   }
 }

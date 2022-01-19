@@ -60,27 +60,27 @@ public class PartitionedRegionMembershipListenerDUnitTest
   @Override
   protected List<DistributedMember> assertInitialMembers(DistributedMember otherId) {
     List<DistributedMember> l = super.assertInitialMembers(otherId);
-    assertTrue(this.myPRListener.lastOpWasInitialMembers());
-    assertEquals(l, this.myPRListener.getInitialMembers());
+    assertTrue(myPRListener.lastOpWasInitialMembers());
+    assertEquals(l, myPRListener.getInitialMembers());
     return l;
   }
 
   @Override
   protected void closeRoots() {
     super.closeRoots();
-    this.prr.close();
+    prr.close();
   }
 
   @Override
   protected void createRootRegionWithListener(final String rName) throws CacheException {
     super.createRootRegionWithListener(rName);
     int to = getOpTimeout();
-    this.myPRListener = new MyRML(to);
+    myPRListener = new MyRML(to);
     AttributesFactory af = new AttributesFactory();
-    af.initCacheListeners(new CacheListener[] {this.myPRListener});
+    af.initCacheListeners(new CacheListener[] {myPRListener});
     af.setPartitionAttributes(
         new PartitionAttributesFactory().setTotalNumBuckets(5).setRedundantCopies(0).create());
-    this.prr = createRootRegion(rName + "-pr", af.create());
+    prr = createRootRegion(rName + "-pr", af.create());
   }
 
   @Override
@@ -127,14 +127,14 @@ public class PartitionedRegionMembershipListenerDUnitTest
   @Override
   protected void assertOpWasCreate() {
     super.assertOpWasCreate();
-    assertTrue(this.myPRListener.lastOpWasCreate());
+    assertTrue(myPRListener.lastOpWasCreate());
   }
 
   @Override
   protected void assertOpWasDeparture() {
     super.assertOpWasDeparture();
-    assertTrue(this.myPRListener.lastOpWasDeparture());
-    assertEventStuff(this.myPRListener.getLastEvent(), this.otherId, this.prr);
+    assertTrue(myPRListener.lastOpWasDeparture());
+    assertEventStuff(myPRListener.getLastEvent(), otherId, prr);
   }
 
 

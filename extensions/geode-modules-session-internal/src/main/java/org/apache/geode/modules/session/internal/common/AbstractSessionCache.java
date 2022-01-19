@@ -59,11 +59,11 @@ public abstract class AbstractSessionCache implements SessionCache {
    */
   @Override
   public Region<String, HttpSession> getOperatingRegion() {
-    return this.operatingRegion;
+    return operatingRegion;
   }
 
   void createStatistics() {
-    this.statistics = new DeltaSessionStatistics(getCache().getDistributedSystem(),
+    statistics = new DeltaSessionStatistics(getCache().getDistributedSystem(),
         (String) properties.get(CacheProperty.STATISTICS_NAME));
   }
 

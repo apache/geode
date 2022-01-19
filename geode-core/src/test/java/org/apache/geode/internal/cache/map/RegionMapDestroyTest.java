@@ -1703,7 +1703,7 @@ public class RegionMapDestroyTest {
   }
 
   private void doDestroyExpectingThrowable() {
-    doDestroyThrowable = catchThrowable(() -> doDestroy());
+    doDestroyThrowable = catchThrowable(this::doDestroy);
   }
 
   ///////////////////// verify methods /////////////////////////////

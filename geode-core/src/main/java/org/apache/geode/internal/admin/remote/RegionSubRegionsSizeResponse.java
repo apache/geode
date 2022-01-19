@@ -49,7 +49,7 @@ public class RegionSubRegionsSizeResponse extends AdminResponse implements Cance
   }
 
   public RegionSubRegionSnapshot getSnapshot() {
-    return this.snapshot;
+    return snapshot;
   }
 
   /**
@@ -67,14 +67,14 @@ public class RegionSubRegionsSizeResponse extends AdminResponse implements Cance
   }
 
   void populateSnapshot(DistributionManager dm) {
-    if (this.cancelled) {
+    if (cancelled) {
       return;
     }
 
     DistributedSystem sys = dm.getSystem();
     InternalCache cache = (InternalCache) CacheFactory.getInstance(sys);
 
-    if (this.cancelled) {
+    if (cancelled) {
       return;
     }
 
@@ -88,7 +88,7 @@ public class RegionSubRegionsSizeResponse extends AdminResponse implements Cance
     root.setEntryCount(0);
 
     Set rootRegions = cache.rootRegions();
-    this.snapshot = root;
+    snapshot = root;
 
     populateRegionSubRegions(root, rootRegions, cache);
   }
@@ -103,7 +103,7 @@ public class RegionSubRegionsSizeResponse extends AdminResponse implements Cance
    */
   private void populateRegionSubRegions(RegionSubRegionSnapshot parentSnapShot, Set regions,
       InternalCache cache) {
-    if (this.cancelled) {
+    if (cancelled) {
       return;
     }
 
@@ -125,23 +125,23 @@ public class RegionSubRegionsSizeResponse extends AdminResponse implements Cance
 
   @Override
   public synchronized void cancel() {
-    this.cancelled = true;
+    cancelled = true;
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeBoolean(this.cancelled);
-    DataSerializer.writeObject(this.snapshot, out);
+    out.writeBoolean(cancelled);
+    DataSerializer.writeObject(snapshot, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.cancelled = in.readBoolean();
-    this.snapshot = DataSerializer.readObject(in);
+    cancelled = in.readBoolean();
+    snapshot = DataSerializer.readObject(in);
   }
 
   /**
@@ -154,7 +154,7 @@ public class RegionSubRegionsSizeResponse extends AdminResponse implements Cance
 
   @Override
   public String toString() {
-    return "RegionSubRegionsSizeResponse [from=" + this.getRecipient() + ' '
-        + (this.snapshot == null ? "null" : this.snapshot.toString());
+    return "RegionSubRegionsSizeResponse [from=" + getRecipient() + ' '
+        + (snapshot == null ? "null" : snapshot.toString());
   }
 }

@@ -48,10 +48,10 @@ public class ClientMessagesRegionCreationAndDestroyJUnitTest {
   /** The cache instance */
   private Cache cache = null;
   // max number of cache server can attached to the cache
-  private int brigeNum = 5;
+  private final int brigeNum = 5;
   // stores corresponding names of client messages region created by bridge
   // server
-  private HashSet regionNames = new HashSet();
+  private final HashSet regionNames = new HashSet();
 
   /**
    * Create the cache in setup.

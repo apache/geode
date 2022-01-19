@@ -105,7 +105,7 @@ public class LuceneIndexStats {
   }
 
   public LuceneIndexStats(StatisticsFactory f, String name) {
-    this.stats = f.createAtomicStatistics(statsType, name);
+    stats = f.createAtomicStatistics(statsType, name);
     stats.setIntSupplier(documentsId, this::computeDocumentCount);
   }
 
@@ -187,19 +187,19 @@ public class LuceneIndexStats {
   }
 
   public void addDocumentsSupplier(IntSupplier supplier) {
-    this.documentsSuppliers.add(supplier);
+    documentsSuppliers.add(supplier);
   }
 
   public void removeDocumentsSupplier(IntSupplier supplier) {
-    this.documentsSuppliers.remove(supplier);
+    documentsSuppliers.remove(supplier);
   }
 
   public int getDocuments() {
-    return this.stats.getInt(documentsId);
+    return stats.getInt(documentsId);
   }
 
   private int computeDocumentCount() {
-    return this.documentsSuppliers.stream().mapToInt(IntSupplier::getAsInt).sum();
+    return documentsSuppliers.stream().mapToInt(IntSupplier::getAsInt).sum();
   }
 
   public int getQueryExecutions() {
@@ -243,7 +243,7 @@ public class LuceneIndexStats {
   }
 
   public Statistics getStats() {
-    return this.stats;
+    return stats;
   }
 
   public void incNumberOfQueryExecuted() {

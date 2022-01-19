@@ -69,33 +69,33 @@ public class LocalStatisticsImpl extends StatisticsImpl {
     int doubleCount = realType.getDoubleStatCount();
 
     if (longCount > 0) {
-      this.longStorage = new long[longCount];
+      longStorage = new long[longCount];
       if (atomicIncrements) {
-        this.longLocks = new Object[longCount];
+        longLocks = new Object[longCount];
         for (int i = 0; i < longLocks.length; i++) {
           longLocks[i] = new Object();
         }
       } else {
-        this.longLocks = null;
+        longLocks = null;
       }
     } else {
-      this.longStorage = null;
-      this.longLocks = null;
+      longStorage = null;
+      longLocks = null;
     }
 
     if (doubleCount > 0) {
-      this.doubleStorage = new double[doubleCount];
+      doubleStorage = new double[doubleCount];
       if (atomicIncrements) {
-        this.doubleLocks = new Object[doubleCount];
+        doubleLocks = new Object[doubleCount];
         for (int i = 0; i < doubleLocks.length; i++) {
           doubleLocks[i] = new Object();
         }
       } else {
-        this.doubleLocks = null;
+        doubleLocks = null;
       }
     } else {
-      this.doubleStorage = null;
-      this.doubleLocks = null;
+      doubleStorage = null;
+      doubleLocks = null;
     }
   }
 
@@ -129,7 +129,7 @@ public class LocalStatisticsImpl extends StatisticsImpl {
   }
 
   private int getOffsetFromDoubleId(int id) {
-    return id - this.longCount;
+    return id - longCount;
   }
 
   //////////////////////// store() Methods ///////////////////////
@@ -137,13 +137,13 @@ public class LocalStatisticsImpl extends StatisticsImpl {
   @Override
   protected void _setLong(int id, long value) {
     int offset = getOffsetFromLongId(id);
-    this.longStorage[offset] = value;
+    longStorage[offset] = value;
   }
 
   @Override
   protected void _setDouble(int id, double value) {
     int offset = getOffsetFromDoubleId(id);
-    this.doubleStorage[offset] = value;
+    doubleStorage[offset] = value;
   }
 
   /////////////////////// get() Methods ///////////////////////
@@ -151,13 +151,13 @@ public class LocalStatisticsImpl extends StatisticsImpl {
   @Override
   protected long _getLong(int id) {
     int offset = getOffsetFromLongId(id);
-    return this.longStorage[offset];
+    return longStorage[offset];
   }
 
   @Override
   protected double _getDouble(int id) {
     int offset = getOffsetFromDoubleId(id);
-    return this.doubleStorage[offset];
+    return doubleStorage[offset];
   }
 
   //////////////////////// inc() Methods ////////////////////////
@@ -165,24 +165,24 @@ public class LocalStatisticsImpl extends StatisticsImpl {
   @Override
   protected void _incLong(int id, long delta) {
     int offset = getOffsetFromLongId(id);
-    if (this.longLocks != null) {
-      synchronized (this.longLocks[offset]) {
-        this.longStorage[offset] += delta;
+    if (longLocks != null) {
+      synchronized (longLocks[offset]) {
+        longStorage[offset] += delta;
       }
     } else {
-      this.longStorage[offset] += delta;
+      longStorage[offset] += delta;
     }
   }
 
   @Override
   protected void _incDouble(int id, double delta) {
     int offset = getOffsetFromDoubleId(id);
-    if (this.doubleLocks != null) {
-      synchronized (this.doubleLocks[offset]) {
-        this.doubleStorage[offset] += delta;
+    if (doubleLocks != null) {
+      synchronized (doubleLocks[offset]) {
+        doubleStorage[offset] += delta;
       }
     } else {
-      this.doubleStorage[offset] += delta;
+      doubleStorage[offset] += delta;
     }
   }
 }

@@ -76,12 +76,12 @@ public class CacheServerAdvisor extends GridAdvisor {
 
     public CacheServerProfile(CacheServerProfile toCopy) {
       super(toCopy);
-      this.groups = toCopy.groups;
+      groups = toCopy.groups;
     }
 
     /** don't modify the returned array! */
     public String[] getGroups() {
-      return this.groups;
+      return groups;
     }
 
     public void setGroups(String[] groups) {
@@ -105,11 +105,11 @@ public class CacheServerAdvisor extends GridAdvisor {
     }
 
     public long getLoadPollInterval() {
-      return this.loadPollInterval;
+      return loadPollInterval;
     }
 
     public void setLoadPollInterval(long v) {
-      this.loadPollInterval = v;
+      loadPollInterval = v;
     }
 
     /**
@@ -137,7 +137,7 @@ public class CacheServerAdvisor extends GridAdvisor {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeStringArray(this.groups, out);
+      DataSerializer.writeStringArray(groups, out);
       out.writeInt(maxConnections);
       InternalDataSerializer.invokeToData(initialLoad, out);
       out.writeLong(getLoadPollInterval());
@@ -147,9 +147,9 @@ public class CacheServerAdvisor extends GridAdvisor {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.groups = DataSerializer.readStringArray(in);
-      this.maxConnections = in.readInt();
-      this.initialLoad = new ServerLoad();
+      groups = DataSerializer.readStringArray(in);
+      maxConnections = in.readInt();
+      initialLoad = new ServerLoad();
       InternalDataSerializer.invokeFromData(initialLoad, in);
       setLoadPollInterval(in.readLong());
     }
@@ -162,8 +162,8 @@ public class CacheServerAdvisor extends GridAdvisor {
     @Override
     public void fillInToString(StringBuilder sb) {
       super.fillInToString(sb);
-      if (this.groups != null) {
-        sb.append("; groups=" + Arrays.asList(this.groups));
+      if (groups != null) {
+        sb.append("; groups=" + Arrays.asList(groups));
         sb.append("; maxConnections=" + maxConnections);
         sb.append("; initialLoad=" + initialLoad);
         sb.append("; loadPollInterval=" + getLoadPollInterval());

@@ -20,7 +20,7 @@ import java.util.Set;
 
 public class TestUtils {
   public static <T> Set<T> asSet(T... objects) {
-    return new HashSet<T>(Arrays.asList(objects));
+    return new HashSet<>(Arrays.asList(objects));
   }
 
 }

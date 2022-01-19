@@ -58,9 +58,9 @@ import org.apache.geode.test.junit.categories.OffHeapTest;
 @SuppressWarnings("serial")
 public class OutOfOffHeapMemoryDUnitTest extends JUnit4CacheTestCase {
 
-  protected static final AtomicReference<Cache> cache = new AtomicReference<Cache>();
+  protected static final AtomicReference<Cache> cache = new AtomicReference<>();
   protected static final AtomicReference<DistributedSystem> system =
-      new AtomicReference<DistributedSystem>();
+      new AtomicReference<>();
   protected static final AtomicBoolean isSmallerVM = new AtomicBoolean();
 
   @Override

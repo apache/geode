@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal.beans.stats;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -26,16 +25,16 @@ import org.apache.geode.management.internal.ManagementConstants;
 
 public class StatsAggregator {
 
-  private Map<String, Class<?>> typeMap;
+  private final Map<String, Class<?>> typeMap;
 
-  private Map<String, AtomicReference<Number>> aggregateMap;
+  private final Map<String, AtomicReference<Number>> aggregateMap;
 
-  private LogWriter logger;
+  private final LogWriter logger;
 
   public StatsAggregator(Map<String, Class<?>> typeMap) {
     this.typeMap = typeMap;
-    this.aggregateMap = new HashMap<String, AtomicReference<Number>>();
-    this.logger = InternalDistributedSystem.getLogger();
+    aggregateMap = new HashMap<>();
+    logger = InternalDistributedSystem.getLogger();
     initAggregateMap();
   }
 
@@ -43,19 +42,18 @@ public class StatsAggregator {
    * Initialize all counters to 0;
    */
   private void initAggregateMap() {
-    Iterator<String> it = typeMap.keySet().iterator();
-    while (it.hasNext()) {
+    for (final String s : typeMap.keySet()) {
       AtomicReference<Number> ref = null;
-      String attribute = it.next();
+      String attribute = s;
       Class<?> classzz = typeMap.get(attribute);
       if (classzz == Long.TYPE) {
-        ref = new AtomicReference<Number>(new Long(0L));
+        ref = new AtomicReference<>(0L);
       } else if (classzz == Integer.TYPE) {
-        ref = new AtomicReference<Number>(new Integer(0));
+        ref = new AtomicReference<>(0);
       } else if (classzz == Float.TYPE) {
-        ref = new AtomicReference<Number>(new Float(0F));
+        ref = new AtomicReference<>(0F);
       } else if (classzz == Double.TYPE) {
-        ref = new AtomicReference<Number>(new Double(0D));
+        ref = new AtomicReference<>(0D);
 
       }
 
@@ -91,22 +89,22 @@ public class StatsAggregator {
             Class<?> classzz = typeEntry.getValue();
             if (classzz == Long.TYPE) {
               if (oldVal == null) {
-                oldVal = new Long(0L);
+                oldVal = 0L;
               }
               incLong(attribute, (Long) newVal, (Long) oldVal);
             } else if (classzz == Integer.TYPE) {
               if (oldVal == null) {
-                oldVal = new Integer(0);
+                oldVal = 0;
               }
               incInt(attribute, (Integer) newVal, (Integer) oldVal);
             } else if (classzz == Float.TYPE) {
               if (oldVal == null) {
-                oldVal = new Float(0F);
+                oldVal = 0F;
               }
               incFloat(attribute, (Float) newVal, (Float) oldVal);
             } else if (classzz == Double.TYPE) {
               if (oldVal == null) {
-                oldVal = new Double(0D);
+                oldVal = 0D;
               }
               incDouble(attribute, (Double) newVal, (Double) oldVal);
 

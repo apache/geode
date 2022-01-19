@@ -61,13 +61,13 @@ public class LuceneCommandsSecurityDUnitTest {
     // start the locator
     Properties props = new Properties();
     props.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
-    this.locator = this.locatorServer.startLocatorVM(0, props);
+    locator = locatorServer.startLocatorVM(0, props);
 
     // start the server
     props = new Properties();
     props.setProperty("security-username", "clusterManage");
     props.setProperty("security-password", "clusterManage");
-    this.locatorServer.startServerVM(1, props, this.locator.getPort());
+    locatorServer.startServerVM(1, props, locator.getPort());
   }
 
   protected UserNameAndExpectedResponse[] getCreateIndexUserNameAndExpectedResponses() {
@@ -82,11 +82,11 @@ public class LuceneCommandsSecurityDUnitTest {
   @Parameters(method = "getCreateIndexUserNameAndExpectedResponses")
   public void verifyCreateIndexPermissions(UserNameAndExpectedResponse user) throws Exception {
     // Connect gfsh
-    this.gfshShell.secureConnectAndVerify(this.locator.getPort(), GfshCommandRule.PortType.locator,
+    gfshShell.secureConnectAndVerify(locator.getPort(), GfshCommandRule.PortType.locator,
         user.getUserName(), user.getUserName());
 
     // Attempt to create lucene index
-    CommandResult result = this.gfshShell.executeCommand(getCreateIndexCommand());
+    CommandResult result = gfshShell.executeCommand(getCreateIndexCommand());
 
     // Verify result
     verifyResult(user, result);
@@ -106,11 +106,11 @@ public class LuceneCommandsSecurityDUnitTest {
     createIndexAndRegion();
 
     // Connect gfsh
-    this.gfshShell.secureConnectAndVerify(this.locator.getPort(), GfshCommandRule.PortType.locator,
+    gfshShell.secureConnectAndVerify(locator.getPort(), GfshCommandRule.PortType.locator,
         user.getUserName(), user.getUserName());
 
     // Attempt to search lucene index
-    CommandResult result = this.gfshShell.executeCommand(getSearchIndexCommand());
+    CommandResult result = gfshShell.executeCommand(getSearchIndexCommand());
 
     // Verify result
     verifyResult(user, result);
@@ -130,11 +130,11 @@ public class LuceneCommandsSecurityDUnitTest {
     createIndexAndRegion();
 
     // Connect gfsh
-    this.gfshShell.secureConnectAndVerify(this.locator.getPort(), GfshCommandRule.PortType.locator,
+    gfshShell.secureConnectAndVerify(locator.getPort(), GfshCommandRule.PortType.locator,
         user.getUserName(), user.getUserName());
 
     // Attempt to search lucene index
-    CommandResult result = this.gfshShell.executeCommand(getListIndexesCommand());
+    CommandResult result = gfshShell.executeCommand(getListIndexesCommand());
 
     // Verify result
     verifyResult(user, result);
@@ -154,11 +154,11 @@ public class LuceneCommandsSecurityDUnitTest {
     createIndexAndRegion();
 
     // Connect gfsh
-    this.gfshShell.secureConnectAndVerify(this.locator.getPort(), GfshCommandRule.PortType.locator,
+    gfshShell.secureConnectAndVerify(locator.getPort(), GfshCommandRule.PortType.locator,
         user.getUserName(), user.getUserName());
 
     // Attempt to search lucene index
-    CommandResult result = this.gfshShell.executeCommand(getDescribeIndexCommand());
+    CommandResult result = gfshShell.executeCommand(getDescribeIndexCommand());
 
     // Verify result
     verifyResult(user, result);
@@ -179,11 +179,11 @@ public class LuceneCommandsSecurityDUnitTest {
     createIndexAndRegion();
 
     // Connect gfsh
-    this.gfshShell.secureConnectAndVerify(this.locator.getPort(), GfshCommandRule.PortType.locator,
+    gfshShell.secureConnectAndVerify(locator.getPort(), GfshCommandRule.PortType.locator,
         user.getUserName(), user.getUserName());
 
     // Attempt to search lucene index
-    CommandResult result = this.gfshShell.executeCommand(getDestroyIndexCommand());
+    CommandResult result = gfshShell.executeCommand(getDestroyIndexCommand());
 
     // Verify result
     verifyResult(user, result);
@@ -191,17 +191,17 @@ public class LuceneCommandsSecurityDUnitTest {
 
   protected void createIndexAndRegion() throws Exception {
     // Connect gfsh to locator with permissions necessary to create an index and region
-    this.gfshShell.secureConnectAndVerify(this.locator.getPort(), GfshCommandRule.PortType.locator,
+    gfshShell.secureConnectAndVerify(locator.getPort(), GfshCommandRule.PortType.locator,
         "cluster,data", "cluster,data");
 
     // Create lucene index
-    this.gfshShell.executeAndAssertThat(getCreateIndexCommand()).statusIsSuccess();
+    gfshShell.executeAndAssertThat(getCreateIndexCommand()).statusIsSuccess();
 
     // Create region
-    this.gfshShell.executeAndAssertThat(getCreateRegionCommand()).statusIsSuccess();
+    gfshShell.executeAndAssertThat(getCreateRegionCommand()).statusIsSuccess();
 
     // Disconnect gfsh
-    this.gfshShell.disconnect();
+    gfshShell.disconnect();
   }
 
   private void verifyResult(UserNameAndExpectedResponse user, Result result) {
@@ -210,7 +210,7 @@ public class LuceneCommandsSecurityDUnitTest {
     } else {
       assertEquals(Result.Status.OK, result.getStatus());
     }
-    assertTrue(this.gfshShell.getGfshOutput().contains(user.getExpectedResponse()));
+    assertTrue(gfshShell.getGfshOutput().contains(user.getExpectedResponse()));
   }
 
   protected String getCreateIndexCommand() {
@@ -273,15 +273,15 @@ public class LuceneCommandsSecurityDUnitTest {
     }
 
     public String getUserName() {
-      return this.userName;
+      return userName;
     }
 
     public boolean getExpectAuthorizationError() {
-      return this.expectAuthorizationError;
+      return expectAuthorizationError;
     }
 
     public String getExpectedResponse() {
-      return this.expectedResponse;
+      return expectedResponse;
     }
   }
 }

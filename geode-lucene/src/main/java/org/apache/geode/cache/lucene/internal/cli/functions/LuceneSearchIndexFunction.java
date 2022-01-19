@@ -81,7 +81,7 @@ public class LuceneSearchIndexFunction<K, V> implements InternalFunction {
           List<LuceneResultStruct> page = pageableLuceneQueryResults.next();
           page.stream()
               .forEach(searchResult -> result
-                  .add(new LuceneSearchResults<K, V>(searchResult.getKey().toString(),
+                  .add(new LuceneSearchResults<>(searchResult.getKey().toString(),
                       searchResult.getValue().toString(), searchResult.getScore())));
         }
       }

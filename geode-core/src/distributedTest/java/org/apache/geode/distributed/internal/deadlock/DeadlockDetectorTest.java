@@ -35,7 +35,7 @@ public class DeadlockDetectorTest {
 
   @Before
   public void setUp() throws Exception {
-    stuckThreads = Collections.synchronizedSet(new HashSet<Thread>());
+    stuckThreads = Collections.synchronizedSet(new HashSet<>());
   }
 
   @After

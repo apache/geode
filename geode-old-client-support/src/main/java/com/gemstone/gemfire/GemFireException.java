@@ -84,10 +84,10 @@ public abstract class GemFireException extends RuntimeException {
    * is nonexistent or unknown.
    */
   public Throwable getRootCause() {
-    if (this.getCause() == null) {
+    if (getCause() == null) {
       return null;
     }
-    Throwable root = this.getCause();
+    Throwable root = getCause();
     while (root.getCause() != null) {
       root = root.getCause();
     }
@@ -118,7 +118,7 @@ public abstract class GemFireException extends RuntimeException {
   // //ourMsg = super.toString(); //causes inifinite recursion
   // ourMsg = "";
   // }
-  // StringBuffer sb = new StringBuffer(ourMsg);
+  // StringBuilder sb = new StringBuilder(ourMsg);
   // sb.append(" Caused by: ");
   // String causeMsg = this.cause.getMessage();
   // if (causeMsg == null || causeMsg.length() == 0) {

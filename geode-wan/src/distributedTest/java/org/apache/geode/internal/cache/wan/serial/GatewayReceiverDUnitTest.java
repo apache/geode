@@ -90,8 +90,8 @@ public class GatewayReceiverDUnitTest extends WANTestBase {
       SerializableCallableIF<DistributionAdvisor> extractAdvisorLambda) throws Exception {
     InternalDistributedMember[] memberIds = new InternalDistributedMember[8];
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     vm2.invoke(() -> WANTestBase.createCache(nyPort));
     vm3.invoke(() -> WANTestBase.createCache(nyPort));
@@ -142,8 +142,8 @@ public class GatewayReceiverDUnitTest extends WANTestBase {
       SerializableCallableIF<DistributionAdvisor> extractAdvisorLambda) throws Exception {
     InternalDistributedMember[] memberIds = new InternalDistributedMember[8];
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     vm2.invoke(() -> WANTestBase.createCache(nyPort));
     vm3.invoke(() -> WANTestBase.createCache(nyPort));
@@ -196,8 +196,8 @@ public class GatewayReceiverDUnitTest extends WANTestBase {
       throws Exception {
     InternalDistributedMember[] memberIds = new InternalDistributedMember[8];
 
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     vm2.invoke(() -> WANTestBase.createCache(nyPort));
 

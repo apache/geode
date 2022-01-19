@@ -40,27 +40,27 @@ public class SecurityWithExpirationIntegrationTest {
   @Before
   public void before() throws Exception {
     props.setProperty(SECURITY_MANAGER, ExpirableSecurityManager.class.getName());
-    securityService = SecurityServiceFactory.create(this.props);
+    securityService = SecurityServiceFactory.create(props);
   }
 
   @Test
   public void testAuthenticationWhenUserExpired() {
     getSecurityManager().addExpiredUser("data");
-    assertThatThrownBy(() -> this.securityService.login(loginCredentials("data", "data")))
+    assertThatThrownBy(() -> securityService.login(loginCredentials("data", "data")))
         .isInstanceOf(AuthenticationExpiredException.class);
   }
 
   @Test
   public void testAuthorizationWhenUserExpired() {
-    this.securityService.login(loginCredentials("data", "data"));
+    securityService.login(loginCredentials("data", "data"));
     getSecurityManager().addExpiredUser("data");
-    assertThatThrownBy(() -> this.securityService.authorize(ResourcePermissions.DATA_READ))
+    assertThatThrownBy(() -> securityService.authorize(ResourcePermissions.DATA_READ))
         .isInstanceOf(AuthenticationExpiredException.class);
   }
 
   @Test
   public void logoutMultipleTimeOnTheSameSubjectShouldNotThrowException() {
-    this.securityService.login(loginCredentials("data", "data"));
+    securityService.login(loginCredentials("data", "data"));
     Subject subject = securityService.getSubject();
     subject.logout();
     subject.logout();

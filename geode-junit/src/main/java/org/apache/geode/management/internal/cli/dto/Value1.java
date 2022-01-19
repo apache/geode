@@ -30,11 +30,11 @@ public class Value1 implements Serializable {
   private int employeeId;
 
   public Value1(int i) {
-    this.employeeId = i;
-    this.name = "Name" + i;
-    this.lastName = "lastName" + i;
-    this.department = "department" + i;
-    this.age = i;
+    employeeId = i;
+    name = "Name" + i;
+    lastName = "lastName" + i;
+    department = "department" + i;
+    age = i;
   }
 
   public String getName() {
@@ -91,11 +91,9 @@ public class Value1 implements Serializable {
   }
 
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(" Value1 [ Name : ").append(name).append(" lastName : ").append(lastName)
-        .append(" department : ").append(department).append(" age : ").append(age)
-        .append(" employeeId : ").append(employeeId).append(" ]");
-    return sb.toString();
+    return " Value1 [ Name : " + name + " lastName : " + lastName
+        + " department : " + department + " age : " + age
+        + " employeeId : " + employeeId + " ]";
   }
 
 

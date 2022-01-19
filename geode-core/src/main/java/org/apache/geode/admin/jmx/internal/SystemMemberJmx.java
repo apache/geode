@@ -382,8 +382,8 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
       // need to create a new instance of ManagedBean to clean the "slate"...
       ManagedBean newManagedBean = new DynamicManagedBean(managed);
       ConfigurationParameter[] params = member.getConfiguration();
-      for (int i = 0; i < params.length; i++) {
-        ConfigurationParameterJmxImpl parm = (ConfigurationParameterJmxImpl) params[i];
+      for (final ConfigurationParameter param : params) {
+        ConfigurationParameterJmxImpl parm = (ConfigurationParameterJmxImpl) param;
         ConfigAttributeInfo attrInfo = new ConfigAttributeInfo(parm);
 
         attrInfo.setName(parm.getName());
@@ -454,12 +454,12 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
       } catch (RuntimeOperationsException e) {
         logger
             .info(String.format("Failed to send %s notification for %s",
-                new Object[] {"'" + notif.getType() + "'", "'" + notif.getMessage() + "'"}),
+                "'" + notif.getType() + "'", "'" + notif.getMessage() + "'"),
                 e);
       } catch (MBeanException e) {
         logger
             .info(String.format("Failed to send %s notification for %s",
-                new Object[] {"'" + notif.getType() + "'", "'" + notif.getMessage() + "'"}),
+                "'" + notif.getType() + "'", "'" + notif.getMessage() + "'"),
                 e);
       }
     }

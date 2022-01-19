@@ -14,7 +14,6 @@
  */
 package org.apache.geode.security.generator;
 
-import java.util.Iterator;
 import java.util.Properties;
 
 import org.apache.geode.distributed.DistributedMember;
@@ -52,16 +51,16 @@ public class UserPasswordWithExtraPropsAuthInit extends UserPasswordAuthInit {
     final String extraProps = securityProperties.getProperty(EXTRA_PROPS);
 
     if (extraProps != null) {
-      for (Iterator it = securityProperties.keySet().iterator(); it.hasNext();) {
-        final String key = (String) it.next();
+      for (final Object o : securityProperties.keySet()) {
+        final String key = (String) o;
         if (key.startsWith(SECURITY_PREFIX) && key.equalsIgnoreCase(USER_NAME) == false
             && key.equalsIgnoreCase(PASSWORD) == false
             && key.equalsIgnoreCase(EXTRA_PROPS) == false) {
           securityPropertiesCopy.setProperty(key, securityProperties.getProperty(key));
         }
       }
-      this.securityLogWriter
-          .fine("got everything and now have: " + securityPropertiesCopy.keySet().toString());
+      securityLogWriter
+          .fine("got everything and now have: " + securityPropertiesCopy.keySet());
     }
 
     return securityPropertiesCopy;

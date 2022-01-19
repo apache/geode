@@ -44,10 +44,10 @@ public class SniProxySocketFactory implements SocketFactory, Declarable {
 
   @Override // Declarable
   public void initialize(Cache cache, Properties properties) {
-    this.hostname = properties.getProperty("hostname");
+    hostname = properties.getProperty("hostname");
     String portString =
         properties.getProperty("port", "" + DistributionLocator.DEFAULT_LOCATOR_PORT);
-    this.port = Integer.parseInt(portString);
+    port = Integer.parseInt(portString);
   }
 
   @Override

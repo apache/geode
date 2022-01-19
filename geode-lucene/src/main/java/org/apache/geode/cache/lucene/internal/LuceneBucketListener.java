@@ -24,7 +24,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class LuceneBucketListener extends PartitionListenerAdapter {
   private static final Logger logger = LogService.getLogger();
-  private PartitionedRepositoryManager lucenePartitionRepositoryManager;
+  private final PartitionedRepositoryManager lucenePartitionRepositoryManager;
   private final DistributionManager dm;
 
   public LuceneBucketListener(PartitionedRepositoryManager partitionedRepositoryManager,

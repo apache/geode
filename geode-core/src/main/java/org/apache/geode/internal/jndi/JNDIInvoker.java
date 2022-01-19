@@ -260,12 +260,12 @@ public class JNDIInvoker {
   private static void doTransactionLookup() throws NamingException {
     Object jndiObject = null;
     LogWriter writer = TransactionUtils.getLogWriter();
-    for (int i = 0; i < knownJNDIManagers.length; i++) {
+    for (final String[] knownJNDIManager : knownJNDIManagers) {
       try {
-        jndiObject = ctx.lookup(knownJNDIManagers[i][0]);
+        jndiObject = ctx.lookup(knownJNDIManager[0]);
       } catch (NamingException e) {
         String exception = "JNDIInvoker::doTransactionLookup::Couldn't lookup ["
-            + knownJNDIManagers[i][0] + " (" + knownJNDIManagers[i][1] + ")]";
+            + knownJNDIManager[0] + " (" + knownJNDIManager[1] + ")]";
         if (writer.finerEnabled()) {
           writer.finer(exception);
         }
@@ -273,7 +273,7 @@ public class JNDIInvoker {
       if (jndiObject instanceof TransactionManager) {
         transactionManager = (TransactionManager) jndiObject;
         String exception = "JNDIInvoker::doTransactionLookup::Found TransactionManager for "
-            + knownJNDIManagers[i][1];
+            + knownJNDIManager[1];
         if (writer.fineEnabled()) {
           writer.fine(exception);
         }
@@ -338,7 +338,7 @@ public class JNDIInvoker {
       throw new NameNotFoundException(
           String.format(
               "JNDIInvoker::doTransactionLookup::Found WebSphere TransactionManager factory class [%s], but could not invoke its static 'getTransactionManager' method",
-              new Object[] {clazz.getName()}));
+              clazz.getName()));
     }
   }
 
@@ -446,12 +446,8 @@ public class JNDIInvoker {
   public static boolean isValidDataSource(String name) {
     Object dataSource = dataSourceMap.get(name);
 
-    if (dataSource == null || (dataSource instanceof DataSource
-        && !(dataSource instanceof GemFireTransactionDataSource))) {
-      return true;
-    }
-
-    return false;
+    return dataSource == null || (dataSource instanceof DataSource
+        && !(dataSource instanceof GemFireTransactionDataSource));
   }
 
   /**

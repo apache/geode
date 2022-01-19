@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -61,7 +60,7 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
     PartitionedRegion pr = (PartitionedRegion) PartitionedRegionTestHelper
         .createPartitionedRegion(prPrefix, localMaxMemory, redundancy);
 
-    HashSet<Integer> bucketsToQuery = new HashSet<Integer>();
+    HashSet<Integer> bucketsToQuery = new HashSet<>();
     for (int i = 0; i < totalNoOfBuckets; i++) {
       bucketsToQuery.add(i);
     }
@@ -85,12 +84,12 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
     Map n2bMap = null;
     try {
       n2bMap = evalr.buildNodeToBucketMap();
-    } catch (Exception ex) {
+    } catch (Exception ignored) {
 
     }
     ArrayList buckList = new ArrayList();
-    for (Iterator itr = n2bMap.entrySet().iterator(); itr.hasNext();) {
-      Map.Entry entry = (Map.Entry) itr.next();
+    for (final Object o : n2bMap.entrySet()) {
+      Map.Entry entry = (Map.Entry) o;
       if (entry.getValue() != null) {
         buckList.addAll((List) entry.getValue());
       }
@@ -99,7 +98,7 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
     assertEquals("Unexpected number of buckets", totalNoOfBuckets, buckList.size());
     for (int i = 0; i < totalNoOfBuckets; i++) {
       assertTrue(" Bucket with Id = " + i + " not present in bucketList.",
-          buckList.contains(new Integer(i)));
+          buckList.contains(i));
     }
 
     pr.destroyRegion();
@@ -121,10 +120,10 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
         bp.peerMemberId = (InternalDistributedMember) nodes.get(ran.nextInt(nodes.size()));
         Integer v;
         if ((v = (Integer) verMap.get(bp.getDistributedMember())) != null) {
-          bp.version = v.intValue() + 1;
-          verMap.put(bp.getDistributedMember(), new Integer(bp.version));
+          bp.version = v + 1;
+          verMap.put(bp.getDistributedMember(), bp.version);
         } else {
-          verMap.put(bp.getDistributedMember(), new Integer(0));
+          verMap.put(bp.getDistributedMember(), 0);
           bp.version = 0;
         }
 
@@ -227,8 +226,8 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
         new ExpirationAttributes(), new ExpirationAttributes(), new ExpirationAttributes(),
         new ExpirationAttributes(), Collections.emptySet());
     RegionAdvisor ra = pr.getRegionAdvisor();
-    for (Iterator itr = nodes.iterator(); itr.hasNext();) {
-      Node n = (Node) itr.next();
+    for (final Object node : nodes) {
+      Node n = (Node) node;
       prConf.addNode(n);
       PartitionProfile pp = (PartitionProfile) ra.createProfile();
       pp.peerMemberId = n.getMemberId();

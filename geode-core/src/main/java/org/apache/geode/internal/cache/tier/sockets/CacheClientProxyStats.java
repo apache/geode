@@ -181,7 +181,7 @@ public class CacheClientProxyStats implements MessageStats {
    * @param name The name of the <code>Statistics</code>
    */
   public CacheClientProxyStats(StatisticsFactory factory, String name) {
-    this._stats = factory.createAtomicStatistics(_type, "cacheClientProxyStats-" + name);
+    _stats = factory.createAtomicStatistics(_type, "cacheClientProxyStats-" + name);
   }
 
   ///////////////////// Instance Methods /////////////////////
@@ -190,7 +190,7 @@ public class CacheClientProxyStats implements MessageStats {
    * Closes the <code>CacheClientProxyStats</code>.
    */
   public void close() {
-    this._stats.close();
+    _stats.close();
   }
 
   /**
@@ -199,7 +199,7 @@ public class CacheClientProxyStats implements MessageStats {
    * @return the current value of the "messagesReceived" stat
    */
   public int getMessagesReceived() {
-    return this._stats.getInt(_messagesReceivedId);
+    return _stats.getInt(_messagesReceivedId);
   }
 
   /**
@@ -208,7 +208,7 @@ public class CacheClientProxyStats implements MessageStats {
    * @return the current value of the "messagesQueued" stat
    */
   public int getMessagesQueued() {
-    return this._stats.getInt(_messagesQueuedId);
+    return _stats.getInt(_messagesQueuedId);
   }
 
   /**
@@ -217,7 +217,7 @@ public class CacheClientProxyStats implements MessageStats {
    * @return the current value of the "messagesNotQueuedOriginator" stat
    */
   public int getMessagesNotQueuedOriginator() {
-    return this._stats.getInt(_messagesNotQueuedOriginatorId);
+    return _stats.getInt(_messagesNotQueuedOriginatorId);
   }
 
   /**
@@ -226,7 +226,7 @@ public class CacheClientProxyStats implements MessageStats {
    * @return the current value of the "messagesNotQueuedNotInterested" stat
    */
   public int getMessagesNotQueuedNotInterested() {
-    return this._stats.getInt(_messagesNotQueuedNotInterestedId);
+    return _stats.getInt(_messagesNotQueuedNotInterestedId);
   }
 
   /**
@@ -235,7 +235,7 @@ public class CacheClientProxyStats implements MessageStats {
    * @return the current value of the "messagesFailedQueued" stat
    */
   public int getMessagesFailedQueued() {
-    return this._stats.getInt(_messagesFailedQueuedId);
+    return _stats.getInt(_messagesFailedQueuedId);
   }
 
   /**
@@ -244,7 +244,7 @@ public class CacheClientProxyStats implements MessageStats {
    * @return the current value of the "messageQueueSize" stat
    */
   public int getMessageQueueSize() {
-    return this._stats.getInt(_messageQueueSizeId);
+    return _stats.getInt(_messageQueueSizeId);
   }
 
   /**
@@ -253,7 +253,7 @@ public class CacheClientProxyStats implements MessageStats {
    * @return the current value of the messagesProcessed" stat
    */
   public int getMessagesProcessed() {
-    return this._stats.getInt(_messagesProcessedId);
+    return _stats.getInt(_messagesProcessedId);
   }
 
   /**
@@ -262,7 +262,7 @@ public class CacheClientProxyStats implements MessageStats {
    * @return the current value of the "messageProcessingTime" stat
    */
   public long getMessageProcessingTime() {
-    return this._stats.getLong(_messageProcessingTimeId);
+    return _stats.getLong(_messageProcessingTimeId);
   }
 
   /**
@@ -271,7 +271,7 @@ public class CacheClientProxyStats implements MessageStats {
    * @return the current value of the "deltaMessagesSent" stat
    */
   public int getDeltaMessagesSent() {
-    return this._stats.getInt(_deltaMessagesSentId);
+    return _stats.getInt(_deltaMessagesSentId);
   }
 
   /**
@@ -280,7 +280,7 @@ public class CacheClientProxyStats implements MessageStats {
    * @return the current value of the "deltaFullMessagesSent" stat
    */
   public int getDeltaFullMessagesSent() {
-    return this._stats.getInt(_deltaFullMessagesSentId);
+    return _stats.getInt(_deltaFullMessagesSentId);
   }
 
   /**
@@ -289,7 +289,7 @@ public class CacheClientProxyStats implements MessageStats {
    * @return the current value of the "cqCount" stat
    */
   public int getCqCount() {
-    return this._stats.getInt(_cqCountId);
+    return _stats.getInt(_cqCountId);
   }
 
   /**
@@ -298,7 +298,7 @@ public class CacheClientProxyStats implements MessageStats {
    * @return the current value of the "_messagesBeingQueuedInProgress" stat
    */
   public long getMessagesBeingQueuedInProgress() {
-    return this._stats.getLong(_messagesBeingQueuedInProgressId);
+    return _stats.getLong(_messagesBeingQueuedInProgressId);
   }
 
   /**
@@ -307,7 +307,7 @@ public class CacheClientProxyStats implements MessageStats {
    * @return the current value of the "_messagesBeingQueuedTime" stat
    */
   public long getMessagesBeingQueuedTime() {
-    return this._stats.getLong(_messagesBeingQueuedTimeId);
+    return _stats.getLong(_messagesBeingQueuedTimeId);
   }
 
 
@@ -315,63 +315,63 @@ public class CacheClientProxyStats implements MessageStats {
    * Increments the "messagesReceived" stat.
    */
   public void incMessagesReceived() {
-    this._stats.incInt(_messagesReceivedId, 1);
+    _stats.incInt(_messagesReceivedId, 1);
   }
 
   /**
    * Increments the "messagesQueued" stat.
    */
   public void incMessagesQueued() {
-    this._stats.incInt(_messagesQueuedId, 1);
+    _stats.incInt(_messagesQueuedId, 1);
   }
 
   /**
    * Increments the "messagesNotQueuedOriginator" stat.
    */
   public void incMessagesNotQueuedOriginator() {
-    this._stats.incInt(_messagesNotQueuedOriginatorId, 1);
+    _stats.incInt(_messagesNotQueuedOriginatorId, 1);
   }
 
   /**
    * Increments the "messagesNotQueuedNotInterested" stat.
    */
   public void incMessagesNotQueuedNotInterested() {
-    this._stats.incInt(_messagesNotQueuedNotInterestedId, 1);
+    _stats.incInt(_messagesNotQueuedNotInterestedId, 1);
   }
 
   /**
    * Increments the "messagesFailedQueued" stat.
    */
   public void incMessagesFailedQueued() {
-    this._stats.incInt(_messagesFailedQueuedId, 1);
+    _stats.incInt(_messagesFailedQueuedId, 1);
   }
 
   /**
    * Increments the "cqCount" stat.
    */
   public void incCqCount() {
-    this._stats.incInt(_cqCountId, 1);
+    _stats.incInt(_cqCountId, 1);
   }
 
   /**
    * Increments the "messagesBeingQueuedInProgress" stat.
    */
   public void incMessagesBeingQueuedInProgress() {
-    this._stats.incLong(_messagesBeingQueuedInProgressId, 1);
+    _stats.incLong(_messagesBeingQueuedInProgressId, 1);
   }
 
   /**
    * Decrements the "cqCount" stat.
    */
   public void decCqCount() {
-    this._stats.incInt(_cqCountId, -1);
+    _stats.incInt(_cqCountId, -1);
   }
 
   /**
    * Decrements the "messagesBeingQueuedInProgress" stat.
    */
   public void decMessagesBeingQueuedInProgress() {
-    this._stats.incLong(_messagesBeingQueuedInProgressId, -1);
+    _stats.incLong(_messagesBeingQueuedInProgressId, -1);
   }
 
   /**
@@ -380,7 +380,7 @@ public class CacheClientProxyStats implements MessageStats {
    * @param size The size of the queue
    */
   public void setQueueSize(int size) {
-    this._stats.setInt(_messageQueueSizeId, size);
+    _stats.setInt(_messageQueueSizeId, size);
   }
 
   /**
@@ -402,25 +402,25 @@ public class CacheClientProxyStats implements MessageStats {
     long ts = DistributionStats.getStatTime();
 
     // Increment number of notifications
-    this._stats.incInt(_messagesProcessedId, 1);
+    _stats.incInt(_messagesProcessedId, 1);
 
     // Increment notification time
     long elapsed = ts - start;
-    this._stats.incLong(_messageProcessingTimeId, elapsed);
+    _stats.incLong(_messageProcessingTimeId, elapsed);
   }
 
   /**
    * Increments the "deltaMessagesSent" stats.
    */
   public void incDeltaMessagesSent() {
-    this._stats.incInt(_deltaMessagesSentId, 1);
+    _stats.incInt(_deltaMessagesSentId, 1);
   }
 
   /**
    * Increments the "deltaFullMessagesSent" stats.
    */
   public void incDeltaFullMessagesSent() {
-    this._stats.incInt(_deltaFullMessagesSentId, 1);
+    _stats.incInt(_deltaFullMessagesSentId, 1);
   }
 
   @Override
@@ -430,7 +430,7 @@ public class CacheClientProxyStats implements MessageStats {
 
   @Override
   public void incSentBytes(long v) {
-    this._stats.incLong(_sentBytesId, v);
+    _stats.incLong(_sentBytesId, v);
   }
 
   @Override
@@ -454,6 +454,6 @@ public class CacheClientProxyStats implements MessageStats {
     decMessagesBeingQueuedInProgress();
 
     long elapsed = ts - startTime;
-    this._stats.incLong(_messagesBeingQueuedTimeId, elapsed);
+    _stats.incLong(_messagesBeingQueuedTimeId, elapsed);
   }
 }

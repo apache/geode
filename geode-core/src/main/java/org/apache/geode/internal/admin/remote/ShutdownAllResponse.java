@@ -43,7 +43,7 @@ public class ShutdownAllResponse extends AdminResponse {
   }
 
   public ShutdownAllResponse(InternalDistributedMember sender, boolean isToShutDown) {
-    this.setRecipient(sender);
+    setRecipient(sender);
     this.isToShutDown = isToShutDown;
   }
 
@@ -63,13 +63,13 @@ public class ShutdownAllResponse extends AdminResponse {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.isToShutDown = in.readBoolean();
+    isToShutDown = in.readBoolean();
   }
 
   @Override
   public String toString() {
-    return "ShutdownAllResponse from " + this.getSender() + " msgId=" + this.getMsgId()
-        + " isToShutDown=" + this.isToShutDown;
+    return "ShutdownAllResponse from " + getSender() + " msgId=" + getMsgId()
+        + " isToShutDown=" + isToShutDown;
   }
 
   public boolean isToShutDown() {

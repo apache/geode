@@ -201,9 +201,9 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Client pool.
-    final int port0 = server0.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port1 = server1.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port2 = server2.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
+    final int port0 = server0.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port1 = server1.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port2 = server2.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(server0.getHost());
 
@@ -253,7 +253,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
             rs[0][0] = (SelectResults) query.execute();
             resWithoutIndexRemote[i] = rs[0][0];
             LogWriterUtils.getLogWriter().info("RR remote indexType: no index  size of resultset: "
-                + rs[0][0].size() + " for query: " + queryString[i]);;
+                + rs[0][0].size() + " for query: " + queryString[i]);
             checkForPdxString(rs[0][0].asList(), queryString[i]);
 
             LogWriterUtils.getLogWriter()
@@ -263,7 +263,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
             resWithoutIndexLocal[i] = rs[0][1];
             LogWriterUtils.getLogWriter()
                 .info("RR  client local indexType:no index size of resultset: " + rs[0][1].size()
-                    + " for query: " + queryString[i]);;
+                    + " for query: " + queryString[i]);
             checkForPdxString(rs[0][1].asList(), queryString[i]);
           } catch (Exception e) {
             Assert.fail("Failed executing " + queryString[i], e);
@@ -275,7 +275,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
             Query query = remoteQueryService.newQuery(queryString2[i]);
             resWithIndexRemote[i] = (SelectResults) query.execute();
             LogWriterUtils.getLogWriter().info("RR  remote region2 size of resultset: "
-                + resWithIndexRemote[i].size() + " for query: " + queryString2[i]);;
+                + resWithIndexRemote[i].size() + " for query: " + queryString2[i]);
             checkForPdxString(resWithIndexRemote[i].asList(), queryString2[i]);
 
             // to compare local query results with and without index
@@ -284,7 +284,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
             query = localQueryService.newQuery(queryString2[i]);
             resWithIndexLocal[i] = (SelectResults) query.execute();
             LogWriterUtils.getLogWriter().info("RR  local region2 size of resultset: "
-                + resWithIndexLocal[i].size() + " for query: " + queryString2[i]);;
+                + resWithIndexLocal[i].size() + " for query: " + queryString2[i]);
             checkForPdxString(resWithIndexLocal[i].asList(), queryString2[i]);
           } catch (Exception e) {
             Assert.fail("Failed executing " + queryString2[i], e);
@@ -382,18 +382,18 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
         QueryService localQueryService = getCache().getQueryService();
 
         // Query server1 locally to check if PdxString is not being returned
-        for (int i = 0; i < queryString.length; i++) {
+        for (final String s : queryString) {
           try {
             LogWriterUtils.getLogWriter()
-                .info("### Executing Query locally on server:" + queryString[i]);
-            SelectResults rs = (SelectResults) localQueryService.newQuery(queryString[i]).execute();
+                .info("### Executing Query locally on server:" + s);
+            SelectResults rs = (SelectResults) localQueryService.newQuery(s).execute();
             LogWriterUtils.getLogWriter().info(
                 "isPR: false server local readSerializedTrue: indexType: false size of resultset: "
-                    + rs.size() + " for query: " + queryString[i]);
+                    + rs.size() + " for query: " + s);
             // The results should not be PdxString
-            checkForPdxString(rs.asList(), queryString[i]);
+            checkForPdxString(rs.asList(), s);
           } catch (Exception e) {
-            Assert.fail("Failed executing " + queryString[i], e);
+            Assert.fail("Failed executing " + s, e);
           }
         }
       }
@@ -408,19 +408,19 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
         QueryService remoteQueryService = (PoolManager.find(poolName)).getQueryService();
 
         // Query server1 remotely to check if PdxString is not being returned
-        for (int i = 0; i < queryString.length; i++) {
+        for (final String s : queryString) {
           try {
             LogWriterUtils.getLogWriter()
-                .info("### Executing Query locally on server:" + queryString[i]);
+                .info("### Executing Query locally on server:" + s);
             SelectResults rs =
-                (SelectResults) remoteQueryService.newQuery(queryString[i]).execute();
+                (SelectResults) remoteQueryService.newQuery(s).execute();
             LogWriterUtils.getLogWriter()
                 .info("RR server remote readSerializedTrue: indexType: false size of resultset: "
-                    + rs.size() + " for query: " + queryString[i]);
+                    + rs.size() + " for query: " + s);
             // The results should not be PdxString
-            checkForPdxString(rs.asList(), queryString[i]);
+            checkForPdxString(rs.asList(), s);
           } catch (Exception e) {
-            Assert.fail("Failed executing " + queryString[i], e);
+            Assert.fail("Failed executing " + s, e);
           }
         }
       }
@@ -485,9 +485,9 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Client pool.
-    final int port0 = server0.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port1 = server1.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port2 = server2.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
+    final int port0 = server0.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port1 = server1.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port2 = server2.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(server0.getHost());
 
@@ -552,7 +552,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
             rs[0][0] = (SelectResults) query.execute();
             LogWriterUtils.getLogWriter()
                 .info("RR remote indexType: CompactRange size of resultset: " + rs[0][0].size()
-                    + " for query: " + queryString[i]);;
+                    + " for query: " + queryString[i]);
             checkForPdxString(rs[0][0].asList(), queryString[i]);
 
             LogWriterUtils.getLogWriter()
@@ -561,7 +561,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
             rs[0][1] = (SelectResults) query.execute();
             LogWriterUtils.getLogWriter()
                 .info("RR  client local indexType: CompactRange size of resultset: "
-                    + rs[0][1].size() + " for query: " + queryString[i]);;
+                    + rs[0][1].size() + " for query: " + queryString[i]);
             checkForPdxString(rs[0][1].asList(), queryString[i]);
 
             if (i < orderByQueryIndex) {
@@ -597,18 +597,18 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
         QueryService localQueryService = getCache().getQueryService();
 
         // Query server1 locally to check if PdxString is not being returned
-        for (int i = 0; i < queryString.length; i++) {
+        for (final String s : queryString) {
           try {
             LogWriterUtils.getLogWriter()
-                .info("### Executing Query locally on server:" + queryString[i]);
-            SelectResults rs = (SelectResults) localQueryService.newQuery(queryString[i]).execute();
+                .info("### Executing Query locally on server:" + s);
+            SelectResults rs = (SelectResults) localQueryService.newQuery(s).execute();
             LogWriterUtils.getLogWriter()
                 .info("RR server local indexType:Range  size of resultset: " + rs.size()
-                    + " for query: " + queryString[i]);
+                    + " for query: " + s);
             // The results should not be PdxString
-            checkForPdxString(rs.asList(), queryString[i]);
+            checkForPdxString(rs.asList(), s);
           } catch (Exception e) {
-            Assert.fail("Failed executing " + queryString[i], e);
+            Assert.fail("Failed executing " + s, e);
           }
         }
       }
@@ -622,18 +622,18 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
         cache.setReadSerializedForTest(true);
         QueryService localQueryService = getCache().getQueryService();
         // Query server1 locally to check if PdxString is not being returned
-        for (int i = 0; i < queryString.length; i++) {
+        for (final String s : queryString) {
           try {
             LogWriterUtils.getLogWriter()
-                .info("### Executing Query locally on server:" + queryString[i]);
-            SelectResults rs = (SelectResults) localQueryService.newQuery(queryString[i]).execute();
+                .info("### Executing Query locally on server:" + s);
+            SelectResults rs = (SelectResults) localQueryService.newQuery(s).execute();
             LogWriterUtils.getLogWriter().info(
                 "RR server local readSerializedTrue: indexType: CompactRange size of resultset: "
-                    + rs.size() + " for query: " + queryString[i]);
+                    + rs.size() + " for query: " + s);
             // The results should not be PdxString
-            checkForPdxString(rs.asList(), queryString[i]);
+            checkForPdxString(rs.asList(), s);
           } catch (Exception e) {
-            Assert.fail("Failed executing " + queryString[i], e);
+            Assert.fail("Failed executing " + s, e);
           }
         }
       }
@@ -648,19 +648,19 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
         QueryService remoteQueryService = (PoolManager.find(poolName)).getQueryService();
 
         // Query server1 remotely to check if PdxString is not being returned
-        for (int i = 0; i < queryString.length; i++) {
+        for (final String s : queryString) {
           try {
             LogWriterUtils.getLogWriter()
-                .info("### Executing Query locally on server:" + queryString[i]);
+                .info("### Executing Query locally on server:" + s);
             SelectResults rs =
-                (SelectResults) remoteQueryService.newQuery(queryString[i]).execute();
+                (SelectResults) remoteQueryService.newQuery(s).execute();
             LogWriterUtils.getLogWriter().info(
                 "RR server remote readSerializedTrue: indexType:CompactRange size of resultset: "
-                    + rs.size() + " for query: " + queryString[i]);
+                    + rs.size() + " for query: " + s);
             // The results should not be PdxString
-            checkForPdxString(rs.asList(), queryString[i]);
+            checkForPdxString(rs.asList(), s);
           } catch (Exception e) {
-            Assert.fail("Failed executing " + queryString[i], e);
+            Assert.fail("Failed executing " + s, e);
           }
         }
       }
@@ -725,9 +725,9 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Client pool.
-    final int port0 = server0.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port1 = server1.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port2 = server2.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
+    final int port0 = server0.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port1 = server1.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port2 = server2.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server0.getHost());
 
     // Create client pool.
@@ -786,7 +786,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
             Query query = remoteQueryService.newQuery(queryString[i]);
             rs[0][0] = (SelectResults) query.execute();
             LogWriterUtils.getLogWriter().info("RR remote indexType: Range size of resultset: "
-                + rs[0][0].size() + " for query: " + queryString[i]);;
+                + rs[0][0].size() + " for query: " + queryString[i]);
             checkForPdxString(rs[0][0].asList(), queryString[i]);
 
             LogWriterUtils.getLogWriter()
@@ -795,7 +795,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
             rs[0][1] = (SelectResults) query.execute();
             LogWriterUtils.getLogWriter()
                 .info("RR  client local indexType: Range size of resultset: " + rs[0][1].size()
-                    + " for query: " + queryString[i]);;
+                    + " for query: " + queryString[i]);
             checkForPdxString(rs[0][1].asList(), queryString[i]);
 
             if (i < orderByQueryIndex) {
@@ -830,18 +830,18 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
         QueryService localQueryService = getCache().getQueryService();
 
         // Query server1 locally to check if PdxString is not being returned
-        for (int i = 0; i < queryString.length; i++) {
+        for (final String s : queryString) {
           try {
             LogWriterUtils.getLogWriter()
-                .info("### Executing Query locally on server:" + queryString[i]);
-            SelectResults rs = (SelectResults) localQueryService.newQuery(queryString[i]).execute();
+                .info("### Executing Query locally on server:" + s);
+            SelectResults rs = (SelectResults) localQueryService.newQuery(s).execute();
             LogWriterUtils.getLogWriter()
                 .info("RR server local indexType:Range  size of resultset: " + rs.size()
-                    + " for query: " + queryString[i]);
+                    + " for query: " + s);
             // The results should not be PdxString
-            checkForPdxString(rs.asList(), queryString[i]);
+            checkForPdxString(rs.asList(), s);
           } catch (Exception e) {
-            Assert.fail("Failed executing " + queryString[i], e);
+            Assert.fail("Failed executing " + s, e);
           }
         }
       }
@@ -854,18 +854,18 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
         cache.setReadSerializedForTest(true);
         QueryService localQueryService = getCache().getQueryService();
         // Query server1 locally to check if PdxString is not being returned
-        for (int i = 0; i < queryString.length; i++) {
+        for (final String s : queryString) {
           try {
             LogWriterUtils.getLogWriter()
-                .info("### Executing Query locally on server:" + queryString[i]);
-            SelectResults rs = (SelectResults) localQueryService.newQuery(queryString[i]).execute();
+                .info("### Executing Query locally on server:" + s);
+            SelectResults rs = (SelectResults) localQueryService.newQuery(s).execute();
             LogWriterUtils.getLogWriter()
                 .info("RR  server local readSerializedTrue: indexType: Range size of resultset: "
-                    + rs.size() + " for query: " + queryString[i]);
+                    + rs.size() + " for query: " + s);
             // The results should not be PdxString
-            checkForPdxString(rs.asList(), queryString[i]);
+            checkForPdxString(rs.asList(), s);
           } catch (Exception e) {
-            Assert.fail("Failed executing " + queryString[i], e);
+            Assert.fail("Failed executing " + s, e);
           }
         }
       }
@@ -878,19 +878,19 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
         cache.setReadSerializedForTest(true);
         QueryService remoteQueryService = (PoolManager.find(poolName)).getQueryService();
         // Query server1 remotely to check if PdxString is not being returned
-        for (int i = 0; i < queryString.length; i++) {
+        for (final String s : queryString) {
           try {
             LogWriterUtils.getLogWriter()
-                .info("### Executing Query locally on server:" + queryString[i]);
+                .info("### Executing Query locally on server:" + s);
             SelectResults rs =
-                (SelectResults) remoteQueryService.newQuery(queryString[i]).execute();
+                (SelectResults) remoteQueryService.newQuery(s).execute();
             LogWriterUtils.getLogWriter()
                 .info("RR server remote readSerializedTrue: indexType: Range size of resultset: "
-                    + rs.size() + " for query: " + queryString[i]);
+                    + rs.size() + " for query: " + s);
             // The results should not be PdxString
-            checkForPdxString(rs.asList(), queryString[i]);
+            checkForPdxString(rs.asList(), s);
           } catch (Exception e) {
-            Assert.fail("Failed executing " + queryString[i], e);
+            Assert.fail("Failed executing " + s, e);
           }
         }
       }
@@ -964,9 +964,9 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Client pool.
-    final int port0 = server0.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port1 = server1.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port2 = server2.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
+    final int port0 = server0.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port1 = server1.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port2 = server2.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(server0.getHost());
 
@@ -1016,7 +1016,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
             rs[0][0] = (SelectResults) query.execute();
             resWithoutIndexRemote[i] = rs[0][0];
             LogWriterUtils.getLogWriter().info("RR remote no index size of resultset: "
-                + rs[0][0].size() + " for query: " + queryString[i]);;
+                + rs[0][0].size() + " for query: " + queryString[i]);
             checkForPdxString(rs[0][0].asList(), queryString[i]);
 
             LogWriterUtils.getLogWriter()
@@ -1026,7 +1026,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
             resWithoutIndexLocal[i] = rs[0][1];
             LogWriterUtils.getLogWriter()
                 .info("isPR: " + isPr + "  client local indexType:no index size of resultset: "
-                    + rs[0][1].size() + " for query: " + queryString[i]);;
+                    + rs[0][1].size() + " for query: " + queryString[i]);
             checkForPdxString(rs[0][1].asList(), queryString[i]);
           } catch (Exception e) {
             Assert.fail("Failed executing " + queryString[i], e);
@@ -1039,7 +1039,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
             resWithIndexRemote[i] = (SelectResults) query.execute();
             LogWriterUtils.getLogWriter()
                 .info("isPR: " + isPr + "  remote region2 size of resultset: "
-                    + resWithIndexRemote[i].size() + " for query: " + queryString2[i]);;
+                    + resWithIndexRemote[i].size() + " for query: " + queryString2[i]);
             checkForPdxString(resWithIndexRemote[i].asList(), queryString2[i]);
 
             // to compare local query results with and without index
@@ -1049,7 +1049,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
             resWithIndexLocal[i] = (SelectResults) query.execute();
             LogWriterUtils.getLogWriter()
                 .info("isPR: " + isPr + "  local region2 size of resultset: "
-                    + resWithIndexLocal[i].size() + " for query: " + queryString2[i]);;
+                    + resWithIndexLocal[i].size() + " for query: " + queryString2[i]);
             checkForPdxString(resWithIndexLocal[i].asList(), queryString2[i]);
           } catch (Exception e) {
             Assert.fail("Failed executing " + queryString2[i], e);
@@ -1147,19 +1147,19 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
         cache.setReadSerializedForTest(true);
         QueryService localQueryService = getCache().getQueryService();
         // Query server1 locally to check if PdxString is not being returned
-        for (int i = 0; i < queryString.length; i++) {
+        for (final String s : queryString) {
           try {
             LogWriterUtils.getLogWriter()
-                .info("### Executing Query locally on server:" + queryString[i]);
-            SelectResults rs = (SelectResults) localQueryService.newQuery(queryString[i]).execute();
+                .info("### Executing Query locally on server:" + s);
+            SelectResults rs = (SelectResults) localQueryService.newQuery(s).execute();
             LogWriterUtils.getLogWriter()
                 .info("isPR: " + isPr
                     + " server local readSerializedTrue: indexType: no index size of resultset: "
-                    + rs.size() + " for query: " + queryString[i]);
+                    + rs.size() + " for query: " + s);
             // The results should not be PdxString
-            checkForPdxString(rs.asList(), queryString[i]);
+            checkForPdxString(rs.asList(), s);
           } catch (Exception e) {
-            Assert.fail("Failed executing " + queryString[i], e);
+            Assert.fail("Failed executing " + s, e);
           }
         }
       }
@@ -1173,19 +1173,19 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
         cache.setReadSerializedForTest(true);
         QueryService remoteQueryService = (PoolManager.find(poolName)).getQueryService();
         // Query server1 remotely to check if PdxString is not being returned
-        for (int i = 0; i < queryString.length; i++) {
+        for (final String s : queryString) {
           try {
             LogWriterUtils.getLogWriter()
-                .info("### Executing Query locally on server:" + queryString[i]);
+                .info("### Executing Query locally on server:" + s);
             SelectResults rs =
-                (SelectResults) remoteQueryService.newQuery(queryString[i]).execute();
+                (SelectResults) remoteQueryService.newQuery(s).execute();
             LogWriterUtils.getLogWriter()
                 .info("RR server remote readSerializedTrue: indexType:no index size of resultset: "
-                    + rs.size() + " for query: " + queryString[i]);
+                    + rs.size() + " for query: " + s);
             // The results should not be PdxString
-            checkForPdxString(rs.asList(), queryString[i]);
+            checkForPdxString(rs.asList(), s);
           } catch (Exception e) {
-            Assert.fail("Failed executing " + queryString[i], e);
+            Assert.fail("Failed executing " + s, e);
           }
         }
       }
@@ -1257,9 +1257,9 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Client pool.
-    final int port0 = server0.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port1 = server1.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port2 = server2.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
+    final int port0 = server0.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port1 = server1.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port2 = server2.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(server0.getHost());
 
@@ -1331,7 +1331,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
             rs[0][0] = (SelectResults) query.execute();
             LogWriterUtils.getLogWriter()
                 .info("RR remote indexType:CompactRange size of resultset: " + rs[0][0].size()
-                    + " for query: " + queryString[i]);;
+                    + " for query: " + queryString[i]);
             checkForPdxString(rs[0][0].asList(), queryString[i]);
 
             LogWriterUtils.getLogWriter()
@@ -1340,7 +1340,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
             rs[0][1] = (SelectResults) query.execute();
             LogWriterUtils.getLogWriter()
                 .info("isPR: " + isPr + "  client local indexType:CompactRange size of resultset: "
-                    + rs[0][1].size() + " for query: " + queryString[i]);;
+                    + rs[0][1].size() + " for query: " + queryString[i]);
             checkForPdxString(rs[0][1].asList(), queryString[i]);
 
             if (i < orderByQueryIndex) {
@@ -1374,18 +1374,18 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
         QueryService localQueryService = getCache().getQueryService();
 
         // Query server1 locally to check if PdxString is not being returned
-        for (int i = 0; i < queryString.length; i++) {
+        for (final String s : queryString) {
           try {
             LogWriterUtils.getLogWriter()
-                .info("### Executing Query locally on server:" + queryString[i]);
-            SelectResults rs = (SelectResults) localQueryService.newQuery(queryString[i]).execute();
+                .info("### Executing Query locally on server:" + s);
+            SelectResults rs = (SelectResults) localQueryService.newQuery(s).execute();
             LogWriterUtils.getLogWriter()
                 .info("RR server local indexType:Range  size of resultset: " + rs.size()
-                    + " for query: " + queryString[i]);
+                    + " for query: " + s);
             // The results should not be PdxString
-            checkForPdxString(rs.asList(), queryString[i]);
+            checkForPdxString(rs.asList(), s);
           } catch (Exception e) {
-            Assert.fail("Failed executing " + queryString[i], e);
+            Assert.fail("Failed executing " + s, e);
           }
         }
       }
@@ -1400,19 +1400,19 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
         QueryService localQueryService = getCache().getQueryService();
 
         // Query server1 locally to check if PdxString is not being returned
-        for (int i = 0; i < queryString.length; i++) {
+        for (final String s : queryString) {
           try {
             LogWriterUtils.getLogWriter()
-                .info("### Executing Query locally on server:" + queryString[i]);
-            SelectResults rs = (SelectResults) localQueryService.newQuery(queryString[i]).execute();
+                .info("### Executing Query locally on server:" + s);
+            SelectResults rs = (SelectResults) localQueryService.newQuery(s).execute();
             LogWriterUtils.getLogWriter()
                 .info("isPR: " + isPr
                     + " server local readSerializedTrue: indexType:CompactRange size of resultset: "
-                    + rs.size() + " for query: " + queryString[i]);
+                    + rs.size() + " for query: " + s);
             // The results should not be PdxString
-            checkForPdxString(rs.asList(), queryString[i]);
+            checkForPdxString(rs.asList(), s);
           } catch (Exception e) {
-            Assert.fail("Failed executing " + queryString[i], e);
+            Assert.fail("Failed executing " + s, e);
           }
         }
       }
@@ -1427,19 +1427,19 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
         QueryService remoteQueryService = (PoolManager.find(poolName)).getQueryService();
 
         // Query server1 remotely to check if PdxString is not being returned
-        for (int i = 0; i < queryString.length; i++) {
+        for (final String s : queryString) {
           try {
             LogWriterUtils.getLogWriter()
-                .info("### Executing Query locally on server:" + queryString[i]);
+                .info("### Executing Query locally on server:" + s);
             SelectResults rs =
-                (SelectResults) remoteQueryService.newQuery(queryString[i]).execute();
+                (SelectResults) remoteQueryService.newQuery(s).execute();
             LogWriterUtils.getLogWriter().info(
                 "RR server remote readSerializedTrue: indexType: indexType:CompactRange size of resultset: "
-                    + rs.size() + " for query: " + queryString[i]);
+                    + rs.size() + " for query: " + s);
             // The results should not be PdxString
-            checkForPdxString(rs.asList(), queryString[i]);
+            checkForPdxString(rs.asList(), s);
           } catch (Exception e) {
-            Assert.fail("Failed executing " + queryString[i], e);
+            Assert.fail("Failed executing " + s, e);
           }
         }
       }
@@ -1511,9 +1511,9 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Client pool.
-    final int port0 = server0.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port1 = server1.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port2 = server2.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
+    final int port0 = server0.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port1 = server1.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port2 = server2.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(server0.getHost());
 
@@ -1582,7 +1582,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
             Query query = remoteQueryService.newQuery(queryString[i]);
             rs[0][0] = (SelectResults) query.execute();
             LogWriterUtils.getLogWriter().info("RR remote indexType: Range size of resultset: "
-                + rs[0][0].size() + " for query: " + queryString[i]);;
+                + rs[0][0].size() + " for query: " + queryString[i]);
             checkForPdxString(rs[0][0].asList(), queryString[i]);
 
             LogWriterUtils.getLogWriter()
@@ -1591,7 +1591,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
             rs[0][1] = (SelectResults) query.execute();
             LogWriterUtils.getLogWriter()
                 .info("isPR: " + isPr + "  client local indexType: Range size of resultset: "
-                    + rs[0][1].size() + " for query: " + queryString[i]);;
+                    + rs[0][1].size() + " for query: " + queryString[i]);
             checkForPdxString(rs[0][1].asList(), queryString[i]);
 
             if (i < orderByQueryIndex) {
@@ -1628,18 +1628,18 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
         QueryService localQueryService = getCache().getQueryService();
 
         // Query server1 locally to check if PdxString is not being returned
-        for (int i = 0; i < queryString.length; i++) {
+        for (final String s : queryString) {
           try {
             LogWriterUtils.getLogWriter()
-                .info("### Executing Query locally on server:" + queryString[i]);
-            SelectResults rs = (SelectResults) localQueryService.newQuery(queryString[i]).execute();
+                .info("### Executing Query locally on server:" + s);
+            SelectResults rs = (SelectResults) localQueryService.newQuery(s).execute();
             LogWriterUtils.getLogWriter()
                 .info("RR server local indexType:Range  size of resultset: " + rs.size()
-                    + " for query: " + queryString[i]);
+                    + " for query: " + s);
             // The results should not be PdxString
-            checkForPdxString(rs.asList(), queryString[i]);
+            checkForPdxString(rs.asList(), s);
           } catch (Exception e) {
-            Assert.fail("Failed executing " + queryString[i], e);
+            Assert.fail("Failed executing " + s, e);
           }
         }
       }
@@ -1654,19 +1654,19 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
         QueryService localQueryService = getCache().getQueryService();
 
         // Query server1 locally to check if PdxString is not being returned
-        for (int i = 0; i < queryString.length; i++) {
+        for (final String s : queryString) {
           try {
             LogWriterUtils.getLogWriter()
-                .info("### Executing Query locally on server:" + queryString[i]);
-            SelectResults rs = (SelectResults) localQueryService.newQuery(queryString[i]).execute();
+                .info("### Executing Query locally on server:" + s);
+            SelectResults rs = (SelectResults) localQueryService.newQuery(s).execute();
             LogWriterUtils.getLogWriter()
                 .info("isPR: " + isPr
                     + " server local readSerializedTrue: indexType: Range size of resultset: "
-                    + rs.size() + " for query: " + queryString[i]);
+                    + rs.size() + " for query: " + s);
             // The results should not be PdxString
-            checkForPdxString(rs.asList(), queryString[i]);
+            checkForPdxString(rs.asList(), s);
           } catch (Exception e) {
-            Assert.fail("Failed executing " + queryString[i], e);
+            Assert.fail("Failed executing " + s, e);
           }
         }
       }
@@ -1681,19 +1681,19 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
         QueryService remoteQueryService = (PoolManager.find(poolName)).getQueryService();
 
         // Query server1 remotely to check if PdxString is not being returned
-        for (int i = 0; i < queryString.length; i++) {
+        for (final String s : queryString) {
           try {
             LogWriterUtils.getLogWriter()
-                .info("### Executing Query locally on server:" + queryString[i]);
+                .info("### Executing Query locally on server:" + s);
             SelectResults rs =
-                (SelectResults) remoteQueryService.newQuery(queryString[i]).execute();
+                (SelectResults) remoteQueryService.newQuery(s).execute();
             LogWriterUtils.getLogWriter()
                 .info("RR server remote readSerializedTrue: indexType: Range size of resultset: "
-                    + rs.size() + " for query: " + queryString[i]);
+                    + rs.size() + " for query: " + s);
             // The results should not be PdxString
-            checkForPdxString(rs.asList(), queryString[i]);
+            checkForPdxString(rs.asList(), s);
           } catch (Exception e) {
-            Assert.fail("Failed executing " + queryString[i], e);
+            Assert.fail("Failed executing " + s, e);
           }
         }
       }
@@ -1765,9 +1765,9 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Client pool.
-    final int port0 = server0.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port1 = server1.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
-    final int port2 = server2.invoke(() -> PdxStringQueryDUnitTest.getCacheServerPort());
+    final int port0 = server0.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port1 = server1.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
+    final int port2 = server2.invoke(PdxStringQueryDUnitTest::getCacheServerPort);
 
     final String host0 = NetworkUtils.getServerHostName(server0.getHost());
 
@@ -1853,7 +1853,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
             Query query = remoteQueryService.newQuery(qs[i]);
             SelectResults res = (SelectResults) query.execute();
             LogWriterUtils.getLogWriter().info("PR NULL Pdxstring test size of resultset: "
-                + res.size() + " for query: " + qs[i]);;
+                + res.size() + " for query: " + qs[i]);
             if (i == 0) {
               for (Object o : res) {
                 if (o != null) {
@@ -1878,9 +1878,9 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
 
 
   private void compareResultsOrder(SelectResults[][] r, boolean isPr) {
-    for (int j = 0; j < r.length; j++) {
-      Object[] r1 = (r[j][0]).toArray();
-      Object[] r2 = (r[j][1]).toArray();
+    for (final SelectResults[] selectResults : r) {
+      Object[] r1 = (selectResults[0]).toArray();
+      Object[] r2 = (selectResults[1]).toArray();
       if (r1.length != r2.length) {
         fail("Size of results not equal: " + r1.length + " vs " + r2.length);
       }
@@ -1933,22 +1933,23 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     Iterator itert1 = null;
     Iterator itert2 = null;
     ObjectType type1, type2;
-    outer: for (int j = 0; j < r.length; j++) {
-      CollectionType collType1 = r[j][0].getCollectionType();
-      CollectionType collType2 = r[j][1].getCollectionType();
+    outer: for (final SelectResults[] selectResults : r) {
+      CollectionType collType1 = selectResults[0].getCollectionType();
+      CollectionType collType2 = selectResults[1].getCollectionType();
       type1 = collType1.getElementType();
       type2 = collType2.getElementType();
 
-      if (r[j][0].size() == r[j][1].size()) {
-        System.out.println("Both SelectResults are of Same Size i.e.  Size= " + r[j][1].size());
+      if (selectResults[0].size() == selectResults[1].size()) {
+        System.out.println(
+            "Both SelectResults are of Same Size i.e.  Size= " + selectResults[1].size());
       } else {
         System.out.println("FAILED4: SelectResults size is different in both the cases. Size1="
-            + r[j][0].size() + " Size2 = " + r[j][1].size());
+            + selectResults[0].size() + " Size2 = " + selectResults[1].size());
         ok = false;
         break;
       }
-      set2 = (((SelectResults) r[j][1]).asSet());
-      set1 = (((SelectResults) r[j][0]).asSet());
+      set2 = (selectResults[1].asSet());
+      set1 = (selectResults[0].asSet());
       boolean pass = true;
       itert1 = set1.iterator();
       while (itert1.hasNext()) {
@@ -2049,9 +2050,9 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
           }
         }
 
-        for (int i = 0; i < qs.length; i++) {
-          SelectResults sr = (SelectResults) cache.getQueryService().newQuery(qs[i]).execute();
-          assertEquals("Did not get expected result from query: " + qs[i] + " ", 2, sr.size());
+        for (final String q : qs) {
+          SelectResults sr = (SelectResults) cache.getQueryService().newQuery(q).execute();
+          assertEquals("Did not get expected result from query: " + q + " ", 2, sr.size());
         }
 
         return null;
@@ -2065,9 +2066,9 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
       Boolean previousPdxReadSerializedFlag = cache.getPdxReadSerializedOverride();
       cache.setPdxReadSerializedOverride(true);
       try {
-        for (int i = 0; i < qs.length; i++) {
-          SelectResults sr = (SelectResults) getCache().getQueryService().newQuery(qs[i]).execute();
-          assertEquals("Did not get expected result from query: " + qs[i] + " ", 2, sr.size());
+        for (final String q : qs) {
+          SelectResults sr = (SelectResults) getCache().getQueryService().newQuery(q).execute();
+          assertEquals("Did not get expected result from query: " + q + " ", 2, sr.size());
         }
       } finally {
         cache.setPdxReadSerializedOverride(previousPdxReadSerializedFlag);
@@ -2094,7 +2095,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     if (asyncIndex) {
       factory.setIndexMaintenanceSynchronous(!asyncIndex);
     }
-    createRegion(this.regionName, this.rootRegionName, factory.create());
+    createRegion(regionName, rootRegionName, factory.create());
     try {
       startBridgeServer(0, false);
     } catch (Exception ex) {
@@ -2119,7 +2120,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
    * Stops the cache server that serves up the given cache.
    */
   protected void stopBridgeServer(Cache cache) {
-    CacheServer server = (CacheServer) cache.getCacheServers().iterator().next();
+    CacheServer server = cache.getCacheServers().iterator().next();
     server.stop();
     assertFalse(server.isRunning());
   }

@@ -196,7 +196,7 @@ public class IndexTrackingQueryObserverDUnitTest extends JUnit4CacheTestCase {
         Index keyIndex1 = null;
         try {
           if (create) {
-            keyIndex1 = (IndexProtocol) qs.createIndex(IndexTrackingTestHook.INDEX_NAME,
+            keyIndex1 = qs.createIndex(IndexTrackingTestHook.INDEX_NAME,
                 IndexType.FUNCTIONAL, "ID",
                 SEPARATOR + "portfolio ");
             assertNotNull(keyIndex1);
@@ -280,7 +280,7 @@ public class IndexTrackingQueryObserverDUnitTest extends JUnit4CacheTestCase {
         Collection<Integer> rslts = regionMap.getResults().values();
         int totalResults = 0;
         for (Integer i : rslts) {
-          totalResults += i.intValue();
+          totalResults += i;
         }
 
         getLogWriter().fine("Index Info result size is " + totalResults);

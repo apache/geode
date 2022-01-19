@@ -52,7 +52,7 @@ public class StringId {
   private static final Locale currentLocale;
 
   @Immutable
-  private static boolean includeMsgIDs;
+  private static final boolean includeMsgIDs;
 
   /**
    * A StringId to allow users to log a literal String using the
@@ -93,7 +93,7 @@ public class StringId {
    * @return unformated text
    **/
   public String getRawText() {
-    return this.text;
+    return text;
   }
 
   /**
@@ -101,7 +101,7 @@ public class StringId {
    **/
   @Override
   public String toString() {
-    return MessageFormat.format(this.text, (Object[]) null);
+    return MessageFormat.format(text, (Object[]) null);
   }
 
 
@@ -112,7 +112,7 @@ public class StringId {
    * @return the English translation of this StringId
    **/
   public String toString(Object... params) {
-    return MessageFormat.format(this.text, params);
+    return MessageFormat.format(text, params);
   }
 
   /**
@@ -121,7 +121,7 @@ public class StringId {
   public String toLocalizedString() {
     String idStr = "";
     if (includeMsgIDs) {
-      idStr = "msgID " + this.id + ": ";
+      idStr = "msgID " + id + ": ";
     }
     return MessageFormat.format(idStr + StringId.rb.getString(this), (Object[]) null);
   }
@@ -135,7 +135,7 @@ public class StringId {
   public String toLocalizedString(Object... params) {
     String idStr = "";
     if (includeMsgIDs) {
-      idStr = "msgID " + this.id + ": ";
+      idStr = "msgID " + id + ": ";
     }
     return MessageFormat.format(idStr + StringId.rb.getString(this), params);
   }

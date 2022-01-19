@@ -87,13 +87,13 @@ import org.apache.geode.internal.util.ArrayUtils;
  */
 public class StructSetOrResultsSet {
 
-  public void CompareQueryResultsWithoutAndWithIndexes(Object[][] r, int len, String queries[]) {
+  public void CompareQueryResultsWithoutAndWithIndexes(Object[][] r, int len, String[] queries) {
     CompareQueryResultsWithoutAndWithIndexes(r, len, false, queries);
   }
 
   /** Creates a new instance of StructSetOrResultsSet */
   public void CompareQueryResultsWithoutAndWithIndexes(Object[][] r, int len, boolean checkOrder,
-      String queries[]) {
+      String[] queries) {
 
     Collection coll1;
     Collection coll2;
@@ -175,7 +175,7 @@ public class StructSetOrResultsSet {
           LogWriter logger = CacheUtils.getLogger();
           logger.error("order by inconsistency at element index = " + j);
           logger.error(" query result =****");
-          logger.error(" query result =" + coll1.toString());
+          logger.error(" query result =" + coll1);
           logger.error(" query result elementType=" + sr.getCollectionType().getElementType());
           logger.error(" externally sorted result =****");
           logger.error(ArrayUtils.toString(externallySorted));
@@ -197,7 +197,7 @@ public class StructSetOrResultsSet {
           LogWriter logger = CacheUtils.getLogger();
           logger.error("order by inconsistency at element index = " + i);
           logger.error(" query result =****");
-          logger.error(" query result =" + coll1.toString());
+          logger.error(" query result =" + coll1);
           logger.error(" externally sorted result =****");
           logger.error(ArrayUtils.toString(externallySorted));
           fail("failed query due to order mismatch=" + query);
@@ -228,38 +228,29 @@ public class StructSetOrResultsSet {
     final OrderByComparator obc = new OrderByComparator(orderByAttribs, resultType, context);
     Comparator baseComparator = obc;
     if (resultType.isStructType()) {
-      baseComparator = new Comparator<Struct>() {
-        @Override
-        public int compare(Struct o1, Struct o2) {
-          return obc.compare(o1.getFieldValues(), o2.getFieldValues());
-        }
-      };
+      baseComparator =
+          (Comparator<Struct>) (o1, o2) -> obc.compare(o1.getFieldValues(), o2.getFieldValues());
     }
     final Comparator secondLevelComparator = baseComparator;
-    final Comparator finalComparator = new Comparator() {
-
-      @Override
-      public int compare(Object o1, Object o2) {
-        final boolean[] orderByColsEqual = new boolean[] {false};
-        QueryObserverHolder.setInstance(new QueryObserverAdapter() {
-          @Override
-          public void orderByColumnsEqual() {
-            orderByColsEqual[0] = true;
-          }
-        });
-        int result = secondLevelComparator.compare(o1, o2);
-        if (result != 0 && orderByColsEqual[0]) {
-          result = 0;
+    final Comparator finalComparator = (o1, o2) -> {
+      final boolean[] orderByColsEqual = new boolean[] {false};
+      QueryObserverHolder.setInstance(new QueryObserverAdapter() {
+        @Override
+        public void orderByColumnsEqual() {
+          orderByColsEqual[0] = true;
         }
-        return result;
+      });
+      int result = secondLevelComparator.compare(o1, o2);
+      if (result != 0 && orderByColsEqual[0]) {
+        result = 0;
       }
-
+      return result;
     };
 
     Field hasUnmappedOrderByColsField =
         CompiledSelect.class.getDeclaredField("hasUnmappedOrderByCols");
     hasUnmappedOrderByColsField.setAccessible(true);
-    boolean skip = ((Boolean) hasUnmappedOrderByColsField.get(cs)).booleanValue();
+    boolean skip = (Boolean) hasUnmappedOrderByColsField.get(cs);
     ValidationLevel validationLevel = ValidationLevel.ALL;
 
     int limit;
@@ -271,7 +262,7 @@ public class StructSetOrResultsSet {
       Method evaluateLimitMethod = CompiledSelect.class.getDeclaredMethod("evaluateLimitValue",
           ExecutionContext.class, CompiledValue.class);
       evaluateLimitMethod.setAccessible(true);
-      limit = ((Integer) evaluateLimitMethod.invoke(null, context, limitCV)).intValue();
+      limit = (Integer) evaluateLimitMethod.invoke(null, context, limitCV);
     } else {
       limit = cs.getLimitValue(null);
     }
@@ -309,7 +300,7 @@ public class StructSetOrResultsSet {
 
   /** Creates a new instance of StructSetOrResultsSet */
   public void CompareCountStarQueryResultsWithoutAndWithIndexes(Object[][] r, int len,
-      boolean checkOrder, String queries[]) {
+      boolean checkOrder, String[] queries) {
 
     Integer count1, count2;
     Iterator<Integer> itert1, itert2;
@@ -331,12 +322,12 @@ public class StructSetOrResultsSet {
    * Compares two ArrayLists containing query results with/without order.
    */
   public void CompareQueryResultsAsListWithoutAndWithIndexes(Object[][] r, int len,
-      boolean checkOrder, String queries[]) {
+      boolean checkOrder, String[] queries) {
     CompareQueryResultsAsListWithoutAndWithIndexes(r, len, checkOrder, true, queries);
   }
 
   public void CompareQueryResultsAsListWithoutAndWithIndexes(Object[][] r, int len,
-      boolean checkOrder, boolean checkClass, String queries[]) {
+      boolean checkOrder, boolean checkClass, String[] queries) {
     Integer count1, count2;
     Iterator<Integer> itert1, itert2;
     ArrayList result1, result2;
@@ -419,9 +410,7 @@ public class StructSetOrResultsSet {
   }
 
   private boolean collectionContains(Collection collection, Object object) {
-    Iterator iterator = collection.iterator();
-    while (iterator.hasNext()) {
-      Object o = iterator.next();
+    for (final Object o : collection) {
       if (objectsEqual(object, o)) {
         return true;
       }
@@ -442,15 +431,10 @@ public class StructSetOrResultsSet {
         elementEqual =
             elementEqual && ((values1[i] == values2[i]) || values1[i].equals(values2[i]));
       }
-      if (elementEqual) {
-        return true;
-      }
+      return elementEqual;
     } else {
       // if o1 is null and o2 is not, an NPE will be thrown
-      if (o1 == o2 || o1.equals(o2)) {
-        return true;
-      }
+      return o1 == o2 || o1.equals(o2);
     }
-    return false;
   }
 }

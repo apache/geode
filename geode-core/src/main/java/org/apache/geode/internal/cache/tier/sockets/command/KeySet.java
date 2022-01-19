@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -187,8 +186,7 @@ public class KeySet extends BaseCommand {
 
     List keyList = new ArrayList(MAXIMUM_CHUNK_SIZE);
     final boolean isTraceEnabled = logger.isTraceEnabled();
-    for (Iterator it = keySet.iterator(); it.hasNext();) {
-      Object entryKey = it.next();
+    for (Object entryKey : keySet) {
       keyList.add(entryKey);
       if (isTraceEnabled) {
         logger.trace("{}: fillAndSendKeySetResponseKey <{}>; list size was {}; region: {}",

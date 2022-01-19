@@ -84,7 +84,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
   private static final String TEST_FUNCTION2 = TestFunction.TEST_FUNCTION2;
   private Boolean isByName = null;
 
-  private static int retryCount = 0;
+  private static final int retryCount = 0;
   private Boolean toRegister = null;
 
   private static Region metaDataRegion;

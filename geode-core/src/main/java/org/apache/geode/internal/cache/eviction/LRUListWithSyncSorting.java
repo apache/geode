@@ -32,7 +32,7 @@ public class LRUListWithSyncSorting extends AbstractEvictionList {
 
   public LRUListWithSyncSorting(EvictionController controller) {
     super(controller);
-    this.maxEntries = readMaxEntriesProperty();
+    maxEntries = readMaxEntriesProperty();
   }
 
   private int readMaxEntriesProperty() {
@@ -54,7 +54,7 @@ public class LRUListWithSyncSorting extends AbstractEvictionList {
     long numEvals = 0;
 
     for (;;) {
-      EvictionNode aNode = this.unlinkHeadEntry();
+      EvictionNode aNode = unlinkHeadEntry();
 
       if (logger.isTraceEnabled(LogMarker.LRU_CLOCK_VERBOSE)) {
         logger.trace(LogMarker.LRU_CLOCK_VERBOSE, "lru considering {}", aNode);

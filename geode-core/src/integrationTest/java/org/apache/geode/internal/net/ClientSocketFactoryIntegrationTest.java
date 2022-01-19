@@ -70,8 +70,8 @@ public class ClientSocketFactoryIntegrationTest {
 
   @After
   public void tearDown() throws Exception {
-    if (this.socket != null) {
-      this.socket.close();
+    if (socket != null) {
+      socket.close();
     }
 
     System.clearProperty(GEMFIRE_PREFIX + "clientSocketFactory");
@@ -82,7 +82,7 @@ public class ClientSocketFactoryIntegrationTest {
 
   @Test
   public void testClientSocketFactory() throws Exception {
-    assertThatThrownBy(() -> this.socket = SocketCreatorFactory
+    assertThatThrownBy(() -> socket = SocketCreatorFactory
         .getSocketCreatorForComponent(CLUSTER).forClient()
         .connect(new HostAndPort("localhost", 12345), 0))
             .isExactlyInstanceOf(IOException.class).hasMessage(EXCEPTION_MESSAGE);

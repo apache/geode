@@ -53,7 +53,7 @@ public class DateMessage extends SerialDistributionMessage {
    * Returns the date associated with this message.
    */
   public Date getDate() {
-    return this.date;
+    return date;
   }
 
   /**
@@ -62,14 +62,14 @@ public class DateMessage extends SerialDistributionMessage {
   @Override
   public void process(ClusterDistributionManager dm) {
     // Make sure that message state is what we expect
-    Assert.assertTrue(this.date != null);
+    Assert.assertTrue(date != null);
 
-    System.out.println(format.format(this.date));
+    System.out.println(format.format(date));
   }
 
   @Override
   public void reset() {
-    this.date = null;
+    date = null;
   }
 
   ////////////////// Externalizable Methods //////////////////
@@ -83,7 +83,7 @@ public class DateMessage extends SerialDistributionMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.date, out);
+    DataSerializer.writeObject(date, out);
   }
 
   @Override
@@ -91,11 +91,11 @@ public class DateMessage extends SerialDistributionMessage {
       DeserializationContext context) throws IOException, ClassNotFoundException {
 
     super.fromData(in, context);
-    this.date = (Date) DataSerializer.readObject(in);
+    date = DataSerializer.readObject(in);
   }
 
   public String toString() {
-    return format.format(this.date);
+    return format.format(date);
   }
 
   @Override

@@ -39,9 +39,9 @@ public class MemberMappedArgument implements Serializable {
 
   private static final long serialVersionUID = -6465867775653599576L;
 
-  private Object defaultArgument;
+  private final Object defaultArgument;
 
-  private Map<String, Object> memberToArgMap;
+  private final Map<String, Object> memberToArgMap;
 
   public MemberMappedArgument(Object defaultArgument, Map<String, Object> memberToArgMap) {
     this.defaultArgument = defaultArgument;
@@ -52,16 +52,16 @@ public class MemberMappedArgument implements Serializable {
     if (memberToArgMap.containsKey(memberId)) {
       return memberToArgMap.get(memberId);
     } else {
-      return this.defaultArgument;
+      return defaultArgument;
     }
   }
 
   public Object getDefaultArgument() {
-    return this.defaultArgument;
+    return defaultArgument;
   }
 
   // TODO:Asif: Not good to return the refernec of the mapping. Should we return a copy?
   public Map<String, Object> getMemberSpecificArgumentsMap() {
-    return this.memberToArgMap;
+    return memberToArgMap;
   }
 }

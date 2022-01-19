@@ -40,7 +40,7 @@ public abstract class AbstractHincrByFloatIntegrationTest implements RedisIntegr
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
   private JedisCluster jedis;
-  private static int ITERATION_COUNT = 4000;
+  private static final int ITERATION_COUNT = 4000;
 
   @Before
   public void setUp() {

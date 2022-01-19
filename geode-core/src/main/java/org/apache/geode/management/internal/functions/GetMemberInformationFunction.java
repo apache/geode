@@ -146,9 +146,7 @@ public class GetMemberInformationFunction implements InternalFunction {
       }
     } else {
       memberInfo.setServer(true);
-      Iterator<CacheServer> iters = csList.iterator();
-      while (iters.hasNext()) {
-        CacheServer cs = iters.next();
+      for (final CacheServer cs : csList) {
         CacheServerInfo cacheServerInfo = new CacheServerInfo();
         cacheServerInfo.setBindAddress(cs.getBindAddress());
         cacheServerInfo.setPort(cs.getPort());

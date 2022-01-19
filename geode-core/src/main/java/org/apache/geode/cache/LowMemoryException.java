@@ -40,7 +40,7 @@ public class LowMemoryException extends ResourceException {
    * Creates a new instance of <code>LowMemoryException</code>.
    */
   public LowMemoryException() {
-    this.critMems = Collections.emptySet();
+    critMems = Collections.emptySet();
   }
 
   /**
@@ -51,7 +51,7 @@ public class LowMemoryException extends ResourceException {
    */
   public LowMemoryException(String msg, final Set<DistributedMember> criticalMembers) {
     super(msg);
-    this.critMems = Collections.unmodifiableSet(criticalMembers);
+    critMems = Collections.unmodifiableSet(criticalMembers);
   }
 
   /**
@@ -60,6 +60,6 @@ public class LowMemoryException extends ResourceException {
    * @return the critical members
    */
   public Set<DistributedMember> getCriticalMembers() {
-    return this.critMems;
+    return critMems;
   }
 }

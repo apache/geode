@@ -58,22 +58,12 @@ public class ClassNotFoundExceptionDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testDataSerializable() throws InterruptedException {
-    doTest(new ObjectFactory() {
-      @Override
-      public Object get() {
-        return new ClassNotFoundDataSerializable();
-      }
-    });
+    doTest((ObjectFactory) ClassNotFoundDataSerializable::new);
   }
 
   @Test
   public void testPdx() throws InterruptedException {
-    doTest(new ObjectFactory() {
-      @Override
-      public Object get() {
-        return new ClassNotFoundPdx(false);
-      }
-    });
+    doTest((ObjectFactory) () -> new ClassNotFoundPdx(false));
   }
 
   public void doTest(final ObjectFactory objectFactory) throws InterruptedException {
@@ -257,8 +247,8 @@ public class ClassNotFoundExceptionDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  private static interface ObjectFactory extends Serializable {
-    public Object get();
+  private interface ObjectFactory extends Serializable {
+    Object get();
   }
 
 }

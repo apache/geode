@@ -25,25 +25,25 @@ import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 public class LuceneServiceMBean extends NotificationBroadcasterSupport
     implements LuceneServiceMXBean, CacheServiceMBeanBase {
 
-  private LuceneServiceBridge bridge;
+  private final LuceneServiceBridge bridge;
 
   public LuceneServiceMBean(LuceneService service) {
-    this.bridge = new LuceneServiceBridge(service);
+    bridge = new LuceneServiceBridge(service);
   }
 
   @Override
   public LuceneIndexMetrics[] listIndexMetrics() {
-    return this.bridge.listIndexMetrics();
+    return bridge.listIndexMetrics();
   }
 
   @Override
   public LuceneIndexMetrics[] listIndexMetrics(String regionPath) {
-    return this.bridge.listIndexMetrics(regionPath);
+    return bridge.listIndexMetrics(regionPath);
   }
 
   @Override
   public LuceneIndexMetrics listIndexMetrics(String regionPath, String indexName) {
-    return this.bridge.listIndexMetrics(regionPath, indexName);
+    return bridge.listIndexMetrics(regionPath, indexName);
   }
 
   @Override
@@ -57,6 +57,6 @@ public class LuceneServiceMBean extends NotificationBroadcasterSupport
   }
 
   public void addIndex(LuceneIndex index) {
-    this.bridge.addIndex(index);
+    bridge.addIndex(index);
   }
 }

@@ -192,7 +192,7 @@ public abstract class OpenTypeConverter {
    * Put the converter in the map to avoid future creation
    */
   private static synchronized void putConverter(Type type, OpenTypeConverter conv) {
-    WeakReference<OpenTypeConverter> wr = new WeakReference<OpenTypeConverter>(conv);
+    WeakReference<OpenTypeConverter> wr = new WeakReference<>(conv);
     converterMap.put(type, wr);
   }
 
@@ -209,8 +209,7 @@ public abstract class OpenTypeConverter {
     final OpenType[] simpleTypes = {BIGDECIMAL, BIGINTEGER, BOOLEAN, BYTE, CHARACTER, DATE, DOUBLE,
         FLOAT, INTEGER, LONG, OBJECTNAME, SHORT, STRING, VOID,};
 
-    for (int i = 0; i < simpleTypes.length; i++) {
-      final OpenType t = simpleTypes[i];
+    for (final OpenType t : simpleTypes) {
       Class c;
       try {
         c = Class.forName(t.getClassName(), false, ObjectName.class.getClassLoader());
@@ -235,7 +234,7 @@ public abstract class OpenTypeConverter {
                 primitiveArrayOpenType, primitiveArrayType);
             putPreDefinedConverter(primitiveArrayType, primitiveArrayConv);
           }
-        } catch (NoSuchFieldException e) {
+        } catch (NoSuchFieldException ignored) {
 
         } catch (IllegalAccessException e) {
           assert (false);
@@ -302,7 +301,7 @@ public abstract class OpenTypeConverter {
   }
 
   private static <T extends Enum<T>> OpenTypeConverter makeEnumConverter(Class<T> enumClass) {
-    return new EnumConverter<T>(enumClass);
+    return new EnumConverter<>(enumClass);
   }
 
   private static OpenTypeConverter makeArrayOrCollectionConverter(Type collectionType,
@@ -375,7 +374,7 @@ public abstract class OpenTypeConverter {
     if (rawType instanceof Class) {
       Class c = (Class<?>) rawType;
       if (c == List.class || c == Set.class || c == SortedSet.class) {
-        Type[] actuals = ((ParameterizedType) objType).getActualTypeArguments();
+        Type[] actuals = objType.getActualTypeArguments();
         assert (actuals.length == 1);
         if (c == SortedSet.class) {
           mustBeComparable(c, actuals[0]);
@@ -384,7 +383,7 @@ public abstract class OpenTypeConverter {
       } else {
         boolean sortedMap = (c == SortedMap.class);
         if (c == Map.class || sortedMap) {
-          Type[] actuals = ((ParameterizedType) objType).getActualTypeArguments();
+          Type[] actuals = objType.getActualTypeArguments();
           assert (actuals.length == 2);
           if (sortedMap) {
             mustBeComparable(c, actuals[0]);
@@ -401,7 +400,7 @@ public abstract class OpenTypeConverter {
    */
   private static OpenTypeConverter makeCompositeConverter(Class c) throws OpenDataException {
 
-    final List<Method> methods = Arrays.asList(c.getMethods());
+    final Method[] methods = c.getMethods();
     final SortedMap<String, Method> getterMap = OpenTypeUtil.newSortedMap();
 
     for (Method method : methods) {
@@ -506,7 +505,7 @@ public abstract class OpenTypeConverter {
       // as is conventional for a CompositeDataView
       Class targetClass = getTargetClass();
       try {
-        Method fromMethod = targetClass.getMethod("from", new Class[] {CompositeData.class});
+        Method fromMethod = targetClass.getMethod("from", CompositeData.class);
 
         if (!Modifier.isStatic(fromMethod.getModifiers())) {
           final String msg = "Method from(CompositeData) is not static";
@@ -756,7 +755,7 @@ public abstract class OpenTypeConverter {
             u.or(a);
             u.or(b);
             if (!getterIndexSets.contains(u)) {
-              Set<String> names = new TreeSet<String>();
+              Set<String> names = new TreeSet<>();
               for (int i = u.nextSetBit(0); i >= 0; i = u.nextSetBit(i + 1)) {
                 names.add(itemNames[i]);
               }

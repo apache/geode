@@ -33,7 +33,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 
 
 public class CompiledRegion extends AbstractCompiledValue {
-  private String regionPath;
+  private final String regionPath;
 
 
   public CompiledRegion(String regionPath) {
@@ -46,7 +46,7 @@ public class CompiledRegion extends AbstractCompiledValue {
   }
 
   public String getRegionPath() {
-    return this.regionPath;
+    return regionPath;
   }
 
   @Override
@@ -57,7 +57,7 @@ public class CompiledRegion extends AbstractCompiledValue {
     PartitionedRegion pr = context.getPartitionedRegion();
 
 
-    if (pr != null && pr.getFullPath().equals(this.regionPath)) {
+    if (pr != null && pr.getFullPath().equals(regionPath)) {
       rgn = context.getBucketRegion();
     } else if (pr != null) {
       // Asif : This is a very tricky solution to allow equijoin queries on PartitionedRegion
@@ -68,7 +68,7 @@ public class CompiledRegion extends AbstractCompiledValue {
       BucketRegion br = context.getBucketRegion();
       int bucketID = br.getId();
       // Is current region a partitioned region
-      rgn = cache.getRegion(this.regionPath);
+      rgn = cache.getRegion(regionPath);
       if (rgn.getAttributes().getDataPolicy().withPartitioning()) {
         // convert it into bucket region.
         PartitionedRegion prLocal = (PartitionedRegion) rgn;
@@ -76,7 +76,7 @@ public class CompiledRegion extends AbstractCompiledValue {
       }
 
     } else {
-      rgn = cache.getRegion(this.regionPath);
+      rgn = cache.getRegion(regionPath);
     }
 
     if (rgn == null) {
@@ -86,7 +86,7 @@ public class CompiledRegion extends AbstractCompiledValue {
         throw new CacheClosedException();
       }
       throw new RegionNotFoundException(
-          String.format("Region not found: %s", this.regionPath));
+          String.format("Region not found: %s", regionPath));
     }
 
     if (context.isCqQueryContext()) {
@@ -106,7 +106,7 @@ public class CompiledRegion extends AbstractCompiledValue {
 
   @Override
   public void getRegionsInQuery(Set regionsInQuery, Object[] parameters) {
-    regionsInQuery.add(this.regionPath);
+    regionsInQuery.add(regionPath);
   }
 
 

@@ -50,16 +50,16 @@ public class OfflineMemberDetailsImpl
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     int offlineMembersLength = in.readInt();
-    this.offlineMembers = new Set[offlineMembersLength];
+    offlineMembers = new Set[offlineMembersLength];
     for (int i = 0; i < offlineMembersLength; i++) {
       int setSize = in.readInt();
-      Set<PersistentMemberID> set = new HashSet<PersistentMemberID>(setSize);
+      Set<PersistentMemberID> set = new HashSet<>(setSize);
       for (int j = 0; j < setSize; j++) {
         PersistentMemberID id = new PersistentMemberID();
         InternalDataSerializer.invokeFromData(id, in);
         set.add(id);
       }
-      this.offlineMembers[i] = set;
+      offlineMembers[i] = set;
     }
   }
 

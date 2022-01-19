@@ -102,8 +102,8 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
     primary = host.getVM(0);
     secondary = host.getVM(1);
     client1 = host.getVM(2);
-    PORT1 = ((Integer) primary.invoke(() -> StatsBugDUnitTest.createServerCache())).intValue();
-    PORT2 = ((Integer) secondary.invoke(() -> StatsBugDUnitTest.createServerCache())).intValue();
+    PORT1 = primary.invoke(StatsBugDUnitTest::createServerCache);
+    PORT2 = secondary.invoke(StatsBugDUnitTest::createServerCache);
   }
 
   /**
@@ -128,11 +128,11 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
   @Override
   public final void preTearDown() throws Exception {
     // close client
-    client1.invoke(() -> StatsBugDUnitTest.closeCache());
+    client1.invoke(StatsBugDUnitTest::closeCache);
 
     // close server
-    primary.invoke(() -> StatsBugDUnitTest.closeCache());
-    secondary.invoke(() -> StatsBugDUnitTest.closeCache());
+    primary.invoke(StatsBugDUnitTest::closeCache);
+    secondary.invoke(StatsBugDUnitTest::closeCache);
   }
 
   /**
@@ -149,11 +149,11 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
   public void testBug36109() throws Exception {
     LogWriterUtils.getLogWriter().info("testBug36109 : BEGIN");
     client1.invoke(() -> StatsBugDUnitTest.createClientCacheForInvalidates(
-        NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT1), new Integer(PORT2)));
-    client1.invoke(() -> StatsBugDUnitTest.prepopulateClient());
+        NetworkUtils.getServerHostName(Host.getHost(0)), PORT1, PORT2));
+    client1.invoke(StatsBugDUnitTest::prepopulateClient);
     primary.invoke(() -> StatsBugDUnitTest.doEntryOperations(primaryPrefix));
     Wait.pause(3000);
-    primary.invoke(() -> StatsBugDUnitTest.stopServer());
+    primary.invoke(StatsBugDUnitTest::stopServer);
     try {
       Thread.sleep(5000);
     } catch (InterruptedException ignore) {
@@ -167,7 +167,7 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
       fail("interrupted");
     }
 
-    client1.invoke(() -> StatsBugDUnitTest.verifyNumInvalidates());
+    client1.invoke(StatsBugDUnitTest::verifyNumInvalidates);
     LogWriterUtils.getLogWriter().info("testBug36109 : END");
   }
 
@@ -195,7 +195,7 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
     server.setSocketBufferSize(32768);
     server.start();
     LogWriterUtils.getLogWriter().info("Server started at PORT = " + port);
-    return new Integer(port);
+    return port;
   }
 
   /**
@@ -211,7 +211,7 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     pool = (PoolImpl) ClientServerTestCase.configureConnectionPool(factory, host,
-        new int[] {port1.intValue(), port2.intValue()}, true, -1, 3, null);
+        new int[] {port1, port2}, true, -1, 3, null);
     RegionAttributes attrs = factory.create();
     Region region = cache.createRegion(REGION_NAME, attrs);
     region.registerInterest("ALL_KEYS");
@@ -232,7 +232,7 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     pool = (PoolImpl) ClientServerTestCase.configureConnectionPool(factory, host,
-        new int[] {port1.intValue(), port2.intValue()}, true, -1, 3, null);
+        new int[] {port1, port2}, true, -1, 3, null);
     RegionAttributes attrs = factory.create();
     Region region = cache.createRegion(REGION_NAME, attrs);
     region.registerInterest("ALL_KEYS", false, false);

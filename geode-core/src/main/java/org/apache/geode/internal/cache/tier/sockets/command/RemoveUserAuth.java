@@ -52,7 +52,7 @@ public class RemoveUserAuth extends BaseCommand {
       serverConnection.setAsTrue(REQUIRES_RESPONSE);
       Part keepalivePart = clientMessage.getPart(0);
       byte[] keepaliveByte = keepalivePart.getSerializedForm();
-      boolean keepalive = (keepaliveByte == null || keepaliveByte[0] == 0) ? false : true;
+      boolean keepalive = keepaliveByte != null && keepaliveByte[0] != 0;
       serverConnection.getSecurityLogWriter().fine("remove user auth keep alive " + keepalive);
       serverConnection.removeUserAuth(clientMessage, keepalive);
       writeReply(clientMessage, serverConnection);

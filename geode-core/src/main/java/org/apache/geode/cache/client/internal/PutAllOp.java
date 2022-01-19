@@ -16,7 +16,6 @@ package org.apache.geode.cache.client.internal;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -288,15 +287,14 @@ public class PutAllOp {
       }
       getMessage().addIntPart(flags);
       getMessage().addIntPart(size);
-      if (this.callbackArg != null) {
-        getMessage().addObjPart(this.callbackArg);
+      if (callbackArg != null) {
+        getMessage().addObjPart(callbackArg);
       }
-      this.keys = new ArrayList(size);
-      Iterator iterator = map.entrySet().iterator();
-      while (iterator.hasNext()) {
-        Map.Entry mapEntry = (Map.Entry) iterator.next();
+      keys = new ArrayList(size);
+      for (final Object o : map.entrySet()) {
+        Map.Entry mapEntry = (Map.Entry) o;
         Object key = mapEntry.getKey();
-        this.keys.add(key);
+        keys.add(key);
         getMessage().addStringOrObjPart(key);
         Object value = mapEntry.getValue();
         if (value instanceof CachedDeserializable) {
@@ -334,48 +332,45 @@ public class PutAllOp {
       final VersionedObjectList result = new VersionedObjectList();
       final Exception[] exceptionRef = new Exception[1];
       try {
-        processChunkedResponse((ChunkedMessage) msg, "putAll", new ChunkHandler() {
-          @Override
-          public void handle(ChunkedMessage cm) throws Exception {
-            int numParts = msg.getNumberOfParts();
-            final boolean isDebugEnabled = logger.isDebugEnabled();
-            if (isDebugEnabled) {
-              logger.debug("putAllOp.processChunkedResponse processing message with {} parts",
-                  numParts);
-            }
-            for (int partNo = 0; partNo < numParts; partNo++) {
-              Part part = cm.getPart(partNo);
-              try {
-                Object o = part.getObject();
-                if (isDebugEnabled) {
-                  logger.debug("part({}) contained {}", partNo, o);
-                }
-                if (o == null) {
-                  // no response is an okay response
-                } else if (o instanceof byte[]) {
-                  if (prSingleHopEnabled) {
-                    byte[] bytesReceived = part.getSerializedForm();
-                    if (bytesReceived[0] != ClientMetadataService.INITIAL_VERSION) { // nw hop
-                      if (region != null) {
-                        try {
-                          ClientMetadataService cms = region.getCache().getClientMetadataService();
-                          cms.scheduleGetPRMetaData(region, false, bytesReceived[1]);
-                        } catch (CacheClosedException e) {
-                        }
+        processChunkedResponse((ChunkedMessage) msg, "putAll", cm -> {
+          int numParts = msg.getNumberOfParts();
+          final boolean isDebugEnabled = logger.isDebugEnabled();
+          if (isDebugEnabled) {
+            logger.debug("putAllOp.processChunkedResponse processing message with {} parts",
+                numParts);
+          }
+          for (int partNo = 0; partNo < numParts; partNo++) {
+            Part part = cm.getPart(partNo);
+            try {
+              Object o = part.getObject();
+              if (isDebugEnabled) {
+                logger.debug("part({}) contained {}", partNo, o);
+              }
+              if (o == null) {
+                // no response is an okay response
+              } else if (o instanceof byte[]) {
+                if (prSingleHopEnabled) {
+                  byte[] bytesReceived = part.getSerializedForm();
+                  if (bytesReceived[0] != ClientMetadataService.INITIAL_VERSION) { // nw hop
+                    if (region != null) {
+                      try {
+                        ClientMetadataService cms = region.getCache().getClientMetadataService();
+                        cms.scheduleGetPRMetaData(region, false, bytesReceived[1]);
+                      } catch (CacheClosedException ignored) {
                       }
                     }
                   }
-                } else if (o instanceof Throwable) {
-                  String s = "While performing a remote putAll";
-                  exceptionRef[0] = new ServerOperationException(s, (Throwable) o);
-                } else {
-                  VersionedObjectList chunk = (VersionedObjectList) o;
-                  chunk.replaceNullIDs(con.getEndpoint().getMemberId());
-                  result.addAll(chunk);
                 }
-              } catch (Exception e) {
-                exceptionRef[0] = new ServerOperationException("Unable to deserialize value", e);
+              } else if (o instanceof Throwable) {
+                String s = "While performing a remote putAll";
+                exceptionRef[0] = new ServerOperationException(s, (Throwable) o);
+              } else {
+                VersionedObjectList chunk = (VersionedObjectList) o;
+                chunk.replaceNullIDs(con.getEndpoint().getMemberId());
+                result.addAll(chunk);
               }
+            } catch (Exception e) {
+              exceptionRef[0] = new ServerOperationException("Unable to deserialize value", e);
             }
           }
         });
@@ -394,9 +389,9 @@ public class PutAllOp {
         // v7.0.1: fill in the keys
         if (result.hasVersions() && result.getKeys().isEmpty()) {
           if (logger.isTraceEnabled()) {
-            logger.trace("setting keys of response to {}", this.keys);
+            logger.trace("setting keys of response to {}", keys);
           }
-          result.setKeys(this.keys);
+          result.setKeys(keys);
         }
       }
       return result;

@@ -102,7 +102,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
 
     cqDUnitTest.createServer(server);
 
-    final int port = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
+    final int port = server.invoke(CqQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Create client.
@@ -144,13 +144,13 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
     IgnoredException.addIgnoredException("Could not find any server");
     cqDUnitTest.createServer(server1);
 
-    final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
+    final int port1 = server1.invoke(CqQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
     final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
 
     cqDUnitTest.createServer(server2, ports[0]);
-    final int port2 = server2.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
+    final int port2 = server2.invoke(CqQueryDUnitTest::getCacheServerPort);
 
     // Create client - With 3 server endpoints and redundancy level set to 2.
 
@@ -211,7 +211,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
 
     // UPDATE with stop.
     cqDUnitTest.createServer(server3, ports[1]);
-    server3.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
+    server3.invoke(CqQueryDUnitTest::getCacheServerPort);
     Wait.pause(2 * 1000);
 
     cqDUnitTest.clearCQListenerEvents(client, "testCQHAWithState_0");
@@ -262,7 +262,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
     VM client = host.getVM(1);
     VM producer = host.getVM(2);
     cqDUnitTest.createServer(server, 0, true);
-    final int port = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
+    final int port = server.invoke(CqQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Create client.
@@ -336,7 +336,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
 
     /* Create Server and Client */
     cqDUnitTest.createServer(server);
-    final int port = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
+    final int port = server.invoke(CqQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
     cqDUnitTest.createClient(client1, port, host0);
     cqDUnitTest.createClient(client2, port, host0);
@@ -396,7 +396,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
     cqDUnitTest.createServer(server1, 0, false, DataPolicy.REPLICATE);
     cqDUnitTest.createServer(server2, 0, false, DataPolicy.REPLICATE);
 
-    final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
+    final int port1 = server1.invoke(CqQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
     cqDUnitTest.createClient(client, port1, host0);
@@ -477,7 +477,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
       }
     });
 
-    final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
+    final int port1 = server1.invoke(CqQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server1.getHost());
 
     cqDUnitTest.createClient(client, port1, host0);
@@ -498,10 +498,10 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
     cqDUnitTest.createValues(server1, cqDUnitTest.regions[0], size);
 
     for (int i = 1; i <= size; i++) {
-      cqDUnitTest.waitForUpdated(client, "testCQWithEviction_0", cqDUnitTest.KEY + i);
+      cqDUnitTest.waitForUpdated(client, "testCQWithEviction_0", CqQueryDUnitTest.KEY + i);
     }
 
-    cqDUnitTest.validateCQ(client, "testCQWithEviction_0", cqDUnitTest.noTest, 0, 10, 0);
+    cqDUnitTest.validateCQ(client, "testCQWithEviction_0", CqQueryDUnitTest.noTest, 0, 10, 0);
 
     // Close.
     cqDUnitTest.closeClient(client);
@@ -520,7 +520,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
 
     cqDUnitTest.createServer(server1, 0, false, DataPolicy.REPLICATE);
 
-    final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
+    final int port1 = server1.invoke(CqQueryDUnitTest::getCacheServerPort);
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
 
     final String[] regions = cqDUnitTest.regions;
@@ -544,10 +544,10 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
             regionFactory.setScope(Scope.LOCAL);
             ClientServerTestCase.configureConnectionPool(regionFactory, serverHost, serverPorts[0],
                 -1, false, -1, -1, null);
-            for (int i = 0; i < regions.length; i++) {
-              createRegion(regions[i], regionFactory.create());
+            for (final String region : regions) {
+              createRegion(region, regionFactory.create());
               LogWriterUtils.getLogWriter()
-                  .info("### Successfully Created Region on Client :" + regions[i]);
+                  .info("### Successfully Created Region on Client :" + region);
             }
           }
         };
@@ -582,7 +582,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
 
     cqDUnitTest.createServer(server1, 0, false, DataPolicy.REPLICATE);
 
-    final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
+    final int port1 = server1.invoke(CqQueryDUnitTest::getCacheServerPort);
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
 
     final String[] regions = cqDUnitTest.regions;
@@ -608,10 +608,10 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
             ClientServerTestCase.configureConnectionPool(regionFactory, serverHost, serverPorts[0],
                 -1, true, -1, -1, null);
 
-            for (int i = 0; i < regions.length; i++) {
-              createRegion(regions[i], regionFactory.createRegionAttributes());
+            for (final String region : regions) {
+              createRegion(region, regionFactory.createRegionAttributes());
               LogWriterUtils.getLogWriter()
-                  .info("### Successfully Created Region on Client :" + regions[i]);
+                  .info("### Successfully Created Region on Client :" + region);
             }
           }
         };
@@ -641,7 +641,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
 
     cqDUnitTest.createServer(server1, 0, false, DataPolicy.REPLICATE);
 
-    final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
+    final int port1 = server1.invoke(CqQueryDUnitTest::getCacheServerPort);
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
 
     final String[] regions = cqDUnitTest.regions;
@@ -666,10 +666,10 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
             regionFactory.setScope(Scope.LOCAL);
             ClientServerTestCase.configureConnectionPool(regionFactory, serverHost, serverPorts[0],
                 -1, true, -1, -1, null);
-            for (int i = 0; i < regions.length; i++) {
-              createRegion(regions[i], regionFactory.createRegionAttributes());
+            for (final String region : regions) {
+              createRegion(region, regionFactory.createRegionAttributes());
               LogWriterUtils.getLogWriter()
-                  .info("### Successfully Created Region on Client :" + regions[i]);
+                  .info("### Successfully Created Region on Client :" + region);
             }
           }
         };
@@ -699,7 +699,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
 
     cqDUnitTest.createServer(server1, 0, false, DataPolicy.REPLICATE);
 
-    final int port1 = server1.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
+    final int port1 = server1.invoke(CqQueryDUnitTest::getCacheServerPort);
     final String serverHost = NetworkUtils.getServerHostName(server1.getHost());
 
     final String[] regions = cqDUnitTest.regions;
@@ -726,10 +726,10 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
             ClientServerTestCase.configureConnectionPool(regionFactory, serverHost, serverPorts[0],
                 -1, false, -1, -1, null);
 
-            for (int i = 0; i < regions.length; i++) {
-              createRegion(regions[i], regionFactory.createRegionAttributes());
+            for (final String region : regions) {
+              createRegion(region, regionFactory.createRegionAttributes());
               LogWriterUtils.getLogWriter()
-                  .info("### Successfully Created Region on Client :" + regions[i]);
+                  .info("### Successfully Created Region on Client :" + region);
             }
           }
         };
@@ -767,7 +767,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
     VM client = host.getVM(1);
 
     cqDUnitTest.createServer(server);
-    final int port = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
+    final int port = server.invoke(CqQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     cqDUnitTest.createClient(client, port, host0);
@@ -854,7 +854,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
     VM client = host.getVM(1);
     final String cqName = "testEventsDuringQueryExecution_0";
     cqDUnitTest.createServer(server);
-    final int port = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
+    final int port = server.invoke(CqQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Initialize Client.
@@ -895,8 +895,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
         try {
           cqResults = cq1.executeWithInitialResults();
         } catch (Exception ex) {
-          AssertionError err = new AssertionError("Failed to execute  CQ " + cqName);
-          err.initCause(ex);
+          AssertionError err = new AssertionError("Failed to execute  CQ " + cqName, ex);
           throw err;
         }
 
@@ -910,7 +909,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
         // Check if the events from CqListener are in order.
         int oldId = 0;
         for (Object cqEvent : cqListener.events.toArray()) {
-          int newId = new Integer(cqEvent.toString()).intValue();
+          int newId = new Integer(cqEvent.toString());
           if (oldId > newId) {
             fail("Queued events for CQ Listener during execution with "
                 + "Initial results is not in the order in which they are created.");
@@ -999,7 +998,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
 
     // initialize server and retreive host and port values
     cqDUnitTest.createServer(server);
-    final int port = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
+    final int port = server.invoke(CqQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
 
     // Initialize Client.
@@ -1056,8 +1055,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
               cqResults = cq1.executeWithInitialResults();
 
             } catch (Exception e) {
-              AssertionError err = new AssertionError("Failed to execute  CQ " + cqName);
-              err.initCause(e);
+              AssertionError err = new AssertionError("Failed to execute  CQ " + cqName, e);
               throw err;
             }
 
@@ -1068,7 +1066,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
             // Check if the events from CqListener are in order.
             int oldId = 0;
             for (Object cqEvent : cqListener.events.toArray()) {
-              int newId = new Integer(cqEvent.toString()).intValue();
+              int newId = new Integer(cqEvent.toString());
               if (oldId > newId) {
                 fail("Queued events for CQ Listener during execution with "
                     + "Initial results is not in the order in which they are created.");
@@ -1123,8 +1121,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
         } catch (IllegalStateException e) {
           // we expect an error due to the cq having already being in run state
         } catch (Exception e) {
-          AssertionError err = new AssertionError("test hook lock interrupted" + cqName);
-          err.initCause(e);
+          AssertionError err = new AssertionError("test hook lock interrupted" + cqName, e);
           throw err;
         }
       }
@@ -1141,8 +1138,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
           Thread.sleep(5000);
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
-          AssertionError err = new AssertionError("test hook lock interrupted" + cqName);
-          err.initCause(e);
+          AssertionError err = new AssertionError("test hook lock interrupted" + cqName, e);
           throw err;
         }
         CqQueryImpl.testHook.ready();
@@ -1163,7 +1159,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
       public void run2() {
         class CqQueryTestHook implements CqQueryImpl.TestHook {
 
-          CountDownLatch latch = new CountDownLatch(1);
+          final CountDownLatch latch = new CountDownLatch(1);
 
           @Override
           public void pauseUntilReady() {
@@ -1192,7 +1188,7 @@ public class CqDataDUnitTest extends JUnit4CacheTestCase {
 
           }
 
-        };
+        }
         CqQueryImpl.testHook = new CqQueryTestHook();
       }
     };

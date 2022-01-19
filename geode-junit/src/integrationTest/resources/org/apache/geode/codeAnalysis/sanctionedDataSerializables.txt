@@ -24,7 +24,7 @@ toData,9
 
 org/apache/geode/cache/query/data/Portfolio,2
 fromData,186
-toData,192
+toData,200
 
 org/apache/geode/cache/query/data/Position,2
 fromData,159
@@ -87,8 +87,8 @@ fromData,97
 toData,105
 
 org/apache/geode/pdx/TestObjectForJSONFormatter,2
-fromData,614
-toData,569
+fromData,613
+toData,568
 
 org/apache/geode/security/query/data/PdxQueryTestObject,2
 fromData,25
@@ -97,3 +97,4 @@ toData,27
 org/apache/geode/security/query/data/PdxTrade,2
 fromData,49
 toData,53
+

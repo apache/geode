@@ -28,7 +28,7 @@ public class ConnectionUtil {
 
   public static SocketFactory getSocketFactory(boolean usessl) throws IOException {
     if (usessl) {
-      return (SSLSocketFactory) SSLSocketFactory.getDefault();
+      return SSLSocketFactory.getDefault();
     } else {
       return SocketFactory.getDefault();
     }

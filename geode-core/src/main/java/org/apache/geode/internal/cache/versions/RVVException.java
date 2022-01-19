@@ -138,7 +138,7 @@ abstract class RVVException
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    InternalDataSerializer.writeUnsignedVL(this.previousVersion, out);
+    InternalDataSerializer.writeUnsignedVL(previousVersion, out);
     writeReceived(out);
   }
 
@@ -151,7 +151,7 @@ abstract class RVVException
    * returns true if the missing versions that this exception represents have all been received
    */
   public boolean isFilled() {
-    return this.previousVersion + 1 >= this.nextVersion;
+    return previousVersion + 1 >= nextVersion;
   }
 
   @Override
@@ -164,15 +164,15 @@ abstract class RVVException
    */
   @Override
   public int compareTo(RVVException o) {
-    long thisVal = this.previousVersion;
+    long thisVal = previousVersion;
     long anotherVal = o.previousVersion;
     return (thisVal < anotherVal ? -1 : (thisVal == anotherVal ? 0 : 1));
   }
 
   /** Test hook - compare two exceptions */
   public boolean sameAs(RVVException other) {
-    return (this.previousVersion == other.previousVersion)
-        && (this.nextVersion == other.nextVersion);
+    return (previousVersion == other.previousVersion)
+        && (nextVersion == other.nextVersion);
   }
 
   @Override

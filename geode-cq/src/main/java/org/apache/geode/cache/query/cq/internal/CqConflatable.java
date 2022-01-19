@@ -60,7 +60,7 @@ public class CqConflatable implements Conflatable, Serializable {
       String regionname) {
     this.key = key;
     this.value = value;
-    this.id = eventId;
+    id = eventId;
     this.conflate = conflate;
     this.regionname = regionname;
   }
@@ -72,7 +72,7 @@ public class CqConflatable implements Conflatable, Serializable {
    */
   @Override
   public boolean shouldBeConflated() {
-    return this.conflate;
+    return conflate;
   }
 
   /**
@@ -82,7 +82,7 @@ public class CqConflatable implements Conflatable, Serializable {
    */
   @Override
   public String getRegionToConflate() {
-    return this.regionname;
+    return regionname;
   }
 
   /**
@@ -92,7 +92,7 @@ public class CqConflatable implements Conflatable, Serializable {
    */
   @Override
   public Object getKeyToConflate() {
-    return this.key;
+    return key;
   }
 
   /**
@@ -102,7 +102,7 @@ public class CqConflatable implements Conflatable, Serializable {
    */
   @Override
   public Object getValueToConflate() {
-    return this.value;
+    return value;
   }
 
   /**
@@ -123,7 +123,7 @@ public class CqConflatable implements Conflatable, Serializable {
    */
   @Override
   public EventID getEventId() {
-    return this.id;
+    return id;
   }
 
   /**

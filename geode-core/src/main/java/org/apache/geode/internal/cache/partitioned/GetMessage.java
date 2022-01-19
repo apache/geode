@@ -104,7 +104,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
       ClientProxyMembershipID context, boolean returnTombstones) {
     super(recipient, regionId, processor);
     this.key = key;
-    this.cbArg = aCallbackArgument;
+    cbArg = aCallbackArgument;
     this.context = context;
     this.returnTombstones = returnTombstones;
   }
@@ -116,7 +116,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
   public int getProcessorType() {
     if (!forceUseOfPRExecutor && !ORDER_PR_GETS && !isDirectAck()) {
       try {
-        PartitionedRegion pr = PartitionedRegion.getPRFromId(this.regionId);
+        PartitionedRegion pr = PartitionedRegion.getPRFromId(regionId);
         // If the region is persistent the get may need to fault a value
         // in which has to sync the region entry. Note it may need to
         // do this even if it is not overflow (after recovery values are faulted in async).
@@ -164,9 +164,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
 
     PartitionedRegionDataStore ds = r.getDataStore();
 
-    if (this.getTXUniqId() != TXManagerImpl.NOTX) {
-      assert r.getDataView() instanceof TXStateProxy;
-    }
+    assert getTXUniqId() == TXManagerImpl.NOTX || r.getDataView() instanceof TXStateProxy;
 
     RawValue valueBytes;
     Object val = null;
@@ -177,12 +175,12 @@ public class GetMessage extends PartitionMessageWithDirectReply {
           KeyInfo keyInfo = r.getKeyInfo(key, cbArg);
           boolean lockEntry = forceUseOfPRExecutor || isDirectAck();
 
-          val = r.getDataView().getSerializedValue(r, keyInfo, !lockEntry, this.context, event,
+          val = r.getDataView().getSerializedValue(r, keyInfo, !lockEntry, context, event,
               returnTombstones);
 
           if (val == BucketRegion.REQUIRES_ENTRY_LOCK) {
             Assert.assertTrue(!lockEntry);
-            this.forceUseOfPRExecutor = true;
+            forceUseOfPRExecutor = true;
             if (logger.isDebugEnabled()) {
               logger.debug("Rescheduling GetMessage due to possible cache-miss");
             }
@@ -191,7 +189,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
           }
           valueBytes = val instanceof RawValue ? (RawValue) val : new RawValue(val);
         } catch (DistributedSystemDisconnectedException sde) {
-          sendReply(getSender(), this.processorId, dm,
+          sendReply(getSender(), processorId, dm,
               new ReplyException(new ForceReattemptException(
                   "Operation got interrupted due to shutdown in progress on remote VM.",
                   sde)),
@@ -228,8 +226,8 @@ public class GetMessage extends PartitionMessageWithDirectReply {
   @Override
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
-    buff.append("; key=").append(this.key).append("; callback arg=").append(this.cbArg)
-        .append("; context=").append(this.context);
+    buff.append("; key=").append(key).append("; callback arg=").append(cbArg)
+        .append("; context=").append(context);
   }
 
   @Override
@@ -241,20 +239,20 @@ public class GetMessage extends PartitionMessageWithDirectReply {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.key = DataSerializer.readObject(in);
-    this.cbArg = DataSerializer.readObject(in);
+    key = DataSerializer.readObject(in);
+    cbArg = DataSerializer.readObject(in);
     this.context = DataSerializer.readObject(in);
-    this.returnTombstones = in.readBoolean();
+    returnTombstones = in.readBoolean();
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.key, out);
-    DataSerializer.writeObject(this.cbArg, out);
+    DataSerializer.writeObject(key, out);
+    DataSerializer.writeObject(cbArg, out);
     DataSerializer.writeObject(this.context, out);
-    out.writeBoolean(this.returnTombstones);
+    out.writeBoolean(returnTombstones);
   }
 
   @Override
@@ -351,16 +349,16 @@ public class GetMessage extends PartitionMessageWithDirectReply {
 
     private GetReplyMessage(int processorId, RawValue val, VersionTag versionTag) {
       setProcessorId(processorId);
-      this.rawVal = val;
+      rawVal = val;
       final Object rval = val.getRawValue();
       if (rval == Token.TOMBSTONE) {
-        this.valueType = VALUE_IS_TOMBSTONE;
+        valueType = VALUE_IS_TOMBSTONE;
       } else if (Token.isInvalid(rval)) {
-        this.valueType = VALUE_IS_INVALID;
+        valueType = VALUE_IS_INVALID;
       } else if (val.isValueByteArray()) {
-        this.valueType = VALUE_IS_BYTES;
+        valueType = VALUE_IS_BYTES;
       } else {
-        this.valueType = VALUE_IS_SERIALIZED_OBJECT;
+        valueType = VALUE_IS_SERIALIZED_OBJECT;
       }
       this.versionTag = versionTag;
     }
@@ -402,7 +400,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
       if (isDebugEnabled) {
         logger.trace(LogMarker.DM_VERBOSE,
             "GetReplyMessage process invoking reply processor with processorId: {}",
-            this.processorId);
+            processorId);
       }
 
       if (processor == null) {
@@ -412,8 +410,8 @@ public class GetMessage extends PartitionMessageWithDirectReply {
         return;
       }
 
-      if (this.versionTag != null) {
-        this.versionTag.replaceNullIDs(this.getSender());
+      if (versionTag != null) {
+        versionTag.replaceNullIDs(getSender());
       }
 
       processor.process(this);
@@ -433,19 +431,19 @@ public class GetMessage extends PartitionMessageWithDirectReply {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      final boolean hasVersionTag = (this.versionTag != null);
-      byte flags = this.valueType;
+      final boolean hasVersionTag = (versionTag != null);
+      byte flags = valueType;
       if (hasVersionTag) {
         flags |= VALUE_HAS_VERSION_TAG;
       }
       out.writeByte(flags);
-      if (this.valueType == VALUE_IS_BYTES) {
-        DataSerializer.writeByteArray((byte[]) this.rawVal.getRawValue(), out);
+      if (valueType == VALUE_IS_BYTES) {
+        DataSerializer.writeByteArray((byte[]) rawVal.getRawValue(), out);
       } else {
-        this.rawVal.writeAsByteArray(out);
+        rawVal.writeAsByteArray(out);
       }
       if (hasVersionTag) {
-        DataSerializer.writeObject(this.versionTag, out);
+        DataSerializer.writeObject(versionTag, out);
       }
     }
 
@@ -458,34 +456,34 @@ public class GetMessage extends PartitionMessageWithDirectReply {
       if ((hasVersionTag = (flags & VALUE_HAS_VERSION_TAG) != 0)) {
         flags &= ~VALUE_HAS_VERSION_TAG;
       }
-      this.valueType = flags;
-      this.valueInBytes = DataSerializer.readByteArray(in);
+      valueType = flags;
+      valueInBytes = DataSerializer.readByteArray(in);
       if (flags != VALUE_IS_BYTES) {
-        this.remoteVersion = StaticSerialization.getVersionForDataStreamOrNull(in);
+        remoteVersion = StaticSerialization.getVersionForDataStreamOrNull(in);
       }
       if (hasVersionTag) {
-        this.versionTag = (VersionTag) DataSerializer.readObject(in);
+        versionTag = DataSerializer.readObject(in);
       }
     }
 
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder();
-      sb.append("GetReplyMessage ").append("processorid=").append(this.processorId)
-          .append(" reply to sender ").append(this.getSender());
-      if (this.valueType == VALUE_IS_TOMBSTONE) {
+      sb.append("GetReplyMessage ").append("processorid=").append(processorId)
+          .append(" reply to sender ").append(getSender());
+      if (valueType == VALUE_IS_TOMBSTONE) {
         sb.append(" returning tombstone token.");
-      } else if (this.valueType == VALUE_IS_INVALID) {
+      } else if (valueType == VALUE_IS_INVALID) {
         sb.append(" returning invalid token.");
-      } else if (this.rawVal != null) {
-        sb.append(" returning serialized value=").append(this.rawVal);
-      } else if (this.valueInBytes == null) {
+      } else if (rawVal != null) {
+        sb.append(" returning serialized value=").append(rawVal);
+      } else if (valueInBytes == null) {
         sb.append(" returning null value");
       } else {
-        sb.append(" returning serialized value of len=").append(this.valueInBytes.length);
+        sb.append(" returning serialized value of len=").append(valueInBytes.length);
       }
-      if (this.versionTag != null) {
-        sb.append(" version=").append(this.versionTag);
+      if (versionTag != null) {
+        sb.append(" version=").append(versionTag);
       }
       return sb.toString();
     }
@@ -512,7 +510,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
     @Override
     public void process(DistributionMessage msg) {
       if (DistributionStats.enableClockStats) {
-        this.start = DistributionStats.getStatTime();
+        start = DistributionStats.getStatTime();
       }
       if (msg instanceof GetReplyMessage) {
         GetReplyMessage reply = (GetReplyMessage) msg;
@@ -520,10 +518,10 @@ public class GetMessage extends PartitionMessageWithDirectReply {
         // (or some other limited resource)
         if (reply.valueInBytes != null || reply.valueType == GetReplyMessage.VALUE_IS_INVALID
             || reply.valueType == GetReplyMessage.VALUE_IS_TOMBSTONE) {
-          this.getReply = reply;
+          getReply = reply;
         }
-        this.returnValueReceived = true;
-        this.versionTag = reply.versionTag;
+        returnValueReceived = true;
+        versionTag = reply.versionTag;
       }
       super.process(msg);
     }
@@ -536,7 +534,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
      * @return the value object
      */
     public Object getValue(boolean preferCD) throws ForceReattemptException {
-      final GetReplyMessage reply = this.getReply;
+      final GetReplyMessage reply = getReply;
       try {
         if (reply != null) {
           switch (reply.valueType) {
@@ -575,7 +573,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
      * @return version information for the entry after successfully reading a response
      */
     public VersionTag getVersionTag() {
-      return this.versionTag;
+      return versionTag;
     }
 
 
@@ -587,7 +585,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
       try {
         waitForCacheException();
         if (DistributionStats.enableClockStats) {
-          getDistributionManager().getStats().incReplyHandOffTime(this.start);
+          getDistributionManager().getStats().incReplyHandOffTime(start);
         }
       } catch (ForceReattemptException e) {
         e.checkKey(key);
@@ -595,7 +593,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
         logger.debug(msg, e);
         throw e;
       }
-      if (!this.returnValueReceived) {
+      if (!returnValueReceived) {
         throw new ForceReattemptException(
             "no return value received");
       }

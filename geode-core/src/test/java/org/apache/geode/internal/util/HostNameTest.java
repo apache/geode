@@ -80,11 +80,11 @@ public class HostNameTest {
   private void setHostNameProperties(String osName) {
     System.setProperty("os.name", osName);
     if (isWindows()) {
-      this.env.set(COMPUTER_NAME_PROPERTY, EXPECTED_HOSTNAME);
-      this.env.set(HOSTNAME_PROPERTY, null);
+      env.set(COMPUTER_NAME_PROPERTY, EXPECTED_HOSTNAME);
+      env.set(HOSTNAME_PROPERTY, null);
     } else {
-      this.env.set(COMPUTER_NAME_PROPERTY, null);
-      this.env.set(HOSTNAME_PROPERTY, EXPECTED_HOSTNAME);
+      env.set(COMPUTER_NAME_PROPERTY, null);
+      env.set(HOSTNAME_PROPERTY, EXPECTED_HOSTNAME);
     }
 
     assertThat(System.getProperty("os.name")).isEqualTo(osName);
@@ -100,11 +100,11 @@ public class HostNameTest {
   private void setHostNamePropertiesNull(String osName) {
     System.setProperty("os.name", osName);
     if (isWindows()) {
-      this.env.set(COMPUTER_NAME_PROPERTY, null);
-      this.env.set(HOSTNAME_PROPERTY, null);
+      env.set(COMPUTER_NAME_PROPERTY, null);
+      env.set(HOSTNAME_PROPERTY, null);
     } else {
-      this.env.set(COMPUTER_NAME_PROPERTY, null);
-      this.env.set(HOSTNAME_PROPERTY, null);
+      env.set(COMPUTER_NAME_PROPERTY, null);
+      env.set(HOSTNAME_PROPERTY, null);
     }
 
     assertThat(System.getProperty("os.name")).isEqualTo(osName);

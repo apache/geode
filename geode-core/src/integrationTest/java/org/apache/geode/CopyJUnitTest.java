@@ -67,8 +67,8 @@ public class CopyJUnitTest {
   private void createCache(boolean copyOnRead) throws CacheException {
     Properties p = new Properties();
     p.setProperty(MCAST_PORT, "0"); // loner
-    this.cache = CacheFactory.create(DistributedSystem.connect(p));
-    this.cache.setCopyOnRead(copyOnRead);
+    cache = CacheFactory.create(DistributedSystem.connect(p));
+    cache.setCopyOnRead(copyOnRead);
 
     AttributesFactory af = new AttributesFactory();
     af.setScope(Scope.LOCAL);
@@ -113,14 +113,14 @@ public class CopyJUnitTest {
         newValue = null;
       }
     });
-    this.region = this.cache.createRegion("CopyJUnitTest", af.create());
+    region = cache.createRegion("CopyJUnitTest", af.create());
   }
 
   private void closeCache() {
-    if (this.cache != null) {
-      this.region = null;
-      Cache c = this.cache;
-      this.cache = null;
+    if (cache != null) {
+      region = null;
+      Cache c = cache;
+      cache = null;
       c.close();
     }
   }
@@ -131,7 +131,7 @@ public class CopyJUnitTest {
     try {
       CopyHelper.copy(new Object());
       fail("Expected CopyException");
-    } catch (CopyException ok) {
+    } catch (CopyException ignored) {
     }
     CopyHelper.copy(new CloneImpl());
   }
@@ -147,16 +147,16 @@ public class CopyJUnitTest {
   public void testReferences() throws Exception {
     createCache(false);
     try {
-      final Object ov = new Integer(6);
-      final Object v = new Integer(7);
-      this.region.put("key", ov);
-      this.region.put("key", v);
-      assertTrue("expected listener getOldValue to return reference to ov", this.oldValue == ov);
-      assertTrue("expected listener getNewValue to return reference to v", this.newValue == v);
-      assertTrue("expected get to return reference to v", this.region.get("key") == v);
-      Region.Entry re = this.region.getEntry("key");
+      final Object ov = 6;
+      final Object v = 7;
+      region.put("key", ov);
+      region.put("key", v);
+      assertTrue("expected listener getOldValue to return reference to ov", oldValue == ov);
+      assertTrue("expected listener getNewValue to return reference to v", newValue == v);
+      assertTrue("expected get to return reference to v", region.get("key") == v);
+      Region.Entry re = region.getEntry("key");
       assertTrue("expected Entry.getValue to return reference to v", re.getValue() == v);
-      Collection c = this.region.values();
+      Collection c = region.values();
       Object[] cArray = c.toArray();
       assertTrue("expected values().toArray() to return reference to v", cArray[0] == v);
       assertTrue("expected values().iterator().next() to return reference to v",
@@ -194,10 +194,7 @@ public class CopyJUnitTest {
         return false;
       }
       ModifiableInteger other = (ModifiableInteger) obj;
-      if (v != other.v) {
-        return false;
-      }
-      return true;
+      return v == other.v;
     }
   }
 
@@ -207,18 +204,18 @@ public class CopyJUnitTest {
     try {
       final Object ov = new ModifiableInteger(1);
       final Object v = new ModifiableInteger(2);
-      this.region.put("key", ov);
-      this.region.put("key", v);
-      assertTrue("expected listener getOldValue to return copy of ov", this.oldValue != ov);
-      assertEquals(ov, this.oldValue);
-      assertTrue("expected listener getNewValue to return copy of v", this.newValue != v);
-      assertEquals(v, this.newValue);
-      assertTrue("expected get to return copy of v", this.region.get("key") != v);
-      assertEquals(v, this.region.get("key"));
-      Region.Entry re = this.region.getEntry("key");
+      region.put("key", ov);
+      region.put("key", v);
+      assertTrue("expected listener getOldValue to return copy of ov", oldValue != ov);
+      assertEquals(ov, oldValue);
+      assertTrue("expected listener getNewValue to return copy of v", newValue != v);
+      assertEquals(v, newValue);
+      assertTrue("expected get to return copy of v", region.get("key") != v);
+      assertEquals(v, region.get("key"));
+      Region.Entry re = region.getEntry("key");
       assertTrue("expected Entry.getValue to return copy of v", re.getValue() != v);
       assertEquals(v, re.getValue());
-      Collection c = this.region.values();
+      Collection c = region.values();
       Object[] cArray = c.toArray();
       assertTrue("expected values().toArray() to return copy of v", cArray[0] != v);
       assertEquals(v, cArray[0]);
@@ -236,16 +233,16 @@ public class CopyJUnitTest {
     createCache(true);
     try {
       // Integer is immutable so copies should not be made
-      final Object ov = new Integer(6);
-      final Object v = new Integer(7);
-      this.region.put("key", ov);
-      this.region.put("key", v);
-      assertSame(ov, this.oldValue);
-      assertSame(v, this.newValue);
-      assertSame(v, this.region.get("key"));
-      Region.Entry re = this.region.getEntry("key");
+      final Object ov = 6;
+      final Object v = 7;
+      region.put("key", ov);
+      region.put("key", v);
+      assertSame(ov, oldValue);
+      assertSame(v, newValue);
+      assertSame(v, region.get("key"));
+      Region.Entry re = region.getEntry("key");
       assertSame(v, re.getValue());
-      Collection c = this.region.values();
+      Collection c = region.values();
       Object[] cArray = c.toArray();
       assertSame(v, cArray[0]);
 
@@ -354,13 +351,13 @@ public class CopyJUnitTest {
   @Test
   public void testIsWellKnownImmutableInstance() {
     assertEquals(true, CopyHelper.isWellKnownImmutableInstance("abc"));
-    assertEquals(true, CopyHelper.isWellKnownImmutableInstance(Integer.valueOf(0)));
-    assertEquals(true, CopyHelper.isWellKnownImmutableInstance(Long.valueOf(0)));
-    assertEquals(true, CopyHelper.isWellKnownImmutableInstance(Byte.valueOf((byte) 0)));
-    assertEquals(true, CopyHelper.isWellKnownImmutableInstance(Short.valueOf((short) 0)));
-    assertEquals(true, CopyHelper.isWellKnownImmutableInstance(Float.valueOf((float) 1.2)));
-    assertEquals(true, CopyHelper.isWellKnownImmutableInstance(Double.valueOf(1.2)));
-    assertEquals(true, CopyHelper.isWellKnownImmutableInstance(Character.valueOf((char) 0)));
+    assertEquals(true, CopyHelper.isWellKnownImmutableInstance(0));
+    assertEquals(true, CopyHelper.isWellKnownImmutableInstance(0L));
+    assertEquals(true, CopyHelper.isWellKnownImmutableInstance((byte) 0));
+    assertEquals(true, CopyHelper.isWellKnownImmutableInstance((short) 0));
+    assertEquals(true, CopyHelper.isWellKnownImmutableInstance((float) 1.2));
+    assertEquals(true, CopyHelper.isWellKnownImmutableInstance(1.2));
+    assertEquals(true, CopyHelper.isWellKnownImmutableInstance((char) 0));
     assertEquals(true, CopyHelper.isWellKnownImmutableInstance(new BigInteger("1234")));
     assertEquals(true, CopyHelper.isWellKnownImmutableInstance(new BigDecimal("123.4556")));
     assertEquals(true, CopyHelper.isWellKnownImmutableInstance(new UUID(1L, 2L)));
@@ -465,13 +462,13 @@ public class CopyJUnitTest {
   @Test
   public void testTxReferences() throws Exception {
     createCache(false);
-    final CacheTransactionManager txMgr = this.cache.getCacheTransactionManager();
+    final CacheTransactionManager txMgr = cache.getCacheTransactionManager();
     txMgr.begin();
     try {
-      final Object v = new Integer(7);
-      this.region.put("key", v);
-      assertTrue("expected get to return reference to v", this.region.get("key") == v);
-      Region.Entry re = this.region.getEntry("key");
+      final Object v = 7;
+      region.put("key", v);
+      assertTrue("expected get to return reference to v", region.get("key") == v);
+      Region.Entry re = region.getEntry("key");
       assertTrue("expected Entry.getValue to return reference to v", re.getValue() == v);
       txMgr.rollback();
     } finally {
@@ -486,14 +483,14 @@ public class CopyJUnitTest {
   @Test
   public void testTxCopies() throws Exception {
     createCache(true);
-    final CacheTransactionManager txMgr = this.cache.getCacheTransactionManager();
+    final CacheTransactionManager txMgr = cache.getCacheTransactionManager();
     txMgr.begin();
     try {
       final Object v = new ModifiableInteger(7);
-      this.region.put("key", v);
-      assertTrue("expected get to return copy of v", this.region.get("key") != v);
-      assertEquals(v, this.region.get("key"));
-      Region.Entry re = this.region.getEntry("key");
+      region.put("key", v);
+      assertTrue("expected get to return copy of v", region.get("key") != v);
+      assertEquals(v, region.get("key"));
+      Region.Entry re = region.getEntry("key");
       assertTrue("expected Entry.getValue to return copy of v", re.getValue() != v);
       assertEquals(v, re.getValue());
       txMgr.rollback();
@@ -534,7 +531,7 @@ public class CopyJUnitTest {
 
   @Test
   public void testMapDeepCopy() {
-    Map<Season, Complex1> map1 = new HashMap<Season, Complex1>();
+    Map<Season, Complex1> map1 = new HashMap<>();
     Complex1 in1 = new Complex1();
     in1.hashMap.put(Season.SUMMER, 2);
     map1.put(Season.SUMMER, in1);
@@ -556,11 +553,11 @@ public class CopyJUnitTest {
     try {
       NonSerializable m = CopyHelper.deepCopy(n);
       fail("expected a CopyException for a non serializable");
-    } catch (final CopyException ok) {
+    } catch (final CopyException ignored) {
     }
   }
 
-  static enum Season {
+  enum Season {
     SPRING, SUMMER, FALL, WINTER
   }
 
@@ -571,7 +568,7 @@ public class CopyJUnitTest {
   static class Complex1 implements Serializable {
     private static final long serialVersionUID = 1L;
     Season season = Season.SPRING;
-    Map<Season, Integer> hashMap = new HashMap<Season, Integer>();
+    Map<Season, Integer> hashMap = new HashMap<>();
 
     @Override
     public int hashCode() {
@@ -601,10 +598,7 @@ public class CopyJUnitTest {
       } else if (!hashMap.equals(other.hashMap)) {
         return false;
       }
-      if (season != other.season) {
-        return false;
-      }
-      return true;
+      return season == other.season;
     }
   }
 
@@ -612,7 +606,7 @@ public class CopyJUnitTest {
     private static final long serialVersionUID = 1L;
     int id = 1;
     String str = "Hello there!";
-    List<Complex1> innerList = new ArrayList<Complex1>();
+    List<Complex1> innerList = new ArrayList<>();
 
     @Override
     public int hashCode() {
@@ -647,13 +641,9 @@ public class CopyJUnitTest {
         return false;
       }
       if (str == null) {
-        if (other.str != null) {
-          return false;
-        }
-      } else if (!str.equals(other.str)) {
-        return false;
-      }
-      return true;
+        return other.str == null;
+      } else
+        return str.equals(other.str);
     }
   }
 

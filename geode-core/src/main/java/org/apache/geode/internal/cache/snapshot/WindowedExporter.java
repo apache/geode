@@ -76,7 +76,7 @@ public class WindowedExporter<K, V> implements Exporter<K, V> {
     SnapshotPacket last = new SnapshotPacket();
     DistributedMember me = region.getCache().getDistributedSystem().getDistributedMember();
 
-    WindowedArgs<K, V> args = new WindowedArgs<K, V>(me, options);
+    WindowedArgs<K, V> args = new WindowedArgs<>(me, options);
     WindowedExportCollector results = new WindowedExportCollector(local, last);
     try {
       // Since the ExportCollector already is a LocalResultsCollector it's ok not
@@ -89,7 +89,7 @@ public class WindowedExporter<K, V> implements Exporter<K, V> {
       // Ensure that our collector gets all exceptions so we can shut down the
       // queue properly.
       exec.setForwardExceptions(true);
-      exec.execute(new WindowedExportFunction<K, V>());
+      exec.execute(new WindowedExportFunction<>());
 
       BlockingQueue<SnapshotPacket> queue = results.getResult();
 
@@ -186,7 +186,7 @@ public class WindowedExporter<K, V> implements Exporter<K, V> {
 
       try {
         int bufferSize = 0;
-        List<SnapshotRecord> buffer = new ArrayList<SnapshotRecord>();
+        List<SnapshotRecord> buffer = new ArrayList<>();
         DistributedMember me = region.getCache().getDistributedSystem().getDistributedMember();
         for (Iterator<Entry<K, V>> iter = region.entrySet().iterator(); iter.hasNext()
             && !window.isAborted();) {
@@ -275,10 +275,10 @@ public class WindowedExporter<K, V> implements Exporter<K, V> {
       this.end = end;
 
       done = new AtomicBoolean(false);
-      members = new ConcurrentHashMap<DistributedMember, Integer>();
+      members = new ConcurrentHashMap<>();
 
       // cannot bound queue to exert back pressure
-      entries = new LinkedBlockingQueue<SnapshotPacket>();
+      entries = new LinkedBlockingQueue<>();
     }
 
     @Override

@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
@@ -96,10 +95,10 @@ public abstract class CompiledArithmetic extends AbstractCompiledValue
         if (num2 instanceof Double) {
           return evaluateArithmeticOperation((Double) num1, ((Double) num2));
         } else {
-          return evaluateArithmeticOperation((Double) num1, Double.valueOf(num2.doubleValue()));
+          return evaluateArithmeticOperation((Double) num1, num2.doubleValue());
         }
       } else if (num2 instanceof Double) {
-        return evaluateArithmeticOperation(Double.valueOf(num1.doubleValue()), (Double) num2);
+        return evaluateArithmeticOperation(num1.doubleValue(), (Double) num2);
       }
 
       if (num1 instanceof Float) {
@@ -161,7 +160,7 @@ public abstract class CompiledArithmetic extends AbstractCompiledValue
 
   @Override
   public Set computeDependencies(ExecutionContext context)
-      throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     context.addDependencies(this, _left.computeDependencies(context));
     return context.addDependencies(this, _right.computeDependencies(context));
   }

@@ -27,7 +27,6 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.NameResolutionException;
@@ -286,8 +285,7 @@ public class QueryUtils {
       rs = new ResultsBag(large, null);
     }
 
-    for (Iterator itr = small.iterator(); itr.hasNext();) {
-      Object element = itr.next();
+    for (Object element : small) {
       rs.add(element);
     }
     return rs;
@@ -379,7 +377,7 @@ public class QueryUtils {
       Iterator itr = finalItrs.iterator();
       int len = finalItrs.size();
       if (len > 1) {
-        Object values[] = new Object[len];
+        Object[] values = new Object[len];
         int j = 0;
         while (itr.hasNext()) {
           values[j++] = ((RuntimeIterator) itr.next()).evaluate(context);
@@ -610,7 +608,7 @@ public class QueryUtils {
       StructTypeImpl resultType = (StructTypeImpl) createStructTypeForRuntimeIterators(finalItrs);
       if (useLinkedDataStructure) {
         returnSet = context.isDistinct() ? new LinkedStructSet(resultType)
-            : new SortedResultsBag<Struct>((StructTypeImpl) resultType, nullValuesAtStart);
+            : new SortedResultsBag<>(resultType, nullValuesAtStart);
       } else {
         returnSet = QueryUtils.createStructCollection(context, resultType);
       }
@@ -886,7 +884,7 @@ public class QueryUtils {
    */
   static IndexData[] getRelationshipIndexIfAny(CompiledValue lhs, CompiledValue rhs,
       ExecutionContext context, int operator)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     if (operator != OQLLexerTokenTypes.TOK_EQ) {
       // Operator must be '='
       return null;
@@ -928,7 +926,7 @@ public class QueryUtils {
    * @return IndexData object
    */
   static IndexData getAvailableIndexIfAny(CompiledValue cv, ExecutionContext context, int operator)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     // If operator is = or != then first search for PRIMARY_KEY Index
     boolean usePrimaryIndex =
         operator == OQLLexerTokenTypes.TOK_EQ || operator == OQLLexerTokenTypes.TOK_NE;
@@ -937,7 +935,7 @@ public class QueryUtils {
 
   private static IndexData getAvailableIndexIfAny(CompiledValue cv, ExecutionContext context,
       boolean usePrimaryIndex)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     Set set = new HashSet();
     context.computeUltimateDependencies(cv, set);
     if (set.size() != 1) {
@@ -1220,8 +1218,8 @@ public class QueryUtils {
         // identify the iterators which we need to expand to
         // TODO: Make the code compact by using a common function to take care of this
         int size = finalList.size();
-        for (int i = 0; i < size; ++i) {
-          RuntimeIterator currItr = (RuntimeIterator) finalList.get(i);
+        for (Object o : finalList) {
+          RuntimeIterator currItr = (RuntimeIterator) o;
           // If the runtimeIterators of scope not present in CheckSet add it to the expansion list
           if (!expnItrsToIgnore.contains(currItr)) {
             totalExpList.add(currItr);
@@ -1303,8 +1301,8 @@ public class QueryUtils {
         // identify the iterators which we need to expand to
         // TODO: Make the code compact by using a common function to take care of this
         int size = finalList.size();
-        for (int i = 0; i < size; ++i) {
-          RuntimeIterator currItr = (RuntimeIterator) finalList.get(i);
+        for (Object o : finalList) {
+          RuntimeIterator currItr = (RuntimeIterator) o;
           // If the runtimeIterators of scope not present in CheckSet add it to the expansion list
           if (!expnItrsToIgnore.contains(currItr)) {
             totalExpList.add(currItr);
@@ -1466,8 +1464,8 @@ public class QueryUtils {
       expnItrsAlreadyAccounted.addAll(ich1.finalList);
       expnItrsAlreadyAccounted.addAll(ich2.finalList);
       int size = totalFinalList.size();
-      for (int i = 0; i < size; ++i) {
-        RuntimeIterator currItr = (RuntimeIterator) totalFinalList.get(i);
+      for (Object o : totalFinalList) {
+        RuntimeIterator currItr = (RuntimeIterator) o;
         // If the runtimeIterators of scope not present in CheckSet add it to the expansion list
         if (!expnItrsAlreadyAccounted.contains(currItr)) {
           totalExpList.add(currItr);
@@ -1475,8 +1473,7 @@ public class QueryUtils {
       }
     } else {
       totalFinalList = new ArrayList();
-      for (int i = 0; i < indpdntItrs.length; ++i) {
-        RuntimeIterator indpndntItr = indpdntItrs[i];
+      for (RuntimeIterator indpndntItr : indpdntItrs) {
         if (indpndntItr == ich1.finalList.get(0)) {
           totalFinalList.addAll(ich1.finalList);
         } else if (indpndntItr == ich2.finalList.get(0)) {

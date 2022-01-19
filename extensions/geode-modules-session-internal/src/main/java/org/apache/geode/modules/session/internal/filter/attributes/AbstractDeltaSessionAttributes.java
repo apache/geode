@@ -42,7 +42,7 @@ public abstract class AbstractDeltaSessionAttributes extends AbstractSessionAttr
    * This map holds the updates to attributes
    */
   protected transient Map<String, DeltaEvent> deltas =
-      Collections.synchronizedMap(new HashMap<String, DeltaEvent>());
+      Collections.synchronizedMap(new HashMap<>());
 
   @Override
   public boolean hasDelta() {
@@ -70,7 +70,7 @@ public abstract class AbstractDeltaSessionAttributes extends AbstractSessionAttr
   public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
     maxInactiveInterval = in.readInt();
     lastAccessedTime = in.readLong();
-    Map<String, DeltaEvent> localDeltas = new HashMap<String, DeltaEvent>();
+    Map<String, DeltaEvent> localDeltas = new HashMap<>();
     try {
       int size = DataSerializer.readInteger(in);
       for (int i = 0; i < size; i++) {

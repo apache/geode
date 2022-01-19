@@ -36,17 +36,17 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  */
 class ReflectionLuceneSerializer implements LuceneSerializer {
 
-  private Field[] fields;
+  private final Field[] fields;
 
   private static final Logger logger = LogService.getLogger();
 
   public ReflectionLuceneSerializer(Class<? extends Object> clazz, String[] indexedFields) {
-    Set<String> fieldSet = new HashSet<String>(Arrays.asList(indexedFields));
+    Set<String> fieldSet = new HashSet<>(Arrays.asList(indexedFields));
 
     // Iterate through all declared fields and save them
     // in a list if they are an indexed field and have the correct
     // type.
-    ArrayList<Field> foundFields = new ArrayList<Field>();
+    ArrayList<Field> foundFields = new ArrayList<>();
     while (clazz != Object.class) {
       for (Field field : clazz.getDeclaredFields()) {
         Class<?> type = field.getType();
@@ -59,7 +59,7 @@ class ReflectionLuceneSerializer implements LuceneSerializer {
       clazz = clazz.getSuperclass();
     }
 
-    this.fields = foundFields.toArray(new Field[foundFields.size()]);
+    fields = foundFields.toArray(new Field[foundFields.size()]);
   }
 
   @Override

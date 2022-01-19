@@ -276,7 +276,7 @@ public class TableMetaDataManagerTest {
     when(tablesResultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME.toUpperCase())
         .thenReturn(TABLE_NAME);
     String QUOTE = "@@";
-    when(this.databaseMetaData.getIdentifierQuoteString()).thenReturn(QUOTE);
+    when(databaseMetaData.getIdentifierQuoteString()).thenReturn(QUOTE);
 
     TableMetaDataView data =
         tableMetaDataManager.getTableMetaDataView(connection, regionMapping);

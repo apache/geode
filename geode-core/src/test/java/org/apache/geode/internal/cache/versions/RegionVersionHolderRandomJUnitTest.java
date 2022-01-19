@@ -51,7 +51,7 @@ public class RegionVersionHolderRandomJUnitTest extends RegionVersionHolderSmall
    */
   @Override
   protected void recordVersions(RegionVersionHolder vh, BitSet bs) {
-    List<Integer> list = new ArrayList<Integer>();
+    List<Integer> list = new ArrayList<>();
     // Build a list of the versions to record
     for (int i = 1; i < bs.length(); i++) {
       if (bs.get(i)) {
@@ -91,13 +91,12 @@ public class RegionVersionHolderRandomJUnitTest extends RegionVersionHolderSmall
       updaters[i] = new HolderUpdater(UPDATES, i, NUM_UPDATERS, exceptions, vh1, vh2);
     }
 
-    for (int i = 0; i < updaters.length; i++) {
-      updaters[i].start();
+    for (final HolderUpdater holderUpdater : updaters) {
+      holderUpdater.start();
     }
 
-
-    for (int i = 0; i < updaters.length; i++) {
-      updaters[i].join();
+    for (final HolderUpdater updater : updaters) {
+      updater.join();
     }
 
     // System.out.println("testing vh1="+vh1);
@@ -116,12 +115,12 @@ public class RegionVersionHolderRandomJUnitTest extends RegionVersionHolderSmall
 
   private static class HolderUpdater extends Thread {
 
-    private int updates;
-    private int myNumber;
-    private int numUpdaters;
-    private IntOpenHashSet exceptions;
-    private RegionVersionHolder vh1;
-    private RegionVersionHolder vh2;
+    private final int updates;
+    private final int myNumber;
+    private final int numUpdaters;
+    private final IntOpenHashSet exceptions;
+    private final RegionVersionHolder vh1;
+    private final RegionVersionHolder vh2;
 
     public HolderUpdater(int updates, int myNumber, int numUpdaters, IntOpenHashSet exceptions,
         RegionVersionHolder vh1, RegionVersionHolder vh2) {

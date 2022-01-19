@@ -50,7 +50,7 @@ public class RootRegionRequest extends AdminRequest {
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
     // nothing needs to be done. If we got this far then a cache must exist.
-    return RootRegionResponse.create(dm, this.getSender());
+    return RootRegionResponse.create(dm, getSender());
   }
 
   @Override

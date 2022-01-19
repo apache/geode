@@ -1648,8 +1648,8 @@ public class ConnectionStats implements MessageStats {
 
   public ConnectionStats(StatisticsFactory factory, String prefix, String name,
       PoolStats poolStats) {
-    this.stats = factory.createAtomicStatistics(type, prefix + "Stats-" + name);
-    this.sendStats = factory.createAtomicStatistics(sendType, prefix + "SendStats-" + name);
+    stats = factory.createAtomicStatistics(type, prefix + "Stats-" + name);
+    sendStats = factory.createAtomicStatistics(sendType, prefix + "SendStats-" + name);
     this.poolStats = poolStats;
   }
 
@@ -1662,8 +1662,8 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this get
    */
   public long startGet() {
-    this.stats.incInt(getInProgressId, 1);
-    this.sendStats.incInt(getSendInProgressId, 1);
+    stats.incInt(getInProgressId, 1);
+    sendStats.incInt(getSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -1677,15 +1677,15 @@ public class ConnectionStats implements MessageStats {
   public void endGetSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(getSendInProgressId, -1);
+    sendStats.incInt(getSendInProgressId, -1);
     int endGetSendId;
     if (failed) {
       endGetSendId = getSendFailedId;
     } else {
       endGetSendId = getSendId;
     }
-    this.sendStats.incInt(endGetSendId, 1);
-    this.sendStats.incLong(getSendDurationId, duration);
+    sendStats.incInt(endGetSendId, 1);
+    sendStats.incLong(getSendDurationId, duration);
   }
 
   /**
@@ -1698,7 +1698,7 @@ public class ConnectionStats implements MessageStats {
   public void endGet(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(getInProgressId, -1);
+    stats.incInt(getInProgressId, -1);
     int endGetId;
     if (timedOut) {
       endGetId = getTimedOutId;
@@ -1707,16 +1707,16 @@ public class ConnectionStats implements MessageStats {
     } else {
       endGetId = getId;
     }
-    this.stats.incLong(endGetId, 1L);
-    this.stats.incLong(getDurationId, duration);
+    stats.incLong(endGetId, 1L);
+    stats.incLong(getDurationId, duration);
   }
 
   public int getGets() {
-    return this.stats.getInt(getId);
+    return stats.getInt(getId);
   }
 
   public long getGetDuration() {
-    return this.stats.getLong(getDurationId);
+    return stats.getLong(getDurationId);
   }
 
   /**
@@ -1728,8 +1728,8 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this put
    */
   public long startPut() {
-    this.stats.incInt(putInProgressId, 1);
-    this.sendStats.incInt(putSendInProgressId, 1);
+    stats.incInt(putInProgressId, 1);
+    sendStats.incInt(putSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -1743,15 +1743,15 @@ public class ConnectionStats implements MessageStats {
   public void endPutSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(putSendInProgressId, -1);
+    sendStats.incInt(putSendInProgressId, -1);
     int endPutSendId;
     if (failed) {
       endPutSendId = putSendFailedId;
     } else {
       endPutSendId = putSendId;
     }
-    this.sendStats.incInt(endPutSendId, 1);
-    this.sendStats.incLong(putSendDurationId, duration);
+    sendStats.incInt(endPutSendId, 1);
+    sendStats.incLong(putSendDurationId, duration);
   }
 
   /**
@@ -1764,7 +1764,7 @@ public class ConnectionStats implements MessageStats {
   public void endPut(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(putInProgressId, -1);
+    stats.incInt(putInProgressId, -1);
     int endPutId;
     if (timedOut) {
       endPutId = putTimedOutId;
@@ -1773,16 +1773,16 @@ public class ConnectionStats implements MessageStats {
     } else {
       endPutId = putId;
     }
-    this.stats.incLong(endPutId, 1L);
-    this.stats.incLong(putDurationId, duration);
+    stats.incLong(endPutId, 1L);
+    stats.incLong(putDurationId, duration);
   }
 
   public int getPuts() {
-    return this.stats.getInt(putId);
+    return stats.getInt(putId);
   }
 
   public long getPutDuration() {
-    return this.stats.getLong(putDurationId);
+    return stats.getLong(putDurationId);
   }
 
   /**
@@ -1794,8 +1794,8 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this destroy
    */
   public long startDestroy() {
-    this.stats.incInt(destroyInProgressId, 1);
-    this.sendStats.incInt(destroySendInProgressId, 1);
+    stats.incInt(destroyInProgressId, 1);
+    sendStats.incInt(destroySendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -1809,15 +1809,15 @@ public class ConnectionStats implements MessageStats {
   public void endDestroySend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(destroySendInProgressId, -1);
+    sendStats.incInt(destroySendInProgressId, -1);
     int endDestroySendId;
     if (failed) {
       endDestroySendId = destroySendFailedId;
     } else {
       endDestroySendId = destroySendId;
     }
-    this.sendStats.incInt(endDestroySendId, 1);
-    this.sendStats.incLong(destroySendDurationId, duration);
+    sendStats.incInt(endDestroySendId, 1);
+    sendStats.incLong(destroySendDurationId, duration);
   }
 
   /**
@@ -1830,7 +1830,7 @@ public class ConnectionStats implements MessageStats {
   public void endDestroy(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(destroyInProgressId, -1);
+    stats.incInt(destroyInProgressId, -1);
     int endDestroyId;
     if (timedOut) {
       endDestroyId = destroyTimedOutId;
@@ -1839,8 +1839,8 @@ public class ConnectionStats implements MessageStats {
     } else {
       endDestroyId = destroyId;
     }
-    this.stats.incLong(endDestroyId, 1);
-    this.stats.incLong(destroyDurationId, duration);
+    stats.incLong(endDestroyId, 1);
+    stats.incLong(destroyDurationId, duration);
   }
 
   /**
@@ -1852,8 +1852,8 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this destroyRegion
    */
   public long startDestroyRegion() {
-    this.stats.incInt(destroyRegionInProgressId, 1);
-    this.sendStats.incInt(destroyRegionSendInProgressId, 1);
+    stats.incInt(destroyRegionInProgressId, 1);
+    sendStats.incInt(destroyRegionSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -1867,15 +1867,15 @@ public class ConnectionStats implements MessageStats {
   public void endDestroyRegionSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(destroyRegionSendInProgressId, -1);
+    sendStats.incInt(destroyRegionSendInProgressId, -1);
     int endDestroyRegionSendId;
     if (failed) {
       endDestroyRegionSendId = destroyRegionSendFailedId;
     } else {
       endDestroyRegionSendId = destroyRegionSendId;
     }
-    this.sendStats.incInt(endDestroyRegionSendId, 1);
-    this.sendStats.incLong(destroyRegionSendDurationId, duration);
+    sendStats.incInt(endDestroyRegionSendId, 1);
+    sendStats.incLong(destroyRegionSendDurationId, duration);
   }
 
   /**
@@ -1888,7 +1888,7 @@ public class ConnectionStats implements MessageStats {
   public void endDestroyRegion(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(destroyRegionInProgressId, -1);
+    stats.incInt(destroyRegionInProgressId, -1);
     int endDestroyRegionId;
     if (timedOut) {
       endDestroyRegionId = destroyRegionTimedOutId;
@@ -1897,8 +1897,8 @@ public class ConnectionStats implements MessageStats {
     } else {
       endDestroyRegionId = destroyRegionId;
     }
-    this.stats.incInt(endDestroyRegionId, 1);
-    this.stats.incLong(destroyRegionDurationId, duration);
+    stats.incInt(endDestroyRegionId, 1);
+    stats.incLong(destroyRegionDurationId, duration);
   }
 
   /**
@@ -1910,8 +1910,8 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this clear
    */
   public long startClear() {
-    this.stats.incInt(clearInProgressId, 1);
-    this.sendStats.incInt(clearSendInProgressId, 1);
+    stats.incInt(clearInProgressId, 1);
+    sendStats.incInt(clearSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -1925,15 +1925,15 @@ public class ConnectionStats implements MessageStats {
   public void endClearSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(clearSendInProgressId, -1);
+    sendStats.incInt(clearSendInProgressId, -1);
     int endClearSendId;
     if (failed) {
       endClearSendId = clearSendFailedId;
     } else {
       endClearSendId = clearSendId;
     }
-    this.sendStats.incInt(endClearSendId, 1);
-    this.sendStats.incLong(clearSendDurationId, duration);
+    sendStats.incInt(endClearSendId, 1);
+    sendStats.incLong(clearSendDurationId, duration);
   }
 
   /**
@@ -1946,7 +1946,7 @@ public class ConnectionStats implements MessageStats {
   public void endClear(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(clearInProgressId, -1);
+    stats.incInt(clearInProgressId, -1);
     int endClearId;
     if (timedOut) {
       endClearId = clearTimedOutId;
@@ -1955,8 +1955,8 @@ public class ConnectionStats implements MessageStats {
     } else {
       endClearId = clearId;
     }
-    this.stats.incLong(endClearId, 1L);
-    this.stats.incLong(clearDurationId, duration);
+    stats.incLong(endClearId, 1L);
+    stats.incLong(clearDurationId, duration);
   }
 
   /**
@@ -1968,8 +1968,8 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this containsKey
    */
   public long startContainsKey() {
-    this.stats.incInt(containsKeyInProgressId, 1);
-    this.sendStats.incInt(containsKeySendInProgressId, 1);
+    stats.incInt(containsKeyInProgressId, 1);
+    sendStats.incInt(containsKeySendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -1983,15 +1983,15 @@ public class ConnectionStats implements MessageStats {
   public void endContainsKeySend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(containsKeySendInProgressId, -1);
+    sendStats.incInt(containsKeySendInProgressId, -1);
     int endContainsKeySendId;
     if (failed) {
       endContainsKeySendId = containsKeySendFailedId;
     } else {
       endContainsKeySendId = containsKeySendId;
     }
-    this.sendStats.incInt(endContainsKeySendId, 1);
-    this.sendStats.incLong(containsKeySendDurationId, duration);
+    sendStats.incInt(endContainsKeySendId, 1);
+    sendStats.incLong(containsKeySendDurationId, duration);
   }
 
   /**
@@ -2004,7 +2004,7 @@ public class ConnectionStats implements MessageStats {
   public void endContainsKey(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(containsKeyInProgressId, -1);
+    stats.incInt(containsKeyInProgressId, -1);
     int endContainsKeyId;
     if (timedOut) {
       endContainsKeyId = containsKeyTimedOutId;
@@ -2013,8 +2013,8 @@ public class ConnectionStats implements MessageStats {
     } else {
       endContainsKeyId = containsKeyId;
     }
-    this.stats.incInt(endContainsKeyId, 1);
-    this.stats.incLong(containsKeyDurationId, duration);
+    stats.incInt(endContainsKeyId, 1);
+    stats.incLong(containsKeyDurationId, duration);
   }
 
   /**
@@ -2026,8 +2026,8 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this keySet
    */
   public long startKeySet() {
-    this.stats.incInt(keySetInProgressId, 1);
-    this.sendStats.incInt(keySetSendInProgressId, 1);
+    stats.incInt(keySetInProgressId, 1);
+    sendStats.incInt(keySetSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -2041,15 +2041,15 @@ public class ConnectionStats implements MessageStats {
   public void endKeySetSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(keySetSendInProgressId, -1);
+    sendStats.incInt(keySetSendInProgressId, -1);
     int endKeySetSendId;
     if (failed) {
       endKeySetSendId = keySetSendFailedId;
     } else {
       endKeySetSendId = keySetSendId;
     }
-    this.sendStats.incInt(endKeySetSendId, 1);
-    this.sendStats.incLong(keySetSendDurationId, duration);
+    sendStats.incInt(endKeySetSendId, 1);
+    sendStats.incLong(keySetSendDurationId, duration);
   }
 
   /**
@@ -2062,7 +2062,7 @@ public class ConnectionStats implements MessageStats {
   public void endKeySet(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(keySetInProgressId, -1);
+    stats.incInt(keySetInProgressId, -1);
     int endKeySetId;
     if (timedOut) {
       endKeySetId = keySetTimedOutId;
@@ -2071,8 +2071,8 @@ public class ConnectionStats implements MessageStats {
     } else {
       endKeySetId = keySetId;
     }
-    this.stats.incInt(endKeySetId, 1);
-    this.stats.incLong(keySetDurationId, duration);
+    stats.incInt(endKeySetId, 1);
+    stats.incLong(keySetDurationId, duration);
   }
 
   /**
@@ -2084,8 +2084,8 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this registerInterest
    */
   public long startRegisterInterest() {
-    this.stats.incInt(registerInterestInProgressId, 1);
-    this.sendStats.incInt(registerInterestSendInProgressId, 1);
+    stats.incInt(registerInterestInProgressId, 1);
+    sendStats.incInt(registerInterestSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -2099,15 +2099,15 @@ public class ConnectionStats implements MessageStats {
   public void endRegisterInterestSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(registerInterestSendInProgressId, -1);
+    sendStats.incInt(registerInterestSendInProgressId, -1);
     int endRegisterInterestSendId;
     if (failed) {
       endRegisterInterestSendId = registerInterestSendFailedId;
     } else {
       endRegisterInterestSendId = registerInterestSendId;
     }
-    this.sendStats.incInt(endRegisterInterestSendId, 1);
-    this.sendStats.incLong(registerInterestSendDurationId, duration);
+    sendStats.incInt(endRegisterInterestSendId, 1);
+    sendStats.incLong(registerInterestSendDurationId, duration);
   }
 
   /**
@@ -2120,7 +2120,7 @@ public class ConnectionStats implements MessageStats {
   public void endRegisterInterest(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(registerInterestInProgressId, -1);
+    stats.incInt(registerInterestInProgressId, -1);
     int endRegisterInterestId;
     if (timedOut) {
       endRegisterInterestId = registerInterestTimedOutId;
@@ -2129,8 +2129,8 @@ public class ConnectionStats implements MessageStats {
     } else {
       endRegisterInterestId = registerInterestId;
     }
-    this.stats.incInt(endRegisterInterestId, 1);
-    this.stats.incLong(registerInterestDurationId, duration);
+    stats.incInt(endRegisterInterestId, 1);
+    stats.incLong(registerInterestDurationId, duration);
   }
 
   /**
@@ -2142,8 +2142,8 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this unregisterInterest
    */
   public long startUnregisterInterest() {
-    this.stats.incInt(unregisterInterestInProgressId, 1);
-    this.sendStats.incInt(unregisterInterestSendInProgressId, 1);
+    stats.incInt(unregisterInterestInProgressId, 1);
+    sendStats.incInt(unregisterInterestSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -2157,15 +2157,15 @@ public class ConnectionStats implements MessageStats {
   public void endUnregisterInterestSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(unregisterInterestSendInProgressId, -1);
+    sendStats.incInt(unregisterInterestSendInProgressId, -1);
     int endUnregisterInterestSendId;
     if (failed) {
       endUnregisterInterestSendId = unregisterInterestSendFailedId;
     } else {
       endUnregisterInterestSendId = unregisterInterestSendId;
     }
-    this.sendStats.incInt(endUnregisterInterestSendId, 1);
-    this.sendStats.incLong(unregisterInterestSendDurationId, duration);
+    sendStats.incInt(endUnregisterInterestSendId, 1);
+    sendStats.incLong(unregisterInterestSendDurationId, duration);
   }
 
   /**
@@ -2178,7 +2178,7 @@ public class ConnectionStats implements MessageStats {
   public void endUnregisterInterest(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(unregisterInterestInProgressId, -1);
+    stats.incInt(unregisterInterestInProgressId, -1);
     int endUnregisterInterestId;
     if (timedOut) {
       endUnregisterInterestId = unregisterInterestTimedOutId;
@@ -2187,8 +2187,8 @@ public class ConnectionStats implements MessageStats {
     } else {
       endUnregisterInterestId = unregisterInterestId;
     }
-    this.stats.incInt(endUnregisterInterestId, 1);
-    this.stats.incLong(unregisterInterestDurationId, duration);
+    stats.incInt(endUnregisterInterestId, 1);
+    stats.incLong(unregisterInterestDurationId, duration);
   }
 
   /**
@@ -2200,8 +2200,8 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this query
    */
   public long startQuery() {
-    this.stats.incInt(queryInProgressId, 1);
-    this.sendStats.incInt(querySendInProgressId, 1);
+    stats.incInt(queryInProgressId, 1);
+    sendStats.incInt(querySendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -2215,15 +2215,15 @@ public class ConnectionStats implements MessageStats {
   public void endQuerySend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(querySendInProgressId, -1);
+    sendStats.incInt(querySendInProgressId, -1);
     int endQuerySendId;
     if (failed) {
       endQuerySendId = querySendFailedId;
     } else {
       endQuerySendId = querySendId;
     }
-    this.sendStats.incInt(endQuerySendId, 1);
-    this.sendStats.incLong(querySendDurationId, duration);
+    sendStats.incInt(endQuerySendId, 1);
+    sendStats.incLong(querySendDurationId, duration);
   }
 
   /**
@@ -2236,7 +2236,7 @@ public class ConnectionStats implements MessageStats {
   public void endQuery(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(queryInProgressId, -1);
+    stats.incInt(queryInProgressId, -1);
     int endQueryId;
     if (timedOut) {
       endQueryId = queryTimedOutId;
@@ -2245,8 +2245,8 @@ public class ConnectionStats implements MessageStats {
     } else {
       endQueryId = queryId;
     }
-    this.stats.incInt(endQueryId, 1);
-    this.stats.incLong(queryDurationId, duration);
+    stats.incInt(endQueryId, 1);
+    stats.incLong(queryDurationId, duration);
   }
 
   /**
@@ -2258,8 +2258,8 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this createCQ
    */
   public long startCreateCQ() {
-    this.stats.incInt(createCQInProgressId, 1);
-    this.sendStats.incInt(createCQSendInProgressId, 1);
+    stats.incInt(createCQInProgressId, 1);
+    sendStats.incInt(createCQSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -2273,15 +2273,15 @@ public class ConnectionStats implements MessageStats {
   public void endCreateCQSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(createCQSendInProgressId, -1);
+    sendStats.incInt(createCQSendInProgressId, -1);
     int endCreateCQSendId;
     if (failed) {
       endCreateCQSendId = createCQSendFailedId;
     } else {
       endCreateCQSendId = createCQSendId;
     }
-    this.sendStats.incInt(endCreateCQSendId, 1);
-    this.sendStats.incLong(createCQSendDurationId, duration);
+    sendStats.incInt(endCreateCQSendId, 1);
+    sendStats.incLong(createCQSendDurationId, duration);
   }
 
   /**
@@ -2294,7 +2294,7 @@ public class ConnectionStats implements MessageStats {
   public void endCreateCQ(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(createCQInProgressId, -1);
+    stats.incInt(createCQInProgressId, -1);
     int endCreateCQId;
     if (timedOut) {
       endCreateCQId = createCQTimedOutId;
@@ -2303,8 +2303,8 @@ public class ConnectionStats implements MessageStats {
     } else {
       endCreateCQId = createCQId;
     }
-    this.stats.incInt(endCreateCQId, 1);
-    this.stats.incLong(createCQDurationId, duration);
+    stats.incInt(endCreateCQId, 1);
+    stats.incLong(createCQDurationId, duration);
   }
 
   /**
@@ -2316,8 +2316,8 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this stopCQ
    */
   public long startStopCQ() {
-    this.stats.incInt(stopCQInProgressId, 1);
-    this.sendStats.incInt(stopCQSendInProgressId, 1);
+    stats.incInt(stopCQInProgressId, 1);
+    sendStats.incInt(stopCQSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -2331,15 +2331,15 @@ public class ConnectionStats implements MessageStats {
   public void endStopCQSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(stopCQSendInProgressId, -1);
+    sendStats.incInt(stopCQSendInProgressId, -1);
     int endStopCQSendId;
     if (failed) {
       endStopCQSendId = stopCQSendFailedId;
     } else {
       endStopCQSendId = stopCQSendId;
     }
-    this.sendStats.incInt(endStopCQSendId, 1);
-    this.sendStats.incLong(stopCQSendDurationId, duration);
+    sendStats.incInt(endStopCQSendId, 1);
+    sendStats.incLong(stopCQSendDurationId, duration);
   }
 
   /**
@@ -2352,7 +2352,7 @@ public class ConnectionStats implements MessageStats {
   public void endStopCQ(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(stopCQInProgressId, -1);
+    stats.incInt(stopCQInProgressId, -1);
     int endStopCQId;
     if (timedOut) {
       endStopCQId = stopCQTimedOutId;
@@ -2361,8 +2361,8 @@ public class ConnectionStats implements MessageStats {
     } else {
       endStopCQId = stopCQId;
     }
-    this.stats.incInt(endStopCQId, 1);
-    this.stats.incLong(stopCQDurationId, duration);
+    stats.incInt(endStopCQId, 1);
+    stats.incLong(stopCQDurationId, duration);
   }
 
   /**
@@ -2374,8 +2374,8 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this closeCQ
    */
   public long startCloseCQ() {
-    this.stats.incInt(closeCQInProgressId, 1);
-    this.sendStats.incInt(closeCQSendInProgressId, 1);
+    stats.incInt(closeCQInProgressId, 1);
+    sendStats.incInt(closeCQSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -2389,15 +2389,15 @@ public class ConnectionStats implements MessageStats {
   public void endCloseCQSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(closeCQSendInProgressId, -1);
+    sendStats.incInt(closeCQSendInProgressId, -1);
     int endCloseCQSendId;
     if (failed) {
       endCloseCQSendId = closeCQSendFailedId;
     } else {
       endCloseCQSendId = closeCQSendId;
     }
-    this.sendStats.incInt(endCloseCQSendId, 1);
-    this.sendStats.incLong(closeCQSendDurationId, duration);
+    sendStats.incInt(endCloseCQSendId, 1);
+    sendStats.incLong(closeCQSendDurationId, duration);
   }
 
   /**
@@ -2410,7 +2410,7 @@ public class ConnectionStats implements MessageStats {
   public void endCloseCQ(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(closeCQInProgressId, -1);
+    stats.incInt(closeCQInProgressId, -1);
     int endCloseCQId;
     if (timedOut) {
       endCloseCQId = closeCQTimedOutId;
@@ -2419,8 +2419,8 @@ public class ConnectionStats implements MessageStats {
     } else {
       endCloseCQId = closeCQId;
     }
-    this.stats.incInt(endCloseCQId, 1);
-    this.stats.incLong(closeCQDurationId, duration);
+    stats.incInt(endCloseCQId, 1);
+    stats.incLong(closeCQDurationId, duration);
   }
 
   /**
@@ -2432,8 +2432,8 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this stopCQ
    */
   public long startGetDurableCQs() {
-    this.stats.incInt(getDurableCQsInProgressId, 1);
-    this.sendStats.incInt(getDurableCQsSendsInProgressId, 1);
+    stats.incInt(getDurableCQsInProgressId, 1);
+    sendStats.incInt(getDurableCQsSendsInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -2447,15 +2447,15 @@ public class ConnectionStats implements MessageStats {
   public void endGetDurableCQsSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(getDurableCQsSendsInProgressId, -1);
+    sendStats.incInt(getDurableCQsSendsInProgressId, -1);
     int endGetDurableCQsSendId;
     if (failed) {
       endGetDurableCQsSendId = getDurableCQsSendFailedId;
     } else {
       endGetDurableCQsSendId = getDurableCQsSendId;
     }
-    this.sendStats.incInt(endGetDurableCQsSendId, 1);
-    this.sendStats.incLong(getDurableCQsSendDurationId, duration);
+    sendStats.incInt(endGetDurableCQsSendId, 1);
+    sendStats.incLong(getDurableCQsSendDurationId, duration);
   }
 
   /**
@@ -2468,7 +2468,7 @@ public class ConnectionStats implements MessageStats {
   public void endGetDurableCQs(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(getDurableCQsInProgressId, -1);
+    stats.incInt(getDurableCQsInProgressId, -1);
     int endGetDurableCQsId;
     if (timedOut) {
       endGetDurableCQsId = getDurableCQsTimedOutId;
@@ -2477,8 +2477,8 @@ public class ConnectionStats implements MessageStats {
     } else {
       endGetDurableCQsId = getDurableCQsId;
     }
-    this.stats.incInt(endGetDurableCQsId, 1);
-    this.stats.incLong(getDurableCQsDurationId, duration);
+    stats.incInt(endGetDurableCQsId, 1);
+    stats.incLong(getDurableCQsDurationId, duration);
   }
 
   /**
@@ -2490,8 +2490,8 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this gatewayBatch
    */
   public long startGatewayBatch() {
-    this.stats.incInt(gatewayBatchInProgressId, 1);
-    this.sendStats.incInt(gatewayBatchSendInProgressId, 1);
+    stats.incInt(gatewayBatchInProgressId, 1);
+    sendStats.incInt(gatewayBatchSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -2505,15 +2505,15 @@ public class ConnectionStats implements MessageStats {
   public void endGatewayBatchSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(gatewayBatchSendInProgressId, -1);
+    sendStats.incInt(gatewayBatchSendInProgressId, -1);
     int endGatewayBatchSendId;
     if (failed) {
       endGatewayBatchSendId = gatewayBatchSendFailedId;
     } else {
       endGatewayBatchSendId = gatewayBatchSendId;
     }
-    this.sendStats.incInt(endGatewayBatchSendId, 1);
-    this.sendStats.incLong(gatewayBatchSendDurationId, duration);
+    sendStats.incInt(endGatewayBatchSendId, 1);
+    sendStats.incLong(gatewayBatchSendDurationId, duration);
   }
 
   /**
@@ -2526,7 +2526,7 @@ public class ConnectionStats implements MessageStats {
   public void endGatewayBatch(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(gatewayBatchInProgressId, -1);
+    stats.incInt(gatewayBatchInProgressId, -1);
     int endGatewayBatchId;
     if (timedOut) {
       endGatewayBatchId = gatewayBatchTimedOutId;
@@ -2535,8 +2535,8 @@ public class ConnectionStats implements MessageStats {
     } else {
       endGatewayBatchId = gatewayBatchId;
     }
-    this.stats.incInt(endGatewayBatchId, 1);
-    this.stats.incLong(gatewayBatchDurationId, duration);
+    stats.incInt(endGatewayBatchId, 1);
+    stats.incLong(gatewayBatchDurationId, duration);
   }
 
   /**
@@ -2548,8 +2548,8 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this readyForEvents
    */
   public long startReadyForEvents() {
-    this.stats.incInt(readyForEventsInProgressId, 1);
-    this.sendStats.incInt(readyForEventsSendInProgressId, 1);
+    stats.incInt(readyForEventsInProgressId, 1);
+    sendStats.incInt(readyForEventsSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -2563,15 +2563,15 @@ public class ConnectionStats implements MessageStats {
   public void endReadyForEventsSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(readyForEventsSendInProgressId, -1);
+    sendStats.incInt(readyForEventsSendInProgressId, -1);
     int endReadyForEventsSendId;
     if (failed) {
       endReadyForEventsSendId = readyForEventsSendFailedId;
     } else {
       endReadyForEventsSendId = readyForEventsSendId;
     }
-    this.sendStats.incInt(endReadyForEventsSendId, 1);
-    this.sendStats.incLong(readyForEventsSendDurationId, duration);
+    sendStats.incInt(endReadyForEventsSendId, 1);
+    sendStats.incLong(readyForEventsSendDurationId, duration);
   }
 
   /**
@@ -2584,7 +2584,7 @@ public class ConnectionStats implements MessageStats {
   public void endReadyForEvents(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(readyForEventsInProgressId, -1);
+    stats.incInt(readyForEventsInProgressId, -1);
     int endReadyForEventsId;
     if (timedOut) {
       endReadyForEventsId = readyForEventsTimedOutId;
@@ -2593,8 +2593,8 @@ public class ConnectionStats implements MessageStats {
     } else {
       endReadyForEventsId = readyForEventsId;
     }
-    this.stats.incInt(endReadyForEventsId, 1);
-    this.stats.incLong(readyForEventsDurationId, duration);
+    stats.incInt(endReadyForEventsId, 1);
+    stats.incLong(readyForEventsDurationId, duration);
   }
 
   /**
@@ -2606,8 +2606,8 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this makePrimary
    */
   public long startMakePrimary() {
-    this.stats.incInt(makePrimaryInProgressId, 1);
-    this.sendStats.incInt(makePrimarySendInProgressId, 1);
+    stats.incInt(makePrimaryInProgressId, 1);
+    sendStats.incInt(makePrimarySendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -2621,15 +2621,15 @@ public class ConnectionStats implements MessageStats {
   public void endMakePrimarySend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(makePrimarySendInProgressId, -1);
+    sendStats.incInt(makePrimarySendInProgressId, -1);
     int endMakePrimarySendId;
     if (failed) {
       endMakePrimarySendId = makePrimarySendFailedId;
     } else {
       endMakePrimarySendId = makePrimarySendId;
     }
-    this.sendStats.incInt(endMakePrimarySendId, 1);
-    this.sendStats.incLong(makePrimarySendDurationId, duration);
+    sendStats.incInt(endMakePrimarySendId, 1);
+    sendStats.incLong(makePrimarySendDurationId, duration);
   }
 
   /**
@@ -2642,7 +2642,7 @@ public class ConnectionStats implements MessageStats {
   public void endMakePrimary(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(makePrimaryInProgressId, -1);
+    stats.incInt(makePrimaryInProgressId, -1);
     int endMakePrimaryId;
     if (timedOut) {
       endMakePrimaryId = makePrimaryTimedOutId;
@@ -2651,8 +2651,8 @@ public class ConnectionStats implements MessageStats {
     } else {
       endMakePrimaryId = makePrimaryId;
     }
-    this.stats.incInt(endMakePrimaryId, 1);
-    this.stats.incLong(makePrimaryDurationId, duration);
+    stats.incInt(endMakePrimaryId, 1);
+    stats.incLong(makePrimaryDurationId, duration);
   }
 
   /**
@@ -2664,8 +2664,8 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this closeCon
    */
   public long startCloseCon() {
-    this.stats.incInt(closeConInProgressId, 1);
-    this.sendStats.incInt(closeConSendInProgressId, 1);
+    stats.incInt(closeConInProgressId, 1);
+    sendStats.incInt(closeConSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -2679,15 +2679,15 @@ public class ConnectionStats implements MessageStats {
   public void endCloseConSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(closeConSendInProgressId, -1);
+    sendStats.incInt(closeConSendInProgressId, -1);
     int endCloseConSendId;
     if (failed) {
       endCloseConSendId = closeConSendFailedId;
     } else {
       endCloseConSendId = closeConSendId;
     }
-    this.sendStats.incInt(endCloseConSendId, 1);
-    this.sendStats.incLong(closeConSendDurationId, duration);
+    sendStats.incInt(endCloseConSendId, 1);
+    sendStats.incLong(closeConSendDurationId, duration);
   }
 
   /**
@@ -2700,7 +2700,7 @@ public class ConnectionStats implements MessageStats {
   public void endCloseCon(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(closeConInProgressId, -1);
+    stats.incInt(closeConInProgressId, -1);
     int endCloseConId;
     if (timedOut) {
       endCloseConId = closeConTimedOutId;
@@ -2709,8 +2709,8 @@ public class ConnectionStats implements MessageStats {
     } else {
       endCloseConId = closeConId;
     }
-    this.stats.incInt(endCloseConId, 1);
-    this.stats.incLong(closeConDurationId, duration);
+    stats.incInt(endCloseConId, 1);
+    stats.incLong(closeConDurationId, duration);
   }
 
   /**
@@ -2722,8 +2722,8 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this primaryAck
    */
   public long startPrimaryAck() {
-    this.stats.incInt(primaryAckInProgressId, 1);
-    this.sendStats.incInt(primaryAckSendInProgressId, 1);
+    stats.incInt(primaryAckInProgressId, 1);
+    sendStats.incInt(primaryAckSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -2737,15 +2737,15 @@ public class ConnectionStats implements MessageStats {
   public void endPrimaryAckSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(primaryAckSendInProgressId, -1);
+    sendStats.incInt(primaryAckSendInProgressId, -1);
     int endPrimaryAckSendId;
     if (failed) {
       endPrimaryAckSendId = primaryAckSendFailedId;
     } else {
       endPrimaryAckSendId = primaryAckSendId;
     }
-    this.sendStats.incInt(endPrimaryAckSendId, 1);
-    this.sendStats.incLong(primaryAckSendDurationId, duration);
+    sendStats.incInt(endPrimaryAckSendId, 1);
+    sendStats.incLong(primaryAckSendDurationId, duration);
   }
 
   /**
@@ -2758,7 +2758,7 @@ public class ConnectionStats implements MessageStats {
   public void endPrimaryAck(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(primaryAckInProgressId, -1);
+    stats.incInt(primaryAckInProgressId, -1);
     int endPrimaryAckId;
     if (timedOut) {
       endPrimaryAckId = primaryAckTimedOutId;
@@ -2767,8 +2767,8 @@ public class ConnectionStats implements MessageStats {
     } else {
       endPrimaryAckId = primaryAckId;
     }
-    this.stats.incInt(endPrimaryAckId, 1);
-    this.stats.incLong(primaryAckDurationId, duration);
+    stats.incInt(endPrimaryAckId, 1);
+    stats.incLong(primaryAckDurationId, duration);
   }
 
   /**
@@ -2780,8 +2780,8 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this ping
    */
   public long startPing() {
-    this.stats.incInt(pingInProgressId, 1);
-    this.sendStats.incInt(pingSendInProgressId, 1);
+    stats.incInt(pingInProgressId, 1);
+    sendStats.incInt(pingSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -2795,15 +2795,15 @@ public class ConnectionStats implements MessageStats {
   public void endPingSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(pingSendInProgressId, -1);
+    sendStats.incInt(pingSendInProgressId, -1);
     int endPingSendId;
     if (failed) {
       endPingSendId = pingSendFailedId;
     } else {
       endPingSendId = pingSendId;
     }
-    this.sendStats.incInt(endPingSendId, 1);
-    this.sendStats.incLong(pingSendDurationId, duration);
+    sendStats.incInt(endPingSendId, 1);
+    sendStats.incLong(pingSendDurationId, duration);
   }
 
   /**
@@ -2816,7 +2816,7 @@ public class ConnectionStats implements MessageStats {
   public void endPing(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(pingInProgressId, -1);
+    stats.incInt(pingInProgressId, -1);
     int endPingId;
     if (timedOut) {
       endPingId = pingTimedOutId;
@@ -2825,8 +2825,8 @@ public class ConnectionStats implements MessageStats {
     } else {
       endPingId = pingId;
     }
-    this.stats.incInt(endPingId, 1);
-    this.stats.incLong(pingDurationId, duration);
+    stats.incInt(endPingId, 1);
+    stats.incLong(pingDurationId, duration);
   }
 
   /**
@@ -2838,15 +2838,15 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this registerInstantiators
    */
   public long startRegisterInstantiators() {
-    this.stats.incInt(registerInstantiatorsInProgressId, 1);
-    this.sendStats.incInt(registerInstantiatorsSendInProgressId, 1);
+    stats.incInt(registerInstantiatorsInProgressId, 1);
+    sendStats.incInt(registerInstantiatorsSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
 
   public long startRegisterDataSerializers() {
-    this.stats.incInt(registerDataSerializersInProgressId, 1);
-    this.sendStats.incInt(registerDataSerializersSendInProgressId, 1);
+    stats.incInt(registerDataSerializersInProgressId, 1);
+    sendStats.incInt(registerDataSerializersSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -2860,29 +2860,29 @@ public class ConnectionStats implements MessageStats {
   public void endRegisterInstantiatorsSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(registerInstantiatorsSendInProgressId, -1);
+    sendStats.incInt(registerInstantiatorsSendInProgressId, -1);
     int endRegisterInstantiatorsSendId;
     if (failed) {
       endRegisterInstantiatorsSendId = registerInstantiatorsSendFailedId;
     } else {
       endRegisterInstantiatorsSendId = registerInstantiatorsSendId;
     }
-    this.sendStats.incInt(endRegisterInstantiatorsSendId, 1);
-    this.sendStats.incLong(registerInstantiatorsSendDurationId, duration);
+    sendStats.incInt(endRegisterInstantiatorsSendId, 1);
+    sendStats.incLong(registerInstantiatorsSendDurationId, duration);
   }
 
   public void endRegisterDataSerializersSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(registerDataSerializersSendInProgressId, -1);
+    sendStats.incInt(registerDataSerializersSendInProgressId, -1);
     int endDataSerializersSendId;
     if (failed) {
       endDataSerializersSendId = registerDataSerializersSendFailedId;
     } else {
       endDataSerializersSendId = registerDataSerializersSendId;
     }
-    this.sendStats.incInt(endDataSerializersSendId, 1);
-    this.sendStats.incLong(registerDataSerializersSendDurationId, duration);
+    sendStats.incInt(endDataSerializersSendId, 1);
+    sendStats.incLong(registerDataSerializersSendDurationId, duration);
   }
 
   /**
@@ -2895,7 +2895,7 @@ public class ConnectionStats implements MessageStats {
   public void endRegisterInstantiators(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(registerInstantiatorsInProgressId, -1);
+    stats.incInt(registerInstantiatorsInProgressId, -1);
     int endRegisterInstantiatorsId;
     if (timedOut) {
       endRegisterInstantiatorsId = registerInstantiatorsTimedOutId;
@@ -2904,14 +2904,14 @@ public class ConnectionStats implements MessageStats {
     } else {
       endRegisterInstantiatorsId = registerInstantiatorsId;
     }
-    this.stats.incInt(endRegisterInstantiatorsId, 1);
-    this.stats.incLong(registerInstantiatorsDurationId, duration);
+    stats.incInt(endRegisterInstantiatorsId, 1);
+    stats.incLong(registerInstantiatorsDurationId, duration);
   }
 
   public void endRegisterDataSerializers(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(registerDataSerializersInProgressId, -1);
+    stats.incInt(registerDataSerializersInProgressId, -1);
     int endRegisterDataSerializersId;
     if (timedOut) {
       endRegisterDataSerializersId = registerDataSerializersTimedOutId;
@@ -2920,8 +2920,8 @@ public class ConnectionStats implements MessageStats {
     } else {
       endRegisterDataSerializersId = registerDataSerializersId;
     }
-    this.stats.incInt(endRegisterDataSerializersId, 1);
-    this.stats.incLong(registerDataSerializersDurationId, duration);
+    stats.incInt(endRegisterDataSerializersId, 1);
+    stats.incLong(registerDataSerializersDurationId, duration);
   }
 
   /**
@@ -2933,8 +2933,8 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this putAll
    */
   public long startPutAll() {
-    this.stats.incInt(putAllInProgressId, 1);
-    this.sendStats.incInt(putAllSendInProgressId, 1);
+    stats.incInt(putAllInProgressId, 1);
+    sendStats.incInt(putAllSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -2948,15 +2948,15 @@ public class ConnectionStats implements MessageStats {
   public void endPutAllSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(putAllSendInProgressId, -1);
+    sendStats.incInt(putAllSendInProgressId, -1);
     int endPutAllSendId;
     if (failed) {
       endPutAllSendId = putAllSendFailedId;
     } else {
       endPutAllSendId = putAllSendId;
     }
-    this.sendStats.incInt(endPutAllSendId, 1);
-    this.sendStats.incLong(putAllSendDurationId, duration);
+    sendStats.incInt(endPutAllSendId, 1);
+    sendStats.incLong(putAllSendDurationId, duration);
   }
 
   /**
@@ -2969,7 +2969,7 @@ public class ConnectionStats implements MessageStats {
   public void endPutAll(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(putAllInProgressId, -1);
+    stats.incInt(putAllInProgressId, -1);
     int endPutAllId;
     if (timedOut) {
       endPutAllId = putAllTimedOutId;
@@ -2978,8 +2978,8 @@ public class ConnectionStats implements MessageStats {
     } else {
       endPutAllId = putAllId;
     }
-    this.stats.incInt(endPutAllId, 1);
-    this.stats.incLong(putAllDurationId, duration);
+    stats.incInt(endPutAllId, 1);
+    stats.incLong(putAllDurationId, duration);
   }
 
   /**
@@ -2991,8 +2991,8 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this removeAll
    */
   public long startRemoveAll() {
-    this.stats.incInt(removeAllInProgressId, 1);
-    this.sendStats.incInt(removeAllSendInProgressId, 1);
+    stats.incInt(removeAllInProgressId, 1);
+    sendStats.incInt(removeAllSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -3006,15 +3006,15 @@ public class ConnectionStats implements MessageStats {
   public void endRemoveAllSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(removeAllSendInProgressId, -1);
+    sendStats.incInt(removeAllSendInProgressId, -1);
     int endRemoveAllSendId;
     if (failed) {
       endRemoveAllSendId = removeAllSendFailedId;
     } else {
       endRemoveAllSendId = removeAllSendId;
     }
-    this.sendStats.incInt(endRemoveAllSendId, 1);
-    this.sendStats.incLong(removeAllSendDurationId, duration);
+    sendStats.incInt(endRemoveAllSendId, 1);
+    sendStats.incLong(removeAllSendDurationId, duration);
   }
 
   /**
@@ -3027,7 +3027,7 @@ public class ConnectionStats implements MessageStats {
   public void endRemoveAll(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(removeAllInProgressId, -1);
+    stats.incInt(removeAllInProgressId, -1);
     int endRemoveAllId;
     if (timedOut) {
       endRemoveAllId = removeAllTimedOutId;
@@ -3036,8 +3036,8 @@ public class ConnectionStats implements MessageStats {
     } else {
       endRemoveAllId = removeAllId;
     }
-    this.stats.incInt(endRemoveAllId, 1);
-    this.stats.incLong(removeAllDurationId, duration);
+    stats.incInt(endRemoveAllId, 1);
+    stats.incLong(removeAllDurationId, duration);
   }
 
   /**
@@ -3049,8 +3049,8 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this getAll
    */
   public long startGetAll() {
-    this.stats.incInt(getAllInProgressId, 1);
-    this.sendStats.incInt(getAllSendInProgressId, 1);
+    stats.incInt(getAllInProgressId, 1);
+    sendStats.incInt(getAllSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -3064,15 +3064,15 @@ public class ConnectionStats implements MessageStats {
   public void endGetAllSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(getAllSendInProgressId, -1);
+    sendStats.incInt(getAllSendInProgressId, -1);
     int endGetAllSendId;
     if (failed) {
       endGetAllSendId = getAllSendFailedId;
     } else {
       endGetAllSendId = getAllSendId;
     }
-    this.sendStats.incInt(endGetAllSendId, 1);
-    this.sendStats.incLong(getAllSendDurationId, duration);
+    sendStats.incInt(endGetAllSendId, 1);
+    sendStats.incLong(getAllSendDurationId, duration);
   }
 
   /**
@@ -3085,7 +3085,7 @@ public class ConnectionStats implements MessageStats {
   public void endGetAll(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(getAllInProgressId, -1);
+    stats.incInt(getAllInProgressId, -1);
     int endGetAllId;
     if (timedOut) {
       endGetAllId = getAllTimedOutId;
@@ -3094,57 +3094,57 @@ public class ConnectionStats implements MessageStats {
     } else {
       endGetAllId = getAllId;
     }
-    this.stats.incInt(endGetAllId, 1);
-    this.stats.incLong(getAllDurationId, duration);
+    stats.incInt(endGetAllId, 1);
+    stats.incLong(getAllDurationId, duration);
   }
 
   public int getConnections() {
-    return this.stats.getInt(connectionsId);
+    return stats.getInt(connectionsId);
   }
 
   public int getOps() {
     int ops = 0;
     for (int i = 0; i < opIds.length; i++) {
-      ops += this.stats.getInt(i);
+      ops += stats.getInt(i);
     }
     return ops;
   }
 
   public void incConnections(int delta) {
-    this.stats.incInt(connectionsId, delta);
+    stats.incInt(connectionsId, delta);
     if (delta > 0) {
-      this.stats.incInt(connectsId, delta);
+      stats.incInt(connectsId, delta);
     } else if (delta < 0) {
-      this.stats.incInt(disconnectsId, -delta);
+      stats.incInt(disconnectsId, -delta);
     }
-    this.poolStats.incConnections(delta);
+    poolStats.incConnections(delta);
   }
 
   private void startClientOp() {
-    this.poolStats.startClientOp();
+    poolStats.startClientOp();
   }
 
   private void endClientOpSend(long duration, boolean failed) {
-    this.poolStats.endClientOpSend(duration, failed);
+    poolStats.endClientOpSend(duration, failed);
   }
 
   private void endClientOp(long duration, boolean timedOut, boolean failed) {
-    this.poolStats.endClientOp(duration, timedOut, failed);
+    poolStats.endClientOp(duration, timedOut, failed);
   }
 
   public void close() {
-    this.stats.close();
-    this.sendStats.close();
+    stats.close();
+    sendStats.close();
   }
 
   @Override
   public void incReceivedBytes(long v) {
-    this.stats.incLong(receivedBytesId, v);
+    stats.incLong(receivedBytesId, v);
   }
 
   @Override
   public void incSentBytes(long v) {
-    this.stats.incLong(sentBytesId, v);
+    stats.incLong(sentBytesId, v);
   }
 
   @Override
@@ -3172,8 +3172,8 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this ExecuteFunction
    */
   public long startExecuteFunction() {
-    this.stats.incInt(executeFunctionInProgressId, 1);
-    this.sendStats.incInt(executeFunctionSendInProgressId, 1);
+    stats.incInt(executeFunctionInProgressId, 1);
+    sendStats.incInt(executeFunctionSendInProgressId, 1);
     return getStatTime();
   }
 
@@ -3185,15 +3185,15 @@ public class ConnectionStats implements MessageStats {
    */
   public void endExecuteFunctionSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
-    this.sendStats.incInt(executeFunctionSendInProgressId, -1);
+    sendStats.incInt(executeFunctionSendInProgressId, -1);
     int endExecuteFunctionSendId;
     if (failed) {
       endExecuteFunctionSendId = executeFunctionSendFailedId;
     } else {
       endExecuteFunctionSendId = executeFunctionSendId;
     }
-    this.sendStats.incInt(endExecuteFunctionSendId, 1);
-    this.sendStats.incLong(executeFunctionSendDurationId, duration);
+    sendStats.incInt(endExecuteFunctionSendId, 1);
+    sendStats.incLong(executeFunctionSendDurationId, duration);
   }
 
   /**
@@ -3205,7 +3205,7 @@ public class ConnectionStats implements MessageStats {
    */
   public void endExecuteFunction(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
-    this.stats.incInt(executeFunctionInProgressId, -1);
+    stats.incInt(executeFunctionInProgressId, -1);
     int endExecuteFunctionId;
     if (timedOut) {
       endExecuteFunctionId = executeFunctionTimedOutId;
@@ -3214,20 +3214,20 @@ public class ConnectionStats implements MessageStats {
     } else {
       endExecuteFunctionId = executeFunctionId;
     }
-    this.stats.incInt(endExecuteFunctionId, 1);
-    this.stats.incLong(executeFunctionDurationId, duration);
+    stats.incInt(endExecuteFunctionId, 1);
+    stats.incLong(executeFunctionDurationId, duration);
   }
 
   public int getExecuteFunctions() {
-    return this.stats.getInt(executeFunctionId);
+    return stats.getInt(executeFunctionId);
   }
 
   public long getExecuteFunctionDuration() {
-    return this.stats.getLong(executeFunctionDurationId);
+    return stats.getLong(executeFunctionDurationId);
   }
 
   public int getGetDurableCqs() {
-    return this.stats.getInt(getDurableCQsId);
+    return stats.getInt(getDurableCQsId);
   }
 
   /**
@@ -3239,8 +3239,8 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this ExecuteFunction
    */
   public long startGetClientPRMetadata() {
-    this.stats.incInt(getClientPRMetadataInProgressId, 1);
-    this.sendStats.incInt(getClientPRMetadataSendInProgressId, 1);
+    stats.incInt(getClientPRMetadataInProgressId, 1);
+    sendStats.incInt(getClientPRMetadataSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -3254,15 +3254,15 @@ public class ConnectionStats implements MessageStats {
   public void endGetClientPRMetadataSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(getClientPRMetadataSendInProgressId, -1);
+    sendStats.incInt(getClientPRMetadataSendInProgressId, -1);
     int endGetClientPRMetadataSendId;
     if (failed) {
       endGetClientPRMetadataSendId = getClientPRMetadataSendFailedId;
     } else {
       endGetClientPRMetadataSendId = getClientPRMetadataSendId;
     }
-    this.sendStats.incInt(endGetClientPRMetadataSendId, 1);
-    this.sendStats.incLong(getClientPRMetadataSendDurationId, duration);
+    sendStats.incInt(endGetClientPRMetadataSendId, 1);
+    sendStats.incLong(getClientPRMetadataSendDurationId, duration);
   }
 
   /**
@@ -3275,7 +3275,7 @@ public class ConnectionStats implements MessageStats {
   public void endGetClientPRMetadata(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(getClientPRMetadataInProgressId, -1);
+    stats.incInt(getClientPRMetadataInProgressId, -1);
     int endGetClientPRMetadataId;
     if (timedOut) {
       endGetClientPRMetadataId = getClientPRMetadataTimedOutId;
@@ -3284,8 +3284,8 @@ public class ConnectionStats implements MessageStats {
     } else {
       endGetClientPRMetadataId = getClientPRMetadataId;
     }
-    this.stats.incInt(endGetClientPRMetadataId, 1);
-    this.stats.incLong(getClientPRMetadataDurationId, duration);
+    stats.incInt(endGetClientPRMetadataId, 1);
+    stats.incLong(getClientPRMetadataDurationId, duration);
   }
 
   /**
@@ -3297,8 +3297,8 @@ public class ConnectionStats implements MessageStats {
    * @return the start time of this GetClientPartitionAttributes
    */
   public long startGetClientPartitionAttributes() {
-    this.stats.incInt(getClientPartitionAttributesInProgressId, 1);
-    this.sendStats.incInt(getClientPartitionAttributesSendInProgressId, 1);
+    stats.incInt(getClientPartitionAttributesInProgressId, 1);
+    sendStats.incInt(getClientPartitionAttributesSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -3312,15 +3312,15 @@ public class ConnectionStats implements MessageStats {
   public void endGetClientPartitionAttributesSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(getClientPartitionAttributesSendInProgressId, -1);
+    sendStats.incInt(getClientPartitionAttributesSendInProgressId, -1);
     int endGetClientPartitionAttributesSendId;
     if (failed) {
       endGetClientPartitionAttributesSendId = getClientPartitionAttributesSendFailedId;
     } else {
       endGetClientPartitionAttributesSendId = getClientPartitionAttributesSendId;
     }
-    this.sendStats.incInt(endGetClientPartitionAttributesSendId, 1);
-    this.sendStats.incLong(getClientPartitionAttributesSendDurationId, duration);
+    sendStats.incInt(endGetClientPartitionAttributesSendId, 1);
+    sendStats.incLong(getClientPartitionAttributesSendDurationId, duration);
   }
 
   /**
@@ -3333,7 +3333,7 @@ public class ConnectionStats implements MessageStats {
   public void endGetClientPartitionAttributes(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(getClientPartitionAttributesInProgressId, -1);
+    stats.incInt(getClientPartitionAttributesInProgressId, -1);
     int endGetClientPartitionAttributesId;
     if (timedOut) {
       endGetClientPartitionAttributesId = getClientPartitionAttributesTimedOutId;
@@ -3342,20 +3342,20 @@ public class ConnectionStats implements MessageStats {
     } else {
       endGetClientPartitionAttributesId = getClientPartitionAttributesId;
     }
-    this.stats.incInt(endGetClientPartitionAttributesId, 1);
-    this.stats.incLong(getClientPartitionAttributesDurationId, duration);
+    stats.incInt(endGetClientPartitionAttributesId, 1);
+    stats.incLong(getClientPartitionAttributesDurationId, duration);
   }
 
   public long startGetPDXTypeById() {
-    this.stats.incInt(getPDXTypeByIdInProgressId, 1);
-    this.sendStats.incInt(getPDXTypeByIdSendInProgressId, 1);
+    stats.incInt(getPDXTypeByIdInProgressId, 1);
+    sendStats.incInt(getPDXTypeByIdSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
 
   public long startGetPDXIdForType() {
-    this.stats.incInt(getPDXIdForTypeInProgressId, 1);
-    this.sendStats.incInt(getPDXIdForTypeSendInProgressId, 1);
+    stats.incInt(getPDXIdForTypeInProgressId, 1);
+    sendStats.incInt(getPDXIdForTypeSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -3363,35 +3363,35 @@ public class ConnectionStats implements MessageStats {
   public void endGetPDXTypeByIdSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(getPDXTypeByIdSendInProgressId, -1);
+    sendStats.incInt(getPDXTypeByIdSendInProgressId, -1);
     int endGetPDXTypeByIdSendId;
     if (failed) {
       endGetPDXTypeByIdSendId = getPDXTypeByIdSendFailedId;
     } else {
       endGetPDXTypeByIdSendId = getPDXTypeByIdSendId;
     }
-    this.sendStats.incInt(endGetPDXTypeByIdSendId, 1);
-    this.sendStats.incLong(getPDXTypeByIdSendDurationId, duration);
+    sendStats.incInt(endGetPDXTypeByIdSendId, 1);
+    sendStats.incLong(getPDXTypeByIdSendDurationId, duration);
   }
 
   public void endGetPDXIdForTypeSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(getPDXIdForTypeSendInProgressId, -1);
+    sendStats.incInt(getPDXIdForTypeSendInProgressId, -1);
     int endGetPDXIdForTypeSendId;
     if (failed) {
       endGetPDXIdForTypeSendId = getPDXIdForTypeSendFailedId;
     } else {
       endGetPDXIdForTypeSendId = getPDXIdForTypeSendId;
     }
-    this.sendStats.incInt(endGetPDXIdForTypeSendId, 1);
-    this.sendStats.incLong(getPDXIdForTypeSendDurationId, duration);
+    sendStats.incInt(endGetPDXIdForTypeSendId, 1);
+    sendStats.incLong(getPDXIdForTypeSendDurationId, duration);
   }
 
   public void endGetPDXTypeById(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(getPDXTypeByIdInProgressId, -1);
+    stats.incInt(getPDXTypeByIdInProgressId, -1);
     int statId;
     if (timedOut) {
       statId = getPDXTypeByIdTimedOutId;
@@ -3400,14 +3400,14 @@ public class ConnectionStats implements MessageStats {
     } else {
       statId = getPDXTypeByIdId;
     }
-    this.stats.incInt(statId, 1);
-    this.stats.incLong(getPDXTypeByIdDurationId, duration);
+    stats.incInt(statId, 1);
+    stats.incLong(getPDXTypeByIdDurationId, duration);
   }
 
   public void endGetPDXIdForType(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(getPDXIdForTypeInProgressId, -1);
+    stats.incInt(getPDXIdForTypeInProgressId, -1);
     int statId;
     if (timedOut) {
       statId = getPDXIdForTypeTimedOutId;
@@ -3416,13 +3416,13 @@ public class ConnectionStats implements MessageStats {
     } else {
       statId = getPDXIdForTypeId;
     }
-    this.stats.incInt(statId, 1);
-    this.stats.incLong(getPDXIdForTypeDurationId, duration);
+    stats.incInt(statId, 1);
+    stats.incLong(getPDXIdForTypeDurationId, duration);
   }
 
   public long startAddPdxType() {
-    this.stats.incInt(addPdxTypeInProgressId, 1);
-    this.sendStats.incInt(addPdxTypeSendInProgressId, 1);
+    stats.incInt(addPdxTypeInProgressId, 1);
+    sendStats.incInt(addPdxTypeSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -3430,21 +3430,21 @@ public class ConnectionStats implements MessageStats {
   public void endAddPdxTypeSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(addPdxTypeSendInProgressId, -1);
+    sendStats.incInt(addPdxTypeSendInProgressId, -1);
     int endAddPdxTypeSendId;
     if (failed) {
       endAddPdxTypeSendId = addPdxTypeSendFailedId;
     } else {
       endAddPdxTypeSendId = addPdxTypeSendId;
     }
-    this.sendStats.incInt(endAddPdxTypeSendId, 1);
-    this.sendStats.incLong(addPdxTypeSendDurationId, duration);
+    sendStats.incInt(endAddPdxTypeSendId, 1);
+    sendStats.incLong(addPdxTypeSendDurationId, duration);
   }
 
   public void endAddPdxType(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(addPdxTypeInProgressId, -1);
+    stats.incInt(addPdxTypeInProgressId, -1);
     int statId;
     if (timedOut) {
       statId = addPdxTypeTimedOutId;
@@ -3453,13 +3453,13 @@ public class ConnectionStats implements MessageStats {
     } else {
       statId = addPdxTypeId;
     }
-    this.stats.incInt(statId, 1);
-    this.stats.incLong(addPdxTypeDurationId, duration);
+    stats.incInt(statId, 1);
+    stats.incLong(addPdxTypeDurationId, duration);
   }
 
   public long startSize() {
-    this.stats.incInt(sizeInProgressId, 1);
-    this.sendStats.incInt(sizeSendInProgressId, 1);
+    stats.incInt(sizeInProgressId, 1);
+    sendStats.incInt(sizeSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -3467,22 +3467,22 @@ public class ConnectionStats implements MessageStats {
   public void endSizeSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(sizeSendInProgressId, -1);
+    sendStats.incInt(sizeSendInProgressId, -1);
     int endSizeSendId;
     if (failed) {
       endSizeSendId = sizeSendFailedId;
     } else {
       endSizeSendId = sizeSendId;
     }
-    this.sendStats.incInt(endSizeSendId, 1);
-    this.sendStats.incLong(sizeSendDurationId, duration);
+    sendStats.incInt(endSizeSendId, 1);
+    sendStats.incLong(sizeSendDurationId, duration);
 
   }
 
   public void endSize(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(sizeInProgressId, -1);
+    stats.incInt(sizeInProgressId, -1);
     int endSizeId;
     if (timedOut) {
       endSizeId = sizeTimedOutId;
@@ -3491,15 +3491,15 @@ public class ConnectionStats implements MessageStats {
     } else {
       endSizeId = sizeId;
     }
-    this.stats.incInt(endSizeId, 1);
-    this.stats.incLong(sizeDurationId, duration);
+    stats.incInt(endSizeId, 1);
+    stats.incLong(sizeDurationId, duration);
   }
 
 
 
   public long startInvalidate() {
-    this.stats.incInt(invalidateInProgressId, 1);
-    this.sendStats.incInt(invalidateSendInProgressId, 1);
+    stats.incInt(invalidateInProgressId, 1);
+    sendStats.incInt(invalidateSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -3507,21 +3507,21 @@ public class ConnectionStats implements MessageStats {
   public void endInvalidateSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(invalidateSendInProgressId, -1);
+    sendStats.incInt(invalidateSendInProgressId, -1);
     int endInvalidateSendId;
     if (failed) {
       endInvalidateSendId = invalidateSendFailedId;
     } else {
       endInvalidateSendId = invalidateSendId;
     }
-    this.sendStats.incInt(endInvalidateSendId, 1);
-    this.sendStats.incLong(invalidateSendDurationId, duration);
+    sendStats.incInt(endInvalidateSendId, 1);
+    sendStats.incLong(invalidateSendDurationId, duration);
   }
 
   public void endInvalidate(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(invalidateInProgressId, -1);
+    stats.incInt(invalidateInProgressId, -1);
     int endInvalidateId;
     if (timedOut) {
       endInvalidateId = invalidateTimedOutId;
@@ -3530,13 +3530,13 @@ public class ConnectionStats implements MessageStats {
     } else {
       endInvalidateId = invalidateId;
     }
-    this.stats.incLong(endInvalidateId, 1L);
-    this.stats.incLong(invalidateDurationId, duration);
+    stats.incLong(endInvalidateId, 1L);
+    stats.incLong(invalidateDurationId, duration);
   }
 
   public long startCommit() {
-    this.stats.incInt(commitInProgressId, 1);
-    this.sendStats.incInt(commitSendInProgressId, 1);
+    stats.incInt(commitInProgressId, 1);
+    sendStats.incInt(commitSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -3544,21 +3544,21 @@ public class ConnectionStats implements MessageStats {
   public void endCommitSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(commitSendInProgressId, -1);
+    sendStats.incInt(commitSendInProgressId, -1);
     int endcommitSendId;
     if (failed) {
       endcommitSendId = commitSendFailedId;
     } else {
       endcommitSendId = commitSendId;
     }
-    this.sendStats.incInt(endcommitSendId, 1);
-    this.sendStats.incLong(commitSendDurationId, duration);
+    sendStats.incInt(endcommitSendId, 1);
+    sendStats.incLong(commitSendDurationId, duration);
   }
 
   public void endCommit(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(commitInProgressId, -1);
+    stats.incInt(commitInProgressId, -1);
     int endcommitId;
     if (timedOut) {
       endcommitId = commitTimedOutId;
@@ -3567,14 +3567,14 @@ public class ConnectionStats implements MessageStats {
     } else {
       endcommitId = commitId;
     }
-    this.stats.incInt(endcommitId, 1);
-    this.stats.incLong(commitDurationId, duration);
+    stats.incInt(endcommitId, 1);
+    stats.incLong(commitDurationId, duration);
   }
 
 
   public long startGetEntry() {
-    this.stats.incInt(getEntryInProgressId, 1);
-    this.sendStats.incInt(getEntrySendInProgressId, 1);
+    stats.incInt(getEntryInProgressId, 1);
+    sendStats.incInt(getEntrySendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -3582,21 +3582,21 @@ public class ConnectionStats implements MessageStats {
   public void endGetEntrySend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(getEntrySendInProgressId, -1);
+    sendStats.incInt(getEntrySendInProgressId, -1);
     int endGetEntrySendId;
     if (failed) {
       endGetEntrySendId = getEntrySendFailedId;
     } else {
       endGetEntrySendId = getEntrySendId;
     }
-    this.sendStats.incInt(endGetEntrySendId, 1);
-    this.sendStats.incLong(getEntrySendDurationId, duration);
+    sendStats.incInt(endGetEntrySendId, 1);
+    sendStats.incLong(getEntrySendDurationId, duration);
   }
 
   public void endGetEntry(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(getEntryInProgressId, -1);
+    stats.incInt(getEntryInProgressId, -1);
     int endGetEntryId;
     if (timedOut) {
       endGetEntryId = getEntryTimedOutId;
@@ -3605,14 +3605,14 @@ public class ConnectionStats implements MessageStats {
     } else {
       endGetEntryId = getEntryId;
     }
-    this.stats.incInt(endGetEntryId, 1);
-    this.stats.incLong(getEntryDurationId, duration);
+    stats.incInt(endGetEntryId, 1);
+    stats.incLong(getEntryDurationId, duration);
   }
 
 
   public long startRollback() {
-    this.stats.incInt(rollbackInProgressId, 1);
-    this.sendStats.incInt(rollbackSendInProgressId, 1);
+    stats.incInt(rollbackInProgressId, 1);
+    sendStats.incInt(rollbackSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -3620,21 +3620,21 @@ public class ConnectionStats implements MessageStats {
   public void endRollbackSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(rollbackSendInProgressId, -1);
+    sendStats.incInt(rollbackSendInProgressId, -1);
     int endRollbackSendId;
     if (failed) {
       endRollbackSendId = rollbackSendFailedId;
     } else {
       endRollbackSendId = rollbackSendId;
     }
-    this.sendStats.incInt(endRollbackSendId, 1);
-    this.sendStats.incLong(rollbackSendDurationId, duration);
+    sendStats.incInt(endRollbackSendId, 1);
+    sendStats.incLong(rollbackSendDurationId, duration);
   }
 
   public void endRollback(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(rollbackInProgressId, -1);
+    stats.incInt(rollbackInProgressId, -1);
     int endRollbackId;
     if (timedOut) {
       endRollbackId = rollbackTimedOutId;
@@ -3643,15 +3643,15 @@ public class ConnectionStats implements MessageStats {
     } else {
       endRollbackId = rollbackId;
     }
-    this.stats.incInt(endRollbackId, 1);
-    this.stats.incLong(rollbackDurationId, duration);
+    stats.incInt(endRollbackId, 1);
+    stats.incLong(rollbackDurationId, duration);
   }
 
 
 
   public long startTxFailover() {
-    this.stats.incInt(txFailoverInProgressId, 1);
-    this.sendStats.incInt(txFailoverSendInProgressId, 1);
+    stats.incInt(txFailoverInProgressId, 1);
+    sendStats.incInt(txFailoverSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -3659,21 +3659,21 @@ public class ConnectionStats implements MessageStats {
   public void endTxFailoverSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(txFailoverSendInProgressId, -1);
+    sendStats.incInt(txFailoverSendInProgressId, -1);
     int endTxFailoverSendId;
     if (failed) {
       endTxFailoverSendId = txFailoverSendFailedId;
     } else {
       endTxFailoverSendId = txFailoverSendId;
     }
-    this.sendStats.incInt(endTxFailoverSendId, 1);
-    this.sendStats.incLong(txFailoverSendDurationId, duration);
+    sendStats.incInt(endTxFailoverSendId, 1);
+    sendStats.incLong(txFailoverSendDurationId, duration);
   }
 
   public void endTxFailover(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(txFailoverInProgressId, -1);
+    stats.incInt(txFailoverInProgressId, -1);
     int endTxFailoverId;
     if (timedOut) {
       endTxFailoverId = txFailoverTimedOutId;
@@ -3682,14 +3682,14 @@ public class ConnectionStats implements MessageStats {
     } else {
       endTxFailoverId = txFailoverId;
     }
-    this.stats.incInt(endTxFailoverId, 1);
-    this.stats.incLong(txFailoverDurationId, duration);
+    stats.incInt(endTxFailoverId, 1);
+    stats.incLong(txFailoverDurationId, duration);
   }
 
 
   public long startTxSynchronization() {
-    this.stats.incInt(txSynchronizationInProgressId, 1);
-    this.sendStats.incInt(txSynchronizationSendInProgressId, 1);
+    stats.incInt(txSynchronizationInProgressId, 1);
+    sendStats.incInt(txSynchronizationSendInProgressId, 1);
     startClientOp();
     return getStatTime();
   }
@@ -3697,21 +3697,21 @@ public class ConnectionStats implements MessageStats {
   public void endTxSynchronizationSend(long startTime, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOpSend(duration, failed);
-    this.sendStats.incInt(txSynchronizationSendInProgressId, -1);
+    sendStats.incInt(txSynchronizationSendInProgressId, -1);
     int endTxSynchronizationSendId;
     if (failed) {
       endTxSynchronizationSendId = txSynchronizationSendFailedId;
     } else {
       endTxSynchronizationSendId = txSynchronizationSendId;
     }
-    this.sendStats.incInt(endTxSynchronizationSendId, 1);
-    this.sendStats.incLong(txSynchronizationSendDurationId, duration);
+    sendStats.incInt(endTxSynchronizationSendId, 1);
+    sendStats.incLong(txSynchronizationSendDurationId, duration);
   }
 
   public void endTxSynchronization(long startTime, boolean timedOut, boolean failed) {
     long duration = getStatTime() - startTime;
     endClientOp(duration, timedOut, failed);
-    this.stats.incInt(txSynchronizationInProgressId, -1);
+    stats.incInt(txSynchronizationInProgressId, -1);
     int endTxSynchronizationId;
     if (timedOut) {
       endTxSynchronizationId = txSynchronizationTimedOutId;
@@ -3720,7 +3720,7 @@ public class ConnectionStats implements MessageStats {
     } else {
       endTxSynchronizationId = txSynchronizationId;
     }
-    this.stats.incInt(endTxSynchronizationId, 1);
-    this.stats.incLong(txSynchronizationDurationId, duration);
+    stats.incInt(endTxSynchronizationId, 1);
+    stats.incLong(txSynchronizationDurationId, duration);
   }
 }

@@ -45,19 +45,19 @@ public class WaitingAsyncEventListener implements AsyncEventListener {
   }
 
   private void waitToStartProcessingEvents() throws InterruptedException {
-    this.latch.await();
+    latch.await();
   }
 
   public void startProcessingEvents() {
-    this.latch.countDown();
+    latch.countDown();
   }
 
   private int incrementTotalEvents() {
-    return this.numberOfEvents.incrementAndGet();
+    return numberOfEvents.incrementAndGet();
   }
 
   public int getTotalEvents() {
-    return this.numberOfEvents.get();
+    return numberOfEvents.get();
   }
 
   @Override

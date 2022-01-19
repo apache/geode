@@ -237,7 +237,7 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
   }
 
   private Vector<String> parseSendersConnectedFromGfshOutput(String gfshOutput) {
-    String lines[] = gfshOutput.split(lineSeparator());
+    String[] lines = gfshOutput.split(lineSeparator());
     final String sendersConnectedColumnHeader = "Senders Connected";
     String receiverInfo = null;
     for (int i = 0; i < lines.length; i++) {
@@ -251,7 +251,7 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
         receiverInfo);
     String[] tableRow = receiverInfo.split("\\|");
     String sendersConnectedColumnValue = tableRow[3].trim();
-    Vector<String> senders = new Vector<String>();
+    Vector<String> senders = new Vector<>();
     for (String sender : sendersConnectedColumnValue.split(",")) {
       senders.add(sender.trim());
     }

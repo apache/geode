@@ -31,33 +31,33 @@ public class OrderId implements DataSerializable {
   }
 
   public OrderId(int orderId, CustId custId) {
-    this.orderId = new Integer(orderId);
+    this.orderId = orderId;
     this.custId = custId;
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.orderId = DataSerializer.readInteger(in);
-    this.custId = (CustId) DataSerializer.readObject(in);
+    orderId = DataSerializer.readInteger(in);
+    custId = DataSerializer.readObject(in);
 
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeInteger(this.orderId, out);
-    DataSerializer.writeObject(this.custId, out);
+    DataSerializer.writeInteger(orderId, out);
+    DataSerializer.writeObject(custId, out);
   }
 
   public String toString() {
-    return "(OrderId:" + this.orderId + " , " + this.custId + ")";
+    return "(OrderId:" + orderId + " , " + custId + ")";
   }
 
   public Integer getOrderId() {
-    return this.orderId;
+    return orderId;
   }
 
   public CustId getCustId() {
-    return this.custId;
+    return custId;
   }
 
   public boolean equals(Object o) {

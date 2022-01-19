@@ -44,8 +44,8 @@ public class DestroyAsyncEventQueueCommandTest {
   public static GfshParserRule gfsh = new GfshParserRule();
 
   private DestroyAsyncEventQueueCommand command;
-  private DistributedMember member1 = mock(DistributedMember.class);
-  private DistributedMember member2 = mock(DistributedMember.class);
+  private final DistributedMember member1 = mock(DistributedMember.class);
+  private final DistributedMember member2 = mock(DistributedMember.class);
   private Set<DistributedMember> members;
   private List<CliFunctionResult> functionResults;
 

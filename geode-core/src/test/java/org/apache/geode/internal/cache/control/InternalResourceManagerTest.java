@@ -92,7 +92,7 @@ public class InternalResourceManagerTest {
     resourceManager.close();
 
     await("Submitted task is done")
-        .until(() -> submittedTask.isDone());
+        .until(submittedTask::isDone);
   }
 
   @Test

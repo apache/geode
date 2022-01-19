@@ -54,19 +54,19 @@ public class GetOperationContextImpl extends GetOperationContext implements Rele
 
   @Override
   public void setObject(Object value, boolean isObject) {
-    this.released = false;
+    released = false;
     super.setObject(value, isObject);
   }
 
   @Override
   public void setValue(Object value, boolean isObject) {
-    this.released = false;
+    released = false;
     super.setValue(value, isObject);
   }
 
   private void checkForReleasedOffHeapValue(StoredObject so) {
     // Note that we only care about stored objects with a ref count
-    if (this.released && so.hasRefCount()) {
+    if (released && so.hasRefCount()) {
       throw new IllegalStateException(
           "Attempt to access off-heap value after the OperationContext callback returned.");
     }
@@ -118,7 +118,7 @@ public class GetOperationContextImpl extends GetOperationContext implements Rele
     // but we do make sure that any future attempt to access
     // the off-heap value fails.
     if (super.getValue() instanceof StoredObject) {
-      this.released = true;
+      released = true;
     }
   }
 

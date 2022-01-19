@@ -797,7 +797,7 @@ public class ReferenceCountHelperImplTest {
   @Test
   public void doGetRefCountInfoWithTrackRefsTrueAndTrackFreesFalse() {
     ReferenceCountHelperImpl referenceCountHelperImpl = newReferenceCountHelperImpl_TrueFalse();
-    long address = (long) 0x1000;
+    long address = 0x1000;
 
     referenceCountHelperImpl.refCountChanged(address, false, 1);
     List<RefCountChangeInfo> list = referenceCountHelperImpl.peekRefCountInfo(address);

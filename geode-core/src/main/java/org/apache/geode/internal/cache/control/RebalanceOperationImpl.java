@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.control;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -52,11 +51,12 @@ public class RebalanceOperationImpl implements RebalanceOperation {
 
   private final boolean simulation;
   private final InternalCache cache;
-  private List<Future<RebalanceResults>> futureList = new ArrayList<Future<RebalanceResults>>();
+  private final List<Future<RebalanceResults>> futureList =
+      new ArrayList<>();
   private int pendingTasks;
   private final AtomicBoolean cancelled = new AtomicBoolean();
   private final Object futureLock = new Object();
-  private RegionFilter filter;
+  private final RegionFilter filter;
 
   RebalanceOperationImpl(InternalCache cache, boolean simulation, RegionFilter filter) {
     this.simulation = simulation;
@@ -65,10 +65,10 @@ public class RebalanceOperationImpl implements RebalanceOperation {
   }
 
   public void start() {
-    final InternalResourceManager manager = this.cache.getInternalResourceManager();
-    synchronized (this.futureLock) {
+    final InternalResourceManager manager = cache.getInternalResourceManager();
+    synchronized (futureLock) {
       manager.addInProgressRebalance(this);
-      this.scheduleRebalance();
+      scheduleRebalance();
     }
   }
 
@@ -91,7 +91,7 @@ public class RebalanceOperationImpl implements RebalanceOperation {
                 PartitionedRegionRebalanceOp prOp = new PartitionedRegionRebalanceOp(region,
                     simulation, new CompositeDirector(false, false, false, true), true, true,
                     cancelled, stats);
-                this.futureList.add(submitRebalanceTask(prOp, start));
+                futureList.add(submitRebalanceTask(prOp, start));
               } else {
                 continue;
               }
@@ -99,7 +99,7 @@ public class RebalanceOperationImpl implements RebalanceOperation {
               PartitionedRegionRebalanceOp prOp =
                   new PartitionedRegionRebalanceOp(region, simulation,
                       new CompositeDirector(true, true, true, true), true, true, cancelled, stats);
-              this.futureList.add(submitRebalanceTask(prOp, start));
+              futureList.add(submitRebalanceTask(prOp, start));
             }
           }
         } catch (RegionDestroyedException ignore) {
@@ -116,7 +116,7 @@ public class RebalanceOperationImpl implements RebalanceOperation {
 
   private Future<RebalanceResults> submitRebalanceTask(
       final PartitionedRegionRebalanceOp rebalanceOp, final long rebalanceStartTime) {
-    final InternalResourceManager manager = this.cache.getInternalResourceManager();
+    final InternalResourceManager manager = cache.getInternalResourceManager();
     ScheduledExecutorService ex = manager.getExecutor();
 
     synchronized (futureLock) {
@@ -124,32 +124,29 @@ public class RebalanceOperationImpl implements RebalanceOperation {
       pendingTasks++;
 
       try {
-        Future<RebalanceResults> future = ex.submit(new Callable<RebalanceResults>() {
-          @Override
-          public RebalanceResults call() {
-            try {
-              RebalanceResultsImpl results = new RebalanceResultsImpl();
-              SystemFailure.checkFailure();
-              cache.getCancelCriterion().checkCancelInProgress(null);
+        Future<RebalanceResults> future = ex.submit(() -> {
+          try {
+            RebalanceResultsImpl results = new RebalanceResultsImpl();
+            SystemFailure.checkFailure();
+            cache.getCancelCriterion().checkCancelInProgress(null);
 
-              Set<PartitionRebalanceInfo> detailSet = null;
+            Set<PartitionRebalanceInfo> detailSet = null;
 
-              detailSet = rebalanceOp.execute();
+            detailSet = rebalanceOp.execute();
 
-              for (PartitionRebalanceInfo details : detailSet) {
-                results.addDetails(details);
-              }
-              return results;
-            } catch (RuntimeException e) {
-              logger.debug("Unexpected exception in rebalancing: {}", e.getMessage(), e);
-              throw e;
-            } finally {
-              synchronized (RebalanceOperationImpl.this.futureLock) {
-                pendingTasks--;
-                if (pendingTasks == 0) {// all threads done
-                  manager.removeInProgressRebalance(RebalanceOperationImpl.this);
-                  manager.getStats().endRebalance(rebalanceStartTime);
-                }
+            for (PartitionRebalanceInfo details : detailSet) {
+              results.addDetails(details);
+            }
+            return results;
+          } catch (RuntimeException e) {
+            logger.debug("Unexpected exception in rebalancing: {}", e.getMessage(), e);
+            throw e;
+          } finally {
+            synchronized (futureLock) {
+              pendingTasks--;
+              if (pendingTasks == 0) {// all threads done
+                manager.removeInProgressRebalance(RebalanceOperationImpl.this);
+                manager.getStats().endRebalance(rebalanceStartTime);
               }
             }
           }
@@ -164,8 +161,8 @@ public class RebalanceOperationImpl implements RebalanceOperation {
   }
 
   private List<Future<RebalanceResults>> getFutureList() {
-    synchronized (this.futureList) {
-      return this.futureList;
+    synchronized (futureList) {
+      return futureList;
     }
   }
 
@@ -173,7 +170,7 @@ public class RebalanceOperationImpl implements RebalanceOperation {
   public boolean cancel() {
     cancelled.set(true);
 
-    synchronized (this.futureLock) {
+    synchronized (futureLock) {
       for (Future<RebalanceResults> fr : getFutureList()) {
         if (fr.cancel(false)) {
           pendingTasks--;
@@ -236,7 +233,7 @@ public class RebalanceOperationImpl implements RebalanceOperation {
 
   @Override
   public boolean isCancelled() {
-    return this.cancelled.get();
+    return cancelled.get();
   }
 
   private boolean isAllDone() {
@@ -250,7 +247,7 @@ public class RebalanceOperationImpl implements RebalanceOperation {
 
   @Override
   public boolean isDone() {
-    return this.cancelled.get() || isAllDone();
+    return cancelled.get() || isAllDone();
   }
 
   /**
@@ -259,6 +256,6 @@ public class RebalanceOperationImpl implements RebalanceOperation {
    * @return true if this is a simulation
    */
   boolean isSimulation() {
-    return this.simulation;
+    return simulation;
   }
 }

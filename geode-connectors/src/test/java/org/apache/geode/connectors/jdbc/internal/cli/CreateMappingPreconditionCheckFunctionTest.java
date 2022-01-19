@@ -81,7 +81,7 @@ public class CreateMappingPreconditionCheckFunctionTest {
   private TableMetaDataManager tableMetaDataManager;
   private TableMetaDataView tableMetaDataView;
   private DataSource dataSource;
-  private PdxType pdxType = mock(PdxType.class);
+  private final PdxType pdxType = mock(PdxType.class);
   private String remoteInputStreamName;
   private RemoteInputStream remoteInputStream;
   private final Object[] inputArgs = new Object[3];

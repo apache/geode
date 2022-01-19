@@ -56,9 +56,9 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
   private transient PdxUnreadData readUnreadFieldsCalled;
 
   protected PdxReaderImpl(PdxReaderImpl copy) {
-    this.blobType = copy.blobType;
-    this.dis = new PdxInputStream(copy.dis);
-    this.readUnreadFieldsCalled = copy.getReadUnreadFieldsCalled();
+    blobType = copy.blobType;
+    dis = new PdxInputStream(copy.dis);
+    readUnreadFieldsCalled = copy.getReadUnreadFieldsCalled();
   }
 
   public PdxReaderImpl(PdxType pdxType, DataInput in, int len) throws IOException {
@@ -89,8 +89,8 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
   }
 
   protected PdxReaderImpl(PdxType pdxType, PdxInputStream bbis) {
-    this.blobType = pdxType;
-    this.dis = bbis;
+    blobType = pdxType;
+    dis = bbis;
   }
 
   public static final int MAX_UNSIGNED_BYTE = 255;
@@ -100,7 +100,7 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
    * @return size of each variable length field offset
    */
   private byte getSizeOfOffset() {
-    int size = this.dis.size();
+    int size = dis.size();
     if (size <= MAX_UNSIGNED_BYTE) {
       return DataSize.BYTE_SIZE;
     } else if (size <= MAX_UNSIGNED_SHORT) {
@@ -111,7 +111,7 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
 
   @Override
   public PdxField getPdxField(String fieldName) {
-    return this.blobType.getPdxField(fieldName);
+    return blobType.getPdxField(fieldName);
   }
 
   @Override
@@ -313,12 +313,12 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
 
   @Override
   public Date readDate(PdxField ft) {
-    return this.dis.readDate(getPositionForField(ft));
+    return dis.readDate(getPositionForField(ft));
   }
 
   @Override
   public Date readDate() {
-    return this.dis.readDate();
+    return dis.readDate();
   }
 
   @Override
@@ -336,12 +336,12 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
 
   @Override
   public String readString(PdxField ft) {
-    return this.dis.readString(getPositionForField(ft));
+    return dis.readString(getPositionForField(ft));
   }
 
   @Override
   public String readString() {
-    return this.dis.readString();
+    return dis.readString();
   }
 
   @Override
@@ -362,12 +362,12 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
     if (ft instanceof DefaultPdxField) {
       return null; // default object value
     }
-    return this.dis.readObject(getPositionForField(ft));
+    return dis.readObject(getPositionForField(ft));
   }
 
   @Override
   public Object readObject() {
-    return this.dis.readObject();
+    return dis.readObject();
   }
 
   @Override
@@ -385,12 +385,12 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
 
   @Override
   public char[] readCharArray(PdxField ft) {
-    return this.dis.readCharArray(getPositionForField(ft));
+    return dis.readCharArray(getPositionForField(ft));
   }
 
   @Override
   public char[] readCharArray() {
-    return this.dis.readCharArray();
+    return dis.readCharArray();
   }
 
   @Override
@@ -408,12 +408,12 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
 
   @Override
   public boolean[] readBooleanArray(PdxField ft) {
-    return this.dis.readBooleanArray(getPositionForField(ft));
+    return dis.readBooleanArray(getPositionForField(ft));
   }
 
   @Override
   public boolean[] readBooleanArray() {
-    return this.dis.readBooleanArray();
+    return dis.readBooleanArray();
   }
 
   @Override
@@ -431,12 +431,12 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
 
   @Override
   public byte[] readByteArray(PdxField ft) {
-    return this.dis.readByteArray(getPositionForField(ft));
+    return dis.readByteArray(getPositionForField(ft));
   }
 
   @Override
   public byte[] readByteArray() {
-    return this.dis.readByteArray();
+    return dis.readByteArray();
   }
 
   @Override
@@ -454,12 +454,12 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
 
   @Override
   public short[] readShortArray(PdxField ft) {
-    return this.dis.readShortArray(getPositionForField(ft));
+    return dis.readShortArray(getPositionForField(ft));
   }
 
   @Override
   public short[] readShortArray() {
-    return this.dis.readShortArray();
+    return dis.readShortArray();
   }
 
   @Override
@@ -477,12 +477,12 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
 
   @Override
   public int[] readIntArray(PdxField ft) {
-    return this.dis.readIntArray(getPositionForField(ft));
+    return dis.readIntArray(getPositionForField(ft));
   }
 
   @Override
   public int[] readIntArray() {
-    return this.dis.readIntArray();
+    return dis.readIntArray();
   }
 
   @Override
@@ -500,12 +500,12 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
 
   @Override
   public long[] readLongArray(PdxField ft) {
-    return this.dis.readLongArray(getPositionForField(ft));
+    return dis.readLongArray(getPositionForField(ft));
   }
 
   @Override
   public long[] readLongArray() {
-    return this.dis.readLongArray();
+    return dis.readLongArray();
   }
 
   @Override
@@ -523,12 +523,12 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
 
   @Override
   public float[] readFloatArray(PdxField ft) {
-    return this.dis.readFloatArray(getPositionForField(ft));
+    return dis.readFloatArray(getPositionForField(ft));
   }
 
   @Override
   public float[] readFloatArray() {
-    return this.dis.readFloatArray();
+    return dis.readFloatArray();
   }
 
   @Override
@@ -546,12 +546,12 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
 
   @Override
   public double[] readDoubleArray(PdxField ft) {
-    return this.dis.readDoubleArray(getPositionForField(ft));
+    return dis.readDoubleArray(getPositionForField(ft));
   }
 
   @Override
   public double[] readDoubleArray() {
-    return this.dis.readDoubleArray();
+    return dis.readDoubleArray();
   }
 
   @Override
@@ -569,12 +569,12 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
 
   @Override
   public String[] readStringArray(PdxField ft) {
-    return this.dis.readStringArray(getPositionForField(ft));
+    return dis.readStringArray(getPositionForField(ft));
   }
 
   @Override
   public String[] readStringArray() {
-    return this.dis.readStringArray();
+    return dis.readStringArray();
   }
 
   @Override
@@ -595,12 +595,12 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
     if (ft instanceof DefaultPdxField) {
       return null; // default array value
     }
-    return this.dis.readObjectArray(getPositionForField(ft));
+    return dis.readObjectArray(getPositionForField(ft));
   }
 
   @Override
   public Object[] readObjectArray() {
-    return this.dis.readObjectArray();
+    return dis.readObjectArray();
   }
 
   @Override
@@ -618,12 +618,12 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
 
   @Override
   public byte[][] readArrayOfByteArrays(PdxField ft) {
-    return this.dis.readArrayOfByteArrays(getPositionForField(ft));
+    return dis.readArrayOfByteArrays(getPositionForField(ft));
   }
 
   @Override
   public byte[][] readArrayOfByteArrays() {
-    return this.dis.readArrayOfByteArrays();
+    return dis.readArrayOfByteArrays();
   }
 
   /**
@@ -631,7 +631,7 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
    * @return the offset to the variable length field
    */
   private int getOffset(int idx) {
-    int size = this.dis.size();
+    int size = dis.size();
     if (size <= MAX_UNSIGNED_BYTE) {
       return dis.readByte(size - idx * DataSize.BYTE_SIZE) & MAX_UNSIGNED_BYTE;
     } else if (size <= MAX_UNSIGNED_SHORT) {
@@ -675,7 +675,7 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
   }
 
   private int getOffsetToVlfTable() {
-    return this.dis.size() - blobType.getVariableLengthFieldCount() * getSizeOfOffset();
+    return dis.size() - blobType.getVariableLengthFieldCount() * getSizeOfOffset();
   }
 
   @Override
@@ -768,7 +768,7 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
       AutoClassInfo ci = getPdxType().getAutoInfo(pdxClass);
       if (ci != null) {
         Object obj = ci.newInstance(pdxClass);
-        this.orderedDeserialize(obj, ci);
+        orderedDeserialize(obj, ci);
         return obj;
       }
     }
@@ -856,16 +856,16 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
   }
 
   PdxUnreadData getReadUnreadFieldsCalled() {
-    return this.readUnreadFieldsCalled;
+    return readUnreadFieldsCalled;
   }
 
   void setReadUnreadFieldsCalled(PdxUnreadData v) {
-    this.readUnreadFieldsCalled = v;
+    readUnreadFieldsCalled = v;
   }
 
   @Override
   public PdxType getPdxType() {
-    return this.blobType;
+    return blobType;
   }
 
   public ByteSource getRaw(int fieldIdx) {
@@ -888,7 +888,7 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
     } else {
       endOffset = getAbsolutePosition(getPdxType().getPdxFieldByIndex(nextFieldIdx));
     }
-    return this.dis.slice(startOffset, endOffset);
+    return dis.slice(startOffset, endOffset);
   }
 
   @Override
@@ -899,19 +899,19 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
   }
 
   protected void basicSendTo(DataOutput out) throws IOException {
-    this.dis.sendTo(out);
+    dis.sendTo(out);
   }
 
   protected void basicSendTo(ByteBuffer bb) {
-    this.dis.sendTo(bb);
+    dis.sendTo(bb);
   }
 
   protected int basicSize() {
-    return this.dis.size();
+    return dis.size();
   }
 
   protected void basicSetBuffer(ByteBuffer bb) {
-    this.dis.setBuffer(bb);
+    dis.setBuffer(bb);
   }
 
   /**
@@ -934,7 +934,7 @@ public class PdxReaderImpl implements InternalPdxReader, java.io.Serializable {
    */
   private PdxReaderImpl prepForOrderedReading() {
     PdxReaderImpl result = this;
-    if (this.dis instanceof PdxInputStream) {
+    if (dis instanceof PdxInputStream) {
       result = new PdxReaderImpl(this);
     }
     int pos = 0;

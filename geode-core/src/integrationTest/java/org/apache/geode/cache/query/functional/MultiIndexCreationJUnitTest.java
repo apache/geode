@@ -48,9 +48,9 @@ import org.apache.geode.test.junit.categories.OQLIndexTest;
 
 @Category({OQLIndexTest.class})
 public class MultiIndexCreationJUnitTest {
-  private static String regionName = "portfolios";
-  private String prRegionName = "prPortfolios";
-  private String overflowRegionName = "overflowPortfolios";
+  private static final String regionName = "portfolios";
+  private final String prRegionName = "prPortfolios";
+  private final String overflowRegionName = "overflowPortfolios";
 
   @Before
   public void setUp() throws java.lang.Exception {
@@ -103,8 +103,8 @@ public class MultiIndexCreationJUnitTest {
     String[] queries = {"select * from " + r.getFullPath() + " where status = 'active'",
         "select * from " + r.getFullPath() + " where ID > 4"};
 
-    for (int i = 0; i < queries.length; i++) {
-      SelectResults sr = (SelectResults) qs.newQuery(queries[i]).execute();
+    for (final String query : queries) {
+      SelectResults sr = (SelectResults) qs.newQuery(query).execute();
       assertEquals(5, sr.size());
     }
     QueryObserverHolder.setInstance(old);
@@ -157,8 +157,8 @@ public class MultiIndexCreationJUnitTest {
     String[] queries = {"select * from " + r.getFullPath() + " where status = 'active'",
         "select * from " + r.getFullPath() + " where ID > 4"};
 
-    for (int i = 0; i < queries.length; i++) {
-      SelectResults sr = (SelectResults) qs.newQuery(queries[i]).execute();
+    for (final String query : queries) {
+      SelectResults sr = (SelectResults) qs.newQuery(query).execute();
       assertEquals(5, sr.size());
     }
     QueryObserverHolder.setInstance(old);
@@ -200,8 +200,8 @@ public class MultiIndexCreationJUnitTest {
     String[] queries = {"select * from " + r.getFullPath() + " where status = 'active'",
         "select * from " + r.getFullPath() + " where ID > 4"};
 
-    for (int i = 0; i < queries.length; i++) {
-      SelectResults sr = (SelectResults) qs.newQuery(queries[i]).execute();
+    for (final String query : queries) {
+      SelectResults sr = (SelectResults) qs.newQuery(query).execute();
       assertEquals(5, sr.size());
     }
     QueryObserverHolder.setInstance(old);

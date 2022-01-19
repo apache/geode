@@ -22,11 +22,11 @@ import org.apache.geode.management.internal.FederationComponent;
 
 public class LongStatsDeltaAggregator {
 
-  private AtomicLongArray prevCounters;
+  private final AtomicLongArray prevCounters;
 
-  private AtomicLongArray currCounters;
+  private final AtomicLongArray currCounters;
 
-  private List<String> keys;
+  private final List<String> keys;
 
   public LongStatsDeltaAggregator(List<String> keys) {
     this.keys = keys;
@@ -84,7 +84,7 @@ public class LongStatsDeltaAggregator {
 
   private void initializeArray(AtomicLongArray arr) {
     for (int i = 0; i < arr.length(); i++) {
-      arr.set(i, Long.valueOf(0));
+      arr.set(i, 0L);
     }
   }
 }

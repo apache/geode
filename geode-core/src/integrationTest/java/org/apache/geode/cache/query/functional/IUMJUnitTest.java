@@ -102,11 +102,11 @@ public class IUMJUnitTest {
     }
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] =
+    String[] queries =
         {"SELECT DISTINCT * FROM " + SEPARATOR + "pos,  positions.values where status='active'"
         // TASK IUM4
         };
-    SelectResults r[][] = new SelectResults[queries.length][2];
+    SelectResults[][] r = new SelectResults[queries.length][2];
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       try {
@@ -175,15 +175,15 @@ public class IUMJUnitTest {
     }
     CacheUtils.getQueryService();
 
-    String queries[] = {
+    String[] queries = {
         "SELECT DISTINCT * from " + SEPARATOR
             + "portfolios pf , pf.positions.values pos where pos.getSecId = 'IBM' and status = 'inactive'"
         // TASK IUM3
     };
-    for (int i = 0; i < queries.length; i++) {
+    for (final String query : queries) {
       Query q = null;
       try {
-        q = CacheUtils.getQueryService().newQuery(queries[i]);
+        q = CacheUtils.getQueryService().newQuery(query);
         Object r3 = q.execute();
         resType3 = (StructType) ((SelectResults) r3).getCollectionType().getElementType();
         resSize3 = (((SelectResults) r3).size());
@@ -193,9 +193,8 @@ public class IUMJUnitTest {
         // CacheUtils.log(strg2[1]);
 
         set3 = (((SelectResults) r3).asSet());
-        Iterator iter = set3.iterator();
-        while (iter.hasNext()) {
-          Struct stc3 = (Struct) iter.next();
+        for (final Object o : set3) {
+          Struct stc3 = (Struct) o;
           valPf2 = stc3.get(strg3[0]);
           valPos2 = stc3.get(strg3[1]);
           isActive3 = ((Portfolio) stc3.get(strg3[0])).isActive();

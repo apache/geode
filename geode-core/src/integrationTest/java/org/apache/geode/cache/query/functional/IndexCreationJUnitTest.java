@@ -92,8 +92,8 @@ public class IndexCreationJUnitTest {
   private int resSize1 = 0;
   private int resSize2 = 0;
 
-  private Iterator itert1 = null;
-  private Iterator itert2 = null;
+  private final Iterator itert1 = null;
+  private final Iterator itert2 = null;
 
   private Set set1 = null;
   private Set set2 = null;
@@ -136,14 +136,14 @@ public class IndexCreationJUnitTest {
     Index i8 = qs.createIndex("statusIndex8", IndexType.FUNCTIONAL, "a.status",
         SEPARATOR + "portfolios.values.asSet a, positions");
     // TASK ICM6
-    Object indices[] = {i1, i2, i5, i6, i7, i8}; // remove any commented Index
+    Object[] indices = {i1, i2, i5, i6, i7, i8}; // remove any commented Index
     // from Array
 
-    for (int j = 0; j < indices.length; j++) {
-      CacheUtils.log(((IndexProtocol) indices[j]).isValid());
-      boolean r = ((IndexProtocol) indices[j]).isValid();
+    for (final Object index : indices) {
+      CacheUtils.log(((IndexProtocol) index).isValid());
+      boolean r = ((IndexProtocol) index).isValid();
       assertTrue("Test: testIndexCreation FAILED", r);
-      CacheUtils.log(((IndexProtocol) indices[j]).getName());
+      CacheUtils.log(((IndexProtocol) index).getName());
       CacheUtils.log("Test: testIndexCreation PASS");
     }
   }
@@ -295,13 +295,13 @@ public class IndexCreationJUnitTest {
     // pf.positions.values b");
     // TASK ICM5 org.apache.geode.cache.query.IndexInvalidException
 
-    Object indices[] = {i3}; // remove any commented Index from Array
+    Object[] indices = {i3}; // remove any commented Index from Array
 
-    for (int j = 0; j < indices.length; j++) {
-      CacheUtils.log(((IndexProtocol) indices[j]).isValid());
-      boolean r = ((IndexProtocol) indices[j]).isValid();
+    for (final Object index : indices) {
+      CacheUtils.log(((IndexProtocol) index).isValid());
+      boolean r = ((IndexProtocol) index).isValid();
       if (r == true) {
-        CacheUtils.log(((IndexProtocol) indices[j]).getName());
+        CacheUtils.log(((IndexProtocol) index).getName());
         CacheUtils.log("Test: testIndexCreation PASS");
       } else {
         fail("Test: testIndexCreation FAILED");
@@ -312,10 +312,10 @@ public class IndexCreationJUnitTest {
   @Test
   public void testComparisonBetnWithAndWithoutIndexCreationComparableObject() throws Exception {
     // Task ID IUM10
-    SelectResults r[][] = new SelectResults[4][2];
+    SelectResults[][] r = new SelectResults[4][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] =
+    String[] queries =
         {"select distinct * from " + SEPARATOR + "portfolios pf where pf.getCW(pf.ID) = $1",
             "select distinct * from " + SEPARATOR + "portfolios pf where pf.getCW(pf.ID) > $1",
             "select distinct * from " + SEPARATOR + "portfolios pf where pf.getCW(pf.ID) < $1",
@@ -325,7 +325,7 @@ public class IndexCreationJUnitTest {
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       q = CacheUtils.getQueryService().newQuery(queries[i]);
-      Object params[] = new Object[1];
+      Object[] params = new Object[1];
       params[0] = new ComparableWrapper(1);
       QueryObserverImpl observer = new QueryObserverImpl();
       QueryObserverHolder.setInstance(observer);
@@ -345,7 +345,7 @@ public class IndexCreationJUnitTest {
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       q = CacheUtils.getQueryService().newQuery(queries[i]);
-      Object params[] = new Object[1];
+      Object[] params = new Object[1];
       params[0] = new ComparableWrapper(1);
       QueryObserverImpl observer2 = new QueryObserverImpl();
       QueryObserverHolder.setInstance(observer2);
@@ -370,7 +370,7 @@ public class IndexCreationJUnitTest {
         "select distinct * from " + SEPARATOR
             + "portfolios pf where pf.collectionHolderMap[(pf.ID).toString()].arr[pf.ID] != -1"};
 
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       q = qs.newQuery(queries[i]);
@@ -518,7 +518,7 @@ public class IndexCreationJUnitTest {
     Query qr =
         qs.newQuery("Select distinct * from " + SEPARATOR
             + "portfolios.keys keys where keys.hashCode >= $1");
-    SelectResults sr = (SelectResults) qr.execute(new Object[] {new Integer(-1)});
+    SelectResults sr = (SelectResults) qr.execute(new Object[] {-1});
     assertEquals(6, sr.size());
   }
 
@@ -571,7 +571,7 @@ public class IndexCreationJUnitTest {
     Query qr = qs.newQuery(
         "Select distinct keys.hashCode  from " + SEPARATOR
             + "portfolios.keys() keys where keys.hashCode >= $1");
-    SelectResults sr = (SelectResults) qr.execute(new Object[] {new Integer(-1)});
+    SelectResults sr = (SelectResults) qr.execute(new Object[] {-1});
     assertEquals(6, sr.size());
   }
 
@@ -601,14 +601,14 @@ public class IndexCreationJUnitTest {
           SEPARATOR + "portfolios.toArray[1].positions.values");
       CacheUtils.log(((RangeIndex) i1).dump());
       fail("Index creation should have failed");
-    } catch (Exception e) {
+    } catch (Exception ignored) {
     }
     try {
       Index i2 = qs.createIndex("r12Index", IndexType.FUNCTIONAL, "secId",
           SEPARATOR + "portfolios.asList[1].positions.values");
       CacheUtils.log(((RangeIndex) i2).dump());
       fail("Index creation should have failed");
-    } catch (Exception e) {
+    } catch (Exception ignored) {
     }
   }
 
@@ -653,8 +653,8 @@ public class IndexCreationJUnitTest {
     Index i1 = qs.createIndex("Index1", IndexType.FUNCTIONAL, "b.secId",
         SEPARATOR + "portfolios pf, pf.positions.values b");
     ObjectType type = ((IndexProtocol) i1).getResultSetType();
-    String fieldNames[] = {"index_iter1", "index_iter2"};
-    ObjectType fieldTypes[] =
+    String[] fieldNames = {"index_iter1", "index_iter2"};
+    ObjectType[] fieldTypes =
         {new ObjectTypeImpl(Portfolio.class), new ObjectTypeImpl(Object.class)};
     // ObjectType expectedType = new StructTypeImpl( fieldNames,fieldTypes);
     ObjectType expectedType = new StructTypeImpl(fieldNames, fieldTypes);
@@ -777,9 +777,9 @@ public class IndexCreationJUnitTest {
         "index_iter1.positions['key1','key2','key3']");
     assertTrue(i1 instanceof CompactMapRangeIndex);
     CompactMapRangeIndex mri = (CompactMapRangeIndex) i1;
-    Object mapKeys[] = mri.getMapKeysForTesting();
+    Object[] mapKeys = mri.getMapKeysForTesting();
     assertEquals(mapKeys.length, 3);
-    Set<String> keys = new HashSet<String>();
+    Set<String> keys = new HashSet<>();
     keys.add("key1");
     keys.add("key2");
     keys.add("key3");
@@ -789,7 +789,7 @@ public class IndexCreationJUnitTest {
     assertTrue(keys.isEmpty());
     String[] patterns = mri.getPatternsForTesting();
     assertEquals(patterns.length, 3);
-    Set<String> patternsSet = new HashSet<String>();
+    Set<String> patternsSet = new HashSet<>();
     patternsSet.add("index_iter1.positions['key1']");
     patternsSet.add("index_iter1.positions['key2']");
     patternsSet.add("index_iter1.positions['key3']");
@@ -1066,7 +1066,7 @@ public class IndexCreationJUnitTest {
               SEPARATOR + "portfoliosInPartitionedRegion p, p.positions");
       // index should fail to create
       fail();
-    } catch (IndexInvalidException e) {
+    } catch (IndexInvalidException ignored) {
     }
     qs.removeIndex(i1);
     // This test should not throw an exception if i2 was properly cleaned up.

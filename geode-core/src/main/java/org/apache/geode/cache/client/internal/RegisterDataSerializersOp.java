@@ -55,8 +55,7 @@ public class RegisterDataSerializersOp {
      */
     public RegisterDataSerializersOpImpl(DataSerializer[] dataSerializers, EventID eventId) {
       super(MessageType.REGISTER_DATASERIALIZERS, dataSerializers.length * 2 + 1);
-      for (int i = 0; i < dataSerializers.length; i++) {
-        DataSerializer dataSerializer = dataSerializers[i];
+      for (DataSerializer dataSerializer : dataSerializers) {
         // strip '.class' off these class names
         String className = dataSerializer.getClass().toString().substring(6);
         try {
@@ -79,13 +78,13 @@ public class RegisterDataSerializersOp {
      */
     public RegisterDataSerializersOpImpl(SerializerAttributesHolder[] holders, EventID eventId) {
       super(MessageType.REGISTER_DATASERIALIZERS, holders.length * 2 + 1);
-      for (int i = 0; i < holders.length; i++) {
+      for (final SerializerAttributesHolder holder : holders) {
         try {
-          getMessage().addBytesPart(BlobHelper.serializeToBlob(holders[i].getClassName()));
+          getMessage().addBytesPart(BlobHelper.serializeToBlob(holder.getClassName()));
         } catch (IOException ex) {
           throw new SerializationException("failed serializing object", ex);
         }
-        getMessage().addIntPart(holders[i].getId());
+        getMessage().addIntPart(holder.getId());
       }
       getMessage().addBytesPart(eventId.calcBytes());
       // // CALLBACK FOR TESTING PURPOSE ONLY ////

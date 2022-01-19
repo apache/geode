@@ -17,7 +17,6 @@ package org.apache.geode.cache;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.geode.distributed.Role;
@@ -82,7 +81,7 @@ public class RegionDistributionException extends RegionRoleException {
    * @return the required roles that caused this exception
    */
   public Set getFailedRoles() {
-    return this.failedRoles;
+    return failedRoles;
   }
 
   /**
@@ -92,13 +91,13 @@ public class RegionDistributionException extends RegionRoleException {
   private void writeObject(java.io.ObjectOutputStream out) throws IOException {
     out.defaultWriteObject();
     // transform roles to string names which are serializable...
-    Set fr = this.failedRoles;
+    Set fr = failedRoles;
     if (fr == null) {
       fr = Collections.EMPTY_SET;
     }
     Set roleNames = new HashSet(fr.size());
-    for (Iterator iter = fr.iterator(); iter.hasNext();) {
-      String name = ((Role) iter.next()).getName();
+    for (final Object o : fr) {
+      String name = ((Role) o).getName();
       roleNames.add(name);
     }
     out.writeObject(roleNames);
@@ -113,11 +112,11 @@ public class RegionDistributionException extends RegionRoleException {
     // transform string names which are serializable back into roles...
     Set roleNames = (Set) in.readObject();
     Set roles = new HashSet(roleNames.size());
-    for (Iterator iter = roleNames.iterator(); iter.hasNext();) {
-      String name = (String) iter.next();
+    for (final Object roleName : roleNames) {
+      String name = (String) roleName;
       roles.add(InternalRole.getRole(name));
     }
-    this.failedRoles = roles;
+    failedRoles = roles;
   }
 
 }

@@ -19,7 +19,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -60,29 +59,29 @@ public class ConfigurationResponse implements DataSerializableFixedID {
       SerializationContext context) throws IOException {
     DataSerializer.writeHashMap(requestedConfiguration, out);
     DataSerializer.writeHashMap(jarNames, out);
-    DataSerializer.writeBoolean(Boolean.valueOf(failedToGetSharedConfig), out);
+    DataSerializer.writeBoolean(failedToGetSharedConfig, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.requestedConfiguration = DataSerializer.readHashMap(in);
-    this.jarNames = DataSerializer.readHashMap(in);
-    this.failedToGetSharedConfig = DataSerializer.readBoolean(in);
+    requestedConfiguration = DataSerializer.readHashMap(in);
+    jarNames = DataSerializer.readHashMap(in);
+    failedToGetSharedConfig = DataSerializer.readBoolean(in);
   }
 
   public Map<String, Configuration> getRequestedConfiguration() {
-    return this.requestedConfiguration;
+    return requestedConfiguration;
   }
 
   public void addConfiguration(Configuration configuration) {
     if (configuration != null) {
-      this.requestedConfiguration.put(configuration.getConfigName(), configuration);
+      requestedConfiguration.put(configuration.getConfigName(), configuration);
     }
   }
 
   public String toString() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     Set<String> configNames = requestedConfiguration.keySet();
     for (String configName : configNames) {
       sb.append("\n" + requestedConfiguration.get(configName));
@@ -91,15 +90,13 @@ public class ConfigurationResponse implements DataSerializableFixedID {
   }
 
   public String describeConfig() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     if (requestedConfiguration.isEmpty()) {
       sb.append("Received an empty shared configuration");
     } else {
       Set<Entry<String, Configuration>> entries = requestedConfiguration.entrySet();
-      Iterator<Entry<String, Configuration>> iter = entries.iterator();
 
-      while (iter.hasNext()) {
-        Entry<String, Configuration> entry = iter.next();
+      for (final Entry<String, Configuration> entry : entries) {
         String configType = entry.getKey();
         Configuration config = entry.getValue();
 

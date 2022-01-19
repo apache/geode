@@ -401,7 +401,7 @@ public class ClientHealthMonitor {
           if (socketAddress == null) {
             clientString = "client member id=" + membershipID;
           } else {
-            clientString = "host name=" + socketAddress.toString() + " host ip="
+            clientString = "host name=" + socketAddress + " host ip="
                 + socketAddress.getHostAddress() + " client port=" + socketPort
                 + " client member id=" + membershipID;
           }
@@ -836,7 +836,7 @@ public class ClientHealthMonitor {
           // An exception occurred while monitoring the clients. If the monitor
           // is not stopped, log it and continue processing.
           if (!_isStopped) {
-            logger.fatal(ClientHealthMonitor.this.toString() + ": An unexpected Exception occurred",
+            logger.fatal(ClientHealthMonitor.this + ": An unexpected Exception occurred",
                 e);
           }
         }

@@ -35,16 +35,16 @@ public class Shipment implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.shipmentName = DataSerializer.readString(in);
+    shipmentName = DataSerializer.readString(in);
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.shipmentName, out);
+    DataSerializer.writeString(shipmentName, out);
   }
 
   public String toString() {
-    return this.shipmentName;
+    return shipmentName;
   }
 
   public boolean equals(Object obj) {
@@ -54,9 +54,7 @@ public class Shipment implements DataSerializable {
 
     if (obj instanceof Shipment) {
       Shipment other = (Shipment) obj;
-      if (other.shipmentName != null && other.shipmentName.equals(this.shipmentName)) {
-        return true;
-      }
+      return other.shipmentName != null && other.shipmentName.equals(shipmentName);
     }
     return false;
   }

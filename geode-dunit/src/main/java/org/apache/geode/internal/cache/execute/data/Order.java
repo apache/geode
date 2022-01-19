@@ -35,17 +35,17 @@ public class Order implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.orderName = DataSerializer.readString(in);
+    orderName = DataSerializer.readString(in);
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.orderName, out);
+    DataSerializer.writeString(orderName, out);
   }
 
   @Override
   public String toString() {
-    return this.orderName;
+    return orderName;
   }
 
   @Override
@@ -56,9 +56,7 @@ public class Order implements DataSerializable {
 
     if (obj instanceof Order) {
       Order other = (Order) obj;
-      if (other.orderName != null && other.orderName.equals(this.orderName)) {
-        return true;
-      }
+      return other.orderName != null && other.orderName.equals(orderName);
     }
     return false;
   }

@@ -39,7 +39,7 @@ public class DistributionAdvisorTest {
   private DistributionAdvisor.Profile profile;
   private VersionSource lostVersionID;
   private PersistentMemberID persistentMemberID;
-  private long delay = 100;
+  private final long delay = 100;
   private DataPolicy dataPolicy;
 
   @Before

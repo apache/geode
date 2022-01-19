@@ -141,7 +141,7 @@ public class PdxAttributesDistributedTest extends JUnit4CacheTestCase {
 
         EnumInfo expectedEnumInfo = new EnumInfo(SimpleEnum.TWO);
         int expectKey = (dsId << 24)
-            | (PeerTypeRegistration.PLACE_HOLDER_FOR_TYPE_ID & expectedEnumInfo.hashCode());;
+            | (PeerTypeRegistration.PLACE_HOLDER_FOR_TYPE_ID & expectedEnumInfo.hashCode());
 
         assertEquals(expectKey, enumId.intValue());
         foundEnum = true;
@@ -226,7 +226,7 @@ public class PdxAttributesDistributedTest extends JUnit4CacheTestCase {
 
         EnumInfo expectedEnumInfo = new EnumInfo(SimpleEnum.TWO);
         int expectKey =
-            PeerTypeRegistration.PLACE_HOLDER_FOR_TYPE_ID & expectedEnumInfo.hashCode();;
+            PeerTypeRegistration.PLACE_HOLDER_FOR_TYPE_ID & expectedEnumInfo.hashCode();
 
         assertEquals(expectKey, enumId.intValue());
         foundEnum = true;
@@ -290,7 +290,7 @@ public class PdxAttributesDistributedTest extends JUnit4CacheTestCase {
       initCache(true, false, null);
       Region region = createRegion(true, false);
 
-      Throwable thrown = catchThrowable(() -> defineATypeNoEnum());
+      Throwable thrown = catchThrowable(this::defineATypeNoEnum);
       assertThat(thrown).isExactlyInstanceOf(PdxInitializationException.class);
 
       // Drop partitioned region.
@@ -313,7 +313,7 @@ public class PdxAttributesDistributedTest extends JUnit4CacheTestCase {
     {
       initCache(true, false, null);
       Region region = createRegion(true, true);
-      Throwable thrown = catchThrowable(() -> defineATypeNoEnum());
+      Throwable thrown = catchThrowable(this::defineATypeNoEnum);
       assertThat(thrown).isExactlyInstanceOf(PdxInitializationException.class);
 
       // Drop partitioned region.
@@ -354,7 +354,7 @@ public class PdxAttributesDistributedTest extends JUnit4CacheTestCase {
     {
       initCache(true, false, null);
       definePersistentAEQ(cache, "aeq", true);
-      Throwable thrown = catchThrowable(() -> defineATypeNoEnum());
+      Throwable thrown = catchThrowable(this::defineATypeNoEnum);
       assertThat(thrown).isExactlyInstanceOf(PdxInitializationException.class);
     }
     tearDown();
@@ -389,7 +389,7 @@ public class PdxAttributesDistributedTest extends JUnit4CacheTestCase {
       int port = AvailablePortHelper.getRandomAvailableTCPPort();
       PoolManager.createFactory().addServer("localhost", port).create("pool");
 
-      Throwable thrown = catchThrowable(() -> defineAType());
+      Throwable thrown = catchThrowable(this::defineAType);
       assertThat(thrown).isExactlyInstanceOf(ToDataException.class);
     }
   }

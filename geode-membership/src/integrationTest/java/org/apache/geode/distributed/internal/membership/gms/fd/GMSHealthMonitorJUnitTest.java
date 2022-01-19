@@ -55,7 +55,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.distributed.internal.membership.api.MemberData;
@@ -66,7 +65,6 @@ import org.apache.geode.distributed.internal.membership.api.MemberStartupExcepti
 import org.apache.geode.distributed.internal.membership.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.DefaultMembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.distributed.internal.membership.gms.MemberIdentifierImpl;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor.ClientSocketHandler;
@@ -96,7 +94,7 @@ public class GMSHealthMonitorJUnitTest {
   private GMSHealthMonitor gmsHealthMonitor;
   private Manager manager;
   final long memberTimeout = 1000l;
-  private int[] portRange = new int[] {0, 65535};
+  private final int[] portRange = new int[] {0, 65535};
   private boolean useGMSHealthMonitorTestClass = false;
   private boolean simulateHeartbeatInGMSHealthMonitorTestClass = true;
   private boolean allowSelfCheckToSucceed = true;
@@ -170,7 +168,7 @@ public class GMSHealthMonitorJUnitTest {
   }
 
   @Test
-  public void testHMServiceHandlesShutdownRace() throws IOException, Exception {
+  public void testHMServiceHandlesShutdownRace() throws Exception {
     // The health monitor starts a thread to monitor the tcp socket, both that thread and the
     // stopServices call will attempt to shut down the socket during a normal close. This test tries
     // to create a problematic ordering to make sure we still shutdown properly.
@@ -329,9 +327,9 @@ public class GMSHealthMonitorJUnitTest {
 
     gmsHealthMonitor.installView(v);
 
-    ArrayList<MemberIdentifier> recipient = new ArrayList<MemberIdentifier>();
+    ArrayList<MemberIdentifier> recipient = new ArrayList<>();
     recipient.add(mockMembers.get(0));
-    ArrayList<SuspectRequest> as = new ArrayList<SuspectRequest>();
+    ArrayList<SuspectRequest> as = new ArrayList<>();
     SuspectRequest sr = new SuspectRequest(mockMembers.get(1), "Not Responding");// removing member
                                                                                  // 1
     as.add(sr);
@@ -362,9 +360,9 @@ public class GMSHealthMonitorJUnitTest {
 
     gmsHealthMonitor.installView(v);
 
-    ArrayList<MemberIdentifier> recipient = new ArrayList<MemberIdentifier>();
+    ArrayList<MemberIdentifier> recipient = new ArrayList<>();
     recipient.add(mockMembers.get(0));
-    ArrayList<SuspectRequest> as = new ArrayList<SuspectRequest>();
+    ArrayList<SuspectRequest> as = new ArrayList<>();
     SuspectRequest sr = new SuspectRequest(mockMembers.get(1), "Not Responding");// removing member
                                                                                  // 1
     as.add(sr);
@@ -398,10 +396,10 @@ public class GMSHealthMonitorJUnitTest {
 
     gmsHealthMonitor.installView(v);
 
-    ArrayList<MemberIdentifier> recipient = new ArrayList<MemberIdentifier>();
+    ArrayList<MemberIdentifier> recipient = new ArrayList<>();
     recipient.add(mockMembers.get(0));
     recipient.add(mockMembers.get(1));
-    ArrayList<SuspectRequest> as = new ArrayList<SuspectRequest>();
+    ArrayList<SuspectRequest> as = new ArrayList<>();
     SuspectRequest sr = new SuspectRequest(mockMembers.get(0), "Not Responding");// removing
                                                                                  // coordinator
     as.add(sr);
@@ -424,12 +422,9 @@ public class GMSHealthMonitorJUnitTest {
     MemberIdentifier memberToCheck = mockMembers.get(1);
     HeartbeatMessage fakeHeartbeat = new HeartbeatMessage();
     fakeHeartbeat.setSender(memberToCheck);
-    when(messenger.send(any(HeartbeatRequestMessage.class))).then(new Answer() {
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        gmsHealthMonitor.processMessage(fakeHeartbeat);
-        return null;
-      }
+    when(messenger.send(any(HeartbeatRequestMessage.class))).then((Answer) invocation -> {
+      gmsHealthMonitor.processMessage(fakeHeartbeat);
+      return null;
     });
 
     boolean retVal = gmsHealthMonitor.checkIfAvailable(memberToCheck, "Not responding", true);
@@ -575,7 +570,7 @@ public class GMSHealthMonitorJUnitTest {
       gmsHealthMonitor.setNextNeighbor(v, memberToCheck);
       assertNotEquals(memberToCheck, gmsHealthMonitor.getNextNeighbor());
 
-      ((MemberIdentifierImpl) mockMembers.get(0)).setVersionForTest(KnownVersion.GEODE_1_3_0);
+      mockMembers.get(0).setVersionForTest(KnownVersion.GEODE_1_3_0);
       boolean retVal = gmsHealthMonitor.inlineCheckIfAvailable(mockMembers.get(0), v, true,
           memberToCheck, "Not responding");
 
@@ -829,7 +824,7 @@ public class GMSHealthMonitorJUnitTest {
     try (ServerSocket socket =
         gmsHealthMonitor.createServerSocket(InetAddress.getLocalHost(), new int[] {-1, -1})) {
       Assert.fail("socket was created with invalid port range");
-    } catch (IllegalArgumentException e) {
+    } catch (IllegalArgumentException ignored) {
 
     }
   }
@@ -1115,10 +1110,7 @@ public class GMSHealthMonitorJUnitTest {
           fakeHeartbeat.setSender(suspectMember);
           gmsHealthMonitor.processMessage(fakeHeartbeat);
         }
-        if (allowSelfCheckToSucceed && suspectMember.equals(joinLeave.getMemberID())) {
-          return true;
-        }
-        return false;
+        return allowSelfCheckToSucceed && suspectMember.equals(joinLeave.getMemberID());
       }
       return super.doTCPCheckMember(suspectMember, port, retryIfConnectFails);
     }

@@ -73,7 +73,7 @@ public class PRSanityCheckMessage extends PartitionMessage {
   @Override
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
-    buff.append(" regionName=").append(this.regionName);
+    buff.append(" regionName=").append(regionName);
   }
 
   @Override
@@ -85,14 +85,14 @@ public class PRSanityCheckMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.regionName = DataSerializer.readString(in);
+    regionName = DataSerializer.readString(in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeString(this.regionName, out);
+    DataSerializer.writeString(regionName, out);
   }
 
   /**
@@ -122,7 +122,7 @@ public class PRSanityCheckMessage extends PartitionMessage {
       instance.setTransactionDistributed(pr.getCache().getTxManager().isDistributed());
       dm.putOutgoing(instance);
       int sanityCheckInterval = Integer
-          .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "PRSanityCheckInterval", 5000).intValue();
+          .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "PRSanityCheckInterval", 5000);
       if (sanityCheckInterval != 0) {
         final SystemTimer tm = new SystemTimer(dm.getSystem());
         SystemTimer.SystemTimerTask st = new SystemTimer.SystemTimerTask() {
@@ -157,7 +157,7 @@ public class PRSanityCheckMessage extends PartitionMessage {
    */
   @Override
   public void process(ClusterDistributionManager dm) {
-    PartitionedRegion.validatePRID(getSender(), this.regionId, this.regionName);
+    PartitionedRegion.validatePRID(getSender(), regionId, regionName);
   }
 
   @Override

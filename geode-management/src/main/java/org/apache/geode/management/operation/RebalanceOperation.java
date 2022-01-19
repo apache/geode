@@ -28,12 +28,14 @@ import org.apache.geode.management.runtime.RebalanceResult;
  */
 @Experimental
 public class RebalanceOperation implements ClusterManagementOperation<RebalanceResult> {
+  private static final long serialVersionUID = 328709777841108084L;
+
   /**
    * see {@link #getEndpoint()}
    */
   public static final String REBALANCE_ENDPOINT = "/operations/rebalances";
-  private List<String> includeRegions = new ArrayList<>();
-  private List<String> excludeRegions = new ArrayList<>();
+  private final List<String> includeRegions = new ArrayList<>();
+  private final List<String> excludeRegions = new ArrayList<>();
   private boolean simulate;
   private String operator;
 
@@ -46,10 +48,10 @@ public class RebalanceOperation implements ClusterManagementOperation<RebalanceR
    * copy constructor
    */
   public RebalanceOperation(RebalanceOperation other) {
-    this.setExcludeRegions(other.getExcludeRegions());
-    this.setIncludeRegions(other.getIncludeRegions());
-    this.setSimulate(other.isSimulate());
-    this.operator = other.getOperator();
+    setExcludeRegions(other.getExcludeRegions());
+    setIncludeRegions(other.getIncludeRegions());
+    setSimulate(other.isSimulate());
+    operator = other.getOperator();
   }
 
   /***
@@ -112,7 +114,7 @@ public class RebalanceOperation implements ClusterManagementOperation<RebalanceR
 
   @Override
   public String getOperator() {
-    return this.operator;
+    return operator;
   }
 
   public void setOperator(String operator) {

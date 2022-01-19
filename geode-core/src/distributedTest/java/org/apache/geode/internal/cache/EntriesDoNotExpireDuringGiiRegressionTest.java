@@ -100,7 +100,7 @@ public class EntriesDoNotExpireDuringGiiRegressionTest implements Serializable {
 
   @Test
   public void entriesShouldNotExpireDuringGII() throws Exception {
-    AsyncInvocation<Void> doRegionOps = otherVM.invokeAsync(() -> doRegionOps());
+    AsyncInvocation<Void> doRegionOps = otherVM.invokeAsync(this::doRegionOps);
 
     RegionFactory<String, String> regionFactory =
         cacheRule.getOrCreateCache().createRegionFactory(REPLICATE);

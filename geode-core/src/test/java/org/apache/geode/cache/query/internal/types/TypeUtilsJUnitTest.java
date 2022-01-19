@@ -627,9 +627,9 @@ public class TypeUtilsJUnitTest {
   @Test
   public void comparingTemporalValuesForWhichTheComparatorThrowsTypeMismatchExceptionShouldReturnBooleanWhenTheComparisonOperatorIsSupported()
       throws TypeMismatchException {
-    assertThat(TypeUtils.compare(new Date(12345), new Integer(12345), OQLLexerTokenTypes.TOK_NE))
+    assertThat(TypeUtils.compare(new Date(12345), 12345, OQLLexerTokenTypes.TOK_NE))
         .isEqualTo(Boolean.TRUE);
-    assertThat(TypeUtils.compare(new Date(12345), new Integer(12345), OQLLexerTokenTypes.TOK_EQ))
+    assertThat(TypeUtils.compare(new Date(12345), 12345, OQLLexerTokenTypes.TOK_EQ))
         .isEqualTo(Boolean.FALSE);
 
     OQLLexerTokenTypes tempInstance = new OQLLexerTokenTypes() {};
@@ -639,7 +639,7 @@ public class TypeUtilsJUnitTest {
       try {
         int token = field.getInt(tempInstance);
         if (!equalityOperators.contains(token)) {
-          assertThatThrownBy(() -> TypeUtils.compare(new Date(), new Integer(0), token))
+          assertThatThrownBy(() -> TypeUtils.compare(new Date(), 0, token))
               .isInstanceOf(TypeMismatchException.class).hasMessageMatching(
                   "^Unable to compare object of type ' (.*) ' with object of type ' (.*) '$");
         }
@@ -786,7 +786,7 @@ public class TypeUtilsJUnitTest {
         int token = field.getInt(tempInstance);
         if (!equalityOperators.contains(token)) {
           assertThatThrownBy(
-              () -> TypeUtils.compare(new Integer("20"), new String("100"), token))
+              () -> TypeUtils.compare(new Integer("20"), "100", token))
                   .isInstanceOf(TypeMismatchException.class).hasMessageMatching(
                       "^Unable to compare object of type ' (.*) ' with object of type ' (.*) '$");
         }
@@ -1005,7 +1005,7 @@ public class TypeUtilsJUnitTest {
 
     @Override
     public int compareTo(Object o) {
-      return this.id.compareTo(((ComparableObject) o).id);
+      return id.compareTo(((ComparableObject) o).id);
     }
   }
 
@@ -1018,20 +1018,20 @@ public class TypeUtilsJUnitTest {
 
     ArbitraryObject(String id) {
       this.id = id;
-      this.equalsInvocations = new AtomicInteger(0);
+      equalsInvocations = new AtomicInteger(0);
     }
 
     Integer getInvocationsAmount() {
-      return this.equalsInvocations.get();
+      return equalsInvocations.get();
     }
 
     void resetInvocationsAmount() {
-      this.equalsInvocations.set(0);
+      equalsInvocations.set(0);
     }
 
     @Override
     public boolean equals(Object o) {
-      this.equalsInvocations.incrementAndGet();
+      equalsInvocations.incrementAndGet();
 
       if (this == o) {
         return true;

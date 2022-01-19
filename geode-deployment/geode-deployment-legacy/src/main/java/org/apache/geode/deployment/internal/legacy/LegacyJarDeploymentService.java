@@ -148,7 +148,7 @@ public class LegacyJarDeploymentService implements JarDeploymentService {
     logger.info("Reinitializing JarDeploymentService with new working directory: {}",
         workingDirectory);
     if (deployments.isEmpty()) {
-      this.jarDeployer = new JarDeployer(workingDirectory);
+      jarDeployer = new JarDeployer(workingDirectory);
     } else {
       throw new RuntimeException(
           "Cannot reinitialize working directory with existing deployments. Please undeploy first.");

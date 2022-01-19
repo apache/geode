@@ -31,7 +31,7 @@ import org.apache.geode.security.SecurityManager;
 public class SecurityManagerProvider {
   private static final Logger logger = LogService.getLogger(SECURITY_LOGGER_NAME);
 
-  private org.apache.shiro.mgt.SecurityManager shiroManager;
+  private final org.apache.shiro.mgt.SecurityManager shiroManager;
   private SecurityManager securityManager;
 
   public SecurityManagerProvider() {
@@ -39,7 +39,7 @@ public class SecurityManagerProvider {
   }
 
   public SecurityManagerProvider(String shiroConfig) {
-    this.securityManager = null;
+    securityManager = null;
 
     IniSecurityManagerFactory factory = new IniSecurityManagerFactory("classpath:" + shiroConfig);
     // we will need to make sure that shiro uses a case sensitive permission resolver
@@ -62,7 +62,7 @@ public class SecurityManagerProvider {
 
   private void increaseShiroGlobalSessionTimeout(final DefaultSecurityManager shiroManager) {
     SessionManager sessionManager = shiroManager.getSessionManager();
-    if (DefaultSessionManager.class.isInstance(sessionManager)) {
+    if (sessionManager instanceof DefaultSessionManager) {
       DefaultSessionManager defaultSessionManager = (DefaultSessionManager) sessionManager;
       defaultSessionManager.setGlobalSessionTimeout(Long.MAX_VALUE);
       long value = defaultSessionManager.getGlobalSessionTimeout();

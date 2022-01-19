@@ -105,7 +105,7 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
     // on the same key while creating the region in VM2. Afterward make
     // sure that all three regions are consistent
 
-    final String name = this.getUniqueName() + "-CC";
+    final String name = getUniqueName() + "-CC";
     createRegionWithAttribute(vm0, name, false);
     createRegionWithAttribute(vm1, name, false);
     createRegionWithAttribute(vm2, name, false);
@@ -286,7 +286,7 @@ public class DistributedNoAckRegionCCEDUnitTest extends DistributedNoAckRegionDU
     // on the same key while creating the region in VM2. Afterward make
     // sure that all three regions are consistent
 
-    final String name = this.getUniqueName() + "-CC";
+    final String name = getUniqueName() + "-CC";
 
     assertThat(vm0.invoke("Create Region", () -> {
       try {

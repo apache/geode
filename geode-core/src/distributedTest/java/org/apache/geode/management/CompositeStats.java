@@ -30,10 +30,10 @@ public class CompositeStats {
   public CompositeStats(String connectionStatsType, long connectionsOpen, long connectionsClosed,
       long connectionsAttempts, long connectionsFailures, long connectionLifeTime) {
     this.connectionStatsType = connectionStatsType;
-    this.connectionsOpened = connectionsOpen;
+    connectionsOpened = connectionsOpen;
     this.connectionsClosed = connectionsClosed;
-    this.connectionsAttempted = connectionsAttempts;
-    this.connectionsFailed = connectionsFailures;
+    connectionsAttempted = connectionsAttempts;
+    connectionsFailed = connectionsFailures;
     this.connectionLifeTime = connectionLifeTime;
   }
 
@@ -63,15 +63,13 @@ public class CompositeStats {
 
   @Override
   public String toString() {
-    StringBuilder builder = new StringBuilder();
-    builder.append(CompositeStats.class.getSimpleName());
-    builder.append("[connectionStatsType=").append(connectionStatsType);
-    builder.append(", connectionsOpened=").append(connectionsOpened);
-    builder.append(", connectionsClosed=").append(connectionsClosed);
-    builder.append(", connectionsAttempted=").append(connectionsAttempted);
-    builder.append(", connectionsFailed=").append(connectionsFailed);
-    builder.append(", connectionsTTL=").append(connectionLifeTime);
-    builder.append("]");
-    return builder.toString();
+    return CompositeStats.class.getSimpleName()
+        + "[connectionStatsType=" + connectionStatsType
+        + ", connectionsOpened=" + connectionsOpened
+        + ", connectionsClosed=" + connectionsClosed
+        + ", connectionsAttempted=" + connectionsAttempted
+        + ", connectionsFailed=" + connectionsFailed
+        + ", connectionsTTL=" + connectionLifeTime
+        + "]";
   }
 }

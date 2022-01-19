@@ -25,8 +25,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.util.Iterator;
-import java.util.Map;
 import java.util.Properties;
 
 import org.junit.Test;
@@ -123,9 +121,9 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
         // ops in each
         for (int i = 0; i < bucketsToCreate; i++) {
           // assume mod-based hashing for bucket creation
-          pr.put(new Integer(i), "value0");
-          pr.put(new Integer(i + pr.getPartitionAttributes().getTotalNumBuckets()), "value1");
-          pr.put(new Integer(i + (pr.getPartitionAttributes().getTotalNumBuckets()) * 2), "value2");
+          pr.put(i, "value0");
+          pr.put(i + pr.getPartitionAttributes().getTotalNumBuckets(), "value1");
+          pr.put(i + (pr.getPartitionAttributes().getTotalNumBuckets()) * 2, "value2");
         }
       }
     };
@@ -145,10 +143,9 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
               assertTrue(pollWaitMillis < (SECONDS.toMillis(maximumWaitSeconds) * 4));
               final PartitionedRegion pr = (PartitionedRegion) getRootRegion(name);
               assertNotNull(pr);
-              for (final Iterator i =
-                  ((PartitionedRegion) pr).getDataStore().getAllLocalBuckets().iterator(); i
-                      .hasNext();) {
-                final Entry entry = (Entry) i.next();
+              for (final Entry<Integer, BucketRegion> integerBucketRegionEntry : pr.getDataStore()
+                  .getAllLocalBuckets()) {
+                final Entry entry = (Entry) integerBucketRegionEntry;
                 final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
                 if (bucketRegion == null) {
                   continue;
@@ -165,10 +162,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
                 @Override
                 public boolean done() {
                   // we have a primary
-                  if (pr.getDiskRegionStats().getNumOverflowOnDisk() == 9) {
-                    return true;
-                  }
-                  return false;
+                  return pr.getDiskRegionStats().getNumOverflowOnDisk() == 9;
                 }
 
                 @Override
@@ -181,7 +175,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
               int entriesEvicted = 0;
 
               entriesEvicted += pr.getDiskRegionStats().getNumOverflowOnDisk();
-              return new Integer(entriesEvicted);
+              return entriesEvicted;
             } finally {
               cleanUpAfterFakeNotification();
               // Clean up the observer for future tests
@@ -194,25 +188,25 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
         };
     final Integer v2i = (Integer) vm2.invoke(assertBucketAttributesAndEviction);
     final Integer v3i = (Integer) vm3.invoke(assertBucketAttributesAndEviction);
-    final int totalEvicted = v2i.intValue() + v3i.intValue();
+    final int totalEvicted = v2i + v3i;
     // assume all three entries in each bucket were evicted to disk
     assertEquals((3 * bucketsToCreate * (redundantCopies + 1)), totalEvicted);
   }
 
   protected void raiseFakeNotification() {
-    ((GemFireCacheImpl) getCache()).getHeapEvictor().setTestAbortAfterLoopCount(1);
+    getCache().getHeapEvictor().setTestAbortAfterLoopCount(1);
     HeapMemoryMonitor.setTestDisableMemoryUpdates(true);
 
     setEvictionPercentage(85);
     HeapMemoryMonitor hmm =
-        ((GemFireCacheImpl) getCache()).getInternalResourceManager().getHeapMonitor();
+        getCache().getInternalResourceManager().getHeapMonitor();
     hmm.setTestMaxMemoryBytes(100);
 
     hmm.updateStateAndSendEvent(90, "test");
   }
 
   protected void cleanUpAfterFakeNotification() {
-    ((GemFireCacheImpl) getCache()).getHeapEvictor().setTestAbortAfterLoopCount(Integer.MAX_VALUE);
+    getCache().getHeapEvictor().setTestAbortAfterLoopCount(Integer.MAX_VALUE);
     HeapMemoryMonitor.setTestDisableMemoryUpdates(false);
   }
 
@@ -261,9 +255,9 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
         // ops in each
         for (int i = 0; i < bucketsToCreate; i++) {
           // assume mod-based hashing for bucket creation
-          pr.put(new Integer(i), "value0");
-          pr.put(new Integer(i + pr.getPartitionAttributes().getTotalNumBuckets()), "value1");
-          pr.put(new Integer(i + (pr.getPartitionAttributes().getTotalNumBuckets()) * 2), "value2");
+          pr.put(i, "value0");
+          pr.put(i + pr.getPartitionAttributes().getTotalNumBuckets(), "value1");
+          pr.put(i + (pr.getPartitionAttributes().getTotalNumBuckets()) * 2, "value2");
         }
       }
     };
@@ -283,9 +277,9 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
               assertNotNull(pr);
 
               long entriesEvicted = 0;
-              for (final Iterator i = pr.getDataStore().getAllLocalBuckets().iterator(); i
-                  .hasNext();) {
-                final Entry entry = (Entry) i.next();
+              for (final Entry<Integer, BucketRegion> integerBucketRegionEntry : pr.getDataStore()
+                  .getAllLocalBuckets()) {
+                final Entry entry = (Entry) integerBucketRegionEntry;
 
                 final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
                 if (bucketRegion == null) {
@@ -303,10 +297,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
                 @Override
                 public boolean done() {
                   // we have a primary
-                  if (pr.getTotalEvictions() == 9) {
-                    return true;
-                  }
-                  return false;
+                  return pr.getTotalEvictions() == 9;
                 }
 
                 @Override
@@ -317,7 +308,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
               GeodeAwaitility.await().untilAsserted(wc);
 
               entriesEvicted = pr.getTotalEvictions();
-              return new Long(entriesEvicted);
+              return entriesEvicted;
             } finally {
               cleanUpAfterFakeNotification();
               // Clean up the observer for future tests
@@ -387,7 +378,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
         final PartitionedRegion pr = (PartitionedRegion) getRootRegion(name);
         assertNotNull(pr);
         for (int counter = 1; counter <= localMaxMem + extraEntries; counter++) {
-          pr.put(new Integer(counter), new byte[1 * 1024 * 1024]);
+          pr.put(counter, new byte[1 * 1024 * 1024]);
         }
       }
     };
@@ -405,9 +396,9 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
             // entries
             // overflowed
             long entriesEvicted = 0;
-            for (final Iterator i = pr.getDataStore().getAllLocalBuckets().iterator(); i
-                .hasNext();) {
-              final Map.Entry entry = (Map.Entry) i.next();
+            for (final Entry<Integer, BucketRegion> integerBucketRegionEntry : pr.getDataStore()
+                .getAllLocalBuckets()) {
+              final Entry entry = (Entry) integerBucketRegionEntry;
 
               final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
               if (bucketRegion == null) {
@@ -420,7 +411,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
 
             }
             entriesEvicted += pr.getDiskRegionStats().getNumOverflowOnDisk();
-            return new Long(entriesEvicted);
+            return entriesEvicted;
           }
         };
     final Long vm2i = (Long) vm2.invoke(assertBucketAttributesAndEviction);
@@ -437,7 +428,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
         final PartitionedRegion pr = (PartitionedRegion) getRootRegion(name);
         // Make sure we can get all of the entries
         for (int counter = 1; counter <= localMaxMem + extraEntries; counter++) {
-          assertNotNull(pr.get(new Integer(counter)));
+          assertNotNull(pr.get(counter));
         }
       }
     });
@@ -481,7 +472,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
         final PartitionedRegion pr = (PartitionedRegion) getRootRegion(name);
         assertNotNull(pr);
         for (int counter = 1; counter <= localMaxMem + extraEntries; counter++) {
-          pr.put(new Integer(counter), new byte[1 * 1024 * 1024]);
+          pr.put(counter, new byte[1 * 1024 * 1024]);
         }
       }
     };
@@ -495,9 +486,9 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
               final PartitionedRegion pr = (PartitionedRegion) getRootRegion(name);
               assertNotNull(pr);
               long entriesEvicted = 0;
-              for (final Iterator i = pr.getDataStore().getAllLocalBuckets().iterator(); i
-                  .hasNext();) {
-                final Map.Entry entry = (Map.Entry) i.next();
+              for (final Entry<Integer, BucketRegion> integerBucketRegionEntry : pr.getDataStore()
+                  .getAllLocalBuckets()) {
+                final Entry entry = (Entry) integerBucketRegionEntry;
 
                 final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
                 if (bucketRegion == null) {
@@ -509,7 +500,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
                     .isLocalDestroy());
               }
               entriesEvicted = pr.getTotalEvictions();
-              return new Long(entriesEvicted);
+              return entriesEvicted;
             } finally {
             }
           }
@@ -566,7 +557,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
         final PartitionedRegion pr = (PartitionedRegion) getRootRegion(name);
         assertNotNull(pr);
         for (int counter = 1; counter <= maxEntries + extraEntries; counter++) {
-          pr.put(new Integer(counter), new byte[1 * 1024 * 1024]);
+          pr.put(counter, new byte[1 * 1024 * 1024]);
         }
       }
     };
@@ -583,9 +574,9 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
             // entries
             // overflowed
             int entriesEvicted = 0;
-            for (final Iterator i = pr.getDataStore().getAllLocalBuckets().iterator(); i
-                .hasNext();) {
-              final Map.Entry entry = (Map.Entry) i.next();
+            for (final Entry<Integer, BucketRegion> integerBucketRegionEntry : pr.getDataStore()
+                .getAllLocalBuckets()) {
+              final Entry entry = (Entry) integerBucketRegionEntry;
 
               final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
               if (bucketRegion == null) {
@@ -597,13 +588,13 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
                   .isOverflowToDisk());
             }
             entriesEvicted += pr.getDiskRegionStats().getNumOverflowOnDisk();
-            return new Integer(entriesEvicted);
+            return entriesEvicted;
 
           }
         };
     final Integer vm2i = (Integer) vm2.invoke(assertBucketAttributesAndEviction);
     final Integer vm3i = (Integer) vm3.invoke(assertBucketAttributesAndEviction);
-    final int totalEvicted = vm2i.intValue() + vm3i.intValue();
+    final int totalEvicted = vm2i + vm3i;
     assertEquals(extraEntries * 2, totalEvicted);
   }
 
@@ -612,7 +603,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
     public boolean verify(long expectedEvictions) {
       return false;
     }
-  };
+  }
 
   @Test
   public void testEntryLRUWithLocalDestroy() {
@@ -689,7 +680,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
         final PartitionedRegion pr = (PartitionedRegion) getRootRegion(name);
         assertNotNull(pr);
         for (int counter = 1; counter <= maxEntries + extraEntries; counter++) {
-          pr.put(new Integer(counter), new byte[1 * 1024 * 1024]);
+          pr.put(counter, new byte[1 * 1024 * 1024]);
         }
       }
     };
@@ -702,9 +693,9 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
             try {
               final PartitionedRegion pr = (PartitionedRegion) getRootRegion(name);
               assertNotNull(pr);
-              for (final Iterator i = pr.getDataStore().getAllLocalBuckets().iterator(); i
-                  .hasNext();) {
-                final Map.Entry entry = (Map.Entry) i.next();
+              for (final Entry<Integer, BucketRegion> integerBucketRegionEntry : pr.getDataStore()
+                  .getAllLocalBuckets()) {
+                final Entry entry = (Entry) integerBucketRegionEntry;
 
                 final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
                 if (bucketRegion == null) {
@@ -782,12 +773,12 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
               .setRedundantCopies(0).create());
           factory.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes((buks / 2)));
           final PartitionedRegion pr = (PartitionedRegion) createRootRegion(name, factory.create());
-          final Integer key = new Integer(1);
+          final Integer key = 1;
           pr.put(key, "testval");
           final BucketRegion b;
           try {
             b = pr.getDataStore().getInitializedBucketForId(key,
-                new Integer(PartitionedRegionHelper.getHashKey(pr, null, key, null, null)));
+                PartitionedRegionHelper.getHashKey(pr, null, key, null, null));
           } catch (final ForceReattemptException e) {
             fail();
           }
@@ -1217,12 +1208,12 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
                   EvictionAttributes.createLRUMemoryAttributes((totalNumBuckets / 2)));
               final PartitionedRegion pr =
                   (PartitionedRegion) createRootRegion(name, factory.create());
-              final Integer key = new Integer(1);
+              final Integer key = 1;
               pr.put(key, "testval");
               final BucketRegion b;
               try {
                 b = pr.getDataStore().getInitializedBucketForId(key,
-                    new Integer(PartitionedRegionHelper.getHashKey(pr, null, key, null, null)));
+                    PartitionedRegionHelper.getHashKey(pr, null, key, null, null));
               } catch (final ForceReattemptException e) {
                 fail();
               }
@@ -1252,11 +1243,11 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
 
       public PRLRUMemoryRunnable(final boolean accessor) {
         super("Test LRU memory eviction attrs on a " + (accessor ? " accessor" : " datastore"));
-        this.isAccessor = accessor;
+        isAccessor = accessor;
       }
 
       public PartitionAttributes createPartitionAttributes(final int localMaxMemory) {
-        if (this.isAccessor) {
+        if (isAccessor) {
           return new PartitionAttributesFactory().setLocalMaxMemory(0)
               .setRedundantCopies(redundantCopies).create();
         } else {
@@ -1335,7 +1326,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
           final EvictionAttributes okEa =
               EvictionAttributes.createLRUMemoryAttributes(firstEvictionAttributes.getMaximum() - 1,
                   firstEvictionAttributes.getObjectSizer(), firstEvictionAttributes.getAction());
-          if (!this.isAccessor) {
+          if (!isAccessor) {
             assertTrue(okEa.getMaximum() < pra.getLocalMaxMemory());
           }
           assertTrue(!okEa.equals(firstEvictionAttributes));
@@ -1357,7 +1348,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
               EvictionAttributes.createLRUMemoryAttributes(firstEvictionAttributes.getMaximum() + 1,
                   firstEvictionAttributes.getObjectSizer(), firstEvictionAttributes.getAction());
           assertTrue(!okEa.equals(firstEvictionAttributes));
-          if (!this.isAccessor) {
+          if (!isAccessor) {
             assertEquals(okEa.getMaximum(), pra.getLocalMaxMemory() + 1);
           }
           factory.setEvictionAttributes(okEa);
@@ -1378,14 +1369,14 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
           // lower the localMaxMemory
           pra = createPartitionAttributes(firstEvictionAttributes.getMaximum() - 1);
           factory.setPartitionAttributes(pra);
-          if (!this.isAccessor) {
+          if (!isAccessor) {
             assertTrue(firstEvictionAttributes.getMaximum() > pra.getLocalMaxMemory());
           }
           factory.setEvictionAttributes(firstEvictionAttributes);
           final RegionAttributes attrs = factory.create();
           final Region pr = createRootRegion(name, attrs);
           assertNotNull(pr);
-          if (!this.isAccessor) {
+          if (!isAccessor) {
             assertEquals(pr.getAttributes().getPartitionAttributes().getLocalMaxMemory(),
                 pr.getAttributes().getEvictionAttributes().getMaximum());
           }
@@ -1725,7 +1716,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
         final PartitionedRegion pr = (PartitionedRegion) getRootRegion(name);
         assertNotNull(pr);
         for (int counter = 0; counter <= maxEntries + extraEntries; counter++) {
-          pr.put(new Integer(counter), "value");
+          pr.put(counter, "value");
         }
       }
     };

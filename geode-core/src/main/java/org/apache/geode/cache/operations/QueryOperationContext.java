@@ -51,7 +51,7 @@ public class QueryOperationContext extends OperationContext {
   public QueryOperationContext(String queryString, Set regionNames, boolean postOperation) {
     this.queryString = queryString;
     this.regionNames = regionNames;
-    this.queryResult = null;
+    queryResult = null;
     this.postOperation = postOperation;
   }
 
@@ -84,19 +84,19 @@ public class QueryOperationContext extends OperationContext {
    */
   @Override
   public boolean isPostOperation() {
-    return this.postOperation;
+    return postOperation;
   }
 
   /**
    * Set the post-operation flag to true.
    */
   public void setPostOperation() {
-    this.postOperation = true;
+    postOperation = true;
   }
 
   /** Return the query string of this query operation. */
   public String getQuery() {
-    return this.queryString;
+    return queryString;
   }
 
   /**
@@ -105,8 +105,8 @@ public class QueryOperationContext extends OperationContext {
    * @param query the new query string for this query.
    */
   public void modifyQuery(String query) {
-    this.queryString = query;
-    this.regionNames = null;
+    queryString = query;
+    regionNames = null;
   }
 
   /**
@@ -115,7 +115,7 @@ public class QueryOperationContext extends OperationContext {
    * @return names of regions being queried.
    */
   public Set getRegionNames() {
-    return this.regionNames;
+    return regionNames;
   }
 
   /**
@@ -133,7 +133,7 @@ public class QueryOperationContext extends OperationContext {
    * @return result of the query.
    */
   public Object getQueryResult() {
-    return this.queryResult;
+    return queryResult;
   }
 
   /**

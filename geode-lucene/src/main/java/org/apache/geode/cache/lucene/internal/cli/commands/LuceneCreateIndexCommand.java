@@ -86,7 +86,7 @@ public class LuceneCreateIndexCommand extends LuceneCommandBase {
         new LuceneIndexInfo(indexName, regionPath, trimmedFields, analyzers, serializer);
 
     final ResultCollector<?, ?> rc =
-        this.executeFunctionOnAllMembers(createIndexFunction, indexInfo);
+        executeFunctionOnAllMembers(createIndexFunction, indexInfo);
     final List<CliFunctionResult> funcResults = (List<CliFunctionResult>) rc.getResult();
     final XmlEntity xmlEntity = funcResults.stream().filter(CliFunctionResult::isSuccessful)
         .map(CliFunctionResult::getXmlEntity).filter(Objects::nonNull).findFirst().orElse(null);

@@ -145,7 +145,7 @@ public class GFSnapshot {
   public static <K, V> SnapshotIterator<K, V> read(final File snapshot, TypeRegistry typeRegistry)
       throws IOException, ClassNotFoundException {
     return new SnapshotIterator<K, V>() {
-      GFSnapshotImporter in = new GFSnapshotImporter(snapshot, typeRegistry);
+      final GFSnapshotImporter in = new GFSnapshotImporter(snapshot, typeRegistry);
 
       private boolean foundNext;
       private Entry<K, V> next;

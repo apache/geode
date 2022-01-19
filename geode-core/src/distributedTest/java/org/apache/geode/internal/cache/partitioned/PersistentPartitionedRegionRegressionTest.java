@@ -235,7 +235,7 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
     assertThat(vm0.invoke(() -> getOfflineMembers(0))).isEmpty();
     assertThat(vm1.invoke(() -> getOfflineMembers(0))).isEmpty();
 
-    InternalDistributedMember memberVM1 = vm1.invoke(() -> getInternalDistributedMember());
+    InternalDistributedMember memberVM1 = vm1.invoke(this::getInternalDistributedMember);
     vm2.invoke(() -> {
       PartitionedRegion region = (PartitionedRegion) getCache().getRegion(partitionedRegionName);
       assertThat(region.getDataStore().moveBucket(0, memberVM1, false)).isTrue();
@@ -285,7 +285,7 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
           if (message instanceof ManageBucketMessage.ManageBucketReplyMessage) {
             Cache cache = getCache();
             disconnectFromDS();
-            await().until(() -> cache.isClosed());
+            await().until(cache::isClosed);
             CRASHED.set(true);
           }
         }
@@ -304,7 +304,7 @@ public class PersistentPartitionedRegionRegressionTest implements Serializable {
 
     // wait till cache is completely shutdown before trying to create the region again. otherwise
     // deadlock situation might happen.
-    vm0.invoke(() -> await().until(() -> CRASHED.get()));
+    vm0.invoke(() -> await().until(CRASHED::get));
     vm0.invoke(() -> createPartitionedRegion(0, -1, 113, true));
     vm0.invoke(() -> checkData(0, 4, "a", partitionedRegionName));
 

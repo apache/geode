@@ -64,7 +64,7 @@ public class PersistDUnitTest {
     protected ConcurrentPersistOperation(int port, String keyBaseName, long iterationCount) {
       this.port = port;
       this.keyBaseName = keyBaseName;
-      this.persistedCount = new AtomicLong(0);
+      persistedCount = new AtomicLong(0);
       this.iterationCount = iterationCount;
     }
 
@@ -73,11 +73,11 @@ public class PersistDUnitTest {
       JedisCluster internalJedisCluster =
           new JedisCluster(new HostAndPort(BIND_ADDRESS, port), REDIS_CLIENT_TIMEOUT);
 
-      for (int i = 0; i < this.iterationCount; i++) {
-        String key = this.keyBaseName + i;
-        this.persistedCount.addAndGet(internalJedisCluster.persist(key));
+      for (int i = 0; i < iterationCount; i++) {
+        String key = keyBaseName + i;
+        persistedCount.addAndGet(internalJedisCluster.persist(key));
       }
-      return this.persistedCount;
+      return persistedCount;
     }
   }
 

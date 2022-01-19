@@ -132,10 +132,7 @@ public class ServerLocation implements DataSerializable, Comparable<ServerLocati
         return false; // fix for bug 42040
       }
     }
-    if (port != other.port) {
-      return false;
-    }
-    return true;
+    return port == other.port;
   }
 
   @Override
@@ -153,25 +150,25 @@ public class ServerLocation implements DataSerializable, Comparable<ServerLocati
   }
 
   public void setUserId(long id) {
-    this.userId = id;
+    userId = id;
   }
 
   public long getUserId() {
-    return this.userId;
+    return userId;
   }
 
   public void compareAndSetRequiresCredentials(boolean bool) {
     int val = bool ? REQUIRES_CREDENTIALS : REQUIRES_NO_CREDENTIALS;
-    this.requiresCredentials.compareAndSet(INITIAL_REQUIRES_CREDENTIALS, val);
+    requiresCredentials.compareAndSet(INITIAL_REQUIRES_CREDENTIALS, val);
   }
 
   public void setRequiresCredentials(boolean bool) {
     int val = bool ? REQUIRES_CREDENTIALS : REQUIRES_NO_CREDENTIALS;
-    this.requiresCredentials.set(val);
+    requiresCredentials.set(val);
   }
 
   public boolean getRequiresCredentials() {
-    return this.requiresCredentials.get() == REQUIRES_CREDENTIALS ? true : false;
+    return requiresCredentials.get() == REQUIRES_CREDENTIALS;
   }
 
 }

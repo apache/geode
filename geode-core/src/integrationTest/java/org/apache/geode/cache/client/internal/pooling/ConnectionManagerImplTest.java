@@ -151,7 +151,7 @@ public class ConnectionManagerImplTest {
 
     PooledConnection heldConnection =
         (PooledConnection) connectionManager.borrowConnection(timeout);
-    assertThatThrownBy(() -> heldConnection.activate()).isInstanceOf(InternalGemFireException.class)
+    assertThatThrownBy(heldConnection::activate).isInstanceOf(InternalGemFireException.class)
         .hasMessageContaining("Connection already active");
 
     connectionManager.close(false);

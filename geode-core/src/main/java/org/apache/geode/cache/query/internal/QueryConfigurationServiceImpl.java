@@ -94,9 +94,9 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
     }
 
     if (isSecurityDisabled((InternalCache) cache) || ALLOW_UNTRUSTED_METHOD_INVOCATION) {
-      this.authorizer = NO_OP_AUTHORIZER;
+      authorizer = NO_OP_AUTHORIZER;
     } else {
-      this.authorizer = new RestrictedMethodAuthorizer(cache);
+      authorizer = new RestrictedMethodAuthorizer(cache);
     }
 
     return true;
@@ -153,13 +153,13 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
 
     try {
       if (className.equals(RestrictedMethodAuthorizer.class.getName())) {
-        this.authorizer = new RestrictedMethodAuthorizer(cache);
+        authorizer = new RestrictedMethodAuthorizer(cache);
       } else if (className.equals(UnrestrictedMethodAuthorizer.class.getName())) {
-        this.authorizer = new UnrestrictedMethodAuthorizer(cache);
+        authorizer = new UnrestrictedMethodAuthorizer(cache);
       } else if (className.equals(JavaBeanAccessorMethodAuthorizer.class.getName())) {
-        this.authorizer = new JavaBeanAccessorMethodAuthorizer(cache, parameters);
+        authorizer = new JavaBeanAccessorMethodAuthorizer(cache, parameters);
       } else if (className.equals(RegExMethodAuthorizer.class.getName())) {
-        this.authorizer = new RegExMethodAuthorizer(cache, parameters);
+        authorizer = new RegExMethodAuthorizer(cache, parameters);
       } else {
         Class<?> userClass = ClassPathLoader.getLatest().forName(className);
         if (!Arrays.asList(userClass.getInterfaces()).contains(MethodInvocationAuthorizer.class)) {
@@ -171,7 +171,7 @@ public class QueryConfigurationServiceImpl implements QueryConfigurationService 
         MethodInvocationAuthorizer tmpAuthorizer =
             (MethodInvocationAuthorizer) userClass.newInstance();
         tmpAuthorizer.initialize(cache, parameters);
-        this.authorizer = tmpAuthorizer;
+        authorizer = tmpAuthorizer;
       }
 
       invalidateContinuousQueryCache(cqService);

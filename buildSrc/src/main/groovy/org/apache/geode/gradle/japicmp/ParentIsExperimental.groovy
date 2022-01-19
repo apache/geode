@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.geode.gradle.japicmp;
+package org.apache.geode.gradle.japicmp
 
 import me.champeau.gradle.japicmp.report.Violation
 import me.champeau.gradle.japicmp.report.stdrules.AbstractRecordingSeenMembers
@@ -28,7 +28,7 @@ import japicmp.model.JApiCompatibility
 
 class ParentIsExperimental extends AbstractRecordingSeenMembers {
   @Override
-  public Violation maybeAddViolation(final JApiCompatibility member) {
+  Violation maybeAddViolation(final JApiCompatibility member) {
     boolean isExperimental = true
     if (!member.isBinaryCompatible() || !member.isSourceCompatible()) {
       if (member instanceof JApiMethod || member instanceof JApiConstructor) {

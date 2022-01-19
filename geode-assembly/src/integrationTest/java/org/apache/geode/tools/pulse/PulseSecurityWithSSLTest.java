@@ -94,7 +94,7 @@ public class PulseSecurityWithSSLTest {
     // Ensure that the backend JMX connection is working too
     response = client.post("/pulse/pulseUpdate", "pulseData",
         "{\"SystemAlerts\": {\"pageNumber\":\"1\"},\"ClusterDetails\":{}}");
-    String body = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+    String body = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
 
     assertThat(JsonPath.parse(body).read("$.SystemAlerts.connectedFlag", Boolean.class)).isTrue();
   }

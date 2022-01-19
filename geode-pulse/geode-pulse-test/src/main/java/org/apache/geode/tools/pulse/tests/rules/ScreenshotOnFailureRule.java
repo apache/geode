@@ -29,10 +29,10 @@ import org.openqa.selenium.WebDriver;
 
 public class ScreenshotOnFailureRule extends TestWatcher {
 
-  private Supplier<WebDriver> webDriverSupplier;
+  private final Supplier<WebDriver> webDriverSupplier;
 
   public ScreenshotOnFailureRule(final Supplier<WebDriver> provider) {
-    this.webDriverSupplier = provider;
+    webDriverSupplier = provider;
   }
 
   @Override
@@ -41,7 +41,7 @@ public class ScreenshotOnFailureRule extends TestWatcher {
   }
 
   private void takeScreenshot(String screenshotName) {
-    WebDriver driver = this.webDriverSupplier.get();
+    WebDriver driver = webDriverSupplier.get();
     if (driver instanceof TakesScreenshot) {
       File tempFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
       try {

@@ -84,7 +84,7 @@ public class ResourceManagerType {
    *
    */
   public void setCriticalHeapPercentage(String value) {
-    this.criticalHeapPercentage = value;
+    criticalHeapPercentage = value;
   }
 
   /**
@@ -106,7 +106,7 @@ public class ResourceManagerType {
    *
    */
   public void setEvictionHeapPercentage(String value) {
-    this.evictionHeapPercentage = value;
+    evictionHeapPercentage = value;
   }
 
   /**
@@ -128,7 +128,7 @@ public class ResourceManagerType {
    *
    */
   public void setCriticalOffHeapPercentage(String value) {
-    this.criticalOffHeapPercentage = value;
+    criticalOffHeapPercentage = value;
   }
 
   /**
@@ -150,7 +150,7 @@ public class ResourceManagerType {
    *
    */
   public void setEvictionOffHeapPercentage(String value) {
-    this.evictionOffHeapPercentage = value;
+    evictionOffHeapPercentage = value;
   }
 
 }

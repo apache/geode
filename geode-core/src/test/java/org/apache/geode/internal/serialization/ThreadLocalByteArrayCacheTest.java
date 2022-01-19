@@ -22,7 +22,7 @@ import org.junit.Test;
 
 
 public class ThreadLocalByteArrayCacheTest {
-  private ThreadLocalByteArrayCache instance = new ThreadLocalByteArrayCache(2);
+  private final ThreadLocalByteArrayCache instance = new ThreadLocalByteArrayCache(2);
 
   @Test
   public void emptyArrayReturned() {

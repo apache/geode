@@ -34,7 +34,7 @@ public class ServerLauncherDUnitTestHelper {
 
     serverLauncher.start();
 
-    Thread t = new Thread(() -> serverLauncher.stop());
+    Thread t = new Thread(serverLauncher::stop);
 
     t.setDaemon(true);
     t.start();

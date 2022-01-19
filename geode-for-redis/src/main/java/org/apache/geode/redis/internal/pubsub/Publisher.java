@@ -89,10 +89,10 @@ public class Publisher {
   private final Map<Client, ClientPublisher> clientPublishers = new ConcurrentHashMap<>();
 
   public Publisher(RegionProvider regionProvider, Subscriptions subscriptions, RedisStats stats) {
-    this.executor = createExecutorService();
+    executor = createExecutorService();
     this.regionProvider = regionProvider;
     this.subscriptions = subscriptions;
-    this.redisStats = stats;
+    redisStats = stats;
     registerPublishFunction();
   }
 
@@ -102,7 +102,7 @@ public class Publisher {
     this.executor = executor;
     this.regionProvider = regionProvider;
     this.subscriptions = subscriptions;
-    this.redisStats = stats;
+    redisStats = stats;
     // no need to register function in unit tests
   }
 
@@ -256,7 +256,7 @@ public class Publisher {
 
     public PublishRequest(byte[] channel) {
       this.channel = channel;
-      this.messages = new ArrayList<>();
+      messages = new ArrayList<>();
     }
 
     @SuppressWarnings("unused")
@@ -265,7 +265,7 @@ public class Publisher {
     }
 
     public void addMessage(byte[] message) {
-      this.messages.add(message);
+      messages.add(message);
     }
 
     public byte[] getChannel() {

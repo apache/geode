@@ -174,7 +174,7 @@ public class DLockServiceCharacterizationTests {
   @Test
   public void whatHappensWhenTheDLockServiceWasNeverCreated() throws Exception {
     final String serviceName =
-        "Please don't use this anywhere else " + this.getClass().getCanonicalName();
+        "Please don't use this anywhere else " + getClass().getCanonicalName();
 
     assertThatThrownBy(() -> DistributedLockService.becomeLockGrantor(serviceName))
         .isInstanceOf(IllegalArgumentException.class);

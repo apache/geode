@@ -42,6 +42,7 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.MemberStarterRule;
 
 
 public class FunctionCommandsDUnitTestBase {
@@ -61,7 +62,7 @@ public class FunctionCommandsDUnitTestBase {
 
   @BeforeClass
   public static void before() throws Exception {
-    locator = lsRule.startLocatorVM(0, l -> l.withHttpService());
+    locator = lsRule.startLocatorVM(0, MemberStarterRule::withHttpService);
 
     Properties props = new Properties();
     props.setProperty("groups", "group-1");

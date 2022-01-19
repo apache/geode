@@ -57,16 +57,16 @@ public class DurableClientConnectDisconnectSocketDistributedTest implements Seri
             });
 
     // Invoke readyForEvents in client
-    client.invoke(() -> readyForEvents());
+    client.invoke(this::readyForEvents);
 
     // Verify client socket is connected on the server
-    server.invoke(() -> verifyCacheClientProxySocketIsOpen());
+    server.invoke(this::verifyCacheClientProxySocketIsOpen);
 
     // Close client
-    client.invoke(() -> closeClient());
+    client.invoke(this::closeClient);
 
     // Wait for the client socket to be closed on the server
-    server.invoke(() -> waitForCacheClientProxySocketToBeClosed());
+    server.invoke(this::waitForCacheClientProxySocketToBeClosed);
 
     // Reconnect the client
     client =
@@ -77,16 +77,16 @@ public class DurableClientConnectDisconnectSocketDistributedTest implements Seri
             });
 
     // Invoke readyForEvents in client
-    client.invoke(() -> readyForEvents());
+    client.invoke(this::readyForEvents);
 
     // Verify client socket is connected on the server
-    server.invoke(() -> verifyCacheClientProxySocketIsOpen());
+    server.invoke(this::verifyCacheClientProxySocketIsOpen);
 
     // Close client
-    client.invoke(() -> closeClient());
+    client.invoke(this::closeClient);
 
     // Wait for the client socket to be closed on the server
-    server.invoke(() -> waitForCacheClientProxySocketToBeClosed());
+    server.invoke(this::waitForCacheClientProxySocketToBeClosed);
   }
 
   protected Properties getDurableClientProperties(String durableClientId) {

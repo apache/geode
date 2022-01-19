@@ -51,7 +51,7 @@ public class CallbackSampler {
     this.statisticsManager = statisticsManager;
     this.executor = executor;
 
-    executor.scheduleAtFixedRate(() -> sampleCallbacks(), sampleInterval, sampleInterval, timeUnit);
+    executor.scheduleAtFixedRate(this::sampleCallbacks, sampleInterval, sampleInterval, timeUnit);
   }
 
   private void sampleCallbacks() {
@@ -82,7 +82,7 @@ public class CallbackSampler {
 
   public void stop() {
     if (executor != null) {
-      this.executor.shutdown();
+      executor.shutdown();
     }
   }
 }

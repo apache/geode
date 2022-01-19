@@ -23,7 +23,7 @@ public class PRColocationDUnitTestHelper {
     if (defaultStringSize == 0) {
       return "";
     }
-    StringBuffer buf = new StringBuffer(defaultStringSize);
+    StringBuilder buf = new StringBuilder(defaultStringSize);
     for (int i = 0; i < defaultStringSize; i++) {
       buf.append("a");
     }

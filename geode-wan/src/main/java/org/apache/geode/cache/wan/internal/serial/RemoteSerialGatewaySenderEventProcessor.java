@@ -41,10 +41,10 @@ public class RemoteSerialGatewaySenderEventProcessor extends SerialGatewaySender
     // In case of serial there is a way to create gatewaySender and attach
     // asyncEventListener. Not sure of the use-case but there are dunit tests
     // To make them pass uncommenting the below condition
-    if (this.sender.getRemoteDSId() != GatewaySender.DEFAULT_DISTRIBUTED_SYSTEM_ID) {
-      this.dispatcher = new GatewaySenderEventRemoteDispatcher(this);
+    if (sender.getRemoteDSId() != GatewaySender.DEFAULT_DISTRIBUTED_SYSTEM_ID) {
+      dispatcher = new GatewaySenderEventRemoteDispatcher(this);
     } else {
-      this.dispatcher = new GatewaySenderEventCallbackDispatcher(this);
+      dispatcher = new GatewaySenderEventCallbackDispatcher(this);
     }
   }
 

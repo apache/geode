@@ -199,7 +199,7 @@ public class RMIRegistryService implements RMIRegistryServiceMBean {
  */
 class RMIServerSocketFactoryImpl implements RMIServerSocketFactory {
   /* IP address to use for creating ServerSocket */
-  private InetAddress bindAddress;
+  private final InetAddress bindAddress;
 
   /**
    * Constructs a RMIServerSocketFactory. The given rmiBindAddress is used to bind the ServerSockets
@@ -210,7 +210,7 @@ class RMIServerSocketFactoryImpl implements RMIServerSocketFactory {
    * @throws UnknownHostException if IP Address can not be resolved for the given host string
    */
   /* default */ RMIServerSocketFactoryImpl(String rmiBindAddress) throws UnknownHostException {
-    this.bindAddress = InetAddress.getByName(rmiBindAddress);
+    bindAddress = InetAddress.getByName(rmiBindAddress);
   }
 
   /**

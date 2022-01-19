@@ -125,7 +125,7 @@ public class RestAPITestBase implements Serializable {
       HttpPost post =
           createHTTPPost(function, regionName, filter, restURLIndex, groups, members, jsonBody);
 
-      System.out.println("Request: POST " + post.toString());
+      System.out.println("Request: POST " + post);
       value = httpclient.execute(post);
     } catch (Exception e) {
       fail("unexpected exception", e);

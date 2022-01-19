@@ -220,7 +220,7 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
         @Override
         public void cacheCreated(InternalCache cache) {
           calledCreateCache.set(true);
-          await().until(() -> cache.isCacheAtShutdownAll());
+          await().until(cache::isCacheAtShutdownAll);
         }
 
         @Override
@@ -233,14 +233,14 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
     });
     try {
       boolean vm0CalledCreateCache = vm0.invoke(() -> {
-        await().until(() -> calledCreateCache.get());
+        await().until(calledCreateCache::get);
         return calledCreateCache.get();
       });
       assertTrue(vm0CalledCreateCache);
       shutDownAllMembers(vm2, 1);
       asyncCreate.get(60, TimeUnit.SECONDS);
       boolean vm0CalledCloseCache = vm0.invoke(() -> {
-        await().until(() -> calledCloseCache.get());
+        await().until(calledCloseCache::get);
         return calledCloseCache.get();
       });
       assertTrue(vm0CalledCloseCache);
@@ -586,7 +586,7 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
       a0.getResult(MAX_WAIT);
       fail("should have received a cache closed exception");
     } catch (AssertionError e) {
-      if (!CacheClosedException.class.isInstance(getRootCause(e))) {
+      if (!(getRootCause(e) instanceof CacheClosedException)) {
         throw e;
       }
     }
@@ -648,7 +648,7 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
     return new SerializableRunnable("create DR") {
       @Override
       public void run() {
-        Cache cache = ShutdownAllDUnitTest.this.getCache();
+        Cache cache = getCache();
 
         DiskStore ds = cache.findDiskStore(diskStoreName);
         if (ds == null) {
@@ -721,7 +721,7 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
           recoveryDone = null;
         }
 
-        Cache cache = ShutdownAllDUnitTest.this.getCache();
+        Cache cache = getCache();
 
         if (diskStoreName != null) {
           DiskStore ds = cache.findDiskStore(diskStoreName);
@@ -780,7 +780,7 @@ public class ShutdownAllDUnitTest extends JUnit4CacheTestCase {
         Region region = cache.getRegion(regionName);
         if (region instanceof PartitionedRegion) {
           PartitionedRegion pr = (PartitionedRegion) region;
-          return new TreeSet<Integer>(pr.getDataStore().getAllLocalBucketIds());
+          return new TreeSet<>(pr.getDataStore().getAllLocalBucketIds());
         } else {
           return null;
         }

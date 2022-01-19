@@ -20,7 +20,7 @@ import org.apache.geode.management.LocatorMXBean;
 
 public class LocatorMBean extends NotificationBroadcasterSupport implements LocatorMXBean {
 
-  private LocatorMBeanBridge bridge;
+  private final LocatorMBeanBridge bridge;
 
   public LocatorMBean(LocatorMBeanBridge bridge) {
     this.bridge = bridge;

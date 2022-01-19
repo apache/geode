@@ -48,8 +48,8 @@ public class FragmentJUnitTest {
 
   @After
   public void tearDown() throws Exception {
-    for (int i = 0; i < slabs.length; i++) {
-      slabs[i].free();
+    for (final SlabImpl slab : slabs) {
+      slab.free();
     }
   }
 
@@ -194,7 +194,7 @@ public class FragmentJUnitTest {
     Long fragmentAddress = fragment.getAddress();
     byte[] bytes = new byte[(int) OffHeapStorage.MIN_SLAB_SIZE];
     byte[] expectedBytes = new byte[(int) OffHeapStorage.MIN_SLAB_SIZE];
-    Arrays.fill(expectedBytes, OffHeapStoredObject.FILL_BYTE);;
+    Arrays.fill(expectedBytes, OffHeapStoredObject.FILL_BYTE);
     fragment.fill();
     AddressableMemoryManager.readBytes(fragmentAddress, bytes, 0,
         (int) OffHeapStorage.MIN_SLAB_SIZE);

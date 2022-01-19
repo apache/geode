@@ -47,7 +47,7 @@ public class ClusterManagementServiceOnServerTest implements Serializable {
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
 
-  private File keyFile = new File(ClusterManagementServiceOnServerTest.class.getClassLoader()
+  private final File keyFile = new File(ClusterManagementServiceOnServerTest.class.getClassLoader()
       .getResource("ssl/trusted.keystore").getFile());
 
   private MemberVM locator, server;

@@ -64,7 +64,7 @@ public class FileSystemStats {
   }
 
   public FileSystemStats(StatisticsFactory f, String name) {
-    this.stats = f.createAtomicStatistics(statsType, name);
+    stats = f.createAtomicStatistics(statsType, name);
   }
 
   public void incReadBytes(int delta) {

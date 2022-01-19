@@ -21,16 +21,16 @@ public class StatsRate {
 
   private int prevIntCounter = 0;
 
-  private MBeanStatsMonitor monitor;
+  private final MBeanStatsMonitor monitor;
 
-  private String[] statsKeys;
+  private final String[] statsKeys;
 
-  private StatType type;
+  private final StatType type;
 
 
 
   public StatsRate(String statsKey, StatType type, MBeanStatsMonitor monitor) {
-    this.statsKeys = new String[] {statsKey};
+    statsKeys = new String[] {statsKey};
     this.monitor = monitor;
     this.type = type;
   }

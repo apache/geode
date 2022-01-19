@@ -82,23 +82,23 @@ public class AlterGatewaySenderFunction implements InternalFunction<GatewaySende
 
     Integer alertThreshold = gatewaySenderCreateArgs.getAlertThreshold();
     if (alertThreshold != null) {
-      ((AbstractGatewaySender) gateway).setAlertThreshold(alertThreshold.intValue());
+      ((AbstractGatewaySender) gateway).setAlertThreshold(alertThreshold);
     }
 
     Integer batchSize = gatewaySenderCreateArgs.getBatchSize();
     if (batchSize != null) {
-      ((AbstractGatewaySender) gateway).setBatchSize(batchSize.intValue());
+      ((AbstractGatewaySender) gateway).setBatchSize(batchSize);
     }
 
     Integer batchTimeInterval = gatewaySenderCreateArgs.getBatchTimeInterval();
     if (batchTimeInterval != null) {
-      ((AbstractGatewaySender) gateway).setBatchTimeInterval(batchTimeInterval.intValue());
+      ((AbstractGatewaySender) gateway).setBatchTimeInterval(batchTimeInterval);
     }
 
     Boolean groupTransactionEvents = gatewaySenderCreateArgs.mustGroupTransactionEvents();
     if (groupTransactionEvents != null) {
       ((AbstractGatewaySender) gateway)
-          .setGroupTransactionEvents(groupTransactionEvents.booleanValue());
+          .setGroupTransactionEvents(groupTransactionEvents);
     }
 
     List<String> gatewayEventFilters = gatewaySenderCreateArgs.getGatewayEventFilter();

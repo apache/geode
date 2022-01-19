@@ -36,7 +36,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractGetRangeIntegrationTest implements RedisIntegrationTest {
 
-  private Random random = new Random();
+  private final Random random = new Random();
   private JedisCluster jedis;
   private final String key = "key";
   private final String value = "value";

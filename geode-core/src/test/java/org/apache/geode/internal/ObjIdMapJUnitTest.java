@@ -41,7 +41,7 @@ public class ObjIdMapJUnitTest {
   public void testSimplePut() {
     ObjIdMap map = new ObjIdMap();
     int key = 4;
-    Object value = new Integer(key);
+    Object value = key;
     map.put(key, value);
     assertSame(value, map.get(key));
   }
@@ -57,7 +57,7 @@ public class ObjIdMapJUnitTest {
   public void testSimpleContainsKey() {
     ObjIdMap map = new ObjIdMap();
     int key = 4;
-    Object value = new Integer(key);
+    Object value = key;
     map.put(key, value);
     assertTrue(map.containsKey(key));
   }
@@ -66,7 +66,7 @@ public class ObjIdMapJUnitTest {
   public void testSimpleRemove() {
     ObjIdMap map = new ObjIdMap();
     int key = 4;
-    Object value = new Integer(key);
+    Object value = key;
     map.put(key, value);
     assertSame(value, map.remove(key));
   }
@@ -75,15 +75,15 @@ public class ObjIdMapJUnitTest {
   public void testSimpleValues() {
     ObjIdMap map = new ObjIdMap();
     for (int i = 0; i < 20; i++) {
-      map.put(i, new Integer(i));
+      map.put(i, i);
     }
 
     Object[] values = map.values();
     assertEquals(20, values.length);
     for (int i = 0; i < 20; i++) {
       boolean found = false;
-      for (int j = 0; j < values.length; j++) {
-        if (values[j].equals(new Integer(i))) {
+      for (final Object value : values) {
+        if (value.equals(i)) {
           found = true;
           break;
         }
@@ -107,26 +107,26 @@ public class ObjIdMapJUnitTest {
 
     // Loop until we have 1000 keys. This addresses the slight
     // possibility of duplicates...
-    HashSet<Integer> keySet = new HashSet<Integer>();
+    HashSet<Integer> keySet = new HashSet<>();
     while (keySet.size() != size) {
       int key = Math.abs(random.nextInt());
-      keySet.add(new Integer(key));
+      keySet.add(key);
     }
 
     // Loop until we have 1000 values
-    HashSet<Long> valueSet = new HashSet<Long>();
+    HashSet<Long> valueSet = new HashSet<>();
     while (valueSet.size() != size) {
       long value = Math.abs(random.nextLong());
-      valueSet.add(new Long(value));
+      valueSet.add(value);
     }
 
     Iterator<Integer> keyIt = keySet.iterator();
     Iterator<Long> valueIt = valueSet.iterator();
-    int keys[] = new int[size];
-    Long values[] = new Long[size];
+    int[] keys = new int[size];
+    Long[] values = new Long[size];
     for (int i = 0; i < size; i++) {
-      keys[i] = keyIt.next().intValue();
-      values[i] = valueIt.next();;
+      keys[i] = keyIt.next();
+      values[i] = valueIt.next();
     }
 
     // ----------------------
@@ -152,8 +152,8 @@ public class ObjIdMapJUnitTest {
       boolean found = false;
       int key = keys[i];
       Object value = values[i];
-      for (int j = 0; j < valueArray.length; j++) {
-        if (valueArray[j].equals(value)) {
+      for (final Object o : valueArray) {
+        if (o.equals(value)) {
           found = true;
           break;
         }
@@ -192,7 +192,7 @@ public class ObjIdMapJUnitTest {
             // because it is only in the map once.
             continue;
           }
-          Integer newValue = new Integer(key);
+          Integer newValue = key;
           numAdds++;
           map.put(key, new WeakReference(newValue));
           saver.add(newValue);
@@ -208,8 +208,8 @@ public class ObjIdMapJUnitTest {
           numRemoves++;
           key = random.nextInt(saver.size());
           Integer value = (Integer) saver.remove(key);
-          bits.clear(value.intValue());
-          assertNotNull(map.remove(value.intValue()));
+          bits.clear(value);
+          assertNotNull(map.remove(value));
           break;
         case 4: // Release reference to random entry
           if (saver.size() == 0) {
@@ -218,7 +218,7 @@ public class ObjIdMapJUnitTest {
           numReleases++;
           key = random.nextInt(saver.size());
           value = (Integer) saver.remove(key);
-          bits.clear(value.intValue());
+          bits.clear(value);
           break;
         case 5: // Validate random entry
         case 6:
@@ -228,7 +228,7 @@ public class ObjIdMapJUnitTest {
           }
           numChecks++;
           Integer valueToCheck = (Integer) saver.get(random.nextInt(saver.size()));
-          WeakReference ref = (WeakReference) map.get(valueToCheck.intValue());
+          WeakReference ref = (WeakReference) map.get(valueToCheck);
           assertTrue(ref != null);
           assertEquals(valueToCheck, ref.get());
           break;
@@ -245,7 +245,7 @@ public class ObjIdMapJUnitTest {
     int size = 10;
     ObjIdMap map = new ObjIdMap();
     for (int i = 0; i < size; i++) {
-      map.put(i, new Integer(i));
+      map.put(i, i);
     }
     assertEquals(size, map.size());
 

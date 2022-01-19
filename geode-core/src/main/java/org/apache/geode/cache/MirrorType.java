@@ -108,7 +108,7 @@ public class MirrorType implements java.io.Serializable {
    * @since GemFire 5.0
    */
   public DataPolicy getDataPolicy() {
-    return this.dataPolicy;
+    return dataPolicy;
   }
 
   /** Return whether this is <code>KEYS</code>. */
@@ -142,6 +142,6 @@ public class MirrorType implements java.io.Serializable {
    */
   @Override
   public String toString() {
-    return this.name;
+    return name;
   }
 }

@@ -210,7 +210,7 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
     long sleepMs = getTimeToSleep(startTime, copiedEntries, maxRate);
     if (sleepMs > 0) {
       logger.info("{}: Sleeping for {} ms to accommodate to requested maxRate",
-          this.getClass().getSimpleName(), sleepMs);
+          getClass().getSimpleName(), sleepMs);
       threadSleeper.sleep(sleepMs);
     } else {
       if (Thread.currentThread().isInterrupted()) {

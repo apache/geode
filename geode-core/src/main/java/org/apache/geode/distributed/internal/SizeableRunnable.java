@@ -27,7 +27,7 @@ package org.apache.geode.distributed.internal;
  */
 
 public abstract class SizeableRunnable implements Runnable, Sizeable {
-  private int size;
+  private final int size;
 
   public SizeableRunnable(int size) {
     this.size = size;
@@ -35,6 +35,6 @@ public abstract class SizeableRunnable implements Runnable, Sizeable {
 
   @Override
   public int getSize() {
-    return this.size;
+    return size;
   }
 }

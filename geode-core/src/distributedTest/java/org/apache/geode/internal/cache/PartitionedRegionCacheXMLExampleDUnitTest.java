@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.apache.geode.cache.Region;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 
 /**
  * This class tests regions created by xml files
@@ -65,12 +66,12 @@ public class PartitionedRegionCacheXMLExampleDUnitTest extends CacheTestCase {
 
     vm0.invoke(() -> createCache(cacheXmlFileName));
     vm1.invoke(() -> createCache(cacheXmlFileName));
-    vm0.invoke(() -> validatePartitionedRegions());
+    vm0.invoke(this::validatePartitionedRegions);
 
     // Disconnecting and again creating the PR from xml file
-    vm1.invoke(() -> disconnectFromDS());
+    vm1.invoke(JUnit4DistributedTestCase::disconnectFromDS);
     vm1.invoke(() -> createCache(cacheXmlFileName));
-    vm1.invoke(() -> validatePartitionedRegions());
+    vm1.invoke(this::validatePartitionedRegions);
   }
 
   @Test

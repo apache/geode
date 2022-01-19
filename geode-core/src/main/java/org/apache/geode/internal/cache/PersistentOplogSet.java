@@ -141,7 +141,7 @@ public class PersistentOplogSet implements OplogSet {
   }
 
   private TreeSet<Oplog> getSortedOplogs() {
-    TreeSet<Oplog> result = new TreeSet<Oplog>(
+    TreeSet<Oplog> result = new TreeSet<>(
         (Comparator) (arg0, arg1) -> Long
             .signum(((Oplog) arg1).getOplogId() - ((Oplog) arg0).getOplogId()));
     for (Oplog oplog : getAllOplogs()) {

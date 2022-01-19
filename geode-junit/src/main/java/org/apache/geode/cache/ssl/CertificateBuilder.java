@@ -60,8 +60,8 @@ public class CertificateBuilder {
   private final int days;
   private final String algorithm;
   private X500Name name;
-  private List<String> dnsNames;
-  private List<InetAddress> ipAddresses;
+  private final List<String> dnsNames;
+  private final List<InetAddress> ipAddresses;
   private boolean isCA;
   private CertificateMaterial issuer;
 
@@ -72,8 +72,8 @@ public class CertificateBuilder {
   public CertificateBuilder(int days, String algorithm) {
     this.days = days;
     this.algorithm = algorithm;
-    this.dnsNames = new ArrayList<>();
-    this.ipAddresses = new ArrayList<>();
+    dnsNames = new ArrayList<>();
+    ipAddresses = new ArrayList<>();
   }
 
   private static GeneralName dnsGeneralName(String name) {
@@ -94,7 +94,7 @@ public class CertificateBuilder {
 
   public CertificateBuilder commonName(String cn) {
     try {
-      this.name = new X500Name("O=Geode, CN=" + cn);
+      name = new X500Name("O=Geode, CN=" + cn);
     } catch (IOException ex) {
       throw new UncheckedIOException(ex);
     }
@@ -102,18 +102,18 @@ public class CertificateBuilder {
   }
 
   public CertificateBuilder sanDnsName(String hostName) {
-    this.dnsNames.add(hostName);
+    dnsNames.add(hostName);
     return this;
   }
 
   public CertificateBuilder sanIpAddress(InetAddress hostAddress) {
-    this.ipAddresses.add(hostAddress);
+    ipAddresses.add(hostAddress);
     return this;
   }
 
   public CertificateBuilder sanIpAddress(String address) {
     try {
-      this.ipAddresses.add(InetAddress.getByName(address));
+      ipAddresses.add(InetAddress.getByName(address));
     } catch (UnknownHostException ex) {
       throw new RuntimeException(ex);
     }
@@ -121,7 +121,7 @@ public class CertificateBuilder {
   }
 
   public CertificateBuilder isCA() {
-    this.isCA = true;
+    isCA = true;
     return this;
   }
 

@@ -104,7 +104,7 @@ public class GatewaySenderEventCallbackArgument extends WrappedCallbackArgument
    * @return the id of the originating <code>GatewayReceiver</code> making the request
    */
   public int getOriginatingDSId() {
-    return this.originatingDSId;
+    return originatingDSId;
   }
 
   /**
@@ -122,7 +122,7 @@ public class GatewaySenderEventCallbackArgument extends WrappedCallbackArgument
    * @return the list of <code>Gateway</code> s to which the event has been sent
    */
   public IntOpenHashSet getRecipientDSIds() {
-    return this.receipientDSIds;
+    return receipientDSIds;
   }
 
   /**
@@ -131,9 +131,9 @@ public class GatewaySenderEventCallbackArgument extends WrappedCallbackArgument
    * @param originalGatewaysReceivers The original recipient <code>Gateway</code>s.
    */
   public void initializeReceipientDSIds(List<Integer> originalGatewaysReceivers) {
-    this.receipientDSIds = new IntOpenHashSet(2);
+    receipientDSIds = new IntOpenHashSet(2);
     for (Integer id : originalGatewaysReceivers) {
-      this.receipientDSIds.add(id);
+      receipientDSIds.add(id);
     }
   }
 
@@ -146,10 +146,10 @@ public class GatewaySenderEventCallbackArgument extends WrappedCallbackArgument
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out);
-    DataSerializer.writeInteger(this.originatingDSId, out);
-    if (this.receipientDSIds != null) {
-      out.writeInt(this.receipientDSIds.size());
-      for (Integer gateway : this.receipientDSIds) {
+    DataSerializer.writeInteger(originatingDSId, out);
+    if (receipientDSIds != null) {
+      out.writeInt(receipientDSIds.size());
+      for (Integer gateway : receipientDSIds) {
         out.writeInt(gateway);
       }
     } else {
@@ -161,22 +161,20 @@ public class GatewaySenderEventCallbackArgument extends WrappedCallbackArgument
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.originatingDSId = DataSerializer.readInteger(in);
-    this.receipientDSIds = new IntOpenHashSet(2);
+    originatingDSId = DataSerializer.readInteger(in);
+    receipientDSIds = new IntOpenHashSet(2);
     int numberOfRecipientGateways = in.readInt();
     for (int i = 0; i < numberOfRecipientGateways; i++) {
-      this.receipientDSIds.add(in.readInt());
+      receipientDSIds.add(in.readInt());
     }
   }
 
   @Override
   public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("GatewaySenderEventCallbackArgument [").append("originalCallbackArg=")
-        .append(getOriginalCallbackArg()).append(";originatingSenderId=")
-        .append(this.originatingDSId).append(";recipientGatewayReceivers=")
-        .append(this.receipientDSIds).append("]");
-    return buffer.toString();
+    return "GatewaySenderEventCallbackArgument [" + "originalCallbackArg="
+        + getOriginalCallbackArg() + ";originatingSenderId="
+        + originatingDSId + ";recipientGatewayReceivers="
+        + receipientDSIds + "]";
   }
 
   @Override

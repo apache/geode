@@ -25,7 +25,7 @@ public class MyGatewayEventFilter1 implements GatewayEventFilter, Declarable2 {
   private final Properties resolveProps;
 
   public MyGatewayEventFilter1() {
-    this.resolveProps = new Properties();
+    resolveProps = new Properties();
   }
 
   @Override
@@ -35,12 +35,12 @@ public class MyGatewayEventFilter1 implements GatewayEventFilter, Declarable2 {
 
   @Override
   public Properties getConfig() {
-    return this.resolveProps;
+    return resolveProps;
   }
 
   @Override
   public void init(Properties props) {
-    this.resolveProps.putAll(props);
+    resolveProps.putAll(props);
   }
 
 

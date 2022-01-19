@@ -224,27 +224,27 @@ public class DiskUsageTest {
 
     public TestableDiskUsage(File dir, long min) {
       this.dir = dir;
-      this.minimum = min;
+      minimum = min;
     }
 
     public TestableDiskUsage(File dir) {
       this.dir = dir;
-      this.minimum = 0L;
+      minimum = 0L;
     }
 
     public TestableDiskUsage() {
-      this.dir = null;
-      this.minimum = 0L;
+      dir = null;
+      minimum = 0L;
     }
 
     @Override
     protected File dir() {
-      return this.dir;
+      return dir;
     }
 
     @Override
     protected long getMinimumSpace() {
-      return this.minimum;
+      return minimum;
     }
 
     @Override
@@ -262,23 +262,23 @@ public class DiskUsageTest {
     }
 
     public long getTotal() {
-      return this.total;
+      return total;
     }
 
     public long getFree() {
-      return this.free;
+      return free;
     }
 
     public DiskState getNext() {
-      return this.next;
+      return next;
     }
 
     public String getPct() {
-      return this.pct;
+      return pct;
     }
 
     public String getCriticalMessage() {
-      return this.criticalMessage;
+      return criticalMessage;
     }
   }
 }

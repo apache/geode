@@ -97,8 +97,8 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
     // client 2 VM
     client2 = host.getVM(3);
 
-    PORT1 = server1.invoke(() -> createServerCache());
-    PORT2 = server2.invoke(() -> createServerCache());
+    PORT1 = server1.invoke(this::createServerCache);
+    PORT2 = server2.invoke(this::createServerCache);
 
     client1.invoke(
         () -> createClientCache(NetworkUtils.getServerHostName(server1.getHost()), PORT1, PORT2));
@@ -116,12 +116,12 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void updatesAreProgegatedAfterFailover() {
     // First create entries on both servers via the two client
-    client1.invoke(() -> createEntriesK1andK2());
-    client2.invoke(() -> createEntriesK1andK2());
-    client1.invoke(() -> registerKeysK1andK2());
-    client2.invoke(() -> registerKeysK1andK2());
+    client1.invoke(this::createEntriesK1andK2);
+    client2.invoke(this::createEntriesK1andK2);
+    client1.invoke(this::registerKeysK1andK2);
+    client2.invoke(this::registerKeysK1andK2);
     // Induce fail over of InteretsList Endpoint to Server 2 by killing server1
-    server1.invoke(() -> killServer(new Integer(PORT1)));
+    server1.invoke(() -> killServer(PORT1));
     // Wait for 10 seconds to allow fail over. This would mean that Interstist has failed
     // over to Server2.
     final CacheSerializableRunnable waitToDetectDeadServer =
@@ -141,7 +141,7 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
 
     // Start Server1 again so that both clients1 & Client 2 will establish connection to server1
     // too.
-    server1.invoke(() -> startServer(new Integer(PORT1)));
+    server1.invoke(() -> startServer(PORT1));
 
     final CacheSerializableRunnable waitToDetectLiveServer =
         new CacheSerializableRunnable("Wait for servers to be alive") {
@@ -162,13 +162,13 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
     client1.invoke(
         () -> acquireConnectionsAndPutonK1andK2(NetworkUtils.getServerHostName(client1.getHost())));
     // Check if both the puts ( on key1 & key2 ) have reached the servers
-    server1.invoke(() -> verifyUpdates());
-    server2.invoke(() -> verifyUpdates());
+    server1.invoke(this::verifyUpdates);
+    server2.invoke(this::verifyUpdates);
     // verify updates to other client
-    client2.invoke(() -> verifyUpdates());
+    client2.invoke(this::verifyUpdates);
 
     // verify no updates for update originator
-    client1.invoke(() -> verifySenderUpdateCount());
+    client1.invoke(this::verifySenderUpdateCount);
   }
 
   /**
@@ -191,7 +191,7 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
     Iterator iter = getCache().getCacheServers().iterator();
     if (iter.hasNext()) {
       CacheServer server = (CacheServer) iter.next();
-      if (server.getPort() == port.intValue()) {
+      if (server.getPort() == port) {
         server.stop();
       }
     }
@@ -199,7 +199,7 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
 
   private void startServer(Integer port) throws IOException {
     CacheServer server1 = getCache().addCacheServer();
-    server1.setPort(port.intValue());
+    server1.setPort(port);
     server1.setNotifyBySubscription(true);
     server1.start();
   }
@@ -230,8 +230,8 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
     ClientCache cache;
     try {
       System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "PoolImpl.DISABLE_RANDOM", "true");
-      int PORT1 = port1.intValue();
-      int PORT2 = port2.intValue();
+      int PORT1 = port1;
+      int PORT2 = port2;
       Properties props = new Properties();
       props.setProperty(MCAST_PORT, "0");
       props.setProperty(LOCATORS, "");
@@ -258,7 +258,7 @@ public class UpdatePropagationDUnitTest extends JUnit4CacheTestCase {
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   protected RegionAttributes createCacheServerAttributes() {

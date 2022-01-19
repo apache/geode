@@ -145,7 +145,7 @@ public class PulseTestUtils {
     }
 
     String[] memberNames = JMXProperties.getInstance().getProperty("members").split(" ");
-    HashMap<String, HashMap<String, Member>> sgMap = new HashMap<String, HashMap<String, Member>>();
+    HashMap<String, HashMap<String, Member>> sgMap = new HashMap<>();
 
     for (String member : memberNames) {
       Member thisMember = new Member(member);
@@ -154,7 +154,7 @@ public class PulseTestUtils {
       for (String sgName : sgs) {
         HashMap<String, Member> sgMembers = sgMap.get(sgName);
         if (sgMembers == null) {
-          sgMembers = new HashMap<String, Member>();
+          sgMembers = new HashMap<>();
           sgMap.put(sgName, sgMembers);
         }
         sgMembers.put(thisMember.getMember(), thisMember);
@@ -192,7 +192,7 @@ public class PulseTestUtils {
     }
 
     String[] memberNames = JMXProperties.getInstance().getProperty("members").split(" ");
-    HashMap<String, HashMap<String, Member>> rzMap = new HashMap<String, HashMap<String, Member>>();
+    HashMap<String, HashMap<String, Member>> rzMap = new HashMap<>();
 
     for (String member : memberNames) {
       Member thisMember = new Member(member);
@@ -203,7 +203,7 @@ public class PulseTestUtils {
       HashMap<String, Member> rzMembers = rzMap.get(sgName);
 
       if (rzMembers == null) {
-        rzMembers = new HashMap<String, Member>();
+        rzMembers = new HashMap<>();
         rzMap.put(sgName, rzMembers);
       }
 
@@ -242,7 +242,7 @@ public class PulseTestUtils {
     }
 
     String[] memberNames = JMXProperties.getInstance().getProperty("members").split(" ");
-    HashMap<String, Member> tpMap = new HashMap<String, Member>();
+    HashMap<String, Member> tpMap = new HashMap<>();
 
     for (String member : memberNames) {
       Member thisMember = new Member(member);
@@ -286,7 +286,7 @@ public class PulseTestUtils {
     }
 
     String[] regionNames = JMXProperties.getInstance().getProperty("regions").split(" ");
-    HashMap<String, Region> dataMap = new HashMap<String, Region>();
+    HashMap<String, Region> dataMap = new HashMap<>();
 
     for (String region : regionNames) {
       Region thisRegion = new Region(region);
@@ -323,7 +323,7 @@ public class PulseTestUtils {
     }
 
     String[] memberNames = JMXProperties.getInstance().getProperty("members").split(" ");
-    HashMap<String, Member> tpMap = new HashMap<String, Member>();
+    HashMap<String, Member> tpMap = new HashMap<>();
 
     for (String member : memberNames) {
       Member thisMember = new Member(member);
@@ -483,7 +483,7 @@ public class PulseTestUtils {
   }
 
   public static void assertMemberSortingByHeapUsage() {
-    Map<Long, String> memberMap = new TreeMap<Long, String>(Collections.reverseOrder());
+    Map<Long, String> memberMap = new TreeMap<>(Collections.reverseOrder());
     String[] membersNames = splitString(JMXProperties.getInstance().getProperty("members"), " ");
     for (String member : membersNames) {
       Member thisMember = new Member(member);
@@ -508,7 +508,7 @@ public class PulseTestUtils {
 
   public static void assertMemberSortingBySgHeapUsage() {
     String[] memberNames = JMXProperties.getInstance().getProperty("members").split(" ");
-    HashMap<String, HashMap<String, Member>> sgMap = new HashMap<String, HashMap<String, Member>>();
+    HashMap<String, HashMap<String, Member>> sgMap = new HashMap<>();
     for (String member : memberNames) {
       Member thisMember = new Member(member);
       String[] sgs = thisMember.getGroups();
@@ -516,13 +516,13 @@ public class PulseTestUtils {
       for (String sgName : sgs) {
         HashMap<String, Member> sgMembers = sgMap.get(sgName);
         if (sgMembers == null) {
-          sgMembers = new HashMap<String, Member>();
+          sgMembers = new HashMap<>();
           sgMap.put(sgName, sgMembers);
         }
         sgMembers.put(thisMember.getMember(), thisMember);
       }
     }
-    Map<Float, String> memberMap = new TreeMap<Float, String>(Collections.reverseOrder());
+    Map<Float, String> memberMap = new TreeMap<>(Collections.reverseOrder());
 
     for (int sgId = 1; sgId <= 3; sgId++) {
       String sgName = "SG1";
@@ -551,7 +551,7 @@ public class PulseTestUtils {
 
   public static void assertMemberSortingBySgCpuUsage() {
     String[] memberNames = JMXProperties.getInstance().getProperty("members").split(" ");
-    HashMap<String, HashMap<String, Member>> sgMap = new HashMap<String, HashMap<String, Member>>();
+    HashMap<String, HashMap<String, Member>> sgMap = new HashMap<>();
     for (String member : memberNames) {
       Member thisMember = new Member(member);
       String[] sgs = thisMember.getGroups();
@@ -559,7 +559,7 @@ public class PulseTestUtils {
       for (String sgName : sgs) {
         HashMap<String, Member> sgMembers = sgMap.get(sgName);
         if (sgMembers == null) {
-          sgMembers = new HashMap<String, Member>();
+          sgMembers = new HashMap<>();
           sgMap.put(sgName, sgMembers);
         }
         sgMembers.put(thisMember.getMember(), thisMember);
@@ -592,20 +592,20 @@ public class PulseTestUtils {
 
   public static void assertMemberSortingByRzHeapUsage() {
     String[] memberNames = JMXProperties.getInstance().getProperty("members").split(" ");
-    HashMap<String, HashMap<String, Member>> rzMap = new HashMap<String, HashMap<String, Member>>();
+    HashMap<String, HashMap<String, Member>> rzMap = new HashMap<>();
     for (String member : memberNames) {
       Member thisMember = new Member(member);
       String sgName = thisMember.getRedundancyZone();
       HashMap<String, Member> rzMembers = rzMap.get(sgName);
 
       if (rzMembers == null) {
-        rzMembers = new HashMap<String, Member>();
+        rzMembers = new HashMap<>();
         rzMap.put(sgName, rzMembers);
       }
 
       rzMembers.put(thisMember.getMember(), thisMember);
     }
-    Map<Float, String> memberMap = new TreeMap<Float, String>(Collections.reverseOrder());
+    Map<Float, String> memberMap = new TreeMap<>(Collections.reverseOrder());
     String rzName = "RZ1 RZ2";
     String memName = "M1";
     Member m = rzMap.get(rzName).get(memName);
@@ -629,14 +629,14 @@ public class PulseTestUtils {
 
   public static void assertMemeberSortingByRzCpuUsage() {
     String[] memberNames = JMXProperties.getInstance().getProperty("members").split(" ");
-    HashMap<String, HashMap<String, Member>> rzMap = new HashMap<String, HashMap<String, Member>>();
+    HashMap<String, HashMap<String, Member>> rzMap = new HashMap<>();
     for (String member : memberNames) {
       Member thisMember = new Member(member);
       String sgName = thisMember.getRedundancyZone();
       HashMap<String, Member> rzMembers = rzMap.get(sgName);
 
       if (rzMembers == null) {
-        rzMembers = new HashMap<String, Member>();
+        rzMembers = new HashMap<>();
         rzMap.put(sgName, rzMembers);
       }
 

@@ -36,10 +36,10 @@ var colorCodeForZeroEntryCountRegions = "#848789";
 // Global reference for PulseFunctions
 var pf = new PulseFunctions();
 
-var infoAlerts = new Array();
-var severAlerts = new Array();
-var errorAlerts = new Array();
-var warningAlerts = new Array();
+var infoAlerts = [];
+var severAlerts = [];
+var errorAlerts = [];
+var warningAlerts = [];
 var expanededNodIds = [];
 var functionStartArray = [];
 
@@ -170,7 +170,7 @@ function repsonseErrorHandler(data) {
     // redirect user on Login Page
     window.location.href = "login.html?error=HTTP Error 401 : Unauthorized Access..";
   }
-};
+}
 
 // Function for removing/clearing all the three types of alerts
 function clearAlerts(alertType, flagClearAll) {
@@ -273,8 +273,8 @@ function displayClusterStatus() {
 
     // updating r graph
     if (flagActiveTab == "MEM_R_GRAPH_DEF") {
-      var postData = new Object();
-      var qp = new Object();
+      var postData = {};
+      var qp = {};
       postData["ClusterMembersRGraph"] = qp;
       var data = {
         "pulseData" : this.toJSONObj(postData)
@@ -290,8 +290,8 @@ function displayClusterStatus() {
     }
     // updating tree map
     if (flagActiveTab == "MEM_TREE_MAP_DEF") {
-      var postData = new Object();
-      var qp = new Object();
+      var postData = {};
+      var qp = {};
       postData["ClusterMembers"] = qp;
       var data = {
         "pulseData" : this.toJSONObj(postData)
@@ -389,11 +389,11 @@ function extractFilterTextFrom(elementId){
  */
 function applyFilterOnNotificationsList(alertsType){
   
-  var filteredNotifications = new Object();
+  var filteredNotifications = {};
   
   if('severe' == alertsType.toLowerCase()){
     var filterText = extractFilterTextFrom('filterSevereNotificationsListBox');
-    var filteredSevereAlertsList = new Array();
+    var filteredSevereAlertsList = [];
     for(var cntr=0; cntr < severAlerts.length; cntr++){
       if(severAlerts[cntr].description.toLowerCase().indexOf(filterText) > -1
           || severAlerts[cntr].memberName.toLowerCase().indexOf(filterText) > -1){
@@ -406,7 +406,7 @@ function applyFilterOnNotificationsList(alertsType){
     filteredNotifications.warnings = warningAlerts;    
   }else if('error' == alertsType.toLowerCase()){
     var filterText = extractFilterTextFrom('filterErrorNotificationsListBox');
-    var filteredErrorAlertsList = new Array();
+    var filteredErrorAlertsList = [];
     for(var cntr=0; cntr < errorAlerts.length; cntr++){
       if(errorAlerts[cntr].description.toLowerCase().indexOf(filterText) > -1
           || errorAlerts[cntr].memberName.toLowerCase().indexOf(filterText) > -1){
@@ -419,7 +419,7 @@ function applyFilterOnNotificationsList(alertsType){
     filteredNotifications.warnings = warningAlerts;
   }else if('warning' == alertsType.toLowerCase()){
     var filterText = extractFilterTextFrom('filterWarningNotificationsListBox');
-    var filteredWarningAlertsList = new Array();
+    var filteredWarningAlertsList = [];
     for(var cntr=0; cntr < warningAlerts.length; cntr++){
       if(warningAlerts[cntr].description.toLowerCase().indexOf(filterText) > -1
           || warningAlerts[cntr].memberName.toLowerCase().indexOf(filterText) > -1){
@@ -432,10 +432,10 @@ function applyFilterOnNotificationsList(alertsType){
     filteredNotifications.warnings = filteredWarningAlertsList;
   }else{ // all alerts
     var filterText = extractFilterTextFrom('filterAllNotificationsListBox');
-    var filteredSevereAlertsList = new Array();
-    var filteredErrorAlertsList = new Array();
-    var filteredWarningAlertsList = new Array();
-    var filteredInfoAlertsList = new Array();
+    var filteredSevereAlertsList = [];
+    var filteredErrorAlertsList = [];
+    var filteredWarningAlertsList = [];
+    var filteredInfoAlertsList = [];
     for(var cntr=0; cntr < infoAlerts.length; cntr++){
       if(infoAlerts[cntr].description.toLowerCase().indexOf(filterText) > -1
           || infoAlerts[cntr].memberName.toLowerCase().indexOf(filterText) > -1){
@@ -1402,7 +1402,7 @@ UUIDv4 = function b(a) {
 
 function scanPageForWidgets() {
   var listOfActiveWidgets = $("[data-active ='yes']");
-  var functionTimingList = new Array();
+  var functionTimingList = [];
   for ( var i = 0; i < listOfActiveWidgets.length; i++) {
     // alert( listOfActiveWidgets[i].dataset.widgetid);
     widgetAlreadyPresent = false;
@@ -1596,7 +1596,7 @@ function convertBytesToMBorGB(value){
   var ONE_MB = 1024 * 1024;
   var ONE_GB = 1024 * 1024 * 1024;
   
-  var convertedValue = new Array();
+  var convertedValue = [];
   var valueInMBorGB = value;
   var isBorKBorMBorGB = "B";
   

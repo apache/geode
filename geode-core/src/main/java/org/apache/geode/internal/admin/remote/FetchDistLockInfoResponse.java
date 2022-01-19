@@ -20,7 +20,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,15 +48,13 @@ public class FetchDistLockInfoResponse extends AdminResponse {
     InternalDistributedMember id = dm.getDistributionManagerId();
     Set entries = DLockService.snapshotAllServices().entrySet();
     List infos = new ArrayList();
-    Iterator iter = entries.iterator();
-    while (iter.hasNext()) {
-      Map.Entry entry = (Map.Entry) iter.next();
+    for (final Object o : entries) {
+      Map.Entry entry = (Map.Entry) o;
       String serviceName = entry.getKey().toString();
       DLockService service = (DLockService) entry.getValue();
       Set serviceEntries = service.snapshotService().entrySet();
-      Iterator iter1 = serviceEntries.iterator();
-      while (iter1.hasNext()) {
-        Map.Entry token = (Map.Entry) iter1.next();
+      for (final Object serviceEntry : serviceEntries) {
+        Map.Entry token = (Map.Entry) serviceEntry;
         infos.add(new RemoteDLockInfo(serviceName, token.getKey().toString(),
             (DLockToken) token.getValue(), id));
       }
@@ -81,19 +78,19 @@ public class FetchDistLockInfoResponse extends AdminResponse {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.lockInfos, out);
+    DataSerializer.writeObject(lockInfos, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.lockInfos = (DLockInfo[]) DataSerializer.readObject(in);
+    lockInfos = DataSerializer.readObject(in);
   }
 
   @Override
   public String toString() {
     return String.format("FetchDistLockInfoResponse from %s",
-        this.getSender());
+        getSender());
   }
 }

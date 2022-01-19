@@ -21,7 +21,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -54,9 +53,8 @@ public class SubRegionResponse extends AdminResponse {
 
     List subNames = new ArrayList();
     List userAttrs = new ArrayList();
-    Iterator it = subregions.iterator();
-    while (it.hasNext()) {
-      Region reg = (Region) it.next();
+    for (final Object subregion : subregions) {
+      Region reg = (Region) subregion;
       subNames.add(reg.getName());
       userAttrs.add(CacheDisplay.getCachedObjectDisplay(reg.getUserAttribute(),
           GemFireVM.LIGHTWEIGHT_CACHE_VALUE));
@@ -88,20 +86,20 @@ public class SubRegionResponse extends AdminResponse {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.subRegionNames, out);
-    DataSerializer.writeObject(this.userAttributes, out);
+    DataSerializer.writeObject(subRegionNames, out);
+    DataSerializer.writeObject(userAttributes, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.subRegionNames = (String[]) DataSerializer.readObject(in);
-    this.userAttributes = (String[]) DataSerializer.readObject(in);
+    subRegionNames = DataSerializer.readObject(in);
+    userAttributes = DataSerializer.readObject(in);
   }
 
   @Override
   public String toString() {
-    return "SubRegionResponse from " + this.getRecipient();
+    return "SubRegionResponse from " + getRecipient();
   }
 }

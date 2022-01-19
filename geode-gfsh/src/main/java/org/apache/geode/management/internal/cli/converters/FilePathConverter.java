@@ -31,7 +31,7 @@ public class FilePathConverter implements Converter<File> {
   private FilePathStringConverter delegate;
 
   public FilePathConverter() {
-    this.delegate = new FilePathStringConverter();
+    delegate = new FilePathStringConverter();
   }
 
   public void setDelegate(FilePathStringConverter delegate) {

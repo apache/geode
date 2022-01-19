@@ -36,8 +36,8 @@ public class MemoryInspectorImplJUnitTest {
 
   @Before
   public void setUp() {
-    this.freeList = mock(FreeListManager.class);
-    this.inspector = new MemoryInspectorImpl(freeList);
+    freeList = mock(FreeListManager.class);
+    inspector = new MemoryInspectorImpl(freeList);
   }
 
   @Test
@@ -78,31 +78,31 @@ public class MemoryInspectorImplJUnitTest {
   }
 
   private void createSnapshot(List<MemoryBlock> memoryBlocks) {
-    when(this.freeList.getOrderedBlocks()).thenReturn(memoryBlocks);
+    when(freeList.getOrderedBlocks()).thenReturn(memoryBlocks);
     inspector.createSnapshot();
   }
 
   @Test
   public void createSnapshotCallsGetOrderedBlocks() {
-    List<MemoryBlock> emptyList = new ArrayList<MemoryBlock>();
+    List<MemoryBlock> emptyList = new ArrayList<>();
     createSnapshot(emptyList);
-    verify(this.freeList, times(1)).getOrderedBlocks();
+    verify(freeList, times(1)).getOrderedBlocks();
     assertSame(emptyList, inspector.getSnapshot());
   }
 
   @Test
   public void createSnapshotIsIdempotent() {
-    List<MemoryBlock> emptyList = new ArrayList<MemoryBlock>();
+    List<MemoryBlock> emptyList = new ArrayList<>();
     createSnapshot(emptyList);
-    when(this.freeList.getOrderedBlocks()).thenReturn(null);
+    when(freeList.getOrderedBlocks()).thenReturn(null);
     inspector.createSnapshot();
-    verify(this.freeList, times(1)).getOrderedBlocks();
+    verify(freeList, times(1)).getOrderedBlocks();
     assertSame(emptyList, inspector.getSnapshot());
   }
 
   @Test
   public void clearSnapshotAfterCreatingOneReturnsEmptyList() {
-    List<MemoryBlock> emptyList = new ArrayList<MemoryBlock>();
+    List<MemoryBlock> emptyList = new ArrayList<>();
     createSnapshot(emptyList);
 
     inspector.clearSnapshot();

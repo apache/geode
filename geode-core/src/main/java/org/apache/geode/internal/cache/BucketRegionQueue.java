@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -69,9 +68,9 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
    * A transient deque, but should be treated like as a fifo queue to maintain the eventSeqNum of
    * the events that are to be sent to remote site. It is cleared when the queue is cleared.
    */
-  private final BlockingDeque<Object> eventSeqNumDeque = new LinkedBlockingDeque<Object>();
+  private final BlockingDeque<Object> eventSeqNumDeque = new LinkedBlockingDeque<>();
 
-  private final List<Object> markAsDuplicate = new ArrayList<Object>();
+  private final List<Object> markAsDuplicate = new ArrayList<>();
 
   private long lastKeyRecovered;
 
@@ -83,8 +82,8 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
       InternalCache cache, InternalRegionArguments internalRegionArgs,
       StatisticsClock statisticsClock) {
     super(regionName, attrs, parentRegion, cache, internalRegionArgs, statisticsClock);
-    this.keySet();
-    this.indexes = new ConcurrentHashMap<Object, Long>();
+    keySet();
+    indexes = new ConcurrentHashMap<>();
   }
 
   @Override
@@ -103,27 +102,24 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   private void initializeEventSeqNumQueue() {
     getInitializationLock().writeLock().lock();
     try {
-      if (!this.keySet().isEmpty()) {
+      if (!keySet().isEmpty()) {
         if (getPartitionedRegion().getColocatedWith() == null) {
-          List<EventID> keys = new ArrayList<EventID>(this.keySet());
-          Collections.sort(keys, new Comparator<EventID>() {
-            @Override
-            public int compare(EventID o1, EventID o2) {
-              int compareMem =
-                  new ByteComparator().compare(o1.getMembershipID(), o2.getMembershipID());
-              if (compareMem == 1) {
+          List<EventID> keys = new ArrayList<>(keySet());
+          Collections.sort(keys, (o1, o2) -> {
+            int compareMem =
+                new ByteComparator().compare(o1.getMembershipID(), o2.getMembershipID());
+            if (compareMem == 1) {
+              return 1;
+            } else if (compareMem == -1) {
+              return -1;
+            } else {
+              if (o1.getThreadID() > o2.getThreadID()) {
                 return 1;
-              } else if (compareMem == -1) {
+              } else if (o1.getThreadID() < o2.getThreadID()) {
                 return -1;
               } else {
-                if (o1.getThreadID() > o2.getThreadID()) {
-                  return 1;
-                } else if (o1.getThreadID() < o2.getThreadID()) {
-                  return -1;
-                } else {
-                  return o1.getSequenceID() < o2.getSequenceID() ? -1
-                      : o1.getSequenceID() == o2.getSequenceID() ? 0 : 1;
-                }
+                return o1.getSequenceID() < o2.getSequenceID() ? -1
+                    : o1.getSequenceID() == o2.getSequenceID() ? 0 : 1;
               }
             }
           });
@@ -131,7 +127,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
             eventSeqNumDeque.addLast(eventID);
           }
         } else {
-          TreeSet<Long> sortedKeys = new TreeSet<Long>(this.keySet());
+          TreeSet<Long> sortedKeys = new TreeSet<>(keySet());
           // although the empty check for this.keySet() is done above,
           // do the same for sortedKeys as well because the keySet() might have become
           // empty since the above check was made (keys might have been destroyed through
@@ -142,7 +138,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
               eventSeqNumDeque.addLast(key);
             }
             lastKeyRecovered = sortedKeys.last();
-            if (this.getEventSeqNum() != null) {
+            if (getEventSeqNum() != null) {
               Atomics.setIfGreater(getEventSeqNum(), lastKeyRecovered);
             }
           }
@@ -154,7 +150,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
               getId(), eventSeqNumDeque.size(), lastKeyRecovered, getEventSeqNum());
         }
       }
-      this.initialized = true;
+      initialized = true;
       // Now, the bucket is initialized. Destroy the failedBatchRemovalKeys.
       destroyFailedBatchRemovalMessageKeys();
     } finally {
@@ -212,28 +208,19 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
 
   @Override
   public void closeEntries() {
-    OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
-      @Override
-      public void run() {
-        BucketRegionQueue.super.closeEntries();
-      }
-    });
-    this.indexes.clear();
-    this.eventSeqNumDeque.clear();
-    this.markAsDuplicate.clear();
+    OffHeapClearRequired.doWithOffHeapClear(BucketRegionQueue.super::closeEntries);
+    indexes.clear();
+    eventSeqNumDeque.clear();
+    markAsDuplicate.clear();
   }
 
   @Override
   public Set<VersionSource> clearEntries(final RegionVersionVector rvv) {
-    final AtomicReference<Set<VersionSource>> result = new AtomicReference<Set<VersionSource>>();
-    OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
-      @Override
-      public void run() {
-        result.set(BucketRegionQueue.super.clearEntries(rvv));
-      }
-    });
-    this.eventSeqNumDeque.clear();
-    this.markAsDuplicate.clear();
+    final AtomicReference<Set<VersionSource>> result = new AtomicReference<>();
+    OffHeapClearRequired.doWithOffHeapClear(
+        () -> result.set(BucketRegionQueue.super.clearEntries(rvv)));
+    eventSeqNumDeque.clear();
+    markAsDuplicate.clear();
     return result.get();
   }
 
@@ -247,9 +234,9 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   protected void clearQueues() {
     getInitializationLock().writeLock().lock();
     try {
-      this.indexes.clear();
-      this.eventSeqNumDeque.clear();
-      this.markAsDuplicate.clear();
+      indexes.clear();
+      eventSeqNumDeque.clear();
+      markAsDuplicate.clear();
     } finally {
       getInitializationLock().writeLock().unlock();
     }
@@ -269,7 +256,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
           return success;
         }
 
-        if (getPartitionedRegion().isConflationEnabled() && this.getBucketAdvisor().isPrimary()) {
+        if (getPartitionedRegion().isConflationEnabled() && getBucketAdvisor().isPrimary()) {
           Object object = event.getNewValue();
           Long key = (Long) event.getKey();
           if (object instanceof Conflatable) {
@@ -295,7 +282,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   }
 
   private void conflateOldEntry(Conflatable object, Long tailKey) {
-    PartitionedRegion region = this.getPartitionedRegion();
+    PartitionedRegion region = getPartitionedRegion();
     Conflatable conflatableObject = object;
     if (region.isConflationEnabled() && conflatableObject.shouldBeConflated()) {
       Object keyToConflate = conflatableObject.getKeyToConflate();
@@ -303,10 +290,10 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
       if (logger.isDebugEnabled()) {
         logger.debug(" The region name is : {}", rName);
       }
-      Map latestIndexesForRegion = (Map) this.indexes.get(rName);
+      Map latestIndexesForRegion = (Map) indexes.get(rName);
       if (latestIndexesForRegion == null) {
         latestIndexesForRegion = new ConcurrentHashMap();
-        this.indexes.put(rName, latestIndexesForRegion);
+        indexes.put(rName, latestIndexesForRegion);
       }
       Long previousTailKey = (Long) latestIndexesForRegion.put(keyToConflate, tailKey);
       if (previousTailKey != null) {
@@ -349,7 +336,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
           // Otherwise, remove the index from the indexes map.
           String rName = object.getRegionToConflate();
           Object key = object.getKeyToConflate();
-          Map latestIndexesForRegion = (Map) this.indexes.get(rName);
+          Map latestIndexesForRegion = (Map) indexes.get(rName);
           if (latestIndexesForRegion != null) {
             // Remove the index if appropriate. Verify the qKey is actually the one being referenced
             // in the index. If it isn't, then another event has been received for the real key. In
@@ -357,7 +344,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
             if (latestIndexesForRegion.get(key) == qkey) {
               Long index = (Long) latestIndexesForRegion.remove(key);
               if (index != null) {
-                this.getPartitionedRegion().getParallelGatewaySender().getStatistics()
+                getPartitionedRegion().getParallelGatewaySender().getStatistics()
                     .decConflationIndexesMapSize();
                 if (logger.isDebugEnabled()) {
                   logger.debug("{}: Removed index {} for {}", this, index, object);
@@ -389,11 +376,11 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     }
 
     // Primary buckets should already remove the key while peeking
-    if (!this.getBucketAdvisor().isPrimary()) {
+    if (!getBucketAdvisor().isPrimary()) {
       if (logger.isDebugEnabled()) {
         logger.debug(" removing the key {} from eventSeqNumQueue", event.getKey());
       }
-      this.eventSeqNumDeque.remove(event.getKey());
+      eventSeqNumDeque.remove(event.getKey());
     }
   }
 
@@ -406,7 +393,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     try {
       object = getValueInVMOrDiskWithoutFaultIn(k);
       if (object != null && object instanceof CachedDeserializable) {
-        object = ((CachedDeserializable) object).getDeserializedValue(this, this.getRegionEntry(k));
+        object = ((CachedDeserializable) object).getDeserializedValue(this, getRegionEntry(k));
       }
     } catch (EntryNotFoundException ok) {
       // just return null;
@@ -425,10 +412,10 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     // clears the eventSeqNumQueue and can cause data inconsistency (defect #48984)
     getInitializationLock().readLock().lock();
     try {
-      if (this.getPartitionedRegion().isDestroyed()) {
+      if (getPartitionedRegion().isDestroyed()) {
         throw new BucketRegionQueueUnavailableException();
       }
-      key = this.eventSeqNumDeque.peekFirst();
+      key = eventSeqNumDeque.peekFirst();
       if (key != null) {
         boolean setDuplicate = markAsDuplicate.remove(key);
 
@@ -441,11 +428,11 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
             }
             ((GatewaySenderEventImpl) object).setPossibleDuplicate(true);
           }
-        } else if (!this.getPartitionedRegion().isConflationEnabled()) {
+        } else if (!getPartitionedRegion().isConflationEnabled()) {
           if (logger.isDebugEnabled()) {
             logger.debug(
                 "The value against key {} in the bucket region queue with id {} is NULL for the GatewaySender {}",
-                key, getId(), this.getPartitionedRegion().getParallelGatewaySender());
+                key, getId(), getPartitionedRegion().getParallelGatewaySender());
           }
         }
         // In case of conflation and a race where bucket recovers
@@ -457,7 +444,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
         // RegionQueue[1])[0];
         // //queue.addToPeekedKeys(key);
         // }
-        this.eventSeqNumDeque.remove(key);
+        eventSeqNumDeque.remove(key);
       }
       return object; // OFFHEAP: ok since callers are careful to do destroys on
                      // region queue after finished with peeked object.
@@ -474,17 +461,15 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   public List<Object> getElementsMatching(Predicate matchingPredicate, Predicate endPredicate) {
     getInitializationLock().readLock().lock();
     try {
-      if (this.getPartitionedRegion().isDestroyed()) {
+      if (getPartitionedRegion().isDestroyed()) {
         throw new BucketRegionQueueUnavailableException();
       }
-      List<Object> elementsMatching = new ArrayList<Object>();
-      Iterator<Object> it = this.eventSeqNumDeque.iterator();
-      while (it.hasNext()) {
-        Object key = it.next();
+      List<Object> elementsMatching = new ArrayList<>();
+      for (final Object key : eventSeqNumDeque) {
         Object object = optimalGet(key);
         if (matchingPredicate.test(object)) {
           elementsMatching.add(object);
-          this.eventSeqNumDeque.remove(key);
+          eventSeqNumDeque.remove(key);
           if (endPredicate.test(object)) {
             break;
           }
@@ -499,18 +484,18 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   @Override
   protected void addToEventQueue(Object key, boolean didPut, EntryEventImpl event) {
     if (didPut) {
-      if (this.initialized) {
-        this.eventSeqNumDeque.addLast(key);
+      if (initialized) {
+        eventSeqNumDeque.addLast(key);
         updateLargestQueuedKey((Long) key);
       }
       if (logger.isDebugEnabled()) {
         if (event != null) {
           logger.debug("Put successfully in the queue : {} was initialized: {}",
-              event.getRawNewValue(), this.initialized);
+              event.getRawNewValue(), initialized);
         }
       }
     }
-    if (this.getBucketAdvisor().isPrimary()) {
+    if (getBucketAdvisor().isPrimary()) {
       incQueueSize(1);
     } else {
       incSecondaryQueueSize(1);
@@ -522,15 +507,15 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   }
 
   private void updateLargestQueuedKey(Long key) {
-    Atomics.setIfGreater(this.latestQueuedKey, key);
+    Atomics.setIfGreater(latestQueuedKey, key);
   }
 
   private void setLatestAcknowledgedKey(Long key) {
-    this.latestAcknowledgedKey.set(key);
+    latestAcknowledgedKey.set(key);
   }
 
   public long getLatestQueuedKey() {
-    return this.latestQueuedKey.get();
+    return latestQueuedKey.get();
   }
 
   public boolean waitUntilFlushed(long latestQueuedKey, long timeout, TimeUnit unit)
@@ -542,7 +527,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     }
     boolean result = false;
     // Wait until latestAcknowledgedKey > latestQueuedKey or the queue is empty
-    if (this.initialized) {
+    if (initialized) {
       long nanosRemaining = unit.toNanos(timeout);
       long endTime = System.nanoTime() + nanosRemaining;
       while (nanosRemaining > 0) {
@@ -552,9 +537,9 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
             break;
           }
         } catch (RegionDestroyedException e) {
-          if (this.isBucketDestroyed()) {
+          if (isBucketDestroyed()) {
             getCancelCriterion().checkCancelInProgress(e);
-            throw new BucketMovedException(this.getFullPath());
+            throw new BucketMovedException(getFullPath());
           }
         }
         Thread.sleep(Math.min(TimeUnit.NANOSECONDS.toMillis(nanosRemaining) + 1, 100));
@@ -574,7 +559,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
    * @return Returns the key for which value was destroyed.
    */
   public Object remove() throws ForceReattemptException {
-    Object key = this.eventSeqNumDeque.removeFirst();
+    Object key = eventSeqNumDeque.removeFirst();
     if (key != null) {
       destroyKey(key);
     }
@@ -647,7 +632,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
       event.release();
     }
 
-    this.notifyEntriesRemoved();
+    notifyEntriesRemoved();
   }
 
   @Override
@@ -656,15 +641,15 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   }
 
   public boolean isReadyForPeek() {
-    return !this.getPartitionedRegion().isDestroyed() && !this.isEmpty()
-        && !this.eventSeqNumDeque.isEmpty() && getBucketAdvisor().isPrimary();
+    return !getPartitionedRegion().isDestroyed() && !isEmpty()
+        && !eventSeqNumDeque.isEmpty() && getBucketAdvisor().isPrimary();
   }
 
   @VisibleForTesting
   List<Object> getHelperQueueList() {
     getInitializationLock().readLock().lock();
     try {
-      if (this.getPartitionedRegion().isDestroyed()) {
+      if (getPartitionedRegion().isDestroyed()) {
         throw new BucketRegionQueueUnavailableException();
       }
       return eventSeqNumDeque.stream()

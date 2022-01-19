@@ -114,10 +114,7 @@ public class ObjectPartListJUnitTest {
       if (!(o instanceof AssertionError)) {
         return false;
       }
-      if (!((AssertionError) o).getMessage().equals(getMessage())) {
-        return false;
-      }
-      return true;
+      return ((AssertionError) o).getMessage().equals(getMessage());
     }
   }
 }

@@ -36,7 +36,7 @@ public class ListenerIdMap {
   private int threshold;
 
   /** The load factor of the map */
-  private float loadFactor;
+  private final float loadFactor;
 
   //////////////////// Constructors ////////////////////
 
@@ -46,12 +46,12 @@ public class ListenerIdMap {
   public ListenerIdMap(int initialCapacity, float loadFactor) {
     if (initialCapacity < 0) {
       throw new IllegalArgumentException(String.format("Illegal Initial Capacity: %s",
-          Integer.valueOf(initialCapacity)));
+          initialCapacity));
     }
 
     if (loadFactor <= 0 || Float.isNaN(loadFactor)) {
       throw new IllegalArgumentException(String.format("Illegal Load factor: %s",
-          new Float(loadFactor)));
+          loadFactor));
     }
 
     if (initialCapacity == 0) {
@@ -76,7 +76,7 @@ public class ListenerIdMap {
    * Returns the number of mappings in this map
    */
   public int size() {
-    return this.count;
+    return count;
   }
 
   /**
@@ -122,10 +122,10 @@ public class ListenerIdMap {
    */
   private void rehash() {
     int oldCapacity = table.length;
-    Entry oldMap[] = table;
+    Entry[] oldMap = table;
 
     int newCapacity = oldCapacity * 2 + 1;
-    Entry newMap[] = new Entry[newCapacity];
+    Entry[] newMap = new Entry[newCapacity];
 
     threshold = (int) (newCapacity * loadFactor);
     table = newMap;
@@ -163,7 +163,7 @@ public class ListenerIdMap {
     }
 
     // Adjust the table, if necessary
-    if (this.count >= this.threshold) {
+    if (count >= threshold) {
       rehash();
       table = this.table;
       bucket = Math.abs(key) % table.length;
@@ -208,12 +208,12 @@ public class ListenerIdMap {
    * Returns all of the objects in the map
    */
   public Object[] values() {
-    Object[] values = new Object[this.size()];
+    Object[] values = new Object[size()];
 
     Entry[] table = this.table;
     int i = 0;
-    for (int bucket = 0; bucket < table.length; bucket++) {
-      for (Entry e = table[bucket]; e != null; e = e.next) {
+    for (final Entry entry : table) {
+      for (Entry e = entry; e != null; e = e.next) {
         values[i++] = e.value;
       }
     }
@@ -225,12 +225,12 @@ public class ListenerIdMap {
    * Returns all of the entries in the map
    */
   public ListenerIdMap.Entry[] entries() {
-    Entry[] entries = new Entry[this.size()];
+    Entry[] entries = new Entry[size()];
 
     Entry[] table = this.table;
     int i = 0;
-    for (int bucket = 0; bucket < table.length; bucket++) {
-      for (Entry e = table[bucket]; e != null; e = e.next) {
+    for (final Entry entry : table) {
+      for (Entry e = entry; e != null; e = e.next) {
         entries[i++] = e;
       }
     }
@@ -262,11 +262,11 @@ public class ListenerIdMap {
     Entry next;
 
     public int getKey() {
-      return this.key;
+      return key;
     }
 
     public Object getValue() {
-      return this.value;
+      return value;
     }
   }
 
@@ -287,16 +287,16 @@ public class ListenerIdMap {
      * all of the entries.
      */
     public Entry next() {
-      while (this.next == null && this.index < table.length) {
+      while (next == null && index < table.length) {
         if (table[index] != null) {
-          this.next = table[index];
+          next = table[index];
         }
-        this.index++;
+        index++;
       }
 
-      Entry oldNext = this.next;
+      Entry oldNext = next;
       if (oldNext != null) {
-        this.next = oldNext.next;
+        next = oldNext.next;
       }
       return oldNext;
     }

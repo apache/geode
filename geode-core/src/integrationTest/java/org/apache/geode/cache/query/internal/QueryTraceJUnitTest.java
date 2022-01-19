@@ -40,7 +40,6 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.index.CompactRangeIndex;
-import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.cache.query.internal.index.PartitionedIndex;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
@@ -95,7 +94,7 @@ public class QueryTraceJUnitTest {
     qs = CacheUtils.getQueryService();
 
     keyIndex1 =
-        (IndexProtocol) qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID",
+        qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID",
             SEPARATOR + "portfolio ");
 
     assertTrue(keyIndex1 instanceof PartitionedIndex);
@@ -132,7 +131,7 @@ public class QueryTraceJUnitTest {
     qs = CacheUtils.getQueryService();
 
     keyIndex1 =
-        (IndexProtocol) qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID",
+        qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID",
             SEPARATOR + "portfolio ");
 
     assertTrue(keyIndex1 instanceof CompactRangeIndex);
@@ -174,7 +173,7 @@ public class QueryTraceJUnitTest {
     qs = CacheUtils.getQueryService();
 
     keyIndex1 =
-        (IndexProtocol) qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID",
+        qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID",
             SEPARATOR + "portfolio ");
 
     assertTrue(keyIndex1 instanceof PartitionedIndex);
@@ -214,7 +213,7 @@ public class QueryTraceJUnitTest {
     qs = CacheUtils.getQueryService();
 
     keyIndex1 =
-        (IndexProtocol) qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID",
+        qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID",
             SEPARATOR + "portfolio ");
 
     assertTrue(keyIndex1 instanceof CompactRangeIndex);
@@ -253,7 +252,7 @@ public class QueryTraceJUnitTest {
     qs = CacheUtils.getQueryService();
 
     keyIndex1 =
-        (IndexProtocol) qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID",
+        qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID",
             SEPARATOR + "portfolio ");
 
     assertTrue(keyIndex1 instanceof PartitionedIndex);
@@ -287,7 +286,7 @@ public class QueryTraceJUnitTest {
     qs = CacheUtils.getQueryService();
 
     keyIndex1 =
-        (IndexProtocol) qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID",
+        qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID",
             SEPARATOR + "portfolio ");
 
     assertTrue(keyIndex1 instanceof CompactRangeIndex);
@@ -322,7 +321,7 @@ public class QueryTraceJUnitTest {
     qs = CacheUtils.getQueryService();
 
     keyIndex1 =
-        (IndexProtocol) qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID",
+        qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID",
             SEPARATOR + "portfolio ");
 
     assertTrue(keyIndex1 instanceof PartitionedIndex);
@@ -357,7 +356,7 @@ public class QueryTraceJUnitTest {
     qs = CacheUtils.getQueryService();
 
     keyIndex1 =
-        (IndexProtocol) qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID",
+        qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID",
             SEPARATOR + "portfolio ");
 
     assertTrue(keyIndex1 instanceof CompactRangeIndex);
@@ -391,7 +390,7 @@ public class QueryTraceJUnitTest {
     qs = CacheUtils.getQueryService();
 
     keyIndex1 =
-        (IndexProtocol) qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID",
+        qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID",
             SEPARATOR + "portfolio ");
 
     assertTrue(keyIndex1 instanceof CompactRangeIndex);
@@ -424,7 +423,7 @@ public class QueryTraceJUnitTest {
     qs = CacheUtils.getQueryService();
 
     keyIndex1 =
-        (IndexProtocol) qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID",
+        qs.createIndex(INDEX_NAME, IndexType.FUNCTIONAL, "ID",
             SEPARATOR + "portfolio ");
 
     assertTrue(keyIndex1 instanceof CompactRangeIndex);

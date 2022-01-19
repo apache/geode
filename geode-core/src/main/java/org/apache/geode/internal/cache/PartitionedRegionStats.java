@@ -560,11 +560,11 @@ public class PartitionedRegionStats {
   }
 
   public void close() {
-    this.stats.close();
+    stats.close();
   }
 
   public Statistics getStats() {
-    return this.stats;
+    return stats;
   }
 
   public long getTime() {
@@ -610,9 +610,9 @@ public class PartitionedRegionStats {
   public void endPut(long start, int numInc) {
     if (clock.isEnabled()) {
       long delta = clock.getTime() - start;
-      this.stats.incLong(putTimeId, delta);
+      stats.incLong(putTimeId, delta);
     }
-    this.stats.incLong(putsCompletedId, numInc);
+    stats.incLong(putsCompletedId, numInc);
   }
 
   /**
@@ -622,115 +622,115 @@ public class PartitionedRegionStats {
   public void endPutAll(long start, int numInc) {
     if (clock.isEnabled()) {
       long delta = clock.getTime() - start;
-      this.stats.incLong(fieldId_PUTALL_TIME, delta);
+      stats.incLong(fieldId_PUTALL_TIME, delta);
       // this.putStatsHistogram.endOp(delta);
 
     }
-    this.stats.incLong(fieldId_PUTALLS_COMPLETED, numInc);
+    stats.incLong(fieldId_PUTALLS_COMPLETED, numInc);
   }
 
   public void endRemoveAll(long start, int numInc) {
     if (clock.isEnabled()) {
       long delta = clock.getTime() - start;
-      this.stats.incLong(fieldId_REMOVE_ALL_TIME, delta);
+      stats.incLong(fieldId_REMOVE_ALL_TIME, delta);
     }
-    this.stats.incLong(fieldId_REMOVE_ALLS_COMPLETED, numInc);
+    stats.incLong(fieldId_REMOVE_ALLS_COMPLETED, numInc);
   }
 
   public void endCreate(long start, int numInc) {
     if (clock.isEnabled()) {
-      this.stats.incLong(createTimeId, clock.getTime() - start);
+      stats.incLong(createTimeId, clock.getTime() - start);
     }
-    this.stats.incLong(createsCompletedId, numInc);
+    stats.incLong(createsCompletedId, numInc);
   }
 
   public void endGet(long start, int numInc) {
     if (clock.isEnabled()) {
       final long delta = clock.getTime() - start;
-      this.stats.incLong(getTimeId, delta);
+      stats.incLong(getTimeId, delta);
     }
-    this.stats.incLong(getsCompletedId, numInc);
+    stats.incLong(getsCompletedId, numInc);
   }
 
   public void endDestroy(long start) {
     if (clock.isEnabled()) {
-      this.stats.incLong(destroyTimeId, clock.getTime() - start);
+      stats.incLong(destroyTimeId, clock.getTime() - start);
     }
-    this.stats.incLong(destroysCompletedId, 1);
+    stats.incLong(destroysCompletedId, 1);
   }
 
   public void endInvalidate(long start) {
     if (clock.isEnabled()) {
-      this.stats.incLong(invalidateTimeId, clock.getTime() - start);
+      stats.incLong(invalidateTimeId, clock.getTime() - start);
     }
-    this.stats.incLong(invalidatesCompletedId, 1);
+    stats.incLong(invalidatesCompletedId, 1);
   }
 
   public void endContainsKey(long start, int numInc) {
     if (clock.isEnabled()) {
-      this.stats.incLong(containsKeyTimeId, clock.getTime() - start);
+      stats.incLong(containsKeyTimeId, clock.getTime() - start);
     }
-    this.stats.incLong(containsKeyCompletedId, numInc);
+    stats.incLong(containsKeyCompletedId, numInc);
   }
 
   public void endContainsValueForKey(long start, int numInc) {
     if (clock.isEnabled()) {
-      this.stats.incLong(containsValueForKeyTimeId, clock.getTime() - start);
+      stats.incLong(containsValueForKeyTimeId, clock.getTime() - start);
     }
-    this.stats.incLong(containsValueForKeyCompletedId, numInc);
+    stats.incLong(containsValueForKeyCompletedId, numInc);
   }
 
   public void incContainsKeyValueRetries() {
-    this.stats.incLong(containsKeyRetriesId, 1);
+    stats.incLong(containsKeyRetriesId, 1);
   }
 
   public void incContainsKeyValueOpsRetried() {
-    this.stats.incLong(containsKeyOpsRetriedId, 1);
+    stats.incLong(containsKeyOpsRetriedId, 1);
   }
 
   public void incInvalidateRetries() {
-    this.stats.incLong(invalidateRetriesId, 1);
+    stats.incLong(invalidateRetriesId, 1);
   }
 
   public void incInvalidateOpsRetried() {
-    this.stats.incLong(invalidateOpsRetriedId, 1);
+    stats.incLong(invalidateOpsRetriedId, 1);
   }
 
   public void incDestroyRetries() {
-    this.stats.incLong(destroyRetriesId, 1);
+    stats.incLong(destroyRetriesId, 1);
   }
 
   public void incDestroyOpsRetried() {
-    this.stats.incLong(destroyOpsRetriedId, 1);
+    stats.incLong(destroyOpsRetriedId, 1);
   }
 
   public void incPutRetries() {
-    this.stats.incLong(putRetriesId, 1);
+    stats.incLong(putRetriesId, 1);
   }
 
   public void incPutOpsRetried() {
-    this.stats.incLong(putOpsRetriedId, 1);
+    stats.incLong(putOpsRetriedId, 1);
   }
 
   public void incGetOpsRetried() {
-    this.stats.incLong(getOpsRetriedId, 1);
+    stats.incLong(getOpsRetriedId, 1);
   }
 
   public void incGetRetries() {
-    this.stats.incLong(getRetriesId, 1);
+    stats.incLong(getRetriesId, 1);
   }
 
   @VisibleForTesting
   public long getGetRetries() {
-    return this.stats.getLong(getRetriesId);
+    return stats.getLong(getRetriesId);
   }
 
   public void incCreateOpsRetried() {
-    this.stats.incLong(createOpsRetriedId, 1);
+    stats.incLong(createOpsRetriedId, 1);
   }
 
   public void incCreateRetries() {
-    this.stats.incLong(createRetriesId, 1);
+    stats.incLong(createRetriesId, 1);
   }
 
   // ------------------------------------------------------------------------
@@ -738,11 +738,11 @@ public class PartitionedRegionStats {
   // ------------------------------------------------------------------------
 
   public void incPreferredReadLocal() {
-    this.stats.incLong(preferredReadLocalId, 1);
+    stats.incLong(preferredReadLocalId, 1);
   }
 
   public void incPreferredReadRemote() {
-    this.stats.incLong(preferredReadRemoteId, 1);
+    stats.incLong(preferredReadRemoteId, 1);
   }
 
   // ------------------------------------------------------------------------
@@ -750,20 +750,20 @@ public class PartitionedRegionStats {
   // ------------------------------------------------------------------------
 
   public long startPartitionMessageProcessing() {
-    this.stats.incLong(partitionMessagesReceivedId, 1);
+    stats.incLong(partitionMessagesReceivedId, 1);
     return getTime();
   }
 
   public void endPartitionMessagesProcessing(long start) {
     if (clock.isEnabled()) {
       long delta = clock.getTime() - start;
-      this.stats.incLong(partitionMessagesProcessingTimeId, delta);
+      stats.incLong(partitionMessagesProcessingTimeId, delta);
     }
-    this.stats.incLong(partitionMessagesProcessedId, 1);
+    stats.incLong(partitionMessagesProcessedId, 1);
   }
 
   public void incPartitionMessagesSent() {
-    this.stats.incLong(partitionMessagesSentId, 1);
+    stats.incLong(partitionMessagesSentId, 1);
   }
 
   // ------------------------------------------------------------------------
@@ -771,47 +771,47 @@ public class PartitionedRegionStats {
   // ------------------------------------------------------------------------
 
   public void incBucketCount(int delta) {
-    this.stats.incLong(bucketCountId, delta);
+    stats.incLong(bucketCountId, delta);
   }
 
   public void setBucketCount(int i) {
-    this.stats.setLong(bucketCountId, i);
+    stats.setLong(bucketCountId, i);
   }
 
   public void incDataStoreEntryCount(int amt) {
-    this.stats.incLong(dataStoreEntryCountId, amt);
+    stats.incLong(dataStoreEntryCountId, amt);
   }
 
   public long getDataStoreEntryCount() {
-    return this.stats.getLong(dataStoreEntryCountId);
+    return stats.getLong(dataStoreEntryCountId);
   }
 
   public void incBytesInUse(long delta) {
-    this.stats.incLong(dataStoreBytesInUseId, delta);
+    stats.incLong(dataStoreBytesInUseId, delta);
   }
 
   public long getDataStoreBytesInUse() {
-    return this.stats.getLong(dataStoreBytesInUseId);
+    return stats.getLong(dataStoreBytesInUseId);
   }
 
   public long getTotalBucketCount() {
-    return this.stats.getLong(bucketCountId);
+    return stats.getLong(bucketCountId);
   }
 
   public void incPutAllRetries() {
-    this.stats.incLong(fieldId_PUTALL_RETRIES, 1);
+    stats.incLong(fieldId_PUTALL_RETRIES, 1);
   }
 
   public void incPutAllMsgsRetried() {
-    this.stats.incLong(fieldId_PUTALL_MSGS_RETRIED, 1);
+    stats.incLong(fieldId_PUTALL_MSGS_RETRIED, 1);
   }
 
   public void incRemoveAllRetries() {
-    this.stats.incLong(fieldId_REMOVE_ALL_RETRIES, 1);
+    stats.incLong(fieldId_REMOVE_ALL_RETRIES, 1);
   }
 
   public void incRemoveAllMsgsRetried() {
-    this.stats.incLong(fieldId_REMOVE_ALL_MSGS_RETRIED, 1);
+    stats.incLong(fieldId_REMOVE_ALL_MSGS_RETRIED, 1);
   }
 
   // ------------------------------------------------------------------------
@@ -819,122 +819,122 @@ public class PartitionedRegionStats {
   // ------------------------------------------------------------------------
 
   public long getVolunteeringInProgress() {
-    return this.stats.getLong(volunteeringInProgressId);
+    return stats.getLong(volunteeringInProgressId);
   }
 
   public long getVolunteeringBecamePrimary() {
-    return this.stats.getLong(volunteeringBecamePrimaryId);
+    return stats.getLong(volunteeringBecamePrimaryId);
   }
 
   public long getVolunteeringBecamePrimaryTime() {
-    return this.stats.getLong(volunteeringBecamePrimaryTimeId);
+    return stats.getLong(volunteeringBecamePrimaryTimeId);
   }
 
   public long getVolunteeringOtherPrimary() {
-    return this.stats.getLong(volunteeringOtherPrimaryId);
+    return stats.getLong(volunteeringOtherPrimaryId);
   }
 
   public long getVolunteeringOtherPrimaryTime() {
-    return this.stats.getLong(volunteeringOtherPrimaryTimeId);
+    return stats.getLong(volunteeringOtherPrimaryTimeId);
   }
 
   public long getVolunteeringClosed() {
-    return this.stats.getLong(volunteeringClosedId);
+    return stats.getLong(volunteeringClosedId);
   }
 
   public long getVolunteeringClosedTime() {
-    return this.stats.getLong(volunteeringClosedTimeId);
+    return stats.getLong(volunteeringClosedTimeId);
   }
 
   public long startVolunteering() {
-    this.stats.incLong(volunteeringInProgressId, 1);
+    stats.incLong(volunteeringInProgressId, 1);
     return clock.getTime();
   }
 
   public void endVolunteeringBecamePrimary(long start) {
     long ts = clock.getTime();
-    this.stats.incLong(volunteeringInProgressId, -1);
-    this.stats.incLong(volunteeringBecamePrimaryId, 1);
+    stats.incLong(volunteeringInProgressId, -1);
+    stats.incLong(volunteeringBecamePrimaryId, 1);
     if (clock.isEnabled()) {
       long time = ts - start;
-      this.stats.incLong(volunteeringBecamePrimaryTimeId, time);
+      stats.incLong(volunteeringBecamePrimaryTimeId, time);
     }
   }
 
   public void endVolunteeringOtherPrimary(long start) {
     long ts = clock.getTime();
-    this.stats.incLong(volunteeringInProgressId, -1);
-    this.stats.incLong(volunteeringOtherPrimaryId, 1);
+    stats.incLong(volunteeringInProgressId, -1);
+    stats.incLong(volunteeringOtherPrimaryId, 1);
     if (clock.isEnabled()) {
       long time = ts - start;
-      this.stats.incLong(volunteeringOtherPrimaryTimeId, time);
+      stats.incLong(volunteeringOtherPrimaryTimeId, time);
     }
   }
 
   public void endVolunteeringClosed(long start) {
     long ts = clock.getTime();
-    this.stats.incLong(volunteeringInProgressId, -1);
-    this.stats.incLong(volunteeringClosedId, 1);
+    stats.incLong(volunteeringInProgressId, -1);
+    stats.incLong(volunteeringClosedId, 1);
     if (clock.isEnabled()) {
       long time = ts - start;
-      this.stats.incLong(volunteeringClosedTimeId, time);
+      stats.incLong(volunteeringClosedTimeId, time);
     }
   }
 
   public long getTotalNumBuckets() {
-    return this.stats.getLong(totalNumBucketsId);
+    return stats.getLong(totalNumBucketsId);
   }
 
   public void incTotalNumBuckets(int val) {
-    this.stats.incLong(totalNumBucketsId, val);
+    stats.incLong(totalNumBucketsId, val);
   }
 
   public long getPrimaryBucketCount() {
-    return this.stats.getLong(primaryBucketCountId);
+    return stats.getLong(primaryBucketCountId);
   }
 
   public void incPrimaryBucketCount(int val) {
-    this.stats.incLong(primaryBucketCountId, val);
+    stats.incLong(primaryBucketCountId, val);
   }
 
   public long getVolunteeringThreads() {
-    return this.stats.getLong(volunteeringThreadsId);
+    return stats.getLong(volunteeringThreadsId);
   }
 
   public void incVolunteeringThreads(int val) {
-    this.stats.incLong(volunteeringThreadsId, val);
+    stats.incLong(volunteeringThreadsId, val);
   }
 
   public long getLowRedundancyBucketCount() {
-    return this.stats.getLong(lowRedundancyBucketCountId);
+    return stats.getLong(lowRedundancyBucketCountId);
   }
 
   public long getNoCopiesBucketCount() {
-    return this.stats.getLong(noCopiesBucketCountId);
+    return stats.getLong(noCopiesBucketCountId);
   }
 
   public void incLowRedundancyBucketCount(int val) {
-    this.stats.incLong(lowRedundancyBucketCountId, val);
+    stats.incLong(lowRedundancyBucketCountId, val);
   }
 
   public void incNoCopiesBucketCount(int val) {
-    this.stats.incLong(noCopiesBucketCountId, val);
+    stats.incLong(noCopiesBucketCountId, val);
   }
 
   public long getConfiguredRedundantCopies() {
-    return this.stats.getLong(configuredRedundantCopiesId);
+    return stats.getLong(configuredRedundantCopiesId);
   }
 
   public void setConfiguredRedundantCopies(int val) {
-    this.stats.setLong(configuredRedundantCopiesId, val);
+    stats.setLong(configuredRedundantCopiesId, val);
   }
 
   public void setLocalMaxMemory(long l) {
-    this.stats.setLong(localMaxMemoryId, l);
+    stats.setLong(localMaxMemoryId, l);
   }
 
   public void setActualRedundantCopies(int val) {
-    this.stats.setLong(actualRedundantCopiesId, val);
+    stats.setLong(actualRedundantCopiesId, val);
   }
 
   // ------------------------------------------------------------------------
@@ -944,13 +944,13 @@ public class PartitionedRegionStats {
   /** Put stat start time in holding map for later removal and use by caller */
   public void putStartTime(Object key, long startTime) {
     if (clock.isEnabled()) {
-      this.startTimeMap.put(key, startTime);
+      startTimeMap.put(key, startTime);
     }
   }
 
   /** Remove stat start time from holding map to complete a clock stat */
   public long removeStartTime(Object key) {
-    Long startTime = (Long) this.startTimeMap.remove(key);
+    Long startTime = startTimeMap.remove(key);
     return startTime == null ? 0 : startTime;
   }
 
@@ -969,34 +969,34 @@ public class PartitionedRegionStats {
    */
   public void endGetEntry(long start, int numInc) {
     if (clock.isEnabled()) {
-      this.stats.incLong(getEntryTimeId, clock.getTime() - start);
+      stats.incLong(getEntryTimeId, clock.getTime() - start);
     }
-    this.stats.incLong(getEntriesCompletedId, numInc);
+    stats.incLong(getEntriesCompletedId, numInc);
   }
 
   // ------------------------------------------------------------------------
   // bucket creation, primary transfer stats (see also rebalancing stats below)
   // ------------------------------------------------------------------------
   public long startRecovery() {
-    this.stats.incLong(recoveriesInProgressId, 1);
+    stats.incLong(recoveriesInProgressId, 1);
     return clock.getTime();
   }
 
   public void endRecovery(long start) {
     long ts = clock.getTime();
-    this.stats.incLong(recoveriesInProgressId, -1);
+    stats.incLong(recoveriesInProgressId, -1);
     if (clock.isEnabled()) {
-      this.stats.incLong(recoveriesTimeId, ts - start);
+      stats.incLong(recoveriesTimeId, ts - start);
     }
-    this.stats.incLong(recoveriesCompletedId, 1);
+    stats.incLong(recoveriesCompletedId, 1);
   }
 
   public long getRecoveriesInProgress() {
-    return this.stats.getLong(recoveriesInProgressId);
+    return stats.getLong(recoveriesInProgressId);
   }
 
   public long startBucketCreate(boolean isRebalance) {
-    this.stats.incLong(bucketCreatesInProgressId, 1);
+    stats.incLong(bucketCreatesInProgressId, 1);
     if (isRebalance) {
       startRebalanceBucketCreate();
     }
@@ -1005,14 +1005,14 @@ public class PartitionedRegionStats {
 
   public void endBucketCreate(long start, boolean success, boolean isRebalance) {
     long ts = clock.getTime();
-    this.stats.incLong(bucketCreatesInProgressId, -1);
+    stats.incLong(bucketCreatesInProgressId, -1);
     if (clock.isEnabled()) {
-      this.stats.incLong(bucketCreateTimeId, ts - start);
+      stats.incLong(bucketCreateTimeId, ts - start);
     }
     if (success) {
-      this.stats.incLong(bucketCreatesCompletedId, 1);
+      stats.incLong(bucketCreatesCompletedId, 1);
     } else {
-      this.stats.incLong(bucketCreatesFailedId, 1);
+      stats.incLong(bucketCreatesFailedId, 1);
     }
     if (isRebalance) {
       endRebalanceBucketCreate(start, ts, success);
@@ -1020,7 +1020,7 @@ public class PartitionedRegionStats {
   }
 
   public long startPrimaryTransfer(boolean isRebalance) {
-    this.stats.incLong(primaryTransfersInProgressId, 1);
+    stats.incLong(primaryTransfersInProgressId, 1);
     if (isRebalance) {
       startRebalancePrimaryTransfer();
     }
@@ -1029,14 +1029,14 @@ public class PartitionedRegionStats {
 
   public void endPrimaryTransfer(long start, boolean success, boolean isRebalance) {
     long ts = clock.getTime();
-    this.stats.incLong(primaryTransfersInProgressId, -1);
+    stats.incLong(primaryTransfersInProgressId, -1);
     if (clock.isEnabled()) {
-      this.stats.incLong(primaryTransferTimeId, ts - start);
+      stats.incLong(primaryTransferTimeId, ts - start);
     }
     if (success) {
-      this.stats.incLong(primaryTransfersCompletedId, 1);
+      stats.incLong(primaryTransfersCompletedId, 1);
     } else {
-      this.stats.incLong(primaryTransfersFailedId, 1);
+      stats.incLong(primaryTransfersFailedId, 1);
     }
     if (isRebalance) {
       endRebalancePrimaryTransfer(start, ts, success);
@@ -1044,35 +1044,35 @@ public class PartitionedRegionStats {
   }
 
   public long getBucketCreatesInProgress() {
-    return this.stats.getLong(bucketCreatesInProgressId);
+    return stats.getLong(bucketCreatesInProgressId);
   }
 
   public long getBucketCreatesCompleted() {
-    return this.stats.getLong(bucketCreatesCompletedId);
+    return stats.getLong(bucketCreatesCompletedId);
   }
 
   public long getBucketCreatesFailed() {
-    return this.stats.getLong(bucketCreatesFailedId);
+    return stats.getLong(bucketCreatesFailedId);
   }
 
   public long getBucketCreateTime() {
-    return this.stats.getLong(bucketCreateTimeId);
+    return stats.getLong(bucketCreateTimeId);
   }
 
   public long getPrimaryTransfersInProgress() {
-    return this.stats.getLong(primaryTransfersInProgressId);
+    return stats.getLong(primaryTransfersInProgressId);
   }
 
   public long getPrimaryTransfersCompleted() {
-    return this.stats.getLong(primaryTransfersCompletedId);
+    return stats.getLong(primaryTransfersCompletedId);
   }
 
   public long getPrimaryTransfersFailed() {
-    return this.stats.getLong(primaryTransfersFailedId);
+    return stats.getLong(primaryTransfersFailedId);
   }
 
   public long getPrimaryTransferTime() {
-    return this.stats.getLong(primaryTransferTimeId);
+    return stats.getLong(primaryTransferTimeId);
   }
 
   // ------------------------------------------------------------------------
@@ -1080,67 +1080,67 @@ public class PartitionedRegionStats {
   // ------------------------------------------------------------------------
 
   private void startRebalanceBucketCreate() {
-    this.stats.incLong(rebalanceBucketCreatesInProgressId, 1);
+    stats.incLong(rebalanceBucketCreatesInProgressId, 1);
   }
 
   private void endRebalanceBucketCreate(long start, long end, boolean success) {
-    this.stats.incLong(rebalanceBucketCreatesInProgressId, -1);
+    stats.incLong(rebalanceBucketCreatesInProgressId, -1);
     if (clock.isEnabled()) {
-      this.stats.incLong(rebalanceBucketCreateTimeId, end - start);
+      stats.incLong(rebalanceBucketCreateTimeId, end - start);
     }
     if (success) {
-      this.stats.incLong(rebalanceBucketCreatesCompletedId, 1);
+      stats.incLong(rebalanceBucketCreatesCompletedId, 1);
     } else {
-      this.stats.incLong(rebalanceBucketCreatesFailedId, 1);
+      stats.incLong(rebalanceBucketCreatesFailedId, 1);
     }
   }
 
   private void startRebalancePrimaryTransfer() {
-    this.stats.incLong(rebalancePrimaryTransfersInProgressId, 1);
+    stats.incLong(rebalancePrimaryTransfersInProgressId, 1);
   }
 
   private void endRebalancePrimaryTransfer(long start, long end, boolean success) {
-    this.stats.incLong(rebalancePrimaryTransfersInProgressId, -1);
+    stats.incLong(rebalancePrimaryTransfersInProgressId, -1);
     if (clock.isEnabled()) {
-      this.stats.incLong(rebalancePrimaryTransferTimeId, end - start);
+      stats.incLong(rebalancePrimaryTransferTimeId, end - start);
     }
     if (success) {
-      this.stats.incLong(rebalancePrimaryTransfersCompletedId, 1);
+      stats.incLong(rebalancePrimaryTransfersCompletedId, 1);
     } else {
-      this.stats.incLong(rebalancePrimaryTransfersFailedId, 1);
+      stats.incLong(rebalancePrimaryTransfersFailedId, 1);
     }
   }
 
   public long getRebalanceBucketCreatesInProgress() {
-    return this.stats.getLong(rebalanceBucketCreatesInProgressId);
+    return stats.getLong(rebalanceBucketCreatesInProgressId);
   }
 
   public long getRebalanceBucketCreatesCompleted() {
-    return this.stats.getLong(rebalanceBucketCreatesCompletedId);
+    return stats.getLong(rebalanceBucketCreatesCompletedId);
   }
 
   public long getRebalanceBucketCreatesFailed() {
-    return this.stats.getLong(rebalanceBucketCreatesFailedId);
+    return stats.getLong(rebalanceBucketCreatesFailedId);
   }
 
   public long getRebalanceBucketCreateTime() {
-    return this.stats.getLong(rebalanceBucketCreateTimeId);
+    return stats.getLong(rebalanceBucketCreateTimeId);
   }
 
   public long getRebalancePrimaryTransfersInProgress() {
-    return this.stats.getLong(rebalancePrimaryTransfersInProgressId);
+    return stats.getLong(rebalancePrimaryTransfersInProgressId);
   }
 
   public long getRebalancePrimaryTransfersCompleted() {
-    return this.stats.getLong(rebalancePrimaryTransfersCompletedId);
+    return stats.getLong(rebalancePrimaryTransfersCompletedId);
   }
 
   public long getRebalancePrimaryTransfersFailed() {
-    return this.stats.getLong(rebalancePrimaryTransfersFailedId);
+    return stats.getLong(rebalancePrimaryTransfersFailedId);
   }
 
   public long getRebalancePrimaryTransferTime() {
-    return this.stats.getLong(rebalancePrimaryTransferTimeId);
+    return stats.getLong(rebalancePrimaryTransferTimeId);
   }
 
   public long startApplyReplication() {
@@ -1192,10 +1192,10 @@ public class PartitionedRegionStats {
   }
 
   public void incPRMetaDataSentCount() {
-    this.stats.incLong(prMetaDataSentCountId, 1);
+    stats.incLong(prMetaDataSentCountId, 1);
   }
 
   public long getPRMetaDataSentCount() {
-    return this.stats.getLong(prMetaDataSentCountId);
+    return stats.getLong(prMetaDataSentCountId);
   }
 }

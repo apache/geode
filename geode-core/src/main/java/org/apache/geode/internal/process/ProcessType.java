@@ -44,23 +44,23 @@ public enum ProcessType {
   }
 
   public String getPidFileName() {
-    return new StringBuilder(System.getProperty(PROPERTY_TEST_PREFIX, EMPTY)).append(fileName)
-        .append('.').append(SUFFIX_PID).toString();
+    return System.getProperty(PROPERTY_TEST_PREFIX, EMPTY) + fileName
+        + '.' + SUFFIX_PID;
   }
 
   public String getStopRequestFileName() {
-    return new StringBuilder(System.getProperty(PROPERTY_TEST_PREFIX, EMPTY)).append(fileName)
-        .append('.').append(SUFFIX_STOP_REQUEST).toString();
+    return System.getProperty(PROPERTY_TEST_PREFIX, EMPTY) + fileName
+        + '.' + SUFFIX_STOP_REQUEST;
   }
 
   public String getStatusRequestFileName() {
-    return new StringBuilder(System.getProperty(PROPERTY_TEST_PREFIX, EMPTY)).append(fileName)
-        .append('.').append(SUFFIX_STATUS_REQUEST).toString();
+    return System.getProperty(PROPERTY_TEST_PREFIX, EMPTY) + fileName
+        + '.' + SUFFIX_STATUS_REQUEST;
   }
 
   public String getStatusFileName() {
-    return new StringBuilder(System.getProperty(PROPERTY_TEST_PREFIX, EMPTY)).append(fileName)
-        .append('.').append(SUFFIX_STATUS).toString();
+    return System.getProperty(PROPERTY_TEST_PREFIX, EMPTY) + fileName
+        + '.' + SUFFIX_STATUS;
   }
 
   @Override

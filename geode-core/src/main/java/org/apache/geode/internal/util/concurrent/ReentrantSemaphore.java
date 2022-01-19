@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
  *
  */
 public class ReentrantSemaphore extends Semaphore {
-  private final ThreadLocal<Integer> holdCount = new ThreadLocal<Integer>();
+  private final ThreadLocal<Integer> holdCount = new ThreadLocal<>();
 
   public ReentrantSemaphore(int permits) {
     super(permits);
@@ -125,11 +125,11 @@ public class ReentrantSemaphore extends Semaphore {
   private boolean incHoldCount() {
     Integer count = holdCount.get();
     if (count != null) {
-      holdCount.set(Integer.valueOf(count.intValue() + 1));
+      holdCount.set(count + 1);
       return false;
     }
     {
-      holdCount.set(Integer.valueOf(1));
+      holdCount.set(1);
       return true;
     }
   }
@@ -139,11 +139,11 @@ public class ReentrantSemaphore extends Semaphore {
     if (count == null) {
       return true;
     }
-    if (count.intValue() == 1) {
+    if (count == 1) {
       holdCount.remove();
       return true;
     } else {
-      holdCount.set(Integer.valueOf(count.intValue() - 1));
+      holdCount.set(count - 1);
       return false;
     }
   }

@@ -90,16 +90,16 @@ public abstract class AbstractSortedSetRangeOptions<T> {
     }
 
     hasLimit = true;
-    this.offset = parsedOffset;
+    offset = parsedOffset;
     if (parsedCount < 0) {
-      this.count = Integer.MAX_VALUE;
+      count = Integer.MAX_VALUE;
     } else {
-      this.count = parsedCount;
+      count = parsedCount;
     }
   }
 
   void handleWithScoresArgument() {
-    this.withScores = true;
+    withScores = true;
   }
 
   // The range will contain no entries if:

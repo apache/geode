@@ -21,10 +21,10 @@ import org.junit.Test;
 
 
 public class BytesToStringTest {
-  private static long KB = 1024;
-  private static long MB = 1024 * KB;
-  private static long GB = 1024 * MB;
-  private static long TB = 1024 * GB;
+  private static final long KB = 1024;
+  private static final long MB = 1024 * KB;
+  private static final long GB = 1024 * MB;
+  private static final long TB = 1024 * GB;
 
   private BytesToString bytesToString;
 

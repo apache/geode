@@ -19,11 +19,11 @@ import java.util.Map;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
 
 public class CachingSingleObjectSizer implements SingleObjectSizer {
-  private final Map<Class, Long> sizeCache = new CopyOnWriteWeakHashMap<Class, Long>();
+  private final Map<Class, Long> sizeCache = new CopyOnWriteWeakHashMap<>();
   private final SingleObjectSizer wrappedSizer;
 
   public CachingSingleObjectSizer(SingleObjectSizer sizer) {
-    this.wrappedSizer = sizer;
+    wrappedSizer = sizer;
   }
 
   @Override
@@ -34,11 +34,11 @@ public class CachingSingleObjectSizer implements SingleObjectSizer {
     } else {
       Long size = sizeCache.get(clazz);
       if (size != null) {
-        return size.longValue();
+        return size;
       }
-      size = Long.valueOf(wrappedSizer.sizeof(object));
+      size = wrappedSizer.sizeof(object);
       sizeCache.put(clazz, size);
-      return size.longValue();
+      return size;
     }
   }
 

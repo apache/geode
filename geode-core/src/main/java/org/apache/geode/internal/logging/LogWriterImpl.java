@@ -1109,8 +1109,8 @@ public abstract class LogWriterImpl implements InternalLogWriter {
               sb.append("Stack trace for '").append(targetThread).append("'")
                   .append(lineSeparator());
               if (els.length > 0) {
-                for (int i = 0; i < els.length; i++) {
-                  sb.append("\tat ").append(els[i]).append(lineSeparator());
+                for (final StackTraceElement el : els) {
+                  sb.append("\tat ").append(el).append(lineSeparator());
                 }
               } else {
                 sb.append("    no stack").append(lineSeparator());
@@ -1132,8 +1132,8 @@ public abstract class LogWriterImpl implements InternalLogWriter {
     StackTraceElement[] els = targetThread.getStackTrace();
     sb.append("Stack trace for '").append(targetThread).append("'").append(lineSeparator());
     if (els.length > 0) {
-      for (int i = 0; i < els.length; i++) {
-        sb.append("\tat ").append(els[i]).append(lineSeparator());
+      for (final StackTraceElement el : els) {
+        sb.append("\tat ").append(el).append(lineSeparator());
       }
     } else {
       sb.append("    no stack").append(lineSeparator());

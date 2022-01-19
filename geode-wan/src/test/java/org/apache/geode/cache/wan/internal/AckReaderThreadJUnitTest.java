@@ -43,17 +43,17 @@ public class AckReaderThreadJUnitTest {
 
   private void createCache() {
     // Mock cache
-    this.cache = Fakes.cache();
+    cache = Fakes.cache();
   }
 
   private void createSender() {
     // Mock gateway sender
-    this.sender = mock(AbstractGatewaySender.class);
-    when(this.sender.getCache()).thenReturn(this.cache);
+    sender = mock(AbstractGatewaySender.class);
+    when(sender.getCache()).thenReturn(cache);
   }
 
   private void createDispatcher() {
-    this.dispatcher = mock(GatewaySenderEventRemoteDispatcher.class);
+    dispatcher = mock(GatewaySenderEventRemoteDispatcher.class);
   }
 
   @Test
@@ -61,7 +61,7 @@ public class AckReaderThreadJUnitTest {
 
     // Create AckReaderThread
     GatewaySenderEventRemoteDispatcher.AckReaderThread thread =
-        this.dispatcher.new AckReaderThread(this.sender, "AckReaderThread");
+        dispatcher.new AckReaderThread(sender, "AckReaderThread");
 
     // Create parent BatchException containing a NullPointerException with no index
     List<BatchException70> batchExceptions = new ArrayList<>();

@@ -86,7 +86,7 @@ public class ClientProxyWithDeltaDistributedTest implements Serializable {
 
     hostName = getHostName();
 
-    serverPort = server.invoke(() -> createServerCache());
+    serverPort = server.invoke(this::createServerCache);
 
     client1.invoke(() -> createClientCacheWithProxyRegion(hostName, serverPort));
     client2.invoke(() -> createClientCacheWithProxyRegion(hostName, serverPort));
@@ -94,7 +94,7 @@ public class ClientProxyWithDeltaDistributedTest implements Serializable {
 
   @After
   public void tearDown() throws Exception {
-    invokeInEveryVM(() -> DeltaEnabledObject.resetFromDeltaInvoked());
+    invokeInEveryVM(DeltaEnabledObject::resetFromDeltaInvoked);
     invokeInEveryVM(() -> CacheClientUpdater.isUsedByTest = false);
 
     disconnectAllFromDS();
@@ -166,7 +166,7 @@ public class ClientProxyWithDeltaDistributedTest implements Serializable {
     });
 
     client2.invoke(() -> {
-      await().until(() -> ClientListener.KEY_ZERO_CREATED.get());
+      await().until(ClientListener.KEY_ZERO_CREATED::get);
       assertThat(CacheClientUpdater.fullValueRequested).isFalse();
       assertThat(DeltaEnabledObject.fromDeltaInvoked()).isFalse();
     });

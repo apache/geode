@@ -77,7 +77,7 @@ public class DescribeClientCommand extends GfshCommand {
     for (ObjectName objName : cacheServers) {
       CacheServerMXBean serverMbean = service.getMBeanInstance(objName, CacheServerMXBean.class);
       List<String> listOfClient =
-          new ArrayList<>(Arrays.asList((String[]) serverMbean.getClientIds()));
+          new ArrayList<>(Arrays.asList(serverMbean.getClientIds()));
       if (listOfClient.contains(clientId)) {
         if (clientHealthStatus == null) {
           try {
@@ -196,7 +196,7 @@ public class DescribeClientCommand extends GfshCommand {
           TabularResultModel poolStatsResultTable = result.addTable(entry.getKey());
           poolStatsResultTable.setHeader("Pool Stats For Pool Name = " + entry.getKey());
           String poolStatsStr = entry.getValue();
-          String str[] = poolStatsStr.split(";");
+          String[] str = poolStatsStr.split(";");
 
           LogWrapper logWrapper = LogWrapper.getInstance(getCache());
           logWrapper.info("describe client clientHealthStatus min conn="

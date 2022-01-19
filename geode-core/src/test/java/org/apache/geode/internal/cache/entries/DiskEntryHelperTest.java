@@ -39,9 +39,9 @@ import org.apache.geode.internal.offheap.StoredObject;
 public class DiskEntryHelperTest {
 
 
-  private InternalRegion internalRegion = mock(InternalRegion.class);
+  private final InternalRegion internalRegion = mock(InternalRegion.class);
 
-  private DiskRegion diskRegion = mock(DiskRegion.class);
+  private final DiskRegion diskRegion = mock(DiskRegion.class);
 
   private boolean callDoSynchronousWrite() {
     return DiskEntry.Helper.doSynchronousWrite(internalRegion, diskRegion);

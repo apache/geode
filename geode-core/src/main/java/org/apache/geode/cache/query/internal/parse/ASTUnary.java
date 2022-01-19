@@ -30,7 +30,7 @@ public class ASTUnary extends GemFireAST {
 
   @Override
   public void compile(QCompiler compiler) {
-    if (this.getType() == OQLLexerTokenTypes.TOK_MINUS) {
+    if (getType() == OQLLexerTokenTypes.TOK_MINUS) {
       GemFireAST child = (GemFireAST) getFirstChild();
       int tokenType = child.getType();
       if (tokenType == OQLLexerTokenTypes.NUM_INT || tokenType == OQLLexerTokenTypes.NUM_LONG

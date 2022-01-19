@@ -97,8 +97,8 @@ public class LuceneIndexCommandsJUnitTest {
 
   @Before
   public void before() {
-    this.mockCache = mock(InternalCache.class, "InternalCache");
-    when(this.mockCache.getSecurityService()).thenReturn(mock(SecurityService.class));
+    mockCache = mock(InternalCache.class, "InternalCache");
+    when(mockCache.getSecurityService()).thenReturn(mock(SecurityService.class));
   }
 
   @Test
@@ -135,7 +135,7 @@ public class LuceneIndexCommandsJUnitTest {
     when(mockResultCollector.getResult()).thenReturn(results);
 
     final LuceneListIndexCommand command =
-        new LuceneTestListIndexCommand(this.mockCache, mockFunctionExecutor);
+        new LuceneTestListIndexCommand(mockCache, mockFunctionExecutor);
 
     ResultModel result = command.listIndex(false);
     TabularResultModel data = result.getTableSection("lucene-indexes");
@@ -188,7 +188,7 @@ public class LuceneIndexCommandsJUnitTest {
     when(mockResultCollector.getResult()).thenReturn(results);
 
     final LuceneListIndexCommand command =
-        new LuceneTestListIndexCommand(this.mockCache, mockFunctionExecutor);
+        new LuceneTestListIndexCommand(mockCache, mockFunctionExecutor);
 
     ResultModel result = command.listIndex(true);
     TabularResultModel data = result.getTableSection("lucene-indexes");
@@ -217,7 +217,7 @@ public class LuceneIndexCommandsJUnitTest {
   public void testCreateIndex() throws Exception {
     final ResultCollector mockResultCollector = mock(ResultCollector.class);
     final LuceneCreateIndexCommand command =
-        spy(new LuceneTestCreateIndexCommand(this.mockCache, null));
+        spy(new LuceneTestCreateIndexCommand(mockCache, null));
 
     final List<CliFunctionResult> cliFunctionResults = new ArrayList<>();
     cliFunctionResults
@@ -255,7 +255,7 @@ public class LuceneIndexCommandsJUnitTest {
     final String serverName = "mockServer";
     final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
     final LuceneDescribeIndexCommand command =
-        spy(new LuceneTestDescribeIndexCommand(this.mockCache, null));
+        spy(new LuceneTestDescribeIndexCommand(mockCache, null));
 
     String[] searchableFields = {"field1", "field2", "field3"};
     Map<String, Analyzer> fieldAnalyzers = new HashMap<>();
@@ -296,13 +296,13 @@ public class LuceneIndexCommandsJUnitTest {
   public void testSearchIndex() throws Exception {
     final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
     final LuceneSearchIndexCommand command =
-        spy(new LuceneTestSearchIndexCommand(this.mockCache, null));
+        spy(new LuceneTestSearchIndexCommand(mockCache, null));
 
     final List<Set<LuceneSearchResults>> queryResultsList = new ArrayList<>();
     HashSet<LuceneSearchResults> queryResults = new HashSet<>();
-    queryResults.add(createQueryResults("A", "Result1", Float.valueOf("1.3")));
-    queryResults.add(createQueryResults("B", "Result1", Float.valueOf("1.2")));
-    queryResults.add(createQueryResults("C", "Result1", Float.valueOf("1.1")));
+    queryResults.add(createQueryResults("A", "Result1", Float.parseFloat("1.3")));
+    queryResults.add(createQueryResults("B", "Result1", Float.parseFloat("1.2")));
+    queryResults.add(createQueryResults("C", "Result1", Float.parseFloat("1.1")));
     queryResultsList.add(queryResults);
     doReturn(mockResultCollector).when(command).executeSearch(any(LuceneQueryInfo.class));
     doReturn(queryResultsList).when(mockResultCollector).getResult();
@@ -321,16 +321,16 @@ public class LuceneIndexCommandsJUnitTest {
     final Gfsh mockGfsh = mock(Gfsh.class);
     final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
     final LuceneSearchIndexCommand command =
-        spy(new LuceneTestSearchIndexCommand(this.mockCache, null));
+        spy(new LuceneTestSearchIndexCommand(mockCache, null));
     ArgumentCaptor<String> resultCaptor = ArgumentCaptor.forClass(String.class);
 
-    LuceneSearchResults result1 = createQueryResults("A", "Result1", Float.valueOf("1.7"));
-    LuceneSearchResults result2 = createQueryResults("B", "Result1", Float.valueOf("1.6"));
-    LuceneSearchResults result3 = createQueryResults("C", "Result1", Float.valueOf("1.5"));
-    LuceneSearchResults result4 = createQueryResults("D", "Result1", Float.valueOf("1.4"));
-    LuceneSearchResults result5 = createQueryResults("E", "Result1", Float.valueOf("1.3"));
-    LuceneSearchResults result6 = createQueryResults("F", "Result1", Float.valueOf("1.2"));
-    LuceneSearchResults result7 = createQueryResults("G", "Result1", Float.valueOf("1.1"));
+    LuceneSearchResults result1 = createQueryResults("A", "Result1", Float.parseFloat("1.7"));
+    LuceneSearchResults result2 = createQueryResults("B", "Result1", Float.parseFloat("1.6"));
+    LuceneSearchResults result3 = createQueryResults("C", "Result1", Float.parseFloat("1.5"));
+    LuceneSearchResults result4 = createQueryResults("D", "Result1", Float.parseFloat("1.4"));
+    LuceneSearchResults result5 = createQueryResults("E", "Result1", Float.parseFloat("1.3"));
+    LuceneSearchResults result6 = createQueryResults("F", "Result1", Float.parseFloat("1.2"));
+    LuceneSearchResults result7 = createQueryResults("G", "Result1", Float.parseFloat("1.1"));
     final List<Set<LuceneSearchResults>> queryResultsList =
         getSearchResults(result1, result2, result3, result4, result5, result6, result7);
 
@@ -389,13 +389,13 @@ public class LuceneIndexCommandsJUnitTest {
   public void testSearchIndexWithKeysOnly() throws Exception {
     final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
     final LuceneSearchIndexCommand command =
-        spy(new LuceneTestSearchIndexCommand(this.mockCache, null));
+        spy(new LuceneTestSearchIndexCommand(mockCache, null));
 
     final List<Set<LuceneSearchResults>> queryResultsList = new ArrayList<>();
     HashSet<LuceneSearchResults> queryResults = new HashSet<>();
-    queryResults.add(createQueryResults("A", "Result1", Float.valueOf("1.3")));
-    queryResults.add(createQueryResults("B", "Result1", Float.valueOf("1.2")));
-    queryResults.add(createQueryResults("C", "Result1", Float.valueOf("1.1")));
+    queryResults.add(createQueryResults("A", "Result1", Float.parseFloat("1.3")));
+    queryResults.add(createQueryResults("B", "Result1", Float.parseFloat("1.2")));
+    queryResults.add(createQueryResults("C", "Result1", Float.parseFloat("1.1")));
     queryResultsList.add(queryResults);
     doReturn(mockResultCollector).when(command).executeSearch(any(LuceneQueryInfo.class));
     doReturn(queryResultsList).when(mockResultCollector).getResult();
@@ -409,7 +409,7 @@ public class LuceneIndexCommandsJUnitTest {
   public void testSearchIndexWhenSearchResultsHaveSameScore() throws Exception {
     final ResultCollector mockResultCollector = mock(ResultCollector.class, "ResultCollector");
     final LuceneSearchIndexCommand command =
-        spy(new LuceneTestSearchIndexCommand(this.mockCache, null));
+        spy(new LuceneTestSearchIndexCommand(mockCache, null));
 
     final List<Set<LuceneSearchResults>> queryResultsList = new ArrayList<>();
     HashSet<LuceneSearchResults> queryResults = new HashSet<>();
@@ -640,7 +640,7 @@ public class LuceneIndexCommandsJUnitTest {
     @Override
     public Execution getMembersFunctionExecutor(final Set<DistributedMember> members) {
       assertThat(members).isNotNull();
-      return this.functionExecutor;
+      return functionExecutor;
     }
   }
 
@@ -661,7 +661,7 @@ public class LuceneIndexCommandsJUnitTest {
     @Override
     public Execution getMembersFunctionExecutor(final Set<DistributedMember> members) {
       assertThat(members).isNotNull();
-      return this.functionExecutor;
+      return functionExecutor;
     }
   }
 
@@ -682,7 +682,7 @@ public class LuceneIndexCommandsJUnitTest {
     @Override
     public Execution getMembersFunctionExecutor(final Set<DistributedMember> members) {
       assertThat(members).isNotNull();
-      return this.functionExecutor;
+      return functionExecutor;
     }
   }
 
@@ -703,7 +703,7 @@ public class LuceneIndexCommandsJUnitTest {
     @Override
     public Execution getMembersFunctionExecutor(final Set<DistributedMember> members) {
       assertThat(members).isNotNull();
-      return this.functionExecutor;
+      return functionExecutor;
     }
   }
 
@@ -724,7 +724,7 @@ public class LuceneIndexCommandsJUnitTest {
     @Override
     public Execution getMembersFunctionExecutor(final Set<DistributedMember> members) {
       assertThat(members).isNotNull();
-      return this.functionExecutor;
+      return functionExecutor;
     }
   }
 }

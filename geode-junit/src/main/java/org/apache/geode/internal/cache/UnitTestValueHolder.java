@@ -25,20 +25,20 @@ public class UnitTestValueHolder implements Externalizable {
   public UnitTestValueHolder() {}
 
   public UnitTestValueHolder(Object v) {
-    this.value = v;
+    value = v;
   }
 
   public Object getValue() {
-    return this.value;
+    return value;
   }
 
   @Override
   public void writeExternal(ObjectOutput out) throws IOException {
-    out.writeObject(this.value);
+    out.writeObject(value);
   }
 
   @Override
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-    this.value = in.readObject();
+    value = in.readObject();
   }
 }

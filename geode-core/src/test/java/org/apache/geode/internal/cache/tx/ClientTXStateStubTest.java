@@ -82,7 +82,7 @@ public class ClientTXStateStubTest {
     when(stub.createTXRegionLockRequestImpl(any(), any()))
         .thenReturn(mock(TXRegionLockRequestImpl.class));
 
-    assertThatThrownBy(() -> stub.commit()).isInstanceOf(CancelException.class);
+    assertThatThrownBy(stub::commit).isInstanceOf(CancelException.class);
   }
 
   @Test
@@ -115,7 +115,7 @@ public class ClientTXStateStubTest {
     ClientTXStateStub stub = spy(new ClientTXStateStub(cache, dm, stateProxy, target, region));
 
     InOrder order = inOrder(serverRegionProxy, internalPool);
-    assertThatThrownBy(() -> stub.commit()).isInstanceOf(InternalGemFireError.class);
+    assertThatThrownBy(stub::commit).isInstanceOf(InternalGemFireError.class);
 
     order.verify(serverRegionProxy).commit(anyInt());
     order.verify(internalPool).releaseServerAffinity();

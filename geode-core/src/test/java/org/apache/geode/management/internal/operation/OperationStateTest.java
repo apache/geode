@@ -163,8 +163,7 @@ public class OperationStateTest {
         new OperationState<>("opId", operation, start);
     operationState.setOperationEnd(end, null, null);
 
-    StringBuilder expected = new StringBuilder();
-    expected.append("OperationState{" +
+    final String expected = "OperationState{" +
         "opId=" + operationState.getId() +
         ", operation=" + operationState.getOperation() +
         ", operationStart=" + operationState.getOperationStart() +
@@ -172,9 +171,9 @@ public class OperationStateTest {
         ", result=null" +
         ", throwable=null" +
         ", locator=" + operationState.getLocator() +
-        '}');
+        '}';
 
-    assertThat(operationState.toString()).isEqualTo(expected.toString());
+    assertThat(operationState.toString()).isEqualTo(expected);
   }
 
   @Test
@@ -186,8 +185,7 @@ public class OperationStateTest {
         new OperationState<>("opId", operation, start);
     operationState.setOperationEnd(end, null, new RuntimeException("Test"));
 
-    StringBuilder expected = new StringBuilder();
-    expected.append("OperationState{" +
+    final String expected = "OperationState{" +
         "opId=" + operationState.getId() +
         ", operation=" + operationState.getOperation() +
         ", operationStart=" + operationState.getOperationStart() +
@@ -195,9 +193,9 @@ public class OperationStateTest {
         ", result=null" +
         ", throwable=" + operationState.getThrowable().getMessage() +
         ", locator=" + operationState.getLocator() +
-        '}');
+        '}';
 
-    assertThat(operationState.toString()).isEqualTo(expected.toString());
+    assertThat(operationState.toString()).isEqualTo(expected);
   }
 
 }

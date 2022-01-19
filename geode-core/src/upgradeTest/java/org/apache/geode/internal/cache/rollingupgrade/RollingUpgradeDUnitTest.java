@@ -128,7 +128,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
   }
 
   private void deleteWorkingDirFiles() {
-    Invoke.invokeInEveryVM("delete files", () -> deleteVMFiles());
+    Invoke.invokeInEveryVM("delete files", this::deleteVMFiles);
   }
 
   @Override
@@ -158,7 +158,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
     } else if ((regionType.equals("persistentReplicate"))) {
       shortcutName = RegionShortcut.PARTITION_PERSISTENT.name();
       for (int i = 0; i < testingDirs.length; i++) {
-        testingDirs[i] = new File(diskDir, "diskStoreVM_" + String.valueOf(host.getVM(i).getId()))
+        testingDirs[i] = new File(diskDir, "diskStoreVM_" + host.getVM(i).getId())
             .getAbsoluteFile();
         if (!testingDirs[i].exists()) {
           System.out.println(" Creating diskdir for server: " + i);
@@ -634,7 +634,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
   private static boolean assertEntryExists(Cache cache, String regionName, Object key) {
     assertRegionExists(cache, regionName);
     Region region = getRegion(cache, regionName);
-    if (!region.keySet().contains(key)) {
+    if (!region.containsKey(key)) {
       throw new Error("Entry for key:" + key + " does not exist");
     }
     return true;
@@ -652,8 +652,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
     Object[] enumConstants = aClass.getEnumConstants();
     RegionShortcut shortcut = null;
     int length = enumConstants.length;
-    for (int i = 0; i < length; i++) {
-      Object constant = enumConstants[i];
+    for (Object constant : enumConstants) {
       if (((Enum) constant).name().equals(shortcutName)) {
         shortcut = (RegionShortcut) constant;
         break;
@@ -713,7 +712,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
       stopCacheServers(cache);
       cache.close();
       long startTime = System.currentTimeMillis();
-      await().until(() -> cache.isClosed());
+      await().until(cache::isClosed);
     }
   }
 

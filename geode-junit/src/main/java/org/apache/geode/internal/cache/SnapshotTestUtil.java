@@ -31,7 +31,7 @@ public class SnapshotTestUtil {
 
   public static <K, V> void checkSnapshotEntries(File dir, Map<K, V> expected, String diskStoreName,
       String regionName) throws Exception {
-    final Map<K, V> testData = new HashMap<K, V>(expected);
+    final Map<K, V> testData = new HashMap<>(expected);
     String snapshot = "snapshot-" + diskStoreName + "-" + regionName + ".gfd";
     try (SnapshotIterator<Integer, MyObject> iter = SnapshotReader.read(new File(dir, snapshot))) {
       while (iter.hasNext()) {

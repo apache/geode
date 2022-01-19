@@ -54,7 +54,7 @@ public class CreateGatewaySenderCommandTest {
   private CreateGatewaySenderCommand command;
   private List<CliFunctionResult> functionResults;
   private CliFunctionResult cliFunctionResult;
-  private ArgumentCaptor<GatewaySenderFunctionArgs> argsArgumentCaptor =
+  private final ArgumentCaptor<GatewaySenderFunctionArgs> argsArgumentCaptor =
       ArgumentCaptor.forClass(GatewaySenderFunctionArgs.class);
 
   @Before

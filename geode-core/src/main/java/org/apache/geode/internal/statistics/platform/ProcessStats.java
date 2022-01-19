@@ -41,11 +41,11 @@ public abstract class ProcessStats {
    * @see Statistics#close
    */
   public void close() {
-    this.stats.close();
+    stats.close();
   }
 
   public Statistics getStatistics() {
-    return this.stats;
+    return stats;
   }
 
   /**

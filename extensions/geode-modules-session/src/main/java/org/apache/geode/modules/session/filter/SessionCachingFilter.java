@@ -94,7 +94,7 @@ public class SessionCachingFilter implements Filter {
 
     private static final String URL_SESSION_IDENTIFIER = ";jsessionid=";
 
-    private ResponseWrapper response;
+    private final ResponseWrapper response;
 
     private boolean sessionFromCookie = false;
 
@@ -104,9 +104,9 @@ public class SessionCachingFilter implements Filter {
 
     private GemfireHttpSession session = null;
 
-    private SessionManager manager;
+    private final SessionManager manager;
 
-    private HttpServletRequest outerRequest = null;
+    private final HttpServletRequest outerRequest = null;
 
     private final ServletContext context;
 
@@ -443,7 +443,7 @@ public class SessionCachingFilter implements Filter {
   public void init(final FilterConfig config) {
     LOG.info("Starting Session Filter initialization");
     registerInstantiators();
-    this.filterConfig = config;
+    filterConfig = config;
 
     if (started.getAndDecrement() > 0) {
       // Allow override for testing purposes
@@ -456,7 +456,7 @@ public class SessionCachingFilter implements Filter {
 
       try {
         manager = (SessionManager) Class.forName(managerClassStr).newInstance();
-        manager.start(config, this.getClass().getClassLoader());
+        manager.start(config, getClass().getClassLoader());
       } catch (Exception ex) {
         LOG.error("Exception creating Session Manager", ex);
       }
@@ -473,7 +473,7 @@ public class SessionCachingFilter implements Filter {
     }
 
     LOG.info("Session Filter initialization complete");
-    LOG.debug("Filter class loader {}", this.getClass().getClassLoader());
+    LOG.debug("Filter class loader {}", getClass().getClassLoader());
   }
 
   private void registerInstantiators() {

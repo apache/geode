@@ -83,7 +83,7 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
   public void testBug32356() throws Exception {
     LogWriterUtils.getLogWriter().fine("[testBug32356]");
     Host host = Host.getHost(0);
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final Object key = "32356";
 
     // lock/unlock '32356' in all vms... (make all vms aware of token)
@@ -120,7 +120,7 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testNonGlobalRegion() throws CacheException {
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     AttributesFactory factory = new AttributesFactory(getGlobalAttrs());
     factory.setScope(Scope.LOCAL);
     Region region = getOrCreateRootRegion().createSubregion(name + "LOCAL", factory.create());
@@ -150,7 +150,7 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testSingleVMLockUnlock() throws CacheException {
-    String name = this.getUniqueName() + "-GLOBAL";
+    String name = getUniqueName() + "-GLOBAL";
     Region region = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
 
     Lock lock = region.getDistributedLock("obj");
@@ -160,7 +160,7 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testIsLockGrantorAttribute() throws Exception {
-    String name = this.getUniqueName() + "-testIsLockGrantorAttribute";
+    String name = getUniqueName() + "-testIsLockGrantorAttribute";
     AttributesFactory factory = new AttributesFactory(getGlobalAttrs());
     factory.setLockGrantor(true);
     Region region = getOrCreateRootRegion().createSubregion(name, factory.create());
@@ -177,8 +177,8 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    final String name = this.getUniqueName();
-    final Object key = new Integer(5);
+    final String name = getUniqueName();
+    final Object key = 5;
     vm0.invoke(new CacheSerializableRunnable("Get lock") {
       @Override
       public void run2() throws CacheException {
@@ -212,8 +212,8 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    final String name = this.getUniqueName();
-    final Object key = new Integer(5);
+    final String name = getUniqueName();
+    final Object key = 5;
     vm0.invoke(new CacheSerializableRunnable("Get lock") {
       @Override
       public void run2() throws CacheException {
@@ -246,8 +246,8 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    final String name = this.getUniqueName();
-    final Object key = new Integer(5);
+    final String name = getUniqueName();
+    final Object key = 5;
 
     // In first VM, get a lock on the entry
     vm0.invoke(new CacheSerializableRunnable("Get lock") {
@@ -292,8 +292,8 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    final String name = this.getUniqueName();
-    final Object key = new Integer(5);
+    final String name = getUniqueName();
+    final Object key = 5;
     vm0.invoke(new CacheSerializableRunnable("Get lock") {
       @Override
       public void run2() throws CacheException {
@@ -326,8 +326,8 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    final String name = this.getUniqueName();
-    final Object key = new Integer(5);
+    final String name = getUniqueName();
+    final Object key = 5;
     vm0.invoke(new CacheSerializableRunnable("Get lock") {
       @Override
       public void run2() throws CacheException {
@@ -362,8 +362,8 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    final String name = this.getUniqueName() + "-GLOBAL";
-    final Object key = new Integer(5);
+    final String name = getUniqueName() + "-GLOBAL";
+    final Object key = 5;
 
     // First, create region & entry, and lock the entry, in Master VM
     Region r = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
@@ -412,7 +412,7 @@ public class GlobalLockingDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testRegionDistributedLockSimple() throws CacheException {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     Region r = getOrCreateRootRegion().createSubregion(name, getGlobalAttrs());
     Lock lock = r.getRegionDistributedLock();
     lock.lock();

@@ -66,16 +66,16 @@ public class RetryRule implements TestRule, Serializable {
   private final AbstractRetryRule implementation;
 
   public RetryRule() {
-    this.implementation = new LocalRetryRule();
+    implementation = new LocalRetryRule();
   }
 
   public RetryRule(final int retryCount) {
-    this.implementation = new GlobalRetryRule(retryCount);
+    implementation = new GlobalRetryRule(retryCount);
   }
 
   @Override
   public Statement apply(final Statement base, final Description description) {
-    return this.implementation.apply(base, description);
+    return implementation.apply(base, description);
   }
 
   protected abstract class AbstractRetryRule implements TestRule, Serializable {
@@ -128,14 +128,14 @@ public class RetryRule implements TestRule, Serializable {
       return new Statement() {
         @Override
         public void evaluate() throws Throwable {
-          GlobalRetryRule.this.evaluatePerCase(base, description);
+          evaluatePerCase(base, description);
         }
       };
     }
 
     protected void evaluatePerCase(final Statement base, final Description description)
         throws Throwable {
-      evaluate(base, description, this.retryCount);
+      evaluate(base, description, retryCount);
     }
   }
 
@@ -151,7 +151,7 @@ public class RetryRule implements TestRule, Serializable {
       return new Statement() {
         @Override
         public void evaluate() throws Throwable {
-          LocalRetryRule.this.evaluatePerTest(base, description);
+          evaluatePerTest(base, description);
         }
       };
     }

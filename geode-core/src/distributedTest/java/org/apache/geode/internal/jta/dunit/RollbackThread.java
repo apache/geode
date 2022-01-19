@@ -43,7 +43,7 @@ public class RollbackThread implements Runnable {
 
   public Thread thd;
   public String threadName;
-  private LogWriter log;
+  private final LogWriter log;
 
   public RollbackThread(String name, LogWriter log) {
     threadName = name;

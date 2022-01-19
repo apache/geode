@@ -40,59 +40,59 @@ public class MainWithChildrenRollingFileHandlerIntegrationTest {
 
   @Before
   public void before() throws Exception {
-    this.name = this.testName.getMethodName();
-    this.handler = new MainWithChildrenRollingFileHandler();
+    name = testName.getMethodName();
+    handler = new MainWithChildrenRollingFileHandler();
   }
 
   @Test
   public void getFilePattern_matchesFilesWithBothIds() throws Exception {
-    Pattern pattern = this.handler.getFilePattern(this.name);
+    Pattern pattern = handler.getFilePattern(name);
 
     assertThat(pattern).isNotNull();
-    assertThat(pattern.matcher(this.name).matches()).isFalse();
-    assertThat(pattern.matcher(this.name + "-01-01").matches()).isTrue();
-    assertThat(pattern.matcher(this.name + "-01-02").matches()).isTrue();
-    assertThat(pattern.matcher(this.name + "-02-01").matches()).isTrue();
-    assertThat(pattern.matcher(this.name + "-01").matches()).isFalse();
-    assertThat(pattern.matcher(this.name + "0101").matches()).isFalse();
-    assertThat(pattern.matcher(this.name + "--").matches()).isFalse();
+    assertThat(pattern.matcher(name).matches()).isFalse();
+    assertThat(pattern.matcher(name + "-01-01").matches()).isTrue();
+    assertThat(pattern.matcher(name + "-01-02").matches()).isTrue();
+    assertThat(pattern.matcher(name + "-02-01").matches()).isTrue();
+    assertThat(pattern.matcher(name + "-01").matches()).isFalse();
+    assertThat(pattern.matcher(name + "0101").matches()).isFalse();
+    assertThat(pattern.matcher(name + "--").matches()).isFalse();
 
     // TODO: revisit these to determine if behavior should change
-    assertThat(pattern.matcher(this.name + "-01-01-01").matches()).isFalse();
-    assertThat(pattern.matcher(this.name + ".01-01-01").matches()).isFalse();
+    assertThat(pattern.matcher(name + "-01-01-01").matches()).isFalse();
+    assertThat(pattern.matcher(name + ".01-01-01").matches()).isFalse();
   }
 
   @Test
   public void getFilePattern_withNumbers_matchesFiles() throws Exception {
-    this.name = "a1s2d3f4_cache1_statistics";
-    Pattern pattern = this.handler.getFilePattern(this.name);
+    name = "a1s2d3f4_cache1_statistics";
+    Pattern pattern = handler.getFilePattern(name);
 
     assertThat(pattern).isNotNull();
-    assertThat(pattern.matcher(this.name + "-01-41").matches()).isTrue();
+    assertThat(pattern.matcher(name + "-01-41").matches()).isTrue();
   }
 
   @Test
   public void getFilePattern_withHyphens_matchesFiles() throws Exception {
-    this.name = "a1s2d3f4_cache1-statistics";
-    Pattern pattern = this.handler.getFilePattern(this.name);
+    name = "a1s2d3f4_cache1-statistics";
+    Pattern pattern = handler.getFilePattern(name);
 
     assertThat(pattern).isNotNull();
-    assertThat(pattern.matcher(this.name + "-01-41").matches()).isTrue();
+    assertThat(pattern.matcher(name + "-01-41").matches()).isTrue();
   }
 
   @Test
   public void getFilePattern_empty_throwsIllegalArgumentException() throws Exception {
-    this.name = "";
+    name = "";
 
-    assertThatThrownBy(() -> this.handler.getFilePattern(this.name))
+    assertThatThrownBy(() -> handler.getFilePattern(name))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   public void getFilePattern_null_throwsIllegalArgumentException() throws Exception {
-    this.name = null;
+    name = null;
 
-    assertThatThrownBy(() -> this.handler.getFilePattern(this.name))
+    assertThatThrownBy(() -> handler.getFilePattern(name))
         .isInstanceOf(IllegalArgumentException.class);
   }
 

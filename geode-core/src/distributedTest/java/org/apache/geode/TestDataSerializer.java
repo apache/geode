@@ -34,8 +34,8 @@ public class TestDataSerializer extends DataSerializer {
 
   public TestDataSerializer(String str, int val) {
     this();
-    this.name = str;
-    this.age = val;
+    name = str;
+    age = val;
   }
 
   /*
@@ -56,8 +56,8 @@ public class TestDataSerializer extends DataSerializer {
    */
   @Override
   public boolean toData(Object o, DataOutput out) throws IOException {
-    writeString(this.name, out);
-    writePrimitiveInt(this.age, out);
+    writeString(name, out);
+    writePrimitiveInt(age, out);
     return true;
   }
 
@@ -88,11 +88,11 @@ class TestSupportedClass1 {
   private int field = 10;
 
   public void setField(int f) {
-    this.field = f;
+    field = f;
   }
 
   public int getField() {
-    return this.field;
+    return field;
   }
 }
 
@@ -101,11 +101,11 @@ class TestSupportedClass2 {
   private int field = 20;
 
   public void setField(int f) {
-    this.field = f;
+    field = f;
   }
 
   public int getField() {
-    return this.field;
+    return field;
   }
 }
 
@@ -114,10 +114,10 @@ class TestSupportedClass3 {
   private int field = 30;
 
   public void setField(int f) {
-    this.field = f;
+    field = f;
   }
 
   public int getField() {
-    return this.field;
+    return field;
   }
 }

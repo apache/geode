@@ -42,17 +42,17 @@ public class FindCoordinatorRequest<ID extends MemberIdentifier> extends Abstrac
   private String dhalgo;
 
   public FindCoordinatorRequest(ID myId) {
-    this.memberID = myId;
-    this.dhalgo = "";
+    memberID = myId;
+    dhalgo = "";
   }
 
   public FindCoordinatorRequest(ID myId,
       Collection<ID> rejectedCoordinators, int lastViewId, byte[] pk,
       int requestId, String dhalgo) {
-    this.memberID = myId;
+    memberID = myId;
     this.rejectedCoordinators = rejectedCoordinators;
     this.lastViewId = lastViewId;
-    this.myPublicKey = pk;
+    myPublicKey = pk;
     this.requestId = requestId;
     this.dhalgo = dhalgo;
   }
@@ -78,7 +78,7 @@ public class FindCoordinatorRequest<ID extends MemberIdentifier> extends Abstrac
   }
 
   public int getLastViewId() {
-    return this.lastViewId;
+    return lastViewId;
   }
 
   @Override
@@ -111,9 +111,9 @@ public class FindCoordinatorRequest<ID extends MemberIdentifier> extends Abstrac
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     context.getSerializer().writeObject(memberID, out);
-    if (this.rejectedCoordinators != null) {
-      out.writeInt(this.rejectedCoordinators.size());
-      for (ID mbr : this.rejectedCoordinators) {
+    if (rejectedCoordinators != null) {
+      out.writeInt(rejectedCoordinators.size());
+      for (ID mbr : rejectedCoordinators) {
         context.getSerializer().writeObject(mbr, out);
       }
     } else {
@@ -122,22 +122,22 @@ public class FindCoordinatorRequest<ID extends MemberIdentifier> extends Abstrac
     out.writeInt(lastViewId);
     out.writeInt(requestId);
     StaticSerialization.writeString(dhalgo, out);
-    StaticSerialization.writeByteArray(this.myPublicKey, out);
+    StaticSerialization.writeByteArray(myPublicKey, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.memberID = context.getDeserializer().readObject(in);
+    memberID = context.getDeserializer().readObject(in);
     int size = in.readInt();
-    this.rejectedCoordinators = new ArrayList<>(size);
+    rejectedCoordinators = new ArrayList<>(size);
     for (int i = 0; i < size; i++) {
-      this.rejectedCoordinators.add(context.getDeserializer().readObject(in));
+      rejectedCoordinators.add(context.getDeserializer().readObject(in));
     }
-    this.lastViewId = in.readInt();
-    this.requestId = in.readInt();
-    this.dhalgo = StaticSerialization.readString(in);
-    this.myPublicKey = StaticSerialization.readByteArray(in);
+    lastViewId = in.readInt();
+    requestId = in.readInt();
+    dhalgo = StaticSerialization.readString(in);
+    myPublicKey = StaticSerialization.readByteArray(in);
   }
 
   @Override
@@ -178,12 +178,8 @@ public class FindCoordinatorRequest<ID extends MemberIdentifier> extends Abstrac
       return false;
     }
     if (rejectedCoordinators == null) {
-      if (other.rejectedCoordinators != null) {
-        return false;
-      }
-    } else if (!rejectedCoordinators.equals(other.rejectedCoordinators)) {
-      return false;
-    }
-    return true;
+      return other.rejectedCoordinators == null;
+    } else
+      return rejectedCoordinators.equals(other.rejectedCoordinators);
   }
 }

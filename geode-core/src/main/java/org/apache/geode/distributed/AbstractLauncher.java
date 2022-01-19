@@ -199,7 +199,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    * @see #setDebug(boolean)
    */
   public boolean isDebugging() {
-    return this.debug;
+    return debug;
   }
 
   /**
@@ -219,7 +219,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
    * @return a boolean valued indicating if the referenced Locator is running.
    */
   public boolean isRunning() {
-    return this.running.get();
+    return running.get();
   }
 
   /**
@@ -556,7 +556,6 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
       return buffer.toString();
     }
 
-    @SuppressWarnings("unchecked")
     protected ServiceState(final Status status, final String statusMessage, final long timestamp,
         final String serviceLocation, final Integer pid, final Long uptime,
         final String workingDirectory, final List<String> jvmArguments, final String classpath,
@@ -623,7 +622,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     public boolean isVmWithProcessIdRunning() {
       // note: this will use JNA if available or return false
-      return ProcessUtils.isProcessAlive(this.getPid());
+      return ProcessUtils.isProcessAlive(getPid());
     }
 
     /**
@@ -673,7 +672,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
      * @return a String indicating the GemFire member's name for the process.
      */
     public String getMemberName() {
-      return this.memberName;
+      return memberName;
     }
 
     /**
@@ -692,7 +691,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
      * @return a String indication the location (such as host/port) of the GemFire service.
      */
     public String getServiceLocation() {
-      return this.serviceLocation;
+      return serviceLocation;
     }
 
     /**
@@ -759,7 +758,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
      * @return a String value indicating the path of the log file for the process.
      */
     public String getLogFile() {
-      return this.logFile;
+      return logFile;
     }
 
     /**
@@ -768,7 +767,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
      * @return a String value representing the host or IP address for the process and its service.
      */
     public String getHost() {
-      return this.host;
+      return host;
     }
 
     /**
@@ -777,7 +776,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
      * @return an Integer value indicating the port for the process and its service.
      */
     public String getPort() {
-      return this.port;
+      return port;
     }
 
     /**

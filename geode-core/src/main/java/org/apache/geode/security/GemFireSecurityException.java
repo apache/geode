@@ -31,7 +31,7 @@ public class GemFireSecurityException extends GemFireException {
 
   private static final long serialVersionUID = 3814254578203076926L;
 
-  private Throwable cause;
+  private final Throwable cause;
 
   /**
    * Constructs a new exception with the specified detail message.
@@ -78,7 +78,7 @@ public class GemFireSecurityException extends GemFireException {
 
   @Override
   public synchronized Throwable getCause() {
-    return (this.cause == this ? null : this.cause);
+    return (cause == this ? null : cause);
   }
 
   /**
@@ -91,7 +91,7 @@ public class GemFireSecurityException extends GemFireException {
     if (object == null) {
       return true;
     }
-    return Serializable.class.isInstance(object);
+    return object instanceof Serializable;
   }
 
   /**
@@ -102,8 +102,8 @@ public class GemFireSecurityException extends GemFireException {
    *         {@code NamingException}.
    */
   protected Object getResolvedObj() {
-    final Throwable thisCause = this.cause;
-    if (thisCause != null && NamingException.class.isInstance(thisCause)) {
+    final Throwable thisCause = cause;
+    if (thisCause != null && thisCause instanceof NamingException) {
       return ((NamingException) thisCause).getResolvedObj();
     }
     return null;

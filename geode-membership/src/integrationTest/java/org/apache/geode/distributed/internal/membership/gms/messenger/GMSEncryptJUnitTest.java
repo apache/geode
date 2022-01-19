@@ -43,7 +43,7 @@ public class GMSEncryptJUnitTest {
 
   Services services;
 
-  MemberIdentifier mockMembers[];
+  MemberIdentifier[] mockMembers;
 
   GMSMembershipView netView;
 
@@ -287,7 +287,7 @@ public class GMSEncryptJUnitTest {
     initMocks();
 
     final GMSEncrypt sender = new GMSEncrypt(services, DEFAULT_ALGO);
-    Thread.currentThread().sleep(100);
+    Thread.sleep(100);
     sender.initClusterSecretKey();
     final GMSEncrypt receiver = new GMSEncrypt(services, DEFAULT_ALGO);
 

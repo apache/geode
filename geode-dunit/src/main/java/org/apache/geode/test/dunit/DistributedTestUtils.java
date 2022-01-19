@@ -137,8 +137,8 @@ public class DistributedTestUtils {
 
   public static void unregisterAllDataSerializersFromAllVms() {
     unregisterDataSerializerInThisVM();
-    Invoke.invokeInEveryVM(() -> unregisterDataSerializerInThisVM());
-    Invoke.invokeInLocator(() -> unregisterDataSerializerInThisVM());
+    Invoke.invokeInEveryVM(DistributedTestUtils::unregisterDataSerializerInThisVM);
+    Invoke.invokeInLocator(DistributedTestUtils::unregisterDataSerializerInThisVM);
   }
 
   public static void unregisterInstantiatorsInThisVM() {

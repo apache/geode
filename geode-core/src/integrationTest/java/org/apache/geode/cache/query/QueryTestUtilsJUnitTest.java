@@ -106,7 +106,7 @@ public class QueryTestUtilsJUnitTest {
 
   @Test
   public void testQueriesWithoutDistinct() throws Exception {
-    this.populateOffsetPortfolioValuesInRegion("exampleRegion", 2);
+    populateOffsetPortfolioValuesInRegion("exampleRegion", 2);
     String[] queries = {"181"};
     int results = 0;
     for (Object result : utils.executeQueriesWithoutDistinct(queries)) {

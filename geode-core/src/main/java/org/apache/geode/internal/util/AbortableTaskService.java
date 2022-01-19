@@ -50,7 +50,7 @@ public class AbortableTaskService {
 
   public AbortableTaskService(Executor exec) {
     this.exec = exec;
-    tasks = new ConcurrentLinkedQueue<AbortingRunnable>();
+    tasks = new ConcurrentLinkedQueue<>();
   }
 
   /**
@@ -117,10 +117,10 @@ public class AbortableTaskService {
     private final AbortableTask task;
 
     /** true if the task is aborted */
-    private AtomicBoolean aborted;
+    private final AtomicBoolean aborted;
 
     /** true if the task has begun */
-    private AtomicBoolean hasStarted;
+    private final AtomicBoolean hasStarted;
 
     /** true if the task is complete */
     private boolean done;

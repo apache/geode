@@ -62,27 +62,27 @@ public class LocalFunctionExecutionDUnitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void testLocalDataSetPR() {
-    dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.createCacheInVm());
-    Object args[] =
-        new Object[] {"testRegion", new Integer(1), new Integer(50), new Integer(10), null};
+    dataStore1.invoke(LocalFunctionExecutionDUnitTest::createCacheInVm);
+    Object[] args =
+        new Object[] {"testRegion", 1, 50, 10, null};
     dataStore1.invoke(LocalFunctionExecutionDUnitTest.class, "createPR", args);
-    dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.put());
-    dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.executeFunction());
+    dataStore1.invoke(LocalFunctionExecutionDUnitTest::put);
+    dataStore1.invoke(LocalFunctionExecutionDUnitTest::executeFunction);
   }
 
   @Test
   public void testLocalDataSetDR() {
-    dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.createCacheInVm());
-    Object args[] = new Object[] {"testRegion", DataPolicy.REPLICATE};
+    dataStore1.invoke(LocalFunctionExecutionDUnitTest::createCacheInVm);
+    Object[] args = new Object[] {"testRegion", DataPolicy.REPLICATE};
     dataStore1.invoke(LocalFunctionExecutionDUnitTest.class, "createDR", args);
-    dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.put());
-    dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.executeFunction());
+    dataStore1.invoke(LocalFunctionExecutionDUnitTest::put);
+    dataStore1.invoke(LocalFunctionExecutionDUnitTest::executeFunction);
   }
 
   @Test
   public void testLocalMember() {
-    dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.createCacheInVm());
-    dataStore1.invoke(() -> LocalFunctionExecutionDUnitTest.executeFunctionOnMember());
+    dataStore1.invoke(LocalFunctionExecutionDUnitTest::createCacheInVm);
+    dataStore1.invoke(LocalFunctionExecutionDUnitTest::executeFunctionOnMember);
   }
 
   public static void createCacheInVm() {
@@ -107,8 +107,8 @@ public class LocalFunctionExecutionDUnitTest extends JUnit4DistributedTestCase {
       Integer localMaxMemory, Integer totalNumBuckets, String colocatedWith) {
 
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
-    PartitionAttributes prAttr = paf.setRedundantCopies(redundancy.intValue())
-        .setLocalMaxMemory(localMaxMemory.intValue()).setTotalNumBuckets(totalNumBuckets.intValue())
+    PartitionAttributes prAttr = paf.setRedundantCopies(redundancy)
+        .setLocalMaxMemory(localMaxMemory).setTotalNumBuckets(totalNumBuckets)
         .setColocatedWith(colocatedWith).create();
     AttributesFactory attr = new AttributesFactory();
     attr.setPartitionAttributes(prAttr);

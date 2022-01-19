@@ -131,11 +131,11 @@ public class ConnectionPoolingJUnitTest {
       sm.execute(sql);
       sm.close();
       conn.close();
-      Thread th[] = new Thread[numThreads];
+      Thread[] th = new Thread[numThreads];
       for (int i = 0; i < numThreads; ++i) {
         final int threadID = i;
         th[i] = new Thread(new Runnable() {
-          private int key = threadID;
+          private final int key = threadID;
 
           @Override
           public void run() {
@@ -190,17 +190,16 @@ public class ConnectionPoolingJUnitTest {
         });
       }
 
-      for (int i = 0; i < th.length; ++i) {
-        th[i].start();
+      for (final Thread value : th) {
+        value.start();
       }
 
-      for (int i = 0; i < th.length; ++i) {
-        Thread t = th[i];
+      for (Thread t : th) {
         long ms = 90 * 1000;
         t.join(ms);
         if (t.isAlive()) {
-          for (int j = 0; j < th.length; j++) {
-            th[j].interrupt();
+          for (final Thread thread : th) {
+            thread.interrupt();
           }
           fail("Thread did not terminate after " + ms + " ms: " + t);
         }

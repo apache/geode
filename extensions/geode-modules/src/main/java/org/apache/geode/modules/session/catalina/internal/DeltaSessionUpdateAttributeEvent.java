@@ -44,24 +44,24 @@ public class DeltaSessionUpdateAttributeEvent implements DeltaSessionAttributeEv
 
   @Override
   public void apply(DeltaSessionInterface session) {
-    session.localUpdateAttribute(this.attributeName, this.attributeValue);
+    session.localUpdateAttribute(attributeName, attributeValue);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.attributeName = DataSerializer.readString(in);
-    this.attributeValue = DataSerializer.readObject(in);
+    attributeName = DataSerializer.readString(in);
+    attributeValue = DataSerializer.readObject(in);
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.attributeName, out);
-    DataSerializer.writeObject(this.attributeValue, out);
+    DataSerializer.writeString(attributeName, out);
+    DataSerializer.writeObject(attributeValue, out);
   }
 
   public String toString() {
     return "DeltaSessionUpdateAttributeEvent[" + "attributeName="
-        + this.attributeName + "; attributeValue=" + this.attributeValue
+        + attributeName + "; attributeValue=" + attributeValue
         + "]";
   }
 }

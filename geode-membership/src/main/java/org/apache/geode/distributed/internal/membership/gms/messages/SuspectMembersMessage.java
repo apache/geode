@@ -36,7 +36,7 @@ public class SuspectMembersMessage<ID extends MemberIdentifier> extends Abstract
   public SuspectMembersMessage(List<ID> recipients, List<SuspectRequest<ID>> s) {
     super();
     setRecipients(recipients);
-    this.suspectRequests = s;
+    suspectRequests = s;
   }
 
   public SuspectMembersMessage() {

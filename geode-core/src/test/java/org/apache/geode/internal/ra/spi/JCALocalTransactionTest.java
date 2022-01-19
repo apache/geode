@@ -38,26 +38,26 @@ public class JCALocalTransactionTest {
 
   @Before
   public void setUp() throws Exception {
-    this.cache = Fakes.cache();
-    this.transactionManager = mock(TXManagerImpl.class);
+    cache = Fakes.cache();
+    transactionManager = mock(TXManagerImpl.class);
   }
 
   @Test
   public void testCallingBeginDoesBeginTransaction() throws ResourceException {
     // Create JCALocalTransaction
     JCALocalTransaction jcaTransaction =
-        new JCALocalTransaction(this.cache, this.transactionManager);
+        new JCALocalTransaction(cache, transactionManager);
 
     // Once TXManagerImpl begin is called, add when/thenReturn to return the TXStateProxy
     doAnswer(invocation -> {
-      when(this.transactionManager.getTXState()).thenReturn(mock(TXStateProxy.class));
+      when(transactionManager.getTXState()).thenReturn(mock(TXStateProxy.class));
       return null;
-    }).when(this.transactionManager).begin();
+    }).when(transactionManager).begin();
 
     // Begin the transaction
     jcaTransaction.begin();
 
     // Verify the TXManagerImpl begins a transaction
-    verify(this.transactionManager, times(1)).begin();
+    verify(transactionManager, times(1)).begin();
   }
 }

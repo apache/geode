@@ -35,7 +35,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.HARegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.Host;
@@ -79,8 +78,8 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
    */
   @Override
   public final void preTearDown() throws Exception {
-    vm0.invoke(() -> HARegionDUnitTest.closeCache());
-    vm1.invoke(() -> HARegionDUnitTest.closeCache());
+    vm0.invoke(HARegionDUnitTest::closeCache);
+    vm1.invoke(HARegionDUnitTest::closeCache);
   }
 
   /**
@@ -108,13 +107,13 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testLocalPut() {
-    vm0.invoke(() -> HARegionDUnitTest.createRegion());
-    vm1.invoke(() -> HARegionDUnitTest.createRegion());
-    vm0.invoke(() -> HARegionDUnitTest.putValue1());
-    vm1.invoke(() -> HARegionDUnitTest.getNull());
-    vm1.invoke(() -> HARegionDUnitTest.putValue2());
-    vm0.invoke(() -> HARegionDUnitTest.getValue1());
-    vm1.invoke(() -> HARegionDUnitTest.getValue2());
+    vm0.invoke(HARegionDUnitTest::createRegion);
+    vm1.invoke(HARegionDUnitTest::createRegion);
+    vm0.invoke(HARegionDUnitTest::putValue1);
+    vm1.invoke(HARegionDUnitTest::getNull);
+    vm1.invoke(HARegionDUnitTest::putValue2);
+    vm0.invoke(HARegionDUnitTest::getValue1);
+    vm1.invoke(HARegionDUnitTest::getValue2);
 
   }
 
@@ -128,16 +127,16 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testLocalDestroy() {
-    vm0.invoke(() -> HARegionDUnitTest.createRegion());
-    vm1.invoke(() -> HARegionDUnitTest.createRegion());
-    vm0.invoke(() -> HARegionDUnitTest.putValue1());
-    vm1.invoke(() -> HARegionDUnitTest.getNull());
-    vm1.invoke(() -> HARegionDUnitTest.putValue2());
-    vm0.invoke(() -> HARegionDUnitTest.getValue1());
-    vm1.invoke(() -> HARegionDUnitTest.getValue2());
-    vm0.invoke(() -> HARegionDUnitTest.destroy());
-    vm0.invoke(() -> HARegionDUnitTest.getNull());
-    vm1.invoke(() -> HARegionDUnitTest.getValue2());
+    vm0.invoke(HARegionDUnitTest::createRegion);
+    vm1.invoke(HARegionDUnitTest::createRegion);
+    vm0.invoke(HARegionDUnitTest::putValue1);
+    vm1.invoke(HARegionDUnitTest::getNull);
+    vm1.invoke(HARegionDUnitTest::putValue2);
+    vm0.invoke(HARegionDUnitTest::getValue1);
+    vm1.invoke(HARegionDUnitTest::getValue2);
+    vm0.invoke(HARegionDUnitTest::destroy);
+    vm0.invoke(HARegionDUnitTest::getNull);
+    vm1.invoke(HARegionDUnitTest::getValue2);
   }
 
   /**
@@ -148,13 +147,13 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testGII() {
-    vm0.invoke(() -> HARegionDUnitTest.createRegion());
-    vm0.invoke(() -> HARegionDUnitTest.putValue1());
-    vm0.invoke(() -> HARegionDUnitTest.getValue1());
-    vm1.invoke(() -> HARegionDUnitTest.createRegion());
-    vm1.invoke(() -> HARegionDUnitTest.getValue1());
-    vm1.invoke(() -> HARegionDUnitTest.putValue2());
-    vm1.invoke(() -> HARegionDUnitTest.getValue2());
+    vm0.invoke(HARegionDUnitTest::createRegion);
+    vm0.invoke(HARegionDUnitTest::putValue1);
+    vm0.invoke(HARegionDUnitTest::getValue1);
+    vm1.invoke(HARegionDUnitTest::createRegion);
+    vm1.invoke(HARegionDUnitTest::getValue1);
+    vm1.invoke(HARegionDUnitTest::putValue2);
+    vm1.invoke(HARegionDUnitTest::getValue2);
 
   }
 
@@ -166,10 +165,10 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testLocalDestroyRegion() {
-    vm0.invoke(() -> HARegionDUnitTest.createRegion());
-    vm1.invoke(() -> HARegionDUnitTest.createRegion());
-    vm0.invoke(() -> HARegionDUnitTest.destroyRegion());
-    vm1.invoke(() -> HARegionDUnitTest.verifyRegionNotDestroyed());
+    vm0.invoke(HARegionDUnitTest::createRegion);
+    vm1.invoke(HARegionDUnitTest::createRegion);
+    vm0.invoke(HARegionDUnitTest::destroyRegion);
+    vm1.invoke(HARegionDUnitTest::verifyRegionNotDestroyed);
 
   }
 
@@ -197,15 +196,15 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testQRM() {
-    vm0.invoke(() -> HARegionDUnitTest.createRegionQueue());
-    vm1.invoke(() -> HARegionDUnitTest.createRegionQueue());
-    vm0.invoke(() -> HARegionDUnitTest.verifyAddingDispatchMesgs());
+    vm0.invoke(HARegionDUnitTest::createRegionQueue);
+    vm1.invoke(HARegionDUnitTest::createRegionQueue);
+    vm0.invoke(HARegionDUnitTest::verifyAddingDispatchMesgs);
     try {
       Thread.sleep(5000);
     } catch (InterruptedException e) {
       fail("interrupted");
     }
-    vm1.invoke(() -> HARegionDUnitTest.verifyDispatchedMessagesRemoved());
+    vm1.invoke(HARegionDUnitTest::verifyDispatchedMessagesRemoved);
   }
 
   /**
@@ -226,7 +225,7 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
     when(harq.updateHAEventWrapper(any(), any(), any()))
         .thenAnswer(AdditionalAnswers.returnsSecondArg());
 
-    HARegion.getInstance(REGION_NAME, (GemFireCacheImpl) cache, harq, factory.create(),
+    HARegion.getInstance(REGION_NAME, cache, harq, factory.create(),
         disabledClock());
   }
 
@@ -263,11 +262,11 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
   public static void verifyDispatchedMessagesRemoved() {
     try {
       Region region = hrq.getRegion();
-      if (region.get(new Long(0)) != null) {
+      if (region.get(0L) != null) {
         fail("Expected message to have been deleted but it is not deleted");
       }
 
-      if (region.get(new Long(1)) == null) {
+      if (region.get(1L) == null) {
         fail("Expected message not to have been deleted but it is deleted");
       }
     } catch (Exception e) {

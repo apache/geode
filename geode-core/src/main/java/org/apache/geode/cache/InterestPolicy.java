@@ -146,6 +146,6 @@ public class InterestPolicy implements java.io.Serializable {
    */
   @Override
   public String toString() {
-    return this.name;
+    return name;
   }
 }

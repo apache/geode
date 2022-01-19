@@ -34,6 +34,6 @@ public class NativeErrorException extends Exception {
   }
 
   public int getErrorCode() {
-    return this.errorCode;
+    return errorCode;
   }
 }

@@ -37,7 +37,7 @@ public class AccessControlMBean implements AccessControlMXBean {
   @Override
   public boolean authorize(String resource, String permission) {
     try {
-      this.securityService.authorize(Resource.valueOf(resource), Operation.valueOf(permission),
+      securityService.authorize(Resource.valueOf(resource), Operation.valueOf(permission),
           ResourcePermission.ALL, ResourcePermission.ALL);
       return true;
     } catch (GemFireSecurityException e) {

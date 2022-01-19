@@ -49,20 +49,20 @@ public class FaultyDelta implements Delta, DataSerializable {
   public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
     try {
       byte deltaBits = DataSerializer.readByte(in);
-      GemFireCacheImpl.getInstance().getLogger().fine("Applying delta on " + this.toString());
+      GemFireCacheImpl.getInstance().getLogger().fine("Applying delta on " + this);
       if (deltaBits != 0) {
         // we should read here int, but we are reading byte array. Its is done
         // intentionly to produce faulty fromDelta implementation
         if ((deltaBits & INT_MASK) == INT_MASK) {
-          this.bigObj = DataSerializer.readByteArray(in);
+          bigObj = DataSerializer.readByteArray(in);
           GemFireCacheImpl.getInstance().getLogger()
-              .fine(" Applied delta on DeltaImpl's field 'bigObj' = {" + this.bigObj[0] + " "
-                  + this.bigObj[1] + "}");
+              .fine(" Applied delta on DeltaImpl's field 'bigObj' = {" + bigObj[0] + " "
+                  + bigObj[1] + "}");
         }
         if ((deltaBits & BIG_OBJECT_MASK) == BIG_OBJECT_MASK) {
-          this.intVal = DataSerializer.readPrimitiveInt(in);
+          intVal = DataSerializer.readPrimitiveInt(in);
           GemFireCacheImpl.getInstance().getLogger()
-              .fine(" Applied delta on DeltaImpl's field 'intVal' = " + this.intVal);
+              .fine(" Applied delta on DeltaImpl's field 'intVal' = " + intVal);
         }
         if ((deltaBits | COMPLETE_MASK) != COMPLETE_MASK) {
           GemFireCacheImpl.getInstance().getLogger().fine(" <unknown field code>");
@@ -81,24 +81,24 @@ public class FaultyDelta implements Delta, DataSerializable {
 
   @Override
   public boolean hasDelta() {
-    return this.hasDelta;
+    return hasDelta;
   }
 
   @Override
   public void toDelta(DataOutput out) throws IOException {
     try {
-      DataSerializer.writeByte(this.deltaBits, out);
-      GemFireCacheImpl.getInstance().getLogger().fine("Extracting delta from " + this.toString());
+      DataSerializer.writeByte(deltaBits, out);
+      GemFireCacheImpl.getInstance().getLogger().fine("Extracting delta from " + this);
       if ((deltaBits & INT_MASK) == INT_MASK) {
         GemFireCacheImpl.getInstance().getLogger()
-            .fine(" Extracted delta from DeltaObj's field 'intVal' = " + this.intVal);
-        DataSerializer.writePrimitiveInt(this.intVal, out);
+            .fine(" Extracted delta from DeltaObj's field 'intVal' = " + intVal);
+        DataSerializer.writePrimitiveInt(intVal, out);
       }
       if ((deltaBits & BIG_OBJECT_MASK) == BIG_OBJECT_MASK) {
         GemFireCacheImpl.getInstance().getLogger()
-            .fine(" Extracted delta from DeltaObj's field 'bigObj' = {" + this.bigObj[0] + " "
-                + this.bigObj[1] + "}");
-        DataSerializer.writeByteArray(this.bigObj, out);
+            .fine(" Extracted delta from DeltaObj's field 'bigObj' = {" + bigObj[0] + " "
+                + bigObj[1] + "}");
+        DataSerializer.writeByteArray(bigObj, out);
       }
       if ((deltaBits | COMPLETE_MASK) != COMPLETE_MASK) {
         GemFireCacheImpl.getInstance().getLogger().fine(" <unknown field code>");
@@ -121,14 +121,14 @@ public class FaultyDelta implements Delta, DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.intVal = DataSerializer.readPrimitiveInt(in);
-    this.bigObj = DataSerializer.readByteArray(in);
+    intVal = DataSerializer.readPrimitiveInt(in);
+    bigObj = DataSerializer.readByteArray(in);
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writePrimitiveInt(this.intVal, out);
-    DataSerializer.writeByteArray(this.bigObj, out);
+    DataSerializer.writePrimitiveInt(intVal, out);
+    DataSerializer.writeByteArray(bigObj, out);
   }
 
   public byte[] getBigObj() {
@@ -136,14 +136,14 @@ public class FaultyDelta implements Delta, DataSerializable {
   }
 
   public void setBigObj(byte[] bigObj) {
-    this.hasDelta = true;
-    this.deltaBits |= BIG_OBJECT_MASK;
+    hasDelta = true;
+    deltaBits |= BIG_OBJECT_MASK;
     this.bigObj = bigObj;
   }
 
   public void resetDeltaStatus() {
-    this.deltaBits = 0x0;
-    this.hasDelta = false;
+    deltaBits = 0x0;
+    hasDelta = false;
   }
 
   public int getIntVal() {
@@ -151,13 +151,13 @@ public class FaultyDelta implements Delta, DataSerializable {
   }
 
   public void setIntVal(int intVal) {
-    this.hasDelta = true;
-    this.deltaBits |= INT_MASK;
+    hasDelta = true;
+    deltaBits |= INT_MASK;
     this.intVal = intVal;
   }
 
   public String toString() {
-    return "DeltaObj[hasDelta=" + this.hasDelta + ",intVal=" + this.intVal + ",bigObj={"
-        + this.bigObj[0] + "," + this.bigObj[1] + "}]";
+    return "DeltaObj[hasDelta=" + hasDelta + ",intVal=" + intVal + ",bigObj={"
+        + bigObj[0] + "," + bigObj[1] + "}]";
   }
 }

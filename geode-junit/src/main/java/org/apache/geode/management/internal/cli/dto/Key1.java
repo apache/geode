@@ -57,9 +57,7 @@ public class Key1 implements Serializable {
   }
 
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(" Key1 [ id : ").append(id).append(" name : ").append(name).append(" ]");
-    return sb.toString();
+    return " Key1 [ id : " + id + " name : " + name + " ]";
   }
 
 

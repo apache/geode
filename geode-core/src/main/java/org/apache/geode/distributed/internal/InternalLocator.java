@@ -206,7 +206,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   private ServerLocator serverLocator;
   private Properties env;
 
-  private DistributionConfigImpl distributionConfig;
+  private final DistributionConfigImpl distributionConfig;
   private WanLocatorDiscoverer locatorDiscoverer;
   private InternalConfigurationPersistenceService configurationPersistenceService;
   private ClusterManagementService clusterManagementService;
@@ -485,7 +485,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     // bindAddress is superceded by hostAddress but must be kept for Locator API backward
     // compatibility
     if (hostAddress != null) {
-      this.bindAddress = hostAddress.getAddress();
+      bindAddress = hostAddress.getAddress();
     }
     this.hostnameForClients = hostnameForClients;
 

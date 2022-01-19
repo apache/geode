@@ -50,7 +50,7 @@ public class SqlToPdxInstanceCreatorTest {
   private InternalCache cache;
   private RegionMapping regionMapping;
   private FieldMapping columnMapping = mock(FieldMapping.class);
-  private PdxInstance pdxTemplate = mock(PdxInstance.class);
+  private final PdxInstance pdxTemplate = mock(PdxInstance.class);
 
   @Before
   public void setup() throws Exception {

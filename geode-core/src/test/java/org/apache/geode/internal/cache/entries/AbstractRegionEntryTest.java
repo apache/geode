@@ -372,8 +372,8 @@ public class AbstractRegionEntryTest {
     @Override
     public void setVersions(VersionTag tag) {
       this.tag = tag;
-      this.timeStamp = tag.getVersionTimeStamp();
-      this.dsId = tag.getDistributedSystemId();
+      timeStamp = tag.getVersionTimeStamp();
+      dsId = tag.getDistributedSystemId();
     }
 
     @Override
@@ -400,12 +400,12 @@ public class AbstractRegionEntryTest {
 
     @Override
     protected Object getValueField() {
-      return this.value;
+      return value;
     }
 
     @Override
     protected void setValueField(Object v) {
-      this.value = v;
+      value = v;
     }
 
     @Override
@@ -475,7 +475,7 @@ public class AbstractRegionEntryTest {
 
     @Override
     public long getVersionTimeStamp() {
-      return this.timeStamp;
+      return timeStamp;
     }
 
     @Override
@@ -485,7 +485,7 @@ public class AbstractRegionEntryTest {
 
     @Override
     public int getDistributedSystemId() {
-      return this.dsId;
+      return dsId;
     }
 
     @Override

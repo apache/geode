@@ -86,9 +86,9 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
     // order by field
     // its null values are reported first and then the values in ascending
     // order.
-    String queries[] = getQueriesForOrderByWithNullValues();
+    String[] queries = getQueriesForOrderByWithNullValues();
 
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
 
@@ -227,7 +227,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
       results = (SelectResults) q.execute();
       list = results.asList();
       for (int i = 1; i <= size; i++) {
-        int id = ((Integer) list.get((i - 1))).intValue();
+        int id = (Integer) list.get((i - 1));
         // ID should be one of 1, 2, 3 because of distinct
         if (i <= numNullValues) {
           if (!(id == 1 || id == 2 || id == 3)) {
@@ -247,7 +247,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
       results = (SelectResults) q.execute();
       list = results.asList();
       for (int i = 1; i <= list.size(); i++) {
-        int id = ((Integer) list.get((i - 1))).intValue();
+        int id = (Integer) list.get((i - 1));
         if (id != (numNullValues + i)) {
           fail(" Value of ID is not as expected, " + id);
         }
@@ -261,7 +261,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
       list = results.asList();
       for (int i = 1; i <= size; i++) {
         Struct vals = (Struct) list.get((i - 1));
-        int id = ((Integer) vals.get("ID")).intValue();
+        int id = (Integer) vals.get("ID");
         String pkid = (String) vals.get("pkid");
 
         // ID should be one of 1, 2, 3 because of distinct
@@ -290,7 +290,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
 
       for (int i = 1; i <= list.size(); i++) {
         Struct vals = (Struct) list.get((i - 1));
-        int id = ((Integer) vals.get("ID")).intValue();
+        int id = (Integer) vals.get("ID");
         String pkid = (String) vals.get("pkid");
 
         if (i <= numNullValues) {
@@ -317,7 +317,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
 
       for (int i = 1; i <= list.size(); i++) {
         Struct vals = (Struct) list.get((i - 1));
-        int id = ((Integer) vals.get("ID")).intValue();
+        int id = (Integer) vals.get("ID");
         String pkid = (String) vals.get("pkid");
 
         if (i <= numNullValues) {
@@ -344,7 +344,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
 
       for (int i = 1; i <= list.size(); i++) {
         Struct vals = (Struct) list.get((i - 1));
-        int id = ((Integer) vals.get("ID")).intValue();
+        int id = (Integer) vals.get("ID");
         String pkid = (String) vals.get("pkid");
 
         if (i <= numNullValues) {
@@ -373,7 +373,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
     // order by field
     // its null values are reported first and then the values in ascending
     // order.
-    String queries[] = {"SELECT  distinct * FROM " + SEPARATOR + "portfolio1 pf1 order by pkid", // 0
+    String[] queries = {"SELECT  distinct * FROM " + SEPARATOR + "portfolio1 pf1 order by pkid", // 0
                                                                                                  // null
         // values are
         // first in the
@@ -418,14 +418,14 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
   @Test
   public void testLimitApplicationOnPrimaryKeyIndex() throws Exception {
 
-    String queries[] = {
+    String[] queries = {
         // The PK index should be used but limit should not be applied as order by
         // cannot be applied while data is fetched
         // from index
         "SELECT  distinct ID, description, createTime FROM " + SEPARATOR
             + "portfolio1 pf1 where pf1.ID != $1 limit 10",};
 
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Position.resetCounter();
@@ -443,7 +443,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
       try {
         q = CacheUtils.getQueryService().newQuery(queries[i]);
         CacheUtils.getLogger().info("Executing query: " + queries[i]);
-        r[i][0] = q.execute(new Object[] {new Integer(10)});
+        r[i][0] = q.execute(10);
       } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());
@@ -451,7 +451,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
     }
     // Create Indexes
 
-    this.createIndex("PKIDIndexPf1", IndexType.PRIMARY_KEY, "ID", SEPARATOR + "portfolio1");
+    createIndex("PKIDIndexPf1", IndexType.PRIMARY_KEY, "ID", SEPARATOR + "portfolio1");
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -460,7 +460,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
         CacheUtils.getLogger().info("Executing query: " + queries[i]);
         QueryObserverImpl observer = new QueryObserverImpl();
         QueryObserverHolder.setInstance(observer);
-        r[i][1] = q.execute(new Object[] {"10"});
+        r[i][1] = q.execute("10");
         int indexLimit = queries[i].indexOf("limit");
         int limit = -1;
         boolean limitQuery = indexLimit != -1;
@@ -488,9 +488,8 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
           assertFalse(observer.limitAppliedAtIndex);
         }
 
-        Iterator itr = observer.indexesUsed.iterator();
-        while (itr.hasNext()) {
-          String indexUsed = itr.next().toString();
+        for (final Object o : observer.indexesUsed) {
+          String indexUsed = o.toString();
           if (!(indexUsed).equals("PKIDIndexPf1")) {
             fail("<PKIDIndexPf1> was expected but found " + indexUsed);
           }
@@ -542,15 +541,15 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
       Object[] values1 = ((Struct) itert1.next()).getFieldValues();
       Object[] values2 = ((Struct) itert2.next()).getFieldValues();
       assertEquals(values1.length, values2.length);
-      assertTrue((((Integer) values1[0]).intValue() != 10));
-      assertTrue((((Integer) values2[0]).intValue() != 10));
+      assertTrue(((Integer) values1[0] != 10));
+      assertTrue(((Integer) values2[0] != 10));
     }
 
   }
 
   @Test
   public void testLimitAndOrderByApplicationOnPrimaryKeyIndexQuery() throws Exception {
-    String queries[] = {
+    String[] queries = {
         // The PK index should be used but limit should not be applied as order
         // by cannot be applied while data is fetched
         // from index
@@ -561,7 +560,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
 
     };
 
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Position.resetCounter();
@@ -579,7 +578,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
       try {
         q = CacheUtils.getQueryService().newQuery(queries[i]);
         CacheUtils.getLogger().info("Executing query: " + queries[i]);
-        r[i][0] = q.execute(new Object[] {new Integer(10)});
+        r[i][0] = q.execute(10);
       } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());
@@ -587,7 +586,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
     }
     // Create Indexes
 
-    this.createIndex("PKIDIndexPf1", IndexType.PRIMARY_KEY, "ID", SEPARATOR + "portfolio1");
+    createIndex("PKIDIndexPf1", IndexType.PRIMARY_KEY, "ID", SEPARATOR + "portfolio1");
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -596,7 +595,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
         CacheUtils.getLogger().info("Executing query: " + queries[i]);
         QueryObserverImpl observer = new QueryObserverImpl();
         QueryObserverHolder.setInstance(observer);
-        r[i][1] = q.execute(new Object[] {"10"});
+        r[i][1] = q.execute("10");
         int indexLimit = queries[i].indexOf("limit");
         int limit = -1;
         boolean limitQuery = indexLimit != -1;
@@ -621,9 +620,8 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
           assertFalse(observer.limitAppliedAtIndex);
         }
 
-        Iterator itr = observer.indexesUsed.iterator();
-        while (itr.hasNext()) {
-          String indexUsed = itr.next().toString();
+        for (final Object o : observer.indexesUsed) {
+          String indexUsed = o.toString();
           if (!(indexUsed).equals("PKIDIndexPf1")) {
             fail("<PKIDIndexPf1> was expected but found " + indexUsed);
           }
@@ -646,7 +644,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
 
   @Test
   public void testOrderedResultsReplicatedRegion() throws Exception {
-    String queries[] = {
+    String[] queries = {
         // Test case No. IUMR021
 
         "select distinct status as st from " + SEPARATOR
@@ -663,7 +661,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
             + "portfolio1 key where key.status = 'inactive' order by key.status desc, key.ID"
 
     };
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Position.resetCounter();
@@ -688,9 +686,9 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
       }
     }
     // Create Indexes
-    this.createIndex("i1", IndexType.FUNCTIONAL, "p.status", SEPARATOR + "portfolio1 p");
-    this.createIndex("i2", IndexType.FUNCTIONAL, "p.ID", SEPARATOR + "portfolio1 p");
-    this.createIndex("i3", IndexType.FUNCTIONAL, "p.position1.secId", SEPARATOR + "portfolio1 p");
+    createIndex("i1", IndexType.FUNCTIONAL, "p.status", SEPARATOR + "portfolio1 p");
+    createIndex("i2", IndexType.FUNCTIONAL, "p.ID", SEPARATOR + "portfolio1 p");
+    createIndex("i3", IndexType.FUNCTIONAL, "p.position1.secId", SEPARATOR + "portfolio1 p");
 
     // Execute Queries with Indexes
     for (int i = 0; i < queries.length; i++) {
@@ -715,7 +713,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
 
   @Override
   public String[] getQueriesForLimitNotAppliedIfOrderByNotUsingIndex() {
-    String queries[] = {
+    String[] queries = {
         // Test case No. IUMR021
         "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
             + "portfolio1 pf1 where pkid = '12' and ID > 10 order by ID desc, pkid asc ",
@@ -790,7 +788,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
 
   @Override
   public String[] getQueriesForMultiColOrderByWithIndexResultWithProjection() {
-    String queries[] = {
+    String[] queries = {
         // Test case No. IUMR021
         "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
             + "portfolio1 pf1 where ID > 10 order by ID desc, pkid desc ",
@@ -862,7 +860,7 @@ public class OrderByReplicatedJUnitTest extends OrderByTestImplementation {
 
   @Override
   public String[] getQueriesForMultiColOrderByWithMultiIndexResultProjection() {
-    String queries[] = {
+    String[] queries = {
         // Test case No. IUMR021
         "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
             + "portfolio1 pf1 where pkid = '12' and ID > 10 order by ID desc, pkid asc ",

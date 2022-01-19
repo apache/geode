@@ -23,11 +23,12 @@ import java.util.Properties;
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.DeclarableType;
+import org.apache.geode.cache.configuration.ObjectType;
 import org.apache.geode.cache.configuration.ParameterType;
 import org.apache.geode.management.configuration.ClassName;
 
 public class ClassNameConverterTest {
-  private ClassNameConverter converter = new ClassNameConverter();
+  private final ClassNameConverter converter = new ClassNameConverter();
 
   @Test
   public void convertNull() throws Exception {
@@ -44,9 +45,9 @@ public class ClassNameConverterTest {
     DeclarableType declarableType = converter.fromConfigObject(className);
     assertThat(declarableType.getClassName()).isEqualTo("xyz");
     List<ParameterType> parameters = declarableType.getParameters();
-    assertThat(parameters).extracting(p -> p.getName()).containsExactlyInAnyOrder("field1",
+    assertThat(parameters).extracting(ParameterType::getName).containsExactlyInAnyOrder("field1",
         "field2");
-    assertThat(parameters).extracting(p -> p.getString()).containsExactlyInAnyOrder("value1",
+    assertThat(parameters).extracting(ObjectType::getString).containsExactlyInAnyOrder("value1",
         "value2");
   }
 

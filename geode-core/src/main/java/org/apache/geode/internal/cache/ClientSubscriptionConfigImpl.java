@@ -44,9 +44,9 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
   private boolean hasOverflowDirectory = false;
 
   public ClientSubscriptionConfigImpl() {
-    this.haQueueCapacity = DEFAULT_CAPACITY;
-    this.haEvictionPolicy = DEFAULT_EVICTION_POLICY;
-    this.overflowDirectory = DEFAULT_OVERFLOW_DIRECTORY;
+    haQueueCapacity = DEFAULT_CAPACITY;
+    haEvictionPolicy = DEFAULT_EVICTION_POLICY;
+    overflowDirectory = DEFAULT_OVERFLOW_DIRECTORY;
   }
 
   /**
@@ -58,7 +58,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
    */
   @Override
   public int getCapacity() {
-    return this.haQueueCapacity;
+    return haQueueCapacity;
   }
 
   /**
@@ -70,7 +70,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
    */
   @Override
   public void setCapacity(int capacity) {
-    this.haQueueCapacity = capacity;
+    haQueueCapacity = capacity;
   }
 
   /**
@@ -82,7 +82,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
    */
   @Override
   public String getEvictionPolicy() {
-    return this.haEvictionPolicy;
+    return haEvictionPolicy;
   }
 
   /**
@@ -93,7 +93,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
    */
   @Override
   public void setEvictionPolicy(String policy) {
-    this.haEvictionPolicy = policy;
+    haEvictionPolicy = policy;
   }
 
   /**
@@ -106,10 +106,10 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
   @Override
   @Deprecated
   public void setOverflowDirectory(String overflowDirectory) {
-    if (this.getDiskStoreName() != null) {
+    if (getDiskStoreName() != null) {
       throw new IllegalStateException(
           String.format("Deprecated API %s cannot be used with DiskStore %s",
-              new Object[] {"setOverflowDirectory", this.getDiskStoreName()}));
+              "setOverflowDirectory", getDiskStoreName()));
     }
     this.overflowDirectory = overflowDirectory;
     setHasOverflowDirectory(true);
@@ -125,21 +125,21 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
   @Override
   @Deprecated
   public String getOverflowDirectory() {
-    if (this.getDiskStoreName() != null) {
+    if (getDiskStoreName() != null) {
       throw new IllegalStateException(
           String.format("Deprecated API %s cannot be used with DiskStore %s",
-              new Object[] {"getOverflowDirectory", this.getDiskStoreName()}));
+              "getOverflowDirectory", getDiskStoreName()));
     }
-    return this.overflowDirectory;
+    return overflowDirectory;
   }
 
   @Override
   public String toString() {
-    String str = " Eviction policy " + this.getEvictionPolicy() + " capacity " + this.getCapacity();
+    String str = " Eviction policy " + getEvictionPolicy() + " capacity " + getCapacity();
     if (diskStoreName == null) {
-      str += " Overflow Directory " + this.getOverflowDirectory();
+      str += " Overflow Directory " + getOverflowDirectory();
     } else {
-      str += " DiskStore Name: " + this.diskStoreName;
+      str += " DiskStore Name: " + diskStoreName;
     }
     return str;
   }
@@ -164,13 +164,13 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
     if (hasOverflowDirectory()) {
       throw new IllegalStateException(
           String.format("Deprecated API %s cannot be used with DiskStore %s",
-              new Object[] {"setDiskStoreName", this.getDiskStoreName()}));
+              "setDiskStoreName", getDiskStoreName()));
     }
     this.diskStoreName = diskStoreName;
   }
 
   public boolean hasOverflowDirectory() {
-    return this.hasOverflowDirectory;
+    return hasOverflowDirectory;
   }
 
   private void setHasOverflowDirectory(boolean hasOverflowDirectory) {

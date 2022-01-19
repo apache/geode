@@ -20,7 +20,7 @@ import java.security.Principal;
 import org.apache.shiro.subject.Subject;
 
 public class ShiroPrincipal implements Principal {
-  private Subject subject;
+  private final Subject subject;
 
   public ShiroPrincipal(Subject subject) {
     this.subject = subject;

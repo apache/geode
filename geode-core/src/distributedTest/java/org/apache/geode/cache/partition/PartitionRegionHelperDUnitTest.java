@@ -334,7 +334,7 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
       }
     });
 
-    HashMap<DistributedMember, VM> d2v = new HashMap<DistributedMember, VM>();
+    HashMap<DistributedMember, VM> d2v = new HashMap<>();
     SerializableCallable createPrRegion = new SerializableCallable("createDataStore") {
       @Override
       public Object call() throws Exception {
@@ -353,9 +353,9 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
     dm = (DistributedMember) ds3.invoke(createPrRegion);
     d2v.put(dm, ds3);
 
-    final Integer buk0Key1 = new Integer(0);
-    final Integer buk0Key2 = new Integer(buk0Key1.intValue() + tb);
-    final Integer buk1Key1 = new Integer(1);
+    final Integer buk0Key1 = 0;
+    final Integer buk0Key2 = buk0Key1 + tb;
+    final Integer buk1Key1 = 1;
 
     accessor.invoke(new CacheSerializableRunnable("nonPRcheck") {
       @SuppressWarnings("unchecked")
@@ -390,17 +390,17 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
         try {
           PartitionRegionHelper.getPrimaryMemberForKey(lr, key);
           fail();
-        } catch (IllegalArgumentException expected) {
+        } catch (IllegalArgumentException ignored) {
         }
         try {
           PartitionRegionHelper.getAllMembersForKey(lr, key);
           fail();
-        } catch (IllegalArgumentException expected) {
+        } catch (IllegalArgumentException ignored) {
         }
         try {
           PartitionRegionHelper.getRedundantMembersForKey(lr, key);
           fail();
-        } catch (IllegalArgumentException expected) {
+        } catch (IllegalArgumentException ignored) {
         }
       }
     });
@@ -415,17 +415,17 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
             try {
               PartitionRegionHelper.getPrimaryMemberForKey(r, null);
               fail();
-            } catch (IllegalStateException expected) {
+            } catch (IllegalStateException ignored) {
             }
             try {
               PartitionRegionHelper.getAllMembersForKey(r, null);
               fail();
-            } catch (IllegalStateException expected) {
+            } catch (IllegalStateException ignored) {
             }
             try {
               PartitionRegionHelper.getRedundantMembersForKey(r, null);
               fail();
-            } catch (IllegalStateException expected) {
+            } catch (IllegalStateException ignored) {
             }
 
             // buk0
@@ -451,22 +451,22 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
             try {
               buk0AllMems.add(me);
               fail();
-            } catch (UnsupportedOperationException expected) {
+            } catch (UnsupportedOperationException ignored) {
             }
             try {
               buk0AllMems.remove(me);
               fail();
-            } catch (UnsupportedOperationException expected) {
+            } catch (UnsupportedOperationException ignored) {
             }
             try {
               buk0RedundantMems.add(me);
               fail();
-            } catch (UnsupportedOperationException expected) {
+            } catch (UnsupportedOperationException ignored) {
             }
             try {
               buk0RedundantMems.remove(me);
               fail();
-            } catch (UnsupportedOperationException expected) {
+            } catch (UnsupportedOperationException ignored) {
             }
             assertTrue(buk0AllMems.containsAll(buk0RedundantMems));
             assertTrue(buk0AllMems.contains(key1Pri));
@@ -500,7 +500,7 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
       public void run2() throws CacheException {
         PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(prName);
         Integer bucketId =
-            new Integer(PartitionedRegionHelper.getHashKey(pr, null, buk0Key1, null, null));
+            PartitionedRegionHelper.getHashKey(pr, null, buk0Key1, null, null);
         try {
           BucketRegion buk0 = pr.getDataStore().getInitializedBucketForId(buk0Key1, bucketId);
           assertNotNull(buk0);
@@ -517,7 +517,7 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
           public void run2() throws CacheException {
             PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(prName);
             Integer bucketId =
-                new Integer(PartitionedRegionHelper.getHashKey(pr, null, buk0Key1, null, null));
+                PartitionedRegionHelper.getHashKey(pr, null, buk0Key1, null, null);
             try {
               BucketRegion buk0 = pr.getDataStore().getInitializedBucketForId(buk0Key1, bucketId);
               assertNotNull(buk0);
@@ -541,7 +541,7 @@ public class PartitionRegionHelperDUnitTest extends JUnit4CacheTestCase {
       public void run2() throws CacheException {
         PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(prName);
         Integer bucketId =
-            new Integer(PartitionedRegionHelper.getHashKey(pr, null, buk0Key1, null, null));
+            PartitionedRegionHelper.getHashKey(pr, null, buk0Key1, null, null);
         try {
           BucketRegion buk0 = pr.getDataStore().getInitializedBucketForId(buk0Key1, bucketId);
           assertNotNull(buk0);

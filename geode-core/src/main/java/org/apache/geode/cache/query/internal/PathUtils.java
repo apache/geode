@@ -52,7 +52,7 @@ public class PathUtils {
 
   public static String buildPathString(String[] path) {
     Support.assertArg(path != null && path.length > 0, "path should not be null or empty");
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append(path[0]);
     for (int i = 1; i < path.length; i++) {
       buf.append('.');
@@ -162,9 +162,9 @@ public class PathUtils {
       }
       if (!TypeUtils.OBJECT_TYPE.equals(type)) {
         Class clazz = type.resolveClass();
-        for (int i = 0; i < exprSteps.size(); i++) {
+        for (Object exprStep : exprSteps) {
           Member member;
-          String stepStr = (String) exprSteps.get(i);
+          String stepStr = (String) exprStep;
           // System.out.println("step = "+step);
           if (stepStr.endsWith("()")) {
             stepStr = stepStr.substring(0, stepStr.length() - 2);
@@ -183,9 +183,9 @@ public class PathUtils {
         }
         return type;
       }
-    } catch (NoSuchMethodException e) {
-    } catch (NameResolutionException e) {
-    } catch (TypeMismatchException e) {
+    } catch (NoSuchMethodException ignored) {
+    } catch (NameResolutionException ignored) {
+    } catch (TypeMismatchException ignored) {
     }
     return TypeUtils.OBJECT_TYPE;
   }
@@ -199,7 +199,7 @@ public class PathUtils {
   public static List<CompiledValue> collectCompiledValuesInThePath(CompiledValue expr,
       ExecutionContext context) throws AmbiguousNameException, TypeMismatchException {
     boolean toContinue = true;
-    List<CompiledValue> retList = new ArrayList<CompiledValue>();
+    List<CompiledValue> retList = new ArrayList<>();
 
     int exprType = expr.getType();
     while (toContinue) {
@@ -222,7 +222,7 @@ public class PathUtils {
           break;
         case CompiledValue.PATH:
           retList.add(expr);
-          expr = ((CompiledPath) expr).getReceiver();
+          expr = expr.getReceiver();
           break;
         case OQLLexerTokenTypes.ITERATOR_DEF:
           retList.add(expr);
@@ -230,7 +230,7 @@ public class PathUtils {
           break;
         case OQLLexerTokenTypes.TOK_LBRACK:
           retList.add(expr);
-          expr = ((CompiledIndexOperation) expr).getReceiver();
+          expr = expr.getReceiver();
           break;
         case OQLLexerTokenTypes.Identifier:
           CompiledID cid = (CompiledID) expr;

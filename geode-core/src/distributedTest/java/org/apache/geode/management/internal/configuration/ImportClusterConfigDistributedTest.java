@@ -66,7 +66,7 @@ public class ImportClusterConfigDistributedTest {
     server.invoke(ImportClusterConfigDistributedTest::validateServerIsUsingClusterConfig);
 
     // do not create the file yet
-    this.exportedClusterConfig = new File(tempFolder.getRoot(), EXPORTED_CLUSTER_CONFIG_ZIP_NAME);
+    exportedClusterConfig = new File(tempFolder.getRoot(), EXPORTED_CLUSTER_CONFIG_ZIP_NAME);
 
     gfsh.executeAndAssertThat(
         "export cluster-configuration --zip-file-name=" + exportedClusterConfig.getCanonicalPath())
@@ -76,8 +76,8 @@ public class ImportClusterConfigDistributedTest {
     locator.stop(true);
     server.stop(true);
 
-    assertThat(this.exportedClusterConfig).exists();
-    assertThat(this.exportedClusterConfig.length()).isGreaterThan(100);
+    assertThat(exportedClusterConfig).exists();
+    assertThat(exportedClusterConfig.length()).isGreaterThan(100);
   }
 
 
@@ -105,7 +105,7 @@ public class ImportClusterConfigDistributedTest {
 
     gfsh.connectAndVerify(locator);
     gfsh.executeAndAssertThat("import cluster-configuration --zip-file-name="
-        + this.exportedClusterConfig.getCanonicalPath()).statusIsSuccess();
+        + exportedClusterConfig.getCanonicalPath()).statusIsSuccess();
 
     server = lsRule.startServerVM(1, locator.getPort());
 

@@ -18,8 +18,8 @@ import org.springframework.shell.support.util.OsUtils;
  */
 public class ANSIBuffer {
   private boolean ansiEnabled = true;
-  private final StringBuffer ansiBuffer = new StringBuffer();
-  private final StringBuffer plainBuffer = new StringBuffer();
+  private final StringBuilder ansiBuffer = new StringBuilder();
+  private final StringBuilder plainBuffer = new StringBuilder();
 
   public ANSIBuffer() {}
 
@@ -28,11 +28,11 @@ public class ANSIBuffer {
   }
 
   public void setAnsiEnabled(final boolean ansi) {
-    this.ansiEnabled = ansi;
+    ansiEnabled = ansi;
   }
 
   public boolean getAnsiEnabled() {
-    return this.ansiEnabled;
+    return ansiEnabled;
   }
 
   public String getAnsiBuffer() {
@@ -340,7 +340,7 @@ public class ANSIBuffer {
           return super.reverse(str).append(ANSICodes.attrib(esc));
         }
         return super.reverse(str);
-      };
+      }
 
       @Override
       public ANSIBuffer attrib(final String str, final int code) {

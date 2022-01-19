@@ -29,7 +29,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.StatisticDescriptor;
@@ -54,7 +53,7 @@ public class FileSizeLimitIntegrationTest {
 
   private SampleCollector sampleCollector;
 
-  private NanoTimer timer = new NanoTimer();
+  private final NanoTimer timer = new NanoTimer();
   private long nanosTimeStamp;
 
   @Rule
@@ -64,51 +63,41 @@ public class FileSizeLimitIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
-    this.dir = this.temporaryFolder.getRoot();
-    this.archiveFileName =
-        new File(this.dir, this.testName.getMethodName() + ".gfs").getAbsolutePath();
+    dir = temporaryFolder.getRoot();
+    archiveFileName =
+        new File(dir, testName.getMethodName() + ".gfs").getAbsolutePath();
 
-    this.factory = new LocalStatisticsFactory(null);
-    this.statisticDescriptors = new StatisticDescriptor[] {
-        this.factory.createIntCounter("stat1", "description of stat1", "units", true)};
-    this.statisticsType =
-        factory.createType("statisticsType1", "statisticsType1", this.statisticDescriptors);
-    this.statistics = factory.createAtomicStatistics(this.statisticsType, "statistics1", 1);
+    factory = new LocalStatisticsFactory(null);
+    statisticDescriptors = new StatisticDescriptor[] {
+        factory.createIntCounter("stat1", "description of stat1", "units", true)};
+    statisticsType =
+        factory.createType("statisticsType1", "statisticsType1", statisticDescriptors);
+    statistics = factory.createAtomicStatistics(statisticsType, "statistics1", 1);
 
-    Answer<Statistics[]> statisticsAnswer = new Answer<Statistics[]>() {
-      @Override
-      public Statistics[] answer(InvocationOnMock invocation) throws Throwable {
-        return factory.getStatistics();
-      }
-    };
+    Answer<Statistics[]> statisticsAnswer = invocation -> factory.getStatistics();
 
-    Answer<Integer> modCountAnswer = new Answer<Integer>() {
-      @Override
-      public Integer answer(InvocationOnMock invocation) throws Throwable {
-        return factory.getStatListModCount();
-      }
-    };
+    Answer<Integer> modCountAnswer = invocation -> factory.getStatListModCount();
 
     StatisticsSampler sampler = mock(StatisticsSampler.class);
     when(sampler.getStatistics()).thenAnswer(statisticsAnswer);
     when(sampler.getStatisticsModCount()).thenAnswer(modCountAnswer);
 
     StatArchiveHandlerConfig config = mock(StatArchiveHandlerConfig.class);
-    when(config.getArchiveFileName()).thenReturn(new File(this.archiveFileName));
+    when(config.getArchiveFileName()).thenReturn(new File(archiveFileName));
     when(config.getArchiveFileSizeLimit()).thenReturn(FILE_SIZE_LIMIT);
     when(config.getSystemId()).thenReturn(1L);
     when(config.getSystemStartTime()).thenReturn(System.currentTimeMillis());
     when(config.getSystemDirectoryPath())
-        .thenReturn(this.temporaryFolder.getRoot().getAbsolutePath());
-    when(config.getProductDescription()).thenReturn(this.testName.getMethodName());
+        .thenReturn(temporaryFolder.getRoot().getAbsolutePath());
+    when(config.getProductDescription()).thenReturn(testName.getMethodName());
     when(config.getArchiveDiskSpaceLimit()).thenReturn(0L);
 
-    this.sampleCollector = new SampleCollector(sampler);
-    this.sampleCollector.initialize(config, this.timer.getTime(),
+    sampleCollector = new SampleCollector(sampler);
+    sampleCollector.initialize(config, NanoTimer.getTime(),
         new MainWithChildrenRollingFileHandler());
 
-    this.timer.reset();
-    this.nanosTimeStamp = this.timer.getLastResetTime() - getNanoRate();
+    timer.reset();
+    nanosTimeStamp = timer.getLastResetTime() - getNanoRate();
   }
 
   @After
@@ -146,12 +135,12 @@ public class FileSizeLimitIntegrationTest {
   }
 
   private SampleCollector getSampleCollector() {
-    return this.sampleCollector;
+    return sampleCollector;
   }
 
   private long advanceNanosTimeStamp() {
-    this.nanosTimeStamp += getNanoRate();
-    return this.nanosTimeStamp;
+    nanosTimeStamp += getNanoRate();
+    return nanosTimeStamp;
   }
 
   private long getNanoRate() {
@@ -163,11 +152,11 @@ public class FileSizeLimitIntegrationTest {
   }
 
   private File archiveFile(final int child) {
-    return new File(this.dir,
-        this.testName.getMethodName() + "-01-" + String.format("%02d", child) + ".gfs");
+    return new File(dir,
+        testName.getMethodName() + "-01-" + String.format("%02d", child) + ".gfs");
   }
 
   private File archiveFile() {
-    return new File(this.archiveFileName);
+    return new File(archiveFileName);
   }
 }

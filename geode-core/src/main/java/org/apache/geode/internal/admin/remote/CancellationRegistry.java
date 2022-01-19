@@ -29,7 +29,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 public class CancellationRegistry {
   @MakeNotStatic
   private static CancellationRegistry internalRef;
-  private Map map = new HashMap();
+  private final Map map = new HashMap();
 
   private CancellationRegistry() {}
 
@@ -81,7 +81,7 @@ public class CancellationRegistry {
       }
       if (other instanceof Key) {
         Key toTest = (Key) other;
-        return (toTest.console.equals(this.console) && toTest.msgId == this.msgId);
+        return (toTest.console.equals(console) && toTest.msgId == msgId);
       }
       return false;
     }

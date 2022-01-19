@@ -180,9 +180,9 @@ public class LuceneIndexCreationPersistenceIntegrationTest extends LuceneIntegra
   @Test
   @Parameters(method = "getRegionShortcuts")
   public void shouldHandleMultipleIndexes(RegionShortcut shortcut) throws Exception {
-    LuceneServiceProvider.get(this.cache).createIndexFactory().setFields("field1")
+    LuceneServiceProvider.get(cache).createIndexFactory().setFields("field1")
         .create(INDEX_NAME + "_1", REGION_NAME);
-    LuceneServiceProvider.get(this.cache).createIndexFactory().setFields("field2")
+    LuceneServiceProvider.get(cache).createIndexFactory().setFields("field2")
         .create(INDEX_NAME + "_2", REGION_NAME);
     Region region = cache.createRegionFactory(shortcut).create(REGION_NAME);
     region.put("key1", new TestObject());

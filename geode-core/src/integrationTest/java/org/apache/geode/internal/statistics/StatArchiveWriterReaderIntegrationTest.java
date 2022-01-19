@@ -30,12 +30,10 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -80,17 +78,17 @@ public class StatArchiveWriterReaderIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
-    this.statisticTypes = new HashMap<>();
-    this.allStatistics = new HashMap<>();
-    this.dir = this.temporaryFolder.getRoot();
-    this.archiveFileName =
-        this.dir.getAbsolutePath() + File.separator + this.testName.getMethodName() + ".gfs";
+    statisticTypes = new HashMap<>();
+    allStatistics = new HashMap<>();
+    dir = temporaryFolder.getRoot();
+    archiveFileName =
+        dir.getAbsolutePath() + File.separator + testName.getMethodName() + ".gfs";
   }
 
   @After
   public void tearDown() throws Exception {
-    this.statisticTypes = null;
-    this.allStatistics = null;
+    statisticTypes = null;
+    allStatistics = null;
     StatisticsTypeFactoryImpl.clear();
   }
 
@@ -103,9 +101,9 @@ public class StatArchiveWriterReaderIntegrationTest {
     final SampleCollector sampleCollector = new SampleCollector(sampler);
 
     final StatArchiveDescriptor archiveDescriptor =
-        new StatArchiveDescriptor.Builder().setArchiveName(this.archiveFileName).setSystemId(1)
+        new StatArchiveDescriptor.Builder().setArchiveName(archiveFileName).setSystemId(1)
             .setSystemStartTime(WRITER_INITIAL_DATE_MILLIS)
-            .setSystemDirectoryPath(this.testName.getMethodName())
+            .setSystemDirectoryPath(testName.getMethodName())
             .setProductDescription(getClass().getSimpleName()).build();
     final StatArchiveWriter writer = new TestStatArchiveWriter(archiveDescriptor);
     sampleCollector.addSampleHandler(writer);
@@ -125,12 +123,12 @@ public class StatArchiveWriterReaderIntegrationTest {
     writer.close();
 
     final StatisticDescriptor[] sds = ST1.getStatistics();
-    for (int i = 0; i < sds.length; i++) {
-      assertEquals(value, st1_1.get(sds[i].getName()));
+    for (final StatisticDescriptor sd : sds) {
+      assertEquals(value, st1_1.get(sd.getName()));
     }
 
     final StatArchiveReader reader =
-        new StatArchiveReader(new File[] {new File(this.archiveFileName)}, null, false);
+        new StatArchiveReader(new File[] {new File(archiveFileName)}, null, false);
 
     // compare all resourceInst values against what was printed above
 
@@ -184,9 +182,9 @@ public class StatArchiveWriterReaderIntegrationTest {
     final SampleCollector sampleCollector = new SampleCollector(sampler);
 
     final StatArchiveDescriptor archiveDescriptor =
-        new StatArchiveDescriptor.Builder().setArchiveName(this.archiveFileName).setSystemId(1)
+        new StatArchiveDescriptor.Builder().setArchiveName(archiveFileName).setSystemId(1)
             .setSystemStartTime(WRITER_INITIAL_DATE_MILLIS)
-            .setSystemDirectoryPath(this.testName.getMethodName())
+            .setSystemDirectoryPath(testName.getMethodName())
             .setProductDescription(getClass().getSimpleName()).build();
     final StatArchiveWriter writer = new TestStatArchiveWriter(archiveDescriptor);
     sampleCollector.addSampleHandler(writer);
@@ -206,12 +204,12 @@ public class StatArchiveWriterReaderIntegrationTest {
     writer.close();
 
     final StatisticDescriptor[] sds = ST1.getStatistics();
-    for (int i = 0; i < sds.length; i++) {
-      assertEquals(value, st1_1.get(sds[i].getName()));
+    for (final StatisticDescriptor sd : sds) {
+      assertEquals(value, st1_1.get(sd.getName()));
     }
 
     final StatArchiveReader reader =
-        new StatArchiveReader(new File[] {new File(this.archiveFileName)}, null, false);
+        new StatArchiveReader(new File[] {new File(archiveFileName)}, null, false);
 
     // compare all resourceInst values against what was printed above
 
@@ -265,9 +263,9 @@ public class StatArchiveWriterReaderIntegrationTest {
     final SampleCollector sampleCollector = new SampleCollector(sampler);
 
     final StatArchiveDescriptor archiveDescriptor =
-        new StatArchiveDescriptor.Builder().setArchiveName(this.archiveFileName).setSystemId(1)
+        new StatArchiveDescriptor.Builder().setArchiveName(archiveFileName).setSystemId(1)
             .setSystemStartTime(WRITER_INITIAL_DATE_MILLIS)
-            .setSystemDirectoryPath(this.testName.getMethodName())
+            .setSystemDirectoryPath(testName.getMethodName())
             .setProductDescription(getClass().getSimpleName()).build();
     final StatArchiveWriter writer = new TestStatArchiveWriter(archiveDescriptor);
     sampleCollector.addSampleHandler(writer);
@@ -287,12 +285,12 @@ public class StatArchiveWriterReaderIntegrationTest {
     writer.close();
 
     final StatisticDescriptor[] sds = ST1.getStatistics();
-    for (int i = 0; i < sds.length; i++) {
-      assertEquals(value, st1_1.get(sds[i].getName()));
+    for (final StatisticDescriptor sd : sds) {
+      assertEquals(value, st1_1.get(sd.getName()));
     }
 
     final StatArchiveReader reader =
-        new StatArchiveReader(new File[] {new File(this.archiveFileName)}, null, false);
+        new StatArchiveReader(new File[] {new File(archiveFileName)}, null, false);
 
     // compare all resourceInst values against what was printed above
 
@@ -346,9 +344,9 @@ public class StatArchiveWriterReaderIntegrationTest {
     final SampleCollector sampleCollector = new SampleCollector(sampler);
 
     final StatArchiveDescriptor archiveDescriptor =
-        new StatArchiveDescriptor.Builder().setArchiveName(this.archiveFileName).setSystemId(1)
+        new StatArchiveDescriptor.Builder().setArchiveName(archiveFileName).setSystemId(1)
             .setSystemStartTime(WRITER_INITIAL_DATE_MILLIS)
-            .setSystemDirectoryPath(this.testName.getMethodName())
+            .setSystemDirectoryPath(testName.getMethodName())
             .setProductDescription(getClass().getSimpleName()).build();
     final StatArchiveWriter writer = new TestStatArchiveWriter(archiveDescriptor);
     sampleCollector.addSampleHandler(writer);
@@ -368,12 +366,12 @@ public class StatArchiveWriterReaderIntegrationTest {
     writer.close();
 
     final StatisticDescriptor[] sds = ST1.getStatistics();
-    for (int i = 0; i < sds.length; i++) {
-      assertEquals(value, st1_1.get(sds[i].getName()));
+    for (final StatisticDescriptor sd : sds) {
+      assertEquals(value, st1_1.get(sd.getName()));
     }
 
     final StatArchiveReader reader =
-        new StatArchiveReader(new File[] {new File(this.archiveFileName)}, null, false);
+        new StatArchiveReader(new File[] {new File(archiveFileName)}, null, false);
 
     // compare all resourceInst values against what was printed above
 
@@ -427,9 +425,9 @@ public class StatArchiveWriterReaderIntegrationTest {
     final SampleCollector sampleCollector = new SampleCollector(sampler);
 
     final StatArchiveDescriptor archiveDescriptor =
-        new StatArchiveDescriptor.Builder().setArchiveName(this.archiveFileName).setSystemId(1)
+        new StatArchiveDescriptor.Builder().setArchiveName(archiveFileName).setSystemId(1)
             .setSystemStartTime(WRITER_INITIAL_DATE_MILLIS)
-            .setSystemDirectoryPath(this.testName.getMethodName())
+            .setSystemDirectoryPath(testName.getMethodName())
             .setProductDescription(getClass().getSimpleName()).build();
     final StatArchiveWriter writer = new TestStatArchiveWriter(archiveDescriptor);
     sampleCollector.addSampleHandler(writer);
@@ -447,12 +445,12 @@ public class StatArchiveWriterReaderIntegrationTest {
     writer.close();
 
     final StatisticDescriptor[] sds = ST1.getStatistics();
-    for (int i = 0; i < sds.length; i++) {
-      assertEquals(5L, st1_1.get(sds[i].getName()));
+    for (final StatisticDescriptor sd : sds) {
+      assertEquals(5L, st1_1.get(sd.getName()));
     }
 
     final StatArchiveReader reader =
-        new StatArchiveReader(new File[] {new File(this.archiveFileName)}, null, false);
+        new StatArchiveReader(new File[] {new File(archiveFileName)}, null, false);
 
     // compare all resourceInst values against what was printed above
 
@@ -506,9 +504,9 @@ public class StatArchiveWriterReaderIntegrationTest {
     final SampleCollector sampleCollector = new SampleCollector(sampler);
 
     final StatArchiveDescriptor archiveDescriptor =
-        new StatArchiveDescriptor.Builder().setArchiveName(this.archiveFileName).setSystemId(1)
+        new StatArchiveDescriptor.Builder().setArchiveName(archiveFileName).setSystemId(1)
             .setSystemStartTime(WRITER_INITIAL_DATE_MILLIS)
-            .setSystemDirectoryPath(this.testName.getMethodName())
+            .setSystemDirectoryPath(testName.getMethodName())
             .setProductDescription(getClass().getSimpleName()).build();
     final StatArchiveWriter writer = new TestStatArchiveWriter(archiveDescriptor);
     sampleCollector.addSampleHandler(writer);
@@ -533,12 +531,12 @@ public class StatArchiveWriterReaderIntegrationTest {
     writer.close();
 
     final StatisticDescriptor[] sds = ST1.getStatistics();
-    for (int i = 0; i < sds.length; i++) {
-      assertEquals(value1 + value2, st1_1.get(sds[i].getName()));
+    for (final StatisticDescriptor sd : sds) {
+      assertEquals(value1 + value2, st1_1.get(sd.getName()));
     }
 
     final StatArchiveReader reader =
-        new StatArchiveReader(new File[] {new File(this.archiveFileName)}, null, false);
+        new StatArchiveReader(new File[] {new File(archiveFileName)}, null, false);
 
     // compare all resourceInst values against what was printed above
 
@@ -602,9 +600,9 @@ public class StatArchiveWriterReaderIntegrationTest {
     final SampleCollector sampleCollector = new SampleCollector(sampler);
 
     final StatArchiveDescriptor archiveDescriptor =
-        new StatArchiveDescriptor.Builder().setArchiveName(this.archiveFileName).setSystemId(1)
+        new StatArchiveDescriptor.Builder().setArchiveName(archiveFileName).setSystemId(1)
             .setSystemStartTime(WRITER_INITIAL_DATE_MILLIS - 2000)
-            .setSystemDirectoryPath(this.testName.getMethodName())
+            .setSystemDirectoryPath(testName.getMethodName())
             .setProductDescription(getClass().getSimpleName()).build();
     final StatArchiveWriter writer = new TestStatArchiveWriter(archiveDescriptor);
     sampleCollector.addSampleHandler(writer);
@@ -917,35 +915,35 @@ public class StatArchiveWriterReaderIntegrationTest {
 
     if (false) {
       StatisticDescriptor[] sds = ST1.getStatistics();
-      for (int i = 0; i < sds.length; i++) {
-        logger.info("testWriteAfterSamplingBegins#st1_1#" + sds[i].getName() + "="
-            + st1_1.get(sds[i].getName()));
+      for (final StatisticDescriptor item : sds) {
+        logger.info("testWriteAfterSamplingBegins#st1_1#" + item.getName() + "="
+            + st1_1.get(item.getName()));
       }
-      for (int i = 0; i < sds.length; i++) {
-        logger.info("testWriteAfterSamplingBegins#st1_2#" + sds[i].getName() + "="
-            + st1_2.get(sds[i].getName()));
+      for (final StatisticDescriptor value : sds) {
+        logger.info("testWriteAfterSamplingBegins#st1_2#" + value.getName() + "="
+            + st1_2.get(value.getName()));
       }
 
       sds = ST2.getStatistics();
-      for (int i = 0; i < sds.length; i++) {
-        logger.info("testWriteAfterSamplingBegins#st2_1#" + sds[i].getName() + "="
-            + st2_1.get(sds[i].getName()));
+      for (final StatisticDescriptor descriptor : sds) {
+        logger.info("testWriteAfterSamplingBegins#st2_1#" + descriptor.getName() + "="
+            + st2_1.get(descriptor.getName()));
       }
 
       sds = ST3.getStatistics();
-      for (int i = 0; i < sds.length; i++) {
-        logger.info("testWriteAfterSamplingBegins#st3_1#" + sds[i].getName() + "="
-            + st3_1.get(sds[i].getName()));
+      for (final StatisticDescriptor statisticDescriptor : sds) {
+        logger.info("testWriteAfterSamplingBegins#st3_1#" + statisticDescriptor.getName() + "="
+            + st3_1.get(statisticDescriptor.getName()));
       }
-      for (int i = 0; i < sds.length; i++) {
-        logger.info("testWriteAfterSamplingBegins#st3_2#" + sds[i].getName() + "="
-            + st3_2.get(sds[i].getName()));
+      for (final StatisticDescriptor sd : sds) {
+        logger.info("testWriteAfterSamplingBegins#st3_2#" + sd.getName() + "="
+            + st3_2.get(sd.getName()));
       }
     }
 
     // validate that stat archive file exists
 
-    final File actual = new File(this.archiveFileName);
+    final File actual = new File(archiveFileName);
     assertTrue(actual.exists());
 
     // validate content of stat archive file using StatArchiveReader
@@ -955,16 +953,16 @@ public class StatArchiveWriterReaderIntegrationTest {
     // compare all resourceInst values against what was printed above
 
     final List resources = reader.getResourceInstList();
-    for (final Iterator iter = resources.iterator(); iter.hasNext();) {
-      final StatArchiveReader.ResourceInst ri = (StatArchiveReader.ResourceInst) iter.next();
+    for (final Object resource : resources) {
+      final StatArchiveReader.ResourceInst ri = (StatArchiveReader.ResourceInst) resource;
       final String resourceName = ri.getName();
       assertNotNull(resourceName);
 
-      final String expectedStatsType = this.statisticTypes.get(resourceName);
+      final String expectedStatsType = statisticTypes.get(resourceName);
       assertNotNull(expectedStatsType);
       assertEquals(expectedStatsType, ri.getType().getName());
 
-      final Map<String, Number> expectedStatValues = this.allStatistics.get(resourceName);
+      final Map<String, Number> expectedStatValues = allStatistics.get(resourceName);
       assertNotNull(expectedStatValues);
 
       final StatValue[] statValues = ri.getStatValues();
@@ -990,7 +988,7 @@ public class StatArchiveWriterReaderIntegrationTest {
     // validate byte content of stat archive file against saved expected file
 
     final File expected = new File(createTempFileFromResource(getClass(),
-        "StatArchiveWriterReaderJUnitTest_" + this.testName.getMethodName() + "_expected.gfs")
+        "StatArchiveWriterReaderJUnitTest_" + testName.getMethodName() + "_expected.gfs")
             .getAbsolutePath());
     assertTrue(expected + " does not exist!", expected.exists());
     assertEquals(expected.length(), actual.length());
@@ -1012,9 +1010,9 @@ public class StatArchiveWriterReaderIntegrationTest {
     final SampleCollector sampleCollector = new SampleCollector(sampler);
 
     final StatArchiveDescriptor archiveDescriptor =
-        new StatArchiveDescriptor.Builder().setArchiveName(this.archiveFileName).setSystemId(1)
+        new StatArchiveDescriptor.Builder().setArchiveName(archiveFileName).setSystemId(1)
             .setSystemStartTime(WRITER_INITIAL_DATE_MILLIS - 2000)
-            .setSystemDirectoryPath(this.testName.getMethodName())
+            .setSystemDirectoryPath(testName.getMethodName())
             .setProductDescription(getClass().getSimpleName()).build();
     final StatArchiveWriter writer = new TestStatArchiveWriter(archiveDescriptor);
     sampleCollector.addSampleHandler(writer);
@@ -1324,35 +1322,35 @@ public class StatArchiveWriterReaderIntegrationTest {
 
     if (false) {
       StatisticDescriptor[] sds = ST1.getStatistics();
-      for (int i = 0; i < sds.length; i++) {
-        logger.info("testWriteAfterSamplingBegins#st1_1#" + sds[i].getName() + "="
-            + st1_1.get(sds[i].getName()));
+      for (final StatisticDescriptor item : sds) {
+        logger.info("testWriteAfterSamplingBegins#st1_1#" + item.getName() + "="
+            + st1_1.get(item.getName()));
       }
-      for (int i = 0; i < sds.length; i++) {
-        logger.info("testWriteAfterSamplingBegins#st1_2#" + sds[i].getName() + "="
-            + st1_2.get(sds[i].getName()));
+      for (final StatisticDescriptor value : sds) {
+        logger.info("testWriteAfterSamplingBegins#st1_2#" + value.getName() + "="
+            + st1_2.get(value.getName()));
       }
 
       sds = ST2.getStatistics();
-      for (int i = 0; i < sds.length; i++) {
-        logger.info("testWriteAfterSamplingBegins#st2_1#" + sds[i].getName() + "="
-            + st2_1.get(sds[i].getName()));
+      for (final StatisticDescriptor descriptor : sds) {
+        logger.info("testWriteAfterSamplingBegins#st2_1#" + descriptor.getName() + "="
+            + st2_1.get(descriptor.getName()));
       }
 
       sds = ST3.getStatistics();
-      for (int i = 0; i < sds.length; i++) {
-        logger.info("testWriteAfterSamplingBegins#st3_1#" + sds[i].getName() + "="
-            + st3_1.get(sds[i].getName()));
+      for (final StatisticDescriptor statisticDescriptor : sds) {
+        logger.info("testWriteAfterSamplingBegins#st3_1#" + statisticDescriptor.getName() + "="
+            + st3_1.get(statisticDescriptor.getName()));
       }
-      for (int i = 0; i < sds.length; i++) {
-        logger.info("testWriteAfterSamplingBegins#st3_2#" + sds[i].getName() + "="
-            + st3_2.get(sds[i].getName()));
+      for (final StatisticDescriptor sd : sds) {
+        logger.info("testWriteAfterSamplingBegins#st3_2#" + sd.getName() + "="
+            + st3_2.get(sd.getName()));
       }
     }
 
     // validate that stat archive file exists
 
-    final File actual = new File(this.archiveFileName);
+    final File actual = new File(archiveFileName);
     assertTrue(actual.exists());
 
     // validate content of stat archive file using StatArchiveReader
@@ -1362,16 +1360,16 @@ public class StatArchiveWriterReaderIntegrationTest {
     // compare all resourceInst values against what was printed above
 
     final List resources = reader.getResourceInstList();
-    for (final Iterator iter = resources.iterator(); iter.hasNext();) {
-      final StatArchiveReader.ResourceInst ri = (StatArchiveReader.ResourceInst) iter.next();
+    for (final Object resource : resources) {
+      final StatArchiveReader.ResourceInst ri = (StatArchiveReader.ResourceInst) resource;
       final String resourceName = ri.getName();
       assertNotNull(resourceName);
 
-      final String expectedStatsType = this.statisticTypes.get(resourceName);
+      final String expectedStatsType = statisticTypes.get(resourceName);
       assertNotNull(expectedStatsType);
       assertEquals(expectedStatsType, ri.getType().getName());
 
-      final Map<String, Number> expectedStatValues = this.allStatistics.get(resourceName);
+      final Map<String, Number> expectedStatValues = allStatistics.get(resourceName);
       assertNotNull(expectedStatValues);
 
       final StatValue[] statValues = ri.getStatValues();
@@ -1397,7 +1395,7 @@ public class StatArchiveWriterReaderIntegrationTest {
     // validate byte content of stat archive file against saved expected file
 
     final File expected = new File(createTempFileFromResource(getClass(),
-        "StatArchiveWriterReaderJUnitTest_" + this.testName.getMethodName() + "_expected.gfs")
+        "StatArchiveWriterReaderJUnitTest_" + testName.getMethodName() + "_expected.gfs")
             .getAbsolutePath());
     assertTrue(expected + " does not exist!", expected.exists());
     assertEquals(expected.length(), actual.length());
@@ -1414,9 +1412,9 @@ public class StatArchiveWriterReaderIntegrationTest {
   @Test
   public void testNegativeSampleTimeStamp() throws Exception {
     final StatArchiveDescriptor archiveDescriptor =
-        new StatArchiveDescriptor.Builder().setArchiveName(this.archiveFileName).setSystemId(1)
+        new StatArchiveDescriptor.Builder().setArchiveName(archiveFileName).setSystemId(1)
             .setSystemStartTime(WRITER_INITIAL_DATE_MILLIS)
-            .setSystemDirectoryPath(this.testName.getMethodName())
+            .setSystemDirectoryPath(testName.getMethodName())
             .setProductDescription(getClass().getSimpleName()).build();
     final StatArchiveWriter writer = new TestStatArchiveWriter(archiveDescriptor);
 
@@ -1440,9 +1438,9 @@ public class StatArchiveWriterReaderIntegrationTest {
   @Test
   public void testPreviousSampleTimeStamp() throws Exception {
     final StatArchiveDescriptor archiveDescriptor =
-        new StatArchiveDescriptor.Builder().setArchiveName(this.archiveFileName).setSystemId(1)
+        new StatArchiveDescriptor.Builder().setArchiveName(archiveFileName).setSystemId(1)
             .setSystemStartTime(WRITER_INITIAL_DATE_MILLIS)
-            .setSystemDirectoryPath(this.testName.getMethodName())
+            .setSystemDirectoryPath(testName.getMethodName())
             .setProductDescription(getClass().getSimpleName()).build();
     final StatArchiveWriter writer = new TestStatArchiveWriter(archiveDescriptor);
 
@@ -1465,9 +1463,9 @@ public class StatArchiveWriterReaderIntegrationTest {
   @Test
   public void testDestroyClosedStatistics() throws Exception {
     final StatArchiveDescriptor archiveDescriptor =
-        new StatArchiveDescriptor.Builder().setArchiveName(this.archiveFileName).setSystemId(1)
+        new StatArchiveDescriptor.Builder().setArchiveName(archiveFileName).setSystemId(1)
             .setSystemStartTime(WRITER_INITIAL_DATE_MILLIS - 2000)
-            .setSystemDirectoryPath(this.testName.getMethodName())
+            .setSystemDirectoryPath(testName.getMethodName())
             .setProductDescription(getClass().getSimpleName()).build();
     final StatArchiveWriter writer = new TestStatArchiveWriter(archiveDescriptor);
 
@@ -1487,9 +1485,9 @@ public class StatArchiveWriterReaderIntegrationTest {
   @Test
   public void testDestroyUnallocatedStatistics() throws Exception {
     final StatArchiveDescriptor archiveDescriptor =
-        new StatArchiveDescriptor.Builder().setArchiveName(this.archiveFileName).setSystemId(1)
+        new StatArchiveDescriptor.Builder().setArchiveName(archiveFileName).setSystemId(1)
             .setSystemStartTime(WRITER_INITIAL_DATE_MILLIS - 2000)
-            .setSystemDirectoryPath(this.testName.getMethodName())
+            .setSystemDirectoryPath(testName.getMethodName())
             .setProductDescription(getClass().getSimpleName()).build();
     final StatArchiveWriter writer = new TestStatArchiveWriter(archiveDescriptor);
 
@@ -1505,54 +1503,54 @@ public class StatArchiveWriterReaderIntegrationTest {
 
     // Verify StatArchiveReader.update returns cleanly, without throwing an exception
     final StatArchiveReader reader =
-        new StatArchiveReader(new File[] {new File(this.archiveFileName)}, null, false);
+        new StatArchiveReader(new File[] {new File(archiveFileName)}, null, false);
     reader.update();
     reader.close();
   }
 
   private void incDouble(Statistics statistics, String stat, double value) {
     assertFalse(statistics.isClosed());
-    Map<String, Number> statValues = this.allStatistics.get(statistics.getTextId());
+    Map<String, Number> statValues = allStatistics.get(statistics.getTextId());
     if (statValues == null) {
-      statValues = new HashMap<String, Number>();
-      this.allStatistics.put(statistics.getTextId(), statValues);
+      statValues = new HashMap<>();
+      allStatistics.put(statistics.getTextId(), statValues);
     }
     statistics.incDouble(stat, value);
     statValues.put(stat, statistics.getDouble(stat));
-    if (this.statisticTypes.get(statistics.getTextId()) == null) {
-      this.statisticTypes.put(statistics.getTextId(), statistics.getType().getName());
+    if (statisticTypes.get(statistics.getTextId()) == null) {
+      statisticTypes.put(statistics.getTextId(), statistics.getType().getName());
     }
   }
 
   private void incInt(Statistics statistics, String stat, int value) {
     assertFalse(statistics.isClosed());
-    Map<String, Number> statValues = this.allStatistics.get(statistics.getTextId());
+    Map<String, Number> statValues = allStatistics.get(statistics.getTextId());
     if (statValues == null) {
-      statValues = new HashMap<String, Number>();
-      this.allStatistics.put(statistics.getTextId(), statValues);
+      statValues = new HashMap<>();
+      allStatistics.put(statistics.getTextId(), statValues);
     }
     statistics.incInt(stat, value);
     statValues.put(stat, statistics.getInt(stat));
-    if (this.statisticTypes.get(statistics.getTextId()) == null) {
-      this.statisticTypes.put(statistics.getTextId(), statistics.getType().getName());
+    if (statisticTypes.get(statistics.getTextId()) == null) {
+      statisticTypes.put(statistics.getTextId(), statistics.getType().getName());
     }
   }
 
   private void incLong(Statistics statistics, String stat, long value) {
     assertFalse(statistics.isClosed());
-    Map<String, Number> statValues = this.allStatistics.get(statistics.getTextId());
+    Map<String, Number> statValues = allStatistics.get(statistics.getTextId());
     if (statValues == null) {
-      statValues = new HashMap<String, Number>();
-      this.allStatistics.put(statistics.getTextId(), statValues);
+      statValues = new HashMap<>();
+      allStatistics.put(statistics.getTextId(), statValues);
     }
     statistics.incLong(stat, value);
     statValues.put(stat, statistics.getLong(stat));
-    if (this.statisticTypes.get(statistics.getTextId()) == null) {
-      this.statisticTypes.put(statistics.getTextId(), statistics.getType().getName());
+    if (statisticTypes.get(statistics.getTextId()) == null) {
+      statisticTypes.put(statistics.getTextId(), statistics.getType().getName());
     }
   }
 
-  private byte[] readBytes(File file) throws MalformedURLException, IOException {
+  private byte[] readBytes(File file) throws IOException {
     int byteCount = (int) file.length();
 
     byte[] input = new byte[byteCount];
@@ -1572,7 +1570,7 @@ public class StatArchiveWriterReaderIntegrationTest {
   }
 
   private String getUniqueName() {
-    return getClass().getSimpleName() + "_" + this.testName.getMethodName();
+    return getClass().getSimpleName() + "_" + testName.getMethodName();
   }
 
   private static StatisticsType createDummyStatisticsType() {

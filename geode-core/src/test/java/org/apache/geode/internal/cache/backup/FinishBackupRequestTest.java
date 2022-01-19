@@ -41,7 +41,7 @@ public class FinishBackupRequestTest {
   private DistributionManager dm;
   private InternalCache cache;
   private BackupService backupService;
-  private int processorId = 79;
+  private final int processorId = 79;
   private boolean abort;
   private FinishBackupFactory finishBackupFactory;
   private InternalDistributedMember sender;

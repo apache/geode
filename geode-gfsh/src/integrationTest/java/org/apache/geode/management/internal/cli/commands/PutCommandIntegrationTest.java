@@ -40,10 +40,10 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 @Category({GfshTest.class})
 public class PutCommandIntegrationTest {
 
-  private static ServerStarterRule server =
+  private static final ServerStarterRule server =
       new ServerStarterRule().withJMXManager().withRegion(RegionShortcut.REPLICATE, "testRegion");
 
-  private static GfshCommandRule gfsh =
+  private static final GfshCommandRule gfsh =
       new GfshCommandRule(server::getJmxPort, GfshCommandRule.PortType.jmxManager);
 
   @ClassRule

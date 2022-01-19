@@ -71,7 +71,7 @@ public class RegionManagementIntegrationTest {
 
   private Index index;
   private Region region;
-  private static ObjectMapper mapper = GeodeJsonMapper.getMapper();
+  private static final ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
   @Before
   public void before() {

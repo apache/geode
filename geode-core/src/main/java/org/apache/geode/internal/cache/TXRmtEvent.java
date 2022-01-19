@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.geode.cache.Cache;
@@ -41,7 +40,7 @@ import org.apache.geode.internal.offheap.annotations.Retained;
 public class TXRmtEvent implements TransactionEvent {
   private final TransactionId txId;
 
-  private Cache cache;
+  private final Cache cache;
 
   // This list of EntryEventImpls are released by calling freeOffHeapResources
   @Released
@@ -50,12 +49,12 @@ public class TXRmtEvent implements TransactionEvent {
   TXRmtEvent(TransactionId txId, Cache cache) {
     this.txId = txId;
     this.cache = cache;
-    this.events = null;
+    events = null;
   }
 
   @Override
   public TransactionId getTransactionId() {
-    return this.txId;
+    return txId;
   }
 
   private boolean isEventUserVisible(CacheEvent ce) {
@@ -65,13 +64,12 @@ public class TXRmtEvent implements TransactionEvent {
 
   @Override
   public List getEvents() {
-    if (this.events == null) {
+    if (events == null) {
       return Collections.EMPTY_LIST;
     } else {
-      ArrayList result = new ArrayList(this.events.size());
-      Iterator it = this.events.iterator();
-      while (it.hasNext()) {
-        CacheEvent ce = (CacheEvent) it.next();
+      ArrayList result = new ArrayList(events.size());
+      for (final Object event : events) {
+        CacheEvent ce = (CacheEvent) event;
         if (isEventUserVisible(ce)) {
           result.add(ce);
         }
@@ -92,9 +90,7 @@ public class TXRmtEvent implements TransactionEvent {
     if (events == null || events.isEmpty()) {
       return false;
     }
-    Iterator<CacheEvent<?, ?>> it = this.events.iterator();
-    while (it.hasNext()) {
-      CacheEvent<?, ?> event = it.next();
+    for (final CacheEvent<?, ?> event : (Iterable<CacheEvent<?, ?>>) events) {
       if (isEventUserVisible(event)) {
         LocalRegion region = (LocalRegion) event.getRegion();
         if (region != null && !region.isPdxTypesRegion() && !region.isInternalRegion()) {
@@ -114,7 +110,7 @@ public class TXRmtEvent implements TransactionEvent {
   @Retained
   private EntryEventImpl createEvent(InternalRegion r, Operation op, RegionEntry re, Object key,
       Object newValue, Object aCallbackArgument) {
-    DistributedMember originator = ((TXId) this.txId).getMemberId();
+    DistributedMember originator = ((TXId) txId).getMemberId();
     // TODO:ASIF :EventID will not be generated with this constructor . Check if
     // this is correct
     InternalRegion eventRegion = r;
@@ -135,10 +131,10 @@ public class TXRmtEvent implements TransactionEvent {
    */
   private void addEvent(EntryEventImpl e) {
     synchronized (this) {
-      if (this.events == null) {
-        this.events = new ArrayList();
+      if (events == null) {
+        events = new ArrayList();
       }
-      this.events.add(e);
+      events.add(e);
     }
   }
 
@@ -158,12 +154,12 @@ public class TXRmtEvent implements TransactionEvent {
 
   @Override
   public Cache getCache() {
-    return this.cache;
+    return cache;
   }
 
   public void freeOffHeapResources() {
-    if (this.events != null) {
-      for (EntryEventImpl e : (List<EntryEventImpl>) this.events) {
+    if (events != null) {
+      for (EntryEventImpl e : (List<EntryEventImpl>) events) {
         e.release();
       }
     }

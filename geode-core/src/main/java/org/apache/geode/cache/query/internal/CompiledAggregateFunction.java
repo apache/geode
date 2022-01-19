@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
@@ -49,7 +48,7 @@ public class CompiledAggregateFunction extends AbstractCompiledValue {
 
   public CompiledAggregateFunction(CompiledValue expr, int aggFunc, boolean distinctOnly) {
     this.expr = expr;
-    this.aggFuncType = aggFunc;
+    aggFuncType = aggFunc;
     this.distinctOnly = distinctOnly;
   }
 
@@ -64,13 +63,13 @@ public class CompiledAggregateFunction extends AbstractCompiledValue {
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
     boolean isPRQueryNode = context.getIsPRQueryNode();
     boolean isBucketNode = context.getBucketList() != null;
-    switch (this.aggFuncType) {
+    switch (aggFuncType) {
 
       case OQLLexerTokenTypes.SUM:
         if (isPRQueryNode) {
-          return this.distinctOnly ? new SumDistinctPRQueryNode() : new Sum();
+          return distinctOnly ? new SumDistinctPRQueryNode() : new Sum();
         } else {
-          return this.distinctOnly ? (isBucketNode ? new DistinctAggregator() : new SumDistinct())
+          return distinctOnly ? (isBucketNode ? new DistinctAggregator() : new SumDistinct())
               : new Sum();
         }
 
@@ -82,17 +81,17 @@ public class CompiledAggregateFunction extends AbstractCompiledValue {
 
       case OQLLexerTokenTypes.AVG:
         if (isPRQueryNode) {
-          return this.distinctOnly ? new AvgDistinctPRQueryNode() : new AvgPRQueryNode();
+          return distinctOnly ? new AvgDistinctPRQueryNode() : new AvgPRQueryNode();
         } else {
-          return this.distinctOnly ? (isBucketNode ? new DistinctAggregator() : new AvgDistinct())
+          return distinctOnly ? (isBucketNode ? new DistinctAggregator() : new AvgDistinct())
               : (isBucketNode ? new AvgBucketNode() : new Avg());
         }
 
       case OQLLexerTokenTypes.COUNT:
         if (isPRQueryNode) {
-          return this.distinctOnly ? new CountDistinctPRQueryNode() : new CountPRQueryNode();
+          return distinctOnly ? new CountDistinctPRQueryNode() : new CountPRQueryNode();
         } else {
-          return this.distinctOnly ? (isBucketNode ? new DistinctAggregator() : new CountDistinct())
+          return distinctOnly ? (isBucketNode ? new DistinctAggregator() : new CountDistinct())
               : new Count();
         }
 
@@ -104,7 +103,7 @@ public class CompiledAggregateFunction extends AbstractCompiledValue {
   }
 
   private String getStringRep() {
-    switch (this.aggFuncType) {
+    switch (aggFuncType) {
 
       case OQLLexerTokenTypes.SUM:
         return "sum";
@@ -126,15 +125,15 @@ public class CompiledAggregateFunction extends AbstractCompiledValue {
   }
 
   public int getFunctionType() {
-    return this.aggFuncType;
+    return aggFuncType;
   }
 
   public CompiledValue getParameter() {
-    return this.expr;
+    return expr;
   }
 
   public ObjectType getObjectType() {
-    switch (this.aggFuncType) {
+    switch (aggFuncType) {
 
       case OQLLexerTokenTypes.SUM:
       case OQLLexerTokenTypes.MAX:
@@ -153,14 +152,14 @@ public class CompiledAggregateFunction extends AbstractCompiledValue {
 
   @Override
   public void generateCanonicalizedExpression(StringBuilder clauseBuffer, ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     clauseBuffer.insert(0, ')');
-    if (this.expr != null) {
-      this.expr.generateCanonicalizedExpression(clauseBuffer, context);
+    if (expr != null) {
+      expr.generateCanonicalizedExpression(clauseBuffer, context);
     } else {
       clauseBuffer.insert(0, '*');
     }
-    if (this.distinctOnly) {
+    if (distinctOnly) {
       clauseBuffer.insert(0, "distinct ");
     }
     clauseBuffer.insert(0, '(');

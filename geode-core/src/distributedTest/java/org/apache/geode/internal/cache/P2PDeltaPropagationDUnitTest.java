@@ -91,16 +91,16 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void testP2PDeltaPropagationEnableScopeDAck() throws Exception {
-    Object args[] =
+    Object[] args =
         new Object[] {Boolean.TRUE, DataPolicy.REPLICATE, Scope.DISTRIBUTED_ACK, Boolean.FALSE};
     server1.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args);
     server2.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args);
     server3.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args);
     // only delta should get send to server2 and server3
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.put());
+    server1.invoke(P2PDeltaPropagationDUnitTest::put);
     Thread.sleep(5000);
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.getOnDeltaEnabledServer());
-    server3.invoke(() -> P2PDeltaPropagationDUnitTest.getOnDeltaEnabledServer());
+    server2.invoke(P2PDeltaPropagationDUnitTest::getOnDeltaEnabledServer);
+    server3.invoke(P2PDeltaPropagationDUnitTest::getOnDeltaEnabledServer);
 
   }
 
@@ -110,14 +110,14 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void testP2PDeltaPropagationEnableScopeGlobal() throws Exception {
-    Object args[] = new Object[] {Boolean.TRUE, DataPolicy.REPLICATE, Scope.GLOBAL, Boolean.FALSE};
+    Object[] args = new Object[] {Boolean.TRUE, DataPolicy.REPLICATE, Scope.GLOBAL, Boolean.FALSE};
     server1.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args);
     server2.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args);
     server3.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args);
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.put());
+    server1.invoke(P2PDeltaPropagationDUnitTest::put);
     Thread.sleep(5000);
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.getOnDeltaEnabledServer());
-    server3.invoke(() -> P2PDeltaPropagationDUnitTest.getOnDeltaEnabledServer());
+    server2.invoke(P2PDeltaPropagationDUnitTest::getOnDeltaEnabledServer);
+    server3.invoke(P2PDeltaPropagationDUnitTest::getOnDeltaEnabledServer);
   }
 
   /*
@@ -130,13 +130,13 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     server3.invoke(() -> P2PDeltaPropagationDUnitTest.createServerCache(Boolean.TRUE));
 
     // Delta apply should fail on server2 and server3 as values are not there
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.invalidate());
-    server3.invoke(() -> P2PDeltaPropagationDUnitTest.destroy());
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.putDelta());
+    server2.invoke(P2PDeltaPropagationDUnitTest::invalidate);
+    server3.invoke(P2PDeltaPropagationDUnitTest::destroy);
+    server1.invoke(P2PDeltaPropagationDUnitTest::putDelta);
     Thread.sleep(5000);
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.getOnDeltaEnabledWithInvalidate());// Full
-                                                                                         // object
-    server3.invoke(() -> P2PDeltaPropagationDUnitTest.getOnDeltaEnabledWithDestroy());
+    server2.invoke(P2PDeltaPropagationDUnitTest::getOnDeltaEnabledWithInvalidate);// Full
+                                                                                  // object
+    server3.invoke(P2PDeltaPropagationDUnitTest::getOnDeltaEnabledWithDestroy);
   }
 
   /*
@@ -145,14 +145,14 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testP2PDeltaPropagationEnableDirectAckTrue() throws Exception {
 
-    Object args[] =
+    Object[] args =
         new Object[] {Boolean.TRUE, DataPolicy.NORMAL, Scope.DISTRIBUTED_ACK, Boolean.FALSE};
     ConnectionTable.threadWantsOwnResources();
     createServerCache(Boolean.TRUE, DataPolicy.NORMAL, Scope.DISTRIBUTED_ACK, Boolean.FALSE);
     server1.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args);
     put();
     Thread.sleep(5000);
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.getOnDeltaEnabledServer());
+    server1.invoke(P2PDeltaPropagationDUnitTest::getOnDeltaEnabledServer);
 
     ConnectionTable.threadWantsSharedResources();
   }
@@ -162,13 +162,13 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testP2PDeltaPropagationEnableScopeDNoAck() throws Exception {
-    Object args[] =
+    Object[] args =
         new Object[] {Boolean.TRUE, DataPolicy.NORMAL, Scope.DISTRIBUTED_NO_ACK, Boolean.FALSE};
     server1.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args);
     server2.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args);
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.put());
+    server1.invoke(P2PDeltaPropagationDUnitTest::put);
     Thread.sleep(5000);
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.getOnDeltaDisabledServer());
+    server2.invoke(P2PDeltaPropagationDUnitTest::getOnDeltaDisabledServer);
   }
 
 
@@ -179,8 +179,8 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
   public void testP2PDeltaPropagationDisable() throws Exception {
     server1.invoke(() -> P2PDeltaPropagationDUnitTest.createServerCache(Boolean.FALSE));
     server2.invoke(() -> P2PDeltaPropagationDUnitTest.createServerCache(Boolean.FALSE));
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.put());
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.getOnDeltaDisabledServer());
+    server1.invoke(P2PDeltaPropagationDUnitTest::put);
+    server2.invoke(P2PDeltaPropagationDUnitTest::getOnDeltaDisabledServer);
   }
 
   /*
@@ -188,18 +188,18 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testP2PDeltaPropagationEnableScopeDAckDataPolicyEmpty() throws Exception {
-    Object args[] =
+    Object[] args =
         new Object[] {Boolean.TRUE, DataPolicy.REPLICATE, Scope.DISTRIBUTED_ACK, Boolean.FALSE};
-    Object args1[] =
+    Object[] args1 =
         new Object[] {Boolean.TRUE, DataPolicy.EMPTY, Scope.DISTRIBUTED_ACK, Boolean.FALSE};
     server1.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args1);
     server2.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args);
     server3.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args);
     // only delta should get send to server2 and server3
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.put());
+    server1.invoke(P2PDeltaPropagationDUnitTest::put);
     Thread.sleep(5000);
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.getOnDeltaEnabledServer());
-    server3.invoke(() -> P2PDeltaPropagationDUnitTest.getOnDeltaEnabledServer());
+    server2.invoke(P2PDeltaPropagationDUnitTest::getOnDeltaEnabledServer);
+    server3.invoke(P2PDeltaPropagationDUnitTest::getOnDeltaEnabledServer);
   }
 
   /*
@@ -209,23 +209,23 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testP2PDeltaPropagationEnableScopeDAckDataPolicyEmptyWithRegionsCreateApi()
       throws Exception {
-    Object args[] =
+    Object[] args =
         new Object[] {Boolean.TRUE, DataPolicy.REPLICATE, Scope.DISTRIBUTED_ACK, Boolean.FALSE};
-    Object args1[] =
+    Object[] args1 =
         new Object[] {Boolean.TRUE, DataPolicy.EMPTY, Scope.DISTRIBUTED_ACK, Boolean.FALSE};
     server1.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args1);
     server2.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args);
     server3.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", args);
     /* clean flags */
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.resetFlags());
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.resetFlags());
-    server3.invoke(() -> P2PDeltaPropagationDUnitTest.resetFlags());
+    server1.invoke(P2PDeltaPropagationDUnitTest::resetFlags);
+    server2.invoke(P2PDeltaPropagationDUnitTest::resetFlags);
+    server3.invoke(P2PDeltaPropagationDUnitTest::resetFlags);
 
     // only delta should get send to server2 and server3
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.create());
+    server1.invoke(P2PDeltaPropagationDUnitTest::create);
 
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.verifyNoFailurePeer());
-    server3.invoke(() -> P2PDeltaPropagationDUnitTest.verifyNoFailurePeer());
+    server2.invoke(P2PDeltaPropagationDUnitTest::verifyNoFailurePeer);
+    server3.invoke(P2PDeltaPropagationDUnitTest::verifyNoFailurePeer);
   }
 
   @Test
@@ -235,19 +235,19 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     // 3. Assert that peer with non-EMPTY data policy receives delta.
     // 4. Assert that peer with EMPTY data policy receives full value in the first attempt itself.
 
-    Object replicate[] = new Object[] {Boolean.TRUE/* Delta */, DataPolicy.REPLICATE,
+    Object[] replicate = new Object[] {Boolean.TRUE/* Delta */, DataPolicy.REPLICATE,
         Scope.DISTRIBUTED_ACK, Boolean.TRUE /* listener */};
-    Object empty[] = new Object[] {Boolean.TRUE/* Delta */, DataPolicy.EMPTY, Scope.DISTRIBUTED_ACK,
+    Object[] empty = new Object[] {Boolean.TRUE/* Delta */, DataPolicy.EMPTY, Scope.DISTRIBUTED_ACK,
         Boolean.TRUE/* listener */, Boolean.TRUE /* ALL interest policy */};
 
     server1.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", replicate);
     server2.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", replicate);
     server3.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", empty);
 
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.put());
+    server1.invoke(P2PDeltaPropagationDUnitTest::put);
 
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.verifyDeltaReceived(Integer.valueOf(3)));
-    server3.invoke(() -> P2PDeltaPropagationDUnitTest.verifyNoDeltaReceived(Integer.valueOf(3)));
+    server2.invoke(() -> P2PDeltaPropagationDUnitTest.verifyDeltaReceived(3));
+    server3.invoke(() -> P2PDeltaPropagationDUnitTest.verifyNoDeltaReceived(3));
   }
 
   @Test
@@ -257,20 +257,20 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     // 3. Assert that peer with non-EMPTY data policy receives delta.
     // 4. Assert that peer with EMPTY data policy receives full value in the first attempt itself.
 
-    Object replicate[] = new Object[] {Boolean.TRUE/* Delta */, DataPolicy.REPLICATE,
+    Object[] replicate = new Object[] {Boolean.TRUE/* Delta */, DataPolicy.REPLICATE,
         Scope.DISTRIBUTED_ACK, Boolean.TRUE /* listener */};
-    Object empty[] = new Object[] {Boolean.TRUE/* Delta */, DataPolicy.EMPTY, Scope.DISTRIBUTED_ACK,
+    Object[] empty = new Object[] {Boolean.TRUE/* Delta */, DataPolicy.EMPTY, Scope.DISTRIBUTED_ACK,
         Boolean.TRUE /* listener */};
 
     server1.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", replicate);
     server2.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", replicate);
     server3.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", empty);
 
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.put());
+    server1.invoke(P2PDeltaPropagationDUnitTest::put);
 
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.verifyDeltaReceived(Integer.valueOf(3)));
-    server3.invoke(() -> P2PDeltaPropagationDUnitTest
-        .verifyNoDeltaReceived(Integer.valueOf(0/* no events */)));
+    server2.invoke(() -> P2PDeltaPropagationDUnitTest.verifyDeltaReceived(3));
+    server3.invoke(() -> /* no events */ P2PDeltaPropagationDUnitTest
+        .verifyNoDeltaReceived(0));
   }
 
   @Test
@@ -283,22 +283,22 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     int port1 = getRandomAvailableTCPPort();
 
-    Object replicate[] = new Object[] {Boolean.TRUE/* Delta */, DataPolicy.REPLICATE,
+    Object[] replicate = new Object[] {Boolean.TRUE/* Delta */, DataPolicy.REPLICATE,
         Scope.DISTRIBUTED_ACK, Boolean.FALSE /* listener */};
-    Object emptyWithServer[] =
+    Object[] emptyWithServer =
         new Object[] {Boolean.TRUE/* Delta */, DataPolicy.EMPTY, Scope.DISTRIBUTED_ACK,
             Boolean.TRUE/* listener */, Boolean.TRUE /* ALL interest policy */, port1};
-    Object emptyWithoutServer[] = new Object[] {Boolean.TRUE/* Delta */, DataPolicy.EMPTY,
+    Object[] emptyWithoutServer = new Object[] {Boolean.TRUE/* Delta */, DataPolicy.EMPTY,
         Scope.DISTRIBUTED_ACK, Boolean.TRUE/* listener */, Boolean.TRUE /* ALL interest policy */};
 
     server1.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", replicate);
     server2.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", emptyWithServer);
     server3.invoke(P2PDeltaPropagationDUnitTest.class, "createServerCache", emptyWithoutServer);
 
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.put());
+    server1.invoke(P2PDeltaPropagationDUnitTest::put);
 
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.verifyDeltaBytesReceived(Integer.valueOf(2)));
-    server3.invoke(() -> P2PDeltaPropagationDUnitTest.verifyDeltaBytesReceived(Integer.valueOf(0)));
+    server2.invoke(() -> P2PDeltaPropagationDUnitTest.verifyDeltaBytesReceived(2));
+    server3.invoke(() -> P2PDeltaPropagationDUnitTest.verifyDeltaBytesReceived(0));
   }
 
   public static void put() throws Exception {
@@ -354,7 +354,7 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   public static void getOnDeltaEnabledWithDestroy() throws Exception {
     Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
-    assertNull(((DeltaTestImpl) r1.getEntry("KEY")));
+    assertNull(r1.getEntry("KEY"));
   }
 
   public static void getOnDeltaEnabledServer() throws Exception {
@@ -375,7 +375,7 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   public static void checkForNoFullObjectResend() throws Exception {
     Region r1 = cache.getRegion(SEPARATOR + REGION_NAME);
-    assertNull(((DeltaTestImpl) r1.getEntry("KEY").getValue()));
+    assertNull(r1.getEntry("KEY").getValue());
   }
 
   public static void checkForFlag() throws Exception {
@@ -389,9 +389,9 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     server2 = host.getVM(1);
     server3 = host.getVM(2);
     resetFlags();
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.resetFlags());
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.resetFlags());
-    server3.invoke(() -> P2PDeltaPropagationDUnitTest.resetFlags());
+    server1.invoke(P2PDeltaPropagationDUnitTest::resetFlags);
+    server2.invoke(P2PDeltaPropagationDUnitTest::resetFlags);
+    server3.invoke(P2PDeltaPropagationDUnitTest::resetFlags);
   }
 
   private Cache createCache(Properties props) throws Exception {
@@ -451,7 +451,7 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
           if (((EntryEventImpl) event).getDeltaBytes() != null) {
             cache.getLogger().fine("delta bytes received. " + hasDeltaBytes);
             assertTrue("No full value received for event " + event,
-                ((EntryEventImpl) event).getNewValue() != null);
+                event.getNewValue() != null);
             hasDeltaBytes++;
           } else {
             cache.getLogger().fine("delta bytes not received.");
@@ -474,9 +474,9 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
   @Override
   public final void preTearDown() throws Exception {
     closeCache();
-    server1.invoke(() -> P2PDeltaPropagationDUnitTest.closeCache());
-    server2.invoke(() -> P2PDeltaPropagationDUnitTest.closeCache());
-    server3.invoke(() -> P2PDeltaPropagationDUnitTest.closeCache());
+    server1.invoke(P2PDeltaPropagationDUnitTest::closeCache);
+    server2.invoke(P2PDeltaPropagationDUnitTest::closeCache);
+    server3.invoke(P2PDeltaPropagationDUnitTest::closeCache);
   }
 
   public static void closeCache() {

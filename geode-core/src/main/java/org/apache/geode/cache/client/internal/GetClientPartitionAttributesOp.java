@@ -44,7 +44,6 @@ public class GetClientPartitionAttributesOp {
     // no instances allowed
   }
 
-  @SuppressWarnings("unchecked")
   public static ClientPartitionAdvisor execute(ExecutablePool pool, String regionFullPath) {
     AbstractOp op = new GetClientPartitionAttributesOpImpl(regionFullPath);
     if (logger.isDebugEnabled()) {
@@ -139,7 +138,7 @@ public class GetClientPartitionAttributesOp {
           throw new ServerOperationException(s, (Throwable) obj);
         default:
           throw new InternalGemFireError(String.format("Unknown message type %s",
-              Integer.valueOf(msg.getMessageType())));
+              msg.getMessageType()));
       }
     }
 

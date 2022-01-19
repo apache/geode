@@ -106,7 +106,7 @@ public class QueryConfigService extends CacheElement {
    *
    */
   public void setMethodAuthorizer(QueryConfigService.MethodAuthorizer value) {
-    this.methodAuthorizer = value;
+    methodAuthorizer = value;
   }
 
   @Override
@@ -184,7 +184,7 @@ public class QueryConfigService extends CacheElement {
       if (parameter == null) {
         parameter = new ArrayList<>();
       }
-      return this.parameter;
+      return parameter;
     }
 
     /**
@@ -197,7 +197,7 @@ public class QueryConfigService extends CacheElement {
      */
     public void setParameters(
         List<QueryConfigService.MethodAuthorizer.Parameter> parameters) {
-      this.parameter = parameters;
+      parameter = parameters;
     }
 
     /**
@@ -219,7 +219,7 @@ public class QueryConfigService extends CacheElement {
      *
      */
     public void setClassName(String value) {
-      this.className = value;
+      className = value;
     }
 
     /**
@@ -269,7 +269,7 @@ public class QueryConfigService extends CacheElement {
        *
        */
       public void setParameterValue(String value) {
-        this.parameterValue = value;
+        parameterValue = value;
       }
 
     }

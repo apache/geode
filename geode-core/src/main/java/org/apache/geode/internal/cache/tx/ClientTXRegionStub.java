@@ -38,7 +38,7 @@ public class ClientTXRegionStub implements TXRegionStub {
 
   public ClientTXRegionStub(InternalRegion region) {
     // this.region = region;
-    this.proxy = region.getServerProxy();
+    proxy = region.getServerProxy();
   }
 
 
@@ -121,7 +121,7 @@ public class ClientTXRegionStub implements TXRegionStub {
     }
     if (event.getOperation() == Operation.REPLACE) {
       if (!requireOldValue) { // replace(K,V,V)
-        return ((Boolean) result).booleanValue();
+        return (Boolean) result;
       } else { // replace(K,V)
         event.setOldValue(result);
       }
@@ -130,9 +130,7 @@ public class ClientTXRegionStub implements TXRegionStub {
       // logger.debug("putIfAbsent for " + event.getKey() + " is returning " + result);
       // }
       event.setOldValue(result);
-      if (result != null) {
-        return false;
-      }
+      return result == null;
     }
     return true;
   }

@@ -39,10 +39,10 @@ public class DistributedSystemConnectPerf {
     err.println("  iterations    Number of times to " + "connect/disconnect");
     err.println("Where options are:");
     err.println("  -wait time    Time (in milliseconds) connection " + "is open");
-    err.println("");
+    err.println();
     err.println("This program measures the amount of time it takes "
         + "to connect/disconnect to a DistributedSystem");
-    err.println("");
+    err.println();
 
     ExitCode.FATAL.doSystemExit();
   }

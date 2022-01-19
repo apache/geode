@@ -108,14 +108,14 @@ public class VersionedThinLRURegionEntryHeapStringKey2 extends VersionedThinLRUR
       }
     }
     tempBits1 |= key.length();
-    this.bits1 = tempBits1;
-    this.bits2 = tempBits2;
+    bits1 = tempBits1;
+    bits2 = tempBits2;
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   protected Object getValueField() {
-    return this.value;
+    return value;
   }
 
   @Override
@@ -135,7 +135,7 @@ public class VersionedThinLRURegionEntryHeapStringKey2 extends VersionedThinLRUR
 
   @Override
   public int getEntryHash() {
-    return this.hash;
+    return hash;
   }
 
   @Override
@@ -145,7 +145,7 @@ public class VersionedThinLRURegionEntryHeapStringKey2 extends VersionedThinLRUR
 
   @Override
   public HashEntry<Object, Object> getNextEntry() {
-    return this.nextEntry;
+    return nextEntry;
   }
 
   @Override
@@ -222,7 +222,7 @@ public class VersionedThinLRURegionEntryHeapStringKey2 extends VersionedThinLRUR
 
   @Override
   public EvictionNode next() {
-    return this.nextEvictionNode;
+    return nextEvictionNode;
   }
 
   @Override
@@ -232,12 +232,12 @@ public class VersionedThinLRURegionEntryHeapStringKey2 extends VersionedThinLRUR
 
   @Override
   public EvictionNode previous() {
-    return this.previousEvictionNode;
+    return previousEvictionNode;
   }
 
   @Override
   public int getEntrySize() {
-    return this.size;
+    return size;
   }
 
   protected void setEntrySize(final int size) {
@@ -275,25 +275,25 @@ public class VersionedThinLRURegionEntryHeapStringKey2 extends VersionedThinLRUR
 
   @Override
   public VersionSource getMemberID() {
-    return this.memberId;
+    return memberId;
   }
 
   @Override
   public int getDistributedSystemId() {
-    return this.distributedSystemId;
+    return distributedSystemId;
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   public void setVersions(final VersionTag versionTag) {
-    this.memberId = versionTag.getMemberID();
+    memberId = versionTag.getMemberID();
     int eVersion = versionTag.getEntryVersion();
-    this.entryVersionLowBytes = (short) (eVersion & 0xffff);
-    this.entryVersionHighByte = (byte) ((eVersion & 0xff0000) >> 16);
-    this.regionVersionHighBytes = versionTag.getRegionVersionHighBytes();
-    this.regionVersionLowBytes = versionTag.getRegionVersionLowBytes();
+    entryVersionLowBytes = (short) (eVersion & 0xffff);
+    entryVersionHighByte = (byte) ((eVersion & 0xff0000) >> 16);
+    regionVersionHighBytes = versionTag.getRegionVersionHighBytes();
+    regionVersionLowBytes = versionTag.getRegionVersionLowBytes();
     if (!versionTag.isGatewayTag()
-        && this.distributedSystemId == versionTag.getDistributedSystemId()) {
+        && distributedSystemId == versionTag.getDistributedSystemId()) {
       if (getVersionTimeStamp() <= versionTag.getVersionTimeStamp()) {
         setVersionTimeStamp(versionTag.getVersionTimeStamp());
       } else {
@@ -302,7 +302,7 @@ public class VersionedThinLRURegionEntryHeapStringKey2 extends VersionedThinLRUR
     } else {
       setVersionTimeStamp(versionTag.getVersionTimeStamp());
     }
-    this.distributedSystemId = (byte) (versionTag.getDistributedSystemId() & 0xff);
+    distributedSystemId = (byte) (versionTag.getDistributedSystemId() & 0xff);
   }
 
   @Override
@@ -320,9 +320,9 @@ public class VersionedThinLRURegionEntryHeapStringKey2 extends VersionedThinLRUR
   public VersionTag asVersionTag() {
     VersionTag tag = VersionTag.create(memberId);
     tag.setEntryVersion(getEntryVersion());
-    tag.setRegionVersion(this.regionVersionHighBytes, this.regionVersionLowBytes);
+    tag.setRegionVersion(regionVersionHighBytes, regionVersionLowBytes);
     tag.setVersionTimeStamp(getVersionTimeStamp());
-    tag.setDistributedSystemId(this.distributedSystemId);
+    tag.setDistributedSystemId(distributedSystemId);
     return tag;
   }
 
@@ -343,33 +343,33 @@ public class VersionedThinLRURegionEntryHeapStringKey2 extends VersionedThinLRUR
   /** get rvv internal high byte. Used by region entries for transferring to storage */
   @Override
   public short getRegionVersionHighBytes() {
-    return this.regionVersionHighBytes;
+    return regionVersionHighBytes;
   }
 
   /** get rvv internal low bytes. Used by region entries for transferring to storage */
   @Override
   public int getRegionVersionLowBytes() {
-    return this.regionVersionLowBytes;
+    return regionVersionLowBytes;
   }
 
   // ----------------------------------------- key code -------------------------------------------
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   private int getKeyLength() {
-    return (int) (this.bits1 & 0x003fL);
+    return (int) (bits1 & 0x003fL);
   }
 
   private int getEncoding() {
     // 0 means encoded as char
     // 1 means encoded as bytes that are all <= 0x7f;
-    return (int) (this.bits1 >> 6) & 0x03;
+    return (int) (bits1 >> 6) & 0x03;
   }
 
   @Override
   public Object getKey() {
     int keyLength = getKeyLength();
     char[] chars = new char[keyLength];
-    long tempBits1 = this.bits1;
-    long tempBits2 = this.bits2;
+    long tempBits1 = bits1;
+    long tempBits2 = bits2;
     if (getEncoding() == 1) {
       for (int i = 0; i < keyLength; i++) {
         if (i < 7) {
@@ -401,8 +401,8 @@ public class VersionedThinLRURegionEntryHeapStringKey2 extends VersionedThinLRUR
       String stringKey = (String) key;
       int keyLength = getKeyLength();
       if (stringKey.length() == keyLength) {
-        long tempBits1 = this.bits1;
-        long tempBits2 = this.bits2;
+        long tempBits1 = bits1;
+        long tempBits2 = bits2;
         if (getEncoding() == 1) {
           for (int i = 0; i < keyLength; i++) {
             char character;

@@ -78,7 +78,7 @@ public class FunctionInvocationTargetException extends FunctionException {
    * @since GemFire 6.5
    */
   public DistributedMember getMemberId() {
-    return this.id;
+    return id;
   }
 
 }

@@ -26,11 +26,11 @@ import org.apache.geode.management.internal.beans.stats.StatsRate;
 
 public class DiskRegionBridge {
 
-  private DiskRegionStats diskRegionStats;
+  private final DiskRegionStats diskRegionStats;
 
-  private AggregateRegionStatsMonitor aggregateRegionMonitor;
+  private final AggregateRegionStatsMonitor aggregateRegionMonitor;
 
-  private MBeanStatsMonitor diskRegionMonitor;
+  private final MBeanStatsMonitor diskRegionMonitor;
 
   private StatsAverageLatency diskRegionReadsAverageLatency;
 
@@ -47,14 +47,14 @@ public class DiskRegionBridge {
   private static final String REGION_MONITOR = "MemberLevelRegionMonitor";
 
   public DiskRegionBridge(DiskRegionStats stats) {
-    this.diskRegionStats = stats;
-    this.aggregateRegionMonitor = new AggregateRegionStatsMonitor(REGION_MONITOR);
+    diskRegionStats = stats;
+    aggregateRegionMonitor = new AggregateRegionStatsMonitor(REGION_MONITOR);
 
-    this.diskRegionMonitor = new MBeanStatsMonitor(DISK_REGION_MONITOR);
+    diskRegionMonitor = new MBeanStatsMonitor(DISK_REGION_MONITOR);
 
     addDiskRegionStats(diskRegionStats);
 
-    this.configureDiskRegionMetrics();
+    configureDiskRegionMetrics();
   }
 
   private Number getDiskRegionStatistic(String statName) {

@@ -83,7 +83,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
           if (c != null) {
             c.close();
           }
-        } catch (CacheClosedException e) {
+        } catch (CacheClosedException ignored) {
         }
         return null;
       }
@@ -141,7 +141,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
           try {
             c = CacheFactory.getInstance(getSystem(props));
             c.close();
-          } catch (CacheClosedException cce) {
+          } catch (CacheClosedException ignored) {
           }
           c = CacheFactory.create(getSystem(props));
           c.createRegionFactory(RegionShortcut.PARTITION).create(regionName);
@@ -176,8 +176,8 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
 
         // assert succeeded, reset count
         synchronized (OnGroupsFunction.class) {
-          assertEquals(count, f.invocationCount);
-          f.invocationCount = 0;
+          assertEquals(count, OnGroupsFunction.invocationCount);
+          OnGroupsFunction.invocationCount = 0;
         }
         return null;
       }
@@ -191,8 +191,8 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         OnGroupsFunction f = (OnGroupsFunction) FunctionService.getFunction(OnGroupsFunction.Id);
         int count = 0;
         synchronized (OnGroupsFunction.class) {
-          count = f.invocationCount;
-          f.invocationCount = 0;
+          count = OnGroupsFunction.invocationCount;
+          OnGroupsFunction.invocationCount = 0;
         }
         return count;
       }
@@ -206,7 +206,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         OnGroupsFunction f = (OnGroupsFunction) FunctionService.getFunction(OnGroupsFunction.Id);
         int count = 0;
         synchronized (OnGroupsFunction.class) {
-          count = f.invocationCount;
+          count = OnGroupsFunction.invocationCount;
         }
 
         return count;
@@ -220,7 +220,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
       public Object call() throws Exception {
         OnGroupsFunction f = (OnGroupsFunction) FunctionService.getFunction(OnGroupsFunction.Id);
         synchronized (OnGroupsFunction.class) {
-          f.invocationCount = 0;
+          OnGroupsFunction.invocationCount = 0;
         }
         return null;
       }
@@ -261,10 +261,10 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         try {
           FunctionService.onMember("no such group");
           fail("expected exception not thrown");
-        } catch (FunctionException e) {
+        } catch (FunctionException ignored) {
         }
         Execution e = FunctionService.onMembers("gm");
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         args.add("gm");
         e = e.setArguments(args);
         if (registerFunction) {
@@ -285,7 +285,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         DistributedSystem ds = getSystem();
         LogWriterUtils.getLogWriter().fine("SWAP:invoking on g0");
         Execution e = FunctionService.onMembers("g0");
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         args.add("g0");
         e = e.setArguments(args);
         if (registerFunction) {
@@ -305,7 +305,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
       public Object call() throws Exception {
         DistributedSystem ds = getSystem();
         Execution e = FunctionService.onMembers("g1");
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         args.add("g1");
         e = e.setArguments(args);
         if (registerFunction) {
@@ -326,7 +326,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         LogWriterUtils.getLogWriter().fine("SWAP:invoking on g0 g1");
         InternalDistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
         Execution e = FunctionService.onMembers("g0", "g1");
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         args.add("g0");
         args.add("g1");
         e = e.setArguments(args);
@@ -361,12 +361,12 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         try {
           FunctionService.onMember("no such group");
           fail("expected exception not thrown");
-        } catch (FunctionException e) {
+        } catch (FunctionException ignored) {
         }
         try {
           FunctionService.onMember();
           fail("expected exception not thrown");
-        } catch (FunctionException e) {
+        } catch (FunctionException ignored) {
         }
         FunctionService.onMember("g1").execute(new OnGroupsFunction()).getResult();
         return null;
@@ -442,8 +442,8 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         ArrayList<Integer> l =
             (ArrayList<Integer>) e.execute(new OnGroupMultiResultFunction()).getResult();
         int sum = 0;
-        for (int i = 0; i < l.size(); i++) {
-          sum += l.get(i);
+        for (Integer integer : l) {
+          sum += integer;
         }
         assertEquals(5, sum);
         return null;
@@ -458,8 +458,8 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         ArrayList<Integer> l =
             (ArrayList<Integer>) e.execute(new OnGroupMultiResultFunction()).getResult();
         int sum = 0;
-        for (int i = 0; i < l.size(); i++) {
-          sum += l.get(i);
+        for (Integer integer : l) {
+          sum += integer;
         }
         assertEquals(10, sum);
         return null;
@@ -474,8 +474,8 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         ArrayList<Integer> l =
             (ArrayList<Integer>) e.execute(new OnGroupMultiResultFunction()).getResult();
         int sum = 0;
-        for (int i = 0; i < l.size(); i++) {
-          sum += l.get(i);
+        for (Integer integer : l) {
+          sum += integer;
         }
         assertEquals(15, sum);
         return null;
@@ -562,7 +562,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
       public Object call() throws Exception {
         DistributedSystem ds = getSystem();
         Execution e = FunctionService.onMembers("mg");
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         args.add("runtime");
         e = e.setArguments(args);
         try {
@@ -613,7 +613,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
       public Object call() throws Exception {
         DistributedSystem ds = getSystem();
         Execution e1 = FunctionService.onMembers("g1");
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         args.add("shutdown");
         e1 = e1.setArguments(args);
         try {
@@ -644,7 +644,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
       public Object call() throws Exception {
         DistributedSystem ds = getSystem();
         Execution e1 = FunctionService.onMembers("g1");
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         args.add("shutdown");
         args.add("g2");
         e1 = e1.setArguments(args);
@@ -676,7 +676,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
       public Object call() throws Exception {
         DistributedSystem ds = getSystem();
         Execution e1 = FunctionService.onMembers("g1");
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         args.add("shutdown");
         args.add("g2");
         e1 = e1.setArguments(args);
@@ -743,7 +743,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         try {
           Cache c = CacheFactory.getAnyInstance();
           c.close();
-        } catch (CacheClosedException cce) {
+        } catch (CacheClosedException ignored) {
         }
         disconnectFromDS();
         LogWriterUtils.getLogWriter().fine("SWAP:creating client cache");
@@ -756,7 +756,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         c.getLogger().info("SWAP:invoking function from client on g0");
         Execution e = InternalFunctionService.onServers(c, "g0");
         if (withArgs) {
-          ArrayList<String> args = new ArrayList<String>();
+          ArrayList<String> args = new ArrayList<>();
           args.add("g0");
           e = e.setArguments(args);
         }
@@ -779,7 +779,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         c.getLogger().fine("SWAP:invoking function from client on mg");
         Execution e = InternalFunctionService.onServers(c, "mg");
         if (withArgs) {
-          ArrayList<String> args = new ArrayList<String>();
+          ArrayList<String> args = new ArrayList<>();
           args.add("mg");
           e = e.setArguments(args);
         }
@@ -802,7 +802,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         c.getLogger().fine("SWAP:invoking function from client on g0 g1");
         Execution e = InternalFunctionService.onServers(c, "g0", "g1");
         if (withArgs) {
-          ArrayList<String> args = new ArrayList<String>();
+          ArrayList<String> args = new ArrayList<>();
           args.add("g0");
           args.add("g1");
           e = e.setArguments(args);
@@ -843,7 +843,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         try {
           Cache c = CacheFactory.getAnyInstance();
           c.close();
-        } catch (CacheClosedException cce) {
+        } catch (CacheClosedException ignored) {
         }
         disconnectFromDS();
         LogWriterUtils.getLogWriter().fine("SWAP:creating client cache");
@@ -858,8 +858,8 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         ArrayList<Integer> l =
             (ArrayList<Integer>) e.execute(new OnGroupMultiResultFunction()).getResult();
         int sum = 0;
-        for (int i = 0; i < l.size(); i++) {
-          sum += l.get(i);
+        for (Integer integer : l) {
+          sum += integer;
         }
         assertEquals(10, sum);
         return null;
@@ -875,8 +875,8 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         ArrayList<Integer> l =
             (ArrayList<Integer>) e.execute(new OnGroupMultiResultFunction()).getResult();
         int sum = 0;
-        for (int i = 0; i < l.size(); i++) {
-          sum += l.get(i);
+        for (Integer integer : l) {
+          sum += integer;
         }
         assertEquals(5, sum);
         return null;
@@ -892,8 +892,8 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         ArrayList<Integer> l =
             (ArrayList<Integer>) e.execute(new OnGroupMultiResultFunction()).getResult();
         int sum = 0;
-        for (int i = 0; i < l.size(); i++) {
-          sum += l.get(i);
+        for (Integer integer : l) {
+          sum += integer;
         }
         assertEquals(15, sum);
         return null;
@@ -924,7 +924,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         try {
           Cache c = CacheFactory.getAnyInstance();
           c.close();
-        } catch (CacheClosedException cce) {
+        } catch (CacheClosedException ignored) {
         }
         disconnectFromDS();
         LogWriterUtils.getLogWriter().fine("SWAP:creating client cache");
@@ -939,7 +939,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
           InternalFunctionService.onServer(c, "no such group").execute(new OnGroupsFunction())
               .getResult();
           fail("expected exception not thrown");
-        } catch (FunctionException e) {
+        } catch (FunctionException ignored) {
         } finally {
           ex.remove();
         }
@@ -1006,7 +1006,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         try {
           Cache c = CacheFactory.getAnyInstance();
           c.close();
-        } catch (CacheClosedException cce) {
+        } catch (CacheClosedException ignored) {
         }
         disconnectFromDS();
         LogWriterUtils.getLogWriter().fine("SWAP:creating client cache");
@@ -1021,14 +1021,14 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
           InternalFunctionService.onServers(c, "no such group").execute(new OnGroupsFunction())
               .getResult();
           fail("expected exception not thrown");
-        } catch (FunctionException e) {
+        } catch (FunctionException ignored) {
         } finally {
           expected.remove();
         }
 
         IgnoredException.addIgnoredException("NullPointerException");
         Execution e = InternalFunctionService.onServers(c, "mg");
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         args.add("runtime");
         e = e.setArguments(args);
         try {
@@ -1085,7 +1085,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         try {
           Cache c = CacheFactory.getAnyInstance();
           c.close();
-        } catch (CacheClosedException cce) {
+        } catch (CacheClosedException ignored) {
         }
         disconnectFromDS();
         LogWriterUtils.getLogWriter().fine("SWAP:creating client cache");
@@ -1096,7 +1096,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         ClientCache c = ccf.create();
 
         Execution e = InternalFunctionService.onServers(c, "g1");
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         args.add("disconnect");
         e = e.setArguments(args);
 
@@ -1135,7 +1135,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         try {
           Cache c = CacheFactory.getAnyInstance();
           c.close();
-        } catch (CacheClosedException cce) {
+        } catch (CacheClosedException ignored) {
         }
         disconnectFromDS();
         LogWriterUtils.getLogWriter().fine("SWAP:creating client cache");
@@ -1146,7 +1146,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         ClientCache c = ccf.create();
 
         Execution e = InternalFunctionService.onServers(c, "g1");
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         args.add("disconnect");
         args.add("g2");
         e = e.setArguments(args);
@@ -1185,7 +1185,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         try {
           Cache c = CacheFactory.getAnyInstance();
           c.close();
-        } catch (CacheClosedException cce) {
+        } catch (CacheClosedException ignored) {
         }
         disconnectFromDS();
         LogWriterUtils.getLogWriter().fine("SWAP:creating client cache");
@@ -1196,7 +1196,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         ClientCache c = ccf.create();
 
         Execution e = InternalFunctionService.onServers(c, "g1");
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         args.add("disconnect");
         args.add("g2");
         e = e.setArguments(args);
@@ -1257,7 +1257,7 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4DistributedTestCas
         try {
           Cache c = getAnyInstance();
           c.close();
-        } catch (CacheClosedException cce) {
+        } catch (CacheClosedException ignored) {
         }
         disconnectFromDS();
         getLogWriter().fine("SWAP:creating client cache");

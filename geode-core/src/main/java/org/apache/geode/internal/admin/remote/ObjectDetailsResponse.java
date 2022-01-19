@@ -19,7 +19,6 @@ package org.apache.geode.internal.admin.remote;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.geode.DataSerializer;
@@ -96,15 +95,15 @@ public class ObjectDetailsResponse extends AdminResponse implements Cancellable 
 
   // instance methods
   public Object getObjectValue() {
-    return this.objectValue;
+    return objectValue;
   }
 
   public Object getUserAttribute() {
-    return this.userAttribute;
+    return userAttribute;
   }
 
   public CacheStatistics getStatistics() {
-    return this.stats;
+    return stats;
   }
 
   @Override
@@ -116,23 +115,23 @@ public class ObjectDetailsResponse extends AdminResponse implements Cancellable 
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.objectValue, out);
-    DataSerializer.writeObject(this.userAttribute, out);
-    DataSerializer.writeObject(this.stats, out);
+    DataSerializer.writeObject(objectValue, out);
+    DataSerializer.writeObject(userAttribute, out);
+    DataSerializer.writeObject(stats, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.objectValue = DataSerializer.readObject(in);
-    this.userAttribute = DataSerializer.readObject(in);
-    this.stats = (RemoteCacheStatistics) DataSerializer.readObject(in);
+    objectValue = DataSerializer.readObject(in);
+    userAttribute = DataSerializer.readObject(in);
+    stats = DataSerializer.readObject(in);
   }
 
   @Override
   public String toString() {
-    return "ObjectDetailsResponse from " + this.getRecipient();
+    return "ObjectDetailsResponse from " + getRecipient();
   }
 
 
@@ -150,9 +149,7 @@ public class ObjectDetailsResponse extends AdminResponse implements Cancellable 
       Object obj = null;
       Set keys = r.keySet();
       synchronized (r) {
-        Iterator it = keys.iterator();
-        while (it.hasNext()) {
-          Object o = it.next();
+        for (final Object o : keys) {
           if (objName.equals(o)) {
             synchronized (ObjectDetailsResponse.class) {
               lastObjectNameFound = o;

@@ -55,9 +55,9 @@ public abstract class CacheWriterTestCase extends RegionAttributesTestCase {
    */
   @Test
   public void testCacheWriterBeforeCreate() throws CacheException {
-    String name = this.getUniqueName();
-    final Object key = this.getUniqueName();
-    final Object value = new Integer(42);
+    String name = getUniqueName();
+    final Object key = getUniqueName();
+    final Object value = 42;
     final Object arg = "ARG";
     final String exception = "EXCEPTION";
 
@@ -142,10 +142,10 @@ public abstract class CacheWriterTestCase extends RegionAttributesTestCase {
    */
   @Test
   public void testCacheWriterBeforeUpdate() throws CacheException {
-    String name = this.getUniqueName();
-    final Object key = this.getUniqueName();
-    final Object oldValue = new Integer(42);
-    final Object newValue = new Integer(43);
+    String name = getUniqueName();
+    final Object key = getUniqueName();
+    final Object oldValue = 42;
+    final Object newValue = 43;
     final Object arg = "ARG";
     final String exception = "EXCEPTION";
 
@@ -249,9 +249,9 @@ public abstract class CacheWriterTestCase extends RegionAttributesTestCase {
    */
   @Test
   public void testCacheWriterBeforeDestroy() throws CacheException {
-    String name = this.getUniqueName();
-    final Object key = this.getUniqueName();
-    final Object value = new Integer(42);
+    String name = getUniqueName();
+    final Object key = getUniqueName();
+    final Object value = 42;
     final Object arg = "ARG";
     final String exception = "EXCEPTION";
 
@@ -321,7 +321,7 @@ public abstract class CacheWriterTestCase extends RegionAttributesTestCase {
   @Test
   public void testCacheWriterBeforeRegionDestroy() throws CacheException {
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final Object arg = "ARG";
     final String exception = "EXCEPTION";
 
@@ -338,7 +338,7 @@ public abstract class CacheWriterTestCase extends RegionAttributesTestCase {
 
       @Override
       public void close2() {
-        this.closed = true;
+        closed = true;
       }
 
       @Override
@@ -362,7 +362,7 @@ public abstract class CacheWriterTestCase extends RegionAttributesTestCase {
           }
         }
 
-        this.destroyed = true;
+        destroyed = true;
       }
     };
 
@@ -402,7 +402,7 @@ public abstract class CacheWriterTestCase extends RegionAttributesTestCase {
    */
   @Test
   public void testCacheWriterLocalDestroy() throws CacheException {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
 
     // If any of the writer's callback methods are invoked
     TestCacheWriter writer = new TestCacheWriter() {};
@@ -419,7 +419,7 @@ public abstract class CacheWriterTestCase extends RegionAttributesTestCase {
    */
   @Test
   public void testCacheWriterExceptionAborts() throws CacheException {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final String exception = "EXCEPTION";
 
     TestCacheWriter writer = new TestCacheWriter() {
@@ -462,7 +462,7 @@ public abstract class CacheWriterTestCase extends RegionAttributesTestCase {
     Region region;
 
     region = createRegion(name, attrs);
-    Object value = new Integer(42);
+    Object value = 42;
 
     String p1 = "Test Exception";
     getCache().getLogger().info("<ExpectedException action=add>" + p1 + "</ExpectedException>");

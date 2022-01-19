@@ -121,7 +121,7 @@ public class ClientServerMiscDUnitTest extends ClientServerMiscDUnitTestBase {
     ClientProxyMembershipID proxyID = server1.invoke(
         () -> CacheClientNotifier.getInstance().getClientProxies().iterator().next().getProxyID());
     server2.invoke(() -> {
-      assertThat(ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().contains(proxyID))
+      assertThat(ClientHealthMonitor.getInstance().getClientHeartbeats().containsKey(proxyID))
           .isFalse();
       assertThat(ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().size())
           .isEqualTo(0);
@@ -135,7 +135,7 @@ public class ClientServerMiscDUnitTest extends ClientServerMiscDUnitTestBase {
       ClientProxyMembershipID proxyIDFound =
           ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().iterator().next();
       assertThat(
-          ClientHealthMonitor.getInstance().getClientHeartbeats().keySet().contains(proxyID))
+          ClientHealthMonitor.getInstance().getClientHeartbeats().containsKey(proxyID))
               .isTrue();
     });
   }

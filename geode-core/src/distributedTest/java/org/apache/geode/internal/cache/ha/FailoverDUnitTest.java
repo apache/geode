@@ -84,13 +84,13 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
     vm1 = host.getVM(1);
 
     // start servers first
-    vm0.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
-    vm1.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
-    PORT1 = ((Integer) vm0.invoke(() -> FailoverDUnitTest.createServerCache())).intValue();
-    PORT2 = ((Integer) vm1.invoke(() -> FailoverDUnitTest.createServerCache())).intValue();
+    vm0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
+    vm1.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
+    PORT1 = vm0.invoke(FailoverDUnitTest::createServerCache);
+    PORT2 = vm1.invoke(FailoverDUnitTest::createServerCache);
 
     CacheServerTestUtil.disableShufflingOfEndpoints();
-    createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT1), new Integer(PORT2));
+    createClientCache(NetworkUtils.getServerHostName(host), PORT1, PORT2);
     { // calculate the primary vm
       waitForPrimaryAndBackups(1);
       PoolImpl pool = (PoolImpl) PoolManager.find("FailoverPool");
@@ -108,10 +108,10 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
     createEntries();
     waitForPrimaryAndBackups(1);
     registerInterestList();
-    primary.invoke(() -> FailoverDUnitTest.put());
+    primary.invoke(FailoverDUnitTest::put);
     verifyEntries();
     setClientServerObserver();
-    primary.invoke(() -> FailoverDUnitTest.stopServer());
+    primary.invoke(FailoverDUnitTest::stopServer);
     verifyEntriesAfterFailover();
   }
 
@@ -126,8 +126,8 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
 
   public static void createClientCache(String hostName, Integer port1, Integer port2)
       throws Exception {
-    PORT1 = port1.intValue();
-    PORT2 = port2.intValue();
+    PORT1 = port1;
+    PORT2 = port2;
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
@@ -138,7 +138,7 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
     ClientServerTestCase
         .configureConnectionPoolWithNameAndFactory(factory, hostName, new int[] {PORT1, PORT2},
             true, -1,
-            2, (String) null, "FailoverPool", PoolManager.createFactory(), -1, -1, -2,
+            2, null, "FailoverPool", PoolManager.createFactory(), -1, -1, -2,
             -1);
     factory.setCacheListener(new CacheListenerAdapter() {
       @Override
@@ -164,7 +164,7 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
     server1.setPort(port);
     server1.setNotifyBySubscription(true);
     server1.start();
-    return new Integer(server1.getPort());
+    return server1.getPort();
   }
 
   public void waitForPrimaryAndBackups(final int numBackups) {
@@ -175,10 +175,7 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
         if (pool.getPrimary() == null) {
           return false;
         }
-        if (pool.getRedundants().size() < numBackups) {
-          return false;
-        }
-        return true;
+        return pool.getRedundants().size() >= numBackups;
       }
 
       @Override
@@ -274,7 +271,7 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
       @Override
       public void beforePrimaryIdentificationFromBackup() {
-        primary.invoke(() -> FailoverDUnitTest.putDuringFailover());
+        primary.invoke(FailoverDUnitTest::putDuringFailover);
         PoolImpl.BEFORE_PRIMARY_IDENTIFICATION_FROM_BACKUP_CALLBACK_FLAG = false;
       }
     });
@@ -316,8 +313,8 @@ public class FailoverDUnitTest extends JUnit4DistributedTestCase {
     // close the clients first
     closeCache();
     // then close the servers
-    vm0.invoke(() -> FailoverDUnitTest.closeCache());
-    vm1.invoke(() -> FailoverDUnitTest.closeCache());
+    vm0.invoke(FailoverDUnitTest::closeCache);
+    vm1.invoke(FailoverDUnitTest::closeCache);
     CacheServerTestUtil.resetDisableShufflingOfEndpointsFlag();
   }
 

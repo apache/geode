@@ -60,8 +60,8 @@ public abstract class AbstractGMSMessage<ID extends MemberIdentifier> implements
   public List<ID> getRecipients() {
     if (getMulticast()) {
       return (List<ID>) Collections.singletonList(ALL_RECIPIENTS);
-    } else if (this.recipients != null) {
-      return this.recipients;
+    } else if (recipients != null) {
+      return recipients;
     } else {
       return (List<ID>) Collections.singletonList(ALL_RECIPIENTS);
     }

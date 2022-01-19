@@ -58,7 +58,7 @@ public class CreateJndiBindingCommandTest {
   JndiBindingsType.JndiBinding binding;
   List<JndiBindingsType.JndiBinding> bindings;
 
-  private static String COMMAND = "create jndi-binding ";
+  private static final String COMMAND = "create jndi-binding ";
 
   @Before
   public void setUp() throws Exception {

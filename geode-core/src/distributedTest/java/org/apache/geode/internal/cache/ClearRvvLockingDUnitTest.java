@@ -22,7 +22,6 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.test.dunit.Assert.fail;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
@@ -109,7 +108,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
       runConsistencyTest(vm0, performPutOperation);
       checkForConsistencyErrors();
     } finally {
-      opsVM.invoke(() -> resetHook());
+      opsVM.invoke(this::resetHook);
     }
   }
 
@@ -123,7 +122,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
       runConsistencyTest(vm0, performPutOperation);
       checkForConsistencyErrors();
     } finally {
-      opsVM.invoke(() -> resetHook());
+      opsVM.invoke(this::resetHook);
     }
   }
 
@@ -139,8 +138,8 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
       runConsistencyTest(vm0, performNoAckPutOperation);
       checkForConsistencyErrors();
     } finally {
-      vm0.invoke(() -> resetHook());
-      vm1.invoke(() -> resetHook());
+      vm0.invoke(this::resetHook);
+      vm1.invoke(this::resetHook);
     }
   }
 
@@ -153,7 +152,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
       runConsistencyTest(vm0, performRemoveOperation);
       checkForConsistencyErrors();
     } finally {
-      opsVM.invoke(() -> resetHook());
+      opsVM.invoke(this::resetHook);
     }
   }
 
@@ -166,7 +165,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
       runConsistencyTest(vm0, performRemoveOperation);
       checkForConsistencyErrors();
     } finally {
-      opsVM.invoke(() -> resetHook());
+      opsVM.invoke(this::resetHook);
     }
   }
 
@@ -179,7 +178,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
       runConsistencyTest(vm0, performInvalidateOperation);
       checkForConsistencyErrors();
     } finally {
-      opsVM.invoke(() -> resetHook());
+      opsVM.invoke(this::resetHook);
     }
   }
 
@@ -192,7 +191,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
       runConsistencyTest(vm0, performInvalidateOperation);
       checkForConsistencyErrors();
     } finally {
-      opsVM.invoke(() -> resetHook());
+      opsVM.invoke(this::resetHook);
     }
   }
 
@@ -205,7 +204,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
       runConsistencyTest(vm0, performPutAllOperation);
       checkForConsistencyErrors();
     } finally {
-      opsVM.invoke(() -> resetHook());
+      opsVM.invoke(this::resetHook);
     }
   }
 
@@ -218,7 +217,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
       runConsistencyTest(vm0, performPutAllOperation);
       checkForConsistencyErrors();
     } finally {
-      opsVM.invoke(() -> resetHook());
+      opsVM.invoke(this::resetHook);
     }
   }
 
@@ -231,7 +230,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
       runConsistencyTest(vm0, performRemoveAllOperation);
       checkForConsistencyErrors();
     } finally {
-      opsVM.invoke(() -> resetHook());
+      opsVM.invoke(this::resetHook);
     }
   }
 
@@ -244,7 +243,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
       runConsistencyTest(vm0, performRemoveAllOperation);
       checkForConsistencyErrors();
     } finally {
-      opsVM.invoke(() -> resetHook());
+      opsVM.invoke(this::resetHook);
     }
   }
 
@@ -253,7 +252,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
     if (whichVM == null) {
       doPut();
     } else {
-      whichVM.invoke(() -> doPut());
+      whichVM.invoke(ClearRvvLockingDUnitTest::doPut);
     }
   }
 
@@ -261,7 +260,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
     if (whichVM == null) {
       doRemove();
     } else {
-      whichVM.invoke(() -> doRemove());
+      whichVM.invoke(ClearRvvLockingDUnitTest::doRemove);
     }
   }
 
@@ -269,7 +268,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
     if (whichVM == null) {
       doInvalidate();
     } else {
-      whichVM.invoke(() -> doInvalidate());
+      whichVM.invoke(ClearRvvLockingDUnitTest::doInvalidate);
     }
   }
 
@@ -277,7 +276,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
     if (whichVM == null) {
       doPutAll();
     } else {
-      whichVM.invoke(() -> doPutAll());
+      whichVM.invoke(ClearRvvLockingDUnitTest::doPutAll);
     }
   }
 
@@ -285,7 +284,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
     if (whichVM == null) {
       doRemoveAll();
     } else {
-      whichVM.invoke(() -> doRemoveAll());
+      whichVM.invoke(ClearRvvLockingDUnitTest::doRemoveAll);
     }
   }
 
@@ -293,7 +292,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
     if (whichVM == null) {
       doClear();
     } else {
-      whichVM.invoke(() -> doClear());
+      whichVM.invoke(ClearRvvLockingDUnitTest::doClear);
     }
   }
 
@@ -355,23 +354,17 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
   SerializableRunnable performNoAckPutOperation = new SerializableRunnable("perform NoAckPUT") {
     @Override
     public void run() throws InterruptedException {
-      Runnable putThread1 = new Runnable() {
-        @Override
-        public void run() {
-          DistributedSystem.setThreadsSocketPolicy(false);
-          doPut();
-          DistributedSystem.releaseThreadsSockets();
-        }
+      Runnable putThread1 = () -> {
+        DistributedSystem.setThreadsSocketPolicy(false);
+        doPut();
+        DistributedSystem.releaseThreadsSockets();
       };
 
-      Runnable putThread2 = new Runnable() {
-        @Override
-        public void run() {
-          DistributedSystem.setThreadsSocketPolicy(false);
-          awaitStep1Latch();
-          doClear();
-          DistributedSystem.releaseThreadsSockets();
-        }
+      Runnable putThread2 = () -> {
+        DistributedSystem.setThreadsSocketPolicy(false);
+        awaitStep1Latch();
+        doClear();
+        DistributedSystem.releaseThreadsSockets();
       };
 
       Thread t1 = new Thread(putThread1);
@@ -464,8 +457,8 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void checkForConsistencyErrors() {
-    Map<Object, Object> r0Contents = (Map<Object, Object>) vm0.invoke(() -> getRegionContents());
-    Map<Object, Object> r1Contents = (Map<Object, Object>) vm1.invoke(() -> getRegionContents());
+    Map<Object, Object> r0Contents = vm0.invoke(ClearRvvLockingDUnitTest::getRegionContents);
+    Map<Object, Object> r1Contents = vm1.invoke(ClearRvvLockingDUnitTest::getRegionContents);
 
     String key = THE_KEY;
     softly.assertThat(r1Contents.get(key)).as("region contents are not consistent for key %s", key)
@@ -568,8 +561,8 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
   @SuppressWarnings("rawtypes")
   private static Map<Object, Object> getRegionContents() {
     Map<Object, Object> result = new HashMap<>();
-    for (Iterator i = region.entrySet().iterator(); i.hasNext();) {
-      Region.Entry e = (Region.Entry) i.next();
+    for (final Object o : region.entrySet()) {
+      Region.Entry e = (Region.Entry) o;
       result.put(e.getKey(), e.getValue());
     }
     return result;
@@ -590,7 +583,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
   public static void awaitStep1Latch() {
     try {
       step1Latch.await();
-    } catch (InterruptedException e) {
+    } catch (InterruptedException ignored) {
     }
   }
 
@@ -599,7 +592,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
   }
 
   public static void decrementRemoteStep1Latch() {
-    theOtherVM.invoke(() -> decrementStep1Latch());
+    theOtherVM.invoke(ClearRvvLockingDUnitTest::decrementStep1Latch);
   }
 
   public static void primeStep2Latch(int waitCount) {
@@ -609,7 +602,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
   public static void awaitStep2Latch() {
     try {
       step2Latch.await();
-    } catch (InterruptedException e) {
+    } catch (InterruptedException ignored) {
     }
   }
 
@@ -618,7 +611,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
   }
 
   public static void decrementRemoteStep2Latch() {
-    theOtherVM.invoke(() -> decrementStep2Latch());
+    theOtherVM.invoke(ClearRvvLockingDUnitTest::decrementStep2Latch);
   }
 
   /*
@@ -655,7 +648,7 @@ public class ClearRvvLockingDUnitTest extends JUnit4CacheTestCase {
     public void beforeLock(InternalRegion owner, CacheEvent event) {
       if (event.isOriginRemote() && event.getOperation().isCreate()
           && owner.getName().startsWith("test")) {
-        theOtherVM.invoke(() -> releaseStep1()); // start clear
+        theOtherVM.invoke(ClearRvvLockingDUnitTest::releaseStep1); // start clear
         awaitStep2Latch(); // wait for clear to complete
       }
     }

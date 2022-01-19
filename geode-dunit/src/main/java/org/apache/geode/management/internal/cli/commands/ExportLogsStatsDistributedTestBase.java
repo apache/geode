@@ -43,6 +43,7 @@ import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.MemberStarterRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 public class ExportLogsStatsDistributedTestBase {
@@ -62,7 +63,7 @@ public class ExportLogsStatsDistributedTestBase {
   @BeforeClass
   public static void beforeClass() {
     // start the locator in vm0 and then connect to it over http
-    locator = lsRule.startLocatorVM(0, l -> l.withHttpService());
+    locator = lsRule.startLocatorVM(0, MemberStarterRule::withHttpService);
 
     Properties serverProperties = new Properties();
     serverProperties.setProperty(ConfigurationProperties.STATISTIC_SAMPLING_ENABLED, "true");

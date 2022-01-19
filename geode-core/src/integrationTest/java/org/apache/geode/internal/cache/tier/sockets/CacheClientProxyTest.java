@@ -84,9 +84,9 @@ public class CacheClientProxyTest {
         Handshake.CONFLATION_DEFAULT, KnownVersion.CURRENT, 1L, true,
         null, null, mock(StatisticsClock.class));
 
-    CompletableFuture<Void> result1 = executorServiceRule.runAsync(() -> proxy.close());
-    CompletableFuture<Void> result2 = executorServiceRule.runAsync(() -> proxy.close());
-    CompletableFuture<Void> result3 = executorServiceRule.runAsync(() -> proxy.close());
+    CompletableFuture<Void> result1 = executorServiceRule.runAsync(proxy::close);
+    CompletableFuture<Void> result2 = executorServiceRule.runAsync(proxy::close);
+    CompletableFuture<Void> result3 = executorServiceRule.runAsync(proxy::close);
     CompletableFuture.allOf(result1, result2, result3).join();
     assertThatCode(() -> result1.get(60, SECONDS)).doesNotThrowAnyException();
     assertThatCode(() -> result2.get(60, SECONDS)).doesNotThrowAnyException();

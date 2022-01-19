@@ -28,7 +28,7 @@ public class BucketTargetingMap<K, V> extends AbstractMap<K, V> {
   public Object callbackArg;
 
   public BucketTargetingMap(BucketRegion region, int bucketId) {
-    this.callbackArg = bucketId;
+    callbackArg = bucketId;
     this.region = region;
   }
 

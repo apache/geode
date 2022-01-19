@@ -112,7 +112,7 @@ public class NetstatFunction implements InternalFunction<NetstatFunction.Netstat
     String memberPlatFormInfo = CliStrings.format(CliStrings.NETSTAT__MSG__FOR_HOST_1_OS_2_MEMBER_0,
         id, host, osInfo, lineSeparator);
     netstatInfo.append(lineSeparator).append(memberPlatFormInfo).append(lineSeparator)
-        .append(netstatInfoBottom.toString()).append(lineSeparator);
+        .append(netstatInfoBottom).append(lineSeparator);
   }
 
   private static void addNetstatDefaultOptions(final List<String> cmdOptionsList) {

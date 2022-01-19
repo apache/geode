@@ -40,7 +40,7 @@ public class SharedConfigurationStatusResponse implements DataSerializable {
   }
 
   public SharedConfigurationStatus getStatus() {
-    return this.status;
+    return status;
   }
 
   public void addWaitingLocatorInfo(Set<PersistentMemberPattern> waitingLocatorsInfo) {
@@ -48,7 +48,7 @@ public class SharedConfigurationStatusResponse implements DataSerializable {
   }
 
   public Set<PersistentMemberPattern> getOtherLocatorInformation() {
-    return this.waitingLocatorsInfo;
+    return waitingLocatorsInfo;
   }
 
   @Override
@@ -59,8 +59,8 @@ public class SharedConfigurationStatusResponse implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.status = DataSerializer.readEnum(SharedConfigurationStatus.class, in);
-    this.waitingLocatorsInfo = DataSerializer.readHashSet(in);
+    status = DataSerializer.readEnum(SharedConfigurationStatus.class, in);
+    waitingLocatorsInfo = DataSerializer.readHashSet(in);
   }
 
 

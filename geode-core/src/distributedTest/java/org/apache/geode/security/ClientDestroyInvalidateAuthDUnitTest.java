@@ -37,7 +37,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category({SecurityTest.class})
 public class ClientDestroyInvalidateAuthDUnitTest {
-  private static String REGION_NAME = "AuthRegion";
+  private static final String REGION_NAME = "AuthRegion";
 
   private ClientVM client1, client2;
   @Rule

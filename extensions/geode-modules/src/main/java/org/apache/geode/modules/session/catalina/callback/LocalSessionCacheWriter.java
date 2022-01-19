@@ -34,18 +34,18 @@ public class LocalSessionCacheWriter extends CacheWriterAdapter<String, HttpSess
 
   @Override
   public void beforeCreate(EntryEvent<String, HttpSession> event) throws CacheWriterException {
-    this.backingRegion.put(event.getKey(), event.getNewValue(), event.getCallbackArgument());
+    backingRegion.put(event.getKey(), event.getNewValue(), event.getCallbackArgument());
   }
 
   @Override
   public void beforeUpdate(EntryEvent<String, HttpSession> event) throws CacheWriterException {
-    this.backingRegion.put(event.getKey(), event.getNewValue(), event.getCallbackArgument());
+    backingRegion.put(event.getKey(), event.getNewValue(), event.getCallbackArgument());
   }
 
   @Override
   public void beforeDestroy(EntryEvent<String, HttpSession> event) throws CacheWriterException {
     try {
-      this.backingRegion.destroy(event.getKey(), event.getCallbackArgument());
+      backingRegion.destroy(event.getKey(), event.getCallbackArgument());
     } catch (EntryNotFoundException e) {
       // I think it is safe to ignore this exception. The entry could have
       // expired already in the backing region.

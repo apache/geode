@@ -29,8 +29,8 @@ public class Edge {
     this.graph = graph;
     this.timestamp = timestamp;
     this.name = name;
-    this.source = sourceName;
-    this.dest = destVertex;
+    source = sourceName;
+    dest = destVertex;
   }
 
   @Override
@@ -77,10 +77,7 @@ public class Edge {
     } else if (!source.equals(other.source)) {
       return false;
     }
-    if (timestamp != other.timestamp) {
-      return false;
-    }
-    return true;
+    return timestamp == other.timestamp;
   }
 
   @Override

@@ -170,8 +170,8 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
 
   @Test // parallel, PartitionedRegion, FixedPartitionAttributes
   public void testParallelAsyncEventQueueWithFixedPartition() {
-    vm0.invoke(() -> createCache());
-    vm1.invoke(() -> createCache());
+    vm0.invoke(this::createCache);
+    vm1.invoke(this::createCache);
 
     vm0.invoke(() -> createAsyncEventQueue(asyncEventQueueId, new SpyAsyncEventListener(), false,
         100, dispatcherThreadCount, 100, true));
@@ -189,8 +189,8 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
 
     vm0.invoke(() -> doPuts(partitionedRegionName, 256));
 
-    vm0.invoke(() -> waitForAsyncQueueToEmpty());
-    vm1.invoke(() -> waitForAsyncQueueToEmpty());
+    vm0.invoke(this::waitForAsyncQueueToEmpty);
+    vm1.invoke(this::waitForAsyncQueueToEmpty);
 
     int sizeInVM0 = vm0.invoke(() -> getSpyAsyncEventListener().getEventsMap().size());
     int sizeInVM1 = vm1.invoke(() -> getSpyAsyncEventListener().getEventsMap().size());
@@ -215,10 +215,10 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
 
   @Test // parallel, PartitionedRegion
   public void testParallelAsyncEventQueue() {
-    vm0.invoke(() -> createCache());
-    vm1.invoke(() -> createCache());
-    vm2.invoke(() -> createCache());
-    vm3.invoke(() -> createCache());
+    vm0.invoke(this::createCache);
+    vm1.invoke(this::createCache);
+    vm2.invoke(this::createCache);
+    vm3.invoke(this::createCache);
 
     vm0.invoke(() -> createAsyncEventQueue(asyncEventQueueId, new SpyAsyncEventListener(), false,
         100, dispatcherThreadCount, 100, true));
@@ -236,10 +236,10 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
 
     vm0.invoke(() -> doPuts(partitionedRegionName, 256));
 
-    vm0.invoke(() -> waitForAsyncQueueToEmpty());
-    vm1.invoke(() -> waitForAsyncQueueToEmpty());
-    vm2.invoke(() -> waitForAsyncQueueToEmpty());
-    vm3.invoke(() -> waitForAsyncQueueToEmpty());
+    vm0.invoke(this::waitForAsyncQueueToEmpty);
+    vm1.invoke(this::waitForAsyncQueueToEmpty);
+    vm2.invoke(this::waitForAsyncQueueToEmpty);
+    vm3.invoke(this::waitForAsyncQueueToEmpty);
 
     int sizeInVM0 = vm0.invoke(() -> getSpyAsyncEventListener().getEventsMap().size());
     int sizeInVM1 = vm1.invoke(() -> getSpyAsyncEventListener().getEventsMap().size());
@@ -253,10 +253,10 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
 
   @Test // parallel, PartitionedRegion
   public void testParallelAsyncEventQueueSize() {
-    vm0.invoke(() -> createCache());
-    vm1.invoke(() -> createCache());
-    vm2.invoke(() -> createCache());
-    vm3.invoke(() -> createCache());
+    vm0.invoke(this::createCache);
+    vm1.invoke(this::createCache);
+    vm2.invoke(this::createCache);
+    vm3.invoke(this::createCache);
 
     vm0.invoke(() -> createAsyncEventQueue(asyncEventQueueId, new SpyAsyncEventListener(), false,
         100, dispatcherThreadCount, 100, true));
@@ -277,10 +277,10 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
     vm2.invoke(() -> getInternalGatewaySender().pause());
     vm3.invoke(() -> getInternalGatewaySender().pause());
 
-    vm0.invoke(() -> waitForDispatcherToPause());
-    vm1.invoke(() -> waitForDispatcherToPause());
-    vm2.invoke(() -> waitForDispatcherToPause());
-    vm3.invoke(() -> waitForDispatcherToPause());
+    vm0.invoke(this::waitForDispatcherToPause);
+    vm1.invoke(this::waitForDispatcherToPause);
+    vm2.invoke(this::waitForDispatcherToPause);
+    vm3.invoke(this::waitForDispatcherToPause);
 
     vm0.invoke(() -> doPuts(partitionedRegionName, 1000));
 
@@ -290,10 +290,10 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
 
   @Test // parallel, conflation, PartitionedRegion
   public void testParallelAsyncEventQueueWithConflationEnabled() {
-    vm0.invoke(() -> createCache());
-    vm1.invoke(() -> createCache());
-    vm2.invoke(() -> createCache());
-    vm3.invoke(() -> createCache());
+    vm0.invoke(this::createCache);
+    vm1.invoke(this::createCache);
+    vm2.invoke(this::createCache);
+    vm3.invoke(this::createCache);
 
     vm0.invoke(
         () -> createAsyncEventQueue(asyncEventQueueId, new SpyAsyncEventListener(), true, 100,
@@ -318,10 +318,10 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
     vm2.invoke(() -> getInternalGatewaySender().pause());
     vm3.invoke(() -> getInternalGatewaySender().pause());
 
-    vm0.invoke(() -> waitForDispatcherToPause());
-    vm1.invoke(() -> waitForDispatcherToPause());
-    vm2.invoke(() -> waitForDispatcherToPause());
-    vm3.invoke(() -> waitForDispatcherToPause());
+    vm0.invoke(this::waitForDispatcherToPause);
+    vm1.invoke(this::waitForDispatcherToPause);
+    vm2.invoke(this::waitForDispatcherToPause);
+    vm3.invoke(this::waitForDispatcherToPause);
 
     Map<Integer, Integer> keyValues = new HashMap<>();
     for (int i = 0; i < 1000; i++) {
@@ -356,10 +356,10 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
     vm2.invoke(() -> getInternalGatewaySender().resume());
     vm3.invoke(() -> getInternalGatewaySender().resume());
 
-    vm0.invoke(() -> waitForAsyncQueueToEmpty());
-    vm1.invoke(() -> waitForAsyncQueueToEmpty());
-    vm2.invoke(() -> waitForAsyncQueueToEmpty());
-    vm3.invoke(() -> waitForAsyncQueueToEmpty());
+    vm0.invoke(this::waitForAsyncQueueToEmpty);
+    vm1.invoke(this::waitForAsyncQueueToEmpty);
+    vm2.invoke(this::waitForAsyncQueueToEmpty);
+    vm3.invoke(this::waitForAsyncQueueToEmpty);
 
     int sizeInVM0 = vm0.invoke(() -> getSpyAsyncEventListener().getEventsMap().size());
     int sizeInVM1 = vm1.invoke(() -> getSpyAsyncEventListener().getEventsMap().size());
@@ -379,10 +379,10 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
    */
   @Test // parallel, conflation, PartitionedRegion, RegressionTest
   public void testParallelAsyncEventQueueWithConflationEnabled_bug47213() {
-    vm0.invoke(() -> createCache());
-    vm1.invoke(() -> createCache());
-    vm2.invoke(() -> createCache());
-    vm3.invoke(() -> createCache());
+    vm0.invoke(this::createCache);
+    vm1.invoke(this::createCache);
+    vm2.invoke(this::createCache);
+    vm3.invoke(this::createCache);
 
     vm0.invoke(
         () -> createAsyncEventQueue(asyncEventQueueId, new SpyAsyncEventListener(), true, 100,
@@ -411,10 +411,10 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
     vm2.invoke(() -> getInternalGatewaySender().pause());
     vm3.invoke(() -> getInternalGatewaySender().pause());
 
-    vm0.invoke(() -> waitForDispatcherToPause());
-    vm1.invoke(() -> waitForDispatcherToPause());
-    vm2.invoke(() -> waitForDispatcherToPause());
-    vm3.invoke(() -> waitForDispatcherToPause());
+    vm0.invoke(this::waitForDispatcherToPause);
+    vm1.invoke(this::waitForDispatcherToPause);
+    vm2.invoke(this::waitForDispatcherToPause);
+    vm3.invoke(this::waitForDispatcherToPause);
 
     Map<Integer, Integer> keyValues = new HashMap<>();
     for (int i = 0; i < 1000; i++) {
@@ -444,10 +444,10 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
     vm2.invoke(() -> getInternalGatewaySender().resume());
     vm3.invoke(() -> getInternalGatewaySender().resume());
 
-    vm0.invoke(() -> waitForAsyncQueueToEmpty());
-    vm1.invoke(() -> waitForAsyncQueueToEmpty());
-    vm2.invoke(() -> waitForAsyncQueueToEmpty());
-    vm3.invoke(() -> waitForAsyncQueueToEmpty());
+    vm0.invoke(this::waitForAsyncQueueToEmpty);
+    vm1.invoke(this::waitForAsyncQueueToEmpty);
+    vm2.invoke(this::waitForAsyncQueueToEmpty);
+    vm3.invoke(this::waitForAsyncQueueToEmpty);
 
     int sizeInVM0 = vm0.invoke(() -> getSpyAsyncEventListener().getEventsMap().size());
     int sizeInVM1 = vm1.invoke(() -> getSpyAsyncEventListener().getEventsMap().size());
@@ -462,10 +462,10 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
 
   @Test // parallel, PartitionedRegion, accessor
   public void testParallelAsyncEventQueueWithOneAccessor() {
-    vm0.invoke(() -> createCache());
-    vm1.invoke(() -> createCache());
-    vm2.invoke(() -> createCache());
-    vm3.invoke(() -> createCache());
+    vm0.invoke(this::createCache);
+    vm1.invoke(this::createCache);
+    vm2.invoke(this::createCache);
+    vm3.invoke(this::createCache);
 
     vm0.invoke(() -> createAsyncEventQueue(asyncEventQueueId, new SpyAsyncEventListener(), false,
         100, dispatcherThreadCount, 100, true));
@@ -485,9 +485,9 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
 
     vm0.invoke(() -> doPuts(partitionedRegionName, 256));
 
-    vm1.invoke(() -> waitForAsyncQueueToEmpty());
-    vm2.invoke(() -> waitForAsyncQueueToEmpty());
-    vm3.invoke(() -> waitForAsyncQueueToEmpty());
+    vm1.invoke(this::waitForAsyncQueueToEmpty);
+    vm2.invoke(this::waitForAsyncQueueToEmpty);
+    vm3.invoke(this::waitForAsyncQueueToEmpty);
 
     vm0.invoke(() -> validateSpyAsyncEventListenerEventsMap(0));
 
@@ -502,10 +502,10 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
 
   @Test // parallel, persistent, PartitionedRegion
   public void testParallelAsyncEventQueueWithPersistence() {
-    vm0.invoke(() -> createCache());
-    vm1.invoke(() -> createCache());
-    vm2.invoke(() -> createCache());
-    vm3.invoke(() -> createCache());
+    vm0.invoke(this::createCache);
+    vm1.invoke(this::createCache);
+    vm2.invoke(this::createCache);
+    vm3.invoke(this::createCache);
 
     vm0.invoke(() -> createPersistentAsyncEventQueue(asyncEventQueueId, new SpyAsyncEventListener(),
         false, 100, createDiskStoreName(asyncEventQueueId), false, dispatcherThreadCount, 100, true,
@@ -527,10 +527,10 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
 
     vm0.invoke(() -> doPuts(partitionedRegionName, 256));
 
-    vm0.invoke(() -> waitForAsyncQueueToEmpty());
-    vm1.invoke(() -> waitForAsyncQueueToEmpty());
-    vm2.invoke(() -> waitForAsyncQueueToEmpty());
-    vm3.invoke(() -> waitForAsyncQueueToEmpty());
+    vm0.invoke(this::waitForAsyncQueueToEmpty);
+    vm1.invoke(this::waitForAsyncQueueToEmpty);
+    vm2.invoke(this::waitForAsyncQueueToEmpty);
+    vm3.invoke(this::waitForAsyncQueueToEmpty);
 
     int sizeInVM0 = vm0.invoke(() -> getSpyAsyncEventListener().getEventsMap().size());
     int sizeInVM1 = vm1.invoke(() -> getSpyAsyncEventListener().getEventsMap().size());
@@ -548,8 +548,8 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
    */
   @Test // parallel, PartitionedRegion, possibleDuplicates
   public void testParallelAsyncEventQueueHA_Scenario1() throws InterruptedException {
-    vm0.invoke(() -> createCache());
-    vm1.invoke(() -> createCache());
+    vm0.invoke(this::createCache);
+    vm1.invoke(this::createCache);
 
     vm0.invoke(() -> createAsyncEventQueue(asyncEventQueueId, new GatewaySenderAsyncEventListener(),
         false, 5, dispatcherThreadCount, 100, true));
@@ -564,8 +564,8 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
     vm0.invoke(() -> getInternalGatewaySender().pause());
     vm1.invoke(() -> getInternalGatewaySender().pause());
 
-    vm0.invoke(() -> waitForDispatcherToPause());
-    vm1.invoke(() -> waitForDispatcherToPause());
+    vm0.invoke(this::waitForDispatcherToPause);
+    vm1.invoke(this::waitForDispatcherToPause);
 
     vm0.invoke(() -> doPuts(partitionedRegionName, 80));
 
@@ -596,8 +596,8 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
    */
   @Test // parallel, PartitionedRegion, possibleDuplicates
   public void testParallelAsyncEventQueueHA_Scenario2() {
-    vm0.invoke(() -> createCache());
-    vm1.invoke(() -> createCache());
+    vm0.invoke(this::createCache);
+    vm1.invoke(this::createCache);
 
     vm0.invoke(() -> createAsyncEventQueue(asyncEventQueueId, new GatewaySenderAsyncEventListener(),
         false, 5, dispatcherThreadCount, 100, true));
@@ -648,8 +648,8 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
     vm0.invoke(() -> getInternalGatewaySender().resume());
     vm2.invoke(() -> getInternalGatewaySender().resume());
 
-    vm0.invoke(() -> waitForAsyncQueueToEmpty());
-    vm2.invoke(() -> waitForAsyncQueueToEmpty());
+    vm0.invoke(this::waitForAsyncQueueToEmpty);
+    vm2.invoke(this::waitForAsyncQueueToEmpty);
 
     vm2.invoke(() -> validatePossibleDuplicateEvents(primaryBucketsInVM2, 5));
   }
@@ -660,8 +660,8 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
    */
   @Test // parallel, PartitionedRegion, possibleDuplicates
   public void testParallelAsyncEventQueueHA_Scenario3() {
-    vm0.invoke(() -> createCache());
-    vm1.invoke(() -> createCache());
+    vm0.invoke(this::createCache);
+    vm1.invoke(this::createCache);
 
     vm0.invoke(() -> createAsyncEventQueue(asyncEventQueueId, new GatewaySenderAsyncEventListener(),
         false, 5, dispatcherThreadCount, 100, true));
@@ -676,8 +676,8 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
     vm0.invoke(() -> getInternalGatewaySender().pause());
     vm1.invoke(() -> getInternalGatewaySender().pause());
 
-    vm0.invoke(() -> waitForDispatcherToPause());
-    vm1.invoke(() -> waitForDispatcherToPause());
+    vm0.invoke(this::waitForDispatcherToPause);
+    vm1.invoke(this::waitForDispatcherToPause);
 
     vm0.invoke(() -> doPuts(partitionedRegionName, 80));
 
@@ -688,7 +688,7 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
       createPartitionedRegionAndAwaitRecovery(partitionedRegionName, asyncEventQueueId, 1, 16);
     });
 
-    vm0.invoke(() -> doRebalance());
+    vm0.invoke(this::doRebalance);
 
     Set<Integer> primaryBucketsInVM3 =
         vm2.invoke(() -> getAllLocalPrimaryBucketIds(partitionedRegionName));
@@ -696,9 +696,9 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
     vm0.invoke(() -> getInternalGatewaySender().resume());
     vm1.invoke(() -> getInternalGatewaySender().resume());
 
-    vm0.invoke(() -> waitForAsyncQueueToEmpty());
-    vm1.invoke(() -> waitForAsyncQueueToEmpty());
-    vm2.invoke(() -> waitForAsyncQueueToEmpty());
+    vm0.invoke(this::waitForAsyncQueueToEmpty);
+    vm1.invoke(this::waitForAsyncQueueToEmpty);
+    vm2.invoke(this::waitForAsyncQueueToEmpty);
 
     vm2.invoke(() -> validatePossibleDuplicateEvents(primaryBucketsInVM3, 5));
   }
@@ -739,8 +739,8 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
 
   @Test // parallel, Rebalancing, PartitionedRegion
   public void testParallelAsyncEventQueueMoveBucketAndMoveItBackDuringDispatching() {
-    vm0.invoke(() -> createCache());
-    vm1.invoke(() -> createCache());
+    vm0.invoke(this::createCache);
+    vm1.invoke(this::createCache);
 
     DistributedMember memberInVM0 =
         vm0.invoke(() -> getCache().getDistributedSystem().getDistributedMember());
@@ -766,8 +766,8 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
 
     vm0.invoke(() -> getInternalGatewaySender().resume());
 
-    vm0.invoke(() -> waitForAsyncQueueToEmpty());
-    vm1.invoke(() -> waitForAsyncQueueToEmpty());
+    vm0.invoke(this::waitForAsyncQueueToEmpty);
+    vm1.invoke(this::waitForAsyncQueueToEmpty);
 
     Set<Object> allKeys = new HashSet<>();
     allKeys.addAll(vm0.invoke(() -> getBucketMovingAsyncEventListener().getKeysSeen()));
@@ -785,8 +785,8 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
   @Test // parallel, possibleDuplicates, PartitionedRegion, try-finally
   public void testParallelAsyncEventQueueWithPossibleDuplicateEvents() {
     // Set disable move primaries on start up
-    vm0.invoke(() -> setDisableMovePrimary());
-    vm1.invoke(() -> setDisableMovePrimary());
+    vm0.invoke(this::setDisableMovePrimary);
+    vm1.invoke(this::setDisableMovePrimary);
 
     int numPuts = 30;
 
@@ -832,8 +832,8 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
 
   @Test // parallel, PartitionedRegion, Rebalancing
   public void testParallelAsyncEventQueueMovePrimaryAndMoveItBackDuringDispatching() {
-    vm0.invoke(() -> createCache());
-    vm1.invoke(() -> createCache());
+    vm0.invoke(this::createCache);
+    vm1.invoke(this::createCache);
 
     DistributedMember memberInVM0 =
         vm0.invoke(() -> getCache().getDistributedSystem().getDistributedMember());
@@ -863,11 +863,11 @@ public class ParallelAsyncEventListenerDistributedTest implements Serializable {
     // Resume the AEQ. This should trigger the primary to move to vm1, which will then move it back
     vm0.invoke(() -> getInternalGatewaySender().resume());
 
-    vm0.invoke(() -> waitForPrimaryToMove());
-    vm1.invoke(() -> waitForPrimaryToMove());
+    vm0.invoke(this::waitForPrimaryToMove);
+    vm1.invoke(this::waitForPrimaryToMove);
 
-    vm0.invoke(() -> waitForAsyncQueueToEmpty());
-    vm1.invoke(() -> waitForAsyncQueueToEmpty());
+    vm0.invoke(this::waitForAsyncQueueToEmpty);
+    vm1.invoke(this::waitForAsyncQueueToEmpty);
 
     Set<Object> allKeys = new HashSet<>();
     allKeys.addAll(vm0.invoke(() -> getPrimaryMovingAsyncEventListener().getKeysSeen()));

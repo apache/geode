@@ -143,34 +143,34 @@ public class RuleListTest {
     SpyRule(String name, Invocations invocations) {
       this.name = name;
       this.invocations = invocations;
-      this.beforeThrowable = null;
+      beforeThrowable = null;
     }
 
     SpyRule(SpyRuleBuilder builder) {
-      this.name = builder.name;
-      this.invocations = builder.invocations;
-      this.beforeThrowable = builder.beforeThrowable;
+      name = builder.name;
+      invocations = builder.invocations;
+      beforeThrowable = builder.beforeThrowable;
     }
 
     Invocations invocations() {
-      return this.invocations;
+      return invocations;
     }
 
     void test() {
-      this.invocations.invokedTest();
+      invocations.invokedTest();
     }
 
     @Override
     protected void before() throws Throwable {
-      this.invocations.invokedBefore();
-      if (this.beforeThrowable != null) {
-        throw this.beforeThrowable;
+      invocations.invokedBefore();
+      if (beforeThrowable != null) {
+        throw beforeThrowable;
       }
     }
 
     @Override
     protected void after() {
-      this.invocations.invokedAfter();
+      invocations.invokedAfter();
     }
 
     @Override
@@ -199,7 +199,7 @@ public class RuleListTest {
     }
 
     SpyRuleBuilder beforeThrows(Throwable throwable) {
-      this.beforeThrowable = throwable;
+      beforeThrowable = throwable;
       return this;
     }
 

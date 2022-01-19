@@ -21,7 +21,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 
@@ -34,7 +33,7 @@ import java.util.List;
  */
 public class ProcessOutputReader {
   private int exitCode;
-  private String output;
+  private final String output;
 
   /**
    * Creates a process output reader for the given process.
@@ -45,7 +44,7 @@ public class ProcessOutputReader {
     final List lines = Collections.synchronizedList(new ArrayList());
 
     class ProcessStreamReader extends Thread {
-      private BufferedReader reader;
+      private final BufferedReader reader;
       public int linecount = 0;
 
       public ProcessStreamReader(InputStream stream) {
@@ -61,10 +60,10 @@ public class ProcessOutputReader {
             lines.add(line);
           }
           reader.close();
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
       }
-    };
+    }
 
     ProcessStreamReader stdout = new ProcessStreamReader(p.getInputStream());
     ProcessStreamReader stderr = new ProcessStreamReader(p.getErrorStream());
@@ -80,7 +79,7 @@ public class ProcessOutputReader {
     } catch (InterruptedException ignore) {
       Thread.currentThread().interrupt();
     }
-    this.exitCode = 0;
+    exitCode = 0;
     int retryCount = 9;
     while (retryCount > 0) {
       retryCount--;
@@ -114,9 +113,8 @@ public class ProcessOutputReader {
 
     java.io.StringWriter sw = new java.io.StringWriter();
     PrintWriter pw = new PrintWriter(sw);
-    Iterator it = lines.iterator();
-    while (it.hasNext()) {
-      pw.println((String) it.next());
+    for (final Object line : lines) {
+      pw.println((String) line);
     }
     pw.close();
     try {
@@ -125,9 +123,9 @@ public class ProcessOutputReader {
     }
     StringBuffer buf = sw.getBuffer();
     if (buf != null && buf.length() > 0) {
-      this.output = sw.toString();
+      output = sw.toString();
     } else {
-      this.output = "";
+      output = "";
     }
   }
 

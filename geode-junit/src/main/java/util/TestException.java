@@ -25,7 +25,7 @@ public class TestException extends Error {
     super(name);
   }
 
-  public TestException(StringBuffer name) {
+  public TestException(StringBuilder name) {
     super(name.toString());
   }
 

@@ -47,7 +47,7 @@ public class PutOperationContext extends KeyValueOperationContext {
   /**
    * Flag to indicate whether the current operation is a create or update or unknown.
    */
-  private byte opType;
+  private final byte opType;
 
   /**
    * Constructor for the operation.
@@ -59,7 +59,7 @@ public class PutOperationContext extends KeyValueOperationContext {
    */
   public PutOperationContext(Object key, Object value, boolean isObject) {
     super(key, value, isObject);
-    this.opType = UNKNOWN;
+    opType = UNKNOWN;
   }
 
   /**
@@ -73,7 +73,7 @@ public class PutOperationContext extends KeyValueOperationContext {
    */
   public PutOperationContext(Object key, Object value, boolean isObject, boolean postOperation) {
     super(key, value, isObject, postOperation);
-    this.opType = UNKNOWN;
+    opType = UNKNOWN;
   }
 
   /**
@@ -114,7 +114,7 @@ public class PutOperationContext extends KeyValueOperationContext {
    *         {@link PutOperationContext#UNKNOWN}
    */
   public byte getOpType() {
-    return this.opType;
+    return opType;
   }
 
 }

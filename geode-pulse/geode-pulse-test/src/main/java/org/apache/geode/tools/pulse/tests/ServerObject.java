@@ -32,13 +32,13 @@ import javax.management.openmbean.TabularType;
 public class ServerObject extends NotificationBroadcasterSupport implements ServerObjectMBean {
   private String name = null;
 
-  private TabularDataSupport wanInfo;
-  private static String[] itemNames = {"key", "value"};
-  private static String[] itemDescriptions = {"Key", "Value"};
-  private static OpenType[] itemTypes = {SimpleType.STRING, SimpleType.BOOLEAN};
+  private final TabularDataSupport wanInfo;
+  private static final String[] itemNames = {"key", "value"};
+  private static final String[] itemDescriptions = {"Key", "Value"};
+  private static final OpenType[] itemTypes = {SimpleType.STRING, SimpleType.BOOLEAN};
   private static CompositeType wanInfoType = null;
 
-  private static String[] indexNames = {"key"};
+  private static final String[] indexNames = {"key"};
   private static TabularType wanType = null;
 
   static {
@@ -55,7 +55,7 @@ public class ServerObject extends NotificationBroadcasterSupport implements Serv
 
   public ServerObject(String name) {
     this.name = name;
-    this.wanInfo = new TabularDataSupport(wanType);
+    wanInfo = new TabularDataSupport(wanType);
   }
 
   private String getKey(String propName) {
@@ -79,7 +79,7 @@ public class ServerObject extends NotificationBroadcasterSupport implements Serv
     int cnt = 0;
     while (wan.length >= (cnt + 2)) {
       try {
-        wanInfo.put(buildWanInfoType(new String(wan[cnt]), Boolean.parseBoolean(wan[cnt + 1])));
+        wanInfo.put(buildWanInfoType(wan[cnt], Boolean.parseBoolean(wan[cnt + 1])));
       } catch (OpenDataException e) {
         e.printStackTrace();
       }

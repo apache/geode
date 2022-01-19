@@ -183,7 +183,7 @@ public class LuceneIndexForPartitionedRegionTest {
   public void createRepositoryManagerWithNullSerializer() {
     String name = "indexName";
     String regionPath = "regionName";
-    String fields[] = {"field1", "field2"};
+    String[] fields = {"field1", "field2"};
     InternalCache cache = Fakes.cache();
     ArgumentCaptor<LuceneSerializer> serializerCaptor =
         ArgumentCaptor.forClass(LuceneSerializer.class);
@@ -355,7 +355,7 @@ public class LuceneIndexForPartitionedRegionTest {
     index.setSearchableFields(new String[] {"field"});
     LuceneIndexForPartitionedRegion spy = spy(index);
     doReturn(null).when(spy).createRegion(any(), any(), any(), any(), any(), any());
-    doReturn(null).when(spy).createAEQ((RegionAttributes) any(), any());
+    doReturn(null).when(spy).createAEQ(any(), any());
     spy.setupRepositoryManager(null);
     spy.createAEQ(any(), any());
     spy.initialize();

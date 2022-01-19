@@ -79,7 +79,7 @@ public abstract class AbstractStoredObject implements StoredObject {
     if (isSerialized()) {
       out.write(getSerializedValue());
     } else {
-      Object objToSend = (byte[]) getDeserializedForReading(); // deserialized as a byte[]
+      Object objToSend = getDeserializedForReading(); // deserialized as a byte[]
       DataSerializer.writeObject(objToSend, out);
     }
   }
@@ -116,7 +116,7 @@ public abstract class AbstractStoredObject implements StoredObject {
     if (!isSerialized()) {
       return false;
     }
-    byte dsCode = this.readDataByte(0);
+    byte dsCode = readDataByte(0);
     return dsCode == DSCODE.PDX.toByte() || dsCode == DSCODE.PDX_ENUM.toByte()
         || dsCode == DSCODE.PDX_INLINE_ENUM.toByte();
   }

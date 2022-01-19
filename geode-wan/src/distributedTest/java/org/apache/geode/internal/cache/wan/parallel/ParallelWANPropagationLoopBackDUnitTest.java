@@ -42,9 +42,9 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
 
     // create receiver on site1 and site2
     createCacheInVMs(lnPort, vm2, vm4, vm5);
-    vm2.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
     createCacheInVMs(nyPort, vm3, vm6, vm7);
-    vm3.invoke(() -> WANTestBase.createReceiver());
+    vm3.invoke(WANTestBase::createReceiver);
 
     // create senders on site1
     vm2.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
@@ -234,9 +234,9 @@ public class ParallelWANPropagationLoopBackDUnitTest extends WANTestBase {
     createCacheInVMs(lnPort, vm3, vm6);
     createCacheInVMs(nyPort, vm4, vm7);
     createCacheInVMs(tkPort, vm5);
-    vm3.invoke(() -> WANTestBase.createReceiver());
-    vm4.invoke(() -> WANTestBase.createReceiver());
-    vm5.invoke(() -> WANTestBase.createReceiver());
+    vm3.invoke(WANTestBase::createReceiver);
+    vm4.invoke(WANTestBase::createReceiver);
+    vm5.invoke(WANTestBase::createReceiver);
 
     // site1
     vm3.invoke(() -> WANTestBase.createSender("ln1", 2, true, 100, 10, false, false, null, true));

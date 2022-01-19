@@ -80,7 +80,7 @@ public class FetchResourceAttributesResponse extends AdminResponse {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    stats = (RemoteStat[]) DataSerializer.readObject(in);
+    stats = DataSerializer.readObject(in);
   }
 
   @Override

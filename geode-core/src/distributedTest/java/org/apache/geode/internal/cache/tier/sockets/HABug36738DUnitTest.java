@@ -80,20 +80,20 @@ public class HABug36738DUnitTest extends JUnit4DistributedTestCase {
     final VM server1 = Host.getHost(0).getVM(0);
     final VM server2 = Host.getHost(0).getVM(1);
 
-    server1.invoke(() -> createServerCacheWithHAAndRegion());
+    server1.invoke(this::createServerCacheWithHAAndRegion);
     await().until(() -> regionExists(server1, HAREGION_NAME));
-    server1.invoke(() -> checkRegionQueueSize());
+    server1.invoke(this::checkRegionQueueSize);
 
-    server2.invoke(() -> createServerCacheWithHA());
+    server2.invoke(this::createServerCacheWithHA);
 
-    server1.invoke(() -> checkRegionQueueSize());
-    server2.invoke(() -> checkRegionQueueSize());
+    server1.invoke(this::checkRegionQueueSize);
+    server2.invoke(this::checkRegionQueueSize);
   }
 
   private void createServerCacheWithHAAndRegion() throws Exception {
     createServerCacheWithHA();
     assertNotNull(cache);
-    assertNotNull(this.haRegion);
+    assertNotNull(haRegion);
 
     final AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -104,11 +104,11 @@ public class HABug36738DUnitTest extends JUnit4DistributedTestCase {
 
     for (int i = 0; i < COUNT; i++) {
       ClientUpdateMessage clientMessage =
-          new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_UPDATE, (LocalRegion) this.haRegion,
+          new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_UPDATE, (LocalRegion) haRegion,
               null, ("value" + i).getBytes(), (byte) 0x01, null, new ClientProxyMembershipID(),
               new EventID(("memberID" + i).getBytes(), i, i));
 
-      this.haRegion.put(i, clientMessage);
+      haRegion.put(i, clientMessage);
     }
   }
 

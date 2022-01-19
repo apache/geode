@@ -23,11 +23,11 @@ import org.apache.geode.distributed.DistributedMember;
 
 public class CustomResultCollector implements ResultCollector {
 
-  private ArrayList resultList = new ArrayList();
+  private final ArrayList resultList = new ArrayList();
 
   @Override
   public void addResult(DistributedMember memberID, Object result) {
-    this.resultList.add(result);
+    resultList.add(result);
   }
 
   @Override

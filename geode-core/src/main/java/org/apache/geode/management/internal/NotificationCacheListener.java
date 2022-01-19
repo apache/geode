@@ -30,14 +30,14 @@ public class NotificationCacheListener implements CacheListener<NotificationKey,
   /**
    * For the
    */
-  private NotificationHubClient notifClient;
+  private final NotificationHubClient notifClient;
 
   private volatile boolean readyForEvents;
 
   public NotificationCacheListener(MBeanProxyFactory proxyHelper) {
 
     notifClient = new NotificationHubClient(proxyHelper);
-    this.readyForEvents = false;
+    readyForEvents = false;
 
   }
 

@@ -77,7 +77,7 @@ public class JdbcPooledDataSourceFactory implements PooledDataSourceFactory {
         hikariName = "maximumPoolSize";
       } else if (name.equals("idle-timeout-seconds")) {
         hikariName = "idleTimeout";
-        hikariValue = String.valueOf(Integer.valueOf(hikariValue) * MILLIS_PER_SECOND);
+        hikariValue = String.valueOf(Integer.parseInt(hikariValue) * MILLIS_PER_SECOND);
       }
       result.setProperty(hikariName, hikariValue);
     }

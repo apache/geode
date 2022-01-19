@@ -43,8 +43,8 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class MemberStarterRuleAwaitIntegrationTest {
 
-  private static MemberStarterRule locatorStarterRule = new LocatorStarterRule();
-  private static MemberStarterRule serverStarterRule = new ServerStarterRule();
+  private static final MemberStarterRule locatorStarterRule = new LocatorStarterRule();
+  private static final MemberStarterRule serverStarterRule = new ServerStarterRule();
 
   @Parameter(0)
   public MemberStarterRule ruleToUse;
@@ -87,7 +87,7 @@ public class MemberStarterRuleAwaitIntegrationTest {
   @Test
   public void waitCanPrintMoreComplexResults() throws Exception {
     Supplier<List<String>> abcListProvider = () -> Arrays.asList("A", "B", "C");
-    Function<List<String>, Integer> examiner = list -> list.size();
+    Function<List<String>, Integer> examiner = List::size;
     String description = "Awaiting until list becomes empty.";
     assertThatThrownBy(printExceptionWrapper(() -> ruleToUse.waitUntilEqual(abcListProvider,
         examiner, 0, description, 1, TimeUnit.SECONDS)))

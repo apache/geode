@@ -24,7 +24,7 @@ import java.util.Objects;
 public class QueryTestObject implements Serializable {
   public int id = -1;
 
-  private String name;
+  private final String name;
 
   public Date dateField;
 
@@ -51,7 +51,7 @@ public class QueryTestObject implements Serializable {
     try {
       SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
       dateField = sdf.parse(dateString);
-    } catch (ParseException e) {
+    } catch (ParseException ignored) {
 
     }
   }
@@ -67,7 +67,7 @@ public class QueryTestObject implements Serializable {
       return false;
     }
     QueryTestObject qto = (QueryTestObject) obj;
-    return (this.id == qto.id && this.name.equals(qto.getName()));
+    return (id == qto.id && name.equals(qto.getName()));
   }
 
   @Override

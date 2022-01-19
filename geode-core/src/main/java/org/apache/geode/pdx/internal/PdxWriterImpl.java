@@ -98,44 +98,44 @@ public class PdxWriterImpl implements PdxWriter {
   public PdxWriterImpl(TypeRegistry tr, Object pdx, PdxOutputStream out) {
     this.tr = tr;
     this.pdx = pdx;
-    this.os = out;
-    this.headerOffset = this.os.size();
-    this.aci = null;
+    os = out;
+    headerOffset = os.size();
+    aci = null;
   }
 
   PdxWriterImpl(PdxType pdxType, PdxOutputStream out) {
-    this.tr = null;
-    this.pdx = null;
-    this.os = out;
-    this.existingType = pdxType;
-    this.headerOffset = this.os.size();
-    this.aci = null;
+    tr = null;
+    pdx = null;
+    os = out;
+    existingType = pdxType;
+    headerOffset = os.size();
+    aci = null;
   }
 
   PdxWriterImpl(PdxType pt, TypeRegistry tr, PdxOutputStream out) {
     this.tr = tr;
-    this.pdx = null;
-    this.os = out;
-    this.newType = pt;
-    this.headerOffset = this.os.size();
-    this.aci = null;
+    pdx = null;
+    os = out;
+    newType = pt;
+    headerOffset = os.size();
+    aci = null;
   }
 
   public PdxWriterImpl(TypeRegistry tr, Object pdx, AutoClassInfo aci, PdxOutputStream os) {
     this.tr = tr;
     this.pdx = pdx;
     this.os = os;
-    this.headerOffset = this.os.size();
+    headerOffset = this.os.size();
     this.aci = aci;
   }
 
   private boolean fieldsWritten() {
-    return this.fieldId >= 0;
+    return fieldId >= 0;
   }
 
   private void beforeFieldWrite() {
-    ++this.fieldId;
-    if (this.fieldId > 0) {
+    ++fieldId;
+    if (fieldId > 0) {
       // already wrote first field
       return;
     }
@@ -144,7 +144,7 @@ public class PdxWriterImpl implements PdxWriter {
 
   private void initialize() {
     writeHeader();
-    if (this.existingType != null) {
+    if (existingType != null) {
       // PdxInstance is using us to flush its dirty fields
       return;
     }
@@ -153,42 +153,42 @@ public class PdxWriterImpl implements PdxWriter {
       return;
     }
     PdxUnreadData ud = initUnreadData();
-    if (ud == null && this.pdx != null) {
-      if (this.aci != null) {
-        this.existingType = aci.getSerializedType();
+    if (ud == null && pdx != null) {
+      if (aci != null) {
+        existingType = aci.getSerializedType();
       } else {
-        this.existingType = this.tr.getExistingType(this.pdx);
+        existingType = tr.getExistingType(pdx);
       }
     } else if (ud != null) {
-      this.existingType = ud.getSerializedType();
+      existingType = ud.getSerializedType();
     }
 
-    if (this.existingType != null) {
-      int c = this.existingType.getVariableLengthFieldCount();
+    if (existingType != null) {
+      int c = existingType.getVariableLengthFieldCount();
       if (c > 0) {
-        this.vlfOffsets = new int[c];
+        vlfOffsets = new int[c];
       }
-    } else if (this.pdx != null) {
-      this.newType = new PdxType(this.pdx.getClass().getName(), true);
+    } else if (pdx != null) {
+      newType = new PdxType(pdx.getClass().getName(), true);
     }
   }
 
   private boolean unreadDataInitialized = false;
 
   PdxUnreadData initUnreadData() {
-    if (this.unreadDataInitialized) {
-      return this.unreadData;
+    if (unreadDataInitialized) {
+      return unreadData;
     }
-    this.unreadDataInitialized = true;
-    if (this.tr == null) {
+    unreadDataInitialized = true;
+    if (tr == null) {
       // We are being PdxSerializer serialized.
       // Now is the time to initialize tr.
-      this.tr = GemFireCacheImpl.getForPdx("Could not access Pdx registry").getPdxRegistry();
+      tr = GemFireCacheImpl.getForPdx("Could not access Pdx registry").getPdxRegistry();
     }
-    PdxUnreadData ud = this.unreadData;
-    if (ud == null && this.pdx != null) {
-      ud = this.tr.getUnreadData(this.pdx);
-      this.unreadData = ud;
+    PdxUnreadData ud = unreadData;
+    if (ud == null && pdx != null) {
+      ud = tr.getUnreadData(pdx);
+      unreadData = ud;
     }
     return ud;
   }
@@ -196,97 +196,97 @@ public class PdxWriterImpl implements PdxWriter {
   @Override
   public PdxWriter writeChar(String fieldName, char value) {
     updateMetaData(fieldName, FieldType.CHAR);
-    this.os.writeChar(value);
+    os.writeChar(value);
     return this;
   }
 
   public void writeChar(char value) {
     beforeFieldWrite();
-    this.os.writeChar(value);
+    os.writeChar(value);
   }
 
   @Override
   public PdxWriter writeBoolean(String fieldName, boolean value) {
     updateMetaData(fieldName, FieldType.BOOLEAN);
-    this.os.writeByte((value) ? 0x1 : 0x0);
+    os.writeByte((value) ? 0x1 : 0x0);
     return this;
   }
 
   public void writeBoolean(boolean value) {
     beforeFieldWrite();
-    this.os.writeByte((value) ? 0x1 : 0x0);
+    os.writeByte((value) ? 0x1 : 0x0);
   }
 
   @Override
   public PdxWriter writeByte(String fieldName, byte value) {
     updateMetaData(fieldName, FieldType.BYTE);
-    this.os.writeByte(value);
+    os.writeByte(value);
     return this;
   }
 
   public void writeByte(byte value) {
     beforeFieldWrite();
-    this.os.writeByte(value);
+    os.writeByte(value);
   }
 
   @Override
   public PdxWriter writeShort(String fieldName, short value) {
     updateMetaData(fieldName, FieldType.SHORT);
-    this.os.writeShort(value);
+    os.writeShort(value);
     return this;
   }
 
   public void writeShort(short value) {
     beforeFieldWrite();
-    this.os.writeShort(value);
+    os.writeShort(value);
   }
 
   @Override
   public PdxWriter writeInt(String fieldName, int value) {
     updateMetaData(fieldName, FieldType.INT);
-    this.os.writeInt(value);
+    os.writeInt(value);
     return this;
   }
 
   public void writeInt(int value) {
     beforeFieldWrite();
-    this.os.writeInt(value);
+    os.writeInt(value);
   }
 
   @Override
   public PdxWriter writeLong(String fieldName, long value) {
     updateMetaData(fieldName, FieldType.LONG);
-    this.os.writeLong(value);
+    os.writeLong(value);
     return this;
   }
 
   public void writeLong(long value) {
     beforeFieldWrite();
-    this.os.writeLong(value);
+    os.writeLong(value);
   }
 
   @Override
   public PdxWriter writeFloat(String fieldName, float value) {
     updateMetaData(fieldName, FieldType.FLOAT);
-    this.os.writeFloat(value);
+    os.writeFloat(value);
     return this;
   }
 
   public void writeFloat(float value) {
     beforeFieldWrite();
-    this.os.writeFloat(value);
+    os.writeFloat(value);
   }
 
   @Override
   public PdxWriter writeDouble(String fieldName, double value) {
     updateMetaData(fieldName, FieldType.DOUBLE);
-    this.os.writeDouble(value);
+    os.writeDouble(value);
     return this;
   }
 
   public void writeDouble(double value) {
     beforeFieldWrite();
-    this.os.writeDouble(value);
+    os.writeDouble(value);
   }
 
   @Override
@@ -297,7 +297,7 @@ public class PdxWriterImpl implements PdxWriter {
           "writeDate only accepts instances of Date. Subclasses are not supported. Use writeObject for subclasses of Date.");
     }
     updateMetaData(fieldName, FieldType.DATE);
-    this.os.writeDate(date);
+    os.writeDate(date);
     return this;
   }
 
@@ -308,21 +308,21 @@ public class PdxWriterImpl implements PdxWriter {
           "writeDate only accepts instances of Date. Subclasses are not supported. Use writeObject for subclasses of Date.");
     }
     beforeFieldWrite();
-    this.os.writeDate(date);
+    os.writeDate(date);
   }
 
   @Override
   public PdxWriter writeString(String fieldName, String value) {
     markVariableField();
     updateMetaData(fieldName, FieldType.STRING);
-    this.os.writeString(value);
+    os.writeString(value);
     return this;
   }
 
   public void writeString(String value) {
     markVariableField();
     beforeFieldWrite();
-    this.os.writeString(value);
+    os.writeString(value);
   }
 
   @Override
@@ -338,140 +338,140 @@ public class PdxWriterImpl implements PdxWriter {
   public PdxWriter writeObject(String fieldName, Object object, boolean onlyPortableObjects) {
     markVariableField();
     updateMetaData(fieldName, FieldType.OBJECT);
-    this.os.writeObject(object, onlyPortableObjects);
+    os.writeObject(object, onlyPortableObjects);
     return this;
   }
 
   public void writeObject(Object object, boolean onlyPortableObjects) {
     markVariableField();
     beforeFieldWrite();
-    this.os.writeObject(object, onlyPortableObjects);
+    os.writeObject(object, onlyPortableObjects);
   }
 
   @Override
   public PdxWriter writeBooleanArray(String fieldName, boolean[] array) {
     markVariableField();
     updateMetaData(fieldName, FieldType.BOOLEAN_ARRAY);
-    this.os.writeBooleanArray(array);
+    os.writeBooleanArray(array);
     return this;
   }
 
   public void writeBooleanArray(boolean[] array) {
     markVariableField();
     beforeFieldWrite();
-    this.os.writeBooleanArray(array);
+    os.writeBooleanArray(array);
   }
 
   @Override
   public PdxWriter writeCharArray(String fieldName, char[] array) {
     markVariableField();
     updateMetaData(fieldName, FieldType.CHAR_ARRAY);
-    this.os.writeCharArray(array);
+    os.writeCharArray(array);
     return this;
   }
 
   public void writeCharArray(char[] array) {
     markVariableField();
     beforeFieldWrite();
-    this.os.writeCharArray(array);
+    os.writeCharArray(array);
   }
 
   @Override
   public PdxWriter writeByteArray(String fieldName, byte[] array) {
     markVariableField();
     updateMetaData(fieldName, FieldType.BYTE_ARRAY);
-    this.os.writeByteArray(array);
+    os.writeByteArray(array);
     return this;
   }
 
   public void writeByteArray(byte[] array) {
     markVariableField();
     beforeFieldWrite();
-    this.os.writeByteArray(array);
+    os.writeByteArray(array);
   }
 
   @Override
   public PdxWriter writeShortArray(String fieldName, short[] array) {
     markVariableField();
     updateMetaData(fieldName, FieldType.SHORT_ARRAY);
-    this.os.writeShortArray(array);
+    os.writeShortArray(array);
     return this;
   }
 
   public void writeShortArray(short[] array) {
     markVariableField();
     beforeFieldWrite();
-    this.os.writeShortArray(array);
+    os.writeShortArray(array);
   }
 
   @Override
   public PdxWriter writeIntArray(String fieldName, int[] array) {
     markVariableField();
     updateMetaData(fieldName, FieldType.INT_ARRAY);
-    this.os.writeIntArray(array);
+    os.writeIntArray(array);
     return this;
   }
 
   public void writeIntArray(int[] array) {
     markVariableField();
     beforeFieldWrite();
-    this.os.writeIntArray(array);
+    os.writeIntArray(array);
   }
 
   @Override
   public PdxWriter writeLongArray(String fieldName, long[] array) {
     markVariableField();
     updateMetaData(fieldName, FieldType.LONG_ARRAY);
-    this.os.writeLongArray(array);
+    os.writeLongArray(array);
     return this;
   }
 
   public void writeLongArray(long[] array) {
     markVariableField();
     beforeFieldWrite();
-    this.os.writeLongArray(array);
+    os.writeLongArray(array);
   }
 
   @Override
   public PdxWriter writeFloatArray(String fieldName, float[] array) {
     markVariableField();
     updateMetaData(fieldName, FieldType.FLOAT_ARRAY);
-    this.os.writeFloatArray(array);
+    os.writeFloatArray(array);
     return this;
   }
 
   public void writeFloatArray(float[] array) {
     markVariableField();
     beforeFieldWrite();
-    this.os.writeFloatArray(array);
+    os.writeFloatArray(array);
   }
 
   @Override
   public PdxWriter writeDoubleArray(String fieldName, double[] array) {
     markVariableField();
     updateMetaData(fieldName, FieldType.DOUBLE_ARRAY);
-    this.os.writeDoubleArray(array);
+    os.writeDoubleArray(array);
     return this;
   }
 
   public void writeDoubleArray(double[] array) {
     markVariableField();
     beforeFieldWrite();
-    this.os.writeDoubleArray(array);
+    os.writeDoubleArray(array);
   }
 
   @Override
   public PdxWriter writeStringArray(String fieldName, String[] array) {
     markVariableField();
     updateMetaData(fieldName, FieldType.STRING_ARRAY);
-    this.os.writeStringArray(array);
+    os.writeStringArray(array);
     return this;
   }
 
   public void writeStringArray(String[] array) {
     markVariableField();
     beforeFieldWrite();
-    this.os.writeStringArray(array);
+    os.writeStringArray(array);
   }
 
   @Override
@@ -487,28 +487,28 @@ public class PdxWriterImpl implements PdxWriter {
   public PdxWriter writeObjectArray(String fieldName, Object[] array, boolean onlyPortableObjects) {
     markVariableField();
     updateMetaData(fieldName, FieldType.OBJECT_ARRAY);
-    this.os.writeObjectArray(array, onlyPortableObjects);
+    os.writeObjectArray(array, onlyPortableObjects);
     return this;
   }
 
   public void writeObjectArray(Object[] array, boolean onlyPortableObjects) {
     markVariableField();
     beforeFieldWrite();
-    this.os.writeObjectArray(array, onlyPortableObjects);
+    os.writeObjectArray(array, onlyPortableObjects);
   }
 
   @Override
   public PdxWriter writeArrayOfByteArrays(String fieldName, byte[][] array) {
     markVariableField();
     updateMetaData(fieldName, FieldType.ARRAY_OF_BYTE_ARRAYS);
-    this.os.writeArrayOfByteArrays(array);
+    os.writeArrayOfByteArrays(array);
     return this;
   }
 
   public void writeArrayOfByteArrays(byte[][] array) {
     markVariableField();
     beforeFieldWrite();
-    this.os.writeArrayOfByteArrays(array);
+    os.writeArrayOfByteArrays(array);
   }
 
   private boolean alreadyGenerated = false;
@@ -519,8 +519,8 @@ public class PdxWriterImpl implements PdxWriter {
    * @return total number of bytes serialized for this pdx
    */
   public int completeByteStreamGeneration() {
-    if (!this.alreadyGenerated) {
-      this.alreadyGenerated = true;
+    if (!alreadyGenerated) {
+      alreadyGenerated = true;
       if (!fieldsWritten()) {
         initialize();
       }
@@ -528,34 +528,34 @@ public class PdxWriterImpl implements PdxWriter {
       appendOffsets();
       int typeId;
       if (definingNewPdxType()) {
-        this.newType.initialize(this);
-        if (this.unreadData != null && !this.unreadData.isEmpty()) {
+        newType.initialize(this);
+        if (unreadData != null && !unreadData.isEmpty()) {
           // We created a new type that had unreadData.
           // In this case we don't define a local type
           // but we do set the serialized type.
-          this.newType = this.tr.defineType(newType);
-          typeId = this.newType.getTypeId();
-          this.unreadData.setSerializedType(newType);
+          newType = tr.defineType(newType);
+          typeId = newType.getTypeId();
+          unreadData.setSerializedType(newType);
         } else {
-          this.newType = this.tr.defineLocalType(this.pdx, newType);
-          typeId = this.newType.getTypeId();
+          newType = tr.defineLocalType(pdx, newType);
+          typeId = newType.getTypeId();
         }
       } else {
         if (doExtraValidation()) {
-          int fieldCount = this.fieldId + 1;
-          if (this.existingType.getFieldCount() != fieldCount) {
+          int fieldCount = fieldId + 1;
+          if (existingType.getFieldCount() != fieldCount) {
             throw new PdxSerializationException("Expected the number of fields for class "
-                + this.existingType.getClassName() + " to be " + this.existingType.getFieldCount()
+                + existingType.getClassName() + " to be " + existingType.getFieldCount()
                 + " but instead it was " + fieldCount);
           }
         }
-        typeId = this.existingType.getTypeId();
+        typeId = existingType.getTypeId();
       }
 
       // Now write length of the byte stream (does not include bytes for DSCODE and the length
       // itself.)
       long bits = ((long) getCurrentOffset()) << 32 | (0x00000000FFFFFFFFL & typeId); // fixes 45005
-      this.lu.update(bits);
+      lu.update(bits);
     } // !alreadyGenerated
 
     return getCurrentOffset() + 1; // +1 for DSCODE.PDX.toByte()
@@ -565,14 +565,14 @@ public class PdxWriterImpl implements PdxWriter {
    * Returns the pdx type that can be used by the auto serializer to always serialize this class.
    */
   public PdxType getAutoPdxType() {
-    if (this.unreadData != null && !this.unreadData.isEmpty()) {
+    if (unreadData != null && !unreadData.isEmpty()) {
       return null;
     }
     completeByteStreamGeneration();
     if (definingNewPdxType()) {
-      return this.newType;
+      return newType;
     } else {
-      return this.existingType;
+      return existingType;
     }
   }
 
@@ -584,11 +584,11 @@ public class PdxWriterImpl implements PdxWriter {
    * @return the offset to the byte of the first field
    */
   private int getBaseOffset() {
-    return this.headerOffset + DataSize.BYTE_SIZE + (DataSize.INTEGER_SIZE * 2);
+    return headerOffset + DataSize.BYTE_SIZE + (DataSize.INTEGER_SIZE * 2);
   }
 
   private int getCurrentOffset() {
-    return this.os.size() - getBaseOffset();
+    return os.size() - getBaseOffset();
   }
 
   /**
@@ -597,17 +597,17 @@ public class PdxWriterImpl implements PdxWriter {
   private void appendOffsets() {
     int fieldDataSize = getCurrentOffset();
     // Take the list of offsets and append it in reverse order.
-    byte sizeOfOffset = getSizeOfOffset(this.vlfCount, fieldDataSize);
-    for (int i = (this.vlfCount - 1); i >= 0; i--) {
+    byte sizeOfOffset = getSizeOfOffset(vlfCount, fieldDataSize);
+    for (int i = (vlfCount - 1); i >= 0; i--) {
       switch (sizeOfOffset) {
         case 1:
-          this.os.write((byte) this.vlfOffsets[i]);
+          os.write((byte) vlfOffsets[i]);
           break;
         case 2:
-          this.os.writeShort((short) this.vlfOffsets[i]);
+          os.writeShort((short) vlfOffsets[i]);
           break;
         case 4:
-          this.os.writeInt(this.vlfOffsets[i]);
+          os.writeInt(vlfOffsets[i]);
           break;
         default:
           break;
@@ -638,20 +638,20 @@ public class PdxWriterImpl implements PdxWriter {
   }
 
   public void sendTo(DataOutput out) throws IOException {
-    this.os.sendTo(out);
+    os.sendTo(out);
   }
 
   public byte[] toByteArray() {
-    return this.os.toByteArray();
+    return os.toByteArray();
   }
 
   private void markVariableField() {
-    if (!this.hasSeenFirstVlf) {
-      this.hasSeenFirstVlf = true;
+    if (!hasSeenFirstVlf) {
+      hasSeenFirstVlf = true;
     } else {
       ensureVlfCapacity();
-      this.vlfOffsets[this.vlfCount] = getCurrentOffset();
-      this.vlfCount++;
+      vlfOffsets[vlfCount] = getCurrentOffset();
+      vlfCount++;
     }
   }
 
@@ -660,21 +660,21 @@ public class PdxWriterImpl implements PdxWriter {
    */
   private void ensureVlfCapacity() {
     int vlfOffsetsCapacity = 0;
-    if (this.vlfOffsets != null) {
-      vlfOffsetsCapacity = this.vlfOffsets.length;
+    if (vlfOffsets != null) {
+      vlfOffsetsCapacity = vlfOffsets.length;
     }
-    if (this.vlfCount == vlfOffsetsCapacity) {
+    if (vlfCount == vlfOffsetsCapacity) {
       int[] tmp = new int[vlfOffsetsCapacity + EXPAND_SIZE];
       for (int i = 0; i < vlfOffsetsCapacity; i++) {
-        tmp[i] = this.vlfOffsets[i];
+        tmp[i] = vlfOffsets[i];
       }
-      this.vlfOffsets = tmp;
+      vlfOffsets = tmp;
     }
   }
 
   // only needed when creating a new type
   int getVlfCount() {
-    return this.vlfCount;
+    return vlfCount;
   }
 
   @Override
@@ -769,8 +769,8 @@ public class PdxWriterImpl implements PdxWriter {
   }
 
   private void writeUnreadData() {
-    if (this.unreadData != null) {
-      this.unreadData.sendTo(this);
+    if (unreadData != null) {
+      unreadData.sendTo(this);
     }
   }
 
@@ -779,7 +779,7 @@ public class PdxWriterImpl implements PdxWriter {
       markVariableField();
     }
     updateMetaData(ft);
-    this.os.write(data);
+    os.write(data);
   }
 
   public void writeRawField(PdxField ft, byte[] data) {
@@ -787,7 +787,7 @@ public class PdxWriterImpl implements PdxWriter {
       markVariableField();
     }
     updateMetaData(ft);
-    this.os.write(data, 0, data.length);
+    os.write(data, 0, data.length);
   }
 
   void writeField(PdxField f, Object value) {
@@ -866,34 +866,34 @@ public class PdxWriterImpl implements PdxWriter {
   private HeapDataOutputStream.LongUpdater lu;
 
   private void writeHeader() {
-    this.os.write(DSCODE.PDX.toByte());
-    this.lu = this.os.reserveLong(); // dummy length and type id
+    os.write(DSCODE.PDX.toByte());
+    lu = os.reserveLong(); // dummy length and type id
   }
 
   public boolean definingNewPdxType() {
-    return this.newType != null;
+    return newType != null;
   }
 
   // used by unit tests
   public void setDoExtraValidation(boolean v) {
-    this.doExtraValidation = v;
+    doExtraValidation = v;
   }
 
   private boolean doExtraValidation() {
-    return this.doExtraValidation;
+    return doExtraValidation;
   }
 
   @Override
   public PdxWriter markIdentityField(String fieldName) {
     if (definingNewPdxType()) {
-      PdxField ft = this.newType.getPdxField(fieldName);
+      PdxField ft = newType.getPdxField(fieldName);
       if (ft == null) {
         throw new PdxFieldDoesNotExistException(
             "Field " + fieldName + " must be written before calling markIdentityField");
       }
       ft.setIdentityField(true);
     } else if (doExtraValidation()) {
-      PdxField ft = this.existingType.getPdxField(fieldName);
+      PdxField ft = existingType.getPdxField(fieldName);
       if (ft == null) {
         throw new PdxFieldDoesNotExistException(
             "Field " + fieldName + " must be written before calling markIdentityField");
@@ -911,7 +911,7 @@ public class PdxWriterImpl implements PdxWriter {
       throw new PdxFieldAlreadyExistsException(
           "writeUnreadFields must be called before any other fields are written.");
     }
-    this.unreadData = (PdxUnreadData) unread;
+    unreadData = (PdxUnreadData) unread;
     return this;
   }
 
@@ -922,15 +922,15 @@ public class PdxWriterImpl implements PdxWriter {
   private void updateMetaData(String fieldName, FieldType type, boolean isIdentityField) {
     beforeFieldWrite();
     if (definingNewPdxType()) {
-      PdxField ft = new PdxField(fieldName, this.fieldId, this.vlfCount, type, isIdentityField);
-      this.newType.addField(ft);
+      PdxField ft = new PdxField(fieldName, fieldId, vlfCount, type, isIdentityField);
+      newType.addField(ft);
     } else if (doExtraValidation()) {
-      PdxField ft = this.existingType.getPdxField(fieldName);
+      PdxField ft = existingType.getPdxField(fieldName);
       if (ft == null) {
         throw new PdxSerializationException("Did not expect field " + fieldName
             + " to be serialized since it was not the first time this class was serialized.");
       }
-      if (this.fieldId != ft.getFieldIndex()) {
+      if (fieldId != ft.getFieldIndex()) {
         throw new PdxSerializationException(
             "Detected that the order in which the fields are serialized changed since the first time this class was serialized.");
       }
@@ -950,10 +950,10 @@ public class PdxWriterImpl implements PdxWriter {
     final int LENGTH_SIZE = 4;
     final int PDX_TYPE_SIZE = 4;
     final int BYTES_TO_SKIP = DSCODE_SIZE + LENGTH_SIZE + PDX_TYPE_SIZE;
-    ByteBuffer bb = this.os.toByteBuffer(BYTES_TO_SKIP);
-    PdxType pt = this.newType;
+    ByteBuffer bb = os.toByteBuffer(BYTES_TO_SKIP);
+    PdxType pt = newType;
     if (pt == null) {
-      pt = this.existingType;
+      pt = existingType;
     }
     return new PdxInstanceImpl(pt, new PdxInputStream(bb), bb.limit());
   }
@@ -966,7 +966,7 @@ public class PdxWriterImpl implements PdxWriter {
   }
 
   public int position() {
-    return this.os.size();
+    return os.size();
   }
 
 }

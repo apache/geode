@@ -85,7 +85,7 @@ public class AlertLevel implements java.io.Serializable {
         return AlertLevel.OFF;
       default:
         throw new IllegalArgumentException(String.format("Unknown alert severity: %s",
-            Integer.valueOf(severity)));
+            severity));
     }
   }
 
@@ -95,8 +95,7 @@ public class AlertLevel implements java.io.Serializable {
    * @throws IllegalArgumentException If there is no alert level named <code>name</code>
    */
   public static AlertLevel forName(String name) {
-    for (int i = 0; i < VALUES.length; i++) {
-      AlertLevel level = VALUES[i];
+    for (AlertLevel level : VALUES) {
       if (level.getName().equalsIgnoreCase(name)) {
         return level;
       }
@@ -107,11 +106,11 @@ public class AlertLevel implements java.io.Serializable {
   }
 
   public int getSeverity() {
-    return this.severity;
+    return severity;
   }
 
   public String getName() {
-    return this.name;
+    return name;
   }
 
   public static AlertLevel[] values() {
@@ -125,7 +124,7 @@ public class AlertLevel implements java.io.Serializable {
    */
   @Override
   public String toString() {
-    return this.name /* + "=" + this.severity */;
+    return name /* + "=" + this.severity */;
   }
 
   /**
@@ -147,14 +146,10 @@ public class AlertLevel implements java.io.Serializable {
     }
     final AlertLevel that = (AlertLevel) other;
 
-    if (this.severity != that.severity) {
+    if (severity != that.severity) {
       return false;
     }
-    if (this.name != null && !this.name.equals(that.name)) {
-      return false;
-    }
-
-    return true;
+    return name == null || name.equals(that.name);
   }
 
   /**
@@ -168,8 +163,8 @@ public class AlertLevel implements java.io.Serializable {
     int result = 17;
     final int mult = 37;
 
-    result = mult * result + this.severity;
-    result = mult * result + (this.name == null ? 0 : this.name.hashCode());
+    result = mult * result + severity;
+    result = mult * result + (name == null ? 0 : name.hashCode());
 
     return result;
   }

@@ -63,7 +63,7 @@ public class ConflatableObject implements Conflatable, DataSerializable {
       String regionname) {
     this.key = key;
     this.value = value;
-    this.id = eventId;
+    id = eventId;
     this.conflate = conflate;
     this.regionname = regionname;
   }
@@ -75,7 +75,7 @@ public class ConflatableObject implements Conflatable, DataSerializable {
    */
   @Override
   public boolean shouldBeConflated() {
-    return this.conflate;
+    return conflate;
   }
 
   /**
@@ -85,7 +85,7 @@ public class ConflatableObject implements Conflatable, DataSerializable {
    */
   @Override
   public String getRegionToConflate() {
-    return this.regionname;
+    return regionname;
   }
 
   /**
@@ -95,7 +95,7 @@ public class ConflatableObject implements Conflatable, DataSerializable {
    */
   @Override
   public Object getKeyToConflate() {
-    return this.key;
+    return key;
   }
 
   /**
@@ -105,7 +105,7 @@ public class ConflatableObject implements Conflatable, DataSerializable {
    */
   @Override
   public Object getValueToConflate() {
-    return this.value;
+    return value;
   }
 
   /**
@@ -125,7 +125,7 @@ public class ConflatableObject implements Conflatable, DataSerializable {
    */
   @Override
   public EventID getEventId() {
-    return this.id;
+    return id;
   }
 
   /**
@@ -209,10 +209,10 @@ public class ConflatableObject implements Conflatable, DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.key = DataSerializer.readObject(in);
-    this.value = DataSerializer.readObject(in);
-    this.id = DataSerializer.readObject(in);
-    this.conflate = in.readBoolean();
-    this.regionname = in.readUTF();
+    key = DataSerializer.readObject(in);
+    value = DataSerializer.readObject(in);
+    id = DataSerializer.readObject(in);
+    conflate = in.readBoolean();
+    regionname = in.readUTF();
   }
 }

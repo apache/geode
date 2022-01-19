@@ -53,20 +53,20 @@ public class ShutdownAllGatewayHubsRequest extends DistributionMessage {
 
   @Override
   protected void process(ClusterDistributionManager dm) {
-    ReplyMessage.send(getSender(), this.rpid, null, dm, true /* ignored */, false, false);
+    ReplyMessage.send(getSender(), rpid, null, dm, true /* ignored */, false, false);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.rpid = in.readInt();
+    rpid = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.rpid);
+    out.writeInt(rpid);
   }
 }

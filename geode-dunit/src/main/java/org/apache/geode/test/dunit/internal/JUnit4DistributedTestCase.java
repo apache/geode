@@ -122,14 +122,14 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
 
   @Override
   public final String getName() {
-    if (this.distributedTestFixture != this) {
-      return this.distributedTestFixture.getName();
+    if (distributedTestFixture != this) {
+      return distributedTestFixture.getName();
     }
-    return this.testNameForDistributedTestCase.getMethodName();
+    return testNameForDistributedTestCase.getMethodName();
   }
 
   public final Class<? extends DistributedTestFixture> getTestClass() {
-    return this.distributedTestFixture.getClass();
+    return distributedTestFixture.getClass();
   }
 
   /**
@@ -300,8 +300,8 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    */
   @Override
   public Properties getDistributedSystemProperties() {
-    if (this.distributedTestFixture != this) {
-      return this.distributedTestFixture.getDistributedSystemProperties();
+    if (distributedTestFixture != this) {
+      return distributedTestFixture.getDistributedSystemProperties();
     }
     return defaultGetDistributedSystemProperties();
   }
@@ -402,8 +402,8 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    */
   @Override
   public void preSetUp() throws Exception {
-    if (this.distributedTestFixture != this) {
-      this.distributedTestFixture.preSetUp();
+    if (distributedTestFixture != this) {
+      distributedTestFixture.preSetUp();
     }
   }
 
@@ -415,8 +415,8 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    */
   @Override
   public void postSetUp() throws Exception {
-    if (this.distributedTestFixture != this) {
-      this.distributedTestFixture.postSetUp();
+    if (distributedTestFixture != this) {
+      distributedTestFixture.postSetUp();
     }
   }
 
@@ -459,7 +459,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
             sb.append("\n");
           }
           return new Throwable(
-              "Creating distributed system with the following configuration:\n" + sb.toString());
+              "Creating distributed system with the following configuration:\n" + sb);
         });
   }
 
@@ -509,8 +509,8 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    */
   @Override
   public void preTearDown() throws Exception {
-    if (this.distributedTestFixture != this) {
-      this.distributedTestFixture.preTearDown();
+    if (distributedTestFixture != this) {
+      distributedTestFixture.preTearDown();
     }
   }
 
@@ -522,22 +522,22 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    */
   @Override
   public void postTearDown() throws Exception {
-    if (this.distributedTestFixture != this) {
-      this.distributedTestFixture.postTearDown();
+    if (distributedTestFixture != this) {
+      distributedTestFixture.postTearDown();
     }
   }
 
   @Override
   public void preTearDownAssertions() throws Exception {
-    if (this.distributedTestFixture != this) {
-      this.distributedTestFixture.preTearDownAssertions();
+    if (distributedTestFixture != this) {
+      distributedTestFixture.preTearDownAssertions();
     }
   }
 
   @Override
   public void postTearDownAssertions() throws Exception {
-    if (this.distributedTestFixture != this) {
-      this.distributedTestFixture.postTearDownAssertions();
+    if (distributedTestFixture != this) {
+      distributedTestFixture.postTearDownAssertions();
     }
   }
 

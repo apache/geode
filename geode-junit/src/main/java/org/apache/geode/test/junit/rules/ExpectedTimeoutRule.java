@@ -36,14 +36,14 @@ public class ExpectedTimeoutRule implements TestRule {
     return new ExpectedTimeoutRule();
   }
 
-  private ExpectedException delegate;
+  private final ExpectedException delegate;
   private boolean expectsThrowable;
   private long minDuration;
   private long maxDuration;
   private TimeUnit timeUnit;
 
   private ExpectedTimeoutRule() {
-    this.delegate = ExpectedException.none();
+    delegate = ExpectedException.none();
   }
 
   public ExpectedTimeoutRule expectMinimumDuration(final long minDuration) {
@@ -65,7 +65,7 @@ public class ExpectedTimeoutRule implements TestRule {
    * Adds {@code matcher} to the list of requirements for any thrown exception.
    */
   public void expect(final Matcher<?> matcher) {
-    this.delegate.expect(matcher);
+    delegate.expect(matcher);
   }
 
   /**
@@ -73,8 +73,8 @@ public class ExpectedTimeoutRule implements TestRule {
    * {@code type}.
    */
   public void expect(final Class<? extends Throwable> type) {
-    this.delegate.expect(type);
-    this.expectsThrowable = true;
+    delegate.expect(type);
+    expectsThrowable = true;
   }
 
   /**
@@ -82,7 +82,7 @@ public class ExpectedTimeoutRule implements TestRule {
    * string {@code substring}
    */
   public void expectMessage(final String substring) {
-    this.delegate.expectMessage(substring);
+    delegate.expectMessage(substring);
   }
 
   /**
@@ -90,40 +90,40 @@ public class ExpectedTimeoutRule implements TestRule {
    * exception.
    */
   public void expectMessage(final Matcher<String> matcher) {
-    this.delegate.expectMessage(matcher);
+    delegate.expectMessage(matcher);
   }
 
   /**
    * Adds {@code matcher} to the list of requirements for the cause of any thrown exception.
    */
   public void expectCause(final Matcher<? extends Throwable> expectedCause) {
-    this.delegate.expectCause(expectedCause);
+    delegate.expectCause(expectedCause);
   }
 
   /**
    * Returns true if a timeout is expected.
    */
   protected boolean expectsTimeout() {
-    return this.minDuration > 0 || this.maxDuration > 0;
+    return minDuration > 0 || maxDuration > 0;
   }
 
   /**
    * Returns true if a Throwable is expected.
    */
   protected boolean expectsThrowable() {
-    return this.expectsThrowable;
+    return expectsThrowable;
   }
 
   @Override
   public Statement apply(final Statement base, final Description description) {
-    Statement next = this.delegate.apply(base, description);
+    Statement next = delegate.apply(base, description);
     return new ExpectedTimeoutStatement(next);
   }
 
   private void handleTime(final Long duration) {
     if (expectsTimeout()) {
-      assertThat(this.timeUnit.convert(duration, TimeUnit.NANOSECONDS),
-          new TimeMatcher(this.timeUnit, this.minDuration, this.maxDuration));
+      assertThat(timeUnit.convert(duration, TimeUnit.NANOSECONDS),
+          new TimeMatcher(timeUnit, minDuration, maxDuration));
     }
   }
 
@@ -141,14 +141,14 @@ public class ExpectedTimeoutRule implements TestRule {
 
     @Override
     public boolean matchesSafely(final Long duration) {
-      return duration >= this.minDuration && duration <= this.maxDuration;
+      return duration >= minDuration && duration <= maxDuration;
     }
 
     @Override
     public void describeTo(final org.hamcrest.Description description) {
       description.appendText("expects duration to be greater than or equal to ")
-          .appendValue(this.minDuration).appendText(" and less than or equal to ")
-          .appendValue(this.maxDuration).appendText(" ").appendValue(this.timeUnit);
+          .appendValue(minDuration).appendText(" and less than or equal to ")
+          .appendValue(maxDuration).appendText(" ").appendValue(timeUnit);
     }
   }
 
@@ -156,13 +156,13 @@ public class ExpectedTimeoutRule implements TestRule {
     private final Statement next;
 
     public ExpectedTimeoutStatement(final Statement base) {
-      this.next = base;
+      next = base;
     }
 
     @Override
     public void evaluate() throws Throwable {
       long start = System.nanoTime();
-      this.next.evaluate();
+      next.evaluate();
       handleTime(System.nanoTime() - start);
     }
   }

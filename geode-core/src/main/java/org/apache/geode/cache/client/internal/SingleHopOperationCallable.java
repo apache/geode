@@ -41,12 +41,11 @@ public class SingleHopOperationCallable implements Callable {
     op.initMessagePart();
     Object result = null;
     boolean onlyUseExistingCnx =
-        ((pool.getMaxConnections() != -1 && pool.getConnectionCount() >= pool.getMaxConnections())
-            ? true : false);
+        (pool.getMaxConnections() != -1 && pool.getConnectionCount() >= pool.getMaxConnections());
     op.setAllowDuplicateMetadataRefresh(!onlyUseExistingCnx);
     try {
       UserAttributes.userAttributes.set(securityAttributes);
-      result = this.pool.executeOn(server, op, true, onlyUseExistingCnx);
+      result = pool.executeOn(server, op, true, onlyUseExistingCnx);
     } catch (AllConnectionsInUseException ex) {
       // if we reached connection limit and don't have available connection to
       // that server,then execute function on one of the connections available
@@ -54,9 +53,9 @@ public class SingleHopOperationCallable implements Callable {
       // server
       if (op instanceof ExecuteRegionFunctionSingleHopOpImpl) {
         ExecuteRegionFunctionSingleHopOpImpl newop = (ExecuteRegionFunctionSingleHopOpImpl) op;
-        result = this.pool.execute(new ExecuteRegionFunctionOpImpl(newop));
+        result = pool.execute(new ExecuteRegionFunctionOpImpl(newop));
       } else {
-        result = this.pool.execute(this.op);
+        result = pool.execute(op);
       }
     } finally {
       UserAttributes.userAttributes.set(null);
@@ -65,10 +64,10 @@ public class SingleHopOperationCallable implements Callable {
   }
 
   public ServerLocation getServer() {
-    return this.server;
+    return server;
   }
 
   public AbstractOp getOperation() {
-    return this.op;
+    return op;
   }
 }

@@ -24,7 +24,7 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 public class HelpBlock {
   private String data = null;
-  private List<HelpBlock> children = new ArrayList<>();
+  private final List<HelpBlock> children = new ArrayList<>();
   // indent level
   private int level = -1;
 
@@ -33,7 +33,7 @@ public class HelpBlock {
   public HelpBlock(String data) {
     if (StringUtils.isNotBlank(data)) {
       this.data = data;
-      this.level = 0;
+      level = 0;
     }
   }
 
@@ -46,7 +46,7 @@ public class HelpBlock {
   }
 
   public int getLevel() {
-    return this.level;
+    return level;
   }
 
   public void addChild(HelpBlock helpBlock) {
@@ -70,7 +70,7 @@ public class HelpBlock {
   }
 
   public String toString(int terminalWidth) {
-    StringBuffer builder = new StringBuffer();
+    StringBuilder builder = new StringBuilder();
 
     if (data != null) {
       builder.append(Gfsh.wrapText(data, level, terminalWidth));

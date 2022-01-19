@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
+import org.apache.geode.test.junit.rules.MemberStarterRule;
 
 public class GeodeManagementServiceFlagDUnitTest {
 
@@ -43,7 +44,7 @@ public class GeodeManagementServiceFlagDUnitTest {
 
   @Test
   public void withServiceByDefault() throws Exception {
-    locator = cluster.startLocatorVM(0, l -> l.withHttpService());
+    locator = cluster.startLocatorVM(0, MemberStarterRule::withHttpService);
     restClient =
         new GeodeDevRestClient("/management/v1", "localhost", locator.getHttpPort(),
             false);

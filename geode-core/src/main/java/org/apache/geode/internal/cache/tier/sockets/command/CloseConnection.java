@@ -67,7 +67,7 @@ public class CloseConnection extends BaseCommand {
 
       Part keepalivePart = clientMessage.getPart(0);
       byte[] keepaliveByte = keepalivePart.getSerializedForm();
-      boolean keepalive = (keepaliveByte == null || keepaliveByte[0] == 0) ? false : true;
+      boolean keepalive = keepaliveByte != null && keepaliveByte[0] != 0;
 
       serverConnection.getAcceptor().getCacheClientNotifier()
           .setKeepAlive(serverConnection.getProxyID(), keepalive);

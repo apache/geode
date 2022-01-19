@@ -37,8 +37,8 @@ public class SingleHopQuarterPartitionResolver
   Object[][] months = new Object[12][12];
 
   public SingleHopQuarterPartitionResolver() {
-    this.resolveProps = new Properties();
-    this.resolveProps.setProperty("routingType", "key");
+    resolveProps = new Properties();
+    resolveProps.setProperty("routingType", "key");
   }
 
   int numBuckets;
@@ -114,17 +114,17 @@ public class SingleHopQuarterPartitionResolver
   }
 
   public void setnumBuckets(int numBukcets) {
-    this.numBuckets = numBukcets;
+    numBuckets = numBukcets;
   }
 
   public int getNumBuckets(String partitionName, String regionName,
       PartitionAttributes partitionAttributes) {
-    return this.numBuckets;
+    return numBuckets;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(this.resolveProps);
+    return Objects.hashCode(resolveProps);
   }
 
   @Override
@@ -135,15 +135,11 @@ public class SingleHopQuarterPartitionResolver
     if (obj == null) {
       return false;
     }
-    if (!obj.getClass().equals(this.getClass())) {
+    if (!obj.getClass().equals(getClass())) {
       return false;
     }
     QuarterPartitionResolver other = (QuarterPartitionResolver) obj;
-    if (!this.resolveProps.equals(other.getConfig())) {
-      return false;
-    }
-
-    return true;
+    return resolveProps.equals(other.getConfig());
   }
 
   /*
@@ -153,7 +149,7 @@ public class SingleHopQuarterPartitionResolver
    */
   @Override
   public Properties getConfig() {
-    return this.resolveProps;
+    return resolveProps;
   }
 
   /*
@@ -163,19 +159,19 @@ public class SingleHopQuarterPartitionResolver
    */
   @Override
   public void init(Properties props) {
-    this.resolveProps.putAll(props);
+    resolveProps.putAll(props);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.resolveProps = DataSerializer.readProperties(in);
-    this.numBuckets = in.readInt();
+    resolveProps = DataSerializer.readProperties(in);
+    numBuckets = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeProperties(this.resolveProps, out);
-    out.writeInt(this.numBuckets);
+    DataSerializer.writeProperties(resolveProps, out);
+    out.writeInt(numBuckets);
   }
 
 }

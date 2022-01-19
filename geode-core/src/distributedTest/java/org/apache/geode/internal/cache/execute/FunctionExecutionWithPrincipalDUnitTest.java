@@ -39,12 +39,12 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 public class FunctionExecutionWithPrincipalDUnitTest {
 
-  private static String PR_REGION_NAME = "partitioned-region";
-  private static String REGION_NAME = "replicated-region";
+  private static final String PR_REGION_NAME = "partitioned-region";
+  private static final String REGION_NAME = "replicated-region";
   private static Region<String, String> replicateRegion;
   private static Region<String, String> partitionedRegion;
 
-  private static Function<?> readFunction = new ReadFunction();
+  private static final Function<?> readFunction = new ReadFunction();
 
   private static MemberVM locator;
   private static MemberVM server1;

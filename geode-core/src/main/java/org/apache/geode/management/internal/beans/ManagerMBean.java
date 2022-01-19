@@ -21,7 +21,7 @@ import org.apache.geode.management.ManagerMXBean;
 
 public class ManagerMBean extends NotificationBroadcasterSupport implements ManagerMXBean {
 
-  private ManagerMBeanBridge bridge;
+  private final ManagerMBeanBridge bridge;
 
   public ManagerMBean(ManagerMBeanBridge bridge) {
     this.bridge = bridge;

@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
@@ -51,8 +50,8 @@ public class PrimaryAckOp {
      */
     public PrimaryAckOpImpl(List events) {
       super(MessageType.PERIODIC_ACK, events.size());
-      for (Iterator i = events.iterator(); i.hasNext();) {
-        getMessage().addObjPart(i.next());
+      for (final Object event : events) {
+        getMessage().addObjPart(event);
       }
     }
 

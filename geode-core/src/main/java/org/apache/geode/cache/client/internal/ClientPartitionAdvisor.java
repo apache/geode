@@ -16,7 +16,6 @@ package org.apache.geode.cache.client.internal;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -49,7 +48,7 @@ public class ClientPartitionAdvisor {
   private static final Logger logger = LogService.getLogger();
 
   private final ConcurrentMap<Integer, List<BucketServerLocation66>> bucketServerLocationsMap =
-      new ConcurrentHashMap<Integer, List<BucketServerLocation66>>();
+      new ConcurrentHashMap<>();
 
   private final int totalNumBuckets;
 
@@ -63,7 +62,7 @@ public class ClientPartitionAdvisor {
 
   private boolean fpaAttrsCompletes = false;
 
-  private Random random = new Random();
+  private final Random random = new Random();
 
   @SuppressWarnings("unchecked")
   public ClientPartitionAdvisor(int totalNumBuckets, String colocatedWith,
@@ -73,7 +72,7 @@ public class ClientPartitionAdvisor {
     this.colocatedWith = colocatedWith;
     try {
       if (partitionResolverName != null) {
-        this.partitionResolver = (PartitionResolver) ClassPathLoader.getLatest()
+        partitionResolver = (PartitionResolver) ClassPathLoader.getLatest()
             .forName(partitionResolverName).newInstance();
       }
     } catch (Exception e) {
@@ -86,7 +85,7 @@ public class ClientPartitionAdvisor {
               partitionResolverName));
     }
     if (fpaSet != null) {
-      fixedPAMap = new ConcurrentHashMap<String, List<Integer>>();
+      fixedPAMap = new ConcurrentHashMap<>();
       int totalFPABuckets = 0;
       for (FixedPartitionAttributes fpa : fpaSet) {
         List attrList = new ArrayList();
@@ -96,15 +95,15 @@ public class ClientPartitionAdvisor {
         fixedPAMap.put(fpa.getPartitionName(), attrList);
       }
       if (totalFPABuckets == this.totalNumBuckets) {
-        this.fpaAttrsCompletes = true;
+        fpaAttrsCompletes = true;
       }
     }
   }
 
   public ServerLocation adviseServerLocation(int bucketId) {
-    if (this.bucketServerLocationsMap.containsKey(bucketId)) {
-      List<BucketServerLocation66> locations = this.bucketServerLocationsMap.get(bucketId);
-      List<BucketServerLocation66> locationsCopy = new ArrayList<BucketServerLocation66>(locations);
+    if (bucketServerLocationsMap.containsKey(bucketId)) {
+      List<BucketServerLocation66> locations = bucketServerLocationsMap.get(bucketId);
+      List<BucketServerLocation66> locationsCopy = new ArrayList<>(locations);
 
       if (locationsCopy.isEmpty()) {
         return null;
@@ -119,13 +118,13 @@ public class ClientPartitionAdvisor {
   }
 
   public ServerLocation adviseRandomServerLocation() {
-    ArrayList<Integer> bucketList = new ArrayList<Integer>(this.bucketServerLocationsMap.keySet());
+    ArrayList<Integer> bucketList = new ArrayList<>(bucketServerLocationsMap.keySet());
     int size = bucketList.size();
     if (size > 0) {
       List<BucketServerLocation66> locations =
-          this.bucketServerLocationsMap.get(bucketList.get(random.nextInt(size)));
+          bucketServerLocationsMap.get(bucketList.get(random.nextInt(size)));
       if (locations != null) {
-        List<BucketServerLocation66> serverList = new ArrayList<BucketServerLocation66>(locations);
+        List<BucketServerLocation66> serverList = new ArrayList<>(locations);
         if (serverList.size() == 0) {
           return null;
         }
@@ -136,18 +135,18 @@ public class ClientPartitionAdvisor {
   }
 
   public List<BucketServerLocation66> adviseServerLocations(int bucketId) {
-    if (this.bucketServerLocationsMap.containsKey(bucketId)) {
+    if (bucketServerLocationsMap.containsKey(bucketId)) {
       List<BucketServerLocation66> locationsCopy =
-          new ArrayList<BucketServerLocation66>(this.bucketServerLocationsMap.get(bucketId));
+          new ArrayList<>(bucketServerLocationsMap.get(bucketId));
       return locationsCopy;
     }
     return null;
   }
 
   public ServerLocation advisePrimaryServerLocation(int bucketId) {
-    if (this.bucketServerLocationsMap.containsKey(bucketId)) {
-      List<BucketServerLocation66> locations = this.bucketServerLocationsMap.get(bucketId);
-      List<BucketServerLocation66> locationsCopy = new ArrayList<BucketServerLocation66>(locations);
+    if (bucketServerLocationsMap.containsKey(bucketId)) {
+      List<BucketServerLocation66> locations = bucketServerLocationsMap.get(bucketId);
+      List<BucketServerLocation66> locationsCopy = new ArrayList<>(locations);
       for (BucketServerLocation66 loc : locationsCopy) {
         if (loc.isPrimary()) {
           return loc;
@@ -159,17 +158,17 @@ public class ClientPartitionAdvisor {
 
   public void updateBucketServerLocations(int bucketId,
       List<BucketServerLocation66> bucketServerLocations, ClientMetadataService cms) {
-    List<BucketServerLocation66> locationCopy = new ArrayList<BucketServerLocation66>();
+    List<BucketServerLocation66> locationCopy = new ArrayList<>();
     List<BucketServerLocation66> locations;
 
     boolean honourSeverGroup = cms.honourServerGroup();
 
-    if (this.serverGroup.length() != 0 && honourSeverGroup) {
+    if (serverGroup.length() != 0 && honourSeverGroup) {
       for (BucketServerLocation66 s : bucketServerLocations) {
         String[] groups = s.getServerGroups();
         if (groups.length > 0) {
           for (String str : groups) {
-            if (str.equals(this.serverGroup)) {
+            if (str.equals(serverGroup)) {
               locationCopy.add(s);
               break;
             }
@@ -183,31 +182,29 @@ public class ClientPartitionAdvisor {
       locations = Collections.unmodifiableList(bucketServerLocations);
     }
 
-    this.bucketServerLocationsMap.put(bucketId, locations);
+    bucketServerLocationsMap.put(bucketId, locations);
   }
 
   public void removeBucketServerLocation(ServerLocation serverLocation) {
-    Iterator<Map.Entry<Integer, List<BucketServerLocation66>>> iter =
-        this.bucketServerLocationsMap.entrySet().iterator();
-    while (iter.hasNext()) {
-      Map.Entry<Integer, List<BucketServerLocation66>> entry = iter.next();
+    for (final Map.Entry<Integer, List<BucketServerLocation66>> entry : bucketServerLocationsMap
+        .entrySet()) {
       Integer key = entry.getKey();
       List<BucketServerLocation66> oldLocations = entry.getValue();
       List<BucketServerLocation66> newLocations =
-          new ArrayList<BucketServerLocation66>(oldLocations);
+          new ArrayList<>(oldLocations);
       // if this serverLocation contains in the list the remove the
       // serverLocation and update the map with new List
       while (newLocations.remove(serverLocation)
-          && !this.bucketServerLocationsMap.replace(key, oldLocations, newLocations)) {
-        oldLocations = this.bucketServerLocationsMap.get(key);
-        newLocations = new ArrayList<BucketServerLocation66>(oldLocations);
+          && !bucketServerLocationsMap.replace(key, oldLocations, newLocations)) {
+        oldLocations = bucketServerLocationsMap.get(key);
+        newLocations = new ArrayList<>(oldLocations);
       }
     }
   }
 
   @VisibleForTesting
   public Map<Integer, List<BucketServerLocation66>> getBucketServerLocationsMap_TEST_ONLY() {
-    return this.bucketServerLocationsMap;
+    return bucketServerLocationsMap;
   }
 
   /**
@@ -217,26 +214,26 @@ public class ClientPartitionAdvisor {
    */
 
   public int getTotalNumBuckets() {
-    return this.totalNumBuckets;
+    return totalNumBuckets;
   }
 
   /**
    * @return the serverGroup
    */
   public String getServerGroup() {
-    return this.serverGroup;
+    return serverGroup;
   }
 
 
   public void setServerGroup(String group) {
-    this.serverGroup = group;
+    serverGroup = group;
   }
 
   /**
    * Returns name of the colocated PartitionedRegion on CacheServer
    */
   public String getColocatedWith() {
-    return this.colocatedWith;
+    return colocatedWith;
   }
 
   /**
@@ -245,16 +242,16 @@ public class ClientPartitionAdvisor {
    * @return <code>PartitionResolver</code> for the PartitionedRegion
    */
   public PartitionResolver getPartitionResolver() {
-    return this.partitionResolver;
+    return partitionResolver;
   }
 
   public Set<String> getFixedPartitionNames() {
-    return this.fixedPAMap.keySet();
+    return fixedPAMap.keySet();
   }
 
   public int assignFixedBucketId(Region region, String partition, Object resolveKey) {
-    if (this.fixedPAMap.containsKey(partition)) {
-      List<Integer> attList = this.fixedPAMap.get(partition);
+    if (fixedPAMap.containsKey(partition)) {
+      List<Integer> attList = fixedPAMap.get(partition);
       int hc = resolveKey.hashCode();
       int bucketId = Math.abs(hc % (attList.get(0)));
       int partitionBucketID = bucketId + attList.get(1);
@@ -270,14 +267,14 @@ public class ClientPartitionAdvisor {
   }
 
   public Map<String, List<Integer>> getFixedPAMap() {
-    return this.fixedPAMap;
+    return fixedPAMap;
   }
 
   public void updateFixedPAMap(Map<String, List<Integer>> map) {
-    this.fixedPAMap.putAll(map);
+    fixedPAMap.putAll(map);
   }
 
   public boolean isFPAAttrsComplete() {
-    return this.fpaAttrsCompletes;
+    return fpaAttrsCompletes;
   }
 }

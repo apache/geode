@@ -97,9 +97,9 @@ public class HARegionQueueExpiryRegressionTest extends CacheTestCase {
     hostName = getServerHostName(getHost(0));
 
     server.invoke(() -> setIsSlowStart());
-    serverPort = server.invoke(() -> createServerCache());
+    serverPort = server.invoke(this::createServerCache);
 
-    client.invoke(() -> createClientCache());
+    client.invoke(this::createClientCache);
 
     addIgnoredException("Unexpected IOException");
     addIgnoredException("Connection reset");
@@ -124,8 +124,8 @@ public class HARegionQueueExpiryRegressionTest extends CacheTestCase {
    */
   @Test
   public void allEventsShouldReachClientWithoutExpiring() throws Exception {
-    server.invoke(() -> generateEvents());
-    client.invoke(() -> validateEventCountAtClient());
+    server.invoke(this::generateEvents);
+    client.invoke(this::validateEventCountAtClient);
   }
 
   private int createServerCache() throws IOException {

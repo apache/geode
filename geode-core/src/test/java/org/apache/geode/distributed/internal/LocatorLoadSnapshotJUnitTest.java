@@ -95,9 +95,9 @@ public class LocatorLoadSnapshotJUnitTest {
     assertEquals(Collections.singletonList(l2),
         sn.getServersForQueue(null, Collections.EMPTY_SET, 1));
 
-    assertEquals(Arrays.asList(new ServerLocation[] {l2, l1}),
+    assertEquals(Arrays.asList(l2, l1),
         sn.getServersForQueue(null, Collections.EMPTY_SET, 5));
-    assertEquals(Arrays.asList(new ServerLocation[] {l2, l1}),
+    assertEquals(Arrays.asList(l2, l1),
         sn.getServersForQueue(null, Collections.EMPTY_SET, -1));
   }
 
@@ -138,7 +138,7 @@ public class LocatorLoadSnapshotJUnitTest {
         LOAD_POLL_INTERVAL);
 
     assertEquals(l1, sn.getServerForConnection(null, Collections.EMPTY_SET));
-    assertEquals(Arrays.asList(new ServerLocation[] {l1, l2}),
+    assertEquals(Arrays.asList(l1, l2),
         sn.getServersForQueue(null, Collections.EMPTY_SET, -1));
     sn.removeServer(l1, uniqueId1);
     assertEquals(l2, sn.getServerForConnection(null, Collections.EMPTY_SET));
@@ -167,15 +167,15 @@ public class LocatorLoadSnapshotJUnitTest {
     assertEquals(l2, sn.getServerForConnection("b", Collections.EMPTY_SET));
     sn.updateLoad(l2, uniqueId2, new ServerLoad(100, 1, 1, 1));
     assertEquals(l1, sn.getServerForConnection("b", Collections.EMPTY_SET));
-    assertEquals(Arrays.asList(new ServerLocation[] {l1}),
+    assertEquals(Arrays.asList(l1),
         sn.getServersForQueue("a", Collections.EMPTY_SET, -1));
-    assertEquals(Arrays.asList(new ServerLocation[] {l2}),
+    assertEquals(Arrays.asList(l2),
         sn.getServersForQueue("c", Collections.EMPTY_SET, -1));
-    assertEquals(Arrays.asList(new ServerLocation[] {l1, l2}),
+    assertEquals(Arrays.asList(l1, l2),
         sn.getServersForQueue("b", Collections.EMPTY_SET, -1));
-    assertEquals(Arrays.asList(new ServerLocation[] {l1, l2}),
+    assertEquals(Arrays.asList(l1, l2),
         sn.getServersForQueue(null, Collections.EMPTY_SET, -1));
-    assertEquals(Arrays.asList(new ServerLocation[] {l1, l2}),
+    assertEquals(Arrays.asList(l1, l2),
         sn.getServersForQueue("b", Collections.EMPTY_SET, 5));
 
     sn.removeServer(l1, uniqueId1);
@@ -183,9 +183,9 @@ public class LocatorLoadSnapshotJUnitTest {
     assertEquals(l2, sn.getServerForConnection("b", Collections.EMPTY_SET));
     assertNull(sn.getServerForConnection("a", Collections.EMPTY_SET));
     assertEquals(l2, sn.getServerForConnection("c", Collections.EMPTY_SET));
-    assertEquals(Arrays.asList(new ServerLocation[] {}),
+    assertEquals(Arrays.asList(),
         sn.getServersForQueue("a", Collections.EMPTY_SET, -1));
-    assertEquals(Arrays.asList(new ServerLocation[] {l2}),
+    assertEquals(Arrays.asList(l2),
         sn.getServersForQueue("b", Collections.EMPTY_SET, 5));
   }
 
@@ -279,10 +279,10 @@ public class LocatorLoadSnapshotJUnitTest {
     assertEquals(l2, sn.getServerForConnection(null, Collections.singleton(l1)));
 
     assertEquals(null, sn.getServerForConnection(null, excludeAll));
-    assertEquals(Arrays.asList(new ServerLocation[] {l2}),
+    assertEquals(Arrays.asList(l2),
         sn.getServersForQueue(null, Collections.singleton(l1), 3));
 
-    assertEquals(Arrays.asList(new ServerLocation[] {}),
+    assertEquals(Arrays.asList(),
         sn.getServersForQueue(null, excludeAll, 3));
   }
 

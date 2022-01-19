@@ -123,7 +123,7 @@ public class DistributedSystemMXBeanWithNotificationsDistributedTest implements 
     memberVM2 = getVM(2);
     memberVM3 = getVM(3);
 
-    managerVM.invoke(() -> createManager());
+    managerVM.invoke(this::createManager);
 
     for (VM memberVM : toArray(memberVM1, memberVM2, memberVM3)) {
       memberVM.invoke(() -> createMember(memberVM.getId()));

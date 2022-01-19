@@ -57,7 +57,6 @@ public class DataSourceJTAJUnitTest {
 
   // ///setUp and tearDown methods/////
 
-  @SuppressWarnings("deprecation")
   @BeforeClass
   public static void beforeClass() throws java.lang.Exception {
     disconnectDS();

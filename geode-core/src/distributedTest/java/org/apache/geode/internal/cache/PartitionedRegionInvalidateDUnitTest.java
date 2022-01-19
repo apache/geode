@@ -101,7 +101,7 @@ public class PartitionedRegionInvalidateDUnitTest extends JUnit4CacheTestCase {
     final String rName = getUniqueName();
 
     class CreateRegion extends SerializableCallable {
-      boolean originRemote;
+      final boolean originRemote;
 
       public CreateRegion(boolean originRemote) {
         this.originRemote = originRemote;
@@ -117,7 +117,7 @@ public class PartitionedRegionInvalidateDUnitTest extends JUnit4CacheTestCase {
         r.getAttributesMutator().addCacheListener(l);
         return null;
       }
-    };
+    }
     vm0.invoke(new CreateRegion(true));
     vm1.invoke(new CreateRegion(false));
     vm2.invoke(new CreateRegion(true));

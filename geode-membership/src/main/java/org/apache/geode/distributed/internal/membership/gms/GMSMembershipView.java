@@ -67,7 +67,7 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
   public GMSMembershipView() {
     viewId = 0;
     members = new ArrayList<>(4);
-    this.hashedMembers = new HashSet<>(members);
+    hashedMembers = new HashSet<>(members);
     shutdownMembers = Collections.emptySet();
     crashedMembers = new HashSet<>();
     creator = null;
@@ -106,7 +106,7 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
   public GMSMembershipView(int size, long viewId) {
     this.viewId = (int) viewId;
     members = new ArrayList<>(size);
-    this.hashedMembers = new HashSet<>();
+    hashedMembers = new HashSet<>();
     shutdownMembers = new HashSet<>();
     crashedMembers = Collections.emptySet();
     creator = null;
@@ -117,16 +117,16 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
    * Create a new view with the contents of the given view and the specified view ID
    */
   public GMSMembershipView(GMSMembershipView<ID> other, int viewId) {
-    this.creator = other.creator;
+    creator = other.creator;
     this.viewId = viewId;
-    this.members = new ArrayList<>(other.members);
-    this.hashedMembers = new HashSet<>(other.members);
-    this.failureDetectionPorts = new int[other.failureDetectionPorts.length];
-    System.arraycopy(other.failureDetectionPorts, 0, this.failureDetectionPorts, 0,
+    members = new ArrayList<>(other.members);
+    hashedMembers = new HashSet<>(other.members);
+    failureDetectionPorts = new int[other.failureDetectionPorts.length];
+    System.arraycopy(other.failureDetectionPorts, 0, failureDetectionPorts, 0,
         other.failureDetectionPorts.length);
-    this.shutdownMembers = new HashSet<>(other.shutdownMembers);
-    this.crashedMembers = new HashSet<>(other.crashedMembers);
-    this.publicKeys.putAll(other.publicKeys);
+    shutdownMembers = new HashSet<>(other.shutdownMembers);
+    crashedMembers = new HashSet<>(other.crashedMembers);
+    publicKeys.putAll(other.publicKeys);
   }
 
   public GMSMembershipView(ID creator, int viewId,
@@ -134,22 +134,22 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
       Set<ID> crashes) {
     this.creator = creator;
     this.viewId = viewId;
-    this.members = mbrs;
-    this.hashedMembers = new HashSet<>(mbrs);
-    this.shutdownMembers = shutdowns;
-    this.crashedMembers = crashes;
-    this.failureDetectionPorts = new int[mbrs.size() + 10];
-    Arrays.fill(this.failureDetectionPorts, -1);
+    members = mbrs;
+    hashedMembers = new HashSet<>(mbrs);
+    shutdownMembers = shutdowns;
+    crashedMembers = crashes;
+    failureDetectionPorts = new int[mbrs.size() + 10];
+    Arrays.fill(failureDetectionPorts, -1);
   }
 
 
   public int getViewId() {
-    return this.viewId;
+    return viewId;
   }
 
 
   public ID getCreator() {
-    return this.creator;
+    return creator;
   }
 
   public void setCreator(ID creator) {
@@ -167,7 +167,7 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
   }
 
   public void setPublicKeys(GMSMembershipView<ID> otherView) {
-    this.publicKeys.putAll(otherView.publicKeys);
+    publicKeys.putAll(otherView.publicKeys);
   }
 
   public void setViewId(int viewId) {
@@ -177,7 +177,7 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
 
 
   public int[] getFailureDetectionPorts() {
-    return this.failureDetectionPorts;
+    return failureDetectionPorts;
   }
 
   public int getFailureDetectionPort(ID mbr) {
@@ -236,19 +236,19 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
   }
 
   public ID get(int i) {
-    return this.members.get(i);
+    return members.get(i);
   }
 
   public void add(ID mbr) {
-    this.hashedMembers.add(mbr);
-    this.members.add(mbr);
+    hashedMembers.add(mbr);
+    members.add(mbr);
     int idx = members.size() - 1;
     ensureFDCapacity(idx);
-    this.failureDetectionPorts[idx] = -1;
+    failureDetectionPorts[idx] = -1;
   }
 
   public void addCrashedMembers(Set<ID> mbr) {
-    this.crashedMembers.addAll(mbr);
+    crashedMembers.addAll(mbr);
   }
 
   /**
@@ -265,37 +265,37 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
    */
   public List<ID> getNewMembers() {
     List<ID> result = new ArrayList<>(5);
-    result.addAll(this.members.stream().filter(mbr -> mbr.getVmViewId() == this.viewId)
+    result.addAll(members.stream().filter(mbr -> mbr.getVmViewId() == viewId)
         .collect(Collectors.toList()));
     return result;
   }
 
   public boolean remove(ID mbr) {
-    this.hashedMembers.remove(mbr);
-    int idx = this.members.indexOf(mbr);
+    hashedMembers.remove(mbr);
+    int idx = members.indexOf(mbr);
     if (idx >= 0) {
       System.arraycopy(failureDetectionPorts, idx + 1, failureDetectionPorts, idx,
           failureDetectionPorts.length - idx - 1);
       failureDetectionPorts[failureDetectionPorts.length - 1] = -1;
     }
-    return this.members.remove(mbr);
+    return members.remove(mbr);
   }
 
   public void removeAll(Collection<ID> ids) {
-    this.hashedMembers.removeAll(ids);
+    hashedMembers.removeAll(ids);
     ids.forEach(this::remove);
   }
 
   public boolean contains(ID mbr) {
-    return this.hashedMembers.contains(mbr);
+    return hashedMembers.contains(mbr);
   }
 
   public int size() {
-    return this.members.size();
+    return members.size();
   }
 
   public ID getLeadMember() {
-    for (ID mbr : this.members) {
+    for (ID mbr : members) {
       if (mbr.getVmKind() == ID.NORMAL_DM_TYPE) {
         return mbr;
       }
@@ -387,25 +387,25 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
   /* NetView implementation method */
 
   public List<ID> getGMSMembers() {
-    return Collections.unmodifiableList(this.members);
+    return Collections.unmodifiableList(members);
   }
 
 
   public List<ID> getMembers() {
-    return Collections.unmodifiableList(this.members);
+    return Collections.unmodifiableList(members);
   }
 
   public Set<ID> getShutdownMembers() {
-    return this.shutdownMembers;
+    return shutdownMembers;
   }
 
   public Set<ID> getCrashedMembers() {
-    return this.crashedMembers;
+    return crashedMembers;
   }
 
   /** check to see if the given address is next in line to be coordinator */
   public boolean shouldBeCoordinator(ID who) {
-    Iterator<ID> it = this.members.iterator();
+    Iterator<ID> it = members.iterator();
     ID firstNonPreferred = null;
     while (it.hasNext()) {
       ID mbr = it.next();
@@ -424,7 +424,7 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
   public int memberWeight() {
     int result = 0;
     ID lead = getLeadMember();
-    for (ID mbr : this.members) {
+    for (ID mbr : members) {
       result += mbr.getMemberWeight();
       switch (mbr.getVmKind()) {
         case ID.NORMAL_DM_TYPE:
@@ -452,7 +452,7 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
   public int getCrashedMemberWeight(GMSMembershipView<ID> oldView) {
     int result = 0;
     ID lead = oldView.getLeadMember();
-    for (ID mbr : this.crashedMembers) {
+    for (ID mbr : crashedMembers) {
       if (!oldView.contains(mbr)) {
         continue;
       }
@@ -481,8 +481,8 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
    * view. Admin-only members are not counted
    */
   public Set<ID> getActualCrashedMembers(GMSMembershipView<ID> oldView) {
-    Set<ID> result = new HashSet<>(this.crashedMembers.size());
-    result.addAll(this.crashedMembers.stream()
+    Set<ID> result = new HashSet<>(crashedMembers.size());
+    result.addAll(crashedMembers.stream()
         .filter(mbr -> (mbr.getVmKind() != ID.ADMIN_ONLY_DM_TYPE))
         .filter(mbr -> oldView == null || oldView.contains(mbr)).collect(Collectors.toList()));
     return result;
@@ -493,7 +493,7 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
    */
   public void logCrashedMemberWeights(GMSMembershipView<ID> oldView, Logger log) {
     ID lead = oldView.getLeadMember();
-    for (ID mbr : this.crashedMembers) {
+    for (ID mbr : crashedMembers) {
       if (!oldView.contains(mbr)) {
         continue;
       }
@@ -524,7 +524,7 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
     StringBuilder sb = new StringBuilder(200);
     sb.append("View[").append(creator).append('|').append(viewId).append("] members: [");
     boolean first = true;
-    for (ID mbr : this.members) {
+    for (ID mbr : members) {
       if (!first) {
         sb.append(", ");
       }
@@ -534,10 +534,10 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
       }
       first = false;
     }
-    if (!this.shutdownMembers.isEmpty()) {
+    if (!shutdownMembers.isEmpty()) {
       sb.append("]  shutdown: [");
       first = true;
-      for (ID mbr : this.shutdownMembers) {
+      for (ID mbr : shutdownMembers) {
         if (!first) {
           sb.append(", ");
         }
@@ -545,10 +545,10 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
         first = false;
       }
     }
-    if (!this.crashedMembers.isEmpty()) {
+    if (!crashedMembers.isEmpty()) {
       sb.append("]  crashed: [");
       first = true;
-      for (ID mbr : this.crashedMembers) {
+      for (ID mbr : crashedMembers) {
         if (!first) {
           sb.append(", ");
         }
@@ -575,7 +575,7 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
    */
   public synchronized ID getCanonicalID(ID id) {
     if (hashedMembers.contains(id)) {
-      for (ID m : this.members) {
+      for (ID m : members) {
         if (id.equals(m)) {
           return m;
         }
@@ -590,14 +590,14 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
       return true;
     }
     if (other instanceof GMSMembershipView) {
-      return this.members.equals(((GMSMembershipView<ID>) other).getGMSMembers());
+      return members.equals(((GMSMembershipView<ID>) other).getGMSMembers());
     }
     return false;
   }
 
   @Override
   public synchronized int hashCode() {
-    return this.members.hashCode();
+    return members.hashCode();
   }
 
   @Override
@@ -620,7 +620,7 @@ public class GMSMembershipView<ID extends MemberIdentifier> implements DataSeria
     viewId = in.readInt();
     members = GMSUtil.readArrayOfIDs(in, context);
     assert members != null;
-    this.hashedMembers = new HashSet<>(members);
+    hashedMembers = new HashSet<>(members);
     shutdownMembers = GMSUtil.readHashSetOfMemberIDs(in, context);
     crashedMembers = GMSUtil.readHashSetOfMemberIDs(in, context);
     failureDetectionPorts = StaticSerialization.readIntArray(in);

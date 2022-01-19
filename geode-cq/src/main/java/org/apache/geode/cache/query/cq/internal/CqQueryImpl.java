@@ -88,7 +88,7 @@ public abstract class CqQueryImpl implements InternalCqQuery {
       boolean isDurable) {
     this.cqName = cqName;
     this.queryString = queryString;
-    this.securityLogWriter = (InternalLogWriter) cqService.getCache().getSecurityLoggerI18n();
+    securityLogWriter = (InternalLogWriter) cqService.getCache().getSecurityLoggerI18n();
     this.cqService = cqService;
     this.isDurable = isDurable;
   }
@@ -98,7 +98,7 @@ public abstract class CqQueryImpl implements InternalCqQuery {
    */
   @Override
   public String getName() {
-    return this.cqName;
+    return cqName;
   }
 
   @Override
@@ -116,19 +116,19 @@ public abstract class CqQueryImpl implements InternalCqQuery {
    */
   @Override
   public String getRegionName() {
-    return this.regionName;
+    return regionName;
   }
 
   void updateCqCreateStats() {
     // Initialize the VSD statistics
     StatisticsFactory factory = cqService.getCache().getDistributedSystem();
-    this.stats = new CqQueryVsdStats(factory, getServerCqName());
-    this.cqStats = new CqStatisticsImpl(this);
+    stats = new CqQueryVsdStats(factory, getServerCqName());
+    cqStats = new CqStatisticsImpl(this);
 
     // Update statistics with CQ creation.
-    this.cqService.stats().incCqsStopped();
-    this.cqService.stats().incCqsCreated();
-    this.cqService.stats().incCqsOnClient();
+    cqService.stats().incCqsStopped();
+    cqService.stats().incCqsCreated();
+    cqService.stats().incCqsOnClient();
   }
 
   /**
@@ -136,8 +136,8 @@ public abstract class CqQueryImpl implements InternalCqQuery {
    */
   void validateCq() {
     InternalCache cache = cqService.getInternalCache();
-    DefaultQuery locQuery = (DefaultQuery) cache.getLocalQueryService().newQuery(this.queryString);
-    this.query = locQuery;
+    DefaultQuery locQuery = (DefaultQuery) cache.getLocalQueryService().newQuery(queryString);
+    query = locQuery;
     // assert locQuery != null;
 
     // validate Query.
@@ -164,7 +164,7 @@ public abstract class CqQueryImpl implements InternalCqQuery {
       throw new UnsupportedOperationException(
           "CQ queries must reference one and only one region");
     }
-    this.regionName = (String) regionsInQuery.iterator().next();
+    regionName = (String) regionsInQuery.iterator().next();
 
     // make sure the where clause references no regions
     Set regions = new HashSet();
@@ -207,8 +207,8 @@ public abstract class CqQueryImpl implements InternalCqQuery {
     }
 
     // Set Query ExecutionContext, that will be used in later execution.
-    this.setQueryExecutionContext(
-        new QueryExecutionContext(null, (InternalCache) this.cqService.getCache(), true));
+    setQueryExecutionContext(
+        new QueryExecutionContext(null, (InternalCache) cqService.getCache(), true));
   }
 
   /**
@@ -216,7 +216,7 @@ public abstract class CqQueryImpl implements InternalCqQuery {
    */
   void removeFromCqMap() throws CqException {
     try {
-      cqService.removeCq(this.getServerCqName());
+      cqService.removeCq(getServerCqName());
     } catch (Exception ex) {
       String errMsg =
           "Failed to remove Continuous Query From the repository. CqName: %s Error : %s";
@@ -226,7 +226,7 @@ public abstract class CqQueryImpl implements InternalCqQuery {
       throw new CqException(msg, ex);
     }
     if (logger.isDebugEnabled()) {
-      logger.debug("Removed CQ from the CQ repository. CQ Name: {}", this.cqName);
+      logger.debug("Removed CQ from the CQ repository. CQ Name: {}", cqName);
     }
   }
 
@@ -255,7 +255,7 @@ public abstract class CqQueryImpl implements InternalCqQuery {
 
   @Override
   public LocalRegion getCqBaseRegion() {
-    return this.cqBaseRegion;
+    return cqBaseRegion;
   }
 
   protected abstract void cleanup() throws CqException;
@@ -265,7 +265,7 @@ public abstract class CqQueryImpl implements InternalCqQuery {
    */
   String getBaseRegionName() {
 
-    return this.regionName;
+    return regionName;
   }
 
   @Override
@@ -278,27 +278,27 @@ public abstract class CqQueryImpl implements InternalCqQuery {
    */
   @Override
   public CqState getState() {
-    return this.cqState;
+    return cqState;
   }
 
   @Override
   public void setCqState(int state) {
-    if (this.isClosed()) {
+    if (isClosed()) {
       throw new CqClosedException(
-          String.format("CQ is closed, CqName : %s", this.cqName));
+          String.format("CQ is closed, CqName : %s", cqName));
     }
 
     synchronized (cqState) {
       if (state == CqStateImpl.RUNNING) {
-        this.cqState.setState(CqStateImpl.RUNNING);
-        this.cqService.stats().incCqsActive();
-        this.cqService.stats().decCqsStopped();
+        cqState.setState(CqStateImpl.RUNNING);
+        cqService.stats().incCqsActive();
+        cqService.stats().decCqsStopped();
       } else if (state == CqStateImpl.STOPPED) {
-        this.cqState.setState(CqStateImpl.STOPPED);
-        this.cqService.stats().incCqsStopped();
-        this.cqService.stats().decCqsActive();
+        cqState.setState(CqStateImpl.STOPPED);
+        cqService.stats().incCqsStopped();
+        cqService.stats().decCqsActive();
       } else if (state == CqStateImpl.CLOSING) {
-        this.cqState.setState(state);
+        cqState.setState(state);
       }
     }
   }
@@ -309,7 +309,7 @@ public abstract class CqQueryImpl implements InternalCqQuery {
    * @param cqEvent object
    */
   void updateStats(CqEvent cqEvent) {
-    this.stats.updateStats(cqEvent); // Stats for VSD
+    stats.updateStats(cqEvent); // Stats for VSD
   }
 
   /**
@@ -319,7 +319,7 @@ public abstract class CqQueryImpl implements InternalCqQuery {
    */
   @Override
   public boolean isRunning() {
-    return this.cqState.isRunning();
+    return cqState.isRunning();
   }
 
   /**
@@ -329,7 +329,7 @@ public abstract class CqQueryImpl implements InternalCqQuery {
    */
   @Override
   public boolean isStopped() {
-    return this.cqState.isStopped();
+    return cqState.isStopped();
   }
 
   /**
@@ -339,7 +339,7 @@ public abstract class CqQueryImpl implements InternalCqQuery {
    */
   @Override
   public boolean isClosed() {
-    return this.cqState.isClosed();
+    return cqState.isClosed();
   }
 
   /**
@@ -348,7 +348,7 @@ public abstract class CqQueryImpl implements InternalCqQuery {
    * @return true if close in progress, false otherwise
    */
   public boolean isClosing() {
-    return this.cqState.isClosing();
+    return cqState.isClosing();
   }
 
   /**
@@ -358,7 +358,7 @@ public abstract class CqQueryImpl implements InternalCqQuery {
    */
   @Override
   public boolean isDurable() {
-    return this.isDurable;
+    return isDurable;
   }
 
   /**

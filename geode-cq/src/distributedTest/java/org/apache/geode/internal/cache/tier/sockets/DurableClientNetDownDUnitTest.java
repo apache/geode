@@ -32,23 +32,23 @@ public class DurableClientNetDownDUnitTest extends DurableClientCrashDUnitTest {
 
   @Override
   public void closeDurableClient() {
-    this.durableClientVM.invoke(() -> {
+    durableClientVM.invoke(() -> {
       if (CacheServerTestUtil.getPool() != null) {
         CacheServerTestUtil.getPool().endpointsNetUpForDUnitTest();
       }
     });
-    this.durableClientVM.invoke(() -> CacheServerTestUtil.closeCache());
+    durableClientVM.invoke(() -> CacheServerTestUtil.closeCache());
   }
 
   @Override
   public void disconnectDurableClient(boolean keepAlive) {
-    this.durableClientVM.invoke(() -> CacheServerTestUtil.getPool().endpointsNetDownForDUnitTest());
+    durableClientVM.invoke(() -> CacheServerTestUtil.getPool().endpointsNetDownForDUnitTest());
   }
 
   @Override
   public void restartDurableClient(int durableClientTimeout, Pool clientPool,
       Boolean addControlListener) {
-    this.durableClientVM.invoke(() -> {
+    durableClientVM.invoke(() -> {
       if (CacheServerTestUtil.getPool() != null) {
         CacheServerTestUtil.getPool().endpointsNetUpForDUnitTest();
       }
@@ -58,7 +58,7 @@ public class DurableClientNetDownDUnitTest extends DurableClientCrashDUnitTest {
 
   @Override
   public void restartDurableClient(int durableClientTimeout, Boolean addControlListener) {
-    this.durableClientVM.invoke(() -> {
+    durableClientVM.invoke(() -> {
       if (CacheServerTestUtil.getPool() != null) {
         CacheServerTestUtil.getPool().endpointsNetUpForDUnitTest();
       }
@@ -68,7 +68,7 @@ public class DurableClientNetDownDUnitTest extends DurableClientCrashDUnitTest {
 
   @Override
   public void verifyListenerUpdatesDisconnected(int numberOfEntries) {
-    this.checkListenerEvents(numberOfEntries, 1, -1, this.durableClientVM);
+    checkListenerEvents(numberOfEntries, 1, -1, durableClientVM);
   }
 
   /**
@@ -84,10 +84,10 @@ public class DurableClientNetDownDUnitTest extends DurableClientCrashDUnitTest {
     verifyDurableClientPresent(VERY_LONG_DURABLE_TIMEOUT_SECONDS, durableClientId, server1VM);
 
     // Stop the durable client
-    this.disconnectDurableClient(true);
+    disconnectDurableClient(true);
 
     // Re-start the durable client
-    this.restartDurableClient(VERY_LONG_DURABLE_TIMEOUT_SECONDS, Boolean.TRUE);
+    restartDurableClient(VERY_LONG_DURABLE_TIMEOUT_SECONDS, Boolean.TRUE);
 
     // Verify durable client on server
     verifyDurableClientPresent(VERY_LONG_DURABLE_TIMEOUT_SECONDS, durableClientId, server1VM);
@@ -96,7 +96,7 @@ public class DurableClientNetDownDUnitTest extends DurableClientCrashDUnitTest {
     closeDurableClient();
 
     // Stop the server
-    this.server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 
 
   }

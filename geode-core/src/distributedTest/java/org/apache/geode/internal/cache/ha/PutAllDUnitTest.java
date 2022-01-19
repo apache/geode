@@ -23,7 +23,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -109,11 +108,11 @@ public class PutAllDUnitTest extends JUnit4DistributedTestCase {
   /** close the caches **/
   @Override
   public final void preTearDown() throws Exception {
-    client1.invoke(() -> PutAllDUnitTest.closeCache());
-    client2.invoke(() -> PutAllDUnitTest.closeCache());
+    client1.invoke(PutAllDUnitTest::closeCache);
+    client2.invoke(PutAllDUnitTest::closeCache);
     // close server
-    server1.invoke(() -> PutAllDUnitTest.closeCache());
-    server2.invoke(() -> PutAllDUnitTest.closeCache());
+    server1.invoke(PutAllDUnitTest::closeCache);
+    server2.invoke(PutAllDUnitTest::closeCache);
 
     // close cache in the controller VM (ezoerner) Not doing this was causing CacheExistsExceptions
     // in other dunit tests
@@ -133,14 +132,14 @@ public class PutAllDUnitTest extends JUnit4DistributedTestCase {
 
   /** function to create a 2 servers and 3 client (1 client will be in the unit controller VM) **/
   private void createClientServerConfiguration() {
-    PORT1 = ((Integer) server1.invoke(() -> PutAllDUnitTest.createServerCache())).intValue();
-    PORT2 = ((Integer) server2.invoke(() -> PutAllDUnitTest.createServerCache())).intValue();
+    PORT1 = server1.invoke(PutAllDUnitTest::createServerCache);
+    PORT2 = server2.invoke(PutAllDUnitTest::createServerCache);
     client1.invoke(() -> PutAllDUnitTest
-        .createClientCache1(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1)));
+        .createClientCache1(NetworkUtils.getServerHostName(server1.getHost()), PORT1));
     client2.invoke(() -> PutAllDUnitTest
-        .createClientCache2(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT2)));
+        .createClientCache2(NetworkUtils.getServerHostName(server1.getHost()), PORT2));
     try {
-      createClientCache2(NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT2));
+      createClientCache2(NetworkUtils.getServerHostName(server1.getHost()), PORT2);
     } catch (Exception e) {
       fail(" test failed due to " + e);
     }
@@ -162,7 +161,7 @@ public class PutAllDUnitTest extends JUnit4DistributedTestCase {
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   /** function to create cache **/
@@ -181,7 +180,7 @@ public class PutAllDUnitTest extends JUnit4DistributedTestCase {
    * function to create client cache with HAEventIdPropagationListenerForClient2 as the listener
    **/
   public static void createClientCache2(String host, Integer port1) throws Exception {
-    int PORT1 = port1.intValue();
+    int PORT1 = port1;
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
@@ -212,7 +211,7 @@ public class PutAllDUnitTest extends JUnit4DistributedTestCase {
 
   /** function to create client cache **/
   public static void createClientCache1(String host, Integer port1) throws Exception {
-    int PORT1 = port1.intValue();
+    int PORT1 = port1;
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
@@ -274,9 +273,8 @@ public class PutAllDUnitTest extends JUnit4DistributedTestCase {
 
     // Set the entry to the last entry
     Map.Entry entry = null;
-    for (Iterator threadIdToSequenceIdMapIterator =
-        map.entrySet().iterator(); threadIdToSequenceIdMapIterator.hasNext();) {
-      entry = (Map.Entry) threadIdToSequenceIdMapIterator.next();
+    for (final Object o : map.entrySet()) {
+      entry = (Map.Entry) o;
     }
 
     ThreadIdentifier tid = (ThreadIdentifier) entry.getKey();
@@ -327,11 +325,11 @@ public class PutAllDUnitTest extends JUnit4DistributedTestCase {
   protected static final String PUTALL_KEY4 = "putAllKey4";
   protected static final String PUTALL_KEY5 = "putAllKey5";
 
-  private static String PUTALL_VALUE1 = "putAllValue1";
-  private static String PUTALL_VALUE2 = "putAllValue2";
-  private static String PUTALL_VALUE3 = "putAllValue3";
-  private static String PUTALL_VALUE4 = "putAllValue4";
-  private static String PUTALL_VALUE5 = "putAllValue5";
+  private static final String PUTALL_VALUE1 = "putAllValue1";
+  private static final String PUTALL_VALUE2 = "putAllValue2";
+  private static final String PUTALL_VALUE3 = "putAllValue3";
+  private static final String PUTALL_VALUE4 = "putAllValue4";
+  private static final String PUTALL_VALUE5 = "putAllValue5";
 
 
 
@@ -347,26 +345,26 @@ public class PutAllDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testPutAll() throws Exception {
     setReceivedOperationToFalse();
-    client2.invoke(() -> PutAllDUnitTest.setReceivedOperationToFalse());
+    client2.invoke(PutAllDUnitTest::setReceivedOperationToFalse);
     createClientServerConfiguration();
 
-    EventID[] eventIds1 = (EventID[]) client1.invoke(() -> PutAllDUnitTest.putAll());
+    EventID[] eventIds1 = (EventID[]) client1.invoke(PutAllDUnitTest::putAll);
     assertNotNull(eventIds1);
     // wait for key to propagate till client
     // assert map not null on client
-    client2.invoke(() -> PutAllDUnitTest.waitTillOperationReceived());
+    client2.invoke(PutAllDUnitTest::waitTillOperationReceived);
 
     waitTillOperationReceived();
     EventID[] eventIds2 = (EventID[]) client2
-        .invoke(() -> PutAllDUnitTest.assertThreadIdToSequenceIdMapHasEntryIds());
+        .invoke(PutAllDUnitTest::assertThreadIdToSequenceIdMapHasEntryIds);
     assertNotNull(eventIds2);
-    server1.invoke(() -> PutAllDUnitTest.assertGotAllValues());
-    server2.invoke(() -> PutAllDUnitTest.assertGotAllValues());
-    client1.invoke(() -> PutAllDUnitTest.assertCallbackArgs());
-    client2.invoke(() -> PutAllDUnitTest.assertGotAllValues());
-    client2.invoke(() -> PutAllDUnitTest.assertCallbackArgs());
-    server1.invoke(() -> PutAllDUnitTest.assertCallbackArgs());
-    server2.invoke(() -> PutAllDUnitTest.assertCallbackArgs());
+    server1.invoke(PutAllDUnitTest::assertGotAllValues);
+    server2.invoke(PutAllDUnitTest::assertGotAllValues);
+    client1.invoke(PutAllDUnitTest::assertCallbackArgs);
+    client2.invoke(PutAllDUnitTest::assertGotAllValues);
+    client2.invoke(PutAllDUnitTest::assertCallbackArgs);
+    server1.invoke(PutAllDUnitTest::assertCallbackArgs);
+    server2.invoke(PutAllDUnitTest::assertCallbackArgs);
     assertGotAllValues();
     assertCallbackArgs();
     EventID[] eventIds3 = (EventID[]) assertThreadIdToSequenceIdMapHasEntryIds();

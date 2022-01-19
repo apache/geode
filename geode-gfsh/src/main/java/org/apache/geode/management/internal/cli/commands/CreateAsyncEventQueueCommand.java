@@ -123,7 +123,7 @@ public class CreateAsyncEventQueueCommand extends SingleGfshCommand {
     config.setForwardExpirationDestroy(forwardExpirationDestroy);
     if (gatewayEventFilters != null) {
       config.getGatewayEventFilters().addAll(Arrays.stream(gatewayEventFilters)
-          .map(classname -> new DeclarableType((classname))).collect(Collectors.toList()));
+          .map(DeclarableType::new).collect(Collectors.toList()));
     }
     if (gatewaySubstitutionListener != null) {
       config.setGatewayEventSubstitutionFilter(new DeclarableType(gatewaySubstitutionListener));

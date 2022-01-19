@@ -50,19 +50,19 @@ public class SocketCloser {
    * minutes).
    */
   static final long ASYNC_CLOSE_POOL_KEEP_ALIVE_SECONDS =
-      Long.getLong("p2p.ASYNC_CLOSE_POOL_KEEP_ALIVE_SECONDS", 120).longValue();
+      Long.getLong("p2p.ASYNC_CLOSE_POOL_KEEP_ALIVE_SECONDS", 120);
   /**
    * Maximum number of threads that can be doing a socket close. Any close requests over this max
    * will queue up waiting for a thread.
    */
   static final int ASYNC_CLOSE_POOL_MAX_THREADS =
-      Integer.getInteger("p2p.ASYNC_CLOSE_POOL_MAX_THREADS", 4).intValue();
+      Integer.getInteger("p2p.ASYNC_CLOSE_POOL_MAX_THREADS", 4);
   /**
    * How many milliseconds the synchronous requester waits for the async close to happen. Default is
    * 0. Prior releases waited 50ms.
    */
   static final long ASYNC_CLOSE_WAIT_MILLISECONDS =
-      Long.getLong("p2p.ASYNC_CLOSE_WAIT_MILLISECONDS", 0).longValue();
+      Long.getLong("p2p.ASYNC_CLOSE_WAIT_MILLISECONDS", 0);
 
   /**
    * map of thread pools of async close threads
@@ -99,7 +99,7 @@ public class SocketCloser {
   }
 
   public int getMaxThreads() {
-    return this.asyncClosePoolMaxThreads;
+    return asyncClosePoolMaxThreads;
   }
 
   private ExecutorService getAsyncThreadExecutor(String address) {
@@ -144,8 +144,8 @@ public class SocketCloser {
   public void close() {
     closedLock.lock();
     try {
-      if (!this.closed) {
-        this.closed = true;
+      if (!closed) {
+        closed = true;
       } else {
         return;
       }
@@ -234,9 +234,9 @@ public class SocketCloser {
   }
 
   private void waitForFutureTaskWithTimeout(Future submittedTask) {
-    if (this.asyncCloseWaitTime != 0) {
+    if (asyncCloseWaitTime != 0) {
       try {
-        submittedTask.get(this.asyncCloseWaitTime, this.asyncCloseWaitUnits);
+        submittedTask.get(asyncCloseWaitTime, asyncCloseWaitUnits);
       } catch (InterruptedException | ExecutionException | TimeoutException e) {
         // We want this code to wait at most the asyncCloseWaitTime for the close to happen.
         // It is ok to ignore these exception and let the close continue
@@ -257,7 +257,7 @@ public class SocketCloser {
     try {
       sock.shutdownInput();
       sock.shutdownOutput();
-    } catch (Exception e) {
+    } catch (Exception ignored) {
     }
     try {
       sock.close();

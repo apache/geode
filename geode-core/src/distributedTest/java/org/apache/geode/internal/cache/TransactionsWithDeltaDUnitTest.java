@@ -24,7 +24,6 @@ import static org.junit.Assert.fail;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Iterator;
 
 import org.junit.Test;
 
@@ -48,8 +47,6 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.cache.execute.CustomerIDPartitionResolver;
 import org.apache.geode.internal.cache.execute.data.CustId;
-import org.apache.geode.internal.cache.execute.data.Order;
-import org.apache.geode.internal.cache.execute.data.OrderId;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -95,12 +92,12 @@ public class TransactionsWithDeltaDUnitTest extends JUnit4CacheTestCase {
     if (interestPolicy != null) {
       af.setSubscriptionAttributes(new SubscriptionAttributes(interestPolicy));
     }
-    af.setPartitionAttributes(new PartitionAttributesFactory<CustId, Customer>()
+    af.setPartitionAttributes(new PartitionAttributesFactory<>()
         .setTotalNumBuckets(4).setLocalMaxMemory(accessor ? 0 : 1)
         .setPartitionResolver(new CustomerIDPartitionResolver("resolver1"))
         .setRedundantCopies(redundantCopies).create());
     getCache().createRegion(CUSTOMER, af.create());
-    af.setPartitionAttributes(new PartitionAttributesFactory<OrderId, Order>().setTotalNumBuckets(4)
+    af.setPartitionAttributes(new PartitionAttributesFactory<>().setTotalNumBuckets(4)
         .setLocalMaxMemory(accessor ? 0 : 1)
         .setPartitionResolver(new CustomerIDPartitionResolver("resolver2"))
         .setRedundantCopies(redundantCopies).setColocatedWith(CUSTOMER).create());
@@ -147,12 +144,12 @@ public class TransactionsWithDeltaDUnitTest extends JUnit4CacheTestCase {
     }
 
     public void setId(int id) {
-      this.idChanged = true;
+      idChanged = true;
       this.id = id;
     }
 
     public void setName(String name) {
-      this.nameChanged = true;
+      nameChanged = true;
       this.name = name;
     }
 
@@ -177,7 +174,7 @@ public class TransactionsWithDeltaDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public boolean hasDelta() {
-      return this.idChanged || this.nameChanged;
+      return idChanged || nameChanged;
     }
 
     @Override
@@ -205,25 +202,25 @@ public class TransactionsWithDeltaDUnitTest extends JUnit4CacheTestCase {
       }
       if (obj instanceof Customer) {
         Customer other = (Customer) obj;
-        return this.id == other.id && this.name.equals(other.name);
+        return id == other.id && name.equals(other.name);
       }
       return false;
     }
 
     @Override
     public int hashCode() {
-      return this.id + this.name.hashCode();
+      return id + name.hashCode();
     }
 
     public boolean isFromDeltaCalled() {
-      boolean retVal = this.fromDeltaCalled;
-      this.fromDeltaCalled = false;
+      boolean retVal = fromDeltaCalled;
+      fromDeltaCalled = false;
       return retVal;
     }
 
     public boolean isToDeltaCalled() {
-      boolean retVal = this.toDeltaCalled;
-      this.toDeltaCalled = false;
+      boolean retVal = toDeltaCalled;
+      toDeltaCalled = false;
       return retVal;
     }
 
@@ -348,7 +345,7 @@ public class TransactionsWithDeltaDUnitTest extends JUnit4CacheTestCase {
         try {
           r.put(key, cust);
           fail("exception not thrown");
-        } catch (UnsupportedOperationInTransactionException expected) {
+        } catch (UnsupportedOperationInTransactionException ignored) {
         }
         mgr.rollback();
         return null;
@@ -370,9 +367,8 @@ public class TransactionsWithDeltaDUnitTest extends JUnit4CacheTestCase {
         Region<CustId, Customer> pr = getCache().getRegion(CUSTOMER);
         CustId cust1 = new CustId(1);
         pr.put(cust1, new Customer(1, "name1"));
-        Iterator<CustId> it = pr.keySet().iterator();
-        while (it.hasNext()) {
-          LogWriterUtils.getLogWriter().info("SWAP:iterator1:" + pr.get(it.next()));
+        for (final CustId custId : pr.keySet()) {
+          LogWriterUtils.getLogWriter().info("SWAP:iterator1:" + pr.get(custId));
         }
         Customer c = pr.get(cust1);
         assertNotNull(c);

@@ -245,8 +245,8 @@ public abstract class AbstractConfig implements Config {
               "expected a setting in the form X-Y but found no dash for attribute " + name);
         }
         int[] tempValue = new int[2];
-        tempValue[0] = Integer.valueOf(value.substring(0, minus));
-        tempValue[1] = Integer.valueOf(value.substring(minus + 1));
+        tempValue[0] = Integer.parseInt(value.substring(0, minus));
+        tempValue[1] = Integer.parseInt(value.substring(minus + 1));
         attObjectValue = tempValue;
       } else if (valueType.equals(InetAddress.class)) {
         try {
@@ -254,7 +254,7 @@ public abstract class AbstractConfig implements Config {
         } catch (UnknownHostException ex) {
           throw new IllegalArgumentException(
               String.format("%s value %s must be a valid host name. %s",
-                  name, value, ex.toString()));
+                  name, value, ex));
         }
       } else if (valueType.equals(FlowControlParams.class)) {
         String[] values = value.split(",");
@@ -268,7 +268,7 @@ public abstract class AbstractConfig implements Config {
         int waitTime;
         try {
           allowance = Integer.parseInt(values[0].trim());
-          threshold = Float.valueOf(values[1].trim());
+          threshold = Float.parseFloat(values[1].trim());
           waitTime = Integer.parseInt(values[2].trim());
         } catch (NumberFormatException e) {
           throw new IllegalArgumentException(
@@ -351,10 +351,7 @@ public abstract class AbstractConfig implements Config {
     String[] validAttributeNames = getAttributeNames();
     boolean sourceFound = false;
     Map<String, ConfigSource> sourceMap = getAttSourceMap();
-    boolean sourceIsSecured = false;
-    if (source != null && source.getType() == ConfigSource.Type.SECURE_FILE) {
-      sourceIsSecured = true;
-    }
+    boolean sourceIsSecured = source != null && source.getType() == ConfigSource.Type.SECURE_FILE;
     for (String name : validAttributeNames) {
       if (source == null) {
         if (sourceMap.get(name) != null) {

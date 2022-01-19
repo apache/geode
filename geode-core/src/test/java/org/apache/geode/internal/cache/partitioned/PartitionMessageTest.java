@@ -47,7 +47,7 @@ public class PartitionMessageTest {
   private ClusterDistributionManager dm;
   private PartitionedRegion pr;
   private TXManagerImpl txMgr;
-  private long startTime = 1;
+  private final long startTime = 1;
   private TXStateProxy tx;
   private DistributionAdvisor advisor;
 

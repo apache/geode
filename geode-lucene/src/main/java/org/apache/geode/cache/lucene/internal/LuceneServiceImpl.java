@@ -22,7 +22,6 @@ import static org.apache.geode.internal.serialization.DataSerializableFixedID.CR
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -117,7 +116,7 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
 
   @Override
   public Cache getCache() {
-    return this.cache;
+    return cache;
   }
 
   @Override
@@ -141,7 +140,7 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
   @Override
   public CacheServiceMBeanBase getMBean() {
     LuceneServiceMBean mbean = new LuceneServiceMBean(this);
-    this.managementListener = new ManagementIndexListener(mbean);
+    managementListener = new ManagementIndexListener(mbean);
     return mbean;
   }
 
@@ -153,7 +152,8 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
   public void beforeRegionDestroyed(Region region) {
     List<LuceneIndex> indexes = getIndexes(region.getFullPath());
     if (!indexes.isEmpty()) {
-      String indexNames = indexes.stream().map(i -> i.getName()).collect(Collectors.joining(","));
+      String indexNames =
+          indexes.stream().map(LuceneIndex::getName).collect(Collectors.joining(","));
       throw new IllegalStateException(
           String.format(
               "Region %s cannot be destroyed because it defines Lucene index(es) [%s]. Destroy all Lucene indexes before destroying the region.",
@@ -171,7 +171,7 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
       // Stop and remove the AsyncEventQueue if it exists
       if (aeq != null) {
         aeq.stop();
-        this.cache.removeAsyncEventQueue(aeq);
+        cache.removeAsyncEventQueue(aeq);
       }
     }
   }
@@ -311,9 +311,13 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
       PartitionedRepositoryManager repositoryManager =
           (PartitionedRepositoryManager) luceneIndex.getRepositoryManager();
       Set<Integer> primaryBucketIds = userRegion.getDataStore().getAllLocalPrimaryBucketIds();
-      Iterator primaryBucketIterator = primaryBucketIds.iterator();
-      while (primaryBucketIterator.hasNext()) {
-        int primaryBucketId = (Integer) primaryBucketIterator.next();
+      /**
+       *
+       * Calling getRepository will in turn call computeRepository
+       * which is responsible for indexing the user region.
+       *
+       **/
+      for (final int primaryBucketId : primaryBucketIds) {
         try {
           BucketRegion userBucket = userRegion.getDataStore().getLocalBucketById(primaryBucketId);
           if (userBucket == null) {
@@ -371,8 +375,8 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
   public void afterDataRegionCreated(InternalLuceneIndex index) {
     index.initialize();
 
-    if (this.managementListener != null) {
-      this.managementListener.afterIndexCreated(index);
+    if (managementListener != null) {
+      managementListener.afterIndexCreated(index);
     }
 
     String aeqId = LuceneServiceImpl.getUniqueIndexName(index.getName(), index.getRegionPath());
@@ -603,9 +607,7 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
   }
 
   public void unregisterIndex(final String region) {
-    if (indexMap.containsKey(region)) {
-      indexMap.remove(region);
-    }
+    indexMap.remove(region);
   }
 
   @Override
@@ -656,7 +658,7 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
   @Override
   public boolean waitUntilFlushed(String indexName, String regionPath, long timeout, TimeUnit unit)
       throws InterruptedException {
-    Region dataRegion = this.cache.getRegion(regionPath);
+    Region dataRegion = cache.getRegion(regionPath);
     if (dataRegion == null) {
       logger.info("Data region " + regionPath + " not found");
       return false;
@@ -677,7 +679,7 @@ public class LuceneServiceImpl implements InternalLuceneService, DataSerializabl
 
   @Override
   public boolean isIndexingInProgress(String indexName, String regionPath) {
-    Region region = this.cache.getRegion(regionPath);
+    Region region = cache.getRegion(regionPath);
     if (region == null) {
       logger.info("Data region " + regionPath + " not found");
       return false;

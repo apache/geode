@@ -109,7 +109,7 @@ public class GemFireParameterizedMessage implements Message {
       final Throwable throwable) {
     this.messagePattern = messagePattern;
     this.throwable = throwable;
-    this.stringArgs = parseArguments(objectArgs);
+    stringArgs = parseArguments(objectArgs);
   }
 
   /**
@@ -127,7 +127,7 @@ public class GemFireParameterizedMessage implements Message {
    */
   public GemFireParameterizedMessage(final String messagePattern, final Object[] arguments) {
     this.messagePattern = messagePattern;
-    this.stringArgs = parseArguments(arguments);
+    stringArgs = parseArguments(arguments);
   }
 
   /**
@@ -248,13 +248,9 @@ public class GemFireParameterizedMessage implements Message {
         : that.messagePattern != null) {
       return false;
     }
-    if (!Arrays.equals(stringArgs, that.stringArgs)) {
-      return false;
-    }
+    return Arrays.equals(stringArgs, that.stringArgs);
     // if (throwable != null ? !throwable.equals(that.throwable) : that.throwable != null) return
     // false;
-
-    return true;
   }
 
   @Override
@@ -388,7 +384,7 @@ public class GemFireParameterizedMessage implements Message {
       return (String) o;
     }
     final StringBuilder str = new StringBuilder();
-    final Set<String> dejaVu = new HashSet<String>(); // that's actually a neat name ;)
+    final Set<String> dejaVu = new HashSet<>(); // that's actually a neat name ;)
     recursiveDeepToString(o, str, dejaVu);
     return str.toString();
   }
@@ -461,7 +457,7 @@ public class GemFireParameterizedMessage implements Message {
             } else {
               str.append(", ");
             }
-            recursiveDeepToString(current, str, new HashSet<String>(dejaVu));
+            recursiveDeepToString(current, str, new HashSet<>(dejaVu));
           }
           str.append(']');
         }
@@ -487,9 +483,9 @@ public class GemFireParameterizedMessage implements Message {
           }
           final Object key = current.getKey();
           final Object value = current.getValue();
-          recursiveDeepToString(key, str, new HashSet<String>(dejaVu));
+          recursiveDeepToString(key, str, new HashSet<>(dejaVu));
           str.append('=');
-          recursiveDeepToString(value, str, new HashSet<String>(dejaVu));
+          recursiveDeepToString(value, str, new HashSet<>(dejaVu));
         }
         str.append('}');
       }
@@ -510,7 +506,7 @@ public class GemFireParameterizedMessage implements Message {
           } else {
             str.append(", ");
           }
-          recursiveDeepToString(anOCol, str, new HashSet<String>(dejaVu));
+          recursiveDeepToString(anOCol, str, new HashSet<>(dejaVu));
         }
         str.append(']');
       }
@@ -523,7 +519,7 @@ public class GemFireParameterizedMessage implements Message {
     } else {
       // it's just some other Object, we can only use toString().
       try {
-        str.append(o.toString());
+        str.append(o);
       } catch (final Throwable t) {
         str.append(ERROR_PREFIX);
         str.append(identityToString(o));

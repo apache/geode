@@ -71,9 +71,9 @@ import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 @SuppressWarnings("serial")
 public class ClientDeserializationCopyOnReadRegressionTest extends ClientServerTestCase {
 
-  private String k1 = "k1";
-  private String k2 = "k2";
-  private String k3 = "k3";
+  private final String k1 = "k1";
+  private final String k2 = "k2";
+  private final String k3 = "k3";
 
   private VM client;
   private VM server;

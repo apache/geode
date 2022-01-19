@@ -55,10 +55,10 @@ public class OrderByComparatorJUnitTest {
 
   @Test
   public void testOrderByComparatorUnmapped() throws Exception {
-    String queries[] = {
+    String[] queries = {
         "SELECT  distinct ID, description, createTime FROM " + SEPARATOR
             + "portfolio1 pf1 where ID > 0 order by ID desc, pkid desc ",};
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     Position.resetCounter();
 
     // Create Regions
@@ -93,10 +93,10 @@ public class OrderByComparatorJUnitTest {
 
   @Test
   public void testOrderByComparatorMapped() throws Exception {
-    String queries[] = {
+    String[] queries = {
         "SELECT  distinct ID, description, createTime, pkid FROM " + SEPARATOR
             + "portfolio1 pf1 where ID > 0 order by ID desc, pkid desc ",};
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     Position.resetCounter();
 
     // Create Regions
@@ -132,9 +132,9 @@ public class OrderByComparatorJUnitTest {
 
   @Test
   public void testUnsupportedOrderByForPR() throws Exception {
-    String unsupportedQueries[] =
+    String[] unsupportedQueries =
         {"select distinct p.status from " + SEPARATOR + "portfolio1 p order by p.status, p.ID"};
-    Object r[][] = new Object[unsupportedQueries.length][2];
+    Object[][] r = new Object[unsupportedQueries.length][2];
     Position.resetCounter();
     // Create Regions
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
@@ -161,9 +161,9 @@ public class OrderByComparatorJUnitTest {
 
   @Test
   public void testSupportedOrderByForRR() throws Exception {
-    String unsupportedQueries[] =
+    String[] unsupportedQueries =
         {"select distinct p.status from " + SEPARATOR + "portfolio1 p order by p.status, p.ID"};
-    Object r[][] = new Object[unsupportedQueries.length][2];
+    Object[][] r = new Object[unsupportedQueries.length][2];
     Position.resetCounter();
 
     // Create Regions

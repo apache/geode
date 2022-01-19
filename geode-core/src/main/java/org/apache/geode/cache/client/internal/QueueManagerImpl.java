@@ -1104,14 +1104,14 @@ public class QueueManagerImpl implements QueueManager {
   }
 
   private void recoverCqs(Connection recoveredConnection, boolean isDurable) {
-    Map cqs = this.getPool().getRITracker().getCqsMap();
+    Map cqs = getPool().getRITracker().getCqsMap();
     for (Object o : cqs.entrySet()) {
       Map.Entry e = (Map.Entry) o;
       ClientCQ cqi = (ClientCQ) e.getKey();
       String name = cqi.getName();
-      if (this.pool.getMultiuserAuthentication()) {
+      if (pool.getMultiuserAuthentication()) {
         UserAttributes.userAttributes
-            .set(((DefaultQueryService) this.pool.getQueryService()).getUserAttributes(name));
+            .set(((DefaultQueryService) pool.getQueryService()).getUserAttributes(name));
       }
       try {
         if (((CqStateImpl) cqi.getState()).getState() != CqStateImpl.INIT

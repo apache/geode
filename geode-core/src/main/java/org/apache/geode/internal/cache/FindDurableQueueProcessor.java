@@ -19,7 +19,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -81,9 +80,8 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
     if (cache != null) {
       List l = cache.getCacheServers();
       if (l != null) {
-        Iterator i = l.iterator();
-        while (i.hasNext()) {
-          CacheServerImpl bs = (CacheServerImpl) i.next();
+        for (final Object o : l) {
+          CacheServerImpl bs = (CacheServerImpl) o;
           if (bs.getAcceptor().getCacheClientNotifier().getClientProxy(proxyId) != null) {
             ServerLocation loc = new ServerLocation(bs.getExternalAddress(), bs.getPort());
             matches.add(loc);
@@ -132,22 +130,22 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
 
     @Override
     public int getProcessorId() {
-      return this.processorId;
+      return processorId;
     }
 
     public ClientProxyMembershipID getProxyId() {
-      return this.proxyId;
+      return proxyId;
     }
 
     @Override
     protected void process(final ClusterDistributionManager dm) {
-      ArrayList<ServerLocation> matches = new ArrayList<ServerLocation>();
+      ArrayList<ServerLocation> matches = new ArrayList<>();
       try {
         findLocalDurableQueues(proxyId, matches);
 
       } finally {
         FindDurableQueueReply reply = new FindDurableQueueReply();
-        reply.setProcessorId(this.getProcessorId());
+        reply.setProcessorId(getProcessorId());
         reply.matches = matches;
         reply.setRecipient(getSender());
         if (dm.getId().equals(getSender())) {
@@ -174,24 +172,22 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.processorId = in.readInt();
-      this.proxyId = ClientProxyMembershipID.readCanonicalized(in);
+      processorId = in.readInt();
+      proxyId = ClientProxyMembershipID.readCanonicalized(in);
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      out.writeInt(this.processorId);
-      DataSerializer.writeObject(this.proxyId, out);
+      out.writeInt(processorId);
+      DataSerializer.writeObject(proxyId, out);
     }
 
     @Override
     public String toString() {
-      StringBuffer buff = new StringBuffer();
-      buff.append("FindDurableQueueMessage (proxyId='").append(this.proxyId)
-          .append("' processorId=").append(this.processorId).append(")");
-      return buff.toString();
+      return "FindDurableQueueMessage (proxyId='" + proxyId
+          + "' processorId=" + processorId + ")";
     }
   }
 
@@ -199,7 +195,7 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
     protected ArrayList matches = null;
 
     public ArrayList getMatches() {
-      return this.matches;
+      return matches;
     }
 
     @Override
@@ -211,7 +207,7 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.matches = DataSerializer.readArrayList(in);
+      matches = DataSerializer.readArrayList(in);
     }
 
     @Override
@@ -223,10 +219,8 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
 
     @Override
     public String toString() {
-      StringBuffer buff = new StringBuffer();
-      buff.append("FindDurableQueueReply (matches='").append(this.matches).append("' processorId=")
-          .append(this.processorId).append(")");
-      return buff.toString();
+      return "FindDurableQueueReply (matches='" + matches + "' processorId="
+          + processorId + ")";
     }
   }
 }

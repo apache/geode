@@ -29,11 +29,11 @@ import org.apache.geode.internal.cache.DiskRegionTestingBase;
  */
 public class DiskRegOverflowAsyncGetInMemPerfJUnitTest extends DiskRegionTestingBase {
 
-  private static int counter = 0;
+  private static final int counter = 0;
 
   private LogWriter log = null;
 
-  private DiskRegionProperties diskProps = new DiskRegionProperties();
+  private final DiskRegionProperties diskProps = new DiskRegionProperties();
 
   @Override
   protected final void postSetUp() throws Exception {
@@ -56,14 +56,14 @@ public class DiskRegOverflowAsyncGetInMemPerfJUnitTest extends DiskRegionTesting
     }
   }
 
-  private static int ENTRY_SIZE = 1024;
+  private static final int ENTRY_SIZE = 1024;
 
   /*
    * OP_COUNT can be increased/decrease as per the requirement. If required to be set as higher
    * value such as 1000000 one needs to set the VM heap size accordingly. (For example:Default
    * setting in build.xml is <jvmarg value="-Xmx256M"/>
    */
-  private static int OP_COUNT = 1000;
+  private static final int OP_COUNT = 1000;
 
   @Test
   public void testPopulatefor1Kbwrites() {

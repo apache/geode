@@ -203,7 +203,7 @@ public class ShutdownAllRequest extends AdminRequest {
         if (!isSuccess) {
           InternalDistributedMember me = dm.getDistributionManagerId();
           InternalDistributedSystem ids = dm.getSystem();
-          if (!this.getSender().equals(me)) {
+          if (!getSender().equals(me)) {
             if (ids.isConnected()) {
               logger.fatal("ShutdownAllRequest: disconnect distributed without response.");
               ids.disconnect();
@@ -213,7 +213,7 @@ public class ShutdownAllRequest extends AdminRequest {
       }
     }
 
-    return new ShutdownAllResponse(this.getSender(), isToShutdown);
+    return new ShutdownAllResponse(getSender(), isToShutdown);
   }
 
   @Override
@@ -235,8 +235,8 @@ public class ShutdownAllRequest extends AdminRequest {
 
   @Override
   public String toString() {
-    return "ShutdownAllRequest sent to " + this.getRecipientsDescription() + " from "
-        + this.getSender();
+    return "ShutdownAllRequest sent to " + getRecipientsDescription() + " from "
+        + getSender();
   }
 
   private static class ShutDownAllReplyProcessor extends AdminMultipleReplyProcessor {
@@ -265,7 +265,7 @@ public class ShutdownAllRequest extends AdminRequest {
           synchronized (results) {
             logger.debug("{} adding {} to result set {}", this, msg.getSender(),
                 results);
-            this.results.add(msg.getSender());
+            results.add(msg.getSender());
           }
         } else {
           // for member without cache, we will not wait for its result
@@ -273,7 +273,7 @@ public class ShutdownAllRequest extends AdminRequest {
           removeMember(msg.getSender(), false);
         }
 
-        if (msg.getSender().equals(this.dmgr.getDistributionManagerId())) {
+        if (msg.getSender().equals(dmgr.getDistributionManagerId())) {
           // mark myself as done since my response has been sent and my DS
           // will be closed later anyway
           removeMember(msg.getSender(), false);

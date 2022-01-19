@@ -68,7 +68,7 @@ public class ValueConstraintRegressionTest {
     try {
       portolioRegion.put("key2", new Data());
       fail("Expected ClassCastException after put as valueConstraint is set to Portfolio.class");
-    } catch (ClassCastException expected) {
+    } catch (ClassCastException ignored) {
     }
 
     Set address1 = new HashSet();
@@ -97,7 +97,7 @@ public class ValueConstraintRegressionTest {
     try {
       managerRegion.put("key1", employee);
       fail("Expected ClassCastException after put as valueConstraint is set to Manager.class");
-    } catch (ClassCastException expected) {
+    } catch (ClassCastException ignored) {
     }
   }
 }

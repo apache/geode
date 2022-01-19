@@ -53,11 +53,11 @@ public class JGAddress extends UUID {
 
   public JGAddress(MemberIdentifier mbr) {
     super();
-    this.ip_addr = mbr.getInetAddress();
-    this.port = mbr.getMembershipPort();
-    this.mostSigBits = mbr.getUuidMostSignificantBits();
-    this.leastSigBits = mbr.getUuidLeastSignificantBits();
-    this.vmViewId = mbr.getVmViewId();
+    ip_addr = mbr.getInetAddress();
+    port = mbr.getMembershipPort();
+    mostSigBits = mbr.getUuidMostSignificantBits();
+    leastSigBits = mbr.getUuidLeastSignificantBits();
+    vmViewId = mbr.getVmViewId();
   }
 
 
@@ -78,11 +78,11 @@ public class JGAddress extends UUID {
   }
 
   public int getVmViewId() {
-    return this.vmViewId;
+    return vmViewId;
   }
 
   protected void setVmViewId(int id) {
-    this.vmViewId = id;
+    vmViewId = id;
   }
 
 
@@ -163,9 +163,9 @@ public class JGAddress extends UUID {
     in.readFully(a);
     if (len == Global.IPV6_SIZE) {
       int scope_id = in.readInt();
-      this.ip_addr = Inet6Address.getByAddress(null, a, scope_id);
+      ip_addr = Inet6Address.getByAddress(null, a, scope_id);
     } else {
-      this.ip_addr = InetAddress.getByAddress(a);
+      ip_addr = InetAddress.getByAddress(a);
     }
 
     // changed from readShort(): we need the full 65535, with a short we'd only get up to 32K !

@@ -34,11 +34,11 @@ public class PersistentMemberManager {
   private static final Logger logger = LogService.getLogger();
 
   private final Set<MemberRevocationListener> revocationListeners =
-      new HashSet<MemberRevocationListener>();
+      new HashSet<>();
   private final Map<PersistentMemberPattern, Object> revokedMembers =
-      new ConcurrentHashMap<PersistentMemberPattern, Object>();
-  private Map<PersistentMemberPattern, PendingRevokeListener> pendingRevokes =
-      new HashMap<PersistentMemberPattern, PendingRevokeListener>();
+      new ConcurrentHashMap<>();
+  private final Map<PersistentMemberPattern, PendingRevokeListener> pendingRevokes =
+      new HashMap<>();
 
   private static final Object TOKEN = new Object();
 
@@ -88,7 +88,7 @@ public class PersistentMemberManager {
         revokedMembers.put(pattern, TOKEN);
       }
       revocationListeners.add(listener);
-      return new HashSet<PersistentMemberPattern>(revokedMembers.keySet());
+      return new HashSet<>(revokedMembers.keySet());
     }
   }
 
@@ -100,7 +100,7 @@ public class PersistentMemberManager {
 
   public HashSet<PersistentMemberPattern> getRevokedMembers() {
     synchronized (this) {
-      return new HashSet<PersistentMemberPattern>(revokedMembers.keySet());
+      return new HashSet<>(revokedMembers.keySet());
     }
   }
 
@@ -111,7 +111,7 @@ public class PersistentMemberManager {
   public Map<String, Set<PersistentMemberID>> getWaitingRegions() {
     synchronized (this) {
       Map<String, Set<PersistentMemberID>> missingMemberIds =
-          new HashMap<String, Set<PersistentMemberID>>();
+          new HashMap<>();
       for (MemberRevocationListener listener : revocationListeners) {
         String regionPath = listener.getRegionPath();
         Set<PersistentMemberID> ids = listener.getMissingMemberIds();
@@ -209,8 +209,8 @@ public class PersistentMemberManager {
 
   public class PendingRevokeListener implements MembershipListener {
     InternalDistributedMember sender;
-    private PersistentMemberPattern pattern;
-    private DistributionManager dm;
+    private final PersistentMemberPattern pattern;
+    private final DistributionManager dm;
 
     public PendingRevokeListener(PersistentMemberPattern pattern, InternalDistributedMember sender,
         DistributionManager dm) {

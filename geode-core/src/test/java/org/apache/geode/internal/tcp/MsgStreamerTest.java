@@ -42,8 +42,8 @@ import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.serialization.KnownVersion;
 
 public class MsgStreamerTest {
-  private DMStats stats = mock(DMStats.class);
-  private BufferPool pool = spy(new BufferPool(stats));
+  private final DMStats stats = mock(DMStats.class);
+  private final BufferPool pool = spy(new BufferPool(stats));
   Connection connection1 = mock(Connection.class);
   Connection connection2 = mock(Connection.class);
 

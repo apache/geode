@@ -36,7 +36,7 @@ public class BindingCreation {
 
   public BindingCreation(Map gfSpecific, List vendorSpecific) {
     this.gfSpecific = gfSpecific;
-    this.vendorSpecificList = vendorSpecific;
+    vendorSpecificList = vendorSpecific;
   }
 
   /**
@@ -44,7 +44,7 @@ public class BindingCreation {
    *
    */
   List getVendorSpecificList() {
-    return this.vendorSpecificList;
+    return vendorSpecificList;
   }
 
   /**
@@ -52,6 +52,6 @@ public class BindingCreation {
    *
    */
   Map getGFSpecificMap() {
-    return this.gfSpecific;
+    return gfSpecific;
   }
 }

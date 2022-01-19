@@ -41,7 +41,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     String lessThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID < 5";
 
     // Start server 1
-    server1Port = this.server1VM.invoke(
+    server1Port = server1VM.invoke(
         () -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
 
     final String durableClientId = getName() + "_client";
@@ -59,7 +59,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
         server1VM);
 
     // Stop the durable client
-    this.disconnectDurableClient(true);
+    disconnectDurableClient(true);
 
     // Start normal publisher client
     startClient(publisherClientVM, server1Port, regionName);
@@ -101,13 +101,13 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     checkHAQueueSize(server1VM, durableClientId, 0, 1);
 
     // Stop the durable client
-    this.durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 
     // Stop the publisher client
-    this.publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 
     // Stop the server
-    this.server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
   }
 
   /**
@@ -124,7 +124,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     String lessThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID < 5";
 
     // Start server 1
-    server1Port = this.server1VM.invoke(
+    server1Port = server1VM.invoke(
         () -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
 
     final String durableClientId = getName() + "_client";
@@ -142,7 +142,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
         server1VM);
 
     // Stop the durable client
-    this.disconnectDurableClient(true);
+    disconnectDurableClient(true);
 
     // Start normal publisher client
     startClient(publisherClientVM, server1Port, regionName);
@@ -190,13 +190,13 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     checkHAQueueSize(server1VM, durableClientId, 0, 1);
 
     // Stop the durable client
-    this.durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 
     // Stop the publisher client
-    this.publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 
     // Stop the server
-    this.server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
   }
 
   /**
@@ -213,18 +213,18 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     String lessThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID < 5";
 
     // Start server 1
-    server1Port = this.server1VM.invoke(
+    server1Port = server1VM.invoke(
         () -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
 
     // Start server 2 using the same mcast port as server 1
-    final int server2Port = this.server2VM
+    final int server2Port = server2VM
         .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
 
     // shut down server 2
     closeCache(server2VM);
 
     final String durableClientId = getName() + "_client";
-    this.durableClientVM.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
+    durableClientVM.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
 
     startDurableClient(durableClientVM, durableClientId, server1Port, server2Port, regionName);
 
@@ -240,7 +240,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     checkNumDurableCqs(server1VM, durableClientId, 3);
 
     // Stop the durable client
-    this.disconnectDurableClient(true);
+    disconnectDurableClient(true);
 
     // Start normal publisher client
     startClient(publisherClientVM, server1Port, regionName);
@@ -252,7 +252,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     startDurableClient(durableClientVM, durableClientId, server1Port, server2Port, regionName);
 
     // Re-start server2, at this point it will be the first time server2 has connected to client
-    this.server2VM.invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE,
+    server2VM.invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE,
         server2Port));
 
     // Verify durable client on server2
@@ -294,14 +294,14 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     checkCqStatOnServer(server2VM, durableClientId, "All", 0);
 
     // Stop the durable client
-    this.durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 
     // Stop the publisher client
-    this.publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 
     // Stop the servers
-    this.server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
-    this.server2VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    server2VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
   }
 
   /**
@@ -314,7 +314,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     String lessThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID < 5";
 
     // Start server 1
-    server1Port = this.server1VM.invoke(
+    server1Port = server1VM.invoke(
         () -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
 
     durableClientId = getName() + "_client";
@@ -332,7 +332,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
         server1VM);
 
     // Stop the durable client
-    this.disconnectDurableClient(true);
+    disconnectDurableClient(true);
 
     // Start normal publisher client
     startClient(publisherClientVM, server1Port, regionName);
@@ -379,13 +379,13 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     checkCqStatOnServer(server1VM, durableClientId, "All", 0);
 
     // Stop the durable client
-    this.durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 
     // Stop the publisher client
-    this.publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 
     // Stop the server
-    this.server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
   }
 
   @Test
@@ -395,15 +395,15 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     String lessThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID < 5";
 
     // Start server 1
-    server1Port = this.server1VM.invoke(
+    server1Port = server1VM.invoke(
         () -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
 
     // Start server 2 using the same mcast port as server 1
-    final int server2Port = this.server2VM
+    final int server2Port = server2VM
         .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
 
     final String durableClientId = getName() + "_client";
-    this.durableClientVM.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
+    durableClientVM.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
 
     startDurableClient(durableClientVM, durableClientId, server1Port, server2Port, regionName);
 
@@ -423,7 +423,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
         server1VM);
 
     // Stop the durable client
-    this.disconnectDurableClient(true);
+    disconnectDurableClient(true);
 
     // Start normal publisher client
     startClient(publisherClientVM, server1Port, regionName);
@@ -476,13 +476,13 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     checkCqStatOnServer(server2VM, durableClientId, "All", 0);
 
     // Stop the durable client
-    this.durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 
     // Stop the publisher client
-    this.publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 
     // Stop the server
-    this.server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
   }
 
   /**
@@ -497,17 +497,17 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     String lessThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID < 5";
 
     // Start server 1
-    server1Port = this.server1VM.invoke(
+    server1Port = server1VM.invoke(
         () -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
 
     // Start server 2 using the same mcast port as server 1
-    final int server2Port = this.server2VM
+    final int server2Port = server2VM
         .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
 
     // Start a durable client that is kept alive on the server when it stops
     // normally
     final String durableClientId = getName() + "_client";
-    this.durableClientVM.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
+    durableClientVM.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
 
     startDurableClient(durableClientVM, durableClientId, server1Port, server2Port, regionName);
 
@@ -532,7 +532,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     closeCache(server2VM);
 
     // Stop the durable client
-    this.disconnectDurableClient(true);
+    disconnectDurableClient(true);
 
     // Start normal publisher client
     startClient(publisherClientVM, server1Port, regionName);
@@ -541,7 +541,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     publishEntries(regionName, 10);
 
     // Re-start server2, should get events through gii
-    this.server2VM.invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE,
+    server2VM.invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE,
         server2Port));
 
     // Restart the durable client
@@ -582,11 +582,11 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     checkCqStatOnServer(server2VM, durableClientId, "All", 0);
 
     // Stop the durable clients
-    this.durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
-    this.publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 
     // Stop the servers
-    this.server2VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    server2VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
   }
 
   /**
@@ -603,18 +603,18 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     String lessThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID < 5";
 
     // Start server 1
-    server1Port = this.server1VM.invoke(
+    server1Port = server1VM.invoke(
         () -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
 
     // Start server 2 using the same mcast port as server 1
-    final int server2Port = this.server2VM
+    final int server2Port = server2VM
         .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
 
     // shut down server 2
     closeCache(server2VM);
 
     durableClientId = getName() + "_client";
-    this.durableClientVM.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
+    durableClientVM.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
 
     startDurableClient(durableClientVM, durableClientId, server1Port, server2Port, regionName);
 
@@ -630,7 +630,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     checkNumDurableCqs(server1VM, durableClientId, 3);
 
     // Stop the durable client
-    this.disconnectDurableClient(true);
+    disconnectDurableClient(true);
 
     // Start normal publisher client
     startClient(publisherClientVM, server1Port, regionName);
@@ -642,7 +642,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     startDurableClient(durableClientVM, durableClientId, server1Port, server2Port, regionName);
 
     // Re-start server2, at this point it will be the first time server2 has connected to client
-    this.server2VM.invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE,
+    server2VM.invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE,
         server2Port));
 
     // Verify durable client on server2
@@ -684,14 +684,14 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     checkCqStatOnServer(server2VM, durableClientId, "All", 0);
 
     // Stop the durable client
-    this.durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 
     // Stop the publisher client
-    this.publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 
     // Stop the servers
-    this.server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
-    this.server2VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    server2VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
   }
 
   /**
@@ -706,17 +706,17 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     String lessThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID < 5";
 
     // Start server 1
-    server1Port = this.server1VM.invoke(
+    server1Port = server1VM.invoke(
         () -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
 
     // Start server 2
-    final int server2Port = this.server2VM
+    final int server2Port = server2VM
         .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
 
     // Start a durable client that is kept alive on the server when it stops
     // normally
     durableClientId = getName() + "_client";
-    this.durableClientVM.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
+    durableClientVM.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
 
     startDurableClient(durableClientVM, durableClientId, server1Port, server2Port, regionName);
 
@@ -741,7 +741,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     closeCache(server2VM);
 
     // Stop the durable client
-    this.disconnectDurableClient(true);
+    disconnectDurableClient(true);
 
     // Start normal publisher client
     startClient(publisherClientVM, server1Port, regionName);
@@ -750,7 +750,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     publishEntries(regionName, 10);
 
     // Re-start server2, should get events through gii
-    this.server2VM.invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE,
+    server2VM.invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE,
         server2Port));
 
     // Restart the durable client
@@ -792,12 +792,12 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     checkCqStatOnServer(server1VM, durableClientId, "All", 0);
 
     // Stop the durable clients
-    this.durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
-    this.publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 
     // Stop the servers
-    this.server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
-    this.server2VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    server2VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
   }
 
   /**
@@ -810,17 +810,17 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     String lessThan5Query = "select * from " + SEPARATOR + regionName + " p where p.ID < 5";
 
     // Start server 1
-    server1Port = this.server1VM.invoke(
+    server1Port = server1VM.invoke(
         () -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
 
     // Start server 2 using the same mcast port as server 1
-    final int server2Port = this.server2VM
+    final int server2Port = server2VM
         .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
 
     // Start a durable client that is kept alive on the server when it stops
     // normally
     final String durableClientId = getName() + "_client";
-    this.durableClientVM.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
+    durableClientVM.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
 
     startDurableClient(durableClientVM, durableClientId, server1Port, server2Port, regionName);
 
@@ -842,7 +842,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     checkNumDurableCqs(server2VM, durableClientId, 3);
 
     // Stop the durable client
-    this.disconnectDurableClient(true);
+    disconnectDurableClient(true);
 
     // Start normal publisher client
     startClient(publisherClientVM, server1Port, regionName);
@@ -889,13 +889,13 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     checkCqStatOnServer(server2VM, durableClientId, "All", 0);
 
     // Stop the durable client
-    this.durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 
     // Stop the publisher client
-    this.publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 
     // Stop the server
-    this.server2VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    server2VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
   }
 
   /**
@@ -909,7 +909,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
 
     int timeoutInSeconds = 20;
     // Start server 1
-    server1Port = this.server1VM.invoke(
+    server1Port = server1VM.invoke(
         () -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
 
     final String durableClientId = getName() + "_client";
@@ -927,7 +927,7 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
         server1VM);
 
     // Stop the durable client
-    this.disconnectDurableClient(true);
+    disconnectDurableClient(true);
 
     // Start normal publisher client
     startClient(publisherClientVM, server1Port, regionName);
@@ -982,13 +982,13 @@ public class DurableClientHAQueuedDUnitTest extends DurableClientTestBase {
     checkCqStatOnServer(server1VM, durableClientId, "All", 0);
 
     // Stop the durable client
-    this.durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    durableClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 
     // Stop the publisher client
-    this.publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 
     // Stop the server
-    this.server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
   }
 
 }

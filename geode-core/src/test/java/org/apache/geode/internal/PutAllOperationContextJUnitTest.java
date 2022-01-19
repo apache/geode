@@ -118,7 +118,7 @@ public class PutAllOperationContextJUnitTest {
   @Test
   public void testCachedDeserializable() {
     LinkedHashMap<String, Object> m = new LinkedHashMap<>();
-    Object v = Integer.valueOf(99);
+    Object v = 99;
     CachedDeserializable cd = CachedDeserializableFactory.create(v, 24, null);
     m.put("cd", cd);
     PutAllOperationContext paoc = new PutAllOperationContext(m);
@@ -170,7 +170,7 @@ public class PutAllOperationContextJUnitTest {
     assertEquals(true, opMap.containsKey("1"));
     assertEquals(false, opMap.containsKey("4"));
     assertEquals("1", opMap.get("1"));
-    assertEquals(Arrays.asList("1", "2", "3"), new ArrayList<String>(opMap.values()));
+    assertEquals(Arrays.asList("1", "2", "3"), new ArrayList<>(opMap.values()));
     opMap.put("1", "1b");
     opMap.put("2", "2b");
     opMap.put("3", "3b");

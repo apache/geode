@@ -44,46 +44,46 @@ public class CacheTransactionManagerCreation implements CacheTransactionManager 
   @Override
   public TransactionListener setListener(TransactionListener newListener) {
     TransactionListener result = getListener();
-    this.txListeners.clear();
+    txListeners.clear();
     if (newListener != null) {
-      this.txListeners.add(newListener);
+      txListeners.add(newListener);
     }
     return result;
   }
 
   @Override
   public void initListeners(TransactionListener[] newListeners) {
-    this.txListeners.clear();
+    txListeners.clear();
     if (newListeners != null && newListeners.length > 0) {
-      this.txListeners.addAll(Arrays.asList(newListeners));
+      txListeners.addAll(Arrays.asList(newListeners));
     }
   }
 
   @Override
   public void addListener(TransactionListener newListener) {
-    if (!this.txListeners.contains(newListener)) {
-      this.txListeners.add(newListener);
+    if (!txListeners.contains(newListener)) {
+      txListeners.add(newListener);
     }
   }
 
   @Override
   public void removeListener(TransactionListener newListener) {
-    this.txListeners.remove(newListener);
+    txListeners.remove(newListener);
   }
 
   @Override
   public TransactionListener[] getListeners() {
-    TransactionListener[] result = new TransactionListener[this.txListeners.size()];
-    this.txListeners.toArray(result);
+    TransactionListener[] result = new TransactionListener[txListeners.size()];
+    txListeners.toArray(result);
     return result;
   }
 
   @Override
   public TransactionListener getListener() {
-    if (this.txListeners.isEmpty()) {
+    if (txListeners.isEmpty()) {
       return null;
-    } else if (this.txListeners.size() == 1) {
-      return (TransactionListener) this.txListeners.get(0);
+    } else if (txListeners.size() == 1) {
+      return (TransactionListener) txListeners.get(0);
     } else {
       throw new IllegalStateException(
           "more than one transaction listener exists");

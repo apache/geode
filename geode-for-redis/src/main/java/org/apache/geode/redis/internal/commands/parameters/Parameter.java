@@ -32,7 +32,7 @@ public class Parameter {
   private int firstKey = 1;
   private int lastKey = 1;
   private int step = 1;
-  private List<Consumer<Command>> predicates = new ArrayList<>();
+  private final List<Consumer<Command>> predicates = new ArrayList<>();
 
   public void checkParameters(Command command, ExecutionHandlerContext context) {
     predicates.forEach(p -> p.accept(command));

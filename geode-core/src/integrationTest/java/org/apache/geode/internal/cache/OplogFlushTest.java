@@ -49,7 +49,7 @@ public class OplogFlushTest extends DiskRegionTestingBase {
   private Oplog ol = null;
   private ByteBuffer bb1 = null;
   private ByteBuffer bb2 = null;
-  private ByteBuffer[] bbArray = new ByteBuffer[2];
+  private final ByteBuffer[] bbArray = new ByteBuffer[2];
   private UninterruptibleFileChannel ch;
   private UninterruptibleFileChannel spyCh;
 

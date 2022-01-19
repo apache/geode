@@ -42,15 +42,15 @@ public class RemoteDLockInfo implements DLockInfo, DataSerializable {
   public RemoteDLockInfo(String serviceName, String name, DLockToken lock,
       InternalDistributedMember localId) {
     this.serviceName = serviceName;
-    this.lockName = name;
+    lockName = name;
     synchronized (lock) {
-      this.threadId = lock.getThreadName();
-      this.acquired = this.threadId != null;
-      if (this.acquired) {
-        this.owner = localId;
+      threadId = lock.getThreadName();
+      acquired = threadId != null;
+      if (acquired) {
+        owner = localId;
       }
-      this.recursion = lock.getRecursion();
-      this.leaseExpiration = lock.getLeaseExpireTime();
+      recursion = lock.getRecursion();
+      leaseExpiration = lock.getLeaseExpireTime();
     }
   }
 
@@ -116,14 +116,14 @@ public class RemoteDLockInfo implements DLockInfo, DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.serviceName = DataSerializer.readString(in);
-    this.threadId = DataSerializer.readString(in);
-    this.lockName = DataSerializer.readString(in);
-    this.acquired = in.readBoolean();
-    this.recursion = in.readInt();
-    this.owner = (InternalDistributedMember) DataSerializer.readObject(in);
-    this.startTime = in.readLong();
-    this.leaseExpiration = in.readLong();
+    serviceName = DataSerializer.readString(in);
+    threadId = DataSerializer.readString(in);
+    lockName = DataSerializer.readString(in);
+    acquired = in.readBoolean();
+    recursion = in.readInt();
+    owner = DataSerializer.readObject(in);
+    startTime = in.readLong();
+    leaseExpiration = in.readLong();
   }
 
 }

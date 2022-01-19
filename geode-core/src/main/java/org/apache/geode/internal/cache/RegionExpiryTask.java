@@ -29,7 +29,7 @@ abstract class RegionExpiryTask extends ExpiryTask {
 
   protected RegionExpiryTask(LocalRegion reg) {
     super(reg);
-    this.isCanceled = false;
+    isCanceled = false;
   }
 
   @Override

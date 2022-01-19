@@ -77,7 +77,7 @@ public class ClassNameType implements Serializable {
    *
    */
   public void setClassName(String value) {
-    this.className = value;
+    className = value;
   }
 
   @Override

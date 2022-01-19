@@ -25,18 +25,18 @@ import org.apache.geode.internal.logging.LogWriterImpl;
 
 public class AlertDetails {
 
-  private int alertLevel;
+  private final int alertLevel;
 
-  private String connectionName;
-  private String threadName;
-  private long tid;
-  private String msg;
-  private String exceptionText;
-  private Date msgDate;
+  private final String connectionName;
+  private final String threadName;
+  private final long tid;
+  private final String msg;
+  private final String exceptionText;
+  private final Date msgDate;
   private final String sourceId;
   private final String message;
 
-  private InternalDistributedMember sender;
+  private final InternalDistributedMember sender;
 
   public AlertDetails(int alertLevel, Date msgDate, String connectionName, String threadName,
       long tid, String msg, String exceptionText, InternalDistributedMember sender) {
@@ -51,7 +51,7 @@ public class AlertDetails {
     this.sender = sender;
 
     {
-      StringBuffer tmpSourceId = new StringBuffer();
+      StringBuilder tmpSourceId = new StringBuilder();
 
       tmpSourceId.append(threadName);
       if (tmpSourceId.length() > 0) {
@@ -59,16 +59,16 @@ public class AlertDetails {
       }
       tmpSourceId.append("tid=0x");
       tmpSourceId.append(Long.toHexString(tid));
-      this.sourceId = tmpSourceId.toString();
+      sourceId = tmpSourceId.toString();
     }
     {
-      StringBuffer tmpMessage = new StringBuffer();
+      StringBuilder tmpMessage = new StringBuilder();
       tmpMessage.append(msg);
       if (tmpMessage.length() > 0) {
         tmpMessage.append('\n');
       }
       tmpMessage.append(exceptionText);
-      this.message = tmpMessage.toString();
+      message = tmpMessage.toString();
     }
   }
 
@@ -109,7 +109,7 @@ public class AlertDetails {
    * received by a distribution manager.
    */
   public InternalDistributedMember getSender() {
-    return this.sender;
+    return sender;
   }
 
   public String toString() {

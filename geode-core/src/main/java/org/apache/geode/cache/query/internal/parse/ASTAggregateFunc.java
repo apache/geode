@@ -36,7 +36,7 @@ public class ASTAggregateFunc extends GemFireAST {
   }
 
   public void setAggregateFunctionType(int type) {
-    this.aggFunctionType = type;
+    aggFunctionType = type;
   }
 
   public void setDistinctOnly(boolean distinctOnly) {
@@ -48,12 +48,12 @@ public class ASTAggregateFunc extends GemFireAST {
     super.compile(compiler);
     Object expr = compiler.pop();
     if (expr instanceof String) {
-      if (((String) expr).equals("*")) {
+      if (expr.equals("*")) {
         expr = null;
       } else {
         throw new QueryInvalidException("invalid parameter to aggregate function");
       }
     }
-    compiler.aggregateFunction((CompiledValue) expr, this.aggFunctionType, this.distinctOnly);
+    compiler.aggregateFunction((CompiledValue) expr, aggFunctionType, distinctOnly);
   }
 }

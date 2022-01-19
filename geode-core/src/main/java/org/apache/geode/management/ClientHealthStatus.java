@@ -114,7 +114,7 @@ public class ClientHealthStatus {
   /**
    * Represents stats for a poolName .
    **/
-  private Map<String, String> clientPoolStatsMap = new HashMap<String, String>();
+  private Map<String, String> clientPoolStatsMap = new HashMap<>();
 
   /**
    * Returns the number of times a successful get operation has occurred.
@@ -290,11 +290,11 @@ public class ClientHealthStatus {
 
 
   public Map<String, String> getPoolStats() {
-    return this.clientPoolStatsMap;
+    return clientPoolStatsMap;
   }
 
   public void setPoolStats(Map<String, String> map) {
-    this.clientPoolStatsMap = map;
+    clientPoolStatsMap = map;
   }
 
   public boolean isConnected() {

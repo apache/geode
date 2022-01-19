@@ -113,19 +113,19 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
    *
    */
   public HAEventWrapper(ClientUpdateMessage event) {
-    this.regionName = event.getRegionName();
-    this.keyOfInterest = event.getKeyOfInterest();
-    this.shouldConflate = event.shouldBeConflated();
-    this.eventIdentifier = event.getEventId();
+    regionName = event.getRegionName();
+    keyOfInterest = event.getKeyOfInterest();
+    shouldConflate = event.shouldBeConflated();
+    eventIdentifier = event.getEventId();
     rcUpdater.set(this, 0);
     putInProgressCountUpdater.set(this, 0);
-    this.clientUpdateMessage = event;
-    this.clientCqs = ((ClientUpdateMessageImpl) event).getClientCqs();
+    clientUpdateMessage = event;
+    clientCqs = ((ClientUpdateMessageImpl) event).getClientCqs();
   }
 
   public HAEventWrapper(EventID eventId) {
-    this.eventIdentifier = eventId;
-    this.clientUpdateMessage = new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_CREATE,
+    eventIdentifier = eventId;
+    clientUpdateMessage = new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_CREATE,
         new ClientProxyMembershipID(), eventId);
     rcUpdater.set(this, 0);
     putInProgressCountUpdater.set(this, 0);
@@ -144,7 +144,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
    */
   @Override
   public EventID getEventId() {
-    return this.eventIdentifier;
+    return eventIdentifier;
   }
 
   /*
@@ -154,7 +154,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
    */
   @Override
   public Object getKeyToConflate() {
-    return this.keyOfInterest;
+    return keyOfInterest;
   }
 
   /*
@@ -164,7 +164,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
    */
   @Override
   public String getRegionToConflate() {
-    return this.regionName;
+    return regionName;
   }
 
   /*
@@ -194,11 +194,11 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
    */
   @Override
   public boolean shouldBeConflated() {
-    return this.shouldConflate;
+    return shouldConflate;
   }
 
   public void setClientUpdateMessage(ClientUpdateMessage cum) {
-    this.clientUpdateMessage = cum;
+    clientUpdateMessage = cum;
   }
 
   /**
@@ -208,15 +208,15 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
    * @return an instance of <code>ClientUpdateMessage</code> implementation.
    */
   public ClientUpdateMessage getClientUpdateMessage() {
-    return this.clientUpdateMessage;
+    return clientUpdateMessage;
   }
 
   public ClientCqConcurrentMap getClientCqs() {
-    return this.clientCqs;
+    return clientCqs;
   }
 
   public void setHAContainer(Map container) {
-    this.haContainer = container;
+    haContainer = container;
   }
 
   /**
@@ -233,7 +233,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
       return false;
     }
 
-    return this == other || this.getEventId().equals(((HAEventWrapper) other).getEventId());
+    return this == other || getEventId().equals(((HAEventWrapper) other).getEventId());
   }
 
   /**
@@ -243,24 +243,24 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
    */
   @Override
   public int hashCode() {
-    return this.getEventId().hashCode();
+    return getEventId().hashCode();
   }
 
   @Override
   public String toString() {
-    if (this.clientUpdateMessage != null) {
+    if (clientUpdateMessage != null) {
       return "HAEventWrapper[refCount=" + getReferenceCount() + "; putInProgress="
-          + putInProgressCountUpdater.get(this) + "; msg=" + this.clientUpdateMessage + "]";
+          + putInProgressCountUpdater.get(this) + "; msg=" + clientUpdateMessage + "]";
     } else {
-      return "HAEventWrapper[region=" + this.regionName + "; key=" + this.keyOfInterest
+      return "HAEventWrapper[region=" + regionName + "; key=" + keyOfInterest
           + "; refCount=" + getReferenceCount()
           + "; putInProgress=" + putInProgressCountUpdater.get(this) + "; event="
-          + this.eventIdentifier
-          + ((this.clientUpdateMessage == null) ? "; no message" : ";with message")
-          + ((this.clientUpdateMessage == null) ? ""
-              : ("; op=" + this.clientUpdateMessage.getOperation()))
-          + ((this.clientUpdateMessage == null) ? ""
-              : ("; version=" + this.clientUpdateMessage.getVersionTag()))
+          + eventIdentifier
+          + ((clientUpdateMessage == null) ? "; no message" : ";with message")
+          + ((clientUpdateMessage == null) ? ""
+              : ("; op=" + clientUpdateMessage.getOperation()))
+          + ((clientUpdateMessage == null) ? ""
+              : ("; version=" + clientUpdateMessage.getVersionTag()))
           + "]";
     }
   }
@@ -274,7 +274,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    ClientUpdateMessageImpl cum = (ClientUpdateMessageImpl) this.haContainer.get(this);
+    ClientUpdateMessageImpl cum = (ClientUpdateMessageImpl) haContainer.get(this);
 
     // If the dispatcher sends the cum object to the client and removes it from
     // the haContainer before we do haContainer.get() (above), we indicate that
@@ -306,11 +306,11 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
       DeserializationContext context) throws IOException, ClassNotFoundException {
     if (DataSerializer.readPrimitiveBoolean(in)) {
       // Indicates that we have a ClientUpdateMessage along with the HAEW instance in inputstream.
-      this.eventIdentifier = (EventID) context.getDeserializer().readObject(in);
-      this.clientUpdateMessage = new ClientUpdateMessageImpl();
-      InternalDataSerializer.invokeFromData(this.clientUpdateMessage, in);
-      ((ClientUpdateMessageImpl) this.clientUpdateMessage).setEventIdentifier(this.eventIdentifier);
-      if (this.clientUpdateMessage.hasCqs()) {
+      eventIdentifier = context.getDeserializer().readObject(in);
+      clientUpdateMessage = new ClientUpdateMessageImpl();
+      InternalDataSerializer.invokeFromData(clientUpdateMessage, in);
+      ((ClientUpdateMessageImpl) clientUpdateMessage).setEventIdentifier(eventIdentifier);
+      if (clientUpdateMessage.hasCqs()) {
         {
           ClientCqConcurrentMap cqMap;
           int size = InternalDataSerializer.readArrayLength(in);
@@ -319,7 +319,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
           } else {
             cqMap = new ClientCqConcurrentMap(size, 1.0f, 1);
             for (int i = 0; i < size; i++) {
-              ClientProxyMembershipID key = DataSerializer.<ClientProxyMembershipID>readObject(in);
+              ClientProxyMembershipID key = DataSerializer.readObject(in);
               CqNameToOp value;
               {
                 byte typeByte = in.readByte();
@@ -329,7 +329,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
                     throw new IllegalStateException(
                         "The value of a ConcurrentHashMap is not allowed to be null.");
                   } else if (cqNamesSize == 1) {
-                    String cqNamesKey = DataSerializer.<String>readObject(in);
+                    String cqNamesKey = DataSerializer.readObject(in);
                     Integer cqNamesValue = DataSerializer.<Integer>readObject(in);
                     value = new CqNameToOpSingleEntry(cqNamesKey, cqNamesValue);
                   } else if (cqNamesSize == 0) {
@@ -337,7 +337,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
                   } else {
                     value = new CqNameToOpHashMap(cqNamesSize);
                     for (int j = 0; j < cqNamesSize; j++) {
-                      String cqNamesKey = DataSerializer.<String>readObject(in);
+                      String cqNamesKey = DataSerializer.readObject(in);
                       Integer cqNamesValue = DataSerializer.<Integer>readObject(in);
                       value.add(cqNamesKey, cqNamesValue);
                     }
@@ -353,13 +353,13 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
               cqMap.put(key, value);
             }
           }
-          this.clientCqs = cqMap;
+          clientCqs = cqMap;
         }
-        ((ClientUpdateMessageImpl) this.clientUpdateMessage).setClientCqs(this.clientCqs);
+        ((ClientUpdateMessageImpl) clientUpdateMessage).setClientCqs(clientCqs);
       }
-      this.regionName = this.clientUpdateMessage.getRegionName();
-      this.keyOfInterest = this.clientUpdateMessage.getKeyOfInterest();
-      this.shouldConflate = this.clientUpdateMessage.shouldBeConflated();
+      regionName = clientUpdateMessage.getRegionName();
+      keyOfInterest = clientUpdateMessage.getKeyOfInterest();
+      shouldConflate = clientUpdateMessage.shouldBeConflated();
       rcUpdater.set(this, 0);
     } else {
       // Read and ignore dummy eventIdentifier instance.
@@ -415,7 +415,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
     if (logger.isDebugEnabled()) {
       logger.debug("Incremented PutInProgressCounter from " + location
           + " on HAEventWrapper with Event ID hash code: " + hashCode() + "; System ID hash code: "
-          + System.identityHashCode(this) + "; Wrapper details: " + toString());
+          + System.identityHashCode(this) + "; Wrapper details: " + this);
     }
 
     return putInProgressCounter;
@@ -428,7 +428,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
       if (logger.isDebugEnabled()) {
         logger.debug("Decremented PutInProgressCounter on HAEventWrapper with Event ID hash code: "
             + hashCode() + "; System ID hash code: "
-            + System.identityHashCode(this) + "; Wrapper details: " + toString());
+            + System.identityHashCode(this) + "; Wrapper details: " + this);
       }
 
       if (putInProgressCounter == 0L) {
@@ -436,7 +436,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
           logger.debug("Setting HAEventWrapper ClientUpdateMessage to null.  Event ID hash code: "
               + hashCode()
               + "; System ID hash code: " + System.identityHashCode(this) + "; Wrapper details: "
-              + toString());
+              + this);
         }
         setClientUpdateMessage(null);
       }

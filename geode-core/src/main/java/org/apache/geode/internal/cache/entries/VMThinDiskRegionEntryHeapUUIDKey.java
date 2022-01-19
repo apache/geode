@@ -66,14 +66,14 @@ public class VMThinDiskRegionEntryHeapUUIDKey extends VMThinDiskRegionEntryHeap 
     super(context, (value instanceof RecoveredEntry ? null : value));
     // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
     initialize(context, value);
-    this.keyMostSigBits = key.getMostSignificantBits();
-    this.keyLeastSigBits = key.getLeastSignificantBits();
+    keyMostSigBits = key.getMostSignificantBits();
+    keyLeastSigBits = key.getLeastSignificantBits();
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   protected Object getValueField() {
-    return this.value;
+    return value;
   }
 
   @Override
@@ -93,7 +93,7 @@ public class VMThinDiskRegionEntryHeapUUIDKey extends VMThinDiskRegionEntryHeap 
 
   @Override
   public int getEntryHash() {
-    return this.hash;
+    return hash;
   }
 
   @Override
@@ -103,7 +103,7 @@ public class VMThinDiskRegionEntryHeapUUIDKey extends VMThinDiskRegionEntryHeap 
 
   @Override
   public HashEntry<Object, Object> getNextEntry() {
-    return this.nextEntry;
+    return nextEntry;
   }
 
   @Override
@@ -125,12 +125,12 @@ public class VMThinDiskRegionEntryHeapUUIDKey extends VMThinDiskRegionEntryHeap 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   public DiskId getDiskId() {
-    return this.id;
+    return id;
   }
 
   @Override
   public void setDiskId(final RegionEntry oldEntry) {
-    this.id = ((DiskEntry) oldEntry).getDiskId();
+    id = ((DiskEntry) oldEntry).getDiskId();
   }
 
   private void diskInitialize(final RegionEntryContext context, final Object value) {
@@ -138,7 +138,7 @@ public class VMThinDiskRegionEntryHeapUUIDKey extends VMThinDiskRegionEntryHeap 
     DiskStoreImpl diskStore = diskRecoveryStore.getDiskStore();
     long maxOplogSize = diskStore.getMaxOplogSize();
     // get appropriate instance of DiskId implementation based on maxOplogSize
-    this.id = DiskId.createDiskId(maxOplogSize, true, diskStore.needsLinkedList());
+    id = DiskId.createDiskId(maxOplogSize, true, diskStore.needsLinkedList());
     Helper.initialize(this, diskRecoveryStore, value);
   }
 
@@ -146,15 +146,15 @@ public class VMThinDiskRegionEntryHeapUUIDKey extends VMThinDiskRegionEntryHeap 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   public Object getKey() {
-    return new UUID(this.keyMostSigBits, this.keyLeastSigBits);
+    return new UUID(keyMostSigBits, keyLeastSigBits);
   }
 
   @Override
   public boolean isKeyEqual(final Object key) {
     if (key instanceof UUID) {
       UUID uuid = (UUID) key;
-      return uuid.getLeastSignificantBits() == this.keyLeastSigBits
-          && uuid.getMostSignificantBits() == this.keyMostSigBits;
+      return uuid.getLeastSignificantBits() == keyLeastSigBits
+          && uuid.getMostSignificantBits() == keyMostSigBits;
     }
     return false;
   }

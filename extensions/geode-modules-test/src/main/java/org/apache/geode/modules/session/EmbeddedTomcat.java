@@ -36,10 +36,10 @@ import org.apache.juli.logging.LogFactory;
 import org.apache.geode.modules.session.catalina.JvmRouteBinderValve;
 
 public class EmbeddedTomcat {
-  private Log logger = LogFactory.getLog(getClass());
-  private int port;
-  private Embedded container;
-  private Context rootContext;
+  private final Log logger = LogFactory.getLog(getClass());
+  private final int port;
+  private final Embedded container;
+  private final Context rootContext;
 
   EmbeddedTomcat(int port, String jvmRoute) throws MalformedURLException {
     this.port = port;
@@ -52,7 +52,7 @@ public class EmbeddedTomcat {
     container.setRealm(new MemoryRealm());
 
     // create webapp loader
-    WebappLoader loader = new WebappLoader(this.getClass().getClassLoader());
+    WebappLoader loader = new WebappLoader(getClass().getClassLoader());
     // The classes directory for the web application being run.
     loader.addRepository(new File("target/classes").toURI().toURL().toString());
 

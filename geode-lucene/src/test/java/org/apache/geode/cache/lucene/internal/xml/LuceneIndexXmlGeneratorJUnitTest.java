@@ -65,12 +65,12 @@ public class LuceneIndexXmlGeneratorJUnitTest {
     captor = ArgumentCaptor.forClass(Attributes.class);
     verify(handler, times(2)).startElement(eq(""), eq("field"), eq("lucene:field"),
         captor.capture());
-    Set<String> foundFields = new HashSet<String>();
+    Set<String> foundFields = new HashSet<>();
     for (Attributes fieldAttr : captor.getAllValues()) {
       foundFields.add(fieldAttr.getValue(LuceneXmlConstants.NAME));
     }
 
-    HashSet<String> expected = new HashSet<String>(Arrays.asList(fields));
+    HashSet<String> expected = new HashSet<>(Arrays.asList(fields));
     assertEquals(expected, foundFields);
 
     verify(handler, times(2)).endElement(eq(""), eq("field"), eq("lucene:field"));
@@ -108,12 +108,12 @@ public class LuceneIndexXmlGeneratorJUnitTest {
     captor = ArgumentCaptor.forClass(Attributes.class);
     verify(handler, times(2)).startElement(eq(""), eq("field"), eq("lucene:field"),
         captor.capture());
-    Set<String> foundFields = new HashSet<String>();
+    Set<String> foundFields = new HashSet<>();
     for (Attributes fieldAttr : captor.getAllValues()) {
       foundFields.add(fieldAttr.getValue(LuceneXmlConstants.NAME));
     }
 
-    HashSet<String> expected = new HashSet<String>(Arrays.asList(fields));
+    HashSet<String> expected = new HashSet<>(Arrays.asList(fields));
     assertEquals(expected, foundFields);
 
     verify(handler, times(2)).endElement(eq(""), eq("field"), eq("lucene:field"));

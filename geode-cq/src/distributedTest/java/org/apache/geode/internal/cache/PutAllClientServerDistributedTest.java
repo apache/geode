@@ -3384,7 +3384,7 @@ public class PutAllClientServerDistributedTest implements Serializable {
       RegionFactory<String, TickerData> regionFactory =
           getCache().createRegionFactory(regionShortcut);
       if (regionShortcut.isPartition()) {
-        regionFactory.setPartitionAttributes(new PartitionAttributesFactory<String, TickerData>()
+        regionFactory.setPartitionAttributes(new PartitionAttributesFactory<>()
             .setRedundantCopies(redundantCopies)
             .setTotalNumBuckets(10)
             .create());

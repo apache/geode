@@ -59,7 +59,7 @@ public class NativeRedisTestRule extends ExternalResource implements Serializabl
   }
 
   public NativeRedisTestRule withMaxConnections(int max_connections) {
-    this.max_clients = max_connections;
+    max_clients = max_connections;
 
     return this;
   }

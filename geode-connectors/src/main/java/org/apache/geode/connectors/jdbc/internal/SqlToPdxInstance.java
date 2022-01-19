@@ -39,7 +39,7 @@ public class SqlToPdxInstance {
   }
 
   public void setPdxTemplate(PdxInstance template) {
-    this.pdxTemplate = template;
+    pdxTemplate = template;
   }
 
   public void addMapping(String columnName, String pdxFieldName, FieldType pdxFieldType) {
@@ -78,7 +78,7 @@ public class SqlToPdxInstance {
     final int columnCount = metaData.getColumnCount();
     for (int i = 1; i <= columnCount; i++) {
       String columnName = metaData.getColumnName(i);
-      PdxFieldInfo fieldInfo = this.columnToPdxFieldMap.get(columnName);
+      PdxFieldInfo fieldInfo = columnToPdxFieldMap.get(columnName);
       if (fieldInfo == null) {
         throw new JdbcConnectorException(
             "The jdbc-mapping does not contain the column name \"" + columnName + "\"."

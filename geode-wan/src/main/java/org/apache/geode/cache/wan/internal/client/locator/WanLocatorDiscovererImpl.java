@@ -43,20 +43,20 @@ public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer {
   @Override
   public void discover(int port, DistributionConfigImpl config,
       LocatorMembershipListener locatorListener, final String hostnameForClients) {
-    this._executor = LoggingExecutors.newCachedThreadPool("WAN Locator Discovery Thread", true);
+    _executor = LoggingExecutors.newCachedThreadPool("WAN Locator Discovery Thread", true);
     exchangeLocalLocators(port, config, locatorListener, hostnameForClients);
     exchangeRemoteLocators(port, config, locatorListener, hostnameForClients);
-    this._executor.shutdown();
+    _executor.shutdown();
   }
 
   @Override
   public void stop() {
-    this.stopped = true;
+    stopped = true;
   }
 
   @Override
   public boolean isStopped() {
-    return this.stopped;
+    return stopped;
   }
 
   /**
@@ -89,7 +89,7 @@ public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer {
             new LocatorDiscovery(this, localLocatorId, request, locatorListener);
         LocatorDiscovery.LocalLocatorDiscovery localLocatorDiscovery =
             localDiscovery.new LocalLocatorDiscovery();
-        this._executor.execute(localLocatorDiscovery);
+        _executor.execute(localLocatorDiscovery);
       }
     }
   }
@@ -111,7 +111,7 @@ public class WanLocatorDiscovererImpl implements WanLocatorDiscoverer {
             new LocatorDiscovery(this, remoteLocatorId, request, locatorListener);
         LocatorDiscovery.RemoteLocatorDiscovery remoteLocatorDiscovery =
             localDiscovery.new RemoteLocatorDiscovery();
-        this._executor.execute(remoteLocatorDiscovery);
+        _executor.execute(remoteLocatorDiscovery);
       }
     }
   }

@@ -81,8 +81,8 @@ public class CPUContentionService {
   private final int threadCount;
 
   public CPUContentionService(int numberOfThreads) {
-    this.executor = newFixedThreadPool(numberOfThreads);
-    this.threadCount = numberOfThreads;
+    executor = newFixedThreadPool(numberOfThreads);
+    threadCount = numberOfThreads;
   }
 
   public void runUntil(Instant stopTime) {

@@ -36,7 +36,7 @@ public class AppendCommand extends StorageCommand {
     ValueWrapper oldValWrapper = r.get(key);
     String retVal = Reply.NOT_FOUND.toString();
     if (oldValWrapper != null) {
-      byte[] appendVal = (byte[]) value;
+      byte[] appendVal = value;
       byte[] oldVal = oldValWrapper.getValue();
       byte[] newVal = new byte[oldVal.length + appendVal.length];
       System.arraycopy(oldVal, 0, newVal, 0, oldVal.length);
@@ -55,7 +55,7 @@ public class AppendCommand extends StorageCommand {
     try {
       ValueWrapper oldValWrapper = r.get(key);
       if (oldValWrapper != null) {
-        byte[] appendVal = (byte[]) value;
+        byte[] appendVal = value;
         byte[] oldVal = oldValWrapper.getValue();
         byte[] newVal = new byte[oldVal.length + appendVal.length];
         System.arraycopy(oldVal, 0, newVal, 0, oldVal.length);

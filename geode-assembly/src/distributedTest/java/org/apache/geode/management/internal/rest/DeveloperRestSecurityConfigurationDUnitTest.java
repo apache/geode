@@ -34,7 +34,7 @@ public class DeveloperRestSecurityConfigurationDUnitTest {
 
   @Test
   public void testWithSecurityManager() {
-    this.server = cluster.startServerVM(0,
+    server = cluster.startServerVM(0,
         x -> x.withRestService()
             .withSecurityManager(SimpleSecurityManager.class));
     GeodeDevRestClient client =
@@ -61,7 +61,7 @@ public class DeveloperRestSecurityConfigurationDUnitTest {
 
   @Test
   public void testWithoutSecurityManager() {
-    this.server = cluster.startServerVM(1, ServerStarterRule::withRestService);
+    server = cluster.startServerVM(1, ServerStarterRule::withRestService);
     GeodeDevRestClient client =
         new GeodeDevRestClient("/geode", "localhost", server.getHttpPort(), false);
 

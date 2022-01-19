@@ -16,7 +16,6 @@ package org.apache.geode.internal.jndi;
 
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Map;
 
 import javax.naming.Context;
@@ -82,9 +81,8 @@ public class InitialContextFactoryImpl implements InitialContextFactory {
    * clean up all changes to the environment in case if the test is running in the app server.
    */
   public static void revertSetAsInitial() {
-    Iterator i = oldSystemProps.entrySet().iterator();
-    while (i.hasNext()) {
-      Map.Entry entry = (Map.Entry) i.next();
+    for (final Object o : oldSystemProps.entrySet()) {
+      Map.Entry entry = (Map.Entry) o;
       restoreSystemProperty((String) entry.getKey(), (String) entry.getValue());
     }
   }

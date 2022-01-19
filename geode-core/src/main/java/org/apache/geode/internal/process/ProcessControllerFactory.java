@@ -44,7 +44,7 @@ public class ProcessControllerFactory {
   private final boolean disableAttachApi;
 
   public ProcessControllerFactory() {
-    this.disableAttachApi = Boolean.getBoolean(PROPERTY_DISABLE_ATTACH_API);
+    disableAttachApi = Boolean.getBoolean(PROPERTY_DISABLE_ATTACH_API);
   }
 
   public ProcessController createProcessController(final ProcessControllerParameters parameters,

@@ -26,12 +26,12 @@ public class ProcessHolder {
   }
 
   public void kill() {
-    this.killed = true;
+    killed = true;
     process.destroy();
   }
 
   public void killForcibly() {
-    this.killed = true;
+    killed = true;
     process.destroyForcibly();
   }
 

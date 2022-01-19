@@ -107,7 +107,7 @@ public class AutoConnectionSourceDUnitTest extends LocatorTestBase {
     try {
       vm0.invoke("StartBridgeClient",
           () -> startBridgeClient(null, getServerHostName(), getRandomAvailableTCPPort()));
-      checkLocators(vm0, new InetSocketAddress[] {}, new InetSocketAddress[] {});
+      checkLocators(vm0, new InetSocketAddress[] {});
       putInVM(vm0);
       fail("Client cache should not have been able to start");
     } catch (Exception e) {

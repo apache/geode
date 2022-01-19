@@ -135,8 +135,8 @@ public class DiskRecoveryWithVersioningGiiRegressionTest extends CacheTestCase {
     uniqueName = getClass().getSimpleName() + "_" + testName.getMethodName();
     diskDir = temporaryFolder.newFolder(uniqueName + "_serverWithDisk_disk");
 
-    serverWithDisk.invoke(() -> createCacheWithDisk());
-    server.invoke(() -> createCache());
+    serverWithDisk.invoke(this::createCacheWithDisk);
+    server.invoke(this::createCache);
   }
 
   @After
@@ -155,14 +155,14 @@ public class DiskRecoveryWithVersioningGiiRegressionTest extends CacheTestCase {
 
     server.invoke(() -> {
       DistributedCacheOperation.test_InvalidVersionAction =
-          new DelayedAction(() -> unsetRemoteFlagInServerWithDisk());
+          new DelayedAction(this::unsetRemoteFlagInServerWithDisk);
       DistributedCacheOperation.test_InvalidVersionAction.allowToProceed();
 
       putEntries();
       validateRegionContents();
     });
 
-    serverWithDisk.invoke(() -> validateRegionContents());
+    serverWithDisk.invoke(this::validateRegionContents);
   }
 
   private void createCacheWithDisk() {

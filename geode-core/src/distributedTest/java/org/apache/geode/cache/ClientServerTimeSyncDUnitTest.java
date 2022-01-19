@@ -128,7 +128,7 @@ public class ClientServerTimeSyncDUnitTest extends JUnit4CacheTestCase {
       GeodeAwaitility.await().untilAsserted(wc);
     } finally {
       cache.close();
-      vm1.invoke(() -> CacheTestCase.disconnectFromDS());
+      vm1.invoke(CacheTestCase::disconnectFromDS);
     }
   }
 
@@ -214,7 +214,7 @@ public class ClientServerTimeSyncDUnitTest extends JUnit4CacheTestCase {
       GeodeAwaitility.await().untilAsserted(wc);
     } finally {
       cache.close();
-      vm1.invoke(() -> CacheTestCase.disconnectFromDS());
+      vm1.invoke(CacheTestCase::disconnectFromDS);
     }
   }
 

@@ -40,7 +40,7 @@ public class SerializableRuleListTest {
     FakeSerializableTestRule fakeRule = new FakeSerializableTestRule().value(value);
     SerializableRuleList instance = new SerializableRuleList().add(fakeRule);
 
-    SerializableRuleList cloned = (SerializableRuleList) SerializationUtils.clone(instance);
+    SerializableRuleList cloned = SerializationUtils.clone(instance);
 
     assertThat(cloned.rules().size()).isEqualTo(1);
     assertThat(cloned.rules().get(0)).isInstanceOf(FakeSerializableTestRule.class)
@@ -60,7 +60,7 @@ public class SerializableRuleListTest {
     }
 
     public String value() {
-      return this.value;
+      return value;
     }
 
     @Override
@@ -84,7 +84,7 @@ public class SerializableRuleListTest {
 
       FakeSerializableTestRule that = (FakeSerializableTestRule) o;
 
-      return this.value != null ? this.value.equals(that.value()) : that.value() == null;
+      return value != null ? value.equals(that.value()) : that.value() == null;
     }
   }
 }

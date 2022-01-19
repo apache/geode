@@ -48,7 +48,7 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
    */
   @Override
   public KnownVersion getVersion() {
-    return this.version;
+    return version;
   }
 
   /**
@@ -56,7 +56,7 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
    */
   @Override
   public void readFully(byte[] b) throws IOException {
-    this.in.readFully(b);
+    in.readFully(b);
   }
 
   /**
@@ -64,7 +64,7 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
    */
   @Override
   public void readFully(byte[] b, int off, int len) throws IOException {
-    this.in.readFully(b, off, len);
+    in.readFully(b, off, len);
   }
 
   /**
@@ -72,7 +72,7 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
    */
   @Override
   public int skipBytes(int n) throws IOException {
-    return this.in.skipBytes(n);
+    return in.skipBytes(n);
   }
 
   /**
@@ -80,7 +80,7 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
    */
   @Override
   public boolean readBoolean() throws IOException {
-    return this.in.readBoolean();
+    return in.readBoolean();
   }
 
   /**
@@ -88,7 +88,7 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
    */
   @Override
   public byte readByte() throws IOException {
-    return this.in.readByte();
+    return in.readByte();
   }
 
   /**
@@ -96,7 +96,7 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
    */
   @Override
   public int readUnsignedByte() throws IOException {
-    return this.in.readUnsignedByte();
+    return in.readUnsignedByte();
   }
 
   /**
@@ -104,7 +104,7 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
    */
   @Override
   public short readShort() throws IOException {
-    return this.in.readShort();
+    return in.readShort();
   }
 
   /**
@@ -112,7 +112,7 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
    */
   @Override
   public int readUnsignedShort() throws IOException {
-    return this.in.readUnsignedShort();
+    return in.readUnsignedShort();
   }
 
   /**
@@ -120,7 +120,7 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
    */
   @Override
   public char readChar() throws IOException {
-    return this.in.readChar();
+    return in.readChar();
   }
 
   /**
@@ -128,7 +128,7 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
    */
   @Override
   public int readInt() throws IOException {
-    return this.in.readInt();
+    return in.readInt();
   }
 
   /**
@@ -136,7 +136,7 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
    */
   @Override
   public long readLong() throws IOException {
-    return this.in.readLong();
+    return in.readLong();
   }
 
   /**
@@ -144,7 +144,7 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
    */
   @Override
   public float readFloat() throws IOException {
-    return this.in.readFloat();
+    return in.readFloat();
   }
 
   /**
@@ -152,7 +152,7 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
    */
   @Override
   public double readDouble() throws IOException {
-    return this.in.readDouble();
+    return in.readDouble();
   }
 
   /**
@@ -160,7 +160,7 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
    */
   @Override
   public String readLine() throws IOException {
-    return this.in.readLine();
+    return in.readLine();
   }
 
   /**
@@ -168,7 +168,7 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
    */
   @Override
   public String readUTF() throws IOException {
-    return this.in.readUTF();
+    return in.readUTF();
   }
 
   /**
@@ -176,7 +176,7 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
    */
   @Override
   public Object readObject() throws ClassNotFoundException, IOException {
-    return this.in.readObject();
+    return in.readObject();
   }
 
   /**
@@ -184,7 +184,7 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
    */
   @Override
   public int read() throws IOException {
-    return this.in.read();
+    return in.read();
   }
 
   /**
@@ -192,7 +192,7 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
    */
   @Override
   public int read(byte[] b) throws IOException {
-    return this.in.read(b);
+    return in.read(b);
   }
 
   /**
@@ -200,7 +200,7 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
    */
   @Override
   public int read(byte[] b, int off, int len) throws IOException {
-    return this.in.read(b, off, len);
+    return in.read(b, off, len);
   }
 
   /**
@@ -208,7 +208,7 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
    */
   @Override
   public long skip(long n) throws IOException {
-    return this.in.skip(n);
+    return in.skip(n);
   }
 
   /**
@@ -216,7 +216,7 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
    */
   @Override
   public int available() throws IOException {
-    return this.in.available();
+    return in.available();
   }
 
   /**
@@ -224,7 +224,7 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
    */
   @Override
   public void close() throws IOException {
-    this.in.close();
+    in.close();
   }
 
   /**
@@ -233,6 +233,6 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
   @Override
   public String toString() {
     return "VersionedObjectInput@" + Integer.toHexString(System.identityHashCode(this)) + " ("
-        + this.version + ')';
+        + version + ')';
   }
 }

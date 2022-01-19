@@ -77,7 +77,7 @@ public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {
   @Test
   public void testBug35381() throws Exception {
     final Host host = Host.getHost(0);
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int[] ports = new int[1]; // 1 server in this test
 
     final int whichVM = 0;
@@ -107,7 +107,7 @@ public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {
         LogWriterUtils.getLogWriter().info("[testBug35381] serverMemberId=" + getMemberId());
       }
     });
-    ports[whichVM] = vm.invoke(() -> ClientRegisterInterestDUnitTest.getBridgeServerPort());
+    ports[whichVM] = vm.invoke(ClientRegisterInterestDUnitTest::getBridgeServerPort);
     assertTrue(ports[whichVM] != 0);
 
     LogWriterUtils.getLogWriter().info("[testBug35381] create bridge client");
@@ -130,7 +130,7 @@ public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {
       region.registerInterest("KEY-1");
       fail(
           "registerInterest failed to throw SubscriptionNotEnabledException with establishCallbackConnection set to false");
-    } catch (SubscriptionNotEnabledException expected) {
+    } catch (SubscriptionNotEnabledException ignored) {
     }
   }
 
@@ -157,7 +157,7 @@ public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {
     // controller is bridge client
 
     final Host host = getHost(0);
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final String regionName1 = name + "-1";
     final String regionName2 = name + "-2";
     final String regionName3 = name + "-3";
@@ -234,10 +234,10 @@ public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {
 
     // get the cache server ports...
     ports[firstServerIdx] =
-        firstServerVM.invoke(() -> getBridgeServerPort());
+        firstServerVM.invoke(ClientRegisterInterestDUnitTest::getBridgeServerPort);
     assertTrue(ports[firstServerIdx] != 0);
     ports[secondServerIdx] =
-        secondServerVM.invoke(() -> getBridgeServerPort());
+        secondServerVM.invoke(ClientRegisterInterestDUnitTest::getBridgeServerPort);
     assertTrue(ports[secondServerIdx] != 0);
     assertTrue(ports[firstServerIdx] != ports[secondServerIdx]);
 
@@ -321,11 +321,8 @@ public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {
     ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        if (!"VAL-1-1".equals(region1.get(key1)) || !"VAL-1-1".equals(region2.get(key2))
-            || !"VAL-1-1".equals(region3.get(key3))) {
-          return false;
-        }
-        return true;
+        return "VAL-1-1".equals(region1.get(key1)) && "VAL-1-1".equals(region2.get(key2))
+            && "VAL-1-1".equals(region3.get(key3));
       }
 
       @Override
@@ -375,7 +372,7 @@ public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {
     try {
       assertEquals(null, region2.get(key2));
       fail("CacheLoaderException expected");
-    } catch (CacheLoaderException e) {
+    } catch (CacheLoaderException ignored) {
     }
 
     // region2 registration should be gone now
@@ -411,10 +408,7 @@ public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {
     ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        if (!"VAL-2-2".equals(region1.get(key1)) || !"VAL-2-2".equals(region3.get(key3))) {
-          return false;
-        }
-        return true;
+        return "VAL-2-2".equals(region1.get(key1)) && "VAL-2-2".equals(region3.get(key3));
       }
 
       @Override
@@ -450,11 +444,8 @@ public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {
     ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        if (!"VAL-2-3".equals(region1.get(key1)) || !"VAL-2-2".equals(region2.get(key2))
-            || !"VAL-2-3".equals(region3.get(key3))) {
-          return false;
-        }
-        return true;
+        return "VAL-2-3".equals(region1.get(key1)) && "VAL-2-2".equals(region2.get(key2))
+            && "VAL-2-3".equals(region3.get(key3));
       }
 
       @Override
@@ -475,7 +466,7 @@ public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {
 
   @Test
   public void rejectAttemptToRegisterInterestInLonerSystem() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final String regionName1 = name + "-1";
 
     // create first cache server with region for client...
@@ -504,7 +495,7 @@ public class ClientRegisterInterestDUnitTest extends ClientServerTestCase {
     });
 
     // get the cache server ports...
-    int port = firstServerVM.invoke(() -> ClientRegisterInterestDUnitTest.getBridgeServerPort());
+    int port = firstServerVM.invoke(ClientRegisterInterestDUnitTest::getBridgeServerPort);
 
     try {
       ClientCache clientCache =

@@ -92,7 +92,7 @@ public class UpgradeOfflineDiskStoreCommand extends GfshCommand {
             builder.append(',');
           }
         }
-        commandList.add(CliStrings.UPGRADE_OFFLINE_DISK_STORE__DISKDIRS + "=" + builder.toString());
+        commandList.add(CliStrings.UPGRADE_OFFLINE_DISK_STORE__DISKDIRS + "=" + builder);
       }
       // -1 is ignore as maxOplogSize
       commandList.add(CliStrings.UPGRADE_OFFLINE_DISK_STORE__MAXOPLOGSIZE + "=" + maxOplogSize);

@@ -921,7 +921,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
   private void stopServer(VM server) {
     server.invoke(() -> {
       GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-      cache.MAX_QUERY_EXECUTION_TIME = -1;
+      GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME = -1;
       return null;
     });
   }
@@ -944,7 +944,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
       GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
 
-      cache.MAX_QUERY_EXECUTION_TIME = queryTimeout;
+      GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME = queryTimeout;
 
       InternalResourceManager resourceManager =
           (InternalResourceManager) cache.getResourceManager();
@@ -1105,7 +1105,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
     CancelDuringGatherHook(VM vmToCallback) {
       super();
-      this.hitCriticalThreshold = true;
+      hitCriticalThreshold = true;
       callbackVM = vmToCallback;
     }
 

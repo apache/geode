@@ -80,7 +80,7 @@ public class ProcessUtils {
       if (index < 0) {
         throw new PidUnavailableException("Unable to parse pid from " + name);
       }
-      return Integer.valueOf(name.substring(0, index));
+      return Integer.parseInt(name.substring(0, index));
     } catch (NumberFormatException e) {
       throw new PidUnavailableException("Unable to parse pid from " + name, e);
     }

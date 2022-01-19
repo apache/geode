@@ -42,16 +42,16 @@ public class LocalStatisticsFactory extends AbstractStatisticsFactory
   public LocalStatisticsFactory(CancelCriterion stopper) {
     super(initId(), initName(), initStartTime());
 
-    this.statsDisabled = Boolean.getBoolean(STATS_DISABLE_NAME_PROPERTY);
+    statsDisabled = Boolean.getBoolean(STATS_DISABLE_NAME_PROPERTY);
     if (statsDisabled) {
-      this.sampler = null;
+      sampler = null;
       logger.info(LogMarker.STATISTICS_MARKER,
           "Statistic collection is disabled: use: -Dstats.disable=false to turn on statistics.");
     } else if (stopper != null) {
-      this.sampler = new SimpleStatSampler(stopper, this);
-      this.sampler.start();
+      sampler = new SimpleStatSampler(stopper, this);
+      sampler.start();
     } else {
-      this.sampler = null;
+      sampler = null;
     }
   }
 
@@ -68,20 +68,20 @@ public class LocalStatisticsFactory extends AbstractStatisticsFactory
   }
 
   protected SimpleStatSampler getStatSampler() {
-    return this.sampler;
+    return sampler;
   }
 
   @Override
   public void close() {
-    if (this.sampler != null) {
-      this.sampler.stop();
+    if (sampler != null) {
+      sampler.stop();
     }
   }
 
   @Override
   public Statistics createOsStatistics(StatisticsType type, String textId, long numericId,
       int osStatFlags) {
-    if (this.statsDisabled) {
+    if (statsDisabled) {
       return new DummyStatisticsImpl(type, textId, numericId);
     }
     return super.createOsStatistics(type, textId, numericId, osStatFlags);
@@ -89,7 +89,7 @@ public class LocalStatisticsFactory extends AbstractStatisticsFactory
 
   @Override
   public Statistics createAtomicStatistics(StatisticsType type, String textId, long numericId) {
-    if (this.statsDisabled) {
+    if (statsDisabled) {
       return new DummyStatisticsImpl(type, textId, numericId);
     }
     return super.createAtomicStatistics(type, textId, numericId);

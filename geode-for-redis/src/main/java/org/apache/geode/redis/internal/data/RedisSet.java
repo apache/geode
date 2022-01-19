@@ -248,7 +248,7 @@ public class RedisSet extends AbstractRedisData {
 
     if (popCount >= originalSize) {
       region.remove(key, this);
-      return this.members;
+      return members;
     }
 
     List<byte[]> popped = new ArrayList<>();

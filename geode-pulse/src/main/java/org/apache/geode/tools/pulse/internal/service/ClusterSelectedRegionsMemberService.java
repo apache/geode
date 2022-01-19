@@ -61,7 +61,7 @@ public class ClusterSelectedRegionsMemberService implements PulseService {
   }
 
   // Comparator based upon regions entry count
-  private static Comparator<Cluster.RegionOnMember> romEntryCountComparator = (m1, m2) -> {
+  private static final Comparator<Cluster.RegionOnMember> romEntryCountComparator = (m1, m2) -> {
     long m1EntryCount = m1.getEntryCount();
     long m2EntryCount = m2.getEntryCount();
     return Long.compare(m1EntryCount, m2EntryCount);

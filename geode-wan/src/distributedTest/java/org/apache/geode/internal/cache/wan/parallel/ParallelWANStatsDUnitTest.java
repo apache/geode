@@ -60,7 +60,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
   @Override
   protected final void postSetUpWANTestBase() {
-    this.testName = getTestMethodName();
+    testName = getTestMethodName();
   }
 
   @Test
@@ -128,7 +128,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     // stop vm7 to trigger rebalance and move some primary buckets
     System.out.println("Current secondary queue sizes:" + v4List.get(10) + ":" + v5List.get(10)
         + ":" + v6List.get(10) + ":" + v7List.get(10));
-    vm7.invoke(() -> WANTestBase.closeCache());
+    vm7.invoke(WANTestBase::closeCache);
     await().untilAsserted(() -> {
       int v4secondarySize = vm4.invoke(() -> WANTestBase.getSecondaryQueueSizeInStats("ln"));
       int v5secondarySize = vm5.invoke(() -> WANTestBase.getSecondaryQueueSizeInStats("ln"));
@@ -1232,7 +1232,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
     // Configure sending site member
     String senderId = "ny";
-    String regionName = this.testName + "_PR";
+    String regionName = testName + "_PR";
     vm1.invoke(() -> createCache(lnPort));
     vm1.invoke(() -> createSender(senderId, 2, true, 100, 10, true, true, null, false));
     vm1.invoke(() -> createPartitionedRegion(regionName, senderId, 0, 10, isOffHeap()));
@@ -1249,7 +1249,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
     // Configure receiving site member
     vm3.invoke(() -> createCache(nyPort));
-    vm3.invoke(() -> createReceiver());
+    vm3.invoke(WANTestBase::createReceiver);
     vm3.invoke(() -> createPartitionedRegion(regionName, null, 0, 10, isOffHeap()));
 
     // Wait for queue to drain

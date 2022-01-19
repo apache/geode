@@ -27,7 +27,7 @@ public class DescribeMappingResult {
 
 
   public DescribeMappingResult() {
-    this.attributeMap = new LinkedHashMap<>();
+    attributeMap = new LinkedHashMap<>();
   }
 
   public DescribeMappingResult(Map<String, String> attributeMap) {
@@ -35,7 +35,7 @@ public class DescribeMappingResult {
   }
 
   public Map<String, String> getAttributeMap() {
-    return this.attributeMap;
+    return attributeMap;
   }
 
   public String getGroupName() {

@@ -162,12 +162,10 @@ public class GfshScript {
 
   @Override
   public String toString() {
-    StringBuilder builder = new StringBuilder();
-    builder.append(name).append(": gfsh ");
-    builder.append(commands.stream()
-        .map(debuggableCommand -> "-e " + debuggableCommand.command)
-        .collect(joining(" ")));
-    return builder.toString();
+    return name + ": gfsh "
+        + commands.stream()
+            .map(debuggableCommand -> "-e " + debuggableCommand.command)
+            .collect(joining(" "));
   }
 
   List<String> getExtendedClasspath() {

@@ -19,13 +19,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class Employee implements Serializable {
-  private String name;
-  private int age;
-  private int empId;
-  private Set addresses;
-  private String title;
-  private int salary;
-  private PhoneNo phoneNo;
+  private final String name;
+  private final int age;
+  private final int empId;
+  private final Set addresses;
+  private final String title;
+  private final int salary;
+  private final PhoneNo phoneNo;
 
   public String name() {
     return name;
@@ -55,20 +55,20 @@ public class Employee implements Serializable {
     this.title = title;
     this.salary = salary;
     this.addresses = addresses;
-    this.phoneNo = new PhoneNo(111, 222, 333, 444);
+    phoneNo = new PhoneNo(111, 222, 333, 444);
 
   }
 
   // Added for the Test IUMRCompositeIteratorTest
   public Set getPhoneNo(String zipCode) {
     Set ph = new HashSet();
-    ph.add(this.phoneNo);
+    ph.add(phoneNo);
     return ph;
   }
 
   public Set getPh(int empId) {
     Set ph = new HashSet();
-    ph.add(this.phoneNo);
+    ph.add(phoneNo);
     return ph;
   }
 }

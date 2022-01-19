@@ -247,7 +247,7 @@ public class QueryObserverCallbacksTest {
     private int j = 0;
     private Index usedIndx = null;
     private Index unusedIndx = null;
-    private Index[] dbIndx = new Index[3];
+    private final Index[] dbIndx = new Index[3];
 
     @Override
     public void beforeIndexLookup(Index index, int oper, Object key) {

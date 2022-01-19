@@ -52,7 +52,7 @@ public class FetchSysCfgRequest extends AdminRequest {
    */
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    return FetchSysCfgResponse.create(dm, this.getSender());
+    return FetchSysCfgResponse.create(dm, getSender());
   }
 
   @Override
@@ -74,6 +74,6 @@ public class FetchSysCfgRequest extends AdminRequest {
 
   @Override
   public String toString() {
-    return "FetchSysCfgRequest sent to " + this.getRecipient() + " from " + this.getSender();
+    return "FetchSysCfgRequest sent to " + getRecipient() + " from " + getSender();
   }
 }

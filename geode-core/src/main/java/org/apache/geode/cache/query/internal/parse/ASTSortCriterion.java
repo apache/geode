@@ -32,7 +32,7 @@ public class ASTSortCriterion extends GemFireAST {
   @Override
   public void compile(QCompiler compiler) {
     super.compile(compiler);
-    compiler.compileSortCriteria(this.getText());
+    compiler.compileSortCriteria(getText());
   }
 
 

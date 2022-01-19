@@ -50,9 +50,9 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
 
   @Test
   public void testSerialSenderWithTransportFilter() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     vm2.invoke(() -> SenderWithTransportFilterDUnitTest.createReceiverWithTransportFilters(nyPort));
     vm2.invoke(
@@ -75,9 +75,9 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
 
   @Test
   public void testParallelSenderWithTransportFilter() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     vm2.invoke(() -> SenderWithTransportFilterDUnitTest.createReceiverWithTransportFilters(nyPort));
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 0, 10,
@@ -110,7 +110,7 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
     int port = AvailablePortHelper.getRandomAvailableTCPPort();
     fact.setStartPort(port);
     fact.setEndPort(port);
-    ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<GatewayTransportFilter>();
+    ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<>();
     transportFilters.add(new CheckSumTransportFilter("CheckSumTransportFilter"));
     if (!transportFilters.isEmpty()) {
       for (GatewayTransportFilter filter : transportFilters) {
@@ -141,7 +141,7 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
       gateway.setMaximumQueueMemory(maxMemory);
       gateway.setBatchSize(batchSize);
       ((InternalGatewaySenderFactory) gateway).setLocatorDiscoveryCallback(new MyLocatorCallback());
-      ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<GatewayTransportFilter>();
+      ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<>();
       transportFilters.add(new CheckSumTransportFilter("CheckSumTransportFilter"));
       if (!transportFilters.isEmpty()) {
         for (GatewayTransportFilter filter : transportFilters) {
@@ -164,7 +164,7 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
       gateway.setBatchSize(batchSize);
       gateway.setManualStart(isManualStart);
       ((InternalGatewaySenderFactory) gateway).setLocatorDiscoveryCallback(new MyLocatorCallback());
-      ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<GatewayTransportFilter>();
+      ArrayList<GatewayTransportFilter> transportFilters = new ArrayList<>();
       transportFilters.add(new CheckSumTransportFilter("CheckSumTransportFilter"));
       if (!transportFilters.isEmpty()) {
         for (GatewayTransportFilter filter : transportFilters) {
@@ -187,7 +187,7 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
 
     Adler32 checker = new Adler32();
 
-    private String name;
+    private final String name;
 
     public CheckSumTransportFilter(String name) {
       this.name = name;
@@ -195,7 +195,7 @@ public class SenderWithTransportFilterDUnitTest extends WANTestBase {
 
     @Override
     public String toString() {
-      return this.name;
+      return name;
     }
 
     @Override

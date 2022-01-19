@@ -60,8 +60,8 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
 
   @Test
   public void testParallelSenderQueueEventsOverflow_NoDiskStoreSpecified() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -101,15 +101,15 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
     // considering a memory limit of 40 MB, maximum of 40 events can be in memory. Rest should be on
     // disk.
     await().untilAsserted(() -> {
-      long numOvVm4 = (Long) vm4.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
-      long numOvVm5 = (Long) vm5.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
-      long numOvVm6 = (Long) vm6.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
-      long numOvVm7 = (Long) vm7.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
+      long numOvVm4 = vm4.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
+      long numOvVm5 = vm5.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
+      long numOvVm6 = vm6.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
+      long numOvVm7 = vm7.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
 
-      long numMemVm4 = (Long) vm4.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
-      long numMemVm5 = (Long) vm5.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
-      long numMemVm6 = (Long) vm6.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
-      long numMemVm7 = (Long) vm7.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
+      long numMemVm4 = vm4.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
+      long numMemVm5 = vm5.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
+      long numMemVm6 = vm6.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
+      long numMemVm7 = vm7.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
 
       LogWriterUtils.getLogWriter().info("Entries overflown to disk: " + numOvVm4 + "," + numOvVm5
           + "," + numOvVm6 + "," + numOvVm7);
@@ -141,8 +141,8 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
   @Ignore("TODO: test is disabled")
   @Test
   public void testParallelSenderQueueEventsOverflow() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -181,15 +181,15 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
     int numEventPuts = 50;
     vm4.invoke(() -> WANTestBase.doHeavyPuts(getUniqueName(), numEventPuts));
 
-    long numOvVm4 = (Long) vm4.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
-    long numOvVm5 = (Long) vm5.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
-    long numOvVm6 = (Long) vm6.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
-    long numOvVm7 = (Long) vm7.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
+    long numOvVm4 = vm4.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
+    long numOvVm5 = vm5.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
+    long numOvVm6 = vm6.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
+    long numOvVm7 = vm7.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
 
-    long numMemVm4 = (Long) vm4.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
-    long numMemVm5 = (Long) vm5.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
-    long numMemVm6 = (Long) vm6.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
-    long numMemVm7 = (Long) vm7.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
+    long numMemVm4 = vm4.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
+    long numMemVm5 = vm5.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
+    long numMemVm6 = vm6.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
+    long numMemVm7 = vm7.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
 
     LogWriterUtils.getLogWriter().info("Entries overflown to disk: " + numOvVm4 + "," + numOvVm5
         + "," + numOvVm6 + "," + numOvVm7);
@@ -223,8 +223,8 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
   @Ignore("TODO: test is disabled")
   @Test
   public void testParallelSenderQueueEventsOverflow_2() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -263,15 +263,15 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
     int numEventPuts = 50;
     vm4.invoke(() -> WANTestBase.doHeavyPuts(getUniqueName(), numEventPuts));
 
-    long numOvVm4 = (Long) vm4.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
-    long numOvVm5 = (Long) vm5.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
-    long numOvVm6 = (Long) vm6.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
-    long numOvVm7 = (Long) vm7.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
+    long numOvVm4 = vm4.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
+    long numOvVm5 = vm5.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
+    long numOvVm6 = vm6.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
+    long numOvVm7 = vm7.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
 
-    long numMemVm4 = (Long) vm4.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
-    long numMemVm5 = (Long) vm5.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
-    long numMemVm6 = (Long) vm6.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
-    long numMemVm7 = (Long) vm7.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
+    long numMemVm4 = vm4.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
+    long numMemVm5 = vm5.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
+    long numMemVm6 = vm6.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
+    long numMemVm7 = vm7.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
 
     LogWriterUtils.getLogWriter().info("Entries overflown to disk: " + numOvVm4 + "," + numOvVm5
         + "," + numOvVm6 + "," + numOvVm7);
@@ -311,8 +311,8 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
   @Ignore("TODO: test is disabled")
   @Test
   public void testParallelSenderQueueNoEventsOverflow() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -351,15 +351,15 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
     int numEventPuts = 15;
     vm4.invoke(() -> WANTestBase.doHeavyPuts(getUniqueName(), numEventPuts));
 
-    long numOvVm4 = (Long) vm4.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
-    long numOvVm5 = (Long) vm5.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
-    long numOvVm6 = (Long) vm6.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
-    long numOvVm7 = (Long) vm7.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
+    long numOvVm4 = vm4.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
+    long numOvVm5 = vm5.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
+    long numOvVm6 = vm6.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
+    long numOvVm7 = vm7.invoke(() -> WANTestBase.getNumberOfEntriesOverflownToDisk("ln"));
 
-    long numMemVm4 = (Long) vm4.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
-    long numMemVm5 = (Long) vm5.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
-    long numMemVm6 = (Long) vm6.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
-    long numMemVm7 = (Long) vm7.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
+    long numMemVm4 = vm4.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
+    long numMemVm5 = vm5.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
+    long numMemVm6 = vm6.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
+    long numMemVm7 = vm7.invoke(() -> WANTestBase.getNumberOfEntriesInVM("ln"));
 
     LogWriterUtils.getLogWriter().info("Entries overflown to disk: " + numOvVm4 + "," + numOvVm5
         + "," + numOvVm6 + "," + numOvVm7);
@@ -392,10 +392,10 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
   @Ignore("TODO: test is disabled")
   @Test
   public void test_ValidateParallelGatewaySenderQueueAttributes_1() {
-    Integer localLocPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer localLocPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
     Integer remoteLocPort =
-        (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, localLocPort));
+        vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, localLocPort));
 
     WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
@@ -454,10 +454,10 @@ public class ParallelGatewaySenderQueueOverflowDUnitTest extends WANTestBase {
   @Ignore("TODO: test is disabled")
   @Test
   public void test_ValidateParallelGatewaySenderQueueAttributes_2() {
-    Integer localLocPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer localLocPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
     Integer remoteLocPort =
-        (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, localLocPort));
+        vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, localLocPort));
 
     WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();

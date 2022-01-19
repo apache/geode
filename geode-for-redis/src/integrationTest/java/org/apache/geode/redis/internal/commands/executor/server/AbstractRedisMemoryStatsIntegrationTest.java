@@ -55,7 +55,7 @@ public abstract class AbstractRedisMemoryStatsIntegrationTest implements RedisIn
 
   @Test
   public void maxMemory_shouldBeASensibleValue() {
-    long maxMemory = Long.valueOf(RedisTestHelper.getInfo(jedis).get(MAX_MEMORY));
+    long maxMemory = Long.parseLong(RedisTestHelper.getInfo(jedis).get(MAX_MEMORY));
     assertThat(maxMemory).isGreaterThan(0L);
   }
 

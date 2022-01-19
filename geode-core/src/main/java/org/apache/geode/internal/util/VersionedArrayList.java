@@ -52,7 +52,7 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
    * Constructor for DataSerializable.
    */
   public VersionedArrayList() {
-    this.list = new ArrayList<Node>();
+    list = new ArrayList<>();
   }
 
   /**
@@ -60,7 +60,7 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
    *
    */
   public VersionedArrayList(int size) {
-    this.list = new ArrayList<Node>(size);
+    list = new ArrayList<>(size);
   }
 
   public VersionedArrayList(List<? extends Node> list) {
@@ -78,9 +78,9 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
    */
   public synchronized void add(Node obj) {
 
-    ArrayList newList = new ArrayList<Node>(this.list);
+    ArrayList newList = new ArrayList<>(list);
     newList.add(obj);
-    this.list = Collections.unmodifiableList(newList);
+    list = Collections.unmodifiableList(newList);
     // incrementVersion("a->" + obj);
     incrementVersion();
   }
@@ -98,10 +98,10 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
    * @param obj the object to remove from the list
    */
   public synchronized boolean remove(Node obj) {
-    ArrayList<Node> newList = new ArrayList<Node>(this.list);
+    ArrayList<Node> newList = new ArrayList<>(list);
     boolean ret = newList.remove(obj);
     if (ret) {
-      this.list = Collections.unmodifiableList(newList);
+      list = Collections.unmodifiableList(newList);
       // incrementVersion("r->" + obj);
       incrementVersion();
     }
@@ -115,7 +115,7 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
    */
   @Override
   public synchronized Iterator<Node> iterator() {
-    return this.list.iterator();
+    return list.iterator();
   }
 
   /**
@@ -123,7 +123,7 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
    *
    */
   public synchronized int size() {
-    return this.list.size();
+    return list.size();
   }
 
   /**
@@ -134,7 +134,7 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
   public boolean contains(Node obj) {
     final List<Node> l;
     synchronized (this) {
-      l = this.list;
+      l = list;
     }
     return l.contains(obj);
   }
@@ -148,7 +148,7 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
   public Object get(int i) {
     final List<Node> l;
     synchronized (this) {
-      l = this.list;
+      l = list;
     }
     return l.get(i);
   }
@@ -160,7 +160,7 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
   public int indexOf(Object obj) {
     final List<Node> l;
     synchronized (this) {
-      l = this.list;
+      l = list;
     }
     return l.indexOf(obj);
   }
@@ -172,9 +172,9 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
   public Set<Node> getListCopy() {
     final List<Node> l;
     synchronized (this) {
-      l = this.list;
+      l = list;
     }
-    return new HashSet<Node>(l);
+    return new HashSet<>(l);
   }
 
   /**
@@ -187,13 +187,13 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
     final List<Node> l;
     // final List vh;
     synchronized (this) {
-      l = this.list;
+      l = list;
       // vh = this.vhist;
     }
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append("ArrayList version = " + getVersion() + " Elements = { ");
-    for (int i = 0; i < l.size(); i++) {
-      sb.append(l.get(i).toString() + ", ");
+    for (Node node : l) {
+      sb.append(node.toString() + ", ");
     }
     // sb.append("vhist:\n " + vh);
     sb.append("}");
@@ -207,16 +207,16 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
     final List<Node> l;
     // final List vh;
     synchronized (this) {
-      v = this.version;
-      l = this.list;
+      v = version;
+      l = list;
       // vh = this.vhist;
     }
 
     out.writeLong(v);
     final int s = l.size();
     out.writeInt(s);
-    for (int k = 0; k < s; k++) {
-      InternalDataSerializer.invokeToData((l.get(k)), out);
+    for (Node node : l) {
+      InternalDataSerializer.invokeToData(node, out);
     }
 
     // final int sh = vh.size();
@@ -229,7 +229,7 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    final ArrayList<Node> l = new ArrayList<Node>();
+    final ArrayList<Node> l = new ArrayList<>();
     final long v = in.readLong();
     final int size = in.readInt();
     for (int k = 0; k < size; k++) {
@@ -243,8 +243,8 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
     // }
 
     synchronized (this) {
-      this.version = v;
-      this.list = Collections.unmodifiableList(l);
+      version = v;
+      list = Collections.unmodifiableList(l);
       // this.vhist = Collections.unmodifiableList(vh);
     }
   }
@@ -257,15 +257,15 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
    */
   @Override
   public synchronized Comparable getVersion() {
-    return Long.valueOf(this.version);
+    return version;
   }
 
   @Override
   public boolean isNewerThan(Versionable other) {
     if (other instanceof VersionedArrayList) {
-      final long v = ((Long) other.getVersion()).longValue();
+      final long v = (Long) other.getVersion();
       synchronized (this) {
-        return this.version > v;
+        return version > v;
       }
     } else {
       final Comparable o = other.getVersion();
@@ -281,7 +281,7 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
         v = ((VersionedArrayList) other).version;
       }
       synchronized (this) {
-        return this.version < v;
+        return version < v;
       }
     } else {
       final Comparable o = other.getVersion();
@@ -297,7 +297,7 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
         v = ((VersionedArrayList) other).version;
       }
       synchronized (this) {
-        return this.version == v;
+        return version == v;
       }
     } else {
       final Comparable o = other.getVersion();
@@ -323,6 +323,6 @@ public class VersionedArrayList implements DataSerializable, Versionable, Iterab
     // this.vhist = Collections.unmodifiableList(newList);
     // }
 
-    ++this.version;
+    ++version;
   }
 }

@@ -835,7 +835,7 @@ public class CompactOfflineDiskStoreJUnitTest {
     RegionVersionHolder dummyHolder = new RegionVersionHolder(1);
     try {
       dummyHolder.toData(out);
-    } catch (IOException e) {
+    } catch (IOException ignored) {
     }
     int holderSize = out.size();
     out.close();

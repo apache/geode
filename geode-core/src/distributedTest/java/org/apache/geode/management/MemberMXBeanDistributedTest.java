@@ -83,10 +83,10 @@ public class MemberMXBeanDistributedTest implements
     server4.invoke(() -> createBuckets(regionName));
 
     await().untilAsserted(() -> {
-      final int sumOfBuckets = server1.invoke(() -> getBucketsInitialized()) +
-          server2.invoke(() -> getBucketsInitialized()) +
-          server3.invoke(() -> getBucketsInitialized()) +
-          server4.invoke(() -> getBucketsInitialized());
+      final int sumOfBuckets = server1.invoke(this::getBucketsInitialized) +
+          server2.invoke(this::getBucketsInitialized) +
+          server3.invoke(this::getBucketsInitialized) +
+          server4.invoke(this::getBucketsInitialized);
       assertThat(sumOfBuckets).isEqualTo(1000);
     });
 
@@ -106,10 +106,10 @@ public class MemberMXBeanDistributedTest implements
     }
 
     await().untilAsserted(() -> {
-      final int sumOfBuckets = server1.invoke(() -> getBucketsInitialized()) +
-          server2.invoke(() -> getBucketsInitialized()) +
-          server3.invoke(() -> getBucketsInitialized()) +
-          server4.invoke(() -> getBucketsInitialized());
+      final int sumOfBuckets = server1.invoke(this::getBucketsInitialized) +
+          server2.invoke(this::getBucketsInitialized) +
+          server3.invoke(this::getBucketsInitialized) +
+          server4.invoke(this::getBucketsInitialized);
       assertThat(sumOfBuckets).isEqualTo(4000);
     });
 

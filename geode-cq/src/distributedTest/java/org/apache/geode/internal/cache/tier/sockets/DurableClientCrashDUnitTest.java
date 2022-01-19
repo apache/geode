@@ -31,12 +31,12 @@ public class DurableClientCrashDUnitTest extends DurableClientTestBase {
 
   @Override
   protected final void postSetUpDurableClientTestBase() {
-    this.durableClientVM.invoke(() -> CacheServerTestUtil.setClientCrash(Boolean.TRUE));
+    durableClientVM.invoke(() -> CacheServerTestUtil.setClientCrash(Boolean.TRUE));
   }
 
   @Override
   protected void preTearDownDurableClientTestBase() {
-    this.durableClientVM.invoke(() -> CacheServerTestUtil.setClientCrash(Boolean.FALSE));
+    durableClientVM.invoke(() -> CacheServerTestUtil.setClientCrash(Boolean.FALSE));
   }
 
   /**
@@ -51,10 +51,10 @@ public class DurableClientCrashDUnitTest extends DurableClientTestBase {
     verifyDurableClientPresent(VERY_LONG_DURABLE_TIMEOUT_SECONDS, durableClientId, server1VM);
 
     // Stop the durable client
-    this.disconnectDurableClient(true);
+    disconnectDurableClient(true);
 
     // Re-start the durable client
-    this.restartDurableClient(VERY_LONG_DURABLE_TIMEOUT_SECONDS, Boolean.TRUE);
+    restartDurableClient(VERY_LONG_DURABLE_TIMEOUT_SECONDS, Boolean.TRUE);
 
     // Verify durable client on server
     verifyDurableClientPresent(VERY_LONG_DURABLE_TIMEOUT_SECONDS, durableClientId, server1VM);
@@ -63,7 +63,7 @@ public class DurableClientCrashDUnitTest extends DurableClientTestBase {
     closeDurableClient();
 
     // Stop the server
-    this.server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
+    server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 
 
   }

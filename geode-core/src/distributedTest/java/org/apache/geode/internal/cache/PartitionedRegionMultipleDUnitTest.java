@@ -43,11 +43,11 @@ public class PartitionedRegionMultipleDUnitTest extends CacheTestCase {
   private VM vm0;
   private VM vm1;
 
-  private int startIndexForKey = 0;
-  private int endIndexForKey = 50;
+  private final int startIndexForKey = 0;
+  private final int endIndexForKey = 50;
 
-  private int startIndexForDestroy = 20;
-  private int endIndexForDestroy = 40;
+  private final int startIndexForDestroy = 20;
+  private final int endIndexForDestroy = 40;
 
   @Rule
   public DistributedRestoreSystemProperties restore = new DistributedRestoreSystemProperties();

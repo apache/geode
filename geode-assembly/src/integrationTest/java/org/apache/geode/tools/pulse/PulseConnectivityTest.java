@@ -56,7 +56,7 @@ public class PulseConnectivityTest {
     if ("localhost".equals(nonDefaultJmxBindAddress)) {
       nonDefaultJmxBindAddress = InetAddress.getLocalHost().getHostAddress();
     }
-    return Arrays.asList(new String[] {"localhost", nonDefaultJmxBindAddress});
+    return Arrays.asList("localhost", nonDefaultJmxBindAddress);
   }
 
   @Before

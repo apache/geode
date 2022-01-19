@@ -15,7 +15,6 @@
 package org.apache.geode.admin.internal;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
@@ -46,23 +45,23 @@ public class GemFireHealthEvaluator {
   private static final Logger logger = LogService.getLogger();
 
   /** Determines how the health of GemFire is determined */
-  private GemFireHealthConfig config;
+  private final GemFireHealthConfig config;
 
   /** Evaluates the health of this member of the distributed system */
-  private MemberHealthEvaluator memberHealth;
+  private final MemberHealthEvaluator memberHealth;
 
   /** Evaluates the health of the Cache hosted in this VM */
-  private CacheHealthEvaluator cacheHealth;
+  private final CacheHealthEvaluator cacheHealth;
 
   /**
    * The most recent <code>OKAY_HEALTH</code> diagnoses of the GemFire system
    */
-  private List<String> okayDiagnoses;
+  private final List<String> okayDiagnoses;
 
   /**
    * The most recent <code>POOR_HEALTH</code> diagnoses of the GemFire system
    */
-  private List<String> poorDiagnoses;
+  private final List<String> poorDiagnoses;
 
   /////////////////////// Constructors ///////////////////////
 
@@ -79,10 +78,10 @@ public class GemFireHealthEvaluator {
     }
 
     this.config = config;
-    this.memberHealth = new MemberHealthEvaluator(config, dm);
-    this.cacheHealth = new CacheHealthEvaluator(config, dm);
-    this.okayDiagnoses = new ArrayList<>();
-    this.poorDiagnoses = new ArrayList<>();
+    memberHealth = new MemberHealthEvaluator(config, dm);
+    cacheHealth = new CacheHealthEvaluator(config, dm);
+    okayDiagnoses = new ArrayList<>();
+    poorDiagnoses = new ArrayList<>();
   }
 
   ////////////////////// Instance Methods //////////////////////
@@ -95,16 +94,16 @@ public class GemFireHealthEvaluator {
    */
   public GemFireHealth.Health evaluate() {
     List status = new ArrayList();
-    this.memberHealth.evaluate(status);
-    this.cacheHealth.evaluate(status);
+    memberHealth.evaluate(status);
+    cacheHealth.evaluate(status);
 
     GemFireHealth.Health overallHealth = GemFireHealth.GOOD_HEALTH;
-    this.okayDiagnoses.clear();
-    this.poorDiagnoses.clear();
+    okayDiagnoses.clear();
+    poorDiagnoses.clear();
 
-    for (Iterator iter = status.iterator(); iter.hasNext();) {
+    for (final Object o : status) {
       AbstractHealthEvaluator.HealthStatus health =
-          (AbstractHealthEvaluator.HealthStatus) iter.next();
+          (AbstractHealthEvaluator.HealthStatus) o;
       if (overallHealth == GemFireHealth.GOOD_HEALTH) {
         if ((health.getHealthCode() != GemFireHealth.GOOD_HEALTH)) {
           overallHealth = health.getHealthCode();
@@ -118,10 +117,10 @@ public class GemFireHealthEvaluator {
 
       GemFireHealth.Health healthCode = health.getHealthCode();
       if (healthCode == GemFireHealth.OKAY_HEALTH) {
-        this.okayDiagnoses.add(health.getDiagnosis());
+        okayDiagnoses.add(health.getDiagnosis());
 
       } else if (healthCode == GemFireHealth.POOR_HEALTH) {
-        this.poorDiagnoses.add(health.getDiagnosis());
+        poorDiagnoses.add(health.getDiagnosis());
       }
     }
 
@@ -141,14 +140,14 @@ public class GemFireHealthEvaluator {
       return new String[0];
 
     } else if (healthCode == GemFireHealth.OKAY_HEALTH) {
-      String[] array = new String[this.okayDiagnoses.size()];
-      this.okayDiagnoses.toArray(array);
+      String[] array = new String[okayDiagnoses.size()];
+      okayDiagnoses.toArray(array);
       return array;
 
     } else {
       Assert.assertTrue(healthCode == GemFireHealth.POOR_HEALTH);
-      String[] array = new String[this.poorDiagnoses.size()];
-      this.poorDiagnoses.toArray(array);
+      String[] array = new String[poorDiagnoses.size()];
+      poorDiagnoses.toArray(array);
       return array;
     }
   }
@@ -157,8 +156,8 @@ public class GemFireHealthEvaluator {
    * Resets the state of this evaluator
    */
   public void reset() {
-    this.okayDiagnoses.clear();
-    this.poorDiagnoses.clear();
+    okayDiagnoses.clear();
+    poorDiagnoses.clear();
   }
 
   /**
@@ -167,15 +166,15 @@ public class GemFireHealthEvaluator {
    * @see GemFireHealthConfig#getHealthEvaluationInterval
    */
   public int getEvaluationInterval() {
-    return this.config.getHealthEvaluationInterval();
+    return config.getHealthEvaluationInterval();
   }
 
   /**
    * Closes this evaluator and releases all of its resources
    */
   public void close() {
-    this.memberHealth.close();
-    this.cacheHealth.close();
+    memberHealth.close();
+    cacheHealth.close();
   }
 
 }

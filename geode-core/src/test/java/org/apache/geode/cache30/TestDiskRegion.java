@@ -28,7 +28,6 @@ import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.DiskRegion;
@@ -57,7 +56,7 @@ public class TestDiskRegion {
     Cache cache = CacheFactory.create(system);
     AttributesFactory factory = new AttributesFactory();
     factory.setEvictionAttributes(EvictionAttributes.createLRUMemoryAttributes(2,
-        (ObjectSizer) null, EvictionAction.OVERFLOW_TO_DISK));
+        null, EvictionAction.OVERFLOW_TO_DISK));
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
     File user_dir = new File(System.getProperty("user.dir"));
     if (!user_dir.exists()) {
@@ -76,7 +75,7 @@ public class TestDiskRegion {
 
     // Put some small stuff
     for (int i = 0; i < 10; i++) {
-      region.put(new Integer(i), String.valueOf(i));
+      region.put(i, String.valueOf(i));
     }
 
     Assert.assertTrue(diskStats.getWrites() == 0);
@@ -97,7 +96,7 @@ public class TestDiskRegion {
           + ", total entry size " + lruStats.getCounter());
       int[] array = new int[250];
       array[0] = total;
-      region.put(new Integer(total), array);
+      region.put(total, array);
     }
 
     Assert.assertTrue(diskStats.getWrites() == 1);
@@ -106,7 +105,7 @@ public class TestDiskRegion {
 
     System.out.println("----------  Finished Putting -------------");
 
-    Object value = region.get(new Integer(0));
+    Object value = region.get(0);
     Assert.assertTrue(value != null);
     Assert.assertTrue(((int[]) value)[0] == 0);
 
@@ -120,7 +119,7 @@ public class TestDiskRegion {
       System.out.println("total gets " + i + ", evictions " + lruStats.getEvictions()
           + ", total entry size " + lruStats.getCounter());
 
-      int[] array = (int[]) region.get(new Integer(i));
+      int[] array = (int[]) region.get(i);
       Assert.assertTrue(array != null);
       Assert.assertTrue(i == array[0]);
     }
@@ -129,7 +128,7 @@ public class TestDiskRegion {
 
     long startEvictions = lruStats.getEvictions();
     for (int i = 0; i < 10; i++) {
-      region.put(new Integer(i), new int[251]);
+      region.put(i, new int[251]);
       long expected = startEvictions + 1 + i;
       long actual = lruStats.getEvictions();
       Assert.assertTrue(expected == actual,
@@ -145,7 +144,7 @@ public class TestDiskRegion {
     Cache cache = CacheFactory.create(system);
     AttributesFactory factory = new AttributesFactory();
     factory.setEvictionAttributes(EvictionAttributes.createLRUMemoryAttributes(2,
-        (ObjectSizer) null, EvictionAction.OVERFLOW_TO_DISK));
+        null, EvictionAction.OVERFLOW_TO_DISK));
     factory.setCacheListener(new CacheListenerAdapter() {
       @Override
       public void afterUpdate(EntryEvent event) {
@@ -164,7 +163,7 @@ public class TestDiskRegion {
     for (int i = 0; true; i++) {
       br.readLine();
       // Thread.sleep(500);
-      Object key = new Integer(i);
+      Object key = i;
       Object value = new byte[200000];
       region.put(key, value);
       System.out.println(key + " -> " + value + " evictions = " + lruStats.getEvictions()
@@ -180,7 +179,7 @@ public class TestDiskRegion {
     Cache cache = CacheFactory.create(system);
     AttributesFactory factory = new AttributesFactory();
     factory.setEvictionAttributes(EvictionAttributes.createLRUMemoryAttributes(2,
-        (ObjectSizer) null, EvictionAction.OVERFLOW_TO_DISK));
+        null, EvictionAction.OVERFLOW_TO_DISK));
     LocalRegion region = (LocalRegion) cache.createRegion("TestDiskRegion", factory.create());
     // DiskRegion dr = region.getDiskRegion();
     // DiskRegionStats diskStats = dr.getStats();
@@ -210,7 +209,7 @@ public class TestDiskRegion {
     Cache cache = CacheFactory.create(system);
     AttributesFactory factory = new AttributesFactory();
     factory.setEvictionAttributes(EvictionAttributes.createLRUMemoryAttributes(2,
-        (ObjectSizer) null, EvictionAction.OVERFLOW_TO_DISK));
+        null, EvictionAction.OVERFLOW_TO_DISK));
     LocalRegion region = (LocalRegion) cache.createRegion("TestDiskRegion", factory.create());
     // DiskRegion dr = region.getDiskRegion();
     // DiskRegionStats diskStats = dr.getStats();
@@ -220,7 +219,7 @@ public class TestDiskRegion {
       int[] array = new int[1000];
       array[0] = i;
       try {
-        region.put(array, new Integer(i));
+        region.put(array, i);
 
       } catch (IllegalStateException ex) {
         System.out.println("Ran out of space: " + ex);

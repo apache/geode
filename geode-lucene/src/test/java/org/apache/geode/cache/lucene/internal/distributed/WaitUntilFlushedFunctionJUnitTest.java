@@ -45,11 +45,11 @@ public class WaitUntilFlushedFunctionJUnitTest {
 
   String regionPath = SEPARATOR + "region";
   String indexName = "index";
-  final EntryScore<String> r1_1 = new EntryScore<String>("key-1-1", .5f);
-  final EntryScore<String> r1_2 = new EntryScore<String>("key-1-2", .4f);
-  final EntryScore<String> r1_3 = new EntryScore<String>("key-1-3", .3f);
-  final EntryScore<String> r2_1 = new EntryScore<String>("key-2-1", .45f);
-  final EntryScore<String> r2_2 = new EntryScore<String>("key-2-2", .35f);
+  final EntryScore<String> r1_1 = new EntryScore<>("key-1-1", .5f);
+  final EntryScore<String> r1_2 = new EntryScore<>("key-1-2", .4f);
+  final EntryScore<String> r1_3 = new EntryScore<>("key-1-3", .3f);
+  final EntryScore<String> r2_1 = new EntryScore<>("key-2-1", .45f);
+  final EntryScore<String> r2_2 = new EntryScore<>("key-2-2", .35f);
 
   InternalRegionFunctionContext mockContext;
   ResultSender mockResultSender;

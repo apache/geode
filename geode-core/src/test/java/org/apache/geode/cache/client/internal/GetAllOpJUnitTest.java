@@ -41,9 +41,9 @@ import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.test.fake.Fakes;
 
 public class GetAllOpJUnitTest {
-  private ExecutablePool pool = mock(PoolImpl.class);
-  private GemFireCacheImpl cache = Fakes.cache();
-  private LocalRegion region = mock(LocalRegion.class);
+  private final ExecutablePool pool = mock(PoolImpl.class);
+  private final GemFireCacheImpl cache = Fakes.cache();
+  private final LocalRegion region = mock(LocalRegion.class);
   ArrayList<Integer> keys;
 
   @Before

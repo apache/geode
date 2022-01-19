@@ -81,8 +81,8 @@ public class TestSSLServer {
   private final Set<Integer> protocolIds = new TreeSet<>();
   private final Map<Integer, Set<Integer>> cipherSuiteIds = new TreeMap<>();
   private final Set<String> certificateIds = new TreeSet<>();
-  private String host;
-  private int port;
+  private final String host;
+  private final int port;
 
   public TestSSLServer(String host, int port) {
     this.host = host;
@@ -112,7 +112,7 @@ public class TestSSLServer {
     }
     InetSocketAddress isa = new InetSocketAddress(name, port);
 
-    Set<Integer> protocolVersions = new TreeSet<Integer>();
+    Set<Integer> protocolVersions = new TreeSet<>();
     boolean compress = false;
     for (int v = 0x0300; v <= 0x0303; v++) {
       ServerHello serverHello = connect(isa, v, CIPHER_SUITES.keySet());
@@ -148,12 +148,12 @@ public class TestSSLServer {
         + " (ORDER IS NOT SIGNIFICANT):");
     Set<Integer> lastSuppCS = null;
     Map<Integer, Set<Integer>> suppCS =
-        new TreeMap<Integer, Set<Integer>>();
-    Set<String> certID = new TreeSet<String>();
+        new TreeMap<>();
+    Set<String> certID = new TreeSet<>();
 
     if (serverHello2 != null) {
       System.out.println("  " + versionString(0x0200));
-      Set<Integer> vc2 = new TreeSet<Integer>();
+      Set<Integer> vc2 = new TreeSet<>();
       for (int c : serverHello2.cipherSuites) {
         vc2.add(c);
       }
@@ -300,8 +300,8 @@ public class TestSSLServer {
    */
   static Set<Integer> supportedSuites(InetSocketAddress isa, int version,
       Set<String> serverCertID) {
-    Set<Integer> cs = new TreeSet<Integer>(CIPHER_SUITES.keySet());
-    Set<Integer> rs = new TreeSet<Integer>();
+    Set<Integer> cs = new TreeSet<>(CIPHER_SUITES.keySet());
+    Set<Integer> rs = new TreeSet<>();
     for (;;) {
       ServerHello sh = connect(isa, version, cs);
       if (sh == null) {
@@ -369,8 +369,8 @@ public class TestSSLServer {
      * it chooses RC4 over CBC streams when given the choice.
      * We only consider strong cipher suites here.
      */
-    List<Integer> strongCBC = new ArrayList<Integer>();
-    List<Integer> strongStream = new ArrayList<Integer>();
+    List<Integer> strongCBC = new ArrayList<>();
+    List<Integer> strongStream = new ArrayList<>();
     for (int suite : supp) {
       CipherSuite cs = CIPHER_SUITES.get(suite);
       if (cs == null) {
@@ -391,7 +391,7 @@ public class TestSSLServer {
     if (strongStream.size() == 0) {
       return true;
     }
-    List<Integer> ns = new ArrayList<Integer>(strongCBC);
+    List<Integer> ns = new ArrayList<>(strongCBC);
     ns.addAll(strongStream);
     ServerHello sh = connect(isa, version, ns);
     return !strongStream.contains(sh.cipherSuite);
@@ -422,7 +422,7 @@ public class TestSSLServer {
         s.connect(isa);
       } catch (IOException ioe) {
         System.err.println("could not connect to "
-            + isa + ": " + ioe.toString());
+            + isa + ": " + ioe);
         return null;
       }
       byte[] ch = makeClientHello(version, cipherSuites);
@@ -457,7 +457,7 @@ public class TestSSLServer {
         s.connect(isa);
       } catch (IOException ioe) {
         System.err.println("could not connect to "
-            + isa + ": " + ioe.toString());
+            + isa + ": " + ioe);
         return null;
       }
       s.getOutputStream().write(SSL2_CLIENT_HELLO);
@@ -523,8 +523,8 @@ public class TestSSLServer {
    */
   static class OutputRecord extends OutputStream {
 
-    private OutputStream out;
-    private byte[] buffer = new byte[MAX_RECORD_LEN + 5];
+    private final OutputStream out;
+    private final byte[] buffer = new byte[MAX_RECORD_LEN + 5];
     private int ptr;
     private int version;
     private int type;
@@ -600,8 +600,8 @@ public class TestSSLServer {
    */
   static class InputRecord extends InputStream {
 
-    private InputStream in;
-    private byte[] buffer = new byte[MAX_RECORD_LEN + 5];
+    private final InputStream in;
+    private final byte[] buffer = new byte[MAX_RECORD_LEN + 5];
     private int ptr, end;
     private int version;
     private int type;
@@ -1012,7 +1012,7 @@ public class TestSSLServer {
   }
 
   static Map<Integer, CipherSuite> CIPHER_SUITES =
-      new TreeMap<Integer, CipherSuite>();
+      new TreeMap<>();
 
   static class CipherSuite {
 

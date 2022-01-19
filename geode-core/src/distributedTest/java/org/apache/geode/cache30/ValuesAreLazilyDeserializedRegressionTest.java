@@ -59,7 +59,7 @@ public class ValuesAreLazilyDeserializedRegressionTest extends CacheTestCase {
 
   @Before
   public void setUp() throws Exception {
-    this.otherVM = Host.getHost(0).getVM(0);
+    otherVM = Host.getHost(0).getVM(0);
   }
 
   /**
@@ -76,7 +76,7 @@ public class ValuesAreLazilyDeserializedRegressionTest extends CacheTestCase {
     // before gii
     region.put("key1", new HomeBoy());
 
-    doCreateOtherVm(this.otherVM);
+    doCreateOtherVm(otherVM);
 
     // after gii
     region.put("key2", new HomeBoy());

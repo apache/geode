@@ -56,8 +56,8 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
 
   private static MemberVM locator;
 
-  private static String REPLICATED_REGION = "replicatedRegion";
-  private static String PARTITIONED_REGION = "partitionedRegion";
+  private static final String REPLICATED_REGION = "replicatedRegion";
+  private static final String PARTITIONED_REGION = "partitionedRegion";
 
   @BeforeClass
   public static void beforeClass() {

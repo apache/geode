@@ -51,7 +51,6 @@ import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore.CreateBucketResult;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
-import org.apache.geode.internal.cache.control.ResourceEvent;
 import org.apache.geode.internal.cache.control.ResourceListener;
 import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage;
 import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage.BecomePrimaryBucketResponse;
@@ -100,9 +99,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     assertNotNull(detailsSet);
     assertEquals(Collections.emptySet(), detailsSet);
 
-    ResourceListener listener = new ResourceListener() {
-      @Override
-      public void onEvent(ResourceEvent event) {}
+    ResourceListener listener = event -> {
     };
 
     InternalResourceManager internalManager = (InternalResourceManager) manager;
@@ -144,7 +141,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
 
     // bucketKeys to use for making three buckets in first PR
     final Integer[] bucketKeys =
-        new Integer[] {Integer.valueOf(0), Integer.valueOf(42), Integer.valueOf(76)};
+        new Integer[] {0, 42, 76};
 
     assertEquals(0, bucketKeys[0].hashCode());
     assertEquals(42, bucketKeys[1].hashCode());
@@ -188,8 +185,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
           }
 
           // iterate over each PartitionedRegionDetails
-          for (Iterator<PartitionRegionInfo> prIter = detailsSet.iterator(); prIter.hasNext();) {
-            PartitionRegionInfo details = prIter.next();
+          for (PartitionRegionInfo details : detailsSet) {
             // NOTE: getRegionPath() contains the Region.SEPARATOR + regionPath
             assertTrue("Unknown regionPath=" + details.getRegionPath(),
                 details.getRegionPath().contains(regionPath[0])
@@ -205,9 +201,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
               assertEquals(localMaxMemory.length - 1, memberDetails.size());
 
               // iterate over each PartitionMemberDetails (datastores only)
-              for (Iterator<PartitionMemberInfo> mbrIter = memberDetails.iterator(); mbrIter
-                  .hasNext();) {
-                PartitionMemberInfo mbrDetails = mbrIter.next();
+              for (PartitionMemberInfo mbrDetails : memberDetails) {
                 assertNotNull(mbrDetails);
                 DistributedMember mbr = mbrDetails.getDistributedMember();
                 assertNotNull(mbr);
@@ -291,7 +285,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
 
     // bucketKeys to use for making three bckets in first PR
     final Integer[] bucketKeys =
-        new Integer[] {Integer.valueOf(0), Integer.valueOf(42), Integer.valueOf(76)};
+        new Integer[] {0, 42, 76};
 
     assertEquals(0, bucketKeys[0].hashCode());
     assertEquals(42, bucketKeys[1].hashCode());
@@ -325,44 +319,44 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
               return getSystem().getDistributedMember();
             }
           });
-      memberSizes[vm] = ((Long) Host.getHost(0).getVM(vm).invoke(new SerializableCallable() {
+      memberSizes[vm] = (Long) Host.getHost(0).getVM(vm).invoke(new SerializableCallable() {
         @Override
         public Object call() {
           PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath[0]);
           PartitionedRegionDataStore ds = pr.getDataStore();
           if (ds == null) {
-            return Long.valueOf(0);
+            return 0L;
           } else {
-            return Long.valueOf(getSize(ds));
+            return getSize(ds);
           }
         }
-      })).longValue();
+      });
       memberBucketCounts[vm] =
-          ((Integer) Host.getHost(0).getVM(vm).invoke(new SerializableCallable() {
+          (Integer) Host.getHost(0).getVM(vm).invoke(new SerializableCallable() {
             @Override
             public Object call() {
               PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath[0]);
               PartitionedRegionDataStore ds = pr.getDataStore();
               if (ds == null) {
-                return new Integer(0);
+                return 0;
               } else {
-                return new Integer(ds.getBucketsManaged());
+                return (int) ds.getBucketsManaged();
               }
             }
-          })).intValue();
+          });
       memberPrimaryCounts[vm] =
-          ((Integer) Host.getHost(0).getVM(vm).invoke(new SerializableCallable() {
+          (Integer) Host.getHost(0).getVM(vm).invoke(new SerializableCallable() {
             @Override
             public Object call() {
               PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath[0]);
               PartitionedRegionDataStore ds = pr.getDataStore();
               if (ds == null) {
-                return new Integer(0);
+                return 0;
               } else {
-                return new Integer(ds.getNumberOfPrimaryBucketsManaged());
+                return ds.getNumberOfPrimaryBucketsManaged();
               }
             }
-          })).intValue();
+          });
     }
 
     // test everything here
@@ -371,7 +365,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
       Host.getHost(0).getVM(vm).invoke(new SerializableRunnable() {
         @Override
         public void run() {
-          Set<InternalPRInfo> detailsSet = new HashSet<InternalPRInfo>();
+          Set<InternalPRInfo> detailsSet = new HashSet<>();
           GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
           for (PartitionedRegion pr : cache.getPartitionedRegions()) {
             InternalPRInfo info = pr.getRedundancyProvider().buildPartitionedRegionInfo(true,
@@ -385,8 +379,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
           }
 
           // iterate over each InternalPRDetails
-          for (Iterator<InternalPRInfo> prIter = detailsSet.iterator(); prIter.hasNext();) {
-            InternalPRInfo details = prIter.next();
+          for (InternalPRInfo details : detailsSet) {
             // NOTE: getRegionPath() contains the Region.SEPARATOR + regionPath
             assertTrue("Unknown regionPath=" + details.getRegionPath(),
                 details.getRegionPath().contains(regionPath[0])
@@ -402,9 +395,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
               assertEquals(localMaxMemory.length - 1, memberDetails.size());
 
               // iterate over each InternalPartitionDetails (datastores only)
-              for (Iterator<InternalPartitionDetails> mbrIter = memberDetails.iterator(); mbrIter
-                  .hasNext();) {
-                InternalPartitionDetails mbrDetails = mbrIter.next();
+              for (InternalPartitionDetails mbrDetails : memberDetails) {
                 assertNotNull(mbrDetails);
                 DistributedMember mbr = mbrDetails.getDistributedMember();
                 assertNotNull(mbr);
@@ -532,8 +523,8 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run() {
         Region pr = getCache().getRegion(regionPath);
-        for (int i = 0; i < bucketKeys.length; i++) {
-          pr.put(bucketKeys[i], value);
+        for (final Integer bucketKey : bucketKeys) {
+          pr.put(bucketKey, value);
         }
       }
     });
@@ -551,44 +542,44 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
               return getSystem().getDistributedMember();
             }
           });
-      memberSizes[vm] = ((Long) Host.getHost(0).getVM(vm).invoke(new SerializableCallable() {
+      memberSizes[vm] = (Long) Host.getHost(0).getVM(vm).invoke(new SerializableCallable() {
         @Override
         public Object call() {
           PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath);
           PartitionedRegionDataStore ds = pr.getDataStore();
           if (ds == null) {
-            return Long.valueOf(0);
+            return 0L;
           } else {
-            return Long.valueOf(getSize(ds));
+            return getSize(ds);
           }
         }
-      })).longValue();
+      });
       memberBucketCounts[vm] =
-          ((Integer) Host.getHost(0).getVM(vm).invoke(new SerializableCallable() {
+          (Integer) Host.getHost(0).getVM(vm).invoke(new SerializableCallable() {
             @Override
             public Object call() {
               PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath);
               PartitionedRegionDataStore ds = pr.getDataStore();
               if (ds == null) {
-                return new Integer(0);
+                return 0;
               } else {
-                return new Integer(ds.getBucketsManaged());
+                return (int) ds.getBucketsManaged();
               }
             }
-          })).intValue();
+          });
       memberPrimaryCounts[vm] =
-          ((Integer) Host.getHost(0).getVM(vm).invoke(new SerializableCallable() {
+          (Integer) Host.getHost(0).getVM(vm).invoke(new SerializableCallable() {
             @Override
             public Object call() {
               PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath);
               PartitionedRegionDataStore ds = pr.getDataStore();
               if (ds == null) {
-                return new Integer(0);
+                return 0;
               } else {
-                return new Integer(ds.getNumberOfPrimaryBucketsManaged());
+                return ds.getNumberOfPrimaryBucketsManaged();
               }
             }
-          })).intValue();
+          });
     }
   }
 
@@ -606,8 +597,8 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     Host.getHost(0).getVM(vm).invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        for (int i = 0; i < regionPath.length; i++) {
-          Region pr = getCache().getRegion(regionPath[i]);
+        for (final String s : regionPath) {
+          Region pr = getCache().getRegion(s);
           pr.destroyRegion();
         }
       }
@@ -624,7 +615,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     final int[] localMaxMemory = new int[] {100, 100};
 
     // bucketKeys to use for making one bucket
-    final Integer[] bucketKeys = new Integer[] {Integer.valueOf(0)};
+    final Integer[] bucketKeys = new Integer[] {0};
 
     createRegion(Host.getHost(0).getVM(0), regionPath[0], localMaxMemory[0], numBuckets[0],
         redundantCopies[0]);
@@ -660,7 +651,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     assertTrue(primaryVM != otherVM);
 
     boolean deposedPrimary =
-        ((Boolean) Host.getHost(0).getVM(otherVM).invoke(new SerializableCallable() {
+        (Boolean) Host.getHost(0).getVM(otherVM).invoke(new SerializableCallable() {
           @Override
           public Object call() {
             PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath[0]);
@@ -677,7 +668,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
               return Boolean.FALSE;
             }
           }
-        })).booleanValue();
+        });
 
     assertTrue(deposedPrimary);
   }
@@ -692,7 +683,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     final int[] localMaxMemory = new int[] {100, 100, 0};
 
     // bucketKeys to use for making one bucket
-    final Integer[] bucketKeys = new Integer[] {Integer.valueOf(0)};
+    final Integer[] bucketKeys = new Integer[] {0};
 
     createRegion(Host.getHost(0).getVM(0), regionPath[0], localMaxMemory[0], numBuckets[0],
         redundantCopies[0]);
@@ -735,7 +726,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     final int finalOtherVM = otherVM;
 
     boolean becamePrimary =
-        ((Boolean) Host.getHost(0).getVM(accessorVM).invoke(new SerializableCallable() {
+        (Boolean) Host.getHost(0).getVM(accessorVM).invoke(new SerializableCallable() {
           @Override
           public Object call() {
             PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath[0]);
@@ -743,12 +734,12 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
             BecomePrimaryBucketResponse response =
                 BecomePrimaryBucketMessage.send(members[finalOtherVM], pr, 0, false);
             if (response != null) {
-              return Boolean.valueOf(response.waitForResponse());
+              return response.waitForResponse();
             } else {
               return Boolean.FALSE;
             }
           }
-        })).booleanValue();
+        });
 
     assertTrue(becamePrimary);
 
@@ -772,8 +763,8 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  private static interface OpDuringBucketRemove extends java.io.Serializable {
-    public void runit(PartitionedRegion pr, Object key, Object value);
+  private interface OpDuringBucketRemove extends java.io.Serializable {
+    void runit(PartitionedRegion pr, Object key, Object value);
   }
 
   private void doOpDuringBucketRemove(final OpDuringBucketRemove op) {
@@ -784,7 +775,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     // localMaxMemory config to use for three members
     final int[] localMaxMemory = new int[] {100, 100};
 
-    final Integer KEY = Integer.valueOf(69);
+    final Integer KEY = 69;
     // bucketKeys to use for making one bucket
     final Integer[] bucketKeys = new Integer[] {KEY};
 
@@ -844,13 +835,10 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
         final PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath[0]);
         final boolean[] invoked = new boolean[] {false};
         final PartitionedRegionDataStore prds = pr.getDataStore();
-        prds.setBucketReadHook(new Runnable() {
-          @Override
-          public void run() {
-            invoked[0] = true;
-            logger.debug("In bucketReadHook");
-            assertTrue(prds.removeBucket(0, false));
-          }
+        prds.setBucketReadHook(() -> {
+          invoked[0] = true;
+          logger.debug("In bucketReadHook");
+          assertTrue(prds.removeBucket(0, false));
         });
         try {
           Bucket bucket = pr.getRegionAdvisor().getBucket(0);
@@ -891,96 +879,69 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testRemoveDuringGetEntry() {
-    doOpDuringBucketRemove(new OpDuringBucketRemove() {
-      @Override
-      public void runit(PartitionedRegion pr, Object key, Object value) {
-        Region.Entry re = pr.getEntry(key);
-        assertNotNull("region entry should have existed", re);
-        assertEquals(false, re.isLocal());
-        assertEquals(value, re.getValue());
-      }
+    doOpDuringBucketRemove((OpDuringBucketRemove) (pr, key, value) -> {
+      Region.Entry re = pr.getEntry(key);
+      assertNotNull("region entry should have existed", re);
+      assertEquals(false, re.isLocal());
+      assertEquals(value, re.getValue());
     });
   }
 
   @Test
   public void testRemoveDuringGet() {
-    doOpDuringBucketRemove(new OpDuringBucketRemove() {
-      @Override
-      public void runit(PartitionedRegion pr, Object key, Object value) {
-        assertEquals(value, pr.get(key));
-      }
-    });
+    doOpDuringBucketRemove(
+        (OpDuringBucketRemove) (pr, key, value) -> assertEquals(value, pr.get(key)));
   }
 
   @Test
   public void testRemoveDuringContainsKey() {
-    doOpDuringBucketRemove(new OpDuringBucketRemove() {
-      @Override
-      public void runit(PartitionedRegion pr, Object key, Object value) {
-        assertEquals(true, pr.containsKey(key));
-      }
-    });
+    doOpDuringBucketRemove(
+        (OpDuringBucketRemove) (pr, key, value) -> assertEquals(true, pr.containsKey(key)));
   }
 
   @Test
   public void testRemoveDuringContainsValueForKey() {
-    doOpDuringBucketRemove(new OpDuringBucketRemove() {
-      @Override
-      public void runit(PartitionedRegion pr, Object key, Object value) {
-        assertEquals(true, pr.containsValueForKey(key));
-      }
-    });
+    doOpDuringBucketRemove(
+        (OpDuringBucketRemove) (pr, key, value) -> assertEquals(true, pr.containsValueForKey(key)));
   }
 
   @Test
   public void testRemoveDuringKeySet() {
-    doOpDuringBucketRemove(new OpDuringBucketRemove() {
-      @Override
-      public void runit(PartitionedRegion pr, Object key, Object value) {
-        assertEquals(Collections.singleton(key), pr.keySet());
-      }
-    });
+    doOpDuringBucketRemove(
+        (OpDuringBucketRemove) (pr, key, value) -> assertEquals(Collections.singleton(key),
+            pr.keySet()));
   }
 
   @Test
   public void testRemoveDuringValues() {
-    doOpDuringBucketRemove(new OpDuringBucketRemove() {
-      @Override
-      public void runit(PartitionedRegion pr, Object key, Object value) {
-        assertEquals(Collections.singleton(value), pr.values());
-      }
-    });
+    doOpDuringBucketRemove(
+        (OpDuringBucketRemove) (pr, key, value) -> assertEquals(Collections.singleton(value),
+            pr.values()));
   }
 
   @Test
   public void testRemoveDuringEntrySet() {
-    doOpDuringBucketRemove(new OpDuringBucketRemove() {
-      @Override
-      public void runit(PartitionedRegion pr, Object key, Object value) {
-        Iterator it = pr.entrySet(false).iterator();
-        Region.Entry re = (Region.Entry) it.next();
-        assertEquals(value, re.getValue());
-        assertEquals(key, re.getKey());
-        assertEquals(false, it.hasNext());
-      }
+    doOpDuringBucketRemove((OpDuringBucketRemove) (pr, key, value) -> {
+      Iterator it = pr.entrySet(false).iterator();
+      Region.Entry re = (Region.Entry) it.next();
+      assertEquals(value, re.getValue());
+      assertEquals(key, re.getKey());
+      assertEquals(false, it.hasNext());
     });
   }
 
   @Test
   public void testRemoveDuringQuery() {
-    doOpDuringBucketRemove(new OpDuringBucketRemove() {
-      @Override
-      public void runit(PartitionedRegion pr, Object key, Object value) {
-        try {
-          SelectResults sr = pr.query("toString()='doOpDuringBucketRemove.VALUE'"); // fetch
-                                                                                    // everything
-          assertEquals(1, sr.size());
-          assertEquals(value, sr.iterator().next());
-        } catch (QueryException ex) {
-          Assert.fail("didn't expect a QueryException", ex);
-        } catch (QueryInvalidException ex2) {
-          Assert.fail("didn't expect QueryInvalidException", ex2);
-        }
+    doOpDuringBucketRemove((OpDuringBucketRemove) (pr, key, value) -> {
+      try {
+        SelectResults sr = pr.query("toString()='doOpDuringBucketRemove.VALUE'"); // fetch
+                                                                                  // everything
+        assertEquals(1, sr.size());
+        assertEquals(value, sr.iterator().next());
+      } catch (QueryException ex) {
+        Assert.fail("didn't expect a QueryException", ex);
+      } catch (QueryInvalidException ex2) {
+        Assert.fail("didn't expect QueryInvalidException", ex2);
       }
     });
   }
@@ -999,7 +960,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     createRegion(Host.getHost(0).getVM(1), regionPath[0], localMaxMemory[1], numBuckets[0],
         redundantCopies[0]);
 
-    final Integer bucketKey = Integer.valueOf(0);
+    final Integer bucketKey = 0;
     final byte[] value = new byte[1]; // 2 MB in size
 
     createBucket(0, regionPath[0], bucketKey, value);
@@ -1043,7 +1004,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     });
 
     boolean sentRemoveBucket =
-        ((Boolean) Host.getHost(0).getVM(primaryVM).invoke(new SerializableCallable() {
+        (Boolean) Host.getHost(0).getVM(primaryVM).invoke(new SerializableCallable() {
           @Override
           public Object call() {
             InternalDistributedMember recipient = members[finalOtherVM];
@@ -1058,7 +1019,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
               return Boolean.FALSE;
             }
           }
-        })).booleanValue();
+        });
     assertTrue("Failed to get reply to RemoveBucketMessage", sentRemoveBucket);
 
     Host.getHost(0).getVM(otherVM).invoke(new SerializableRunnable() {
@@ -1105,7 +1066,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     createRegion(Host.getHost(0).getVM(1), regionPath[2], localMaxMemory, numBuckets,
         redundantCopies, regionPath[1]);
 
-    final Integer bucketKey = Integer.valueOf(0);
+    final Integer bucketKey = 0;
     final byte[] value = new byte[1];
 
     createBucket(0, regionPath[0], bucketKey, value);
@@ -1141,20 +1102,20 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     Host.getHost(0).getVM(otherVM).invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        for (int i = 0; i < regionPath.length; i++) {
-          PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath[i]);
+        for (final String s : regionPath) {
+          PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(s);
           Bucket bucket = pr.getRegionAdvisor().getBucket(0);
-          assertTrue("Target member is not hosting bucket to remove for " + regionPath[i],
+          assertTrue("Target member is not hosting bucket to remove for " + s,
               bucket.isHosting());
-          assertNotNull("Bucket is null on target member for " + regionPath[i], bucket);
-          assertNotNull("BucketRegion is null on target member for " + regionPath[i],
+          assertNotNull("Bucket is null on target member for " + s, bucket);
+          assertNotNull("BucketRegion is null on target member for " + s,
               bucket.getBucketAdvisor().getProxyBucketRegion().getHostedBucketRegion());
         }
       }
     });
 
     boolean sentRemoveBucket =
-        ((Boolean) Host.getHost(0).getVM(primaryVM).invoke(new SerializableCallable() {
+        (Boolean) Host.getHost(0).getVM(primaryVM).invoke(new SerializableCallable() {
           @Override
           public Object call() {
             InternalDistributedMember recipient = members[finalOtherVM];
@@ -1169,23 +1130,23 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
               return Boolean.FALSE;
             }
           }
-        })).booleanValue();
+        });
     assertTrue("Failed to get reply to RemoveBucketMessage", sentRemoveBucket);
 
     Host.getHost(0).getVM(otherVM).invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        for (int i = 0; i < regionPath.length; i++) {
-          PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath[i]);
+        for (final String s : regionPath) {
+          PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(s);
 
           Bucket bucket = pr.getRegionAdvisor().getBucket(0);
           BucketRegion bucketRegion =
               bucket.getBucketAdvisor().getProxyBucketRegion().getHostedBucketRegion();
 
-          assertFalse("Target member is still hosting removed bucket for " + regionPath[i],
+          assertFalse("Target member is still hosting removed bucket for " + s,
               bucket.isHosting());
 
-          assertNull("BucketRegion is not null on target member for " + regionPath[i],
+          assertNull("BucketRegion is not null on target member for " + s,
               bucketRegion);
         }
       }
@@ -1213,7 +1174,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
 
     // create the bucket on the first two members
 
-    final Integer bucketKey = Integer.valueOf(0);
+    final Integer bucketKey = 0;
     final byte[] value = new byte[1]; // 2 MB in size
 
     createBucket(0, regionPath[0], bucketKey, value);
@@ -1329,7 +1290,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
 
     // create the bucket on the first two members
 
-    final Integer bucketKey = Integer.valueOf(0);
+    final Integer bucketKey = 0;
     final byte[] value = new byte[1];
 
     createBucket(0, regionPath[0], bucketKey, value);
@@ -1368,21 +1329,21 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     Host.getHost(0).getVM(otherVM).invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        for (int i = 0; i < regionPath.length; i++) {
-          PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath[i]);
+        for (final String s : regionPath) {
+          PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(s);
 
           Bucket bucket = pr.getRegionAdvisor().getBucket(0);
 
-          assertNotNull("Bucket is null on SRC member for " + regionPath[i], bucket);
+          assertNotNull("Bucket is null on SRC member for " + s, bucket);
 
           BucketRegion bucketRegion =
               bucket.getBucketAdvisor().getProxyBucketRegion().getHostedBucketRegion();
 
-          assertTrue("SRC member is not hosting bucket for " + regionPath[i], bucket.isHosting());
-          assertNotNull("BucketRegion is null on SRC member for " + regionPath[i], bucketRegion);
+          assertTrue("SRC member is not hosting bucket for " + s, bucket.isHosting());
+          assertNotNull("BucketRegion is null on SRC member for " + s, bucketRegion);
 
           int redundancy = bucket.getBucketAdvisor().getBucketRedundancy();
-          assertEquals("SRC member reports redundancy " + redundancy + " for " + regionPath[i],
+          assertEquals("SRC member reports redundancy " + redundancy + " for " + s,
               redundantCopies, redundancy);
         }
       }
@@ -1447,7 +1408,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
 
     // create the bucket on the first two members
 
-    final Integer bucketKey = Integer.valueOf(0);
+    final Integer bucketKey = 0;
     final byte[] value = new byte[1]; // 2 MB in size
 
     createBucket(0, regionPath[0], bucketKey, value);
@@ -1510,7 +1471,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     // initiate moveBucket to move from otherVM to newVM
 
     boolean movedBucket =
-        ((Boolean) Host.getHost(0).getVM(finalNewVM).invoke(new SerializableCallable() {
+        (Boolean) Host.getHost(0).getVM(finalNewVM).invoke(new SerializableCallable() {
           @Override
           public Object call() {
             InternalDistributedMember recipient = members[finalOtherVM];
@@ -1519,7 +1480,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
 
             return pr.getDataStore().moveBucket(0, recipient, true);
           }
-        })).booleanValue();
+        });
     assertTrue("Failed in call to moveBucket", movedBucket);
 
     // validate that otherVM no longer hosts bucket
@@ -1593,7 +1554,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
 
     // create the bucket on the first two members
 
-    final Integer bucketKey = Integer.valueOf(0);
+    final Integer bucketKey = 0;
     final byte[] value = new byte[1];
 
     createBucket(0, regionPath[0], bucketKey, value);
@@ -1632,8 +1593,8 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     Host.getHost(0).getVM(otherVM).invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        for (int i = 0; i < regionPath.length; i++) {
-          PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath[i]);
+        for (final String s : regionPath) {
+          PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(s);
 
           Bucket bucket = pr.getRegionAdvisor().getBucket(0);
 
@@ -1696,7 +1657,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     // initiate moveBucket to move from otherVM to newVM
 
     boolean movedBucket =
-        ((Boolean) Host.getHost(0).getVM(finalNewVM).invoke(new SerializableCallable() {
+        (Boolean) Host.getHost(0).getVM(finalNewVM).invoke(new SerializableCallable() {
           @Override
           public Object call() {
             InternalDistributedMember recipient = members[finalOtherVM];
@@ -1705,7 +1666,7 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
 
             return pr.getDataStore().moveBucket(0, recipient, true);
           }
-        })).booleanValue();
+        });
     assertTrue("Failed in call to moveBucket", movedBucket);
 
     // validate that otherVM no longer hosts colocated buckets
@@ -1713,8 +1674,8 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     Host.getHost(0).getVM(otherVM).invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        for (int i = 0; i < regionPath.length; i++) {
-          PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath[i]);
+        for (final String s : regionPath) {
+          PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(s);
 
           Bucket bucket = pr.getRegionAdvisor().getBucket(0);
 
@@ -1733,8 +1694,8 @@ public class ResourceManagerDUnitTest extends JUnit4CacheTestCase {
     Host.getHost(0).getVM(finalNewVM).invoke(new SerializableRunnable() {
       @Override
       public void run() {
-        for (int i = 0; i < regionPath.length; i++) {
-          PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionPath[i]);
+        for (final String s : regionPath) {
+          PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(s);
 
           Bucket bucket = pr.getRegionAdvisor().getBucket(0);
 

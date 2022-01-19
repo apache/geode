@@ -40,7 +40,7 @@ public class CompositeTestMBean implements CompositeTestMXBean {
 
   @Override
   public Map<String, Integer> getMap() {
-    Map<String, Integer> testMap = new HashMap<String, Integer>();
+    Map<String, Integer> testMap = new HashMap<>();
     testMap.put("KEY-1", 5);
     return testMap;
   }
@@ -59,7 +59,7 @@ public class CompositeTestMBean implements CompositeTestMXBean {
   public Integer[] getIntegerArray() {
     Integer[] arr = new Integer[2];
     for (int i = 0; i < arr.length; i++) {
-      arr[i] = new Integer(0);
+      arr[i] = 0;
     }
     return arr;
   }

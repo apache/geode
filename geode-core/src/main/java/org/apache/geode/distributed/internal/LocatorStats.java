@@ -46,14 +46,14 @@ public class LocatorStats implements MembershipLocatorStatistics {
   private static final String RESPONSE_TIME = "responseProcessingTime"; // counter
   private static final String SERVER_LOAD_UPDATES = "serverLoadUpdates"; // counter
 
-  private AtomicInteger known_locators = new AtomicInteger();
-  private AtomicLong requests_to_locator = new AtomicLong();
-  private AtomicLong requestTime = new AtomicLong();
-  private AtomicLong responseTime = new AtomicLong();
-  private AtomicLong responses_from_locator = new AtomicLong();
-  private AtomicInteger endpoints_known = new AtomicInteger();
-  private AtomicInteger requestsInProgress = new AtomicInteger();
-  private AtomicLong serverLoadUpdates = new AtomicLong();
+  private final AtomicInteger known_locators = new AtomicInteger();
+  private final AtomicLong requests_to_locator = new AtomicLong();
+  private final AtomicLong requestTime = new AtomicLong();
+  private final AtomicLong responseTime = new AtomicLong();
+  private final AtomicLong responses_from_locator = new AtomicLong();
+  private final AtomicInteger endpoints_known = new AtomicInteger();
+  private final AtomicInteger requestsInProgress = new AtomicInteger();
+  private final AtomicLong serverLoadUpdates = new AtomicLong();
 
 
   private static final int _KNOWN_LOCATORS;
@@ -108,8 +108,8 @@ public class LocatorStats implements MembershipLocatorStatistics {
    * Called when the DS comes online so we can hookup the stats
    */
   public void hookupStats(StatisticsFactory f, String name) {
-    if (this._stats == null) {
-      this._stats = f.createAtomicStatistics(type, name);
+    if (_stats == null) {
+      _stats = f.createAtomicStatistics(type, name);
       setLocatorCount(known_locators.get());
       setServerCount(endpoints_known.get());
       setLocatorRequests(requests_to_locator.get());
@@ -125,33 +125,33 @@ public class LocatorStats implements MembershipLocatorStatistics {
 
 
   public void setServerCount(int sc) {
-    if (this._stats == null) {
-      this.endpoints_known.set(sc);
+    if (_stats == null) {
+      endpoints_known.set(sc);
     } else {
-      this._stats.setInt(_ENDPOINTS_KNOWN, sc);
+      _stats.setInt(_ENDPOINTS_KNOWN, sc);
     }
   }
 
   public void setLocatorCount(int lc) {
-    if (this._stats == null) {
-      this.known_locators.set(lc);
+    if (_stats == null) {
+      known_locators.set(lc);
     } else {
-      this._stats.setInt(_KNOWN_LOCATORS, lc);
+      _stats.setInt(_KNOWN_LOCATORS, lc);
     }
   }
 
   @Override
   public void endLocatorRequest(long startTime) {
     long took = DistributionStats.getStatTime() - startTime;
-    if (this._stats == null) {
-      this.requests_to_locator.incrementAndGet();
+    if (_stats == null) {
+      requests_to_locator.incrementAndGet();
       if (took > 0) {
-        this.requestTime.getAndAdd(took);
+        requestTime.getAndAdd(took);
       }
     } else {
-      this._stats.incLong(_REQUESTS_TO_LOCATOR, 1);
+      _stats.incLong(_REQUESTS_TO_LOCATOR, 1);
       if (took > 0) {
-        this._stats.incLong(_REQUEST_TIME, took);
+        _stats.incLong(_REQUEST_TIME, took);
       }
     }
   }
@@ -159,15 +159,15 @@ public class LocatorStats implements MembershipLocatorStatistics {
   @Override
   public void endLocatorResponse(long startTime) {
     long took = DistributionStats.getStatTime() - startTime;
-    if (this._stats == null) {
-      this.responses_from_locator.incrementAndGet();
+    if (_stats == null) {
+      responses_from_locator.incrementAndGet();
       if (took > 0) {
-        this.responseTime.getAndAdd(took);
+        responseTime.getAndAdd(took);
       }
     } else {
-      this._stats.incLong(_RESPONSES_FROM_LOCATOR, 1);
+      _stats.incLong(_RESPONSES_FROM_LOCATOR, 1);
       if (took > 0) {
-        this._stats.incLong(_RESPONSE_TIME, took);
+        _stats.incLong(_RESPONSE_TIME, took);
       }
     }
   }
@@ -175,48 +175,48 @@ public class LocatorStats implements MembershipLocatorStatistics {
 
 
   public void setLocatorRequests(long rl) {
-    if (this._stats == null) {
-      this.requests_to_locator.set(rl);
+    if (_stats == null) {
+      requests_to_locator.set(rl);
     } else {
-      this._stats.setLong(_REQUESTS_TO_LOCATOR, rl);
+      _stats.setLong(_REQUESTS_TO_LOCATOR, rl);
     }
   }
 
   public void setLocatorResponses(long rl) {
-    if (this._stats == null) {
-      this.responses_from_locator.set(rl);
+    if (_stats == null) {
+      responses_from_locator.set(rl);
     } else {
-      this._stats.setLong(_RESPONSES_FROM_LOCATOR, rl);
+      _stats.setLong(_RESPONSES_FROM_LOCATOR, rl);
     }
   }
 
   public void setServerLoadUpdates(long v) {
-    if (this._stats == null) {
-      this.serverLoadUpdates.set(v);
+    if (_stats == null) {
+      serverLoadUpdates.set(v);
     } else {
-      this._stats.setLong(_SERVER_LOAD_UPDATES, v);
+      _stats.setLong(_SERVER_LOAD_UPDATES, v);
     }
   }
 
   public void incServerLoadUpdates() {
-    if (this._stats == null) {
-      this.serverLoadUpdates.incrementAndGet();
+    if (_stats == null) {
+      serverLoadUpdates.incrementAndGet();
     } else {
-      this._stats.incLong(_SERVER_LOAD_UPDATES, 1);
+      _stats.incLong(_SERVER_LOAD_UPDATES, 1);
     }
   }
 
   public void incRequestInProgress(int threads) {
-    if (this._stats != null) {
-      this._stats.incInt(_REQUESTS_IN_PROGRESS, threads);
+    if (_stats != null) {
+      _stats.incInt(_REQUESTS_IN_PROGRESS, threads);
     } else {
       requestsInProgress.getAndAdd(threads);
     }
   }
 
   public void close() {
-    if (this._stats != null) {
-      this._stats.close();
+    if (_stats != null) {
+      _stats.close();
     }
   }
 }

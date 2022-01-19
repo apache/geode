@@ -210,7 +210,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     }
 
     for (VM vm : toArray(vm0, vm1, vm2)) {
-      vm.invoke(() -> closeCache());
+      vm.invoke(this::closeCache);
     }
 
     for (VM vm : toArray(vm0, vm1, vm2)) {
@@ -285,7 +285,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     }
 
     for (VM vm : toArray(vm0, vm1)) {
-      vm.invoke(() -> closeCache());
+      vm.invoke(this::closeCache);
     }
 
     // The following should fail immediately with ISE on vm0,
@@ -335,7 +335,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     }
 
     for (VM vm : toArray(vm0, vm1)) {
-      vm.invoke(() -> closeCache());
+      vm.invoke(this::closeCache);
     }
 
     vm1.invoke(() -> {
@@ -760,9 +760,9 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     }
 
     AsyncInvocation<Void> createChildPRTreeInVM0 =
-        vm0.invokeAsync(() -> validateColocationLogger_withChildRegionTree());
+        vm0.invokeAsync(this::validateColocationLogger_withChildRegionTree);
     AsyncInvocation<Void> createChildPRTreeInVM1 =
-        vm1.invokeAsync(() -> validateColocationLogger_withChildRegionTree());
+        vm1.invokeAsync(this::validateColocationLogger_withChildRegionTree);
 
     createChildPRTreeInVM0.await();
     createChildPRTreeInVM1.await();
@@ -810,7 +810,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     }
 
     for (VM vm : toArray(vm0, vm1, vm2)) {
-      vm.invoke(() -> closeCache());
+      vm.invoke(this::closeCache);
     }
 
     for (VM vm : toArray(vm0, vm1, vm2)) {
@@ -905,7 +905,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
       assertThat(getCache().getDistributionManager().getDistributionManagerIds()).hasSize(4);
     });
 
-    vm2.invoke(() -> closeCache());
+    vm2.invoke(this::closeCache);
 
     // Make sure the other members notice that vm2 has gone
     for (VM vm : toArray(vm0, vm1)) {
@@ -917,7 +917,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     }
 
     for (VM vm : toArray(vm0, vm1)) {
-      vm.invoke(() -> closeCache());
+      vm.invoke(this::closeCache);
     }
 
     // Create the members, but don't initialize VM2 yet
@@ -1004,7 +1004,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     });
 
     // Close one of the members to trigger redundancy recovery.
-    vm2.invoke(() -> closeCache());
+    vm2.invoke(this::closeCache);
 
     vm0.invoke(() -> {
       // Wait until redundancy is recovered.
@@ -1019,7 +1019,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
 
     // Close the remaining members.
     for (VM vm : toArray(vm0, vm1)) {
-      vm.invoke(() -> closeCache());
+      vm.invoke(this::closeCache);
     }
 
     vm2.invoke(() -> {
@@ -1113,7 +1113,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     });
 
     // Close one of the members to trigger redundancy recovery.
-    vm2.invoke(() -> closeCache());
+    vm2.invoke(this::closeCache);
 
     vm0.invoke(() -> {
       // Wait until redundancy is recovered.
@@ -1128,7 +1128,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
 
     // Close the remaining members.
     for (VM vm : toArray(vm0, vm1)) {
-      vm.invoke(() -> closeCache());
+      vm.invoke(this::closeCache);
     }
 
     vm2.invoke(() -> {
@@ -1224,7 +1224,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     });
 
     // Close one of the members to trigger redundancy recovery.
-    vm2.invoke(() -> closeCache());
+    vm2.invoke(this::closeCache);
 
     // Wait until redundancy is recovered.
     vm0.invoke(() -> {
@@ -1237,7 +1237,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
 
     // Close the remaining members.
     for (VM vm : toArray(vm0, vm1)) {
-      vm.invoke(() -> closeCache());
+      vm.invoke(this::closeCache);
     }
 
     // Recreate the parent region. Try to make sure that the member with the latest copy of the
@@ -1311,7 +1311,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     });
 
     // Close one of the members to trigger redundancy recovery.
-    vm2.invoke(() -> closeCache());
+    vm2.invoke(this::closeCache);
 
     // Wait until redundancy is recovered.
     vm0.invoke(() -> {
@@ -1324,7 +1324,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
 
     // Close the remaining members.
     for (VM vm : toArray(vm0, vm1)) {
-      vm.invoke(() -> closeCache());
+      vm.invoke(this::closeCache);
     }
 
     // Recreate the parent region. Try to make sure that the member with the latest copy of the
@@ -1444,7 +1444,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     disconnectDuringGiiInVm0.await();
 
     // close the cache in vm1
-    vm1.invoke(() -> closeCache());
+    vm1.invoke(this::closeCache);
 
     // Create the cache and PRs on both members
     for (VM vm : toArray(vm0, vm1)) {
@@ -1492,7 +1492,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
 
     // Close the members
     for (VM vm : toArray(vm1, vm0)) {
-      vm.invoke(() -> closeCache());
+      vm.invoke(this::closeCache);
     }
 
     // Recreate the parent region. Try to make sure that the member with the latest copy of the
@@ -1569,7 +1569,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
 
     // Close the members
     for (VM vm : toArray(vm1, vm0)) {
-      vm.invoke(() -> closeCache());
+      vm.invoke(this::closeCache);
     }
 
     vm1.invoke(() -> {
@@ -1629,7 +1629,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
     // Make sure the system is recoverable by restarting it
 
     for (VM vm : toArray(vm0, vm1, vm2)) {
-      vm.invoke(() -> closeCache());
+      vm.invoke(this::closeCache);
     }
 
     for (VM vm : toArray(vm0, vm1, vm2)) {
@@ -1672,7 +1672,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
 
     // Close the members
     for (VM vm : toArray(vm0, vm1)) {
-      vm.invoke(() -> closeCache());
+      vm.invoke(this::closeCache);
     }
 
     // Recreate the parent region. Try to make sure that the member with the latest copy of the

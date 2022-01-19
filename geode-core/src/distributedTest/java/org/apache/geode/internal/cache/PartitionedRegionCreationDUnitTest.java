@@ -217,10 +217,10 @@ public class PartitionedRegionCreationDUnitTest extends CacheTestCase {
 
     awaitAllAsyncInvocations();
 
-    invokeAsync(vm0, () -> validatePRInitialization());
-    invokeAsync(vm1, () -> validatePRInitialization());
-    invokeAsync(vm2, () -> validatePRInitialization());
-    invokeAsync(vm3, () -> validatePRInitialization());
+    invokeAsync(vm0, this::validatePRInitialization);
+    invokeAsync(vm1, this::validatePRInitialization);
+    invokeAsync(vm2, this::validatePRInitialization);
+    invokeAsync(vm3, this::validatePRInitialization);
 
     awaitAllAsyncInvocations();
   }

@@ -93,7 +93,7 @@ public class ClearDuringGiiOplogWithMissingCreateRegressionTest extends CacheTes
    */
   @Test
   public void clearDuringGiiShouldOplogCreateAndDelete() {
-    server1.invoke(() -> createCacheForVM0());
+    server1.invoke(this::createCacheForVM0);
     server1.invoke(() -> {
       Region<Integer, Integer> region = getCache().getRegion(regionName);
       for (int i = 0; i < PUT_COUNT; i++) {
@@ -101,7 +101,7 @@ public class ClearDuringGiiOplogWithMissingCreateRegressionTest extends CacheTes
       }
     });
 
-    server2.invoke(() -> createCacheForVM1());
+    server2.invoke(this::createCacheForVM1);
 
     server1.invoke(() -> {
       getCache().getRegion(regionName).localDestroyRegion();
@@ -110,8 +110,8 @@ public class ClearDuringGiiOplogWithMissingCreateRegressionTest extends CacheTes
 
     server2.invoke(() -> getCache().close());
 
-    server2.invoke(() -> createCacheForVM1());
-    server2.invoke(() -> assertThatRegionSizeIsZero());
+    server2.invoke(this::createCacheForVM1);
+    server2.invoke(this::assertThatRegionSizeIsZero);
   }
 
   /**

@@ -29,7 +29,7 @@ public class SystemMemberCacheEventImpl extends SystemMembershipEventImpl
     implements SystemMemberCacheEvent {
 
   /** The operation done by this event */
-  private Operation op;
+  private final Operation op;
 
   /////////////////////// Constructors ///////////////////////
 
@@ -45,12 +45,12 @@ public class SystemMemberCacheEventImpl extends SystemMembershipEventImpl
 
   @Override
   public Operation getOperation() {
-    return this.op;
+    return op;
   }
 
   @Override
   public String toString() {
-    return super.toString() + " op=" + this.op;
+    return super.toString() + " op=" + op;
   }
 
 }

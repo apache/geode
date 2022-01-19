@@ -167,8 +167,8 @@ public class PdxLocalQueryVersionedClassDUnitTest extends PDXQueryTestBase {
       Assert.fail("Failed query execution " + a2.getException());
     }
 
-    this.closeClient(client);
-    this.closeClient(server);
+    closeClient(client);
+    closeClient(server);
 
   }
 

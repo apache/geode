@@ -20,6 +20,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -36,7 +37,7 @@ import java.util.stream.Collectors;
  */
 public class DeployJarChildFirstClassLoader extends ChildFirstClassLoader {
 
-  private String artifactId;
+  private final String artifactId;
   public final Map<String, DeployJarChildFirstClassLoader> artifactIdsToClassLoader;
 
   public DeployJarChildFirstClassLoader(
@@ -67,13 +68,13 @@ public class DeployJarChildFirstClassLoader extends ChildFirstClassLoader {
     }
     if (c == null) {
       for (DeployJarChildFirstClassLoader sibling : artifactIdsToClassLoader.values().stream()
-          .filter(s -> s != null).collect(Collectors.toList())) {
+          .filter(Objects::nonNull).collect(Collectors.toList())) {
         try {
           c = sibling.findClass(name);
           if (c != null) {
             break;
           }
-        } catch (ClassNotFoundException | NoClassDefFoundError e) {
+        } catch (ClassNotFoundException | NoClassDefFoundError ignored) {
         }
       }
     }

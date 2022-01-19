@@ -58,7 +58,7 @@ public class ClusterManagementGetResultAssert<T extends AbstractConfiguration<R>
 
   public EntityGroupInfo<T, R> getResult() {
     return actual.getResult().getGroups().get(0);
-  };
+  }
 
   public ObjectAssert<T> hasConfiguration() {
     return assertThat(getActual().getResult().getGroups().get(0).getConfiguration());

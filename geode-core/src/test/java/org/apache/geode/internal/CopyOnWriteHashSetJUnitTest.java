@@ -35,10 +35,10 @@ public class CopyOnWriteHashSetJUnitTest {
 
   @Test
   public void testSnapshot() {
-    CopyOnWriteHashSet<String> set = new CopyOnWriteHashSet<String>();
+    CopyOnWriteHashSet<String> set = new CopyOnWriteHashSet<>();
     set.add("a");
     Set<String> snap = set.getSnapshot();
-    Set<String> copy = new HashSet<String>(set);
+    Set<String> copy = new HashSet<>(set);
     set.add("b");
 
     assertEquals(copy, snap);
@@ -46,7 +46,7 @@ public class CopyOnWriteHashSetJUnitTest {
 
   @Test
   public void testIteratorRemove() {
-    CopyOnWriteHashSet<String> startingCollection = new CopyOnWriteHashSet<String>();
+    CopyOnWriteHashSet<String> startingCollection = new CopyOnWriteHashSet<>();
     startingCollection.addAll(Arrays.asList("a", "b", "c", "d"));
 
     Iterator<String> iterator = startingCollection.iterator();
@@ -65,7 +65,7 @@ public class CopyOnWriteHashSetJUnitTest {
 
   @Test
   public void testAllMethods() throws Exception {
-    CopyOnWriteHashSet<String> set = new CopyOnWriteHashSet<String>();
+    CopyOnWriteHashSet<String> set = new CopyOnWriteHashSet<>();
     assertTrue(set.add("a"));
     assertFalse(set.add("a"));
     Iterator itr = set.iterator();
@@ -74,16 +74,16 @@ public class CopyOnWriteHashSetJUnitTest {
     assertFalse(itr.hasNext());
     assertEquals(1, set.size());
 
-    assertTrue(set.addAll(Arrays.asList(new String[] {"b", "c", "d"})));
+    assertTrue(set.addAll(Arrays.asList("b", "c", "d")));
     assertTrue(set.contains("b"));
     assertTrue(set.contains("c"));
     assertTrue(set.contains("d"));
 
-    assertTrue(set.retainAll(Arrays.asList(new String[] {"a", "b", "c"})));
-    assertFalse(set.retainAll(Arrays.asList(new String[] {"a", "b", "c"})));
+    assertTrue(set.retainAll(Arrays.asList("a", "b", "c")));
+    assertFalse(set.retainAll(Arrays.asList("a", "b", "c")));
 
-    HashSet<String> test = new HashSet<String>();
-    test.addAll(Arrays.asList(new String[] {"a", "b", "c"}));
+    HashSet<String> test = new HashSet<>();
+    test.addAll(Arrays.asList("a", "b", "c"));
     assertEquals(test, set);
     assertEquals(set, test);
     assertEquals(test.toString(), set.toString());
@@ -100,12 +100,12 @@ public class CopyOnWriteHashSetJUnitTest {
 
     set.clear();
 
-    set.addAll(Arrays.asList(new String[] {"b", "c", "d"}));
+    set.addAll(Arrays.asList("b", "c", "d"));
 
-    assertTrue(set.removeAll(Arrays.asList(new String[] {"b", "c"})));
-    assertFalse(set.removeAll(Arrays.asList(new String[] {"b", "c"})));
+    assertTrue(set.removeAll(Arrays.asList("b", "c")));
+    assertFalse(set.removeAll(Arrays.asList("b", "c")));
 
-    assertEquals(new HashSet(Arrays.asList(new String[] {"d"})), set);
+    assertEquals(new HashSet(Arrays.asList("d")), set);
 
     ByteArrayOutputStream boas = new ByteArrayOutputStream();
     ObjectOutputStream out = new ObjectOutputStream(boas);

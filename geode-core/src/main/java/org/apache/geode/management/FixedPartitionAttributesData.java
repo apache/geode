@@ -28,17 +28,17 @@ public class FixedPartitionAttributesData {
   /**
    * Name of the Fixed partition
    */
-  private String name;
+  private final String name;
 
   /**
    * whether this is the primary partition
    */
-  private boolean primary;
+  private final boolean primary;
 
   /**
    * Number of buckets in the partition
    */
-  private int numBucket;
+  private final int numBucket;
 
   /**
    *

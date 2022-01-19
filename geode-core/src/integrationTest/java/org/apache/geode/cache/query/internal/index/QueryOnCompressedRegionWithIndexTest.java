@@ -95,22 +95,22 @@ public class QueryOnCompressedRegionWithIndexTest {
     cf.set(MCAST_PORT, "0");
     cf.set(LOCATORS, "");
     cf.setPdxPersistent(true);
-    this.cache = cf.create();
+    cache = cf.create();
 
     // Create region with compression enabled
-    this.region = createRegion("region_" + shortcut, shortcut);
+    region = createRegion("region_" + shortcut, shortcut);
   }
 
   @After
   public void closeCache() {
     // Destroy the region
-    if (this.region != null) {
-      this.region.destroyRegion();
+    if (region != null) {
+      region.destroyRegion();
     }
 
     // Destroy the cache
-    if (this.cache != null) {
-      this.cache.close();
+    if (cache != null) {
+      cache.close();
     }
 
     // Delete backup files
@@ -129,12 +129,12 @@ public class QueryOnCompressedRegionWithIndexTest {
   @Test
   public void testCreateIndexThenAddEntries() throws Exception {
     // Create index
-    String indexName = this.region.getName() + "_index";
-    createIndex(indexName, "status", this.region.getFullPath());
+    String indexName = region.getName() + "_index";
+    createIndex(indexName, "status", region.getFullPath());
 
     // Load entries
     int numObjects = 10;
-    loadEntries(this.region, numObjects, false);
+    loadEntries(region, numObjects, false);
 
     // Execute queries and validate results
     executeQueriesAndValidateResults(numObjects, indexName);
@@ -143,12 +143,12 @@ public class QueryOnCompressedRegionWithIndexTest {
   @Test
   public void testCreateIndexThenAddPdxEntries() throws Exception {
     // Create index
-    String indexName = this.region.getName() + "_index";
-    createIndex(indexName, "status", this.region.getFullPath());
+    String indexName = region.getName() + "_index";
+    createIndex(indexName, "status", region.getFullPath());
 
     // Load entries
     int numObjects = 10;
-    loadEntries(this.region, numObjects, true);
+    loadEntries(region, numObjects, true);
 
     // Execute queries and validate results
     executeQueriesAndValidateResults(numObjects, indexName);
@@ -158,11 +158,11 @@ public class QueryOnCompressedRegionWithIndexTest {
   public void testAddEntriesThenCreateIndex() throws Exception {
     // Load entries
     int numObjects = 10;
-    loadEntries(this.region, numObjects, false);
+    loadEntries(region, numObjects, false);
 
     // Create index
-    String indexName = this.region.getName() + "_index";
-    createIndex(indexName, "status", this.region.getFullPath());
+    String indexName = region.getName() + "_index";
+    createIndex(indexName, "status", region.getFullPath());
 
     // Execute queries and validate results
     executeQueriesAndValidateResults(numObjects, indexName);
@@ -172,24 +172,24 @@ public class QueryOnCompressedRegionWithIndexTest {
   public void testAddPdxEntriesThenCreateIndex() throws Exception {
     // Load entries
     int numObjects = 10;
-    loadEntries(this.region, numObjects, true);
+    loadEntries(region, numObjects, true);
 
     // Create index
-    String indexName = this.region.getName() + "_index";
-    createIndex(indexName, "status", this.region.getFullPath());
+    String indexName = region.getName() + "_index";
+    createIndex(indexName, "status", region.getFullPath());
 
     // Execute queries and validate results
     executeQueriesAndValidateResults(numObjects, indexName);
   }
 
   private Region createRegion(String regionName, RegionShortcut shortcut) {
-    return this.cache.createRegionFactory(shortcut).setCompressor(new SnappyCompressor())
+    return cache.createRegionFactory(shortcut).setCompressor(new SnappyCompressor())
         .create(regionName);
   }
 
   private Index createIndex(String indexName, String indexedExpression, String regionPath)
       throws Exception {
-    return this.cache.getQueryService().createIndex(indexName, indexedExpression, regionPath);
+    return cache.getQueryService().createIndex(indexName, indexedExpression, regionPath);
   }
 
   private void loadEntries(Region region, int numObjects, boolean usePdx) {
@@ -199,11 +199,11 @@ public class QueryOnCompressedRegionWithIndexTest {
   }
 
   private void executeQueriesAndValidateResults(int numObjects, String indexName) throws Exception {
-    executeQuery("select * from " + this.region.getFullPath() + " where status = 'inactive'",
+    executeQuery("select * from " + region.getFullPath() + " where status = 'inactive'",
         numObjects / 2, indexName);
-    executeQuery("select * from " + this.region.getFullPath() + " where status = 'active'",
+    executeQuery("select * from " + region.getFullPath() + " where status = 'active'",
         numObjects / 2, indexName);
-    executeQuery("select * from " + this.region.getFullPath() + " where status = null", 0,
+    executeQuery("select * from " + region.getFullPath() + " where status = null", 0,
         indexName);
   }
 
@@ -214,7 +214,7 @@ public class QueryOnCompressedRegionWithIndexTest {
     QueryObserverHolder.setInstance(observer);
 
     // Execute query
-    Query query = this.cache.getQueryService().newQuery(queryStr);
+    Query query = cache.getQueryService().newQuery(queryStr);
     SelectResults results = (SelectResults) query.execute();
 
     // Validate results size

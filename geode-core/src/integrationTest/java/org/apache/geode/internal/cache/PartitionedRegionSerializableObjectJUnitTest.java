@@ -26,7 +26,6 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +36,7 @@ import org.apache.geode.test.dunit.ThreadUtils;
 
 public class PartitionedRegionSerializableObjectJUnitTest {
 
-  private String regionName = "SerizableRegion";
+  private final String regionName = "SerizableRegion";
 
   /** It is common region for all the threads */
   private Region root;
@@ -45,11 +44,11 @@ public class PartitionedRegionSerializableObjectJUnitTest {
   /**
    * It is map to store thread name and list of objects which are created by that thread.
    */
-  private static Map thread2List = new HashMap();
+  private static final Map thread2List = new HashMap();
 
-  private static int MAX_COUNT = 10;
+  private static final int MAX_COUNT = 10;
 
-  private static int MAX_THREADS = 10;
+  private static final int MAX_THREADS = 10;
 
   /**
    * This test creates a region and threads. This Region is common to all the threads which perform
@@ -59,7 +58,7 @@ public class PartitionedRegionSerializableObjectJUnitTest {
   @Test
   public void testOperationsWithSerializableObject() {
     int localMaxMemory = 50;
-    Thread threadArr[] = new Thread[10];
+    Thread[] threadArr = new Thread[10];
     root = PartitionedRegionTestHelper.createPartitionedRegion(regionName,
         String.valueOf(localMaxMemory), 0);
     System.out.println("*******testOperationsWithSerializableObject started*********");
@@ -103,12 +102,9 @@ public class PartitionedRegionSerializableObjectJUnitTest {
       Region pr = PartitionedRegionTestHelper.getExistingRegion(SEPARATOR + regionName);
       assertNotNull(pr);
       List list = new ArrayList();
-      list = (ArrayList) thread2List.get(this.getName());
+      list = (ArrayList) thread2List.get(getName());
 
-      Iterator itr = list.iterator();
-
-      while (itr.hasNext()) {
-        Object listObj = itr.next();
+      for (final Object listObj : list) {
         try {
           Object retObj = pr.get(listObj);
           assertNotNull(retObj);
@@ -142,7 +138,7 @@ public class PartitionedRegionSerializableObjectJUnitTest {
       List list = new ArrayList();
       for (key = 0; key < MAX_COUNT; key++) {
         try {
-          obj = PartitionedRegionTestHelper.createPRSerializableObject(this.getName() + key, key);
+          obj = PartitionedRegionTestHelper.createPRSerializableObject(getName() + key, key);
           pr.put(obj, obj);
           list.add(obj);
         } catch (Exception ex) {
@@ -151,7 +147,7 @@ public class PartitionedRegionSerializableObjectJUnitTest {
                   + key + ". Exception stack = " + ex);
         }
       }
-      thread2List.put(this.getName(), list);
+      thread2List.put(getName(), list);
     }
   }
 }

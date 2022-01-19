@@ -54,9 +54,7 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
-import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneQuery;
-import org.apache.geode.cache.lucene.LuceneQueryException;
 import org.apache.geode.cache.lucene.LuceneQueryProvider;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
@@ -81,11 +79,11 @@ import org.apache.geode.test.junit.categories.PerformanceTest;
 public class IndexRepositoryImplPerformanceTest {
 
   private static final int NUM_WORDS = 1000;
-  private static int[] COMMIT_INTERVAL = new int[] {100, 1000, 5000};
-  private static int NUM_ENTRIES = 500_000;
-  private static int NUM_QUERIES = 500_000;
+  private static final int[] COMMIT_INTERVAL = new int[] {100, 1000, 5000};
+  private static final int NUM_ENTRIES = 500_000;
+  private static final int NUM_QUERIES = 500_000;
 
-  private StandardAnalyzer analyzer = new StandardAnalyzer();
+  private final StandardAnalyzer analyzer = new StandardAnalyzer();
 
   @Test
   public void testIndexRepository() throws Exception {
@@ -203,13 +201,7 @@ public class IndexRepositoryImplPerformanceTest {
       @Override
       public int query(final Query query) throws Exception {
         LuceneQuery<Object, Object> luceneQuery = service.createLuceneQueryFactory().create("index",
-            SEPARATOR + "region", new LuceneQueryProvider() {
-
-              @Override
-              public Query getQuery(LuceneIndex index) throws LuceneQueryException {
-                return query;
-              }
-            });
+            SEPARATOR + "region", (LuceneQueryProvider) index -> query);
 
         PageableLuceneQueryResults<Object, Object> results = luceneQuery.findPages();
         return results.size();
@@ -252,7 +244,7 @@ public class IndexRepositoryImplPerformanceTest {
       @Override
       public void cleanup() throws Exception {
         writer.close();
-        cache.close();;
+        cache.close();
       }
 
       @Override
@@ -331,7 +323,7 @@ public class IndexRepositoryImplPerformanceTest {
 
     // Create some random words. We need to be careful
     // to make sure we get NUM_WORDS distinct words here
-    Set<String> wordSet = new HashSet<String>();
+    Set<String> wordSet = new HashSet<>();
     Random rand = new Random();
     while (wordSet.size() < NUM_WORDS) {
       int length = rand.nextInt(12) + 3;
@@ -341,7 +333,7 @@ public class IndexRepositoryImplPerformanceTest {
       }
       wordSet.add(new String(text));
     }
-    List<String> words = new ArrayList<String>(wordSet.size());
+    List<String> words = new ArrayList<>(wordSet.size());
     words.addAll(wordSet);
 
 
@@ -352,14 +344,14 @@ public class IndexRepositoryImplPerformanceTest {
 
     // Do the actual test
 
-    for (int i = 0; i < COMMIT_INTERVAL.length; i++) {
+    for (final int j : COMMIT_INTERVAL) {
       Results results = writeRandomWords(callbacks, words, rand, NUM_ENTRIES, NUM_QUERIES / 10,
-          COMMIT_INTERVAL[i]);
+          j);
 
       System.out.println(testName + " writes(entries=" + NUM_ENTRIES + ", commit="
-          + COMMIT_INTERVAL[i] + "): " + TimeUnit.NANOSECONDS.toMillis(results.writeTime));
+          + j + "): " + TimeUnit.NANOSECONDS.toMillis(results.writeTime));
       System.out.println(testName + " queries(entries=" + NUM_ENTRIES + ", commit="
-          + COMMIT_INTERVAL[i] + "): " + TimeUnit.NANOSECONDS.toMillis(results.queryTime));
+          + j + "): " + TimeUnit.NANOSECONDS.toMillis(results.queryTime));
     }
   }
 
@@ -440,17 +432,17 @@ public class IndexRepositoryImplPerformanceTest {
   }
 
   private interface TestCallbacks {
-    public void init() throws Exception;
+    void init() throws Exception;
 
-    public int query(Query query) throws Exception;
+    int query(Query query) throws Exception;
 
-    public void addObject(String key, String text) throws Exception;
+    void addObject(String key, String text) throws Exception;
 
-    public void commit() throws Exception;
+    void commit() throws Exception;
 
-    public void waitForAsync() throws Exception;
+    void waitForAsync() throws Exception;
 
-    public void cleanup() throws Exception;
+    void cleanup() throws Exception;
   }
 
   private static class Results {

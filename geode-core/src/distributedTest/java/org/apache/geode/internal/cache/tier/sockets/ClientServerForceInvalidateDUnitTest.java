@@ -144,8 +144,8 @@ public class ClientServerForceInvalidateDUnitTest extends JUnit4CacheTestCase {
       region1.registerInterest("ALL_KEYS", InterestResultPolicy.NONE, false, false);
       region1.put(key, "1000");
       logger.info("installing observers");
-      server1.invoke(() -> installObserver());
-      server2.invoke(() -> installObserver());
+      server1.invoke(ClientServerForceInvalidateDUnitTest::installObserver);
+      server2.invoke(ClientServerForceInvalidateDUnitTest::installObserver);
 
       server2.invoke(() -> invalidateOnServer(key));
 
@@ -154,14 +154,14 @@ public class ClientServerForceInvalidateDUnitTest extends JUnit4CacheTestCase {
       logger.info("putting a new value 1001");
       region1.put(key, "1001");
       logger.info("UnPausing observers");
-      server1.invoke(() -> unpauseObserver());
-      server2.invoke(() -> unpauseObserver());
+      server1.invoke(ClientServerForceInvalidateDUnitTest::unpauseObserver);
+      server2.invoke(ClientServerForceInvalidateDUnitTest::unpauseObserver);
 
       waitForClientInvalidate();
 
     } finally {
-      server1.invoke(() -> cleanupObserver());
-      server2.invoke(() -> cleanupObserver());
+      server1.invoke(ClientServerForceInvalidateDUnitTest::cleanupObserver);
+      server2.invoke(ClientServerForceInvalidateDUnitTest::cleanupObserver);
     }
   }
 
@@ -186,14 +186,13 @@ public class ClientServerForceInvalidateDUnitTest extends JUnit4CacheTestCase {
   }
 
   private static void createOnServer(final Object key, final Object value) {
-    @SuppressWarnings("unchecked")
     Region<Object, Object> r = GemFireCacheImpl.getExisting().getRegion(REGION_NAME1);
     r.create(key, value);
   }
 
   private void waitForClientInvalidate() {
     await()
-        .until(() -> hasClientListenerAfterInvalidateBeenInvoked());
+        .until(this::hasClientListenerAfterInvalidateBeenInvoked);
   }
 
   static class DelaySendingEvent extends ClientServerObserverAdapter {
@@ -241,7 +240,8 @@ public class ClientServerForceInvalidateDUnitTest extends JUnit4CacheTestCase {
 
   private void validateServerListenerInvoked() {
     boolean listenerInvoked =
-        server1.invoke(() -> validateOnServer()) || server2.invoke(() -> validateOnServer());
+        server1.invoke(ClientServerForceInvalidateDUnitTest::validateOnServer) || server2.invoke(
+            ClientServerForceInvalidateDUnitTest::validateOnServer);
     assertTrue(listenerInvoked);
   }
 
@@ -281,7 +281,7 @@ public class ClientServerForceInvalidateDUnitTest extends JUnit4CacheTestCase {
     RegionFactory<String, String> factory = cache.createRegionFactory();
     if (partitioned) {
       factory.setDataPolicy(DataPolicy.PARTITION);
-      factory.setPartitionAttributes(new PartitionAttributesFactory<String, String>()
+      factory.setPartitionAttributes(new PartitionAttributesFactory<>()
           .setRedundantCopies(0).setTotalNumBuckets(251).create());
     } else {
       factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -295,10 +295,10 @@ public class ClientServerForceInvalidateDUnitTest extends JUnit4CacheTestCase {
     int port = getRandomAvailableTCPPort();
     logger.info("Starting server on port " + port);
     server.setPort(port);
-    server.setMaxThreads(maxThreads.intValue());
+    server.setMaxThreads(maxThreads);
     server.start();
     logger.info("Started server on port " + server.getPort());
-    return new Integer(server.getPort());
+    return server.getPort();
 
   }
 
@@ -333,11 +333,8 @@ public class ClientServerForceInvalidateDUnitTest extends JUnit4CacheTestCase {
   private static boolean poolReady(final PoolImpl pool) {
     try {
       Connection conn = pool.acquireConnection();
-      if (conn == null) {
-        // excuse = "acquireConnection returned null?";
-        return false;
-      }
-      return true;
+      // excuse = "acquireConnection returned null?";
+      return conn != null;
     } catch (NoAvailableServersException e) {
       // excuse = "Cannot find a server: " + e;
       return false;
@@ -416,8 +413,8 @@ public class ClientServerForceInvalidateDUnitTest extends JUnit4CacheTestCase {
     // close the clients first
     closeForceInvalidateCache();
     // then close the servers
-    server1.invoke(() -> closeForceInvalidateCache());
-    server2.invoke(() -> closeForceInvalidateCache());
+    server1.invoke(ClientServerForceInvalidateDUnitTest::closeForceInvalidateCache);
+    server2.invoke(ClientServerForceInvalidateDUnitTest::closeForceInvalidateCache);
   }
 
   @SuppressWarnings("deprecation")

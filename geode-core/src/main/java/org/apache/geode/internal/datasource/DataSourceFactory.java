@@ -30,7 +30,6 @@ package org.apache.geode.internal.datasource;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -162,7 +161,7 @@ public class DataSourceFactory {
       String exception =
           String.format(
               "DataSourceFactory::getPooledDataSource:Exception creating ConnectionPoolDataSource.Exception string=%s",
-              new Object[] {ex});
+              ex);
       logger.error(String.format(
           "DataSourceFactory::getPooledDataSource:Exception creating ConnectionPoolDataSource.Exception string=%s",
           ex),
@@ -260,7 +259,7 @@ public class DataSourceFactory {
       String exception =
           String.format(
               "DataSourceFactory::getTranxDataSource:Exception in creating GemFireTransactionDataSource. Exception string=%s",
-              new Object[] {ex});
+              ex);
       logger.error(String.format(
           "DataSourceFactory::getTranxDataSource:Exception in creating GemFireTransactionDataSource. Exception string=%s",
           ex),
@@ -276,9 +275,8 @@ public class DataSourceFactory {
    */
   private ConfiguredDataSourceProperties createDataSourceProperties(Map configMap) {
     ConfiguredDataSourceProperties configs = new ConfiguredDataSourceProperties();
-    Iterator entries = configMap.entrySet().iterator();
-    while (entries.hasNext()) {
-      Map.Entry entry = (Map.Entry) entries.next();
+    for (final Object o : configMap.entrySet()) {
+      Map.Entry entry = (Map.Entry) o;
       String name = (String) entry.getKey();
       final Object obj = entry.getValue();
       if (name.equals("connection-url")) {
@@ -319,7 +317,7 @@ public class DataSourceFactory {
      * Test hook for replacing URL
      */
     if (TEST_CONNECTION_URL != null) {
-      configs.setURL((String) TEST_CONNECTION_URL);
+      configs.setURL(TEST_CONNECTION_URL);
     }
     return configs;
   }
@@ -378,35 +376,35 @@ public class DataSourceFactory {
     String type = null;
     String methodName = null;
     Method m = null;
-    for (Iterator it = props.iterator(); it.hasNext();) {
-      ConfigProperty cp = (ConfigProperty) it.next();
+    for (final Object prop : props) {
+      ConfigProperty cp = (ConfigProperty) prop;
       key = cp.getName();
       value = cp.getValue();
       type = cp.getType();
       if (key.indexOf("password") != -1) {
         value = PasswordUtil.decrypt(String.valueOf(value));
       }
-      methodName = new StringBuffer("set").append(Character.toUpperCase(key.charAt(0)))
-          .append(key.length() > 1 ? key.substring(1) : "").toString();
+      methodName = "set" + Character.toUpperCase(key.charAt(0))
+          + (key.length() > 1 ? key.substring(1) : "");
       try {
         Class cl = null;
         Class realClass = null;
         if ("int".equals(type)) {
           cl = int.class;
-          realClass = java.lang.Integer.class;
+          realClass = Integer.class;
         } else {
           cl = ClassPathLoader.getLatest().forName(type);
           realClass = cl;
         }
-        Constructor cr = realClass.getConstructor(new Class[] {java.lang.String.class});
-        Object ob = cr.newInstance(new Object[] {value});
-        m = c.getMethod(methodName, new Class[] {cl});
-        m.invoke(cpdsObj, new Object[] {ob});
+        Constructor cr = realClass.getConstructor(String.class);
+        Object ob = cr.newInstance(value);
+        m = c.getMethod(methodName, cl);
+        m.invoke(cpdsObj, ob);
       } catch (ClassNotFoundException ex) {
         String exception =
             String.format(
                 "DataSourceFactory::invokeAllMethods: Exception in creating Class with the given config-property-type classname. Exception string=%s",
-                ex.toString());
+                ex);
         if (logger.isDebugEnabled()) {
           logger.debug(exception, ex);
         }
@@ -414,7 +412,7 @@ public class DataSourceFactory {
         String exception =
             String.format(
                 "DataSourceFactory::invokeAllMethods: Exception in creating method using config-property-name property. Exception string=%s",
-                ex.toString());
+                ex);
         if (logger.isDebugEnabled()) {
           logger.debug(exception, ex);
         }
@@ -422,7 +420,7 @@ public class DataSourceFactory {
         String exception =
             String.format(
                 "DataSourceFactory::invokeAllMethods: Exception in creating instance of the class using the constructor with a String parameter. Exception string=%s",
-                ex.toString());
+                ex);
         if (logger.isDebugEnabled()) {
           logger.debug(exception, ex);
         }

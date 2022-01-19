@@ -90,7 +90,7 @@ public class DiskDirsType implements Serializable {
     if (diskDirs == null) {
       diskDirs = new ArrayList<>();
     }
-    return this.diskDirs;
+    return diskDirs;
   }
 
 }

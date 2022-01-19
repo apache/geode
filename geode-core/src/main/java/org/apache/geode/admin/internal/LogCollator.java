@@ -42,13 +42,13 @@ public class LogCollator {
         return "";
       }
       this.system = system;
-      this.logTails = new ArrayList<>();
+      logTails = new ArrayList<>();
       gatherActiveLogs();
       gatherInactiveLogs();
       return mergeLogs();
     } finally {
       this.system = null;
-      this.logTails = null;
+      logTails = null;
     }
   }
 
@@ -57,8 +57,7 @@ public class LogCollator {
   private String mergeLogs() {
     // combine logs...
     Map<String, InputStream> logFiles = new HashMap<>();
-    for (int i = 0; i < this.logTails.size(); i++) {
-      Loglet loglet = this.logTails.get(i);
+    for (Loglet loglet : logTails) {
       logFiles.put(loglet.name, new ByteArrayInputStream(loglet.tail.getBytes()));
     }
 
@@ -73,9 +72,9 @@ public class LogCollator {
   }
 
   private void gatherActiveLogs() {
-    ApplicationVM[] runningsApps = this.system.listApplications();
-    for (int i = 0; i < runningsApps.length; i++) {
-      addLogFrom(runningsApps[i]);
+    ApplicationVM[] runningsApps = system.listApplications();
+    for (final ApplicationVM runningsApp : runningsApps) {
+      addLogFrom(runningsApp);
     }
   }
 
@@ -99,7 +98,7 @@ public class LogCollator {
   private void addTail(String logName, String[] logs) {
     if (logs.length > 0) {
       String tail = (logs.length > 1) ? logs[1] : logs[0];
-      this.logTails.add(new Loglet(logName, tail));
+      logTails.add(new Loglet(logName, tail));
     }
   }
 

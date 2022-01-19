@@ -44,13 +44,13 @@ import org.apache.geode.security.NotAuthorizedException;
  * @since GemFire 7.0
  */
 public class GfshExecutionStrategy implements ExecutionStrategy {
-  private Class<?> mutex = GfshExecutionStrategy.class;
+  private final Class<?> mutex = GfshExecutionStrategy.class;
   private Gfsh shell;
-  private LogWrapper logWrapper;
+  private final LogWrapper logWrapper;
 
   GfshExecutionStrategy(Gfsh shell) {
     this.shell = shell;
-    this.logWrapper = shell.getGfshFileLogger();
+    logWrapper = shell.getGfshFileLogger();
   }
 
   /**
@@ -85,7 +85,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
     }
 
     // check if it's a GfshParseResult
-    if (!GfshParseResult.class.isInstance(parseResult)) {
+    if (!(parseResult instanceof GfshParseResult)) {
       throw new IllegalStateException("Configuration error!");
     }
 

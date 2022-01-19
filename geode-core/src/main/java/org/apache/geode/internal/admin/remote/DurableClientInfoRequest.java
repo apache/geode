@@ -63,28 +63,28 @@ public class DurableClientInfoRequest extends AdminRequest {
    */
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    return DurableClientInfoResponse.create(dm, this.getSender(), this);
+    return DurableClientInfoResponse.create(dm, getSender(), this);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeString(this.durableId, out);
-    out.writeInt(this.action);
+    DataSerializer.writeString(durableId, out);
+    out.writeInt(action);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.durableId = DataSerializer.readString(in);
-    this.action = in.readInt();
+    durableId = DataSerializer.readString(in);
+    action = in.readInt();
     setFriendlyName(this);
   }
 
   public String toString() {
-    return "DurableClientInfoRequest from " + this.getSender();
+    return "DurableClientInfoRequest from " + getSender();
   }
 
   /*

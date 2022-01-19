@@ -75,36 +75,36 @@ public class InternalRegionArguments {
   /* methods that set and retrieve internal state used to configure a Region */
 
   public InternalRegionArguments setIsUsedForPartitionedRegionAdmin(boolean adminFlag) {
-    this.isUsedForPartitionedRegionAdmin = adminFlag;
+    isUsedForPartitionedRegionAdmin = adminFlag;
     return this;
   }
 
   public boolean isUsedForPartitionedRegionAdmin() {
-    return this.isUsedForPartitionedRegionAdmin;
+    return isUsedForPartitionedRegionAdmin;
   }
 
   public InternalRegionArguments setPartitionedRegionBucketRedundancy(int redundancy) {
-    this.isUsedForPartitionedRegionBucket = true;
-    this.bucketRedundancy = redundancy;
+    isUsedForPartitionedRegionBucket = true;
+    bucketRedundancy = redundancy;
     return this;
   }
 
   public InternalRegionArguments setPartitionedRegionAdvisor(RegionAdvisor advisor) {
-    this.partitionedRegionAdvisor = advisor;
+    partitionedRegionAdvisor = advisor;
     return this;
   }
 
   public RegionAdvisor getPartitionedRegionAdvisor() {
-    return this.partitionedRegionAdvisor;
+    return partitionedRegionAdvisor;
   }
 
   public InternalRegionArguments setBucketAdvisor(BucketAdvisor advisor) {
-    this.bucketAdvisor = advisor;
+    bucketAdvisor = advisor;
     return this;
   }
 
   public BucketAdvisor getBucketAdvisor() {
-    return this.bucketAdvisor;
+    return bucketAdvisor;
   }
 
   public InternalRegionArguments setPersistenceAdvisor(PersistenceAdvisor persistenceAdvisor) {
@@ -126,16 +126,16 @@ public class InternalRegionArguments {
   }
 
   public boolean isUsedForPartitionedRegionBucket() {
-    return this.isUsedForPartitionedRegionBucket;
+    return isUsedForPartitionedRegionBucket;
   }
 
   public InternalRegionArguments setIsUsedForMetaRegion(boolean isMetaRegion) {
-    this.isUsedForMetaRegion = isMetaRegion;
+    isUsedForMetaRegion = isMetaRegion;
     return this;
   }
 
   public boolean isUsedForMetaRegion() {
-    return this.isUsedForMetaRegion;
+    return isUsedForMetaRegion;
   }
 
   public InternalRegionArguments setMetaRegionWithTransactions(boolean metaRegionWithTransactions) {
@@ -144,11 +144,11 @@ public class InternalRegionArguments {
   }
 
   public boolean isMetaRegionWithTransactions() {
-    return this.metaRegionWithTransactions;
+    return metaRegionWithTransactions;
   }
 
   public int getPartitionedRegionBucketRedundancy() {
-    return this.bucketRedundancy;
+    return bucketRedundancy;
   }
 
   public InternalRegionArguments setLoaderHelperFactory(LoaderHelperFactory loaderHelperFactory) {
@@ -157,16 +157,16 @@ public class InternalRegionArguments {
   }
 
   public LoaderHelperFactory getLoaderHelperFactory() {
-    return this.loaderHelperFactory;
+    return loaderHelperFactory;
   }
 
   public InternalRegionArguments setDestroyLockFlag(boolean getDestoryLock) {
-    this.getDestroyLock = getDestoryLock;
+    getDestroyLock = getDestoryLock;
     return this;
   }
 
   public boolean getDestroyLockFlag() {
-    return this.getDestroyLock;
+    return getDestroyLock;
   }
 
   public InternalRegionArguments setSnapshotInputStream(InputStream snapshotInputStream) {
@@ -175,7 +175,7 @@ public class InternalRegionArguments {
   }
 
   public InputStream getSnapshotInputStream() {
-    return this.snapshotInputStream;
+    return snapshotInputStream;
   }
 
   public InternalRegionArguments setImageTarget(InternalDistributedMember imageTarget) {
@@ -184,7 +184,7 @@ public class InternalRegionArguments {
   }
 
   public InternalDistributedMember getImageTarget() {
-    return this.imageTarget;
+    return imageTarget;
   }
 
   public InternalRegionArguments setRecreateFlag(boolean recreate) {
@@ -193,16 +193,16 @@ public class InternalRegionArguments {
   }
 
   public boolean getRecreateFlag() {
-    return this.recreate;
+    return recreate;
   }
 
   public InternalRegionArguments setInternalMetaRegion(LocalRegion r) {
-    this.internalMetaRegion = r;
+    internalMetaRegion = r;
     return this;
   }
 
   public LocalRegion getInternalMetaRegion() {
-    return this.internalMetaRegion;
+    return internalMetaRegion;
   }
 
   public HasCachePerfStats getCachePerfStatsHolder() {
@@ -220,61 +220,61 @@ public class InternalRegionArguments {
   }
 
   public PartitionedRegion getPartitionedRegion() {
-    return this.partitionedRegion;
+    return partitionedRegion;
   }
 
   public InternalRegionArguments setTestCallable(TestCallable c) {
-    this.testCallable = c;
+    testCallable = c;
     return this;
   }
 
   public TestCallable getTestCallable() {
-    return this.testCallable;
+    return testCallable;
   }
 
   public InternalRegionArguments setUserAttribute(Object userAttr) {
-    this.userAttribute = userAttr;
+    userAttribute = userAttr;
     return this;
   }
 
   public Object getUserAttribute() {
-    return this.userAttribute;
+    return userAttribute;
   }
 
   public InternalRegionArguments setIsUsedForSerialGatewaySenderQueue(boolean queueFlag) {
-    this.isUsedForSerialGatewaySenderQueue = queueFlag;
+    isUsedForSerialGatewaySenderQueue = queueFlag;
     return this;
   }
 
   public boolean isUsedForSerialGatewaySenderQueue() {
-    return this.isUsedForSerialGatewaySenderQueue;
+    return isUsedForSerialGatewaySenderQueue;
   }
 
   public InternalRegionArguments setIsUsedForParallelGatewaySenderQueue(boolean queueFlag) {
-    this.isUsedForParallelGatewaySenderQueue = queueFlag;
+    isUsedForParallelGatewaySenderQueue = queueFlag;
     return this;
   }
 
   public boolean isUsedForParallelGatewaySenderQueue() {
-    return this.isUsedForParallelGatewaySenderQueue;
+    return isUsedForParallelGatewaySenderQueue;
   }
 
   public InternalRegionArguments setParallelGatewaySender(AbstractGatewaySender pgSender) {
-    this.parallelGatewaySender = pgSender;
+    parallelGatewaySender = pgSender;
     return this;
   }
 
   public InternalRegionArguments setSerialGatewaySender(AbstractGatewaySender serialSender) {
-    this.serialGatewaySender = serialSender;
+    serialGatewaySender = serialSender;
     return this;
   }
 
   public AbstractGatewaySender getSerialGatewaySender() {
-    return this.serialGatewaySender;
+    return serialGatewaySender;
   }
 
   public AbstractGatewaySender getParallelGatewaySender() {
-    return this.parallelGatewaySender;
+    return parallelGatewaySender;
   }
 
 
@@ -286,31 +286,31 @@ public class InternalRegionArguments {
   }
 
   public List getIndexes() {
-    return this.indexes;
+    return indexes;
   }
 
   public InternalRegionArguments addCacheServiceProfile(CacheServiceProfile profile) {
-    if (this.cacheServiceProfiles == null) {
-      this.cacheServiceProfiles = new HashMap<>();
+    if (cacheServiceProfiles == null) {
+      cacheServiceProfiles = new HashMap<>();
     }
-    this.cacheServiceProfiles.put(profile.getId(), profile);
+    cacheServiceProfiles.put(profile.getId(), profile);
     return this;
   }
 
   public Map<String, CacheServiceProfile> getCacheServiceProfiles() {
-    return this.cacheServiceProfiles;
+    return cacheServiceProfiles;
   }
 
   public InternalRegionArguments addInternalAsyncEventQueueId(String aeqId) {
-    if (this.internalAsyncEventQueueIds == null) {
-      this.internalAsyncEventQueueIds = new HashSet<>();
+    if (internalAsyncEventQueueIds == null) {
+      internalAsyncEventQueueIds = new HashSet<>();
     }
-    this.internalAsyncEventQueueIds.add(aeqId);
+    internalAsyncEventQueueIds.add(aeqId);
     return this;
   }
 
   public Set<String> getInternalAsyncEventQueueIds() {
-    return this.internalAsyncEventQueueIds;
+    return internalAsyncEventQueueIds;
   }
 
   public boolean isInternalRegion() {

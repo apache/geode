@@ -45,7 +45,7 @@ public class LocatorLauncherContextLoader extends BaseLocatorContextLoader {
     }
 
     builder.setWorkingDirectory(temp.getRoot().getAbsolutePath());
-    this.locator = builder.build();
+    locator = builder.build();
   }
 
   @Override

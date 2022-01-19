@@ -53,17 +53,17 @@ public class DistributedBlackboard extends AbstractDistributedRule implements Bl
 
   @Override
   protected void before() {
-    invoker().invokeInEveryVMAndController(() -> invokeBefore());
+    invoker().invokeInEveryVMAndController(this::invokeBefore);
   }
 
   @Override
   protected void after() throws Throwable {
-    invoker().invokeInEveryVMAndController(() -> invokeAfter());
+    invoker().invokeInEveryVMAndController(this::invokeAfter);
   }
 
   @Override
   protected void afterCreateVM(VM vm) {
-    vm.invoke(() -> invokeBefore());
+    vm.invoke(this::invokeBefore);
   }
 
   @Override

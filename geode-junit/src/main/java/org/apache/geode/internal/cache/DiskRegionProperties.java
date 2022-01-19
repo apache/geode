@@ -78,11 +78,11 @@ public class DiskRegionProperties {
   }
 
   public boolean getAllowForceCompaction() {
-    return this.allowForceCompaction;
+    return allowForceCompaction;
   }
 
   public int getCompactionThreshold() {
-    return this.compactionThreshold;
+    return compactionThreshold;
   }
 
   public boolean isSynchronous() {
@@ -121,7 +121,7 @@ public class DiskRegionProperties {
   public void setDiskDirs(File[] diskDirs) {
     if (diskDirs == null) {
       this.diskDirs = null;
-      this.diskDirSize = null;
+      diskDirSize = null;
       return;
     }
     this.diskDirs = diskDirs;
@@ -144,11 +144,11 @@ public class DiskRegionProperties {
   }
 
   public void setAllowForceCompaction(boolean v) {
-    this.allowForceCompaction = v;
+    allowForceCompaction = v;
   }
 
   public void setCompactionThreshold(int v) {
-    this.compactionThreshold = v;
+    compactionThreshold = v;
   }
 
   public void setSynchronous(boolean isSynchronous) {
@@ -176,34 +176,34 @@ public class DiskRegionProperties {
   }
 
   public void setStatisticsEnabled(boolean v) {
-    this.statisticsEnabled = v;
+    statisticsEnabled = v;
   }
 
   public boolean getStatisticsEnabled() {
-    return this.statisticsEnabled;
+    return statisticsEnabled;
   }
 
   public void setConcurrencyLevel(int v) {
-    this.concurrencyLevel = v;
+    concurrencyLevel = v;
   }
 
   public int getConcurrencyLevel() {
-    return this.concurrencyLevel;
+    return concurrencyLevel;
   }
 
   public void setInitialCapacity(int v) {
-    this.initialCapacity = v;
+    initialCapacity = v;
   }
 
   public int getInitialCapacity() {
-    return this.initialCapacity;
+    return initialCapacity;
   }
 
   public void setLoadFactor(float v) {
-    this.loadFactor = v;
+    loadFactor = v;
   }
 
   public float getLoadFactor() {
-    return this.loadFactor;
+    return loadFactor;
   }
 }

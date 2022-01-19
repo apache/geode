@@ -38,7 +38,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -139,7 +138,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
 
   protected static boolean destroyFlag = false;
 
-  protected static List<Integer> dispatcherThreads = new ArrayList<Integer>(Arrays.asList(1, 3, 5));
+  protected static List<Integer> dispatcherThreads = new ArrayList<>(Arrays.asList(1, 3, 5));
 
   // this will be set for each test method run with one of the values from above
   // list
@@ -488,7 +487,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
 
     ((AsyncEventQueueImpl) theChannel).getSender().pause();
 
-    ((AbstractGatewaySender) ((AsyncEventQueueImpl) theChannel).getSender()).getEventProcessor()
+    ((AsyncEventQueueImpl) theChannel).getSender().getEventProcessor()
         .waitForDispatcherToPause();
   }
 
@@ -849,10 +848,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     WaitCriterion wc = new WaitCriterion() {
       @Override
       public boolean done() {
-        if (sender != null && ((AbstractGatewaySender) sender).isPrimary()) {
-          return true;
-        }
-        return false;
+        return sender != null && ((AbstractGatewaySender) sender).isPrimary();
       }
 
       @Override
@@ -960,8 +956,8 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
 
   public static String makePath(String[] strings) {
     StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < strings.length; i++) {
-      sb.append(strings[i]);
+    for (final String string : strings) {
+      sb.append(string);
       sb.append(File.separator);
     }
     return sb.toString();
@@ -1088,10 +1084,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
       WaitCriterion wc = new WaitCriterion() {
         @Override
         public boolean done() {
-          if (r.keySet().size() == regionSize) {
-            return true;
-          }
-          return false;
+          return r.keySet().size() == regionSize;
         }
 
         @Override
@@ -1179,10 +1172,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     WaitCriterion wc = new WaitCriterion() {
       @Override
       public boolean done() {
-        if (eventsMap.size() == expectedSize) {
-          return true;
-        }
-        return false;
+        return eventsMap.size() == expectedSize;
       }
 
       @Override
@@ -1210,10 +1200,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     WaitCriterion wc = new WaitCriterion() {
       @Override
       public boolean done() {
-        if (eventsMap.size() == expectedSize) {
-          return true;
-        }
-        return false;
+        return eventsMap.size() == expectedSize;
       }
 
       @Override
@@ -1223,9 +1210,8 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     };
     GeodeAwaitility.await().untilAsserted(wc); // TODO:Yogs
     Collection values = eventsMap.values();
-    Iterator itr = values.iterator();
-    while (itr.hasNext()) {
-      AsyncEvent asyncEvent = (AsyncEvent) itr.next();
+    for (final Object value : values) {
+      AsyncEvent asyncEvent = (AsyncEvent) value;
       if (isLoad) {
         assertTrue(asyncEvent.getOperation().isLoad());
       }
@@ -1250,10 +1236,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     WaitCriterion wc = new WaitCriterion() {
       @Override
       public boolean done() {
-        if (eventsMap.size() == expectedSize) {
-          return true;
-        }
-        return false;
+        return eventsMap.size() == expectedSize;
       }
 
       @Override
@@ -1263,9 +1246,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     };
     GeodeAwaitility.await().untilAsserted(wc); // TODO:Yogs
 
-    Iterator<AsyncEvent> itr = eventsMap.values().iterator();
-    while (itr.hasNext()) {
-      AsyncEvent event = itr.next();
+    for (final AsyncEvent event : (Iterable<AsyncEvent>) eventsMap.values()) {
       assertTrue("possibleDuplicate should be true for event: " + event,
           event.getPossibleDuplicate());
     }
@@ -1285,10 +1266,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
           for (RegionQueue q : queues) {
             size += q.size();
           }
-          if (size == 0) {
-            return true;
-          }
-          return false;
+          return size == 0;
         }
 
         @Override
@@ -1311,10 +1289,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
           for (RegionQueue q : queues) {
             size += q.size();
           }
-          if (size == 0) {
-            return true;
-          }
-          return false;
+          return size == 0;
         }
 
         @Override
@@ -1376,8 +1351,8 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     assertNotNull(eventsMap);
     assertEquals(expectedNumInvocations, eventsMap.size());
 
-    for (Iterator i = eventsMap.entrySet().iterator(); i.hasNext();) {
-      Map.Entry<Integer, String> entry = (Map.Entry<Integer, String>) i.next();
+    for (final Object o : eventsMap.entrySet()) {
+      Map.Entry<Integer, String> entry = (Map.Entry<Integer, String>) o;
       assertEquals(MyGatewayEventSubstitutionFilter.SUBSTITUTION_PREFIX + entry.getKey(),
           entry.getValue());
     }
@@ -1559,11 +1534,11 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
   @Override
   public final void postTearDown() throws Exception {
     cleanupVM();
-    vm0.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
-    vm1.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
-    vm2.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
-    vm3.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
-    vm4.invoke(() -> AsyncEventQueueTestBase.cleanupVM());
+    vm0.invoke(AsyncEventQueueTestBase::cleanupVM);
+    vm1.invoke(AsyncEventQueueTestBase::cleanupVM);
+    vm2.invoke(AsyncEventQueueTestBase::cleanupVM);
+    vm3.invoke(AsyncEventQueueTestBase::cleanupVM);
+    vm4.invoke(AsyncEventQueueTestBase::cleanupVM);
   }
 
   public static void cleanupVM() throws IOException {
@@ -1650,13 +1625,13 @@ class MyAsyncEventListener_CacheLoader implements AsyncEventListener {
   private final Map eventsMap;
 
   public MyAsyncEventListener_CacheLoader() {
-    this.eventsMap = new ConcurrentHashMap();
+    eventsMap = new ConcurrentHashMap();
   }
 
   @Override
   public boolean processEvents(List<AsyncEvent> events) {
     for (AsyncEvent event : events) {
-      this.eventsMap.put(event.getKey(), event);
+      eventsMap.put(event.getKey(), event);
     }
     return true;
   }
@@ -1689,7 +1664,7 @@ class MyCacheLoader implements CacheLoader, Declarable {
 
 class SizeableGatewayEventSubstitutionFilter implements GatewayEventSubstitutionFilter, Declarable {
 
-  private AtomicInteger numToDataInvocations = new AtomicInteger();
+  private final AtomicInteger numToDataInvocations = new AtomicInteger();
 
   protected static final String SUBSTITUTION_PREFIX = "substituted_";
 
@@ -1705,11 +1680,11 @@ class SizeableGatewayEventSubstitutionFilter implements GatewayEventSubstitution
   public void init(Properties properties) {}
 
   protected void incNumToDataInvocations() {
-    this.numToDataInvocations.incrementAndGet();
+    numToDataInvocations.incrementAndGet();
   }
 
   protected int getNumToDataInvocations() {
-    return this.numToDataInvocations.get();
+    return numToDataInvocations.get();
   }
 }
 
@@ -1718,7 +1693,7 @@ class GatewayEventSubstituteObject implements DataSerializable, Sizeable {
 
   private String id;
 
-  private SizeableGatewayEventSubstitutionFilter filter;
+  private final SizeableGatewayEventSubstitutionFilter filter;
 
   public GatewayEventSubstituteObject(SizeableGatewayEventSubstitutionFilter filter, String id) {
     this.filter = filter;
@@ -1726,18 +1701,18 @@ class GatewayEventSubstituteObject implements DataSerializable, Sizeable {
   }
 
   public String getId() {
-    return this.id;
+    return id;
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    this.filter.incNumToDataInvocations();
-    DataSerializer.writeString(this.id, out);
+    filter.incNumToDataInvocations();
+    DataSerializer.writeString(id, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.id = DataSerializer.readString(in);
+    id = DataSerializer.readString(in);
   }
 
   @Override
@@ -1746,21 +1721,21 @@ class GatewayEventSubstituteObject implements DataSerializable, Sizeable {
   }
 
   public String toString() {
-    return new StringBuilder().append(getClass().getSimpleName()).append("[").append("id=")
-        .append(this.id).append("]").toString();
+    return getClass().getSimpleName() + "[" + "id="
+        + id + "]";
   }
 }
 
 
 class MyGatewayEventSubstitutionFilter implements GatewayEventSubstitutionFilter, Declarable {
 
-  private AtomicInteger numInvocations = new AtomicInteger();
+  private final AtomicInteger numInvocations = new AtomicInteger();
 
   protected static final String SUBSTITUTION_PREFIX = "substituted_";
 
   @Override
   public Object getSubstituteValue(EntryEvent event) {
-    this.numInvocations.incrementAndGet();
+    numInvocations.incrementAndGet();
     return SUBSTITUTION_PREFIX + event.getKey();
   }
 
@@ -1771,6 +1746,6 @@ class MyGatewayEventSubstitutionFilter implements GatewayEventSubstitutionFilter
   public void init(Properties properties) {}
 
   protected int getNumInvocations() {
-    return this.numInvocations.get();
+    return numInvocations.get();
   }
 }

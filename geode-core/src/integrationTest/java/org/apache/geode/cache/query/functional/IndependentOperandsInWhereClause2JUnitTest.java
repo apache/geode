@@ -63,7 +63,7 @@ public class IndependentOperandsInWhereClause2JUnitTest {
       region.put("" + i, new Portfolio(i));
     }
     QueryService qs = CacheUtils.getQueryService();
-    String queries[] = {
+    String[] queries = {
         /* 1 */ "select distinct * from " + SEPARATOR
             + "portfolios pf, positions.values pos where  (pf.ID > 1 or status = 'active') or (true AND pos.secId ='IBM')", // size
         // 6
@@ -157,9 +157,9 @@ public class IndependentOperandsInWhereClause2JUnitTest {
             + " WHERE pos.value.secId = 'HP'", // size 3
     };
 
-    int sizeOfResult[] =
+    int[] sizeOfResult =
         {6, 6, 42, 1, 1, 0, 4, 0, 0, 5, 1, 2, 6, 1, 1, 6, 8, 1, 1, 0, 1, 0, 1, 2, 4, 0, 3};
-    SelectResults sr[][] = new SelectResults[queries.length][2];
+    SelectResults[][] sr = new SelectResults[queries.length][2];
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
       q = CacheUtils.getQueryService().newQuery(queries[i]);

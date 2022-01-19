@@ -34,7 +34,7 @@ public class ManagementRestSecurityConfigurationDUnitTest {
 
   @Test
   public void testWithSecurityManager() {
-    this.locator = cluster.startLocatorVM(0,
+    locator = cluster.startLocatorVM(0,
         x -> x.withHttpService().withSecurityManager(SimpleSecurityManager.class));
     GeodeDevRestClient client =
         new GeodeDevRestClient("/management", "localhost", locator.getHttpPort(), false);
@@ -60,7 +60,7 @@ public class ManagementRestSecurityConfigurationDUnitTest {
 
   @Test
   public void testWithoutSecurityManager() {
-    this.locator = cluster.startLocatorVM(1, MemberStarterRule::withHttpService);
+    locator = cluster.startLocatorVM(1, MemberStarterRule::withHttpService);
     GeodeDevRestClient client =
         new GeodeDevRestClient("/management", "localhost", locator.getHttpPort(), false);
 

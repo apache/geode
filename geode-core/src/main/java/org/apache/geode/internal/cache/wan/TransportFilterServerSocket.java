@@ -23,17 +23,17 @@ import org.apache.geode.cache.wan.GatewayTransportFilter;
 
 public class TransportFilterServerSocket extends ServerSocket {
 
-  private List<GatewayTransportFilter> gatewayTransportFilters;
+  private final List<GatewayTransportFilter> gatewayTransportFilters;
 
   public TransportFilterServerSocket(List<GatewayTransportFilter> transportFilters)
       throws IOException {
     super();
-    this.gatewayTransportFilters = transportFilters;
+    gatewayTransportFilters = transportFilters;
   }
 
   @Override
   public Socket accept() throws IOException {
-    Socket s = new TransportFilterSocket(this.gatewayTransportFilters);
+    Socket s = new TransportFilterSocket(gatewayTransportFilters);
     implAccept(s);
     return s;
   }

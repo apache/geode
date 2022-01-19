@@ -27,7 +27,6 @@ import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -120,8 +119,8 @@ public class AgentLauncher {
     assert basename != null : "The base name used by the AgentLauncher to create files cannot be null!";
     this.basename = basename;
     final String formattedBasename = this.basename.toLowerCase().replace(" ", "");
-    this.startLogFileName = "start_" + formattedBasename + ".log";
-    this.statusFileName = "." + formattedBasename + ".ser";
+    startLogFileName = "start_" + formattedBasename + ".log";
+    statusFileName = "." + formattedBasename + ".ser";
   }
 
   /**
@@ -135,11 +134,11 @@ public class AgentLauncher {
     out.println("\n");
     out.println("Agent configuration properties");
 
-    SortedMap<String, String> map = new TreeMap<String, String>();
+    SortedMap<String, String> map = new TreeMap<>();
 
     int maxLength = 0;
-    for (Iterator<Object> iter = props.keySet().iterator(); iter.hasNext();) {
-      String prop = (String) iter.next();
+    for (final Object o : props.keySet()) {
+      String prop = (String) o;
       int length = prop.length();
       if (length > maxLength) {
         maxLength = length;
@@ -150,9 +149,7 @@ public class AgentLauncher {
               + props.getProperty(prop) + "\")");
     }
 
-    Iterator<Entry<String, String>> entries = map.entrySet().iterator();
-    while (entries.hasNext()) {
-      Entry<String, String> entry = entries.next();
+    for (final Entry<String, String> entry : map.entrySet()) {
       String prop = entry.getKey();
       out.print("  ");
       out.println(prop);
@@ -171,9 +168,9 @@ public class AgentLauncher {
         out.print(" ");
         printed += word.length() + 1;
       }
-      out.println("");
+      out.println();
     }
-    out.println("");
+    out.println();
 
     ExitCode.FATAL.doSystemExit();
   }
@@ -183,12 +180,12 @@ public class AgentLauncher {
    * value is specified on the command line, a default one is provided.
    */
   protected Map<String, Object> getStartOptions(final String[] args) throws Exception {
-    final Map<String, Object> options = new HashMap<String, Object>();
+    final Map<String, Object> options = new HashMap<>();
 
     options.put(APPENDTO_LOG_FILE, "false");
     options.put(DIR, IOUtils.tryGetCanonicalFileElseGetAbsoluteFile(new File(".")));
 
-    final List<String> vmArgs = new ArrayList<String>();
+    final List<String> vmArgs = new ArrayList<>();
     options.put(VMARGS, vmArgs);
 
     final Properties agentProps = new Properties();
@@ -294,7 +291,7 @@ public class AgentLauncher {
 
   private void printCommandLine(final String[] commandLine) {
     if (PRINT_LAUNCH_COMMAND) {
-      System.out.print("Starting " + this.basename + " with command:\n");
+      System.out.print("Starting " + basename + " with command:\n");
       for (final String command : commandLine) {
         System.out.print(command);
         System.out.print(' ');
@@ -315,7 +312,7 @@ public class AgentLauncher {
           startLogFile.getAbsolutePath()));
     }
 
-    Map<String, String> env = new HashMap<String, String>();
+    Map<String, String> env = new HashMap<>();
     // read the passwords from command line
     SocketCreator.readSSLProperties(env, true);
 
@@ -361,7 +358,7 @@ public class AgentLauncher {
 
     workingDirectory = IOUtils.tryGetCanonicalFileElseGetAbsoluteFile((File) options.get(DIR));
 
-    writeStatus(createStatus(this.basename, STARTING, OSProcess.getId()));
+    writeStatus(createStatus(basename, STARTING, OSProcess.getId()));
 
     final Agent agent = createAgent((Properties) options.get(AGENT_PROPS));
 
@@ -412,7 +409,7 @@ public class AgentLauncher {
       public void run() {
         try {
           agent.start();
-          writeStatus(createStatus(AgentLauncher.this.basename, RUNNING, OSProcess.getId()));
+          writeStatus(createStatus(basename, RUNNING, OSProcess.getId()));
         } catch (IOException e) {
           e.printStackTrace();
         } catch (GemFireException e) {
@@ -442,7 +439,7 @@ public class AgentLauncher {
    */
   private void setServerError(final String message, final Throwable cause) {
     try {
-      writeStatus(createStatus(this.basename, SHUTDOWN_PENDING_AFTER_FAILED_STARTUP,
+      writeStatus(createStatus(basename, SHUTDOWN_PENDING_AFTER_FAILED_STARTUP,
           OSProcess.getId(), message, cause));
     } catch (Exception e) {
       logger.fatal(e.getMessage(), e);
@@ -459,7 +456,7 @@ public class AgentLauncher {
         agent.stop();
         final ExitCode exitCode =
             (isStatus(SHUTDOWN_PENDING_AFTER_FAILED_STARTUP) ? ExitCode.FATAL : ExitCode.NORMAL);
-        writeStatus(createStatus(this.status, SHUTDOWN));
+        writeStatus(createStatus(status, SHUTDOWN));
         exitCode.doSystemExit();
       }
     }
@@ -470,7 +467,7 @@ public class AgentLauncher {
    * line. This method can also be used with getting the status of a agent.
    */
   protected Map<String, Object> getStopOptions(final String[] args) throws Exception {
-    final Map<String, Object> options = new HashMap<String, Object>();
+    final Map<String, Object> options = new HashMap<>();
 
     options.put(DIR, IOUtils.tryGetCanonicalFileElseGetAbsoluteFile(new File(".")));
 
@@ -502,20 +499,20 @@ public class AgentLauncher {
       spinReadStatus();
 
       if (!isStatus(SHUTDOWN)) {
-        writeStatus(createStatus(this.basename, SHUTDOWN_PENDING, status.pid));
+        writeStatus(createStatus(basename, SHUTDOWN_PENDING, status.pid));
       }
 
       pollAgentForShutdown();
 
       if (isStatus(SHUTDOWN)) {
         System.out
-            .println(String.format("The %s has shut down.", this.basename));
+            .println(String.format("The %s has shut down.", basename));
         deleteStatus();
         exitCode = ExitCode.NORMAL;
       } else {
         System.out
             .println(String.format("Timeout waiting for %s to shutdown, status is: %s",
-                this.basename, status));
+                basename, status));
       }
     } else {
       System.out.println(
@@ -541,7 +538,7 @@ public class AgentLauncher {
    * Prints the status of the GemFire JMX Agent running in the configured working directory.
    */
   public void status(final String[] args) throws Exception {
-    this.workingDirectory =
+    workingDirectory =
         IOUtils.tryGetCanonicalFileElseGetAbsoluteFile((File) getStopOptions(args).get(DIR));
     System.out.println(getStatus());
     ExitCode.NORMAL.doSystemExit();
@@ -556,9 +553,9 @@ public class AgentLauncher {
     if (new File(workingDirectory, statusFileName).exists()) {
       status = spinReadStatus();
     } else {
-      status = createStatus(this.basename, SHUTDOWN, 0,
+      status = createStatus(basename, SHUTDOWN, 0,
           String.format("%s is not running in the specified working directory: (%s).",
-              this.basename, this.workingDirectory),
+              basename, workingDirectory),
           null);
     }
 
@@ -577,8 +574,8 @@ public class AgentLauncher {
    *         states.
    */
   private boolean isStatus(final Integer... states) {
-    return (this.status != null
-        && Arrays.asList(defaultToUnknownStateIfNull(states)).contains(this.status.state));
+    return (status != null
+        && Arrays.asList(defaultToUnknownStateIfNull(states)).contains(status.state));
   }
 
   /**
@@ -618,8 +615,8 @@ public class AgentLauncher {
     try {
       fileIn = new FileInputStream(new File(workingDirectory, statusFileName));
       objectIn = new ObjectInputStream(fileIn);
-      this.status = (Status) objectIn.readObject();
-      return this.status;
+      status = (Status) objectIn.readObject();
+      return status;
     } catch (ClassNotFoundException e) {
       throw new RuntimeException(e);
     } finally {
@@ -762,7 +759,7 @@ public class AgentLauncher {
     out.println("agent stop [-dir=<dir>]");
     out.println("Stops a GemFire JMX Agent");
     out.println("\t<dir> Directory in which agent runs, default is the current directory");
-    out.println("");
+    out.println();
     out.println("agent status [-dir=<dir>]");
     out.println(
         "Reports the status and the process id of a GemFire JMX Agent");
@@ -865,7 +862,7 @@ public class AgentLauncher {
         buffer.append(msg);
       } else {
         buffer.append(
-            String.format("%s pid: %d status: ", this.baseName, pid));
+            String.format("%s pid: %d status: ", baseName, pid));
 
         switch (state) {
           case SHUTDOWN:
@@ -893,7 +890,7 @@ public class AgentLauncher {
             buffer.append("\n").append(msg).append(" - ");
           } else {
             buffer.append("\n " + String.format("Exception in %s : %s ",
-                this.baseName, exception.getMessage()) + " - ");
+                baseName, exception.getMessage()) + " - ");
           }
           buffer
               .append("See log file for details.");

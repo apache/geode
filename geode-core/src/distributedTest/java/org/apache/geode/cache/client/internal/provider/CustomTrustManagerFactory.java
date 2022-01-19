@@ -34,7 +34,7 @@ import javax.net.ssl.X509ExtendedTrustManager;
 
 public abstract class CustomTrustManagerFactory extends TrustManagerFactorySpi {
 
-  private final Logger logger = Logger.getLogger(this.getClass().getName());
+  private final Logger logger = Logger.getLogger(getClass().getName());
 
   private final String algorithm;
   private final String trustStorePath;
@@ -65,16 +65,16 @@ public abstract class CustomTrustManagerFactory extends TrustManagerFactorySpi {
   }
 
   private X509ExtendedTrustManager getCustomTrustManager() {
-    if (this.customTrustManager == null) {
-      for (TrustManager candidate : this.customTrustManagerFactory.getTrustManagers()) {
+    if (customTrustManager == null) {
+      for (TrustManager candidate : customTrustManagerFactory.getTrustManagers()) {
         if (candidate instanceof X509ExtendedTrustManager) {
-          this.logger.info("Adding System Trust Manager");
-          this.customTrustManager = (X509ExtendedTrustManager) candidate;
+          logger.info("Adding System Trust Manager");
+          customTrustManager = (X509ExtendedTrustManager) candidate;
           break;
         }
       }
     }
-    return this.customTrustManager;
+    return customTrustManager;
   }
 
   private void init() {
@@ -84,8 +84,8 @@ public abstract class CustomTrustManagerFactory extends TrustManagerFactorySpi {
     try (FileInputStream fileInputStream = new FileInputStream(trustStorePath)) {
       KeyStore trustStore = KeyStore.getInstance(trustStoreType);
       trustStore.load(fileInputStream, trustStorePassword.toCharArray());
-      this.customTrustManagerFactory = TrustManagerFactory.getInstance(this.algorithm, "SunJSSE");
-      this.customTrustManagerFactory.init(trustStore);
+      customTrustManagerFactory = TrustManagerFactory.getInstance(algorithm, "SunJSSE");
+      customTrustManagerFactory.init(trustStore);
     } catch (NoSuchAlgorithmException | IOException | CertificateException | KeyStoreException
         | NoSuchProviderException e) {
       throw new UndeclaredThrowableException(e);

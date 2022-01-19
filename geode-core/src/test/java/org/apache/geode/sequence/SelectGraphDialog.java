@@ -17,8 +17,6 @@ package org.apache.geode.sequence;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -48,12 +46,12 @@ import org.apache.geode.internal.sequencelog.model.GraphSet;
  * use File | Settings | File Templates.
  */
 public class SelectGraphDialog extends JDialog {
-  private List<GraphID> selectedIds = new ArrayList<GraphID>();
-  private Set<SelectionListener> listeners = new HashSet<SelectionListener>();
+  private List<GraphID> selectedIds = new ArrayList<>();
+  private final Set<SelectionListener> listeners = new HashSet<>();
 
   public SelectGraphDialog(final GraphSet graphs) {
 
-    final List<GraphID> ids = new ArrayList<GraphID>(graphs.getMap().keySet());
+    final List<GraphID> ids = new ArrayList<>(graphs.getMap().keySet());
     Collections.sort(ids);
     final FilterableListModel listModel = new FilterableListModel(ids);
     final JList list = new JList(listModel);
@@ -62,22 +60,14 @@ public class SelectGraphDialog extends JDialog {
     selectGraphPane.setPreferredSize(new Dimension(500, 500));
 
     JButton apply = new JButton("Apply");
-    apply.addActionListener(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        selectedIds = (List) Arrays.asList(list.getSelectedValues());
-        fireSelectionChanged();
-        setVisible(false);
-      }
+    apply.addActionListener(e -> {
+      selectedIds = (List) Arrays.asList(list.getSelectedValues());
+      fireSelectionChanged();
+      setVisible(false);
     });
 
     JButton cancel = new JButton("Cancel");
-    cancel.addActionListener(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        setVisible(false);
-      }
-    });
+    cancel.addActionListener(e -> setVisible(false));
 
     JPanel buttonPane = new JPanel();
     buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
@@ -133,7 +123,7 @@ public class SelectGraphDialog extends JDialog {
   /**
    * A listener for changes to the graph selections
    */
-  public static interface SelectionListener {
+  public interface SelectionListener {
     void selectionChanged(List<GraphID> selectedIds);
   }
 
@@ -142,8 +132,8 @@ public class SelectGraphDialog extends JDialog {
     private List<Object> filteredElements;
 
     public FilterableListModel(List<?> elements) {
-      this.allElements = elements;
-      this.filteredElements = new ArrayList<Object>(elements);
+      allElements = elements;
+      filteredElements = new ArrayList<>(elements);
     }
 
     @Override
@@ -158,7 +148,7 @@ public class SelectGraphDialog extends JDialog {
 
     public void updateFilter(String filter) {
       Pattern pattern = Pattern.compile(filter);
-      filteredElements = new ArrayList<Object>();
+      filteredElements = new ArrayList<>();
       for (Object element : allElements) {
         if (pattern.matcher(element.toString()).find()) {
           filteredElements.add(element);

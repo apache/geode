@@ -57,29 +57,24 @@ public class NanoTimer {
   private final TimeService timeService;
 
   @Immutable
-  private static final TimeService systemTimeService = new TimeService() {
-    @Override
-    public long getTime() {
-      return java.lang.System.nanoTime();
-    }
-  };
+  private static final TimeService systemTimeService = System::nanoTime;
 
   /**
    * Create a NanoTimer.
    */
   public NanoTimer() {
-    this.timeService = systemTimeService;
-    this.lastResetTime = systemTimeService.getTime();
-    this.constructionTime = this.lastResetTime;
+    timeService = systemTimeService;
+    lastResetTime = systemTimeService.getTime();
+    constructionTime = lastResetTime;
   }
 
   /**
    * For unit testing
    */
   protected NanoTimer(TimeService ts) {
-    this.timeService = ts;
-    this.lastResetTime = ts.getTime();
-    this.constructionTime = this.lastResetTime;
+    timeService = ts;
+    lastResetTime = ts.getTime();
+    constructionTime = lastResetTime;
   }
 
   /**
@@ -117,7 +112,7 @@ public class NanoTimer {
    * @return timestamp in nanoseconds since construction.
    */
   public long getConstructionTime() {
-    return this.constructionTime;
+    return constructionTime;
   }
 
   /**
@@ -130,7 +125,7 @@ public class NanoTimer {
    * @return timestamp in nanoseconds of construction or the last reset.
    */
   public long getLastResetTime() {
-    return this.lastResetTime;
+    return lastResetTime;
   }
 
   /**
@@ -140,9 +135,9 @@ public class NanoTimer {
    * @return time in nanoseconds since construction or last reset.
    */
   public long reset() {
-    long save = this.lastResetTime;
-    this.lastResetTime = this.timeService.getTime();
-    return this.lastResetTime - save;
+    long save = lastResetTime;
+    lastResetTime = timeService.getTime();
+    return lastResetTime - save;
   }
 
   /**
@@ -152,7 +147,7 @@ public class NanoTimer {
    * @return time in nanoseconds since construction or last reset.
    */
   public long getTimeSinceReset() {
-    return this.timeService.getTime() - this.lastResetTime;
+    return timeService.getTime() - lastResetTime;
   }
 
   /**
@@ -161,7 +156,7 @@ public class NanoTimer {
    * @return time in nanoseconds since construction.
    */
   public long getTimeSinceConstruction() {
-    return this.timeService.getTime() - this.constructionTime;
+    return timeService.getTime() - constructionTime;
   }
 
   /**

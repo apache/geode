@@ -75,8 +75,8 @@ public class FunctionExceptionsIncludeLocalMemberRegressionTest implements Seria
 
     createPartitionedRegion(regionName);
 
-    datastore1.invoke(() -> registerThrowsExceptionFunction());
-    datastore2.invoke(() -> registerThrowsExceptionFunction());
+    datastore1.invoke(this::registerThrowsExceptionFunction);
+    datastore2.invoke(this::registerThrowsExceptionFunction);
 
     registerThrowsExceptionFunction();
 
@@ -88,7 +88,7 @@ public class FunctionExceptionsIncludeLocalMemberRegressionTest implements Seria
   public void functionExceptionsIncludeLocalMember() {
     ResultCollector resultCollector = execution.execute(ThrowsExceptionFunction.class.getName());
 
-    Throwable thrown = catchThrowable(() -> resultCollector.getResult());
+    Throwable thrown = catchThrowable(resultCollector::getResult);
     assertThat(thrown).isInstanceOf(FunctionException.class);
 
     FunctionException functionException = (FunctionException) thrown;

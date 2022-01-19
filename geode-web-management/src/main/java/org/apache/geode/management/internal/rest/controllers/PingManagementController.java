@@ -31,6 +31,6 @@ public class PingManagementController extends AbstractManagementController {
 
   @GetMapping("/ping")
   public ResponseEntity<String> ping() {
-    return new ResponseEntity<String>("pong", HttpStatus.OK);
+    return new ResponseEntity<>("pong", HttpStatus.OK);
   }
 }

@@ -361,7 +361,7 @@ public class HARegionQueueTest {
     HARegionQueue spy = spy(haRegionQueue);
     int maxChunkSize = 1000;
     spy.hasSynchronizedWithPrimary.set(true);
-    doReturn(new LinkedList<EventID>()).when(spy).getGIIEvents();
+    doReturn(new LinkedList<>()).when(spy).getGIIEvents();
 
     spy.doSynchronizationWithPrimary(primary, internalCache);
 

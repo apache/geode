@@ -32,9 +32,9 @@ public class AlertLevelJUnitTest {
    * Method: equals(Object other)
    */
 
-  private AlertLevel alertLevel1 = AlertLevel.WARNING;
-  private AlertLevel alertLevel2 = AlertLevel.ERROR;
-  private AlertLevel alertLevel3 = AlertLevel.WARNING;
+  private final AlertLevel alertLevel1 = AlertLevel.WARNING;
+  private final AlertLevel alertLevel2 = AlertLevel.ERROR;
+  private final AlertLevel alertLevel3 = AlertLevel.WARNING;
 
 
   @Test
@@ -53,7 +53,7 @@ public class AlertLevelJUnitTest {
 
 
     AlertLevel level1 =
-        constructor.newInstance(AlertLevel.ERROR.getSeverity(), new String("ERROR"),
+        constructor.newInstance(AlertLevel.ERROR.getSeverity(), "ERROR",
             AlertLevel.ERROR.ordinal);
     assertEquals(level1.getName(), alertLevel2.getName());
     assertTrue(level1.equals(alertLevel2));

@@ -36,7 +36,7 @@ public class ConfigProperty {
   }
 
   public void setName(String name) {
-    this._name = name;
+    _name = name;
   }
 
   public String getName() {
@@ -44,7 +44,7 @@ public class ConfigProperty {
   }
 
   public void setType(String type) {
-    this._type = type;
+    _type = type;
   }
 
   public String getType() {
@@ -52,7 +52,7 @@ public class ConfigProperty {
   }
 
   public void setValue(String value) {
-    this._value = value;
+    _value = value;
   }
 
   public String getValue() {

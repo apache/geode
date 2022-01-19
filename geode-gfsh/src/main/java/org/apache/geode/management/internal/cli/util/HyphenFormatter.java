@@ -40,13 +40,13 @@ public class HyphenFormatter {
     if (!containsOption(command)) {
       return command;
     }
-    this.formatted = new StringBuilder();
+    formatted = new StringBuilder();
 
     List<String> strings = split(command);
     for (String string : strings) {
       if (string.contains(EQUAL_HYPHEN)) {
         int indexOfEquals = string.indexOf(EQUAL);
-        formatted.append(string.substring(0, indexOfEquals + 1));
+        formatted.append(string, 0, indexOfEquals + 1);
         formatted.append(QUOTE);
         formatted.append(string.substring(indexOfEquals + 1));
         formatted.append(QUOTE);

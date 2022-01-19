@@ -62,8 +62,8 @@ public class IndexCreationDeadLockJUnitTest {
   @Before
   public void setUp() throws Exception {
     CacheUtils.startCache();
-    this.testFailed = false;
-    this.cause = "";
+    testFailed = false;
+    cause = "";
     exceptionInCreatingIndex = false;
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -77,7 +77,7 @@ public class IndexCreationDeadLockJUnitTest {
   @After
   public void tearDown() throws Exception {
     try {
-      this.region.localDestroyRegion();
+      region.localDestroyRegion();
     } catch (RegionDestroyedException rde) {
       // Ignore
     }
@@ -91,8 +91,8 @@ public class IndexCreationDeadLockJUnitTest {
   @Test
   public void testIndexCreationDeadLock() throws Exception {
     simulateDeadlockScenario();
-    assertFalse(this.cause, this.testFailed);
-    assertFalse("Index creation failed", this.exceptionInCreatingIndex);
+    assertFalse(cause, testFailed);
+    assertFalse("Index creation failed", exceptionInCreatingIndex);
   }
 
   /**
@@ -100,7 +100,7 @@ public class IndexCreationDeadLockJUnitTest {
    */
   @Test
   public void testIndexCreationDeadLockForDiskOnlyRegion() {
-    this.region.destroyRegion();
+    region.destroyRegion();
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setValueConstraint(Portfolio.class);
@@ -114,8 +114,8 @@ public class IndexCreationDeadLockJUnitTest {
     dir.deleteOnExit();
     region = CacheUtils.createRegion("portfolios", factory.create(), true);
     simulateDeadlockScenario();
-    assertFalse(this.cause, this.testFailed);
-    assertFalse("Index creation failed", this.exceptionInCreatingIndex);
+    assertFalse(cause, testFailed);
+    assertFalse("Index creation failed", exceptionInCreatingIndex);
   }
 
   /**
@@ -123,7 +123,7 @@ public class IndexCreationDeadLockJUnitTest {
    */
   @Test
   public void testIndexCreationDeadLockForStatsEnabledRegion() {
-    this.region.destroyRegion();
+    region.destroyRegion();
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setValueConstraint(Portfolio.class);
@@ -131,8 +131,8 @@ public class IndexCreationDeadLockJUnitTest {
     factory.setIndexMaintenanceSynchronous(true);
     region = CacheUtils.createRegion("portfolios", factory.create(), true);
     simulateDeadlockScenario();
-    assertFalse(this.cause, this.testFailed);
-    assertFalse("Index creation failed", this.exceptionInCreatingIndex);
+    assertFalse(cause, testFailed);
+    assertFalse("Index creation failed", exceptionInCreatingIndex);
   }
 
   /**
@@ -140,7 +140,7 @@ public class IndexCreationDeadLockJUnitTest {
    */
   @Test
   public void testIndexCreationDeadLockForOverflowToDiskRegion() {
-    this.region.destroyRegion();
+    region.destroyRegion();
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setValueConstraint(Portfolio.class);
@@ -155,9 +155,9 @@ public class IndexCreationDeadLockJUnitTest {
     dir.deleteOnExit();
     region = CacheUtils.createRegion("portfolios", factory.create(), true);
     simulateDeadlockScenario();
-    assertFalse(this.cause, this.testFailed);
+    assertFalse(cause, testFailed);
     assertTrue("Index creation succeeded . For diskRegion this shoudl not have happened",
-        this.exceptionInCreatingIndex);
+        exceptionInCreatingIndex);
   }
 
   private void simulateDeadlockScenario() {
@@ -224,7 +224,7 @@ public class IndexCreationDeadLockJUnitTest {
         System.out.println(
             "---------------------Destroying & repopulating the data -------------------------");
         AttributesMutator mutator =
-            IndexCreationDeadLockJUnitTest.this.region.getAttributesMutator();
+            region.getAttributesMutator();
         mutator.setCacheWriter(new BeforeUpdateCallBack());
         CacheUtils.log("region.size(): - " + region.size());
         for (int i = 0; i < 10; i++) {
@@ -233,8 +233,8 @@ public class IndexCreationDeadLockJUnitTest {
         }
       } catch (Exception e) {
         e.printStackTrace();
-        IndexCreationDeadLockJUnitTest.this.testFailed = true;
-        IndexCreationDeadLockJUnitTest.this.cause = "Test failed because of exception=" + e;
+        testFailed = true;
+        cause = "Test failed because of exception=" + e;
       }
     }
   }
@@ -258,8 +258,8 @@ public class IndexCreationDeadLockJUnitTest {
           ThreadUtils.join(indxCreationThread, 30 * 1000);
         } catch (Exception e) {
           e.printStackTrace();
-          IndexCreationDeadLockJUnitTest.this.testFailed = true;
-          IndexCreationDeadLockJUnitTest.this.cause = "Test failed because of exception=" + e;
+          testFailed = true;
+          cause = "Test failed because of exception=" + e;
           fail(e.toString());
         }
       }

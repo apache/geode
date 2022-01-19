@@ -26,7 +26,6 @@ import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
@@ -51,7 +50,7 @@ public class DeltaClientPostAuthorizationDUnitTest extends ClientAuthorizationTe
 
   private static final int PAUSE = 5 * 1000; // TODO: replace with Awaitility
 
-  private DeltaTestImpl[] deltas = new DeltaTestImpl[8];
+  private final DeltaTestImpl[] deltas = new DeltaTestImpl[8];
 
   @Override
   public final void preSetUpClientAuthorizationTestBase() throws Exception {
@@ -69,7 +68,7 @@ public class DeltaClientPostAuthorizationDUnitTest extends ClientAuthorizationTe
   public void testPutPostOpNotifications() throws Exception {
     OperationWithAction[] allOps = allOps();
 
-    AuthzCredentialGenerator gen = this.getXmlAuthzGenerator();
+    AuthzCredentialGenerator gen = getXmlAuthzGenerator();
     CredentialGenerator cGen = gen.getCredentialGenerator();
     Properties extraAuthProps = cGen.getSystemProperties();
     Properties javaProps = cGen.getJavaProperties();
@@ -137,9 +136,8 @@ public class DeltaClientPostAuthorizationDUnitTest extends ClientAuthorizationTe
       final int port2, final String authInit, final Properties extraAuthProps,
       final Properties extraAuthzProps, final TestCredentialGenerator credentialGenerator,
       final Random random) throws InterruptedException {
-    for (Iterator<OperationWithAction> opIter = opBlock.iterator(); opIter.hasNext();) {
+    for (OperationWithAction currentOp : opBlock) {
       // Start client with valid credentials as specified in OperationWithAction
-      OperationWithAction currentOp = opIter.next();
       OperationCode opCode = currentOp.getOperationCode();
       int opFlags = currentOp.getFlags();
       int clientNum = currentOp.getClientNum();
@@ -218,18 +216,18 @@ public class DeltaClientPostAuthorizationDUnitTest extends ClientAuthorizationTe
 
       // Perform the operation from selected client
       if (useThisVM) {
-        doOp(opCode, currentOp.getIndices(), new Integer(opFlags), new Integer(expectedResult));
+        doOp(opCode, currentOp.getIndices(), opFlags, expectedResult);
       } else {
         int[] indices = currentOp.getIndices();
         clientVM.invoke(() -> DeltaClientPostAuthorizationDUnitTest.doOp(opCode, indices,
-            new Integer(opFlags), new Integer(expectedResult)));
+            opFlags, expectedResult));
       }
     }
   }
 
   private void setUpDeltas() {
     for (int i = 0; i < 8; i++) {
-      deltas[i] = new DeltaTestImpl(0, "0", new Double(0), new byte[0],
+      deltas[i] = new DeltaTestImpl(0, "0", (double) 0, new byte[0],
           new TestObjectWithIdentifier("0", 0));
     }
     deltas[1].setIntVar(5);
@@ -249,11 +247,11 @@ public class DeltaClientPostAuthorizationDUnitTest extends ClientAuthorizationTe
     // deltas[7].setByteArr(new byte[] { 1, 2, 3, 4, 5 });
 
     deltas[3].resetDeltaStatus();
-    deltas[3].setDoubleVar(new Double(5));
-    deltas[4].setDoubleVar(new Double(5));
-    deltas[5].setDoubleVar(new Double(5));
-    deltas[6].setDoubleVar(new Double(5));
-    deltas[7].setDoubleVar(new Double(5));
+    deltas[3].setDoubleVar(5.0);
+    deltas[4].setDoubleVar(5.0);
+    deltas[5].setDoubleVar(5.0);
+    deltas[6].setDoubleVar(5.0);
+    deltas[7].setDoubleVar(5.0);
 
     deltas[4].resetDeltaStatus();
     deltas[4].setStr("str changed");

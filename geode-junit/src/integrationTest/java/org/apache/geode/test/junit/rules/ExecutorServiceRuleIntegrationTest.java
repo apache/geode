@@ -55,7 +55,7 @@ public class ExecutorServiceRuleIntegrationTest {
     invocations = null;
 
     while (hangLatch != null && hangLatch.getCount() > 0) {
-      hangLatch.countDown();;
+      hangLatch.countDown();
     }
 
     if (executorService != null) {

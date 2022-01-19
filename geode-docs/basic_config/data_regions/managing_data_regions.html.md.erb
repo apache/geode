@@ -186,7 +186,7 @@ Create a partitioned region with a partition resolver for colocated
 regions:
 
 ``` pre
-PartitionAttributesFactory paf = new PartitionAttributesFactory<CustomerId, String>();
+PartitionAttributesFactory<CustomerId, String> paf = new PartitionAttributesFactory<>();
 paf.setPartitionResolver(new CustomerOrderResolver());
 
 RegionFactory rf = 

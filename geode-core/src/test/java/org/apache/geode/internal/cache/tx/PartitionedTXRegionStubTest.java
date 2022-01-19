@@ -535,7 +535,7 @@ public class PartitionedTXRegionStubTest {
     PartitionedTXRegionStub stub = spy(new PartitionedTXRegionStub(txStateStub, partitionedRegion));
     when(event.getRegion()).thenReturn(partitionedRegion);
     when(partitionedRegion
-        .putRemotely((InternalDistributedMember) remoteTransactionHost, event, false, false,
+        .putRemotely(remoteTransactionHost, event, false, false,
             expectedObject, true))
                 .thenReturn(true);
 
@@ -549,7 +549,7 @@ public class PartitionedTXRegionStubTest {
     PartitionedTXRegionStub stub = spy(new PartitionedTXRegionStub(txStateStub, partitionedRegion));
     when(event.getRegion()).thenReturn(partitionedRegion);
     when(partitionedRegion
-        .putRemotely((InternalDistributedMember) remoteTransactionHost, event, false, false,
+        .putRemotely(remoteTransactionHost, event, false, false,
             expectedObject, true))
                 .thenReturn(false);
 
@@ -562,7 +562,7 @@ public class PartitionedTXRegionStubTest {
     PartitionedTXRegionStub stub = spy(new PartitionedTXRegionStub(txStateStub, partitionedRegion));
     when(event.getRegion()).thenReturn(partitionedRegion);
     when(partitionedRegion
-        .putRemotely((InternalDistributedMember) remoteTransactionHost, event, true, false,
+        .putRemotely(remoteTransactionHost, event, true, false,
             expectedObject, true))
                 .thenThrow(expectedException);
 
@@ -583,7 +583,7 @@ public class PartitionedTXRegionStubTest {
     doReturn(expectedException).when(stub).getTransactionException(keyInfo,
         forceReattemptException);
     when(partitionedRegion
-        .putRemotely((InternalDistributedMember) remoteTransactionHost, event, true, false,
+        .putRemotely(remoteTransactionHost, event, true, false,
             expectedObject, true))
                 .thenThrow(forceReattemptException);
 
@@ -606,7 +606,7 @@ public class PartitionedTXRegionStubTest {
     doReturn(expectedException).when(stub).getTransactionException(keyInfo,
         forceReattemptException);
     when(partitionedRegion
-        .putRemotely((InternalDistributedMember) remoteTransactionHost, event, true, false,
+        .putRemotely(remoteTransactionHost, event, true, false,
             expectedObject, true))
                 .thenThrow(forceReattemptException);
 

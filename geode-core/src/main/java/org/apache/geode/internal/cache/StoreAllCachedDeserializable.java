@@ -62,28 +62,28 @@ public class StoreAllCachedDeserializable implements CachedDeserializable, DataS
       throw new NullPointerException(
           "value must not be null");
     }
-    this.value = serializedValue;
-    this.objValue = EntryEventImpl.deserialize(this.value);
+    value = serializedValue;
+    objValue = EntryEventImpl.deserialize(value);
   }
 
   public StoreAllCachedDeserializable(Object object) {
-    this.objValue = object;
-    this.value = EntryEventImpl.serialize(object);
+    objValue = object;
+    value = EntryEventImpl.serialize(object);
   }
 
   @Override
   public Object getDeserializedValue(Region r, RegionEntry re) {
-    return this.objValue;
+    return objValue;
   }
 
   @Override
   public Object getDeserializedForReading() {
-    return this.objValue;
+    return objValue;
   }
 
   @Override
   public Object getDeserializedWritableCopy(Region r, RegionEntry re) {
-    return EntryEventImpl.deserialize(this.value);
+    return EntryEventImpl.deserialize(value);
   }
 
   /**
@@ -91,12 +91,12 @@ public class StoreAllCachedDeserializable implements CachedDeserializable, DataS
    */
   @Override
   public byte[] getSerializedValue() {
-    return this.value;
+    return value;
   }
 
   @Override
   public void fillSerializedValue(BytesAndBitsForCompactor wrapper, byte userBits) {
-    wrapper.setData(this.value, userBits, this.value.length,
+    wrapper.setData(value, userBits, value.length,
         false /* Not Reusable as it refers to underlying value */);
   }
 
@@ -106,17 +106,17 @@ public class StoreAllCachedDeserializable implements CachedDeserializable, DataS
    */
   @Override
   public Object getValue() {
-    return this.value;
+    return value;
   }
 
   @Override
   public int getSizeInBytes() {
-    return MEM_OVERHEAD + CachedDeserializableFactory.getByteSize(this.value) * 2;
+    return MEM_OVERHEAD + CachedDeserializableFactory.getByteSize(value) * 2;
   }
 
   @Override
   public int getValueSizeInBytes() {
-    return CachedDeserializableFactory.getByteSize(this.value);
+    return CachedDeserializableFactory.getByteSize(value);
   }
 
   @Override
@@ -127,14 +127,14 @@ public class StoreAllCachedDeserializable implements CachedDeserializable, DataS
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.value = DataSerializer.readByteArray(in);
-    this.objValue = EntryEventImpl.deserialize(this.value);
+    value = DataSerializer.readByteArray(in);
+    objValue = EntryEventImpl.deserialize(value);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    DataSerializer.writeByteArray(this.value, out);
+    DataSerializer.writeByteArray(value, out);
   }
 
   String getShortClassName() {
@@ -144,7 +144,7 @@ public class StoreAllCachedDeserializable implements CachedDeserializable, DataS
 
   @Override
   public String toString() {
-    return getShortClassName() + "@" + this.hashCode();
+    return getShortClassName() + "@" + hashCode();
   }
 
   @Override
@@ -154,7 +154,7 @@ public class StoreAllCachedDeserializable implements CachedDeserializable, DataS
 
   @Override
   public String getStringForm() {
-    return StringUtils.forceToString(this.objValue);
+    return StringUtils.forceToString(objValue);
   }
 
   @Override

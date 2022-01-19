@@ -36,7 +36,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 @Category({SecurityTest.class})
 public class ClientRegionClearAuthDUnitTest extends JUnit4DistributedTestCase {
 
-  private static String REGION_NAME = "AuthRegion";
+  private static final String REGION_NAME = "AuthRegion";
 
   final Host host = Host.getHost(0);
   final VM client1 = host.getVM(1);
@@ -57,7 +57,7 @@ public class ClientRegionClearAuthDUnitTest extends JUnit4DistributedTestCase {
       public void run() {
         ClientCache cache = createClientCache("stranger", "1234567", server.getPort());
         Region region = createProxyRegion(cache, REGION_NAME);
-        assertNotAuthorized(() -> region.clear(), "DATA:WRITE:AuthRegion");
+        assertNotAuthorized(region::clear, "DATA:WRITE:AuthRegion");
       }
     };
     client1.invoke(clearUnauthorized);

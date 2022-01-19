@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.tx;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.geode.CancelException;
@@ -57,13 +56,13 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
    * TransactionDataNotColocated and TransactionDataRebalanced exceptions. Map rather than set, as a
    * HashSet is backed by a HashMap. (avoids one "new" call).
    */
-  private Map<Integer, Boolean> buckets = new HashMap<Integer, Boolean>();
+  private final Map<Integer, Boolean> buckets = new HashMap<>();
 
   private final PartitionedRegion region;
 
   public PartitionedTXRegionStub(TXStateStub txstate, PartitionedRegion r) {
     super(txstate);
-    this.region = r;
+    region = r;
   }
 
   public Map<Integer, Boolean> getBuckets() {
@@ -129,9 +128,9 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
   // is this key in a different bucket from all the existing buckets
   // of the underlying PR or its colocated PRs touched by the transaction.
   private boolean isKeyInNonColocatedBucket(KeyInfo keyInfo) {
-    Map<Region<?, ?>, TXRegionStub> regionStubs = this.state.getRegionStubs();
-    Collection<PartitionedRegion> colcatedRegions = (Collection<PartitionedRegion>) ColocationHelper
-        .getAllColocationRegions(this.region).values();
+    Map<Region<?, ?>, TXRegionStub> regionStubs = state.getRegionStubs();
+    Collection<PartitionedRegion> colcatedRegions = ColocationHelper
+        .getAllColocationRegions(region).values();
     // get all colocated region buckets touched in the transaction
     for (PartitionedRegion colcatedRegion : colcatedRegions) {
       PartitionedTXRegionStub regionStub =
@@ -377,9 +376,8 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     PutAllPartialResult partialKeys = new PutAllPartialResult(putallO.putAllDataSize);
 
     successfulPuts.clear(); // this is rebuilt by this method
-    Iterator itor = prMsgMap.entrySet().iterator();
-    while (itor.hasNext()) {
-      Map.Entry mapEntry = (Map.Entry) itor.next();
+    for (final Object o : prMsgMap.entrySet()) {
+      Map.Entry mapEntry = (Map.Entry) o;
       Integer bucketId = (Integer) mapEntry.getKey();
       PutAllPRMessage prMsg = (PutAllPRMessage) mapEntry.getValue();
       pr.checkReadiness();
@@ -406,7 +404,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
     if (partialKeys.hasFailure()) {
       pr.getCache().getLogger().info(String.format("Region %s putAll: %s",
-          new Object[] {pr.getFullPath(), partialKeys}));
+          pr.getFullPath(), partialKeys));
       if (putallO.isBridgeOperation()) {
         if (partialKeys.getFailure() instanceof CancelException) {
           throw (CancelException) partialKeys.getFailure();
@@ -437,9 +435,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
     PutAllPartialResult partialKeys = new PutAllPartialResult(op.removeAllDataSize);
 
     successfulOps.clear(); // this is rebuilt by this method
-    Iterator<Map.Entry<Integer, RemoveAllPRMessage>> itor = prMsgMap.entrySet().iterator();
-    while (itor.hasNext()) {
-      Map.Entry<Integer, RemoveAllPRMessage> mapEntry = itor.next();
+    for (final Map.Entry<Integer, RemoveAllPRMessage> mapEntry : prMsgMap.entrySet()) {
       Integer bucketId = mapEntry.getKey();
       RemoveAllPRMessage prMsg = mapEntry.getValue();
       pr.checkReadiness();
@@ -466,7 +462,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
     if (partialKeys.hasFailure()) {
       pr.getCache().getLogger().info(String.format("Region %s removeAll: %s",
-          new Object[] {pr.getFullPath(), partialKeys}));
+          pr.getFullPath(), partialKeys));
       if (op.isBridgeOperation()) {
         if (partialKeys.getFailure() instanceof CancelException) {
           throw (CancelException) partialKeys.getFailure();
@@ -493,8 +489,8 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       PartitionedRegion pr) {
     // retry the put remotely until it finds the right node managing the bucket
     InternalDistributedMember currentTarget =
-        pr.getOrCreateNodeForBucketWrite(bucketId.intValue(), null);
-    if (!currentTarget.equals(this.state.getTarget())) {
+        pr.getOrCreateNodeForBucketWrite(bucketId, null);
+    if (!currentTarget.equals(state.getTarget())) {
       @Released
       EntryEventImpl firstEvent = prMsg.getFirstEvent(pr);
       try {
@@ -512,8 +508,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       throw new TransactionDataNotColocatedException(prce.getMessage());
     } catch (PrimaryBucketException notPrimary) {
       RuntimeException re = new TransactionDataRebalancedException(
-          "Transactional data moved, due to rebalancing.");
-      re.initCause(notPrimary);
+          "Transactional data moved, due to rebalancing.", notPrimary);
       throw re;
     } catch (DataLocationException dle) {
       throw new TransactionException(dle);
@@ -528,8 +523,8 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       PartitionedRegion pr) {
     // retry the put remotely until it finds the right node managing the bucket
     InternalDistributedMember currentTarget =
-        pr.getOrCreateNodeForBucketWrite(bucketId.intValue(), null);
-    if (!currentTarget.equals(this.state.getTarget())) {
+        pr.getOrCreateNodeForBucketWrite(bucketId, null);
+    if (!currentTarget.equals(state.getTarget())) {
       @Released
       EntryEventImpl firstEvent = prMsg.getFirstEvent(pr);
       try {
@@ -547,8 +542,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       throw new TransactionDataNotColocatedException(prce.getMessage());
     } catch (PrimaryBucketException notPrimary) {
       RuntimeException re = new TransactionDataRebalancedException(
-          "Transactional data moved, due to rebalancing.");
-      re.initCause(notPrimary);
+          "Transactional data moved, due to rebalancing.", notPrimary);
       throw re;
     } catch (DataLocationException dle) {
       throw new TransactionException(dle);
@@ -561,7 +555,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
   @Override
   protected InternalRegion getRegion() {
-    return this.region;
+    return region;
   }
 
 }

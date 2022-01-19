@@ -194,7 +194,7 @@ public class CreateJndiBindingCommand extends SingleGfshCommand {
     }
 
     public String getType() {
-      return this.type;
+      return type;
     }
 
     public String getName() {

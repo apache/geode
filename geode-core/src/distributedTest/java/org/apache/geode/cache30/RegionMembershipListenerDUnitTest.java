@@ -99,7 +99,7 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
         getCache();
       }
     });
-    this.otherId = vm.invoke(() -> getSystem().getDistributedMember());
+    otherId = vm.invoke(() -> getSystem().getDistributedMember());
   }
 
   protected void createRootOtherVm(final String rName) {
@@ -169,12 +169,12 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
 
   protected void createRootRegionWithListener(String rName) throws CacheException {
     int to = getOpTimeout();
-    this.myListener = new MyRML(to);
-    this.r =
-        createRootRegion(rName, createRootRegionAttributes(new CacheListener[] {this.myListener}));
-    this.mySRListener = new MyRML(to);
-    this.sr = this.r.createSubregion("mysub",
-        createSubRegionAttributes(new CacheListener[] {this.mySRListener}));
+    myListener = new MyRML(to);
+    r =
+        createRootRegion(rName, createRootRegionAttributes(new CacheListener[] {myListener}));
+    mySRListener = new MyRML(to);
+    sr = r.createSubregion("mysub",
+        createSubRegionAttributes(new CacheListener[] {mySRListener}));
   }
 
   public int getOpTimeout() {
@@ -199,11 +199,11 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
     closeRoots();
 
     createRootRegionWithListener(rName);
-    assertInitialMembers(this.otherId);
+    assertInitialMembers(otherId);
   }
 
   protected void closeRoots() {
-    this.r.close();
+    r.close();
   }
 
   protected List<DistributedMember> assertInitialMembers(final DistributedMember expectedId) {
@@ -211,18 +211,18 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
     if (expectedId == null) {
       l = Arrays.asList(new DistributedMember[] {});
     } else {
-      l = Arrays.asList(new DistributedMember[] {expectedId});
+      l = Arrays.asList(expectedId);
     }
-    assertTrue(this.myListener.lastOpWasInitialMembers());
-    assertEquals(l, this.myListener.getInitialMembers());
-    assertTrue(this.mySRListener.lastOpWasInitialMembers());
-    assertEquals(l, this.mySRListener.getInitialMembers());
+    assertTrue(myListener.lastOpWasInitialMembers());
+    assertEquals(l, myListener.getInitialMembers());
+    assertTrue(mySRListener.lastOpWasInitialMembers());
+    assertEquals(l, mySRListener.getInitialMembers());
     // test new methods added for #43098
     if (expectedId != null) {
-      Cache cache = (Cache) this.r.getRegionService();
+      Cache cache = (Cache) r.getRegionService();
       // assertIndexDetailsEquals(l, new ArrayList(cache.getMembers()));
-      assertEquals(l, new ArrayList(cache.getMembers(this.r)));
-      assertEquals(l, new ArrayList(cache.getMembers(this.sr)));
+      assertEquals(l, new ArrayList(cache.getMembers(r)));
+      assertEquals(l, new ArrayList(cache.getMembers(sr)));
     }
     return l;
   }
@@ -236,27 +236,27 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
     initOtherId();
     createRootRegionWithListener(rName);
     createRootOtherVm(rName);
-    assertTrue(this.myListener.lastOpWasCreate());
+    assertTrue(myListener.lastOpWasCreate());
     {
-      RegionEvent e = this.myListener.getLastEvent();
-      assertEquals(this.otherId, e.getDistributedMember());
+      RegionEvent e = myListener.getLastEvent();
+      assertEquals(otherId, e.getDistributedMember());
       assertEquals(Operation.REGION_CREATE, e.getOperation());
       assertEquals(true, e.isOriginRemote());
       assertEquals(false, e.getOperation().isDistributed());
-      assertEquals(this.r, e.getRegion());
+      assertEquals(r, e.getRegion());
       // the test now uses a hook to get the member's DistributionAdvisor profile in the callback
       // argument
       assertTrue(e.getCallbackArgument() instanceof Profile);
       // assertIndexDetailsEquals(null, e.getCallbackArgument());
     }
-    assertTrue(this.mySRListener.lastOpWasCreate());
+    assertTrue(mySRListener.lastOpWasCreate());
     {
-      RegionEvent e = this.mySRListener.getLastEvent();
-      assertEquals(this.otherId, e.getDistributedMember());
+      RegionEvent e = mySRListener.getLastEvent();
+      assertEquals(otherId, e.getDistributedMember());
       assertEquals(Operation.REGION_CREATE, e.getOperation());
       assertEquals(true, e.isOriginRemote());
       assertEquals(false, e.getOperation().isDistributed());
-      assertEquals(this.sr, e.getRegion());
+      assertEquals(sr, e.getRegion());
       // the test now uses a hook to get the member's DistributionAdvisor profile in the callback
       // argument
       assertTrue(e.getCallbackArgument() instanceof Profile);
@@ -292,10 +292,10 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
   }
 
   protected void assertOpWasDeparture() {
-    assertTrue(this.myListener.lastOpWasDeparture());
-    assertEventStuff(this.myListener.getLastEvent(), this.otherId, this.r);
-    assertTrue(this.mySRListener.lastOpWasDeparture());
-    assertEventStuff(this.mySRListener.getLastEvent(), this.otherId, this.sr);
+    assertTrue(myListener.lastOpWasDeparture());
+    assertEventStuff(myListener.getLastEvent(), otherId, r);
+    assertTrue(mySRListener.lastOpWasDeparture());
+    assertEventStuff(mySRListener.getLastEvent(), otherId, sr);
   }
 
   public static void assertEventStuff(RegionEvent e, DistributedMember em, Region er) {
@@ -308,8 +308,8 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
   }
 
   protected void assertOpWasCreate() {
-    assertTrue(this.myListener.lastOpWasCreate());
-    assertTrue(this.mySRListener.lastOpWasCreate());
+    assertTrue(myListener.lastOpWasCreate());
+    assertTrue(mySRListener.lastOpWasCreate());
   }
 
   /**
@@ -322,31 +322,31 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
     createRootRegionWithListener(rName);
     createRootOtherVm(rName);
     try {
-      assertTrue(this.myListener.lastOpWasCreate()); // root region
-      assertTrue(this.mySRListener.lastOpWasCreate()); // subregion
+      assertTrue(myListener.lastOpWasCreate()); // root region
+      assertTrue(mySRListener.lastOpWasCreate()); // subregion
       MembershipManagerHelper.inhibitForcedDisconnectLogging(true);
 
       crashCacheOtherVm();
       int to = getOpTimeout();
-      MembershipManagerHelper.waitForMemberDeparture(basicGetSystem(), this.otherId, to);
-      this.myListener.waitForCrashOp();
+      MembershipManagerHelper.waitForMemberDeparture(basicGetSystem(), otherId, to);
+      myListener.waitForCrashOp();
       {
-        RegionEvent e = this.myListener.getLastEvent();
-        assertEquals(this.otherId, e.getDistributedMember());
+        RegionEvent e = myListener.getLastEvent();
+        assertEquals(otherId, e.getDistributedMember());
         assertEquals(Operation.REGION_CLOSE, e.getOperation());
         assertEquals(true, e.isOriginRemote());
         assertEquals(false, e.getOperation().isDistributed());
-        assertEquals(this.r, e.getRegion());
+        assertEquals(r, e.getRegion());
         assertEquals(null, e.getCallbackArgument());
       }
-      this.mySRListener.waitForCrashOp();
+      mySRListener.waitForCrashOp();
       {
-        RegionEvent e = this.mySRListener.getLastEvent();
-        assertEquals(this.otherId, e.getDistributedMember());
+        RegionEvent e = mySRListener.getLastEvent();
+        assertEquals(otherId, e.getDistributedMember());
         assertEquals(Operation.REGION_CLOSE, e.getOperation());
         assertEquals(true, e.isOriginRemote());
         assertEquals(false, e.getOperation().isDistributed());
-        assertEquals(this.sr, e.getRegion());
+        assertEquals(sr, e.getRegion());
         assertEquals(null, e.getCallbackArgument());
       }
     } finally {
@@ -357,7 +357,8 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
 
   enum Op {
     Initial, Create, Departure, Crash
-  };
+  }
+
   public class MyRML extends RegionMembershipListenerAdapter {
     private final int timeOut;
     volatile Op lastOp;
@@ -367,7 +368,7 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
                                                 // afterRemoteRegionCreate was called?
 
     public MyRML(int to) {
-      this.timeOut = to;
+      timeOut = to;
     }
 
     public boolean lastOpWasInitialMembers() {
@@ -381,7 +382,7 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
         // initialized
         assertTrue(
             "bug #44684 - expected remote member to be initialized when afterRemoteRegionCreate was invoked",
-            this.memberInitialized);
+            memberInitialized);
       }
       return result;
     }
@@ -412,19 +413,19 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
       WaitCriterion ev = new WaitCriterion() {
         @Override
         public boolean done() {
-          return MyRML.this.lastOp == op;
+          return lastOp == op;
         }
 
         @Override
         public String description() {
-          return MyRML.this.toString() + " waiting for Op " + op + " when lastOp was "
-              + getOpName(MyRML.this.lastOp);
+          return MyRML.this + " waiting for Op " + op + " when lastOp was "
+              + getOpName(lastOp);
         }
       };
-      getLogWriter().info(this.toString() + " waiting for Op " + getOpName(op)
-          + " when lastOp was " + getOpName(this.lastOp));
+      getLogWriter().info(this + " waiting for Op " + getOpName(op)
+          + " when lastOp was " + getOpName(lastOp));
       GeodeAwaitility.await().untilAsserted(ev);
-      assertEquals(op, this.lastOp);
+      assertEquals(op, lastOp);
       return true;
     }
 
@@ -433,37 +434,37 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
     }
 
     public RegionEvent getLastEvent() {
-      return this.lastEvent;
+      return lastEvent;
     }
 
     public List getInitialMembers() {
-      return Arrays.asList(this.initialMembers);
+      return Arrays.asList(initialMembers);
     }
 
     @Override
     public void initialMembers(Region r, DistributedMember[] initialMembers) {
-      this.lastOp = Op.Initial;
-      this.lastEvent = null;
+      lastOp = Op.Initial;
+      lastEvent = null;
       this.initialMembers = initialMembers;
       LogWriterUtils.getLogWriter()
-          .info(this.toString() + " received initialMembers notification for region " + r
+          .info(this + " received initialMembers notification for region " + r
               + " with members " + Arrays.deepToString(initialMembers));
     }
 
     @Override
     public void afterRemoteRegionCreate(RegionEvent event) {
-      this.lastOp = Op.Create;
-      this.lastEvent = event;
+      lastOp = Op.Create;
+      lastEvent = event;
       CacheProfile cacheProfile = (CacheProfile) event.getCallbackArgument();
       if (cacheProfile != null) {
-        this.memberInitialized = cacheProfile.regionInitialized;
-        if (!this.memberInitialized) {
+        memberInitialized = cacheProfile.regionInitialized;
+        if (!memberInitialized) {
           LogWriterUtils.getLogWriter().warning(
               "afterRemoteRegionCreate invoked when member is not done initializing!",
               new Exception("stack trace"));
         }
         LogWriterUtils.getLogWriter().info(
-            this.toString() + " received afterRemoteRegionCreate notification for event " + event);
+            this + " received afterRemoteRegionCreate notification for event " + event);
       } else {
         LogWriterUtils.getLogWriter().warning(
             "afterRemoteRegionCreate was expecting a profile in the event callback but there was none. "
@@ -473,18 +474,18 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public void afterRemoteRegionDeparture(RegionEvent event) {
-      this.lastOp = Op.Departure;
-      this.lastEvent = event;
+      lastOp = Op.Departure;
+      lastEvent = event;
       LogWriterUtils.getLogWriter().info(
-          this.toString() + " received afterRemoteRegionDeparture notification for event " + event);
+          this + " received afterRemoteRegionDeparture notification for event " + event);
     }
 
     @Override
     public void afterRemoteRegionCrash(RegionEvent event) {
-      this.lastOp = Op.Crash;
-      this.lastEvent = event;
+      lastOp = Op.Crash;
+      lastEvent = event;
       LogWriterUtils.getLogWriter().info(
-          this.toString() + " received afterRemoteRegionCrash notification for event " + event);
+          this + " received afterRemoteRegionCrash notification for event " + event);
     }
   }
 }

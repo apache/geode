@@ -473,7 +473,7 @@ public class IndexMaintenanceJUnitTest {
       Iterator itr = rng.valueToEntriesMap.values().iterator();
       assertEquals(rng.valueToEntriesMap.size(), 1);
       assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
-      Set<Integer> expectedElements = new HashSet<Integer>();
+      Set<Integer> expectedElements = new HashSet<>();
       for (int k = j; k <= ID; ++k) {
         expectedElements.add(k);
       }
@@ -501,7 +501,7 @@ public class IndexMaintenanceJUnitTest {
       Iterator itr = rng.valueToEntriesMap.values().iterator();
       assertEquals(rng.valueToEntriesMap.size(), 1);
       assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
-      Set<Integer> expectedElements = new HashSet<Integer>();
+      Set<Integer> expectedElements = new HashSet<>();
       for (int k = j; k <= ID; ++k) {
         expectedElements.add(k);
       }
@@ -526,7 +526,7 @@ public class IndexMaintenanceJUnitTest {
       Iterator itr = rng.valueToEntriesMap.values().iterator();
       assertEquals(rng.valueToEntriesMap.size(), 1);
       assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
-      Set<Integer> expectedElements = new HashSet<Integer>();
+      Set<Integer> expectedElements = new HashSet<>();
       for (int k = j; k <= ID; ++k) {
         expectedElements.add(k);
       }
@@ -558,7 +558,7 @@ public class IndexMaintenanceJUnitTest {
       itr = rng.valueToEntriesMap.values().iterator();
       assertEquals(rng.valueToEntriesMap.size(), 1);
       assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
-      Set<Integer> expectedElements = new HashSet<Integer>();
+      Set<Integer> expectedElements = new HashSet<>();
       for (int k = j; k <= ID; ++k) {
         expectedElements.add(k);
       }
@@ -590,7 +590,7 @@ public class IndexMaintenanceJUnitTest {
         assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
       }
 
-      Set<Integer> expectedElements = new HashSet<Integer>();
+      Set<Integer> expectedElements = new HashSet<>();
       for (int k = j; k <= ID; ++k) {
         expectedElements.add(k);
       }
@@ -640,7 +640,7 @@ public class IndexMaintenanceJUnitTest {
         assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
       }
 
-      Set<Integer> expectedElements = new HashSet<Integer>();
+      Set<Integer> expectedElements = new HashSet<>();
       for (int k = j; k <= ID; ++k) {
         expectedElements.add(k);
       }
@@ -707,7 +707,7 @@ public class IndexMaintenanceJUnitTest {
       Iterator itr = rng.valueToEntriesMap.values().iterator();
       assertEquals(rng.valueToEntriesMap.size(), 1);
       assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
-      Set<Integer> expectedElements = new HashSet<Integer>();
+      Set<Integer> expectedElements = new HashSet<>();
       for (int k = j; k <= ID; ++k) {
         expectedElements.add(k);
       }
@@ -738,7 +738,7 @@ public class IndexMaintenanceJUnitTest {
       Iterator itr = rng.valueToEntriesMap.values().iterator();
       assertEquals(rng.valueToEntriesMap.size(), 1);
       assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
-      Set<Integer> expectedElements = new HashSet<Integer>();
+      Set<Integer> expectedElements = new HashSet<>();
       for (int k = j; k <= ID; ++k) {
         expectedElements.add(k);
       }
@@ -765,7 +765,7 @@ public class IndexMaintenanceJUnitTest {
       Iterator itr = rng.valueToEntriesMap.values().iterator();
       assertEquals(rng.valueToEntriesMap.size(), 1);
       assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
-      Set<Integer> expectedElements = new HashSet<Integer>();
+      Set<Integer> expectedElements = new HashSet<>();
       for (int k = j; k <= ID; ++k) {
         expectedElements.add(k);
       }
@@ -800,7 +800,7 @@ public class IndexMaintenanceJUnitTest {
       itr = rng.valueToEntriesMap.values().iterator();
       assertEquals(rng.valueToEntriesMap.size(), 1);
       assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
-      Set<Integer> expectedElements = new HashSet<Integer>();
+      Set<Integer> expectedElements = new HashSet<>();
       for (int k = j; k <= ID; ++k) {
         expectedElements.add(k);
       }
@@ -833,7 +833,7 @@ public class IndexMaintenanceJUnitTest {
         assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
       }
 
-      Set<Integer> expectedElements = new HashSet<Integer>();
+      Set<Integer> expectedElements = new HashSet<>();
       for (int k = j; k <= ID; ++k) {
         expectedElements.add(k);
       }
@@ -947,7 +947,7 @@ public class IndexMaintenanceJUnitTest {
       Iterator itr = rng.valueToEntriesMap.values().iterator();
       assertEquals(rng.valueToEntriesMap.size(), 1);
       assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
-      Set<Integer> expectedElements = new HashSet<Integer>();
+      Set<Integer> expectedElements = new HashSet<>();
       for (int k = j; k <= ID; ++k) {
         expectedElements.add(k);
       }
@@ -977,7 +977,7 @@ public class IndexMaintenanceJUnitTest {
       Iterator itr = rng.valueToEntriesMap.values().iterator();
       assertEquals(rng.valueToEntriesMap.size(), 1);
       assertTrue(rng.valueToEntriesMap.containsKey("val" + j));
-      Set<Integer> expectedElements = new HashSet<Integer>();
+      Set<Integer> expectedElements = new HashSet<>();
       for (int k = j; k <= ID; ++k) {
         expectedElements.add(k);
       }
@@ -1218,18 +1218,18 @@ public class IndexMaintenanceJUnitTest {
 
         @Override
         public void afterIndexLookup(Collection coll) {
-          IndexMaintenanceJUnitTest.this.indexUsed = true;
+          indexUsed = true;
         }
       });
       SelectResults set = (SelectResults) q.execute();
-      if (set.size() == 0 || !this.indexUsed) {
+      if (set.size() == 0 || !indexUsed) {
         fail("Either Size of the result set is zero or Index is not used ");
       }
-      this.indexUsed = false;
+      indexUsed = false;
 
       region.clear();
       set = (SelectResults) q.execute();
-      if (set.size() != 0 || !this.indexUsed) {
+      if (set.size() != 0 || !indexUsed) {
         fail("Either Size of the result set is not zero or Index is not used ");
       }
     } catch (Exception e) {
@@ -1255,20 +1255,16 @@ public class IndexMaintenanceJUnitTest {
 
         @Override
         public void afterIndexLookup(Collection coll) {
-          IndexMaintenanceJUnitTest.this.indexUsed = true;
+          indexUsed = true;
         }
 
         @Override
         public void beforeRerunningIndexCreationQuery() {
           // Spawn a separate thread here which does a put opertion on region
-          Thread th = new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-              // Assert that the size of region is now 0
-              assertTrue(region.size() == 0);
-              region.put("" + 8, new Portfolio(8));
-            }
+          Thread th = new Thread(() -> {
+            // Assert that the size of region is now 0
+            assertTrue(region.size() == 0);
+            region.put("" + 8, new Portfolio(8));
           });
           th.start();
           ThreadUtils.join(th, 30 * 1000);
@@ -1276,13 +1272,13 @@ public class IndexMaintenanceJUnitTest {
         }
       });
       SelectResults set = (SelectResults) q.execute();
-      if (set.size() == 0 || !this.indexUsed) {
+      if (set.size() == 0 || !indexUsed) {
         fail("Either Size of the result set is zero or Index is not used ");
       }
-      this.indexUsed = false;
+      indexUsed = false;
       region.clear();
       set = (SelectResults) q.execute();
-      if (set.size() != 1 || !this.indexUsed) {
+      if (set.size() != 1 || !indexUsed) {
         fail("Either Size of the result set is not one or Index is not used ");
       }
     } catch (Exception e) {
@@ -1376,7 +1372,7 @@ public class IndexMaintenanceJUnitTest {
     try {
       itr = ri.getIndexStorage().iterator(null);
       while (itr.hasNext()) {
-        IndexStoreEntry reEntry = (IndexStoreEntry) itr.next();
+        IndexStoreEntry reEntry = itr.next();
         Object obj = reEntry.getDeserializedRegionKey();
         assertTrue(obj instanceof String);
         assertTrue(idSet.contains(obj));
@@ -1425,7 +1421,7 @@ public class IndexMaintenanceJUnitTest {
     }
 
     public void addKeyValue(Object key, Object value) {
-      this.maap.put(key, value);
+      maap.put(key, value);
     }
   }
 }

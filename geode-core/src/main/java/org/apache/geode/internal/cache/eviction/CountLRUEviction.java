@@ -75,7 +75,7 @@ public class CountLRUEviction extends AbstractEvictionController {
 
   @Override
   public long getLimit() {
-    return this.maximumEntries;
+    return maximumEntries;
   }
 
   /**

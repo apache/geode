@@ -272,7 +272,7 @@ public class DistributedErrorCollectorDistributedTest {
 
     @Test
     public void assertionFailsInDUnitVM() {
-      getVM(0).invoke(() -> checkThat());
+      getVM(0).invoke(this::checkThat);
     }
 
     private void checkThat() {
@@ -339,7 +339,7 @@ public class DistributedErrorCollectorDistributedTest {
 
     @Test
     public void exceptionInDUnitVM() {
-      getVM(0).invoke(() -> addError());
+      getVM(0).invoke(this::addError);
     }
 
     private void addError() {
@@ -449,7 +449,7 @@ public class DistributedErrorCollectorDistributedTest {
 
     @Test
     public void checkSucceeds() {
-      Object result = errorCollector.checkSucceeds(() -> new Object());
+      Object result = errorCollector.checkSucceeds(Object::new);
 
       assertThat(result).isNotNull();
     }

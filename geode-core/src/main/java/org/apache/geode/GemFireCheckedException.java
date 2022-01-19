@@ -48,7 +48,7 @@ public abstract class GemFireCheckedException extends Exception {
    */
   public GemFireCheckedException(String message, Throwable cause) {
     super(message);
-    this.initCause(cause);
+    initCause(cause);
   }
 
   /**
@@ -56,7 +56,7 @@ public abstract class GemFireCheckedException extends Exception {
    */
   public GemFireCheckedException(Throwable cause) {
     super();
-    this.initCause(cause);
+    initCause(cause);
   }
 
   //////////////////// Instance Methods ////////////////////
@@ -66,10 +66,10 @@ public abstract class GemFireCheckedException extends Exception {
    * cause is nonexistent or unknown.
    */
   public Throwable getRootCause() {
-    if (this.getCause() == null) {
+    if (getCause() == null) {
       return null;
     }
-    Throwable root = this.getCause();
+    Throwable root = getCause();
     while (root != null) {
       if (root.getCause() == null) {
         break;

@@ -74,11 +74,11 @@ public class DistributedSystemStatsJUnitTest {
     props.setProperty(JMX_MANAGER_UPDATE_RATE, "60000");
     props.setProperty(JMX_MANAGER_PORT, "0");
 
-    this.system = (InternalDistributedSystem) DistributedSystem.connect(props);
-    assertNotNull(this.system.getStatSampler());
-    assertNotNull(this.system.getStatSampler().waitForSampleCollector(TIMEOUT));
+    system = (InternalDistributedSystem) DistributedSystem.connect(props);
+    assertNotNull(system.getStatSampler());
+    assertNotNull(system.getStatSampler().waitForSampleCollector(TIMEOUT));
 
-    this.cache = new CacheFactory().create();
+    cache = new CacheFactory().create();
 
   }
 
@@ -118,17 +118,17 @@ public class DistributedSystemStatsJUnitTest {
   @After
   public void tearDown() throws Exception {
     // System.clearProperty("gemfire.stats.debug.debugSampleCollector");
-    this.system.disconnect();
-    this.system = null;
+    system.disconnect();
+    system = null;
   }
 
   protected void waitForNotification() throws InterruptedException {
-    this.system.getStatSampler().waitForSample(TIMEOUT);
+    system.getStatSampler().waitForSample(TIMEOUT);
     Thread.sleep(SLEEP);
   }
 
   protected void sample() throws InterruptedException {
-    this.system.getStatSampler().getSampleCollector().sample(NanoTimer.getTime());
+    system.getStatSampler().getSampleCollector().sample(NanoTimer.getTime());
     Thread.sleep(SLEEP);
   }
 

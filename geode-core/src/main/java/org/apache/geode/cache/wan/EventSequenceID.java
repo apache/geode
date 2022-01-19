@@ -30,17 +30,17 @@ public class EventSequenceID {
   /**
    * Uniquely identifies the distributed member VM in which the Event is produced
    */
-  private String membershipID;
+  private final String membershipID;
 
   /**
    * Unqiuely identifies the thread producing the event
    */
-  private long threadID;
+  private final long threadID;
 
   /**
    * Uniquely identifies individual event produced by a given thread
    */
-  private long sequenceID;
+  private final long sequenceID;
 
   public EventSequenceID(byte[] membershipID, long threadID, long sequenceID) {
     // convert the byte array of membershipID to a readable string
@@ -56,15 +56,15 @@ public class EventSequenceID {
   }
 
   public String getMembershipID() {
-    return this.membershipID;
+    return membershipID;
   }
 
   public long getThreadID() {
-    return this.threadID;
+    return threadID;
   }
 
   public long getSequenceID() {
-    return this.sequenceID;
+    return sequenceID;
   }
 
   public boolean equals(Object obj) {
@@ -73,24 +73,21 @@ public class EventSequenceID {
     }
 
     EventSequenceID obj2 = (EventSequenceID) obj;
-    return (this.membershipID.equals(obj2.getMembershipID()) && this.threadID == obj2.getThreadID()
-        && this.sequenceID == obj2.getSequenceID());
+    return (membershipID.equals(obj2.getMembershipID()) && threadID == obj2.getThreadID()
+        && sequenceID == obj2.getSequenceID());
   }
 
   public int hashCode() {
-    StringBuilder builder = new StringBuilder();
-    builder.append(this.membershipID);
-    builder.append(this.threadID);
-    builder.append(this.sequenceID);
-    return builder.toString().hashCode();
+    final String builder = membershipID
+        + threadID
+        + sequenceID;
+    return builder.hashCode();
   }
 
   public String toString() {
-    StringBuilder builder = new StringBuilder();
-    builder.append("membershipID: " + membershipID);
-    builder.append("; threadID: " + threadID);
-    builder.append("; sequenceID: " + sequenceID);
-    return builder.toString();
+    return "membershipID: " + membershipID
+        + "; threadID: " + threadID
+        + "; sequenceID: " + sequenceID;
   }
 
 }

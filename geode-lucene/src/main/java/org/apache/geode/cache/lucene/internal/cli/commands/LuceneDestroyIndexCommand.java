@@ -115,7 +115,7 @@ public class LuceneDestroyIndexCommand extends LuceneCommandBase {
                     new Object[] {regionPath})
                 : CliStrings.format(
                     LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEX_0_FROM_REGION_1,
-                    new Object[] {indexName, regionPath}));
+                    indexName, regionPath));
       } else {
         tabularResult.accumulate("Status", cliFunctionResult.getMessage());
       }

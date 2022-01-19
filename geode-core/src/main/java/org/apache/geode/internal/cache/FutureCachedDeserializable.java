@@ -29,7 +29,7 @@ public class FutureCachedDeserializable {
   }
 
   public CachedDeserializable create(InternalCache cache) {
-    return CachedDeserializableFactory.create(this.data, cache);
+    return CachedDeserializableFactory.create(data, cache);
   }
 
 }

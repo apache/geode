@@ -30,7 +30,7 @@ public class SocketCreatorFactory {
   @MakeNotStatic
   private static SocketCreatorFactory instance = null;
   @MakeNotStatic
-  private Map<SecurableCommunicationChannel, SocketCreator> socketCreators = new HashMap<>();
+  private final Map<SecurableCommunicationChannel, SocketCreator> socketCreators = new HashMap<>();
   private DistributionConfig distributionConfig;
 
   /**

@@ -129,7 +129,7 @@ public class Installer {
     processWebXml(input, output);
     input.close();
 
-    System.out.println(output.toString());
+    System.out.println(output);
   }
 
 

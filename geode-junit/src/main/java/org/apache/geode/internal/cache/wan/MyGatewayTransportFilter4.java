@@ -56,7 +56,7 @@ public class MyGatewayTransportFilter4 implements GatewayTransportFilter, Serial
       return false;
     }
     MyGatewayTransportFilter4 filter = (MyGatewayTransportFilter4) obj;
-    return this.Id.equals(filter.Id);
+    return Id.equals(filter.Id);
   }
 
   @Override

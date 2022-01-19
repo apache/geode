@@ -43,32 +43,32 @@ public class LocalQueryServiceJUnitTest {
 
   @Before
   public void before() throws Exception {
-    this.ignoredException = addIgnoredException(IOException.class.getName());
+    ignoredException = addIgnoredException(IOException.class.getName());
 
-    this.clientCache = new ClientCacheFactory().create();
+    clientCache = new ClientCacheFactory().create();
     ClientRegionFactory factory =
-        this.clientCache.createClientRegionFactory(ClientRegionShortcut.LOCAL);
+        clientCache.createClientRegionFactory(ClientRegionShortcut.LOCAL);
     Region region = factory.create("localRegion");
-    this.numEntries = 10;
-    for (int i = 0; i < this.numEntries; i++) {
+    numEntries = 10;
+    for (int i = 0; i < numEntries; i++) {
       region.put(i, i);
     }
   }
 
   @After
   public void after() throws Exception {
-    if (this.clientCache != null) {
-      this.clientCache.close();
+    if (clientCache != null) {
+      clientCache.close();
     }
-    this.ignoredException.remove();
+    ignoredException.remove();
   }
 
   @Test
   public void testLocalQueryService() throws Exception {
     SelectResults sR =
-        executeLocalQuery(this.clientCache, "SELECT * from " + SEPARATOR + "localRegion");
+        executeLocalQuery(clientCache, "SELECT * from " + SEPARATOR + "localRegion");
 
-    assertEquals(this.numEntries, sR.size());
+    assertEquals(numEntries, sR.size());
   }
 
   @Test
@@ -76,9 +76,9 @@ public class LocalQueryServiceJUnitTest {
     CacheTransactionManager cacheTransactionManager = clientCache.getCacheTransactionManager();
     cacheTransactionManager.begin();
     SelectResults selectResults =
-        executeLocalQuery(this.clientCache, "SELECT * from " + SEPARATOR + "localRegion");
+        executeLocalQuery(clientCache, "SELECT * from " + SEPARATOR + "localRegion");
 
-    assertEquals(this.numEntries, selectResults.size());
+    assertEquals(numEntries, selectResults.size());
 
     cacheTransactionManager.commit();
   }

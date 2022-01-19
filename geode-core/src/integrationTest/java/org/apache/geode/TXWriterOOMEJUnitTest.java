@@ -19,7 +19,6 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.TransactionEvent;
 import org.apache.geode.cache.TransactionWriter;
 import org.apache.geode.cache.TransactionWriterException;
@@ -37,7 +36,7 @@ public class TXWriterOOMEJUnitTest extends TXWriterTestCase {
     installCacheListenerAndWriter();
 
     // install TransactionWriter
-    ((CacheTransactionManager) this.txMgr).setWriter(new TransactionWriter() {
+    txMgr.setWriter(new TransactionWriter() {
       @Override
       public void beforeCommit(TransactionEvent event) throws TransactionWriterException {
         throw new OutOfMemoryError("this is expected!");
@@ -52,21 +51,21 @@ public class TXWriterOOMEJUnitTest extends TXWriterTestCase {
     try {
       SystemFailureTestHook.setExpectedFailureClass(OutOfMemoryError.class);
 
-      this.txMgr.begin();
-      this.region.create("key1", "value1");
-      this.cbCount = 0;
+      txMgr.begin();
+      region.create("key1", "value1");
+      cbCount = 0;
       try {
-        this.txMgr.commit();
+        txMgr.commit();
         fail("Commit should have thrown OOME");
       } catch (OutOfMemoryError expected) {
         // this is what we expect
       }
 
       // no callbacks were invoked
-      assertEquals(0, this.cbCount);
-      assertEquals(0, this.failedCommits);
-      assertEquals(0, this.afterCommits);
-      assertEquals(0, this.afterRollbacks);
+      assertEquals(0, cbCount);
+      assertEquals(0, failedCommits);
+      assertEquals(0, afterCommits);
+      assertEquals(0, afterRollbacks);
     } finally {
       SystemFailureTestHook.setExpectedFailureClass(null);
     }

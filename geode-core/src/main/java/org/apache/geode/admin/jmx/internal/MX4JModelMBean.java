@@ -10,7 +10,6 @@ package org.apache.geode.admin.jmx.internal;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Date;
-import java.util.Iterator;
 
 import javax.management.Attribute;
 import javax.management.AttributeChangeNotification;
@@ -119,7 +118,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
 
   @Override
   public void postRegister(Boolean registrationDone) {
-    if (!registrationDone.booleanValue()) {
+    if (!registrationDone) {
       clear();
     }
   }
@@ -164,11 +163,8 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
   }
 
   private boolean isModelMBeanInfoValid(ModelMBeanInfo info) {
-    if (info == null || info.getClassName() == null) {
-      return false;
-    }
+    return info != null && info.getClassName() != null;
     // PENDING: maybe more checks are needed
-    return true;
   }
 
   @Override
@@ -216,8 +212,8 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
       filter.enableAttribute(attributeName);
     } else {
       MBeanAttributeInfo[] ai = m_modelMBeanInfo.getAttributes();
-      for (int i = 0; i < ai.length; i++) {
-        Descriptor d = ((ModelMBeanAttributeInfo) ai[i]).getDescriptor();
+      for (final MBeanAttributeInfo mBeanAttributeInfo : ai) {
+        Descriptor d = mBeanAttributeInfo.getDescriptor();
         filter.enableAttribute((String) d.getFieldValue("name"));
       }
     }
@@ -265,8 +261,8 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
       filter.enableAttribute(attributeName);
     } else {
       MBeanAttributeInfo[] ai = m_modelMBeanInfo.getAttributes();
-      for (int i = 0; i < ai.length; i++) {
-        Descriptor d = ((ModelMBeanAttributeInfo) ai[i]).getDescriptor();
+      for (final MBeanAttributeInfo mBeanAttributeInfo : ai) {
+        Descriptor d = mBeanAttributeInfo.getDescriptor();
         filter.enableAttribute((String) d.getFieldValue("name"));
       }
     }
@@ -360,8 +356,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     Logger logger = getLogger();
 
     AttributeList list = new AttributeList();
-    for (int i = 0; i < attributes.length; ++i) {
-      String attrName = attributes[i];
+    for (String attrName : attributes) {
       Attribute attribute = null;
       try {
         Object value = getAttribute(attrName);
@@ -488,7 +483,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
         // Cache the new value only if caching is needed
         if (staleness != ALWAYS_STALE) {
           attributeDescriptor.setField("value", returnValue);
-          attributeDescriptor.setField(lastUpdateField, Long.valueOf(System.currentTimeMillis()));
+          attributeDescriptor.setField(lastUpdateField, System.currentTimeMillis());
           if (logger.isEnabledFor(Logger.TRACE)) {
             logger.trace("Returned value has been cached");
           }
@@ -535,8 +530,8 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     Logger logger = getLogger();
 
     AttributeList list = new AttributeList();
-    for (Iterator i = attributes.iterator(); i.hasNext();) {
-      Attribute attribute = (Attribute) i.next();
+    for (final Object o : attributes) {
+      Attribute attribute = (Attribute) o;
       String name = attribute.getName();
       try {
         setAttribute(attribute);
@@ -646,7 +641,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
       int staleness = getStaleness(attributeDescriptor, mbeanDescriptor, lastUpdateField);
       if (staleness != ALWAYS_STALE) {
         attributeDescriptor.setField("value", attrValue);
-        attributeDescriptor.setField(lastUpdateField, Long.valueOf(System.currentTimeMillis()));
+        attributeDescriptor.setField(lastUpdateField, System.currentTimeMillis());
         if (logger.isEnabledFor(Logger.TRACE)) {
           logger.trace("Attribute's value has been cached");
         }
@@ -805,7 +800,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
       // Cache the new value only if caching is needed
       if (staleness != ALWAYS_STALE) {
         operationDescriptor.setField("lastReturnedValue", returnValue);
-        operationDescriptor.setField(lastUpdateField, Long.valueOf(System.currentTimeMillis()));
+        operationDescriptor.setField(lastUpdateField, System.currentTimeMillis());
         if (logger.isEnabledFor(Logger.TRACE)) {
           logger.trace("Returned value has been cached");
         }
@@ -920,11 +915,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
       Long period = getFieldTimeValue(attribute, mbean, "persistPeriod");
       long now = System.currentTimeMillis();
       Long lastUpdate = (Long) attribute.getFieldValue(lastUpdateField);
-      if (now - lastUpdate.longValue() < period.longValue()) {
-        return false;
-      } else {
-        return true;
-      }
+      return now - lastUpdate >= period;
     } else if (persist == PERSIST_NEVER) {
       return false;
     } else if (persist == PERSIST_ON_TIMER) {
@@ -992,7 +983,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
       }
       return ALWAYS_STALE;
     } else {
-      long ctl = currencyTimeLimit.longValue() * 1000;
+      long ctl = currencyTimeLimit * 1000;
       if (logger.isEnabledFor(Logger.TRACE)) {
         logger.trace("currencyTimeLimit is (ms): " + ctl);
       }
@@ -1015,7 +1006,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
         long luts = 0;
 
         if (timestamp != null) {
-          luts = timestamp.longValue();
+          luts = timestamp;
         }
         if (logger.isEnabledFor(Logger.DEBUG)) {
           logger.debug(lastUpdateField + " is: " + luts);
@@ -1066,18 +1057,18 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     }
 
     if (value instanceof Number) {
-      return Long.valueOf(((Number) value).longValue());
+      return ((Number) value).longValue();
     }
 
     if (value instanceof String) {
       try {
         long ctl = Long.parseLong((String) value);
-        return Long.valueOf(ctl);
+        return ctl;
       } catch (NumberFormatException x) {
-        return Long.valueOf(0);
+        return 0L;
       }
     }
-    return Long.valueOf(0);
+    return 0L;
   }
 
   private Object invokeMethod(Object target, String methodName, Class[] params, Object[] args)
@@ -1141,9 +1132,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
     if (modelMBeanLogger == null) {
       descriptor = info.getMBeanDescriptor();
       modelMBeanLogger = findLogger(descriptor);
-      if (modelMBeanLogger != null) {
-        return modelMBeanLogger;
-      }
+      return modelMBeanLogger;
     }
 
     return null;
@@ -1166,7 +1155,7 @@ public class MX4JModelMBean implements ModelMBean, MBeanRegistration, Notificati
       logger.debug("Log fields: log=" + log + ", file=" + location);
     }
 
-    if (log == null || !Boolean.valueOf(log).booleanValue()) {
+    if (log == null || !Boolean.parseBoolean(log)) {
       if (logger.isEnabledFor(Logger.DEBUG)) {
         logger.debug("Logging is not supported by this ModelMBean");
       }

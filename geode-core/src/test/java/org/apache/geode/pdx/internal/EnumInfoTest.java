@@ -41,7 +41,7 @@ public class EnumInfoTest {
     THREE(3),
     FOUR(4);
 
-    private int intValue;
+    private final int intValue;
 
     TestEnum(int intValue) {
       this.intValue = intValue;

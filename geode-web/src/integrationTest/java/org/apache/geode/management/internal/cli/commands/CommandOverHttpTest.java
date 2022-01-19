@@ -90,8 +90,8 @@ public class CommandOverHttpTest {
   public void exportConfig() throws Exception {
     String dir = temporaryFolder.getRoot().getAbsolutePath();
     gfshRule.executeAndAssertThat("export config --dir=" + dir).statusIsSuccess()
-        .containsOutput("File saved to " + Paths.get(dir, "server-cache.xml").toString())
-        .containsOutput("File saved to " + Paths.get(dir, "server-gf.properties").toString());
+        .containsOutput("File saved to " + Paths.get(dir, "server-cache.xml"))
+        .containsOutput("File saved to " + Paths.get(dir, "server-gf.properties"));
   }
 
   @Test

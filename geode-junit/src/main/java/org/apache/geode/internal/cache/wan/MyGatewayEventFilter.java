@@ -25,11 +25,11 @@ import org.apache.geode.cache.wan.GatewayQueueEvent;
 // testAsyncEventQueueConfiguredFromXmlUsesFilter
 public class MyGatewayEventFilter implements GatewayEventFilter, Declarable {
 
-  private AtomicInteger beforeEnqueueInvocations = new AtomicInteger();
+  private final AtomicInteger beforeEnqueueInvocations = new AtomicInteger();
 
-  private AtomicInteger beforeTransmitInvocations = new AtomicInteger();
+  private final AtomicInteger beforeTransmitInvocations = new AtomicInteger();
 
-  private AtomicInteger afterAcknowledgementInvocations = new AtomicInteger();
+  private final AtomicInteger afterAcknowledgementInvocations = new AtomicInteger();
 
   @Override
   public boolean beforeEnqueue(GatewayQueueEvent event) {
@@ -49,15 +49,15 @@ public class MyGatewayEventFilter implements GatewayEventFilter, Declarable {
   }
 
   public int getBeforeEnqueueInvocations() {
-    return this.beforeEnqueueInvocations.get();
+    return beforeEnqueueInvocations.get();
   }
 
   public int getBeforeTransmitInvocations() {
-    return this.beforeTransmitInvocations.get();
+    return beforeTransmitInvocations.get();
   }
 
   public int getAfterAcknowledgementInvocations() {
-    return this.afterAcknowledgementInvocations.get();
+    return afterAcknowledgementInvocations.get();
   }
 
   @Override

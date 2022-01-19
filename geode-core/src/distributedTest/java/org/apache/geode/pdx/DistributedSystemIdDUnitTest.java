@@ -98,13 +98,13 @@ public class DistributedSystemIdDUnitTest extends JUnit4DistributedTestCase {
     try {
       createLocator(vm0, "256");
       fail("Should have gotten an exception");
-    } catch (Exception expected) {
+    } catch (Exception ignored) {
     }
 
     try {
       createLocator(vm0, "aardvark");
       fail("Should have gotten an exception");
-    } catch (Exception expected) {
+    } catch (Exception ignored) {
     }
   }
 

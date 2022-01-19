@@ -48,7 +48,7 @@ public class TabularResultModelColumnAssert<T> extends TabularResultModelSliceAs
    * verifies the expected number of values in the column
    */
   public final TabularResultModelColumnAssert<T> hasSize(int expected) {
-    assertThat(this.values).hasSize(expected);
+    assertThat(values).hasSize(expected);
     return this;
   }
 }

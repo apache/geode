@@ -115,14 +115,14 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
   public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(() -> TxnTimeOutDUnitTest.init());
+    vm0.invoke(TxnTimeOutDUnitTest::init);
   }
 
   @Override
   public final void preTearDown() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(() -> TxnTimeOutDUnitTest.closeCache());
+    vm0.invoke(TxnTimeOutDUnitTest::closeCache);
   }
 
   @Test
@@ -131,24 +131,24 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
       Host host = Host.getHost(0);
       VM vm0 = host.getVM(0);
 
-      Object o[] = new Object[1];
-      o[0] = new Integer(2);
+      Object[] o = new Object[1];
+      o[0] = 2;
       AsyncInvocation asyncObj1 = vm0.invokeAsync(TxnTimeOutDUnitTest.class, "runTest3", o);
 
-      Object o1[] = new Object[1];
-      o1[0] = new Integer(2);
+      Object[] o1 = new Object[1];
+      o1[0] = 2;
       AsyncInvocation asyncObj2 = vm0.invokeAsync(TxnTimeOutDUnitTest.class, "runTest3", o1);
 
-      Object o2[] = new Object[1];
-      o2[0] = new Integer(3);
+      Object[] o2 = new Object[1];
+      o2[0] = 3;
       AsyncInvocation asyncObj3 = vm0.invokeAsync(TxnTimeOutDUnitTest.class, "runTest3", o2);
 
-      Object o3[] = new Object[1];
-      o3[0] = new Integer(3);
+      Object[] o3 = new Object[1];
+      o3[0] = 3;
       AsyncInvocation asyncObj4 = vm0.invokeAsync(TxnTimeOutDUnitTest.class, "runTest3", o3);
 
-      Object o4[] = new Object[1];
-      o4[0] = new Integer(1);
+      Object[] o4 = new Object[1];
+      o4[0] = 1;
       AsyncInvocation asyncObj5 = vm0.invokeAsync(TxnTimeOutDUnitTest.class, "runTest3", o4);
 
       ThreadUtils.join(asyncObj1, 5 * 60 * 1000);
@@ -187,8 +187,8 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
   public void testLoginTimeOut() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    AsyncInvocation asyncObj1 = vm0.invokeAsync(() -> TxnTimeOutDUnitTest.runTest2());
-    AsyncInvocation asyncObj2 = vm0.invokeAsync(() -> TxnTimeOutDUnitTest.runTest1());
+    AsyncInvocation asyncObj1 = vm0.invokeAsync(TxnTimeOutDUnitTest::runTest2);
+    AsyncInvocation asyncObj2 = vm0.invokeAsync(TxnTimeOutDUnitTest::runTest1);
 
     ThreadUtils.join(asyncObj1, 5 * 60 * 1000);
     if (asyncObj1.exceptionOccurred()) {
@@ -261,7 +261,7 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
   public static void runTest3(Object o)
       throws SystemException, NotSupportedException, NamingException, InterruptedException {
     boolean exceptionOccurred = false;
-    int sleeptime = ((Integer) o).intValue();
+    int sleeptime = (Integer) o;
     Context ctx = cache.getJNDIContext();
     UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
     utx.begin();
@@ -281,7 +281,7 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
   private static String readFile(String filename) throws IOException {
     BufferedReader br = new BufferedReader(new FileReader(filename));
     String nextLine = "";
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     while ((nextLine = br.readLine()) != null) {
       sb.append(nextLine);
       //

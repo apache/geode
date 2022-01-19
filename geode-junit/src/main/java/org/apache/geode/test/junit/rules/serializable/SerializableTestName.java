@@ -52,12 +52,12 @@ public class SerializableTestName extends TestName implements SerializableTestRu
     private final String name;
 
     SerializationProxy(final SerializableTestName instance) {
-      this.name = (String) readField(TestName.class, instance, FIELD_NAME);
+      name = (String) readField(TestName.class, instance, FIELD_NAME);
     }
 
     private Object readResolve() {
       SerializableTestName instance = new SerializableTestName();
-      writeField(TestName.class, instance, FIELD_NAME, this.name);
+      writeField(TestName.class, instance, FIELD_NAME, name);
       return instance;
     }
   }

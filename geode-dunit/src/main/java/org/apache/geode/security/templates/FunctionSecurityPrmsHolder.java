@@ -36,14 +36,14 @@ public class FunctionSecurityPrmsHolder {
   }
 
   public Boolean isOptimizeForWrite() {
-    return this.optimizeForWrite;
+    return optimizeForWrite;
   }
 
   public Set<String> getFunctionIds() {
-    return this.functionIds;
+    return functionIds;
   }
 
   public Set<String> getKeySet() {
-    return this.keySet;
+    return keySet;
   }
 }

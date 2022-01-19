@@ -92,7 +92,7 @@ public class AgentUtil {
         "tools/Extensions/" + versionedWarFileName,
         "lib/" + versionedWarFileName,
         unversionedWarFileName})
-        .map(possibleFile -> this.getClass().getClassLoader().getResource(possibleFile))
+        .map(possibleFile -> getClass().getClassLoader().getResource(possibleFile))
         .filter(Objects::nonNull).findFirst().orElse(null);
 
     URI uri = null;

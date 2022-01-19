@@ -101,7 +101,7 @@ public class DiskStoreMonitor {
   }
 
   public DiskStoreMonitor(File logFile) {
-    disks = new ConcurrentHashMap<DiskStoreImpl, Set<DirectoryHolderUsage>>();
+    disks = new ConcurrentHashMap<>();
     logDisk = new LogUsage(getLogDir(logFile));
 
     if (logger.isTraceEnabled(LogMarker.DISK_STORE_MONITOR_VERBOSE)) {
@@ -138,7 +138,7 @@ public class DiskStoreMonitor {
           ds.getName());
     }
 
-    Set<DirectoryHolderUsage> du = new HashSet<DirectoryHolderUsage>();
+    Set<DirectoryHolderUsage> du = new HashSet<>();
     for (DirectoryHolder dir : ds.getDirectoryHolders()) {
       du.add(new DirectoryHolderUsage(ds, dir));
     }

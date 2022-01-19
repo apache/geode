@@ -68,7 +68,7 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
       ResultSender<?> resultSender, boolean isPossibleDuplicate, Object principal) {
     super(cache, functionId, args, resultSender);
     this.dataSet = dataSet;
-    this.filter = routingObjects;
+    filter = routingObjects;
     this.colocatedLocalDataMap = colocatedLocalDataMap;
     this.localBucketArray = localBucketArray;
     this.isPossibleDuplicate = isPossibleDuplicate;
@@ -82,8 +82,8 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
   }
 
   private void setFunctionContexts() {
-    if (this.colocatedLocalDataMap != null) {
-      for (LocalDataSet ls : this.colocatedLocalDataMap.values()) {
+    if (colocatedLocalDataMap != null) {
+      for (LocalDataSet ls : colocatedLocalDataMap.values()) {
         ls.setFunctionContext(this);
       }
     }
@@ -98,7 +98,7 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
    */
   @Override
   public <K, V> Region<K, V> getDataSet() {
-    return this.dataSet;
+    return dataSet;
   }
 
   /**
@@ -111,29 +111,27 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
    */
   @Override
   public Set<?> getFilter() {
-    return this.filter;
+    return filter;
   }
 
   @Override
   public String toString() {
-    final StringBuilder buf = new StringBuilder();
-    buf.append("[RegionFunctionContextImpl:");
-    buf.append("dataSet=");
-    buf.append(this.dataSet);
-    buf.append(";filter=");
-    buf.append(this.filter);
-    buf.append(";args=");
-    buf.append(getArguments());
-    buf.append(";principal=");
-    buf.append(getPrincipal());
-    buf.append(']');
-    return buf.toString();
+    return "[RegionFunctionContextImpl:"
+        + "dataSet="
+        + dataSet
+        + ";filter="
+        + filter
+        + ";args="
+        + getArguments()
+        + ";principal="
+        + getPrincipal()
+        + ']';
   }
 
   @Override
   public Region getLocalDataSet(Region r) {
-    if (this.colocatedLocalDataMap != null) {
-      return this.colocatedLocalDataMap.get(r.getFullPath());
+    if (colocatedLocalDataMap != null) {
+      return colocatedLocalDataMap.get(r.getFullPath());
     } else {
       return null;
     }
@@ -141,10 +139,10 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
 
   @Override
   public Map<String, LocalDataSet> getColocatedLocalDataSets() {
-    if (this.colocatedLocalDataMap != null) {
+    if (colocatedLocalDataMap != null) {
       HashMap<String, LocalDataSet> ret =
-          new HashMap<String, LocalDataSet>(this.colocatedLocalDataMap);
-      ret.remove(this.dataSet.getFullPath());
+          new HashMap<>(colocatedLocalDataMap);
+      ret.remove(dataSet.getFullPath());
       return Collections.unmodifiableMap(ret);
     } else {
       return Collections.emptyMap();
@@ -153,7 +151,7 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
 
   @Override
   public boolean isPossibleDuplicate() {
-    return this.isPossibleDuplicate;
+    return isPossibleDuplicate;
   }
 
   @Override
@@ -161,7 +159,7 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
     if (!region.getAttributes().getDataPolicy().withPartitioning()) {
       return null;
     }
-    return this.localBucketArray;
+    return localBucketArray;
   }
 
   @Override

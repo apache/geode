@@ -32,8 +32,8 @@ public class ObjectWithAuthz implements DataSerializable {
   private Object authz;
 
   public ObjectWithAuthz() {
-    this.val = null;
-    this.authz = null;
+    val = null;
+    authz = null;
   }
 
   public ObjectWithAuthz(Object val, Object authz) {
@@ -44,26 +44,26 @@ public class ObjectWithAuthz implements DataSerializable {
 
   public Object getVal() {
 
-    return this.val;
+    return val;
   }
 
   public Object getAuthz() {
 
-    return this.authz;
+    return authz;
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
 
-    this.val = DataSerializer.readObject(in);
-    this.authz = DataSerializer.readObject(in);
+    val = DataSerializer.readObject(in);
+    authz = DataSerializer.readObject(in);
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
 
-    DataSerializer.writeObject(this.val, out);
-    DataSerializer.writeObject(this.authz, out);
+    DataSerializer.writeObject(val, out);
+    DataSerializer.writeObject(authz, out);
   }
 
 }

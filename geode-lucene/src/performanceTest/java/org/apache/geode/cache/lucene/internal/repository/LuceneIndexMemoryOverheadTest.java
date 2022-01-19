@@ -17,7 +17,7 @@ package org.apache.geode.cache.lucene.internal.repository;
 
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -44,12 +44,12 @@ import org.apache.geode.test.junit.categories.PerformanceTest;
 @Ignore("Tests have no assertions")
 public class LuceneIndexMemoryOverheadTest extends LuceneIntegrationTest {
   private static final String REGION_NAME = "index";
-  private static int NUM_BATCHES = 30;
-  private static int NUM_ENTRIES = 10000;
-  private Random random = new Random(0);
+  private static final int NUM_BATCHES = 30;
+  private static final int NUM_ENTRIES = 10000;
+  private final Random random = new Random(0);
 
   private static final Logger logger = LogService.getLogger();
-  private Callable flush =
+  private final Callable flush =
       () -> luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, 60000, TimeUnit.MILLISECONDS);
   protected static ObjectGraphSizer.ObjectFilter filter =
       (parent, object) -> !(object instanceof AvailableCommandsConverter);
@@ -116,8 +116,8 @@ public class LuceneIndexMemoryOverheadTest extends LuceneIntegrationTest {
       byte[] field2 = new byte[5];
       random.nextBytes(field1);
       random.nextBytes(field2);
-      TestObject test = new TestObject(new String(field1, Charset.forName("ASCII")),
-          new String(field2, Charset.forName("ASCII")));
+      TestObject test = new TestObject(new String(field1, StandardCharsets.US_ASCII),
+          new String(field2, StandardCharsets.US_ASCII));
       region.put(i, test);
     }
 

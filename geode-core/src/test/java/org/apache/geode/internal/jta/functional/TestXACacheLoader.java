@@ -56,7 +56,7 @@ public class TestXACacheLoader implements CacheLoader {
       Connection conn = ds.getConnection();
       Statement stm = conn.createStatement();
       ResultSet rs = stm.executeQuery("select name from " + tableName + " where id = ("
-          + (new Integer(ob.toString())).intValue() + ")");
+          + new Integer(ob.toString()) + ")");
       rs.next();
       obj = rs.getString(1);
       stm.close();

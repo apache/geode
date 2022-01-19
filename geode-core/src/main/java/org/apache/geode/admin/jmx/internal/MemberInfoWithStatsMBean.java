@@ -23,7 +23,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -108,17 +107,17 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
   /* default */static final String MBEAN_NAME = "GemFire:type=MemberInfoWithStatsMBean";
 
   /** ObjectName handle for this MBean */
-  private ObjectName objectName;
+  private final ObjectName objectName;
 
   /** version of the GemFire Enterprise system that is running */
-  private String version;
+  private final String version;
   private int refreshInterval;
   private String id;
 
-  private Agent agent;
+  private final Agent agent;
   private AdminDistributedSystemJmxImpl adminDSJmx;
 
-  private NotificationForwarder forwarder;
+  private final NotificationForwarder forwarder;
   private boolean isInitialized;// needs synchronization?
 
   /**
@@ -130,11 +129,11 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
   MemberInfoWithStatsMBean(Agent agent)
       throws OperationsException, MBeanRegistrationException, AdminException {
     this.agent = agent;
-    this.objectName = ObjectName.getInstance(MBEAN_NAME);
-    this.version = GemFireVersion.getGemFireVersion();
-    this.refreshInterval = -1;
-    this.id = NOT_AVAILABLE_STR;
-    this.forwarder = new NotificationForwarder(agent.getMBeanServer());
+    objectName = ObjectName.getInstance(MBEAN_NAME);
+    version = GemFireVersion.getGemFireVersion();
+    refreshInterval = -1;
+    id = NOT_AVAILABLE_STR;
+    forwarder = new NotificationForwarder(agent.getMBeanServer());
   }
 
   /**
@@ -366,7 +365,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
         CacheVm[] cacheVms = adminDSJmx.getCacheVms();
         SystemMember[] appVms = adminDSJmx.getSystemMemberApplications();
 
-        List<String> membersList = new ArrayList<String>();
+        List<String> membersList = new ArrayList<>();
         if (cacheVms != null && cacheVms.length != 0) {
           for (SystemMember cacheVm : cacheVms) {
             membersList.add(cacheVm.getId());
@@ -402,7 +401,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
    * @throws OperationsException if fails to retrieve the regions information
    */
   public Map<String, Map<String, ?>> getRegions(String memberId) throws OperationsException {
-    Map<String, Map<String, ?>> regionsInfo = new LinkedHashMap<String, Map<String, ?>>();
+    Map<String, Map<String, ?>> regionsInfo = new LinkedHashMap<>();
 
     if (memberId != null) {
       try {
@@ -420,12 +419,12 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
         }
       } catch (AdminException e) {
         logger.warn(String.format("Exception occurred for operation: %s for member: %s",
-            new Object[] {"getRegions", memberId}),
+            "getRegions", memberId),
             e);
         throw new OperationsException(e.getMessage());
       } catch (Exception e) {
         logger.warn(String.format("Exception occurred for operation: %s for member: %s",
-            new Object[] {"getRegions", memberId}),
+            "getRegions", memberId),
             e);
         throw new OperationsException(e.getMessage());
       }
@@ -447,24 +446,24 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
       if (adminDSJmx != null) {
         // Members are already inited after connectToSystem. Now init Cache, Region & Stats MBeans
         SystemMember[] cacheVms = adminDSJmx.getCacheVms();
-        for (int i = 0; i < cacheVms.length; i++) {
+        for (final SystemMember cacheVm : cacheVms) {
           try {
-            initializeCacheRegionsAndStats((SystemMemberJmx) cacheVms[i]);
+            initializeCacheRegionsAndStats((SystemMemberJmx) cacheVm);
           } catch (AdminException e) {
             logger.info(String.format(
                 "Exception occurred while intializing : %s. Contiuning with next  ...",
-                cacheVms[i].getId()),
+                cacheVm.getId()),
                 e);
           }
         }
         SystemMember[] appVms = adminDSJmx.getSystemMemberApplications();
-        for (int i = 0; i < appVms.length; i++) {
+        for (final SystemMember appVm : appVms) {
           try {
-            initializeCacheRegionsAndStats((SystemMemberJmx) appVms[i]);
+            initializeCacheRegionsAndStats((SystemMemberJmx) appVm);
           } catch (AdminException e) {
             logger.info(String.format(
                 "Exception occurred while intializing : %s. Contiuning with next  ...",
-                appVms[i].getId()),
+                appVm.getId()),
                 e);
           }
         }
@@ -533,8 +532,8 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
 
     Set subRegionSnapshots = regionSnapshot.getSubRegionSnapshots();
 
-    for (Iterator iterator = subRegionSnapshots.iterator(); iterator.hasNext();) {
-      RegionSubRegionSnapshot subRegion = (RegionSubRegionSnapshot) iterator.next();
+    for (final Object subRegionSnapshot : subRegionSnapshots) {
+      RegionSubRegionSnapshot subRegion = (RegionSubRegionSnapshot) subRegionSnapshot;
       try {
         initializeRegionSubRegions(cache, subRegion);
       } catch (AdminException e) {
@@ -648,7 +647,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
    * @return All the required details for a member with given memberId
    */
   public Map<String, Object> getMemberDetails(String memberId) throws OperationsException {
-    Map<String, Object> allDetails = new TreeMap<String, Object>();
+    Map<String, Object> allDetails = new TreeMap<>();
 
     if (memberId != null) {
       try {
@@ -710,25 +709,25 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
             cache.refresh();
             cacheServers = cache.getCacheServers();
           }
-          Integer memberCacheServerPort = Integer.valueOf(0);
+          Integer memberCacheServerPort = 0;
           if (cacheServers.length != 0) {
             /*
              * Taking the first cache server port. We don't recommend multiple cache severs for a
              * cache.
              */
-            memberCacheServerPort = Integer.valueOf(cacheServers[0].getPort());
+            memberCacheServerPort = cacheServers[0].getPort();
           }
           allDetails.put(MEMBER_PORT, memberCacheServerPort);
         }
 
       } catch (AdminException e) {
         logger.warn(String.format("Exception occurred for operation: %s for member: %s",
-            new Object[] {"getMemberDetails", memberId}),
+            "getMemberDetails", memberId),
             e);
         throw new OperationsException(e.getMessage());
       } catch (Exception e) {
         logger.warn(String.format("Exception occurred for operation: %s for member: %s",
-            new Object[] {"getMemberDetails", memberId}),
+            "getMemberDetails", memberId),
             e);
         throw new OperationsException(e.getMessage());
       }
@@ -743,15 +742,15 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
    */
   @SuppressWarnings("rawtypes")
   private Map<String, Map<String, ?>> getClientDetails(GemFireMemberStatus snapshot) {
-    Map<String, Map<String, ?>> clientsInfo = new LinkedHashMap<String, Map<String, ?>>();
+    Map<String, Map<String, ?>> clientsInfo = new LinkedHashMap<>();
 
     Set connectedClients = snapshot.getConnectedClients();
     if (!connectedClients.isEmpty()) {
       Map clientHealthStatsMap = snapshot.getClientHealthStats();
 
-      for (Iterator iterator = connectedClients.iterator(); iterator.hasNext();) {
-        Map<String, Object> clientData = new HashMap<String, Object>();
-        String clientId = (String) iterator.next();
+      for (final Object connectedClient : connectedClients) {
+        Map<String, Object> clientData = new HashMap<>();
+        String clientId = (String) connectedClient;
         String host = snapshot.getClientHostName(clientId);
         clientData.put(CLIENT_ID, clientId);
         clientData.put(CLIENT_NAME, extractClientName(clientId, host));
@@ -769,13 +768,13 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
           clientData.put(CLIENT_STATS_UPDATETIME, clientHealthStats.getUpdateTime().getTime());
           clientData.put(CLIENT_STATS_THREADS, clientHealthStats.getNumOfThreads());
         } else {
-          clientData.put(CLIENT_STATS_GETS, Integer.valueOf(0));
-          clientData.put(CLIENT_STATS_PUTS, Integer.valueOf(0));
-          clientData.put(CLIENT_STATS_CACHEMISSES, Integer.valueOf(0));
-          clientData.put(CLIENT_STATS_CPUUSAGE, Long.valueOf(0));
-          clientData.put(CLIENT_STATS_CPUS, Integer.valueOf(0));
-          clientData.put(CLIENT_STATS_UPDATETIME, Long.valueOf(0));
-          clientData.put(CLIENT_STATS_THREADS, Integer.valueOf(0));
+          clientData.put(CLIENT_STATS_GETS, 0);
+          clientData.put(CLIENT_STATS_PUTS, 0);
+          clientData.put(CLIENT_STATS_CACHEMISSES, 0);
+          clientData.put(CLIENT_STATS_CPUUSAGE, 0L);
+          clientData.put(CLIENT_STATS_CPUS, 0);
+          clientData.put(CLIENT_STATS_UPDATETIME, 0L);
+          clientData.put(CLIENT_STATS_THREADS, 0);
         }
 
         clientsInfo.put(clientId, clientData);
@@ -795,7 +794,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
    */
   private Map<String, Map<String, ?>> getAllRegionsDetails(SystemMemberCacheJmxImpl cache,
       Map<String, ObjectName> existingRegionMbeans) throws OperationsException {
-    Map<String, Map<String, ?>> regionsInfo = new TreeMap<String, Map<String, ?>>();
+    Map<String, Map<String, ?>> regionsInfo = new TreeMap<>();
 
     if (cache != null) {
       try {
@@ -836,8 +835,8 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
     if (!fullPath.equals(PLACE_HOLDER_ROOT_REGION)) {
       fullPath = fullPath.substring(PLACE_HOLDER_ROOT_REGION.length() - 1);
       String name = regionSnapshot.getName();
-      Integer entryCount = Integer.valueOf(regionSnapshot.getEntryCount());
-      Map<String, Object> details = new TreeMap<String, Object>();
+      Integer entryCount = regionSnapshot.getEntryCount();
+      Map<String, Object> details = new TreeMap<>();
       details.put(REGION_NAME, name);
       details.put(REGION_PATH, fullPath);
       details.put(REGION_ENTRYCOUNT, entryCount);
@@ -875,8 +874,8 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
 
     Set subRegionSnapshots = regionSnapshot.getSubRegionSnapshots();
 
-    for (Iterator iterator = subRegionSnapshots.iterator(); iterator.hasNext();) {
-      RegionSubRegionSnapshot subRegion = (RegionSubRegionSnapshot) iterator.next();
+    for (final Object subRegionSnapshot : subRegionSnapshots) {
+      RegionSubRegionSnapshot subRegion = (RegionSubRegionSnapshot) subRegionSnapshot;
       collectAllRegionsDetails(cache, subRegion, regionsInfo, existingRegionMbeans);
     }
   }
@@ -966,7 +965,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
    */
   private Map<String, Object> getRequiredStats(SystemMemberJmx member, boolean statSamplingEnabled)
       throws OperationsException {
-    Map<String, Object> statDetails = new TreeMap<String, Object>();
+    Map<String, Object> statDetails = new TreeMap<>();
 
     try {
       if (!statSamplingEnabled) {
@@ -993,22 +992,21 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
         ObjectName[] vmMemoryUsageStats = getExistingStats(member.getId(), "vmHeapMemoryStats");
         ObjectName[] vmStats = getExistingStats(member.getId(), "vmStats");
         ObjectName[] cachePerfStats = getExistingStats(member.getId(), "cachePerfStats");
-        boolean needToReinit = false;
-        if (vmMemoryUsageStats.length == 0 || vmStats.length == 0 || cachePerfStats.length == 0) {
-          // if the StatisticResource MBeans are not created
-          needToReinit = true;
-        }
+        boolean needToReinit =
+            vmMemoryUsageStats.length == 0 || vmStats.length == 0 || cachePerfStats.length == 0;
+        // if the StatisticResource MBeans are not created
         if (!needToReinit) {
           /*
            * To handle a case when the StatisticResource MBeans are created but not registered with
            * RefreshTimer. If VMMemoryUsageStats are present, maxMemory should always be non-zero.
            */
-          for (int i = 0; i < vmMemoryUsageStats.length; i++) {// ideally there should be a single
-                                                               // instance
-            String type = (String) mBeanServer.getAttribute(vmMemoryUsageStats[i], "type");
+          for (final ObjectName vmMemoryUsageStat : vmMemoryUsageStats) {// ideally there should be
+                                                                         // a single
+            // instance
+            String type = (String) mBeanServer.getAttribute(vmMemoryUsageStat, "type");
 
             if ("VMMemoryUsageStats".equals(type)) { // first instance that has Statistics Type name
-              maxMemory = (Number) getAttribute(vmMemoryUsageStats[i], "maxMemory", defaultVal);
+              maxMemory = (Number) getAttribute(vmMemoryUsageStat, "maxMemory", defaultVal);
               break;
             }
           }
@@ -1026,36 +1024,37 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
           cachePerfStats = getExistingStats(member.getId(), "cachePerfStats");
         }
 
-        for (int i = 0; i < vmMemoryUsageStats.length; i++) {// ideally there should be a single
-                                                             // instance
-          String type = (String) mBeanServer.getAttribute(vmMemoryUsageStats[i], "type");
+        for (final ObjectName vmMemoryUsageStat : vmMemoryUsageStats) {// ideally there should be a
+                                                                       // single
+          // instance
+          String type = (String) mBeanServer.getAttribute(vmMemoryUsageStat, "type");
 
           if ("VMMemoryUsageStats".equals(type)) { // first instance that has Statistics Type name
-            maxMemory = (Number) getAttribute(vmMemoryUsageStats[i], "maxMemory", defaultVal);
-            usedMemory = (Number) getAttribute(vmMemoryUsageStats[i], "usedMemory", defaultVal);
+            maxMemory = (Number) getAttribute(vmMemoryUsageStat, "maxMemory", defaultVal);
+            usedMemory = (Number) getAttribute(vmMemoryUsageStat, "usedMemory", defaultVal);
             break;
           }
         }
 
-        for (int i = 0; i < vmStats.length; i++) {// ideally there should be a single instance
-          String type = (String) mBeanServer.getAttribute(vmStats[i], "type");
+        for (final ObjectName vmStat : vmStats) {// ideally there should be a single instance
+          String type = (String) mBeanServer.getAttribute(vmStat, "type");
 
           if ("VMStats".equals(type)) { // first instance that has Statistics Type name
-            processCpuTime = (Number) getAttribute(vmStats[i], "processCpuTime", defaultVal);
-            cpus = (Number) getAttribute(vmStats[i], "cpus", defaultVal);
+            processCpuTime = (Number) getAttribute(vmStat, "processCpuTime", defaultVal);
+            cpus = (Number) getAttribute(vmStat, "cpus", defaultVal);
             break;
           }
         }
 
-        for (int i = 0; i < cachePerfStats.length; i++) {// ideally there should be a single
-                                                         // instance
-          String type = (String) mBeanServer.getAttribute(cachePerfStats[i], "type");
+        for (final ObjectName cachePerfStat : cachePerfStats) {// ideally there should be a single
+          // instance
+          String type = (String) mBeanServer.getAttribute(cachePerfStat, "type");
 
           if ("CachePerfStats".equals(type)) { // first instance that has Statistics Type name
-            gets = (Number) getAttribute(cachePerfStats[i], "gets", defaultVal);
-            getTime = (Number) getAttribute(cachePerfStats[i], "getTime", defaultVal);
-            puts = (Number) getAttribute(cachePerfStats[i], "puts", defaultVal);
-            putTime = (Number) getAttribute(cachePerfStats[i], "putTime", defaultVal);
+            gets = (Number) getAttribute(cachePerfStat, "gets", defaultVal);
+            getTime = (Number) getAttribute(cachePerfStat, "getTime", defaultVal);
+            puts = (Number) getAttribute(cachePerfStat, "puts", defaultVal);
+            putTime = (Number) getAttribute(cachePerfStat, "putTime", defaultVal);
             break;
           }
         }
@@ -1120,7 +1119,7 @@ public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements No
    */
   private Map<String, ObjectName> getExistingRegionMbeansFullPaths(String memberId)
       throws MalformedObjectNameException {
-    Map<String, ObjectName> pathsToObjName = new HashMap<String, ObjectName>();
+    Map<String, ObjectName> pathsToObjName = new HashMap<>();
 
     if (memberId != null && memberId.trim().length() != 0) {
       Object[] params = new Object[] {MBeanUtils.makeCompliantMBeanNameProperty(memberId)};
@@ -1238,7 +1237,7 @@ class NotificationForwarder extends NotificationBroadcasterSupport implements No
   private static final AtomicLong notificationSequenceNumber = new AtomicLong();
 
   /* reference to the MBeanServer instance */
-  private MBeanServer mBeanServer;
+  private final MBeanServer mBeanServer;
 
   /**
    * Default Constructor

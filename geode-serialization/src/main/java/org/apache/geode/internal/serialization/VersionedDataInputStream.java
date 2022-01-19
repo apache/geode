@@ -46,7 +46,7 @@ public class VersionedDataInputStream extends DataInputStream implements Version
    */
   @Override
   public KnownVersion getVersion() {
-    return this.version;
+    return version;
   }
 
   /**
@@ -54,6 +54,6 @@ public class VersionedDataInputStream extends DataInputStream implements Version
    */
   @Override
   public String toString() {
-    return super.toString() + " (" + this.version + ')';
+    return super.toString() + " (" + version + ')';
   }
 }

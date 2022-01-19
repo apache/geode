@@ -57,7 +57,7 @@ public abstract class CollectionUtils {
    */
   @SafeVarargs
   public static <T> List<T> asList(final T... array) {
-    List<T> arrayList = new ArrayList<T>(array.length);
+    List<T> arrayList = new ArrayList<>(array.length);
     Collections.addAll(arrayList, array);
     return arrayList;
   }
@@ -73,7 +73,7 @@ public abstract class CollectionUtils {
    */
   @SafeVarargs
   public static <T> Set<T> asSet(final T... array) {
-    Set<T> arraySet = new HashSet<T>(array.length);
+    Set<T> arraySet = new HashSet<>(array.length);
     Collections.addAll(arraySet, array);
     return arraySet;
   }
@@ -109,7 +109,7 @@ public abstract class CollectionUtils {
    * @return the specified List if not null otherwise return an empty List.
    */
   public static <T> List<T> emptyList(final List<T> list) {
-    return (list != null ? list : Collections.<T>emptyList());
+    return (list != null ? list : Collections.emptyList());
   }
 
   /**
@@ -122,7 +122,7 @@ public abstract class CollectionUtils {
    * @return the specified Set if not null otherwise return an empty Set.
    */
   public static <T> Set<T> emptySet(final Set<T> set) {
-    return (set != null ? set : Collections.<T>emptySet());
+    return (set != null ? set : Collections.emptySet());
   }
 
   /**
@@ -138,7 +138,7 @@ public abstract class CollectionUtils {
    *         is returned.
    */
   public static <T> List<T> findAll(final Collection<T> collection, final Filter<T> filter) {
-    final List<T> matches = new ArrayList<T>(collection.size());
+    final List<T> matches = new ArrayList<>(collection.size());
 
     for (final T element : collection) {
       if (filter.accept(element)) {
@@ -207,12 +207,7 @@ public abstract class CollectionUtils {
    * @see java.util.Map
    */
   public static <K, V> Map<K, V> removeKeysWithNullValues(final Map<K, V> map) {
-    return removeKeys(map, new Filter<Map.Entry<K, V>>() {
-      @Override
-      public boolean accept(final Map.Entry<K, V> entry) {
-        return (entry.getValue() != null);
-      }
-    });
+    return removeKeys(map, entry -> (entry.getValue() != null));
   }
 
   /**
@@ -248,7 +243,7 @@ public abstract class CollectionUtils {
    * @since GemFire 8.1
    */
   public static <T> Iterable<T> unmodifiableIterable(final Iterable<T> iterable) {
-    return new UnmodifiableIterable<T>(iterable);
+    return new UnmodifiableIterable<>(iterable);
   }
 
   /**

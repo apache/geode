@@ -21,7 +21,7 @@ import org.apache.geode.management.GatewayReceiverMXBean;
 public class GatewayReceiverMBean extends NotificationBroadcasterSupport
     implements GatewayReceiverMXBean {
 
-  private GatewayReceiverMBeanBridge bridge;
+  private final GatewayReceiverMBeanBridge bridge;
 
   public GatewayReceiverMBean(GatewayReceiverMBeanBridge bridge) {
     this.bridge = bridge;

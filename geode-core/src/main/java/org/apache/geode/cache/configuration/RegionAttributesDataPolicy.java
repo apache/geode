@@ -77,10 +77,10 @@ public enum RegionAttributesDataPolicy implements Serializable {
   }
 
   public boolean isPersistent() {
-    return this.value.startsWith("persistent");
+    return value.startsWith("persistent");
   }
 
   public boolean isPartition() {
-    return this.value.endsWith("partition");
+    return value.endsWith("partition");
   }
 }

@@ -36,22 +36,22 @@ public class DistributedRestoreSystemProperties extends AbstractDistributedRule 
 
   @Override
   public void before() throws Exception {
-    invoker().invokeInEveryVMAndController(() -> invokeBefore());
+    invoker().invokeInEveryVMAndController(this::invokeBefore);
   }
 
   @Override
   public void after() {
-    invoker().invokeInEveryVMAndController(() -> invokeAfter());
+    invoker().invokeInEveryVMAndController(this::invokeAfter);
   }
 
   @Override
   protected void afterCreateVM(VM vm) {
-    vm.invoke(() -> invokeBefore());
+    vm.invoke(this::invokeBefore);
   }
 
   @Override
   protected void afterBounceVM(VM vm) {
-    vm.invoke(() -> invokeBefore());
+    vm.invoke(this::invokeBefore);
   }
 
   private void invokeBefore() throws Exception {

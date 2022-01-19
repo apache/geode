@@ -39,7 +39,6 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 
-@SuppressWarnings("serial")
 public class ExtensionClusterConfigurationDUnitTest {
 
   @Rule
@@ -102,7 +101,6 @@ public class ExtensionClusterConfigurationDUnitTest {
       assertEquals("value2", mockRegionExtension.getValue());
 
       // MockCacheExtension verification
-      @SuppressWarnings("unchecked")
       // should only be one cache extension
       final MockCacheExtension mockCacheExtension =
           (MockCacheExtension) cache.getExtensionPoint().getExtensions().iterator().next();
@@ -152,7 +150,6 @@ public class ExtensionClusterConfigurationDUnitTest {
       assertTrue(!extensibleRegion.getExtensionPoint().getExtensions().iterator().hasNext());
 
       // MockCacheExtension verification
-      @SuppressWarnings("unchecked")
       final Extensible<Cache> extensibleCache = cache;
       // Should not be any cache extensions
       assertTrue(!extensibleCache.getExtensionPoint().getExtensions().iterator().hasNext());

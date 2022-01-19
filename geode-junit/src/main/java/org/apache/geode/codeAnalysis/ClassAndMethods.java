@@ -24,11 +24,11 @@ import org.apache.geode.codeAnalysis.decode.CompiledMethod;
 
 public class ClassAndMethods implements Comparable {
   public CompiledClass dclass;
-  public Map<String, CompiledMethod> methods = new HashMap<String, CompiledMethod>();
+  public Map<String, CompiledMethod> methods = new HashMap<>();
   public short variableCount;
 
   public ClassAndMethods(CompiledClass parsedClass) {
-    this.dclass = parsedClass;
+    dclass = parsedClass;
   }
 
   @Override

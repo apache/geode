@@ -82,8 +82,8 @@ public class ConcurrentHashMapIteratorJUnitTest {
   private static class RandomMutations extends Thread {
     private final ConcurrentMap baselineMap;
     private final ConcurrentMap testMap;
-    private int start;
-    private int end;
+    private final int start;
+    private final int end;
     private volatile boolean done;
 
     public RandomMutations(ConcurrentMap baselineMap, ConcurrentMap testMap, int start, int end) {
@@ -110,8 +110,8 @@ public class ConcurrentHashMapIteratorJUnitTest {
     }
 
     public void cancel() throws InterruptedException {
-      this.done = true;
-      this.join();
+      done = true;
+      join();
     }
   }
 }

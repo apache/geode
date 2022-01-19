@@ -62,7 +62,7 @@ public class HARegionQueueStartStopJUnitTest {
     try {
       HARegionQueue.getDispatchedMessagesMapForTesting();
       fail("Expected NullPointerException to occur but did not occur");
-    } catch (NullPointerException e) {
+    } catch (NullPointerException ignored) {
     }
 
     HARegionQueue.startHAServices(cache);
@@ -72,7 +72,7 @@ public class HARegionQueueStartStopJUnitTest {
     try {
       HARegionQueue.getDispatchedMessagesMapForTesting();
       fail("Expected NullPointerException to occur but did not occur");
-    } catch (NullPointerException e) {
+    } catch (NullPointerException ignored) {
     }
 
     createCache();
@@ -80,7 +80,7 @@ public class HARegionQueueStartStopJUnitTest {
     try {
       HARegionQueue.getDispatchedMessagesMapForTesting();
       fail("Expected NullPointerException to occur but did not occur");
-    } catch (NullPointerException e) {
+    } catch (NullPointerException ignored) {
     }
   }
 }

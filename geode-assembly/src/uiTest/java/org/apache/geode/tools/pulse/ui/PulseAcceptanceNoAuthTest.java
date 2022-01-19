@@ -89,6 +89,6 @@ public class PulseAcceptanceNoAuthTest extends PulseAcceptanceTestBase {
 
   @Override
   public Cluster getCluster() {
-    return this.cluster;
+    return cluster;
   }
 }

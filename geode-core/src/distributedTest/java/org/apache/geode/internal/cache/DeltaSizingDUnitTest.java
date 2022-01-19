@@ -87,44 +87,36 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
 
 
   private void doPeerTest(final boolean clone, final boolean copyOnRead) throws Exception {
-    AccessorFactory factory = new AccessorFactory() {
-
-      @Override
-      public Region<Integer, TestDelta> createRegion(Host host, Cache cache, int port1, int port2) {
-        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<Integer, TestDelta>();
-        attr.setCloningEnabled(clone);
-        PartitionAttributesFactory<Integer, TestDelta> paf =
-            new PartitionAttributesFactory<Integer, TestDelta>();
-        paf.setRedundantCopies(1);
-        paf.setLocalMaxMemory(0);
-        PartitionAttributes<Integer, TestDelta> prAttr = paf.create();
-        attr.setPartitionAttributes(prAttr);
-        attr.setDataPolicy(DataPolicy.PARTITION);
-        Region<Integer, TestDelta> region = cache.createRegion("region1", attr.create());
-        return region;
-      }
+    AccessorFactory factory = (host, cache, port1, port2) -> {
+      AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<>();
+      attr.setCloningEnabled(clone);
+      PartitionAttributesFactory<Integer, TestDelta> paf =
+          new PartitionAttributesFactory<>();
+      paf.setRedundantCopies(1);
+      paf.setLocalMaxMemory(0);
+      PartitionAttributes<Integer, TestDelta> prAttr = paf.create();
+      attr.setPartitionAttributes(prAttr);
+      attr.setDataPolicy(DataPolicy.PARTITION);
+      Region<Integer, TestDelta> region = cache.createRegion("region1", attr.create());
+      return region;
     };
 
     doTest(factory, clone, copyOnRead);
   }
 
   private void doClientTest(final boolean clone, final boolean copyOnRead) throws Exception {
-    AccessorFactory factory = new AccessorFactory() {
-
-      @Override
-      public Region<Integer, TestDelta> createRegion(Host host, Cache cache, int port1, int port2) {
-        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<Integer, TestDelta>();
-        PoolFactory pf = PoolManager.createFactory();
-        pf.addServer(NetworkUtils.getServerHostName(host), port1);
-        pf.addServer(NetworkUtils.getServerHostName(host), port2);
-        pf.create("pool");
-        attr.setCloningEnabled(clone);
-        attr.setDataPolicy(DataPolicy.EMPTY);
-        attr.setScope(Scope.LOCAL);
-        attr.setPoolName("pool");
-        Region<Integer, TestDelta> region = cache.createRegion("region1", attr.create());
-        return region;
-      }
+    AccessorFactory factory = (host, cache, port1, port2) -> {
+      AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<>();
+      PoolFactory pf = PoolManager.createFactory();
+      pf.addServer(NetworkUtils.getServerHostName(host), port1);
+      pf.addServer(NetworkUtils.getServerHostName(host), port2);
+      pf.create("pool");
+      attr.setCloningEnabled(clone);
+      attr.setDataPolicy(DataPolicy.EMPTY);
+      attr.setScope(Scope.LOCAL);
+      attr.setPoolName("pool");
+      Region<Integer, TestDelta> region = cache.createRegion("region1", attr.create());
+      return region;
     };
 
     doTest(factory, clone, copyOnRead);
@@ -171,7 +163,7 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
         int port = AvailablePortHelper.getRandomAvailableTCPPort();
         server.setPort(port);
         server.start();
-        return Integer.valueOf(port);
+        return port;
       }
     };
 
@@ -184,14 +176,14 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
         Cache cache = getCache();
         cache.setCopyOnRead(copyOnRead);
         Region<Integer, TestDelta> region =
-            accessorFactory.createRegion(host, cache, port1.intValue(), port2.intValue());
+            accessorFactory.createRegion(host, cache, port1, port2);
         // This call just creates a bucket. We do an extra serialization on entries that trigger
         // bucket creation. Thats a bug that should get fixed, but for now it's throwing off my
         // assertions. So I'll force the creation of the bucket
-        region.put(new Integer(113), new TestDelta(false, "bogus"));
+        region.put(113, new TestDelta(false, "bogus"));
 
         // Now put an entry in that we will modify
-        region.put(new Integer(0), new TestDelta(false, "initial"));
+        region.put(0, new TestDelta(false, "initial"));
       }
     };
 
@@ -208,7 +200,7 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
       public void run() {
         Cache cache = getCache();
         Region<Object, TestDelta> region = cache.getRegion("region1");
-        region.put(new Integer(0), new TestDelta(true, "changedAAAAAAAA"));
+        region.put(0, new TestDelta(true, "changedAAAAAAAA"));
       }
     });
 
@@ -231,7 +223,7 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
       public void run() {
         Cache cache = getCache();
         Region<Object, TestDelta> region = cache.getRegion("region1");
-        region.put(new Integer(0), new TestDelta(true, "changedBBBBBBB"));
+        region.put(0, new TestDelta(true, "changedBBBBBBB"));
       }
     });
 
@@ -257,16 +249,16 @@ public class DeltaSizingDUnitTest extends JUnit4CacheTestCase {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         PartitionedRegion region = (PartitionedRegion) cache.getRegion("region1");
         long size = region.getDataStore().getBucketSize(0);
-        TestDelta value = (TestDelta) region.get(Integer.valueOf(0));
+        TestDelta value = (TestDelta) region.get(0);
         value.checkFields(serializations, deserializations, deltas, clones);
-        return Long.valueOf(size);
+        return size;
       }
     };
     Object size = vm.invoke(getSize);
-    return ((Long) size).longValue();
+    return (Long) size;
   }
 
-  private static interface AccessorFactory extends Serializable {
+  private interface AccessorFactory extends Serializable {
     Region<Integer, TestDelta> createRegion(Host host, Cache cache, int port1, int port2);
   }
 

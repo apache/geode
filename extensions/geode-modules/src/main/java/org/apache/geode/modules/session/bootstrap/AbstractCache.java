@@ -81,7 +81,7 @@ public abstract class AbstractCache {
   protected static AbstractCache instance = null;
 
   AbstractCache() {
-    this.gemfireProperties = new ConcurrentHashMap<>();
+    gemfireProperties = new ConcurrentHashMap<>();
   }
 
   public void lifecycleEvent(LifecycleTypeAdapter eventType) {
@@ -119,7 +119,7 @@ public abstract class AbstractCache {
   }
 
   public GemFireCache getCache() {
-    return this.cache;
+    return cache;
   }
 
   private String getLogFileName() {
@@ -159,7 +159,7 @@ public abstract class AbstractCache {
   }
 
   public float getEvictionHeapPercentage() {
-    return this.evictionHeapPercentage;
+    return evictionHeapPercentage;
   }
 
   public void setEvictionHeapPercentage(String evictionHeapPercentage) {
@@ -167,7 +167,7 @@ public abstract class AbstractCache {
   }
 
   public float getCriticalHeapPercentage() {
-    return this.criticalHeapPercentage;
+    return criticalHeapPercentage;
   }
 
   public void setCriticalHeapPercentage(String criticalHeapPercentage) {
@@ -179,11 +179,11 @@ public abstract class AbstractCache {
   }
 
   public boolean getRebalance() {
-    return this.rebalance;
+    return rebalance;
   }
 
   private Map<String, String> getGemFireProperties() {
-    return this.gemfireProperties;
+    return gemfireProperties;
   }
 
   public void setProperty(String name, String value) {
@@ -206,7 +206,7 @@ public abstract class AbstractCache {
 
     // If it is a valid GemFire property, add it to the GemFire properties, log a warning otherwise.
     if (validProperty) {
-      this.gemfireProperties.put(name, value);
+      gemfireProperties.put(name, value);
     } else {
       getLogger().warn("The input property named " + name
           + " is not a valid GemFire property. It is being ignored.");
@@ -221,7 +221,7 @@ public abstract class AbstractCache {
     Properties properties = new Properties();
 
     // Add any additional gemfire properties
-    properties.putAll(this.gemfireProperties);
+    properties.putAll(gemfireProperties);
 
     // Replace the cache xml file in the properties
     File cacheXmlFile = getCacheXmlFile();
@@ -383,7 +383,7 @@ public abstract class AbstractCache {
   @Override
   public String toString() {
     return getClass().getSimpleName() + "[" + "cache="
-        + this.cache + "]";
+        + cache + "]";
   }
 
   protected abstract void createOrRetrieveCache();

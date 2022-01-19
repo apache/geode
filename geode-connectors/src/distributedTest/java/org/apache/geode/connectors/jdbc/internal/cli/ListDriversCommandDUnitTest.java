@@ -89,7 +89,7 @@ public class ListDriversCommandDUnitTest {
   }
 
   private File loadTestResource(String fileName) {
-    String filePath = ResourceUtils.getResource(this.getClass(), fileName).getPath();
+    String filePath = ResourceUtils.getResource(getClass(), fileName).getPath();
     Assertions.assertThat(filePath).isNotNull();
 
     return new File(filePath);

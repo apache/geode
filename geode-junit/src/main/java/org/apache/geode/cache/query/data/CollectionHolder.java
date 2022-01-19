@@ -33,12 +33,12 @@ import org.apache.geode.DataSerializer;
 public class CollectionHolder implements Serializable, DataSerializable {
 
   public String[] arr;
-  public static String secIds[] = {"SUN", "IBM", "YHOO", "GOOG", "MSFT", "AOL", "APPL", "ORCL",
+  public static String[] secIds = {"SUN", "IBM", "YHOO", "GOOG", "MSFT", "AOL", "APPL", "ORCL",
       "SAP", "DELL", "RHAT", "NOVL", "HP"};
 
   /** Creates a new instance of CollectionHolder */
   public CollectionHolder() {
-    this.arr = new String[10];
+    arr = new String[10];
     for (int i = 0; i < 5; i++) {
       arr[i] = "" + i;
     }
@@ -49,17 +49,17 @@ public class CollectionHolder implements Serializable, DataSerializable {
   }
 
   public String[] getArr() {
-    return this.arr;
+    return arr;
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.arr = DataSerializer.readStringArray(in);
+    arr = DataSerializer.readStringArray(in);
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeStringArray(this.arr, out);
+    DataSerializer.writeStringArray(arr, out);
   }
 
   @Override
@@ -82,10 +82,7 @@ public class CollectionHolder implements Serializable, DataSerializable {
       return false;
     }
     CollectionHolder other = (CollectionHolder) obj;
-    if (!Arrays.equals(arr, other.arr)) {
-      return false;
-    }
-    return true;
+    return Arrays.equals(arr, other.arr);
   }
 
 }

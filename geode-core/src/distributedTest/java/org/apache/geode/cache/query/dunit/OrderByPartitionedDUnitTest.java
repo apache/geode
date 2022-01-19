@@ -88,10 +88,10 @@ public class OrderByPartitionedDUnitTest extends JUnit4CacheTestCase {
     final VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
-    Cache cache = this.getCache();
+    Cache cache = getCache();
     OrderByPartitionedJUnitTestBase test = createTestInstance();
     test.testOrderByWithIndexResultDefaultProjection();
-    this.closeCache(vm0, vm1, vm2, vm3);
+    closeCache(vm0, vm1, vm2, vm3);
   }
 
   @Test
@@ -101,10 +101,10 @@ public class OrderByPartitionedDUnitTest extends JUnit4CacheTestCase {
     final VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
-    Cache cache = this.getCache();
+    Cache cache = getCache();
     OrderByPartitionedJUnitTestBase test = createTestInstance();
     test.testOrderByWithIndexResultWithProjection();
-    this.closeCache(vm0, vm1, vm2, vm3);
+    closeCache(vm0, vm1, vm2, vm3);
   }
 
   @Test
@@ -114,10 +114,10 @@ public class OrderByPartitionedDUnitTest extends JUnit4CacheTestCase {
     final VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
-    Cache cache = this.getCache();
+    Cache cache = getCache();
     OrderByPartitionedJUnitTestBase test = createTestInstance();
     test.testMultiColOrderByWithIndexResultDefaultProjection();
-    this.closeCache(vm0, vm1, vm2, vm3);
+    closeCache(vm0, vm1, vm2, vm3);
   }
 
   @Test
@@ -127,10 +127,10 @@ public class OrderByPartitionedDUnitTest extends JUnit4CacheTestCase {
     final VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
-    Cache cache = this.getCache();
+    Cache cache = getCache();
     OrderByPartitionedJUnitTestBase test = createTestInstance();
     test.testMultiColOrderByWithIndexResultWithProjection();
-    this.closeCache(vm0, vm1, vm2, vm3);
+    closeCache(vm0, vm1, vm2, vm3);
   }
 
   @Test
@@ -140,10 +140,10 @@ public class OrderByPartitionedDUnitTest extends JUnit4CacheTestCase {
     final VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
-    Cache cache = this.getCache();
+    Cache cache = getCache();
     OrderByPartitionedJUnitTestBase test = createTestInstance();
     test.testMultiColOrderByWithMultiIndexResultDefaultProjection();
-    this.closeCache(vm0, vm1, vm2, vm3);
+    closeCache(vm0, vm1, vm2, vm3);
   }
 
   @Test
@@ -153,10 +153,10 @@ public class OrderByPartitionedDUnitTest extends JUnit4CacheTestCase {
     final VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
-    Cache cache = this.getCache();
+    Cache cache = getCache();
     OrderByPartitionedJUnitTestBase test = createTestInstance();
     test.testMultiColOrderByWithMultiIndexResultProjection();
-    this.closeCache(vm0, vm1, vm2, vm3);
+    closeCache(vm0, vm1, vm2, vm3);
   }
 
   @Test
@@ -166,10 +166,10 @@ public class OrderByPartitionedDUnitTest extends JUnit4CacheTestCase {
     final VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
-    Cache cache = this.getCache();
+    Cache cache = getCache();
     OrderByPartitionedJUnitTestBase test = createTestInstance();
     test.testLimitNotAppliedIfOrderByNotUsingIndex();
-    this.closeCache(vm0, vm1, vm2, vm3);
+    closeCache(vm0, vm1, vm2, vm3);
   }
 
   @Test
@@ -179,10 +179,10 @@ public class OrderByPartitionedDUnitTest extends JUnit4CacheTestCase {
     final VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
-    Cache cache = this.getCache();
+    Cache cache = getCache();
     OrderByPartitionedJUnitTestBase test = createTestInstance();
     test.testOrderByWithNullValuesUseIndex();
-    this.closeCache(vm0, vm1, vm2, vm3);
+    closeCache(vm0, vm1, vm2, vm3);
   }
 
   @Test
@@ -192,10 +192,10 @@ public class OrderByPartitionedDUnitTest extends JUnit4CacheTestCase {
     final VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
-    Cache cache = this.getCache();
+    Cache cache = getCache();
     OrderByPartitionedJUnitTestBase test = createTestInstance();
     test.testOrderByForUndefined();
-    this.closeCache(vm0, vm1, vm2, vm3);
+    closeCache(vm0, vm1, vm2, vm3);
   }
 
   @Test
@@ -205,10 +205,10 @@ public class OrderByPartitionedDUnitTest extends JUnit4CacheTestCase {
     final VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
-    Cache cache = this.getCache();
+    Cache cache = getCache();
     OrderByPartitionedJUnitTestBase test = createTestInstance();
     test.testOrderedResultsPartitionedRegion_Bug43514_1();
-    this.closeCache(vm0, vm1, vm2, vm3);
+    closeCache(vm0, vm1, vm2, vm3);
   }
 
   @Test
@@ -218,10 +218,10 @@ public class OrderByPartitionedDUnitTest extends JUnit4CacheTestCase {
     final VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
-    Cache cache = this.getCache();
+    Cache cache = getCache();
     OrderByPartitionedJUnitTestBase test = createTestInstance();
     test.testOrderedResultsPartitionedRegion_Bug43514_2();
-    this.closeCache(vm0, vm1, vm2, vm3);
+    closeCache(vm0, vm1, vm2, vm3);
   }
 
   @Test
@@ -231,10 +231,10 @@ public class OrderByPartitionedDUnitTest extends JUnit4CacheTestCase {
     final VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
-    Cache cache = this.getCache();
+    Cache cache = getCache();
     OrderByPartitionedJUnitTestBase test = createTestInstance();
     test.testOrderByWithNullValues();
-    this.closeCache(vm0, vm1, vm2, vm3);
+    closeCache(vm0, vm1, vm2, vm3);
   }
 
   private void createBuckets(VM vm) {

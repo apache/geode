@@ -39,7 +39,7 @@ public class DiskLruRegRecoveryJUnitTest extends DiskRegionTestingBase {
     int valuesInVm = 0;
     for (int i = 0; i < size; i++) {
       try {
-        Object value = ((LocalRegion) region).getValueInVM(new Integer(i));
+        Object value = ((LocalRegion) region).getValueInVM(i);
         if (value != null) {
           valuesInVm++;
         }
@@ -83,9 +83,9 @@ public class DiskLruRegRecoveryJUnitTest extends DiskRegionTestingBase {
     }
 
     for (int i = 0; i < load; i++) {
-      region.put(new Integer(i), new Integer(i));
+      region.put(i, i);
       if (nonLruRegion != null) {
-        nonLruRegion.put(new Integer(i), new Integer(i));
+        nonLruRegion.put(i, i);
       }
     }
 
@@ -256,8 +256,8 @@ public class DiskLruRegRecoveryJUnitTest extends DiskRegionTestingBase {
     diskProps.setPersistBackup(true);
     diskProps.setRegionName("basicVerifyStats");
     region = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache, diskProps);
-    region.put(key, new Integer(1));
-    region.put(key, new Integer(2));
+    region.put(key, 1);
+    region.put(key, 2);
     region.close();
 
     final CountDownLatch recoveryDone = new CountDownLatch(1);

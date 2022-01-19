@@ -51,7 +51,7 @@ public class VersionedObjectOutput implements ObjectOutput, VersionedDataStream 
    */
   @Override
   public KnownVersion getVersion() {
-    return this.version;
+    return version;
   }
 
   /**
@@ -59,7 +59,7 @@ public class VersionedObjectOutput implements ObjectOutput, VersionedDataStream 
    */
   @Override
   public void write(int b) throws IOException {
-    this.out.write(b);
+    out.write(b);
   }
 
   /**
@@ -67,7 +67,7 @@ public class VersionedObjectOutput implements ObjectOutput, VersionedDataStream 
    */
   @Override
   public void write(byte[] b) throws IOException {
-    this.out.write(b);
+    out.write(b);
   }
 
   /**
@@ -75,7 +75,7 @@ public class VersionedObjectOutput implements ObjectOutput, VersionedDataStream 
    */
   @Override
   public void write(byte[] b, int off, int len) throws IOException {
-    this.out.write(b, off, len);
+    out.write(b, off, len);
   }
 
   /**
@@ -83,7 +83,7 @@ public class VersionedObjectOutput implements ObjectOutput, VersionedDataStream 
    */
   @Override
   public void writeBoolean(boolean v) throws IOException {
-    this.out.writeBoolean(v);
+    out.writeBoolean(v);
   }
 
   /**
@@ -91,7 +91,7 @@ public class VersionedObjectOutput implements ObjectOutput, VersionedDataStream 
    */
   @Override
   public void writeByte(int v) throws IOException {
-    this.out.writeByte(v);
+    out.writeByte(v);
   }
 
   /**
@@ -99,7 +99,7 @@ public class VersionedObjectOutput implements ObjectOutput, VersionedDataStream 
    */
   @Override
   public void writeShort(int v) throws IOException {
-    this.out.writeShort(v);
+    out.writeShort(v);
   }
 
   /**
@@ -107,7 +107,7 @@ public class VersionedObjectOutput implements ObjectOutput, VersionedDataStream 
    */
   @Override
   public void writeChar(int v) throws IOException {
-    this.out.writeChar(v);
+    out.writeChar(v);
   }
 
   /**
@@ -115,7 +115,7 @@ public class VersionedObjectOutput implements ObjectOutput, VersionedDataStream 
    */
   @Override
   public void writeInt(int v) throws IOException {
-    this.out.writeInt(v);
+    out.writeInt(v);
   }
 
   /**
@@ -123,7 +123,7 @@ public class VersionedObjectOutput implements ObjectOutput, VersionedDataStream 
    */
   @Override
   public void writeLong(long v) throws IOException {
-    this.out.writeLong(v);
+    out.writeLong(v);
   }
 
   /**
@@ -131,7 +131,7 @@ public class VersionedObjectOutput implements ObjectOutput, VersionedDataStream 
    */
   @Override
   public void writeFloat(float v) throws IOException {
-    this.out.writeFloat(v);
+    out.writeFloat(v);
   }
 
   /**
@@ -139,7 +139,7 @@ public class VersionedObjectOutput implements ObjectOutput, VersionedDataStream 
    */
   @Override
   public void writeDouble(double v) throws IOException {
-    this.out.writeDouble(v);
+    out.writeDouble(v);
   }
 
   /**
@@ -147,7 +147,7 @@ public class VersionedObjectOutput implements ObjectOutput, VersionedDataStream 
    */
   @Override
   public void writeBytes(String s) throws IOException {
-    this.out.writeBytes(s);
+    out.writeBytes(s);
   }
 
   /**
@@ -155,7 +155,7 @@ public class VersionedObjectOutput implements ObjectOutput, VersionedDataStream 
    */
   @Override
   public void writeChars(String s) throws IOException {
-    this.out.writeChars(s);
+    out.writeChars(s);
   }
 
   /**
@@ -163,7 +163,7 @@ public class VersionedObjectOutput implements ObjectOutput, VersionedDataStream 
    */
   @Override
   public void writeUTF(String s) throws IOException {
-    this.out.writeUTF(s);
+    out.writeUTF(s);
   }
 
   /**
@@ -171,7 +171,7 @@ public class VersionedObjectOutput implements ObjectOutput, VersionedDataStream 
    */
   @Override
   public void writeObject(Object obj) throws IOException {
-    this.out.writeObject(obj);
+    out.writeObject(obj);
   }
 
   /**
@@ -179,7 +179,7 @@ public class VersionedObjectOutput implements ObjectOutput, VersionedDataStream 
    */
   @Override
   public void flush() throws IOException {
-    this.out.flush();
+    out.flush();
   }
 
   /**
@@ -187,6 +187,6 @@ public class VersionedObjectOutput implements ObjectOutput, VersionedDataStream 
    */
   @Override
   public void close() throws IOException {
-    this.out.close();
+    out.close();
   }
 }

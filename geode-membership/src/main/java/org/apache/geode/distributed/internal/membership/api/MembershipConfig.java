@@ -134,7 +134,7 @@ public interface MembershipConfig {
 
   default String getBindAddress() {
     return DEFAULT_BIND_ADDRESS;
-  };
+  }
 
   default String getSecurityPeerAuthInit() {
     return DEFAULT_SECURITY_PEER_AUTH_INIT;

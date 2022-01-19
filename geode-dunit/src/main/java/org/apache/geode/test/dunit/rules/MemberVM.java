@@ -32,7 +32,7 @@ import org.apache.geode.test.junit.rules.Server;
 import org.apache.geode.test.junit.rules.VMProvider;
 
 public class MemberVM extends VMProvider implements Member {
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
   protected Member member;
   protected VM vm;
 
@@ -117,7 +117,7 @@ public class MemberVM extends VMProvider implements Member {
             @Override
             public void reconnecting(InternalDistributedSystem oldSystem) {
               await().atMost(timeout, timeUnit)
-                  .until(() -> (boolean) server1BB.getMailbox(reconnectBBKey));
+                  .until(() -> server1BB.getMailbox(reconnectBBKey));
             }
 
             @Override

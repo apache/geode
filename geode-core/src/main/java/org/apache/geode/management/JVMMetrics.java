@@ -30,37 +30,37 @@ public class JVMMetrics implements Serializable {
   /**
    * Number of GCs performed
    */
-  private long gcCount;
+  private final long gcCount;
 
   /**
    * Total gc time in milliseconds
    */
-  private long gcTimeMillis;
+  private final long gcTimeMillis;
 
   /**
    * Initial memory the vm requested from the operating system for this area in bytes
    */
-  private long initMemory;
+  private final long initMemory;
 
   /**
    * The amount of used memory for this area, measured in bytes
    */
-  private long committedMemory;
+  private final long committedMemory;
 
   /**
    * The amount of used memory for this area, measured in bytes
    */
-  private long usedMemory;
+  private final long usedMemory;
 
   /**
    * represents the maximum amount of memory (in bytes) that can be used for memory management
    */
-  private long maxMemory;
+  private final long maxMemory;
 
   /**
    * Total number of threads
    */
-  private int totalThreads;
+  private final int totalThreads;
 
   /**
    * This constructor is to be used by internal JMX framework only. User should not try to create an

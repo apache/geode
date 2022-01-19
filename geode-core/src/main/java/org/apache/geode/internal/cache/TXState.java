@@ -144,11 +144,11 @@ public class TXState implements TXStateInterface {
   protected TXCommitMessage commitMessage = null;
   ClientProxyMembershipID bridgeContext = null;
   /** keeps track of events, so as not to re-apply events */
-  protected Set<EventID> seenEvents = new HashSet<EventID>();
+  protected Set<EventID> seenEvents = new HashSet<>();
   /** keeps track of results of txPutEntry */
-  private Map<EventID, Boolean> seenResults = new HashMap<>();
+  private final Map<EventID, Boolean> seenResults = new HashMap<>();
   /** keeps track of TransactionDataRebalancedException during txPutEntry */
-  private Map<EventID, TransactionDataRebalancedException> eventExceptions = new HashMap<>();
+  private final Map<EventID, TransactionDataRebalancedException> eventExceptions = new HashMap<>();
 
   @Immutable
   static final TXEntryState ENTRY_EXISTS = new TXEntryState();
@@ -164,16 +164,16 @@ public class TXState implements TXStateInterface {
 
   public TXState(TXStateProxy proxy, boolean onBehalfOfRemoteStub,
       SingleThreadJTAExecutor singleThreadJTAExecutor, StatisticsClock statisticsClock) {
-    this.beginTime = statisticsClock.getTime();
-    this.regions = new IdentityHashMap<>();
+    beginTime = statisticsClock.getTime();
+    regions = new IdentityHashMap<>();
 
-    this.internalAfterConflictCheck = null;
-    this.internalAfterApplyChanges = null;
-    this.internalAfterReleaseLocalLocks = null;
-    this.internalDuringIndividualSend = null;
-    this.internalAfterIndividualSend = null;
-    this.internalBeforeSend = null;
-    this.internalAfterSend = null;
+    internalAfterConflictCheck = null;
+    internalAfterApplyChanges = null;
+    internalAfterReleaseLocalLocks = null;
+    internalDuringIndividualSend = null;
+    internalAfterIndividualSend = null;
+    internalBeforeSend = null;
+    internalAfterSend = null;
     this.proxy = proxy;
     this.onBehalfOfRemoteStub = onBehalfOfRemoteStub;
     this.singleThreadJTAExecutor = singleThreadJTAExecutor;
@@ -185,27 +185,27 @@ public class TXState implements TXStateInterface {
     if (event.getEventId() == null) {
       return false;
     }
-    return this.seenEvents.contains(event.getEventId());
+    return seenEvents.contains(event.getEventId());
   }
 
   private void recordEvent(EntryEventImpl event) {
     assert event != null;
     if (event.getEventId() != null) {
-      this.seenEvents.add(event.getEventId());
+      seenEvents.add(event.getEventId());
     }
   }
 
   void recordEventAndResult(EntryEventImpl event, boolean result) {
     recordEvent(event);
     if (event.getEventId() != null) {
-      this.seenResults.put(event.getEventId(), result);
+      seenResults.put(event.getEventId(), result);
     }
   }
 
   boolean getRecordedResult(EntryEventImpl event) {
     assert event != null;
-    assert this.seenResults.containsKey(event.getEventId());
-    return this.seenResults.get(event.getEventId());
+    assert seenResults.containsKey(event.getEventId());
+    return seenResults.get(event.getEventId());
   }
 
   void recordEventException(EntryEventImpl event,
@@ -225,10 +225,8 @@ public class TXState implements TXStateInterface {
 
   @Override
   public String toString() {
-    StringBuilder builder = new StringBuilder();
-    builder.append(this.getClass()).append("@").append(System.identityHashCode(this))
-        .append(" onBehalfOfRemoteStub:").append(this.onBehalfOfRemoteStub);
-    return builder.toString();
+    return getClass() + "@" + System.identityHashCode(this)
+        + " onBehalfOfRemoteStub:" + onBehalfOfRemoteStub;
   }
 
   /*
@@ -238,7 +236,7 @@ public class TXState implements TXStateInterface {
    */
   @Override
   public TransactionId getTransactionId() {
-    return this.proxy.getTxId();
+    return proxy.getTxId();
   }
 
   public void firePendingCallbacks() {
@@ -291,12 +289,12 @@ public class TXState implements TXStateInterface {
    */
   @Override
   public TXRegionState readRegion(InternalRegion r) {
-    return this.regions.get(r);
+    return regions.get(r);
   }
 
   @Override
   public void rmRegion(LocalRegion r) {
-    TXRegionState txr = this.regions.remove(r);
+    TXRegionState txr = regions.remove(r);
     if (txr != null) {
       txr.cleanup(r);
     }
@@ -318,7 +316,7 @@ public class TXState implements TXStateInterface {
       } else {
         result = new TXRegionState(r, this);
       }
-      this.regions.put(r, result);
+      regions.put(r, result);
     }
     if (logger.isDebugEnabled()) {
       logger.debug("TXState writeRegion flag {} region-state {} ", false,
@@ -334,7 +332,7 @@ public class TXState implements TXStateInterface {
    */
   @Override
   public long getBeginTime() {
-    return this.beginTime;
+    return beginTime;
   }
 
   /*
@@ -345,9 +343,7 @@ public class TXState implements TXStateInterface {
   @Override
   public int getChanges() {
     int changes = 0;
-    Iterator<TXRegionState> it = this.regions.values().iterator();
-    while (it.hasNext()) {
-      TXRegionState txrs = it.next();
+    for (final TXRegionState txrs : regions.values()) {
       changes += txrs.getChanges();
     }
     return changes;
@@ -360,7 +356,7 @@ public class TXState implements TXStateInterface {
    */
   @Override
   public boolean isInProgress() {
-    return !this.closed;
+    return !closed;
   }
 
   /*
@@ -370,8 +366,8 @@ public class TXState implements TXStateInterface {
    */
   @Override
   public int nextModSerialNum() {
-    this.modSerialNum += 1;
-    return this.modSerialNum;
+    modSerialNum += 1;
+    return modSerialNum;
   }
 
   /*
@@ -381,39 +377,39 @@ public class TXState implements TXStateInterface {
    */
   @Override
   public boolean needsLargeModCount() {
-    return this.modSerialNum > Byte.MAX_VALUE;
+    return modSerialNum > Byte.MAX_VALUE;
   }
 
   protected void reserveAndCheck() throws CommitConflictException {
-    if (this.closed) {
+    if (closed) {
       return;
     }
 
     final long conflictStart = statisticsClock.getTime();
-    this.locks = createLockRequest();
-    this.locks.obtain(getCache().getInternalDistributedSystem());
+    locks = createLockRequest();
+    locks.obtain(getCache().getInternalDistributedSystem());
     // for now check account the dlock service time
     // later this stat end should be moved to a finally block
     if (statisticsClock.isEnabled()) {
-      this.proxy.getTxMgr().getCachePerfStats()
+      proxy.getTxMgr().getCachePerfStats()
           .incTxConflictCheckTime(statisticsClock.getTime() - conflictStart);
     }
-    if (this.internalAfterReservation != null) {
-      this.internalAfterReservation.run();
+    if (internalAfterReservation != null) {
+      internalAfterReservation.run();
     }
     checkForConflicts();
   }
 
   byte[] getBaseMembershipId() {
-    return this.baseMembershipId;
+    return baseMembershipId;
   }
 
   long getBaseThreadId() {
-    return this.baseThreadId;
+    return baseThreadId;
   }
 
   long getBaseSequenceId() {
-    return this.baseSequenceId;
+    return baseSequenceId;
   }
 
   @Override
@@ -431,15 +427,15 @@ public class TXState implements TXStateInterface {
    */
   @Override
   public void commit() throws CommitConflictException {
-    if (this.closed) {
+    if (closed) {
       return;
     }
 
     if (logger.isDebugEnabled()) {
       logger.debug("committing transaction {}", getTransactionId());
     }
-    synchronized (this.completionGuard) {
-      this.completionStarted = true;
+    synchronized (completionGuard) {
+      completionStarted = true;
     }
 
     if (onBehalfOfRemoteStub && !proxy.isCommitOnBehalfOfRemoteStub()) {
@@ -455,26 +451,24 @@ public class TXState implements TXStateInterface {
         lockBucketRegions();
       } catch (PrimaryBucketException pbe) {
         // not sure what to do here yet
-        RuntimeException re = new TransactionDataRebalancedException(
-            "Transactional data moved, due to rebalancing.");
-        re.initCause(pbe);
-        throw re;
+        throw new TransactionDataRebalancedException(
+            "Transactional data moved, due to rebalancing.", pbe);
       }
 
-      if (this.locks == null) {
+      if (locks == null) {
         reserveAndCheck();
       }
 
       // For internal testing
-      if (this.internalAfterConflictCheck != null) {
-        this.internalAfterConflictCheck.run();
+      if (internalAfterConflictCheck != null) {
+        internalAfterConflictCheck.run();
       }
 
       /*
        * If there is a TransactionWriter plugged in, we need to to give it an opportunity to cleanup
        * the transaction.
        */
-      TransactionWriter writer = this.proxy.getTxMgr().getWriter();
+      TransactionWriter writer = proxy.getTxMgr().getWriter();
       if (!firedWriter && writer != null) {
         try {
           firedWriter = true;
@@ -522,23 +516,23 @@ public class TXState implements TXStateInterface {
           // apply changes to the cache
           applyChanges(entries);
           // For internal testing
-          if (this.internalAfterApplyChanges != null) {
-            this.internalAfterApplyChanges.run();
+          if (internalAfterApplyChanges != null) {
+            internalAfterApplyChanges.run();
           }
 
           attachFilterProfileInformation(entries);
 
           // build and send the message
           msg = buildMessage();
-          this.commitMessage = msg;
-          if (this.internalBeforeSend != null) {
-            this.internalBeforeSend.run();
+          commitMessage = msg;
+          if (internalBeforeSend != null) {
+            internalBeforeSend.run();
           }
 
-          msg.send(this.locks.getDistributedLockId());
+          msg.send(locks.getDistributedLockId());
           // For internal testing
-          if (this.internalAfterSend != null) {
-            this.internalAfterSend.run();
+          if (internalAfterSend != null) {
+            internalAfterSend.run();
           }
 
           firePendingCallbacks();
@@ -546,7 +540,7 @@ public class TXState implements TXStateInterface {
            * This is to prepare the commit message for the caller, make sure all events are in
            * there.
            */
-          this.commitMessage = buildCompleteMessage();
+          commitMessage = buildCompleteMessage();
         } finally {
           unlockTXRegions(regions);
         }
@@ -554,10 +548,10 @@ public class TXState implements TXStateInterface {
         if (msg != null) {
           msg.releaseViewVersions();
         }
-        this.locks.releaseLocal();
+        locks.releaseLocal();
         // For internal testing
-        if (this.internalAfterReleaseLocalLocks != null) {
-          this.internalAfterReleaseLocalLocks.run();
+        if (internalAfterReleaseLocalLocks != null) {
+          internalAfterReleaseLocalLocks.run();
         }
       }
     } finally {
@@ -566,18 +560,14 @@ public class TXState implements TXStateInterface {
   }
 
   private void lockTXRegions(IdentityHashMap<InternalRegion, TXRegionState> regions) {
-    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = regions.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+    for (final Map.Entry<InternalRegion, TXRegionState> me : regions.entrySet()) {
       InternalRegion r = me.getKey();
       r.getRegionMap().lockRegionForAtomicTX(r);
     }
   }
 
   private void unlockTXRegions(IdentityHashMap<InternalRegion, TXRegionState> regions) {
-    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = regions.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+    for (final Map.Entry<InternalRegion, TXRegionState> me : regions.entrySet()) {
       InternalRegion r = me.getKey();
       r.getRegionMap().unlockRegionForAtomicTX(r);
     }
@@ -585,9 +575,9 @@ public class TXState implements TXStateInterface {
 
   protected void attachFilterProfileInformation(List entries) {
     {
-      Iterator/* <TXEntryStateWithRegionAndKey> */ it = entries.iterator();
-      while (it.hasNext()) {
-        TXEntryStateWithRegionAndKey o = (TXEntryStateWithRegionAndKey) it.next();
+      /* <TXEntryStateWithRegionAndKey> */
+      for (final Object entry : entries) {
+        TXEntryStateWithRegionAndKey o = (TXEntryStateWithRegionAndKey) entry;
         try {
           if (o.r.isUsedForPartitionedRegionBucket()) {
             BucketRegion bucket = (BucketRegion) o.r;
@@ -647,11 +637,11 @@ public class TXState implements TXStateInterface {
    */
   @Override
   public void rollback() {
-    if (this.closed) {
+    if (closed) {
       return;
     }
-    synchronized (this.completionGuard) {
-      this.completionStarted = true;
+    synchronized (completionGuard) {
+      completionStarted = true;
     }
     cleanup();
   }
@@ -663,18 +653,18 @@ public class TXState implements TXStateInterface {
    * @return true if a previous completion was in progress
    */
   public boolean waitForPreviousCompletion() {
-    synchronized (this.completionGuard) {// should have already been done, but just to be sure
-      if (!this.completionStarted) {
+    synchronized (completionGuard) {// should have already been done, but just to be sure
+      if (!completionStarted) {
         return false;
       }
-      while (this.commitMessage == null && !this.closed) {
+      while (commitMessage == null && !closed) {
         if (logger.isDebugEnabled()) {
           logger.debug("Waiting for previous completion for transaction {}", getTransactionId());
         }
         try {
-          this.completionGuard.wait();
+          completionGuard.wait();
         } catch (InterruptedException e) {
-          this.proxy.getCache().getCancelCriterion().checkCancelInProgress(e);
+          proxy.getCache().getCancelCriterion().checkCancelInProgress(e);
           Thread.currentThread().interrupt();
           return true;
         }
@@ -691,18 +681,17 @@ public class TXState implements TXStateInterface {
    *         nearside in the correct order.
    */
   protected List/* <TXEntryStateWithRegionAndKey> */ generateEventOffsets() {
-    this.baseMembershipId = EventID.getMembershipId(this.proxy.getTxMgr().getDM().getSystem());
-    this.baseThreadId = EventID.getThreadId();
-    this.baseSequenceId = EventID.getSequenceId();
+    baseMembershipId = EventID.getMembershipId(proxy.getTxMgr().getDM().getSystem());
+    baseThreadId = EventID.getThreadId();
+    baseSequenceId = EventID.getSequenceId();
 
     List/* <TXEntryStateWithRegionAndKey> */ entries = getSortedEntries();
     if (logger.isDebugEnabled()) {
       logger
-          .debug("generateEventOffsets() entries " + entries + " RegionState Map=" + this.regions);
+          .debug("generateEventOffsets() entries " + entries + " RegionState Map=" + regions);
     }
-    Iterator it = entries.iterator();
-    while (it.hasNext()) {
-      TXEntryStateWithRegionAndKey o = (TXEntryStateWithRegionAndKey) it.next();
+    for (final Object entry : entries) {
+      TXEntryStateWithRegionAndKey o = (TXEntryStateWithRegionAndKey) entry;
       o.es.generateEventOffsets(this);
     }
     return entries;
@@ -710,9 +699,7 @@ public class TXState implements TXStateInterface {
 
   private TXLockRequest createLockRequest() {
     TXLockRequest result = new TXLockRequest();
-    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+    for (final Map.Entry<InternalRegion, TXRegionState> me : regions.entrySet()) {
       InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
       txrs.createLockRequest(r, result);
@@ -721,9 +708,7 @@ public class TXState implements TXStateInterface {
   }
 
   private void checkForConflicts() throws CommitConflictException, PrimaryBucketException {
-    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+    for (final Map.Entry<InternalRegion, TXRegionState> me : regions.entrySet()) {
       InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
       try {
@@ -741,8 +726,8 @@ public class TXState implements TXStateInterface {
     boolean lockingSucceeded;
     do {
       lockingSucceeded = true;
-      Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
-      Set<BucketRegion> obtained = new HashSet<BucketRegion>();
+      Iterator<Map.Entry<InternalRegion, TXRegionState>> it = regions.entrySet().iterator();
+      Set<BucketRegion> obtained = new HashSet<>();
       while (it.hasNext()) {
         Map.Entry<InternalRegion, TXRegionState> me = it.next();
         InternalRegion r = me.getKey();
@@ -806,9 +791,7 @@ public class TXState implements TXStateInterface {
 
 
   protected void cleanupNonDirtyRegions() {
-    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+    for (final Map.Entry<InternalRegion, TXRegionState> me : regions.entrySet()) {
       InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
       txrs.cleanupNonDirtyEntries(r);
@@ -822,10 +805,8 @@ public class TXState implements TXStateInterface {
    */
   protected TXCommitMessage buildMessage() {
     TXCommitMessage msg =
-        new TXCommitMessage(this.proxy.getTxId(), this.proxy.getTxMgr().getDM(), this);
-    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+        new TXCommitMessage(proxy.getTxId(), proxy.getTxMgr().getDM(), this);
+    for (final Map.Entry<InternalRegion, TXRegionState> me : regions.entrySet()) {
       InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
       txrs.buildMessage(r, msg);
@@ -841,10 +822,8 @@ public class TXState implements TXStateInterface {
    */
   protected TXCommitMessage buildCompleteMessage() {
     TXCommitMessage msg =
-        new TXCommitMessage(this.proxy.getTxId(), this.proxy.getTxMgr().getDM(), this);
-    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry<InternalRegion, TXRegionState> me = it.next();
+        new TXCommitMessage(proxy.getTxId(), proxy.getTxMgr().getDM(), this);
+    for (final Map.Entry<InternalRegion, TXRegionState> me : regions.entrySet()) {
       InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
       txrs.buildCompleteMessage(r, msg);
@@ -858,7 +837,7 @@ public class TXState implements TXStateInterface {
    */
   protected void applyChanges(List/* <TXEntryStateWithRegionAndKey> */ entries) {
     // applyChangesStart for each region
-    for (Map.Entry<InternalRegion, TXRegionState> me : this.regions.entrySet()) {
+    for (Map.Entry<InternalRegion, TXRegionState> me : regions.entrySet()) {
       InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
       txrs.applyChangesStart(r, this);
@@ -874,8 +853,8 @@ public class TXState implements TXStateInterface {
     int size = pendingCallbacks.size();
     for (Object entry : entries) {
       TXEntryStateWithRegionAndKey o = (TXEntryStateWithRegionAndKey) entry;
-      if (this.internalDuringApplyChanges != null) {
-        this.internalDuringApplyChanges.run();
+      if (internalDuringApplyChanges != null) {
+        internalDuringApplyChanges.run();
       }
       try {
         o.es.applyChanges(o.r, o.key, this);
@@ -895,7 +874,7 @@ public class TXState implements TXStateInterface {
     }
 
     // applyChangesEnd for each region
-    for (Map.Entry<InternalRegion, TXRegionState> me : this.regions.entrySet()) {
+    for (Map.Entry<InternalRegion, TXRegionState> me : regions.entrySet()) {
       InternalRegion r = me.getKey();
       TXRegionState txrs = me.getValue();
       txrs.applyChangesEnd(r, this);
@@ -915,13 +894,13 @@ public class TXState implements TXStateInterface {
    */
   @Override
   public void close() {
-    if (!this.closed) {
+    if (!closed) {
       if (locks != null) {
         cleanup();
         return;
       }
-      this.closed = true;
-      for (TXRegionState r : this.regions.values()) {
+      closed = true;
+      for (TXRegionState r : regions.values()) {
         r.close();
       }
     }
@@ -938,25 +917,23 @@ public class TXState implements TXStateInterface {
   void doCleanup() {
     RuntimeException exception = null;
     try {
-      this.closed = true;
-      this.seenEvents.clear();
-      this.seenResults.clear();
+      closed = true;
+      seenEvents.clear();
+      seenResults.clear();
       freePendingCallbacks();
-      if (this.locks != null) {
+      if (locks != null) {
         final long conflictStart = statisticsClock.getTime();
         try {
-          this.locks.cleanup(getCache().getInternalDistributedSystem());
+          locks.cleanup(getCache().getInternalDistributedSystem());
         } catch (IllegalArgumentException | IllegalMonitorStateException e) {
           exception = e;
         }
         if (statisticsClock.isEnabled()) {
-          this.proxy.getTxMgr().getCachePerfStats()
+          proxy.getTxMgr().getCachePerfStats()
               .incTxConflictCheckTime(statisticsClock.getTime() - conflictStart);
         }
       }
-      Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
-      while (it.hasNext()) {
-        Map.Entry<InternalRegion, TXRegionState> me = it.next();
+      for (final Map.Entry<InternalRegion, TXRegionState> me : regions.entrySet()) {
         InternalRegion r = me.getKey();
         TXRegionState txrs = me.getValue();
         /*
@@ -985,11 +962,11 @@ public class TXState implements TXStateInterface {
         txrs.cleanup(r);
       }
     } finally {
-      synchronized (this.completionGuard) {
-        this.completionGuard.notifyAll();
+      synchronized (completionGuard) {
+        completionGuard.notifyAll();
       }
 
-      if (exception != null && !this.proxy.getCache().isClosed()) {
+      if (exception != null && !proxy.getCache().isClosed()) {
         throw exception;
       }
     }
@@ -1003,9 +980,7 @@ public class TXState implements TXStateInterface {
   @Override
   public List getEvents() {
     ArrayList events = new ArrayList();
-    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry me = it.next();
+    for (final Map.Entry me : regions.entrySet()) {
       InternalRegion r = (InternalRegion) me.getKey();
       TXRegionState txrs = (TXRegionState) me.getValue();
       txrs.getEvents(r, events, this);
@@ -1020,11 +995,11 @@ public class TXState implements TXStateInterface {
 
   private List/* <TXEntryStateWithRegionAndKey> */ getSortedEntries() {
     ArrayList/* <TXEntryStateWithRegionAndKey> */ entries = new ArrayList();
-    Iterator it = this.regions.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry me = (Map.Entry) it.next();
-      InternalRegion r = (InternalRegion) me.getKey();
-      TXRegionState txrs = (TXRegionState) me.getValue();
+    for (final Map.Entry<InternalRegion, TXRegionState> internalRegionTXRegionStateEntry : regions
+        .entrySet()) {
+      InternalRegion r = (InternalRegion) ((Map.Entry) internalRegionTXRegionStateEntry).getKey();
+      TXRegionState txrs =
+          (TXRegionState) ((Map.Entry) internalRegionTXRegionStateEntry).getValue();
       txrs.getEntries(entries, r);
     }
     if (entries.isEmpty()) {
@@ -1053,7 +1028,7 @@ public class TXState implements TXStateInterface {
     }
 
     private int getSortValue() {
-      return this.es.getSortValue();
+      return es.getSortValue();
     }
 
     @Override
@@ -1087,7 +1062,7 @@ public class TXState implements TXStateInterface {
   @Override
   public synchronized void beforeCompletion() throws SynchronizationCommitConflictException {
     proxy.getTxMgr().setTXState(null);
-    if (this.closed) {
+    if (closed) {
       throw new TXManagerCancelledException();
     }
 
@@ -1110,7 +1085,7 @@ public class TXState implements TXStateInterface {
 
   void doBeforeCompletion() {
     final long opStart = statisticsClock.getTime();
-    this.jtaLifeTime = opStart - getBeginTime();
+    jtaLifeTime = opStart - getBeginTime();
 
     try {
       reserveAndCheck();
@@ -1118,7 +1093,7 @@ public class TXState implements TXStateInterface {
        * If there is a TransactionWriter plugged in, we need to to give it an opportunity to cleanup
        * the transaction.
        */
-      TransactionWriter writer = this.proxy.getTxMgr().getWriter();
+      TransactionWriter writer = proxy.getTxMgr().getWriter();
       if (writer != null) {
         try {
           // need to mark this so we don't fire again in commit
@@ -1149,7 +1124,7 @@ public class TXState implements TXStateInterface {
       }
     } catch (CommitConflictException commitConflict) {
       cleanup();
-      proxy.getTxMgr().noteCommitFailure(opStart, this.jtaLifeTime, this);
+      proxy.getTxMgr().noteCommitFailure(opStart, jtaLifeTime, this);
       throw new SynchronizationCommitConflictException(
           String.format("Conflict detected in GemFire transaction %s",
               getTransactionId()),
@@ -1192,7 +1167,7 @@ public class TXState implements TXStateInterface {
   void doAfterCompletionCommit() {
     final long opStart = statisticsClock.getTime();
     try {
-      Assert.assertTrue(this.locks != null,
+      Assert.assertTrue(locks != null,
           "Gemfire Transaction afterCompletion called with illegal state.");
       try {
         commit();
@@ -1201,8 +1176,8 @@ public class TXState implements TXStateInterface {
         Assert.assertTrue(false, "Gemfire Transaction " + getTransactionId()
             + " afterCompletion failed.due to CommitConflictException: " + error);
       }
-      this.proxy.getTxMgr().noteCommitSuccess(opStart, this.jtaLifeTime, this);
-      this.locks = null;
+      proxy.getTxMgr().noteCommitSuccess(opStart, jtaLifeTime, this);
+      locks = null;
 
     } catch (InternalGemFireError error) {
       throw new TransactionException(error);
@@ -1211,11 +1186,11 @@ public class TXState implements TXStateInterface {
 
   void doAfterCompletionRollback() {
     final long opStart = statisticsClock.getTime();
-    this.jtaLifeTime = opStart - getBeginTime();
+    jtaLifeTime = opStart - getBeginTime();
     try {
       rollback();
       saveTXCommitMessageForClientFailover();
-      this.proxy.getTxMgr().noteRollbackSuccess(opStart, this.jtaLifeTime, this);
+      proxy.getTxMgr().noteRollbackSuccess(opStart, jtaLifeTime, this);
     } catch (InternalGemFireError error) {
       throw new TransactionException(error);
     }
@@ -1236,7 +1211,7 @@ public class TXState implements TXStateInterface {
    * the commit.
    */
   public void setAfterReservation(Runnable afterReservation) {
-    this.internalAfterReservation = afterReservation;
+    internalAfterReservation = afterReservation;
   }
 
   /**
@@ -1244,14 +1219,14 @@ public class TXState implements TXStateInterface {
    * before the changes have been applied to committed state.
    */
   public void setAfterConflictCheck(Runnable afterConflictCheck) {
-    this.internalAfterConflictCheck = afterConflictCheck;
+    internalAfterConflictCheck = afterConflictCheck;
   }
 
   /**
    * Add an internal callback which is run as each transaction change is applied.
    */
   public void setDuringApplyChanges(Runnable duringApplyChanges) {
-    this.internalDuringApplyChanges = duringApplyChanges;
+    internalDuringApplyChanges = duringApplyChanges;
   }
 
   /**
@@ -1260,7 +1235,7 @@ public class TXState implements TXStateInterface {
    * Distributed No Ack scope).
    */
   public void setAfterApplyChanges(Runnable afterApplyChanges) {
-    this.internalAfterApplyChanges = afterApplyChanges;
+    internalAfterApplyChanges = afterApplyChanges;
   }
 
   /**
@@ -1269,7 +1244,7 @@ public class TXState implements TXStateInterface {
    * Far Siders (only for Distributed Scope regions).
    */
   public void setAfterReleaseLocalLocks(Runnable afterReleaseLocalLocks) {
-    this.internalAfterReleaseLocalLocks = afterReleaseLocalLocks;
+    internalAfterReleaseLocalLocks = afterReleaseLocalLocks;
   }
 
   /**
@@ -1278,7 +1253,7 @@ public class TXState implements TXStateInterface {
    * <code>setAfterIndividualSend</code>.
    */
   public void setDuringIndividualSend(Runnable duringIndividualSend) {
-    this.internalDuringIndividualSend = duringIndividualSend;
+    internalDuringIndividualSend = duringIndividualSend;
   }
 
   /**
@@ -1287,7 +1262,7 @@ public class TXState implements TXStateInterface {
    * with Distributed Ack scope)
    */
   public void setAfterIndividualSend(Runnable afterIndividualSend) {
-    this.internalAfterIndividualSend = afterIndividualSend;
+    internalAfterIndividualSend = afterIndividualSend;
   }
 
   /**
@@ -1296,7 +1271,7 @@ public class TXState implements TXStateInterface {
    * the message.
    */
   public void setDuringIndividualCommitProcess(Runnable duringIndividualCommitProcess) {
-    this.internalDuringIndividualCommitProcess = duringIndividualCommitProcess;
+    internalDuringIndividualCommitProcess = duringIndividualCommitProcess;
   }
 
   /**
@@ -1305,7 +1280,7 @@ public class TXState implements TXStateInterface {
    * callback has been called.
    */
   public void setAfterIndividualCommitProcess(Runnable afterIndividualCommitProcess) {
-    this.internalAfterIndividualCommitProcess = afterIndividualCommitProcess;
+    internalAfterIndividualCommitProcess = afterIndividualCommitProcess;
   }
 
 
@@ -1315,14 +1290,14 @@ public class TXState implements TXStateInterface {
    * before the transaction has been cleaned up.
    */
   public void setAfterSend(Runnable afterSend) {
-    this.internalAfterSend = afterSend;
+    internalAfterSend = afterSend;
   }
 
   /**
    * Add an internal callback which is run after the commit message is formed but before it is sent.
    */
   public void setBeforeSend(Runnable r) {
-    this.internalBeforeSend = r;
+    internalBeforeSend = r;
   }
 
 
@@ -1333,7 +1308,7 @@ public class TXState implements TXStateInterface {
    */
   @Override
   public InternalCache getCache() {
-    return this.proxy.getCache();
+    return proxy.getCache();
   }
 
   /*
@@ -1343,7 +1318,7 @@ public class TXState implements TXStateInterface {
    */
   @Override
   public Collection<InternalRegion> getRegions() {
-    return this.regions.keySet();
+    return regions.keySet();
   }
 
   @Override
@@ -1365,11 +1340,8 @@ public class TXState implements TXStateInterface {
    */
   TXEntryState txWriteEntry(InternalRegion region, EntryEventImpl event, boolean ifNew,
       boolean requireOldValue, Object expectedOldValue) throws EntryNotFoundException {
-    boolean createIfAbsent = true;
-    if (event.getOperation() == Operation.REPLACE) {
-      // replace(K,V) and replace(K,V,V) cannot create an entry
-      createIfAbsent = false;
-    }
+    boolean createIfAbsent = event.getOperation() != Operation.REPLACE;
+    // replace(K,V) and replace(K,V,V) cannot create an entry
     TXEntryState tx =
         txReadEntry(event.getKeyInfo(), region, true, expectedOldValue, createIfAbsent);
     if (tx != null) {
@@ -1569,7 +1541,7 @@ public class TXState implements TXStateInterface {
   }
 
   private TXStateInterface getProxy() {
-    return this.proxy;
+    return proxy;
   }
 
   /**
@@ -1765,7 +1737,7 @@ public class TXState implements TXStateInterface {
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
       boolean overwriteDestroyed) {
-    return this.putEntry(event, ifNew, ifOld, expectedOldValue, requireOldValue, lastModified,
+    return putEntry(event, ifNew, ifOld, expectedOldValue, requireOldValue, lastModified,
         overwriteDestroyed, true,
         false);
   }
@@ -1898,7 +1870,7 @@ public class TXState implements TXStateInterface {
   public Set getAdditionalKeysForIterator(LocalRegion currRgn) {
     if (currRgn instanceof PartitionedRegion) {
       final HashSet ret = new HashSet();
-      for (TXRegionState rs : this.regions.values()) {
+      for (TXRegionState rs : regions.values()) {
         if (rs instanceof TXBucketRegionState) {
           TXBucketRegionState brs = (TXBucketRegionState) rs;
           if (brs.getPartitionedRegion() == currRgn) {
@@ -1958,7 +1930,7 @@ public class TXState implements TXStateInterface {
   }
 
   public boolean isOriginRemoteForEvents() {
-    return onBehalfOfRemoteStub || this.proxy.isOnBehalfOfClient();
+    return onBehalfOfRemoteStub || proxy.isOnBehalfOfClient();
   }
 
   @Override
@@ -2103,25 +2075,22 @@ public class TXState implements TXStateInterface {
     /*
      * We need to put this into the tx state.
      */
-    theRegion.syncBulkOp(new Runnable() {
-      @Override
-      public void run() {
-        // final boolean requiresRegionContext = theRegion.keyRequiresRegionContext();
-        InternalDistributedMember myId =
-            theRegion.getDistributionManager().getDistributionManagerId();
-        for (int i = 0; i < putallOp.putAllDataSize; ++i) {
-          @Released
-          EntryEventImpl ev = PutAllPRMessage.getEventFromEntry(theRegion, myId, myId, i,
-              putallOp.putAllData, false, putallOp.getBaseEvent().getContext(), false,
-              !putallOp.getBaseEvent().isGenerateCallbacks());
-          try {
-            ev.setPutAllOperation(putallOp);
-            if (theRegion.basicPut(ev, false, false, null, false)) {
-              successfulPuts.addKeyAndVersion(putallOp.putAllData[i].key, null);
-            }
-          } finally {
-            ev.release();
+    theRegion.syncBulkOp(() -> {
+      // final boolean requiresRegionContext = theRegion.keyRequiresRegionContext();
+      InternalDistributedMember myId =
+          theRegion.getDistributionManager().getDistributionManagerId();
+      for (int i = 0; i < putallOp.putAllDataSize; ++i) {
+        @Released
+        EntryEventImpl ev = PutAllPRMessage.getEventFromEntry(theRegion, myId, myId, i,
+            putallOp.putAllData, false, putallOp.getBaseEvent().getContext(), false,
+            !putallOp.getBaseEvent().isGenerateCallbacks());
+        try {
+          ev.setPutAllOperation(putallOp);
+          if (theRegion.basicPut(ev, false, false, null, false)) {
+            successfulPuts.addKeyAndVersion(putallOp.putAllData[i].key, null);
           }
+        } finally {
+          ev.release();
         }
       }
     }, putallOp.getBaseEvent().getEventId());
@@ -2141,25 +2110,22 @@ public class TXState implements TXStateInterface {
      * Don't fire events here. We are on the data store, we don't need to do anything here. Commit
      * will push them out. We need to put this into the tx state.
      */
-    theRegion.syncBulkOp(new Runnable() {
-      @Override
-      public void run() {
-        InternalDistributedMember myId =
-            theRegion.getDistributionManager().getDistributionManagerId();
-        for (int i = 0; i < op.removeAllDataSize; ++i) {
-          @Released
-          EntryEventImpl ev = RemoveAllPRMessage.getEventFromEntry(theRegion, myId, myId, i,
-              op.removeAllData, false, op.getBaseEvent().getContext(), false,
-              !op.getBaseEvent().isGenerateCallbacks());
-          ev.setRemoveAllOperation(op);
-          try {
-            theRegion.basicDestroy(ev, true/* should we invoke cacheWriter? */, null);
-          } catch (EntryNotFoundException ignore) {
-          } finally {
-            ev.release();
-          }
-          successfulOps.addKeyAndVersion(op.removeAllData[i].key, null);
+    theRegion.syncBulkOp(() -> {
+      InternalDistributedMember myId =
+          theRegion.getDistributionManager().getDistributionManagerId();
+      for (int i = 0; i < op.removeAllDataSize; ++i) {
+        @Released
+        EntryEventImpl ev = RemoveAllPRMessage.getEventFromEntry(theRegion, myId, myId, i,
+            op.removeAllData, false, op.getBaseEvent().getContext(), false,
+            !op.getBaseEvent().isGenerateCallbacks());
+        ev.setRemoveAllOperation(op);
+        try {
+          theRegion.basicDestroy(ev, true/* should we invoke cacheWriter? */, null);
+        } catch (EntryNotFoundException ignore) {
+        } finally {
+          ev.release();
         }
+        successfulOps.addKeyAndVersion(op.removeAllData[i].key, null);
       }
     }, op.getBaseEvent().getEventId());
 
@@ -2177,7 +2143,7 @@ public class TXState implements TXStateInterface {
 
   @Override
   public void recordTXOperation(ServerRegionDataAccess region, ServerRegionOperation op, Object key,
-      Object arguments[]) {
+      Object[] arguments) {
     // no-op here
   }
 
@@ -2216,7 +2182,7 @@ public class TXState implements TXStateInterface {
   }
 
   public DistributedMember getProxyServer() {
-    return this.proxyServer;
+    return proxyServer;
   }
 
   boolean isClosed() {

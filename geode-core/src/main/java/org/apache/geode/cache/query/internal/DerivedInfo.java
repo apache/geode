@@ -17,7 +17,6 @@ package org.apache.geode.cache.query.internal;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -42,8 +41,8 @@ public class DerivedInfo {
   private List expansionList;
 
   public DerivedInfo() {
-    derivedResults = new HashMap<String, SelectResults>();
-    newDerivatives = new ArrayList<Object[]>();
+    derivedResults = new HashMap<>();
+    newDerivatives = new ArrayList<>();
   }
 
   public List getExpansionList() {
@@ -118,7 +117,7 @@ public class DerivedInfo {
     if (theCallingIndex != null && iterOps != null) {
       if (iterOps instanceof CompiledJunction) {
         List opsList = ((CompiledJunction) iterOps).getOperands();
-        this.setOriginalOps(opsList);
+        setOriginalOps(opsList);
         createDerivedJoinResultsFromOpsList(
             (QueryUtils.getCompiledIdFromPath(theCallingIndex._path)).getId(), context, opsList);
       } else if (iterOps.getType() == CompiledValue.COMPARISON) {
@@ -132,10 +131,9 @@ public class DerivedInfo {
   private void createDerivedJoinResultsFromOpsList(String theCallingIndexId,
       ExecutionContext context, List opsList) throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException {
-    Iterator iter = opsList.iterator();
-    while (iter.hasNext()) {
-      CompiledValue cv = (CompiledValue) iter.next();
-      this.currentOp = cv;
+    for (final Object o : opsList) {
+      CompiledValue cv = (CompiledValue) o;
+      currentOp = cv;
 
       if (cv.getType() == CompiledValue.COMPARISON) {
         createDerivedJoinResultsFromCC(theCallingIndexId, (CompiledComparison) cv, context);
@@ -143,13 +141,11 @@ public class DerivedInfo {
     }
     // Now let's derive from our derivatives (for multiple join clauses that can be chained, such as
     // a.id = 1 and a.id = b.id and b.id = c.id
-    List<Object[]> newDerivatives = new ArrayList<Object[]>(this.newDerivatives);
+    List<Object[]> newDerivatives = new ArrayList<>(this.newDerivatives);
     this.newDerivatives.clear();
     if (newDerivatives.size() > 0) {
-      Iterator<Object[]> iterator = newDerivatives.iterator();
-      while (iterator.hasNext()) {
-        Object[] idDerivedAndResults = iterator.next();
-        derivedDerivative(idDerivedAndResults, context, this.getExpansionList());
+      for (final Object[] idDerivedAndResults : newDerivatives) {
+        derivedDerivative(idDerivedAndResults, context, getExpansionList());
       }
     }
   }
@@ -161,10 +157,8 @@ public class DerivedInfo {
     String idDerived = (String) idDerivedAndResults[0];
     SelectResults results = (SelectResults) idDerivedAndResults[1];
     RuntimeIterator ritr = getMatchingRuntimeIterator(idDerived, expansionList);
-    List remainingOps = this.getRemainingOps();
-    Iterator iterator = results.iterator();
-    while (iterator.hasNext()) {
-      Object val = iterator.next();
+    List remainingOps = getRemainingOps();
+    for (final Object val : results) {
       ritr.setCurrent(val);
       createDerivedJoinResultsFromOpsList(idDerived, context, remainingOps);
     }
@@ -173,9 +167,8 @@ public class DerivedInfo {
 
   private RuntimeIterator getMatchingRuntimeIterator(String receiverId, List expansionList)
       throws QueryInvocationTargetException {
-    Iterator iterator = expansionList.iterator();
-    while (iterator.hasNext()) {
-      RuntimeIterator ritr = (RuntimeIterator) iterator.next();
+    for (final Object o : expansionList) {
+      RuntimeIterator ritr = (RuntimeIterator) o;
       if (ritr.getCmpIteratorDefn().getName().equals(receiverId)) {
         return ritr;
       }
@@ -211,14 +204,14 @@ public class DerivedInfo {
       CompiledValue newRightSide, int operator) throws TypeMismatchException,
       FunctionDomainException, NameResolutionException, QueryInvocationTargetException {
     CompiledComparison dcc = createDerivedJoin(context, newLeftSide, newRightSide, operator);
-    IndexInfo[] indexInfos = (IndexInfo[]) dcc.getIndexInfo(context);
+    IndexInfo[] indexInfos = dcc.getIndexInfo(context);
     try {
       if (indexInfos != null && isValidIndexTypeToDerive(indexInfos[0]._getIndex())) {
         populateDerivedResultsFromDerivedJoin(context, dcc, indexInfos[0]);
       }
     } finally {
       if (indexInfos != null) {
-        Index index = (Index) indexInfos[0]._index;
+        Index index = indexInfos[0]._index;
         Index prIndex = ((AbstractIndex) index).getPRIndex();
         if (prIndex != null) {
           ((PartitionedIndex) prIndex).releaseIndexReadLockForRemove();
@@ -268,7 +261,7 @@ public class DerivedInfo {
     } else if (ot.isCollectionType()) {
 
     } else {
-      this.addDerivedResults(dcc.getIndexInfo(context)[0], sr);
+      addDerivedResults(dcc.getIndexInfo(context)[0], sr);
     }
   }
 

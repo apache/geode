@@ -38,13 +38,13 @@ public class LatestLastAccessTimeOperation<K> {
 
   public long getLatestLastAccessTime() {
     final Set<InternalDistributedMember> recipients =
-        this.region.getCacheDistributionAdvisor().adviseNetSearch();
-    final DistributionManager dm = this.region.getDistributionManager();
+        region.getCacheDistributionAdvisor().adviseNetSearch();
+    final DistributionManager dm = region.getDistributionManager();
     dm.retainMembersWithSameOrNewerVersion(recipients, KnownVersion.GEODE_1_4_0);
     final LatestLastAccessTimeReplyProcessor replyProcessor =
         new LatestLastAccessTimeReplyProcessor(dm, recipients);
     dm.putOutgoing(
-        new LatestLastAccessTimeMessage<>(replyProcessor, recipients, this.region, this.key));
+        new LatestLastAccessTimeMessage<>(replyProcessor, recipients, region, key));
     try {
       replyProcessor.waitForReplies();
     } catch (ReplyException e) {

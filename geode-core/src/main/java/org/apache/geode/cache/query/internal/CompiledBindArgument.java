@@ -18,7 +18,6 @@ package org.apache.geode.cache.query.internal;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -31,7 +30,7 @@ import org.apache.geode.pdx.internal.PdxString;
 
 
 public class CompiledBindArgument extends AbstractCompiledValue {
-  private int index; // one-based
+  private final int index; // one-based
 
   public CompiledBindArgument(int index) {
     this.index = index;
@@ -44,12 +43,12 @@ public class CompiledBindArgument extends AbstractCompiledValue {
 
   @Override
   public void generateCanonicalizedExpression(StringBuilder clauseBuffer, ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
 
     // When compiling a new query, a context is created where there are no bind arguments at this
     // point
     if (context.isBindArgsSet()) {
-      Object bindArgumentValue = context.getBindArgument(this.index);
+      Object bindArgumentValue = context.getBindArgument(index);
       if (bindArgumentValue instanceof Region) {
         clauseBuffer.insert(0, ((Region) bindArgumentValue).getFullPath());
       } else if (bindArgumentValue instanceof String) {
@@ -66,7 +65,7 @@ public class CompiledBindArgument extends AbstractCompiledValue {
     if (!context.isBindArgsSet()) {
       return null;
     }
-    Object obj = context.getBindArgument(this.index);
+    Object obj = context.getBindArgument(index);
     // check for BucketRegion substitution
     if (obj instanceof Region) {
       PartitionedRegion pr = context.getPartitionedRegion();
@@ -93,13 +92,13 @@ public class CompiledBindArgument extends AbstractCompiledValue {
 
   @Override
   public void getRegionsInQuery(Set regionsInQuery, Object[] parameters) {
-    Object v = parameters[this.index - 1];
+    Object v = parameters[index - 1];
     if (v instanceof Region) {
       regionsInQuery.add(((Region) v).getFullPath());
     }
   }
 
   public PdxString getSavedPdxString(ExecutionContext context) {
-    return context.getSavedPdxString(this.index);
+    return context.getSavedPdxString(index);
   }
 }

@@ -79,7 +79,7 @@ public class PartitionedRegionDataStoreTest {
   @Test
   public void initializedPartitionedRegionWithoutColocationReturnsRegionReady() {
     PartitionedRegionDataStore partitionedRegionDataStore = spy(new PartitionedRegionDataStore());
-    List<PartitionedRegion> colocatedChildRegions = new ArrayList<PartitionedRegion>();
+    List<PartitionedRegion> colocatedChildRegions = new ArrayList<>();
 
     doReturn(colocatedChildRegions).when(partitionedRegionDataStore)
         .getColocatedChildRegions(partitionedRegion);
@@ -91,7 +91,7 @@ public class PartitionedRegionDataStoreTest {
   @Test
   public void notInitializedPartitionedRegionWithoutColocationReturnsRegionNotReady() {
     PartitionedRegionDataStore partitionedRegionDataStore = spy(new PartitionedRegionDataStore());
-    List<PartitionedRegion> colocatedChildRegions = new ArrayList<PartitionedRegion>();
+    List<PartitionedRegion> colocatedChildRegions = new ArrayList<>();
 
     doReturn(colocatedChildRegions).when(partitionedRegionDataStore)
         .getColocatedChildRegions(partitionedRegion);
@@ -112,26 +112,26 @@ public class PartitionedRegionDataStoreTest {
   }
 
   private void setupColocatedRegions(PartitionedRegionDataStore partitionedRegionDataStore) {
-    List<PartitionedRegion> colocatedChildRegions = new ArrayList<PartitionedRegion>();
+    List<PartitionedRegion> colocatedChildRegions = new ArrayList<>();
     colocatedChildRegions.add(childRegion1);
     colocatedChildRegions.add(childRegion2);
     doReturn(colocatedChildRegions).when(partitionedRegionDataStore)
         .getColocatedChildRegions(partitionedRegion);
 
-    List<PartitionedRegion> childRegion1ColocatedRegions = new ArrayList<PartitionedRegion>();
+    List<PartitionedRegion> childRegion1ColocatedRegions = new ArrayList<>();
     colocatedChildRegions.add(grandChildRegion1_1);
     colocatedChildRegions.add(grandChildRegion1_2);
     doReturn(childRegion1ColocatedRegions).when(partitionedRegionDataStore)
         .getColocatedChildRegions(childRegion1);
 
-    List<PartitionedRegion> childRegion2ColocatedRegions = new ArrayList<PartitionedRegion>();
+    List<PartitionedRegion> childRegion2ColocatedRegions = new ArrayList<>();
     colocatedChildRegions.add(grandChildRegion2_1);
     colocatedChildRegions.add(grandChildRegion2_2);
     colocatedChildRegions.add(grandChildRegion2_3);
     doReturn(childRegion2ColocatedRegions).when(partitionedRegionDataStore)
         .getColocatedChildRegions(childRegion2);
 
-    List<PartitionedRegion> emptyList = new ArrayList<PartitionedRegion>();
+    List<PartitionedRegion> emptyList = new ArrayList<>();
     doReturn(emptyList).when(partitionedRegionDataStore)
         .getColocatedChildRegions(grandChildRegion1_1);
     doReturn(emptyList).when(partitionedRegionDataStore)

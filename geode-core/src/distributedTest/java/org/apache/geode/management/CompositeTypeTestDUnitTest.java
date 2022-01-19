@@ -49,15 +49,15 @@ public class CompositeTypeTestDUnitTest implements Serializable {
 
   @Test
   public void testCompositeTypeGetters() throws Exception {
-    registerMBeanWithCompositeTypeGetters(this.memberVM);
+    registerMBeanWithCompositeTypeGetters(memberVM);
 
-    String memberName = MBeanJMXAdapter.makeCompliantName(getMemberId(this.memberVM));
-    verifyMBeanWithCompositeTypeGetters(this.managerVM, memberName);
+    String memberName = MBeanJMXAdapter.makeCompliantName(getMemberId(memberVM));
+    verifyMBeanWithCompositeTypeGetters(managerVM, memberName);
   }
 
   private void registerMBeanWithCompositeTypeGetters(final VM memberVM) {
     memberVM.invoke("registerMBeanWithCompositeTypeGetters", () -> {
-      SystemManagementService service = this.managementTestRule.getSystemManagementService();
+      SystemManagementService service = managementTestRule.getSystemManagementService();
 
       ObjectName objectName = new ObjectName("GemFire:service=custom,type=composite");
       CompositeTestMXBean compositeTestMXBean = new CompositeTestMBean();
@@ -69,7 +69,7 @@ public class CompositeTypeTestDUnitTest implements Serializable {
 
   private void verifyMBeanWithCompositeTypeGetters(final VM managerVM, final String memberId) {
     managerVM.invoke("verifyMBeanWithCompositeTypeGetters", () -> {
-      SystemManagementService service = this.managementTestRule.getSystemManagementService();
+      SystemManagementService service = managementTestRule.getSystemManagementService();
       ObjectName objectName =
           new ObjectName("GemFire:service=custom,type=composite,member=" + memberId);
 
@@ -96,7 +96,7 @@ public class CompositeTypeTestDUnitTest implements Serializable {
 
   private String getMemberId(final VM memberVM) {
     return memberVM.invoke("getMemberId",
-        () -> this.managementTestRule.getDistributedMember().getId());
+        () -> managementTestRule.getDistributedMember().getId());
   }
 
 }

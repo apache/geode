@@ -75,13 +75,13 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
       throws MembershipConfigurationException, UnknownHostException {
     handler =
         new PrimaryHandler(fallbackHandler, config.getLocatorWaitTime(),
-            () -> System.currentTimeMillis(), x -> Thread.sleep(x));
+            System::currentTimeMillis, Thread::sleep);
     String host = bindAddress == null ? LocalHostUtil.getLocalHostName()
         : bindAddress.getHostName();
     InetAddress inetAddress = bindAddress == null ? null : bindAddress.getAddress();
     String threadName = "Distribution Locator on " + host + ": " + port;
 
-    this.server = new TcpServer(port, inetAddress, handler,
+    server = new TcpServer(port, inetAddress, handler,
         threadName, protocolChecker,
         locatorStats::getStatTime,
         executorServiceSupplier,
@@ -95,7 +95,7 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
         objectSerializer,
         objectDeserializer, Socket::new);
     gmsLocator =
-        new GMSLocator<ID>(bindAddress, config.getLocators(), locatorsAreCoordinators,
+        new GMSLocator<>(bindAddress, config.getLocators(), locatorsAreCoordinators,
             config.isNetworkPartitionDetectionEnabled(),
             locatorStats, config.getSecurityUDPDHAlgo(), workingDirectory, locatorClient,
             objectSerializer,
@@ -162,12 +162,12 @@ public class MembershipLocatorImpl<ID extends MemberIdentifier> implements Membe
 
   @Override
   public boolean isHandled(Class<?> clazz) {
-    return this.handler.isHandled(clazz);
+    return handler.isHandled(clazz);
   }
 
   @VisibleForTesting
   public GMSLocator<ID> getGMSLocator() {
-    return this.gmsLocator;
+    return gmsLocator;
   }
 
   /**

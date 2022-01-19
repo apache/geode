@@ -666,7 +666,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
         ccf.addPoolServer(NetworkUtils.getServerHostName(server.getHost()), port);
         ccf.setPoolSubscriptionEnabled(true);
 
-        ClientCache cache = (ClientCache) getClientCache(ccf);
+        ClientCache cache = getClientCache(ccf);
       }
     });
   }
@@ -686,7 +686,7 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
 
   private WaitCriterion verifyPortfolioCount(final int expected) {
     return new WaitCriterion() {
-      private int expectedCount = expected;
+      private final int expectedCount = expected;
 
       @Override
       public boolean done() {

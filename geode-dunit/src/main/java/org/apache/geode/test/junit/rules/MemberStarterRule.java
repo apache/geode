@@ -39,6 +39,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -112,7 +113,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
   private static int WAIT_UNTIL_TIMEOUT = 30;
 
-  private AccessibleRestoreSystemProperties restore = new AccessibleRestoreSystemProperties();
+  private final AccessibleRestoreSystemProperties restore = new AccessibleRestoreSystemProperties();
 
   public MemberStarterRule() {
     this(new UniquePortSupplier());
@@ -185,7 +186,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
    * withWorkingDir so that logs are accessible and will be cleaned up afterwards.
    */
   public T withLogFile() {
-    this.logFile = true;
+    logFile = true;
     return (T) this;
   }
 
@@ -208,7 +209,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
   public T withProperties(Properties props) {
     if (props != null) {
-      this.properties.putAll(props);
+      properties.putAll(props);
     }
     return (T) this;
   }
@@ -255,7 +256,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   }
 
   public T withAutoStart() {
-    this.autoStart = true;
+    autoStart = true;
     return (T) this;
   }
 
@@ -285,10 +286,10 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     if (!useProductDefaultPorts) {
       // do no override these properties if already exists
       properties.putIfAbsent(JMX_MANAGER_PORT, availableJmxPort + "");
-      this.jmxPort = Integer.parseInt(properties.getProperty(JMX_MANAGER_PORT));
+      jmxPort = Integer.parseInt(properties.getProperty(JMX_MANAGER_PORT));
     } else {
       // the real port numbers will be set after we started the server/locator.
-      this.jmxPort = 0;
+      jmxPort = 0;
     }
     properties.putIfAbsent(JMX_MANAGER, "true");
     properties.putIfAbsent(JMX_MANAGER_START, "true");
@@ -299,7 +300,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     properties.setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
     if (!useDefaultPort) {
       properties.put(HTTP_SERVICE_PORT, availableHttpPort + "");
-      this.httpPort = Integer.parseInt(properties.getProperty(HTTP_SERVICE_PORT));
+      httpPort = Integer.parseInt(properties.getProperty(HTTP_SERVICE_PORT));
     } else {
       // indicate start http service but with default port
       // (different from Gemfire properties, 0 means do not start http service)
@@ -491,7 +492,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
         .collect(Collectors.toList());
 
     waitUntilEqual(diskStoreSupplier,
-        x -> x.size(),
+        List::size,
         exactServerCount,
         predicateDescription,
         WAIT_UNTIL_TIMEOUT, TimeUnit.SECONDS);
@@ -504,7 +505,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
         "Expecting exactly %d servers to have an AEQ with id '%s'.", exactServerCount, queueId);
     waitUntilEqual(
         () -> CliUtils.getMembersWithAsyncEventQueue(getCache(), queueId),
-        membersWithAEQ -> membersWithAEQ.size(),
+        Set::size,
         exactServerCount,
         examinerDescription,
         WAIT_UNTIL_TIMEOUT, TimeUnit.SECONDS);
@@ -544,7 +545,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
       // There is a very slight race condition here, where the above could conceivably time out,
       // and become satisfied before the next supplier.get()
       throw new ConditionTimeoutException(
-          "The observed result '" + String.valueOf(supplier.get())
+          "The observed result '" + supplier.get()
               + "' does not satisfy the provided assertionConsumer. \n" + e.getMessage());
     }
   }

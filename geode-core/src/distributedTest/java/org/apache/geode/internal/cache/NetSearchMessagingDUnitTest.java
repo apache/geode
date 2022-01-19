@@ -51,7 +51,7 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
 public class NetSearchMessagingDUnitTest implements Serializable {
   private static final int DEFAULT_MAXIMUM_ENTRIES = 5;
   private static final AtomicBoolean listenerHasFinished = new AtomicBoolean();
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
   private String regionName;
 
   private VM vm0;

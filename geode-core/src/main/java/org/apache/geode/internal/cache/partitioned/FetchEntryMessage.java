@@ -169,7 +169,7 @@ public class FetchEntryMessage extends PartitionMessage {
   @Override
   protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
-    buff.append("; key=").append(this.key);
+    buff.append("; key=").append(key);
   }
 
   @Override
@@ -181,27 +181,27 @@ public class FetchEntryMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.key = DataSerializer.readObject(in);
+    key = DataSerializer.readObject(in);
   }
 
   @Override
   protected void setBooleans(short s, DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.setBooleans(s, in, context);
-    this.access = ((s & HAS_ACCESS) != 0);
+    access = ((s & HAS_ACCESS) != 0);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.key, out);
+    DataSerializer.writeObject(key, out);
   }
 
   @Override
   protected short computeCompressedShort(short s) {
     s = super.computeCompressedShort(s);
-    if (this.access) {
+    if (access) {
       s |= HAS_ACCESS;
     }
     return s;
@@ -255,7 +255,7 @@ public class FetchEntryMessage extends PartitionMessage {
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE,
             "FetchEntryReplyMessage process invoking reply processor with processorId: {}",
-            this.processorId);
+            processorId);
       }
 
       if (processor == null) {
@@ -273,18 +273,18 @@ public class FetchEntryMessage extends PartitionMessage {
     }
 
     public EntrySnapshot getValue() {
-      return this.value;
+      return value;
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      if (this.value == null) {
+      if (value == null) {
         out.writeBoolean(true); // null entry
       } else {
         out.writeBoolean(false); // null entry
-        InternalDataSerializer.invokeToData(this.value, out);
+        InternalDataSerializer.invokeToData(value, out);
       }
     }
 
@@ -303,11 +303,11 @@ public class FetchEntryMessage extends PartitionMessage {
         // we have to find the region and ask it to create a new Entry instance
         // to be populated from the DataInput
         FetchEntryResponse processor =
-            (FetchEntryResponse) ReplyProcessor21.getProcessor(this.processorId);
+            (FetchEntryResponse) ReplyProcessor21.getProcessor(processorId);
         if (processor == null) {
           throw new OperationCancelledException("This operation was cancelled (null processor)");
         }
-        this.value = new EntrySnapshot(in, processor.partitionedRegion);
+        value = new EntrySnapshot(in, processor.partitionedRegion);
       }
     }
 
@@ -315,7 +315,7 @@ public class FetchEntryMessage extends PartitionMessage {
     public StringBuilder getStringBuilder() {
       StringBuilder sb = super.getStringBuilder();
       if (getException() == null) {
-        sb.append(" returning value=").append(this.value);
+        sb.append(" returning value=").append(value);
       }
       return sb;
     }
@@ -342,10 +342,10 @@ public class FetchEntryMessage extends PartitionMessage {
       try {
         if (msg instanceof FetchEntryReplyMessage) {
           FetchEntryReplyMessage reply = (FetchEntryReplyMessage) msg;
-          this.returnValue = reply.getValue();
+          returnValue = reply.getValue();
           if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
             logger.trace(LogMarker.DM_VERBOSE, "FetchEntryResponse return value is {}",
-                this.returnValue);
+                returnValue);
           }
         }
       } finally {
@@ -373,7 +373,7 @@ public class FetchEntryMessage extends PartitionMessage {
             "FetchEntryResponse got remote CacheException; forcing reattempt.",
             ce);
       }
-      return this.returnValue;
+      return returnValue;
     }
   }
 

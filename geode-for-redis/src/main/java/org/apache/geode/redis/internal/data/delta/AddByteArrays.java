@@ -33,7 +33,7 @@ public class AddByteArrays implements DeltaInfo {
   private final List<byte[]> byteArrays;
 
   public AddByteArrays(List<byte[]> deltas) {
-    this.byteArrays = deltas;
+    byteArrays = deltas;
   }
 
   public void serializeTo(DataOutput out) throws IOException {

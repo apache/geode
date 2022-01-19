@@ -32,12 +32,9 @@ public class DelayedActionJUnitTest {
     final AtomicBoolean hit = new AtomicBoolean(false);
     final CountDownLatch complete = new CountDownLatch(1);
 
-    Runnable r = new Runnable() {
-      @Override
-      public void run() {
-        hit.set(true);
-        complete.countDown();
-      }
+    Runnable r = () -> {
+      hit.set(true);
+      complete.countDown();
     };
 
     DelayedAction delay = new DelayedAction(r);

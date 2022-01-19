@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
@@ -113,7 +112,7 @@ public interface Filter {
    */
   boolean isConditioningNeededForIndex(RuntimeIterator independentIter, ExecutionContext context,
       boolean completeExpnsNeeded)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException;
+      throws TypeMismatchException, NameResolutionException;
 
   /**
    *

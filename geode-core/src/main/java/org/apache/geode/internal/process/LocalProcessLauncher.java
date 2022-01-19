@@ -65,7 +65,7 @@ class LocalProcessLauncher {
       throws FileAlreadyExistsException, IOException, PidUnavailableException {
     notNull(pidFile, "Invalid pidFile '" + pidFile + "' specified");
 
-    this.pid = identifyPid();
+    pid = identifyPid();
     this.pidFile = pidFile;
     writePid(force);
   }

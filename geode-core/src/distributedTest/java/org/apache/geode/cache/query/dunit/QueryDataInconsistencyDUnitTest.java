@@ -65,8 +65,8 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
   private static final int cnt = 0;
   private static final int cntDest = 10;
   private static VM server = null;
-  private static String PartitionedRegionName1 = "TestPartitionedRegion1"; // default name
-  private static String repRegionName = "TestRepRegion"; // default name
+  private static final String PartitionedRegionName1 = "TestPartitionedRegion1"; // default name
+  private static final String repRegionName = "TestRepRegion"; // default name
   private static volatile boolean hooked = false;
 
   @Rule
@@ -95,7 +95,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
 
       // Create common Portflios and NewPortfolios
       for (int j = cnt; j < cntDest; j++) {
-        region.put(new Integer(j), new Portfolio(j));
+        region.put(j, new Portfolio(j));
       }
 
       QueryService queryService = cache.getQueryService();
@@ -345,7 +345,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
       // Create common Portfolios and NewPortfolios
       Position.cnt = 0;
       for (int j = cnt; j < cntDest; j++) {
-        region.put(new Integer(j), new Portfolio(j));
+        region.put(j, new Portfolio(j));
       }
 
       QueryService queryService = cache.getQueryService();
@@ -427,10 +427,7 @@ public class QueryDataInconsistencyDUnitTest implements Serializable {
       } catch (InterruptedException e) {
         return false;
       }
-      if (thread.isAlive()) {
-        return false;
-      }
-      return true;
+      return !thread.isAlive();
     };
   }
 

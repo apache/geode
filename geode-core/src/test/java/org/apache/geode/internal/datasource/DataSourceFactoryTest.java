@@ -214,11 +214,11 @@ public class DataSourceFactoryTest {
     }
 
     public Properties getPoolProperties() {
-      return this.poolProperties;
+      return poolProperties;
     }
 
     public Properties getDataSourceProperties() {
-      return this.dataSourceProperties;
+      return dataSourceProperties;
     }
 
     @Override

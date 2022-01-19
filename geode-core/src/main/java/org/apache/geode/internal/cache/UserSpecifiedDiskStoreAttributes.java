@@ -133,15 +133,15 @@ public class UserSpecifiedDiskStoreAttributes extends DiskStoreAttributes {
 
   public void setAllHasFields(boolean b) {
     int hasCounter = 0;
-    Field thisFields[] = UserSpecifiedDiskStoreAttributes.class.getDeclaredFields();
-    for (int i = 0; i < thisFields.length; i++) {
-      if (thisFields[i].getName().startsWith("has")) {
+    Field[] thisFields = UserSpecifiedDiskStoreAttributes.class.getDeclaredFields();
+    for (final Field thisField : thisFields) {
+      if (thisField.getName().startsWith("has")) {
         hasCounter++;
         try {
-          thisFields[i].setBoolean(this, b);
+          thisField.setBoolean(this, b);
         } catch (IllegalAccessException ouch) {
           Assert.assertTrue(false,
-              "Could not access field" + thisFields[i].getName() + " on " + getClass());
+              "Could not access field" + thisField.getName() + " on " + getClass());
         }
       }
     }
@@ -149,19 +149,19 @@ public class UserSpecifiedDiskStoreAttributes extends DiskStoreAttributes {
   }
 
   public void initHasFields(UserSpecifiedDiskStoreAttributes other) {
-    Field thisFields[] = UserSpecifiedDiskStoreAttributes.class.getDeclaredFields();
+    Field[] thisFields = UserSpecifiedDiskStoreAttributes.class.getDeclaredFields();
     Object[] emptyArgs = new Object[] {};
     int hasCounter = 0;
     String fieldName = null;
-    for (int i = 0; i < thisFields.length; i++) {
-      fieldName = thisFields[i].getName();
+    for (final Field thisField : thisFields) {
+      fieldName = thisField.getName();
       if (fieldName.startsWith("has")) {
         hasCounter++;
         boolean bval = false;
 
         try {
           Method otherMeth = other.getClass().getMethod(fieldName/* , (Class[])null */);
-          bval = ((Boolean) otherMeth.invoke(other, emptyArgs)).booleanValue();
+          bval = (Boolean) otherMeth.invoke(other, emptyArgs);
         } catch (NoSuchMethodException darnit) {
           Assert.assertTrue(false, "A has* method accessor is required for field " + fieldName);
         } catch (IllegalAccessException boom) {
@@ -174,7 +174,7 @@ public class UserSpecifiedDiskStoreAttributes extends DiskStoreAttributes {
         }
 
         try {
-          thisFields[i].setBoolean(this, bval);
+          thisField.setBoolean(this, bval);
         } catch (IllegalAccessException ouch) {
           Assert.assertTrue(false, "Could not access field" + fieldName + " on " + getClass());
         }

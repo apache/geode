@@ -34,67 +34,67 @@ public class MemoryBlockNode implements MemoryBlock {
 
   @Override
   public State getState() {
-    return this.block.getState();
+    return block.getState();
   }
 
   @Override
   public long getAddress() {
-    return this.block.getAddress();
+    return block.getAddress();
   }
 
   @Override
   public int getBlockSize() {
-    return this.block.getBlockSize();
+    return block.getBlockSize();
   }
 
   @Override
   public MemoryBlock getNextBlock() {
-    return this.ma.getMemoryInspector().getBlockAfter(this);
+    return ma.getMemoryInspector().getBlockAfter(this);
   }
 
   @Override
   public int getSlabId() {
-    return this.ma.findSlab(getAddress());
+    return ma.findSlab(getAddress());
   }
 
   @Override
   public int getFreeListId() {
-    return this.block.getFreeListId();
+    return block.getFreeListId();
   }
 
   @Override
   public int getRefCount() {
-    return this.block.getRefCount(); // delegate to fix GEODE-489
+    return block.getRefCount(); // delegate to fix GEODE-489
   }
 
   @Override
   public String getDataType() {
-    if (this.block.getDataType() != null) {
-      return this.block.getDataType();
+    if (block.getDataType() != null) {
+      return block.getDataType();
     }
     if (!isSerialized()) {
       // byte array
       if (isCompressed()) {
-        return "compressed byte[" + ((OffHeapStoredObject) this.block).getDataSize() + "]";
+        return "compressed byte[" + ((OffHeapStoredObject) block).getDataSize() + "]";
       } else {
-        return "byte[" + ((OffHeapStoredObject) this.block).getDataSize() + "]";
+        return "byte[" + ((OffHeapStoredObject) block).getDataSize() + "]";
       }
     } else if (isCompressed()) {
-      return "compressed object of size " + ((OffHeapStoredObject) this.block).getDataSize();
+      return "compressed object of size " + ((OffHeapStoredObject) block).getDataSize();
     }
     // Object obj = EntryEventImpl.deserialize(((Chunk)this.block).getRawBytes());
-    byte[] bytes = ((OffHeapStoredObject) this.block).getRawBytes();
+    byte[] bytes = ((OffHeapStoredObject) block).getRawBytes();
     return DataType.getDataType(bytes);
   }
 
   @Override
   public boolean isSerialized() {
-    return this.block.isSerialized();
+    return block.isSerialized();
   }
 
   @Override
   public boolean isCompressed() {
-    return this.block.isCompressed();
+    return block.isCompressed();
   }
 
   @Override
@@ -103,14 +103,14 @@ public class MemoryBlockNode implements MemoryBlock {
     if (dataType == null || dataType.equals("N/A")) {
       return null;
     } else if (isCompressed()) {
-      return ((OffHeapStoredObject) this.block).getCompressedBytes();
+      return ((OffHeapStoredObject) block).getCompressedBytes();
     } else if (!isSerialized()) {
       // byte array
       // return "byte[" + ((Chunk)this.block).getDataSize() + "]";
-      return ((OffHeapStoredObject) this.block).getRawBytes();
+      return ((OffHeapStoredObject) block).getRawBytes();
     } else {
       try {
-        byte[] bytes = ((OffHeapStoredObject) this.block).getRawBytes();
+        byte[] bytes = ((OffHeapStoredObject) block).getRawBytes();
         return DataSerializer.readObject(DataType.getDataInput(bytes));
       } catch (IOException e) {
         e.printStackTrace();
@@ -168,11 +168,11 @@ public class MemoryBlockNode implements MemoryBlock {
     if (o instanceof MemoryBlockNode) {
       o = ((MemoryBlockNode) o).block;
     }
-    return this.block.equals(o);
+    return block.equals(o);
   }
 
   @Override
   public int hashCode() {
-    return this.block.hashCode();
+    return block.hashCode();
   }
 }

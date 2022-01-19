@@ -94,28 +94,28 @@ public class CleanupFailedInitWithDiskFilesRegressionTest extends CacheTestCase 
    */
   @Test
   public void newDiskRegionShouldBeCleanedUp() {
-    server1.invoke(() -> createRegionOnServer1());
+    server1.invoke(this::createRegionOnServer1);
 
     assertThatThrownBy(() -> server2.invoke(() -> createRegionOnServer2(Scope.DISTRIBUTED_ACK)))
         .isInstanceOf(RMIException.class).hasCauseInstanceOf(IllegalStateException.class);
 
     addIgnoredException(IllegalStateException.class);
     addIgnoredException(ReplyException.class);
-    server2.invoke(() -> validateCleanupOfDiskFiles());
+    server2.invoke(this::validateCleanupOfDiskFiles);
   }
 
   @Test
   public void recreatedDiskRegionShouldBeCleanedUp() {
-    server1.invoke(() -> createRegionOnServer1());
+    server1.invoke(this::createRegionOnServer1);
     server2.invoke(() -> createRegionOnServer2(Scope.GLOBAL));
-    server2.invoke(() -> closeRegion());
+    server2.invoke(this::closeRegion);
 
     assertThatThrownBy(() -> server2.invoke(() -> createRegionOnServer2(Scope.DISTRIBUTED_ACK)))
         .isInstanceOf(RMIException.class).hasCauseInstanceOf(IllegalStateException.class);
 
     addIgnoredException(IllegalStateException.class);
     addIgnoredException(ReplyException.class);
-    server2.invoke(() -> validateCleanupOfDiskFiles());
+    server2.invoke(this::validateCleanupOfDiskFiles);
   }
 
   private void createRegionOnServer1() {

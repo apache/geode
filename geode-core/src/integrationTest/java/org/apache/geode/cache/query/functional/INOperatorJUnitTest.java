@@ -84,9 +84,9 @@ public class INOperatorJUnitTest {
 
     Region region = cache.createRegion("pos", regionAttributes);
 
-    region.put("6", new Integer(6));
-    region.put("10", new Integer(10));
-    region.put("12", new Integer(10));
+    region.put("6", 6);
+    region.put("10", 10);
+    region.put("12", 10);
 
     QueryService qs = cache.getQueryService();
 
@@ -99,8 +99,8 @@ public class INOperatorJUnitTest {
     keys = new Object[] {"5", "6", "10", "45"};
     results = (SelectResults) q.execute(new Object[] {keys});
     expectedResults = new HashSet();
-    expectedResults.add(new Integer(6));
-    expectedResults.add(new Integer(10));
+    expectedResults.add(6);
+    expectedResults.add(10);
     assertThat(results.asSet()).isEqualTo(expectedResults);
 
     q = qs.newQuery("SELECT e.value FROM " + SEPARATOR + "pos.entrySet e WHERE e.key IN $1");
@@ -110,16 +110,16 @@ public class INOperatorJUnitTest {
     assertThat(results.asSet()).isEqualTo(expectedResults);
 
     for (int i = 0; i < 1000; i++) {
-      region.put(String.valueOf(i), new Integer(i));
+      region.put(String.valueOf(i), i);
     }
     q = qs.newQuery("SELECT e.value FROM " + SEPARATOR + "pos.entrySet e WHERE e.key IN $1");
     keys = new Object[] {"5", "6", "10", "45"};
     results = (SelectResults) q.execute(new Object[] {keys});
     expectedResults = new HashSet();
-    expectedResults.add(new Integer(5));
-    expectedResults.add(new Integer(6));
-    expectedResults.add(new Integer(10));
-    expectedResults.add(new Integer(45));
+    expectedResults.add(5);
+    expectedResults.add(6);
+    expectedResults.add(10);
+    expectedResults.add(45);
     assertThat(results.asSet()).isEqualTo(expectedResults);
 
     q = qs.newQuery("SELECT e.key, e.value FROM " + SEPARATOR + "pos.entrySet e WHERE e.key IN $1");
@@ -149,7 +149,7 @@ public class INOperatorJUnitTest {
   @Test
   public void testShortNumSet() throws Exception {
     Short num = Short.valueOf("1");
-    Object params[] = new Object[1];
+    Object[] params = new Object[1];
     params[0] = num;
     Query q = CacheUtils.getQueryService().newQuery("$1 IN SET(1,2,3)");
     Object result = q.execute(params);
@@ -165,7 +165,7 @@ public class INOperatorJUnitTest {
     C1.add(e1);
     C1.add(e2);
     C1.add(e3);
-    Object params[] = new Object[3];
+    Object[] params = new Object[3];
     params[0] = e1;
     params[1] = C1;
     params[2] = e2;
@@ -182,7 +182,7 @@ public class INOperatorJUnitTest {
     HashSet H1 = new HashSet();
     H1.add(s1);
     H1.add(s2);
-    Object params[] = new Object[2];
+    Object[] params = new Object[2];
     params[0] = s1;
     params[1] = H1;
     Query q = CacheUtils.getQueryService().newQuery("$1 IN $2");
@@ -197,7 +197,7 @@ public class INOperatorJUnitTest {
     ArrayList AL1 = new ArrayList();
     AL1.add(s1);
     AL1.add(s2);
-    Object params[] = new Object[3];
+    Object[] params = new Object[3];
     params[0] = s1;
     params[1] = s2;
     params[2] = AL1;
@@ -235,7 +235,7 @@ public class INOperatorJUnitTest {
   @Test
   public void testMiscSet() throws Exception {
     Query q = CacheUtils.getQueryService().newQuery(" $1 IN SET(1, 'a', $2, $3, $4, $5)");
-    Object params[] = {null, new Integer(0), "str", null, new Object()};
+    Object[] params = {null, 0, "str", null, new Object()};
 
     for (int i = 1; i < params.length; i++) {
       params[0] = params[i];
@@ -252,9 +252,9 @@ public class INOperatorJUnitTest {
 
     Region region = cache.createRegion("pos", regionAttributes);
 
-    region.put("6", new Integer(6));
-    region.put("10", new Integer(10));
-    region.put("12", new Integer(10));
+    region.put("6", 6);
+    region.put("10", 10);
+    region.put("12", 10);
 
     QueryService qs = cache.getQueryService();
     qs.createIndex("In Index", IndexType.FUNCTIONAL, "e.key", SEPARATOR + "pos.entrySet e");
@@ -267,8 +267,8 @@ public class INOperatorJUnitTest {
     keys = new Object[] {"5", "6", "10", "45"};
     results = (SelectResults) q.execute(new Object[] {keys});
     expectedResults = new HashSet();
-    expectedResults.add(new Integer(6));
-    expectedResults.add(new Integer(10));
+    expectedResults.add(6);
+    expectedResults.add(10);
     assertThat(results.asSet()).isEqualTo(expectedResults);
 
     q = qs.newQuery("SELECT e.value FROM " + SEPARATOR + "pos.entrySet e WHERE e.key IN $1");
@@ -278,16 +278,16 @@ public class INOperatorJUnitTest {
     assertThat(results.asSet()).isEqualTo(expectedResults);
 
     for (int i = 0; i < 1000; i++) {
-      region.put(String.valueOf(i), new Integer(i));
+      region.put(String.valueOf(i), i);
     }
     q = qs.newQuery("SELECT e.value FROM " + SEPARATOR + "pos.entrySet e WHERE e.key IN $1");
     keys = new Object[] {"5", "6", "10", "45"};
     results = (SelectResults) q.execute(new Object[] {keys});
     expectedResults = new HashSet();
-    expectedResults.add(new Integer(5));
-    expectedResults.add(new Integer(6));
-    expectedResults.add(new Integer(10));
-    expectedResults.add(new Integer(45));
+    expectedResults.add(5);
+    expectedResults.add(6);
+    expectedResults.add(10);
+    expectedResults.add(45);
     assertThat(results.asSet()).isEqualTo(expectedResults);
 
     q = qs.newQuery("SELECT e.key, e.value FROM " + SEPARATOR + "pos.entrySet e WHERE e.key IN $1");

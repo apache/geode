@@ -31,8 +31,8 @@ import java.util.List;
 public class RegionPath {
 
   private final String regionPath;
-  private String regionName;
-  private String regionParentPath;
+  private final String regionName;
+  private final String regionParentPath;
 
   public RegionPath(String pathName) {
     regionPath = pathName;

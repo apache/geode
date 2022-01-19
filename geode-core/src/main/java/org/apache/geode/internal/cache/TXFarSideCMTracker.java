@@ -63,7 +63,7 @@ public class TXFarSideCMTracker {
   private static final Logger logger = LogService.getLogger();
 
   private final Map txInProgress;
-  private final Object txHistory[];
+  private final Object[] txHistory;
   private int lastHistoryItem;
 
   /**
@@ -73,13 +73,13 @@ public class TXFarSideCMTracker {
    *        Far Siders did not receive the second message.
    */
   public TXFarSideCMTracker(int historySize) {
-    this.txInProgress = new HashMap();
-    this.txHistory = new Object[historySize];
-    this.lastHistoryItem = 0;
+    txInProgress = new HashMap();
+    txHistory = new Object[historySize];
+    lastHistoryItem = 0;
   }
 
   public int getHistorySize() {
-    return this.txHistory.length;
+    return txHistory.length;
   }
 
   /**
@@ -124,8 +124,8 @@ public class TXFarSideCMTracker {
   }
 
   boolean foundFromHistory(Object key) {
-    for (int i = this.txHistory.length - 1; i >= 0; --i) {
-      if (key.equals(this.txHistory[i])) {
+    for (int i = txHistory.length - 1; i >= 0; --i) {
+      if (key.equals(txHistory[i])) {
         return true;
       }
     }
@@ -144,12 +144,12 @@ public class TXFarSideCMTracker {
     // case of a shutdown, in that case we don't need to wait
     // around any longer, propagating the interrupt is reasonable behavior
     boolean messageWritten = false;
-    synchronized (this.txInProgress) {
-      while (!this.txInProgress.isEmpty()) {
+    synchronized (txInProgress) {
+      while (!txInProgress.isEmpty()) {
         logger.info("Lock grantor recovery is waiting for transactions to complete: {}",
             txInProgress);
         messageWritten = true;
-        this.txInProgress.wait();
+        txInProgress.wait();
       }
     }
     if (messageWritten) {
@@ -165,8 +165,8 @@ public class TXFarSideCMTracker {
   public void waitToProcess(TXLockId lockId, DistributionManager dm) {
     waitForMemberToDepart(lockId.getMemberId(), dm);
     final TXCommitMessage commitMessage;
-    synchronized (this.txInProgress) {
-      commitMessage = (TXCommitMessage) this.txInProgress.get(lockId);
+    synchronized (txInProgress) {
+      commitMessage = (TXCommitMessage) txInProgress.get(lockId);
     }
     if (commitMessage != null) {
       synchronized (commitMessage) {
@@ -186,8 +186,8 @@ public class TXFarSideCMTracker {
       }
     } else {
       // tx may have completed
-      for (int i = this.txHistory.length - 1; i >= 0; --i) {
-        if (lockId.equals(this.txHistory[i])) {
+      for (int i = txHistory.length - 1; i >= 0; --i) {
+        if (lockId.equals(txHistory[i])) {
           return;
         }
       }
@@ -257,16 +257,16 @@ public class TXFarSideCMTracker {
   public TXCommitMessage processed(TXCommitMessage processedMess) {
     final TXCommitMessage mess;
     final Object key = processedMess.getTrackerKey();
-    synchronized (this.txInProgress) {
-      mess = (TXCommitMessage) this.txInProgress.remove(key);
+    synchronized (txInProgress) {
+      mess = (TXCommitMessage) txInProgress.remove(key);
       if (mess != null) {
-        this.txHistory[this.lastHistoryItem++] = key;
+        txHistory[lastHistoryItem++] = key;
         if (lastHistoryItem >= txHistory.length) {
           lastHistoryItem = 0;
         }
         // For any waitForAllToComplete
         if (txInProgress.isEmpty()) {
-          this.txInProgress.notifyAll();
+          txInProgress.notifyAll();
         }
       }
     }
@@ -285,11 +285,11 @@ public class TXFarSideCMTracker {
    * none of the FarSiders received the CommitProcessMessage
    **/
   public void removeMessage(TXCommitMessage deadMess) {
-    synchronized (this.txInProgress) {
-      this.txInProgress.remove(deadMess.getTrackerKey());
+    synchronized (txInProgress) {
+      txInProgress.remove(deadMess.getTrackerKey());
       // For any waitForAllToComplete
       if (txInProgress.isEmpty()) {
-        this.txInProgress.notifyAll();
+        txInProgress.notifyAll();
       }
     }
   }
@@ -299,24 +299,24 @@ public class TXFarSideCMTracker {
    */
   public TXCommitMessage get(Object key) {
     final TXCommitMessage mess;
-    synchronized (this.txInProgress) {
-      mess = (TXCommitMessage) this.txInProgress.get(key);
+    synchronized (txInProgress) {
+      mess = (TXCommitMessage) txInProgress.get(key);
     }
     return mess;
   }
 
   public TXCommitMessage waitForMessage(Object key, DistributionManager dm) {
     TXCommitMessage msg = null;
-    synchronized (this.txInProgress) {
-      msg = (TXCommitMessage) this.txInProgress.get(key);
+    synchronized (txInProgress) {
+      msg = (TXCommitMessage) txInProgress.get(key);
       while (msg == null) {
         try {
           dm.getSystem().getCancelCriterion().checkCancelInProgress(null);
-          this.txInProgress.wait();
+          txInProgress.wait();
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
         }
-        msg = (TXCommitMessage) this.txInProgress.get(key);
+        msg = (TXCommitMessage) txInProgress.get(key);
       }
     }
     return msg;
@@ -326,31 +326,31 @@ public class TXFarSideCMTracker {
    * The transcation commit message has been received
    */
   public void add(TXCommitMessage msg) {
-    synchronized (this.txInProgress) {
+    synchronized (txInProgress) {
       final Object key = msg.getTrackerKey();
       if (key == null) {
         Assert.assertTrue(false, "TXFarSideCMTracker must have a non-null key for message " + msg);
       }
-      this.txInProgress.put(key, msg);
-      this.txInProgress.notifyAll();
+      txInProgress.put(key, msg);
+      txInProgress.notifyAll();
     }
   }
 
   // TODO we really need to keep around only one msg for each thread on a client
-  private Map<TXId, TXCommitMessage> failoverMap =
+  private final Map<TXId, TXCommitMessage> failoverMap =
       Collections.synchronizedMap(new LinkedHashMap<TXId, TXCommitMessage>() {
         @Override
         protected boolean removeEldestEntry(Entry eldest) {
           return size() > TXManagerImpl.FAILOVER_TX_MAP_SIZE;
-        };
+        }
       });
 
   public void saveTXForClientFailover(TXId txId, TXCommitMessage msg) {
-    this.failoverMap.put(txId, msg);
+    failoverMap.put(txId, msg);
   }
 
   public TXCommitMessage getTXCommitMessage(TXId txId) {
-    return this.failoverMap.get(txId);
+    return failoverMap.get(txId);
   }
 
   /**
@@ -358,9 +358,9 @@ public class TXFarSideCMTracker {
    * finished closing
    */
   public void clearForCacheClose() {
-    this.failoverMap.clear();
-    this.lastHistoryItem = 0;
-    Arrays.fill(this.txHistory, null);
+    failoverMap.clear();
+    lastHistoryItem = 0;
+    Arrays.fill(txHistory, null);
   }
 
   @VisibleForTesting

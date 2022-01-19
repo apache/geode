@@ -34,7 +34,7 @@ import org.apache.geode.internal.cache.DiskRegionTestingBase;
  */
 public class DiskRegionRollOpLogJUnitPerformanceTest extends DiskRegionTestingBase {
 
-  private DiskRegionProperties diskProps = new DiskRegionProperties();
+  private final DiskRegionProperties diskProps = new DiskRegionProperties();
 
   private LogWriter log = null;
 
@@ -47,7 +47,7 @@ public class DiskRegionRollOpLogJUnitPerformanceTest extends DiskRegionTestingBa
    * Also ,one needs to set the VM heap size accordingly. (For example:Default setting in build.xml
    * is <jvmarg value="-Xmx256M"/>
    */
-  private boolean runPerfTest = false;
+  private final boolean runPerfTest = false;
 
   @Override
   protected final void postSetUp() throws Exception {
@@ -559,8 +559,8 @@ public class DiskRegionRollOpLogJUnitPerformanceTest extends DiskRegionTestingBa
   protected void deleteFiles() {
     for (int i = 0; i < 4; i++) {
       File[] files = dirs[i].listFiles();
-      for (int j = 0; j < files.length; j++) {
-        files[j].delete();
+      for (final File file : files) {
+        file.delete();
       }
     }
   }

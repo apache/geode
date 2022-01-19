@@ -34,8 +34,8 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 @Category({ClientSubscriptionTest.class})
 public class FilterProfileIntegrationJUnitTest {
 
-  private static String regionName = "test";
-  private static int numElem = 120;
+  private static final String regionName = "test";
+  private static final int numElem = 120;
 
   @Test
   public void testFilterProfile() throws Exception {
@@ -50,15 +50,12 @@ public class FilterProfileIntegrationJUnitTest {
       final FilterProfileTestHook hook = new FilterProfileTestHook();
       FilterProfile.testHook = hook;
 
-      new Thread(new Runnable() {
-        @Override
-        public void run() {
-          while (hook.getCount() != 1) {
-
-          }
-          filterProfile.unregisterClientInterest("clientId", ".*", InterestType.REGULAR_EXPRESSION);
+      new Thread(() -> {
+        while (hook.getCount() != 1) {
 
         }
+        filterProfile.unregisterClientInterest("clientId", ".*", InterestType.REGULAR_EXPRESSION);
+
       }).start();
       filterProfile.hasAllKeysInterestFor("clientId");
     } finally {
@@ -93,7 +90,7 @@ public class FilterProfileIntegrationJUnitTest {
       latch.countDown();
     }
 
-  };
+  }
 
   /**
    * Helper Methods

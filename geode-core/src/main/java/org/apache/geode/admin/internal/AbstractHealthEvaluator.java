@@ -57,7 +57,7 @@ public abstract class AbstractHealthEvaluator {
    * is set.
    */
   protected AbstractHealthEvaluator(GemFireHealthConfig config, DistributionManager dm) {
-    this.numEvaluations = 0;
+    numEvaluations = 0;
   }
 
   ///////////////////// Instance Methods /////////////////////
@@ -69,7 +69,7 @@ public abstract class AbstractHealthEvaluator {
    *        is populated when ill health is detected.
    */
   public void evaluate(List<HealthStatus> status) {
-    this.numEvaluations++;
+    numEvaluations++;
     check(status);
   }
 
@@ -84,7 +84,7 @@ public abstract class AbstractHealthEvaluator {
    * Returns whether or not this is the first evaluation
    */
   protected boolean isFirstEvaluation() {
-    return this.numEvaluations <= 1;
+    return numEvaluations <= 1;
   }
 
   /**
@@ -125,10 +125,10 @@ public abstract class AbstractHealthEvaluator {
    */
   public class HealthStatus {
     /** The health of a GemFire component */
-    private GemFireHealth.Health healthCode;
+    private final GemFireHealth.Health healthCode;
 
     /** The diagnosis of the illness */
-    private String diagnosis;
+    private final String diagnosis;
 
     ////////////////////// Constructors //////////////////////
 
@@ -141,7 +141,7 @@ public abstract class AbstractHealthEvaluator {
      */
     HealthStatus(GemFireHealth.Health healthCode, String diagnosis) {
       this.healthCode = healthCode;
-      this.diagnosis = "[" + AbstractHealthEvaluator.this.getDescription() + "] " + diagnosis;
+      this.diagnosis = "[" + getDescription() + "] " + diagnosis;
     }
 
     ///////////////////// Instance Methods /////////////////////
@@ -153,14 +153,14 @@ public abstract class AbstractHealthEvaluator {
      * @see GemFireHealth#POOR_HEALTH
      */
     public GemFireHealth.Health getHealthCode() {
-      return this.healthCode;
+      return healthCode;
     }
 
     /**
      * Returns the diagnosis prepended with a description of the component that is ill.
      */
     public String getDiagnosis() {
-      return this.diagnosis;
+      return diagnosis;
     }
 
   }

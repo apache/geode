@@ -131,7 +131,7 @@ public class ExecuteRegionFunctionNoAckOp {
       getMessage().addObjPart(args);
       getMessage().addObjPart(memberMappedArg);
 
-      this.executeOnBucketSet = serverRegionExecutor.getExecuteOnBucketSetFlag();
+      executeOnBucketSet = serverRegionExecutor.getExecuteOnBucketSetFlag();
       byte flags = ExecuteFunctionHelper.createFlags(executeOnBucketSet, isReExecute);
 
       getMessage().addBytesPart(new byte[] {flags});
@@ -149,7 +149,7 @@ public class ExecuteRegionFunctionNoAckOp {
       byte isReExecute = 0;
       int removedNodesSize = 0;
       byte functionState = AbstractExecution.getFunctionState(isHA,
-          hasResult == (byte) 1 ? true : false, optimizeForWrite);
+          hasResult == (byte) 1, optimizeForWrite);
 
       Set routingObjects = serverRegionExecutor.getFilter();
       Object args = serverRegionExecutor.getArguments();
@@ -159,7 +159,7 @@ public class ExecuteRegionFunctionNoAckOp {
       getMessage().addStringOrObjPart(functionId);
       getMessage().addObjPart(args);
       getMessage().addObjPart(memberMappedArg);
-      this.executeOnBucketSet = serverRegionExecutor.getExecuteOnBucketSetFlag();
+      executeOnBucketSet = serverRegionExecutor.getExecuteOnBucketSetFlag();
       byte flags = ExecuteFunctionHelper.createFlags(executeOnBucketSet, isReExecute);
 
       getMessage().addBytesPart(new byte[] {flags});

@@ -39,7 +39,7 @@ class BucketRedundancyTracker {
    */
   BucketRedundancyTracker(int redundantCopies,
       PartitionedRegionRedundancyTracker regionRedundancyTracker) {
-    this.targetRedundancy = redundantCopies;
+    targetRedundancy = redundantCopies;
     this.regionRedundancyTracker = regionRedundancyTracker;
   }
 

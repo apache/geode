@@ -20,7 +20,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.ROLES;
 import static org.junit.Assert.assertEquals;
 
-import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
@@ -76,8 +75,8 @@ public class RoleDUnitTest extends JUnit4DistributedTestCase {
       assertEquals(false, roleA.isPresent());
       assertEquals(0, roleA.getCount());
 
-      for (Iterator iter = roles.iterator(); iter.hasNext();) {
-        Role role = (Role) iter.next();
+      for (final Object o : roles) {
+        Role role = (Role) o;
         assertEquals(true, role.isPresent());
         assertEquals(1, role.getCount());
       }
@@ -93,8 +92,8 @@ public class RoleDUnitTest extends JUnit4DistributedTestCase {
   public void testRolesInDistributedVMs() {
     // connect all four vms...
     final String[] vmRoles = new String[] {"VM_A", "BAR", "Foo,BAR", "Bip,BAM"};
-    final Object[][] roleCounts = new Object[][] {{"VM_A", new Integer(1)}, {"BAR", new Integer(2)},
-        {"Foo", new Integer(1)}, {"Bip", new Integer(1)}, {"BAM", new Integer(1)}};
+    final Object[][] roleCounts = new Object[][] {{"VM_A", 1}, {"BAR", 2},
+        {"Foo", 1}, {"Bip", 1}, {"BAM", 1}};
 
     for (int i = 0; i < vmRoles.length; i++) {
       final int vm = i;
@@ -125,13 +124,13 @@ public class RoleDUnitTest extends JUnit4DistributedTestCase {
               "allRoles is " + allRoles.size() + " but roleCounts should be " + roleCounts.length,
               roleCounts.length, allRoles.size());
 
-          for (Iterator iter = allRoles.iterator(); iter.hasNext();) {
+          for (final Object allRole : allRoles) {
             // match role with string in roleCounts
-            Role role = (Role) iter.next();
-            for (int j = 0; j < roleCounts.length; j++) {
-              if (role.getName().equals(roleCounts[j][0])) {
+            Role role = (Role) allRole;
+            for (final Object[] roleCount : roleCounts) {
+              if (role.getName().equals(roleCount[0])) {
                 // parse count
-                int count = ((Integer) roleCounts[j][1]).intValue();
+                int count = (Integer) roleCount[1];
                 // assert count
                 assertEquals("count for role " + role + " is wrong", count, dm.getRoleCount(role));
                 assertEquals("isRolePresent for role " + role + " should be true", true,

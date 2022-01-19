@@ -83,7 +83,7 @@ public class ClusterManagementOperationResult<A extends ClusterManagementOperati
    * Returns the time the operation was started
    */
   public Date getOperationStart() {
-    return this.operationStart;
+    return operationStart;
   }
 
   /**
@@ -91,14 +91,14 @@ public class ClusterManagementOperationResult<A extends ClusterManagementOperati
    * process.
    */
   public Date getOperationEnd() {
-    return this.operationEnd;
+    return operationEnd;
   }
 
   /**
    * Returns the operation result as an extension of {@link OperationResult}
    */
   public V getOperationResult() {
-    return this.operationResult;
+    return operationResult;
   }
 
   /**
@@ -106,6 +106,6 @@ public class ClusterManagementOperationResult<A extends ClusterManagementOperati
    * no exceptions occurred.
    */
   public Throwable getThrowable() {
-    return this.throwable;
+    return throwable;
   }
 }

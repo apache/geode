@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -99,7 +98,7 @@ public class ResultsSet extends HashSet implements SelectResults, DataSerializab
     if (!(other instanceof ResultsSet)) {
       return false;
     }
-    if (!this.elementType.equals(((ResultsSet) other).elementType)) {
+    if (!elementType.equals(((ResultsSet) other).elementType)) {
       return false;
     }
     return super.equals(other);
@@ -107,7 +106,7 @@ public class ResultsSet extends HashSet implements SelectResults, DataSerializab
 
   @Override
   public int hashCode() {
-    return this.elementType.hashCode();
+    return elementType.hashCode();
   }
 
   @Override
@@ -122,7 +121,7 @@ public class ResultsSet extends HashSet implements SelectResults, DataSerializab
 
   @Override
   public CollectionType getCollectionType() {
-    return new CollectionTypeImpl(Set.class, this.elementType);
+    return new CollectionTypeImpl(Set.class, elementType);
   }
 
   @Override
@@ -149,7 +148,7 @@ public class ResultsSet extends HashSet implements SelectResults, DataSerializab
     InternalDataSerializer.invokeFromData(clt, in);
     setElementType(clt);
     for (int k = size; k > 0; k--) {
-      this.add(context.getDeserializer().readObject(in));
+      add(context.getDeserializer().readObject(in));
     }
   }
 
@@ -157,11 +156,11 @@ public class ResultsSet extends HashSet implements SelectResults, DataSerializab
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     out.writeInt(size());
-    ObjectTypeImpl ctImpl = (ObjectTypeImpl) this.getCollectionType().getElementType();
+    ObjectTypeImpl ctImpl = (ObjectTypeImpl) getCollectionType().getElementType();
     Assert.assertTrue(ctImpl != null, "ctImpl can not be null");
     InternalDataSerializer.invokeToData(ctImpl, out);
-    for (Iterator itr = this.iterator(); itr.hasNext();) {
-      context.getSerializer().writeObject(itr.next(), out);
+    for (final Object o : this) {
+      context.getSerializer().writeObject(o, out);
     }
   }
 

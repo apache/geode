@@ -294,25 +294,25 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
 
     createOrderShipmentOnReceivers();
 
-    Map custKeyValues = (Map) vm4.invoke(() -> putCustomerPartitionedRegion(20));
-    Map orderKeyValues = (Map) vm4.invoke(() -> putOrderPartitionedRegion(20));
-    Map shipmentKeyValues = (Map) vm4.invoke(() -> putShipmentPartitionedRegion(20));
+    Map custKeyValues = vm4.invoke(() -> putCustomerPartitionedRegion(20));
+    Map orderKeyValues = vm4.invoke(() -> putOrderPartitionedRegion(20));
+    Map shipmentKeyValues = vm4.invoke(() -> putShipmentPartitionedRegion(20));
 
     vm4.invoke(() -> WANTestBase.checkQueueSize("ln",
         (custKeyValues.size() + orderKeyValues.size() + shipmentKeyValues.size())));
 
-    Map updatedCustKeyValues = (Map) vm4.invoke(() -> updateCustomerPartitionedRegion(10));
-    Map updatedOrderKeyValues = (Map) vm4.invoke(() -> updateOrderPartitionedRegion(10));
-    Map updatedShipmentKeyValues = (Map) vm4.invoke(() -> updateShipmentPartitionedRegion(10));
+    Map updatedCustKeyValues = vm4.invoke(() -> updateCustomerPartitionedRegion(10));
+    Map updatedOrderKeyValues = vm4.invoke(() -> updateOrderPartitionedRegion(10));
+    Map updatedShipmentKeyValues = vm4.invoke(() -> updateShipmentPartitionedRegion(10));
     int sum = (custKeyValues.size() + orderKeyValues.size() + shipmentKeyValues.size())
         + updatedCustKeyValues.size() + updatedOrderKeyValues.size()
         + updatedShipmentKeyValues.size();
     vm4.invoke(() -> WANTestBase.checkQueueSize("ln", sum));
 
 
-    updatedCustKeyValues = (Map) vm4.invoke(() -> updateCustomerPartitionedRegion(10));
-    updatedOrderKeyValues = (Map) vm4.invoke(() -> updateOrderPartitionedRegion(10));
-    updatedShipmentKeyValues = (Map) vm4.invoke(() -> updateShipmentPartitionedRegion(10));
+    updatedCustKeyValues = vm4.invoke(() -> updateCustomerPartitionedRegion(10));
+    updatedOrderKeyValues = vm4.invoke(() -> updateOrderPartitionedRegion(10));
+    updatedShipmentKeyValues = vm4.invoke(() -> updateShipmentPartitionedRegion(10));
     int sum2 = (custKeyValues.size() + orderKeyValues.size() + shipmentKeyValues.size())
         + updatedCustKeyValues.size() + updatedOrderKeyValues.size()
         + updatedShipmentKeyValues.size();
@@ -346,27 +346,27 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
 
     createOrderShipmentOnReceivers();
 
-    Map custKeyValues = (Map) vm4.invoke(() -> putCustomerPartitionedRegion(20));
-    Map orderKeyValues = (Map) vm4.invoke(() -> putOrderPartitionedRegionUsingCustId(20));
-    Map shipmentKeyValues = (Map) vm4.invoke(() -> putShipmentPartitionedRegionUsingCustId(20));
+    Map custKeyValues = vm4.invoke(() -> putCustomerPartitionedRegion(20));
+    Map orderKeyValues = vm4.invoke(() -> putOrderPartitionedRegionUsingCustId(20));
+    Map shipmentKeyValues = vm4.invoke(() -> putShipmentPartitionedRegionUsingCustId(20));
 
     vm4.invoke(() -> checkQueueSize("ln",
         (custKeyValues.size() + orderKeyValues.size() + shipmentKeyValues.size())));
 
-    Map updatedCustKeyValues = (Map) vm4.invoke(() -> updateCustomerPartitionedRegion(10));
-    Map updatedOrderKeyValues = (Map) vm4.invoke(() -> updateOrderPartitionedRegionUsingCustId(10));
+    Map updatedCustKeyValues = vm4.invoke(() -> updateCustomerPartitionedRegion(10));
+    Map updatedOrderKeyValues = vm4.invoke(() -> updateOrderPartitionedRegionUsingCustId(10));
     Map updatedShipmentKeyValues =
-        (Map) vm4.invoke(() -> updateShipmentPartitionedRegionUsingCustId(10));
+        vm4.invoke(() -> updateShipmentPartitionedRegionUsingCustId(10));
     int sum = (custKeyValues.size() + orderKeyValues.size() + shipmentKeyValues.size())
         + updatedCustKeyValues.size() + updatedOrderKeyValues.size()
         + updatedShipmentKeyValues.size();
 
     vm4.invoke(() -> checkQueueSize("ln", sum));
 
-    updatedCustKeyValues = (Map) vm4.invoke(() -> updateCustomerPartitionedRegion(10));
-    updatedOrderKeyValues = (Map) vm4.invoke(() -> updateOrderPartitionedRegionUsingCustId(10));
+    updatedCustKeyValues = vm4.invoke(() -> updateCustomerPartitionedRegion(10));
+    updatedOrderKeyValues = vm4.invoke(() -> updateOrderPartitionedRegionUsingCustId(10));
     updatedShipmentKeyValues =
-        (Map) vm4.invoke(() -> updateShipmentPartitionedRegionUsingCustId(10));
+        vm4.invoke(() -> updateShipmentPartitionedRegionUsingCustId(10));
 
     int sum2 = (custKeyValues.size() + orderKeyValues.size() + shipmentKeyValues.size())
         + updatedCustKeyValues.size() + updatedOrderKeyValues.size()
@@ -487,8 +487,8 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
   }
 
   protected void initialSetUp() {
-    Integer lnPort = (Integer) vm0.invoke(() -> createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);

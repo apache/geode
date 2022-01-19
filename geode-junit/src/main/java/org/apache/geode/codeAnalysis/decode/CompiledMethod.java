@@ -25,7 +25,7 @@ public class CompiledMethod implements Comparable {
   int name_index;
   int descriptor_index;
   int attributes_count;
-  CompiledAttribute attributes[];
+  CompiledAttribute[] attributes;
   String name;
   String descriptor;
   String accessString;
@@ -50,12 +50,12 @@ public class CompiledMethod implements Comparable {
    * return a string describing the access modifiers for this class
    */
   public String accessString() {
-    StringBuffer result;
+    StringBuilder result;
 
     if (accessString != null) {
       return accessString;
     }
-    result = new StringBuffer();
+    result = new StringBuilder();
     if ((access_flags & 0x0001) != 0) {
       result.append("public ");
     }
@@ -157,10 +157,10 @@ public class CompiledMethod implements Comparable {
   }
 
   public CompiledCode getCode() {
-    for (int i = 0; i < attributes.length; i++) {
-      if (attributes[i].name(myclass).equals("Code")) {
+    for (final CompiledAttribute attribute : attributes) {
+      if (attribute.name(myclass).equals("Code")) {
         try {
-          return new CompiledCode(attributes[i].info);
+          return new CompiledCode(attribute.info);
         } catch (IOException e) {
           e.printStackTrace(System.err);
         }

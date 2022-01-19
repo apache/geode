@@ -17,7 +17,6 @@ package org.apache.geode.internal.jndi;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Vector;
@@ -62,9 +61,9 @@ public class ContextImpl implements Context {
    */
   private final Map ctxMaps = Collections.synchronizedMap(new HashMap());
   // Name of this Context
-  private String ctxName;
+  private final String ctxName;
   // Parent Context of this Context
-  private ContextImpl parentCtx;
+  private final ContextImpl parentCtx;
   // Shows if this context has been destroyed
   private boolean isDestroyed;
 
@@ -74,8 +73,8 @@ public class ContextImpl implements Context {
    */
   private ContextImpl(ContextImpl parentCtx, String name) {
     this.parentCtx = parentCtx;
-    this.ctxName = name;
-    this.isDestroyed = false;
+    ctxName = name;
+    isDestroyed = false;
   }
 
   /**
@@ -383,9 +382,8 @@ public class ContextImpl implements Context {
     Name parsedName = getParsedName(name);
     if (parsedName.size() == 0) {
       Vector bindings = new Vector();
-      Iterator iterat = ctxMaps.keySet().iterator();
-      while (iterat.hasNext()) {
-        String bindingName = (String) iterat.next();
+      for (final Object o : ctxMaps.keySet()) {
+        String bindingName = (String) o;
         bindings.addElement(new Binding(bindingName, ctxMaps.get(bindingName)));
       }
       return new NamingEnumerationImpl(bindings);
@@ -507,7 +505,7 @@ public class ContextImpl implements Context {
             e);
       }
       throw new NameNotFoundException(
-          String.format("Name %s not found", new Object[] {name}));
+          String.format("Name %s not found", name));
     }
   }
 
@@ -760,7 +758,7 @@ public class ContextImpl implements Context {
    * @return compound string name of the context
    */
   String getCompoundStringName() throws NamingException {
-    // StringBuffer compositeName = new StringBuffer();
+    // StringBuilder compositeName = new StringBuilder();
     String compositeName = "";
     ContextImpl curCtx = this;
     while (!curCtx.isRootContext()) {
@@ -796,12 +794,12 @@ public class ContextImpl implements Context {
 
   private static class NamingEnumerationImpl implements NamingEnumeration {
 
-    private Vector elements;
+    private final Vector elements;
     private int currentElement;
 
     NamingEnumerationImpl(Vector elements) {
       this.elements = elements;
-      this.currentElement = 0;
+      currentElement = 0;
     }
 
     @Override

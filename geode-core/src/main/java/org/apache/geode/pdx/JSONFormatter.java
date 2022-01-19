@@ -388,7 +388,7 @@ public class JSONFormatter {
           // write string
           stringFound(currentState);
           currentState = states.SCALAR_FOUND;
-          currentPdxInstance.addObjectField(currentFieldName, new String(jp.getText()));
+          currentPdxInstance.addObjectField(currentFieldName, jp.getText());
           currentFieldName = null;
           break;
         }
@@ -483,7 +483,7 @@ public class JSONFormatter {
   }
 
   private PdxListHelper getList(JsonParser jp, states currentState, PdxListHelper currentPdxList)
-      throws JsonParseException, IOException {
+      throws IOException {
     String currentFieldName = null;
     currentPdxList = new PdxListHelper(currentPdxList, null);
     while (true) {

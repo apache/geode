@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.jetbrains.annotations.NotNull;
@@ -65,8 +64,8 @@ public class UnregisterInterestListOp {
         getMessage().addBytesPart(new byte[] {keepAliveByte});
       }
       getMessage().addIntPart(keys.size());
-      for (Iterator i = keys.iterator(); i.hasNext();) {
-        getMessage().addStringOrObjPart(i.next());
+      for (final Object key : keys) {
+        getMessage().addStringOrObjPart(key);
       }
     }
 

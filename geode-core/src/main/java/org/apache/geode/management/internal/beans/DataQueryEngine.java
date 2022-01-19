@@ -58,8 +58,8 @@ public class DataQueryEngine {
   private static final int QUERY_RESULTSET_LIMIT = 4;
   private static final int QUERY_COLLECTIONS_DEPTH = 5;
 
-  private SystemManagementService service;
-  private InternalCache cache;
+  private final SystemManagementService service;
+  private final InternalCache cache;
 
   public DataQueryEngine(SystemManagementService service, InternalCache cache) {
     this.service = service;
@@ -177,7 +177,7 @@ public class DataQueryEngine {
 
       } else {
         return new JsonisedErrorMessage(String
-            .format("Cannot find regions %s in any of the members", regionsInQuery.toString()))
+            .format("Cannot find regions %s in any of the members", regionsInQuery))
                 .toString();
       }
 

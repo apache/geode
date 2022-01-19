@@ -40,9 +40,9 @@ import org.apache.geode.test.dunit.ThreadUtils;
  */
 public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
 
-  private Set keyIds = Collections.synchronizedSet(new HashSet());
+  private final Set keyIds = Collections.synchronizedSet(new HashSet());
 
-  private DiskRegionProperties diskProps = new DiskRegionProperties();
+  private final DiskRegionProperties diskProps = new DiskRegionProperties();
 
   @Override
   protected final void postSetUp() throws Exception {
@@ -101,21 +101,21 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
   }
 
   void checkIfContainsFileWithSubstring(String substr) {
-    for (int i = 0; i < dirs.length; i++) {
-      File[] files = dirs[i].listFiles();
-      for (int j = 0; j < files.length; j++) {
-        if (files[j].getAbsolutePath().contains(substr)) {
-          fail("file \"" + files[j].getAbsolutePath() + "\" still exists");
+    for (final File dir : dirs) {
+      File[] files = dir.listFiles();
+      for (final File file : files) {
+        if (file.getAbsolutePath().contains(substr)) {
+          fail("file \"" + file.getAbsolutePath() + "\" still exists");
         }
       }
     }
   }
 
   void expectContainsFileWithSubstring(String substr) {
-    for (int i = 0; i < dirs.length; i++) {
-      File[] files = dirs[i].listFiles();
-      for (int j = 0; j < files.length; j++) {
-        if (files[j].getAbsolutePath().contains(substr)) {
+    for (final File dir : dirs) {
+      File[] files = dir.listFiles();
+      for (final File file : files) {
+        if (file.getAbsolutePath().contains(substr)) {
           return; // found one
         }
       }
@@ -124,11 +124,11 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
   }
 
   void checkIfContainsFileWithExt(String fileExtension) {
-    for (int i = 0; i < dirs.length; i++) {
-      File[] files = dirs[i].listFiles();
-      for (int j = 0; j < files.length; j++) {
-        if (files[j].getAbsolutePath().endsWith(fileExtension)) {
-          fail("file \"" + files[j].getAbsolutePath() + "\" still exists");
+    for (final File dir : dirs) {
+      File[] files = dir.listFiles();
+      for (final File file : files) {
+        if (file.getAbsolutePath().endsWith(fileExtension)) {
+          fail("file \"" + file.getAbsolutePath() + "\" still exists");
         }
       }
     }
@@ -304,7 +304,7 @@ public class SimpleDiskRegionJUnitTest extends DiskRegionTestingBase {
       long keyId = 0;
       for (int i = 0; i < 10000; i++) {
         keyId = ((LocalRegion) region).getDiskRegion().newOplogEntryId();
-        keyIds.add(new Long(keyId));
+        keyIds.add(keyId);
       }
     }
   }

@@ -19,7 +19,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -109,19 +108,14 @@ public class InternalClientMembership {
     synchronized (systems) {
       // Initialize our own list of distributed systems via a connect listener
       List existingSystems = InternalDistributedSystem
-          .addConnectListener(new InternalDistributedSystem.ConnectListener() {
-            @Override
-            public void onConnect(InternalDistributedSystem sys) {
-              addInternalDistributedSystem(sys);
-            }
-          });
+          .addConnectListener(InternalClientMembership::addInternalDistributedSystem);
 
       isMonitoring = true;
 
       // While still holding the lock on systems, add all currently known
       // systems to our own list
-      for (Iterator iter = existingSystems.iterator(); iter.hasNext();) {
-        InternalDistributedSystem sys = (InternalDistributedSystem) iter.next();
+      for (final Object existingSystem : existingSystems) {
+        InternalDistributedSystem sys = (InternalDistributedSystem) existingSystem;
         try {
           if (sys.isConnected()) {
             addInternalDistributedSystem(sys);
@@ -148,7 +142,7 @@ public class InternalClientMembership {
       List<ClientMembershipListener> oldListeners = clientMembershipListeners;
       if (!oldListeners.contains(listener)) {
         List<ClientMembershipListener> newListeners =
-            new ArrayList<ClientMembershipListener>(oldListeners);
+            new ArrayList<>(oldListeners);
         newListeners.add(listener);
         clientMembershipListeners = newListeners;
       }
@@ -166,7 +160,7 @@ public class InternalClientMembership {
       List<ClientMembershipListener> oldListeners = clientMembershipListeners;
       if (oldListeners.contains(listener)) {
         List<ClientMembershipListener> newListeners =
-            new ArrayList<ClientMembershipListener>(oldListeners);
+            new ArrayList<>(oldListeners);
         if (newListeners.remove(listener)) {
           clientMembershipListeners = newListeners;
         }
@@ -187,9 +181,7 @@ public class InternalClientMembership {
 
     List<ClientMembershipListener> l = clientMembershipListeners; // volatile fetch
     // convert to an array
-    ClientMembershipListener[] listeners =
-        (ClientMembershipListener[]) l.toArray(new ClientMembershipListener[0]);
-    return listeners;
+    return l.toArray(new ClientMembershipListener[0]);
   }
 
   /**
@@ -199,7 +191,7 @@ public class InternalClientMembership {
   public static void unregisterAllListeners() {
     startMonitoring();
     synchronized (membershipLock) {
-      clientMembershipListeners = new ArrayList<ClientMembershipListener>();
+      clientMembershipListeners = new ArrayList<>();
     }
   }
 
@@ -224,8 +216,8 @@ public class InternalClientMembership {
     if (onlyClientsNotifiedByThisServer) {
       // Note it is not necessary to synchronize on the list of Client servers here,
       // since this is only a status (snapshot) of the system.
-      for (Iterator bsii = cache.getCacheServers().iterator(); bsii.hasNext();) {
-        InternalCacheServer cacheServer = (InternalCacheServer) bsii.next();
+      for (final CacheServer server : cache.getCacheServers()) {
+        InternalCacheServer cacheServer = (InternalCacheServer) server;
         Acceptor acceptor = cacheServer.getAcceptor();
         if (acceptor != null && acceptor.getCacheClientNotifier() != null) {
           if (filterProxyIDs != null) {
@@ -239,7 +231,6 @@ public class InternalClientMembership {
       }
     }
 
-    Map map = chMon.getConnectedClients(filterProxyIDs);
     /*
      * if (onlyClientsNotifiedByThisServer) { Map notifyMap = new HashMap();
      *
@@ -247,7 +238,7 @@ public class InternalClientMembership {
      * iter.next(); if (notifierClients.contains(memberId)) { // found memberId that is notified by
      * this server notifyMap.put(memberId, map.get(memberId)); } } map = notifyMap; }
      */
-    return map;
+    return chMon.getConnectedClients(filterProxyIDs);
   }
 
   /**
@@ -274,8 +265,8 @@ public class InternalClientMembership {
 
     // Get all clients
     Map allClients = new HashMap();
-    for (Iterator bsii = cache.getCacheServers().iterator(); bsii.hasNext();) {
-      InternalCacheServer cacheServer = (InternalCacheServer) bsii.next();
+    for (final CacheServer server : cache.getCacheServers()) {
+      InternalCacheServer cacheServer = (InternalCacheServer) server;
       Acceptor acceptor = cacheServer.getAcceptor();
       if (acceptor != null && acceptor.getCacheClientNotifier() != null) {
         allClients.putAll(acceptor.getCacheClientNotifier().getAllClients());
@@ -316,22 +307,20 @@ public class InternalClientMembership {
     final Map map = new HashMap(); // KEY:server (String), VALUE:List of active endpoints
     // returns an unmodifiable set
     Map/* <String,Pool> */ poolMap = PoolManager.getAll();
-    Iterator pools = poolMap.values().iterator();
-    while (pools.hasNext()) {
-      PoolImpl pi = (PoolImpl) pools.next();
+    for (final Object value : poolMap.values()) {
+      PoolImpl pi = (PoolImpl) value;
       Map/* <ServerLocationAndMemberId,Endpoint> */ eps = pi.getEndpointMap();
-      Iterator it = eps.entrySet().iterator();
-      while (it.hasNext()) {
-        Map.Entry entry = (Map.Entry) it.next();
+      for (final Object o : eps.entrySet()) {
+        Map.Entry entry = (Map.Entry) o;
         ServerLocation loc = ((ServerLocationAndMemberId) entry.getKey()).getServerLocation();
         org.apache.geode.cache.client.internal.Endpoint ep =
             (org.apache.geode.cache.client.internal.Endpoint) entry.getValue();
         String server = loc.getHostName() + "[" + loc.getPort() + "]";
         Integer count = (Integer) map.get(server);
         if (count == null) {
-          map.put(server, Integer.valueOf(1));
+          map.put(server, 1);
         } else {
-          map.put(server, Integer.valueOf(count.intValue() + 1));
+          map.put(server, count + 1);
         }
       }
     }
@@ -446,10 +435,8 @@ public class InternalClientMembership {
   private static void doNotifyClientMembershipListener(DistributedMember member, boolean client,
       ClientMembershipEvent clientMembershipEvent, EventType eventType) {
 
-    for (Iterator<ClientMembershipListener> iter = clientMembershipListeners.iterator(); iter
-        .hasNext();) {
+    for (ClientMembershipListener listener : clientMembershipListeners) {
 
-      ClientMembershipListener listener = iter.next();
       try {
         if (eventType.equals(EventType.JOINED)) {
           listener.memberJoined(clientMembershipEvent);
@@ -563,31 +550,29 @@ public class InternalClientMembership {
 
     protected InternalClientMembershipEvent(DistributedMember member, boolean isClient) {
       this.member = member;
-      this.client = isClient;
+      client = isClient;
     }
 
     @Override
     public DistributedMember getMember() {
-      return this.member;
+      return member;
     }
 
     @Override
     public String getMemberId() {
-      return this.member == null ? "unknown" : this.member.getId();
+      return member == null ? "unknown" : member.getId();
     }
 
     @Override
     public boolean isClient() {
-      return this.client;
+      return client;
     }
 
     @Override // GemStoneAddition
     public String toString() {
-      final StringBuffer sb = new StringBuffer("[ClientMembershipEvent: ");
-      sb.append("member=").append(this.member);
-      sb.append(", isClient=").append(this.client);
-      sb.append("]");
-      return sb.toString();
+      return "[ClientMembershipEvent: " + "member=" + member
+          + ", isClient=" + client
+          + "]";
     }
   }
 
@@ -600,7 +585,7 @@ public class InternalClientMembership {
     forceSynchronous = value;
   }
 
-  private static enum EventType {
+  private enum EventType {
     JOINED, LEFT, CRASHED
   }
 }

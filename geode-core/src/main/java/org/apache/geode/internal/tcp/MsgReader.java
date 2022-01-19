@@ -49,8 +49,8 @@ public class MsgReader {
 
   MsgReader(Connection conn, NioFilter nioFilter, KnownVersion version) {
     this.conn = conn;
-    this.ioFilter = nioFilter;
-    this.byteBufferInputStream =
+    ioFilter = nioFilter;
+    byteBufferInputStream =
         version == null ? new ByteBufferInputStream() : new VersionedByteBufferInputStream(version);
   }
 
@@ -93,8 +93,8 @@ public class MsgReader {
     try (final ByteBufferSharing sharedBuffer = readAtLeast(header.messageLength)) {
       ByteBuffer nioInputBuffer = sharedBuffer.getBuffer();
       Assert.assertTrue(nioInputBuffer.remaining() >= header.messageLength);
-      this.getStats().incMessagesBeingReceived(true, header.messageLength);
-      long startSer = this.getStats().startMsgDeserialization();
+      getStats().incMessagesBeingReceived(true, header.messageLength);
+      long startSer = getStats().startMsgDeserialization();
       try {
         byteBufferInputStream.setBuffer(nioInputBuffer);
         ReplyProcessor21.initMessageRPId();
@@ -104,8 +104,8 @@ public class MsgReader {
       } catch (IOException e) {
         throw e;
       } finally {
-        this.getStats().endMsgDeserialization(startSer);
-        this.getStats().decMessagesBeingReceived(header.messageLength);
+        getStats().endMsgDeserialization(startSer);
+        getStats().decMessagesBeingReceived(header.messageLength);
         ioFilter.doneReadingDirectAck(nioInputBuffer);
       }
     }
@@ -115,7 +115,7 @@ public class MsgReader {
       throws IOException {
     try (final ByteBufferSharing sharedBuffer = readAtLeast(header.messageLength)) {
       ByteBuffer unwrappedBuffer = sharedBuffer.getBuffer();
-      this.getStats().incMessagesBeingReceived(md.size() == 0, header.messageLength);
+      getStats().incMessagesBeingReceived(md.size() == 0, header.messageLength);
       md.addChunk(unwrappedBuffer, header.messageLength);
       // show that the bytes have been consumed by adjusting the buffer's position
       unwrappedBuffer.position(unwrappedBuffer.position() + header.messageLength);

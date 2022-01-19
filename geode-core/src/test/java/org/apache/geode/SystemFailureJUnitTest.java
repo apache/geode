@@ -51,8 +51,8 @@ public class SystemFailureJUnitTest {
     long start = System.nanoTime();
     Thread watchDog = SystemFailure.getWatchDogForTest();
     Thread proctor = SystemFailure.getProctorForTest();
-    await().until(() -> watchDog.isAlive());
-    await().until(() -> proctor.isAlive());
+    await().until(watchDog::isAlive);
+    await().until(proctor::isAlive);
     SystemFailure.stopThreads();
     long elapsed = System.nanoTime() - start;
     assertTrue("Waited too long to shutdown: " + elapsed,

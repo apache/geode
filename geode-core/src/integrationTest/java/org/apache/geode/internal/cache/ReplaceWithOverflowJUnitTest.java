@@ -61,7 +61,7 @@ public class ReplaceWithOverflowJUnitTest {
         .setEvictionAttributes(
             EvictionAttributes.createLRUEntryAttributes(1, EvictionAction.OVERFLOW_TO_DISK))
         .setPartitionAttributes(
-            new PartitionAttributesFactory<String, String>().setTotalNumBuckets(1).create())
+            new PartitionAttributesFactory<>().setTotalNumBuckets(1).create())
         .setDataPolicy(DataPolicy.PARTITION).create("ReplaceWithOverflowJUnitTest");
   }
 

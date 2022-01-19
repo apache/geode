@@ -129,9 +129,9 @@ public class SerialEventListenerDistributedTest implements Serializable {
    */
   @Test // serial, ReplicateRegion, RegressionTest
   public void testReplicatedSerialAsyncEventQueue_ExceptionScenario() {
-    vm0.invoke(() -> createCache());
-    vm1.invoke(() -> createCache());
-    vm2.invoke(() -> createCache());
+    vm0.invoke(this::createCache);
+    vm1.invoke(this::createCache);
+    vm2.invoke(this::createCache);
 
     vm0.invoke(() -> createAsyncEventQueue(asyncEventQueueId, new ThrowingAsyncEventListener(),
         false, 100, 100));
@@ -148,9 +148,9 @@ public class SerialEventListenerDistributedTest implements Serializable {
     vm1.invoke(() -> getInternalGatewaySender().pause());
     vm2.invoke(() -> getInternalGatewaySender().pause());
 
-    vm0.invoke(() -> waitForDispatcherToPause());
-    vm1.invoke(() -> waitForDispatcherToPause());
-    vm2.invoke(() -> waitForDispatcherToPause());
+    vm0.invoke(this::waitForDispatcherToPause);
+    vm1.invoke(this::waitForDispatcherToPause);
+    vm2.invoke(this::waitForDispatcherToPause);
 
     vm0.invoke(() -> doPuts(replicateRegionName, 100));
 

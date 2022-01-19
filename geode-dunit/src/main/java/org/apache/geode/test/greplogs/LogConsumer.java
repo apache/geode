@@ -71,7 +71,7 @@ public class LogConsumer {
     this.enableLogLevelThreshold = enableLogLevelThreshold;
     this.constantIgnoredPatterns.addAll(constantIgnoredPatterns);
     this.logName = logName;
-    this.skipLimit = repeatLimit;
+    skipLimit = repeatLimit;
   }
 
   public String consume(CharSequence line) {

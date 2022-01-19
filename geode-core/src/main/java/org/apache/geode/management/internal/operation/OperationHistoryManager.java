@@ -60,12 +60,11 @@ public class OperationHistoryManager {
   /**
    * look up the specified key
    */
-  @SuppressWarnings("unchecked")
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationState<A, V> get(
       String opId) {
     expireHistory();
 
-    return (OperationState<A, V>) operationStateStore.get(opId);
+    return operationStateStore.get(opId);
   }
 
   @VisibleForTesting

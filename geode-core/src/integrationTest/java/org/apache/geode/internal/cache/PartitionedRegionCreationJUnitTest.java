@@ -19,7 +19,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.junit.After;
@@ -59,13 +58,13 @@ public class PartitionedRegionCreationJUnitTest {
 
   private boolean PRCreateDone = false;
 
-  private List PRRegionList = new ArrayList();
+  private final List PRRegionList = new ArrayList();
 
-  private Object CREATE_COMPLETE_LOCK = new Object();
+  private final Object CREATE_COMPLETE_LOCK = new Object();
 
   private volatile boolean createComplete = false;
 
-  private List<Thread> regionCreationThreads = new ArrayList<>(20);
+  private final List<Thread> regionCreationThreads = new ArrayList<>(20);
 
   @Before
   public void setUp() throws Exception {
@@ -118,17 +117,17 @@ public class PartitionedRegionCreationJUnitTest {
     // Assert that setting any scope throws IllegalStateException
     final Scope[] scopes =
         {Scope.LOCAL, Scope.DISTRIBUTED_ACK, Scope.DISTRIBUTED_NO_ACK, Scope.GLOBAL};
-    for (int i = 0; i < scopes.length; i++) {
+    for (final Scope scope : scopes) {
       try {
         AttributesFactory af = new AttributesFactory();
         af.setDataPolicy(DataPolicy.PARTITION);
-        af.setScope(scopes[i]);
+        af.setScope(scope);
         RegionAttributes ra = af.create();
         Cache cache = PartitionedRegionTestHelper.createCache();
         pr = (PartitionedRegion) cache.createRegion(regionname, ra);
         fail("testpartionedRegionCreate() Expected IllegalStateException not thrown for Scope "
-            + scopes[i]);
-      } catch (IllegalStateException expected) {
+            + scope);
+      } catch (IllegalStateException ignored) {
       } finally {
         if (pr != null && !pr.isDestroyed()) {
           pr.destroyRegion();
@@ -142,7 +141,7 @@ public class PartitionedRegionCreationJUnitTest {
       pr = (PartitionedRegion) PartitionedRegionTestHelper.createPartitionedRegion(regionname,
           String.valueOf(localMaxMemory), redundancy);
       fail("expected redundancy of 10 to cause an exception");
-    } catch (IllegalStateException illex) {
+    } catch (IllegalStateException ignored) {
     }
 
     // test for redundancy < 0
@@ -155,7 +154,7 @@ public class PartitionedRegionCreationJUnitTest {
           String.valueOf(200), redundancy);
       fail(
           "testpartionedRegionCreate() Expected IllegalStateException not thrown for redundancy < 0 ");
-    } catch (IllegalStateException illex) {
+    } catch (IllegalStateException ignored) {
     }
 
   }
@@ -226,17 +225,17 @@ public class PartitionedRegionCreationJUnitTest {
     // Assert that setting any scope throws IllegalStateException
     final Scope[] scopes =
         {Scope.LOCAL, Scope.DISTRIBUTED_ACK, Scope.DISTRIBUTED_NO_ACK, Scope.GLOBAL};
-    for (int i = 0; i < scopes.length; i++) {
+    for (final Scope scope : scopes) {
       try {
         AttributesFactory af = new AttributesFactory();
         af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
-        af.setScope(scopes[i]);
+        af.setScope(scope);
         RegionAttributes ra = af.create();
         Cache cache = PartitionedRegionTestHelper.createCache();
         cache.createRegion(regionname, ra);
         fail("testpartionedRegionCreate() Expected IllegalStateException not thrown for Scope "
-            + scopes[i]);
-      } catch (IllegalStateException expected) {
+            + scope);
+      } catch (IllegalStateException ignored) {
       }
     }
 
@@ -246,7 +245,7 @@ public class PartitionedRegionCreationJUnitTest {
           String.valueOf(0), 4);
       fail(
           "testpartionedRegionCreate() Expected IllegalStateException not thrown for redundancy > 3 ");
-    } catch (IllegalStateException illex) {
+    } catch (IllegalStateException ignored) {
     }
 
     // test for redundancy < 0
@@ -255,7 +254,7 @@ public class PartitionedRegionCreationJUnitTest {
           String.valueOf(200), -1);
       fail(
           "testpartionedRegionCreate() Expected IllegalStateException not thrown for redundancy < 0 ");
-    } catch (IllegalStateException illex) {
+    } catch (IllegalStateException ignored) {
     }
   }
 
@@ -305,9 +304,8 @@ public class PartitionedRegionCreationJUnitTest {
     Region root = (PartitionedRegionTestHelper
         .getExistingRegion(PartitionedRegionHelper.PR_ROOT_REGION_NAME));
 
-    Iterator itr = PRRegionList.iterator();
-    while (itr.hasNext()) {
-      Region region = (Region) itr.next();
+    for (final Object o : PRRegionList) {
+      Region region = (Region) o;
       String name = ((PartitionedRegion) region).getRegionIdentifier();
       PartitionRegionConfig prConfig = (PartitionRegionConfig) root.get(name);
       if (prConfig == null) {

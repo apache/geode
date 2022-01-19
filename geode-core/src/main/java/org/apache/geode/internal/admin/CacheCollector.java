@@ -73,7 +73,7 @@ public class CacheCollector {
    */
   public CacheCollector(GfManagerAgent agent, SnapshotClient view) {
     this.view = view;
-    this.systemAgent = agent;
+    systemAgent = agent;
     systemAgent.setCacheCollector(this);
   }
 
@@ -86,9 +86,9 @@ public class CacheCollector {
     flush();
     ApplicationVM[] apps = systemAgent.listApplications();
 
-    for (int j = 0; j < apps.length; j++) {
-      notHeardFrom.add(apps[j]);
-      apps[j].takeRegionSnapshot(regionName, snapshotCount);
+    for (final ApplicationVM app : apps) {
+      notHeardFrom.add(app);
+      app.takeRegionSnapshot(regionName, snapshotCount);
     }
   }
 
@@ -118,7 +118,7 @@ public class CacheCollector {
    */
   public void close() {
     flush();
-    this.systemAgent.setCacheCollector(null);
+    systemAgent.setCacheCollector(null);
   }
 
   /**
@@ -127,8 +127,8 @@ public class CacheCollector {
   private synchronized void clear() {
     // this.results = new TreeMap(new SnapshotNameComparator());
     snaps = null;
-    this.notHeardFrom = new ArrayList();
-    this.heardFrom = new ArrayList();
+    notHeardFrom = new ArrayList();
+    heardFrom = new ArrayList();
   }
 
   /**

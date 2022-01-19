@@ -63,7 +63,7 @@ public class PutUserCredentials extends BaseCommand {
     } catch (GemFireSecurityException gfse) {
       if (serverConnection.getSecurityLogWriter().warningEnabled()) {
         serverConnection.getSecurityLogWriter().warning(String.format("%s",
-            serverConnection.getName() + ": Security exception: " + gfse.toString()
+            serverConnection.getName() + ": Security exception: " + gfse
                 + (gfse.getCause() != null ? ", caused by: " + gfse.getCause().toString()
                     : "")));
       }

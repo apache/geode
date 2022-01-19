@@ -48,9 +48,9 @@ public class ServiceConfig implements MembershipConfig {
   private final boolean locatorsPreferredAsCoordinators;
 
   public ServiceConfig(RemoteTransportConfig transport, DistributionConfig theConfig) {
-    this.dconfig = theConfig;
+    dconfig = theConfig;
     this.transport = transport;
-    this.isReconnecting = (transport.getOldDSMembershipInfo() != null);
+    isReconnecting = (transport.getOldDSMembershipInfo() != null);
 
     long defaultJoinTimeout = 24000;
     if (isReconnecting || theConfig.getLocators().length() > 0 && !Locator.hasLocator()) {
@@ -64,7 +64,7 @@ public class ServiceConfig implements MembershipConfig {
       defaultJoinTimeout = minimumJoinTimeout;
     }
 
-    joinTimeout = Long.getLong("p2p.joinTimeout", defaultJoinTimeout).longValue();
+    joinTimeout = Long.getLong("p2p.joinTimeout", defaultJoinTimeout);
 
     SocketCreator.resolve_dns = true;
     if (theConfig.getEnableNetworkPartitionDetection() &&

@@ -56,8 +56,8 @@ import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 @RunWith(GeodeParamsRunner.class)
 @Category({OQLQueryTest.class, SecurityTest.class})
 public class DefaultQuerySecurityIntegrationTest {
-  private int entries = 500;
-  private int executions = 20;
+  private final int entries = 500;
+  private final int executions = 20;
   private InternalCache spiedCache;
 
   @Rule
@@ -235,7 +235,7 @@ public class DefaultQuerySecurityIntegrationTest {
 
       if (executor instanceof PartitionedRegion) {
         PartitionedRegion prExecutor = spy((PartitionedRegion) executor);
-        when(prExecutor.getCache()).thenReturn(this.spyCache);
+        when(prExecutor.getCache()).thenReturn(spyCache);
 
         return prExecutor;
       }
@@ -262,7 +262,7 @@ public class DefaultQuerySecurityIntegrationTest {
 
   @SuppressWarnings("unused")
   private static class CustomQueryTestObject extends QueryTestObject {
-    private int privateID;
+    private final int privateID;
 
     public int privateID() {
       return privateID;
@@ -270,7 +270,7 @@ public class DefaultQuerySecurityIntegrationTest {
 
     CustomQueryTestObject(int id, String name) {
       super(id, name);
-      this.privateID = id;
+      privateID = id;
     }
   }
 }

@@ -110,37 +110,37 @@ public class Assert {
 
   public static void assertTrue(boolean b, boolean message) {
     if (!b) {
-      throwError(Boolean.valueOf(message));
+      throwError(message);
     }
   }
 
   public static void assertTrue(boolean b, char message) {
     if (!b) {
-      throwError(new Character(message));
+      throwError(message);
     }
   }
 
   public static void assertTrue(boolean b, int message) {
     if (!b) {
-      throwError(Integer.valueOf(message));
+      throwError(message);
     }
   }
 
   public static void assertTrue(boolean b, long message) {
     if (!b) {
-      throwError(Long.valueOf(message));
+      throwError(message);
     }
   }
 
   public static void assertTrue(boolean b, float message) {
     if (!b) {
-      throwError(new Float(message));
+      throwError(message);
     }
   }
 
   public static void assertTrue(boolean b, double message) {
     if (!b) {
-      throwError(Double.valueOf(message));
+      throwError(message);
     }
   }
 

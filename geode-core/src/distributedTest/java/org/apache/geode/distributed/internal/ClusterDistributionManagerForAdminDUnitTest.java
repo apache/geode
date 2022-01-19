@@ -61,7 +61,7 @@ import org.apache.geode.test.dunit.cache.CacheTestCase;
 public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
     implements AlertListener {
 
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   private transient GfManagerAgent agent;
 
@@ -82,7 +82,7 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
     }
 
     // create a GfManagerAgent in the master vm.
-    this.agent = GfManagerAgentFactory.getManagerAgent(
+    agent = GfManagerAgentFactory.getManagerAgent(
         new GfManagerAgentConfig(null, transport, getLogWriter(), Alert.SEVERE, this, null));
 
     await().untilAsserted(() -> assertThat(agent.isConnected()).isTrue());
@@ -92,8 +92,8 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
   @After
   public void preTearDownCacheTestCase() throws Exception {
     try {
-      if (this.agent != null) {
-        this.agent.disconnect();
+      if (agent != null) {
+        agent.disconnect();
       }
       disconnectFromDS();
     } finally {
@@ -103,7 +103,7 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
 
   @Test
   public void testGetDistributionVMType() {
-    DistributionManager dm = this.agent.getDM();
+    DistributionManager dm = agent.getDM();
     assertThat(dm.getId().getVmKind()).isEqualTo(ClusterDistributionManager.ADMIN_ONLY_DM_TYPE);
   }
 
@@ -195,7 +195,7 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
 
       Object val = entry.getValue();
       assertThat(val).isInstanceOf(String.class);
-      assertThat(((String) val)).contains("java.lang.StringBuffer");
+      assertThat(((String) val)).contains("java.lang.StringBuilder");
 
       /// test physical inspection
       applications[whichApplication].setCacheInspectionMode(GemFireVM.PHYSICAL_CACHE_VALUE);
@@ -207,14 +207,14 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
 
       EntryValueNode node = (EntryValueNode) val;
       String type = node.getType();
-      assertThat(type).contains("java.lang.StringBuffer");
+      assertThat(type).contains("java.lang.StringBuilder");
       assertThat(node.isPrimitiveOrString()).isFalse();
 
       EntryValueNode[] fields = node.getChildren();
       assertThat(fields).isNotNull();
 
       getLogWriter().warning(
-          "The tests use StringBuffers for values which might be implemented differently in jdk 1.5");
+          "The tests use StringBuilders for values which might be implemented differently in jdk 1.5");
 
       /// test destruction in the last valid app
       int lastApplication = applications.length - 1;
@@ -251,7 +251,7 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
           createRegion("cdm-testSubRegion2", regionAttributes);
           createRegion("cdm-testSubRegion3", regionAttributes);
           remoteCreateEntry("", "cacheObj1", null);
-          StringBuffer val = new StringBuffer("userDefValue1");
+          StringBuilder val = new StringBuilder("userDefValue1");
           remoteCreateEntry("", "cacheObj2", val);
         });
       }
@@ -303,7 +303,7 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
   }
 
   private InternalDistributedMember getJavaGroupsIdForVM(VM vm) {
-    return vm.invoke(() -> remoteGetJavaGroupsIdForVM());
+    return vm.invoke(this::remoteGetJavaGroupsIdForVM);
   }
 
   private InternalDistributedMember remoteGetJavaGroupsIdForVM() {

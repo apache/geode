@@ -52,11 +52,11 @@ public abstract class HealthEvaluatorTestCase {
    */
   @After
   public void tearDown() {
-    if (this.system != null) {
-      this.system.disconnect();
+    if (system != null) {
+      system.disconnect();
     }
 
-    this.system = null;
+    system = null;
   }
 
   /**

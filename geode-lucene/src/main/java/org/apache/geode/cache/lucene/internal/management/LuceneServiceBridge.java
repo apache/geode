@@ -28,13 +28,13 @@ import org.apache.geode.cache.lucene.management.LuceneIndexMetrics;
 
 public class LuceneServiceBridge {
 
-  private LuceneService service;
+  private final LuceneService service;
 
-  private Map<String, LuceneIndexStatsMonitor> monitors;
+  private final Map<String, LuceneIndexStatsMonitor> monitors;
 
   public LuceneServiceBridge(LuceneService service) {
     this.service = service;
-    this.monitors = new ConcurrentHashMap<>();
+    monitors = new ConcurrentHashMap<>();
   }
 
   public void addIndex(LuceneIndex index) {
@@ -42,14 +42,14 @@ public class LuceneServiceBridge {
     LuceneIndexStatsMonitor monitor = new LuceneIndexStatsMonitor(index);
 
     // Register the monitor
-    this.monitors.put(getMonitorKey(index), monitor);
+    monitors.put(getMonitorKey(index), monitor);
   }
 
   public LuceneIndexMetrics[] listIndexMetrics() {
-    Collection<LuceneIndex> indexes = this.service.getAllIndexes();
+    Collection<LuceneIndex> indexes = service.getAllIndexes();
     LuceneIndexMetrics[] indexMetrics = new LuceneIndexMetrics[indexes.size()];
     int i = 0;
-    for (LuceneIndex index : this.service.getAllIndexes()) {
+    for (LuceneIndex index : service.getAllIndexes()) {
       indexMetrics[i++] = getIndexMetrics(index);
     }
     return indexMetrics;
@@ -60,7 +60,7 @@ public class LuceneServiceBridge {
       regionPath = SEPARATOR + regionPath;
     }
     List<LuceneIndexMetrics> indexMetrics = new ArrayList();
-    for (LuceneIndex index : this.service.getAllIndexes()) {
+    for (LuceneIndex index : service.getAllIndexes()) {
       if (index.getRegionPath().equals(regionPath)) {
         indexMetrics.add(getIndexMetrics(index));
       }
@@ -69,7 +69,7 @@ public class LuceneServiceBridge {
   }
 
   public LuceneIndexMetrics listIndexMetrics(String regionPath, String indexName) {
-    LuceneIndex index = this.service.getIndex(indexName, regionPath);
+    LuceneIndex index = service.getIndex(indexName, regionPath);
     return index == null ? null : getIndexMetrics(index);
   }
 
@@ -78,7 +78,7 @@ public class LuceneServiceBridge {
   }
 
   private LuceneIndexMetrics getIndexMetrics(LuceneIndex index) {
-    LuceneIndexStatsMonitor monitor = this.monitors.get(getMonitorKey(index));
+    LuceneIndexStatsMonitor monitor = monitors.get(getMonitorKey(index));
     return monitor.getIndexMetrics(index);
   }
 }

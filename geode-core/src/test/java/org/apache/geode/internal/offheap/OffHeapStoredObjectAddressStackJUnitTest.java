@@ -22,8 +22,6 @@ import static org.mockito.Mockito.withSettings;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
-import org.mockito.listeners.InvocationListener;
-import org.mockito.listeners.MethodInvocationReport;
 
 
 public class OffHeapStoredObjectAddressStackJUnitTest {
@@ -62,12 +60,8 @@ public class OffHeapStoredObjectAddressStackJUnitTest {
   @Test
   public void defaultStackLogsNothing() {
     OffHeapStoredObjectAddressStack stack = new OffHeapStoredObjectAddressStack();
-    Logger lw = mock(Logger.class, withSettings().invocationListeners(new InvocationListener() {
-      @Override
-      public void reportInvocation(MethodInvocationReport methodInvocationReport) {
-        fail("Unexpected invocation");
-      }
-    }));
+    Logger lw = mock(Logger.class, withSettings().invocationListeners(
+        methodInvocationReport -> fail("Unexpected invocation")));
     stack.logSizes(lw, "should not be used");
   }
 
@@ -224,7 +218,7 @@ public class OffHeapStoredObjectAddressStackJUnitTest {
   private class TestableSyncChunkStack extends OffHeapStoredObjectAddressStack {
     public boolean doConcurrentMod = true;
     public int chunk2Size;
-    private MemoryAllocatorImpl ma;
+    private final MemoryAllocatorImpl ma;
 
     TestableSyncChunkStack(MemoryAllocatorImpl ma) {
       this.ma = ma;
@@ -235,8 +229,8 @@ public class OffHeapStoredObjectAddressStackJUnitTest {
       if (doConcurrentMod) {
         doConcurrentMod = false;
         OffHeapStoredObject chunk2 = (OffHeapStoredObject) ma.allocate(50);
-        this.chunk2Size = chunk2.getSize();
-        this.offer(chunk2.getAddress());
+        chunk2Size = chunk2.getSize();
+        offer(chunk2.getAddress());
       }
     }
   }

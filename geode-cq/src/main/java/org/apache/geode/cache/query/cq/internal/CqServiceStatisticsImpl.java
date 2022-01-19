@@ -25,7 +25,7 @@ import org.apache.geode.cache.query.internal.DefaultQueryService;
  */
 public class CqServiceStatisticsImpl implements CqServiceStatistics {
 
-  private CqServiceImpl cqService;
+  private final CqServiceImpl cqService;
 
   /**
    * Constructor for CqStatisticsImpl
@@ -41,7 +41,7 @@ public class CqServiceStatisticsImpl implements CqServiceStatistics {
    */
   @Override
   public long numCqsActive() {
-    return this.cqService.getCqServiceVsdStats().getNumCqsActive();
+    return cqService.getCqServiceVsdStats().getNumCqsActive();
   }
 
   /**
@@ -51,7 +51,7 @@ public class CqServiceStatisticsImpl implements CqServiceStatistics {
    */
   @Override
   public long numCqsCreated() {
-    return this.cqService.getCqServiceVsdStats().getNumCqsCreated();
+    return cqService.getCqServiceVsdStats().getNumCqsCreated();
   }
 
   /**
@@ -59,7 +59,7 @@ public class CqServiceStatisticsImpl implements CqServiceStatistics {
    */
   @Override
   public long numCqsClosed() {
-    return this.cqService.getCqServiceVsdStats().getNumCqsClosed();
+    return cqService.getCqServiceVsdStats().getNumCqsClosed();
   }
 
   /**
@@ -67,7 +67,7 @@ public class CqServiceStatisticsImpl implements CqServiceStatistics {
    */
   @Override
   public long numCqsStopped() {
-    return this.cqService.getCqServiceVsdStats().getNumCqsStopped();
+    return cqService.getCqServiceVsdStats().getNumCqsStopped();
   }
 
   /**
@@ -75,7 +75,7 @@ public class CqServiceStatisticsImpl implements CqServiceStatistics {
    */
   @Override
   public long numCqsOnClient() {
-    return this.cqService.getCqServiceVsdStats().getNumCqsOnClient();
+    return cqService.getCqServiceVsdStats().getNumCqsOnClient();
   }
 
   /**

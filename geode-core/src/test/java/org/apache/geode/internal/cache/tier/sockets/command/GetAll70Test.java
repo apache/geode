@@ -84,104 +84,104 @@ public class GetAll70Test {
 
   @Before
   public void setUp() throws Exception {
-    this.getAll70 = new GetAll70();
+    getAll70 = new GetAll70();
     MockitoAnnotations.initMocks(this);
 
-    when(this.authzRequest.getAuthorize(any(), any(), any()))
+    when(authzRequest.getAuthorize(any(), any(), any()))
         .thenReturn(mock(GetOperationContext.class));
 
-    when(this.cache.getRegion(isA(String.class))).thenReturn(this.region);
-    when(this.cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
+    when(cache.getRegion(isA(String.class))).thenReturn(region);
+    when(cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
 
-    when(this.keyPart.getObject()).thenReturn(KEYS);
+    when(keyPart.getObject()).thenReturn(KEYS);
 
-    when(this.message.getPart(eq(0))).thenReturn(this.regionNamePart);
-    when(this.message.getPart(eq(1))).thenReturn(this.keyPart);
-    when(this.message.getPart(eq(2))).thenReturn(this.requestSerializableValuesPart);
+    when(message.getPart(eq(0))).thenReturn(regionNamePart);
+    when(message.getPart(eq(1))).thenReturn(keyPart);
+    when(message.getPart(eq(2))).thenReturn(requestSerializableValuesPart);
 
-    when(this.region.getAttributes()).thenReturn(this.regionAttributes);
+    when(region.getAttributes()).thenReturn(regionAttributes);
 
-    when(this.regionAttributes.getConcurrencyChecksEnabled()).thenReturn(true);
+    when(regionAttributes.getConcurrencyChecksEnabled()).thenReturn(true);
 
-    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
+    when(regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
-    when(this.requestSerializableValuesPart.getInt()).thenReturn(0);
+    when(requestSerializableValuesPart.getInt()).thenReturn(0);
 
-    when(this.serverConnection.getCache()).thenReturn(this.cache);
-    when(this.serverConnection.getCacheServerStats()).thenReturn(mock(CacheServerStats.class));
-    when(this.serverConnection.getAuthzRequest()).thenReturn(this.authzRequest);
-    when(this.serverConnection.getCachedRegionHelper()).thenReturn(mock(CachedRegionHelper.class));
-    when(this.serverConnection.getChunkedResponseMessage()).thenReturn(this.chunkedResponseMessage);
+    when(serverConnection.getCache()).thenReturn(cache);
+    when(serverConnection.getCacheServerStats()).thenReturn(mock(CacheServerStats.class));
+    when(serverConnection.getAuthzRequest()).thenReturn(authzRequest);
+    when(serverConnection.getCachedRegionHelper()).thenReturn(mock(CachedRegionHelper.class));
+    when(serverConnection.getChunkedResponseMessage()).thenReturn(chunkedResponseMessage);
   }
 
   @Test
   public void noSecurityShouldSucceed() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(false);
+    when(securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.getAll70.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    getAll70.cmdExecute(message, serverConnection, securityService, 0);
 
-    verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
+    verify(chunkedResponseMessage).sendChunk(serverConnection);
   }
 
   @Test
   public void integratedSecurityShouldSucceedIfAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(true);
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(true);
 
-    this.getAll70.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    getAll70.cmdExecute(message, serverConnection, securityService, 0);
 
     ArgumentCaptor<ObjectPartList> argument = ArgumentCaptor.forClass(ObjectPartList.class);
-    verify(this.chunkedResponseMessage).addObjPartNoCopying(argument.capture());
+    verify(chunkedResponseMessage).addObjPartNoCopying(argument.capture());
 
     assertThat(argument.getValue().getObjects()).hasSize(KEYS.length);
     for (Object key : argument.getValue().getKeys()) {
       assertThat(key).isIn(KEYS);
     }
     for (Object key : KEYS) {
-      verify(this.securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME,
+      verify(securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME,
           key.toString());
     }
 
-    verify(this.chunkedResponseMessage).sendChunk(this.serverConnection);
+    verify(chunkedResponseMessage).sendChunk(serverConnection);
   }
 
   @Test
   public void integratedSecurityShouldFailIfNotAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(true);
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(true);
 
     for (Object key : KEYS) {
-      doThrow(new NotAuthorizedException("")).when(this.securityService).authorize(Resource.DATA,
+      doThrow(new NotAuthorizedException("")).when(securityService).authorize(Resource.DATA,
           Operation.READ, REGION_NAME, key.toString());
     }
 
-    this.getAll70.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    getAll70.cmdExecute(message, serverConnection, securityService, 0);
 
     for (Object key : KEYS) {
-      verify(this.securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME,
+      verify(securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME,
           key.toString());
     }
 
     ArgumentCaptor<ObjectPartList> argument = ArgumentCaptor.forClass(ObjectPartList.class);
-    verify(this.chunkedResponseMessage).addObjPartNoCopying(argument.capture());
+    verify(chunkedResponseMessage).addObjPartNoCopying(argument.capture());
 
     assertThat(argument.getValue().getObjects()).hasSize(KEYS.length);
     for (Object key : argument.getValue().getObjects()) {
       assertThat(key).isExactlyInstanceOf(NotAuthorizedException.class);
     }
 
-    verify(this.chunkedResponseMessage).sendChunk(eq(this.serverConnection));
+    verify(chunkedResponseMessage).sendChunk(eq(serverConnection));
   }
 
   @Test
   public void oldSecurityShouldSucceedIfAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(false);
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(false);
 
-    this.getAll70.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    getAll70.cmdExecute(message, serverConnection, securityService, 0);
 
     ArgumentCaptor<ObjectPartList> argument = ArgumentCaptor.forClass(ObjectPartList.class);
-    verify(this.chunkedResponseMessage).addObjPartNoCopying(argument.capture());
+    verify(chunkedResponseMessage).addObjPartNoCopying(argument.capture());
 
     assertThat(argument.getValue().getObjects()).hasSize(KEYS.length);
     for (Object key : argument.getValue().getKeys()) {
@@ -189,35 +189,35 @@ public class GetAll70Test {
     }
 
     for (Object key : KEYS) {
-      verify(this.authzRequest).getAuthorize(eq(REGION_NAME), eq(key.toString()), eq(null));
+      verify(authzRequest).getAuthorize(eq(REGION_NAME), eq(key.toString()), eq(null));
     }
 
-    verify(this.chunkedResponseMessage).sendChunk(eq(this.serverConnection));
+    verify(chunkedResponseMessage).sendChunk(eq(serverConnection));
   }
 
   @Test
   public void oldSecurityShouldFailIfNotAuthorized() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(true);
-    when(this.securityService.isIntegratedSecurity()).thenReturn(false);
+    when(securityService.isClientSecurityRequired()).thenReturn(true);
+    when(securityService.isIntegratedSecurity()).thenReturn(false);
 
     for (Object key : KEYS) {
-      doThrow(new NotAuthorizedException("")).when(this.authzRequest).getAuthorize(eq(REGION_NAME),
+      doThrow(new NotAuthorizedException("")).when(authzRequest).getAuthorize(eq(REGION_NAME),
           eq(key.toString()), eq(null));
     }
 
-    this.getAll70.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+    getAll70.cmdExecute(message, serverConnection, securityService, 0);
 
     ArgumentCaptor<ObjectPartList> argument = ArgumentCaptor.forClass(ObjectPartList.class);
-    verify(this.chunkedResponseMessage).addObjPartNoCopying(argument.capture());
+    verify(chunkedResponseMessage).addObjPartNoCopying(argument.capture());
 
     assertThat(argument.getValue().getObjects()).hasSize(KEYS.length);
     for (Object o : argument.getValue().getObjects()) {
       assertThat(o).isExactlyInstanceOf(NotAuthorizedException.class);
     }
     for (Object key : KEYS) {
-      verify(this.authzRequest).getAuthorize(eq(REGION_NAME), eq(key.toString()), eq(null));
+      verify(authzRequest).getAuthorize(eq(REGION_NAME), eq(key.toString()), eq(null));
     }
-    verify(this.chunkedResponseMessage).sendChunk(eq(this.serverConnection));
+    verify(chunkedResponseMessage).sendChunk(eq(serverConnection));
   }
 
 }

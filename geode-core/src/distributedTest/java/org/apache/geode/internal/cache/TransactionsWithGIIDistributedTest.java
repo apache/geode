@@ -62,9 +62,9 @@ public class TransactionsWithGIIDistributedTest implements Serializable {
   private VM vm1;
   private VM vm2;
   private VM vm3;
-  private String regionName = "region";
-  private int numOfEntry = 2500;
-  private int workers = 31;
+  private final String regionName = "region";
+  private final int numOfEntry = 2500;
+  private final int workers = 31;
   private final ConcurrentLinkedQueue<Integer> queue = new ConcurrentLinkedQueue<>();
 
   @Rule

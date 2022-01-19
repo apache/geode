@@ -81,9 +81,9 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
     // Client 1 VM
     client1 = host.getVM(1);
 
-    PORT1 = ((Integer) server1.invoke(() -> RegionCloseDUnitTest.createServerCache())).intValue();
+    PORT1 = server1.invoke(RegionCloseDUnitTest::createServerCache);
     client1.invoke(() -> RegionCloseDUnitTest
-        .createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT1)));
+        .createClientCache(NetworkUtils.getServerHostName(host), PORT1));
   }
 
   private void createCache(Properties props) throws Exception {
@@ -98,14 +98,14 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void testCloseRegionOnClient() {
-    server1.invoke(() -> RegionCloseDUnitTest.VerifyClientProxyOnServerBeforeClose());
-    client1.invoke(() -> RegionCloseDUnitTest.closeRegion());
+    server1.invoke(RegionCloseDUnitTest::VerifyClientProxyOnServerBeforeClose);
+    client1.invoke(RegionCloseDUnitTest::closeRegion);
     // pause(10000);
-    server1.invoke(() -> RegionCloseDUnitTest.VerifyClientProxyOnServerAfterClose());
+    server1.invoke(RegionCloseDUnitTest::VerifyClientProxyOnServerAfterClose);
   }
 
   public static void createClientCache(String host, Integer port1) throws Exception {
-    int PORT1 = port1.intValue();
+    int PORT1 = port1;
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
@@ -138,7 +138,7 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   public static void VerifyClientProxyOnServerBeforeClose() {
@@ -238,8 +238,8 @@ public class RegionCloseDUnitTest extends JUnit4DistributedTestCase {
   @Override
   public final void preTearDown() throws Exception {
     // close client
-    client1.invoke(() -> RegionCloseDUnitTest.closeCache());
+    client1.invoke(RegionCloseDUnitTest::closeCache);
     // close server
-    server1.invoke(() -> RegionCloseDUnitTest.closeCache());
+    server1.invoke(RegionCloseDUnitTest::closeCache);
   }
 }

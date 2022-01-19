@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,9 +32,7 @@ import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.index.IndexData;
 import org.apache.geode.cache.query.internal.index.IndexProtocol;
@@ -51,8 +48,8 @@ import org.apache.geode.pdx.internal.PdxString;
 public class CompiledIn extends AbstractCompiledValue implements Indexable {
   private static final Logger logger = LogService.getLogger();
 
-  private CompiledValue elm;
-  private CompiledValue colln;
+  private final CompiledValue elm;
+  private final CompiledValue colln;
 
   public CompiledIn(CompiledValue elm, CompiledValue colln) {
     this.elm = elm;
@@ -82,13 +79,13 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
   private Object evaluateColln(ExecutionContext context) throws QueryInvocationTargetException,
       NameResolutionException, TypeMismatchException, FunctionDomainException {
     Object evalColln = null;
-    if (this.colln.isDependentOnCurrentScope(context)) {
-      evalColln = this.colln.evaluate(context);
+    if (colln.isDependentOnCurrentScope(context)) {
+      evalColln = colln.evaluate(context);
     } else {
-      evalColln = context.cacheGet(this.colln);
+      evalColln = context.cacheGet(colln);
       if (evalColln == null) {
-        evalColln = this.colln.evaluate(context);
-        context.cachePut(this.colln, evalColln);
+        evalColln = colln.evaluate(context);
+        context.cachePut(colln, evalColln);
       }
     }
     return evalColln;
@@ -97,7 +94,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
   @Override
   public Object evaluate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
-    Object evalElm = this.elm.evaluate(context);
+    Object evalElm = elm.evaluate(context);
 
     Object evalColln = evaluateColln(context);
 
@@ -111,14 +108,13 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     }
 
     if (evalColln instanceof Collection) {
-      Iterator iterator = ((Iterable) evalColln).iterator();
-      while (iterator.hasNext()) {
+      for (final Object o : (Iterable) evalColln) {
         Object evalObj = evalElm;
-        Object collnObj = iterator.next();
+        Object collnObj = o;
         if (evalElm instanceof PdxString && collnObj instanceof String) {
-          evalObj = ((PdxString) evalElm).toString();
+          evalObj = evalElm.toString();
         } else if (collnObj instanceof PdxString && evalElm instanceof String) {
-          collnObj = ((PdxString) collnObj).toString();
+          collnObj = collnObj.toString();
         }
         if (TypeUtils.compare(evalObj, collnObj, OQLLexerTokenTypes.TOK_EQ).equals(Boolean.TRUE)) {
           return Boolean.TRUE;
@@ -157,7 +153,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
    */
   @Override
   public IndexInfo[] getIndexInfo(ExecutionContext context)
-      throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     IndexInfo[] indexInfo = privGetIndexInfo(context);
     if (indexInfo != null) {
       // TODO: == check is identity only
@@ -172,7 +168,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     }
     // get the path and index key to try
     PathAndKey pAndK = getPathAndKey(context);
-    IndexInfo newIndexInfo[] = null;
+    IndexInfo[] newIndexInfo = null;
     if (pAndK != null) {
       CompiledValue path = pAndK._path;
       CompiledValue indexKey = pAndK._key;
@@ -211,14 +207,14 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
    */
   @Override
   protected PlanInfo protGetPlanInfo(ExecutionContext context)
-      throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     PlanInfo result = new PlanInfo();
     IndexInfo[] indexInfo = getIndexInfo(context);
     if (indexInfo == null) {
       return result;
     }
-    for (int i = 0; i < indexInfo.length; ++i) {
-      result.indexes.add(indexInfo[i]._index);
+    for (final IndexInfo info : indexInfo) {
+      result.indexes.add(info._index);
     }
     result.evalAsFilter = true;
     String preferredCondn = (String) context.cacheGet(PREF_INDEX_COND);
@@ -238,9 +234,9 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
 
   @Override
   public Set computeDependencies(ExecutionContext context)
-      throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
-    context.addDependencies(this, this.elm.computeDependencies(context));
-    return context.addDependencies(this, this.colln.computeDependencies(context));
+      throws TypeMismatchException, NameResolutionException {
+    context.addDependencies(this, elm.computeDependencies(context));
+    return context.addDependencies(this, colln.computeDependencies(context));
   }
 
   /**
@@ -249,30 +245,30 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
    * @return a List of entries if optimization was performed, null if no match
    */
   List optimizeBulkGet(CompiledRegion cRgn, ExecutionContext context)
-      throws RegionNotFoundException, TypeMismatchException, NameResolutionException,
+      throws TypeMismatchException, NameResolutionException,
       FunctionDomainException, QueryInvocationTargetException {
     // check the elm to see if it's the key on a map entry
     boolean match = false;
     CompiledValue resolution = null;
 
-    if (this.elm instanceof CompiledID) {
-      String id = ((CompiledID) this.elm).getId();
+    if (elm instanceof CompiledID) {
+      String id = ((CompiledID) elm).getId();
       if (id.equals("key") || id.equals("getKey")) {
         resolution = context.resolve(id);
         if (resolution instanceof CompiledPath) {
-          resolution = ((CompiledPath) resolution).getReceiver();
+          resolution = resolution.getReceiver();
         }
       }
-    } else if (this.elm instanceof CompiledPath) {
-      CompiledPath cPath = (CompiledPath) this.elm;
+    } else if (elm instanceof CompiledPath) {
+      CompiledPath cPath = (CompiledPath) elm;
       if (cPath.getTailID().equals("key") || cPath.getTailID().equals("getKey")) {
         CompiledValue cVal = cPath.getReceiver();
         if (cVal instanceof CompiledID) {
           resolution = context.resolve(((CompiledID) cVal).getId());
         }
       }
-    } else if (this.elm instanceof CompiledOperation) {
-      CompiledOperation cOp = (CompiledOperation) this.elm;
+    } else if (elm instanceof CompiledOperation) {
+      CompiledOperation cOp = (CompiledOperation) elm;
       if (cOp.getMethodName().equals("key") || cOp.getMethodName().equals("getKey")) {
         if (cOp.getReceiver(context) instanceof CompiledID) {
           resolution = context.resolve(((CompiledID) cOp.getReceiver(context)).getId());
@@ -289,7 +285,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
 
     // element matches; finally, check to make sure the collection expression
     // is independent of all iterators
-    if (context.isDependentOnAnyIterator(this.colln)) {
+    if (context.isDependentOnAnyIterator(colln)) {
       return null;
     }
 
@@ -323,8 +319,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
       List results = new ArrayList(colln.size());
 
       // now do the iteration over this collection
-      for (Iterator itr = colln.iterator(); itr.hasNext();) {
-        Object key = itr.next();
+      for (Object key : colln) {
         Region.Entry entry = rgn.getEntry(key);
         if (entry != null) {
           // the region contains this key, so add the entry to the results
@@ -343,15 +338,15 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
   private PathAndKey getPathAndKey(ExecutionContext context)
       throws TypeMismatchException, AmbiguousNameException {
 
-    boolean isLeftDependent = context.isDependentOnCurrentScope(this.elm);
-    boolean isRightDependent = context.isDependentOnCurrentScope(this.colln);
+    boolean isLeftDependent = context.isDependentOnCurrentScope(elm);
+    boolean isRightDependent = context.isDependentOnCurrentScope(colln);
     if (!isLeftDependent || isRightDependent) {
       return null;
     }
     CompiledValue indexKey;
     CompiledValue path;
-    path = this.elm;
-    indexKey = this.colln;
+    path = elm;
+    indexKey = colln;
     // Do not worry about the nature of the collection. As long as it
     // is not dependent on the current scope we should be fine
 
@@ -421,7 +416,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
       SelectResults intermediateResults, boolean completeExpansionNeeded,
       CompiledValue iterOperands, IndexInfo indexInfo, RuntimeIterator[] indpndntItr,
       boolean isIntersection, boolean conditioningNeeded, boolean evalProj)
-      throws TypeMismatchException, AmbiguousNameException, FunctionDomainException,
+      throws TypeMismatchException, FunctionDomainException,
       NameResolutionException, QueryInvocationTargetException {
     ObjectType resultType = indexInfo._index.getResultSetType();
     int indexFieldsSize = -1;
@@ -456,7 +451,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
               .fine("StructType resultType.class=" + resultType.getClass().getName());
           if (useLinkedDataStructure) {
             results = context.isDistinct() ? new LinkedStructSet((StructTypeImpl) resultType)
-                : new SortedResultsBag<Struct>((StructTypeImpl) resultType, nullValuesAtStart);
+                : new SortedResultsBag<>(resultType, nullValuesAtStart);
           } else {
             results = QueryUtils.createStructCollection(context, (StructTypeImpl) resultType);
           }
@@ -481,7 +476,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
                 .fine("StructType resultType.class=" + resultType.getClass().getName());
             if (useLinkedDataStructure) {
               results = context.isDistinct() ? new LinkedStructSet((StructTypeImpl) resultType)
-                  : new SortedResultsBag<Struct>((StructTypeImpl) resultType, nullValuesAtStart);
+                  : new SortedResultsBag<>(resultType, nullValuesAtStart);
             } else {
               results = QueryUtils.createStructCollection(context, (StructTypeImpl) resultType);
             }
@@ -506,7 +501,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
             .fine("StructType resultType.class=" + resultType.getClass().getName());
         if (useLinkedDataStructure) {
           results = context.isDistinct() ? new LinkedStructSet((StructTypeImpl) resultType)
-              : new SortedResultsBag<Struct>((StructTypeImpl) resultType, nullValuesAtStart);
+              : new SortedResultsBag<>(resultType, nullValuesAtStart);
         } else {
           results = QueryUtils.createStructCollection(context, (StructTypeImpl) resultType);
         }
@@ -542,9 +537,8 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
       }
       // handle each type of collection that we support
       if (evalColln instanceof Map) {
-        Iterator itr = ((Map) evalColln).entrySet().iterator();
-        while (itr.hasNext()) {
-          this.queryIndex(itr.next(), indexInfo, results, iterOperands, indpndntItr, context,
+        for (final Object o : ((Map) evalColln).entrySet()) {
+          queryIndex(o, indexInfo, results, iterOperands, indpndntItr, context,
               projAttrib, conditioningNeeded);
         }
 
@@ -554,17 +548,15 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
         // key in the [1]
         // and the evalColln in the [0] position
         if (key instanceof Object[]) {
-          Iterator iterator = ((Iterable) ((Object[]) key)[0]).iterator();
-          while (iterator.hasNext()) {
-            this.queryIndex(new Object[] {iterator.next(), ((Object[]) key)[1]}, indexInfo, results,
+          for (final Object o : (Iterable) ((Object[]) key)[0]) {
+            queryIndex(new Object[] {o, ((Object[]) key)[1]}, indexInfo, results,
                 iterOperands, indpndntItr, context, projAttrib, conditioningNeeded);
           }
         } else {
           // Removing duplicates from the collection
           HashSet set = new HashSet((Collection) evalColln);
-          Iterator itr = set.iterator();
-          while (itr.hasNext()) {
-            this.queryIndex(itr.next(), indexInfo, results, iterOperands, indpndntItr, context,
+          for (final Object o : set) {
+            queryIndex(o, indexInfo, results, iterOperands, indpndntItr, context,
                 projAttrib, conditioningNeeded);
           }
         }
@@ -577,7 +569,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
 
         int evalCollnLength = Array.getLength(evalColln);
         for (int i = 0; i < evalCollnLength; ++i) {
-          this.queryIndex(Array.get(evalColln, i), indexInfo, results, iterOperands, indpndntItr,
+          queryIndex(Array.get(evalColln, i), indexInfo, results, iterOperands, indpndntItr,
               context, projAttrib, conditioningNeeded);
         }
       }
@@ -616,7 +608,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
   @Override
   public boolean isConditioningNeededForIndex(RuntimeIterator independentIter,
       ExecutionContext context, boolean completeExpnsNeeded)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     IndexConditioningHelper ich = null;
     IndexInfo[] idxInfo = getIndexInfo(context);
     assert idxInfo.length == 1;
@@ -678,7 +670,7 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
      */
     return filterEvaluate(context, intermediateResults, true, null,
         indpndntItr != null ? new RuntimeIterator[] {indpndntItr} : null, true,
-        this.isConditioningNeededForIndex(indpndntItr, context, true), true);
+        isConditioningNeededForIndex(indpndntItr, context, true), true);
   }
 
   /**
@@ -761,23 +753,20 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
     int size = 0;
     // handle each type of collection that we support
     if (evalColln instanceof Map) {
-      Iterator itr = ((Map) evalColln).entrySet().iterator();
-      while (itr.hasNext()) {
-        size += idxInfo[0]._index.getSizeEstimate(itr.next(), TOK_EQ, idxInfo[0]._matchLevel);
+      for (final Object o : ((Map) evalColln).entrySet()) {
+        size += idxInfo[0]._index.getSizeEstimate(o, TOK_EQ, idxInfo[0]._matchLevel);
       }
 
     } else if (evalColln instanceof Collection) {
       if (key instanceof Object[]) {
-        Iterator iterator = ((ResultsSet) ((Object[]) key)[0]).iterator();
-        while (iterator.hasNext()) {
+        for (final Object o : (ResultsSet) ((Object[]) key)[0]) {
           size += idxInfo[0]._index.getSizeEstimate(
-              new Object[] {iterator.next(), ((Object[]) key)[1]}, TOK_EQ, idxInfo[0]._matchLevel);
+              new Object[] {o, ((Object[]) key)[1]}, TOK_EQ, idxInfo[0]._matchLevel);
         }
       } else {
 
-        Iterator itr = ((Collection) evalColln).iterator();
-        while (itr.hasNext()) {
-          size += idxInfo[0]._index.getSizeEstimate(itr.next(), TOK_EQ, idxInfo[0]._matchLevel);
+        for (final Object o : (Collection) evalColln) {
+          size += idxInfo[0]._index.getSizeEstimate(o, TOK_EQ, idxInfo[0]._matchLevel);
         }
       }
     } else {
@@ -787,49 +776,49 @@ public class CompiledIn extends AbstractCompiledValue implements Indexable {
       }
       if (evalColln instanceof Object[]) {
         Object[] arr = (Object[]) evalColln;
-        for (int i = 0; i < arr.length; ++i) {
-          size += idxInfo[0]._index.getSizeEstimate(arr[i], TOK_EQ, idxInfo[0]._matchLevel);
+        for (final Object o : arr) {
+          size += idxInfo[0]._index.getSizeEstimate(o, TOK_EQ, idxInfo[0]._matchLevel);
         }
 
       } else if (evalColln instanceof long[]) {
         long[] a = (long[]) evalColln;
-        for (int i = 0; i < a.length; i++) {
-          size += idxInfo[0]._index.getSizeEstimate(a[i], TOK_EQ, idxInfo[0]._matchLevel);
+        for (final long l : a) {
+          size += idxInfo[0]._index.getSizeEstimate(l, TOK_EQ, idxInfo[0]._matchLevel);
         }
 
       } else if (evalColln instanceof double[]) {
         double[] a = (double[]) evalColln;
-        for (int i = 0; i < a.length; i++) {
-          size += idxInfo[0]._index.getSizeEstimate(a[i], TOK_EQ, idxInfo[0]._matchLevel);
+        for (final double v : a) {
+          size += idxInfo[0]._index.getSizeEstimate(v, TOK_EQ, idxInfo[0]._matchLevel);
         }
 
       } else if (evalColln instanceof float[]) {
         float[] a = (float[]) evalColln;
-        for (int i = 0; i < a.length; i++) {
-          size += idxInfo[0]._index.getSizeEstimate(a[i], TOK_EQ, idxInfo[0]._matchLevel);
+        for (final float v : a) {
+          size += idxInfo[0]._index.getSizeEstimate(v, TOK_EQ, idxInfo[0]._matchLevel);
         }
 
       } else if (evalColln instanceof int[]) {
         int[] a = (int[]) evalColln;
-        for (int i = 0; i < a.length; i++) {
-          size += idxInfo[0]._index.getSizeEstimate(a[i], TOK_EQ, idxInfo[0]._matchLevel);
+        for (final int j : a) {
+          size += idxInfo[0]._index.getSizeEstimate(j, TOK_EQ, idxInfo[0]._matchLevel);
         }
       } else if (evalColln instanceof short[]) {
         short[] a = (short[]) evalColln;
-        for (int i = 0; i < a.length; i++) {
-          size += idxInfo[0]._index.getSizeEstimate(a[i], TOK_EQ, idxInfo[0]._matchLevel);
+        for (final short value : a) {
+          size += idxInfo[0]._index.getSizeEstimate(value, TOK_EQ, idxInfo[0]._matchLevel);
         }
 
       } else if (evalColln instanceof char[]) {
         char[] a = (char[]) evalColln;
-        for (int i = 0; i < a.length; i++) {
-          size += idxInfo[0]._index.getSizeEstimate(a[i], TOK_EQ, idxInfo[0]._matchLevel);
+        for (final char c : a) {
+          size += idxInfo[0]._index.getSizeEstimate(c, TOK_EQ, idxInfo[0]._matchLevel);
         }
 
       } else if (evalColln instanceof byte[]) {
         byte[] a = (byte[]) evalColln;
-        for (int i = 0; i < a.length; i++) {
-          size += idxInfo[0]._index.getSizeEstimate(a[i], TOK_EQ, idxInfo[0]._matchLevel);
+        for (final byte b : a) {
+          size += idxInfo[0]._index.getSizeEstimate(b, TOK_EQ, idxInfo[0]._matchLevel);
         }
 
       } else {

@@ -33,7 +33,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 public class PartitionedRegionStatsTest extends JUnit4DistributedTestCase {
 
-  private static String REGION_NAME = "testRegion";
+  private static final String REGION_NAME = "testRegion";
   private final int numOfEntries = 10;
 
   final Host host = Host.getHost(0);

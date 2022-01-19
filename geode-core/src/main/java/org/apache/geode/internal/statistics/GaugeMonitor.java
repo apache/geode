@@ -43,8 +43,8 @@ public class GaugeMonitor extends StatisticsMonitor {
   @Override
   protected StringBuilder appendToString() {
     final StringBuilder sb = new StringBuilder();
-    sb.append("lowThreshold=").append(this.lowThreshold);
-    sb.append(", highThreshold=").append(this.highThreshold);
+    sb.append("lowThreshold=").append(lowThreshold);
+    sb.append(", highThreshold=").append(highThreshold);
     return sb;
   }
 }
