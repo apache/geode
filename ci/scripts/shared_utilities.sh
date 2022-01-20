@@ -19,15 +19,16 @@
 find-here-test-reports() {
   output_directories_file=${1}
   set +e
-  find . -type d -name "reports" > ${output_directories_file}
-  find .  -type d -name "test-results" >> ${output_directories_file}
-  (find . -type d -name "*Test" | grep "build/[^/]*Test$") >> ${output_directories_file}
-  find . -name "*-progress*txt" >> ${output_directories_file}
-  find . -name "*.hprof" -o -name "hs_err*.log" -o -name "replay*.log" >> ${output_directories_file}
-  find . -type d -name "callstacks" >> ${output_directories_file}
-  find .gradle_logs -name '*.log' >> ${output_directories_file}
+  find . -type d -name "reports" > "${output_directories_file}"
+  # shellcheck disable=SC2129
+  find .  -type d -name "test-results" >> "${output_directories_file}"
+  (find . -type d -name "*Test" | grep "build/[^/]*Test$") >> "${output_directories_file}"
+  find . -name "*-progress*txt" >> "${output_directories_file}"
+  find . -name "*.hprof" -o -name "hs_err*.log" -o -name "replay*.log" >> "${output_directories_file}"
+  find . -type d -name "callstacks" >> "${output_directories_file}"
+  find .gradle_logs -name '*.log' >> "${output_directories_file}"
   echo "Collecting the following artifacts..."
-  cat ${output_directories_file}
+  cat "${output_directories_file}"
   echo ""
 }
 
@@ -38,7 +39,7 @@ get-geode-version() {
   # Prune all after '-', yielding e.g., "1.14.0"
   local GEODE_PRODUCT_VERSION=${CONCOURSE_VERSION%%-*}
   (>&2 echo "Geode product VERSION is ${GEODE_PRODUCT_VERSION}")
-  echo ${GEODE_PRODUCT_VERSION}
+  echo "${GEODE_PRODUCT_VERSION}"
 }
 
 get-geode-version-qualifier-slug() {
@@ -47,38 +48,43 @@ get-geode-version-qualifier-slug() {
   local CONCOURSE_BUILD_SLUG=${CONCOURSE_VERSION##*-}
   # Prune all before '.', yielding e.g., "build"
   local QUALIFIER_SLUG=${CONCOURSE_BUILD_SLUG%%.*}
-  echo ${QUALIFIER_SLUG}
+  echo "${QUALIFIER_SLUG}"
 }
 
 get-geode-build-id() {
   local CONCOURSE_VERSION=$1
   # Prune all before the last '.', yielding e.g., "325"
   local BUILD_ID=${CONCOURSE_VERSION##*.}
-  echo ${BUILD_ID}
+  echo "${BUILD_ID}"
 }
 
 get-geode-build-id-padded() {
-  local CONCOURSE_VERSION=$1
-  local BUILD_ID=$(get-geode-build-id ${CONCOURSE_VERSION})
+  local CONCOURSE_VERSION="${1}"
+  local BUILD_ID;
+  BUILD_ID=$(get-geode-build-id "${CONCOURSE_VERSION}")
   # Prune all before the last '.', yielding e.g., "325", then zero-pad, e.g., "0325"
-  local PADDED_BUILD_ID=$(printf "%04d" ${BUILD_ID})
+  local PADDED_BUILD_ID
+  PADDED_BUILD_ID=$(printf "%04d" "${BUILD_ID}")
   (>&2 echo "Build ID is ${PADDED_BUILD_ID}")
-  echo ${PADDED_BUILD_ID}
+  echo "${PADDED_BUILD_ID}"
 }
 
 get-full-version() {
   # Extract each component so that the BuildId can be zero-padded, then reassembled.
   local CONCOURSE_VERSION=$1
-  local GEODE_PRODUCT_VERSION=$(get-geode-version ${CONCOURSE_VERSION})
-  local QUALIFIER_SLUG=$(get-geode-version-qualifier-slug ${CONCOURSE_VERSION})
-  local PADDED_BUILD_ID=$(get-geode-build-id-padded ${CONCOURSE_VERSION})
+  local GEODE_PRODUCT_VERSION
+  GEODE_PRODUCT_VERSION=$(get-geode-version "${CONCOURSE_VERSION}")
+  local QUALIFIER_SLUG
+  QUALIFIER_SLUG=$(get-geode-version-qualifier-slug "${CONCOURSE_VERSION}")
+  local PADDED_BUILD_ID
+  PADDED_BUILD_ID=$(get-geode-build-id-padded "${CONCOURSE_VERSION}")
   local FULL_PRODUCT_VERSION="${GEODE_PRODUCT_VERSION}-${QUALIFIER_SLUG}.${PADDED_BUILD_ID}"
   (>&2 echo "Full product VERSION is ${FULL_PRODUCT_VERSION}")
-  echo ${FULL_PRODUCT_VERSION}
+  echo "${FULL_PRODUCT_VERSION}"
 }
 
 get_geode_pr_exclusion_dirs() {
-  local exclude_dirs="ci dev-tools etc geode-book geode-docs"
+  local exclude_dirs="ci dev-tools etc geode-book geode-docs CODEOWNERS"
   echo "${exclude_dirs}"
 }
 
@@ -93,10 +99,14 @@ is_source_from_pr_testable() {
     return 0;
   fi
 
-  pushd "${repo_dir}" 2>&1 >> /dev/null
-    local base_dir=$(git rev-parse --show-toplevel)
-    local github_pr_dir="${base_dir}/.git/resource"
-    pushd ${base_dir} 2>&1 >> /dev/null
+  # shellcheck disable=SC2164
+  pushd "${repo_dir}" >> /dev/null
+    local base_dir
+    base_dir=$(git rev-parse --show-toplevel)
+    local github_pr_dir
+    github_pr_dir="${base_dir}/.git/resource"
+    # shellcheck disable=SC2164
+    pushd "${base_dir}" >> /dev/null
       local return_code=0
       if [ -d "${github_pr_dir}" ]; then
         # Modify this path list with directories to exclude
@@ -105,8 +115,12 @@ is_source_from_pr_testable() {
         for d in $(echo ${exclude_dirs}); do
           exclude_pathspec="${exclude_pathspec} :(exclude,glob)${d}/**"
         done
-        pushd ${base_dir} &> /dev/null
-          local files=$(git diff --name-only $(cat "${github_pr_dir}/base_sha") $(cat "${github_pr_dir}/head_sha") -- . $(echo ${exclude_pathspec}))
+        # shellcheck disable=SC2164
+        pushd "${base_dir}" &> /dev/null
+          local files
+          # shellcheck disable=SC2046
+          files=$(git diff --name-only "$(cat "${github_pr_dir}/base_sha")" -- . $(echo "${exclude_pathspec}"))
+        # shellcheck disable=SC2164
         popd &> /dev/null
         if [[ -z "${files}" ]]; then
           >&2 echo "CI changes only, skipping tests..."
@@ -117,7 +131,9 @@ is_source_from_pr_testable() {
       else
         >&2 echo "Running tests..."
       fi
-    popd 2>&1 >> /dev/null
-  popd 2>&1 >> /dev/null
+    # shellcheck disable=SC2164
+    popd >> /dev/null
+  # shellcheck disable=SC2164
+  popd >> /dev/null
   return ${return_code}
 }

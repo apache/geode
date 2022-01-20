@@ -27,7 +27,7 @@ while [[ -h "$SOURCE" ]]; do # resolve $SOURCE until the file is no longer a sym
 done
 SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
-. ${SCRIPTDIR}/shared_utilities.sh
+. "${SCRIPTDIR}/shared_utilities.sh"
 
 is_source_from_pr_testable "geode" "$(get_geode_pr_exclusion_dirs)" || exit 0
 
@@ -39,10 +39,10 @@ function changes_for_path() {
                       jq -r -c '.[]| select(.name == "base_sha") | .value') || exit $?
 
     if [[ "${mergeBase}" == "" ]]; then
-      echo "Could not determine merge base. Exiting..."
+      >&2 echo "Could not determine merge base. Exiting..."
       exit 1
     fi
-    git diff --name-only --diff-filter=ACMR ${mergeBase} -- $path
+    git diff --name-only --diff-filter=ACMR "${mergeBase}" -- $path
   popd >> /dev/null
 }
 
@@ -74,7 +74,7 @@ for T in "${CHANGED_FILES_ARRAY[@]}"; do
   echo "  ${T}"
 done
 
-if [[  "${NUM_CHANGED_FILES}" -eq "0" ]]
+if [[  "${NUM_CHANGED_FILES}" -eq 0 ]]
 then
   echo "No changed test files, nothing to test."
   exit 0
@@ -83,7 +83,7 @@ fi
 save_classpath
 
 TEST_TARGETS=$(create_gradle_test_targets "${CHANGED_FILES_ARRAY[@]}")
-TEST_COUNT=$(echo ${TEST_TARGETS} | sed -e 's/.*testCount=\([0-9]*\).*/\1/g')
+TEST_COUNT=$(echo "${TEST_TARGETS}" | sed -e 's/.*testCount=\([0-9]*\).*/\1/g')
 
 if [[ "${NUM_CHANGED_FILES}" -ne "${TEST_COUNT}" ]]
 then
@@ -103,5 +103,5 @@ export GRADLE_TASK_OPTIONS="-Prepeat=50 -PfailOnNoMatchingTests=false"
 echo "GRADLE_TASK_OPTIONS=${GRADLE_TASK_OPTIONS}"
 echo "GRADLE_TASK=${GRADLE_TASK}"
 
-#${SCRIPTDIR}/execute_tests.sh
+"${SCRIPTDIR}/execute_tests.sh"
 
