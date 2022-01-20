@@ -16,7 +16,6 @@
 package org.apache.geode.redis.internal.commands;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
-import static org.apache.geode.redis.internal.commands.RedisCommandSupportLevel.INTERNAL;
 import static org.apache.geode.redis.internal.commands.RedisCommandSupportLevel.SUPPORTED;
 import static org.apache.geode.redis.internal.commands.RedisCommandSupportLevel.UNSUPPORTED;
 import static org.apache.geode.redis.internal.commands.RedisCommandType.Flag.ADMIN;
@@ -445,11 +444,6 @@ public enum RedisCommandType {
 
   public boolean isUnsupported() {
     return supportLevel == UNSUPPORTED;
-  }
-
-
-  public boolean isInternal() {
-    return supportLevel == INTERNAL;
   }
 
   public boolean isUnknown() {
