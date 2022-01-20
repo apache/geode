@@ -85,7 +85,7 @@ include 'geode-server-all'
  '1.12.0',
  '1.12.8',
  '1.13.1',
- '1.13.6',
+ '1.13.7',
  '1.14.2'].each {
   include 'geode-old-versions:'.concat(it)
 }
