@@ -25,17 +25,17 @@ RUN apk add --no-cache \
 #       8763 31B4 5A97 E382 D1BD  FB44 4482 0F9C ABF4 396F
 # uid       [  undef ] Mike Stolz <mikestolz@apache.org>
 # sub   4096R/3871E6AD 2018-04-12 [expires: 2022-04-12]
-ENV GEODE_GPG DB5476815A475574577D442B468A4800EAFB2498
+ENV GEODE_GPG 4EF7D5CB5C453A02954B0B9A1ACF9902D7D9EFBC
 # TODO does this change per-release like other Apache projects? (and thus needs to be a list of full fingerprints from a KEYS file instead?)
 
 ENV GEODE_HOME /geode
 ENV PATH $PATH:$GEODE_HOME/bin
 
 # https://geode.apache.org/releases/
-ENV GEODE_VERSION 1.13.6
+ENV GEODE_VERSION 1.13.7
 # Binaries TGZ SHA-256
 # https://dist.apache.org/repos/dist/release/geode/VERSION/apache-geode-VERSION.tgz.sha256
-ENV GEODE_SHA256 0f56b857c6ab263ce74ce3b136152453d163069771ac79fdbcf49261da5cf819
+ENV GEODE_SHA256 87fa5a6030e6de3a3773fc8a93064ce5f7a3b712f38e1845c0bad4870e4f016b
 
 # http://apache.org/dyn/closer.cgi/geode/1.3.0/apache-geode-1.3.0.tgz
 
