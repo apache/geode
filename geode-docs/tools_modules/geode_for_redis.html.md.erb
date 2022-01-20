@@ -47,7 +47,7 @@ Use `gfsh` to start at least one server with a command of the form:
 gfsh> start server --J=-Dgemfire.geode-for-redis-enabled=true --J=-Dgemfire.geode-for-redis-port=6379
 ```
 
-More information about the options when starting a server is given in the section [Start Server Options](#start-server-options).
+More information about the options when starting a server is given in the section [Start Server Options](#redis-start-server-options) below.
 Note that `gfsh` suppots tab completion which can help with long option names.
 
 To confirm the server is listening, in a separate terminal run:
@@ -99,7 +99,7 @@ To confirm that everything shut down correctly, if you execute a Redis command i
 Could not connect to Redis at 127.0.0.1:6379: Connection refused
 ```
 
-## <a name="start-server-options"></a>Start Server Options
+## <a name="redis-start-server-options"></a>Start Server Options
 
 The options that are specific to starting a server for <%=vars.product_name%> for Redis are listed below.
 For other options see [start server](gfsh/command-pages/start.html#topic_3764EE2DB18B4AE4A625E0354471738A).
@@ -163,7 +163,7 @@ Note that the `geode-for-redis-username` property is only needed if `AUTH` comma
 
 Note also that _any_ `AUTH` requests will fail if no Security Manager has been configured.
 
-For information on configuring the cluster for SSL, see [Managing Security](../managing/security).
+For information on configuring the cluster for SSL, see [Configuring SSL](../managing/security/implementing_ssl.html).
 
 ## <a name="application-development"></a>Application Development
 
@@ -178,7 +178,8 @@ public static ConfigureRedisAction configureRedisAction() {
       return ConfigureRedisAction.NO_OP;
 }
 ```
-This is a known solution for many Managed Redis products (ElastiCache, Azure Cache for Redis, etc) that disable the CONFIG command for security reasons.  You can read more about why this is done [here](https://github.com/spring-projects/spring-session/issues/124).
+This is a known solution for many Managed Redis products (ElastiCache, Azure Cache for Redis, etc) that disable the CONFIG command for security reasons.
+You can read more about why this is done in the [Spring Session issue report](https://github.com/spring-projects/spring-session/issues/124).
 
 ## <a name="redis-commands"></a>Redis Commands
 
