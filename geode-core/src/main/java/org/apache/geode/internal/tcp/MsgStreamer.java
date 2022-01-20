@@ -26,6 +26,7 @@ import java.util.List;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,6 +42,7 @@ import org.apache.geode.internal.ObjToByteArraySerializer;
 import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
@@ -53,6 +55,8 @@ import org.apache.geode.util.internal.GeodeGlossary;
  */
 public class MsgStreamer extends OutputStream
     implements ObjToByteArraySerializer, BaseMsgStreamer, ByteBufferWriter {
+
+  private static final Logger logger = LogService.getLogger();
 
   /**
    * List of connections to send this msg to.
@@ -304,17 +308,29 @@ public class MsgStreamer extends OutputStream
       conflationMsg = msg;
     }
     stats.endMsgSerialization(serStartTime);
+    final BufferDebugging bufferDebugging = new BufferDebugging();
     for (final Iterator<Connection> it = connections.iterator(); it.hasNext();) {
       final Connection connection = it.next();
       try {
-        connection.sendPreserialized(buffer,
-            lastFlushForMessage && msg.containsRegionContentChange(), conflationMsg);
+        final DistributionMessage finalConflationMessage = conflationMsg;
+        bufferDebugging.doProcessingOnReadableBuffer(
+            buffer,
+            _ignored -> connection.sendPreserialized(
+                buffer,
+            lastFlushForMessage && msg.containsRegionContentChange(),
+                finalConflationMessage));
       } catch (IOException ex) {
         it.remove();
         if (connectExceptions == null) {
           connectExceptions = new ConnectExceptions();
         }
         connectExceptions.addFailure(connection.getRemoteAddress(), ex);
+        if (logger.isInfoEnabled()) {
+          logger.info("io exception for {}",
+              connection, ex);
+          logger.info( "MsgStreamer caught IOException while writing ByteBuffer on {}; buffer:\n{}",
+              connection, bufferDebugging.dumpWritableBuffer());
+        }
         connection.closeForReconnect(
             String.format("closing due to %s", "IOException"));
       } catch (ConnectionException ex) {

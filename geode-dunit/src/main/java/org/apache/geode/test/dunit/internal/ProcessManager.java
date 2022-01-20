@@ -324,6 +324,7 @@ class ProcessManager implements ChildVMLauncher {
       cmds.add("--add-opens=java.base/jdk.internal.module=ALL-UNNAMED");
       cmds.add("--add-opens=java.base/java.lang.module=ALL-UNNAMED");
     }
+//    cmds.add("-Djava.security.properties=/Users/bburcham/Projects/geode/geode-core/src/distributedTest/resources/org/apache/geode/distributed/internal/java.security");
     cmds.add(ChildVM.class.getName());
     String[] rst = new String[cmds.size()];
     cmds.toArray(rst);

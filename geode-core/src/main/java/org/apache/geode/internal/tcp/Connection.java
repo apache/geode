@@ -1536,7 +1536,7 @@ public class Connection implements Runnable {
     return owner.getBufferPool();
   }
 
-  private String p2pReaderName() {
+  String p2pReaderName() {
     StringBuilder sb = new StringBuilder(64);
     if (isReceiver) {
       sb.append(THREAD_KIND_IDENTIFIER + "@");
@@ -1623,6 +1623,7 @@ public class Connection implements Runnable {
           break;
         }
 
+        final BufferDebugging bufferDebugging = new BufferDebugging();
         try (final ByteBufferSharing inputSharing = inputBufferVendor.open()) {
           ByteBuffer buff = inputSharing.getBuffer();
 
@@ -1657,7 +1658,8 @@ public class Connection implements Runnable {
             }
             return;
           }
-          processInputBuffer(threadMonitorExecutor);
+          bufferDebugging.doProcessingOnWriteableBuffer(buff,
+              _ignoredBuff -> processInputBuffer(threadMonitorExecutor));
 
           if (!handshakeHasBeenRead && !isReceiver && (handshakeRead || handshakeCancelled)) {
             if (logger.isDebugEnabled()) {
@@ -1702,6 +1704,8 @@ public class Connection implements Runnable {
           if (!isSocketClosed() && !"Socket closed".equalsIgnoreCase(e.getMessage())) {
             if (logger.isInfoEnabled() && !isIgnorableIOException(e)) {
               logger.info("{} io exception for {}", p2pReaderName(), this, e);
+              logger.info( "{} ByteBuffer before/after processing for {}\n{}",
+                  p2pReaderName(), this, bufferDebugging.dumpReadableBuffer());
             }
             if (logger.isDebugEnabled()) {
               if (e.getMessage().contains("interrupted by a call to WSACancelBlockingCall")) {

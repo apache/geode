@@ -21,6 +21,7 @@ import static javax.net.ssl.SSLEngineResult.Status.BUFFER_OVERFLOW;
 import static javax.net.ssl.SSLEngineResult.Status.OK;
 import static org.apache.geode.internal.net.BufferPool.BufferType.TRACKED_RECEIVER;
 import static org.apache.geode.internal.net.BufferPool.BufferType.TRACKED_SENDER;
+import static org.apache.geode.internal.tcp.BufferDebugging.throwTagMishmashSometimes;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -277,6 +278,7 @@ public class NioSslEngine implements NioFilter {
       peerAppData.limit(peerAppData.capacity());
       boolean stopDecryption = false;
       while (wrappedBuffer.hasRemaining() && !stopDecryption) {
+        throwTagMishmashSometimes();
         SSLEngineResult unwrapResult = engine.unwrap(wrappedBuffer, peerAppData);
         switch (unwrapResult.getStatus()) {
           case BUFFER_OVERFLOW:

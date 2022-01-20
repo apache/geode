@@ -15,13 +15,18 @@
 
 package org.apache.geode.distributed.internal;
 
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -30,11 +35,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.LongAdder;
 
+import javax.net.ssl.SSLContext;
+
 import junitparams.Parameters;
 import org.jetbrains.annotations.NotNull;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
@@ -66,9 +75,11 @@ import org.apache.geode.test.version.VersionManager;
  * receiver's buffer.
  *
  */
+
+@Ignore
 @Category({MembershipTest.class})
 @RunWith(GeodeParamsRunner.class)
-public class P2PMessagingConcurrencyDUnitTest {
+public class P2PTagMishmashXrayDUnitTest {
 
   // how many messages will each sender generate?
   private static final int MESSAGES_PER_SENDER = 1_000;
@@ -86,6 +97,9 @@ public class P2PMessagingConcurrencyDUnitTest {
 
   @Rule
   public final ClusterStartupRule clusterStartupRule = new ClusterStartupRule(3);
+
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @ClassRule
   public static final DistributedExecutorServiceRule senderExecutorServiceRule =
@@ -106,6 +120,8 @@ public class P2PMessagingConcurrencyDUnitTest {
       final int sendSocketBufferSize,
       final int receiveSocketBufferSize) throws GeneralSecurityException, IOException {
 
+//    overrideJavaSecurity();
+
     final Properties senderConfiguration =
         gemFireConfiguration(conserveSockets, useTLS, sendSocketBufferSize);
     final Properties receiverConfiguration =
@@ -122,45 +138,11 @@ public class P2PMessagingConcurrencyDUnitTest {
 
   @Test
   @Parameters({
-      /*
-       * all combinations of flags with buffer sizes:
-       * (equal), larger/smaller, smaller/larger, minimal
-       */
       "true, true, true, 32768, 32768",
-      "true, true, true, 65536, 32768",
-      "true, true, true, 32768, 65536",
-      "true, true, true, 1024, 1024",
-      "true, true, false, 32768, 32768",
-      "true, true, false, 65536, 32768",
-      "true, true, false, 32768, 65536",
-      "true, true, false, 1024, 1024",
-      "true, false, true, 32768, 32768",
-      "true, false, true, 65536, 32768",
-      "true, false, true, 32768, 65536",
-      "true, false, true, 1024, 1024",
-      "true, false, false, 32768, 32768",
-      "true, false, false, 65536, 32768",
-      "true, false, false, 32768, 65536",
-      "true, false, false, 1024, 1024",
-      "false, true, true, 32768, 32768",
-      "false, true, true, 65536, 32768",
-      "false, true, true, 32768, 65536",
-      "false, true, true, 1024, 1024",
-      "false, true, false, 32768, 32768",
-      "false, true, false, 65536, 32768",
-      "false, true, false, 32768, 65536",
-      "false, true, false, 1024, 1024",
-      "false, false, true, 32768, 32768",
-      "false, false, true, 65536, 32768",
-      "false, false, true, 32768, 65536",
-      "false, false, true, 1024, 1024",
-      "false, false, false, 32768, 32768",
-      "false, false, false, 65536, 32768",
-      "false, false, false, 32768, 65536",
-      "false, false, false, 1024, 1024",
   })
   public void testP2PMessaging(
-      final boolean requireOrderedDelivery, final boolean conserveSockets,
+      final boolean requireOrderedDelivery,
+      final boolean conserveSockets,
       final boolean useTLS,
       final int sendSocketBufferSize,
       final int receiveSocketBufferSize) throws GeneralSecurityException, IOException {
@@ -269,18 +251,18 @@ public class P2PMessagingConcurrencyDUnitTest {
     private boolean requireOrderedDelivery;
 
     TestMessage(final InternalDistributedMember receiver,
-                final Random random, final int messageId,
-                final boolean requireOrderedDelivery) {
+                final Random random, final int messageId, final boolean requireOrderedDelivery) {
+      this.requireOrderedDelivery = requireOrderedDelivery;
       setRecipient(receiver);
       this.random = random;
       this.messageId = messageId;
-      this.requireOrderedDelivery = requireOrderedDelivery;
     }
 
     // necessary for deserialization
     public TestMessage() {
       random = null;
       messageId = 0;
+      requireOrderedDelivery = false;
     }
 
     @Override
@@ -388,8 +370,30 @@ public class P2PMessagingConcurrencyDUnitTest {
       memberStore.trust("ca", ca);
       // we want to exercise the ByteBufferSharing code paths; we don't care about client auth etc
       securityProperties = memberStore.propertiesWith("all", false, false);
+
+      foo();
+
+      // allow only the NULL cipher suite so we can debug TLS encoded data (buffers)
+      securityProperties.setProperty(SSL_CIPHERS, "TLS_RSA_WITH_NULL_SHA256");
     }
     return securityProperties;
+  }
+
+  private static void foo() throws NoSuchAlgorithmException, KeyManagementException {
+    SSLContext ssl = SSLContext.getInstance("TLSv1.2");
+    ssl.init(null, null, new java.security.SecureRandom());
+    String[] cipherSuites = ssl.getServerSocketFactory().getSupportedCipherSuites();
+  }
+
+  // This doesn't work. Apparently it's set too late to influence the security subsystem.
+  // gotta use -Djava.security.properties=org/apache/geode/distributed/internal/java.security
+  // gotta use -Djava.security.properties=java.security
+  // gotta use -Djava.security.properties=/Users/bburcham/Projects/geode/geode-core/src/distributedTest/resources/org/apache/geode/distributed/internal/java.security
+  // when launching the JVM for now
+  private static void overrideJavaSecurity() {
+    final Path relative = Paths.get("src","test","resources", "java.security");
+    String absolute = relative.toFile().getAbsolutePath();
+    System.setProperty("java.security.properties", absolute);
   }
 
 }
