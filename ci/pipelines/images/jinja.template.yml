@@ -113,28 +113,6 @@ resources:
     password: ((docker-password))
     repository: gcr.io/((gcp-project))/((pipeline-prefix))alpine-tools
 
-- name: ubuntu-docker-image
-  type: registry-image
-  icon: docker
-  source:
-    repository: ubuntu
-    tag: bionic
-
-- name: test-container-dockerfile
-  type: git
-  source:
-    branch: ((geode-build-branch))
-    paths:
-    - ci/images/test-container/*
-    {{ github_access() | indent(4) }}
-
-- name: test-container-docker-image
-  type: docker-image
-  source:
-    username: ((docker-username))
-    password: ((docker-password))
-    repository: gcr.io/((gcp-project))/((pipeline-prefix))test-container
-
 - name: concourse-metadata-resource-dockerfile
   type: git
   source:
@@ -287,9 +265,6 @@ jobs:
   serial: true
   plan:
   - in_parallel:
-    - get: test-container-docker-image
-      passed: [build-test-container-docker-image]
-      trigger: true
     - get: google-geode-builder
       trigger: true
     - get: alpine-tools-docker-image
@@ -310,7 +285,6 @@ jobs:
       - name: results
       platform: linux
       params:
-        GEODE_DOCKER_IMAGE: gcr.io/((gcp-project))/((pipeline-prefix))test-container
         PIPELINE_PREFIX: ((pipeline-prefix))
         GCP_PROJECT: ((gcp-project))
         GCP_NETWORK: ((gcp-network))
@@ -348,7 +322,6 @@ jobs:
       - name: results
       platform: linux
       params:
-        GEODE_DOCKER_IMAGE: gcr.io/((gcp-project))/((pipeline-prefix))test-container
         PIPELINE_PREFIX: ((pipeline-prefix))
         GCP_PROJECT: ((gcp-project))
         GCP_NETWORK: ((gcp-network))
@@ -373,20 +346,6 @@ jobs:
   - put: alpine-tools-docker-image
     params:
       build: alpine-tools-dockerfile/ci/images/alpine-tools
-      tag_as_latest: true
-
-- name: build-test-container-docker-image
-  public: ((public-pipelines))
-  serial: true
-  plan:
-  - in_parallel:
-    - get: ubuntu-docker-image
-      trigger: true
-    - get: test-container-dockerfile
-      trigger: true
-  - put: test-container-docker-image
-    params:
-      build: test-container-dockerfile/ci/images/test-container
       tag_as_latest: true
 
 - name: build-concourse-metadata-resource-docker-image

@@ -2,7 +2,6 @@
   "variables": {
     "pipeline_prefix": "local-testing-",
     "hashed_pipeline_prefix": "0b7ad56c-671b-5244-9f36-01f92928abf8",
-    "geode_docker_image": "unset",
     "gcp_project": "unset",
     "gcp_network": "default",
     "gcp_subnetwork": "default",
