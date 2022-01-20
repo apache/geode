@@ -19,6 +19,7 @@ import static org.apache.geode.redis.internal.data.RedisSet.sdiff;
 import static org.apache.geode.redis.internal.data.RedisSet.sdiffstore;
 import static org.apache.geode.redis.internal.data.RedisSet.sinter;
 import static org.apache.geode.redis.internal.data.RedisSet.sunion;
+import static org.apache.geode.redis.internal.data.RedisSet.sunionstore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,8 +58,7 @@ public abstract class SetOpExecutor implements CommandExecutor {
     }
 
     /*
-     * SINTERSTORE, SUNIONSTORE currently use the else part of the code
-     * for their implementation.
+     * SINTERSTORE currently use the else part of the code for their implementation.
      * TODO: Once the above commands have been implemented remove the if else
      * Refactor so the implementation is in the executor. After delete doActualSetOperation,
      * doStoreSetOp, doStoreSetOpWhileLocked, computeStoreSetOp, fetchSets
@@ -74,11 +74,21 @@ public abstract class SetOpExecutor implements CommandExecutor {
       Set<byte[]> resultSet = context.lockedExecute(setKeys.get(0), new ArrayList<>(setKeys),
           () -> sdiff(regionProvider, setKeys));
       return RedisResponse.array(resultSet, true);
+
     } else if (command.isOfType(RedisCommandType.SINTER)) {
       Set<byte[]> resultSet = context.lockedExecute(setKeys.get(0), new ArrayList<>(setKeys),
           () -> sinter(regionProvider, setKeys));
       return RedisResponse.array(resultSet, true);
-    } else if (command.isOfType(RedisCommandType.SUNION)) {
+
+    } else if (command.isOfType(RedisCommandType.SUNION)
+        || command.isOfType(RedisCommandType.SUNIONSTORE)) {
+      if (isStorage()) {
+        RedisKey destinationKey = command.getKey();
+        int resultSize = context.lockedExecute(destinationKey, new ArrayList<>(setKeys),
+            () -> sunionstore(regionProvider, destinationKey, setKeys));
+        return RedisResponse.integer(resultSize);
+      }
+
       Set<byte[]> resultSet = context.lockedExecute(setKeys.get(0), new ArrayList<>(setKeys),
           () -> sunion(regionProvider, setKeys));
       return RedisResponse.array(resultSet, true);
