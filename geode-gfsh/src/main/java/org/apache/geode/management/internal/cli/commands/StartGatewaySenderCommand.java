@@ -129,7 +129,7 @@ public class StartGatewaySenderCommand extends SingleGfshCommand {
       futures = execService.invokeAll(callables);
     } catch (InterruptedException ite) {
       return ResultModel.createError(
-          CliStrings.format(CliStrings.GATEWAY_SENDER_0_COULD_NOT_BE_INVOKED_DUE_TO_1, id,
+          CliStrings.format(CliStrings.GATEWAY_SENDER_START_0_COULD_NOT_BE_INVOKED_DUE_TO_1, id,
               ite.getMessage()));
     } finally {
       execService.shutdown();

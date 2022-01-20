@@ -41,6 +41,7 @@ dependencies {
     integrationTestImplementation('org.powermock:powermock-module-junit4')
     integrationTestImplementation('org.powermock:powermock-api-mockito2')
     testImplementation(project(':geode-junit'))
+    testImplementation('pl.pragmatists:JUnitParams')
 
     integrationTestImplementation(project(':geode-dunit'))
     integrationTestImplementation('pl.pragmatists:JUnitParams')
