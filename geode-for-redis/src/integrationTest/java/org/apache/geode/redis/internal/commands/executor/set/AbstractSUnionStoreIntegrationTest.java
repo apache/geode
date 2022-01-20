@@ -61,20 +61,20 @@ public abstract class AbstractSUnionStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void sunionstore_withNonExistentDest_withExistentSet_returnsUnionSize_storesUnion() {
+  public void sunionstore_withExistentSet_returnsUnionSize_storesUnion() {
     jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
     assertThat(jedis.sunionstore(DESTINATION_KEY, SET_KEY_1)).isEqualTo(SET_MEMBERS_1.length);
     assertThat(jedis.smembers(DESTINATION_KEY)).containsExactlyInAnyOrder(SET_MEMBERS_1);
   }
 
   @Test
-  public void sunionstore_withNonExistentDest_withNonExistentSet_returnsZero_destKeyDoesNotExist() {
+  public void sunionstore_withNonExistentSet_returnsZero_destKeyDoesNotExist() {
     assertThat(jedis.sunionstore(DESTINATION_KEY, NON_EXISTENT_SET)).isEqualTo(0);
     assertThat(jedis.exists(DESTINATION_KEY)).isFalse();
   }
 
   @Test
-  public void sunionstore_withNonExistentDest_withOneExistentAndOneNonExistentSet_returnsUnionSize_storesUnion() {
+  public void sunionstore_withOneExistentAndOneNonExistentSet_returnsUnionSize_storesUnion() {
     jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
     assertThat(jedis.sunionstore(DESTINATION_KEY, SET_KEY_1, NON_EXISTENT_SET))
         .isEqualTo(SET_MEMBERS_1.length);
@@ -82,7 +82,7 @@ public abstract class AbstractSUnionStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void sunionstore_withNonExistentDest_withOneNonExistentAndOneExistentSet_returnsUnionSize_storesUnion() {
+  public void sunionstore_withOneNonExistentAndOneExistentSet_returnsUnionSize_storesUnion() {
     jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
     assertThat(jedis.sunionstore(DESTINATION_KEY, NON_EXISTENT_SET, SET_KEY_1))
         .isEqualTo(SET_MEMBERS_1.length);
@@ -90,7 +90,7 @@ public abstract class AbstractSUnionStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void sunionstore_withNonExistentDest_withNonOverlappingSets_returnsUnionSize_storesUnion() {
+  public void sunionstore_withNonOverlappingSets_returnsUnionSize_storesUnion() {
     String[] secondSetMembers = new String[] {"apple", "microsoft", "linux", "peach"};
     jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
     jedis.sadd(SET_KEY_2, secondSetMembers);
@@ -103,7 +103,7 @@ public abstract class AbstractSUnionStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void sunionstore_withNonExistentDest_withSomeSharedValues_returnsUnionSize_storesUnion() {
+  public void sunionstore_withSomeSharedValues_returnsUnionSize_storesUnion() {
     String[] secondSetMembers = new String[] {"one", "two", "linux", "peach"};
     jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
     jedis.sadd(SET_KEY_2, secondSetMembers);
@@ -114,7 +114,7 @@ public abstract class AbstractSUnionStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void sunionstore_withNonExistentDest_withAllSharedValues_returnsUnionSize_storesUnion() {
+  public void sunionstore_withAllSharedValues_returnsUnionSize_storesUnion() {
     jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
     jedis.sadd(SET_KEY_2, SET_MEMBERS_1);
 
@@ -124,14 +124,14 @@ public abstract class AbstractSUnionStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void sunionstore_withNonExistentDest_withMultipleNonExistentSets_returnsZero_destKeyDoesNotExist() {
+  public void sunionstore_withMultipleNonExistentSets_returnsZero_destKeyDoesNotExist() {
     assertThat(jedis.sunionstore(DESTINATION_KEY, NON_EXISTENT_SET, "{tag1}nonExistentSet2"))
         .isEqualTo(0);
     assertThat(jedis.exists(DESTINATION_KEY)).isFalse();
   }
 
   @Test
-  public void sunionstore_withExistentDest_withExistentSet_returnsUnionSize_storesUnion() {
+  public void sunionstore_withExistentSet_returnsUnionSize_destKeyOverwrittenWithUnion() {
     jedis.sadd(DESTINATION_KEY, DESTINATION_MEMBERS);
     jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
     assertThat(jedis.sunionstore(DESTINATION_KEY, SET_KEY_1)).isEqualTo(SET_MEMBERS_1.length);
@@ -139,39 +139,14 @@ public abstract class AbstractSUnionStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void sunionstore_withExistentDest_withNonExistentSet_returnsZero_destKeyDoesNotExist() {
+  public void sunionstore_withNonExistentSet_returnsZero_destKeyIsDeleted() {
     jedis.sadd(DESTINATION_KEY, DESTINATION_MEMBERS);
     assertThat(jedis.sunionstore(DESTINATION_KEY, NON_EXISTENT_SET)).isEqualTo(0);
     assertThat(jedis.exists(DESTINATION_KEY)).isFalse();
   }
 
   @Test
-  public void sunionstore_withExistentDest_withNonOverlappingSets_returnsUnionSize_storesUnion() {
-    String[] secondSetMembers = new String[] {"apple", "microsoft", "linux", "peach"};
-    jedis.sadd(DESTINATION_KEY, DESTINATION_MEMBERS);
-    jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
-    jedis.sadd(SET_KEY_2, secondSetMembers);
-
-    String[] result =
-        {"one", "two", "three", "four", "five", "apple", "microsoft", "linux", "peach"};
-    assertThat(jedis.sunionstore(DESTINATION_KEY, SET_KEY_1, SET_KEY_2)).isEqualTo(result.length);
-    assertThat(jedis.smembers(DESTINATION_KEY)).containsExactlyInAnyOrder(result);
-
-  }
-
-  @Test
-  public void sunionstore_withExistentDest_withAllSharedValues_returnsUnionSize_storesUnion() {
-    jedis.sadd(DESTINATION_KEY, DESTINATION_MEMBERS);
-    jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
-    jedis.sadd(SET_KEY_2, SET_MEMBERS_1);
-
-    assertThat(jedis.sunionstore(DESTINATION_KEY, SET_KEY_1, SET_KEY_2))
-        .isEqualTo(SET_MEMBERS_1.length);
-    assertThat(jedis.smembers(DESTINATION_KEY)).containsExactlyInAnyOrder(SET_MEMBERS_1);
-  }
-
-  @Test
-  public void sunionstore_withNonSetDestKey_withExistentSet_returnsUnionSize_storesUnion() {
+  public void sunionstore_withNonSetDestKey_withExistentSet_returnsUnionSize_destKeyOverwrittenWithUnion() {
     String stringKey = "{tag1}ding";
     jedis.set(stringKey, "dong");
 
@@ -181,7 +156,7 @@ public abstract class AbstractSUnionStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void sunionstore_withNonSetDestKey_withNonExistentSet_returnsZero_destKeyDoesNotExist() {
+  public void sunionstore_withNonSetDestKey_withNonExistentSet_returnsZero_destKeyIsDeleted() {
     String stringKey = "{tag1}ding";
     jedis.set(stringKey, "dong");
 
