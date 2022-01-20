@@ -96,6 +96,12 @@ public class RedisSet extends AbstractRedisData {
     return calculateUnion(regionProvider, keys, true);
   }
 
+  public static int sunionstore(RegionProvider regionProvider, RedisKey destinationKey,
+      List<RedisKey> keys) {
+    MemberSet union = calculateUnion(regionProvider, keys, false);
+    return setOpStoreResult(regionProvider, destinationKey, union);
+  }
+
   private static MemberSet calculateUnion(RegionProvider regionProvider, List<RedisKey> keys,
       boolean updateStats) {
     MemberSet union = new MemberSet();
@@ -180,10 +186,10 @@ public class RedisSet extends AbstractRedisData {
 
   @VisibleForTesting
   static int setOpStoreResult(RegionProvider regionProvider, RedisKey destinationKey,
-      MemberSet diff) {
+      MemberSet result) {
     RedisSet destinationSet =
         regionProvider.getTypedRedisDataElseRemove(REDIS_SET, destinationKey, false);
-    if (diff.isEmpty()) {
+    if (result.isEmpty()) {
       if (destinationSet != null) {
         regionProvider.getDataRegion().remove(destinationKey);
       }
@@ -192,14 +198,14 @@ public class RedisSet extends AbstractRedisData {
 
     if (destinationSet != null) {
       destinationSet.persistNoDelta();
-      destinationSet.members = diff;
+      destinationSet.members = result;
       destinationSet.storeChanges(regionProvider.getDataRegion(), destinationKey,
-          new ReplaceByteArrays(diff));
+          new ReplaceByteArrays(result));
     } else {
-      regionProvider.getDataRegion().put(destinationKey, new RedisSet(diff));
+      regionProvider.getDataRegion().put(destinationKey, new RedisSet(result));
     }
 
-    return diff.size();
+    return result.size();
   }
 
   public Pair<BigInteger, List<Object>> sscan(GlobPattern matchPattern, int count,
