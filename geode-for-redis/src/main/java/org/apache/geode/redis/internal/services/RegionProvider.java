@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.services;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
 import static org.apache.geode.redis.internal.RedisProperties.REDIS_REGION_NAME_PROPERTY;
 import static org.apache.geode.redis.internal.RedisProperties.REGION_BUCKETS;
 import static org.apache.geode.redis.internal.RedisProperties.getIntegerSystemProperty;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
@@ -46,6 +48,7 @@ import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.commands.executor.cluster.RedisPartitionResolver;
+import org.apache.geode.redis.internal.data.RedisCrossSlotException;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisDataMovedException;
 import org.apache.geode.redis.internal.data.RedisDataType;
@@ -63,13 +66,12 @@ public class RegionProvider {
    * The name of the region that holds data stored in redis.
    */
   public static final String DEFAULT_REDIS_REGION_NAME = "GEODE_FOR_REDIS";
-  public static final String REDIS_REGION_BUCKETS_PARAM = REGION_BUCKETS;
 
   public static final int REDIS_SLOTS = 16384;
 
   // Ideally the bucket count should be a power of 2, but technically it is not required.
   public static final int REDIS_REGION_BUCKETS =
-      getIntegerSystemProperty(REDIS_REGION_BUCKETS_PARAM, 128, 1, REDIS_SLOTS);
+      getIntegerSystemProperty(REGION_BUCKETS, 128, 1, REDIS_SLOTS);
 
   public static final int REDIS_SLOTS_PER_BUCKET = REDIS_SLOTS / REDIS_REGION_BUCKETS;
 
@@ -144,6 +146,9 @@ public class RegionProvider {
 
   public <T> T lockedExecute(RedisKey key, List<RedisKey> keysToLock, Callable<T> callable) {
     try {
+      if (areKeysCrossSlots(keysToLock)) {
+        throw new RedisCrossSlotException(ERROR_WRONG_SLOT);
+      }
       return partitionedRegion.computeWithPrimaryLocked(key,
           () -> stripedCoordinator.execute(keysToLock, callable));
     } catch (PrimaryBucketLockException | BucketMovedException | RegionDestroyedException ex) {
@@ -153,6 +158,18 @@ public class RegionProvider {
     } catch (Exception ex) {
       throw new RedisException(ex);
     }
+  }
+
+  @VisibleForTesting
+  static boolean areKeysCrossSlots(List<RedisKey> keysToLock) {
+    int slot = keysToLock.get(0).getSlot();
+    for (int i = 1, keysToLockSize = keysToLock.size(); i < keysToLockSize; i++) {
+      RedisKey otherKey = keysToLock.get(i);
+      if (otherKey.getSlot() != slot) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

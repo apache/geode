@@ -66,15 +66,9 @@ public abstract class AbstractMSetExecutor implements CommandExecutor {
 
   protected void mset(ExecutionHandlerContext context, List<RedisKey> keys, List<byte[]> values,
       boolean nx) {
-    List<RedisKey> keysToLock = new ArrayList<>(keys.size());
+    List<RedisKey> keysToLock = new ArrayList<>(keys);
     RegionProvider regionProvider = context.getRegionProvider();
-    for (RedisKey key : keys) {
-      regionProvider.ensureKeyIsLocal(key);
-      keysToLock.add(key);
-    }
 
-    // Pass a key in so that the bucket will be locked. Since all keys are already guaranteed to be
-    // in the same bucket we can use any key for this.
     context.lockedExecuteInTransaction(keysToLock.get(0), keysToLock,
         () -> mset0(regionProvider, keys, values, nx));
   }
