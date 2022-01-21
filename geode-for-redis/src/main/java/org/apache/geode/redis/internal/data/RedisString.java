@@ -190,7 +190,9 @@ public class RedisString extends AbstractRedisData {
   public void applyReplaceByteArrayAtOffsetDelta(int offset, byte[] valueToAdd) {
     int totalLength = offset + valueToAdd.length;
     if (totalLength < value.length) {
-      System.arraycopy(valueToAdd, 0, value, offset, valueToAdd.length);
+      synchronized (this) {
+        System.arraycopy(valueToAdd, 0, value, offset, valueToAdd.length);
+      }
     } else {
       byte[] newBytes = Arrays.copyOf(value, totalLength);
       System.arraycopy(valueToAdd, 0, newBytes, offset, valueToAdd.length);
@@ -362,7 +364,7 @@ public class RedisString extends AbstractRedisData {
   /**
    * Since GII (getInitialImage) can come in and call toData while other threads
    * are modifying this object, the striped executor will not protect toData.
-   * So any methods that modify "value", "appendSequence" need to be thread safe with toData.
+   * So any methods that modify "value" need to be thread safe with toData.
    */
 
   @Override

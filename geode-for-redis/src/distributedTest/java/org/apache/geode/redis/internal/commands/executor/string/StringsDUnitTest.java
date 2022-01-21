@@ -30,7 +30,6 @@ import java.util.function.Consumer;
 
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -57,14 +56,13 @@ public class StringsDUnitTest {
   private static final int NUM_ITERATIONS = 1000;
   private static JedisCluster jedisCluster;
 
-  private static MemberVM locator;
-
   @BeforeClass
   public static void classSetup() {
-    locator = clusterStartUp.startLocatorVM(0);
-    clusterStartUp.startRedisVM(1, locator.getPort());
-    clusterStartUp.startRedisVM(2, locator.getPort());
-    clusterStartUp.startRedisVM(3, locator.getPort());
+    MemberVM locator = clusterStartUp.startLocatorVM(0);
+    int locatorPort = locator.getPort();
+    clusterStartUp.startRedisVM(1, locatorPort);
+    clusterStartUp.startRedisVM(2, locatorPort);
+    clusterStartUp.startRedisVM(3, locatorPort);
 
     int redisServerPort1 = clusterStartUp.getRedisPort(1);
     jedisCluster =
@@ -263,18 +261,13 @@ public class StringsDUnitTest {
     hashtags.add(clusterStartUp.getKeyOnServer("append", 2));
     hashtags.add(clusterStartUp.getKeyOnServer("append", 3));
 
-    Runnable task1 = () -> appendPerformAndVerify(1, 10000, hashtags.get(0), running);
-    Runnable task2 = () -> appendPerformAndVerify(2, 10000, hashtags.get(1), running);
-    Runnable task3 = () -> appendPerformAndVerify(3, 10000, hashtags.get(2), running);
+    Runnable task1 = () -> appendPerformAndVerify(1, hashtags.get(0), running);
+    Runnable task2 = () -> appendPerformAndVerify(2, hashtags.get(1), running);
+    Runnable task3 = () -> appendPerformAndVerify(3, hashtags.get(2), running);
 
     Future<Void> future1 = executor.runAsync(task1);
     Future<Void> future2 = executor.runAsync(task2);
     Future<Void> future3 = executor.runAsync(task3);
-
-    for (int i = 0; i < 100 && running.get(); i++) {
-      clusterStartUp.moveBucketForKey(hashtags.get(i % hashtags.size()));
-      GeodeAwaitility.await().during(Duration.ofMillis(200)).until(() -> true);
-    }
 
     for (int i = 0; i < 100 && running.get(); i++) {
       clusterStartUp.moveBucketForKey(hashtags.get(i % hashtags.size()));
@@ -288,12 +281,11 @@ public class StringsDUnitTest {
     future3.get();
   }
 
-  private void appendPerformAndVerify(int index, int minimumIterations, String hashtag,
-      AtomicBoolean isRunning) {
+  private void appendPerformAndVerify(int index, String hashtag, AtomicBoolean isRunning) {
     String key = "{" + hashtag + "}-key-" + index;
     int iterationCount = 0;
 
-    while (iterationCount < minimumIterations || isRunning.get()) {
+    while (isRunning.get()) {
       String appendString = "-" + key + "-" + iterationCount + "-";
       try {
         jedisCluster.append(key, appendString);
@@ -301,23 +293,46 @@ public class StringsDUnitTest {
         isRunning.set(false);
         throw new RuntimeException("Exception performing APPEND " + appendString, ex);
       }
-      iterationCount += 1;
+      iterationCount++;
     }
 
     String storedString = jedisCluster.get(key);
 
-    int idx = 0;
+    int startIndex = 0;
     int i = 0;
-    while (i < iterationCount) {
+    boolean lastWasDuplicate = false;
+    boolean reachedEnd = false;
+    while (!reachedEnd) {
       String expectedValue = "-" + key + "-" + i + "-";
-      String foundValue = storedString.substring(idx, idx + expectedValue.length());
-      if (!foundValue.equals(expectedValue)) {
-        Assert.fail("unexpected " + foundValue + " at index " + i + " iterationCount="
-            + iterationCount + " in string "
-            + storedString);
-        break;
+
+      int endIndex = startIndex + expectedValue.length();
+      reachedEnd = endIndex == storedString.length();
+      String foundValue = storedString.substring(startIndex, endIndex);
+
+      int subsectionStart = Math.max(0, startIndex - (2 * expectedValue.length()));
+      int subsectionEnd = Math.min(storedString.length(), endIndex + (2 * expectedValue.length()));
+
+      try {
+        assertThat(foundValue).as("unexpected " + foundValue
+            + " at index " + i
+            + " iterationCount=" + iterationCount
+            + " in String subsection: " + storedString.substring(subsectionStart, subsectionEnd))
+            .isEqualTo(expectedValue);
+        lastWasDuplicate = false;
+      } catch (AssertionError error) {
+        // Jedis client retries can lead to duplicated appends, so check if the append is a
+        // duplicate of the previous one, but only allow one duplicated append in a row
+        String previousAppend = "-" + key + "-" + (i - 1) + "-";
+        if (lastWasDuplicate || !foundValue.equals(previousAppend)) {
+          throw error;
+        }
+
+        // Decrement the counter to account for the duplicated append and reset the flag to detect
+        // multiple duplicated appends in a row
+        lastWasDuplicate = true;
+        i--;
       }
-      idx += expectedValue.length();
+      startIndex = endIndex;
       i++;
     }
   }
