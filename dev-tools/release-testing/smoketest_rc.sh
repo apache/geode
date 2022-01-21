@@ -50,9 +50,11 @@ fi
 VERSION_MM=${VERSION%.*}
 
 checkCommand gpg
-checkCommand cmake
-#checkCommand svn
-checkCommand doxygen
+checkCommand wget
+
+#These will be required for building native from source
+#checkCommand cmake
+#checkCommand doxygen
 
 
 echo ""
@@ -61,14 +63,8 @@ echo "Checking java..."
 echo "============================================================"
 [ -z "$JAVA_HOME" ] && JAVA=java || JAVA=$JAVA_HOME/bin/java
 if ! $JAVA -XshowSettings:properties -version 2>&1 | grep 'java.specification.version = 1.8' ; then
-  echo "Please set JAVA_HOME to use JDK 8 to compile Geode for release"
+  echo "Please set JAVA_HOME to use JDK 8 to compile Geode"
   exit 1
-fi
-if $JAVA -XshowSettings:properties -version 2>&1 | grep 'java.vm.vendor = Oracle' ; then
-  echo "Please set JAVA_HOME to use an Open JDK 8 such as from https://adoptopenjdk.net/?variant=openjdk8&jvmVariant=hotspot to compile Geode for release"
-  exit 1
-else
-  $JAVA -XshowSettings:properties -version 2>&1 | grep 'java.vm.vendor = '
 fi
 
 set -x
@@ -100,7 +96,6 @@ echo "============================================================"
 set -x
 rm -rf $WORKSPACE
 mkdir -p $WORKSPACE
-cd $WORKSPACE
 set +x
 
 
@@ -109,13 +104,13 @@ echo "============================================================"
 echo "Cloning repositories at the RC tag..."
 echo "============================================================"
 set -x
+cd $WORKSPACE
 mkdir src_clones
 cd src_clones
 git clone --depth=1 --branch=rel/v${FULL_VERSION} git@github.com:apache/geode.git apache-geode-${VERSION}-src
 git clone --depth=1 --branch=rel/v${FULL_VERSION} git@github.com:apache/geode-examples.git apache-geode-examples-${VERSION}-src
 git clone --depth=1 --branch=rel/v${FULL_VERSION} git@github.com:apache/geode-native.git apache-geode-native-${VERSION}-src
 git clone --depth=1 --branch=rel/v${FULL_VERSION} git@github.com:apache/geode-benchmarks.git apache-geode-benchmarks-${VERSION}-src
-cd $WORKSPACE
 set +x
 
 
@@ -123,9 +118,9 @@ echo ""
 echo "============================================================"
 echo "Downloading artifacts"
 echo "============================================================"
-
 DOWNLOAD_URL="https://dist.apache.org/repos/dist/dev/geode/$FULL_VERSION"
 set -x
+cd $WORKSPACE
 wget $DOWNLOAD_URL -m -np -nv
 set +x
 
@@ -135,6 +130,7 @@ echo "============================================================"
 echo "Untarring source releases"
 echo "============================================================"
 set -x
+cd $WORKSPACE
 mkdir -p src_releases
 cd src_releases
 ls $DOWNLOAD_DIR/*src.tgz | xargs -n1 -I {} bash -c "tar xzf {}"
@@ -147,10 +143,10 @@ echo "Verifying Signatures"
 echo "============================================================"
 
 set -x
+cd $WORKSPACE
 cd $DOWNLOAD_DIR
 ls *.zip *.tar.gz *.tgz | xargs -n1 -I {} bash -c "shasum -c {}.sha*"
 ls *.zip *.tar.gz *.tgz | xargs -n1 -I {} bash -c "gpg --verify {}.asc"
-cd $WORKSPACE
 set +x
 
 echo ""
@@ -158,6 +154,7 @@ echo "============================================================"
 echo "Comparing Source releases with the git tags"
 echo "============================================================"
 set -x
+cd $WORKSPACE
 diff -r -q \
     -x build \
     -x gradlew \
@@ -182,6 +179,7 @@ echo "============================================================"
 echo "Building from source releases"
 echo "============================================================"
 set -x
+cd $WORKSPACE
 
 cd $WORKSPACE/src_releases/apache-geode-${VERSION}-src
 ./gradlew build -Pversion=${VERSION}
@@ -212,7 +210,7 @@ echo " . verify that they meet all requirements of ASF policy on releases as des
 echo " . validate all cryptographic signatures, compile as provided, "
 echo "   and test the result on their own platform."
 echo ""
-echo "This script has alerady validated signatures, compiled, and run the Geode unit tests"
+echo "This script has already validated signatures, compiled, and run the Geode unit tests"
 echo "Please perform additional manual validation such as "
 echo " - Build the native client from source "
 echo " - Ensure that all artifacts meet with apache licensing and release quality standards "
