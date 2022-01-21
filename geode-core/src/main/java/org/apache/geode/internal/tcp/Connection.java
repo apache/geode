@@ -1658,7 +1658,7 @@ public class Connection implements Runnable {
             }
             return;
           }
-          bufferDebugging.doProcessingOnWriteableBuffer(buff,
+          bufferDebugging.doProcessingForReceiver(buff,
               _ignoredBuff -> processInputBuffer(threadMonitorExecutor));
 
           if (!handshakeHasBeenRead && !isReceiver && (handshakeRead || handshakeCancelled)) {
@@ -1704,8 +1704,8 @@ public class Connection implements Runnable {
           if (!isSocketClosed() && !"Socket closed".equalsIgnoreCase(e.getMessage())) {
             if (logger.isInfoEnabled() && !isIgnorableIOException(e)) {
               logger.info("{} io exception for {}", p2pReaderName(), this, e);
-              logger.info( "{} ByteBuffer before/after processing for {}\n{}",
-                  p2pReaderName(), this, bufferDebugging.dumpReadableBuffer());
+              logger.info("{} receiver's ByteBuffer before/after processing for {}\n{}",
+                  p2pReaderName(), this, bufferDebugging.dumpBufferForReceiver());
             }
             if (logger.isDebugEnabled()) {
               if (e.getMessage().contains("interrupted by a call to WSACancelBlockingCall")) {

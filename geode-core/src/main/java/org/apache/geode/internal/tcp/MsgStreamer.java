@@ -313,11 +313,11 @@ public class MsgStreamer extends OutputStream
       final Connection connection = it.next();
       try {
         final DistributionMessage finalConflationMessage = conflationMsg;
-        bufferDebugging.doProcessingOnReadableBuffer(
+        bufferDebugging.doProcessingForSender(
             buffer,
             _ignored -> connection.sendPreserialized(
                 buffer,
-            lastFlushForMessage && msg.containsRegionContentChange(),
+                lastFlushForMessage && msg.containsRegionContentChange(),
                 finalConflationMessage));
       } catch (IOException ex) {
         it.remove();
@@ -328,8 +328,8 @@ public class MsgStreamer extends OutputStream
         if (logger.isInfoEnabled()) {
           logger.info("io exception for {}",
               connection, ex);
-          logger.info( "MsgStreamer caught IOException while writing ByteBuffer on {}; buffer:\n{}",
-              connection, bufferDebugging.dumpWritableBuffer());
+          logger.info("sender's ByteBuffer before/after processing for {}\n{}",
+              connection, bufferDebugging.dumpBufferForSender());
         }
         connection.closeForReconnect(
             String.format("closing due to %s", "IOException"));

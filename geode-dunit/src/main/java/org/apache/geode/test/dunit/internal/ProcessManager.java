@@ -51,6 +51,7 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.membership.utils.AvailablePort;
+import org.apache.geode.internal.tcp.BufferDebugging;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.version.VersionManager;
 
@@ -324,7 +325,7 @@ class ProcessManager implements ChildVMLauncher {
       cmds.add("--add-opens=java.base/jdk.internal.module=ALL-UNNAMED");
       cmds.add("--add-opens=java.base/java.lang.module=ALL-UNNAMED");
     }
-//    cmds.add("-Djava.security.properties=/Users/bburcham/Projects/geode/geode-core/src/distributedTest/resources/org/apache/geode/distributed/internal/java.security");
+    BufferDebugging.overrideJVMSecurityPropertiesFile(cmds);
     cmds.add(ChildVM.class.getName());
     String[] rst = new String[cmds.size()];
     cmds.toArray(rst);

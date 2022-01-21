@@ -269,8 +269,8 @@ public class P2PMessagingConcurrencyDUnitTest {
     private boolean requireOrderedDelivery;
 
     TestMessage(final InternalDistributedMember receiver,
-                final Random random, final int messageId,
-                final boolean requireOrderedDelivery) {
+        final Random random, final int messageId,
+        final boolean requireOrderedDelivery) {
       setRecipient(receiver);
       this.random = random;
       this.messageId = messageId;

@@ -18,6 +18,7 @@ package org.apache.geode.internal.tcp;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -28,9 +29,39 @@ import org.apache.commons.io.HexDump;
 
 public class BufferDebugging {
 
-  public static final int INVERSE_PROBABILITY_OF_EXCEPTION = Integer.MAX_VALUE;
+  private static boolean SIMULATE_TAG_MISMATCH = false;
+  private static boolean ALLOW_NULL_CIPHER = false;
+
+  private static final int NEVER_THROW = Integer.MAX_VALUE;
+
+  /*
+   * Set to Integer.MAX_VALUE to make throwTagMishmashSometimes() a no-op.
+   * Set to value greater than zero to determine how often that method throws
+   * its exception. 1_000 is a good, empirically-derived value for testing.
+   */
+  private static final int INVERSE_PROBABILITY_OF_EXCEPTION =
+      SIMULATE_TAG_MISMATCH ? 1_000 : NEVER_THROW;
+
+  /*
+   * TODO: eliminate hard-coded absolute path here. As it stands it only works on
+   * bburcham laptop.
+   */
+  private static final String SECURITY_PROPERTIES_OVERRIDE_JVM_ARG =
+      "-Djava.security.properties=/Users/bburcham/Projects/geode/geode-core/src/distributedTest/resources/org/apache/geode/distributed/internal/java.security";
+
+  public static void overrideJVMSecurityPropertiesFile(final ArrayList<String> cmds) {
+    if (ALLOW_NULL_CIPHER) {
+      cmds.add(SECURITY_PROPERTIES_OVERRIDE_JVM_ARG);
+    }
+  }
 
   private static class Offsets {
+
+    /*
+     * TODO: it might be nice to capture the mark here too but there is no straightforward
+     * way to do that through the ByteBuffer public interface.
+     */
+
     private final int position;
     private final int limit;
 
@@ -45,13 +76,20 @@ public class BufferDebugging {
     }
   }
 
-  private byte[] originalContent;
-
-  private Offsets writeableOffsetsBeforeProcessing;
-  private Offsets readableOffsetsAfterProcessing;
+  /*
+   * TODO: as of the time of this writing, we are capturing the buffer content only
+   * after processing. Buffer mutation during processing e.g. ByteBuffer.compact()
+   * will affect what we log. If we eventually need to see the buffer as it existed
+   * before processing we'd have to capture it ahead of time (unconditionally). We
+   * might be able to do this with acceptable performance by capturing the direct
+   * buffer to another direct buffer. Then we could copy the bytes out to heap only
+   * if they were actually (eventually) needed for logging.
+   */
+  private byte[] bufferContent;
 
   private Offsets readableOffsetsBeforeProcessing;
-  private Offsets writableOffsetsAfterProcessing;
+  private Offsets writeableOffsetsBeforeProcessing;
+  private Offsets readableOffsetsAfterProcessing;
 
   public static void throwTagMishmashSometimes() throws SSLException {
     if (INVERSE_PROBABILITY_OF_EXCEPTION != Integer.MAX_VALUE &&
@@ -66,95 +104,118 @@ public class BufferDebugging {
   }
 
   /*
-   Buffer is writeable before processing. When an exception is thrown,
-   the buffer is in a readable state.
+   * Buffer is writeable before processing. When an exception is thrown,
+   * the buffer is in a readable state.
    */
-  public void doProcessingOnWriteableBuffer(
+  public void doProcessingForReceiver(
       final ByteBuffer buff,
       final BufferProcessing processing)
       throws IOException {
-    beforeProcessingWriteableBuffer(buff);
+    beforeProcessingForReceiver(buff);
     try {
       processing.process(buff);
     } catch (final IOException e) {
-      onIOExceptionForReadableBuffer(buff);
-      throw e;
-    }
-  }
-
-  public void doProcessingOnReadableBuffer(
-      final ByteBuffer buff,
-      final BufferProcessing processing)
-      throws IOException {
-    beforeProcessingReadableBuffer(buff);
-    try {
-      processing.process(buff);
-    } catch (final IOException e) {
-      onIOExceptionForWritableBuffer(buff);
+      onIOExceptionForReceiver(buff);
       throw e;
     }
   }
 
   /*
-   buff is writeable on entry and exit
+   * Buffer is readable before processing. When an exception is thrown,
+   * the buffer is still in a readable state. Contrast with doProcessingForReceiver().
    */
-  private void beforeProcessingWriteableBuffer(final ByteBuffer buff) {
+  public void doProcessingForSender(
+      final ByteBuffer buff,
+      final BufferProcessing processing)
+      throws IOException {
+    beforeProcessingForSender(buff);
+    try {
+      processing.process(buff);
+    } catch (final IOException e) {
+      onIOExceptionForSender(buff);
+      throw e;
+    }
+  }
+
+  public String dumpBufferForReceiver() {
+    String result = postProcessingMessage();
+    if (writeableOffsetsBeforeProcessing != null) {
+      result += preProcessingMessage(writeableOffsetsBeforeProcessing);
+      result += String.format("Current buffer array from 0 to pre-processing position:\n%s\n",
+          dump(bufferContent, 0, writeableOffsetsBeforeProcessing.position));
+    }
+    return result;
+  }
+
+  public String dumpBufferForSender() {
+    String result = postProcessingMessage();
+    if (readableOffsetsBeforeProcessing != null) {
+      result += preProcessingMessage(readableOffsetsBeforeProcessing);
+      result += String.format("Current buffer array from 0 to pre-processing limit:\n%s\n",
+          dump(bufferContent, 0, readableOffsetsBeforeProcessing.limit));
+    }
+    return result;
+  }
+
+  private String preProcessingMessage(final Offsets offsets) {
+    return String.format("Before processing, offsets (hex) were: position: %08x, limit: %08x\n",
+        offsets.position, offsets.limit);
+  }
+
+  private String postProcessingMessage() {
+    if (readableOffsetsAfterProcessing != null) {
+      return String.format("After processing, offsets (hex) are: position: %08x, limit: %08x\n",
+          readableOffsetsAfterProcessing.position, readableOffsetsAfterProcessing.limit);
+    } else {
+      return "";
+    }
+  }
+
+  /*
+   * buff is writeable on entry and exit
+   */
+  private void beforeProcessingForReceiver(final ByteBuffer buff) {
     // lightweight capture of pre-processing offsets in case we see an exception later
     writeableOffsetsBeforeProcessing = new Offsets(buff);
   }
 
-  private void beforeProcessingReadableBuffer(final ByteBuffer buff) {
+  /*
+   * buff is readable on entry and exit
+   */
+  private void beforeProcessingForSender(final ByteBuffer buff) {
     // lightweight capture of pre-processing offsets in case we see an exception later
     readableOffsetsBeforeProcessing = new Offsets(buff);
   }
 
   /*
-   we encountered an exception so capture the buffer
-   buff is readable on entry and exit
+   * we encountered an exception in receiver processing so capture the buffer
+   * buff is readable on entry and exit
    */
-  private void onIOExceptionForReadableBuffer(final ByteBuffer buff) {
+  private void onIOExceptionForReceiver(final ByteBuffer buff) {
     readableOffsetsAfterProcessing = new Offsets(buff);
     buff.position(0);
     buff.limit(writeableOffsetsBeforeProcessing.position);
-    final int length = buff.limit() - buff.position();
-    originalContent = new byte[length];
-    buff.get(originalContent, 0, length);
+    final int length = buff.remaining();
+    bufferContent = new byte[length];
+    buff.get(bufferContent, 0, length);
     readableOffsetsAfterProcessing.reposition(buff);
   }
 
-  private void onIOExceptionForWritableBuffer(final ByteBuffer buff) {
-    writableOffsetsAfterProcessing = new Offsets(buff);
+  /*
+   * we encountered an exception in sender processing so capture the buffer
+   * buff is readable on entry and exit
+   *
+   * this method differs from onIOExceptionForReceiver() since in this case
+   * we've captured readableOffsetsBeforeProcessing since, unlike in the
+   * receiver case, in this case, the buffer was readable before processing
+   */
+  private void onIOExceptionForSender(final ByteBuffer buff) {
+    readableOffsetsAfterProcessing = new Offsets(buff);
     readableOffsetsBeforeProcessing.reposition(buff);
-    final int length = buff.limit() - buff.position();
-    originalContent = new byte[length];
-    buff.get(originalContent, 0, length);
-    writableOffsetsAfterProcessing.reposition(buff);
-  }
-
-  public String dumpReadableBuffer() {
-    String result = "";
-    if (readableOffsetsAfterProcessing != null) {
-      result += String.format("After processing, offsets (hex) are: position: %08x, limit: %08x\n",
-          readableOffsetsAfterProcessing.position, readableOffsetsAfterProcessing.limit);
-    }
-    if (writeableOffsetsBeforeProcessing != null) {
-      result += String.format("Before processing:\n%s\n", dump(originalContent,
-          0, writeableOffsetsBeforeProcessing.position));
-    }
-    return result;
-  }
-
-  public String dumpWritableBuffer() {
-    String result = "";
-    if (writableOffsetsAfterProcessing != null) {
-      result += String.format("After processing, offsets (hex) are: position: %08x, limit: %08x\n",
-          writableOffsetsAfterProcessing.position, writableOffsetsAfterProcessing.limit);
-    }
-    if (readableOffsetsBeforeProcessing != null) {
-      result += String.format("Before processing:\n%s\n", dump(originalContent,
-          readableOffsetsBeforeProcessing.position, readableOffsetsBeforeProcessing.limit));
-    }
-    return result;
+    final int length = buff.remaining();
+    bufferContent = new byte[length];
+    buff.get(bufferContent, 0, length);
+    readableOffsetsAfterProcessing.reposition(buff);
   }
 
   private String dump(final byte[] content, final int position, final int limit) {
@@ -162,10 +223,11 @@ public class BufferDebugging {
     final ByteArrayOutputStream formatted = new ByteArrayOutputStream();
     String result;
     try {
-      HexDump.dump(slice, position, formatted,0);
+      HexDump.dump(slice, position, formatted, 0);
       result = formatted.toString();
     } catch (IOException e) {
-      result = String.format("(Failed to format content; position: %d, limit: %d)", position, limit);
+      result =
+          String.format("(Failed to format content; position: %d, limit: %d)", position, limit);
     }
     return result;
   }

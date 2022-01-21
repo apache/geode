@@ -120,7 +120,7 @@ public class P2PTagMishmashXrayDUnitTest {
       final int sendSocketBufferSize,
       final int receiveSocketBufferSize) throws GeneralSecurityException, IOException {
 
-//    overrideJavaSecurity();
+    // overrideJavaSecurity();
 
     final Properties senderConfiguration =
         gemFireConfiguration(conserveSockets, useTLS, sendSocketBufferSize);
@@ -251,7 +251,7 @@ public class P2PTagMishmashXrayDUnitTest {
     private boolean requireOrderedDelivery;
 
     TestMessage(final InternalDistributedMember receiver,
-                final Random random, final int messageId, final boolean requireOrderedDelivery) {
+        final Random random, final int messageId, final boolean requireOrderedDelivery) {
       this.requireOrderedDelivery = requireOrderedDelivery;
       setRecipient(receiver);
       this.random = random;
@@ -388,10 +388,11 @@ public class P2PTagMishmashXrayDUnitTest {
   // This doesn't work. Apparently it's set too late to influence the security subsystem.
   // gotta use -Djava.security.properties=org/apache/geode/distributed/internal/java.security
   // gotta use -Djava.security.properties=java.security
-  // gotta use -Djava.security.properties=/Users/bburcham/Projects/geode/geode-core/src/distributedTest/resources/org/apache/geode/distributed/internal/java.security
+  // gotta use
+  // -Djava.security.properties=/Users/bburcham/Projects/geode/geode-core/src/distributedTest/resources/org/apache/geode/distributed/internal/java.security
   // when launching the JVM for now
   private static void overrideJavaSecurity() {
-    final Path relative = Paths.get("src","test","resources", "java.security");
+    final Path relative = Paths.get("src", "test", "resources", "java.security");
     String absolute = relative.toFile().getAbsolutePath();
     System.setProperty("java.security.properties", absolute);
   }
