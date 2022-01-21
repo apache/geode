@@ -1273,6 +1273,27 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     }
   }
 
+
+
+  public boolean markAsDuplicateInTempQueueEvents(Object tailKey) {
+    synchronized (queuedEventsSync) {
+      Iterator<TmpQueueEvent> itr = tmpQueuedEvents.iterator();
+      while (itr.hasNext()) {
+        TmpQueueEvent event = itr.next();
+        if (tailKey.equals(event.getEvent().getTailKey())) {
+          if (logger.isDebugEnabled()) {
+            logger.debug(
+                "shadowKey {} is found in tmpQueueEvents at AbstractGatewaySender level. Marking it..",
+                tailKey);
+          }
+          event.getEvent().setPossibleDuplicate(true);
+          return true;
+        }
+      }
+      return false;
+    }
+  }
+
   /**
    * Removes the EntryEventImpl, whose tailKey matches with the provided tailKey, from
    * tmpQueueEvents.

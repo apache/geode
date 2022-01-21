@@ -31,17 +31,23 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
+import org.apache.geode.internal.cache.wan.parallel.ParallelQueueSetPossibleDuplicateMessage;
 import org.apache.geode.internal.offheap.OffHeapClearRequired;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
+
 
 public abstract class AbstractBucketRegionQueue extends BucketRegion {
   protected static final Logger logger = LogService.getLogger();
@@ -223,7 +229,11 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
       // .getBucketToTempQueueMap().get(getId());
       if (tempQueue != null && !tempQueue.isEmpty()) {
         synchronized (tempQueue) {
+          Map regionToDispatchedKeysMap = new ConcurrentHashMap();
           try {
+            boolean notifyDuplicate =
+                !(this.getPartitionedRegion().getParallelGatewaySender().getEventProcessor()
+                    .getDispatcher() instanceof GatewaySenderEventCallbackDispatcher);
             // ParallelQueueRemovalMessage checks for the key in BucketRegionQueue
             // and if not found there, it removes it from tempQueue. When tempQueue
             // is getting loaded in BucketRegionQueue, it may not find the key in both.
@@ -235,6 +245,9 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
               try {
                 event.setPossibleDuplicate(true);
                 if (addToQueue(event.getShadowKey(), event)) {
+                  if (notifyDuplicate) {
+                    addDuplicateEvent(regionToDispatchedKeysMap, event);
+                  }
                   event = null;
                 }
               } catch (ForceReattemptException e) {
@@ -257,12 +270,42 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
             }
             getInitializationLock().writeLock().unlock();
           }
+          if (regionToDispatchedKeysMap.size() > 0
+              && getPartitionedRegion().getRegionAdvisor() != null) {
+            Set<InternalDistributedMember> recipients =
+                getPartitionedRegion().getRegionAdvisor().adviseDataStore();
+            if (!recipients.isEmpty()) {
+              ParallelQueueSetPossibleDuplicateMessage pqspdm =
+                  new ParallelQueueSetPossibleDuplicateMessage(regionToDispatchedKeysMap);
+              pqspdm.setRecipients(recipients);
+              InternalDistributedSystem ids = getCache().getInternalDistributedSystem();
+              DistributionManager dm = ids.getDistributionManager();
+              dm.putOutgoing(pqspdm);
+            }
+          }
         }
       }
 
       // }
     }
   }
+
+  protected void addDuplicateEvent(Map regionToDispatchedKeysMap, GatewaySenderEventImpl event) {
+    Map bucketIdToDispatchedKeys =
+        (Map) regionToDispatchedKeysMap.get(getPartitionedRegion().getFullPath());
+    if (bucketIdToDispatchedKeys == null) {
+      bucketIdToDispatchedKeys = new ConcurrentHashMap();
+      regionToDispatchedKeysMap.put(getParentRegion().getFullPath(), bucketIdToDispatchedKeys);
+    }
+
+    List dispatchedKeys = (List) bucketIdToDispatchedKeys.get(getId());
+    if (dispatchedKeys == null) {
+      dispatchedKeys = new ArrayList<Object>();
+      bucketIdToDispatchedKeys.put(getId(), dispatchedKeys);
+    }
+    dispatchedKeys.add(event.getShadowKey());
+  }
+
 
   @Override
   public void forceSerialized(EntryEventImpl event) {

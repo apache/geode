@@ -29,10 +29,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -46,7 +48,11 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.ColocationHelper;
 import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
@@ -58,6 +64,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
+import org.apache.geode.internal.cache.wan.parallel.ParallelQueueSetPossibleDuplicateMessage;
 import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderQueue;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.logging.internal.executors.LoggingThread;
@@ -575,29 +582,51 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
             // if the bucket becomes secondary after the event is picked from it,
             // check again before dispatching the event. Do this only for
             // AsyncEventQueue since possibleDuplicate flag is not used in WAN.
-            if (getSender().isParallel()
-                && (getDispatcher() instanceof GatewaySenderEventCallbackDispatcher)) {
-              for (final GatewaySenderEventImpl event : filteredList) {
-                final PartitionedRegion qpr;
-                if (getQueue() instanceof ConcurrentParallelGatewaySenderQueue) {
-                  qpr = ((ConcurrentParallelGatewaySenderQueue) getQueue())
-                      .getRegion(event.getRegionPath());
-                } else {
-                  qpr = ((ParallelGatewaySenderQueue) getQueue())
-                      .getRegion(event.getRegionPath());
-                }
-                int bucketId = event.getBucketId();
-                // if the bucket from which the event has been picked is no longer
-                // primary, then set possibleDuplicate to true on the event
-                if (qpr != null) {
-                  BucketRegion bucket = qpr.getDataStore().getLocalBucketById(bucketId);
-                  if (bucket == null || !bucket.getBucketAdvisor().isPrimary()) {
-                    event.setPossibleDuplicate(true);
-                    if (isDebugEnabled) {
-                      logger.debug(
-                          "Bucket id: {} is no longer primary on this node. The event: {} will be dispatched from this node with possibleDuplicate set to true.",
-                          bucketId, event);
+            if (getSender().isParallel()) {
+              if (getDispatcher() instanceof GatewaySenderEventCallbackDispatcher) {
+                for (final GatewaySenderEventImpl event : filteredList) {
+                  final PartitionedRegion qpr;
+                  if (getQueue() instanceof ConcurrentParallelGatewaySenderQueue) {
+                    qpr = ((ConcurrentParallelGatewaySenderQueue) getQueue())
+                        .getRegion(event.getRegionPath());
+                  } else {
+                    qpr = ((ParallelGatewaySenderQueue) getQueue())
+                        .getRegion(event.getRegionPath());
+                  }
+                  int bucketId = event.getBucketId();
+                  // if the bucket from which the event has been picked is no longer
+                  // primary, then set possibleDuplicate to true on the event
+                  if (qpr != null) {
+                    BucketRegion bucket = qpr.getDataStore().getLocalBucketById(bucketId);
+                    if (bucket == null || !bucket.getBucketAdvisor().isPrimary()) {
+                      event.setPossibleDuplicate(true);
+                      if (isDebugEnabled) {
+                        logger.debug(
+                            "Bucket id: {} is no longer primary on this node. The event: {} will be dispatched from this node with possibleDuplicate set to true.",
+                            bucketId, event);
+                      }
                     }
+                  }
+                }
+              } else {
+                Map regionToDispatchedKeysMap = new ConcurrentHashMap();
+
+                for (final GatewaySenderEventImpl event : filteredList) {
+                  // check if bucket from which the event has been picked is no longer
+                  // primary, then set possibleDuplicate to true on the event
+                  checkIfEventsBucketNotPrimary(regionToDispatchedKeysMap, event);
+                }
+                if (regionToDispatchedKeysMap.size() > 0) {
+                  Set<InternalDistributedMember> recipients =
+                      getAllRecipients(sender.getCache(), regionToDispatchedKeysMap);
+                  if (!recipients.isEmpty()) {
+                    ParallelQueueSetPossibleDuplicateMessage pqspdm =
+                        new ParallelQueueSetPossibleDuplicateMessage(regionToDispatchedKeysMap);
+                    pqspdm.setRecipients(recipients);
+                    InternalDistributedSystem ids =
+                        sender.getCache().getInternalDistributedSystem();
+                    DistributionManager dm = ids.getDistributionManager();
+                    dm.putOutgoing(pqspdm);
                   }
                 }
               }
@@ -968,14 +997,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     statistics.incBatchesRedistributed();
 
     // Set posDup flag on each event in the batch
-    Iterator<?> it = events.iterator();
-    while (it.hasNext() && !isStopped) {
-      Object o = it.next();
-      if (o instanceof GatewaySenderEventImpl) {
-        GatewaySenderEventImpl ge = (GatewaySenderEventImpl) o;
-        ge.setPossibleDuplicate(true);
-      }
-    }
+    notifyPossibleDuplicate(events);
   }
 
   /**
@@ -1319,6 +1341,139 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
   }
 
   protected abstract void enqueueEvent(GatewayQueueEvent<?, ?> event);
+
+
+  private void notifyPossibleDuplicate(List<?> events) {
+    Map regionToDispatchedKeysMap = new ConcurrentHashMap();
+
+    for (Object o : events) {
+      if (o instanceof GatewaySenderEventImpl) {
+        GatewaySenderEventImpl ge = (GatewaySenderEventImpl) o;
+        if (!ge.getPossibleDuplicate()) {
+          if (getSender().isParallel()
+              && !(getDispatcher() instanceof GatewaySenderEventCallbackDispatcher)) {
+            addDuplicateEvent(regionToDispatchedKeysMap, ge);
+          }
+
+          ge.setPossibleDuplicate(true);
+        }
+      }
+    }
+
+    if (regionToDispatchedKeysMap.size() > 0) {
+      Set<InternalDistributedMember> recipients =
+          getAllRecipients(sender.getCache(), regionToDispatchedKeysMap);
+      if (!recipients.isEmpty()) {
+        ParallelQueueSetPossibleDuplicateMessage pqspdm =
+            new ParallelQueueSetPossibleDuplicateMessage(regionToDispatchedKeysMap);
+        pqspdm.setRecipients(recipients);
+        InternalDistributedSystem ids = sender.getCache().getInternalDistributedSystem();
+        DistributionManager dm = ids.getDistributionManager();
+        dm.putOutgoing(pqspdm);
+      }
+    }
+
+  }
+
+  protected void addDuplicateEvent(Map regionToDispatchedKeysMap, GatewaySenderEventImpl event) {
+    PartitionedRegion prQ = null;
+    int bucketId = -1;
+    Object key = null;
+    InternalCache cache = sender.getCache();
+    String regionPath = event.getRegionPath();
+
+    if (event.getRegion() != null) {
+      if (cache.getRegion(regionPath) instanceof DistributedRegion) {
+        prQ = ((ParallelGatewaySenderQueue) getQueue()).getRegion(event.getRegion().getFullPath());
+        bucketId = event.getEventId().getBucketID();
+        key = event.getEventId();
+      } else {
+        prQ = ((ParallelGatewaySenderQueue) getQueue()).getRegion(ColocationHelper
+            .getLeaderRegion((PartitionedRegion) event.getRegion()).getFullPath());
+        bucketId = event.getBucketId();
+        key = event.getShadowKey();
+      }
+    } else {
+      Region region = (PartitionedRegion) cache.getRegion(regionPath);
+      if (region != null && !region.isDestroyed()) {
+        if (region instanceof DistributedRegion) {
+          prQ = ((ParallelGatewaySenderQueue) getQueue()).getRegion(region.getFullPath());
+          bucketId = event.getBucketId();
+          key = event.getEventId();
+        } else {
+          prQ = ((ParallelGatewaySenderQueue) getQueue()).getRegion(
+              ColocationHelper.getLeaderRegion((PartitionedRegion) region).getFullPath());
+          bucketId = event.getBucketId();
+          key = event.getShadowKey();
+        }
+      }
+    }
+
+    if (prQ == null) {
+      return;
+    }
+
+    Map bucketIdToDispatchedKeys = (Map) regionToDispatchedKeysMap.get(prQ.getFullPath());
+    if (bucketIdToDispatchedKeys == null) {
+      bucketIdToDispatchedKeys = new ConcurrentHashMap();
+      regionToDispatchedKeysMap.put(prQ.getFullPath(), bucketIdToDispatchedKeys);
+    }
+
+    List dispatchedKeys = (List) bucketIdToDispatchedKeys.get(bucketId);
+    if (dispatchedKeys == null) {
+      dispatchedKeys = new ArrayList<Object>();
+      bucketIdToDispatchedKeys.put(bucketId, dispatchedKeys);
+    }
+    dispatchedKeys.add(key);
+
+  }
+
+
+  protected void checkIfEventsBucketNotPrimary(Map regionToDispatchedKeysMap,
+      GatewaySenderEventImpl event) {
+    InternalCache cache = sender.getCache();
+    String regionPath = event.getRegionPath();
+    if (cache.getRegion(regionPath) instanceof PartitionedRegion) {
+      PartitionedRegion prQ = ((ParallelGatewaySenderQueue) getQueue()).getRegion(regionPath);
+      int bucketId = event.getBucketId();
+      Object key = event.getShadowKey();
+
+      if (prQ != null) {
+        BucketRegion bucket = prQ.getDataStore().getLocalBucketById(bucketId);
+        if (bucket == null || !bucket.getBucketAdvisor().isPrimary()) {
+          if (!event.getPossibleDuplicate()) {
+            Map bucketIdToDispatchedKeys = (Map) regionToDispatchedKeysMap.get(prQ.getFullPath());
+            if (bucketIdToDispatchedKeys == null) {
+              bucketIdToDispatchedKeys = new ConcurrentHashMap();
+              regionToDispatchedKeysMap.put(prQ.getFullPath(), bucketIdToDispatchedKeys);
+            }
+
+            List dispatchedKeys = (List) bucketIdToDispatchedKeys.get(bucketId);
+            if (dispatchedKeys == null) {
+              dispatchedKeys = new ArrayList<Object>();
+              bucketIdToDispatchedKeys.put(bucketId, dispatchedKeys);
+            }
+            dispatchedKeys.add(key);
+
+            event.setPossibleDuplicate(true);
+          }
+        }
+      }
+    }
+  }
+
+
+
+  private Set<InternalDistributedMember> getAllRecipients(InternalCache cache, Map map) {
+    Set recipients = new ObjectOpenHashSet();
+    for (Object pr : map.keySet()) {
+      PartitionedRegion partitionedRegion = (PartitionedRegion) cache.getRegion((String) pr);
+      if (partitionedRegion != null && partitionedRegion.getRegionAdvisor() != null) {
+        recipients.addAll(partitionedRegion.getRegionAdvisor().adviseDataStore());
+      }
+    }
+    return recipients;
+  }
 
   protected static class SenderStopperCallable implements Callable<Boolean> {
     private final AbstractGatewaySenderEventProcessor processor;

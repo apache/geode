@@ -44,6 +44,7 @@ import org.apache.geode.internal.cache.persistence.query.mock.ByteComparator;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.parallel.BucketRegionQueueUnavailableException;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
@@ -203,7 +204,13 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
 
   @Override
   public void beforeAcquiringPrimaryState() {
-    markAsDuplicate.addAll(eventSeqNumDeque);
+    PartitionedRegion region = getPartitionedRegion();
+    AbstractGatewaySenderEventProcessor ep =
+        region.getParallelGatewaySender().getEventProcessor();
+
+    if (ep.getDispatcher() instanceof GatewaySenderEventCallbackDispatcher) {
+      markAsDuplicate.addAll(eventSeqNumDeque);
+    }
   }
 
   @Override
@@ -660,6 +667,14 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     } finally {
       getInitializationLock().readLock().unlock();
     }
+  }
+
+  public void addMarkAsDuplicate(Object key) {
+    markAsDuplicate.add(key);
+  }
+
+  public boolean checkIfQueueContainsKey(Object key) {
+    return eventSeqNumDeque.contains(key);
   }
 
 }
