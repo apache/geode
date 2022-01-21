@@ -31,12 +31,13 @@ The <%=vars.product_name%> cluster must have at least one server that is set up 
 
 Prerequisites for running the examples:
 
-1. **Install Geode** \
-   Using the instructions in the `README.md` file in the root of the <%=vars.product_name%> checkout directory, build and install Geode.
-2. **Install the Redis CLI** \
-   Follow installation instructions at https://redis.io/download
+1. **Install Geode** <br/>
+Using the instructions in the `README.md` file in the root of the <%=vars.product_name%> checkout directory, build and install Geode.
+2. **Install the Redis CLI** <br/>
+Follow installation instructions at https://redis.io/download
 
 Use `gfsh` to start a locator for managing a <%=vars.product_name%> cluster:
+
 ```commandLine
 gfsh> start locator
 ```
@@ -99,39 +100,38 @@ To confirm that everything shut down correctly, if you execute a Redis command i
 Could not connect to Redis at 127.0.0.1:6379: Connection refused
 ```
 
-## <a name="redis-start-server-options"></a>Start Server Options
+## <a name="redis-start-server-options" class="no-quick-link"></a>Start Server Options
 
 The options that are specific to starting a server for <%=vars.product_name%> for Redis are listed below.
 For other options see [start server](gfsh/command-pages/start.html#topic_3764EE2DB18B4AE4A625E0354471738A).
 
-### `gemfire.geode-for-redis-enabled` (Default: `false`)
+`--J=-Dgemfire.geode-for-redis-enabled` (Default: `false`) <br/>
 If set to `true`, a <%=vars.product_name%> server with <%=vars.product_name%> for Redis will be started.
 
-### `gemfire.geode-for-redis-port` (Default: `6379`)
+`--J=-Dgemfire.geode-for-redis-port` (Default: `6379`) <br/>
 Specifies the port on which the <%=vars.product_name%> server
-listens on for Redis commands. The typical port used with a cluster compatible with Redis is 6379
-(i.e. the same port that native Redis uses).
+listens for Redis commands. Note that the default port `6379` is the same port that native Redis
+uses by default.
 
-### `gemfire.geode-for-redis-bind-address` (Default: `""`)
+`--J=-Dgemfire.geode-for-redis-bind-address` (Default: `""`) <br/>
 Specifies the host address on which <%=vars.product_name%> for Redis is listening. If set to the
 empty string or if not specified, the server listens on all local addresses.
 
-### `gemfire.geode-for-redis-username` (Default: `"default"`)
+`--J=-Dgemfire.geode-for-redis-username` (Default: `"default"`) <br/>
 Specifies the default username that the server uses when a client attempts to authenticate using
 only a password. See section on [Security](#security) for more information.
 
-### `gemfire.geode-for-redis-redundant-copies` (Default: `1`)
+`--J=-Dgemfire.geode-for-redis-redundant-copies` (Default: `1`) <br/>
 Specifies the number of redundant copies <%=vars.product_name%> for Redis will attempt to keep in
 the cluster. A value of 0 means no extra copies of data will be stored in the cluster.
 Note that extra servers need to be running for redundant copies to be made. For
 example if the cluster only has one server then no redundant copies will exist no matter what the
 value of this property is. Also note that <%=vars.product_name%> for Redis uses a Geode partitioned region
 to implement redundant copies and this property corresponds to the partitioned region's
-"redundant-copies" attribute.
-This property must be set the same on every server in the cluster that is running a
+"redundant-copies" attribute. This property must be set the same on every server in the cluster that is running a
 <%=vars.product_name%> for Redis server.
 
-## <a name="security"></a>Security
+## <a name="security" class="no-quick-link"></a>Security
 
 Security is implemented slightly differently to OSS Redis. Redis stores password information in plain text in the redis.conf file.
 
@@ -165,7 +165,7 @@ Note also that _any_ `AUTH` requests will fail if no Security Manager has been c
 
 For information on configuring the cluster for SSL, see [Configuring SSL](../managing/security/implementing_ssl.html).
 
-## <a name="application-development"></a>Application Development
+## <a name="application-development" class="no-quick-link"></a>Application Development
 
 ### Things to know before you begin
 - <%=vars.product_name%> for Redis currently implements a subset of the full Redis set of commands
@@ -181,7 +181,7 @@ public static ConfigureRedisAction configureRedisAction() {
 This is a known solution for many Managed Redis products (ElastiCache, Azure Cache for Redis, etc) that disable the CONFIG command for security reasons.
 You can read more about why this is done in the [Spring Session issue report](https://github.com/spring-projects/spring-session/issues/124).
 
-## <a name="redis-commands"></a>Redis Commands
+## <a name="redis-commands" class="no-quick-link"></a>Redis Commands
 
 <%=vars.product_name%> for Redis supports the following Redis commands.
 
@@ -249,7 +249,6 @@ You can read more about why this is done in the [Spring Session issue report](ht
 - SINTER
 - SINTERSTORE
 - SISMEMBER
-- SLOWLOG **[5]**
 - SMEMBERS
 - SMOVE
 - SPOP
@@ -343,7 +342,7 @@ These commands are supported for Redis 5.
 
    - redis_version
 
-   - redis_mode
+   - redis_mode (always returns "cluster" because <%=vars.product_name%> for Redis always runs in cluster mode.)
 
    - tcp_port
 
@@ -371,7 +370,9 @@ These commands are supported for Redis 5.
 
    - rejected_connections (always returns 0)
 
-**[5]**  SLOWLOG is implemented as a NoOp.
+   - pubsub_channels
+
+   - pubsub_patterns
 
 ## <a id="advantages-over-redis" class="no-quick-link"></a>Advantages of <%=vars.product_name%> over Redis
 
@@ -379,7 +380,7 @@ These commands are supported for Redis 5.
 
 <%=vars.product_name%>'s architecture and management features help detect and resolve **network partitioning** problems without explicit management on the part of the Redis client.
 
-<%=vars.product_name%> for Redis partitions data across multiple servers and keeps replicated up to date _synchronously_, whereas Redis uses asynchronous replication.
+<%=vars.product_name%> for Redis partitions data across multiple servers and keeps replicated data up to date _synchronously_, whereas Redis uses asynchronous replication.
 This provides a higher level of data consistency within the cluster.
 
 ## <a id="expiration-accuracy" class="no-quick-link"></a>Expiration Accuracy
@@ -387,11 +388,11 @@ This provides a higher level of data consistency within the cluster.
 Keys are expired in two ways, actively and passively:
 
 -   With active expiration, expiration is evaluated whenever a key is accessed. If the key is due to expire, it is deleted. Active expiration is accurate to the millisecond.
--   With passive expiration, keys are evaluated every second. If they are due to expire, they are deleted.  Passive expiration is accurate to the second.
+-   With passive expiration, keys are evaluated every three seconds. If they are due to expire, they are deleted.  Passive expiration is accurate to the second.
 
 ## <a id="high-availability-model" class="no-quick-link"></a>High Availability Model
 
-Data is stored in a single partitioned region that has one redundant copy.
+Data is stored in a single partitioned region that by default has one redundant copy.
 In practice this means that the cluster can tolerate the loss of a single server without the loss of
 data.
 
