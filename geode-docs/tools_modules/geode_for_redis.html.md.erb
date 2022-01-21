@@ -49,7 +49,6 @@ gfsh> start server --J=-Dgemfire.geode-for-redis-enabled=true --J=-Dgemfire.geod
 ```
 
 More information about the options when starting a server is given in the section [Start Server Options](#redis-start-server-options) below.
-Note that `gfsh` suppots tab completion which can help with long option names.
 
 To confirm the server is listening, in a separate terminal run:
 
@@ -62,7 +61,7 @@ The `-c` option enables cluster mode in the redis-cli, which is necessary since
 
 If the server is functioning properly, you should see a response of `PONG`.
 
-### <a name="adding-a-server"></a> Add an additional Geode server compatible with Redis APIs
+### <a name="adding-a-server"></a> Add an additional server
 If you’re interested in testing Geode scalability, in gfsh run the `start server` command again.
 
 However, there are two ports that must be unique for each server in the cluster, the
@@ -77,6 +76,7 @@ a different server port, or use `--server-port=0` which tells <%=vars.product_na
 an arbitrary available port for the server port.
 
 For example:
+
 ```commandLine
 gfsh> start server --J=-Dgemfire.geode-for-redis-enabled=true --J=-Dgemfire.geode-for-redis-port=6380 --server-port=0
 ```
@@ -88,11 +88,7 @@ To shut down the Geode cluster you started, in the terminal with gfsh running ty
 gfsh> shutdown --include-locators=true
 ```
 
-This command shuts down the entire Geode cluster. You are prompted with the following choice:
-
-```commandline
-As a lot of data in memory will be lost, including possibly events in queues, do you really want to shutdown the entire distributed system? (Y/n)
-```
+This command shuts down the entire Geode cluster.
 
 To confirm that everything shut down correctly, if you execute a Redis command in the `redis-cli` you should see the following message:
 
@@ -254,7 +250,7 @@ You can read more about why this is done in the [Spring Session issue report](ht
 - SPOP
 - SRANDMEMBER
 - SREM
-- SSCAN
+- SSCAN **[3]**
 - STRLEN
 - SUBSCRIBE
 - SUNION
@@ -283,7 +279,7 @@ You can read more about why this is done in the [Spring Session issue report](ht
 - ZREVRANGEBYLEX
 - ZREVRANGEBYSCORE
 - ZREVRANK
-- ZSCAN
+- ZSCAN **[3]**
 - ZSCORE
 - ZUNIONSTORE
 
@@ -298,8 +294,10 @@ These commands are supported for Redis 5.
 
 **[2]** COMMAND is implemented only with no subcommands.
 
-**[3]** Redis accepts 64-bit signed integers for the HSCAN cursor and COUNT parameters.
-<%=vars.product_name%> for Redis is limited to 32-bit integer values for these parameters.
+**[3]** Native Redis supports a range of values of +/- the capacity of unsigned 64-bit integers
+(+/- 1.8446744e+19) for the CURSOR, but 64-bit signed integers for COUNT. <%=vars.product_name%> for Redis matches
+native Redis' behaviour for COUNT, but only supports values of +/- the capacity of a signed 64-bit
+integer (+/- 9223372036854775807) for CURSOR.
 
 **[4]** INFO is implemented for the sections and fields listed below:
 
@@ -311,11 +309,15 @@ These commands are supported for Redis 5.
 
 - cluster
 
-   - cluster_enables (always returns 0)
+   - cluster_enables (always returns 1)
 
 - keyspace
 
-   - returns stats for db: 0
+   - db0:keys
+
+   - expires (always returns 0)
+
+   - avg_ttl (always returns 0)
 
 - memory
 
@@ -323,7 +325,7 @@ These commands are supported for Redis 5.
 
    - used_memory
 
-   - mem_fragmentation_ratio (always reports 1.00)
+   - mem_fragmentation_ratio
 
 - persistence
 
@@ -335,7 +337,7 @@ These commands are supported for Redis 5.
 
 - replication
 
-   - role
+   - role (always returns "master")
 
    - connected_slaves (always returns 0)
 
