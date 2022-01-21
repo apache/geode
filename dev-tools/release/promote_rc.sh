@@ -175,11 +175,11 @@ for server in dlcdn.apache.org/geode downloads.apache.org/geode repo1.maven.org/
   baseurl=https://${server}/${VERSION}/${file}
   echo ""
   echo "============================================================"
-  echo "Waiting for artifacts to publish to ${baseurl}..."
+  echo "Waiting for ${baseurl} to appear..."
   if  echo "${server}" | grep -q repo1 ; then
-    echo "May take up to one hour after clicking 'Release' in http://repository.apache.org/"
+    echo "(may take up to one hour after clicking 'Release' on http://repository.apache.org/ )"
   else
-    echo "May take up to 15 minutes"
+    echo "(may take up to 15 minutes)"
   fi
   echo "============================================================"
   for suffix in "" .asc .sha256 ; do
