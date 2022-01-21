@@ -29,8 +29,8 @@ import org.apache.commons.io.HexDump;
 
 public class BufferDebugging {
 
-  private static boolean SIMULATE_TAG_MISMATCH = false;
-  private static boolean ALLOW_NULL_CIPHER = false;
+  private static final boolean SIMULATE_TAG_MISMATCH = false;
+  private static final boolean ALLOW_NULL_CIPHER = false;
 
   private static final int NEVER_THROW = Integer.MAX_VALUE;
 
