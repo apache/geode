@@ -163,9 +163,8 @@ public class RegionProvider {
   @VisibleForTesting
   static boolean areKeysCrossSlots(List<RedisKey> keysToLock) {
     int slot = keysToLock.get(0).getSlot();
-    for (int i = 1, keysToLockSize = keysToLock.size(); i < keysToLockSize; i++) {
-      RedisKey otherKey = keysToLock.get(i);
-      if (otherKey.getSlot() != slot) {
+    for (RedisKey key : keysToLock) {
+      if (key.getSlot() != slot) {
         return true;
       }
     }
