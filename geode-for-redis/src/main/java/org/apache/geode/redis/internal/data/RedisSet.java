@@ -28,6 +28,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
@@ -52,7 +53,6 @@ import org.apache.geode.redis.internal.services.RegionProvider;
 
 public class RedisSet extends AbstractRedisData {
   protected static final int REDIS_SET_OVERHEAD = memoryOverhead(RedisSet.class);
-
   private MemberSet members;
 
   public RedisSet(Collection<byte[]> members) {
@@ -275,49 +275,64 @@ public class RedisSet extends AbstractRedisData {
     return popped;
   }
 
-  public Collection<byte[]> srandmember(int count) {
-    int membersSize = members.size();
-    boolean duplicatesAllowed = count < 0;
-    if (duplicatesAllowed) {
-      count = -count;
+  public List<byte[]> srandmember(int count) {
+    List<byte[]> result = new ArrayList<>();
+    int randMethodRatio = 3;
+    if (count < 0) {
+      srandomDuplicateList(-count, result);
+    } else if (count * randMethodRatio < members.size()) {
+      // Count is small enough to add random elements to result
+      srandomUniqueListWithSmallCount(count, result);
+    } else {
+      // Count either equal or greater to member size or close to the member size
+      srandomUniqueListWithLargeCount(count, result);
     }
+    return result;
+  }
 
-    if (!duplicatesAllowed && membersSize <= count && count != 1) {
-      return new ArrayList<>(members);
+  private void srandomDuplicateList(int count, List<byte[]> result) {
+    Random rand = new Random();
+    while (result.size() != count) {
+      int randIndex = rand.nextInt(members.getBackingArrayLength());
+      byte[] member = members.getFromBackingArray(randIndex);
+      if (member != null) {
+        result.add(member);
+      }
+    }
+  }
+
+  private void srandomUniqueListWithSmallCount(int count, List<byte[]> result) {
+    Random rand = new Random();
+    Set<Integer> indexesUsed = new HashSet<>();
+
+    while (result.size() != count) {
+      int randIndex = rand.nextInt(members.getBackingArrayLength());
+      byte[] member = members.getFromBackingArray(randIndex);
+      if (member != null && !indexesUsed.contains(randIndex)) {
+        result.add(member);
+        indexesUsed.add(randIndex);
+      }
+    }
+  }
+
+  private void srandomUniqueListWithLargeCount(int count, List<byte[]> result) {
+    if (count >= members.size()) {
+      result.addAll(members);
+      return;
     }
 
     Random rand = new Random();
+    MemberSet duplicateSet = new MemberSet(members);
 
-    // TODO: this could be optimized to take advantage of MemberSet
-    // storing its data in an array. We probably don't need to copy it
-    // into another array here.
-    byte[][] entries = members.toArray(new byte[membersSize][]);
+    while (duplicateSet.size() != count) {
+      int randIndex = rand.nextInt(duplicateSet.getBackingArrayLength());
+      byte[] member = duplicateSet.getFromBackingArray(randIndex);
+      if (member != null) {
+        duplicateSet.remove(member);
+      }
+    }
 
-    if (count == 1) {
-      byte[] randEntry = entries[rand.nextInt(entries.length)];
-      // TODO: Now that the result is no longer serialized this could use singleton.
-      // Note using ArrayList because Collections.singleton has serialization issues.
-      List<byte[]> result = new ArrayList<>(1);
-      result.add(randEntry);
-      return result;
-    }
-    if (duplicatesAllowed) {
-      List<byte[]> result = new ArrayList<>(count);
-      while (count > 0) {
-        result.add(entries[rand.nextInt(entries.length)]);
-        count--;
-      }
-      return result;
-    } else {
-      Set<byte[]> result = new MemberSet(count);
-      // Note that rand.nextInt can return duplicates when "count" is high
-      // so we need to use a Set to collect the results.
-      while (result.size() < count) {
-        byte[] s = entries[rand.nextInt(entries.length)];
-        result.add(s);
-      }
-      return result;
-    }
+    result.addAll(duplicateSet);
   }
 
   public boolean sismember(byte[] member) {
