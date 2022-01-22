@@ -28,7 +28,6 @@ import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -43,15 +42,11 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.categories.IgnoreInRepeatTestTasks;
-import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 public class GeodeRedisServerStartupAcceptanceTest {
 
   @Rule
   public RedisClusterStartupRule cluster = new RedisClusterStartupRule();
-
-  @ClassRule
-  public static GfshCommandRule gfsh = new GfshCommandRule();
 
   @Category(IgnoreInRepeatTestTasks.class)
   @Test
