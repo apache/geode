@@ -15,7 +15,9 @@
 
 package org.apache.geode.redis.internal.commands.executor;
 
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -23,8 +25,12 @@ import java.net.ServerSocket;
 
 import org.junit.Rule;
 import org.junit.Test;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
@@ -99,4 +105,63 @@ public class GeodeRedisServerStartupUsingGfshAcceptanceTest {
     assertThat(execution.getOutputText()).containsIgnoringCase(
         "The geode-for-redis-bind-address 1.1.1.1 is not a valid address for this machine");
   }
+
+  @Test
+  public void gfshStartsRedisServer_whenRedisEnabled() {
+    String command =
+        "start server --J=-Dgemfire." + ConfigurationProperties.GEODE_FOR_REDIS_ENABLED + "=true";
+    gfshRule.execute(command);
+
+    try (Jedis jedis = new Jedis(BIND_ADDRESS, 6379)) {
+      assertThat(jedis.ping()).isEqualTo("PONG");
+    }
+  }
+
+  @Test
+  public void gfshStartsRedisServer_whenCustomPort() {
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
+    String command =
+        "start server --J=-Dgemfire." + ConfigurationProperties.GEODE_FOR_REDIS_ENABLED + "=true"
+            + " --J=-Dgemfire." + ConfigurationProperties.GEODE_FOR_REDIS_PORT + "=" + port;
+
+    gfshRule.execute(command);
+
+    try (Jedis jedis = new Jedis(BIND_ADDRESS, port)) {
+      assertThat(jedis.ping()).isEqualTo("PONG");
+    }
+  }
+
+  @Test
+  public void gfshStartsRedisServer_whenCustomPortAndBindAddress() {
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
+    String anyLocal = LocalHostUtil.getAnyLocalAddress().getHostAddress();
+    String command =
+        "start server --J=-Dgemfire." + ConfigurationProperties.GEODE_FOR_REDIS_ENABLED + "=true"
+            + " --J=-Dgemfire." + ConfigurationProperties.GEODE_FOR_REDIS_PORT + "=" + port
+            + " --J=-Dgemfire." + ConfigurationProperties.GEODE_FOR_REDIS_BIND_ADDRESS + "="
+            + anyLocal;
+
+    gfshRule.execute(command);
+
+    try (Jedis jedis = new Jedis(anyLocal, port)) {
+      assertThat(jedis.ping()).isEqualTo("PONG");
+    }
+  }
+
+  @Test
+  public void gfshDoesNotStartRedisServer_whenNotRedisEnabled() {
+    int port = AvailablePortHelper.getRandomAvailableTCPPort();
+    String anyLocal = LocalHostUtil.getAnyLocalAddress().getHostAddress();
+    String command =
+        "start server --J=-Dgemfire." + ConfigurationProperties.GEODE_FOR_REDIS_PORT + "=" + port
+            + " --J=-Dgemfire." + ConfigurationProperties.GEODE_FOR_REDIS_BIND_ADDRESS + "="
+            + anyLocal;
+
+    gfshRule.execute(command);
+
+    try (Jedis jedis = new Jedis(BIND_ADDRESS, port)) {
+      assertThatThrownBy(() -> jedis.ping()).isInstanceOf(JedisConnectionException.class);
+    }
+  }
+
 }
