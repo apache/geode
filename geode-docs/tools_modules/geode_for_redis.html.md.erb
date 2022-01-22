@@ -25,7 +25,7 @@ optional password authentication.
 
 <img src="../images_svg/geode_for_redis.svg" class="image" />
 
-## <a id="using-geode-for-redis" class="no-quick-link"></a>Using <%=vars.product_name%> for Redis
+## <a id="using-geode-for-redis"></a>Using <%=vars.product_name%> for Redis
 
 The <%=vars.product_name%> cluster must have at least one server that is set up to handle the incoming Redis commands.
 
@@ -61,7 +61,7 @@ The `-c` option enables cluster mode in the redis-cli, which is necessary since
 
 If the server is functioning properly, you should see a response of `PONG`.
 
-### <a name="adding-a-server"></a> Add an additional server
+### <a id="adding-a-server"></a> Add an additional server
 If you’re interested in testing <%=vars.product_name%> scalability, in gfsh run the `start server` command again.
 
 However, there are two ports that must be unique for each server in the cluster, the
@@ -81,7 +81,7 @@ For example:
 gfsh> start server --J=-Dgemfire.geode-for-redis-enabled=true --J=-Dgemfire.geode-for-redis-port=6380 --server-port=0
 ```
 
-### <a name="shutting-down"></a>Shutting Down
+### <a id="shutting-down"></a>Shutting Down
 To shut down the <%=vars.product_name%> cluster you started, in the terminal with gfsh running type the following command
 
 ```commandLine
@@ -96,7 +96,7 @@ To confirm that everything shut down correctly, if you execute a Redis command i
 Could not connect to Redis at 127.0.0.1:6379: Connection refused
 ```
 
-## <a name="redis-start-server-options" class="no-quick-link"></a>Start Server Options
+## <a id="redis-start-server-options"></a>Start Server Options
 
 The options that are specific to starting a server for <%=vars.product_name%> for Redis are listed below.
 For other options see [start server](gfsh/command-pages/start.html#topic_3764EE2DB18B4AE4A625E0354471738A).
@@ -127,7 +127,7 @@ to implement redundant copies and this property corresponds to the partitioned r
 "redundant-copies" attribute. This property must be set the same on every server in the cluster that is running a
 <%=vars.product_name%> for Redis server.
 
-## <a name="security" class="no-quick-link"></a>Security
+## <a id="security"></a>Security
 
 Security is implemented slightly differently to OSS Redis. Redis stores password information in plain text in the redis.conf file.
 
@@ -161,9 +161,9 @@ Note also that _any_ `AUTH` requests will fail if no Security Manager has been c
 
 For information on configuring the cluster for SSL, see [Configuring SSL](../managing/security/implementing_ssl.html).
 
-## <a name="application-development" class="no-quick-link"></a>Application Development
+## <a id="application-development"></a>Application Development
 
-### Things to know before you begin
+### <a id="thingstoknowbeforyoubegin"></a>Things to know before you begin
 - <%=vars.product_name%> for Redis currently implements a subset of the full Redis set of commands
 - Applications must be using a redis client that supports Redis Cluster mode.
 - If your application is using Spring Session Data Redis you will need to add the following code to disable Spring Session from calling CONFIG (CONFIG is not supported).
@@ -177,7 +177,7 @@ public static ConfigureRedisAction configureRedisAction() {
 This is a known solution for many Managed Redis products (ElastiCache, Azure Cache for Redis, etc.) that disable the CONFIG command for security reasons.
 You can read more about why this is done in the [Spring Session issue report](https://github.com/spring-projects/spring-session/issues/124).
 
-## <a name="redis-commands" class="no-quick-link"></a>Redis Commands
+## <a id="redis-commands"></a>Redis Commands
 
 <%=vars.product_name%> for Redis supports the following Redis commands.
 
@@ -377,7 +377,7 @@ integer (+/-\  9223372036854775807) for CURSOR.
 
    - pubsub_patterns
 
-## <a id="advantages-over-redis" class="no-quick-link"></a>Advantages of <%=vars.product_name%> over Redis
+## <a id="advantages-over-redis"></a>Advantages of <%=vars.product_name%> over Redis
 
 <%=vars.product_name%>’s primary advantage is its **scalability**. While the Redis server is single threaded, <%=vars.product_name%> supports high concurrency. Many Redis clients can execute commands on the <%=vars.product_name%> cluster simultaneously.
 
@@ -386,20 +386,20 @@ integer (+/-\  9223372036854775807) for CURSOR.
 <%=vars.product_name%> for Redis partitions data across multiple servers and keeps replicated data up to date _synchronously_, whereas Redis uses asynchronous replication.
 This provides a higher level of data consistency within the cluster.
 
-## <a id="expiration-accuracy" class="no-quick-link"></a>Expiration Accuracy
+## <a id="expiration-accuracy"></a>Expiration Accuracy
 
 Keys are expired in two ways, actively and passively:
 
 -   With active expiration, expiration is evaluated whenever a key is accessed. If the key is due to expire, it is deleted. Active expiration is accurate to the millisecond.
 -   With passive expiration, keys are evaluated every three seconds. If they are due to expire, they are deleted.  Passive expiration is accurate to the second.
 
-## <a id="high-availability-model" class="no-quick-link"></a>High Availability Model
+## <a id="high-availability-model"></a>High Availability Model
 
 Data is stored in a single partitioned region that by default has one redundant copy.
 In practice this means that the cluster can tolerate the loss of a single server without the loss of
 data.
 
-## <a id="loss-of-connections" class="no-quick-link"></a>Loss of Connections
+## <a id="loss-of-connections"></a>Loss of Connections
 
 There are a number of events that might occur within the <%=vars.product_name%> cluster that can result
 in the cluster closing the connection to the Redis client. Losing the connection to the cluster does not
