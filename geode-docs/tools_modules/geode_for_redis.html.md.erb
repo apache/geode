@@ -181,107 +181,34 @@ You can read more about why this is done in the [Spring Session issue report](ht
 
 <%=vars.product_name%> for Redis supports the following Redis commands.
 
-- APPEND
-- AUTH
-- CLIENT
-- CLUSTER **[1]**
-- COMMAND **[2]**
-- DECR
-- DECRBY
-- DEL
-- DUMP
-- ECHO
-- EXISTS
-- EXPIRE
-- EXPIREAT
-- GET
-- GETRANGE
-- GETSET
-- HDEL
-- HEXISTS
-- HGET
-- HGETALL
-- HINCRBY
-- HINCRBYFLOAT
-- HKEYS
-- HLEN
-- HMGET
-- HMSET
-- HSCAN **[3]**
-- HSET
-- HSETNX
-- HSTRLEN
-- HVALS
-- INCR
-- INCRBY
-- INCRBYFLOAT
-- INFO **[4]**
-- KEYS
-- LOLWUT
-- MGET
-- MSET
-- MSETNX
-- PERSIST
-- PEXPIRE
-- PEXPIREAT
-- PING
-- PSETEX
-- PSUBSCRIBE
-- PTTL
-- PUBLISH
-- PUBSUB
-- PUNSUBSCRIBE
-- RENAME
-- RENAMENX
-- RESTORE
-- SADD
-- SCARD
-- SDIFF
-- SDIFFSTORE
-- SET
-- SETEX
-- SETNX
-- SETRANGE
-- SINTER
-- SINTERSTORE
-- SISMEMBER
-- SMEMBERS
-- SMOVE
-- SPOP
-- SRANDMEMBER
-- SREM
-- SSCAN **[3]**
-- STRLEN
-- SUBSCRIBE
-- SUNION
-- SUNIONSTORE
-- TTL
-- TYPE
-- UNSUBSCRIBE
-- QUIT
-- ZADD
-- ZCARD
-- ZCOUNT
-- ZINCRBY
-- ZINTERSTORE
-- ZLEXCOUNT
-- ZPOPMAX
-- ZPOPMIN
-- ZRANGE
-- ZRANGEBYLEX
-- ZRANGEBYSCORE
-- ZRANK
-- ZREM
-- ZREMRANGEBYLEX
-- ZREMRANGEBYRANK
-- ZREMRANGEBYSCORE
-- ZREVRANGE
-- ZREVRANGEBYLEX
-- ZREVRANGEBYSCORE
-- ZREVRANK
-- ZSCAN **[3]**
-- ZSCORE
-- ZUNIONSTORE
+|   Supported Commands ||||
+|-----|-----|-----|-----|
+| APPEND | AUTH | CLIENT | CLUSTER **[1]** |
+| COMMAND **[2]** | DECR | DECRBY | DEL |
+| DUMP | ECHO | EXISTS | EXPIRE |
+| EXPIREAT | GET | GETRANGE | GETSET |
+| HDEL | HEXISTS | HGET | HGETALL |
+| HINCRBY | HINCRBYFLOAT | HKEYS | HLEN |
+| HMGET | HMSET | HSCAN **[3]** | HSET |
+| HSETNX | HSTRLEN | HVALS | INCR |
+| INCRBY | INCRBYFLOAT | INFO **[4]** | KEYS |
+| LOLWUT | MGET | MSET | MSETNX |
+| PERSIST | PEXPIRE | PEXPIREAT | PING |
+| PSETEX | PSUBSCRIBE | PTTL | PUBLISH |
+| PUBSUB | PUNSUBSCRIBE | RENAME | RENAMENX |
+| RESTORE | SADD | SCARD | SDIFF |
+| SDIFFSTORE | SET | SETEX | SETNX |
+| SETRANGE | SINTER | SINTERSTORE | SISMEMBER |
+| SMEMBERS | SMOVE | SPOP | SRANDMEMBER |
+| SREM | SSCAN **[3]** | STRLEN | SUBSCRIBE |
+| SUNION | SUNIONSTORE | TTL | TYPE |
+| UNSUBSCRIBE | QUIT | ZADD | ZCARD |
+| ZCOUNT | ZINCRBY | ZINTERSTORE | ZLEXCOUNT |
+| ZPOPMAX | ZPOPMIN | ZRANGE | ZRANGEBYLEX |
+| ZRANGEBYSCORE | ZRANK | ZREM | ZREMRANGEBYLEX |
+| ZREMRANGEBYRANK | ZREMRANGEBYSCORE | ZREVRANGE | ZREVRANGEBYLEX |
+| ZREVRANGEBYSCORE | ZREVRANK | ZSCAN **[3]** | ZSCORE |
+| ZUNIONSTORE ||||
 
 
 Commands not listed above are **not implemented**.
@@ -296,7 +223,7 @@ These commands are supported for Redis 5.
 
 **[3]** Native Redis supports a range of values of +/- the capacity of unsigned 64-bit integers
 (+/-&nbsp;1.8446744e+19) for the CURSOR, but 64-bit signed integers for COUNT. <%=vars.product_name%> for Redis matches
-native Redis' behaviour for COUNT, but only supports values of +/- the capacity of a signed 64-bit
+native Redis's behavior for COUNT, but only supports values of +/- the capacity of a signed 64-bit
 integer (+/-&nbsp;9223372036854775807) for CURSOR.
 
 **[4]** INFO is implemented for the sections and fields listed below:
