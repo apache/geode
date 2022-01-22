@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.commands.executor.string;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -71,7 +72,7 @@ public abstract class AbstractMSetIntegrationTest implements RedisIntegrationTes
   public void givenDifferentSlots_returnsError() {
     assertThatThrownBy(
         () -> jedis.sendCommand("key1", Protocol.Command.MSET, "key1", "value1", "key2", "value2"))
-            .hasMessageContaining("CROSSSLOT Keys in request don't hash to the same slot");
+            .hasMessageContaining("CROSSSLOT " + ERROR_WRONG_SLOT);
   }
 
   @Test

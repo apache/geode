@@ -17,7 +17,6 @@ package org.apache.geode.redis.internal.commands.executor.sortedset;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_WEIGHT_NOT_A_FLOAT;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
 import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
 import static org.apache.geode.redis.internal.netty.Coder.toUpperCaseBytes;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.AGGREGATE;
@@ -34,7 +33,6 @@ import org.apache.geode.redis.internal.commands.executor.RedisResponse;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.services.RegionProvider;
 
 public abstract class ZStoreExecutor implements CommandExecutor {
 
@@ -105,24 +103,14 @@ public abstract class ZStoreExecutor implements CommandExecutor {
       }
     }
 
-    int slot = command.getKey().getSlot();
-    for (ZKeyWeight keyWeight : keyWeights) {
-      if (keyWeight.getKey().getSlot() != slot) {
-        return RedisResponse.crossSlot(ERROR_WRONG_SLOT);
-      }
-    }
-
     return RedisResponse.integer(getResult(context, command, keyWeights, aggregator));
   }
 
-  protected List<RedisKey> getKeysToLock(RegionProvider regionProvider, RedisKey destinationKey,
-      List<ZKeyWeight> keyWeights) {
+  protected List<RedisKey> getKeysToLock(RedisKey destinationKey, List<ZKeyWeight> keyWeights) {
     List<RedisKey> keysToLock = new ArrayList<>(keyWeights.size());
     for (ZKeyWeight kw : keyWeights) {
-      regionProvider.ensureKeyIsLocal(kw.getKey());
       keysToLock.add(kw.getKey());
     }
-    regionProvider.ensureKeyIsLocal(destinationKey);
     keysToLock.add(destinationKey);
 
     return keysToLock;

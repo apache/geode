@@ -15,9 +15,11 @@
 package org.apache.geode.redis.internal.commands.executor.set;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static redis.clients.jedis.Protocol.Command.SINTER;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -57,12 +59,22 @@ public abstract class AbstractSInterIntegrationTest implements RedisIntegrationT
 
   @Test
   public void sinterErrors_givenTooFewArguments() {
-    assertAtLeastNArgs(jedis, Protocol.Command.SINTER, 1);
+    assertAtLeastNArgs(jedis, SINTER, 1);
   }
 
   @Test
   public void sinterstoreErrors_givenTooFewArguments() {
     assertAtLeastNArgs(jedis, Protocol.Command.SINTERSTORE, 2);
+  }
+
+  @Test
+  public void sinter_withSetsFromDifferentSlots_returnsCrossSlotError() {
+    String setKeyDifferentSlot = "{tag2}set2";
+    jedis.sadd(SET1, "member1");
+    jedis.sadd(setKeyDifferentSlot, "member2");
+
+    assertThatThrownBy(() -> jedis.sendCommand(SET1, SINTER, SET1, setKeyDifferentSlot))
+        .hasMessage("CROSSSLOT " + ERROR_WRONG_SLOT);
   }
 
   @Test

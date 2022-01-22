@@ -17,10 +17,12 @@ package org.apache.geode.redis.internal.commands.executor.key;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NO_SUCH_KEY;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.Assert.fail;
+import static redis.clients.jedis.Protocol.Command.RENAMENX;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,6 +70,16 @@ public abstract class AbstractRenameNXIntegrationTest implements RedisIntegratio
   @Test
   public void errors_GivenWrongNumberOfArguments() {
     assertExactNumberOfArgs(jedis, Protocol.Command.RENAMENX, 2);
+  }
+
+  @Test
+  public void shouldReturnCrossSlotError_givenKeysInDifferentSlots() {
+    String key1 = "{tag1}key1";
+    String key2 = "{tag2}key2";
+    jedis.set(key1, "value1");
+    jedis.set(key2, "value1");
+    assertThatThrownBy(() -> jedis.sendCommand(key1, RENAMENX, key1, key2))
+        .hasMessageContaining("CROSSSLOT " + ERROR_WRONG_SLOT);
   }
 
   @Test
