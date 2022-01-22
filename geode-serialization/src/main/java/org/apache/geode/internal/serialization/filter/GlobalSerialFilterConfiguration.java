@@ -38,7 +38,9 @@ class GlobalSerialFilterConfiguration implements FilterConfiguration {
   private final SerializableObjectConfig serializableObjectConfig;
   private final FilterPatternFactory filterPatternFactory;
   private final Supplier<Set<String>> sanctionedClassesSupplier;
-  private final Consumer<String> logger;
+  private final Consumer<String> infoLogger;
+  private final Consumer<String> warnLogger;
+  private final Consumer<String> errorLogger;
   private final GlobalSerialFilterFactory globalSerialFilterFactory;
 
   /**
@@ -49,17 +51,25 @@ class GlobalSerialFilterConfiguration implements FilterConfiguration {
         new DefaultFilterPatternFactory(),
         () -> loadSanctionedClassNames(loadSanctionedSerializablesServices()),
         LOGGER::info,
+        LOGGER::warn,
+        LOGGER::error,
         (pattern, sanctionedClasses) -> new ReflectiveFacadeGlobalSerialFilterFactory()
             .create(pattern, sanctionedClasses));
   }
 
   @TestOnly
-  GlobalSerialFilterConfiguration(SerializableObjectConfig serializableObjectConfig,
-      Consumer<String> logger, GlobalSerialFilterFactory globalSerialFilterFactory) {
+  GlobalSerialFilterConfiguration(
+      SerializableObjectConfig serializableObjectConfig,
+      Consumer<String> infoLogger,
+      Consumer<String> warnLogger,
+      Consumer<String> errorLogger,
+      GlobalSerialFilterFactory globalSerialFilterFactory) {
     this(serializableObjectConfig,
         new DefaultFilterPatternFactory(),
         () -> loadSanctionedClassNames(loadSanctionedSerializablesServices()),
-        logger,
+        infoLogger,
+        warnLogger,
+        errorLogger,
         globalSerialFilterFactory);
   }
 
@@ -67,12 +77,16 @@ class GlobalSerialFilterConfiguration implements FilterConfiguration {
       SerializableObjectConfig serializableObjectConfig,
       FilterPatternFactory filterPatternFactory,
       Supplier<Set<String>> sanctionedClassesSupplier,
-      Consumer<String> logger,
+      Consumer<String> infoLogger,
+      Consumer<String> warnLogger,
+      Consumer<String> errorLogger,
       GlobalSerialFilterFactory globalSerialFilterFactory) {
     this.serializableObjectConfig = serializableObjectConfig;
     this.filterPatternFactory = filterPatternFactory;
     this.sanctionedClassesSupplier = sanctionedClassesSupplier;
-    this.logger = logger;
+    this.infoLogger = infoLogger;
+    this.warnLogger = warnLogger;
+    this.errorLogger = errorLogger;
     this.globalSerialFilterFactory = globalSerialFilterFactory;
   }
 
@@ -93,32 +107,45 @@ class GlobalSerialFilterConfiguration implements FilterConfiguration {
       globalSerialFilter.setFilter();
 
       // log statement that filter is now configured
-      logger.accept("Global serial filter is now configured.");
+      infoLogger.accept("Global serial filter is now configured.");
       return true;
 
     } catch (UnsupportedOperationException e) {
-      if (hasRootCauseWithMessage(e, IllegalStateException.class,
-          "Serial filter can only be set once")) {
-
-        // log statement that filter was already configured
-        logger.accept("Global serial filter is already configured.");
-      }
+      handleUnsupportedOperationException(e);
       return false;
     }
   }
 
-  private static boolean hasRootCauseWithMessage(Throwable throwable,
+  private void handleUnsupportedOperationException(UnsupportedOperationException e) {
+    if (hasRootCauseWithMessageContaining(e, IllegalStateException.class,
+        "Serial filter can only be set once")) {
+
+      // log statement that filter was already configured
+      warnLogger.accept("Global serial filter is already configured.");
+    }
+    if (hasRootCauseWithMessageContaining(e, ClassNotFoundException.class,
+        "ObjectInputFilter")) {
+
+      // log statement that a global serial filter cannot be configured
+      errorLogger.accept(
+          "Geode was unable to configure a global serialization filter because ObjectInputFilter not found.");
+    }
+  }
+
+  private static boolean hasRootCauseWithMessageContaining(Throwable throwable,
       Class<? extends Throwable> causeClass, String message) {
     Throwable rootCause = getRootCause(throwable);
-    return isInstanceOf(rootCause, causeClass) && hasMessage(rootCause, message);
+    return nonNull(rootCause) &&
+        isInstanceOf(rootCause, causeClass) &&
+        hasMessageContaining(rootCause, message);
   }
 
   private static boolean isInstanceOf(Throwable throwable, Class<? extends Throwable> causeClass) {
-    return nonNull(throwable) && throwable.getClass().equals(causeClass);
+    return throwable.getClass().equals(causeClass);
   }
 
-  private static boolean hasMessage(Throwable throwable, String message) {
-    return nonNull(throwable) && throwable.getMessage().equalsIgnoreCase(message);
+  private static boolean hasMessageContaining(Throwable throwable, String message) {
+    return throwable.getMessage().toLowerCase().contains(message.toLowerCase());
   }
 
   /**
@@ -134,7 +161,7 @@ class GlobalSerialFilterConfiguration implements FilterConfiguration {
   /**
    * Default implementation of {@code FilterPatternFactory}.
    */
-  static class DefaultFilterPatternFactory implements FilterPatternFactory {
+  public static class DefaultFilterPatternFactory implements FilterPatternFactory {
 
     @Override
     public String create(String optionalSerializableObjectFilter) {

@@ -18,6 +18,7 @@ import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.util.function.Consumer;
 
@@ -31,7 +32,8 @@ public class JmxSerialFilterConfigurationTest {
   private static final String SYSTEM_PROPERTY = "system.property.name";
 
   private String pattern;
-  private Consumer<String> loggerConsumer;
+  private Consumer<String> infoLogger;
+  private Consumer<String> warnLogger;
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -39,7 +41,8 @@ public class JmxSerialFilterConfigurationTest {
   @Before
   public void setUp() {
     pattern = "the-filter-pattern";
-    loggerConsumer = uncheckedCast(mock(Consumer.class));
+    infoLogger = uncheckedCast(mock(Consumer.class));
+    warnLogger = uncheckedCast(mock(Consumer.class));
   }
 
   @Test
@@ -101,29 +104,31 @@ public class JmxSerialFilterConfigurationTest {
   }
 
   @Test
-  public void logsNowConfigured_ifExistingValueIsEmpty() {
+  public void logsSuccess_ifExistingValueIsEmpty() {
     System.setProperty(SYSTEM_PROPERTY, "");
     FilterConfiguration filterConfiguration =
-        new JmxSerialFilterConfiguration(SYSTEM_PROPERTY, pattern, loggerConsumer);
+        new JmxSerialFilterConfiguration(SYSTEM_PROPERTY, pattern, infoLogger, warnLogger);
 
     filterConfiguration.configure();
 
-    verify(loggerConsumer)
+    verify(infoLogger)
         .accept("System property '" + SYSTEM_PROPERTY + "' is now configured with '" +
             pattern + "'.");
+    verifyNoInteractions(warnLogger);
   }
 
   @Test
-  public void logsNowConfigured_ifExistingValueIsBlank() {
+  public void logsSuccess_ifExistingValueIsBlank() {
     System.setProperty(SYSTEM_PROPERTY, " ");
     FilterConfiguration filterConfiguration =
-        new JmxSerialFilterConfiguration(SYSTEM_PROPERTY, pattern, loggerConsumer);
+        new JmxSerialFilterConfiguration(SYSTEM_PROPERTY, pattern, infoLogger, warnLogger);
 
     filterConfiguration.configure();
 
-    verify(loggerConsumer)
+    verify(infoLogger)
         .accept("System property '" + SYSTEM_PROPERTY + "' is now configured with '" +
             pattern + "'.");
+    verifyNoInteractions(warnLogger);
   }
 
   @Test
@@ -141,15 +146,16 @@ public class JmxSerialFilterConfigurationTest {
   }
 
   @Test
-  public void logsAlreadyConfiguredMessage_ifExistingPropertyValueIsNotEmpty() {
+  public void logsWarning_ifExistingPropertyValueIsNotEmpty() {
     String existingValue = "existing-value-of-property";
     System.setProperty(SYSTEM_PROPERTY, existingValue);
     FilterConfiguration filterConfiguration =
-        new JmxSerialFilterConfiguration(SYSTEM_PROPERTY, pattern, loggerConsumer);
+        new JmxSerialFilterConfiguration(SYSTEM_PROPERTY, pattern, infoLogger, warnLogger);
 
     filterConfiguration.configure();
 
-    verify(loggerConsumer)
+    verifyNoInteractions(infoLogger);
+    verify(warnLogger)
         .accept("System property '" + SYSTEM_PROPERTY + "' is already configured.");
   }
 }

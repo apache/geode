@@ -14,10 +14,6 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
-import static java.util.Objects.requireNonNull;
-import static org.apache.geode.internal.serialization.filter.ObjectInputFilterUtils.supportsObjectInputFilter;
-import static org.apache.geode.internal.serialization.filter.ObjectInputFilterUtils.throwUnsupportedOperationException;
-
 import java.util.Set;
 
 /**
@@ -26,24 +22,12 @@ import java.util.Set;
  */
 public class ReflectiveFacadeObjectInputFilterFactory implements ObjectInputFilterFactory {
 
-  private static final String UNSUPPORTED_MESSAGE =
-      "A serialization filter has been specified but this version of Java does not support serialization filters - ObjectInputFilter is not available";
-
-  private final ObjectInputFilterApi api;
-
-  public ReflectiveFacadeObjectInputFilterFactory() {
-    this(new ReflectiveObjectInputFilterApiFactory().createObjectInputFilterApi());
-  }
-
-  private ReflectiveFacadeObjectInputFilterFactory(ObjectInputFilterApi api) {
-    this.api = requireNonNull(api, "ObjectInputFilterApi is required");
-  }
-
   @Override
   public ObjectInputFilter create(SerializableObjectConfig config, Set<String> sanctionedClasses) {
-    if (config.getValidateSerializableObjects()) {
-      requireObjectInputFilter();
+    ObjectInputFilterApi api =
+        new ReflectiveObjectInputFilterApiFactory().createObjectInputFilterApi();
 
+    if (config.getValidateSerializableObjects()) {
       String pattern = new SanctionedSerializablesFilterPattern()
           .append(config.getSerializableObjectFilter())
           .pattern();
@@ -51,11 +35,5 @@ public class ReflectiveFacadeObjectInputFilterFactory implements ObjectInputFilt
       return new ReflectiveFacadeObjectInputFilter(api, pattern, sanctionedClasses);
     }
     return new NullObjectInputFilter();
-  }
-
-  public static void requireObjectInputFilter() {
-    if (!supportsObjectInputFilter()) {
-      throwUnsupportedOperationException(UNSUPPORTED_MESSAGE);
-    }
   }
 }

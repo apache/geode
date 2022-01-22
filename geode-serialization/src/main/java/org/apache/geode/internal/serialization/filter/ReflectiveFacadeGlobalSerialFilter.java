@@ -15,6 +15,7 @@
 package org.apache.geode.internal.serialization.filter;
 
 import static java.util.Collections.unmodifiableCollection;
+import static java.util.Objects.requireNonNull;
 import static org.apache.geode.internal.serialization.filter.ObjectInputFilterUtils.throwUnsupportedOperationException;
 
 import java.lang.reflect.InvocationTargetException;
@@ -35,7 +36,7 @@ class ReflectiveFacadeGlobalSerialFilter implements GlobalSerialFilter {
    */
   ReflectiveFacadeGlobalSerialFilter(ObjectInputFilterApi api, String pattern,
       Collection<String> sanctionedClasses) {
-    this.api = api;
+    this.api = requireNonNull(api, "ObjectInputFilterApi is required");
     this.pattern = pattern;
     this.sanctionedClasses = unmodifiableCollection(sanctionedClasses);
   }

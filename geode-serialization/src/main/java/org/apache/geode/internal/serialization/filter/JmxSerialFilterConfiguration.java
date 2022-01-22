@@ -42,31 +42,37 @@ class JmxSerialFilterConfiguration implements FilterConfiguration {
 
   private final String key;
   private final String value;
-  private final Consumer<String> logger;
+  private final Consumer<String> infoLogger;
+  private final Consumer<String> warnLogger;
 
   /**
    * Constructs instance for the specified system property and filter pattern.
    */
   JmxSerialFilterConfiguration(String property, String pattern) {
-    this(property, pattern, LOGGER::info);
+    this(property, pattern, LOGGER::info, LOGGER::warn);
   }
 
   @VisibleForTesting
-  JmxSerialFilterConfiguration(String property, String pattern, Consumer<String> logger) {
+  JmxSerialFilterConfiguration(
+      String property,
+      String pattern,
+      Consumer<String> infoLogger,
+      Consumer<String> warnLogger) {
     key = property;
     value = pattern;
-    this.logger = logger;
+    this.infoLogger = infoLogger;
+    this.warnLogger = warnLogger;
   }
 
   @Override
   public boolean configure() {
     if (isBlank(System.getProperty(key))) {
       System.setProperty(key, value);
-      logger.accept("System property '" + key + "' is now configured with '" + value + "'.");
+      infoLogger.accept("System property '" + key + "' is now configured with '" + value + "'.");
       return true;
     }
 
-    logger.accept("System property '" + key + "' is already configured.");
+    warnLogger.accept("System property '" + key + "' is already configured.");
     return false;
   }
 }

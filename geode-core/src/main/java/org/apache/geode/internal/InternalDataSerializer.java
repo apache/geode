@@ -70,6 +70,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.TestOnly;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.CanonicalInstantiator;
@@ -439,7 +440,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
         objectInputFilterFactory.create(config, loadSanctionedClassNames(services));
   }
 
-  @VisibleForTesting
+  @TestOnly
   static void clearSerializationFilter() {
     serializationFilter = defaultSerializationFilter;
   }

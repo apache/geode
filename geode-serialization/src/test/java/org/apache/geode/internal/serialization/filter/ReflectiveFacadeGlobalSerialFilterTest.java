@@ -15,6 +15,7 @@
 package org.apache.geode.internal.serialization.filter;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -100,5 +101,16 @@ public class ReflectiveFacadeGlobalSerialFilterTest {
     assertThat(thrown)
         .isInstanceOf(UnsupportedOperationException.class)
         .hasCause(exception);
+  }
+
+  @Test
+  public void requiresObjectInputFilterApi() {
+    Throwable thrown = catchThrowable(() -> {
+      new ReflectiveFacadeGlobalSerialFilter(null, "pattern", emptySet());
+    });
+
+    assertThat(thrown)
+        .isInstanceOf(NullPointerException.class)
+        .hasMessage("ObjectInputFilterApi is required");
   }
 }
