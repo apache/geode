@@ -44,6 +44,7 @@ import org.apache.geode.internal.cache.persistence.query.mock.ByteComparator;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.parallel.BucketRegionQueueUnavailableException;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
@@ -203,7 +204,31 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
 
   @Override
   public void beforeAcquiringPrimaryState() {
+    PartitionedRegion region = getPartitionedRegion();
+
+    if (region != null && region.getParallelGatewaySender() != null) {
+      AbstractGatewaySenderEventProcessor ep =
+          region.getParallelGatewaySender().getEventProcessor();
+
+      if (ep != null && !(ep.getDispatcher() instanceof GatewaySenderEventCallbackDispatcher)) {
+        BucketAdvisor parent = getParentAdvisor(getBucketAdvisor());
+        if (parent.getHasBecomePrimary()) {
+          return;
+        }
+      }
+    }
+
     markAsDuplicate.addAll(eventSeqNumDeque);
+  }
+
+  BucketAdvisor getParentAdvisor(BucketAdvisor advisor) {
+    BucketAdvisor parent = advisor.getParentAdvisor();
+    while (parent != null) {
+      advisor = parent;
+      parent = advisor.getParentAdvisor();
+    }
+    return advisor;
+
   }
 
   @Override

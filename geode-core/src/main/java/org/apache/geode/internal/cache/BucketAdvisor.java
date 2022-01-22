@@ -162,6 +162,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   private volatile boolean everHadPrimary = false;
 
+  private volatile boolean hasBecomePrimary = false;
+
   private BucketAdvisor startingBucketAdvisor;
 
   private final PartitionedRegion pRegion;
@@ -505,6 +507,13 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     return result;
   }
 
+  BucketAdvisor getParentAdvisor() {
+    return parentAdvisor;
+  }
+
+  boolean getHasBecomePrimary() {
+    return hasBecomePrimary;
+  }
 
 
   /**
@@ -1160,6 +1169,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     try {
       synchronized (this) {
         if (isHosting() && (isVolunteering() || isBecomingPrimary())) {
+          hasBecomePrimary = isBecomingPrimary();
           Bucket br = regionAdvisor.getBucket(getBucket().getId());
           if (br instanceof BucketRegion) {
             ((BucketRegion) br).beforeAcquiringPrimaryState();
