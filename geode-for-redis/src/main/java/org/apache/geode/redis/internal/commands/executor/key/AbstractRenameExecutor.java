@@ -16,7 +16,6 @@
 package org.apache.geode.redis.internal.commands.executor.key;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NO_SUCH_KEY;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
 
 import java.util.Arrays;
 import java.util.List;
@@ -39,10 +38,6 @@ public abstract class AbstractRenameExecutor implements CommandExecutor {
 
     if (key.equals(newKey)) {
       return getTargetSameAsSourceResponse();
-    }
-
-    if (key.getSlot() != newKey.getSlot()) {
-      return RedisResponse.crossSlot(ERROR_WRONG_SLOT);
     }
 
     try {

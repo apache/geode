@@ -51,6 +51,7 @@ import org.apache.geode.redis.internal.commands.RedisCommandType;
 import org.apache.geode.redis.internal.commands.executor.RedisResponse;
 import org.apache.geode.redis.internal.commands.executor.UnknownExecutor;
 import org.apache.geode.redis.internal.commands.parameters.RedisParametersMismatchException;
+import org.apache.geode.redis.internal.data.RedisCrossSlotException;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisDataMovedException;
 import org.apache.geode.redis.internal.data.RedisDataType;
@@ -182,6 +183,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       return RedisResponse.moved(rootCause.getMessage());
     } else if (rootCause instanceof RedisDataTypeMismatchException) {
       return RedisResponse.wrongType(rootCause.getMessage());
+    } else if (rootCause instanceof RedisCrossSlotException) {
+      return RedisResponse.crossSlot(rootCause.getMessage());
     } else if (rootCause instanceof IllegalStateException
         || rootCause instanceof RedisParametersMismatchException
         || rootCause instanceof RedisException

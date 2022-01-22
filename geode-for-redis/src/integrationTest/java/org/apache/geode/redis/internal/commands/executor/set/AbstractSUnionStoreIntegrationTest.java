@@ -15,12 +15,13 @@
 package org.apache.geode.redis.internal.commands.executor.set;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_DIFFERENT_SLOTS;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static redis.clients.jedis.Protocol.Command.SUNIONSTORE;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -206,8 +207,9 @@ public abstract class AbstractSUnionStoreIntegrationTest implements RedisIntegra
     jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
     jedis.sadd(setKeyDifferentSlot, secondSetMembers);
 
-    assertThatThrownBy(() -> jedis.sunionstore(DESTINATION_KEY, SET_KEY_1, setKeyDifferentSlot))
-        .hasMessageContaining(ERROR_DIFFERENT_SLOTS);
+    assertThatThrownBy(() -> jedis.sendCommand(DESTINATION_KEY, SUNIONSTORE, DESTINATION_KEY,
+        SET_KEY_1, setKeyDifferentSlot))
+            .hasMessage("CROSSSLOT " + ERROR_WRONG_SLOT);
   }
 
   @Test

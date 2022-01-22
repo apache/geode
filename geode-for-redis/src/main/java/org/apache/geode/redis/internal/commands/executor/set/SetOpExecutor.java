@@ -29,7 +29,6 @@ import org.apache.geode.redis.internal.commands.Command;
 import org.apache.geode.redis.internal.commands.RedisCommandType;
 import org.apache.geode.redis.internal.commands.executor.CommandExecutor;
 import org.apache.geode.redis.internal.commands.executor.RedisResponse;
-import org.apache.geode.redis.internal.data.RedisDataMovedException;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.data.RedisSet;
 import org.apache.geode.redis.internal.data.RedisSet.MemberSet;
@@ -49,13 +48,6 @@ public abstract class SetOpExecutor implements CommandExecutor {
     List<RedisKey> commandElements = command.getProcessedCommandKeys();
     List<RedisKey> setKeys = commandElements.subList(setsStartIndex, commandElements.size());
     RegionProvider regionProvider = context.getRegionProvider();
-    try {
-      for (RedisKey k : setKeys) {
-        regionProvider.ensureKeyIsLocal(k);
-      }
-    } catch (RedisDataMovedException ex) {
-      return RedisResponse.error(ex.getMessage());
-    }
 
     /*
      * SINTERSTORE currently use the else part of the code for their implementation.
@@ -63,20 +55,24 @@ public abstract class SetOpExecutor implements CommandExecutor {
      * Refactor so the implementation is in the executor. After delete doActualSetOperation,
      * doStoreSetOp, doStoreSetOpWhileLocked, computeStoreSetOp, fetchSets
      */
+    List<RedisKey> keysToLock = new ArrayList<>(setKeys);
+    if (isStorage()) {
+      keysToLock.add(command.getKey());
+    }
     if (command.isOfType(RedisCommandType.SDIFF) || command.isOfType(RedisCommandType.SDIFFSTORE)) {
       if (isStorage()) {
         RedisKey destinationKey = command.getKey();
-        int resultSize = context.lockedExecute(destinationKey, new ArrayList<>(setKeys),
+        int resultSize = context.lockedExecute(destinationKey, keysToLock,
             () -> sdiffstore(regionProvider, destinationKey, setKeys));
         return RedisResponse.integer(resultSize);
       }
 
-      Set<byte[]> resultSet = context.lockedExecute(setKeys.get(0), new ArrayList<>(setKeys),
+      Set<byte[]> resultSet = context.lockedExecute(setKeys.get(0), keysToLock,
           () -> sdiff(regionProvider, setKeys));
       return RedisResponse.array(resultSet, true);
 
     } else if (command.isOfType(RedisCommandType.SINTER)) {
-      Set<byte[]> resultSet = context.lockedExecute(setKeys.get(0), new ArrayList<>(setKeys),
+      Set<byte[]> resultSet = context.lockedExecute(setKeys.get(0), keysToLock,
           () -> sinter(regionProvider, setKeys));
       return RedisResponse.array(resultSet, true);
 
@@ -84,12 +80,12 @@ public abstract class SetOpExecutor implements CommandExecutor {
         || command.isOfType(RedisCommandType.SUNIONSTORE)) {
       if (isStorage()) {
         RedisKey destinationKey = command.getKey();
-        int resultSize = context.lockedExecute(destinationKey, new ArrayList<>(setKeys),
+        int resultSize = context.lockedExecute(destinationKey, keysToLock,
             () -> sunionstore(regionProvider, destinationKey, setKeys));
         return RedisResponse.integer(resultSize);
       }
 
-      Set<byte[]> resultSet = context.lockedExecute(setKeys.get(0), new ArrayList<>(setKeys),
+      Set<byte[]> resultSet = context.lockedExecute(setKeys.get(0), keysToLock,
           () -> sunion(regionProvider, setKeys));
       return RedisResponse.array(resultSet, true);
     }

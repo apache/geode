@@ -15,11 +15,13 @@
 package org.apache.geode.redis.internal.commands.executor.set;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static redis.clients.jedis.Protocol.Command.SDIFFSTORE;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -28,7 +30,6 @@ import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
@@ -56,7 +57,17 @@ public abstract class AbstractSDiffStoreIntegrationTest implements RedisIntegrat
 
   @Test
   public void sdiffstoreTooFewArguments_returnsError() {
-    assertAtLeastNArgs(jedis, Protocol.Command.SDIFFSTORE, 2);
+    assertAtLeastNArgs(jedis, SDIFFSTORE, 2);
+  }
+
+  @Test
+  public void sdifstore_withSetsFromDifferentSlots_returnsCrossSlotError() {
+    String setKeyDifferentSlot = "{tag2}set2";
+    jedis.sadd(SET_KEY, "member1");
+    jedis.sadd(setKeyDifferentSlot, "member2");
+
+    assertThatThrownBy(() -> jedis.sendCommand(SET_KEY, SDIFFSTORE, SET_KEY, setKeyDifferentSlot))
+        .hasMessage("CROSSSLOT " + ERROR_WRONG_SLOT);
   }
 
   @Test

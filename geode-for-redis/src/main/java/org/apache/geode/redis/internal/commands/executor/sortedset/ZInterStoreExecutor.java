@@ -32,7 +32,7 @@ public class ZInterStoreExecutor extends ZStoreExecutor {
       List<ZKeyWeight> keyWeights, ZAggregator aggregator) {
     RegionProvider regionProvider = context.getRegionProvider();
     RedisKey key = command.getKey();
-    List<RedisKey> keysToLock = getKeysToLock(regionProvider, key, keyWeights);
+    List<RedisKey> keysToLock = getKeysToLock(key, keyWeights);
 
     return context.lockedExecute(key, keysToLock,
         () -> zinterstore(regionProvider, key, keyWeights, aggregator));
