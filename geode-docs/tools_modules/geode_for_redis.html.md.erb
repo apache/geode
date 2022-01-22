@@ -228,81 +228,16 @@ integer (+/-&nbsp;9223372036854775807) for CURSOR.
 
 **[4]** INFO is implemented for the sections and fields listed below:
 
-- clients
-
-   - connected_clients
-
-   - blocked_clients (always returns 0)
-
-- cluster
-
-   - cluster_enables (always returns 1)
-
-- keyspace
-
-   - db0:keys
-
-   - expires (always returns 0)
-
-   - avg_ttl (always returns 0)
-
-- memory
-
-   - maxmemory
-
-   - used_memory
-
-   - mem_fragmentation_ratio
-
-- persistence
-
-   - loading (always returns 0)
-
-   - rdb_changes_since_last_save (always returns 0)
-
-   - rdb_last_save_time (always returns 0)
-
-- replication
-
-   - role (always returns "master")
-
-   - connected_slaves (always returns 0)
-
-- server
-
-   - redis_version
-
-   - redis_mode (always returns "cluster" because <%=vars.product_name%> for Redis always runs in cluster mode.)
-
-   - tcp_port
-
-   - uptime_in_seconds
-
-   - uptime_in_days
-
-- stats
-
-   - total_commands_processed
-
-   - instantaneous_ops_per_sec
-
-   - total_net_input_bytes
-
-   - instantaneous_input_kbps
-
-   - total_connections_received
-
-   - keyspace_hits
-
-   - keyspace_misses
-
-   - evicted_keys (always returns 0)
-
-   - rejected_connections (always returns 0)
-
-   - pubsub_channels
-
-   - pubsub_patterns
+| INFO section | Field(s) |
+|--------------|----------|
+| clients      | connected_clients<br/>blocked_clients (always returns 0) |
+| cluster      | cluster_enables (always returns 1) |
+| keyspace     | db0:keys<br/>expires (always returns 0)<br/>avg_ttl (always returns 0)<br/> |
+| memory       | maxmemory<br/>used_memory<br/>mem_fragmentation_ratio |
+| persistence  | loading (always returns 0)<br/>rdb_changes_since_last_save (always returns 0)<br/>rdb_last_save_time (always returns 0) |
+| replication  | role (always returns "master")<br/>connected_slaves (always returns 0) |
+| server       | redis_version<br/>redis_mode (always returns "cluster" because <%=vars.product_name%> for Redis always runs in cluster mode.)<br/>tcp_port<br/>uptime_in_seconds<br/>uptime_in_days |
+| stats        | total_commands_processed<br/>instantaneous_ops_per_sec<br/>total_net_input_bytes<br/>instantaneous_input_kbps<br/>total_connections_received<br/>keyspace_hits<br/>keyspace_misses<br/>evicted_keys (always returns 0)<br/>rejected_connections (always returns 0)<br/>pubsub_channels<br/>pubsub_patterns|
 
 ## <a id="advantages-over-redis"></a>Advantages of <%=vars.product_name%> over Redis
 
