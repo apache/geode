@@ -275,6 +275,9 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
             Set<InternalDistributedMember> recipients =
                 getPartitionedRegion().getRegionAdvisor().adviseDataStore();
             if (!recipients.isEmpty()) {
+
+              logger.info("loadEventsFromTempQueue send ParallelQueueSetPossibleDuplicateMessage recipients {}.", recipients);
+
               ParallelQueueSetPossibleDuplicateMessage pqspdm =
                   new ParallelQueueSetPossibleDuplicateMessage(regionToDispatchedKeysMap);
               pqspdm.setRecipients(recipients);

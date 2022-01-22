@@ -290,6 +290,8 @@ public class GatewayReceiverCommand extends BaseCommand {
                     tag.setDistributedSystemId(dsid);
                     clientEvent.setVersionTag(tag);
                   }
+
+                  logger.info("GatewayReceiverCommand key {}, possibleDuplicate {}", key, possibleDuplicate);
                   clientEvent.setPossibleDuplicate(possibleDuplicate);
                   handleMessageRetry(region, clientEvent);
                   byte[] value = valuePart.getSerializedForm();

@@ -620,6 +620,8 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
                   Set<InternalDistributedMember> recipients =
                       getAllRecipients(sender.getCache(), regionToDispatchedKeysMap);
                   if (!recipients.isEmpty()) {
+                    logger.info("checkIfEventsBucketNotPrimary send ParallelQueueSetPossibleDuplicateMessage recipients {}.", recipients);
+
                     ParallelQueueSetPossibleDuplicateMessage pqspdm =
                         new ParallelQueueSetPossibleDuplicateMessage(regionToDispatchedKeysMap);
                     pqspdm.setRecipients(recipients);
@@ -1364,6 +1366,8 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
       Set<InternalDistributedMember> recipients =
           getAllRecipients(sender.getCache(), regionToDispatchedKeysMap);
       if (!recipients.isEmpty()) {
+        logger.info("notifyPossibleDuplicate send ParallelQueueSetPossibleDuplicateMessage recipients {}.", recipients);
+
         ParallelQueueSetPossibleDuplicateMessage pqspdm =
             new ParallelQueueSetPossibleDuplicateMessage(regionToDispatchedKeysMap);
         pqspdm.setRecipients(recipients);

@@ -74,7 +74,8 @@ public class ParallelQueueSetPossibleDuplicateMessage extends PooledDistribution
   protected void process(ClusterDistributionManager dm) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     final InternalCache cache = dm.getCache();
-    
+    logger.info("ParallelQueueSetPossibleDuplicateMessage received {}.", regionToDispatchedKeysMap);
+
     if (cache != null) {
       final InitializationLevel oldLevel =
           LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
