@@ -22,6 +22,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -70,11 +72,14 @@ import org.apache.geode.test.version.VersionManager;
 @RunWith(GeodeParamsRunner.class)
 public class P2PMessagingConcurrencyDUnitTest {
 
-  // how many messages will each sender generate?
-  private static final int MESSAGES_PER_SENDER = 1_000;
+  // how many sending member JVMs
+  private static final int SENDERS = 1;
 
-  // number of concurrent (sending) tasks to run
-  private static final int SENDER_COUNT = 10;
+  // number of concurrent sending tasks to run
+  private static final int TASKS_PER_SENDER = 10;
+
+  // how many messages will each sending task generate?
+  private static final int MESSAGES_PER_SENDING_TASK = 1_000;
 
   // (exclusive) upper bound of random message size, in bytes
   private static final int LARGEST_MESSAGE_BOUND = 32 * 1024 + 2; // 32KiB + 2
@@ -89,9 +94,9 @@ public class P2PMessagingConcurrencyDUnitTest {
 
   @ClassRule
   public static final DistributedExecutorServiceRule senderExecutorServiceRule =
-      new DistributedExecutorServiceRule(SENDER_COUNT, 3);
+      new DistributedExecutorServiceRule(TASKS_PER_SENDER, 3);
 
-  private MemberVM sender;
+  private final Collection<MemberVM> senders = new ArrayList<>();
   private MemberVM receiver;
 
   /*
@@ -116,8 +121,12 @@ public class P2PMessagingConcurrencyDUnitTest {
             x -> x.withProperties(senderConfiguration).withConnectionToLocator()
                 .withoutClusterConfigurationService().withoutManagementRestService());
 
-    sender = clusterStartupRule.startServerVM(1, senderConfiguration, locator.getPort());
-    receiver = clusterStartupRule.startServerVM(2, receiverConfiguration, locator.getPort());
+    receiver = clusterStartupRule.startServerVM(1, receiverConfiguration, locator.getPort());
+
+    for (int i = 2; i - 2 < SENDERS; i++) {
+      senders.add(
+          clusterStartupRule.startServerVM(i, senderConfiguration, locator.getPort()));
+    }
   }
 
   @Test
@@ -178,7 +187,7 @@ public class P2PMessagingConcurrencyDUnitTest {
 
         });
 
-    sender.invoke(() -> {
+    senders.forEach(sender -> sender.invoke(() -> {
 
       bytesTransferredAdder = new LongAdder();
 
@@ -197,8 +206,8 @@ public class P2PMessagingConcurrencyDUnitTest {
        */
       final ExecutorService executor = senderExecutorServiceRule.getExecutorService();
 
-      final CountDownLatch startLatch = new CountDownLatch(SENDER_COUNT);
-      final CountDownLatch stopLatch = new CountDownLatch(SENDER_COUNT);
+      final CountDownLatch startLatch = new CountDownLatch(TASKS_PER_SENDER);
+      final CountDownLatch stopLatch = new CountDownLatch(TASKS_PER_SENDER);
       final LongAdder failedRecipientCount = new LongAdder();
 
       final Runnable doSending = () -> {
@@ -209,9 +218,9 @@ public class P2PMessagingConcurrencyDUnitTest {
         } catch (final InterruptedException e) {
           throw new RuntimeException("doSending failed", e);
         }
-        final int firstMessageId = senderId * SENDER_COUNT;
+        final int firstMessageId = senderId * TASKS_PER_SENDER;
         for (int messageId = firstMessageId; messageId < firstMessageId
-            + MESSAGES_PER_SENDER; messageId++) {
+            + MESSAGES_PER_SENDING_TASK; messageId++) {
           final TestMessage msg = new TestMessage(receiverMember, random, messageId,
               requireOrderedDelivery);
 
@@ -227,7 +236,7 @@ public class P2PMessagingConcurrencyDUnitTest {
         stopLatch.countDown();
       };
 
-      for (int i = 0; i < SENDER_COUNT; ++i) {
+      for (int i = 0; i < TASKS_PER_SENDER; ++i) {
         executor.submit(doSending);
       }
 
@@ -235,9 +244,10 @@ public class P2PMessagingConcurrencyDUnitTest {
 
       assertThat(failedRecipientCount.sum()).as("message delivery failed N times").isZero();
 
-    });
+    }));
 
-    final long bytesSent = getByteCount(sender);
+    final long bytesSent = senders.stream().map(sender -> getByteCount(sender))
+        .reduce(0L, Long::sum);
 
     await().untilAsserted(
         () -> assertThat(getByteCount(receiver))
