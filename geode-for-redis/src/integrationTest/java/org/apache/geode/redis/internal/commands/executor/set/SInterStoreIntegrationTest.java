@@ -14,17 +14,18 @@
  */
 package org.apache.geode.redis.internal.commands.executor.set;
 
-import static org.apache.geode.redis.internal.data.RedisSet.sunionstore;
+import org.junit.ClassRule;
 
-import java.util.List;
+import org.apache.geode.redis.GeodeRedisServerRule;
 
-import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.services.RegionProvider;
+public class SInterStoreIntegrationTest extends AbstractSInterStoreIntegrationTest {
 
-public class SUnionStoreExecutor extends SetOpIntegerResult {
+  @ClassRule
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @Override
-  protected int getResult(RegionProvider regionProvider, List<RedisKey> setKeys, RedisKey destKey) {
-    return sunionstore(regionProvider, setKeys, destKey);
+  public int getPort() {
+    return server.getPort();
   }
+
 }
