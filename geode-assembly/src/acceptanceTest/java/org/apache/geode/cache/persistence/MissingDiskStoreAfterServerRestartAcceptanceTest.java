@@ -16,6 +16,7 @@ package org.apache.geode.cache.persistence;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -29,6 +30,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.test.assertj.LogFileAssert;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class MissingDiskStoreAfterServerRestartAcceptanceTest {
@@ -132,7 +134,7 @@ public class MissingDiskStoreAfterServerRestartAcceptanceTest {
   @Test
   public void serverLauncherUnderscore() throws IOException {
     gfshRule.execute(connectToLocatorCommand, queryCommand);
-    gfshRule.execute(connectToLocatorCommand, "stop server --name=" + SERVER_2_NAME);
+    gfshRule.execute(connectToLocatorCommand, "stop server --name=" + SERVER_4_NAME);
     assertThat(
         gfshRule.execute(connectToLocatorCommand, "show missing-disk-stores").getOutputText())
             .contains("Missing Disk Stores");
@@ -142,6 +144,15 @@ public class MissingDiskStoreAfterServerRestartAcceptanceTest {
     Files.move(server4Path, server5Path, StandardCopyOption.REPLACE_EXISTING);
 
     gfshRule.execute(startServer5Command);
+
+    await().untilAsserted(() -> {
+      String waitingForMembersMessage = String.format(
+          "Server server5 startup completed in");
+
+      LogFileAssert.assertThat(server5Folder.resolve(SERVER_5_NAME + ".log").toFile())
+          .exists()
+          .contains(waitingForMembersMessage);
+    });
 
     String showDiskStoresOutput =
         gfshRule.execute(connectToLocatorCommand, "show missing-disk-stores").getOutputText();
