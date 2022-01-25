@@ -1516,8 +1516,9 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
     boolean gotInterrupted = false;
     try {
       if (failedUpdater != null) {
-        logger.info("{} is waiting for {} to complete.",
-            new Object[] {this, failedUpdater});
+        logger.info(this + " with identity=" + System.identityHashCode(this)
+            + " is waiting for failedUpdater=" + this.failedUpdater + " with identity="
+            + System.identityHashCode(failedUpdater) + " to complete.");
         while (failedUpdater.isAlive()) {
           if (quitting()) {
             return;
@@ -1530,8 +1531,9 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       // just bail, because I have not done anything yet
     } finally {
       if (!gotInterrupted && failedUpdater != null) {
-        logger.info("{} has completed waiting for {}",
-            new Object[] {this, failedUpdater});
+        logger.info(this + " with identity=" + System.identityHashCode(this)
+            + " has completed waiting for failedUpdater=" + this.failedUpdater + " with identity="
+            + System.identityHashCode(failedUpdater));
         failedUpdater = null;
       }
     }
@@ -1719,6 +1721,8 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
           }
 
         } catch (IOException e) {
+          logger.info("XXX CacheClientUpdater.processMessages ioe=" + e + "; identity="
+              + System.identityHashCode(this));
           // Either the server went away, or we caught a closing condition.
           if (!quitting()) {
             // Server departed; print a message.
@@ -1737,6 +1741,8 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
           }
 
         } catch (Exception e) {
+          logger.info("XXX CacheClientUpdater.processMessages e=" + e + "; identity="
+              + System.identityHashCode(this));
           if (!quitting()) {
             ClientServerObserver clientServerObserver = ClientServerObserverHolder.getInstance();
             clientServerObserver.beforeFailoverByCacheClientUpdater(location);

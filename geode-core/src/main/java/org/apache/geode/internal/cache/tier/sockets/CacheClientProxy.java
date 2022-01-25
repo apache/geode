@@ -770,6 +770,9 @@ public class CacheClientProxy implements ClientSession {
     // to true
     final boolean pauseDurable =
         isDurable() && (!stoppedNormally || (getDurableKeepAlive() && stoppedNormally));
+    logger.info(
+        "XXX CacheClientProxy.close pauseDurable={}; isDurable={}; getDurableKeepAlive={}; proxyIdentity={}",
+        pauseDurable, isDurable(), getDurableKeepAlive(), System.identityHashCode(this));
 
     boolean keepProxy = false;
     if (pauseDurable) {
@@ -778,6 +781,8 @@ public class CacheClientProxy implements ClientSession {
     } else {
       terminateDispatching(checkQueue);
       closeTransientFields();
+      logger.info("XXX CacheClientProxy.close terminated dispatching proxyIdentity={}",
+          System.identityHashCode(this));
     }
 
     connected = false;
@@ -1844,14 +1849,18 @@ public class CacheClientProxy implements ClientSession {
       @Override
       public void run2() {
         _durableExpirationTask.compareAndSet(this, null);
-        logger.warn("{} : The expiration task has fired, so this proxy is being terminated.",
-            CacheClientProxy.this);
+        logger.warn(
+            "The expiration task has fired, so this proxy is being terminated proxy={}; proxyIdentity={}; taskIdentity={}",
+            CacheClientProxy.this, System.identityHashCode(CacheClientProxy.this),
+            System.identityHashCode(this));
         // Remove the proxy from the CacheClientNofier's registry
         getCacheClientNotifier().removeClientProxy(CacheClientProxy.this);
         getCacheClientNotifier().durableClientTimedOut(proxyID);
 
         // Close the proxy
         terminateDispatching(false);
+        logger.info("XXX CacheClientProxy.close terminated dispatching proxyIdentity={}",
+            System.identityHashCode(CacheClientProxy.this));
         _cacheClientNotifier.statistics.incQueueDroppedCount();
 
         /*
@@ -1882,6 +1891,9 @@ public class CacheClientProxy implements ClientSession {
     };
     if (_durableExpirationTask.compareAndSet(null, task)) {
       _cache.getCCPTimer().schedule(task, getDurableTimeout() * 1000L);
+      logger.info(
+          "XXX CacheClientProxy.scheduleDurableExpirationTask scheduled durable client task proxyIdentity={}; taskIdentity={}",
+          System.identityHashCode(this), System.identityHashCode(task));
     }
   }
 
@@ -1893,6 +1905,9 @@ public class CacheClientProxy implements ClientSession {
             this);
       }
       if (task.cancel()) {
+        logger.info(
+            "XXX CacheClientProxy.scheduleDurableExpirationTask canceled durable client task proxyIdentity={}; taskIdentity={}",
+            System.identityHashCode(this), System.identityHashCode(task));
         _cache.purgeCCPTimer();
       }
     }

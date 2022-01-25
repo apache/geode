@@ -474,6 +474,9 @@ public class OpExecutorImpl implements ExecutablePool {
     try {
       return executeWithPossibleReAuthentication(connection, op);
     } catch (Exception e) {
+      logger.info(
+          "XXX OpExecutorImpl.executeOn caught exception executing op={}; connection={}; connectionIdentity={}; exception={}",
+          op.getClass().getSimpleName(), connection, System.identityHashCode(connection), e);
       handleException(op, e, connection, 0, true, timeoutFatal);
       // this shouldn't actually be reached, handle exception will throw something
       throw new ServerConnectivityException("Received error connecting to server", e);

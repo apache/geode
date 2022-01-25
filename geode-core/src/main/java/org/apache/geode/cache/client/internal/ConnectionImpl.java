@@ -111,7 +111,11 @@ public class ConnectionImpl implements Connection {
     }
     theSocket.setSoTimeout(readTimeout);
 
+    logger.info(
+        "XXX ConnectionImpl.connect about to referenceEndpoint connection={}; connectionIdentity={}; endpoint={}; endpointIdentity={}",
+        this, System.identityHashCode(this), endpoint, System.identityHashCode(endpointManager));
     endpoint = endpointManager.referenceEndpoint(location, status.getMemberId());
+    logger.info("XXX ConnectionImpl.connect done referenceEndpoint endpoint");
     connectFinished = true;
     endpoint.getStats().incConnections(1);
     return status;

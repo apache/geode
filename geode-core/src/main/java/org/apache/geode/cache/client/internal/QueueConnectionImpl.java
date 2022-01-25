@@ -55,6 +55,9 @@ public class QueueConnectionImpl implements Connection {
     endpoint = clientToServer.getEndpoint();
     this.updater = updater;
     this.failureTracker = failureTracker;
+    logger.info(
+        "XXX QueueConnectionImpl.<init> connection={}; endpoint={}; connectionIdentity={}; endpointIdentity={}",
+        this, endpoint, System.identityHashCode(this), System.identityHashCode(endpoint));
   }
 
   @Override
@@ -223,7 +226,7 @@ public class QueueConnectionImpl implements Connection {
     if (result != null) {
       return result.toString();
     } else {
-      return "SubscriptionConnectionImpl[" + getServer() + ":closed]";
+      return "QueueConnectionImpl[" + getServer() + ":closed]";
     }
   }
 
