@@ -18,12 +18,10 @@ import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -34,65 +32,56 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.ServerConnectivityException;
-import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.test.dunit.DistributedTestUtils;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.ClientCacheRule;
-import org.apache.geode.test.dunit.rules.DistributedRule;
+import org.apache.geode.test.dunit.rules.ClientVM;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
 
 @Category({ClientServerTest.class})
 public class ClientServerCacheOperationDUnitTest implements Serializable {
-  // The tests in this class fail consistently on Windows. They fail intermittently on Linux.
-  // When the intermittent failure on Linux is fixed, perhaps this rule can be removed.
-  @ClassRule
-  public static IgnoreOnWindowsRule ignoreOnWindows = new IgnoreOnWindowsRule();
 
   private final String regionName = "CsTestRegion";
 
   @Rule
-  public DistributedRule distributedRule = new DistributedRule();
-
-  @Rule
-  public CacheRule cacheRule = new CacheRule();
-
-  @Rule
-  public ClientCacheRule clientCacheRule = new ClientCacheRule();
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
   @Test
-  public void largeObjectPutWithReadTimeoutThrowsException() {
-    VM server1 = VM.getVM(0);
-    VM server2 = VM.getVM(1);
-    VM client = VM.getVM(2);
+  public void largeObjectPutWithReadTimeoutThrowsException() throws Exception {
+    MemberVM locator = clusterStartupRule.startLocatorVM(0);
+    int locatorPort = locator.getPort();
+    MemberVM server1 =
+        clusterStartupRule.startServerVM(1, s -> s.withConnectionToLocator(locatorPort));
+    MemberVM server2 =
+        clusterStartupRule.startServerVM(2, s -> s.withConnectionToLocator(locatorPort));
+    ClientVM client1 =
+        clusterStartupRule.startClientVM(3,
+            c -> c.withLocatorConnection(locatorPort).withPoolSubscription(true));
 
+    ClientVM client2 =
+        clusterStartupRule.startClientVM(4,
+            c -> c.withLocatorConnection(locatorPort).withPoolSubscription(true));
     final int byteSize = 40 * 1000 * 1000;
     final int listSize = 2;
-    final int locatorPort = DistributedTestUtils.getLocatorPort();
-
-    server1.invoke(this::createServerCache);
-    server2.invoke(this::createServerCache);
 
     server1.invoke(() -> {
-      RegionFactory<?, ?> regionFactory = cacheRule.getCache().createRegionFactory(REPLICATE);
+      RegionFactory<?, ?> regionFactory =
+          ClusterStartupRule.getCache().createRegionFactory(REPLICATE);
       regionFactory.create(regionName);
     });
 
     server2.invoke(() -> {
-      RegionFactory<?, ?> regionFactory = cacheRule.getCache().createRegionFactory(REPLICATE);
+      RegionFactory<?, ?> regionFactory =
+          ClusterStartupRule.getCache().createRegionFactory(REPLICATE);
       regionFactory.create(regionName);
     });
 
-    List<byte[]> list = new ArrayList(listSize);
+    List<byte[]> list = new ArrayList<byte[]>(listSize);
 
     for (int i = 0; i < listSize; i++) {
       list.add(new byte[byteSize]);
     }
 
-    client.invoke(() -> {
-      clientCacheRule.createClientCache();
-
+    client1.invoke(() -> {
       Pool pool = PoolManager.createFactory()
           .addLocator("localhost", locatorPort)
           .setSocketBufferSize(50)
@@ -102,62 +91,66 @@ public class ClientServerCacheOperationDUnitTest implements Serializable {
           .setServerConnectionTimeout(50)
           .create("testPool");
 
-      Region region = clientCacheRule.getClientCache()
+      Region<Object, Object> region = ClusterStartupRule.getClientCache()
           .createClientRegionFactory(ClientRegionShortcut.PROXY)
           .setPoolName(pool.getName())
           .create(regionName);
-
       assertThatThrownBy(() -> region.put("key", list))
           .isInstanceOf(ServerConnectivityException.class);
 
     });
 
     server1.invoke(() -> {
-      Region region = cacheRule.getCache().getRegion(regionName);
-      List value = (List) region.get("key");
+      Region<?, ?> region = ClusterStartupRule.getCache().getRegion(regionName);
+      List<?> value = (List<?>) region.get("key");
       if (value != null) {
         assertThat(value.size()).isEqualTo(listSize);
         list.forEach((b) -> assertThat(b.length).isEqualTo(byteSize));
       }
     });
 
-    client.invoke(() -> {
-      Region region = clientCacheRule.getClientCache().getRegion(regionName);
+    client2.invoke(() -> {
+      Region<Object, Object> region = ClusterStartupRule.getClientCache()
+          .createClientRegionFactory(ClientRegionShortcut.PROXY)
+          .create(regionName);
       assertThat(region.size()).isEqualTo(0);
-      List value = (List) region.get("key");
+      List<?> value = (List<?>) region.get("key");
       if (value != null) {
         assertThat(value.size()).isEqualTo(listSize);
         list.forEach((b) -> assertThat(b.length).isEqualTo(byteSize));
       }
     });
-
   }
 
   @Test
-  public void largeObjectGetWithReadTimeout() {
-    VM server1 = VM.getVM(0);
-    VM server2 = VM.getVM(1);
-    VM server3 = VM.getVM(2);
-    VM client = VM.getVM(3);
-
-    final int locatorPort = DistributedTestUtils.getLocatorPort();
-
-    server1.invoke(this::createServerCache);
-    server2.invoke(this::createServerCache);
-    server3.invoke(this::createServerCache);
+  public void largeObjectGetWithReadTimeout() throws Exception {
+    MemberVM locator = clusterStartupRule.startLocatorVM(0);
+    int locatorPort = locator.getPort();
+    MemberVM server1 =
+        clusterStartupRule.startServerVM(1, s -> s.withConnectionToLocator(locatorPort));
+    MemberVM server2 =
+        clusterStartupRule.startServerVM(2, s -> s.withConnectionToLocator(locatorPort));
+    MemberVM server3 =
+        clusterStartupRule.startServerVM(3, s -> s.withConnectionToLocator(locatorPort));
+    ClientVM client =
+        clusterStartupRule.startClientVM(4,
+            c -> c.withLocatorConnection(locatorPort).withPoolSubscription(true));
 
     server1.invoke(() -> {
-      RegionFactory<?, ?> regionFactory = cacheRule.getCache().createRegionFactory(REPLICATE);
+      RegionFactory<?, ?> regionFactory =
+          ClusterStartupRule.getCache().createRegionFactory(REPLICATE);
       regionFactory.create(regionName);
     });
 
     server2.invoke(() -> {
-      RegionFactory<?, ?> regionFactory = cacheRule.getCache().createRegionFactory(REPLICATE);
+      RegionFactory<?, ?> regionFactory =
+          ClusterStartupRule.getCache().createRegionFactory(REPLICATE);
       regionFactory.create(regionName);
     });
 
     server3.invoke(() -> {
-      RegionFactory<?, ?> regionFactory = cacheRule.getCache().createRegionFactory(REPLICATE);
+      RegionFactory<?, ?> regionFactory =
+          ClusterStartupRule.getCache().createRegionFactory(REPLICATE);
       Region region = regionFactory.create(regionName);
 
       int listSize = 2;
@@ -171,21 +164,21 @@ public class ClientServerCacheOperationDUnitTest implements Serializable {
     });
 
     server1.invoke(() -> {
-      Region region = cacheRule.getCache().getRegion(regionName);
+      Region region = ClusterStartupRule.getCache().getRegion(regionName);
 
       assertThat(region.size()).isEqualTo(1);
     });
 
     client.invoke(() -> {
-      clientCacheRule.createClientCache();
 
       Pool pool = PoolManager.createFactory()
           .addLocator("localhost", locatorPort)
           .setSocketBufferSize(100)
           .setReadTimeout(50)
+          .setRetryAttempts(4)
           .create("testPool");
 
-      Region region = clientCacheRule.getClientCache()
+      Region region = ClusterStartupRule.getClientCache()
           .createClientRegionFactory(ClientRegionShortcut.PROXY)
           .setPoolName(pool.getName())
           .create(regionName);
@@ -199,12 +192,4 @@ public class ClientServerCacheOperationDUnitTest implements Serializable {
     });
 
   }
-
-  private void createServerCache() throws IOException {
-    cacheRule.createCache();
-    CacheServer cacheServer = cacheRule.getCache().addCacheServer();
-    cacheServer.setPort(0);
-    cacheServer.start();
-  }
-
 }
