@@ -12,13 +12,18 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.redis.internal.data;
 
-public class NullRedisDataStructures {
-  public static final NullRedisString NULL_REDIS_STRING = new NullRedisString();
-  public static final NullRedisSet NULL_REDIS_SET = new NullRedisSet();
-  public static final NullRedisSortedSet NULL_REDIS_SORTED_SET = new NullRedisSortedSet();
-  public static final NullRedisHash NULL_REDIS_HASH = new NullRedisHash();
-  public static final NullRedisData NULL_REDIS_DATA = new NullRedisData();
-  public static final NullRedisList NULL_REDIS_LIST = new NullRedisList();
+class NullRedisList extends RedisList {
+
+  NullRedisList() {
+    super();
+  }
+
+  @Override
+  public boolean isNull() {
+    return true;
+  }
+
 }
