@@ -223,9 +223,9 @@ public class SizeableBytes2ObjectOpenCustomHashMapWithCursorTest {
 
   @Test
   public void scanWithShrinkingTable_DoesNotMissElements() {
-    final int MAP_SIZE = 500;
-    Bytes2StringMap map = new Bytes2StringMap(MAP_SIZE * 2); // *2 to prevent rehash
-    fillMapWithUniqueHashKeys(map, MAP_SIZE);
+    final int initialMapSize = 500;
+    Bytes2StringMap map = new Bytes2StringMap(1); // 1 to ensure resizing back down
+    fillMapWithUniqueHashKeys(map, initialMapSize);
     Map<byte[], String> scanned = new Object2ObjectOpenCustomHashMap<>(ByteArrays.HASH_STRATEGY);
 
     int cursor = map.scan(0, 50, Map::put, scanned);
@@ -234,14 +234,14 @@ public class SizeableBytes2ObjectOpenCustomHashMapWithCursorTest {
     // Remove a lot of elements to trigger a resize
     // Remove some of the elements
     Iterator<Map.Entry<byte[], String>> iterator = map.entrySet().iterator();
-    int removeCount = MAP_SIZE - 100;
+    int removeCount = initialMapSize - 100;
     while (removeCount > 0 && iterator.hasNext()) {
       iterator.next();
       iterator.remove();
       removeCount--;
     }
 
-    cursor = map.scan(cursor, MAP_SIZE, Map::put, scanned);
+    cursor = map.scan(cursor, initialMapSize, Map::put, scanned);
     assertThat(cursor).isEqualTo(0);
 
     // Scan should at least have all of the remaining keys

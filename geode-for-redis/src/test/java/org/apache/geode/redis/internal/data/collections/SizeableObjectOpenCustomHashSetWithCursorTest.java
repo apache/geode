@@ -257,7 +257,8 @@ public class SizeableObjectOpenCustomHashSetWithCursorTest {
   @Test
   public void scanWithShrinkingTable_DoesNotMissElements() {
     final int initialSetSize = 500;
-    ByteSet set = new ByteSet(1); // 1, the minimum hashset resize when shrinking is the initial size
+    ByteSet set = new ByteSet(1); // 1 to ensure resizing back down
+
     fillSetWithUniqueHashKeys(set, initialSetSize);
     List<byte[]> scanned = new ArrayList<>();
     int cursor = set.scan(0, 50, List::add, scanned);
