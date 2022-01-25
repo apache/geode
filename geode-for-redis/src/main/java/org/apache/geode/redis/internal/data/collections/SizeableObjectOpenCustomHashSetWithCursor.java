@@ -66,6 +66,14 @@ public abstract class SizeableObjectOpenCustomHashSetWithCursor<E>
     return removed;
   }
 
+  public E getFromBackingArray(final int pos) {
+    return key[pos];
+  }
+
+  public int getBackingArrayLength() {
+    return key.length;
+  }
+
   @Override
   public int getSizeInBytes() {
     // The object referenced by the "strategy" field is not sized
