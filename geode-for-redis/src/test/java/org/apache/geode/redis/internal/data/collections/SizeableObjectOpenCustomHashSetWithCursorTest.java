@@ -144,9 +144,9 @@ public class SizeableObjectOpenCustomHashSetWithCursorTest {
 
   @Test
   public void twoScansWithNoModifications_ReturnsExpectedElements() {
-    final int SET_SIZE = 10;
-    ByteSet set = new ByteSet(SET_SIZE * 2); // *2 to prevent rehash
-    fillSetWithUniqueHashKeys(set, SET_SIZE);
+    final int setSize = 10;
+    ByteSet set = new ByteSet(setSize * 2); // *2 to prevent rehash
+    fillSetWithUniqueHashKeys(set, setSize);
     List<byte[]> scanned = new ArrayList<>();
     int scanSize = 1 + set.size() / 2;
     // Scan part way through the set
@@ -163,24 +163,24 @@ public class SizeableObjectOpenCustomHashSetWithCursorTest {
 
   @Test
   public void scanWithConcurrentRemoves_ReturnsExpectedElements() {
-    final int SET_SIZE = 10;
+    final int initialSetSize = 10;
     ByteSet set = new ByteSet(
-        SET_SIZE * 2); // *2 to prevent rehash
-    fillSetWithUniqueHashKeys(set, SET_SIZE);
+        initialSetSize * 2); // *2 to prevent rehash
+    fillSetWithUniqueHashKeys(set, initialSetSize);
     List<byte[]> scanned = new ArrayList<>();
-    int cursor = set.scan(0, SET_SIZE / 2, List::add, scanned);
-    assertThat(scanned).hasSize(SET_SIZE / 2);
+    int cursor = set.scan(0, initialSetSize / 2, List::add, scanned);
+    assertThat(scanned).hasSize(initialSetSize / 2);
 
     // Remove some elements
     ObjectIterator<byte[]> iterator = set.iterator();
-    int removeCount = SET_SIZE / 2 - 1;
+    int removeCount = initialSetSize / 2 - 1;
     while (removeCount > 0 && iterator.hasNext()) {
       iterator.next();
       iterator.remove();
       removeCount--;
     }
 
-    cursor = set.scan(cursor, SET_SIZE / 2, List::add, scanned);
+    cursor = set.scan(cursor, initialSetSize / 2, List::add, scanned);
     assertThat(cursor).isZero();
 
     assertThat(scanned).containsAll(set);
@@ -188,62 +188,60 @@ public class SizeableObjectOpenCustomHashSetWithCursorTest {
 
   @Test
   public void scanWithHashcodeCollisions_ReturnsExpectedElements() {
-    final int SET_SIZE = 10;
+    final int setSize = 10;
     ByteSet set = new ByteSet(
-        SET_SIZE * 2); // *2 to prevent rehash
-    fillSetWithCollidingHashKeys(set, SET_SIZE);
+        setSize * 2); // *2 to prevent rehash
+    fillSetWithCollidingHashKeys(set, setSize);
     List<byte[]> scanned = new ArrayList<>();
     int cursor = set.scan(0, 1, List::add, scanned);
 
     // The scan had to ignore the count and return all the elements with the same hash
-    assertThat(scanned).hasSize(SET_SIZE);
+    assertThat(scanned).hasSize(setSize);
     assertThat(scanned).containsExactlyInAnyOrderElementsOf(set);
     cursor = set.scan(cursor, 1, List::add, scanned);
     assertThat(cursor).isZero();
-    assertThat(scanned).hasSize(SET_SIZE);
+    assertThat(scanned).hasSize(setSize);
     assertThat(scanned).containsExactlyInAnyOrderElementsOf(set);
   }
 
   @Test
   public void scanWithHashcodeCollisionsAndConcurrentRemoves_ReturnsExpectedElements() {
-    final int SET_SIZE = 10;
+    final int initialSetSize = 10;
     ByteSet set = new ByteSet(
-        SET_SIZE * 2); // *2 to prevent rehash
-    fillSetWithCollidingHashKeys(set, SET_SIZE);
+        initialSetSize * 2); // *2 to prevent rehash
+    fillSetWithCollidingHashKeys(set, initialSetSize);
     List<byte[]> scanned = new ArrayList<>();
 
-    int cursor = set.scan(0, SET_SIZE / 2, List::add, scanned);
-    assertThat(scanned).hasSize(SET_SIZE);
+    int cursor = set.scan(0, initialSetSize / 2, List::add, scanned);
+    assertThat(scanned).hasSize(initialSetSize);
 
     // Remove some elements
     ObjectIterator<byte[]> iterator = set.iterator();
-    int removeCount = SET_SIZE / 2 - 1;
+    int removeCount = initialSetSize / 2 - 1;
     while (removeCount > 0 && iterator.hasNext()) {
       iterator.next();
       iterator.remove();
       removeCount--;
     }
 
-    cursor = set.scan(cursor, SET_SIZE / 2, List::add, scanned);
+    cursor = set.scan(cursor, initialSetSize / 2, List::add, scanned);
 
     assertThat(cursor).isZero();
-    assertThat(scanned).hasSize(SET_SIZE);
+    assertThat(scanned).hasSize(initialSetSize);
   }
 
   @Test
   public void scanWithGrowingTable_DoesNotMissElements() {
-    final int SET_SIZE = 10;
+    final int initialSetSize = 10;
     ByteSet set =
-        new ByteSet(SET_SIZE * 2); // *2 to prevent rehash
-    fillSetWithUniqueHashKeys(set, SET_SIZE);
+        new ByteSet(initialSetSize * 2); // *2 to prevent rehash
+    fillSetWithUniqueHashKeys(set, initialSetSize);
     List<byte[]> scanned = new ArrayList<>();
     List<byte[]> initialKeys = new ArrayList<>(set.size());
-    for (byte[] element : set) {
-      initialKeys.add(element);
-    }
+    initialKeys.addAll(set);
 
-    int cursor = set.scan(0, SET_SIZE / 2, List::add, scanned);
-    assertThat(scanned).hasSize(SET_SIZE / 2);
+    int cursor = set.scan(0, initialSetSize / 2, List::add, scanned);
+    assertThat(scanned).hasSize(initialSetSize / 2);
 
     // Add a lot of elements to trigger a resize
     IntStream.range(10, 500).forEach(i -> set.add(makeKey(i)));
@@ -258,9 +256,9 @@ public class SizeableObjectOpenCustomHashSetWithCursorTest {
 
   @Test
   public void scanWithShrinkingTable_DoesNotMissElements() {
-    final int SET_SIZE = 500;
-    ByteSet set = new ByteSet(SET_SIZE * 2); // *2 to prevent rehash
-    fillSetWithUniqueHashKeys(set, SET_SIZE);
+    final int initialSetSize = 500;
+    ByteSet set = new ByteSet(1); // 1, the minimum hashset resize when shrinking is the initial size
+    fillSetWithUniqueHashKeys(set, initialSetSize);
     List<byte[]> scanned = new ArrayList<>();
     int cursor = set.scan(0, 50, List::add, scanned);
     assertThat(scanned).hasSize(50);
@@ -268,14 +266,14 @@ public class SizeableObjectOpenCustomHashSetWithCursorTest {
     // Remove a lot of elements to trigger a resize
     // Remove some elements
     ObjectIterator<byte[]> iterator = set.iterator();
-    int removeCount = SET_SIZE - 100;
+    int removeCount = initialSetSize - 100;
     while (removeCount > 0 && iterator.hasNext()) {
       iterator.next();
       iterator.remove();
       removeCount--;
     }
 
-    cursor = set.scan(cursor, SET_SIZE, List::add, scanned);
+    cursor = set.scan(cursor, initialSetSize, List::add, scanned);
     assertThat(cursor).isZero();
 
     // Scan should at least have all the remaining keys
