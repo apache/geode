@@ -70,13 +70,13 @@ public abstract class AbstractSInterStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void sinterstore_withNonExistentSet_returnsZero_destKeyDoesNotExist() {
+  public void sinterstore_withNonExistentSet_returnsZero_doesNotCreateSetAtDestination() {
     assertThat(jedis.sinterstore(DESTINATION_KEY, NON_EXISTENT_SET)).isEqualTo(0);
     assertThat(jedis.exists(DESTINATION_KEY)).isFalse();
   }
 
   @Test
-  public void sinterstore_withOneExistentAndOneNonExistentSet_returnsZero_destKeyDoesNotExist() {
+  public void sinterstore_withExistentFirstSetAndNonExistentSecondSet_returnsZero_doesNotCreateSetAtDestination() {
     jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
     assertThat(jedis.sinterstore(DESTINATION_KEY, SET_KEY_1, NON_EXISTENT_SET))
         .isEqualTo(0);
@@ -84,7 +84,7 @@ public abstract class AbstractSInterStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void sinterstore_withOneNonExistentAndOneExistentSet_returnsZero_destKeyDoesNotExist() {
+  public void sinterstore_withNonExistentFirstSetAndExistentSecondSetSet_returnsZero_doesNotCreateSetAtDestination() {
     jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
     assertThat(jedis.sinterstore(DESTINATION_KEY, NON_EXISTENT_SET, SET_KEY_1))
         .isEqualTo(0);
@@ -92,7 +92,7 @@ public abstract class AbstractSInterStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void sinterstore_withNoIntersectingMembers_returnsZero_destKeyDoesNotExist() {
+  public void sinterstore_withNoIntersectingMembers_returnsZero_doesNotCreateSetAtDestination() {
     String[] secondSetMembers = new String[] {"apple", "microsoft", "linux", "peach"};
     jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
     jedis.sadd(SET_KEY_2, secondSetMembers);
@@ -123,7 +123,7 @@ public abstract class AbstractSInterStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void sinterstore_withMultipleNonExistentSets_returnsZero_destKeyDoesNotExist() {
+  public void sinterstore_withMultipleNonExistentSets_returnsZero_doesNotCreateSetAtDestination() {
     assertThat(jedis.sinterstore(DESTINATION_KEY, NON_EXISTENT_SET, "{tag1}nonExistentSet2"))
         .isEqualTo(0);
     assertThat(jedis.exists(DESTINATION_KEY)).isFalse();
@@ -164,7 +164,7 @@ public abstract class AbstractSInterStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void sinterstore_withNonExistentDest_withNonSetKeyAsFirstKey_returnsWrongTypeError() {
+  public void sinterstore_withNonSetKeyAsFirstKey_returnsWrongTypeError() {
     String stringKey = "{tag1}ding";
     jedis.set(stringKey, "dong");
 
@@ -175,7 +175,7 @@ public abstract class AbstractSInterStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void sinterstore_withExistentDest_withNonSetKeyAsThirdKey_returnsWrongTypeError() {
+  public void sinterstore_withNonSetKeyAsThirdKey_returnsWrongTypeError() {
     String stringKey = "{tag1}ding";
     jedis.set(stringKey, "dong");
 
@@ -187,7 +187,7 @@ public abstract class AbstractSInterStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void sinterstore_withNonExistentDest_withNonSetKeyAsThirdKeyAndNonExistentSetAsFirstKey_returnsWrongTypeError() {
+  public void sinterstore_withNonSetKeyAsThirdKeyAndNonExistentSetAsFirstKey_returnsWrongTypeError() {
     String stringKey = "{tag1}ding";
     jedis.set(stringKey, "dong");
 

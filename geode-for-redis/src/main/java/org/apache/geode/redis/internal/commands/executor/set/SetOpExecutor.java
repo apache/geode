@@ -34,10 +34,8 @@ public abstract class SetOpExecutor implements CommandExecutor {
     List<RedisKey> commandElements = command.getProcessedCommandKeys();
     List<RedisKey> setKeys = commandElements.subList(1, commandElements.size());
 
-    RedisResponse result = context.lockedExecute(setKeys.get(0), new ArrayList<>(setKeys),
-        () -> performCommand(regionProvider, setKeys));
-
-    return result;
+    return context.lockedExecute(setKeys.get(0), new ArrayList<>(setKeys),
+            () -> performCommand(regionProvider, setKeys));
   }
 
   protected abstract RedisResponse performCommand(RegionProvider regionProvider,
