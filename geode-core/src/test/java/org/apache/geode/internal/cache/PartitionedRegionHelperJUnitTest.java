@@ -14,26 +14,45 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
+
+import org.apache.geode.cache.Region;
 
 
 public class PartitionedRegionHelperJUnitTest {
 
   @Test
   public void testEscapeUnescape() {
-    {
-      String bucketName = PartitionedRegionHelper.getBucketName("/root/region", 5);
-      assertEquals("Name = " + bucketName, -1, bucketName.indexOf('/'));
-      assertEquals("/root/region", PartitionedRegionHelper.getPRPath(bucketName));
-    }
+    String bucketName =
+        PartitionedRegionHelper
+            .getBucketName(Region.SEPARATOR + "root" + Region.SEPARATOR + "region", 5);
+    assertThat(bucketName).as("Name = " + bucketName).doesNotContain(Region.SEPARATOR);
+    assertThat(PartitionedRegionHelper.getPRPath(bucketName))
+        .isEqualTo(Region.SEPARATOR + "root" + Region.SEPARATOR + "region");
 
-    {
-      String bucketName = PartitionedRegionHelper.getBucketName("/root/region_one", 5);
-      assertEquals("Name = " + bucketName, -1, bucketName.indexOf('/'));
-      assertEquals("/root/region_one", PartitionedRegionHelper.getPRPath(bucketName));
-    }
+    bucketName =
+        PartitionedRegionHelper
+            .getBucketName(Region.SEPARATOR + "root" + Region.SEPARATOR + "region_one", 5);
+    assertThat(bucketName).as("Name = " + bucketName).doesNotContain(Region.SEPARATOR);
+    assertThat(PartitionedRegionHelper.getPRPath(bucketName))
+        .isEqualTo(Region.SEPARATOR + "root" + Region.SEPARATOR + "region_one");
   }
 
+  @Test
+  public void testEscapeUnescapeWhenRegionHasUnderscoreInTheName() {
+    String bucketName =
+        PartitionedRegionHelper.getBucketName(Region.SEPARATOR + "_region", 5);
+    assertThat(bucketName).as("Name = " + bucketName).doesNotContain(Region.SEPARATOR);
+    assertThat(PartitionedRegionHelper.getPRPath(bucketName))
+        .isEqualTo(Region.SEPARATOR + "_region");
+
+    bucketName =
+        PartitionedRegionHelper
+            .getBucketName(Region.SEPARATOR + "root" + Region.SEPARATOR + "_region_one", 5);
+    assertThat(bucketName).as("Name = " + bucketName).doesNotContain(Region.SEPARATOR);
+    assertThat(PartitionedRegionHelper.getPRPath(bucketName))
+        .isEqualTo(Region.SEPARATOR + "root" + Region.SEPARATOR + "_region_one");
+  }
 }
