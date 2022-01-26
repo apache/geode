@@ -137,12 +137,12 @@ Users can set a custom `default` username using the `geode-for-redis-username` p
 If users don't set this parameter, the default username  will be "default".
 This username will be used when `AUTH <password>` commands are sent without a `<username>`.
 
-For more information about configuring a Security Manager for authentication, see [Implementing Authentication](../managing/security/implementing_authentication.html).
-
 Note that the `geode-for-redis-username` property is only needed if `AUTH` commands are issued without a username.
 In this case, the Security Manager will need to respond to authentication requests using this username.
 
 Note also that _any_ `AUTH` requests will fail if no Security Manager has been configured.
+
+For more information about configuring a Security Manager for authentication, see [Implementing Authentication](../managing/security/implementing_authentication.html).
 
 In addition to authentication, each command is authorized according to <%=vars.product_name%>'s
 [security model](../managing/security/implementing_authorization.html).
