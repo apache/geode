@@ -122,22 +122,6 @@ set +x
 
 echo ""
 echo "============================================================"
-echo "Pushing copyright updates (if any) to develop before branching"
-echo "============================================================"
-#get these 2 done before the branch so we don't have to do develop and support separately.
-#the other 2 will be pushed to develop and support versions when version bumps are pushed.
-for DIR in ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
-    set -x
-    cd ${DIR}
-    if ! git push --dry-run 2>&1 | grep -q 'Everything up-to-date' ; then
-      git push -u origin
-    fi
-    set +x
-done
-
-
-echo ""
-echo "============================================================"
 echo "Creating support/${VERSION_MM} branches"
 echo "============================================================"
 for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
