@@ -87,7 +87,6 @@ echo "============================================================"
 set -x
 rm -rf $WORKSPACE
 mkdir -p $WORKSPACE
-cd $WORKSPACE
 set +x
 
 
@@ -96,6 +95,7 @@ echo "============================================================"
 echo "Cloning repositories..."
 echo "============================================================"
 set -x
+cd ${WORKSPACE}
 git clone --single-branch --branch develop git@github.com:apache/geode.git
 #(cd geode; git reset --hard $desired_sha) #uncomment if latest commit is not the desired branchpoint
 git clone --single-branch --branch develop git@github.com:apache/geode.git geode-develop
@@ -129,6 +129,7 @@ for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
     cd ${DIR}
     git checkout -b support/${VERSION_MM}
     git push -u origin support/${VERSION_MM}
+    git remote set-branches --add origin support/${VERSION_MM}
     set +x
 done
 
