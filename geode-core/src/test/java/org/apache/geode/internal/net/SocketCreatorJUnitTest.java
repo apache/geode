@@ -15,12 +15,14 @@
 package org.apache.geode.internal.net;
 
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.net.BindException;
@@ -28,6 +30,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import javax.net.ssl.SNIHostName;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLParameters;
@@ -35,24 +38,31 @@ import javax.net.ssl.SSLSocket;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
 public class SocketCreatorJUnitTest {
 
+  private final SSLContext context = mock(SSLContext.class);
+  private final SSLParameters parameters = mock(SSLParameters.class);
+  private final SSLEngine engine = mock(SSLEngine.class);
+
+  public SocketCreatorJUnitTest() {
+    when(engine.getSSLParameters()).thenReturn(parameters);
+  }
+
+
   @Test
-  public void testCreateSocketCreatorWithKeystoreUnset() throws Exception {
+  public void testCreateSocketCreatorWithKeystoreUnset() {
     SSLConfig.Builder sslConfigBuilder = new SSLConfig.Builder();
     sslConfigBuilder.setEnabled(true);
     sslConfigBuilder.setKeystore(null);
     sslConfigBuilder.setKeystorePassword("");
     sslConfigBuilder.setTruststore(getSingleKeyKeystore());
     sslConfigBuilder.setTruststorePassword("password");
-    // GEODE-3393: This would fail with java.io.FileNotFoundException: $USER_HOME/.keystore
+    // This would fail with java.io.FileNotFoundException: $USER_HOME/.keystore
     new SocketCreator(sslConfigBuilder.build());
-
   }
 
   @Test
@@ -76,79 +86,142 @@ public class SocketCreatorJUnitTest {
   }
 
   @Test
-  public void testBindExceptionMessageFormattingWithBindAddr() throws Exception {
+  public void testBindExceptionMessageFormattingWithBindAddress() throws Exception {
     testBindExceptionMessageFormatting(InetAddress.getLocalHost());
   }
 
   @Test
-  public void testBindExceptionMessageFormattingNullBindAddr() throws Exception {
+  public void testBindExceptionMessageFormattingNullBindAddress() throws Exception {
     testBindExceptionMessageFormatting(null);
   }
 
   private void testBindExceptionMessageFormatting(InetAddress inetAddress) throws Exception {
     final SocketCreator socketCreator = new SocketCreator(mock(SSLConfig.class));
-    final Socket socket = mock(Socket.class);
 
-    ServerSocket serverSocket = null;
-    try {
-      serverSocket = socketCreator.forCluster().createServerSocket(11234, 10, inetAddress);
+    try (ServerSocket ignored = socketCreator.forCluster()
+        .createServerSocket(11234, 10, inetAddress)) {
       assertThatExceptionOfType(BindException.class).isThrownBy(() -> {
         // call twice on the same port to trigger exception
         socketCreator.forCluster().createServerSocket(11234, 10, inetAddress);
       }).withMessageContaining("11234")
           .withMessageContaining(InetAddress.getLocalHost().getHostAddress());
-    } finally {
-      if (serverSocket != null) {
-        serverSocket.close();
-      }
     }
   }
 
   @Test
-  public void configureSSLEngine() {
-    SSLConfig config = new SSLConfig.Builder().setCiphers("someCipher").setEnabled(true)
-        .setProtocols("someProtocol").setRequireAuth(true).setKeystore("someKeystore.jks")
-        .setAlias("someAlias").setTruststore("someTruststore.jks")
-        .setEndpointIdentificationEnabled(true).build();
-    SSLContext context = mock(SSLContext.class);
-    SSLParameters parameters = mock(SSLParameters.class);
+  public void configureSSLEngineSetsClientModeTrue() {
+    final SSLConfig config = new SSLConfig.Builder().build();
+    final SocketCreator socketCreator = new SocketCreator(config, context);
 
-    SocketCreator socketCreator = new SocketCreator(config, context);
+    socketCreator.configureSSLEngine(engine, "localhost", 12345, true);
 
-    SSLEngine engine = mock(SSLEngine.class);
-    when(engine.getSSLParameters()).thenReturn(parameters);
-
-    socketCreator.configureSSLEngine(engine, "somehost", 12345, true);
-
-    verify(engine).setUseClientMode(isA(Boolean.class));
-    verify(engine).setSSLParameters(parameters);
-    verify(engine, never()).setNeedClientAuth(isA(Boolean.class));
-
-    ArgumentCaptor<String[]> stringArrayCaptor = ArgumentCaptor.forClass(String[].class);
-    verify(engine).setEnabledProtocols(stringArrayCaptor.capture());
-    assertThat(stringArrayCaptor.getValue()).containsExactly("someProtocol");
-    verify(engine).setEnabledCipherSuites(stringArrayCaptor.capture());
-    assertThat(stringArrayCaptor.getValue()).containsExactly("someCipher");
+    verify(engine).setUseClientMode(eq(true));
+    verify(engine).getSSLParameters();
+    verify(engine).setSSLParameters(eq(parameters));
+    verifyNoMoreInteractions(parameters, engine);
   }
 
   @Test
-  public void configureSSLEngineUsingAny() {
-    SSLConfig config = new SSLConfig.Builder().setCiphers("any").setEnabled(true)
-        .setProtocols("any").setRequireAuth(true).setKeystore("someKeystore.jks")
-        .setAlias("someAlias").setTruststore("someTruststore.jks")
-        .setEndpointIdentificationEnabled(true).build();
-    SSLContext context = mock(SSLContext.class);
-    SSLParameters parameters = mock(SSLParameters.class);
+  public void configureSSLEngineSetsClientModeFalse() {
+    final SSLConfig config = new SSLConfig.Builder().build();
+    final SocketCreator socketCreator = new SocketCreator(config, context);
 
-    SocketCreator socketCreator = new SocketCreator(config, context);
+    socketCreator.configureSSLEngine(engine, "localhost", 12345, false);
 
-    SSLEngine engine = mock(SSLEngine.class);
-    when(engine.getSSLParameters()).thenReturn(parameters);
+    verify(engine).setUseClientMode(eq(false));
+    verify(engine).getSSLParameters();
+    verify(engine).setSSLParameters(eq(parameters));
+    verify(parameters).setNeedClientAuth(anyBoolean());
+    verifyNoMoreInteractions(parameters, engine);
+  }
 
-    socketCreator.configureSSLEngine(engine, "somehost", 12345, true);
+  @Test
+  public void configureSSLParametersSetsProtocols() {
+    final SSLConfig config = new SSLConfig.Builder().setProtocols("protocol1,protocol2").build();
+    final SocketCreator socketCreator = new SocketCreator(config, context);
 
-    verify(engine, never()).setEnabledCipherSuites(isA(String[].class));
-    verify(engine, never()).setEnabledProtocols(isA(String[].class));
+    socketCreator.configureSSLParameters(parameters, "localhost", 123, true);
+
+    verify(parameters).setProtocols(eq(new String[] {"protocol1", "protocol2"}));
+    verifyNoMoreInteractions(parameters);
+  }
+
+  @Test
+  public void configureSSLParametersDoesNotSetProtocols() {
+    final SSLConfig config = new SSLConfig.Builder().setProtocols("any").build();
+    final SocketCreator socketCreator = new SocketCreator(config, context);
+
+    socketCreator.configureSSLParameters(parameters, "localhost", 123, true);
+
+    verifyNoMoreInteractions(parameters);
+  }
+
+  @Test
+  public void configureSSLParametersSetsCipherSuites() {
+    final SSLConfig config = new SSLConfig.Builder().setCiphers("cipher1,cipher2").build();
+    final SocketCreator socketCreator = new SocketCreator(config, context);
+
+    socketCreator.configureSSLParameters(parameters, "localhost", 123, true);
+
+    verify(parameters).setCipherSuites(eq(new String[] {"cipher1", "cipher2"}));
+    verifyNoMoreInteractions(parameters);
+  }
+
+  @Test
+  public void configureSSLParametersDoesNotSetCipherSuites() {
+    final SSLConfig config = new SSLConfig.Builder().setCiphers("any").build();
+    final SocketCreator socketCreator = new SocketCreator(config, context);
+
+    socketCreator.configureSSLParameters(parameters, "localhost", 123, true);
+
+    verifyNoMoreInteractions(parameters);
+  }
+
+  @Test
+  public void configureSSLParametersSetsNeedClientAuthTrue() {
+    final SSLConfig config = new SSLConfig.Builder().setRequireAuth(true).build();
+    final SocketCreator socketCreator = new SocketCreator(config, context);
+
+    socketCreator.configureSSLParameters(parameters, "localhost", 123, false);
+
+    verify(parameters).setNeedClientAuth(eq(true));
+    verifyNoMoreInteractions(parameters);
+  }
+
+  @Test
+  public void configureSSLParametersSetsNeedClientAuthFalse() {
+    final SSLConfig config = new SSLConfig.Builder().setRequireAuth(false).build();
+    final SocketCreator socketCreator = new SocketCreator(config, context);
+
+    socketCreator.configureSSLParameters(parameters, "localhost", 123, false);
+
+    verify(parameters).setNeedClientAuth(eq(false));
+    verifyNoMoreInteractions(parameters);
+  }
+
+  @Test
+  public void configureSSLParametersSetsEndpointIdentificationAlgorithmToHttpsAndServerNames() {
+    final SSLConfig config = new SSLConfig.Builder().setEndpointIdentificationEnabled(true).build();
+    final SocketCreator socketCreator = new SocketCreator(config, context);
+
+    socketCreator.configureSSLParameters(parameters, "localhost", 123, true);
+
+    verify(parameters).setEndpointIdentificationAlgorithm(eq("HTTPS"));
+    verify(parameters).getServerNames();
+    verify(parameters)
+        .setServerNames(argThat(a -> a.size() == 1 && a.contains(new SNIHostName("localhost"))));
+    verifyNoMoreInteractions(parameters);
+  }
+
+  @Test
+  public void configureSSLParameterDoesNotSetEndpointIdentificationAlgorithm() {
+    final SSLConfig config =
+        new SSLConfig.Builder().setEndpointIdentificationEnabled(false).build();
+    final SocketCreator socketCreator = new SocketCreator(config, context);
+
+    socketCreator.configureSSLParameters(parameters, "localhost", 123, true);
+
+    verifyNoMoreInteractions(parameters);
   }
 
   private String getSingleKeyKeystore() {

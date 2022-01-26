@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -37,7 +38,7 @@ public class ExpireDisconnectedClientTransactionsMessageTest {
   private final InternalDistributedMember sender = mock(InternalDistributedMember.class);
   private final ExpireDisconnectedClientTransactionsMessage message =
       spy(new ExpireDisconnectedClientTransactionsMessage());
-  private final KnownVersion version = mock(KnownVersion.class);
+  private final KnownVersion version = mock(KnownVersion.class, CALLS_REAL_METHODS);
 
   @Before
   public void setup() {
