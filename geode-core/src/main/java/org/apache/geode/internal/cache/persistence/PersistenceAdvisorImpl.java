@@ -673,7 +673,8 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
       logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE, "{}-{}: Member removed. persistentID={}",
           shortDiskStoreId(), regionPath, id);
     }
-    logger.info("GGG:Member removed, id=" + (id == null ? null : id.getTimeStamp()));
+    logger.info("GGG:Member removed, id=" + (id == null ? null : id.getTimeStamp()) + " for region "
+        + regionPath);
 
     synchronized (lock) {
       recoveredMembers.remove(id);

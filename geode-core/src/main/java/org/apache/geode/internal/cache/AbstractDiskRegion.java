@@ -549,7 +549,7 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
   @Override
   public void memberOffline(PersistentMemberID persistentID) {
     ds.memberOffline(this, persistentID);
-    logger.info("GGG:memberOffline:" + persistentID.getTimeStamp());
+    logger.info("GGG:memberOffline:" + persistentID.getTimeStamp() + " for region " + getName());
     if (logger.isTraceEnabled(LogMarker.PERSIST_VERBOSE)) {
       logger.trace(LogMarker.PERSIST_VERBOSE, "PersistentView {} - {} - member offline {}",
           getDiskStoreID().abbrev(), getName(), persistentID);

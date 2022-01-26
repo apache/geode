@@ -78,7 +78,7 @@ public class PrepareNewPersistentMemberMessage extends HighPriorityDistributionM
         new PrepareNewPersistentMemberMessage(regionPath, oldId, newId, processor.getProcessorId());
     logger.info("GGG:Sending PrepareNewPersistentMemberMessage oldId="
         + (oldId == null ? null : oldId.getTimeStamp()) + ",newId="
-        + (newId == null ? null : newId.getTimeStamp()));
+        + (newId == null ? null : newId.getTimeStamp()) + " for region " + regionPath);
     msg.setRecipients(members);
     dm.putOutgoing(msg);
     processor.waitForRepliesUninterruptibly();
