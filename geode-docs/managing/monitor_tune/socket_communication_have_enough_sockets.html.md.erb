@@ -39,7 +39,7 @@ recommend that you set `conserve-sockets` to `false`.
 
 You can force the release of an idle socket connection for peer-to-peer and client-to-server connections:
 
--   **Peer-to-peer**. For peer-to-peer threads that do not share sockets, you can use the `socket-lease-time` to make sure that no socket sits idle for too long. When a socket that belongs to an individual thread remains unused for this time period, the system automatically returns it to the pool. The next time the thread needs a socket, it creates a new socket.
+-   **Peer-to-peer**. For peer-to-peer threads that do not share sockets, you can use the `socket-lease-time` to make sure that no socket sits idle for too long. When a socket that belongs to an individual thread remains unused for this time period, the system automatically closes that socket. The next time the thread needs a socket, it creates a new socket.
 -   **Client**. For client connections, you can affect the same lease-time behavior by setting the pool `idle-timeout`.
 
 ## <a id="socket_comm__section_936C6562C0034A2EAC9A63FFE9FDAC36" class="no-quick-link"></a>Calculating Connection Requirements
