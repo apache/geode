@@ -1087,7 +1087,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
             logger.debug("DistributedRegion.getInitialImageAndRecovery: Finished Recovery");
           }
           persistentMemberId = dskRgn.getMyPersistentID();
-          logger.info("GGG: recovered my oldId "
+          logger.info("GGG:Recovered my oldId "
               + (persistentMemberId == null ? null : persistentMemberId.getTimeStamp()) + " for "
               + getFullPath());
         }

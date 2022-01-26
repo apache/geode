@@ -1250,9 +1250,6 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
       if (cp.persistentID != null && cp.persistenceInitialized) {
         memberOnline(profile.getDistributedMember(), cp.persistentID);
         logger.info("GGG:memberOnline:" + cp.persistentID.getTimeStamp());
-      } else if (cp.persistentID != null) {
-        logger.info(
-            "GGG:initialized?" + cp.persistenceInitialized + ":" + cp.persistentID.getTimeStamp());
       }
     }
 
