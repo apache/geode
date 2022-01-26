@@ -62,6 +62,14 @@ public class AlterGatewaySenderCommandDUnitTest {
   private static MemberVM server2;
   private final IgnoredException exln = IgnoredException
       .addIgnoredException("could not get remote locator information for remote site");
+  private final IgnoredException exln1 = IgnoredException
+      .addIgnoredException("Connection reset");
+  private final IgnoredException exln2 = IgnoredException
+      .addIgnoredException("Broken pipe");
+  private final IgnoredException exln3 = IgnoredException
+      .addIgnoredException("Connection refused");
+  private final IgnoredException exln4 = IgnoredException
+      .addIgnoredException("Unexpected IOException");
 
   @BeforeClass
   public static void beforeClass() throws Exception {
@@ -89,9 +97,14 @@ public class AlterGatewaySenderCommandDUnitTest {
 
   @After
   public void after() {
+    gfsh.executeAndAssertThat("destroy region --name=parentRegion").statusIsSuccess();
     gfsh.executeAndAssertThat(DESTROY + " --if-exists").statusIsSuccess();
     gfsh.executeAndAssertThat(DESTROY_PARALLEL + " --if-exists").statusIsSuccess();
     exln.remove();
+    exln1.remove();
+    exln2.remove();
+    exln3.remove();
+    exln4.remove();
   }
 
   @Test
@@ -105,6 +118,11 @@ public class AlterGatewaySenderCommandDUnitTest {
 
     gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
         .containsOutput("sender1");
+
+    gfsh.executeAndAssertThat("create region"
+        + " --name=parentRegion"
+        + " --type=PARTITION"
+        + " --gateway-sender-id=sender1").statusIsSuccess();
 
     // verify that server1's event queue has the default value
     server1.invoke(() -> {
@@ -129,6 +147,11 @@ public class AlterGatewaySenderCommandDUnitTest {
 
     gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
         .containsOutput("sender1");
+
+    gfsh.executeAndAssertThat("create region"
+        + " --name=parentRegion"
+        + " --type=PARTITION"
+        + " --gateway-sender-id=sender1").statusIsSuccess();
 
     gfsh.executeAndAssertThat(
         "alter gateway-sender --id=sender1 --batch-size=200 --alert-threshold=100")
@@ -156,6 +179,11 @@ public class AlterGatewaySenderCommandDUnitTest {
 
     gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
         .containsOutput("sender1");
+
+    gfsh.executeAndAssertThat("create region"
+        + " --name=parentRegion"
+        + " --type=PARTITION"
+        + " --gateway-sender-id=sender1").statusIsSuccess();
 
     gfsh.executeAndAssertThat(
         "alter gateway-sender --id=sender1 --batch-size=200 --alert-threshold=100")
@@ -204,6 +232,11 @@ public class AlterGatewaySenderCommandDUnitTest {
     gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
         .containsOutput("sender1");
 
+    gfsh.executeAndAssertThat("create region"
+        + " --name=parentRegion"
+        + " --type=PARTITION"
+        + " --gateway-sender-id=sender1").statusIsSuccess();
+
     gfsh.executeAndAssertThat("alter gateway-sender --id=sender1 --group-transaction-events=true")
         .statusIsError()
         .containsOutput("alter-gateway-sender cannot be performed for --group-transaction-events");
@@ -221,6 +254,11 @@ public class AlterGatewaySenderCommandDUnitTest {
 
     gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
         .containsOutput("sender1");
+
+    gfsh.executeAndAssertThat("create region"
+        + " --name=parentRegion"
+        + " --type=PARTITION"
+        + " --gateway-sender-id=sender1").statusIsSuccess();
 
     server1.stop(false);
 
@@ -256,6 +294,11 @@ public class AlterGatewaySenderCommandDUnitTest {
 
     gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
         .containsOutput("sender1");
+
+    gfsh.executeAndAssertThat("create region"
+        + " --name=parentRegion"
+        + " --type=PARTITION"
+        + " --gateway-sender-id=sender1").statusIsSuccess();
 
     gfsh.executeAndAssertThat(
         "alter gateway-sender --id=sender1 --batch-size=200 --alert-threshold=100 --gateway-event-filter="
@@ -297,6 +340,11 @@ public class AlterGatewaySenderCommandDUnitTest {
 
     gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
         .containsOutput("sender1");
+
+    gfsh.executeAndAssertThat("create region"
+        + " --name=parentRegion"
+        + " --type=PARTITION"
+        + " --gateway-sender-id=sender1").statusIsSuccess();
 
     gfsh.executeAndAssertThat(
         "alter gateway-sender --id=sender1 --batch-size=200 --alert-threshold=100 --gateway-event-filter="
@@ -365,6 +413,11 @@ public class AlterGatewaySenderCommandDUnitTest {
     gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
         .containsOutput("sender1P");
 
+    gfsh.executeAndAssertThat("create region"
+        + " --name=parentRegion"
+        + " --type=PARTITION"
+        + " --gateway-sender-id=sender1P").statusIsSuccess();
+
     gfsh.executeAndAssertThat(
         "alter gateway-sender --id=sender1P --batch-size=200 --alert-threshold=100")
         .statusIsSuccess();
@@ -391,6 +444,12 @@ public class AlterGatewaySenderCommandDUnitTest {
 
     gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
         .containsOutput("sender1P");
+
+    gfsh.executeAndAssertThat("create region"
+        + " --name=parentRegion"
+        + " --type=PARTITION"
+        + " --gateway-sender-id=sender1P").statusIsSuccess();
+
 
     gfsh.executeAndAssertThat("alter gateway-sender --id=sender1P --group-transaction-events=true")
         .statusIsSuccess();
