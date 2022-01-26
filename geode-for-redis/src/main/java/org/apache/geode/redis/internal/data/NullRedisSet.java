@@ -64,6 +64,11 @@ class NullRedisSet extends RedisSet {
   }
 
   @Override
+  void addForSmove(byte[] memberToAdd, Region<RedisKey, RedisData> region, RedisKey key) {
+    sadd(Collections.singletonList(memberToAdd), region, key);
+  }
+
+  @Override
   public long srem(List<byte[]> membersToRemove, Region<RedisKey, RedisData> region, RedisKey key) {
     return 0;
   }

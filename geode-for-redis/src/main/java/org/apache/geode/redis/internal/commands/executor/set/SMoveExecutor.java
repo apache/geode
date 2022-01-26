@@ -36,7 +36,7 @@ public class SMoveExecutor implements CommandExecutor {
     byte[] member = commandElems.get(3);
     RegionProvider regionProvider = context.getRegionProvider();
 
-    int removed = context.lockedExecute(sourceKey, Arrays.asList(sourceKey, destKey),
+    int removed = context.lockedExecuteInTransaction(sourceKey, Arrays.asList(sourceKey, destKey),
         () -> smove(sourceKey, destKey, member, regionProvider));
 
     return RedisResponse.integer(removed);

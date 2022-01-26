@@ -81,14 +81,12 @@ public class RedisSet extends AbstractRedisData {
 
     RedisSet source = regionProvider.getTypedRedisData(REDIS_SET, sourceKey, false);
     RedisSet destination = regionProvider.getTypedRedisData(REDIS_SET, destKey, false);
-    if (source.members.isEmpty() || !source.members.contains(member)) {
+    if (source == NULL_REDIS_SET || !source.members.contains(member)) {
       return 0;
     }
 
-    List<byte[]> movedMember = new ArrayList<>();
-    movedMember.add(member);
-    source.srem(movedMember, region, sourceKey);
-    destination.sadd(movedMember, region, destKey);
+    source.removeForSmove(member, region, sourceKey);
+    destination.addForSmove(member, region, destKey);
     return 1;
   }
 
@@ -415,6 +413,14 @@ public class RedisSet extends AbstractRedisData {
     return membersAdded;
   }
 
+  void addForSmove(byte[] memberToAdd, Region<RedisKey, RedisData> region, RedisKey key) {
+    if (membersAdd(memberToAdd)) {
+      // In a tx, delta requires cloning-enabled which is very expensive.
+      // So just do a put instead of storeChanges which uses delta.
+      region.put(key, this);
+    }
+  }
+
   /**
    * @param membersToRemove members to remove from this set; NOTE this list may by
    *        modified by this call
@@ -429,6 +435,19 @@ public class RedisSet extends AbstractRedisData {
       storeChanges(region, key, new RemoveByteArrays(membersToRemove));
     }
     return membersRemoved;
+  }
+
+  private void removeForSmove(byte[] memberToRemove, Region<RedisKey, RedisData> region,
+      RedisKey key) {
+    if (membersRemove(memberToRemove)) {
+      if (removeFromRegion()) {
+        region.remove(key);
+      } else {
+        // In a tx, delta requires cloning-enabled which is very expensive.
+        // So just do a put instead of storeChanges which uses delta.
+        region.put(key, this);
+      }
+    }
   }
 
   /**
