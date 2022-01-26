@@ -48,7 +48,7 @@ public class KnownVersion extends AbstractVersion {
   private final byte patch;
   private final boolean modifiesClientServerProtocol;
 
-  public static final int HIGHEST_VERSION = 150;
+  public static final int HIGHEST_VERSION = 160;
 
   @Immutable
   private static final KnownVersion[] VALUES = new KnownVersion[HIGHEST_VERSION + 1];
@@ -209,6 +209,13 @@ public class KnownVersion extends AbstractVersion {
       new KnownVersion("GEODE", "1.15.0", (byte) 1, (byte) 15, (byte) 0, (byte) 0,
           GEODE_1_15_0_ORDINAL, true);
 
+  private static final short GEODE_1_16_0_ORDINAL = 160;
+
+  @Immutable
+  public static final KnownVersion GEODE_1_16_0 =
+      new KnownVersion("GEODE", "1.16.0", (byte) 1, (byte) 16, (byte) 0, (byte) 0,
+          GEODE_1_16_0_ORDINAL);
+
   /* NOTE: when adding a new version bump the ordinal by 10. Ordinals can be short ints */
 
   /**
@@ -222,7 +229,7 @@ public class KnownVersion extends AbstractVersion {
    * HIGHEST_VERSION when changing CURRENT !!!
    */
   @Immutable
-  public static final KnownVersion CURRENT = GEODE_1_15_0;
+  public static final KnownVersion CURRENT = GEODE_1_16_0;
 
   /**
    * A lot of versioning code needs access to the current version's ordinal
