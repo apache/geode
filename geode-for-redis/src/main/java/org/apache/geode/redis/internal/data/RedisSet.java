@@ -208,8 +208,8 @@ public class RedisSet extends AbstractRedisData {
 
   public Pair<Integer, List<byte[]>> sscan(GlobPattern matchPattern, int count,
       int cursor) {
-    long maximumCapacity = Math.min(count, scard() + 1);
-    List<byte[]> resultList = new ArrayList<>((int) maximumCapacity);
+    int maximumCapacity = Math.min(count, scard() + 1);
+    List<byte[]> resultList = new ArrayList<>(maximumCapacity);
 
     cursor = members.scan(cursor, count,
         (list, key) -> addIfMatching(matchPattern, list, key), resultList);

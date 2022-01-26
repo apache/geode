@@ -14,12 +14,14 @@
  */
 package org.apache.geode.redis.internal.commands.executor.set;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_CURSOR;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigInteger;
@@ -72,9 +74,8 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
-  public void givenNoKeyArgument_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.SSCAN))
-        .hasMessageContaining("ERR wrong number of arguments for 'sscan' command");
+  public void givenLessThanTwoArguments_returnsWrongNumberOfArgumentsError() {
+    assertAtLeastNArgs(jedis, Protocol.Command.SSCAN, 2);
   }
 
   @Test
@@ -231,20 +232,9 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void negativeCursor_doesNotError() {
-    List<String> set = initializeThreeMemberSet();
+    initializeThreeMemberSet();
 
-    String cursor = "-100";
-    ScanResult<String> result;
-    List<String> allEntries = new ArrayList<>();
-
-    do {
-      result = jedis.sscan(KEY, cursor);
-      allEntries.addAll(result.getResult());
-      cursor = result.getCursor();
-    } while (!result.isCompleteIteration());
-
-    assertThat(allEntries).hasSize(3);
-    assertThat(allEntries).containsExactlyInAnyOrderElementsOf(set);
+    assertThatNoException().isThrownBy(() -> jedis.sscan(KEY, "-1"));
   }
 
   @Test
@@ -257,9 +247,9 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
-  public void givenSetWithMultipleMembers_returnsFewMembers() {
+  public void givenSetWithMultipleMembers_returnsSubsetOfMembers() {
     final List<String> initialMemberData = makeSet();
-    jedis.sadd(KEY, initialMemberData.toArray(new String[initialMemberData.size()]));
+    jedis.sadd(KEY, initialMemberData.toArray(new String[0]));
     ScanResult<String> result = jedis.sscan(KEY, ZERO_CURSOR);
 
     assertThat(result.getResult()).containsAnyElementsOf(initialMemberData);
@@ -520,8 +510,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
         (i) -> multipleSScanAndAssertOnContentOfResultSet(i, jedis2, initialMemberData))
             .run();
 
-    initialMemberData
-        .forEach((member) -> assertThat(jedis.sismember(KEY, member)).isTrue());
+    assertThat(jedis.smembers(KEY)).containsExactlyInAnyOrderElementsOf(initialMemberData);
 
     jedis1.close();
     jedis2.close();
@@ -538,34 +527,11 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
       result = jedis.sscan(KEY, cursor);
       cursor = result.getCursor();
       List<String> resultEntries = result.getResult();
-      resultEntries
-          .forEach((entry) -> allEntries.add(entry));
+      allEntries.addAll(resultEntries);
     } while (!result.isCompleteIteration());
 
     assertThat(allEntries).as("failed on iteration " + iteration)
         .containsAll(initialMemberData);
-  }
-
-  private void multipleSScanAndAssertOnSizeOfResultSet(Jedis jedis,
-      final List<String> initialMemberData) {
-    List<String> allEntries = new ArrayList<>();
-    ScanResult<String> result;
-    String cursor = ZERO_CURSOR;
-
-    do {
-      result = jedis.sscan(KEY, cursor);
-      cursor = result.getCursor();
-      allEntries.addAll(result.getResult());
-    } while (!result.isCompleteIteration());
-
-    List<String> allDistinctEntries =
-        allEntries
-            .stream()
-            .distinct()
-            .collect(Collectors.toList());
-
-    assertThat(allDistinctEntries.size())
-        .isEqualTo(initialMemberData.size());
   }
 
   private List<String> initializeThreeMemberSet() {
@@ -590,14 +556,6 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     List<String> set = new ArrayList<>();
     for (int i = 0; i < SIZE_OF_SET; i++) {
       set.add((BASE_FIELD + i));
-    }
-    return set;
-  }
-
-  private List<byte[]> makeByteSet() {
-    List<byte[]> set = new ArrayList<>();
-    for (int i = 0; i < SIZE_OF_SET; i++) {
-      set.add((BASE_FIELD + i).getBytes());
     }
     return set;
   }
