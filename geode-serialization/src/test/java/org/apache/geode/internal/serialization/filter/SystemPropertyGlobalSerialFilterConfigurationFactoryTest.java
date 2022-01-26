@@ -15,61 +15,117 @@
 package org.apache.geode.internal.serialization.filter;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.mock;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 
 public class SystemPropertyGlobalSerialFilterConfigurationFactoryTest {
 
+  private SerializableObjectConfig config;
+
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
+  @Before
+  public void setUp() {
+    config = mock(SerializableObjectConfig.class);
+  }
+
   @Test
-  public void createsConditionalGlobalSerialFilterConfiguration_whenEnableGlobalSerialFilter_isSet() {
+  public void createsNoOp_whenEnableGlobalSerialFilterIsFalse() {
+    System.clearProperty("geode.enableGlobalSerialFilter");
+    GlobalSerialFilterConfigurationFactory factory =
+        new SystemPropertyGlobalSerialFilterConfigurationFactory();
+
+    FilterConfiguration configuration = factory.create(config);
+
+    boolean result = configuration.configure();
+
+    assertThat(result).isFalse();
+  }
+
+  @Test
+  public void createsEnabledGlobalSerialFilterConfiguration_whenEnableGlobalSerialFilterIsTrue() {
     System.setProperty("geode.enableGlobalSerialFilter", "true");
     GlobalSerialFilterConfigurationFactory factory =
         new SystemPropertyGlobalSerialFilterConfigurationFactory();
 
-    FilterConfiguration filterConfiguration = factory.create(mock(SerializableObjectConfig.class));
+    FilterConfiguration configuration = factory.create(config);
 
-    assertThat(filterConfiguration).isInstanceOf(GlobalSerialFilterConfiguration.class);
+    // don't actually invoke configure because this is a unit test
+    assertThat(configuration).isInstanceOf(GlobalSerialFilterConfiguration.class);
   }
 
   @Test
-  public void createsNoOp_whenEnableGlobalSerialFilter_isNotSet() {
-    GlobalSerialFilterConfigurationFactory factory =
-        new SystemPropertyGlobalSerialFilterConfigurationFactory();
-
-    FilterConfiguration filterConfiguration = factory.create(mock(SerializableObjectConfig.class));
-
-    assertThat(filterConfiguration)
-        .isNotInstanceOf(GlobalSerialFilterConfiguration.class);
-  }
-
-  @Test
-  public void createsNoOp_whenJdkSerialFilter_isSet() {
+  public void createsNoOp_whenJdkSerialFilterExists() {
     System.setProperty("jdk.serialFilter", "*");
     GlobalSerialFilterConfigurationFactory factory =
         new SystemPropertyGlobalSerialFilterConfigurationFactory();
 
-    FilterConfiguration filterConfiguration = factory.create(mock(SerializableObjectConfig.class));
+    FilterConfiguration configuration = factory.create(config);
 
-    assertThat(filterConfiguration)
-        .isNotInstanceOf(GlobalSerialFilterConfiguration.class);
+    boolean result = configuration.configure();
+
+    assertThat(result).isFalse();
   }
 
   @Test
-  public void createsNoOp_whenJdkSerialFilter_andEnableGlobalSerialFilter_areBothSet() {
+  public void createsNoOp_whenJdkSerialFilterExists_andEnableGlobalSerialFilterIsTrue() {
     System.setProperty("jdk.serialFilter", "*");
     System.setProperty("geode.enableGlobalSerialFilter", "true");
     GlobalSerialFilterConfigurationFactory factory =
         new SystemPropertyGlobalSerialFilterConfigurationFactory();
 
-    FilterConfiguration filterConfiguration = factory.create(mock(SerializableObjectConfig.class));
+    FilterConfiguration configuration = factory.create(config);
 
-    assertThat(filterConfiguration)
-        .isNotInstanceOf(GlobalSerialFilterConfiguration.class);
+    boolean result = configuration.configure();
+
+    assertThat(result).isFalse();
+  }
+
+  @Test
+  public void createsNoOp_whenEnableGlobalSerialFilterIsFalse_andJreDoesNotSupportObjectInputFilter() {
+    boolean supportsObjectInputFilter = false;
+    GlobalSerialFilterConfigurationFactory configurationFactory =
+        new SystemPropertyGlobalSerialFilterConfigurationFactory(() -> supportsObjectInputFilter);
+
+    FilterConfiguration configuration = configurationFactory.create(config);
+
+    boolean result = configuration.configure();
+
+    assertThat(result).isFalse();
+  }
+
+  @Test
+  public void createsNoOp_whenEnableGlobalSerialFilterIsTrue_andJreDoesNotSupportObjectInputFilter() {
+    System.setProperty("geode.enableGlobalSerialFilter", "true");
+    boolean supportsObjectInputFilter = false;
+    GlobalSerialFilterConfigurationFactory configurationFactory =
+        new SystemPropertyGlobalSerialFilterConfigurationFactory(() -> supportsObjectInputFilter);
+
+    FilterConfiguration configuration = configurationFactory.create(config);
+
+    boolean result = configuration.configure();
+
+    assertThat(result).isFalse();
+  }
+
+  @Test
+  public void doesNotThrow_whenEnableGlobalSerialFilterIsFalse_andJreDoesNotSupportObjectInputFilter() {
+    System.clearProperty("geode.enableGlobalSerialFilter");
+    GlobalSerialFilterConfigurationFactory factory =
+        new SystemPropertyGlobalSerialFilterConfigurationFactory();
+
+    assertThatCode(() -> {
+
+      FilterConfiguration configuration = factory.create(config);
+
+      configuration.configure();
+
+    }).doesNotThrowAnyException();
   }
 }

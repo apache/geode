@@ -15,13 +15,13 @@
 package org.apache.geode.internal.serialization.filter;
 
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 
-import java.util.function.Consumer;
-
+import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,64 +29,60 @@ public class GlobalSerialFilterConfigurationTest {
 
   private SerializableObjectConfig config;
   private GlobalSerialFilter globalSerialFilter;
-  private Consumer<String> infoLogger;
-  private Consumer<String> warnLogger;
-  private Consumer<String> errorLogger;
+  private Logger logger;
 
   @Before
   public void setUp() {
     config = mock(SerializableObjectConfig.class);
     globalSerialFilter = mock(GlobalSerialFilter.class);
-    infoLogger = uncheckedCast(mock(Consumer.class));
-    warnLogger = uncheckedCast(mock(Consumer.class));
-    errorLogger = uncheckedCast(mock(Consumer.class));
+    logger = uncheckedCast(mock(Logger.class));
   }
 
   @Test
-  public void configureLogsInfo_whenOperationIsSuccessful() {
-    FilterConfiguration filterConfiguration = new GlobalSerialFilterConfiguration(config,
-        infoLogger, warnLogger, errorLogger, (pattern, sanctionedClasses) -> globalSerialFilter);
+  public void logsInfo_whenOperationIsSuccessful() {
+    FilterConfiguration filterConfiguration = new GlobalSerialFilterConfiguration(config, logger,
+        (pattern, sanctionedClasses) -> globalSerialFilter);
 
     filterConfiguration.configure();
 
-    verify(infoLogger).accept("Global serial filter is now configured.");
-    verifyNoInteractions(warnLogger);
-    verifyNoInteractions(errorLogger);
+    verify(logger).info("Global serial filter is now configured.");
+    verify(logger, never()).warn(any(Object.class));
+    verify(logger, never()).error(any(Object.class));
   }
 
   @Test
-  public void configureLogsError_whenCauseOfUnsupportedOperationExceptionIsIllegalStateException() {
+  public void logsError_whenCauseOfUnsupportedOperationExceptionIsIllegalStateException() {
     doThrow(new UnsupportedOperationException(
         new IllegalStateException("Serial filter can only be set once")))
             .when(globalSerialFilter).setFilter();
     FilterConfiguration filterConfiguration = new GlobalSerialFilterConfiguration(config,
-        infoLogger, warnLogger, errorLogger, (pattern, sanctionedClasses) -> globalSerialFilter);
+        logger, (pattern, sanctionedClasses) -> globalSerialFilter);
 
     filterConfiguration.configure();
 
-    verifyNoInteractions(infoLogger);
-    verify(warnLogger).accept("Global serial filter is already configured.");
-    verifyNoInteractions(errorLogger);
+    verify(logger, never()).info(any(Object.class));
+    verify(logger).warn("Global serial filter is already configured.");
+    verify(logger, never()).error(any(Object.class));
   }
 
   @Test
-  public void configureLogsError_whenCauseOfUnsupportedOperationExceptionIsClassNotFoundException() {
+  public void logsError_whenCauseOfUnsupportedOperationExceptionIsClassNotFoundException() {
     doThrow(new UnsupportedOperationException(
         new ClassNotFoundException("sun.misc.ObjectInputFilter")))
             .when(globalSerialFilter).setFilter();
-    FilterConfiguration filterConfiguration = new GlobalSerialFilterConfiguration(config,
-        infoLogger, warnLogger, errorLogger, (pattern, sanctionedClasses) -> globalSerialFilter);
+    FilterConfiguration filterConfiguration = new GlobalSerialFilterConfiguration(config, logger,
+        (pattern, sanctionedClasses) -> globalSerialFilter);
 
     filterConfiguration.configure();
 
-    verifyNoInteractions(infoLogger);
-    verifyNoInteractions(warnLogger);
-    verify(errorLogger).accept(
+    verify(logger, never()).info(any(Object.class));
+    verify(logger, never()).warn(any(Object.class));
+    verify(logger).error(
         "Geode was unable to configure a global serialization filter because ObjectInputFilter not found.");
   }
 
   @Test
-  public void configureSetsValidateSerializableObjects() {
+  public void setsValidateSerializableObjects() {
     SerializableObjectConfig serializableObjectConfig = mock(SerializableObjectConfig.class);
     FilterConfiguration filterConfiguration =
         new GlobalSerialFilterConfiguration(serializableObjectConfig);

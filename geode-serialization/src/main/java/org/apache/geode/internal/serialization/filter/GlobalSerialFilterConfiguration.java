@@ -20,7 +20,6 @@ import static org.apache.geode.internal.serialization.filter.SanctionedSerializa
 import static org.apache.geode.internal.serialization.filter.SanctionedSerializables.loadSanctionedSerializablesServices;
 
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Logger;
@@ -38,9 +37,7 @@ class GlobalSerialFilterConfiguration implements FilterConfiguration {
   private final SerializableObjectConfig serializableObjectConfig;
   private final FilterPatternFactory filterPatternFactory;
   private final Supplier<Set<String>> sanctionedClassesSupplier;
-  private final Consumer<String> infoLogger;
-  private final Consumer<String> warnLogger;
-  private final Consumer<String> errorLogger;
+  private final Logger logger;
   private final GlobalSerialFilterFactory globalSerialFilterFactory;
 
   /**
@@ -50,9 +47,7 @@ class GlobalSerialFilterConfiguration implements FilterConfiguration {
     this(serializableObjectConfig,
         new DefaultFilterPatternFactory(),
         () -> loadSanctionedClassNames(loadSanctionedSerializablesServices()),
-        LOGGER::info,
-        LOGGER::warn,
-        LOGGER::error,
+        LOGGER,
         (pattern, sanctionedClasses) -> new ReflectiveFacadeGlobalSerialFilterFactory()
             .create(pattern, sanctionedClasses));
   }
@@ -60,16 +55,12 @@ class GlobalSerialFilterConfiguration implements FilterConfiguration {
   @TestOnly
   GlobalSerialFilterConfiguration(
       SerializableObjectConfig serializableObjectConfig,
-      Consumer<String> infoLogger,
-      Consumer<String> warnLogger,
-      Consumer<String> errorLogger,
+      Logger logger,
       GlobalSerialFilterFactory globalSerialFilterFactory) {
     this(serializableObjectConfig,
         new DefaultFilterPatternFactory(),
         () -> loadSanctionedClassNames(loadSanctionedSerializablesServices()),
-        infoLogger,
-        warnLogger,
-        errorLogger,
+        logger,
         globalSerialFilterFactory);
   }
 
@@ -77,16 +68,12 @@ class GlobalSerialFilterConfiguration implements FilterConfiguration {
       SerializableObjectConfig serializableObjectConfig,
       FilterPatternFactory filterPatternFactory,
       Supplier<Set<String>> sanctionedClassesSupplier,
-      Consumer<String> infoLogger,
-      Consumer<String> warnLogger,
-      Consumer<String> errorLogger,
+      Logger logger,
       GlobalSerialFilterFactory globalSerialFilterFactory) {
     this.serializableObjectConfig = serializableObjectConfig;
     this.filterPatternFactory = filterPatternFactory;
     this.sanctionedClassesSupplier = sanctionedClassesSupplier;
-    this.infoLogger = infoLogger;
-    this.warnLogger = warnLogger;
-    this.errorLogger = errorLogger;
+    this.logger = logger;
     this.globalSerialFilterFactory = globalSerialFilterFactory;
   }
 
@@ -107,7 +94,7 @@ class GlobalSerialFilterConfiguration implements FilterConfiguration {
       globalSerialFilter.setFilter();
 
       // log statement that filter is now configured
-      infoLogger.accept("Global serial filter is now configured.");
+      logger.info("Global serial filter is now configured.");
       return true;
 
     } catch (UnsupportedOperationException e) {
@@ -121,13 +108,13 @@ class GlobalSerialFilterConfiguration implements FilterConfiguration {
         "Serial filter can only be set once")) {
 
       // log statement that filter was already configured
-      warnLogger.accept("Global serial filter is already configured.");
+      logger.warn("Global serial filter is already configured.");
     }
     if (hasRootCauseWithMessageContaining(e, ClassNotFoundException.class,
         "ObjectInputFilter")) {
 
       // log statement that a global serial filter cannot be configured
-      errorLogger.accept(
+      logger.error(
           "Geode was unable to configure a global serialization filter because ObjectInputFilter not found.");
     }
   }
