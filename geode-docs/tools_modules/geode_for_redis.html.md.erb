@@ -137,28 +137,7 @@ Users can set a custom `default` username using the `geode-for-redis-username` p
 If users don't set this parameter, the default username  will be "default".
 This username will be used when `AUTH <password>` commands are sent without a `<username>`.
 
-The following gfsh command configures a `SimpleSecurityManager`:
-
-```console
-gfsh> start server \
-  --name=<serverName> \
-  --locators=<locatorPort> \
-  --J=-Dgemfire.geode-for-redis-enabled=true \
-  --J=-Dgemfire.geode-for-redis-port=<geodeForRedisPort> \
-  --J=-Dgemfire.geode-for-redis-bind-address=<geodeForRedisBindAddress> \
-  --J=-Dgemfire.geode-for-redis-username=<geodeForRedisUsername> \
-  --J=-Dgemfire.security-manager=org.apache.geode.examples.SimpleSecurityManager
-```
-
-To confirm that the server is working, in a separate terminal run:
-
-```console
-$ redis-cli -c -h <geodeForRedisBindAddress> -p <geodeForRedisPort> \
-  --user <geodeForRedisUsername> -a <geodeForRedisUsername> ping
-```
-
-The `SimpleSecurityManager` is to be used **only for demonstration purposes**.
-It will authenticate successfully when the `password` and `username` are the same.
+For more information about configuring a Security Manager for authentication, see [Implementing Authentication](../managing/security/implementing_authentication.html).
 
 Note that the `geode-for-redis-username` property is only needed if `AUTH` commands are issued without a username.
 In this case, the Security Manager will need to respond to authentication requests using this username.
