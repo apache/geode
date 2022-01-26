@@ -26,8 +26,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
@@ -58,7 +59,6 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
   public static final String FIELD_THREE = "3";
 
   public static final String BASE_FIELD = "baseField_";
-  private final int SIZE_OF_SET = 1000;
 
   @Before
   public void setUp() {
@@ -247,57 +247,46 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void givenSetWithMultipleMembers_returnsSubsetOfMembers() {
-    final List<String> initialMemberData = makeSet();
-    jedis.sadd(KEY, initialMemberData.toArray(new String[0]));
+    final Set<String> initialMemberData = initializeThousandMemberSet();
     ScanResult<String> result = jedis.sscan(KEY, ZERO_CURSOR);
 
-    assertThat(result.getResult()).containsAnyElementsOf(initialMemberData);
+    assertThat(result.getResult()).isSubsetOf(initialMemberData);
   }
 
   @Test
   public void givenCount_returnsAllMembersWithoutDuplicates() {
-    jedis.sadd(KEY, FIELD_ONE, FIELD_TWO, FIELD_THREE);
+    Set<byte[]> initialTotalSet = initializeThousandMemberByteSet();
 
+    int count = 10;
     ScanParams scanParams = new ScanParams();
-    scanParams.count(1);
-    String cursor = ZERO_CURSOR;
+    scanParams.count(10);
     ScanResult<byte[]> result;
-    List<byte[]> allMembersFromScan = new ArrayList<>();
 
-    do {
-      result = jedis.sscan(KEY.getBytes(), cursor.getBytes(), scanParams);
-      allMembersFromScan.addAll(result.getResult());
-      cursor = result.getCursor();
-    } while (!result.isCompleteIteration());
+    result = jedis.sscan(KEY.getBytes(), ZERO_CURSOR.getBytes(), scanParams);
 
-    assertThat(allMembersFromScan).containsExactlyInAnyOrder(FIELD_ONE.getBytes(),
-        FIELD_TWO.getBytes(),
-        FIELD_THREE.getBytes());
+    assertThat(result.getResult().size()).isGreaterThanOrEqualTo(count);
+    assertThat(result.getResult()).isSubsetOf(initialTotalSet);
   }
 
   @Test
   @SuppressWarnings("unchecked")
   public void givenMultipleCounts_returnsAllEntriesWithoutDuplicates() {
-    jedis.sadd(KEY, FIELD_ONE, FIELD_TWO, FIELD_THREE);
-
+    Set<byte[]> initialMemberData = initializeThousandMemberByteSet();
     List<Object> result;
-
     List<byte[]> allEntries = new ArrayList<>();
     String cursor = ZERO_CURSOR;
 
     do {
       result =
-          (List<Object>) jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, cursor, "COUNT",
-              FIELD_TWO,
-              "COUNT", FIELD_ONE);
-      allEntries.addAll((List<byte[]>) result.get(1));
+          (List<Object>) jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, cursor,
+              "COUNT", "1",
+              "COUNT", "2");
       cursor = new String((byte[]) result.get(0));
-    } while (!Arrays.equals((byte[]) result.get(0), ZERO_CURSOR.getBytes()));
+      allEntries.addAll((List<byte[]>) result.get(1));
+    } while (!cursor.equals(ZERO_CURSOR));
 
     assertThat((byte[]) result.get(0)).isEqualTo(ZERO_CURSOR.getBytes());
-    assertThat(allEntries).containsExactlyInAnyOrder(FIELD_ONE.getBytes(),
-        FIELD_TWO.getBytes(),
-        FIELD_THREE.getBytes());
+    assertThat(allEntries).containsExactlyInAnyOrderElementsOf(initialMemberData);
   }
 
   @Test
@@ -317,7 +306,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
 
   @Test
   @SuppressWarnings("unchecked")
-  public void givenMultipleMatches_returnsMembersMatchingLastMatchParameter() {
+  public void givenSetWithThreeEntriesAndMultipleMatchArguments_returnsOnlyElementsMatchingLastMatchArgument() {
     jedis.sadd(KEY, FIELD_ONE, FIELD_TWO, FIELD_THREE);
 
     List<Object> result =
@@ -325,12 +314,12 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
             "MATCH", "3*", "MATCH", "1*");
 
     assertThat((byte[]) result.get(0)).isEqualTo(ZERO_CURSOR.getBytes());
-    assertThat((List<byte[]>) result.get(1)).containsExactlyInAnyOrder(FIELD_ONE.getBytes(),
+    assertThat((List<byte[]>) result.get(1)).containsOnly(FIELD_ONE.getBytes(),
         FIELD_TWO.getBytes());
   }
 
   @Test
-  public void givenMatchAndCount_returnsAllMembersWithoutDuplicates() {
+  public void givenSetWithThreeMembersAndMatchAndCount_returnsAllMatchingMembers() {
     jedis.sadd(KEY, FIELD_ONE, FIELD_TWO, FIELD_THREE);
 
     ScanParams scanParams = new ScanParams();
@@ -346,13 +335,13 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
       cursor = result.getCursor();
     } while (!result.isCompleteIteration());
 
-    assertThat(allMembersFromScan).containsExactlyInAnyOrder(FIELD_ONE.getBytes(),
+    assertThat(allMembersFromScan).containsOnly(FIELD_ONE.getBytes(),
         FIELD_TWO.getBytes());
   }
 
   @Test
   @SuppressWarnings("unchecked")
-  public void givenMultipleCountsAndMatches_returnsAllEntriesWithoutDuplicates() {
+  public void givenSetWithThreeMembersAndMultipleMatchAndCountArguments_returnsAllMatchingMembers() {
     jedis.sadd(KEY, FIELD_ONE, FIELD_TWO, FIELD_THREE);
 
     List<Object> result;
@@ -365,10 +354,10 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
               "MATCH", "3*", "COUNT", FIELD_TWO, "COUNT", FIELD_ONE, "MATCH", "1*");
       allEntries.addAll((List<byte[]>) result.get(1));
       cursor = new String((byte[]) result.get(0));
-    } while (!Arrays.equals((byte[]) result.get(0), ZERO_CURSOR.getBytes()));
+    } while (!cursor.equals(ZERO_CURSOR));
 
     assertThat((byte[]) result.get(0)).isEqualTo(ZERO_CURSOR.getBytes());
-    assertThat(allEntries).containsExactlyInAnyOrder(FIELD_ONE.getBytes(),
+    assertThat(allEntries).containsOnly(FIELD_ONE.getBytes(),
         FIELD_TWO.getBytes());
   }
 
@@ -404,11 +393,10 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
-  public void givenInvalidRegexSyntax_returnsEmptyArray() {
-    jedis.sadd(KEY, "1");
+  public void givenNonMatchingPattern_returnsEmptyResult() {
+    jedis.sadd(KEY, "cat dog emu");
     ScanParams scanParams = new ScanParams();
-    scanParams.count(1);
-    scanParams.match("\\p");
+    scanParams.match("*fish*");
 
     ScanResult<byte[]> result =
         jedis.sscan(KEY.getBytes(), ZERO_CURSOR.getBytes(), scanParams);
@@ -417,32 +405,29 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
-  public void should_notReturnValue_givenValueWasRemovedBeforeSSCANISCalled() {
-    List<String> set = initializeThreeMemberSet();
+  public void should_notReturnValue_givenValueWasRemovedBeforeSscanIsCalled() {
+    initializeThreeMemberSet();
 
     jedis.srem(KEY, FIELD_THREE);
-    set.remove(FIELD_THREE);
 
     GeodeAwaitility.await().untilAsserted(
         () -> assertThat(jedis.sismember(KEY, FIELD_THREE)).isFalse());
 
     ScanResult<String> result = jedis.sscan(KEY, ZERO_CURSOR);
 
-    assertThat(result.getResult()).containsExactlyInAnyOrderElementsOf(set);
+    assertThat(result.getResult()).doesNotContain(FIELD_THREE);
   }
 
   @Test
   public void should_notErrorGivenNonzeroCursorOnFirstCall() {
-    List<String> set = initializeThreeMemberSet();
+    Set<String> set = initializeThreeMemberSet();
 
-    ScanResult<String> result = jedis.sscan(KEY, "5");
-
-    assertThat(result.getResult()).isSubsetOf(set);
+    assertThatNoException().isThrownBy(() -> jedis.sscan(KEY, "5"));
   }
 
   @Test
   public void should_notErrorGivenCountEqualToIntegerMaxValue() {
-    List<byte[]> set = initializeThreeMemberByteSet();
+    Set<byte[]> set = initializeThreeMemberByteSet();
 
     ScanParams scanParams = new ScanParams().count(Integer.MAX_VALUE);
 
@@ -475,8 +460,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void should_returnAllConsistentlyPresentMembers_givenConcurrentThreadsAddingAndRemovingMembers() {
-    final List<String> initialMemberData = makeSet();
-    jedis.sadd(KEY, initialMemberData.toArray(new String[initialMemberData.size()]));
+    final Set<String> initialMemberData = initializeThousandMemberSet();
     final int iterationCount = 500;
 
     Jedis jedis1 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
@@ -497,8 +481,8 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void should_notAlterUnderlyingData_givenMultipleConcurrentSscans() {
-    final List<String> initialMemberData = makeSet();
-    jedis.sadd(KEY, initialMemberData.toArray(new String[initialMemberData.size()]));
+    final Set<String> initialMemberData = initializeThousandMemberSet();
+    jedis.sadd(KEY, initialMemberData.toArray(new String[0]));
     final int iterationCount = 500;
 
     Jedis jedis1 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
@@ -516,7 +500,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
   }
 
   private void multipleSScanAndAssertOnContentOfResultSet(int iteration, Jedis jedis,
-      final List<String> initialMemberData) {
+      final Set<String> initialMemberData) {
 
     List<String> allEntries = new ArrayList<>();
     ScanResult<String> result;
@@ -533,8 +517,8 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
         .containsAll(initialMemberData);
   }
 
-  private List<String> initializeThreeMemberSet() {
-    List<String> set = new ArrayList<>();
+  private Set<String> initializeThreeMemberSet() {
+    Set<String> set = new HashSet<>();
     set.add(FIELD_ONE);
     set.add(FIELD_TWO);
     set.add(FIELD_THREE);
@@ -542,8 +526,8 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     return set;
   }
 
-  private List<byte[]> initializeThreeMemberByteSet() {
-    List<byte[]> set = new ArrayList<>();
+  private Set<byte[]> initializeThreeMemberByteSet() {
+    Set<byte[]> set = new HashSet<>();
     set.add(FIELD_ONE.getBytes());
     set.add(FIELD_TWO.getBytes());
     set.add(FIELD_THREE.getBytes());
@@ -551,10 +535,23 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     return set;
   }
 
-  private List<String> makeSet() {
-    List<String> set = new ArrayList<>();
+  private Set<String> initializeThousandMemberSet() {
+    Set<String> set = new HashSet<>();
+    int SIZE_OF_SET = 1000;
     for (int i = 0; i < SIZE_OF_SET; i++) {
       set.add((BASE_FIELD + i));
+    }
+    jedis.sadd(KEY, set.toArray(new String[0]));
+    return set;
+  }
+
+  private Set<byte[]> initializeThousandMemberByteSet() {
+    Set<byte[]> set = new HashSet<>();
+    int SIZE_OF_SET = 1000;
+    for (int i = 0; i < SIZE_OF_SET; i++) {
+      byte[] memberToAdd = Integer.toString(i).getBytes();
+      set.add(memberToAdd);
+      jedis.sadd(KEY.getBytes(), memberToAdd);
     }
     return set;
   }
