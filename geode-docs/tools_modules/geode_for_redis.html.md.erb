@@ -131,7 +131,11 @@ to implement redundant copies and this property corresponds to the partitioned r
 
 Security is implemented slightly differently to OSS Redis. Redis stores password information in plain text in the redis.conf file.
 
-When using <%=vars.product_name%>, to enable security, a Security Manager needs to be configured on the server(s). This Security Manager will authenticate `AUTH <password>` commands and `AUTH <username> <password>` commands. Users can set a custom `default` username using the `geode-for-redis-username` parameter. This username will be used when `AUTH <password>` commands are sent without a `<username>`.
+When using <%=vars.product_name%>, to enable security, a Security Manager needs to be configured on the server(s).
+This Security Manager will authenticate `AUTH <password>` commands and `AUTH <username> <password>` commands.
+Users can set a custom `default` username using the `geode-for-redis-username` parameter.
+If users don't set this parameter, the default username  will be "default".
+This username will be used when `AUTH <password>` commands are sent without a `<username>`.
 
 The following gfsh command configures a `SimpleSecurityManager`:
 
@@ -153,11 +157,18 @@ $ redis-cli -c -h <geodeForRedisBindAddress> -p <geodeForRedisPort> \
   --user <geodeForRedisUsername> -a <geodeForRedisUsername> ping
 ```
 
-The `SimpleSecurityManager` is to be used **only for demonstration purposes**. It will authenticate successfully when the `password` and `username` are the same.
+The `SimpleSecurityManager` is to be used **only for demonstration purposes**.
+It will authenticate successfully when the `password` and `username` are the same.
 
-Note that the `geode-for-redis-username` property is only needed if `AUTH` commands are issued without a username. In this case, the Security Manager will need to respond to authentication requests using this username.
+Note that the `geode-for-redis-username` property is only needed if `AUTH` commands are issued without a username.
+In this case, the Security Manager will need to respond to authentication requests using this username.
 
 Note also that _any_ `AUTH` requests will fail if no Security Manager has been configured.
+
+In addition to authentication, each command is authorized according to <%=vars.product_name%>'s
+[security model](../managing/security/implementing_authorization.html).
+Commands are divided into Read operations and Write operations for which the resource permissions
+DATA:READ:GEODE_FOR_REDIS and DATA:WRITE:GEODE_FOR_REDIS are respectively required.
 
 For information on configuring the cluster for SSL, see [Configuring SSL](../managing/security/implementing_ssl.html).
 
@@ -231,7 +242,7 @@ integer (+/-&nbsp;9223372036854775807) for CURSOR.
 | INFO section | Field(s) |
 |--------------|----------|
 | clients      | connected_clients<br/>blocked_clients (always returns 0) |
-| cluster      | cluster_enables (always returns 1) |
+| cluster      | cluster_enabled (always returns 1) |
 | keyspace     | db0:keys<br/>expires (always returns 0)<br/>avg_ttl (always returns 0)<br/> |
 | memory       | maxmemory<br/>used_memory<br/>mem_fragmentation_ratio |
 | persistence  | loading (always returns 0)<br/>rdb_changes_since_last_save (always returns 0)<br/>rdb_last_save_time (always returns 0) |
@@ -253,7 +264,7 @@ This provides a higher level of data consistency within the cluster.
 Keys are expired in two ways, actively and passively:
 
 -   With active expiration, expiration is evaluated whenever a key is accessed. If the key is due to expire, it is deleted. Active expiration is accurate to the millisecond.
--   With passive expiration, keys are evaluated every three seconds. If they are due to expire, they are deleted.  Passive expiration is accurate to the second.
+-   With passive expiration, keys are evaluated every three minutes. If they are due to expire, they are deleted.  Passive expiration is accurate to the second.
 
 ## <a id="high-availability-model"></a>High Availability Model
 
