@@ -76,6 +76,9 @@ public class PrepareNewPersistentMemberMessage extends HighPriorityDistributionM
     ReplyProcessor21 processor = new ReplyProcessor21(dm, members, cache.getCancelCriterion());
     PrepareNewPersistentMemberMessage msg =
         new PrepareNewPersistentMemberMessage(regionPath, oldId, newId, processor.getProcessorId());
+    logger.info("GGG:Sending PrepareNewPersistentMemberMessage oldId="
+        + (oldId == null ? null : oldId.getTimeStamp()) + ",newId="
+        + (newId == null ? null : newId.getTimeStamp()));
     msg.setRecipients(members);
     dm.putOutgoing(msg);
     processor.waitForRepliesUninterruptibly();

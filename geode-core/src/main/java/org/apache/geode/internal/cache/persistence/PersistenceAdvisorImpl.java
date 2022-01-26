@@ -673,6 +673,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
       logger.debug(LogMarker.PERSIST_ADVISOR_VERBOSE, "{}-{}: Member removed. persistentID={}",
           shortDiskStoreId(), regionPath, id);
     }
+    logger.info("GGG:Member removed, id=" + (id == null ? null : id.getTimeStamp()));
 
     synchronized (lock) {
       recoveredMembers.remove(id);
@@ -1248,6 +1249,10 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
       CacheProfile cp = (CacheProfile) profile;
       if (cp.persistentID != null && cp.persistenceInitialized) {
         memberOnline(profile.getDistributedMember(), cp.persistentID);
+        logger.info("GGG:memberOnline:" + cp.persistentID.getTimeStamp());
+      } else if (cp.persistentID != null) {
+        logger.info(
+            "GGG:initialized?" + cp.persistenceInitialized + ":" + cp.persistentID.getTimeStamp());
       }
     }
 

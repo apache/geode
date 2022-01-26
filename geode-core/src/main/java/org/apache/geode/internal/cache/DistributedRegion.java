@@ -273,6 +273,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     }
     if (persistenceAdvisor != null) {
       persistentId = persistenceAdvisor.generatePersistentID();
+      logger.info("GGG:Created newId " + (persistentId == null ? null : persistentId.getTimeStamp())
+          + " for region " + getFullPath());
     } else {
       persistentId = null;
     }
@@ -1083,6 +1085,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
             logger.debug("DistributedRegion.getInitialImageAndRecovery: Finished Recovery");
           }
           persistentMemberId = dskRgn.getMyPersistentID();
+          logger.info("GGG: recovered my oldId "
+              + (persistentMemberId == null ? null : persistentMemberId.getTimeStamp()) + " for "
+              + getFullPath());
         }
 
         // Create OQL indexes before starting GII.
