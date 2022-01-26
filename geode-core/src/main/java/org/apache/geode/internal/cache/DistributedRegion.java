@@ -273,8 +273,10 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     }
     if (persistenceAdvisor != null) {
       persistentId = persistenceAdvisor.generatePersistentID();
-      logger.info("GGG:Created newId " + (persistentId == null ? null : persistentId.getTimeStamp())
-          + " for region " + getFullPath());
+      if (persistentId != null) {
+        logger.info(
+            "GGG:Created newId " + persistentId.getTimeStamp() + " for region " + getFullPath());
+      }
     } else {
       persistentId = null;
     }
