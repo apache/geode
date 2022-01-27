@@ -395,6 +395,12 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   }
 
   @Test
+  public void testSinterstore() {
+    runMultiKeyCommandAndAssertNoStatUpdates(SET_KEY,
+        (k1, k2) -> jedis.sinterstore(HASHTAG + "dest", k1, k2));
+  }
+
+  @Test
   public void testSismember() {
     runCommandAndAssertHitsAndMisses(SET_KEY, k -> jedis.sismember(k, "member"));
   }
@@ -563,12 +569,6 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   @Test
   public void testSscan() {
     runCommandAndAssertHitsAndMisses(SET_KEY, k -> jedis.sscan(k, "0"));
-  }
-
-  @Test
-  public void testSinterstore() {
-    runMultiKeyCommandAndAssertNoStatUpdates(SET_KEY,
-        (k1, k2) -> jedis.sinterstore(HASHTAG + "dest", k1, k2));
   }
 
   /************* Helper Methods *************/

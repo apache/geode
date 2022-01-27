@@ -15,11 +15,18 @@
 package org.apache.geode.redis.internal.commands.executor.set;
 
 
+import static org.apache.geode.redis.internal.data.RedisSet.sinterstore;
 
-public class SInterStoreExecutor extends SInterExecutor {
+import java.util.List;
+
+import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.services.RegionProvider;
+
+public class SInterStoreExecutor extends SetOpIntegerResult {
 
   @Override
-  protected boolean isStorage() {
-    return true;
+  protected int getResult(RegionProvider regionProvider, List<RedisKey> setKeys, RedisKey destKey) {
+    return sinterstore(regionProvider, setKeys, destKey);
   }
+
 }
