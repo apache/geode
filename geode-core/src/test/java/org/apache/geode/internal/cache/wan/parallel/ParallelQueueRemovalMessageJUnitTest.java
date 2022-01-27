@@ -249,10 +249,10 @@ public class ParallelQueueRemovalMessageJUnitTest {
     message.process((ClusterDistributionManager) this.cache.getDistributionManager());
   }
 
-  private HashMap<String, Map<Integer, List<Long>>> createRegionToDispatchedKeysMap() {
-    HashMap<String, Map<Integer, List<Long>>> regionToDispatchedKeys = new HashMap<>();
-    Map<Integer, List<Long>> bucketIdToDispatchedKeys = new HashMap<>();
-    List<Long> dispatchedKeys = new ArrayList<>();
+  private HashMap<String, Map<Integer, List<Object>>> createRegionToDispatchedKeysMap() {
+    HashMap<String, Map<Integer, List<Object>>> regionToDispatchedKeys = new HashMap<>();
+    Map<Integer, List<Object>> bucketIdToDispatchedKeys = new HashMap<>();
+    List<Object> dispatchedKeys = new ArrayList<>();
     dispatchedKeys.add(KEY);
     bucketIdToDispatchedKeys.put(BUCKET_ID, dispatchedKeys);
     regionToDispatchedKeys.put(ParallelGatewaySenderHelper.getRegionQueueName(GATEWAY_SENDER_ID),
