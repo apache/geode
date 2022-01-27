@@ -382,9 +382,9 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
         (i) -> multipleSScanAndAssertOnContentOfResultSet(i, jedis1, initialMemberData),
         (i) -> multipleSScanAndAssertOnContentOfResultSet(i, jedis2, initialMemberData),
         (i) -> {
-          String field = "new_" + BASE_FIELD + i;
-          jedis.sadd(KEY, field);
-          jedis.srem(KEY, field);
+          String member = "new_" + BASE_FIELD + i;
+          jedis.sadd(KEY, member);
+          jedis.srem(KEY, member);
         }).run();
 
     jedis1.close();
