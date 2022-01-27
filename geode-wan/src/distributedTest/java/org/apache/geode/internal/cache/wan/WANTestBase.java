@@ -2377,6 +2377,7 @@ public class WANTestBase extends DistributedTestCase {
     Region<Object, Object> r = cache.getRegion(SEPARATOR + regionName);
     for (long i = from; i < numPuts; i++) {
       r.put(i, "Value_" + i);
+      logger.info("toberal putting key: {}", i);
     }
   }
 

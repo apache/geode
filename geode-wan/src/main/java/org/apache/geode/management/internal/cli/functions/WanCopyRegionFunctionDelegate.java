@@ -447,6 +447,9 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
       } else {
         timestamp = ((EntrySnapshot) entry).getVersionTag().getVersionTimeStamp();
       }
+      logger.info(
+          "toberal mustDiscardEntry: key: {}, newestTimestampAllowed: {}, timestamp: {}, discard: {}",
+          entry.getKey(), newestTimestampAllowed, timestamp, timestamp > newestTimestampAllowed);
       return timestamp > newestTimestampAllowed;
     }
   }
