@@ -974,6 +974,7 @@ public class ServerConnection implements Runnable {
   }
 
   void handleTermination(boolean timedOut) {
+    logger.info("XXX ServerConnection.handleTermination terminating sc={}", this);
     synchronized (terminationLock) {
       if (terminated) {
         return;
@@ -1059,6 +1060,7 @@ public class ServerConnection implements Runnable {
     if (cleanupStats) {
       acceptor.getConnectionListener().connectionClosed(clientDeparted, communicationMode);
     }
+    logger.info("XXX ServerConnection.handleTermination done terminating sc={}", this);
   }
 
   protected void doOneMessage() {
