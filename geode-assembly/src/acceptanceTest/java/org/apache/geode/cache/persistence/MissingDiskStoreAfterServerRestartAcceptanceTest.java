@@ -124,7 +124,7 @@ public class MissingDiskStoreAfterServerRestartAcceptanceTest {
     connectToLocatorCommand = "connect --locator=localhost[" + locatorPort + "]";
 
     queryCommand =
-        "query --query=\"select * from " + SEPARATOR + REGION_NAME_WITH_UNDERSCORE + "\"";
+        "query --query=\'select * from " + SEPARATOR + REGION_NAME_WITH_UNDERSCORE + "\'";
 
     gfshRule.execute(startLocatorCommand, startServer1Command, startServer2Command,
         startServer3Command, startServer4Command,
