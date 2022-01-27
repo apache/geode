@@ -14,10 +14,18 @@
  */
 package org.apache.geode.redis.internal.commands.executor.set;
 
-public class SDiffStoreExecutor extends SDiffExecutor {
+import static org.apache.geode.redis.internal.data.RedisSet.sdiffstore;
+
+import java.util.List;
+
+import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.services.RegionProvider;
+
+public class SDiffStoreExecutor extends SetOpIntegerResult {
 
   @Override
-  protected boolean isStorage() {
-    return true;
+  protected int getResult(RegionProvider regionProvider, List<RedisKey> setKeys, RedisKey destKey) {
+    return sdiffstore(regionProvider, setKeys, destKey);
   }
+
 }

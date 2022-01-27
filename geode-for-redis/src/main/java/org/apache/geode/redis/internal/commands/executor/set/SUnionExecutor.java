@@ -14,18 +14,18 @@
  */
 package org.apache.geode.redis.internal.commands.executor.set;
 
+import static org.apache.geode.redis.internal.data.RedisSet.sunion;
+
+import java.util.List;
 import java.util.Set;
 
-public class SUnionExecutor extends SetOpExecutor {
+import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.services.RegionProvider;
+
+public class SUnionExecutor extends SetOpArrayResult {
 
   @Override
-  protected boolean isStorage() {
-    return false;
-  }
-
-  @Override
-  protected boolean doSetOp(Set<byte[]> resultSet, Set<byte[]> nextSet) {
-    resultSet.addAll(nextSet);
-    return false;
+  protected Set<byte[]> getResult(RegionProvider regionProvider, List<RedisKey> setKeys) {
+    return sunion(regionProvider, setKeys, true);
   }
 }

@@ -92,17 +92,7 @@ public class RedisSet extends AbstractRedisData {
     return 1;
   }
 
-  public static Set<byte[]> sunion(RegionProvider regionProvider, List<RedisKey> keys) {
-    return calculateUnion(regionProvider, keys, true);
-  }
-
-  public static int sunionstore(RegionProvider regionProvider, RedisKey destinationKey,
-      List<RedisKey> keys) {
-    MemberSet union = calculateUnion(regionProvider, keys, false);
-    return setOpStoreResult(regionProvider, destinationKey, union);
-  }
-
-  private static MemberSet calculateUnion(RegionProvider regionProvider, List<RedisKey> keys,
+  public static MemberSet sunion(RegionProvider regionProvider, List<RedisKey> keys,
       boolean updateStats) {
     MemberSet union = new MemberSet();
     for (RedisKey key : keys) {
@@ -112,17 +102,13 @@ public class RedisSet extends AbstractRedisData {
     return union;
   }
 
-  public static Set<byte[]> sdiff(RegionProvider regionProvider, List<RedisKey> keys) {
-    return calculateDiff(regionProvider, keys, true);
+  public static int sunionstore(RegionProvider regionProvider, List<RedisKey> keys,
+      RedisKey destinationKey) {
+    MemberSet union = sunion(regionProvider, keys, false);
+    return setOpStoreResult(regionProvider, destinationKey, union);
   }
 
-  public static int sdiffstore(RegionProvider regionProvider, RedisKey destinationKey,
-      List<RedisKey> keys) {
-    MemberSet diff = calculateDiff(regionProvider, keys, false);
-    return setOpStoreResult(regionProvider, destinationKey, diff);
-  }
-
-  private static MemberSet calculateDiff(RegionProvider regionProvider, List<RedisKey> keys,
+  public static MemberSet sdiff(RegionProvider regionProvider, List<RedisKey> keys,
       boolean updateStats) {
     RedisSet firstSet = regionProvider.getTypedRedisData(REDIS_SET, keys.get(0), updateStats);
     MemberSet diff = new MemberSet(firstSet.members);
@@ -136,14 +122,21 @@ public class RedisSet extends AbstractRedisData {
     return diff;
   }
 
-  public static Set<byte[]> sinter(RegionProvider regionProvider, List<RedisKey> keys) {
-    List<RedisSet> sets = createRedisSetList(keys, regionProvider);
+  public static int sdiffstore(RegionProvider regionProvider,
+      List<RedisKey> keys, RedisKey destinationKey) {
+    MemberSet diff = sdiff(regionProvider, keys, false);
+    return setOpStoreResult(regionProvider, destinationKey, diff);
+  }
+
+  public static MemberSet sinter(RegionProvider regionProvider, List<RedisKey> keys,
+      boolean updateStats) {
+    List<RedisSet> sets = createRedisSetList(keys, regionProvider, updateStats);
     final RedisSet smallestSet = findSmallest(sets);
+    MemberSet result = new MemberSet(smallestSet.scard());
     if (smallestSet.scard() == 0) {
-      return Collections.emptySet();
+      return result;
     }
 
-    MemberSet result = new MemberSet(smallestSet.scard());
     for (byte[] member : smallestSet.members) {
       boolean addToSet = true;
       for (RedisSet otherSet : sets) {
@@ -175,13 +168,19 @@ public class RedisSet extends AbstractRedisData {
   }
 
   private static List<RedisSet> createRedisSetList(List<RedisKey> keys,
-      RegionProvider regionProvider) {
+      RegionProvider regionProvider, boolean updateStats) {
     List<RedisSet> sets = new ArrayList<>(keys.size());
     for (RedisKey key : keys) {
-      RedisSet redisSet = regionProvider.getTypedRedisData(REDIS_SET, key, true);
+      RedisSet redisSet = regionProvider.getTypedRedisData(REDIS_SET, key, updateStats);
       sets.add(redisSet);
     }
     return sets;
+  }
+
+  public static int sinterstore(RegionProvider regionProvider,
+      List<RedisKey> keys, RedisKey destinationKey) {
+    MemberSet inter = sinter(regionProvider, keys, false);
+    return setOpStoreResult(regionProvider, destinationKey, inter);
   }
 
   @VisibleForTesting

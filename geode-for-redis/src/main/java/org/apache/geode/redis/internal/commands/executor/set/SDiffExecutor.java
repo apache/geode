@@ -14,18 +14,19 @@
  */
 package org.apache.geode.redis.internal.commands.executor.set;
 
+import static org.apache.geode.redis.internal.data.RedisSet.sdiff;
+
+import java.util.List;
 import java.util.Set;
 
-public class SDiffExecutor extends SetOpExecutor {
+import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.services.RegionProvider;
+
+public class SDiffExecutor extends SetOpArrayResult {
 
   @Override
-  protected boolean doSetOp(Set<byte[]> resultSet, Set<byte[]> nextSet) {
-    resultSet.removeAll(nextSet);
-    return resultSet.isEmpty();
+  protected Set<byte[]> getResult(RegionProvider regionProvider, List<RedisKey> setKeys) {
+    return sdiff(regionProvider, setKeys, true);
   }
 
-  @Override
-  protected boolean isStorage() {
-    return false;
-  }
 }
