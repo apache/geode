@@ -18,7 +18,6 @@ package org.apache.geode.redis.internal.data;
 
 import static java.util.Collections.emptyList;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -38,7 +37,7 @@ class NullRedisSet extends RedisSet {
   }
 
   @Override
-  public Collection<byte[]> spop(Region<RedisKey, RedisData> region, RedisKey key, int popCount) {
+  public List<byte[]> spop(int popCount, Region<RedisKey, RedisData> region, RedisKey key) {
     return emptyList();
   }
 

@@ -16,7 +16,6 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static java.util.Collections.emptyList;
 import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
@@ -224,33 +223,17 @@ public class RedisSet extends AbstractRedisData {
     }
   }
 
-  public Collection<byte[]> spop(Region<RedisKey, RedisData> region, RedisKey key, int popCount) {
-    int originalSize = scard();
-    if (originalSize == 0) {
-      return emptyList();
+  public List<byte[]> spop(int count, Region<RedisKey, RedisData> region, RedisKey key) {
+    List<byte[]> result = new ArrayList<>();
+    if (members.size() <= count) {
+      result.addAll(members);
+      members.clear();
+    } else {
+      srandomUniqueListAddToResult(count, result, true);
     }
 
-    if (popCount >= originalSize) {
-      region.remove(key, this);
-      return members;
-    }
-
-    List<byte[]> popped = new ArrayList<>();
-    byte[][] setMembers = members.toArray(new byte[originalSize][]);
-    Random rand = new Random();
-    while (popped.size() < popCount) {
-      int idx = rand.nextInt(originalSize);
-      byte[] memberToPop = setMembers[idx];
-      if (memberToPop != null) {
-        setMembers[idx] = null;
-        popped.add(memberToPop);
-        membersRemove(memberToPop);
-      }
-    }
-    if (!popped.isEmpty()) {
-      storeChanges(region, key, new RemoveByteArrays(popped));
-    }
-    return popped;
+    storeChanges(region, key, new RemoveByteArrays(result));
+    return result;
   }
 
   public List<byte[]> srandmember(int count) {
@@ -260,10 +243,10 @@ public class RedisSet extends AbstractRedisData {
       srandomDuplicateList(-count, result);
     } else if (count * randMethodRatio < members.size()) {
       // Count is small enough to add random elements to result
-      srandomUniqueListWithSmallCount(count, result);
+      srandomUniqueListAddToResult(count, result, false);
     } else {
       // Count either equal or greater to member size or close to the member size
-      srandomUniqueListWithLargeCount(count, result);
+      srandomUniqueListRemoveFromResult(count, result);
     }
     return result;
   }
@@ -279,7 +262,7 @@ public class RedisSet extends AbstractRedisData {
     }
   }
 
-  private void srandomUniqueListWithSmallCount(int count, List<byte[]> result) {
+  private void srandomUniqueListAddToResult(int count, List<byte[]> result, boolean isSPop) {
     Random rand = new Random();
     Set<Integer> indexesUsed = new HashSet<>();
 
@@ -288,12 +271,16 @@ public class RedisSet extends AbstractRedisData {
       byte[] member = members.getFromBackingArray(randIndex);
       if (member != null && !indexesUsed.contains(randIndex)) {
         result.add(member);
-        indexesUsed.add(randIndex);
+        if (isSPop) {
+          members.remove(member);
+        } else {
+          indexesUsed.add(randIndex);
+        }
       }
     }
   }
 
-  private void srandomUniqueListWithLargeCount(int count, List<byte[]> result) {
+  private void srandomUniqueListRemoveFromResult(int count, List<byte[]> result) {
     if (count >= members.size()) {
       result.addAll(members);
       return;

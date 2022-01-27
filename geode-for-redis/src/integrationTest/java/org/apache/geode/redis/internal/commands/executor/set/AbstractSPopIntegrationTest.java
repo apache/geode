@@ -14,16 +14,18 @@
  */
 package org.apache.geode.redis.internal.commands.executor.set;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_VALUE_MUST_BE_POSITIVE;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.net.Socket;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.After;
 import org.junit.Before;
@@ -32,17 +34,19 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
+import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractSPopIntegrationTest implements RedisIntegrationTest {
   private JedisCluster jedis;
-  private static final int REDIS_CLIENT_TIMEOUT =
-      Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
+  private static final String NON_EXISTENT_SET_KEY = "{tag1}nonExistentSet";
+  private static final String SET_KEY = "{tag1}setKey";
+  private static final String[] SET_MEMBERS =
+      {"one", "two", "three", "four", "five", "six", "seven", "eight"};
 
   @Before
   public void setUp() {
-    jedis = new JedisCluster(new HostAndPort("localhost", getPort()), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, getPort()), REDIS_CLIENT_TIMEOUT);
   }
 
   @After
@@ -52,213 +56,137 @@ public abstract class AbstractSPopIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
-  public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.SPOP))
-        .hasMessageContaining("ERR wrong number of arguments for 'spop' command");
+  public void spopTooFewArgs_returnsError() {
+    assertAtLeastNArgs(jedis, Protocol.Command.SPOP, 1);
   }
 
   @Test
-  public void givenMoreThanThreeArguments_returnsSyntaxError() {
+  public void spopTooManyArgs_returnsError() {
     assertThatThrownBy(
-        () -> jedis.sendCommand("key", Protocol.Command.SPOP, "key", "NaN", "extraArg"))
+        () -> jedis.sendCommand(SET_KEY, Protocol.Command.SPOP, SET_KEY, "5", "5"))
             .hasMessageContaining(ERROR_SYNTAX);
   }
 
   @Test
-  public void givenCountIsNotAnInteger_returnsNotIntegerError() {
-    assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.SPOP, "key", "NaN"))
+  public void spop_withNonNumericCount_returnsError() {
+    assertThatThrownBy(() -> jedis.sendCommand(SET_KEY, Protocol.Command.SPOP, SET_KEY, "b"))
         .hasMessageContaining(ERROR_VALUE_MUST_BE_POSITIVE);
   }
 
   @Test
-  public void testSPop() {
-    int ENTRIES = 10;
-
-    List<String> masterSet = new ArrayList<>();
-    for (int i = 0; i < ENTRIES; i++) {
-      masterSet.add("master-" + i);
-    }
-
-    jedis.sadd("master", masterSet.toArray(new String[] {}));
-    String poppy = jedis.spop("master");
-
-    masterSet.remove(poppy);
-    assertThat(jedis.smembers("master").toArray()).containsExactlyInAnyOrder(masterSet.toArray());
-
-    assertThat(jedis.spop("spopnonexistent")).isNull();
+  public void spop_withNegativeCount_returnsError() {
+    assertThatThrownBy(() -> jedis.spop(SET_KEY, -1))
+        .hasMessageContaining(ERROR_VALUE_MUST_BE_POSITIVE);
   }
 
   @Test
-  public void testSPopAll() {
-    int ENTRIES = 10;
-
-    List<String> masterSet = new ArrayList<>();
-    for (int i = 0; i < ENTRIES; i++) {
-      masterSet.add("master-" + i);
-    }
-
-    jedis.sadd("master", masterSet.toArray(new String[] {}));
-    Set<String> popped = jedis.spop("master", ENTRIES);
-
-    assertThat(jedis.smembers("master").toArray()).isEmpty();
-    assertThat(popped.toArray()).containsExactlyInAnyOrder(masterSet.toArray());
+  public void spop_withoutCount_withNonExistentSet_returnsNull_setNotCreated() {
+    assertThat(jedis.spop(NON_EXISTENT_SET_KEY)).isNull();
+    assertThat(jedis.exists(NON_EXISTENT_SET_KEY)).isFalse();
   }
 
   @Test
-  public void testSPopAllPlusOne() {
-    int ENTRIES = 10;
+  public void spop_withoutCount_withExistentSet_returnsOneMember_removesReturnedMemberFromSet() {
+    jedis.sadd(SET_KEY, SET_MEMBERS);
 
-    List<String> masterSet = new ArrayList<>();
-    for (int i = 0; i < ENTRIES; i++) {
-      masterSet.add("master-" + i);
-    }
-
-    jedis.sadd("master", masterSet.toArray(new String[] {}));
-    Set<String> popped = jedis.spop("master", ENTRIES + 1);
-
-    assertThat(jedis.smembers("master").toArray()).isEmpty();
-    assertThat(popped.toArray()).containsExactlyInAnyOrder(masterSet.toArray());
+    String result = jedis.spop(SET_KEY);
+    assertThat(result).isIn(Arrays.asList(SET_MEMBERS));
+    assertThat(jedis.smembers(SET_KEY)).doesNotContain(result).isSubsetOf(SET_MEMBERS)
+        .doesNotHaveDuplicates();
   }
 
   @Test
-  public void testSPopAllMinusOne() {
-    int ENTRIES = 10;
-
-    List<String> masterSet = new ArrayList<>();
-    for (int i = 0; i < ENTRIES; i++) {
-      masterSet.add("master-" + i);
-    }
-
-    jedis.sadd("master", masterSet.toArray(new String[] {}));
-    Set<String> popped = jedis.spop("master", ENTRIES - 1);
-
-    assertThat(jedis.smembers("master").toArray()).hasSize(1);
-    assertThat(popped).hasSize(ENTRIES - 1);
-    assertThat(masterSet).containsAll(popped);
+  public void spop_withCountAsZero_withExistentSet_returnsEmptyList_setNotModified() {
+    jedis.sadd(SET_KEY, SET_MEMBERS);
+    assertThat(jedis.spop(SET_KEY, 0)).isEmpty();
+    assertThat(jedis.smembers(SET_KEY)).containsExactlyInAnyOrder(SET_MEMBERS);
   }
 
   @Test
-  public void testManySPops() {
-    int ENTRIES = 100;
-
-    List<String> masterSet = new ArrayList<>();
-    for (int i = 0; i < ENTRIES; i++) {
-      masterSet.add("master-" + i);
-    }
-
-    jedis.sadd("master", masterSet.toArray(new String[] {}));
-
-    List<String> popped = new ArrayList<>();
-    for (int i = 0; i < ENTRIES; i++) {
-      popped.add(jedis.spop("master"));
-    }
-
-    assertThat(jedis.smembers("master")).isEmpty();
-    assertThat(popped.toArray()).containsExactlyInAnyOrder(masterSet.toArray());
-
-    assertThat(jedis.spop("master")).isNull();
+  public void spop_withCount_withNonExistentSet_returnsEmptyList_setNotCreated() {
+    assertThat(jedis.spop(NON_EXISTENT_SET_KEY, 1)).isEmpty();
+    assertThat(jedis.exists(NON_EXISTENT_SET_KEY)).isFalse();
   }
 
   @Test
-  public void testConcurrentSPops() throws InterruptedException {
-    int ENTRIES = 1000;
+  public void spop_withSmallCount_withExistentSet_returnsCorrectNumberOfMembers_removesReturnedMembersFromSet() {
+    jedis.sadd(SET_KEY, SET_MEMBERS);
+    int count = 2;
 
-    List<String> masterSet = new ArrayList<>();
-    for (int i = 0; i < ENTRIES; i++) {
-      masterSet.add("master-" + i);
-    }
+    Set<String> result = jedis.spop(SET_KEY, count);
+    assertThat(result.size()).isEqualTo(count);
+    assertThat(result).isSubsetOf(SET_MEMBERS).doesNotHaveDuplicates();
 
-    jedis.sadd("master", masterSet.toArray(new String[] {}));
-
-    List<String> popped1 = new ArrayList<>();
-    Runnable runnable1 = () -> {
-      for (int i = 0; i < ENTRIES / 2; i++) {
-        popped1.add(jedis.spop("master"));
-      }
-    };
-
-    List<String> popped2 = new ArrayList<>();
-    Runnable runnable2 = () -> {
-      for (int i = 0; i < ENTRIES / 2; i++) {
-        popped2.add(jedis.spop("master"));
-      }
-    };
-
-    Thread thread1 = new Thread(runnable1);
-    Thread thread2 = new Thread(runnable2);
-
-    thread1.start();
-    thread2.start();
-    thread1.join();
-    thread2.join();
-
-    assertThat(jedis.smembers("master")).isEmpty();
-
-    popped1.addAll(popped2);
-    assertThat(popped1.toArray()).containsExactlyInAnyOrder(masterSet.toArray());
+    assertThat(jedis.smembers(SET_KEY)).doesNotContainAnyElementsOf(result).isSubsetOf(SET_MEMBERS)
+        .doesNotHaveDuplicates();
   }
 
   @Test
-  public void testSPopWithOutCount_shouldReturnNil_givenEmptySet() {
-    Object result = jedis.sendCommand("noneSuch", Protocol.Command.SPOP, "noneSuch");
+  public void spop_withLargeCount_withExistentSet_returnsCorrectNumberOfMembers_removesReturnedMembersFromSet() {
+    jedis.sadd(SET_KEY, SET_MEMBERS);
+    int count = 6;
 
-    assertThat(result).isNull();
+    Set<String> result = jedis.spop(SET_KEY, count);
+    assertThat(result.size()).isEqualTo(count);
+    assertThat(result).isSubsetOf(SET_MEMBERS).doesNotHaveDuplicates();
+
+    assertThat(jedis.smembers(SET_KEY)).doesNotContainAnyElementsOf(result).isSubsetOf(SET_MEMBERS)
+        .doesNotHaveDuplicates();
   }
 
   @Test
-  public void testSPopWithCount_shouldReturnEmptyList_givenEmptySet() {
-    Set<String> result = jedis.spop("noneSuch", 2);
-
-    assertThat(result).isEmpty();
+  public void spop_withCountAsSetSize_withExistentSet_returnsAllMembers_setKeyIsDeleted() {
+    jedis.sadd(SET_KEY, SET_MEMBERS);
+    assertThat(jedis.spop(SET_KEY, SET_MEMBERS.length)).containsExactlyInAnyOrder(SET_MEMBERS);
+    assertThat(jedis.exists(SET_KEY)).isFalse();
   }
 
   @Test
-  public void testSPopWithCountOfOne_shouldReturnList() {
-    jedis.sadd("set", "one");
-
-    Object actual = jedis.sendCommand("set", Protocol.Command.SPOP, "set", "1");
-
-    assertThat(actual).isInstanceOf(List.class);
+  public void spop_withCountGreaterThanSetSize_withExistentSet_returnsAllMembers_setKeyIsDeleted() {
+    jedis.sadd(SET_KEY, SET_MEMBERS);
+    assertThat(jedis.spop(SET_KEY, SET_MEMBERS.length * 2)).containsExactlyInAnyOrder(SET_MEMBERS);
+    assertThat(jedis.exists(SET_KEY)).isFalse();
   }
 
   @Test
-  public void testSPopWithoutCount_shouldNotReturnList() {
-    jedis.sadd("set", "one");
+  public void spop_withoutCount_withWrongKeyType_returnsWrongTypeError() {
+    String key = "ding";
+    jedis.set(key, "dong");
+    assertThatThrownBy(() -> jedis.spop(key)).hasMessageContaining(ERROR_WRONG_TYPE);
+  }
 
-    Object actual = jedis.sendCommand("set", Protocol.Command.SPOP, "set");
 
-    assertThat(actual).isNotInstanceOf(List.class);
+  @Test
+  public void spop_withCountAsZero_withWrongKeyType_returnsWrongTypeError() {
+    String key = "ding";
+    jedis.set(key, "dong");
+    assertThatThrownBy(() -> jedis.spop(key, 0)).hasMessageContaining(ERROR_WRONG_TYPE);
   }
 
   @Test
-  public void testSPopWithCountZero_shouldReturnEmptyList() {
-    jedis.sadd("set", "one");
-
-    Set<String> result = jedis.spop("set", 0);
-
-    assertThat(result).isEmpty();
+  public void spop_withCountAsNegative_withWrongKeyType_returnsWrongTypeError() {
+    String key = "ding";
+    jedis.set(key, "dong");
+    assertThatThrownBy(() -> jedis.spop(key, -1))
+        .hasMessageContaining(ERROR_VALUE_MUST_BE_POSITIVE);
   }
 
   @Test
-  public void testSPopWithoutArg_shouldReturnBulkString() throws Exception {
-    jedis.sadd("set", "one");
-
-    try (Socket redisSocket = new Socket("localhost", getPort())) {
-      byte[] rawBytes = new byte[] {
-          '*', '2', 0x0d, 0x0a,
-          '$', '4', 0x0d, 0x0a,
-          'S', 'P', 'O', 'P', 0x0d, 0x0a,
-          '$', '3', 0x0d, 0x0a,
-          's', 'e', 't', 0x0d, 0x0a,
-      };
-
-      redisSocket.getOutputStream().write(rawBytes);
-
-      byte[] inputBuffer = new byte[1024];
-      int n = redisSocket.getInputStream().read(inputBuffer);
-      String result = new String(Arrays.copyOfRange(inputBuffer, 0, n));
-
-      assertThat(result).isEqualTo("$3\r\none\r\n");
-    }
+  public void ensureSetConsistency_whenRunningConcurrently() {
+    final AtomicReference<String> spopResultReference = new AtomicReference<>();
+    new ConcurrentLoopingThreads(1000,
+        i -> jedis.sadd(SET_KEY, SET_MEMBERS),
+        i -> spopResultReference.set(jedis.spop(SET_KEY)))
+            .runWithAction(() -> {
+              assertThat(spopResultReference).satisfiesAnyOf(
+                  spopResult -> assertThat(spopResult.get()).isNull(),
+                  spopResult -> assertThat(spopResult.get()).isIn(Arrays.asList(SET_MEMBERS)));
+              assertThat(SET_KEY).satisfiesAnyOf(
+                  key -> assertThat(jedis.exists(key)).isFalse(),
+                  key -> assertThat(jedis.smembers(key))
+                      .doesNotContain(spopResultReference.get()).isSubsetOf(SET_MEMBERS)
+                      .doesNotHaveDuplicates());
+              jedis.srem(SET_KEY, SET_MEMBERS);
+            });
   }
 }

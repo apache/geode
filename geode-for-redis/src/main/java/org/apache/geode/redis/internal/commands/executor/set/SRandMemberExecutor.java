@@ -14,13 +14,31 @@
  */
 package org.apache.geode.redis.internal.commands.executor.set;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SET;
+import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
+
+import java.util.Collections;
 import java.util.List;
 
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.data.RedisSet;
+import org.apache.geode.redis.internal.services.RegionProvider;
 
 public class SRandMemberExecutor extends SetRandomExecutor {
   @Override
-  protected List<byte[]> performCommand(RedisSet set, int count) {
+  protected List<byte[]> performCommand(int count, RegionProvider regionProvider, RedisKey key) {
+    RedisSet set =
+        regionProvider.getTypedRedisData(REDIS_SET, key, true);
+    if (count == 0 || set == NULL_REDIS_SET) {
+      return Collections.emptyList();
+    }
+
     return set.srandmember(count);
+  }
+
+  @Override
+  protected String getError() {
+    return ERROR_NOT_INTEGER;
   }
 }
