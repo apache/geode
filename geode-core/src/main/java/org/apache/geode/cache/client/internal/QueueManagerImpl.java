@@ -373,8 +373,8 @@ public class QueueManagerImpl implements QueueManager {
                   ? (deadConnection.getUpdater().isPrimary() ? "Primary" : "Redundant")
                   : "Queue",
                   endpoint});
-      scheduleRedundancySatisfierIfNeeded(0);
       deadConnection.internalDestroy();
+      scheduleRedundancySatisfierIfNeeded(0);
     } else {
       if (logger.isDebugEnabled()) {
         logger.debug("Ignoring crashed endpoint {} it does not have a queue.", endpoint);
