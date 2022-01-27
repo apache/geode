@@ -413,6 +413,7 @@ public class JNDIInvoker {
     try (Connection connection = getConnection(dataSource, props)) {
     } catch (SQLException sqlEx) {
       closeDataSource(dataSource);
+      logger.warn("Failed DataSource validation for JNDI name {}", jndiName, sqlEx);
       throw new DataSourceCreateException(
           "Failed to connect to \"" + jndiName + "\". See log for details", sqlEx);
     }
