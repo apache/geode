@@ -14,15 +14,14 @@
  */
 package org.apache.geode.redis.internal.commands.executor.set;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_CURSOR;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.math.BigInteger;
 
 import org.junit.ClassRule;
 import org.junit.Test;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
@@ -37,21 +36,29 @@ public class SScanIntegrationTest extends AbstractSScanIntegrationTest {
   }
 
   @Test
-  public void givenDifferentCursorThanSpecifiedByPreviousSscan_returnsAllMembers() {
-    List<byte[]> memberList = new ArrayList<>();
-    for (int i = 0; i < 10; i++) {
-      jedis.sadd("a", String.valueOf(i));
-      memberList.add(String.valueOf(i).getBytes());
-    }
+  public void givenCursorGreaterThanUnsignedLongCapacity_returnsCursorError() {
+    assertThatThrownBy(
+        () -> jedis.sscan(KEY, SIGNED_LONG_MAX.add(BigInteger.ONE).toString()))
+            .hasMessageContaining(ERROR_CURSOR);
+  }
 
-    ScanParams scanParams = new ScanParams();
-    scanParams.count(5);
-    ScanResult<byte[]> result =
-        jedis.sscan("a".getBytes(), "0".getBytes(), scanParams);
-    assertThat(result.isCompleteIteration()).isFalse();
+  @Test
+  public void givenNegativeCursorGreaterThanUnsignedLongCapacity_returnsCursorError() {
+    assertThatThrownBy(
+        () -> jedis.sscan(KEY, SIGNED_LONG_MIN.add(BigInteger.valueOf(-1)).toString()))
+            .hasMessageContaining(ERROR_CURSOR);
+  }
 
-    result = jedis.sscan("a".getBytes(), "100".getBytes());
+  @Test
+  public void givenCursorEqualToUnsignedLongCapacity_doesNotError() {
+    jedis.sadd(KEY, "1");
+    assertThatNoException()
+        .isThrownBy(() -> jedis.sscan(KEY, SIGNED_LONG_MAX.subtract(BigInteger.ONE).toString()));
+  }
 
-    assertThat(result.getResult()).containsExactlyInAnyOrderElementsOf(memberList);
+  @Test
+  public void givenNegativeCursorEqualToUnsignedLongCapacity_returnsCursorError() {
+    jedis.sadd(KEY, "1");
+    assertThatNoException().isThrownBy(() -> jedis.sscan(KEY, SIGNED_LONG_MAX.toString()));
   }
 }
