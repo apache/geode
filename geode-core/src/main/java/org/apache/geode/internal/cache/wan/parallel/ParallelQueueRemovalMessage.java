@@ -20,7 +20,6 @@ import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BE
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -59,12 +58,13 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
 
   private static final Logger logger = LogService.getLogger();
 
-  private HashMap regionToDispatchedKeysMap;
+  private Map<String, Map<Integer, List<Object>>> regionToDispatchedKeysMap;
 
   public ParallelQueueRemovalMessage() {}
 
-  public ParallelQueueRemovalMessage(HashMap rgnToDispatchedKeysMap) {
-    regionToDispatchedKeysMap = rgnToDispatchedKeysMap;
+  public ParallelQueueRemovalMessage(
+      Map<String, Map<Integer, List<Object>>> rgnToDispatchedKeysMap) {
+    this.regionToDispatchedKeysMap = rgnToDispatchedKeysMap;
   }
 
   @Override

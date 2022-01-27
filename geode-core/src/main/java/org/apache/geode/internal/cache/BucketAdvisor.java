@@ -1768,7 +1768,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     return redundancyTracker.getCurrentRedundancy();
   }
 
-  Set<InternalDistributedMember> adviseInitialized() {
+  public Set<InternalDistributedMember> adviseInitialized() {
     return adviseFilter(profile -> {
       assert profile instanceof BucketProfile;
       BucketProfile bucketProfile = (BucketProfile) profile;

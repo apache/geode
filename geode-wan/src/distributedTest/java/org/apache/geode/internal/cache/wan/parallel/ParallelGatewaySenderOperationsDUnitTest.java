@@ -26,6 +26,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -39,10 +40,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -55,6 +58,9 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -69,6 +75,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.RMIException;
+import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -98,6 +105,13 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     addIgnoredException("Connection reset");
     addIgnoredException("Connection refused");
     addIgnoredException("could not get remote locator information");
+  }
+
+  @After
+  public void tearDown() {
+    for (VM vm : asList(vm4, vm5, vm6, vm7)) {
+      vm.invoke(() -> DistributionMessageObserver.setInstance(null));
+    }
   }
 
   @Test(timeout = 300_000)
@@ -1182,6 +1196,84 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
 
   }
 
+  /**
+   * Put entries in region after gateway sender is stopped. Count number of PQRM messages sent.
+   */
+  @Test
+  public void testDroppedEventsSignalizationToSecondaryQueueWhileSenderStopped() {
+    int lnPort = vm0.invoke(() -> createFirstLocatorWithDSId(1));
+    int nyPort = vm1.invoke(() -> createFirstRemoteLocator(2, lnPort));
+
+    createSendersReceiversAndPartitionedRegion(lnPort, nyPort, false, true);
+
+    // make sure all the senders are running before doing any puts
+    waitForSendersRunning();
+
+    // FIRST RUN: now, the senders are started. So, start the puts
+    vm4.invoke(() -> doPuts(getUniqueName() + "_PR", 100));
+
+    vm2.invoke(() -> validateRegionSizeRemainsSame(getUniqueName() + "_PR", 100));
+
+    stopSenders();
+
+    waitForAllSendersNotRunning();
+
+    vm4.invoke(() -> {
+      DistributionMessageObserver.setInstance(new CountSentPQRMObserver());
+    });
+    vm5.invoke(() -> {
+      DistributionMessageObserver.setInstance(new CountSentPQRMObserver());
+    });
+    vm6.invoke(() -> {
+      DistributionMessageObserver.setInstance(new CountSentPQRMObserver());
+    });
+    vm7.invoke(() -> {
+      DistributionMessageObserver.setInstance(new CountSentPQRMObserver());
+    });
+
+    // SECOND RUN: keep one thread doing puts to the region
+    vm4.invoke(() -> doPutsFrom(getUniqueName() + "_PR", 100, 200));
+
+    vm2.invoke(() -> validateRegionSizeRemainsSame(getUniqueName() + "_PR", 100));
+
+    int parallelQueueRemovalMessageCountInVm4 = vm4.invoke(() -> {
+      CountSentPQRMObserver observer =
+          (CountSentPQRMObserver) DistributionMessageObserver.getInstance();
+      return observer.getNumberOfSentPQRM();
+    });
+
+    int parallelQueueRemovalMessageCountInVm5 = vm5.invoke(() -> {
+      CountSentPQRMObserver observer =
+          (CountSentPQRMObserver) DistributionMessageObserver.getInstance();
+      return observer.getNumberOfSentPQRM();
+    });
+
+    int parallelQueueRemovalMessageCountInVm6 = vm6.invoke(() -> {
+      CountSentPQRMObserver observer =
+          (CountSentPQRMObserver) DistributionMessageObserver.getInstance();
+      return observer.getNumberOfSentPQRM();
+    });
+
+    int parallelQueueRemovalMessageCountInVm7 = vm7.invoke(() -> {
+      CountSentPQRMObserver observer =
+          (CountSentPQRMObserver) DistributionMessageObserver.getInstance();
+      return observer.getNumberOfSentPQRM();
+    });
+
+    assertThat(parallelQueueRemovalMessageCountInVm4 + parallelQueueRemovalMessageCountInVm5
+        + parallelQueueRemovalMessageCountInVm6 + parallelQueueRemovalMessageCountInVm7)
+            .isEqualTo(100);
+
+    await().untilAsserted(() -> {
+      int vm4SecondarySize = vm4.invoke(() -> getSecondaryQueueSizeInStats("ln"));
+      int vm5SecondarySize = vm5.invoke(() -> getSecondaryQueueSizeInStats("ln"));
+      int vm6SecondarySize = vm6.invoke(() -> getSecondaryQueueSizeInStats("ln"));
+      int vm7SecondarySize = vm7.invoke(() -> getSecondaryQueueSizeInStats("ln"));
+      assertThat(vm4SecondarySize + vm5SecondarySize + vm6SecondarySize + vm7SecondarySize)
+          .isEqualTo(0);
+    });
+
+  }
 
   private void clearShadowBucketRegions(PartitionedRegion shadowRegion) {
     PartitionedRegionDataStore.BucketVisitor bucketVisitor =
@@ -1506,10 +1598,34 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm7.invoke(() -> waitForSenderRunningState("ln"));
   }
 
+  private void waitForAllSendersNotRunning() {
+    vm4.invoke(() -> waitForSenderNonRunningState("ln"));
+    vm5.invoke(() -> waitForSenderNonRunningState("ln"));
+    vm6.invoke(() -> waitForSenderNonRunningState("ln"));
+    vm7.invoke(() -> waitForSenderNonRunningState("ln"));
+  }
+
   private void validateParallelSenderQueueAllBucketsDrained() {
     vm4.invoke(() -> validateParallelSenderQueueAllBucketsDrained("ln"));
     vm5.invoke(() -> validateParallelSenderQueueAllBucketsDrained("ln"));
     vm6.invoke(() -> validateParallelSenderQueueAllBucketsDrained("ln"));
     vm7.invoke(() -> validateParallelSenderQueueAllBucketsDrained("ln"));
   }
+
+  private static class CountSentPQRMObserver extends DistributionMessageObserver
+      implements Serializable {
+    private final AtomicInteger numberOfSentPQRM = new AtomicInteger(0);
+
+    @Override
+    public void beforeSendMessage(ClusterDistributionManager dm, DistributionMessage message) {
+      if (message instanceof ParallelQueueRemovalMessage) {
+        numberOfSentPQRM.addAndGet(message.getRecipients().size());
+      }
+    }
+
+    public int getNumberOfSentPQRM() {
+      return numberOfSentPQRM.get();
+    }
+  }
+
 }

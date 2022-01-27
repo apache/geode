@@ -105,7 +105,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME + SEPARATOR;
 
   // <PartitionedRegion, Map<Integer, List<Object>>>
-  private final Map regionToDispatchedKeysMap = new ConcurrentHashMap();
+  private final Map<String, Map<Integer, List<Object>>> regionToDispatchedKeysMap =
+      new ConcurrentHashMap<String, Map<Integer, List<Object>>>();
 
   protected final StoppableReentrantLock buckToDispatchLock;
   private final StoppableCondition regionToDispatchedKeysMapEmpty;
@@ -1172,9 +1173,10 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       lock.lock();
       boolean wasEmpty = regionToDispatchedKeysMap.isEmpty();
       try {
-        Map bucketIdToDispatchedKeys = (Map) regionToDispatchedKeysMap.get(prQ.getFullPath());
+        Map<Integer, List<Object>> bucketIdToDispatchedKeys =
+            regionToDispatchedKeysMap.get(prQ.getFullPath());
         if (bucketIdToDispatchedKeys == null) {
-          bucketIdToDispatchedKeys = new ConcurrentHashMap();
+          bucketIdToDispatchedKeys = new ConcurrentHashMap<Integer, List<Object>>();
           regionToDispatchedKeysMap.put(prQ.getFullPath(), bucketIdToDispatchedKeys);
         }
         addRemovedEventToMap(bucketIdToDispatchedKeys, bucketId, key);
@@ -1187,23 +1189,26 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     }
   }
 
-  public void sendQueueRemovalMesssageForDroppedEvent(PartitionedRegion prQ, int bucketId,
+  public void sendQueueRemovalMessageForDroppedEvent(PartitionedRegion prQ, int bucketId,
       Object key) {
-    final HashMap<String, Map<Integer, List>> temp = new HashMap<>();
-    Map bucketIdToDispatchedKeys = new ConcurrentHashMap();
-    temp.put(prQ.getFullPath(), bucketIdToDispatchedKeys);
-    addRemovedEventToMap(bucketIdToDispatchedKeys, bucketId, key);
+
     Set<InternalDistributedMember> recipients =
-        removalThread.getAllRecipients(sender.getCache(), temp);
+        removalThread.getAllRecipientsForEvent(sender.getCache(), prQ.getFullPath(), bucketId);
+
     if (!recipients.isEmpty()) {
+      final Map<String, Map<Integer, List<Object>>> temp = new HashMap<>();
+      Map<Integer, List<Object>> bucketIdToDispatchedKeys = new ConcurrentHashMap<>();
+      temp.put(prQ.getFullPath(), bucketIdToDispatchedKeys);
+      addRemovedEventToMap(bucketIdToDispatchedKeys, bucketId, key);
       ParallelQueueRemovalMessage pqrm = new ParallelQueueRemovalMessage(temp);
       pqrm.setRecipients(recipients);
       sender.getCache().getInternalDistributedSystem().getDistributionManager().putOutgoing(pqrm);
     }
   }
 
-  private void addRemovedEventToMap(Map bucketIdToDispatchedKeys, int bucketId, Object key) {
-    List dispatchedKeys = (List) bucketIdToDispatchedKeys.get(bucketId);
+  private void addRemovedEventToMap(Map<Integer, List<Object>> bucketIdToDispatchedKeys,
+      int bucketId, Object key) {
+    List<Object> dispatchedKeys = bucketIdToDispatchedKeys.get(bucketId);
     if (dispatchedKeys == null) {
       dispatchedKeys = new ArrayList<>();
       bucketIdToDispatchedKeys.put(bucketId, dispatchedKeys);
@@ -1215,9 +1220,10 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     buckToDispatchLock.lock();
     boolean wasEmpty = regionToDispatchedKeysMap.isEmpty();
     try {
-      Map bucketIdToDispatchedKeys = (Map) regionToDispatchedKeysMap.get(prQ.getFullPath());
+      Map<Integer, List<Object>> bucketIdToDispatchedKeys =
+          regionToDispatchedKeysMap.get(prQ.getFullPath());
       if (bucketIdToDispatchedKeys == null) {
-        bucketIdToDispatchedKeys = new ConcurrentHashMap();
+        bucketIdToDispatchedKeys = new ConcurrentHashMap<>();
         regionToDispatchedKeysMap.put(prQ.getFullPath(), bucketIdToDispatchedKeys);
       }
       addRemovedEventsToMap(bucketIdToDispatchedKeys, bucketId, shadowKeys);
@@ -1233,9 +1239,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     buckToDispatchLock.lock();
     boolean wasEmpty = regionToDispatchedKeysMap.isEmpty();
     try {
-      Map bucketIdToDispatchedKeys = (Map) regionToDispatchedKeysMap.get(prQPath);
+      Map<Integer, List<Object>> bucketIdToDispatchedKeys = regionToDispatchedKeysMap.get(prQPath);
       if (bucketIdToDispatchedKeys == null) {
-        bucketIdToDispatchedKeys = new ConcurrentHashMap();
+        bucketIdToDispatchedKeys = new ConcurrentHashMap<>();
         regionToDispatchedKeysMap.put(prQPath, bucketIdToDispatchedKeys);
       }
       addRemovedEventsToMap(bucketIdToDispatchedKeys, bucketId, shadowKeys);
@@ -1247,8 +1253,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     }
   }
 
-  private void addRemovedEventsToMap(Map bucketIdToDispatchedKeys, int bucketId, List keys) {
-    List dispatchedKeys = (List) bucketIdToDispatchedKeys.get(bucketId);
+  private void addRemovedEventsToMap(Map<Integer, List<Object>> bucketIdToDispatchedKeys,
+      int bucketId, List<Object> keys) {
+    List<Object> dispatchedKeys = bucketIdToDispatchedKeys.get(bucketId);
     if (dispatchedKeys == null) {
       dispatchedKeys = keys == null ? new ArrayList<>() : keys;
     } else {
@@ -1886,7 +1893,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
               }
             }
 
-            final HashMap<String, Map<Integer, List>> temp;
+            final Map<String, Map<Integer, List<Object>>> temp;
             buckToDispatchLock.lock();
             try {
               boolean wasEmpty = regionToDispatchedKeysMap.isEmpty();
@@ -1897,7 +1904,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
                 continue;
               }
               // TODO: This should be optimized.
+
               temp = new HashMap<>(regionToDispatchedKeysMap);
+
               regionToDispatchedKeysMap.clear();
             } finally {
               buckToDispatchLock.unlock();
@@ -1965,6 +1974,35 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       }
       return recipients;
     }
+
+    private Set<InternalDistributedMember> getAllRecipientsForEvent(InternalCache cache,
+        String partitionedRegionName, int bucketId) {
+      Set<InternalDistributedMember> recipients = new ObjectOpenHashSet<>();
+      PartitionedRegion partitionedRegion =
+          (PartitionedRegion) cache.getRegion(partitionedRegionName);
+      if (partitionedRegion != null && partitionedRegion.getRegionAdvisor() != null) {
+        final String bucketFullPath =
+            SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME + SEPARATOR
+                + partitionedRegion.getBucketName(bucketId);
+        AbstractBucketRegionQueue bucketRegionQueue =
+            (AbstractBucketRegionQueue) cache.getInternalRegionByPath(bucketFullPath);
+        if (bucketRegionQueue != null && bucketRegionQueue.getBucketAdvisor() != null) {
+          Set<InternalDistributedMember> bucketMembers =
+              bucketRegionQueue.getBucketAdvisor().adviseInitialized();
+          if (!bucketMembers.isEmpty()) {
+            recipients.addAll(bucketMembers);
+          } else {
+            recipients.addAll(partitionedRegion.getRegionAdvisor().adviseDataStore());
+          }
+        } else {
+          recipients.addAll(partitionedRegion.getRegionAdvisor().adviseDataStore());
+        }
+      }
+
+      return recipients;
+    }
+
+
 
     /**
      * shutdown this thread and the caller thread will join this thread
