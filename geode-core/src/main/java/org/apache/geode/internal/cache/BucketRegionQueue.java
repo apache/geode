@@ -205,12 +205,17 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   @Override
   public void beforeAcquiringPrimaryState() {
     PartitionedRegion region = getPartitionedRegion();
-    AbstractGatewaySenderEventProcessor ep =
-        region.getParallelGatewaySender().getEventProcessor();
 
-    if (ep.getDispatcher() instanceof GatewaySenderEventCallbackDispatcher) {
-      markAsDuplicate.addAll(eventSeqNumDeque);
+    if (region != null && region.getParallelGatewaySender() != null) {
+      AbstractGatewaySenderEventProcessor ep =
+          region.getParallelGatewaySender().getEventProcessor();
+
+      if (ep != null && !(ep.getDispatcher() instanceof GatewaySenderEventCallbackDispatcher)) {
+        return;
+      }
     }
+    markAsDuplicate.addAll(eventSeqNumDeque);
+
   }
 
   @Override
@@ -669,8 +674,11 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     }
   }
 
-  public void addMarkAsDuplicate(Object key) {
-    markAsDuplicate.add(key);
+  public void setAsPossibleDuplicate(Object key) {
+    Object object = optimalGet(key);
+    if (object != null) {
+      ((GatewaySenderEventImpl) object).setPossibleDuplicate(true);
+    }
   }
 
   public boolean checkIfQueueContainsKey(Object key) {

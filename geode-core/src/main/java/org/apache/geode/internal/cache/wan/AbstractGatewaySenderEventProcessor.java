@@ -582,53 +582,29 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
             // if the bucket becomes secondary after the event is picked from it,
             // check again before dispatching the event. Do this only for
             // AsyncEventQueue since possibleDuplicate flag is not used in WAN.
-            if (getSender().isParallel()) {
-              if (getDispatcher() instanceof GatewaySenderEventCallbackDispatcher) {
-                for (final GatewaySenderEventImpl event : filteredList) {
-                  final PartitionedRegion qpr;
-                  if (getQueue() instanceof ConcurrentParallelGatewaySenderQueue) {
-                    qpr = ((ConcurrentParallelGatewaySenderQueue) getQueue())
-                        .getRegion(event.getRegionPath());
-                  } else {
-                    qpr = ((ParallelGatewaySenderQueue) getQueue())
-                        .getRegion(event.getRegionPath());
-                  }
-                  int bucketId = event.getBucketId();
-                  // if the bucket from which the event has been picked is no longer
-                  // primary, then set possibleDuplicate to true on the event
-                  if (qpr != null) {
-                    BucketRegion bucket = qpr.getDataStore().getLocalBucketById(bucketId);
-                    if (bucket == null || !bucket.getBucketAdvisor().isPrimary()) {
-                      event.setPossibleDuplicate(true);
-                      if (isDebugEnabled) {
-                        logger.debug(
-                            "Bucket id: {} is no longer primary on this node. The event: {} will be dispatched from this node with possibleDuplicate set to true.",
-                            bucketId, event);
-                      }
+            if (getSender().isParallel()
+                && getDispatcher() instanceof GatewaySenderEventCallbackDispatcher) {
+              for (final GatewaySenderEventImpl event : filteredList) {
+                final PartitionedRegion qpr;
+                if (getQueue() instanceof ConcurrentParallelGatewaySenderQueue) {
+                  qpr = ((ConcurrentParallelGatewaySenderQueue) getQueue())
+                      .getRegion(event.getRegionPath());
+                } else {
+                  qpr = ((ParallelGatewaySenderQueue) getQueue())
+                      .getRegion(event.getRegionPath());
+                }
+                int bucketId = event.getBucketId();
+                // if the bucket from which the event has been picked is no longer
+                // primary, then set possibleDuplicate to true on the event
+                if (qpr != null) {
+                  BucketRegion bucket = qpr.getDataStore().getLocalBucketById(bucketId);
+                  if (bucket == null || !bucket.getBucketAdvisor().isPrimary()) {
+                    event.setPossibleDuplicate(true);
+                    if (isDebugEnabled) {
+                      logger.debug(
+                          "Bucket id: {} is no longer primary on this node. The event: {} will be dispatched from this node with possibleDuplicate set to true.",
+                          bucketId, event);
                     }
-                  }
-                }
-              } else {
-                Map regionToDispatchedKeysMap = new ConcurrentHashMap();
-
-                for (final GatewaySenderEventImpl event : filteredList) {
-                  // check if bucket from which the event has been picked is no longer
-                  // primary, then set possibleDuplicate to true on the event
-                  checkIfEventsBucketNotPrimary(regionToDispatchedKeysMap, event);
-                }
-                if (regionToDispatchedKeysMap.size() > 0) {
-                  Set<InternalDistributedMember> recipients =
-                      getAllRecipients(sender.getCache(), regionToDispatchedKeysMap);
-                  if (!recipients.isEmpty()) {
-                    logger.info("checkIfEventsBucketNotPrimary send ParallelQueueSetPossibleDuplicateMessage recipients {}.", recipients);
-
-                    ParallelQueueSetPossibleDuplicateMessage pqspdm =
-                        new ParallelQueueSetPossibleDuplicateMessage(regionToDispatchedKeysMap);
-                    pqspdm.setRecipients(recipients);
-                    InternalDistributedSystem ids =
-                        sender.getCache().getInternalDistributedSystem();
-                    DistributionManager dm = ids.getDistributionManager();
-                    dm.putOutgoing(pqspdm);
                   }
                 }
               }
@@ -1347,16 +1323,16 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
 
   private void notifyPossibleDuplicate(List<?> events) {
     Map regionToDispatchedKeysMap = new ConcurrentHashMap();
+    boolean pgwsender = (getSender().isParallel()
+        && !(getDispatcher() instanceof GatewaySenderEventCallbackDispatcher));
 
     for (Object o : events) {
       if (o instanceof GatewaySenderEventImpl) {
         GatewaySenderEventImpl ge = (GatewaySenderEventImpl) o;
         if (!ge.getPossibleDuplicate()) {
-          if (getSender().isParallel()
-              && !(getDispatcher() instanceof GatewaySenderEventCallbackDispatcher)) {
+          if (pgwsender) {
             addDuplicateEvent(regionToDispatchedKeysMap, ge);
           }
-
           ge.setPossibleDuplicate(true);
         }
       }
@@ -1366,7 +1342,9 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
       Set<InternalDistributedMember> recipients =
           getAllRecipients(sender.getCache(), regionToDispatchedKeysMap);
       if (!recipients.isEmpty()) {
-        logger.info("notifyPossibleDuplicate send ParallelQueueSetPossibleDuplicateMessage recipients {}.", recipients);
+        logger.info(
+            "notifyPossibleDuplicate send ParallelQueueSetPossibleDuplicateMessage recipients {}.",
+            recipients);
 
         ParallelQueueSetPossibleDuplicateMessage pqspdm =
             new ParallelQueueSetPossibleDuplicateMessage(regionToDispatchedKeysMap);
@@ -1431,41 +1409,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     dispatchedKeys.add(key);
 
   }
-
-
-  protected void checkIfEventsBucketNotPrimary(Map regionToDispatchedKeysMap,
-      GatewaySenderEventImpl event) {
-    InternalCache cache = sender.getCache();
-    String regionPath = event.getRegionPath();
-    if (cache.getRegion(regionPath) instanceof PartitionedRegion) {
-      PartitionedRegion prQ = ((ParallelGatewaySenderQueue) getQueue()).getRegion(regionPath);
-      int bucketId = event.getBucketId();
-      Object key = event.getShadowKey();
-
-      if (prQ != null) {
-        BucketRegion bucket = prQ.getDataStore().getLocalBucketById(bucketId);
-        if (bucket == null || !bucket.getBucketAdvisor().isPrimary()) {
-          if (!event.getPossibleDuplicate()) {
-            Map bucketIdToDispatchedKeys = (Map) regionToDispatchedKeysMap.get(prQ.getFullPath());
-            if (bucketIdToDispatchedKeys == null) {
-              bucketIdToDispatchedKeys = new ConcurrentHashMap();
-              regionToDispatchedKeysMap.put(prQ.getFullPath(), bucketIdToDispatchedKeys);
-            }
-
-            List dispatchedKeys = (List) bucketIdToDispatchedKeys.get(bucketId);
-            if (dispatchedKeys == null) {
-              dispatchedKeys = new ArrayList<Object>();
-              bucketIdToDispatchedKeys.put(bucketId, dispatchedKeys);
-            }
-            dispatchedKeys.add(key);
-
-            event.setPossibleDuplicate(true);
-          }
-        }
-      }
-    }
-  }
-
 
 
   private Set<InternalDistributedMember> getAllRecipients(InternalCache cache, Map map) {

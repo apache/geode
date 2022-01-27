@@ -1925,6 +1925,10 @@ org/apache/geode/internal/cache/wan/parallel/ParallelQueueRemovalMessage,2
 fromData,15
 toData,15
 
+org/apache/geode/internal/cache/wan/parallel/ParallelQueueSetPossibleDuplicateMessage,2
+fromData,15
+toData,15
+
 org/apache/geode/internal/cache/wan/serial/BatchDestroyOperation$DestroyMessage,2
 fromData,46
 toData,41

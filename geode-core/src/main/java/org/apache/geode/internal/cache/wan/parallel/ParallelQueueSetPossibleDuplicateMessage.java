@@ -113,12 +113,13 @@ public class ParallelQueueSetPossibleDuplicateMessage extends PooledDistribution
 
                   if (brq != null) {
                     if (isDebugEnabled) {
-                      logger.debug("ParallelQueueSetPossibleDuplicateMessage : The bucket {} key {}.",
-                              brq, key);
+                      logger.debug(
+                          "ParallelQueueSetPossibleDuplicateMessage : The bucket {} key {}.",
+                          brq, key);
                     }
 
                     if (brq.checkIfQueueContainsKey(key)) {
-                      brq.addMarkAsDuplicate(key);
+                      brq.setAsPossibleDuplicate(key);
                     }
                   }
                 }
