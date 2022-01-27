@@ -900,6 +900,11 @@ public class CacheClientProxy implements ClientSession {
         }
         // Cancel the expiration task
         cancelDurableExpirationTask(false);
+      } else if (_durableExpirationTask.get() != null) {
+        logger.info(
+            "XXX CacheClientProxy.terminateDispatching terminating non-paused proxy with a durable expiration task: proxy={}; durableExpirationTask={}; durableExpirationTaskIdentity={}",
+            this, _durableExpirationTask.get(),
+            System.identityHashCode(_durableExpirationTask.get()));
       }
 
       boolean alreadyDestroyed = false;

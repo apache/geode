@@ -20,7 +20,6 @@ import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Tell a server that a connection is being closed
@@ -37,13 +36,7 @@ public class CloseConnectionOp {
   public static void execute(Connection con, boolean keepAlive) throws Exception {
     AbstractOp op = new CloseConnectionOpImpl(keepAlive);
     try {
-      LogService.getLogger().info(
-          "XXX CloseConnectionOp.execute about to close con={}; conIdentity={}; keepAlive={}", con,
-          System.identityHashCode(con), keepAlive);
       con.execute(op);
-      LogService.getLogger().info(
-          "XXX CloseConnectionOp.execute done close con={}; conIdentity={}; keepAlive={}", con,
-          System.identityHashCode(con), keepAlive);
     } catch (EOFException e) {
       // expected
     }

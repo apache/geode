@@ -20,7 +20,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Represents a server. Keeps track of information about the specific server
@@ -45,8 +44,6 @@ public class Endpoint {
     this.stats = stats;
     this.memberId = memberId;
     updateLastExecute();
-    LogService.getLogger().info("XXX Endpoint.<init> endpoint={}; endpointIdentity={}", this,
-        System.identityHashCode(this));
   }
 
   public void updateLastExecute() {
@@ -65,8 +62,6 @@ public class Endpoint {
   public void close() {
     if (!closed) {
       closed = true;
-      LogService.getLogger().info("XXX Endpoint.close endpoint={}; endpointIdentity={}", this,
-          System.identityHashCode(this));
     }
   }
 

@@ -367,10 +367,6 @@ public class QueueManagerImpl implements QueueManager {
       }
     }
     if (deadConnection != null) {
-      logger.info(
-          "XXX QueueManagerImpl.endpointCrashed deadConnection={}; deadConnectionIdentity={} endpoint={}; endpointIdentity={}",
-          deadConnection, System.identityHashCode(deadConnection), deadConnection.getEndpoint(),
-          System.identityHashCode(deadConnection.getEndpoint()));
       logger
           .info("{} subscription endpoint {} crashed. Scheduling recovery.",
               new Object[] {deadConnection.getUpdater() != null
@@ -412,12 +408,12 @@ public class QueueManagerImpl implements QueueManager {
       }
     }
 
-    logger.info(
-        "Cache client updater identity={} for {} on endpoint {} endpointIdentity={} exiting. Scheduling recovery.",
-        System.identityHashCode(ccu),
-        (deadConnection != null && deadConnection.getUpdater() != null)
-            ? (deadConnection.getUpdater().isPrimary() ? "Primary" : "Redundant") : "Queue",
-        endpoint, System.identityHashCode(endpoint));
+    logger
+        .info("Cache client updater for {} on endpoint {} exiting. Scheduling recovery.",
+            (deadConnection != null && deadConnection.getUpdater() != null)
+                ? (deadConnection.getUpdater().isPrimary() ? "Primary" : "Redundant")
+                : "Queue",
+            endpoint);
     scheduleRedundancySatisfierIfNeeded(0);// one more chance
   }
 
@@ -661,14 +657,7 @@ public class QueueManagerImpl implements QueueManager {
       for (ServerLocation server : servers) {
         Connection connection = null;
         try {
-          logger.info(
-              "XXX QueueManagerImpl.recoverRedundancy about to createClientToServerConnection server={}",
-              server);
           connection = factory.createClientToServerConnection(server, true);
-          logger.info(
-              "XXX QueueManagerImpl.recoverRedundancy done createClientToServerConnection server={}; connection={}; connectionIdentity={}; endpoint={}; endpointIdentity={}",
-              server, connection, System.identityHashCode(connection), connection.getEndpoint(),
-              System.identityHashCode(connection.getEndpoint()));
         } catch (GemFireSecurityException e) {
           throw e;
         } catch (Exception e) {
@@ -680,15 +669,7 @@ public class QueueManagerImpl implements QueueManager {
           continue;
         }
 
-        logger.info(
-            "XXX QueueManagerImpl.recoverRedundancy about to initializeQueueConnection connection={}; connectionIdentity={}; endpoint={}; endpointIdentity={}",
-            connection, System.identityHashCode(connection));
         QueueConnectionImpl queueConnection = initializeQueueConnection(connection, false, null);
-        logger.info(
-            "XXX QueueManagerImpl.recoverRedundancy done initializeQueueConnection connection={}; connectionIdentity={}; endpoint={}; endpointIdentity={}; queueConnection={}; queueConnectionIdentity={}",
-            connection, System.identityHashCode(connection), connection.getEndpoint(),
-            System.identityHashCode(connection.getEndpoint()), queueConnection,
-            System.identityHashCode(queueConnection));
         if (queueConnection != null) {
           boolean isFirstNewConnection = false;
           synchronized (lock) {
@@ -889,12 +870,7 @@ public class QueueManagerImpl implements QueueManager {
     QueueConnectionImpl newPrimary = null;
     while (newPrimary == null && pool.getPoolOrCacheCancelInProgress() == null) {
       List<Connection> backups = queueConnections.getBackups();
-      logger.info("XXX QueueManagerImpl.recoverPrimary about to promoteBackupToPrimary backups={}",
-          backups);
       newPrimary = promoteBackupToPrimary(backups);
-      logger.info(
-          "XXX QueueManagerImpl.recoverPrimary done promoteBackupToPrimary newPrimary={}; newPrimaryIdentity={}",
-          newPrimary, System.identityHashCode(newPrimary));
       // Hitesh now lets say that server crashed
       if (newPrimary == null) {
         // could not find a backup to promote
@@ -1016,11 +992,6 @@ public class QueueManagerImpl implements QueueManager {
       if (connection.getEndpoint().isClosed() || shuttingDown
           || pool.getPoolOrCacheCancelInProgress() != null) {
         isBadConnection = true;
-        logger.info(
-            "XXX QueueManagerImpl.addToConnectionList connection={}; connectionIdentity={}; endpoint={}; endpointIdentity={}; isClosed={}; isBadConnection={}",
-            connection, System.identityHashCode(connection), connection.getEndpoint(),
-            System.identityHashCode(connection.getEndpoint()), connection.getEndpoint().isClosed(),
-            isBadConnection);
       } else {
         isBadConnection = false;
         if (isPrimary) {
@@ -1039,8 +1010,6 @@ public class QueueManagerImpl implements QueueManager {
             connection.getEndpoint());
       }
       try {
-        // @todo potentially change this to internalDestroy()
-        // connection.internalDestroy();
         connection.internalClose(pool.getKeepAlive());
       } catch (Exception e) {
         if (logger.isDebugEnabled()) {
@@ -1077,8 +1046,6 @@ public class QueueManagerImpl implements QueueManager {
           ScheduledFuture<?> future =
               recoveryThread.schedule(redundancySatisfierTask, delay, TimeUnit.MILLISECONDS);
           redundancySatisfierTask.setFuture(future);
-          logger.info(
-              "XXX QueueManagerImpl.scheduleRedundancySatisfierIfNeeded scheduled redundancySatisfierTask");
         } catch (RejectedExecutionException e) {
           // ignore, the timer has been cancelled, which means we're shutting down.
         }
@@ -1336,8 +1303,6 @@ public class QueueManagerImpl implements QueueManager {
     private ConnectionList(QueueConnectionImpl primary, List<Connection> backups,
         GemFireException discoveryException, QueueConnectionImpl failedPrimary) {
       this.primary = primary;
-      logger.info("XXX ConnectionList.<init> primary={}; primaryIdentity={}", primary,
-          System.identityHashCode(primary));
       Map<Endpoint, Connection> allConnectionsTmp = new HashMap<>();
       for (Connection nextConnection : backups) {
         allConnectionsTmp.put(nextConnection.getEndpoint(), nextConnection);

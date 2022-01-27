@@ -110,8 +110,6 @@ public class EndpointManagerImpl implements EndpointManager {
       if (endpoint != null) {
         endpointMap = Collections.unmodifiableMap(endpointMapTemp);
         removedEndpoint = true;
-        logger.info("XXX EndpointManagerImpl.removeEndpoint endpoint={}; endpointIdentity={}",
-            endpoint, System.identityHashCode(endpoint));
       }
       poolStats.setServerCount(endpointMap.size());
     }

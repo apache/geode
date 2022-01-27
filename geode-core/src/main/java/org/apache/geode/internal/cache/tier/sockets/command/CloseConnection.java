@@ -57,6 +57,8 @@ public class CloseConnection extends BaseCommand {
     }
 
     try {
+      logger.info("XXX CloseConnection.cmdExecute about to execute proxyId={}",
+          serverConnection.getProxyID());
       serverConnection.setClientDisconnectCleanly();
       String clientHost = serverConnection.getSocketHost();
       int clientPort = serverConnection.getSocketPort();
@@ -68,6 +70,10 @@ public class CloseConnection extends BaseCommand {
       Part keepalivePart = clientMessage.getPart(0);
       byte[] keepaliveByte = keepalivePart.getSerializedForm();
       boolean keepalive = keepaliveByte != null && keepaliveByte[0] != 0;
+      if (!keepalive) {
+        logger.info("XXX CloseConnection.cmdExecute set keepalive=false proxyId={}",
+            serverConnection.getProxyID());
+      }
 
       serverConnection.getAcceptor().getCacheClientNotifier()
           .setKeepAlive(serverConnection.getProxyID(), keepalive);
@@ -83,6 +89,8 @@ public class CloseConnection extends BaseCommand {
       serverConnection.setFlagProcessMessagesAsFalse();
 
       stats.incProcessCloseConnectionTime(DistributionStats.getStatTime() - start);
+      logger.info("XXX CloseConnection.cmdExecute done execute proxyId={}",
+          serverConnection.getProxyID());
     }
 
   }
