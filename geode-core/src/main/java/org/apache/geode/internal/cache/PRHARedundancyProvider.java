@@ -48,6 +48,7 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.PartitionedRegionStorageException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -726,6 +727,13 @@ public class PRHARedundancyProvider {
             return bucketPrimary;
           }
         }
+      } catch (DiskAccessException dae) {
+        if (partitionedRegion.getCancelCriterion().isCancelInProgress()) {
+          needToElectPrimary = false;
+          partitionedRegion.getCancelCriterion().checkCancelInProgress(dae);
+        }
+
+        throw dae;
       } catch (CancelException | RegionDestroyedException e) {
         // We don't need to elect a primary if the cache was closed. The other members will
         // take care of it. This ensures we don't compromise redundancy.
