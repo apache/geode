@@ -192,21 +192,54 @@ public class SSLConfig {
   }
 
   /**
-   * Returns true if ciphers is either null, empty or is set to "any" (ignoring case)
+   * Checks if "any" cipher is specified in {@link #getCiphers()}
+   *
+   * @return {@code true} if ciphers is either {@code null}, empty or is set to "any"
+   *         (ignoring case), otherwise {@code false}.
    */
   public boolean isAnyCiphers() {
+    return isAnyCiphers(ciphers);
+  }
+
+  /**
+   * Checks if "any" cipher is specified in {@code ciphers}.
+   *
+   * @param ciphers Comma or space separated list of cipher names.
+   * @return {@code true} if {@code ciphers} is either {@code null}, empty or is set to "any"
+   *         (ignoring case), otherwise {@code false}.
+   */
+  public static boolean isAnyCiphers(final String ciphers) {
     return StringUtils.isBlank(ciphers) || "any".equalsIgnoreCase(ciphers);
   }
 
   /**
-   * Returns true if protocols is either null, empty or is set to "any" (ignoring case)
+   * Checks if "any" cipher is specified in {@code ciphers}.
+   *
+   * @param ciphers Array of cipher names.
+   * @return {@code true} if {@code ciphers} is either {@code null}, empty or first entry is "any"
+   *         (ignoring case), otherwise {@code false}.
+   */
+  public static boolean isAnyCiphers(final String... ciphers) {
+    return ArrayUtils.isEmpty(ciphers) || "any".equalsIgnoreCase(ciphers[0]);
+  }
+
+  /**
+   * Checks if "any" protocol is specified in {@code protocols}.
+   *
+   * @param protocols Comma or space separated list of protocol names.
+   * @return {@code true} if {@code protocols} is either {@code null}, empty or is set to "any"
+   *         (ignoring case), otherwise {@code false}.
    */
   public static boolean isAnyProtocols(final String protocols) {
     return StringUtils.isBlank(protocols) || "any".equalsIgnoreCase(protocols);
   }
 
   /**
-   * Returns true if protocols is either null, empty or is set to "any" (ignoring case)
+   * Checks if "any" protocol is specified in {@code protocols}.
+   *
+   * @param protocols Array of protocol names.
+   * @return {@code true} if {@code protocols} is either {@code null}, empty or first entry is "any"
+   *         (ignoring case), otherwise {@code false}.
    */
   public static boolean isAnyProtocols(final String... protocols) {
     return ArrayUtils.isEmpty(protocols) || "any".equalsIgnoreCase(protocols[0]);
@@ -394,7 +427,6 @@ public class SSLConfig {
       SSLParameterExtension sslParameterExtension =
           CallbackInstantiator.getObjectOfTypeFromClassName(sslParameterExtensionConfig,
               SSLParameterExtension.class);
-      ids.getConfig().getDistributedSystemId();
 
       sslParameterExtension.init(
           new SSLParameterExtensionContextImpl(ids.getConfig().getDistributedSystemId()));
