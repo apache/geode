@@ -36,7 +36,7 @@ public class SPopExecutor extends SetRandomExecutor {
     }
 
     RedisSet set =
-        regionProvider.getTypedRedisData(REDIS_SET, key, true);
+        regionProvider.getTypedRedisData(REDIS_SET, key, false);
     if (count == 0 || set == NULL_REDIS_SET) {
       return Collections.emptyList();
     }
