@@ -15,7 +15,6 @@
 package org.apache.geode.internal.net;
 
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -25,9 +24,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import java.net.BindException;
-import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 
 import javax.net.ssl.SNIHostName;
@@ -83,29 +79,6 @@ public class SocketCreatorJUnitTest {
 
     socketCreator.forCluster().handshakeIfSocketIsSSL(socket, timeout);
     verify(socket, never()).setSoTimeout(timeout);
-  }
-
-  @Test
-  public void testBindExceptionMessageFormattingWithBindAddress() throws Exception {
-    testBindExceptionMessageFormatting(InetAddress.getLocalHost());
-  }
-
-  @Test
-  public void testBindExceptionMessageFormattingNullBindAddress() throws Exception {
-    testBindExceptionMessageFormatting(null);
-  }
-
-  private void testBindExceptionMessageFormatting(InetAddress inetAddress) throws Exception {
-    final SocketCreator socketCreator = new SocketCreator(mock(SSLConfig.class));
-
-    try (ServerSocket ignored = socketCreator.forCluster()
-        .createServerSocket(11234, 10, inetAddress)) {
-      assertThatExceptionOfType(BindException.class).isThrownBy(() -> {
-        // call twice on the same port to trigger exception
-        socketCreator.forCluster().createServerSocket(11234, 10, inetAddress);
-      }).withMessageContaining("11234")
-          .withMessageContaining(InetAddress.getLocalHost().getHostAddress());
-    }
   }
 
   @Test
