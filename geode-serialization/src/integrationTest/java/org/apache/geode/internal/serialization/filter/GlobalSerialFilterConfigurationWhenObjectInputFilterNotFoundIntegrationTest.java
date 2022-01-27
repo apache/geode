@@ -90,16 +90,16 @@ public class GlobalSerialFilterConfigurationWhenObjectInputFilterNotFoundIntegra
   }
 
   @Test
-  public void logsError_whenEnableGlobalSerialFilterIsTrue_andObjectInputFilterClassNotFound() {
+  public void logsWarning_whenEnableGlobalSerialFilterIsTrue_andObjectInputFilterClassNotFound() {
     System.setProperty("geode.enableGlobalSerialFilter", "true");
-    FilterConfiguration filterConfiguration = new GlobalSerialFilterConfiguration(
+    FilterConfiguration configuration = new GlobalSerialFilterConfiguration(
         config, logger, globalSerialFilterFactory_throws);
 
-    filterConfiguration.configure();
+    configuration.configure();
 
     verify(logger, never()).info(any(Object.class));
-    verify(logger, never()).warn(any(Object.class));
-    verify(logger).error(
-        "Geode was unable to configure a global serialization filter because ObjectInputFilter not found.");
+    verify(logger).warn(
+        "Unable to configure a global serialization filter because ObjectInputFilter not found. Please use Java release 8u121 or later that supports serialization filtering.");
+    verify(logger, never()).error(any(Object.class));
   }
 }

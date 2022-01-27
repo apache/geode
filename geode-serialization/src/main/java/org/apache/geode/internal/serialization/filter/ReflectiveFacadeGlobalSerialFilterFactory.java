@@ -17,8 +17,6 @@ package org.apache.geode.internal.serialization.filter;
 import java.util.Collection;
 import java.util.function.Supplier;
 
-import org.apache.geode.annotations.VisibleForTesting;
-
 /**
  * Creates an instance of {@code GlobalSerialFilter} that delegates to {@code ObjectInputFilterApi}
  * to maintain independence from the JRE version.
@@ -31,7 +29,10 @@ class ReflectiveFacadeGlobalSerialFilterFactory implements GlobalSerialFilterFac
     this(() -> new ReflectiveObjectInputFilterApiFactory().createObjectInputFilterApi());
   }
 
-  @VisibleForTesting
+  ReflectiveFacadeGlobalSerialFilterFactory(ObjectInputFilterApi objectInputFilterApi) {
+    this(() -> objectInputFilterApi);
+  }
+
   ReflectiveFacadeGlobalSerialFilterFactory(
       Supplier<ObjectInputFilterApi> objectInputFilterApiSupplier) {
     this.objectInputFilterApiSupplier = objectInputFilterApiSupplier;
@@ -40,12 +41,6 @@ class ReflectiveFacadeGlobalSerialFilterFactory implements GlobalSerialFilterFac
   @Override
   public GlobalSerialFilter create(String pattern, Collection<String> sanctionedClasses) {
     ObjectInputFilterApi api = objectInputFilterApiSupplier.get();
-    return create(api, pattern, sanctionedClasses);
-  }
-
-  @VisibleForTesting
-  GlobalSerialFilter create(ObjectInputFilterApi api, String pattern,
-      Collection<String> sanctionedClasses) {
     return new ReflectiveFacadeGlobalSerialFilter(api, pattern, sanctionedClasses);
   }
 }

@@ -22,10 +22,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
@@ -37,10 +39,12 @@ import org.mockito.ArgumentCaptor;
 public class ReflectiveFacadeGlobalSerialFilterTest {
 
   private ObjectInputFilterApi api;
+  private Object objectInputFilter;
 
   @Before
   public void setUp() {
     api = mock(ObjectInputFilterApi.class);
+    objectInputFilter = new Object();
   }
 
   @Test
@@ -50,6 +54,8 @@ public class ReflectiveFacadeGlobalSerialFilterTest {
     Collection<String> sanctionedClasses = asList("class-name-one", "class-name-two");
     GlobalSerialFilter globalSerialFilter =
         new ReflectiveFacadeGlobalSerialFilter(api, pattern, sanctionedClasses);
+    when(api.createObjectInputFilterProxy(eq("the-pattern"), anyCollection()))
+        .thenReturn(objectInputFilter);
 
     globalSerialFilter.setFilter();
 
@@ -62,6 +68,8 @@ public class ReflectiveFacadeGlobalSerialFilterTest {
   public void setsSerialFilter() throws InvocationTargetException, IllegalAccessException {
     GlobalSerialFilter globalSerialFilter =
         new ReflectiveFacadeGlobalSerialFilter(api, "the-pattern", singleton("class-name"));
+    when(api.createObjectInputFilterProxy(eq("the-pattern"), anyCollection()))
+        .thenReturn(objectInputFilter);
 
     globalSerialFilter.setFilter();
 
@@ -71,10 +79,13 @@ public class ReflectiveFacadeGlobalSerialFilterTest {
   @Test
   public void propagatesIllegalAccessExceptionInUnsupportedOperationException()
       throws InvocationTargetException, IllegalAccessException {
-    IllegalAccessException exception = new IllegalAccessException("testing");
-    doThrow(exception).when(api).setSerialFilter(any());
     GlobalSerialFilter globalSerialFilter =
         new ReflectiveFacadeGlobalSerialFilter(api, "the-pattern", singleton("class-name"));
+    IllegalAccessException exception = new IllegalAccessException("testing");
+    when(api.createObjectInputFilterProxy(eq("the-pattern"), anyCollection()))
+        .thenReturn(objectInputFilter);
+    doThrow(exception)
+        .when(api).setSerialFilter(any());
 
     Throwable thrown = catchThrowable(() -> {
       globalSerialFilter.setFilter();
@@ -88,11 +99,11 @@ public class ReflectiveFacadeGlobalSerialFilterTest {
   @Test
   public void propagatesInvocationTargetExceptionInUnsupportedOperationException()
       throws InvocationTargetException, IllegalAccessException {
+    GlobalSerialFilter globalSerialFilter =
+        new ReflectiveFacadeGlobalSerialFilter(api, "the-pattern", singleton("class-name"));
     InvocationTargetException exception =
         new InvocationTargetException(new Exception("testing"), "testing");
     doThrow(exception).when(api).setSerialFilter(any());
-    GlobalSerialFilter globalSerialFilter =
-        new ReflectiveFacadeGlobalSerialFilter(api, "the-pattern", singleton("class-name"));
 
     Throwable thrown = catchThrowable(() -> {
       globalSerialFilter.setFilter();

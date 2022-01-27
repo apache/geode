@@ -94,7 +94,7 @@ class GlobalSerialFilterConfiguration implements FilterConfiguration {
       globalSerialFilter.setFilter();
 
       // log statement that filter is now configured
-      logger.info("Global serial filter is now configured.");
+      logger.info("Global serialization filter is now configured.");
       return true;
 
     } catch (UnsupportedOperationException e) {
@@ -108,14 +108,15 @@ class GlobalSerialFilterConfiguration implements FilterConfiguration {
         "Serial filter can only be set once")) {
 
       // log statement that filter was already configured
-      logger.warn("Global serial filter is already configured.");
+      logger.warn(
+          "Global serialization filter is already configured. Please use only one system property: geode.enableGlobalSerialFilter or jdk.serialFilter.");
     }
     if (hasRootCauseWithMessageContaining(e, ClassNotFoundException.class,
         "ObjectInputFilter")) {
 
       // log statement that a global serial filter cannot be configured
-      logger.error(
-          "Geode was unable to configure a global serialization filter because ObjectInputFilter not found.");
+      logger.warn(
+          "Unable to configure a global serialization filter because ObjectInputFilter not found. Please use Java release 8u121 or later that supports serialization filtering.");
     }
   }
 
