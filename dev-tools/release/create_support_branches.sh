@@ -270,4 +270,4 @@ echo "1. Go to https://github.com/${GITHUB_USER}/geode/pull/new/roll-develop-to-
 echo "2. Plus the BumpMinor job at https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-develop-main?group=semver-management"
 echo "3. Add ${NEWVERSION} to Jira at https://issues.apache.org/jira/projects/GEODE?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page"
 echo "4. (cd ${GEODE}/ci/pipelines/meta && ./deploy_meta.sh) #takes 1-2 hours. keep re-running until successful."
-echo "5. That's it for now.  Once all needed fixes have been proposed and cherry-picked to support/${VERSION_MM} and https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM/./-}-main is green, come back and run ${0%/*}/prepare_rc.sh -v ${VERSION}.RC1"
+echo "5. That's it for now.  Once all needed fixes have been proposed and cherry-picked to support/${VERSION_MM} and https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM/./-}-main is green, come back and run ${0%/*}/prepare_rc.sh -v ${VERSION_MM}.0.RC1"
