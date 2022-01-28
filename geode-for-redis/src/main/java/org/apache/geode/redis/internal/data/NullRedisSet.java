@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.services.RegionProvider;
 
 class NullRedisSet extends RedisSet {
 
@@ -58,18 +59,13 @@ class NullRedisSet extends RedisSet {
   }
 
   @Override
-  public long sadd(List<byte[]> membersToAdd, Region<RedisKey, RedisData> region, RedisKey key) {
-    region.create(key, new RedisSet(membersToAdd));
+  public long sadd(List<byte[]> membersToAdd, RegionProvider regionProvider, RedisKey key) {
+    regionProvider.getLocalDataRegion().create(key, new RedisSet(membersToAdd));
     return membersToAdd.size();
   }
 
   @Override
-  void addForSmove(byte[] memberToAdd, Region<RedisKey, RedisData> region, RedisKey key) {
-    sadd(Collections.singletonList(memberToAdd), region, key);
-  }
-
-  @Override
-  public long srem(List<byte[]> membersToRemove, Region<RedisKey, RedisData> region, RedisKey key) {
+  public long srem(List<byte[]> membersToRemove, RegionProvider regionProvider, RedisKey key) {
     return 0;
   }
 

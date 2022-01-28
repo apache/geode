@@ -77,16 +77,15 @@ public class RedisSet extends AbstractRedisData {
 
   public static int smove(RedisKey sourceKey, RedisKey destKey, byte[] member,
       RegionProvider regionProvider) {
-    Region<RedisKey, RedisData> region = regionProvider.getDataRegion();
-
     RedisSet source = regionProvider.getTypedRedisData(REDIS_SET, sourceKey, false);
     RedisSet destination = regionProvider.getTypedRedisData(REDIS_SET, destKey, false);
     if (source == NULL_REDIS_SET || !source.members.contains(member)) {
       return 0;
     }
-
-    source.removeForSmove(member, region, sourceKey);
-    destination.addForSmove(member, region, destKey);
+    List<byte[]> memberList = new ArrayList<>();
+    memberList.add(member);
+    source.srem(memberList, regionProvider, sourceKey);
+    destination.sadd(memberList, regionProvider, destKey);
     return 1;
   }
 
@@ -400,54 +399,51 @@ public class RedisSet extends AbstractRedisData {
   /**
    * @param membersToAdd members to add to this set; NOTE this list may by
    *        modified by this call
-   * @param region the region this instance is stored in
+   * @param regionProvider the region this instance is stored in
    * @param key the name of the set to add to
    * @return the number of members actually added
    */
-  public long sadd(List<byte[]> membersToAdd, Region<RedisKey, RedisData> region, RedisKey key) {
+  public long sadd(List<byte[]> membersToAdd, RegionProvider regionProvider, RedisKey key) {
     membersToAdd.removeIf(memberToAdd -> !membersAdd(memberToAdd));
     int membersAdded = membersToAdd.size();
     if (membersAdded != 0) {
-      storeChanges(region, key, new AddByteArrays(membersToAdd));
-    }
-    return membersAdded;
-  }
-
-  void addForSmove(byte[] memberToAdd, Region<RedisKey, RedisData> region, RedisKey key) {
-    if (membersAdd(memberToAdd)) {
-      // In a tx, delta requires cloning-enabled which is very expensive.
-      // So just do a put instead of storeChanges which uses delta.
-      region.put(key, this);
-    }
-  }
-
-  /**
-   * @param membersToRemove members to remove from this set; NOTE this list may by
-   *        modified by this call
-   * @param region the region this instance is stored in
-   * @param key the name of the set to remove from
-   * @return the number of members actually removed
-   */
-  public long srem(List<byte[]> membersToRemove, Region<RedisKey, RedisData> region, RedisKey key) {
-    membersToRemove.removeIf(memberToRemove -> !membersRemove(memberToRemove));
-    int membersRemoved = membersToRemove.size();
-    if (membersRemoved != 0) {
-      storeChanges(region, key, new RemoveByteArrays(membersToRemove));
-    }
-    return membersRemoved;
-  }
-
-  private void removeForSmove(byte[] memberToRemove, Region<RedisKey, RedisData> region,
-      RedisKey key) {
-    if (membersRemove(memberToRemove)) {
-      if (removeFromRegion()) {
-        region.remove(key);
+      Region<RedisKey, RedisData> region = regionProvider.getLocalDataRegion();
+      if (!regionProvider.isTransactionInProgress()) {
+        storeChanges(region, key, new AddByteArrays(membersToAdd));
       } else {
         // In a tx, delta requires cloning-enabled which is very expensive.
         // So just do a put instead of storeChanges which uses delta.
         region.put(key, this);
       }
     }
+    return membersAdded;
+  }
+
+  /**
+   * @param membersToRemove members to remove from this set; NOTE this list may by
+   *        modified by this call
+   * @param regionProvider the region this instance is stored in
+   * @param key the name of the set to remove from
+   * @return the number of members actually removed
+   */
+  public long srem(List<byte[]> membersToRemove, RegionProvider regionProvider, RedisKey key) {
+    membersToRemove.removeIf(memberToRemove -> !membersRemove(memberToRemove));
+    int membersRemoved = membersToRemove.size();
+    if (membersRemoved != 0) {
+      Region<RedisKey, RedisData> region = regionProvider.getLocalDataRegion();
+      if (!regionProvider.isTransactionInProgress()) {
+        storeChanges(region, key, new RemoveByteArrays(membersToRemove));
+      } else {
+        if (removeFromRegion()) {
+          region.remove(key);
+        } else {
+          // In a tx, delta requires cloning-enabled which is very expensive.
+          // So just do a put instead of storeChanges which uses delta.
+          region.put(key, this);
+        }
+      }
+    }
+    return membersRemoved;
   }
 
   /**
