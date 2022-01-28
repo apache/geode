@@ -112,12 +112,12 @@ to implement redundant copies and this property corresponds to the partitioned r
 
 ## <a id="security"></a>Security
 
-Security is implemented slightly differently to OSS Redis. Redis stores password information in plain text in the redis.conf file.
+Security is implemented slightly differently to Open Source Redis. Redis stores password information in plain text in the redis.conf file.
 
 When using <%=vars.product_name%>, to enable security, a Security Manager needs to be configured on the server(s) or _all_ `AUTH` requests will fail.
 
 This Security Manager will authenticate the `AUTH <password>` command and the `AUTH <username> <password>` command.
-Similar to OSS Redis, when users send the `AUTH <password>` command without a username, the system will use the default username `default`.
+Similar to Open Source Redis, when users send the `AUTH <password>` command without a username, the system will use the default username `default`.
 
 Users can change this to a custom default username using the `geode-for-redis-username` parameter.
 The custom username will then be used when the `AUTH <password>` command is sent without a `<username>`.
