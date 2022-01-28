@@ -44,6 +44,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.internal.cache.wan.parallel.ParallelQueueSetPossibleDuplicateMessage;
 import org.apache.geode.internal.offheap.OffHeapClearRequired;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -274,6 +275,15 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
               && getPartitionedRegion().getRegionAdvisor() != null) {
             Set<InternalDistributedMember> recipients =
                 getPartitionedRegion().getRegionAdvisor().adviseDataStore();
+
+            if (recipients.isEmpty()) {
+              return;
+            }
+
+            InternalDistributedSystem ids = getCache().getInternalDistributedSystem();
+            DistributionManager dm = ids.getDistributionManager();
+            dm.retainMembersWithSameOrNewerVersion(recipients, KnownVersion.GEODE_1_16_0);
+
             if (!recipients.isEmpty()) {
 
               logger.info(
@@ -283,8 +293,6 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
               ParallelQueueSetPossibleDuplicateMessage pqspdm =
                   new ParallelQueueSetPossibleDuplicateMessage(regionToDispatchedKeysMap);
               pqspdm.setRecipients(recipients);
-              InternalDistributedSystem ids = getCache().getInternalDistributedSystem();
-              DistributionManager dm = ids.getDistributionManager();
               dm.putOutgoing(pqspdm);
             }
           }
@@ -298,7 +306,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
         (Map) regionToDispatchedKeysMap.get(getPartitionedRegion().getFullPath());
     if (bucketIdToDispatchedKeys == null) {
       bucketIdToDispatchedKeys = new ConcurrentHashMap();
-      regionToDispatchedKeysMap.put(getParentRegion().getFullPath(), bucketIdToDispatchedKeys);
+      regionToDispatchedKeysMap.put(getPartitionedRegion().getFullPath(), bucketIdToDispatchedKeys);
     }
 
     List dispatchedKeys = (List) bucketIdToDispatchedKeys.get(getId());

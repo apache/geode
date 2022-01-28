@@ -67,6 +67,7 @@ import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.internal.cache.wan.parallel.ParallelQueueSetPossibleDuplicateMessage;
 import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderQueue;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
@@ -1341,6 +1342,15 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     if (regionToDispatchedKeysMap.size() > 0) {
       Set<InternalDistributedMember> recipients =
           getAllRecipients(sender.getCache(), regionToDispatchedKeysMap);
+
+      if (recipients.isEmpty()) {
+        return;
+      }
+
+      InternalDistributedSystem ids = sender.getCache().getInternalDistributedSystem();
+      DistributionManager dm = ids.getDistributionManager();
+      dm.retainMembersWithSameOrNewerVersion(recipients, KnownVersion.GEODE_1_16_0);
+
       if (!recipients.isEmpty()) {
         logger.info(
             "notifyPossibleDuplicate send ParallelQueueSetPossibleDuplicateMessage recipients {}.",
@@ -1349,8 +1359,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
         ParallelQueueSetPossibleDuplicateMessage pqspdm =
             new ParallelQueueSetPossibleDuplicateMessage(regionToDispatchedKeysMap);
         pqspdm.setRecipients(recipients);
-        InternalDistributedSystem ids = sender.getCache().getInternalDistributedSystem();
-        DistributionManager dm = ids.getDistributionManager();
         dm.putOutgoing(pqspdm);
       }
     }
