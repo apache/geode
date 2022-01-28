@@ -132,7 +132,9 @@ public class RedisSetTest {
 
   @Test
   public void sadd_stores_delta_that_is_stable() {
+    RegionProvider regionProviderMock = mock(RegionProvider.class);
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    when(regionProviderMock.getLocalDataRegion()).thenReturn(region);
     when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
 
     RedisSet set1 = createRedisSet(1, 2);
@@ -140,7 +142,7 @@ public class RedisSetTest {
     ArrayList<byte[]> adds = new ArrayList<>();
     adds.add(member3);
 
-    set1.sadd(adds, region, null);
+    set1.sadd(adds, regionProviderMock, null);
 
     verify(region).put(any(), any());
     assertThat(set1.hasDelta()).isFalse();
@@ -148,7 +150,9 @@ public class RedisSetTest {
 
   @Test
   public void srem_stores_delta_that_is_stable() {
+    RegionProvider regionProviderMock = mock(RegionProvider.class);
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    when(regionProviderMock.getLocalDataRegion()).thenReturn(region);
     when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
 
     RedisSet set1 = createRedisSet(1, 2);
@@ -156,7 +160,7 @@ public class RedisSetTest {
     ArrayList<byte[]> removes = new ArrayList<>();
     removes.add(member1);
 
-    set1.srem(removes, region, null);
+    set1.srem(removes, regionProviderMock, null);
 
     verify(region).put(any(), any());
     assertThat(set1.hasDelta()).isFalse();
@@ -270,7 +274,9 @@ public class RedisSetTest {
   @Test
   public void bytesInUse_sadd_withOneMember() {
     RedisSet set = new RedisSet(new ArrayList<>());
+    RegionProvider regionProviderMock = mock(RegionProvider.class);
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    when(regionProviderMock.getLocalDataRegion()).thenReturn(region);
     final RedisData returnData = mock(RedisData.class);
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
     final RedisKey key = new RedisKey(stringToBytes("key"));
@@ -280,7 +286,7 @@ public class RedisSetTest {
     List<byte[]> members = new ArrayList<>();
     members.add(value);
 
-    set.sadd(members, region, key);
+    set.sadd(members, regionProviderMock, key);
 
     assertThat(set.getSizeInBytes()).isEqualTo(expectedSize(set));
   }
@@ -288,7 +294,9 @@ public class RedisSetTest {
   @Test
   public void bytesInUse_sadd_withMultipleMembers() {
     RedisSet set = new RedisSet(new ArrayList<>());
+    RegionProvider regionProviderMock = mock(RegionProvider.class);
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    when(regionProviderMock.getLocalDataRegion()).thenReturn(region);
     final RedisData returnData = mock(RedisData.class);
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
     final RedisKey key = new RedisKey(stringToBytes("key"));
@@ -299,7 +307,7 @@ public class RedisSetTest {
       String valueString = baseString + i;
       final byte[] value = stringToBytes(valueString);
       members.add(value);
-      set.sadd(members, region, key);
+      set.sadd(members, regionProviderMock, key);
 
       long actual = set.getSizeInBytes();
       long expected = expectedSize(set);
@@ -311,7 +319,9 @@ public class RedisSetTest {
   /******* remove *******/
   @Test
   public void size_shouldDecrease_WhenValueIsRemoved() {
+    RegionProvider regionProviderMock = mock(RegionProvider.class);
     Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    when(regionProviderMock.getLocalDataRegion()).thenReturn(region);
     final RedisData returnData = mock(RedisData.class);
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
     final RedisKey key = new RedisKey(stringToBytes("key"));
@@ -325,7 +335,7 @@ public class RedisSetTest {
 
     List<byte[]> membersToRemove = new ArrayList<>();
     membersToRemove.add(value1);
-    set.srem(membersToRemove, region, key);
+    set.srem(membersToRemove, regionProviderMock, key);
 
     long finalSize = set.getSizeInBytes();
     long expectedSize = expectedSize(set);
