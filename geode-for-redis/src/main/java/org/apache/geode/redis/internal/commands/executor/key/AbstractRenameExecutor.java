@@ -53,9 +53,9 @@ public abstract class AbstractRenameExecutor implements CommandExecutor {
 
   protected static boolean rename(ExecutionHandlerContext context, RedisKey oldKey, RedisKey newKey,
       boolean ifTargetNotExists) {
-    List<RedisKey> lockOrdering = Arrays.asList(oldKey, newKey);
+    final List<RedisKey> keysToLock = Arrays.asList(oldKey, newKey);
 
-    return context.lockedExecute(oldKey, lockOrdering,
+    return context.lockedExecuteInTransaction(oldKey, keysToLock,
         () -> context.getRedisData(oldKey)
             .rename(context.getRegion(), oldKey, newKey, ifTargetNotExists));
   }
