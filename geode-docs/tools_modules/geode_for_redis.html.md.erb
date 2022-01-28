@@ -25,233 +25,213 @@ optional password authentication.
 
 <img src="../images_svg/geode_for_redis.svg" class="image" />
 
-## <a id="using-geode-for-redis"></a>Using <%=vars.product_name%> for Redis
+## <a id="using-the-api" class="no-quick-link"></a>Using <%=vars.product_name%> for Redis
 
 The <%=vars.product_name%> cluster must have at least one server that is set up to handle the incoming Redis commands.
 
-Prerequisites for running the examples:
+Use gfsh to start at least one server with a command of the form:
 
-1. **Install <%=vars.product_name%>** <br/>
-Using the instructions in the `README.md` file in the root of the <%=vars.product_name%> checkout directory, build and install <%=vars.product_name%>.
-2. **Install the Redis CLI** <br/>
-Follow installation instructions at https://redis.io/download
-
-Use `gfsh` to start a locator for managing a <%=vars.product_name%> cluster:
-
-```commandLine
-gfsh> start locator
+```pre
+start server \
+  --name=<serverName> \
+  --locators=<locatorPort> \
+  --J=-Dgemfire.geode-for-redis-enabled=true \
+  --J=-Dgemfire.geode-for-redis-port=<geodeForRedisPort> \
+  --J=-Dgemfire.geode-for-redis-bind-address=<geodeForRedisBindAddress>
 ```
 
-Use `gfsh` to start at least one server with a command of the form:
+If the gemfire property `geode-for-redis-enabled`, is set to `true`, a <%=vars.product_name%>
+server with <%=vars.product_name%> for Redis will be started.
 
-```commandLine
-gfsh> start server --J=-Dgemfire.geode-for-redis-enabled=true --J=-Dgemfire.geode-for-redis-port=6379
+Replace `<serverName>` with the name of your server.
+
+Replace `<locatorPort>` with your locator port.
+
+Replace `<geodeForRedisPort>` with the port that the <%=vars.product_name%> server
+ listens on for Redis commands. The typical port used with a cluster compatible with Redis is 6379.
+
+Replace `<geodeForRedisBindAddress>` with the address of the server host.
+
+Replace `<geodeForRedisPassword>` with the password clients use to authenticate.
+
+To confirm the server is listening, run:
+
+``` pre
+redis-cli -h <geodeForRedisBindAddress> -p <geodeForRedisPort> -a <geodeForRedisPassword> ping
 ```
 
-More information about the options when starting a server is given in the section [Start Server Options](#redis-start-server-options) below.
-
-To confirm the server is listening, in a separate terminal run:
-
-```commandLine
-$ redis-cli -c ping
-```
-
-The `-c` option enables cluster mode in the redis-cli, which is necessary since
-<%=vars.product_name%> for Redis runs as a Redis Cluster.
+Replace `<geodeForRedisBindAddress>`,`<geodeForRedisPort>`, and `<geodeForRedisPassword>` with the same values as the server.
 
 If the server is functioning properly, you should see a response of `PONG`.
 
-### <a id="adding-a-server"></a> Add an additional server
-If you’re interested in testing <%=vars.product_name%> scalability, in gfsh run the `start server` command again.
-
-However, there are two ports that must be unique for each server in the cluster, the
-`gemfire.geode-for-redis-port`, used for receiving Redis commands, and the
-`server-port`, which is used for cluster communication.
-
-The first server used `6379` for the redis port; we'll use `6380` for the second server.
-
-The first server was started without
-a server port specified, so it used the default `40404`. To start up an additional server, you need to specify
-a different server port, or use `--server-port=0` which tells <%=vars.product_name%> to use
-an arbitrary available port for the server port.
-
-For example:
-
-```commandLine
-gfsh> start server --J=-Dgemfire.geode-for-redis-enabled=true --J=-Dgemfire.geode-for-redis-port=6380 --server-port=0
-```
-
-### <a id="shutting-down"></a>Shutting Down
-To shut down the <%=vars.product_name%> cluster you started, in the terminal with gfsh running type the following command
-
-```commandLine
-gfsh> shutdown --include-locators=true
-```
-
-This command shuts down the entire <%=vars.product_name%> cluster.
-
-To confirm that everything shut down correctly, if you execute a Redis command in the `redis-cli` you should see the following message:
-
-```commandline
-Could not connect to Redis at 127.0.0.1:6379: Connection refused
-```
-
-## <a id="redis-start-server-options"></a>Start Server Options
-
-The options that are specific to starting a server for <%=vars.product_name%> for Redis are listed below.
-For other options see [start server](gfsh/command-pages/start.html#topic_3764EE2DB18B4AE4A625E0354471738A).
-
-`--J=-Dgemfire.geode-for-redis-enabled` (Default: `false`) <br/>
-If set to `true`, a <%=vars.product_name%> server with <%=vars.product_name%> for Redis will be started.
-
-`--J=-Dgemfire.geode-for-redis-port` (Default: `6379`) <br/>
-Specifies the port on which the <%=vars.product_name%> server
-listens for Redis commands. Note that the default port `6379` is the same port that native Redis
-uses by default.
-
-`--J=-Dgemfire.geode-for-redis-bind-address` (Default: `""`) <br/>
-Specifies the host address on which <%=vars.product_name%> for Redis is listening. If set to the
-empty string or if not specified, the server listens on all local addresses.
-
-`--J=-Dgemfire.geode-for-redis-username` (Default: `"default"`) <br/>
-Specifies the default username that the server uses when a client attempts to authenticate using
-only a password. See section on [Security](#security) for more information.
-
-`--J=-Dgemfire.geode-for-redis-redundant-copies` (Default: `1`) <br/>
-Specifies the number of redundant copies <%=vars.product_name%> for Redis will attempt to keep in
-the cluster. A value of 0 means no extra copies of data will be stored in the cluster.
-Note that extra servers need to be running for redundant copies to be made. For
-example if the cluster only has one server then no redundant copies will exist no matter what the
-value of this property is. Also note that <%=vars.product_name%> for Redis uses a <%=vars.product_name%> partitioned region
-to implement redundant copies and this property corresponds to the partitioned region's
-"redundant-copies" attribute. This property must be set the same on every server in the cluster that is running a
-<%=vars.product_name%> for Redis server.
-
-## <a id="security"></a>Security
-
-Security is implemented slightly differently to OSS Redis. Redis stores password information in plain text in the redis.conf file.
-
-When using <%=vars.product_name%>, to enable security, a Security Manager needs to be configured on the server(s).
-This Security Manager will authenticate `AUTH <password>` commands and `AUTH <username> <password>` commands.
-Users can set a custom `default` username using the `geode-for-redis-username` parameter.
-If users don't set this parameter, the default username  will be "default".
-This username will be used when `AUTH <password>` commands are sent without a `<username>`.
-
-Note that the `geode-for-redis-username` property is only needed if `AUTH` commands are issued without a username.
-In this case, the Security Manager will need to respond to authentication requests using this username.
-
-Note also that _any_ `AUTH` requests will fail if no Security Manager has been configured.
-
-For more information about configuring a Security Manager for authentication, see [Implementing Authentication](../managing/security/implementing_authentication.html).
-
-In addition to authentication, each command is authorized according to <%=vars.product_name%>'s
-[security model](../managing/security/implementing_authorization.html).
-Commands are divided into Read operations and Write operations for which the resource permissions
-DATA:READ:GEODE_FOR_REDIS and DATA:WRITE:GEODE_FOR_REDIS are respectively required.
-
-For information on configuring the cluster for SSL, see [Configuring SSL](../managing/security/implementing_ssl.html).
-
-## <a id="application-development"></a>Application Development
-
-### <a id="thingstoknowbeforyoubegin"></a>Things to know before you begin
-- <%=vars.product_name%> for Redis currently implements a subset of the full Redis set of commands
-- Applications must be using a redis client that supports Redis Cluster mode.
-- If your application is using Spring Session Data Redis you will need to add the following code to disable Spring Session from calling CONFIG (CONFIG is not supported).
-
-```java
-@Bean
-public static ConfigureRedisAction configureRedisAction() {
-      return ConfigureRedisAction.NO_OP;
-}
-```
-This is a known solution for many Managed Redis products (ElastiCache, Azure Cache for Redis, etc.) that disable the CONFIG command for security reasons.
-You can read more about why this is done in the [Spring Session issue report](https://github.com/spring-projects/spring-session/issues/124).
-
-## <a id="redis-commands"></a>Redis Commands
+## <a id="supported-commands" class="no-quick-link"></a>Supported Redis Commands
 
 <%=vars.product_name%> for Redis supports the following Redis commands.
+<br/>
 
-|   Supported Commands ||||
-|-----|-----|-----|-----|
-| APPEND | AUTH | CLIENT | CLUSTER **[1]** |
-| COMMAND **[2]** | DECR | DECRBY | DEL |
-| DUMP | ECHO | EXISTS | EXPIRE |
-| EXPIREAT | GET | GETRANGE | GETSET |
-| HDEL | HEXISTS | HGET | HGETALL |
-| HINCRBY | HINCRBYFLOAT | HKEYS | HLEN |
-| HMGET | HMSET | HSCAN **[3]** | HSET |
-| HSETNX | HSTRLEN | HVALS | INCR |
-| INCRBY | INCRBYFLOAT | INFO **[4]** | KEYS |
-| LOLWUT | MGET | MSET | MSETNX |
-| PERSIST | PEXPIRE | PEXPIREAT | PING |
-| PSETEX | PSUBSCRIBE | PTTL | PUBLISH |
-| PUBSUB | PUNSUBSCRIBE | RENAME | RENAMENX |
-| RESTORE | SADD | SCARD | SDIFF |
-| SDIFFSTORE | SET | SETEX | SETNX |
-| SETRANGE | SINTER | SINTERSTORE | SISMEMBER |
-| SMEMBERS | SMOVE | SPOP | SRANDMEMBER |
-| SREM | SSCAN **[3]** | STRLEN | SUBSCRIBE |
-| SUNION | SUNIONSTORE | TTL | TYPE |
-| UNSUBSCRIBE | QUIT | ZADD | ZCARD |
-| ZCOUNT | ZINCRBY | ZINTERSTORE | ZLEXCOUNT |
-| ZPOPMAX | ZPOPMIN | ZRANGE | ZRANGEBYLEX |
-| ZRANGEBYSCORE | ZRANK | ZREM | ZREMRANGEBYLEX |
-| ZREMRANGEBYRANK | ZREMRANGEBYSCORE | ZREVRANGE | ZREVRANGEBYLEX |
-| ZREVRANGEBYSCORE | ZREVRANK | ZSCAN **[3]** | ZSCORE |
-| ZUNIONSTORE ||||
+ - APPEND <br/>
+ - AUTH <br/>
+ - DECR <br/>
+ - DECRBY <br/>
+ - DEL <br/>
+ - EXISTS <br/>
+ - EXPIRE <br/>
+ - EXPIREAT <br/>
+ - GET <br/>
+ - GETRANGE <br/>
+ - HDEL <br/>
+ - HEXISTS <br/>
+ - HGET <br/>
+ - HGETALL <br/>
+ - HINCRBY <br/>
+ - HINCRBYFLOAT <br/>
+ - HLEN <br/>
+ - HMGET <br/>
+ - HMSET <br/>
+ - HSCAN **[1]**  <br/>
+ - HSET <br/>
+ - HSETNX <br/>
+ - HSTRLEN <br/>
+ - HVALS <br/>
+ - HKEYS <br/>
+ - INCR <br/>
+ - INCRBY <br/>
+ - INCRBYFLOAT <br/>
+ - INFO **[2]**  <br/>
+ - KEYS <br/>
+ - MGET <br/>
+ - PERSIST <br/>
+ - PEXPIRE <br/>
+ - PEXPIREAT <br/>
+ - PING <br/>
+ - PSUBSCRIBE <br/>
+ - PTTL <br/>
+ - PUBLISH <br/>
+ - PUNSUBSCRIBE <br/>
+ - QUIT <br/>
+ - RENAME <br/>
+ - SADD <br/>
+ - SCARD <br/>
+ - SDIFF <br/>
+ - SDIFFSTORE <br/>
+ - SINTER <br/>
+ - SISMEMBER <br/>
+ - SET <br/>
+ - SETNX <br/>
+ - SLOWLOG **[3]**  <br/>
+ - SMEMBERS <br/>
+ - SMOVE <br/>
+ - SREM <br/>
+ - STRLEN <br/>
+ - SUBSCRIBE <br/>
+ - SUNION <br/>
+ - TTL <br/>
+ - TYPE <br/>
+ - UNSUBSCRIBE <br/>
 
-
+<br/>
 Commands not listed above are **not implemented**.
 
+<br/>
 **NOTES:**
 
 These commands are supported for Redis 5.
 
-**[1]** CLUSTER is implemented for the subcommands INFO, NODES, SLOTS, and KEYSLOT.
+**[1]** Redis accepts 64-bit signed integers for the HSCAN cursor and COUNT parameters.
+ <%=vars.product_name%> for Redis is limited to 32-bit integer values for these parameters.
 
-**[2]** COMMAND is implemented only with no subcommands.
+**[2]** INFO is implemented for the sections and fields listed below:
 
-**[3]** Native Redis supports a range of values of +/- the capacity of unsigned 64-bit integers
-(+/-&nbsp;1.8446744e+19) for the CURSOR, but 64-bit signed integers for COUNT. <%=vars.product_name%> for Redis matches
-native Redis's behavior for COUNT, but only supports values of +/- the capacity of a signed 64-bit
-integer (+/-&nbsp;9223372036854775807) for CURSOR.
+ - clients
 
-**[4]** INFO is implemented for the sections and fields listed below:
+    - connected_clients
 
-| INFO section | Field(s) |
-|--------------|----------|
-| clients      | connected_clients<br/>blocked_clients (always returns 0) |
-| cluster      | cluster_enabled (always returns 1) |
-| keyspace     | db0:keys<br/>expires (always returns 0)<br/>avg_ttl (always returns 0)<br/> |
-| memory       | maxmemory<br/>used_memory<br/>mem_fragmentation_ratio |
-| persistence  | loading (always returns 0)<br/>rdb_changes_since_last_save (always returns 0)<br/>rdb_last_save_time (always returns 0) |
-| replication  | role (always returns "master")<br/>connected_slaves (always returns 0) |
-| server       | redis_version<br/>redis_mode (always returns "cluster" because <%=vars.product_name%> for Redis always runs in cluster mode.)<br/>tcp_port<br/>uptime_in_seconds<br/>uptime_in_days |
-| stats        | total_commands_processed<br/>instantaneous_ops_per_sec<br/>total_net_input_bytes<br/>instantaneous_input_kbps<br/>total_connections_received<br/>keyspace_hits<br/>keyspace_misses<br/>evicted_keys (always returns 0)<br/>rejected_connections (always returns 0)<br/>pubsub_channels<br/>pubsub_patterns|
+    - blocked_clients (always returns 0)
 
-## <a id="advantages-over-redis"></a>Advantages of <%=vars.product_name%> over Redis
+ - cluster
+
+    - cluster_enables (always returns 0)
+
+ - keyspace
+
+    - returns stats for db: 0
+
+ - memory
+
+    - maxmemory
+
+    - used_memory
+
+    - mem_fragmentation_ratio (always reports 1.00)
+
+ - persistence
+
+    - loading (always returns 0)
+
+    - rdb_changes_since_last_save (always returns 0)
+
+    - rdb_last_save_time (always returns 0)
+
+ - replication
+
+    - role
+
+    - connected_slaves (always returns 0)
+
+ - server
+
+   - redis_version
+
+   - redis_mode
+
+   - tcp_port
+
+   - uptime_in_seconds
+
+   - uptime_in_days
+
+ - stats
+
+    - total_commands_processed
+
+    - instantaneous_ops_per_sec
+
+    - total_net_input_bytes
+
+    - instantaneous_input_kbps
+
+    - total_connections_received
+
+    - keyspace_hits
+
+    - keyspace_misses
+
+    - evicted_keys (always returns 0)
+
+    - rejected_connections (always returns 0)
+
+**[3]**  SLOWLOG is implemented as a NoOp.
+
+## <a id="advantages-over-redis" class="no-quick-link"></a>Advantages of <%=vars.product_name%> over Redis
 
 <%=vars.product_name%>’s primary advantage is its **scalability**. While the Redis server is single threaded, <%=vars.product_name%> supports high concurrency. Many Redis clients can execute commands on the <%=vars.product_name%> cluster simultaneously.
 
 <%=vars.product_name%>'s architecture and management features help detect and resolve **network partitioning** problems without explicit management on the part of the Redis client.
 
-<%=vars.product_name%> for Redis partitions data across multiple servers and keeps replicated data up to date _synchronously_, whereas Redis uses asynchronous replication.
-This provides a higher level of data consistency within the cluster.
-
-## <a id="expiration-accuracy"></a>Expiration Accuracy
+## <a id="expiration-accuracy" class="no-quick-link"></a>Expiration Accuracy
 
 Keys are expired in two ways, actively and passively:
 
 -   With active expiration, expiration is evaluated whenever a key is accessed. If the key is due to expire, it is deleted. Active expiration is accurate to the millisecond.
--   With passive expiration, keys are evaluated every three minutes. If they are due to expire, they are deleted.  Passive expiration is accurate to the second.
+-   With passive expiration, keys are evaluated every second. If they are due to expire, they are deleted.  Passive expiration is accurate to the second.
 
-## <a id="high-availability-model"></a>High Availability Model
+## <a id="high-availability-model" class="no-quick-link"></a>High Availability Model
 
-Data is stored in a single partitioned region that by default has one redundant copy.
+Data is stored in a single partitioned region that has one redundant copy.
 In practice this means that the cluster can tolerate the loss of a single server without the loss of
 data.
 
-## <a id="loss-of-connections"></a>Loss of Connections
+## <a id="loss-of-connections" class="no-quick-link"></a>Loss of Connections
 
 There are a number of events that might occur within the <%=vars.product_name%> cluster that can result
 in the cluster closing the connection to the Redis client. Losing the connection to the cluster does not
