@@ -41,6 +41,7 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.GemFireException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.NoSubscriptionServersAvailableException;
 import org.apache.geode.cache.client.ServerConnectivityException;
@@ -539,6 +540,7 @@ public class QueueManagerImpl implements QueueManager {
           // couldn't find a server to make primary
           break;
         }
+        markQueueAsReadyForEvents(primaryQueue);
         if (!addToConnectionList(primaryQueue, true)) {
           excludedServers.add(primaryQueue.getServer());
           primaryQueue = null;
@@ -806,7 +808,8 @@ public class QueueManagerImpl implements QueueManager {
     return primary;
   }
 
-  private void markAsQueueAsReadyForEvents(QueueConnectionImpl primary) {
+  @VisibleForTesting
+  public void markQueueAsReadyForEvents(QueueConnectionImpl primary) {
     if (primary != null && sentClientReady && primary.sendClientReady()) {
       readyForEventsAfterFailover(primary);
     }
@@ -848,7 +851,8 @@ public class QueueManagerImpl implements QueueManager {
    * First we try to make a backup server the primary, but if run out of backup servers we will try
    * to find a new server.
    */
-  private void recoverPrimary(Set<ServerLocation> excludedServers) {
+  @VisibleForTesting
+  public void recoverPrimary(Set<ServerLocation> excludedServers) {
     if (pool.getPoolOrCacheCancelInProgress() != null) {
       return;
     }
@@ -887,7 +891,6 @@ public class QueueManagerImpl implements QueueManager {
         }
         newPrimary = null;
       }
-
     }
 
     if (newPrimary != null) {
@@ -932,7 +935,7 @@ public class QueueManagerImpl implements QueueManager {
           newPrimary = null;
         }
 
-        markAsQueueAsReadyForEvents(newPrimary);
+        markQueueAsReadyForEvents(newPrimary);
 
         // New primary queue was found from a non backup, alert the affected cqs
         cqsConnected();

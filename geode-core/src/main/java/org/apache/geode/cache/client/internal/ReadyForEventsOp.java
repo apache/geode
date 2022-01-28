@@ -40,7 +40,7 @@ public class ReadyForEventsOp {
     // no instances allowed
   }
 
-  private static class ReadyForEventsOpImpl extends AbstractOp {
+  protected static class ReadyForEventsOpImpl extends AbstractOp {
     /**
      * @throws org.apache.geode.SerializationException if serialization fails
      */

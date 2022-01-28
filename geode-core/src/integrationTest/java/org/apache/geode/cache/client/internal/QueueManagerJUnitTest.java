@@ -24,8 +24,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
@@ -35,11 +40,13 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -50,7 +57,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.NoSubscriptionServersAvailableException;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ServerRefusedConnectionException;
 import org.apache.geode.cache.client.SocketFactory;
 import org.apache.geode.cache.client.SubscriptionNotEnabledException;
@@ -59,7 +68,9 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PoolStats;
+import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.internal.logging.LocalLogWriter;
@@ -74,7 +85,7 @@ public class QueueManagerJUnitTest {
   private EndpointManagerImpl endpoints;
   private DummySource source;
   private DummyFactory factory;
-  private QueueManager manager;
+  private QueueManagerImpl manager;
   private ScheduledExecutorService background;
   private PoolStats stats;
 
@@ -273,6 +284,100 @@ public class QueueManagerJUnitTest {
     assertThatThrownBy(() -> manager.start(background))
         .isInstanceOf(ServerRefusedConnectionException.class)
         .hasMessageContaining(serverRefusedConnectionExceptionMessage);
+  }
+
+  @Test
+  public void recoverPrimaryRegistersDoesntLoseData() {
+
+    Set<ServerLocation> excludedServers = new HashSet<>();
+    excludedServers.add(new ServerLocation("localhost", 1));
+    excludedServers.add(new ServerLocation("localhost", 2));
+    excludedServers.add(new ServerLocation("localhost", 3));
+    factory.addConnection(0, 0, 1);
+    factory.addConnection(0, 0, 2);
+    factory.addConnection(0, 0, 3);
+
+    Region testRegion = mock(Region.class);
+
+    InternalPool localPool = mock(InternalPool.class);
+    when(localPool.getSubscriptionAckInterval()).thenReturn(5000);
+    when(localPool.getStats()).thenReturn(mock(PoolStats.class));
+    // getPool().getRITracker()
+    // .getRegionToInterestsMap(interestType, isDurable, !receiveValues)
+    // .values()
+
+    RegisterInterestTracker registerInterestTracker = createRegisterInterestTracker(localPool, mock(
+        LocalRegion.class));
+
+    manager =
+        new QueueManagerImpl(localPool, endpoints, source, factory, 2, 20, logger,
+            ClientProxyMembershipID.getNewProxyMembership(ds));
+    manager.start(background);
+    // verify(spyManager, times(1)).markQueueAsReadyForEvents(any());
+    manager.recoverPrimary(excludedServers);
+
+
+
+    // verify(testRegion).
+
+    verify(localPool).executeOn(any(Connection.class),
+        isA(ReadyForEventsOp.ReadyForEventsOpImpl.class));
+
+    verify(localPool).executeOn(any(Connection.class),
+        isA(RegisterInterestOp.RegisterInterestOpImpl.class));
+
+    // Validate the order of the following two calls.
+    // Verify clearKeysOfInterest called at right time.
+    // Register for events - validation?
+    // pool executeOn with RegisterInterestOp
+    // pool executeOn with ReadyForEventsOp - validation?
+
+    // End result no lost events
+
+
+  }
+
+  private RegisterInterestTracker createRegisterInterestTracker(InternalPool localPool,
+      LocalRegion localRegion) {
+    final RegisterInterestTracker registerInterestTracker = mock(RegisterInterestTracker.class);
+    when(localPool.getRITracker()).thenReturn(registerInterestTracker);
+
+    final ConcurrentHashMap<String, RegisterInterestTracker.RegionInterestEntry> keysConcurrentMap =
+        new ConcurrentHashMap<>();
+    when(registerInterestTracker.getRegionToInterestsMap(eq(InterestType.KEY), anyBoolean(),
+        anyBoolean())).thenReturn(
+            keysConcurrentMap);
+    RegisterInterestTracker.RegionInterestEntry registerInterestEntry =
+        new RegisterInterestTracker.RegionInterestEntry(
+            localRegion);
+
+    registerInterestEntry.getInterests().put("bob", InterestResultPolicy.NONE);
+    keysConcurrentMap.put("testRegion", registerInterestEntry);
+
+    final ConcurrentHashMap<String, RegisterInterestTracker.RegionInterestEntry> regexConcurrentMap =
+        new ConcurrentHashMap<>();
+    when(registerInterestTracker.getRegionToInterestsMap(eq(InterestType.REGULAR_EXPRESSION),
+        anyBoolean(), anyBoolean())).thenReturn(
+            regexConcurrentMap);
+
+    final ConcurrentHashMap<String, RegisterInterestTracker.RegionInterestEntry> filterClassConcurrentMap =
+        new ConcurrentHashMap<>();
+    when(registerInterestTracker.getRegionToInterestsMap(eq(InterestType.FILTER_CLASS),
+        anyBoolean(), anyBoolean())).thenReturn(
+            filterClassConcurrentMap);
+
+    final ConcurrentHashMap<String, RegisterInterestTracker.RegionInterestEntry> cqConcurrentMap =
+        new ConcurrentHashMap<>();
+    when(registerInterestTracker.getRegionToInterestsMap(eq(InterestType.CQ), anyBoolean(),
+        anyBoolean())).thenReturn(
+            cqConcurrentMap);
+
+    final ConcurrentHashMap<String, RegisterInterestTracker.RegionInterestEntry> oqlQueryConcurrentMap =
+        new ConcurrentHashMap<>();
+    when(registerInterestTracker.getRegionToInterestsMap(eq(InterestType.CQ), anyBoolean(),
+        anyBoolean())).thenReturn(
+            oqlQueryConcurrentMap);
+    return registerInterestTracker;
   }
 
   private static void assertPortEquals(int expected, Connection actual) {
