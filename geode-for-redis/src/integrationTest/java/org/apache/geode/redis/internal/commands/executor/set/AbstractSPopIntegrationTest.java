@@ -23,7 +23,9 @@ import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CL
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -89,10 +91,12 @@ public abstract class AbstractSPopIntegrationTest implements RedisIntegrationTes
   public void spop_withoutCount_withExistentSet_returnsOneMember_removesReturnedMemberFromSet() {
     jedis.sadd(SET_KEY, SET_MEMBERS);
 
+    List<String> setMembersList = new ArrayList<>(Arrays.asList(SET_MEMBERS));
     String result = jedis.spop(SET_KEY);
-    assertThat(result).isIn(Arrays.asList(SET_MEMBERS));
-    assertThat(jedis.smembers(SET_KEY)).doesNotContain(result).isSubsetOf(SET_MEMBERS)
-        .doesNotHaveDuplicates();
+    assertThat(result).isIn(setMembersList);
+
+    setMembersList.remove(result);
+    assertThat(jedis.smembers(SET_KEY)).containsExactlyInAnyOrderElementsOf(setMembersList);
   }
 
   @Test
@@ -113,12 +117,13 @@ public abstract class AbstractSPopIntegrationTest implements RedisIntegrationTes
     jedis.sadd(SET_KEY, SET_MEMBERS);
     int count = 2;
 
+    List<String> setMembersList = new ArrayList<>(Arrays.asList(SET_MEMBERS));
     Set<String> result = jedis.spop(SET_KEY, count);
     assertThat(result.size()).isEqualTo(count);
-    assertThat(result).isSubsetOf(SET_MEMBERS).doesNotHaveDuplicates();
+    assertThat(result).isSubsetOf(setMembersList);
 
-    assertThat(jedis.smembers(SET_KEY)).doesNotContainAnyElementsOf(result).isSubsetOf(SET_MEMBERS)
-        .doesNotHaveDuplicates();
+    setMembersList.removeAll(result);
+    assertThat(jedis.smembers(SET_KEY)).containsExactlyInAnyOrderElementsOf(setMembersList);
   }
 
   @Test
@@ -126,12 +131,13 @@ public abstract class AbstractSPopIntegrationTest implements RedisIntegrationTes
     jedis.sadd(SET_KEY, SET_MEMBERS);
     int count = 6;
 
+    List<String> setMembersList = new ArrayList<>(Arrays.asList(SET_MEMBERS));
     Set<String> result = jedis.spop(SET_KEY, count);
     assertThat(result.size()).isEqualTo(count);
-    assertThat(result).isSubsetOf(SET_MEMBERS).doesNotHaveDuplicates();
+    assertThat(result).isSubsetOf(setMembersList);
 
-    assertThat(jedis.smembers(SET_KEY)).doesNotContainAnyElementsOf(result).isSubsetOf(SET_MEMBERS)
-        .doesNotHaveDuplicates();
+    setMembersList.removeAll(result);
+    assertThat(jedis.smembers(SET_KEY)).containsExactlyInAnyOrderElementsOf(setMembersList);
   }
 
   @Test

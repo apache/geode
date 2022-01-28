@@ -53,12 +53,10 @@ public abstract class SetRandomExecutor implements CommandExecutor {
       if (results.isEmpty()) {
         return RedisResponse.nil();
       } else {
-        return RedisResponse.bulkString(results.iterator().next());
+        return RedisResponse.bulkString(results.get(0));
       }
     }
   }
-
-
 
   protected abstract List<byte[]> performCommand(int count, RegionProvider regionProvider,
       RedisKey key);

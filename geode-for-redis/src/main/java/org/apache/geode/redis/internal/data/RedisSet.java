@@ -229,7 +229,15 @@ public class RedisSet extends AbstractRedisData {
       result.addAll(members);
       members.clear();
     } else {
-      srandomUniqueListAddToResult(count, result, true);
+      Random rand = new Random();
+      while (result.size() != count) {
+        int randIndex = rand.nextInt(members.getBackingArrayLength());
+        byte[] member = members.getFromBackingArray(randIndex);
+        if (member != null) {
+          result.add(member);
+          members.remove(member);
+        }
+      }
     }
 
     storeChanges(region, key, new RemoveByteArrays(result));
@@ -243,10 +251,10 @@ public class RedisSet extends AbstractRedisData {
       srandomDuplicateList(-count, result);
     } else if (count * randMethodRatio < members.size()) {
       // Count is small enough to add random elements to result
-      srandomUniqueListAddToResult(count, result, false);
+      srandomUniqueListWithSmallCount(count, result);
     } else {
       // Count either equal or greater to member size or close to the member size
-      srandomUniqueListRemoveFromResult(count, result);
+      srandomUniqueListWithLargeCount(count, result);
     }
     return result;
   }
@@ -262,7 +270,7 @@ public class RedisSet extends AbstractRedisData {
     }
   }
 
-  private void srandomUniqueListAddToResult(int count, List<byte[]> result, boolean isSPop) {
+  private void srandomUniqueListWithSmallCount(int count, List<byte[]> result) {
     Random rand = new Random();
     Set<Integer> indexesUsed = new HashSet<>();
 
@@ -271,16 +279,12 @@ public class RedisSet extends AbstractRedisData {
       byte[] member = members.getFromBackingArray(randIndex);
       if (member != null && !indexesUsed.contains(randIndex)) {
         result.add(member);
-        if (isSPop) {
-          members.remove(member);
-        } else {
-          indexesUsed.add(randIndex);
-        }
+        indexesUsed.add(randIndex);
       }
     }
   }
 
-  private void srandomUniqueListRemoveFromResult(int count, List<byte[]> result) {
+  private void srandomUniqueListWithLargeCount(int count, List<byte[]> result) {
     if (count >= members.size()) {
       result.addAll(members);
       return;
