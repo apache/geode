@@ -29,8 +29,9 @@ Prerequisites:
 
 1. **Install <%=vars.product_name%>** <br/>
 Using the instructions in the `README.md` file in the root of the <%=vars.product_name%> checkout directory, build and install <%=vars.product_name%>.
-2. **Install the Redis CLI** <br/>
-Follow installation instructions at https://redis.io/download
+2. **A Redis Client to Connect to the Cluster** <br/>
+Users will need a Redis client, that supports **Redis cluster commands** to connect to the cluster.  This example uses the Redis CLI which can be
+installed following the instructions at https://redis.io/download
 
 ### <a id="starting-a-geode-for-redis-cluster"></a>Starting a <%=vars.product_name%> for Redis cluster
 Use `gfsh` to start a locator for managing a <%=vars.product_name%> cluster:
@@ -237,8 +238,8 @@ integer (+/-&nbsp;9223372036854775807) for CURSOR.
 
 Keys are expired in two ways, actively and passively:
 
--   With active expiration, expiration is evaluated **whenever a key is accessed**. If the key is due to expire, it is deleted. Active expiration is accurate to the millisecond.
--   With passive expiration, keys are evaluated **every three minutes**. If they are due to expire, they are deleted.  Passive expiration is accurate to the second.
+-   With active expiration, expiration is evaluated **whenever a key is accessed**. If the key is due to expire, it is deleted.
+-   With passive expiration, keys are evaluated **every three minutes**. If they are due to expire, they are deleted.
 
 ## <a id="loss-of-connections"></a>Loss of Connections
 
