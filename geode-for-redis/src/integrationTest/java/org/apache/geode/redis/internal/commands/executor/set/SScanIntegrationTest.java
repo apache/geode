@@ -36,29 +36,30 @@ public class SScanIntegrationTest extends AbstractSScanIntegrationTest {
   }
 
   @Test
-  public void givenCursorGreaterThanUnsignedLongCapacity_returnsCursorError() {
+  public void givenCursorGreaterThanSignedLongMaxValue_returnsCursorError() {
     assertThatThrownBy(
         () -> jedis.sscan(KEY, SIGNED_LONG_MAX.add(BigInteger.ONE).toString()))
             .hasMessageContaining(ERROR_CURSOR);
   }
 
   @Test
-  public void givenNegativeCursorGreaterThanUnsignedLongCapacity_returnsCursorError() {
+  public void givenNegativeCursorLessThanSignedLongMinValue_returnsCursorError() {
     assertThatThrownBy(
-        () -> jedis.sscan(KEY, SIGNED_LONG_MIN.add(BigInteger.valueOf(-1)).toString()))
+        () -> jedis.sscan(KEY, SIGNED_LONG_MIN.subtract(BigInteger.ONE).toString()))
             .hasMessageContaining(ERROR_CURSOR);
   }
 
   @Test
-  public void givenCursorEqualToUnsignedLongCapacity_doesNotError() {
+  public void givenCursorEqualToSignedLongMinValue_doesNotError() {
     jedis.sadd(KEY, "1");
     assertThatNoException()
-        .isThrownBy(() -> jedis.sscan(KEY, SIGNED_LONG_MAX.subtract(BigInteger.ONE).toString()));
+        .isThrownBy(() -> jedis.sscan(KEY, SIGNED_LONG_MAX.toString()));
   }
 
   @Test
-  public void givenNegativeCursorEqualToUnsignedLongCapacity_returnsCursorError() {
+  public void givenNegativeCursorEqualToSignedLongMinValue_doesNotError() {
     jedis.sadd(KEY, "1");
-    assertThatNoException().isThrownBy(() -> jedis.sscan(KEY, SIGNED_LONG_MAX.toString()));
+    assertThatNoException()
+        .isThrownBy(() -> jedis.sscan(KEY, SIGNED_LONG_MIN.toString()));
   }
 }
