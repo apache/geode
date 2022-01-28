@@ -79,12 +79,11 @@ public class RedisSet extends AbstractRedisData {
       RegionProvider regionProvider) {
     RedisSet source = regionProvider.getTypedRedisData(REDIS_SET, sourceKey, false);
     RedisSet destination = regionProvider.getTypedRedisData(REDIS_SET, destKey, false);
-    if (source == NULL_REDIS_SET || !source.members.contains(member)) {
-      return 0;
-    }
     List<byte[]> memberList = new ArrayList<>();
     memberList.add(member);
-    source.srem(memberList, regionProvider, sourceKey);
+    if (source.srem(memberList, regionProvider, sourceKey) == 0) {
+      return 0;
+    }
     destination.sadd(memberList, regionProvider, destKey);
     return 1;
   }
@@ -397,50 +396,62 @@ public class RedisSet extends AbstractRedisData {
   }
 
   /**
-   * @param membersToAdd members to add to this set; NOTE this list may by
-   *        modified by this call
+   * @param membersToAdd members to add to this set
    * @param regionProvider the region this instance is stored in
    * @param key the name of the set to add to
    * @return the number of members actually added
    */
   public long sadd(List<byte[]> membersToAdd, RegionProvider regionProvider, RedisKey key) {
-    membersToAdd.removeIf(memberToAdd -> !membersAdd(memberToAdd));
-    int membersAdded = membersToAdd.size();
-    if (membersAdded != 0) {
-      Region<RedisKey, RedisData> region = regionProvider.getLocalDataRegion();
-      if (!regionProvider.isTransactionInProgress()) {
-        storeChanges(region, key, new AddByteArrays(membersToAdd));
-      } else {
-        // In a tx, delta requires cloning-enabled which is very expensive.
-        // So just do a put instead of storeChanges which uses delta.
-        region.put(key, this);
+    AddByteArrays delta = new AddByteArrays();
+    int membersAdded = 0;
+    for (byte[] member : membersToAdd) {
+      if (membersAdd(member)) {
+        delta.add(member);
+        membersAdded++;
       }
+    }
+    if (membersAdded == 0) {
+      return 0;
+    }
+    Region<RedisKey, RedisData> region = regionProvider.getLocalDataRegion();
+    if (!regionProvider.isTransactionInProgress()) {
+      storeChanges(region, key, delta);
+    } else {
+      // In a tx, delta requires cloning-enabled which is very expensive.
+      // So just do a put instead of storeChanges which uses delta.
+      region.put(key, this);
     }
     return membersAdded;
   }
 
   /**
-   * @param membersToRemove members to remove from this set; NOTE this list may by
-   *        modified by this call
+   * @param membersToRemove members to remove from this set
    * @param regionProvider the region this instance is stored in
    * @param key the name of the set to remove from
    * @return the number of members actually removed
    */
   public long srem(List<byte[]> membersToRemove, RegionProvider regionProvider, RedisKey key) {
-    membersToRemove.removeIf(memberToRemove -> !membersRemove(memberToRemove));
-    int membersRemoved = membersToRemove.size();
-    if (membersRemoved != 0) {
-      Region<RedisKey, RedisData> region = regionProvider.getLocalDataRegion();
-      if (!regionProvider.isTransactionInProgress()) {
-        storeChanges(region, key, new RemoveByteArrays(membersToRemove));
+    RemoveByteArrays delta = new RemoveByteArrays();
+    int membersRemoved = 0;
+    for (byte[] member : membersToRemove) {
+      if (membersRemove(member)) {
+        delta.add(member);
+        membersRemoved++;
+      }
+    }
+    if (membersRemoved == 0) {
+      return 0;
+    }
+    Region<RedisKey, RedisData> region = regionProvider.getLocalDataRegion();
+    if (!regionProvider.isTransactionInProgress()) {
+      storeChanges(region, key, delta);
+    } else {
+      if (removeFromRegion()) {
+        region.remove(key);
       } else {
-        if (removeFromRegion()) {
-          region.remove(key);
-        } else {
-          // In a tx, delta requires cloning-enabled which is very expensive.
-          // So just do a put instead of storeChanges which uses delta.
-          region.put(key, this);
-        }
+        // In a tx, delta requires cloning-enabled which is very expensive.
+        // So just do a put instead of storeChanges which uses delta.
+        region.put(key, this);
       }
     }
     return membersRemoved;

@@ -60,7 +60,7 @@ class NullRedisSet extends RedisSet {
 
   @Override
   public long sadd(List<byte[]> membersToAdd, RegionProvider regionProvider, RedisKey key) {
-    regionProvider.getLocalDataRegion().create(key, new RedisSet(membersToAdd));
+    regionProvider.getDataRegion().create(key, new RedisSet(membersToAdd));
     return membersToAdd.size();
   }
 
