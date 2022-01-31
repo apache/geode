@@ -344,8 +344,4 @@ public class RegionProvider {
     }
     return getHeapMemoryMonitor().getHeapCriticalMembersFrom(getRegionMembers());
   }
-
-  public boolean isTransactionInProgress() {
-    return txManager.exists();
-  }
 }
