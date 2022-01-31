@@ -78,7 +78,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void givenNonexistentKey_returnsEmptyArray() {
-    ScanResult<String> result = jedis.sscan("nonexistent", ZERO_CURSOR);
+    ScanResult<String> result = jedis.sscan("nonexistentKey", ZERO_CURSOR);
     assertThat(result.isCompleteIteration()).isTrue();
     assertThat(result.getResult()).isEmpty();
   }
@@ -86,7 +86,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
   @Test
   public void givenNonexistentKeyAndIncorrectOptionalArguments_returnsEmptyArray() {
     ScanResult<byte[]> result =
-        sendCustomSscanCommand("nonexistent", "nonexistent", ZERO_CURSOR, "ANY");
+        sendCustomSscanCommand("nonexistentKey", "nonexistentKey", ZERO_CURSOR, "ANY");
     assertThat(result.getResult()).isEmpty();
   }
 
@@ -177,14 +177,14 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
   public void givenKeyIsNotASet_andCursorIsNotAnInteger_returnsInvalidCursorError() {
     jedis.hset(KEY, "b", MEMBER_ONE);
     assertThatThrownBy(
-        () -> jedis.sscan(KEY, "not-int"))
+        () -> jedis.sscan(KEY, "notAnInteger"))
             .hasMessageContaining(ERROR_CURSOR);
   }
 
   @Test
   public void givenNonexistentKey_andCursorIsNotInteger_returnsInvalidCursorError() {
     assertThatThrownBy(
-        () -> jedis.sscan("not-a-key", "not-int"))
+        () -> jedis.sscan("nonexistentKey", "notAnInteger"))
             .hasMessageContaining(ERROR_CURSOR);
   }
 
@@ -192,7 +192,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
   public void givenExistentSetKey_andCursorIsNotAnInteger_returnsInvalidCursorError() {
     jedis.set(KEY, "b");
     assertThatThrownBy(
-        () -> jedis.sscan(KEY, "not-int"))
+        () -> jedis.sscan(KEY, "notAnInteger"))
             .hasMessageContaining(ERROR_CURSOR);
   }
 
