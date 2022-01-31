@@ -24,10 +24,12 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
@@ -37,7 +39,9 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
+import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -97,7 +101,7 @@ public class RebalanceOperationComplexPart2DistributedTest
     }
 
     // Put data in the server regions
-    clientPopulateServers();
+    clientPopulateServers(5);
 
     // Rebalance Server VM will initiate the rebalances in this test
     VM server2 = clusterStartupRule.getVM(2);
@@ -131,6 +135,74 @@ public class RebalanceOperationComplexPart2DistributedTest
     assertThat(zoneABucketCount).isEqualTo(EXPECTED_BUCKET_COUNT);
   }
 
+
+
+  @Test
+  public void testServerStartsDuringRebalance() throws Exception {
+    Logger logger = LogService.getLogger();
+
+
+    /*
+     * 02:03:04.120 Peer1 initialized
+     * 02:04:50.258 Peer4 comes up
+     * 02:05:01.390 Rebalance 1 starts rebalance
+     * 02:05:08.348 Rebalance 1 moves bucket 66
+     * 02:05:08.384 Peer 3 comes up
+     * 02:05:08.374 Peer4 has the copy from Peer 1
+     * 02:05:19.849 Rebalance1 rebalance completes
+     * 02:05:55.931 Peer 4 shutdown
+     * 02:05:56.043 Peer2 initialized
+     * 02:07:03.625 Peer2 shutdown
+     * 02:07:03.709 Peer4 initialized
+     * 02:08:10.167 Peer4 shutdown
+     * 02:08:24.845 Peer3 wants bucket data from Peer 1
+     *
+     */
+    startServer(1);
+    startServer(2);
+    startServer(3);
+    startServer(4);
+
+
+    // Put data in the server regions
+    clientPopulateServers(5);
+    clusterStartupRule.stop(3, false);
+
+    // Rebalance Server VM will initiate the rebalances in this test
+    VM server2 = clusterStartupRule.getVM(2);
+
+    // Take the server 1 offline
+    clusterStartupRule.stop(1, true);
+    startServer(1);
+    AsyncInvocation<Void> startServerInvocation = asyncStartServer(3);
+    // Baseline rebalance with everything up
+    AsyncInvocation<Void> invocation =
+        server2.invokeAsync(() -> doRebalance(ClusterStartupRule.getCache().getResourceManager()));
+    startServerInvocation.await();
+    Thread.sleep(100);
+    invocation.await();
+    // Stop server 3 never to start again.
+    clusterStartupRule.crashVM(4);
+    startServer(4);
+    clusterStartupRule.stop(1, true);
+    startServer(1);
+
+    VM.getVM(3).invoke(() -> {
+      Region<Integer, String> region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      for (int i = 0; i < 49500; i = i + 10) {
+        try {
+          region.invalidate(i);
+        } catch (EntryNotFoundException ignored) {
+          logger.info("entry " + i + "  not found");
+
+        }
+      }
+    });
+
+  }
+
+
+
   private int getBucketCount(int server) {
     return clusterStartupRule.getVM(server).invoke(() -> {
       PartitionedRegion region =
@@ -139,23 +211,16 @@ public class RebalanceOperationComplexPart2DistributedTest
     });
   }
 
-
-
   /**
    * Startup a client to put all the data in the server regions
    */
-  protected void clientPopulateServers() throws Exception {
+  protected void clientPopulateServers(int vmIndex) throws Exception {
     Properties properties2 = new Properties();
     ClientVM clientVM =
-        clusterStartupRule.startClientVM(SERVER_ZONE_MAP.size() + 1, properties2,
+        clusterStartupRule.startClientVM(vmIndex, properties2,
             ccf -> ccf.addPoolLocator("localhost", locatorPort));
 
     clientVM.invoke(() -> {
-
-      Map<Integer, String> putMap = new HashMap<>();
-      for (int i = 0; i < 1000; i++) {
-        putMap.put(i, "A");
-      }
 
       ClientCache clientCache = ClusterStartupRule.getClientCache();
       ClientRegionFactory<Object, Object> clientRegionFactory =
@@ -163,7 +228,9 @@ public class RebalanceOperationComplexPart2DistributedTest
               ClientRegionShortcut.PROXY);
       clientRegionFactory.create(REGION_NAME);
       Region<Integer, String> region = clientCache.getRegion(REGION_NAME);
-      region.putAll(putMap);
+      for (int i = 0; i < 50000; i++) {
+        region.put(i, "A");
+      }
     });
   }
 
@@ -180,18 +247,47 @@ public class RebalanceOperationComplexPart2DistributedTest
         .withConnectionToLocator(locatorPort));
 
     VM.getVM(index).invoke(() -> {
-      RegionFactory<Object, Object> regionFactory =
-          ClusterStartupRule.getCache().createRegionFactory(
-              RegionShortcut.PARTITION_REDUNDANT);
-      PartitionAttributesImpl partitionAttributesImpl = new PartitionAttributesImpl();
-      partitionAttributesImpl.setRedundantCopies(1);
-      partitionAttributesImpl.setStartupRecoveryDelay(-1);
-      partitionAttributesImpl.setRecoveryDelay(-1);
-      partitionAttributesImpl.setTotalNumBuckets(EXPECTED_BUCKET_COUNT);
-      regionFactory.setPartitionAttributes(partitionAttributesImpl);
-      regionFactory.create(REGION_NAME);
+      configureServer(REGION_NAME, 1);
 
     });
+  }
+
+  /**
+   * Startup server *index* in *redundancy zone*
+   *
+   * @param index - server
+   */
+  protected VM startServer(int index) {
+    clusterStartupRule.startServerVM(index, s -> s
+        .withConnectionToLocator(locatorPort));
+    VM server = VM.getVM(index);
+    server.invoke(() -> {
+      configureServer(REGION_NAME, 0);
+    });
+    return server;
+  }
+
+  protected AsyncInvocation<Void> asyncStartServer(int index) {
+    clusterStartupRule.startServerVM(index, s -> s
+        .withConnectionToLocator(locatorPort));
+    VM server = VM.getVM(index);
+    AsyncInvocation<Void> result = server.invokeAsync(() -> {
+      configureServer(REGION_NAME, 0);
+    });
+    return result;
+  }
+
+  private void configureServer(String regionName, int redundancy) {
+    RegionFactory<Object, Object> regionFactory =
+        ClusterStartupRule.getCache().createRegionFactory(
+            RegionShortcut.PARTITION_REDUNDANT);
+    PartitionAttributesImpl partitionAttributesImpl = new PartitionAttributesImpl();
+    partitionAttributesImpl.setRedundantCopies(redundancy);
+    partitionAttributesImpl.setStartupRecoveryDelay(-redundancy);
+    partitionAttributesImpl.setRecoveryDelay(-redundancy);
+    partitionAttributesImpl.setTotalNumBuckets(EXPECTED_BUCKET_COUNT);
+    regionFactory.setPartitionAttributes(partitionAttributesImpl);
+    regionFactory.create(regionName);
   }
 
   /**
@@ -214,7 +310,7 @@ public class RebalanceOperationComplexPart2DistributedTest
   protected int getZoneABucketCount() {
     int bucketCount = 0;
     for (Map.Entry<Integer, String> entry : SERVER_ZONE_MAP.entrySet()) {
-      if (entry.getValue().compareTo(RebalanceOperationComplexPart2DistributedTest.ZONE_A) == 0) {
+      if (entry.getValue().compareTo(ZONE_A) == 0) {
         bucketCount += getBucketCount(entry.getKey());
       }
     }

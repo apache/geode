@@ -792,9 +792,7 @@ public class PartitionedRegion extends LocalRegion
         statisticsClock);
     regionIdentifier = getFullPath().replace(Region.SEPARATOR_CHAR, '#');
 
-    if (logger.isDebugEnabled()) {
-      logger.debug("Constructing Partitioned Region {}", regionName);
-    }
+    logger.info("Constructing Partitioned Region {}", regionName);
 
     // By adding this disconnect listener we ensure that the pridmap is cleaned
     // up upon
@@ -859,10 +857,8 @@ public class PartitionedRegion extends LocalRegion
       fixedPASet = 0;
     }
 
-    if (logger.isDebugEnabled()) {
-      logger.debug("Partitioned Region {} constructed {}", regionName,
-          (haveCacheLoader ? "with a cache loader" : ""));
-    }
+    logger.info("Partitioned Region {} constructed {}", regionName,
+        (haveCacheLoader ? "with a cache loader" : ""));
     if (getEvictionAttributes() != null
         && getEvictionAttributes().getAlgorithm().isLRUHeap()) {
       sortedBuckets = new ArrayList<>();
@@ -1114,9 +1110,7 @@ public class PartitionedRegion extends LocalRegion
       }
     } catch (RegionDestroyedException rde) {
       // Do nothing.
-      if (logger.isDebugEnabled()) {
-        logger.debug("initPRInternals: failed due to exception", rde);
-      }
+      logger.info("initPRInternals: failed due to exception", rde);
     }
 
     releaseAfterGetInitialImageLatch();
@@ -1128,9 +1122,7 @@ public class PartitionedRegion extends LocalRegion
       }
     } catch (RegionDestroyedException rde) {
       // Do nothing.
-      if (logger.isDebugEnabled()) {
-        logger.debug("initPRInternals: failed due to exception", rde);
-      }
+      logger.info("initPRInternals: failed due to exception", rde);
     }
 
     return true;
@@ -1208,17 +1200,13 @@ public class PartitionedRegion extends LocalRegion
   @Override
   public void initialize(InputStream snapshotInputStream, InternalDistributedMember imageTarget,
       InternalRegionArguments internalRegionArgs) throws TimeoutException, ClassNotFoundException {
-    if (logger.isDebugEnabled()) {
-      logger.debug("PartitionedRegion#initialize {}", getName());
-    }
+    logger.info("PartitionedRegion#initialize {}", getName());
     RegionLogger.logCreate(getName(), getDistributionManager().getDistributionManagerId());
 
     requiresNotification = cache.requiresNotificationFromPR(this);
     initPRInternals(internalRegionArgs);
 
-    if (logger.isDebugEnabled()) {
-      logger.debug("PartitionRegion#initialize: finished with {}", this);
-    }
+    logger.info("PartitionRegion#initialize: finished with {}", this);
     cache.addPartitionedRegion(this);
 
   }
@@ -1412,9 +1400,7 @@ public class PartitionedRegion extends LocalRegion
     }
     final RegionLock rl = getRegionLock();
     try {
-      if (logger.isDebugEnabled()) {
-        logger.debug("registerPartitionedRegion: obtaining lock");
-      }
+      logger.info("registerPartitionedRegion: obtaining lock");
       rl.lock();
       checkReadiness();
 
@@ -1461,9 +1447,7 @@ public class PartitionedRegion extends LocalRegion
        */
       cleanPRRegistration = true;
     } catch (LockServiceDestroyedException lsde) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("registerPartitionedRegion: unable to obtain lock for {}", this);
-      }
+      logger.info("registerPartitionedRegion: unable to obtain lock for {}", this);
       PartitionedRegionException pre = null;
       try {
         cleanupFailedInitialization();
@@ -1521,21 +1505,15 @@ public class PartitionedRegion extends LocalRegion
         // error condition, so you also need to check to see if the JVM
         // is still usable:
         SystemFailure.checkFailure();
-        if (logger.isDebugEnabled()) {
-          logger.debug("Partitioned Region creation, could not clean up after caught exception", e);
-        }
+        logger.info("Partitioned Region creation, could not clean up after caught exception", e);
       }
       throw new PartitionedRegionException(registerErrMsg, t);
     } finally {
       try {
         rl.unlock();
-        if (logger.isDebugEnabled()) {
-          logger.debug("registerPartitionedRegion: released lock");
-        }
+        logger.info("registerPartitionedRegion: released lock");
       } catch (Exception es) {
-        if (logger.isDebugEnabled()) {
-          logger.debug(es.getMessage(), es);
-        }
+        logger.info(es.getMessage(), es);
       }
     }
   }
@@ -1788,17 +1766,13 @@ public class PartitionedRegion extends LocalRegion
 
         return ret;
       } catch (PRLocallyDestroyedException pde) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("getEntryInBucket: Encountered PRLocallyDestroyedException", pde);
-        }
+        logger.info("getEntryInBucket: Encountered PRLocallyDestroyedException", pde);
         checkReadiness();
       } catch (EntryNotFoundException ignore) {
         return null;
       } catch (ForceReattemptException prce) {
         prce.checkKey(key);
-        if (logger.isDebugEnabled()) {
-          logger.debug("getEntryInBucket: retrying, attempts so far: {}", count, prce);
-        }
+        logger.info("getEntryInBucket: retrying, attempts so far: {}", count, prce);
         checkReadiness();
         InternalDistributedMember lastNode = retryNode;
         retryNode = getOrCreateNodeForBucketRead(bucketId);
@@ -1812,10 +1786,8 @@ public class PartitionedRegion extends LocalRegion
           retryTime.waitToRetryNode();
         }
       } catch (PrimaryBucketException notPrimary) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("Bucket {} on Node {} not primary", notPrimary.getLocalizedMessage(),
-              retryNode);
-        }
+        logger.info("Bucket {} on Node {} not primary", notPrimary.getLocalizedMessage(),
+            retryNode);
         getRegionAdvisor().notPrimary(bucketId, retryNode);
         retryNode = getOrCreateNodeForBucketRead(bucketId);
       }
@@ -1836,11 +1808,9 @@ public class PartitionedRegion extends LocalRegion
     }
 
     PartitionedRegionDistributionException e = null; // Fix for bug 36014
-    if (logger.isDebugEnabled()) {
-      e = new PartitionedRegionDistributionException(
-          String.format("No VM available for getEntry in %s attempts",
-              count));
-    }
+    e = new PartitionedRegionDistributionException(
+        String.format("No VM available for getEntry in %s attempts",
+            count));
     logger.warn(String.format("No VM available for getEntry in %s attempts", count), e);
     return null;
   }
@@ -2054,9 +2024,7 @@ public class PartitionedRegion extends LocalRegion
       final Set buckets)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException, ForceReattemptException {
-    if (logger.isDebugEnabled()) {
-      logger.debug("Executing query :{}", query);
-    }
+    logger.info("Executing query :{}", query);
 
     HashSet<Integer> allBuckets = new HashSet<>();
 
@@ -2084,9 +2052,7 @@ public class PartitionedRegion extends LocalRegion
     }
 
     if (allBuckets.size() == 0) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("No bucket storage allocated. PR has no data yet.");
-      }
+      logger.info("No bucket storage allocated. PR has no data yet.");
       ResultsSet resSet = new ResultsSet();
       resSet.setElementType(new ObjectTypeImpl(
           getValueConstraint() == null ? Object.class : getValueConstraint()));
@@ -2221,9 +2187,7 @@ public class PartitionedRegion extends LocalRegion
       InternalDistributedMember targetNode = getNodeForBucketWrite(bucketId, null);
       // force all values to be serialized early to make size computation cheap
       // and to optimize distribution.
-      if (logger.isDebugEnabled()) {
-        logger.debug("PR.virtualPut putting event={}", event);
-      }
+      logger.info("PR.virtualPut putting event={}", event);
 
       if (targetNode == null) {
         try {
@@ -2246,10 +2210,8 @@ public class PartitionedRegion extends LocalRegion
       if (putAllOp_save == null) {
         result = putInBucket(targetNode, bucketId, event, ifNew, ifOld, expectedOldValue,
             requireOldValue, (ifNew ? 0L : lastModified));
-        if (logger.isDebugEnabled()) {
-          logger.debug("PR.virtualPut event={} ifNew={} ifOld={} result={}", event, ifNew, ifOld,
-              result);
-        }
+        logger.info("PR.virtualPut event={} ifNew={} ifOld={} result={}", event, ifNew, ifOld,
+            result);
       } else {
         checkIfAboveThreshold(event); // fix for 40502
         // putAll: save the bucket id into DPAO, then wait for postPutAll to send msg
@@ -2259,9 +2221,7 @@ public class PartitionedRegion extends LocalRegion
         // buckets
         // could be changed at that time
         putAllOp_save.addEntry(event, bucketId);
-        if (logger.isDebugEnabled()) {
-          logger.debug("PR.virtualPut PutAll added event={} into bucket {}", event, bucketId);
-        }
+        logger.info("PR.virtualPut PutAll added event={} into bucket {}", event, bucketId);
         result = true;
       }
     } catch (RegionDestroyedException rde) {
@@ -2408,13 +2368,13 @@ public class PartitionedRegion extends LocalRegion
       } catch (PutAllPartialResultException pre) {
         // sendMsgByBucket applied partial keys
         if (isDebugEnabled) {
-          logger.debug("PR.postPutAll encountered PutAllPartialResultException, ", pre);
+          logger.info("PR.postPutAll encountered PutAllPartialResultException, ", pre);
         }
         partialKeys.consolidate(pre.getResult());
       } catch (Exception ex) {
         // If failed at other exception
         if (isDebugEnabled) {
-          logger.debug("PR.postPutAll encountered exception at sendMsgByBucket, ", ex);
+          logger.info("PR.postPutAll encountered exception at sendMsgByBucket, ", ex);
         }
         @Released
         EntryEventImpl firstEvent = prMsg.getFirstEvent(this);
@@ -2427,7 +2387,7 @@ public class PartitionedRegion extends LocalRegion
       if (isDebugEnabled) {
         long now = System.currentTimeMillis();
         if ((now - then) >= 10000) {
-          logger.debug("PR.sendMsgByBucket took " + (now - then) + " ms");
+          logger.info("PR.sendMsgByBucket took " + (now - then) + " ms");
         }
       }
     }
@@ -2497,13 +2457,13 @@ public class PartitionedRegion extends LocalRegion
       } catch (PutAllPartialResultException pre) {
         // sendMsgByBucket applied partial keys
         if (isDebugEnabled) {
-          logger.debug("PR.postRemoveAll encountered BulkOpPartialResultException, ", pre);
+          logger.info("PR.postRemoveAll encountered BulkOpPartialResultException, ", pre);
         }
         partialKeys.consolidate(pre.getResult());
       } catch (Exception ex) {
         // If failed at other exception
         if (isDebugEnabled) {
-          logger.debug("PR.postRemoveAll encountered exception at sendMsgByBucket, ", ex);
+          logger.info("PR.postRemoveAll encountered exception at sendMsgByBucket, ", ex);
         }
         @Released
         EntryEventImpl firstEvent = prMsg.getFirstEvent(this);
@@ -2516,7 +2476,7 @@ public class PartitionedRegion extends LocalRegion
       if (isDebugEnabled) {
         long now = System.currentTimeMillis();
         if ((now - then) >= 10000) {
-          logger.debug("PR.sendMsgByBucket took {} ms", (now - then));
+          logger.info("PR.sendMsgByBucket took {} ms", (now - then));
         }
       }
     }
@@ -2562,7 +2522,7 @@ public class PartitionedRegion extends LocalRegion
       RetryTimeKeeper retryTime = null;
       InternalDistributedMember currentTarget = getNodeForBucketWrite(bucketId, null);
       if (isDebugEnabled) {
-        logger.debug("PR.sendMsgByBucket:bucket {}'s currentTarget is {}", bucketId, currentTarget);
+        logger.info("PR.sendMsgByBucket:bucket {}'s currentTarget is {}", bucketId, currentTarget);
       }
 
       long timeOut = 0;
@@ -2611,7 +2571,7 @@ public class PartitionedRegion extends LocalRegion
 
           currentTarget = waitForNodeOrCreateBucket(retryTime, event, bucketId);
           if (isDebugEnabled) {
-            logger.debug("PR.sendMsgByBucket: event size is {}, new currentTarget is {}",
+            logger.info("PR.sendMsgByBucket: event size is {}, new currentTarget is {}",
                 getEntrySize(event), currentTarget);
           }
 
@@ -2633,12 +2593,12 @@ public class PartitionedRegion extends LocalRegion
           }
           currentTarget = getNodeForBucketWrite(bucketId, retryTime);
           if (isDebugEnabled) {
-            logger.debug("PR.sendMsgByBucket: Old target was {}, Retrying {}", lastTarget,
+            logger.info("PR.sendMsgByBucket: Old target was {}, Retrying {}", lastTarget,
                 currentTarget);
           }
           if (lastTarget.equals(currentTarget)) {
             if (isDebugEnabled) {
-              logger.debug("PR.sendMsgByBucket: Retrying at the same node:{} due to {}",
+              logger.info("PR.sendMsgByBucket: Retrying at the same node:{} due to {}",
                   currentTarget, prce.getMessage());
             }
             if (retryTime.overMaximum()) {
@@ -2652,7 +2612,7 @@ public class PartitionedRegion extends LocalRegion
           prMsg.setPossibleDuplicate(true);
         } catch (PrimaryBucketException notPrimary) {
           if (isDebugEnabled) {
-            logger.debug("Bucket {} on Node {} not primnary", notPrimary.getLocalizedMessage(),
+            logger.info("Bucket {} on Node {} not primnary", notPrimary.getLocalizedMessage(),
                 currentTarget);
           }
           getRegionAdvisor().notPrimary(bucketId, currentTarget);
@@ -2662,7 +2622,7 @@ public class PartitionedRegion extends LocalRegion
           currentTarget = getNodeForBucketWrite(bucketId, retryTime);
         } catch (DataLocationException dle) {
           if (isDebugEnabled) {
-            logger.debug("DataLocationException processing putAll", dle);
+            logger.info("DataLocationException processing putAll", dle);
           }
           throw new TransactionException(dle);
         }
@@ -2700,9 +2660,7 @@ public class PartitionedRegion extends LocalRegion
     try {
       RetryTimeKeeper retryTime = null;
       InternalDistributedMember currentTarget = getNodeForBucketWrite(bucketId, null);
-      if (logger.isDebugEnabled()) {
-        logger.debug("PR.sendMsgByBucket:bucket {}'s currentTarget is {}", bucketId, currentTarget);
-      }
+      logger.info("PR.sendMsgByBucket:bucket {}'s currentTarget is {}", bucketId, currentTarget);
 
       long timeOut = 0;
       int count = 0;
@@ -2749,10 +2707,8 @@ public class PartitionedRegion extends LocalRegion
           }
 
           currentTarget = waitForNodeOrCreateBucket(retryTime, event, bucketId);
-          if (logger.isDebugEnabled()) {
-            logger.debug("PR.sendMsgByBucket: event size is {}, new currentTarget is {}",
-                getEntrySize(event), currentTarget);
-          }
+          logger.info("PR.sendMsgByBucket: event size is {}, new currentTarget is {}",
+              getEntrySize(event), currentTarget);
 
           // It's possible this is a GemFire thread e.g. ServerConnection
           // which got to this point because of a distributed system shutdown or
@@ -2776,10 +2732,8 @@ public class PartitionedRegion extends LocalRegion
                 currentTarget);
           }
           if (lastTarget.equals(currentTarget)) {
-            if (logger.isDebugEnabled()) {
-              logger.debug("PR.sendMsgByBucket: Retrying at the same node:{} due to {}",
-                  currentTarget, prce.getMessage());
-            }
+            logger.info("PR.sendMsgByBucket: Retrying at the same node:{} due to {}",
+                currentTarget, prce.getMessage());
             if (retryTime.overMaximum()) {
               PRHARedundancyProvider.timedOut(this, null, null, "update an entry",
                   retryTimeout);
@@ -2792,19 +2746,15 @@ public class PartitionedRegion extends LocalRegion
             prMsg.setPossibleDuplicate(true);
           }
         } catch (PrimaryBucketException notPrimary) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("Bucket {} on Node {} not primary", notPrimary.getLocalizedMessage(),
-                currentTarget);
-          }
+          logger.info("Bucket {} on Node {} not primary", notPrimary.getLocalizedMessage(),
+              currentTarget);
           getRegionAdvisor().notPrimary(bucketId, currentTarget);
           if (retryTime == null) {
             retryTime = new RetryTimeKeeper(retryTimeout);
           }
           currentTarget = getNodeForBucketWrite(bucketId, retryTime);
         } catch (DataLocationException dle) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("DataLocationException processing putAll", dle);
-          }
+          logger.info("DataLocationException processing putAll", dle);
           throw new TransactionException(dle);
         }
 
@@ -2851,9 +2801,7 @@ public class PartitionedRegion extends LocalRegion
           putResult = pr.returnValue;
           versions = pr.versions;
         } catch (RegionDestroyedException rde) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("prMsg.send: caught RegionDestroyedException", rde);
-          }
+          logger.info("prMsg.send: caught RegionDestroyedException", rde);
           throw new RegionDestroyedException(toString(), getFullPath());
         } catch (CacheException ce) {
           // Fix for bug 36014
@@ -2898,9 +2846,7 @@ public class PartitionedRegion extends LocalRegion
           putResult = pr.returnValue;
           versions = pr.versions;
         } catch (RegionDestroyedException rde) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("prMsg.send: caught RegionDestroyedException", rde);
-          }
+          logger.info("prMsg.send: caught RegionDestroyedException", rde);
           throw new RegionDestroyedException(toString(), getFullPath());
         } catch (CacheException ce) {
           // Fix for bug 36014
@@ -2942,10 +2888,8 @@ public class PartitionedRegion extends LocalRegion
   private boolean putInBucket(final InternalDistributedMember targetNode, final Integer bucketId,
       final EntryEventImpl event, final boolean ifNew, boolean ifOld, Object expectedOldValue,
       boolean requireOldValue, final long lastModified) {
-    if (logger.isDebugEnabled()) {
-      logger.debug("putInBucket: {} ({}) to {} to bucketId={} retry={} ms", event.getKey(),
-          event.getKey().hashCode(), targetNode, bucketStringForLogs(bucketId), retryTimeout);
-    }
+    logger.info("putInBucket: {} ({}) to {} to bucketId={} retry={} ms", event.getKey(),
+        event.getKey().hashCode(), targetNode, bucketStringForLogs(bucketId), retryTimeout);
     // retry the put remotely until it finds the right node managing the bucket
 
     RetryTimeKeeper retryTime = null;
@@ -3005,10 +2949,8 @@ public class PartitionedRegion extends LocalRegion
 
       try {
         final boolean isLocal = (localMaxMemory > 0) && currentTarget.equals(getMyId());
-        if (logger.isDebugEnabled()) {
-          logger.debug("putInBucket: currentTarget = {}; ifNew = {}; ifOld = {}; isLocal = {}",
-              currentTarget, ifNew, ifOld, isLocal);
-        }
+        logger.info("putInBucket: currentTarget = {}; ifNew = {}; ifOld = {}; isLocal = {}",
+            currentTarget, ifNew, ifOld, isLocal);
         checkIfAboveThreshold(event);
         if (isLocal) {
           event.setInvokePRCallbacks(true);
@@ -3066,9 +3008,7 @@ public class PartitionedRegion extends LocalRegion
 
         return result;
       } catch (ConcurrentCacheModificationException e) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("putInBucket: caught concurrent cache modification exception", e);
-        }
+        logger.info("putInBucket: caught concurrent cache modification exception", e);
         event.isConcurrencyConflict(true);
 
         if (logger.isTraceEnabled()) {
@@ -3079,12 +3019,10 @@ public class PartitionedRegion extends LocalRegion
         return result;
       } catch (ForceReattemptException prce) {
         prce.checkKey(event.getKey());
-        if (logger.isDebugEnabled()) {
-          logger.debug(
-              "putInBucket: Got ForceReattemptException for {} on VM {} for node {}{}{} for bucket = {}",
-              this, getMyId(), currentTarget, getPRId(), BUCKET_ID_SEPARATOR, bucketId, prce);
-          logger.debug("putInBucket: count={}", count);
-        }
+        logger.info(
+            "putInBucket: Got ForceReattemptException for {} on VM {} for node {}{}{} for bucket = {}",
+            this, getMyId(), currentTarget, getPRId(), BUCKET_ID_SEPARATOR, bucketId, prce);
+        logger.info("putInBucket: count={}", count);
         checkReadiness();
         InternalDistributedMember lastTarget = currentTarget;
         if (retryTime == null) {
@@ -3100,10 +3038,8 @@ public class PartitionedRegion extends LocalRegion
         }
         event.setPossibleDuplicate(true);
       } catch (PrimaryBucketException notPrimary) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("Bucket {} on Node {} not primary", notPrimary.getLocalizedMessage(),
-              currentTarget);
-        }
+        logger.info("Bucket {} on Node {} not primary", notPrimary.getLocalizedMessage(),
+            currentTarget);
         getRegionAdvisor().notPrimary(bucketId, currentTarget);
         if (retryTime == null) {
           retryTime = new RetryTimeKeeper(retryTimeout);
@@ -3133,12 +3069,10 @@ public class PartitionedRegion extends LocalRegion
         prStats.incPutRetries();
       }
 
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            "putInBucket for bucketId = {} failed (attempt # {} ({} ms left), retrying with node {}",
-            bucketStringForLogs(bucketId), count, (timeOut - System.currentTimeMillis()),
-            currentTarget);
-      }
+      logger.info(
+          "putInBucket for bucketId = {} failed (attempt # {} ({} ms left), retrying with node {}",
+          bucketStringForLogs(bucketId), count, (timeOut - System.currentTimeMillis()),
+          currentTarget);
     } // for
 
     // NOTREACHED
@@ -3231,7 +3165,7 @@ public class PartitionedRegion extends LocalRegion
       if (!getRegionAdvisor().isStorageAssignedForBucket(bucketId, minimumWriteRedundancy,
           false)) {
         if (isDebugEnabled) {
-          logger.debug("No storage assigned for bucket ({}{}{}) writer", getPRId(),
+          logger.info("No storage assigned for bucket ({}{}{}) writer", getPRId(),
               BUCKET_ID_SEPARATOR, bucketId);
         }
         return null; // No bucket for this key
@@ -3278,16 +3212,13 @@ public class PartitionedRegion extends LocalRegion
           return d; // success!
         } else {
           // go around the loop again
-          if (logger.isDebugEnabled()) {
-            logger.debug("No primary node found for bucket ({}{}{}) {}", getPRId(),
-                BUCKET_ID_SEPARATOR, bucketId, readOrWrite);
-          }
+          logger.info("No primary node found for bucket ({}{}{}) {}", getPRId(),
+              BUCKET_ID_SEPARATOR, bucketId, readOrWrite);
         }
+
         if (!getRegionAdvisor().isStorageAssignedForBucket(bucketId)) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("No storage while waiting for primary for bucket ({}{}{}) {}", getPRId(),
-                BUCKET_ID_SEPARATOR, bucketId, readOrWrite);
-          }
+          logger.info("No storage while waiting for primary for bucket ({}{}{}) {}", getPRId(),
+              BUCKET_ID_SEPARATOR, bucketId, readOrWrite);
           return null; // No bucket for this key
         }
         checkShutdown();
@@ -3421,9 +3352,7 @@ public class PartitionedRegion extends LocalRegion
         }
         return pr.returnValue;
       } catch (RegionDestroyedException rde) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("putRemotely: caught RegionDestroyedException", rde);
-        }
+        logger.info("putRemotely: caught RegionDestroyedException", rde);
         throw new RegionDestroyedException(toString(), getFullPath());
       } catch (TransactionException te) {
         throw te;
@@ -3521,9 +3450,7 @@ public class PartitionedRegion extends LocalRegion
         allowRetry = true;
       }
       if (targetNode == null) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("No need to create buckets on get(), no CacheLoader configured.");
-        }
+        logger.info("No need to create buckets on get(), no CacheLoader configured.");
         return null;
       }
 
@@ -3561,43 +3488,31 @@ public class PartitionedRegion extends LocalRegion
       if (!executeOnBucketSet) {
         switch (execution.getFilter().size()) {
           case 1:
-            if (logger.isDebugEnabled()) {
-              logger.debug("Executing Function: (Single Hop) {} on single node.", function.getId());
-            }
+            logger.info("Executing Function: (Single Hop) {} on single node.", function.getId());
             return executeOnSingleNode(function, execution, rc, true, false);
           default:
-            if (logger.isDebugEnabled()) {
-              logger.debug("Executing Function: (Single Hop) {} on multiple nodes.",
-                  function.getId());
-            }
+            logger.info("Executing Function: (Single Hop) {} on multiple nodes.",
+                function.getId());
             return executeOnMultipleNodes(function, execution, rc, true, false);
         }
       } else {
-        if (logger.isDebugEnabled()) {
-          logger.debug("Executing Function: (Single Hop) {} on a set of buckets nodes.",
-              function.getId());
-        }
+        logger.info("Executing Function: (Single Hop) {} on a set of buckets nodes.",
+            function.getId());
         return executeOnBucketSet(function, execution, rc, execution.getFilter());
       }
     } else {
       switch (execution.getFilter().size()) {
         case 0:
-          if (logger.isDebugEnabled()) {
-            logger.debug("Executing Function: {} setArguments={} on all buckets.", function.getId(),
-                execution.getArguments());
-          }
+          logger.info("Executing Function: {} setArguments={} on all buckets.", function.getId(),
+              execution.getArguments());
           return executeOnAllBuckets(function, execution, rc, false);
         case 1:
-          if (logger.isDebugEnabled()) {
-            logger.debug("Executing Function: {} setArguments={} on single node.", function.getId(),
-                execution.getArguments());
-          }
+          logger.info("Executing Function: {} setArguments={} on single node.", function.getId(),
+              execution.getArguments());
           return executeOnSingleNode(function, execution, rc, false, executeOnBucketSet);
         default:
-          if (logger.isDebugEnabled()) {
-            logger.debug("Executing Function: {} setArguments={} on multiple nodes.",
-                function.getId(), execution.getArguments());
-          }
+          logger.info("Executing Function: {} setArguments={} on multiple nodes.",
+              function.getId(), execution.getArguments());
           return executeOnMultipleNodes(function, execution, rc, false, executeOnBucketSet);
       }
     }
@@ -3635,9 +3550,7 @@ public class PartitionedRegion extends LocalRegion
             if (profiles != null) {
               for (ServerBucketProfile profile : profiles) {
                 if (profile.getDistributedMember().equals(targetNode)) {
-                  if (logger.isDebugEnabled()) {
-                    logger.debug("FunctionServiceSingleHop: Found multiple nodes.{}", getMyId());
-                  }
+                  logger.info("FunctionServiceSingleHop: Found multiple nodes.{}", getMyId());
                   throw new InternalFunctionInvocationTargetException(
                       "Multiple target nodes found for single hop operation");
                 }
@@ -3731,9 +3644,7 @@ public class PartitionedRegion extends LocalRegion
               localKeys, ColocationHelper
                   .constructAndGetAllColocatedLocalDataSet(this, localBucketSet),
               localBucketSet, resultSender, execution.isReExecute());
-      if (logger.isDebugEnabled()) {
-        logger.debug("FunctionService: Executing on local node with keys.{}", localKeys);
-      }
+      logger.info("FunctionService: Executing on local node with keys.{}", localKeys);
       execution.executeFunctionOnLocalPRNode(function, prContext, resultSender, dm, isTX());
     }
 
@@ -3749,10 +3660,8 @@ public class PartitionedRegion extends LocalRegion
             execution.isReExecute(), execution.isFnSerializationReqd(), getPrincipal());
         recipMap.put(recip, context);
       }
-      if (logger.isDebugEnabled()) {
-        logger.debug("FunctionService: Executing on remote nodes with member to keys map.{}",
-            memberToKeysMap);
-      }
+      logger.info("FunctionService: Executing on remote nodes with member to keys map.{}",
+          memberToKeysMap);
       PartitionedRegionFunctionResultWaiter resultReceiver =
           new PartitionedRegionFunctionResultWaiter(getSystem(), getPRId(),
               localResultCollector, function, resultSender);
@@ -3795,9 +3704,7 @@ public class PartitionedRegion extends LocalRegion
       if (profiles != null) {
         for (ServerBucketProfile profile : profiles) {
           if (profile.getDistributedMember().equals(targetNode)) {
-            if (logger.isDebugEnabled()) {
-              logger.debug("FunctionServiceSingleHop: Found remote node.{}", localVm);
-            }
+            logger.info("FunctionServiceSingleHop: Found remote node.{}", localVm);
             throw new InternalFunctionInvocationTargetException(
                 "Multiple target nodes found for single hop operation");
           }
@@ -3810,10 +3717,8 @@ public class PartitionedRegion extends LocalRegion
           String.format("No target node found for KEY, %s", key));
     }
 
-    if (logger.isDebugEnabled()) {
-      logger.debug("Executing Function: {} setArguments={} on {}", function.getId(),
-          execution.getArguments(), targetNode);
-    }
+    logger.info("Executing Function: {} setArguments={} on {}", function.getId(),
+        execution.getArguments(), targetNode);
     while (!execution.getFailedNodes().isEmpty()) {
       RetryTimeKeeper retryTime = new RetryTimeKeeper(retryTimeout);
       if (execution.getFailedNodes().contains(targetNode.getId())) {
@@ -3881,19 +3786,14 @@ public class PartitionedRegion extends LocalRegion
             function.optimizeForWrite());
 
     if (memberToBuckets.isEmpty()) {
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            "Executing on bucketset : {} executeOnBucketSet Member to buckets map is : {} bucketSet is empty",
-            bucketSet, memberToBuckets);
-      }
+      logger.info(
+          "Executing on bucketset : {} executeOnBucketSet Member to buckets map is : {} bucketSet is empty",
+          bucketSet, memberToBuckets);
       throw new EmptyRegionFunctionException(
           "Region is empty and the function cannot be executed");
     } else {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Executing on bucketset : {} executeOnBucketSet Member to buckets map is : {}",
-            bucketSet, memberToBuckets);
-
-      }
+      logger.info("Executing on bucketset : {} executeOnBucketSet Member to buckets map is : {}",
+          bucketSet, memberToBuckets);
     }
 
     if (memberToBuckets.size() > 1) {
@@ -3911,11 +3811,9 @@ public class PartitionedRegion extends LocalRegion
             if (profiles != null) {
               for (ServerBucketProfile profile : profiles) {
                 if (profile.getDistributedMember().equals(targetNode)) {
-                  if (logger.isDebugEnabled()) {
-                    logger.debug(
-                        "FunctionServiceSingleHop: Found multiple nodes for executing on bucket set.{}",
-                        getMyId());
-                  }
+                  logger.info(
+                      "FunctionServiceSingleHop: Found multiple nodes for executing on bucket set.{}",
+                      getMyId());
                   throw new InternalFunctionInvocationTargetException(
                       "Multiple target nodes found for single hop operation");
                 }
@@ -4152,7 +4050,7 @@ public class PartitionedRegion extends LocalRegion
         return obj;
       } catch (PRLocallyDestroyedException pde) {
         if (isDebugEnabled) {
-          logger.debug("getFromBucket Encountered PRLocallyDestroyedException", pde);
+          logger.info("getFromBucket Encountered PRLocallyDestroyedException", pde);
         }
         checkReadiness();
         if (allowRetry) {
@@ -4176,7 +4074,7 @@ public class PartitionedRegion extends LocalRegion
         if (allowRetry) {
           InternalDistributedMember lastNode = retryNode;
           if (isDebugEnabled) {
-            logger.debug("getFromBucket: retry attempt: {} of {}", count, retryAttempts, prce);
+            logger.info("getFromBucket: retry attempt: {} of {}", count, retryAttempts, prce);
           }
           retryNode = getNodeForBucketReadOrLoad(bucketId);
           if (lastNode.equals(retryNode)) {
@@ -4187,7 +4085,7 @@ public class PartitionedRegion extends LocalRegion
               break;
             }
             if (isDebugEnabled) {
-              logger.debug("waiting to retry node {}", retryNode);
+              logger.info("waiting to retry node {}", retryNode);
             }
             retryTime.waitToRetryNode();
           }
@@ -4198,7 +4096,7 @@ public class PartitionedRegion extends LocalRegion
       } catch (PrimaryBucketException notPrimary) {
         if (allowRetry) {
           if (isDebugEnabled) {
-            logger.debug("getFromBucket: {} on Node {} not primary",
+            logger.info("getFromBucket: {} on Node {} not primary",
                 notPrimary.getLocalizedMessage(), retryNode);
           }
           getRegionAdvisor().notPrimary(bucketId, retryNode);
@@ -4221,17 +4119,15 @@ public class PartitionedRegion extends LocalRegion
       }
       prStats.incGetRetries();
       if (isDebugEnabled) {
-        logger.debug("getFromBucket: Attempting to resend get to node {} after {} failed attempts",
+        logger.info("getFromBucket: Attempting to resend get to node {} after {} failed attempts",
             retryNode, count);
       }
     } // While
 
     PartitionedRegionDistributionException e = null; // Fix for bug 36014
-    if (logger.isDebugEnabled()) {
-      e = new PartitionedRegionDistributionException(
-          String.format("No VM available for get in %s attempts",
-              count));
-    }
+    e = new PartitionedRegionDistributionException(
+        String.format("No VM available for get in %s attempts",
+            count));
     logger.warn(String.format("No VM available for get in %s attempts", count), e);
     return null;
   }
@@ -4502,14 +4398,10 @@ public class PartitionedRegion extends LocalRegion
           return ret;
         }
       } catch (PRLocallyDestroyedException ignore) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("getBucketKeys: Encountered PRLocallyDestroyedException");
-        }
+        logger.info("getBucketKeys: Encountered PRLocallyDestroyedException");
         checkReadiness();
       } catch (ForceReattemptException prce) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("getBucketKeys: attempt:{}", (count + 1), prce);
-        }
+        logger.info("getBucketKeys: attempt:{}", (count + 1), prce);
         checkReadiness();
         if (snoozer == null) {
           snoozer = new RetryTimeKeeper(retryTimeout);
@@ -4530,9 +4422,7 @@ public class PartitionedRegion extends LocalRegion
       }
       count++;
     }
-    if (logger.isDebugEnabled()) {
-      logger.debug("getBucketKeys: no keys found returning empty set");
-    }
+    logger.info("getBucketKeys: no keys found returning empty set");
     return Collections.emptySet();
   }
 
@@ -4833,10 +4723,8 @@ public class PartitionedRegion extends LocalRegion
       EntryEventImpl clientEvent, boolean returnTombstones)
       throws PrimaryBucketException, ForceReattemptException {
     Object value;
-    if (logger.isDebugEnabled()) {
-      logger.debug("PartitionedRegion#getRemotely: getting value from bucketId={}{}{} for key {}",
-          getPRId(), BUCKET_ID_SEPARATOR, bucketId, key);
-    }
+    logger.info("PartitionedRegion#getRemotely: getting value from bucketId={}{}{} for key {}",
+        getPRId(), BUCKET_ID_SEPARATOR, bucketId, key);
     GetResponse response = GetMessage.send(targetNode, this, key, aCallbackArgument,
         requestingClient, returnTombstones);
     prStats.incPartitionMessagesSent();
@@ -4844,9 +4732,7 @@ public class PartitionedRegion extends LocalRegion
     if (clientEvent != null) {
       clientEvent.setVersionTag(response.getVersionTag());
     }
-    if (logger.isDebugEnabled()) {
-      logger.debug("getRemotely: got value {} for key {}", value, key);
-    }
+    logger.info("getRemotely: got value {} for key {}", value, key);
     return value;
   }
 
@@ -4898,7 +4784,7 @@ public class PartitionedRegion extends LocalRegion
     int n = 0;
     while (!ownership) {
       if (isDebugEnabled) {
-        logger.debug("grabPRIDLock: Trying to get the dlock in allPartitionedRegions for {}: {}",
+        logger.info("grabPRIDLock: Trying to get the dlock in allPartitionedRegions for {}: {}",
             PartitionedRegionHelper.MAX_PARTITIONED_REGION_ID, (n + 1));
       }
       ownership = lockService.lock(PartitionedRegionHelper.MAX_PARTITIONED_REGION_ID,
@@ -4910,10 +4796,8 @@ public class PartitionedRegion extends LocalRegion
   private static void releasePRIDLock(final DistributedLockService lockService) {
     try {
       lockService.unlock(PartitionedRegionHelper.MAX_PARTITIONED_REGION_ID);
-      if (logger.isDebugEnabled()) {
-        logger.debug("releasePRIDLock: Released the dlock in allPartitionedRegions for {}",
-            PartitionedRegionHelper.MAX_PARTITIONED_REGION_ID);
-      }
+      logger.info("releasePRIDLock: Released the dlock in allPartitionedRegions for {}",
+          PartitionedRegionHelper.MAX_PARTITIONED_REGION_ID);
     } catch (Exception es) {
       logger.warn(String.format("releasePRIDLock: unlocking %s caught an exception",
           PartitionedRegionHelper.MAX_PARTITIONED_REGION_ID), es);
@@ -4936,10 +4820,8 @@ public class PartitionedRegion extends LocalRegion
     try {
       ownership = grabPRIDLock(lockService);
       if (ownership) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("generatePRId: Got the dlock in allPartitionedRegions for {}",
-              PartitionedRegionHelper.MAX_PARTITIONED_REGION_ID);
-        }
+        logger.info("generatePRId: Got the dlock in allPartitionedRegions for {}",
+            PartitionedRegionHelper.MAX_PARTITIONED_REGION_ID);
 
         Set parMembers = sys.getDistributionManager().getOtherDistributionManagerIds();
 
@@ -4958,9 +4840,7 @@ public class PartitionedRegion extends LocalRegion
           IdentityUpdateResponse pr = IdentityUpdateMessage.send(parMembers, sys, currentPRID);
           pr.waitForRepliesUninterruptibly();
         } catch (ReplyException e) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("generatePRId: Ignoring exception", e);
-          }
+          logger.info("generatePRId: Ignoring exception", e);
         }
       }
     } finally {
@@ -5218,11 +5098,9 @@ public class PartitionedRegion extends LocalRegion
     // check in bucket2Node region
     final InternalDistributedMember targetNode = getOrCreateNodeForBucketWrite(bucketId, null);
 
-    if (logger.isDebugEnabled()) {
-      logger.debug("destroyInBucket: key={} ({}) in node {} to bucketId={} retry={} ms",
-          event.getKey(), event.getKey().hashCode(), targetNode, bucketStringForLogs(bucketId),
-          retryTimeout);
-    }
+    logger.info("destroyInBucket: key={} ({}) in node {} to bucketId={} retry={} ms",
+        event.getKey(), event.getKey().hashCode(), targetNode, bucketStringForLogs(bucketId),
+        retryTimeout);
 
     // retry the put remotely until it finds the right node managing the bucket
     RetryTimeKeeper retryTime = null;
@@ -5286,9 +5164,7 @@ public class PartitionedRegion extends LocalRegion
           TimeoutException e = new TimeoutException(
               String.format("Time out looking for target node for destroy; waited %s ms",
                   retryTime.getRetryTime()));
-          if (logger.isDebugEnabled()) {
-            logger.debug(e.getMessage(), e);
-          }
+          logger.info(e.getMessage(), e);
           checkReadiness();
           throw e;
         }
@@ -5324,9 +5200,7 @@ public class PartitionedRegion extends LocalRegion
 
         // NOTREACHED (success)
       } catch (ConcurrentCacheModificationException e) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("destroyInBucket: caught concurrent cache modification exception", e);
-        }
+        logger.info("destroyInBucket: caught concurrent cache modification exception", e);
         event.isConcurrencyConflict(true);
 
         if (logger.isTraceEnabled()) {
@@ -5355,10 +5229,8 @@ public class PartitionedRegion extends LocalRegion
           retryTime.waitToRetryNode();
         }
       } catch (PrimaryBucketException notPrimary) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("destroyInBucket: {} on Node {} not primary",
-              notPrimary.getLocalizedMessage(), currentTarget);
-        }
+        logger.info("destroyInBucket: {} on Node {} not primary",
+            notPrimary.getLocalizedMessage(), currentTarget);
         getRegionAdvisor().notPrimary(bucketId, currentTarget);
         if (retryTime == null) {
           retryTime = new RetryTimeKeeper(retryTimeout);
@@ -5372,11 +5244,9 @@ public class PartitionedRegion extends LocalRegion
       }
       prStats.incDestroyRetries();
 
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            "destroyInBucket: Attempting to resend destroy to node {} after {} failed attempts",
-            currentTarget, count);
-      }
+      logger.info(
+          "destroyInBucket: Attempting to resend destroy to node {} after {} failed attempts",
+          currentTarget, count);
     } // for
   }
 
@@ -5393,14 +5263,14 @@ public class PartitionedRegion extends LocalRegion
             if (isProfileFromSameGroup(profile)) {
               if (getNetworkHopType() != NETWORK_HOP_TO_SAME_GROUP
                   && logger.isDebugEnabled()) {
-                logger.debug(
+                logger.info(
                     "one-hop: cache op meta data staleness observed.  Message is in same server group (byte 1)");
               }
               setNetworkHopType((byte) NETWORK_HOP_TO_SAME_GROUP);
             } else {
               if (getNetworkHopType() != NETWORK_HOP_TO_DIFFERENT_GROUP
                   && logger.isDebugEnabled()) {
-                logger.debug(
+                logger.info(
                     "one-hop: cache op meta data staleness observed.  Message is to different server group (byte 2)");
               }
               setNetworkHopType((byte) NETWORK_HOP_TO_DIFFERENT_GROUP);
@@ -5585,10 +5455,8 @@ public class PartitionedRegion extends LocalRegion
         synchronized (prIdToPR) {
           if (prIdToPR.containsKey(partitionedRegionId)) {
             prIdToPR.put(partitionedRegionId, PRIdMap.FAILED_REGISTRATION, false);
-            if (logger.isDebugEnabled()) {
-              logger.debug("cleanupFailedInitialization: set failed for prId={} named {}",
-                  partitionedRegionId, getName());
-            }
+            logger.info("cleanupFailedInitialization: set failed for prId={} named {}",
+                partitionedRegionId, getName());
           }
         }
 
@@ -5608,9 +5476,7 @@ public class PartitionedRegion extends LocalRegion
     if (getDiskStore() != null && getDiskStore().getOwnedByRegion()) {
       getDiskStore().close();
     }
-    if (logger.isDebugEnabled()) {
-      logger.debug("cleanupFailedInitialization: end of {}", getName());
-    }
+    logger.info("cleanupFailedInitialization: end of {}", getName());
     if (savedFirstRuntimeException != null
         && savedFirstRuntimeException instanceof DistributedSystemDisconnectedException) {
       logger.warn("cleanupFailedInitialization originally failed with {}",
@@ -5635,9 +5501,7 @@ public class PartitionedRegion extends LocalRegion
       sendInvalidateRegionMessage(event);
     }
     for (BucketRegion br : getDataStore().getAllLocalPrimaryBucketRegions()) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Invalidating bucket {}", br);
-      }
+      logger.info("Invalidating bucket {}", br);
       br.basicInvalidateRegion(event);
     }
     super.basicInvalidateRegion(event);
@@ -5664,16 +5528,12 @@ public class PartitionedRegion extends LocalRegion
       } catch (ReplyException e) {
         thr = e;
         if (!isClosed && !isDestroyed) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("Invalidating partitioned region caught exception", e);
-          }
+          logger.info("Invalidating partitioned region caught exception", e);
         }
       } catch (InterruptedException e) {
         thr = e;
         if (!cache.getCancelCriterion().isCancelInProgress()) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("Invalidating partitioned region caught exception", e);
-          }
+          logger.info("Invalidating partitioned region caught exception", e);
         }
       }
     }
@@ -5681,9 +5541,7 @@ public class PartitionedRegion extends LocalRegion
       PartitionedRegionDistributionException e = new PartitionedRegionDistributionException(
           String.format("Invalidating partitioned region caught exception %s",
               count));
-      if (logger.isDebugEnabled()) {
-        logger.debug(e.getMessage(), e);
-      }
+      logger.info(e.getMessage(), e);
       throw e;
     }
   }
@@ -5780,12 +5638,12 @@ public class PartitionedRegion extends LocalRegion
         return;
       } catch (ConcurrentCacheModificationException e) {
         if (isDebugEnabled) {
-          logger.debug("invalidateInBucket: caught concurrent cache modification exception", e);
+          logger.info("invalidateInBucket: caught concurrent cache modification exception", e);
         }
         event.isConcurrencyConflict(true);
 
         if (isDebugEnabled) {
-          logger.debug(
+          logger.info(
               "ConcurrentCacheModificationException received for invalidateInBucket for bucketId: {}{}{} for event: {}  No reattampt is done, returning from here",
               getPRId(), BUCKET_ID_SEPARATOR, bucketId, event);
         }
@@ -5793,7 +5651,7 @@ public class PartitionedRegion extends LocalRegion
       } catch (ForceReattemptException prce) {
         prce.checkKey(event.getKey());
         if (isDebugEnabled) {
-          logger.debug("invalidateInBucket: retry attempt:{} of {}", count, retryAttempts, prce);
+          logger.info("invalidateInBucket: retry attempt:{} of {}", count, retryAttempts, prce);
         }
         checkReadiness();
 
@@ -5811,7 +5669,7 @@ public class PartitionedRegion extends LocalRegion
         event.setPossibleDuplicate(true);
       } catch (PrimaryBucketException notPrimary) {
         if (isDebugEnabled) {
-          logger.debug("invalidateInBucket {} on Node {} not primary",
+          logger.info("invalidateInBucket {} on Node {} not primary",
               notPrimary.getLocalizedMessage(), retryNode);
         }
         getRegionAdvisor().notPrimary(bucketId, retryNode);
@@ -5824,7 +5682,7 @@ public class PartitionedRegion extends LocalRegion
       }
       prStats.incInvalidateRetries();
       if (isDebugEnabled) {
-        logger.debug(
+        logger.info(
             "invalidateInBucket: Attempting to resend invalidate to node {} after {} failed attempts",
             retryNode, count);
       }
@@ -5927,9 +5785,7 @@ public class PartitionedRegion extends LocalRegion
                 recipient),
             ce);
       } catch (RegionDestroyedException rde) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("createRemotely: caught exception", rde);
-        }
+        logger.info("createRemotely: caught exception", rde);
         throw new RegionDestroyedException(toString(), getFullPath());
       }
     }
@@ -6136,9 +5992,7 @@ public class PartitionedRegion extends LocalRegion
         try {
           destroy(currentKey);
         } catch (EntryNotFoundException e) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("Caught exception during KeySetIterator remove", e);
-          }
+          logger.info("Caught exception during KeySetIterator remove", e);
         } finally {
           currentKey = null;
         }
@@ -6361,11 +6215,9 @@ public class PartitionedRegion extends LocalRegion
   boolean containsKeyInBucket(final InternalDistributedMember targetNode, final Integer bucketIdInt,
       final Object key, boolean valueCheck) {
     final int retryAttempts = calcRetry();
-    if (logger.isDebugEnabled()) {
-      logger.debug("containsKeyInBucket: {}{} ({}) from: {} bucketId={}",
-          (valueCheck ? "ValueForKey key=" : "Key key="), key, key.hashCode(), targetNode,
-          bucketStringForLogs(bucketIdInt));
-    }
+    logger.info("containsKeyInBucket: {}{} ({}) from: {} bucketId={}",
+        (valueCheck ? "ValueForKey key=" : "Key key="), key, key.hashCode(), targetNode,
+        bucketStringForLogs(bucketIdInt));
     boolean ret;
     int count = 0;
     RetryTimeKeeper retryTime = null;
@@ -6406,15 +6258,11 @@ public class PartitionedRegion extends LocalRegion
         }
         return ret;
       } catch (PRLocallyDestroyedException pde) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("containsKeyInBucket: Encountered PRLocallyDestroyedException", pde);
-        }
+        logger.info("containsKeyInBucket: Encountered PRLocallyDestroyedException", pde);
         checkReadiness();
       } catch (ForceReattemptException prce) {
         prce.checkKey(key);
-        if (logger.isDebugEnabled()) {
-          logger.debug("containsKeyInBucket: retry attempt:{} of {}", count, retryAttempts, prce);
-        }
+        logger.info("containsKeyInBucket: retry attempt:{} of {}", count, retryAttempts, prce);
         checkReadiness();
 
         InternalDistributedMember lastNode = retryNode;
@@ -6429,10 +6277,8 @@ public class PartitionedRegion extends LocalRegion
           retryTime.waitToRetryNode();
         }
       } catch (PrimaryBucketException notPrimary) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("containsKeyInBucket {} on Node {} not primary",
-              notPrimary.getLocalizedMessage(), retryNode);
-        }
+        logger.info("containsKeyInBucket {} on Node {} not primary",
+            notPrimary.getLocalizedMessage(), retryNode);
         getRegionAdvisor().notPrimary(bucketIdInt, retryNode);
         retryNode = getOrCreateNodeForBucketRead(bucketIdInt);
       } catch (RegionDestroyedException rde) {
@@ -6466,9 +6312,7 @@ public class PartitionedRegion extends LocalRegion
 
     Integer countInteger = count;
     PartitionedRegionDistributionException e = null; // Fix for bug 36014
-    if (logger.isDebugEnabled()) {
-      e = new PartitionedRegionDistributionException(String.format(msg, countInteger));
-    }
+    e = new PartitionedRegionDistributionException(String.format(msg, countInteger));
     logger.warn(String.format(msg, countInteger), e);
     return false;
   }
@@ -6550,9 +6394,7 @@ public class PartitionedRegion extends LocalRegion
    */
   public boolean containsValueForKeyRemotely(InternalDistributedMember targetNode, Integer bucketId,
       Object key) throws PrimaryBucketException, ForceReattemptException {
-    if (logger.isDebugEnabled()) {
-      logger.debug("containsValueForKeyRemotely: key={}", key);
-    }
+    logger.info("containsValueForKeyRemotely: key={}", key);
     ContainsKeyValueResponse r =
         ContainsKeyValueMessage.send(targetNode, this, key, bucketId, true);
     prStats.incPartitionMessagesSent();
@@ -6618,9 +6460,7 @@ public class PartitionedRegion extends LocalRegion
       recips.remove(getMyId());
       if (!recips.isEmpty()) {
         Map<Integer, SizeEntry> remoteSizes = getSizeRemotely(recips, false);
-        if (logger.isDebugEnabled()) {
-          logger.debug("entryCount: {} remoteSizes={}", this, remoteSizes);
-        }
+        logger.info("entryCount: {} remoteSizes={}", this, remoteSizes);
         if (bucketSizes != null && !bucketSizes.isEmpty()) {
           for (Map.Entry<Integer, SizeEntry> me : remoteSizes.entrySet()) {
             Integer k = me.getKey();
@@ -6924,9 +6764,7 @@ public class PartitionedRegion extends LocalRegion
           // cache was probably closed which destroyed this lock service
           // note: destroyed lock services release all held locks
           cache.getCancelCriterion().checkCancelInProgress(null);
-          if (logger.isDebugEnabled()) {
-            logger.debug("BucketLock#unlock: Lock service {} was destroyed", lockService, e);
-          }
+          logger.info("BucketLock#unlock: Lock service {} was destroyed", lockService, e);
         } finally {
           lockOwned = false;
         }
@@ -7203,10 +7041,8 @@ public class PartitionedRegion extends LocalRegion
   public void destroyParallelGatewaySenderRegion(Operation op, boolean cacheWrite, boolean lock,
       boolean callbackEvents) {
 
-    if (logger.isDebugEnabled()) {
-      logger.debug("Destroying parallel queue region for senders: {}",
-          getParallelGatewaySenderIds());
-    }
+    logger.info("Destroying parallel queue region for senders: {}",
+        getParallelGatewaySenderIds());
 
     boolean keepWaiting = true;
 
@@ -7493,9 +7329,7 @@ public class PartitionedRegion extends LocalRegion
   private void destroyCleanUp(RegionEventImpl event, int[] serials) {
     String rId = getRegionIdentifier();
     try {
-      if (logger.isDebugEnabled()) {
-        logger.debug("PartitionedRegion#destroyCleanUp: Destroying region: {}", getFullPath());
-      }
+      logger.info("PartitionedRegion#destroyCleanUp: Destroying region: {}", getFullPath());
       sendDestroyRegionMessage(event, serials);
       try {
         // if this event is global destruction of the region everywhere, remove
@@ -7504,16 +7338,12 @@ public class PartitionedRegion extends LocalRegion
           getPRRoot().destroy(rId);
         }
       } catch (EntryNotFoundException ex) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("PartitionedRegion#destroyCleanup: caught exception", ex);
-        }
+        logger.info("PartitionedRegion#destroyCleanup: caught exception", ex);
       } catch (CancelException ignore) {
         // ignore; metadata not accessible
       }
     } finally {
-      if (logger.isDebugEnabled()) {
-        logger.debug("PartitionedRegion#destroyCleanUp: " + "Destroyed region: {}", getFullPath());
-      }
+      logger.info("PartitionedRegion#destroyCleanUp: " + "Destroyed region: {}", getFullPath());
     }
   }
 
@@ -7539,11 +7369,9 @@ public class PartitionedRegion extends LocalRegion
 
   private boolean attemptToSendDestroyRegionMessage(RegionEventImpl event, int[] serials) {
     if (getPRRoot() == null) {
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            "Partition region {} failed to initialize. Remove its profile from remote members.",
-            this);
-      }
+      logger.info(
+          "Partition region {} failed to initialize. Remove its profile from remote members.",
+          this);
       new UpdateAttributesProcessor(this, true).distribute(false);
       return false;
     }
@@ -7602,9 +7430,7 @@ public class PartitionedRegion extends LocalRegion
       locallyDestroyingThread = Thread.currentThread();
       isLocallyDestroyed = true;
     }
-    if (logger.isDebugEnabled()) {
-      logger.debug("destroyPartitionedRegionLocally: Starting destroy for PR = {}", this);
-    }
+    logger.info("destroyPartitionedRegionLocally: Starting destroy for PR = {}", this);
     try {
       synchronized (prIdToPR) {
         prIdToPR.remove(getPRId());
@@ -7618,9 +7444,7 @@ public class PartitionedRegion extends LocalRegion
       getPrStats().close();
       cache.getInternalResourceManager(false).removeResourceListener(this);
       locallyDestroyingThread = null;
-      if (logger.isDebugEnabled()) {
-        logger.debug("destroyPartitionedRegionLocally: Ending destroy for PR = {}", this);
-      }
+      logger.info("destroyPartitionedRegionLocally: Ending destroy for PR = {}", this);
     }
     return true;
   }
@@ -7634,9 +7458,7 @@ public class PartitionedRegion extends LocalRegion
    */
   @Override
   protected void postDestroyRegion(boolean destroyDiskRegion, RegionEventImpl event) {
-    if (logger.isDebugEnabled()) {
-      logger.debug("PartitionedRegion#postDestroyRegion: {}", this);
-    }
+    logger.info("PartitionedRegion#postDestroyRegion: {}", this);
     Assert.assertTrue(isDestroyed || isClosed);
 
     // Fixes 44551 - wait for persistent buckets to finish
@@ -7674,10 +7496,8 @@ public class PartitionedRegion extends LocalRegion
             }
           } catch (CancelException ignore) {
             // Don't throw this; we're just trying to remove the region.
-            if (logger.isDebugEnabled()) {
-              logger.debug(
-                  "postDestroyRegion: failed sending DestroyRegionMessage due to cache closure");
-            }
+            logger.info(
+                "postDestroyRegion: failed sending DestroyRegionMessage due to cache closure");
           } finally {
             // Since we are not calling closePartitionedRegion
             // we need to cleanup any diskStore we own here.
@@ -7695,10 +7515,8 @@ public class PartitionedRegion extends LocalRegion
           // afterRegionsClosedByCacheClose(GemFireCache
           // cache) or GemFireCache.close()
         } else {
-          if (logger.isDebugEnabled()) {
-            logger.debug("Making closePartitionedRegion call for {} with origin = {} op= {}", this,
-                event.isOriginRemote(), op);
-          }
+          logger.info("Making closePartitionedRegion call for {} with origin = {} op= {}", this,
+              event.isOriginRemote(), op);
           try {
             closePartitionedRegion(event);
           } finally {
@@ -7716,11 +7534,9 @@ public class PartitionedRegion extends LocalRegion
         getPrStats().close();
       }
     } else if (Operation.REGION_DESTROY.equals(op) || Operation.REGION_EXPIRE_DESTROY.equals(op)) {
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            "PartitionedRegion#postDestroyRegion: Making destroyPartitionedRegion call for {} with originRemote = {}",
-            this, event.isOriginRemote());
-      }
+      logger.info(
+          "PartitionedRegion#postDestroyRegion: Making destroyPartitionedRegion call for {} with originRemote = {}",
+          this, event.isOriginRemote());
       destroyPartitionedRegion(event);
     } else {
       Assert.assertTrue(false, "Unknown op" + op);
@@ -7839,7 +7655,7 @@ public class PartitionedRegion extends LocalRegion
     // return if notifications are inhibited
     if (event.inhibitAllNotifications()) {
       if (isDebugEnabled) {
-        logger.debug("Notification inhibited for key {}", event.getKey());
+        logger.info("Notification inhibited for key {}", event.getKey());
       }
 
       return;
@@ -7849,7 +7665,7 @@ public class PartitionedRegion extends LocalRegion
     serverPut(event, requireOldValue, expectedOldValue);
     if (localWriter == null && (netWriteRecipients == null || netWriteRecipients.isEmpty())) {
       if (isDebugEnabled) {
-        logger.debug(
+        logger.info(
             "cacheWriteBeforePut: beforePut empty set returned by advisor.adviseNetWrite in netWrite");
       }
       return;
@@ -7863,13 +7679,13 @@ public class PartitionedRegion extends LocalRegion
       try {
         if (!isNewKey) {
           if (isDebugEnabled) {
-            logger.debug("cacheWriteBeforePut: doNetWrite(BEFOREUPDATE)");
+            logger.info("cacheWriteBeforePut: doNetWrite(BEFOREUPDATE)");
           }
           processor.doNetWrite(event, netWriteRecipients, localWriter,
               SearchLoadAndWriteProcessor.BEFOREUPDATE);
         } else {
           if (isDebugEnabled) {
-            logger.debug("cacheWriteBeforePut: doNetWrite(BEFORECREATE)");
+            logger.info("cacheWriteBeforePut: doNetWrite(BEFORECREATE)");
           }
           // sometimes the op will erroneously be UPDATE
           processor.doNetWrite(event, netWriteRecipients, localWriter,
@@ -7895,9 +7711,7 @@ public class PartitionedRegion extends LocalRegion
       throws CacheWriterException, EntryNotFoundException, TimeoutException {
     // return if notifications are inhibited
     if (event.inhibitAllNotifications()) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Notification inhibited for key {}", event.getKey());
-      }
+      logger.info("Notification inhibited for key {}", event.getKey());
       return false;
     }
 
@@ -7935,9 +7749,7 @@ public class PartitionedRegion extends LocalRegion
    * @see #validateAllBuckets()
    */
   public void dumpAllBuckets(boolean distribute) throws ReplyException {
-    if (logger.isDebugEnabled()) {
-      logger.debug("[dumpAllBuckets] distribute={} {}", distribute, this);
-    }
+    logger.info("[dumpAllBuckets] distribute={} {}", distribute, this);
     getRegionAdvisor().dumpProfiles("dumpAllBuckets");
     if (distribute) {
       PartitionResponse response = DumpBucketsMessage.send(getRegionAdvisor().adviseAllPRNodes(),
@@ -7982,17 +7794,11 @@ public class PartitionedRegion extends LocalRegion
       response.waitForRepliesUninterruptibly();
       dumpB2NForBucket(bucketId);
     } catch (ReplyException re) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("sendDumpB2NRegionForBucket got ReplyException", re);
-      }
+      logger.info("sendDumpB2NRegionForBucket got ReplyException", re);
     } catch (CancelException e) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("sendDumpB2NRegionForBucket got CacheClosedException", e);
-      }
+      logger.info("sendDumpB2NRegionForBucket got CacheClosedException", e);
     } catch (RegionDestroyedException e) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("sendDumpB2RegionForBucket got RegionDestroyedException", e);
-      }
+      logger.info("sendDumpB2RegionForBucket got RegionDestroyedException", e);
     }
   }
 
@@ -8027,7 +7833,7 @@ public class PartitionedRegion extends LocalRegion
         + this
         + "\n"
         + getPRRoot().get(getRegionIdentifier());
-    logger.debug(sb);
+    logger.info(sb);
   }
 
   /**
@@ -8182,9 +7988,7 @@ public class PartitionedRegion extends LocalRegion
       final RetryTimeKeeper retryTime = new RetryTimeKeeper(Integer.MAX_VALUE);
       InternalDistributedMember bucketNode = getOrCreateNodeForBucketRead(bucket);
       for (int count = 0; count <= retryAttempts; count++) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("_getKeysWithInterest bucketId={} attempt={}", bucket, (count + 1));
-        }
+        logger.info("_getKeysWithInterest bucketId={} attempt={}", bucket, (count + 1));
         try {
           if (bucketNode != null) {
             if (bucketNode.equals(getMyId())) {
@@ -8198,15 +8002,11 @@ public class PartitionedRegion extends LocalRegion
           }
           break;
         } catch (PRLocallyDestroyedException ignore) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("_getKeysWithInterest: Encountered PRLocallyDestroyedException");
-          }
+          logger.info("_getKeysWithInterest: Encountered PRLocallyDestroyedException");
           checkReadiness();
         } catch (ForceReattemptException prce) {
           // no checkKey possible
-          if (logger.isDebugEnabled()) {
-            logger.debug("_getKeysWithInterest: retry attempt: {}", count, prce);
-          }
+          logger.info("_getKeysWithInterest: retry attempt: {}", count, prce);
           checkReadiness();
 
           InternalDistributedMember lastTarget = bucketNode;
@@ -8360,11 +8160,9 @@ public class PartitionedRegion extends LocalRegion
       indexManager = IndexUtils.getIndexManager(cache, this, true);
     }
 
-    if (logger.isDebugEnabled()) {
-      logger.debug(
-          "Started creating index with Index Name :{} On PartitionedRegion {}, Indexfrom caluse={}, Remote Request: {}",
-          indexName, getFullPath(), fromClause, remotelyOriginated);
-    }
+    logger.info(
+        "Started creating index with Index Name :{} On PartitionedRegion {}, Indexfrom caluse={}, Remote Request: {}",
+        indexName, getFullPath(), fromClause, remotelyOriginated);
     IndexTask indexTask = new IndexTask(remotelyOriginated, indexType, indexName, indexedExpression,
         fromClause, imports, loadEntries);
 
@@ -8469,11 +8267,9 @@ public class PartitionedRegion extends LocalRegion
         Thread.currentThread().interrupt();
       }
     }
-    if (logger.isDebugEnabled()) {
-      logger.debug(
-          "Completed creating index with Index Name :{} On PartitionedRegion {}, Remote Request: {}",
-          indexName, getFullPath(), remotelyOriginated);
-    }
+    logger.info(
+        "Completed creating index with Index Name :{} On PartitionedRegion {}, Remote Request: {}",
+        indexName, getFullPath(), remotelyOriginated);
     return index;
   }
 
@@ -8556,10 +8352,8 @@ public class PartitionedRegion extends LocalRegion
         // be removed from the IndexManager#indexes map by the createIndex
         // method so that those indexes will not be populated in the next
         // step.
-        if (logger.isDebugEnabled()) {
-          logger.debug("Creation failed for index: {}, {}", icd.getIndexName(), ex.getMessage(),
-              ex);
-        }
+        logger.info("Creation failed for index: {}, {}", icd.getIndexName(), ex.getMessage(),
+            ex);
         exceptionsMap.put(icd.getIndexName(), ex);
         throwException = true;
       }
@@ -8703,9 +8497,7 @@ public class PartitionedRegion extends LocalRegion
     response =
         (IndexCreationMsg.IndexCreationResponse) IndexCreationMsg.send(idM, this, indexDefinitions);
 
-    if (logger.isDebugEnabled()) {
-      logger.debug("Sending explicitly index creation message to : {}", idM);
-    }
+    logger.info("Sending explicitly index creation message to : {}", idM);
 
     if (response != null) {
       try {
@@ -8730,9 +8522,7 @@ public class PartitionedRegion extends LocalRegion
     int numBuckets = 0;
 
     if (!hasPartitionedIndex || indexes.isEmpty()) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("This partitioned regions does not have any index : {}", this);
-      }
+      logger.info("This partitioned regions does not have any index : {}", this);
       return numBuckets;
     }
 
@@ -8752,15 +8542,11 @@ public class PartitionedRegion extends LocalRegion
           if (indexMang != null) {
             indexMang.removeIndexes();
             numBuckets++;
-            if (logger.isDebugEnabled()) {
-              logger.debug("Removed all the indexes on bucket {}", bucket);
-            }
+            logger.info("Removed all the indexes on bucket {}", bucket);
           }
         }
       } // ends while
-      if (logger.isDebugEnabled()) {
-        logger.debug("Removed this many indexes on the buckets : {}", numBuckets);
-      }
+      logger.info("Removed this many indexes on the buckets : {}", numBuckets);
       RemoveIndexesMessage.RemoveIndexesResponse response;
 
       if (!remotelyOriginated) {
@@ -8772,11 +8558,9 @@ public class PartitionedRegion extends LocalRegion
         if (null != response) {
           response.waitForResults();
           logger.info("Done waiting for index removal");
-          if (logger.isDebugEnabled()) {
-            logger.debug(
-                "Total number of buckets which removed indexes , locally : {} and remotely removed : {} and the total number of remote buckets : {}",
-                numBuckets, response.getRemoteRemovedIndexes(), response.getTotalRemoteBuckets());
-          }
+          logger.info(
+              "Total number of buckets which removed indexes , locally : {} and remotely removed : {} and the total number of remote buckets : {}",
+              numBuckets, response.getRemoteRemovedIndexes(), response.getTotalRemoteBuckets());
         }
       }
       indexManager.removeIndexes();
@@ -8814,11 +8598,9 @@ public class PartitionedRegion extends LocalRegion
       return numBuckets;
     }
 
-    if (logger.isDebugEnabled()) {
-      logger.debug(
-          "Remove index called, IndexName: {} Index: {}  Will be removing all the bucket indexes.",
-          ind.getName(), ind);
-    }
+    logger.info(
+        "Remove index called, IndexName: {} Index: {}  Will be removing all the bucket indexes.",
+        ind.getName(), ind);
 
     Index index1 = indexManager.getIndex(ind.getName());
     if (index1 != null) {
@@ -8838,9 +8620,7 @@ public class PartitionedRegion extends LocalRegion
         List allBucketIndex = ((PartitionedIndex) prIndex).getBucketIndexes();
         Iterator it = allBucketIndex.iterator();
 
-        if (logger.isDebugEnabled()) {
-          logger.debug("Will be removing indexes on : {} buckets", allBucketIndex.size());
-        }
+        logger.info("Will be removing indexes on : {} buckets", allBucketIndex.size());
 
         while (it.hasNext()) {
           Index in = (Index) it.next();
@@ -8849,9 +8629,7 @@ public class PartitionedRegion extends LocalRegion
           IndexManager indMng = region.getIndexManager();
           indMng.removeIndex(in);
 
-          if (logger.isDebugEnabled()) {
-            logger.debug("Removed index : {} on bucket {}", in, region);
-          }
+          logger.info("Removed index : {} on bucket {}", in, region);
           numBuckets++;
           ((PartitionedIndex) prIndex).removeFromBucketIndexes(region, in);
         } // while
@@ -8870,11 +8648,9 @@ public class PartitionedRegion extends LocalRegion
       if (response != null) {
         response.waitForResults();
         logger.info("Done waiting for index removal");
-        if (logger.isDebugEnabled()) {
-          logger.debug(
-              "Total number of buckets which removed indexs , locally : {} and remotely removed : {} and the total number of remote buckets : {}",
-              numBuckets, response.getRemoteRemovedIndexes(), response.getTotalRemoteBuckets());
-        }
+        logger.info(
+            "Total number of buckets which removed indexs , locally : {} and remotely removed : {} and the total number of remote buckets : {}",
+            numBuckets, response.getRemoteRemovedIndexes(), response.getTotalRemoteBuckets());
       }
     }
     return numBuckets;
@@ -9131,23 +8907,17 @@ public class PartitionedRegion extends LocalRegion
 
   @Override
   public void handleInterestEvent(InterestRegistrationEvent event) {
-    if (logger.isDebugEnabled()) {
-      logger.debug("PartitionedRegion {} handling {}", getFullPath(), event);
-    }
+    logger.info("PartitionedRegion {} handling {}", getFullPath(), event);
     // Process event in remote data stores by sending message
     Set<InternalDistributedMember> allRemoteStores = getRegionAdvisor().adviseDataStore(true);
-    if (logger.isDebugEnabled()) {
-      logger.debug("PartitionedRegion {} sending InterestEvent message to:{}", getFullPath(),
-          allRemoteStores);
-    }
+    logger.info("PartitionedRegion {} sending InterestEvent message to:{}", getFullPath(),
+        allRemoteStores);
     InterestEventResponse response = null;
     if (!allRemoteStores.isEmpty()) {
       try {
         response = InterestEventMessage.send(allRemoteStores, this, event);
       } catch (ForceReattemptException e) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("PartitionedRegion {} caught exception", getFullPath(), e);
-        }
+        logger.info("PartitionedRegion {} caught exception", getFullPath(), e);
       }
     }
 
@@ -9160,15 +8930,11 @@ public class PartitionedRegion extends LocalRegion
     // Wait for replies
     if (response != null) {
       try {
-        if (logger.isDebugEnabled()) {
-          logger.debug("PartitionedRegion {} waiting for response from {}", getFullPath(),
-              allRemoteStores);
-        }
+        logger.info("PartitionedRegion {} waiting for response from {}", getFullPath(),
+            allRemoteStores);
         response.waitForResponse();
       } catch (ForceReattemptException e) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("PartitionedRegion {} caught exception", getFullPath(), e);
-        }
+        logger.info("PartitionedRegion {} caught exception", getFullPath(), e);
       }
     }
   }
@@ -9345,9 +9111,7 @@ public class PartitionedRegion extends LocalRegion
 
   @Override
   public void removeCriticalMember(DistributedMember member) {
-    if (logger.isDebugEnabled()) {
-      logger.debug("PR: removing member {} from critical member list", member);
-    }
+    logger.info("PR: removing member {} from critical member list", member);
     getRegionAdvisor().markBucketsOnMember(member, false/* sick */);
   }
 
@@ -9364,11 +9128,9 @@ public class PartitionedRegion extends LocalRegion
       bucketSorterStarted.set(true);
       bucketSorter.scheduleAtFixedRate(new BucketSorterRunnable(), 0,
           HeapEvictor.BUCKET_SORTING_INTERVAL, TimeUnit.MILLISECONDS);
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            "Started BucketSorter to sort the buckets according to number of entries in each bucket for every {} milliseconds",
-            HeapEvictor.BUCKET_SORTING_INTERVAL);
-      }
+      logger.info(
+          "Started BucketSorter to sort the buckets according to number of entries in each bucket for every {} milliseconds",
+          HeapEvictor.BUCKET_SORTING_INTERVAL);
     }
     if (!bucketSortedOnce.get()) {
       while (bucketSortedOnce.get() == false) {
@@ -9405,9 +9167,7 @@ public class PartitionedRegion extends LocalRegion
           bucketSortedOnce.set(true);
         }
       } catch (Exception e) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("BucketSorterRunnable : encountered Exception ", e);
-        }
+        logger.info("BucketSorterRunnable : encountered Exception ", e);
       }
     }
   }
@@ -9901,13 +9661,13 @@ public class PartitionedRegion extends LocalRegion
         return;
       } catch (ConcurrentCacheModificationException e) {
         if (isDebugEnabled) {
-          logger.debug("updateEntryVersionInBucket: caught concurrent cache modification exception",
+          logger.info("updateEntryVersionInBucket: caught concurrent cache modification exception",
               e);
         }
         event.isConcurrencyConflict(true);
 
         if (isDebugEnabled) {
-          logger.debug(
+          logger.info(
               "ConcurrentCacheModificationException received for updateEntryVersionInBucket for bucketId: {}{}{} for event: {}  No reattampt is done, returning from here",
               getPRId(), BUCKET_ID_SEPARATOR, bucketId, event);
         }
@@ -9915,7 +9675,7 @@ public class PartitionedRegion extends LocalRegion
       } catch (ForceReattemptException prce) {
         prce.checkKey(event.getKey());
         if (isDebugEnabled) {
-          logger.debug("updateEntryVersionInBucket: retry attempt:{} of {}", count, retryAttempts,
+          logger.info("updateEntryVersionInBucket: retry attempt:{} of {}", count, retryAttempts,
               prce);
         }
         checkReadiness();
@@ -9933,7 +9693,7 @@ public class PartitionedRegion extends LocalRegion
         }
       } catch (PrimaryBucketException notPrimary) {
         if (isDebugEnabled) {
-          logger.debug("updateEntryVersionInBucket {} on Node {} not primary",
+          logger.info("updateEntryVersionInBucket {} on Node {} not primary",
               notPrimary.getLocalizedMessage(), retryNode);
         }
         getRegionAdvisor().notPrimary(bucketId, retryNode);
@@ -9943,7 +9703,7 @@ public class PartitionedRegion extends LocalRegion
       count++;
 
       if (isDebugEnabled) {
-        logger.debug(
+        logger.info(
             "updateEntryVersionInBucket: Attempting to resend update version to node {} after {} failed attempts",
             retryNode, count);
       }
@@ -10011,7 +9771,7 @@ public class PartitionedRegion extends LocalRegion
     Set<Integer> allBuckets = userPR.getDataStore().getAllLocalBucketIds();
     Set<Integer> allBucketsClone = new HashSet<>(allBuckets);
     while (allBucketsClone.size() != 0) {
-      logger.debug(
+      logger.info(
           "Need to wait until partitionedRegionQueue <<{}>> is loaded with all the buckets",
           getName());
       Iterator<Integer> itr = allBucketsClone.iterator();
@@ -10086,9 +9846,7 @@ public class PartitionedRegion extends LocalRegion
     rl.lock();
     try {
       if (getPRRoot() == null) {
-        if (logger.isDebugEnabled()) {
-          logger.debug(PartitionedRegionHelper.PR_ROOT_REGION_NAME + " is null");
-        }
+        logger.info(PartitionedRegionHelper.PR_ROOT_REGION_NAME + " is null");
         return;
       }
       PartitionRegionConfig prConfig = getPRRoot().get(getRegionIdentifier());

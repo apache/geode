@@ -1181,11 +1181,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
 
     if (snapshotInputStream != null) {
       try {
-        if (logger.isDebugEnabled()) {
-          logger.debug(
-              "DistributedRegion.getInitialImageAndRecovery: About to load snapshot, isInitialized={}; {}",
-              isInitialized(), getFullPath());
-        }
+        logger.info(
+            "DistributedRegion.getInitialImageAndRecovery: About to load snapshot, isInitialized={}; {}",
+            isInitialized(), getFullPath());
         loadSnapshotDuringInitialization(snapshotInputStream);
       } catch (IOException | ClassNotFoundException e) {
         throw new RuntimeException(e);

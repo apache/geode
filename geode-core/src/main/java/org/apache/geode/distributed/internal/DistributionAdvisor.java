@@ -249,9 +249,7 @@ public class DistributionAdvisor {
     }
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    if (isDebugEnabled) {
-      logger.debug("da.syncForCrashedMember will sync region in cache's timer for region: {}", dr);
-    }
+    logger.debug("da.syncForCrashedMember will sync region in cache's timer for region: {}", dr);
     CacheProfile cacheProfile = (CacheProfile) profile;
     PersistentMemberID persistentId = getPersistentID(cacheProfile);
     VersionSource lostVersionID;
@@ -781,23 +779,17 @@ public class DistributionAdvisor {
    */
   private boolean basicRemoveId(ProfileId memberId, boolean crashed, boolean destroyed) {
     final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE);
-    if (isDebugEnabled) {
-      logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE, "DistributionAdvisor ({}) removeId {}",
-          this, memberId);
-    }
+    logger.debug(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE, "DistributionAdvisor ({}) removeId {}",
+        this, memberId);
 
     Profile profileRemoved = basicRemoveMemberId(memberId);
     if (profileRemoved == null) {
-      if (isDebugEnabled) {
-        logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
-            "DistributionAdvisor.removeId: no profile to remove for {}", memberId);
-      }
+      logger.info(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
+          "DistributionAdvisor.removeId: no profile to remove for {}", memberId);
       return false;
     }
-    if (isDebugEnabled) {
-      logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
-          "DistributionAdvisor.removeId: removed profile for {}", memberId);
-    }
+    logger.debug(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
+        "DistributionAdvisor.removeId: removed profile for {}", memberId);
     profileRemoved(profileRemoved);
     notifyListenersProfileRemoved(profileRemoved, destroyed);
     notifyListenersMemberRemoved(profileRemoved.getDistributedMember(), crashed);

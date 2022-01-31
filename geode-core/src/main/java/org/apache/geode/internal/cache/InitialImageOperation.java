@@ -304,17 +304,13 @@ public class InitialImageOperation {
           // HARegion r = (HARegion)region;
           // if (!r.isPrimaryQueue()) {
           if (!requestFilterInfo(recipient)) {
-            if (isDebugEnabled) {
-              logger.debug("Failed to receive interest and CQ information from {}", recipient);
-            }
+            logger.info("Failed to receive interest and CQ information from {}", recipient);
           }
           // }
         } catch (Exception ex) {
           if (!itr.hasNext()) {
-            if (isDebugEnabled) {
-              logger.info("Failed while getting interest and CQ information from {}", recipient,
-                  ex);
-            }
+            logger.info("Failed while getting interest and CQ information from {}", recipient,
+                ex);
           }
           continue;
         }
@@ -326,9 +322,7 @@ public class InitialImageOperation {
           persistenceAdvisor.updateMembershipView(recipient, targetReinitialized);
           persistenceAdvisor.setInitializing(region.getPersistentID());
         } catch (ReplyException e) {
-          if (isDebugEnabled) {
-            logger.debug("Failed to get membership view", e);
-          }
+          logger.info("Failed to get membership view", e);
           continue;
         }
       }
@@ -378,14 +372,10 @@ public class InitialImageOperation {
           // which has implications for a rolling upgrade.
           Collection<BucketRegion> userPRBuckets =
               ((BucketRegionQueue) (region)).getCorrespondingUserPRBuckets();
-          if (isDebugEnabled) {
-            logger.debug("The parent buckets of this shadowPR region are {}", userPRBuckets);
-          }
+          logger.info("The parent buckets of this shadowPR region are {}", userPRBuckets);
 
           for (BucketRegion parentBucket : userPRBuckets) {
-            if (isDebugEnabled) {
-              logger.debug("Going to do state flush operation on the parent bucket.");
-            }
+            logger.info("Going to do state flush operation on the parent bucket.");
             final StateFlushOperation sf;
             sf = new StateFlushOperation(parentBucket);
             final Set<InternalDistributedMember> r = new HashSet<>();
@@ -407,9 +397,7 @@ public class InitialImageOperation {
               region.getCancelCriterion().checkCancelInProgress(ie);
               return GIIStatus.NO_GII;
             }
-            if (isDebugEnabled) {
-              logger.debug("Completed state flush operation on the parent bucket.");
-            }
+            logger.info("Completed state flush operation on the parent bucket.");
           }
         }
         final StateFlushOperation sf;
@@ -444,36 +432,28 @@ public class InitialImageOperation {
       if (region.getConcurrencyChecksEnabled()) {
         if (allowDeltaGII && recoveredFromDisk) {
           if (!region.getDiskRegion().getRVVTrusted()) {
-            if (isDebugEnabled) {
-              logger.debug("Region {} recovered without EndGII flag, do full GII",
-                  region.getFullPath());
-            }
+            logger.info("Region {} recovered without EndGII flag, do full GII",
+                region.getFullPath());
             m.versionVector = null;
           } else if (keysOfUnfinishedOps != null
               && keysOfUnfinishedOps.size() > MAXIMUM_UNFINISHED_OPERATIONS) {
-            if (isDebugEnabled) {
-              logger.debug(
-                  "Region {} has {} unfinished operations, which exceeded threshold {}, do full GII instead",
-                  region.getFullPath(), keysOfUnfinishedOps.size(),
-                  MAXIMUM_UNFINISHED_OPERATIONS);
-            }
+            logger.info(
+                "Region {} has {} unfinished operations, which exceeded threshold {}, do full GII instead",
+                region.getFullPath(), keysOfUnfinishedOps.size(),
+                MAXIMUM_UNFINISHED_OPERATIONS);
             m.versionVector = null;
           } else {
             if (recoveredRVV.isNewerThanOrCanFillExceptionsFor(remote_rvv)) {
               m.versionVector = null;
-              if (isDebugEnabled) {
-                logger.debug(
-                    "Region {}: after filled versions of unfinished keys, recovered rvv is still newer than remote rvv:{}. recovered rvv is {}. Do full GII",
-                    region.getFullPath(), remote_rvv, recoveredRVV);
-              }
+              logger.info(
+                  "Region {}: after filled versions of unfinished keys, recovered rvv is still newer than remote rvv:{}. recovered rvv is {}. Do full GII",
+                  region.getFullPath(), remote_rvv, recoveredRVV);
             } else {
               m.versionVector = recoveredRVV;
               m.unfinishedKeys = keysOfUnfinishedOps;
-              if (isDebugEnabled) {
-                logger.debug(
-                    "Region {} recovered with EndGII flag, rvv is {}. recovered rvv is {}. Do delta GII",
-                    region.getFullPath(), m.versionVector, recoveredRVV);
-              }
+              logger.info(
+                  "Region {} recovered with EndGII flag, rvv is {}. recovered rvv is {}. Do delta GII",
+                  region.getFullPath(), m.versionVector, recoveredRVV);
             }
           }
           m.checkTombstoneVersions = true;
@@ -534,9 +514,7 @@ public class InitialImageOperation {
                 DiskId id = de.getDiskId();
                 if (id != null && EntryBits.isRecoveredFromDisk(id.getUserBits())) {
                   region.destroyRecoveredEntry(key);
-                  if (isDebugEnabled) {
-                    logger.debug("Deleted unfinished keys:key={}", key);
-                  }
+                  logger.info("Deleted unfinished keys:key={}", key);
                 }
               }
             }
@@ -686,11 +664,11 @@ public class InitialImageOperation {
         }
         if (gotImage) {
           if (logger.isDebugEnabled()) {
-            logger.debug("{} is done synchronizing with {}", region.getName(), target);
+            logger.info("{} is done synchronizing with {}", region.getName(), target);
           }
         } else {
           if (logger.isDebugEnabled()) {
-            logger.debug(
+            logger.info(
                 "{} received no synchronization data from {} which could mean that we are already synchronized",
                 region.getName(), target);
           }
@@ -742,7 +720,7 @@ public class InitialImageOperation {
           if (!recipients.isEmpty()) {
             msg.setRecipients(recipients);
             if (logger.isDebugEnabled()) {
-              logger.debug("Local versions were found that the image provider has not seen for {}",
+              logger.info("Local versions were found that the image provider has not seen for {}",
                   needsSync);
             }
             region.getDistributionManager().putOutgoing(msg);
@@ -844,10 +822,8 @@ public class InitialImageOperation {
           if (slow > 0) {
             boolean interrupted = Thread.interrupted();
             try {
-              if (isDebugEnabled) {
-                logger.debug("processChunk: Sleeping for {} ms for rgn {}", slow,
-                    region.getFullPath());
-              }
+              logger.info("processChunk: Sleeping for {} ms for rgn {}", slow,
+                  region.getFullPath());
               Thread.sleep(slow);
               slowImageSleeps.getAndIncrement();
             } catch (InterruptedException e) {
@@ -983,9 +959,7 @@ public class InitialImageOperation {
             region, entriesToSynchronize);
       }
       if (keys != null) {
-        if (isDebugEnabled) {
-          logger.debug("processed these initial image keys: {}", keys);
-        }
+        logger.info("processed these initial image keys: {}", keys);
       }
       if (internalBeforeCleanExpiredTombstones != null
           && internalBeforeCleanExpiredTombstones.getRegionName().equals(region.getName())) {
@@ -1157,7 +1131,7 @@ public class InitialImageOperation {
      */
     void processRegionStateMessage(RegionStateMessage msg) {
       if (msg.eventState != null) {
-        logger.debug("Applying event state to region {} from {}", region.getName(),
+        logger.info("Applying event state to region {} from {}", region.getName(),
             msg.getSender());
         region.recordEventState(msg.getSender(), msg.eventState);
       }
@@ -1208,7 +1182,7 @@ public class InitialImageOperation {
           numInSeries[m.seriesNum] = m.msgNum + 1;
         }
         if (logger.isDebugEnabled()) {
-          logger.debug(
+          logger.info(
               "InitialImage Message Tracking Status: Processor id: {}; Sender: {}; Messages Processed: {}; NumInSeries:{}",
               getProcessorId(), m.getSender(), arrayToString(msgsProcessed),
               arrayToString(numInSeries));
@@ -1292,7 +1266,7 @@ public class InitialImageOperation {
                   // Bug 48578: In deltaGII, if abort in processChunk, we should mark trustRVV=false
                   // to force full GII next time.
                   gotImage = false;
-                  logger.debug(
+                  logger.info(
                       "processChunk is aborted for region {}, rvv is {}. Do full gii next time.",
                       region.getFullPath(),
                       region.getVersionVector());
@@ -1444,10 +1418,8 @@ public class InitialImageOperation {
     final InitializationLevel initLevel = targetReinitialized ? AFTER_INITIAL_IMAGE : ANY_INIT;
     final InitializationLevel oldLevel = LocalRegion.setThreadInitLevelRequirement(initLevel);
     try {
-      if (isDebugEnabled) {
-        logger.debug("RequestImageMessage: attempting to get region reference for {}, initLevel={}",
-            regionPath, initLevel);
-      }
+      logger.info("RequestImageMessage: attempting to get region reference for {}, initLevel={}",
+          regionPath, initLevel);
       InternalCache cache = dm.getExistingCache();
       localRegion = cache == null ? null : (LocalRegion) cache.getRegion(regionPath);
       // if this is a targeted getInitialImage after a region was initialized,
@@ -1456,27 +1428,21 @@ public class InitialImageOperation {
           && targetReinitialized
           && !localRegion.reinitialized_new()) {
         localRegion = null; // got a region that wasn't reinitialized, so must not be the right one
-        if (isDebugEnabled) {
-          logger.debug(
-              "GII message process: Found region, but wasn't reinitialized, so assuming region destroyed and recreated");
-        }
+        logger.info(
+            "GII message process: Found region, but wasn't reinitialized, so assuming region destroyed and recreated");
       }
     } finally {
       LocalRegion.setThreadInitLevelRequirement(oldLevel);
     }
     if (localRegion == null || !localRegion.isInitialized()) {
-      if (isDebugEnabled) {
-        logger.debug("{}, nothing to do",
-            (localRegion == null ? "region not found" : "region not initialized yet"));
-      }
+      logger.info("{}, nothing to do",
+          (localRegion == null ? "region not found" : "region not initialized yet"));
       // allow finally block to send a failure message
       return null;
     }
 
     if (localRegion.getScope().isLocal()) {
-      if (isDebugEnabled) {
-        logger.debug("local scope region, nothing to do");
-      }
+      logger.info("local scope region, nothing to do");
       // allow finally block to send a failure message
       return null;
     }
@@ -1557,13 +1523,13 @@ public class InitialImageOperation {
       if (!rgn.getDataPolicy().withPersistence()) {
         // non-persistent regions always do full GII
         if (logger.isDebugEnabled()) {
-          logger.debug("Region {} is not a persistent region, do full GII", rgn.getFullPath());
+          logger.info("Region {} is not a persistent region, do full GII", rgn.getFullPath());
         }
         return true;
       }
       if (!rgn.getVersionVector().isRVVGCDominatedBy(requesterRVV)) {
         if (logger.isDebugEnabled()) {
-          logger.debug("Region {}'s local RVVGC is not dominated by remote RVV={}, do full GII",
+          logger.info("Region {}'s local RVVGC is not dominated by remote RVV={}, do full GII",
               rgn.getFullPath(), requesterRVV);
         }
         return true;
@@ -1615,7 +1581,7 @@ public class InitialImageOperation {
             return;
           }
           if (isGiiDebugEnabled) {
-            logger.debug("checking version vector against region's ({})",
+            logger.info("checking version vector against region's ({})",
                 rgn.getVersionVector().fullToString());
           }
           // [bruce] I suppose it's possible to have this check return a list of
@@ -1879,12 +1845,12 @@ public class InitialImageOperation {
         // we do synchronization with no delay as we received the synchronization request
         // indicating timed task has been triggered on other nodes
         if (logger.isDebugEnabled()) {
-          logger.debug("Newly joined member is triggered to schedule SynchronizeForLostMember");
+          logger.info("Newly joined member is triggered to schedule SynchronizeForLostMember");
         }
         region.scheduleSynchronizeForLostMember(lostMember, lostVersionSource, 0);
       } else {
         if (logger.isDebugEnabled()) {
-          logger.debug(
+          logger.info(
               "Live member has been scheduled SynchronizeForLostMember by membership listener.");
         }
       }
@@ -1959,7 +1925,7 @@ public class InitialImageOperation {
               Object v = mapEntry.getValueInVM(rgn); // OFFHEAP: noop
               if (v instanceof Conflatable) {
                 if (((Conflatable) v).getEventId() == null) {
-                  logger.debug("bug 44959: chunkEntries found conflatable with no eventID: {}", v);
+                  logger.info("bug 44959: chunkEntries found conflatable with no eventID: {}", v);
                 }
               }
             }
@@ -2064,7 +2030,7 @@ public class InitialImageOperation {
     private void initiateLocalAbortForTest(final DistributionManager dm) {
       if (!dm.getSystem().isDisconnecting()) {
         if (logger.isDebugEnabled()) {
-          logger.debug(
+          logger.info(
               "abortTest: Disconnecting from distributed system and sending null chunk to abort");
         }
         // can't disconnect the distributed system in a thread owned by the ds,
@@ -2181,7 +2147,7 @@ public class InitialImageOperation {
             if (ccn != null && ccn.getHaContainer() != null) {
               CacheClientProxy proxy =
                   ((HAContainerWrapper) ccn.getHaContainer()).getProxy(region.getName());
-              logger.debug("Processing FilterInfo for proxy: {} : {}", proxy, msg);
+              logger.info("Processing FilterInfo for proxy: {} : {}", proxy, msg);
             }
           } catch (Exception ex) {
             // Ignore.
@@ -2254,13 +2220,13 @@ public class InitialImageOperation {
 
         if (lclRgn == null) {
           if (logger.isDebugEnabled()) {
-            logger.debug("{}; Failed to process filter info request. Region not found.", this);
+            logger.info("{}; Failed to process filter info request. Region not found.", this);
           }
           return;
         }
         if (!lclRgn.isInitialized()) {
           if (logger.isDebugEnabled()) {
-            logger.debug("{}; Failed to process filter info request. Region not yet initialized.",
+            logger.info("{}; Failed to process filter info request. Region not yet initialized.",
                 this);
           }
           return;
@@ -2271,7 +2237,7 @@ public class InitialImageOperation {
         sendFailureMessage = false;
       } catch (CancelException e) {
         if (logger.isDebugEnabled()) {
-          logger.debug("{}; Cache Closed: aborting filter info request.", this);
+          logger.info("{}; Cache Closed: aborting filter info request.", this);
         }
         rex = new ReplyException("Cache Closed: filter info request aborted.");
       } catch (VirtualMachineError err) {
@@ -2528,7 +2494,7 @@ public class InitialImageOperation {
         }
         if (!rgn.getGenerateVersionTag()) {
           if (logger.isDebugEnabled()) {
-            logger.debug("{} non-persistent proxy region, nothing to do. Just reply", this);
+            logger.info("{} non-persistent proxy region, nothing to do. Just reply", this);
           }
           // allow finally block to send a failure message
           RVVReplyMessage.send(dm, getSender(), processorId, null, null);
@@ -2539,11 +2505,11 @@ public class InitialImageOperation {
         sendFailureMessage = false;
       } catch (RegionDestroyedException e) {
         if (logger.isDebugEnabled()) {
-          logger.debug("{}; Region destroyed: Request RVV aborting.", this);
+          logger.info("{}; Region destroyed: Request RVV aborting.", this);
         }
       } catch (CancelException e) {
         if (logger.isDebugEnabled()) {
-          logger.debug("{}; Cache Closed: Request RVV aborting.", this);
+          logger.info("{}; Cache Closed: Request RVV aborting.", this);
         }
       } catch (VirtualMachineError err) {
         sendFailureMessage = false; // Don't try to respond!
@@ -2637,7 +2603,7 @@ public class InitialImageOperation {
         final DistributedRegion rgn = (DistributedRegion) getGIIRegion(dm, regionPath, false);
         if (rgn != null) {
           if (logger.isDebugEnabled()) {
-            logger.debug("synchronizing region with {}", Arrays.toString(lostVersionSources));
+            logger.info("synchronizing region with {}", Arrays.toString(lostVersionSources));
           }
           for (VersionSource lostSource : lostVersionSources) {
             InternalDistributedMember mbr = null;
@@ -2650,11 +2616,11 @@ public class InitialImageOperation {
         }
       } catch (RegionDestroyedException e) {
         if (logger.isDebugEnabled()) {
-          logger.debug("{}; Region destroyed, nothing to do.", this);
+          logger.info("{}; Region destroyed, nothing to do.", this);
         }
       } catch (CancelException e) {
         if (logger.isDebugEnabled()) {
-          logger.debug("{}; Cache Closed, nothing to do.", this);
+          logger.info("{}; Cache Closed, nothing to do.", this);
         }
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);
@@ -2774,7 +2740,7 @@ public class InitialImageOperation {
       if (exception != null) {
         m.setException(exception);
         if (logger.isDebugEnabled()) {
-          logger.debug("Replying with exception: {}", m, exception);
+          logger.info("Replying with exception: {}", m, exception);
         }
       }
       m.setRecipient(recipient);
@@ -3572,7 +3538,7 @@ public class InitialImageOperation {
       }
 
       if (logger.isDebugEnabled()) {
-        logger.debug("Gathering interest information for {}", clientProxy);
+        logger.info("Gathering interest information for {}", clientProxy);
       }
 
       emptyRegionMap = clientProxy.getRegionsWithEmptyDataPolicy();
@@ -3585,7 +3551,7 @@ public class InitialImageOperation {
           continue;
         }
         if (logger.isDebugEnabled()) {
-          logger.debug("Finding interest on region :{} for Client(ID) :{}", r.getName(), clientID);
+          logger.info("Finding interest on region :{} for Client(ID) :{}", r.getName(), clientID);
         }
         FilterProfile pf = r.getFilterProfile();
 
@@ -3611,12 +3577,12 @@ public class InitialImageOperation {
           }
         } catch (Exception ex) {
           if (logger.isDebugEnabled()) {
-            logger.debug("{}: Failed to get CQ info. {}", this, ex.getMessage(), ex);
+            logger.info("{}: Failed to get CQ info. {}", this, ex.getMessage(), ex);
           }
         }
       }
       if (logger.isDebugEnabled()) {
-        logger.debug("Number of filters filled : {}", this);
+        logger.info("Number of filters filled : {}", this);
       }
     }
 
@@ -3695,7 +3661,7 @@ public class InitialImageOperation {
         }
       } catch (Exception ex) {
         if (logger.isDebugEnabled()) {
-          logger.debug("{}: Failed to get Register interest info for region : {}", this, rName, ex);
+          logger.info("{}: Failed to get Register interest info for region : {}", this, rName, ex);
         }
       }
     }
@@ -3866,9 +3832,7 @@ public class InitialImageOperation {
         for (final Map.Entry<String, ?> e : regionKeys.entrySet()) {
           String regionName = e.getKey();
           if (region.getCache().getRegion(regionName) == null) {
-            if (isDebugEnabled) {
-              logger.debug("Unable to register interests. Region not found :{}" + regionName);
-            }
+            logger.info("Unable to register interests. Region not found :{}" + regionName);
           } else {
             boolean manageEmptyRegions = false;
             if (emptyRegionMap != null) {

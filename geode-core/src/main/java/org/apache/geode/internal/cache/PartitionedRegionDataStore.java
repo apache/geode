@@ -1721,13 +1721,9 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     if (response != null) {
       boolean removed = response.waitForResponse();
       if (removed == false) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("Successfully created bucket {} in {} but failed to remove it from {}",
-              bucketId, this, source);
-        }
+        logger.warn("Successfully created bucket {} in {} but failed to remove it from {}",
+            bucketId, this, source);
       }
-      // TODO rebalance - perhaps we should thow an error if we
-      // can't remove the bucket??
     }
     // The new bucket's size is counted in when GII
     return true;
