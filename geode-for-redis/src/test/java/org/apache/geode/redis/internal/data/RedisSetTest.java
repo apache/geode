@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static org.apache.geode.internal.cache.TXManagerImpl.NOTX;
 import static org.apache.geode.redis.internal.data.AbstractRedisData.NO_EXPIRATION;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
@@ -50,6 +51,8 @@ import org.mockito.invocation.InvocationOnMock;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.TXId;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
@@ -131,10 +134,69 @@ public class RedisSetTest {
   }
 
   @Test
+  public void storeChangesDoesNotStoreDeltaIfTransactionIsInProgress() {
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
+    when(region.put(any(), any())).thenAnswer(invocation -> {
+      assertThat(invocation.getArgument(1, RedisSet.class).hasDelta()).isFalse();
+      return null;
+    });
+
+    TXId txId = mock(TXId.class);
+    when(txId.getUniqId()).thenReturn(5);
+    when(((PartitionedRegion) region).getTXId()).thenReturn(txId);
+
+    RedisSet set = createRedisSet(1, 2);
+    List<byte[]> membersToAdd = Collections.singletonList(new byte[] {3});
+
+    set.sadd(membersToAdd, region, null);
+
+    verify(region).put(any(), any());
+    assertThat(set.hasDelta()).isFalse();
+  }
+
+  @Test
+  public void storeChangesStoresDeltaIfTransactionIsNOTX() {
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
+    when(region.put(any(), any())).thenAnswer(invocation -> {
+      assertThat(invocation.getArgument(1, RedisSet.class).hasDelta()).isTrue();
+      return null;
+    });
+
+    TXId txId = mock(TXId.class);
+    when(txId.getUniqId()).thenReturn(NOTX);
+    when(((PartitionedRegion) region).getTXId()).thenReturn(txId);
+
+    RedisSet set = createRedisSet(1, 2);
+    List<byte[]> membersToAdd = Collections.singletonList(new byte[] {3});
+
+    set.sadd(membersToAdd, region, null);
+
+    verify(region).put(any(), any());
+    assertThat(set.hasDelta()).isFalse();
+  }
+
+  @Test
+  public void storeChangesStoresDeltaIfTransactionIsNull() {
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
+    when(region.put(any(), any())).thenAnswer(invocation -> {
+      assertThat(invocation.getArgument(1, RedisSet.class).hasDelta()).isTrue();
+      return null;
+    });
+
+    when(((PartitionedRegion) region).getTXId()).thenReturn(null);
+
+    RedisSet set = createRedisSet(1, 2);
+    List<byte[]> membersToAdd = Collections.singletonList(new byte[] {3});
+
+    set.sadd(membersToAdd, region, null);
+
+    verify(region).put(any(), any());
+    assertThat(set.hasDelta()).isFalse();
+  }
+
+  @Test
   public void sadd_stores_delta_that_is_stable() {
-    RegionProvider regionProviderMock = mock(RegionProvider.class);
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
-    when(regionProviderMock.getLocalDataRegion()).thenReturn(region);
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
 
     RedisSet set1 = createRedisSet(1, 2);
@@ -142,7 +204,7 @@ public class RedisSetTest {
     ArrayList<byte[]> adds = new ArrayList<>();
     adds.add(member3);
 
-    set1.sadd(adds, regionProviderMock, null);
+    set1.sadd(adds, region, null);
 
     verify(region).put(any(), any());
     assertThat(set1.hasDelta()).isFalse();
@@ -150,9 +212,7 @@ public class RedisSetTest {
 
   @Test
   public void srem_stores_delta_that_is_stable() {
-    RegionProvider regionProviderMock = mock(RegionProvider.class);
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
-    when(regionProviderMock.getLocalDataRegion()).thenReturn(region);
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
 
     RedisSet set1 = createRedisSet(1, 2);
@@ -160,7 +220,7 @@ public class RedisSetTest {
     ArrayList<byte[]> removes = new ArrayList<>();
     removes.add(member1);
 
-    set1.srem(removes, regionProviderMock, null);
+    set1.srem(removes, region, null);
 
     verify(region).put(any(), any());
     assertThat(set1.hasDelta()).isFalse();
@@ -169,7 +229,7 @@ public class RedisSetTest {
   @Test
   public void sdiffstore_stores_delta_that_is_stable() {
     RegionProvider regionProvider = uncheckedCast(mock(RegionProvider.class));
-    Region<RedisKey, RedisData> dataRegion = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> dataRegion = uncheckedCast(mock(PartitionedRegion.class));
 
     RedisSet setDest = createRedisSet(1, 2);
 
@@ -188,7 +248,7 @@ public class RedisSetTest {
   @Test
   public void sdiffstore_sets_expiration_time_to_zero() {
     RegionProvider regionProvider = uncheckedCast(mock(RegionProvider.class));
-    Region<RedisKey, RedisData> dataRegion = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> dataRegion = uncheckedCast(mock(PartitionedRegion.class));
 
     RedisSet setDest = createRedisSet(1, 2);
     setDest.setExpirationTimestamp(dataRegion, null, 100);
@@ -207,7 +267,7 @@ public class RedisSetTest {
 
   @Test
   public void setExpirationTimestamp_stores_delta_that_is_stable() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
 
     RedisSet set1 = createRedisSet(1, 2);
@@ -274,9 +334,7 @@ public class RedisSetTest {
   @Test
   public void bytesInUse_sadd_withOneMember() {
     RedisSet set = new RedisSet(new ArrayList<>());
-    RegionProvider regionProviderMock = mock(RegionProvider.class);
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
-    when(regionProviderMock.getLocalDataRegion()).thenReturn(region);
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     final RedisData returnData = mock(RedisData.class);
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
     final RedisKey key = new RedisKey(stringToBytes("key"));
@@ -286,7 +344,7 @@ public class RedisSetTest {
     List<byte[]> members = new ArrayList<>();
     members.add(value);
 
-    set.sadd(members, regionProviderMock, key);
+    set.sadd(members, region, key);
 
     assertThat(set.getSizeInBytes()).isEqualTo(expectedSize(set));
   }
@@ -294,9 +352,7 @@ public class RedisSetTest {
   @Test
   public void bytesInUse_sadd_withMultipleMembers() {
     RedisSet set = new RedisSet(new ArrayList<>());
-    RegionProvider regionProviderMock = mock(RegionProvider.class);
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
-    when(regionProviderMock.getLocalDataRegion()).thenReturn(region);
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     final RedisData returnData = mock(RedisData.class);
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
     final RedisKey key = new RedisKey(stringToBytes("key"));
@@ -307,7 +363,7 @@ public class RedisSetTest {
       String valueString = baseString + i;
       final byte[] value = stringToBytes(valueString);
       members.add(value);
-      set.sadd(members, regionProviderMock, key);
+      set.sadd(members, region, key);
 
       long actual = set.getSizeInBytes();
       long expected = expectedSize(set);
@@ -319,9 +375,7 @@ public class RedisSetTest {
   /******* remove *******/
   @Test
   public void size_shouldDecrease_WhenValueIsRemoved() {
-    RegionProvider regionProviderMock = mock(RegionProvider.class);
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
-    when(regionProviderMock.getLocalDataRegion()).thenReturn(region);
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     final RedisData returnData = mock(RedisData.class);
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
     final RedisKey key = new RedisKey(stringToBytes("key"));
@@ -335,7 +389,7 @@ public class RedisSetTest {
 
     List<byte[]> membersToRemove = new ArrayList<>();
     membersToRemove.add(value1);
-    set.srem(membersToRemove, regionProviderMock, key);
+    set.srem(membersToRemove, region, key);
 
     long finalSize = set.getSizeInBytes();
     long expectedSize = expectedSize(set);

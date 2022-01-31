@@ -17,19 +17,20 @@ package org.apache.geode.redis.internal.commands.executor.set;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.commands.Command;
 import org.apache.geode.redis.internal.commands.executor.CommandExecutor;
 import org.apache.geode.redis.internal.commands.executor.RedisResponse;
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
-import org.apache.geode.redis.internal.services.RegionProvider;
 
 public class SAddExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElements = command.getProcessedCommand();
-    RegionProvider region = context.getRegionProvider();
+    Region<RedisKey, RedisData> region = context.getRegion();
     RedisKey key = command.getKey();
     List<byte[]> membersToAdd = new ArrayList<>(commandElements.subList(2, commandElements.size()));
 
