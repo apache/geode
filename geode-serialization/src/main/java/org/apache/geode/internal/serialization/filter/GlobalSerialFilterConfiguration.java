@@ -76,8 +76,7 @@ class GlobalSerialFilterConfiguration implements FilterConfiguration {
   }
 
   @Override
-  public boolean configure() {
-    try {
+  public boolean configure() throws UnableToSetSerialFilterException {
       // enable validate-serializable-objects
       serializableObjectConfig.setValidateSerializableObjects(true);
 
@@ -94,9 +93,6 @@ class GlobalSerialFilterConfiguration implements FilterConfiguration {
       // log statement that filter is now configured
       logger.info("Global serialization filter is now configured.");
       return true;
-    } catch (UnableToSetSerialFilterException e) {
-      throw new RuntimeException("Unable to configure global serialization filter", e);
-    }
   }
 
   /**

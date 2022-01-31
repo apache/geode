@@ -87,7 +87,7 @@ public class ReflectiveFacadeObjectInputFilterTest {
     });
 
     assertThat(thrown)
-        .isInstanceOf(UnsupportedOperationException.class)
+        .isInstanceOf(UnableToSetSerialFilterException.class)
         .hasRootCause(exception);
   }
 
@@ -105,7 +105,7 @@ public class ReflectiveFacadeObjectInputFilterTest {
     });
 
     assertThat(thrown)
-        .isInstanceOf(UnsupportedOperationException.class)
+        .isInstanceOf(UnableToSetSerialFilterException.class)
         .hasCause(exception);
   }
 

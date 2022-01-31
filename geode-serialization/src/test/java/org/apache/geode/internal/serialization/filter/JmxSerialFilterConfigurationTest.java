@@ -53,7 +53,7 @@ public class JmxSerialFilterConfigurationTest {
   }
 
   @Test
-  public void setsPropertyValue() {
+  public void setsPropertyValue() throws UnableToSetSerialFilterException {
     FilterConfiguration filterConfiguration =
         new JmxSerialFilterConfiguration(SYSTEM_PROPERTY, pattern);
 
@@ -65,7 +65,7 @@ public class JmxSerialFilterConfigurationTest {
   }
 
   @Test
-  public void setsPropertyValue_ifExistingValueIsNull() {
+  public void setsPropertyValue_ifExistingValueIsNull() throws UnableToSetSerialFilterException {
     System.clearProperty(SYSTEM_PROPERTY);
     FilterConfiguration filterConfiguration =
         new JmxSerialFilterConfiguration(SYSTEM_PROPERTY, pattern);
@@ -78,7 +78,7 @@ public class JmxSerialFilterConfigurationTest {
   }
 
   @Test
-  public void setsPropertyValue_ifExistingValueIsEmpty() {
+  public void setsPropertyValue_ifExistingValueIsEmpty() throws UnableToSetSerialFilterException {
     System.setProperty(SYSTEM_PROPERTY, "");
     FilterConfiguration filterConfiguration =
         new JmxSerialFilterConfiguration(SYSTEM_PROPERTY, pattern);
@@ -91,7 +91,7 @@ public class JmxSerialFilterConfigurationTest {
   }
 
   @Test
-  public void setsPropertyValue_ifExistingValueIsBlank() {
+  public void setsPropertyValue_ifExistingValueIsBlank() throws UnableToSetSerialFilterException {
     System.setProperty(SYSTEM_PROPERTY, " ");
     FilterConfiguration filterConfiguration =
         new JmxSerialFilterConfiguration(SYSTEM_PROPERTY, pattern);
@@ -104,7 +104,7 @@ public class JmxSerialFilterConfigurationTest {
   }
 
   @Test
-  public void logsSuccess_ifExistingValueIsEmpty() {
+  public void logsSuccess_ifExistingValueIsEmpty() throws UnableToSetSerialFilterException {
     System.setProperty(SYSTEM_PROPERTY, "");
     FilterConfiguration filterConfiguration =
         new JmxSerialFilterConfiguration(SYSTEM_PROPERTY, pattern, infoLogger, warnLogger);
@@ -118,7 +118,7 @@ public class JmxSerialFilterConfigurationTest {
   }
 
   @Test
-  public void logsSuccess_ifExistingValueIsBlank() {
+  public void logsSuccess_ifExistingValueIsBlank() throws UnableToSetSerialFilterException {
     System.setProperty(SYSTEM_PROPERTY, " ");
     FilterConfiguration filterConfiguration =
         new JmxSerialFilterConfiguration(SYSTEM_PROPERTY, pattern, infoLogger, warnLogger);
@@ -132,7 +132,8 @@ public class JmxSerialFilterConfigurationTest {
   }
 
   @Test
-  public void doesNotSetPropertyValue_ifExistingValueIsNotEmpty() {
+  public void doesNotSetPropertyValue_ifExistingValueIsNotEmpty()
+      throws UnableToSetSerialFilterException {
     String existingValue = "existing-value-of-property";
     System.setProperty(SYSTEM_PROPERTY, existingValue);
     FilterConfiguration filterConfiguration =
@@ -146,7 +147,8 @@ public class JmxSerialFilterConfigurationTest {
   }
 
   @Test
-  public void logsWarning_ifExistingPropertyValueIsNotEmpty() {
+  public void logsWarning_ifExistingPropertyValueIsNotEmpty()
+      throws UnableToSetSerialFilterException {
     String existingValue = "existing-value-of-property";
     System.setProperty(SYSTEM_PROPERTY, existingValue);
     FilterConfiguration filterConfiguration =

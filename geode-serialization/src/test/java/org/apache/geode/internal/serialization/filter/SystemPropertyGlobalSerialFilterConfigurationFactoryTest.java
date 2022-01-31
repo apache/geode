@@ -36,7 +36,8 @@ public class SystemPropertyGlobalSerialFilterConfigurationFactoryTest {
   }
 
   @Test
-  public void createsNoOp_whenEnableGlobalSerialFilterIsFalse() {
+  public void createsNoOp_whenEnableGlobalSerialFilterIsFalse()
+      throws UnableToSetSerialFilterException {
     System.clearProperty("geode.enableGlobalSerialFilter");
     GlobalSerialFilterConfigurationFactory factory =
         new SystemPropertyGlobalSerialFilterConfigurationFactory();
@@ -61,7 +62,7 @@ public class SystemPropertyGlobalSerialFilterConfigurationFactoryTest {
   }
 
   @Test
-  public void createsNoOp_whenJdkSerialFilterExists() {
+  public void createsNoOp_whenJdkSerialFilterExists() throws UnableToSetSerialFilterException {
     System.setProperty("jdk.serialFilter", "*");
     GlobalSerialFilterConfigurationFactory factory =
         new SystemPropertyGlobalSerialFilterConfigurationFactory();
@@ -74,7 +75,8 @@ public class SystemPropertyGlobalSerialFilterConfigurationFactoryTest {
   }
 
   @Test
-  public void createsNoOp_whenJdkSerialFilterExists_andEnableGlobalSerialFilterIsTrue() {
+  public void createsNoOp_whenJdkSerialFilterExists_andEnableGlobalSerialFilterIsTrue()
+      throws UnableToSetSerialFilterException {
     System.setProperty("jdk.serialFilter", "*");
     System.setProperty("geode.enableGlobalSerialFilter", "true");
     GlobalSerialFilterConfigurationFactory factory =
@@ -88,7 +90,8 @@ public class SystemPropertyGlobalSerialFilterConfigurationFactoryTest {
   }
 
   @Test
-  public void createsNoOp_whenEnableGlobalSerialFilterIsFalse_andJreDoesNotSupportObjectInputFilter() {
+  public void createsNoOp_whenEnableGlobalSerialFilterIsFalse_andJreDoesNotSupportObjectInputFilter()
+      throws UnableToSetSerialFilterException {
     boolean supportsObjectInputFilter = false;
     GlobalSerialFilterConfigurationFactory configurationFactory =
         new SystemPropertyGlobalSerialFilterConfigurationFactory(() -> supportsObjectInputFilter);
@@ -101,7 +104,8 @@ public class SystemPropertyGlobalSerialFilterConfigurationFactoryTest {
   }
 
   @Test
-  public void createsNoOp_whenEnableGlobalSerialFilterIsTrue_andJreDoesNotSupportObjectInputFilter() {
+  public void createsNoOp_whenEnableGlobalSerialFilterIsTrue_andJreDoesNotSupportObjectInputFilter()
+      throws UnableToSetSerialFilterException {
     System.setProperty("geode.enableGlobalSerialFilter", "true");
     boolean supportsObjectInputFilter = false;
     GlobalSerialFilterConfigurationFactory configurationFactory =

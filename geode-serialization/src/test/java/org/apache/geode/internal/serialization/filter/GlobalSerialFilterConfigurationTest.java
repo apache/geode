@@ -41,7 +41,7 @@ public class GlobalSerialFilterConfigurationTest {
   }
 
   @Test
-  public void logsInfo_whenOperationIsSuccessful() {
+  public void logsInfo_whenOperationIsSuccessful() throws UnableToSetSerialFilterException {
     FilterConfiguration filterConfiguration = new GlobalSerialFilterConfiguration(config, logger,
         (pattern, sanctionedClasses) -> globalSerialFilter);
 
@@ -93,7 +93,7 @@ public class GlobalSerialFilterConfigurationTest {
   }
 
   @Test
-  public void setsValidateSerializableObjects() {
+  public void setsValidateSerializableObjects() throws UnableToSetSerialFilterException {
     SerializableObjectConfig serializableObjectConfig = mock(SerializableObjectConfig.class);
     FilterConfiguration filterConfiguration =
         new GlobalSerialFilterConfiguration(serializableObjectConfig);
