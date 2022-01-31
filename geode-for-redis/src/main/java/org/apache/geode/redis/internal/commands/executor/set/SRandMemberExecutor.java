@@ -15,7 +15,6 @@
 package org.apache.geode.redis.internal.commands.executor.set;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
-import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
 
 import java.util.Collections;
@@ -30,7 +29,7 @@ public class SRandMemberExecutor extends SetRandomExecutor {
   protected List<byte[]> performCommand(int count, RegionProvider regionProvider, RedisKey key) {
     RedisSet set =
         regionProvider.getTypedRedisData(REDIS_SET, key, true);
-    if (count == 0 || set == NULL_REDIS_SET) {
+    if (count == 0 || set.isNull()) {
       return Collections.emptyList();
     }
 

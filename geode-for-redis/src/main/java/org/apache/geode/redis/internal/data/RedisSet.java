@@ -224,36 +224,60 @@ public class RedisSet extends AbstractRedisData {
   }
 
   public List<byte[]> spop(int count, Region<RedisKey, RedisData> region, RedisKey key) {
-    List<byte[]> result = new ArrayList<>();
-    if (members.size() <= count) {
-      result.addAll(members);
-      members.clear();
+    int randMethodRatio = 3;
+    List<byte[]> result = new ArrayList<>(Math.min(count, members.size()));
+    if (count * randMethodRatio < members.size()) {
+      // Count is small enough to add random elements to result
+      spopWithSmallCount(count, result);
     } else {
-      Random rand = new Random();
-      while (result.size() != count) {
-        int randIndex = rand.nextInt(members.getBackingArrayLength());
-        byte[] member = members.getFromBackingArray(randIndex);
-        if (member != null) {
-          result.add(member);
-          members.remove(member);
-        }
-      }
+      // Count either equal or greater to member size or close to the member size
+      spopWithLargeCount(count, result);
     }
-
     storeChanges(region, key, new RemoveByteArrays(result));
     return result;
   }
 
+  private void spopWithSmallCount(int count, List<byte[]> result) {
+    Random rand = new Random();
+    while (result.size() != count) {
+      byte[] member = members.getRandomMemberFromBackingArray(rand);
+      result.add(member);
+      members.remove(member);
+    }
+  }
+
+  private void spopWithLargeCount(int count, List<byte[]> result) {
+    if (count >= members.size()) {
+      members.toList(result);
+      members.clear();
+      return;
+    }
+
+    Random rand = new Random();
+    MemberSet remainingMembers = new MemberSet(members.size() - count);
+    while (members.size() != count) {
+      byte[] member = members.getRandomMemberFromBackingArray(rand);
+      remainingMembers.add(member);
+      members.remove(member);
+    }
+
+    members.toList(result);
+    members = remainingMembers;
+  }
+
   public List<byte[]> srandmember(int count) {
-    List<byte[]> result = new ArrayList<>();
+    List<byte[]> result;
     int randMethodRatio = 3;
     if (count < 0) {
+      result = new ArrayList<>(-count);
       srandomDuplicateList(-count, result);
     } else if (count * randMethodRatio < members.size()) {
       // Count is small enough to add random elements to result
+      result = new ArrayList<>(count);
       srandomUniqueListWithSmallCount(count, result);
     } else {
       // Count either equal or greater to member size or close to the member size
+      result = new ArrayList<>(Math.min(count, members.size()));
       srandomUniqueListWithLargeCount(count, result);
     }
     return result;
@@ -262,46 +286,38 @@ public class RedisSet extends AbstractRedisData {
   private void srandomDuplicateList(int count, List<byte[]> result) {
     Random rand = new Random();
     while (result.size() != count) {
-      int randIndex = rand.nextInt(members.getBackingArrayLength());
-      byte[] member = members.getFromBackingArray(randIndex);
-      if (member != null) {
-        result.add(member);
-      }
+      byte[] member = members.getRandomMemberFromBackingArray(rand);
+      result.add(member);
     }
   }
 
   private void srandomUniqueListWithSmallCount(int count, List<byte[]> result) {
     Random rand = new Random();
-    Set<Integer> indexesUsed = new HashSet<>();
+    Set<byte[]> membersUsed = new HashSet<>();
 
     while (result.size() != count) {
-      int randIndex = rand.nextInt(members.getBackingArrayLength());
-      byte[] member = members.getFromBackingArray(randIndex);
-      if (member != null && !indexesUsed.contains(randIndex)) {
+      byte[] member = members.getRandomMemberFromBackingArray(rand);
+      if (!membersUsed.contains(member)) {
         result.add(member);
-        indexesUsed.add(randIndex);
+        membersUsed.add(member);
       }
     }
   }
 
   private void srandomUniqueListWithLargeCount(int count, List<byte[]> result) {
     if (count >= members.size()) {
-      result.addAll(members);
+      members.toList(result);
       return;
     }
 
     Random rand = new Random();
     MemberSet duplicateSet = new MemberSet(members);
-
     while (duplicateSet.size() != count) {
-      int randIndex = rand.nextInt(duplicateSet.getBackingArrayLength());
-      byte[] member = duplicateSet.getFromBackingArray(randIndex);
-      if (member != null) {
-        duplicateSet.remove(member);
-      }
+      byte[] member = members.getRandomMemberFromBackingArray(rand);
+      duplicateSet.remove(member);
     }
 
-    result.addAll(duplicateSet);
+    duplicateSet.toList(result);
   }
 
   public boolean sismember(byte[] member) {
@@ -493,6 +509,12 @@ public class RedisSet extends AbstractRedisData {
     @Override
     protected int sizeElement(byte[] element) {
       return memoryOverhead(element);
+    }
+
+    private void toList(List<byte[]> list) {
+      for (byte[] member : this) {
+        list.add(member);
+      }
     }
   }
 
