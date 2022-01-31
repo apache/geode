@@ -77,22 +77,22 @@ class GlobalSerialFilterConfiguration implements FilterConfiguration {
 
   @Override
   public boolean configure() throws UnableToSetSerialFilterException {
-      // enable validate-serializable-objects
-      serializableObjectConfig.setValidateSerializableObjects(true);
+    // enable validate-serializable-objects
+    serializableObjectConfig.setValidateSerializableObjects(true);
 
-      // create a GlobalSerialFilter
-      String pattern = filterPatternFactory
-          .create(serializableObjectConfig.getSerializableObjectFilterIfEnabled());
-      Set<String> sanctionedClasses = sanctionedClassesSupplier.get();
-      GlobalSerialFilter globalSerialFilter =
-          globalSerialFilterFactory.create(pattern, sanctionedClasses);
+    // create a GlobalSerialFilter
+    String pattern = filterPatternFactory
+        .create(serializableObjectConfig.getSerializableObjectFilterIfEnabled());
+    Set<String> sanctionedClasses = sanctionedClassesSupplier.get();
+    GlobalSerialFilter globalSerialFilter =
+        globalSerialFilterFactory.create(pattern, sanctionedClasses);
 
-      // invoke setFilter on GlobalSerialFilter to set the process-wide filter
-      globalSerialFilter.setFilter();
+    // invoke setFilter on GlobalSerialFilter to set the process-wide filter
+    globalSerialFilter.setFilter();
 
-      // log statement that filter is now configured
-      logger.info("Global serialization filter is now configured.");
-      return true;
+    // log statement that filter is now configured
+    logger.info("Global serialization filter is now configured.");
+    return true;
   }
 
   /**
