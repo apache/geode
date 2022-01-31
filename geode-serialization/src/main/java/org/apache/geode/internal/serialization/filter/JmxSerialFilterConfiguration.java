@@ -16,8 +16,6 @@ package org.apache.geode.internal.serialization.filter;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-import java.util.function.Consumer;
-
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
@@ -42,37 +40,34 @@ class JmxSerialFilterConfiguration implements FilterConfiguration {
 
   private final String key;
   private final String value;
-  private final Consumer<String> infoLogger;
-  private final Consumer<String> warnLogger;
+  private final Logger logger;
 
   /**
    * Constructs instance for the specified system property and filter pattern.
    */
   JmxSerialFilterConfiguration(String property, String pattern) {
-    this(property, pattern, LOGGER::info, LOGGER::warn);
+    this(property, pattern, LOGGER);
   }
 
   @VisibleForTesting
   JmxSerialFilterConfiguration(
       String property,
       String pattern,
-      Consumer<String> infoLogger,
-      Consumer<String> warnLogger) {
+      Logger logger) {
     key = property;
     value = pattern;
-    this.infoLogger = infoLogger;
-    this.warnLogger = warnLogger;
+    this.logger = logger;
   }
 
   @Override
   public boolean configure() {
     if (isBlank(System.getProperty(key))) {
       System.setProperty(key, value);
-      infoLogger.accept("System property '" + key + "' is now configured with '" + value + "'.");
+      logger.info("System property '" + key + "' is now configured with '" + value + "'.");
       return true;
     }
 
-    warnLogger.accept("System property '" + key + "' is already configured.");
+    logger.warn("System property '" + key + "' is already configured.");
     return false;
   }
 }
