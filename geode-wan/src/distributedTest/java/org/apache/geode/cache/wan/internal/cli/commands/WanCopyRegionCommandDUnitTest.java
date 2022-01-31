@@ -1460,11 +1460,15 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
   }
 
   private void waitForWanCopyRegionCommandToStart(boolean useParallel, boolean usePartitionedRegion,
-      List<VM> servers) {
+      List<VM> servers) throws InterruptedException {
+    // Wait for the command execution to be registered in the service
     final int executionsExpected = useParallel && usePartitionedRegion ? servers.size() : 1;
     await().untilAsserted(
         () -> assertThat(getNumberOfCurrentExecutionsInServers(servers))
             .isEqualTo(executionsExpected));
+    // Wait some extra milliseconds to allow for the command to actually start to
+    // avoid flakyness in the tests.
+    Thread.sleep(100);
   }
 
   private void addIgnoredExceptionsForClosingAfterCancelCommand() {
