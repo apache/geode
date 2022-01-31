@@ -64,7 +64,8 @@ public class GlobalSerialFilterConfigurationWhenObjectInputFilterNotFoundIntegra
   }
 
   @Test
-  public void logsNothing_whenEnableGlobalSerialFilterIsFalse_andObjectInputFilterClassNotFound() {
+  public void logsNothing_whenEnableGlobalSerialFilterIsFalse_andObjectInputFilterClassNotFound()
+      throws UnableToSetSerialFilterException {
     System.clearProperty("geode.enableGlobalSerialFilter");
     GlobalSerialFilterConfigurationFactory factory =
         new SystemPropertyGlobalSerialFilterConfigurationFactory(() -> supportsObjectInputFilter);
@@ -76,7 +77,8 @@ public class GlobalSerialFilterConfigurationWhenObjectInputFilterNotFoundIntegra
   }
 
   @Test
-  public void doesNotConfigureOrThrow_whenEnableGlobalSerialFilterIsTrue_andObjectInputFilterClassNotFound() {
+  public void doesNotConfigureOrThrow_whenEnableGlobalSerialFilterIsTrue_andObjectInputFilterClassNotFound()
+      throws UnableToSetSerialFilterException {
     System.setProperty("geode.enableGlobalSerialFilter", "true");
     GlobalSerialFilterConfigurationFactory factory =
         new SystemPropertyGlobalSerialFilterConfigurationFactory(() -> supportsObjectInputFilter);
