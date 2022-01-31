@@ -151,6 +151,6 @@ public class JmxSerialFilterConfigurationTest {
     filterConfiguration.configure();
 
     verify(logger)
-        .warn("System property '" + SYSTEM_PROPERTY + "' is already configured.");
+        .info("System property '" + SYSTEM_PROPERTY + "' is already configured.");
   }
 }

@@ -67,7 +67,7 @@ class JmxSerialFilterConfiguration implements FilterConfiguration {
       return true;
     }
 
-    logger.warn("System property '" + key + "' is already configured.");
+    logger.info("System property '" + key + "' is already configured.");
     return false;
   }
 }
