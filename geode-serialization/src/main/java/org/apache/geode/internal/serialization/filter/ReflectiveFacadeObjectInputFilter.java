@@ -80,27 +80,28 @@ class ReflectiveFacadeObjectInputFilter implements ObjectInputFilter {
 
   private void handleExceptionThrownByApi(ReflectiveOperationException e)
       throws UnableToSetSerialFilterException {
-    String causeClassName = e.getCause() == null ? getClassName(e) : getClassName(e.getCause());
-    switch (causeClassName) {
+    String className = getClassName(e);
+    switch (className) {
       case "java.lang.IllegalAccessException":
         throw new UnableToSetSerialFilterException(
-            "Unable to configure an input stream serialization filter using reflection.",
+            "Unable to configure an input serialization filter using reflection.",
             e);
       case "java.lang.reflect.InvocationTargetException":
-        if (getRootCause(e).getClass().getName().equals("java.lang.IllegalStateException")) {
+        if (getRootCause(e) instanceof IllegalStateException) {
           // ObjectInputFilter throws IllegalStateException
           // if the filter has already been set non-null
           throw new FilterAlreadyConfiguredException(
-              "Unable to configure an input stream serialization filter because filter has already been set non-null",
+              "Unable to configure an input serialization filter because filter has already been set non-null.",
               e);
         }
+        String causeClassName = e.getCause() == null ? getClassName(e) : getClassName(e.getCause());
         throw new UnableToSetSerialFilterException(
-            "Unable to configure an input stream serialization filter because invocation target threw "
-                + causeClassName,
+            "Unable to configure an input serialization serialization filter because invocation target threw "
+                + causeClassName + ".",
             e);
       default:
         throw new UnableToSetSerialFilterException(
-            "Unable to configure an input stream serialization filter.",
+            "Unable to configure an input serialization filter.",
             e);
     }
   }

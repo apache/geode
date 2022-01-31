@@ -82,10 +82,10 @@ public class ReflectiveFacadeGlobalSerialFilterTest {
       throws InvocationTargetException, IllegalAccessException {
     GlobalSerialFilter globalSerialFilter =
         new ReflectiveFacadeGlobalSerialFilter(api, "the-pattern", singleton("class-name"));
-    IllegalAccessException exception = new IllegalAccessException("testing");
+    IllegalAccessException illegalAccessException = new IllegalAccessException("testing");
     when(api.createObjectInputFilterProxy(eq("the-pattern"), anyCollection()))
         .thenReturn(objectInputFilter);
-    doThrow(exception)
+    doThrow(illegalAccessException)
         .when(api).setSerialFilter(any());
 
     Throwable thrown = catchThrowable(() -> {
@@ -94,7 +94,9 @@ public class ReflectiveFacadeGlobalSerialFilterTest {
 
     assertThat(thrown)
         .isInstanceOf(UnableToSetSerialFilterException.class)
-        .hasRootCause(exception);
+        .hasMessage("Unable to configure a global serialization filter using reflection.")
+        .hasRootCause(illegalAccessException)
+        .hasRootCauseMessage("testing");
   }
 
   @Test
@@ -102,9 +104,9 @@ public class ReflectiveFacadeGlobalSerialFilterTest {
       throws InvocationTargetException, IllegalAccessException {
     GlobalSerialFilter globalSerialFilter =
         new ReflectiveFacadeGlobalSerialFilter(api, "the-pattern", singleton("class-name"));
-    InvocationTargetException exception =
+    InvocationTargetException invocationTargetException =
         new InvocationTargetException(new Exception("testing"), "testing");
-    doThrow(exception).when(api).setSerialFilter(any());
+    doThrow(invocationTargetException).when(api).setSerialFilter(any());
 
     Throwable thrown = catchThrowable(() -> {
       globalSerialFilter.setFilter();
@@ -112,7 +114,38 @@ public class ReflectiveFacadeGlobalSerialFilterTest {
 
     assertThat(thrown)
         .isInstanceOf(UnableToSetSerialFilterException.class)
-        .hasCause(exception);
+        .hasMessage(
+            "Unable to configure a global serialization filter because invocation target threw "
+                + Exception.class.getName() + ".")
+        .hasCause(invocationTargetException)
+        .hasRootCauseInstanceOf(Exception.class)
+        .hasRootCauseMessage("testing");
+  }
+
+  /**
+   * The ObjectInputFilter API throws IllegalStateException nested within InvocationTargetException
+   * if a non-null filter already exists.
+   */
+  @Test
+  public void propagatesNestedIllegalStateExceptionInObjectInputFilterException()
+      throws InvocationTargetException, IllegalAccessException {
+    GlobalSerialFilter globalSerialFilter =
+        new ReflectiveFacadeGlobalSerialFilter(api, "the-pattern", singleton("class-name"));
+    InvocationTargetException invocationTargetException =
+        new InvocationTargetException(new IllegalStateException("testing"), "testing");
+    doThrow(invocationTargetException).when(api).setSerialFilter(any());
+
+    Throwable thrown = catchThrowable(() -> {
+      globalSerialFilter.setFilter();
+    });
+
+    assertThat(thrown)
+        .isInstanceOf(FilterAlreadyConfiguredException.class)
+        .hasMessage(
+            "Unable to configure a global serialization filter because filter has already been set non-null.")
+        .hasCauseInstanceOf(InvocationTargetException.class)
+        .hasRootCauseInstanceOf(IllegalStateException.class)
+        .hasRootCauseMessage("testing");
   }
 
   @Test

@@ -44,10 +44,10 @@ public class GlobalSerialFilterConfigurationWhenFilterIsAlreadySetIntegrationTes
 
     assertThat(thrown)
         .isInstanceOf(UnableToSetSerialFilterException.class)
-        .hasMessage("Unable to configure a global serialization filter.")
+        .hasMessage(
+            "Unable to configure a global serialization filter because filter has already been set non-null.")
         .hasCauseInstanceOf(InvocationTargetException.class)
         .hasRootCauseInstanceOf(IllegalStateException.class)
         .hasRootCauseMessage("Serial filter can only be set once");
   }
-
 }

@@ -77,8 +77,8 @@ public class ReflectiveFacadeObjectInputFilterTest {
   @Test
   public void propagatesIllegalAccessExceptionInUnsupportedOperationException()
       throws InvocationTargetException, IllegalAccessException {
-    IllegalAccessException exception = new IllegalAccessException("testing");
-    doThrow(exception).when(api).setObjectInputFilter(same(objectInputStream), any());
+    IllegalAccessException illegalAccessException = new IllegalAccessException("testing");
+    doThrow(illegalAccessException).when(api).setObjectInputFilter(same(objectInputStream), any());
     ObjectInputFilter objectInputFilter =
         new ReflectiveFacadeObjectInputFilter(api, "the-pattern", singleton("class-name"));
 
@@ -88,15 +88,17 @@ public class ReflectiveFacadeObjectInputFilterTest {
 
     assertThat(thrown)
         .isInstanceOf(UnableToSetSerialFilterException.class)
-        .hasRootCause(exception);
+        .hasMessage("Unable to configure an input serialization filter using reflection.")
+        .hasRootCause(illegalAccessException);
   }
 
   @Test
   public void propagatesInvocationTargetExceptionInUnsupportedOperationException()
       throws InvocationTargetException, IllegalAccessException {
-    InvocationTargetException exception =
+    InvocationTargetException invocationTargetException =
         new InvocationTargetException(new Exception("testing"), "testing");
-    doThrow(exception).when(api).setObjectInputFilter(same(objectInputStream), any());
+    doThrow(invocationTargetException).when(api).setObjectInputFilter(same(objectInputStream),
+        any());
     ObjectInputFilter objectInputFilter =
         new ReflectiveFacadeObjectInputFilter(api, "the-pattern", singleton("class-name"));
 
@@ -106,7 +108,37 @@ public class ReflectiveFacadeObjectInputFilterTest {
 
     assertThat(thrown)
         .isInstanceOf(UnableToSetSerialFilterException.class)
-        .hasCause(exception);
+        .hasMessage(
+            "Unable to configure an input serialization serialization filter because invocation target threw "
+                + Exception.class.getName() + ".")
+        .hasCause(invocationTargetException);
+  }
+
+  /**
+   * The ObjectInputFilter API throws IllegalStateException nested within InvocationTargetException
+   * if a non-null filter already exists.
+   */
+  @Test
+  public void propagatesNestedIllegalStateExceptionInObjectInputFilterException()
+      throws InvocationTargetException, IllegalAccessException {
+    ObjectInputFilter objectInputFilter =
+        new ReflectiveFacadeObjectInputFilter(api, "the-pattern", singleton("class-name"));
+    InvocationTargetException invocationTargetException =
+        new InvocationTargetException(new IllegalStateException("testing"), "testing");
+    doThrow(invocationTargetException)
+        .when(api).setObjectInputFilter(same(objectInputStream), any());
+
+    Throwable thrown = catchThrowable(() -> {
+      objectInputFilter.setFilterOn(objectInputStream);
+    });
+
+    assertThat(thrown)
+        .isInstanceOf(FilterAlreadyConfiguredException.class)
+        .hasMessage(
+            "Unable to configure an input serialization filter because filter has already been set non-null.")
+        .hasCauseInstanceOf(InvocationTargetException.class)
+        .hasRootCauseInstanceOf(IllegalStateException.class)
+        .hasRootCauseMessage("testing");
   }
 
   @Test
