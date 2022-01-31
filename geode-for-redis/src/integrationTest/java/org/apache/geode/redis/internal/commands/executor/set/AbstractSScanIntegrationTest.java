@@ -174,6 +174,14 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
+  public void givenKeyIsNotASetAndCountIsNegative_returnsWrongTypeError() {
+    jedis.hset(KEY, "b", MEMBER_ONE);
+    assertThatThrownBy(
+        () -> jedis.sscan(KEY_BYTES, ZERO_CURSOR_BYTES, new ScanParams().count(-37)))
+            .hasMessageContaining(ERROR_WRONG_TYPE);
+  }
+
+  @Test
   public void givenKeyIsNotASet_andCursorIsNotAnInteger_returnsInvalidCursorError() {
     jedis.hset(KEY, "b", MEMBER_ONE);
     assertThatThrownBy(
@@ -241,9 +249,9 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     // be returned.
     int firstCount = 1;
     int secondCount = 500;
-    ScanParams scanParams = new ScanParams().count(firstCount).count(secondCount);
-
-    ScanResult<byte[]> result = jedis.sscan(KEY_BYTES, ZERO_CURSOR_BYTES, scanParams);
+    ScanResult<byte[]> result = sendCustomSscanCommand(KEY, KEY, ZERO_CURSOR,
+        "COUNT", String.valueOf(firstCount),
+        "COUNT", String.valueOf(secondCount));
 
     List<byte[]> returnedMembers = result.getResult();
     assertThat(returnedMembers.size()).isGreaterThanOrEqualTo(secondCount);
@@ -265,9 +273,9 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
   @Test
   public void givenSetWithThreeEntriesAndMultipleMatchArguments_returnsOnlyElementsMatchingLastMatchArgument() {
     jedis.sadd(KEY, MEMBER_ONE, MEMBER_TWELVE, MEMBER_THREE);
-    ScanParams scanParams = new ScanParams().match("3*").match("1*");
 
-    ScanResult<byte[]> result = jedis.sscan(KEY_BYTES, ZERO_CURSOR_BYTES, scanParams);
+    ScanResult<byte[]> result =
+        sendCustomSscanCommand(KEY, KEY, ZERO_CURSOR, "MATCH", "3*", "MATCH", "1*");
 
     assertThat(result.getCursor()).isEqualTo(ZERO_CURSOR);
     assertThat(result.getResult()).containsOnly(MEMBER_ONE.getBytes(),
@@ -298,9 +306,12 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     Set<byte[]> initialMemberData = initializeThousandMemberByteSet();
     // Choose a large COUNT to ensure that some matching members are returned
     // There are 111 matching members in the set 0..999
-    ScanParams scanParams = new ScanParams().count(20).match("1*").count(950).match("9*");
 
-    ScanResult<byte[]> result = jedis.sscan(KEY_BYTES, ZERO_CURSOR_BYTES, scanParams);
+    ScanResult<byte[]> result = sendCustomSscanCommand(KEY, KEY, ZERO_CURSOR,
+        "COUNT", "20",
+        "MATCH", "1*",
+        "COUNT", "950",
+        "MATCH", "9*");
 
     List<byte[]> returnedMembers = result.getResult();
     // We know that we must have found at least 61 matching members, given the size of COUNT and the
