@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
-import static java.util.Objects.nonNull;
-import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCause;
 import static org.apache.geode.internal.serialization.filter.SanctionedSerializables.loadSanctionedClassNames;
 import static org.apache.geode.internal.serialization.filter.SanctionedSerializables.loadSanctionedSerializablesServices;
 
@@ -96,44 +94,9 @@ class GlobalSerialFilterConfiguration implements FilterConfiguration {
       // log statement that filter is now configured
       logger.info("Global serialization filter is now configured.");
       return true;
-
-    } catch (UnsupportedOperationException e) {
-      handleUnsupportedOperationException(e);
-      return false;
+    } catch (UnableToSetSerialFilterException e) {
+      throw new RuntimeException("Unable to configure global serialization filter", e);
     }
-  }
-
-  private void handleUnsupportedOperationException(UnsupportedOperationException e) {
-    if (hasRootCauseWithMessageContaining(e, IllegalStateException.class,
-        "Serial filter can only be set once")) {
-
-      // log statement that filter was already configured
-      logger.warn(
-          "Global serialization filter is already configured. Please use only one system property: geode.enableGlobalSerialFilter or jdk.serialFilter.");
-    }
-    if (hasRootCauseWithMessageContaining(e, ClassNotFoundException.class,
-        "ObjectInputFilter")) {
-
-      // log statement that a global serial filter cannot be configured
-      logger.warn(
-          "Unable to configure a global serialization filter because ObjectInputFilter not found. Please use Java release 8u121 or later that supports serialization filtering.");
-    }
-  }
-
-  private static boolean hasRootCauseWithMessageContaining(Throwable throwable,
-      Class<? extends Throwable> causeClass, String message) {
-    Throwable rootCause = getRootCause(throwable);
-    return nonNull(rootCause) &&
-        isInstanceOf(rootCause, causeClass) &&
-        hasMessageContaining(rootCause, message);
-  }
-
-  private static boolean isInstanceOf(Throwable throwable, Class<? extends Throwable> causeClass) {
-    return throwable.getClass().equals(causeClass);
-  }
-
-  private static boolean hasMessageContaining(Throwable throwable, String message) {
-    return throwable.getMessage().toLowerCase().contains(message.toLowerCase());
   }
 
   /**

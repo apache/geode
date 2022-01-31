@@ -127,6 +127,7 @@ import org.apache.geode.internal.serialization.filter.ObjectInputFilterFactory;
 import org.apache.geode.internal.serialization.filter.ReflectiveFacadeObjectInputFilterFactory;
 import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
 import org.apache.geode.internal.serialization.filter.SerializableObjectConfig;
+import org.apache.geode.internal.serialization.filter.UnableToSetSerialFilterException;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.NonPortableClassException;
@@ -2701,7 +2702,14 @@ public abstract class InternalDataSerializer extends DataSerializer {
       }
 
       ObjectInput ois = new DSObjectInputStream(stream);
-      serializationFilter.setFilterOn((ObjectInputStream) ois);
+
+      try {
+        serializationFilter.setFilterOn((ObjectInputStream) ois);
+      } catch (UnableToSetSerialFilterException e) {
+        // maintain existing behavior for validate-serializable-objects
+        throw new UnsupportedOperationException(e);
+      }
+
       if (stream instanceof VersionedDataStream) {
         KnownVersion v = ((VersionedDataStream) stream).getVersion();
         if (KnownVersion.CURRENT != v && v != null) {

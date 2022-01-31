@@ -16,10 +16,8 @@ package org.apache.geode.internal.serialization.filter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.mockito.ArgumentMatchers.any;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 import org.apache.logging.log4j.Logger;
@@ -95,11 +93,14 @@ public class GlobalSerialFilterConfigurationWhenObjectInputFilterNotFoundIntegra
     FilterConfiguration configuration = new GlobalSerialFilterConfiguration(
         config, logger, globalSerialFilterFactory_throws);
 
-    configuration.configure();
+    Throwable thrown = catchThrowable(() -> {
+      configuration.configure();
+    });
 
-    verify(logger, never()).info(any(Object.class));
-    verify(logger).warn(
-        "Unable to configure a global serialization filter because ObjectInputFilter not found. Please use Java release 8u121 or later that supports serialization filtering.");
-    verify(logger, never()).error(any(Object.class));
+    assertThat(thrown)
+        .isInstanceOf(UnsupportedOperationException.class)
+        .hasMessage("java.lang.ClassNotFoundException: sun.misc.ObjectInputFilter")
+        .hasRootCauseInstanceOf(ClassNotFoundException.class)
+        .hasRootCauseMessage("sun.misc.ObjectInputFilter");
   }
 }

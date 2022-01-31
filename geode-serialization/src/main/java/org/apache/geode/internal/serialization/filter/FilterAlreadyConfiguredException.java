@@ -14,19 +14,23 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
-import java.io.ObjectInputStream;
-
 /**
- * Defines operation to set this serialization filter on an {@code ObjectInputStream}.
+ * Checked exception thrown when configuring a filter fails because a non-null filter already
+ * exists. All uses of this exception are caught and rethrown before reaching the user.
  */
-@FunctionalInterface
-public interface ObjectInputFilter {
+public class FilterAlreadyConfiguredException extends UnableToSetSerialFilterException {
 
-  /**
-   * Sets this serialization filter on the specified {@code ObjectInputStream}.
-   *
-   * @throws FilterAlreadyConfiguredException if a non-null serialization filter already exists
-   * @throws UnableToSetSerialFilterException if there's any failure setting a serialization filter
-   */
-  void setFilterOn(ObjectInputStream objectInputStream) throws UnableToSetSerialFilterException;
+  public FilterAlreadyConfiguredException(String message) {
+    super(message);
+  }
+
+  public FilterAlreadyConfiguredException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public FilterAlreadyConfiguredException(Throwable cause) {
+    super(cause);
+  }
+
+  private static final long serialVersionUID = -6102549374563510704L;
 }

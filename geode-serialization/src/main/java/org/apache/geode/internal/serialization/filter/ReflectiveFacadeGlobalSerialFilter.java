@@ -16,7 +16,7 @@ package org.apache.geode.internal.serialization.filter;
 
 import static java.util.Collections.unmodifiableCollection;
 import static java.util.Objects.requireNonNull;
-import static org.apache.geode.internal.serialization.filter.ObjectInputFilterUtils.throwUnsupportedOperationException;
+import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCause;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
@@ -45,7 +45,7 @@ class ReflectiveFacadeGlobalSerialFilter implements GlobalSerialFilter {
    * Invokes interface-defined operation to set this as the process-wide filter.
    */
   @Override
-  public void setFilter() {
+  public void setFilter() throws UnableToSetSerialFilterException {
     try {
       // create the ObjectInputFilter to set as the global serial filter
       Object objectInputFilter = api.createObjectInputFilterProxy(pattern, sanctionedClasses);
@@ -54,9 +54,7 @@ class ReflectiveFacadeGlobalSerialFilter implements GlobalSerialFilter {
       api.setSerialFilter(objectInputFilter);
 
     } catch (IllegalAccessException | InvocationTargetException e) {
-      throwUnsupportedOperationException(
-          "Geode was unable to configure a global serialization filter",
-          e);
+      handleExceptionThrownByApi(e);
     }
   }
 
@@ -68,5 +66,36 @@ class ReflectiveFacadeGlobalSerialFilter implements GlobalSerialFilter {
         .append(", pattern='").append(pattern).append('\'')
         .append('}')
         .toString();
+  }
+
+  private void handleExceptionThrownByApi(ReflectiveOperationException e)
+      throws UnableToSetSerialFilterException {
+    String causeClassName = e.getCause() == null ? getClassName(e) : getClassName(e.getCause());
+    switch (causeClassName) {
+      case "java.lang.IllegalAccessException":
+        throw new UnableToSetSerialFilterException(
+            "Unable to configure a global serialization filter using reflection.",
+            e);
+      case "java.lang.reflect.InvocationTargetException":
+        if (getRootCause(e).getClass().getName().equals("java.lang.IllegalStateException")) {
+          // ObjectInputFilter throws IllegalStateException
+          // if the filter has already been set non-null
+          throw new FilterAlreadyConfiguredException(
+              "Unable to configure a global serialization filter because filter has already been set non-null",
+              e);
+        }
+        throw new UnableToSetSerialFilterException(
+            "Unable to configure a global serialization filter because invocation target threw "
+                + causeClassName,
+            e);
+      default:
+        throw new UnableToSetSerialFilterException(
+            "Unable to configure a global serialization filter.",
+            e);
+    }
+  }
+
+  private static String getClassName(Throwable throwable) {
+    return throwable.getClass().getName();
   }
 }

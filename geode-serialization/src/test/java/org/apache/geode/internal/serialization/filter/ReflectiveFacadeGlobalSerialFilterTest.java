@@ -49,7 +49,7 @@ public class ReflectiveFacadeGlobalSerialFilterTest {
 
   @Test
   public void createsObjectInputFilterProxy()
-      throws InvocationTargetException, IllegalAccessException {
+      throws InvocationTargetException, IllegalAccessException, UnableToSetSerialFilterException {
     String pattern = "the-pattern";
     Collection<String> sanctionedClasses = asList("class-name-one", "class-name-two");
     GlobalSerialFilter globalSerialFilter =
@@ -65,7 +65,8 @@ public class ReflectiveFacadeGlobalSerialFilterTest {
   }
 
   @Test
-  public void setsSerialFilter() throws InvocationTargetException, IllegalAccessException {
+  public void setsSerialFilter()
+      throws InvocationTargetException, IllegalAccessException, UnableToSetSerialFilterException {
     GlobalSerialFilter globalSerialFilter =
         new ReflectiveFacadeGlobalSerialFilter(api, "the-pattern", singleton("class-name"));
     when(api.createObjectInputFilterProxy(eq("the-pattern"), anyCollection()))
@@ -77,7 +78,7 @@ public class ReflectiveFacadeGlobalSerialFilterTest {
   }
 
   @Test
-  public void propagatesIllegalAccessExceptionInUnsupportedOperationException()
+  public void propagatesIllegalAccessExceptionInObjectInputFilterException()
       throws InvocationTargetException, IllegalAccessException {
     GlobalSerialFilter globalSerialFilter =
         new ReflectiveFacadeGlobalSerialFilter(api, "the-pattern", singleton("class-name"));
@@ -92,12 +93,12 @@ public class ReflectiveFacadeGlobalSerialFilterTest {
     });
 
     assertThat(thrown)
-        .isInstanceOf(UnsupportedOperationException.class)
+        .isInstanceOf(UnableToSetSerialFilterException.class)
         .hasRootCause(exception);
   }
 
   @Test
-  public void propagatesInvocationTargetExceptionInUnsupportedOperationException()
+  public void propagatesInvocationTargetExceptionInObjectInputFilterException()
       throws InvocationTargetException, IllegalAccessException {
     GlobalSerialFilter globalSerialFilter =
         new ReflectiveFacadeGlobalSerialFilter(api, "the-pattern", singleton("class-name"));
@@ -110,7 +111,7 @@ public class ReflectiveFacadeGlobalSerialFilterTest {
     });
 
     assertThat(thrown)
-        .isInstanceOf(UnsupportedOperationException.class)
+        .isInstanceOf(UnableToSetSerialFilterException.class)
         .hasCause(exception);
   }
 

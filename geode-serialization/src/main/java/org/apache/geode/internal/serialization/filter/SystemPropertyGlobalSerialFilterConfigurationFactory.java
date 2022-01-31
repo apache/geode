@@ -55,6 +55,14 @@ public class SystemPropertyGlobalSerialFilterConfigurationFactory
     if (enabled) {
       return new GlobalSerialFilterConfiguration(serializableObjectConfig);
     }
-    return () -> false;
+    return new NullFilterConfiguration();
+  }
+
+  private static class NullFilterConfiguration implements FilterConfiguration {
+
+    @Override
+    public boolean configure() {
+      return false;
+    }
   }
 }

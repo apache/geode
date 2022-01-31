@@ -15,6 +15,8 @@
 package org.apache.geode.internal.serialization.filter;
 
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -51,35 +53,43 @@ public class GlobalSerialFilterConfigurationTest {
   }
 
   @Test
-  public void logsError_whenCauseOfUnsupportedOperationExceptionIsIllegalStateException() {
-    doThrow(new UnsupportedOperationException(
+  public void rethrowsWhenIllegalStateExceptionIsThrownByApi()
+      throws UnableToSetSerialFilterException {
+    doThrow(new UnableToSetSerialFilterException(
         new IllegalStateException("Serial filter can only be set once")))
             .when(globalSerialFilter).setFilter();
     FilterConfiguration filterConfiguration = new GlobalSerialFilterConfiguration(config,
         logger, (pattern, sanctionedClasses) -> globalSerialFilter);
 
-    filterConfiguration.configure();
+    Throwable thrown = catchThrowable(() -> {
+      filterConfiguration.configure();
+    });
 
-    verify(logger, never()).info(any(Object.class));
-    verify(logger).warn(
-        "Global serialization filter is already configured. Please use only one system property: geode.enableGlobalSerialFilter or jdk.serialFilter.");
-    verify(logger, never()).error(any(Object.class));
+    assertThat(thrown)
+        .isInstanceOf(UnableToSetSerialFilterException.class)
+        .hasMessage("java.lang.IllegalStateException: Serial filter can only be set once")
+        .hasRootCauseInstanceOf(IllegalStateException.class)
+        .hasRootCauseMessage("Serial filter can only be set once");
   }
 
   @Test
-  public void logsError_whenCauseOfUnsupportedOperationExceptionIsClassNotFoundException() {
-    doThrow(new UnsupportedOperationException(
+  public void rethrowsWhenClassNotFoundExceptionIsThrownByApi()
+      throws UnableToSetSerialFilterException {
+    doThrow(new UnableToSetSerialFilterException(
         new ClassNotFoundException("sun.misc.ObjectInputFilter")))
             .when(globalSerialFilter).setFilter();
     FilterConfiguration filterConfiguration = new GlobalSerialFilterConfiguration(config, logger,
         (pattern, sanctionedClasses) -> globalSerialFilter);
 
-    filterConfiguration.configure();
+    Throwable thrown = catchThrowable(() -> {
+      filterConfiguration.configure();
+    });
 
-    verify(logger, never()).info(any(Object.class));
-    verify(logger).warn(
-        "Unable to configure a global serialization filter because ObjectInputFilter not found. Please use Java release 8u121 or later that supports serialization filtering.");
-    verify(logger, never()).error(any(Object.class));
+    assertThat(thrown)
+        .isInstanceOf(UnableToSetSerialFilterException.class)
+        .hasMessage("java.lang.ClassNotFoundException: sun.misc.ObjectInputFilter")
+        .hasRootCauseInstanceOf(ClassNotFoundException.class)
+        .hasRootCauseMessage("sun.misc.ObjectInputFilter");
   }
 
   @Test
