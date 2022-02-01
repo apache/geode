@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
@@ -273,6 +274,31 @@ public class QueueManagerJUnitTest {
     assertThatThrownBy(() -> manager.start(background))
         .isInstanceOf(ServerRefusedConnectionException.class)
         .hasMessageContaining(serverRefusedConnectionExceptionMessage);
+  }
+
+  @Test
+  public void testAddToConnectionListCallsCloseConnectionOpWithKeepAliveTrue() throws Exception {
+    // Create and start the QueueManager
+    manager = new QueueManagerImpl(pool, endpoints, source, factory, 0, 2000, logger,
+        ClientProxyMembershipID.getNewProxyMembership(ds));
+    QueueManagerImpl managerImpl = (QueueManagerImpl) manager;
+
+    // Create a QueueConnectionImpl
+    Connection connection = mock(Connection.class);
+    Endpoint endpoint = mock(Endpoint.class);
+    when(connection.getEndpoint()).thenReturn(endpoint);
+    when(endpoint.isClosed()).thenReturn(true);
+    // The ClientUpdater is not mocked because isAlive is final and addToConnectionList verifies it
+    // is true.
+    ClientUpdater updater = factory.createServerToClientConnection(endpoint, manager, true, null);
+    QueueConnectionImpl queueConnection =
+        new QueueConnectionImpl(managerImpl, connection, updater, null);
+
+    // Invoke addToConnectionList with the Endpoint in closed state
+    managerImpl.addToConnectionList(queueConnection, true);
+
+    // Verify Connection.close is called with keepAlive = true
+    verify(connection).close(true);
   }
 
   private static void assertPortEquals(int expected, Connection actual) {

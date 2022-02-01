@@ -41,6 +41,7 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.GemFireException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.NoSubscriptionServersAvailableException;
 import org.apache.geode.cache.client.ServerConnectivityException;
@@ -980,7 +981,8 @@ public class QueueManagerImpl implements QueueManager {
   // connection but CCU may died as endpoint closed....
   // so before putting connection need to see if something(crash) happen we should be able to
   // recover from it
-  private boolean addToConnectionList(QueueConnectionImpl connection, boolean isPrimary) {
+  @VisibleForTesting
+  protected boolean addToConnectionList(QueueConnectionImpl connection, boolean isPrimary) {
     boolean isBadConnection;
     synchronized (lock) {
       ClientUpdater cu = connection.getUpdater();
@@ -1010,7 +1012,7 @@ public class QueueManagerImpl implements QueueManager {
             connection.getEndpoint());
       }
       try {
-        connection.internalClose(pool.getKeepAlive());
+        connection.internalClose(true);
       } catch (Exception e) {
         if (logger.isDebugEnabled()) {
           logger.debug("Error destroying client to server connection to {}",
