@@ -103,7 +103,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final DistributedMember member;
   private final RedisSecurityService securityService;
   private BigInteger scanCursor;
-  private BigInteger sscanCursor;
   private final AtomicBoolean channelInactive = new AtomicBoolean();
   private final ChannelId channelId;
 
@@ -133,7 +132,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.member = member;
     this.securityService = securityService;
     scanCursor = new BigInteger("0");
-    sscanCursor = new BigInteger("0");
     channelId = channel.id();
     redisStats.addClient();
 
@@ -383,14 +381,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   public void setScanCursor(BigInteger scanCursor) {
     this.scanCursor = scanCursor;
-  }
-
-  public BigInteger getSscanCursor() {
-    return sscanCursor;
-  }
-
-  public void setSscanCursor(BigInteger sscanCursor) {
-    this.sscanCursor = sscanCursor;
   }
 
   public String getMemberName() {
