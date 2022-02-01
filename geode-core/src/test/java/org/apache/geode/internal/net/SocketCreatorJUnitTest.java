@@ -32,12 +32,8 @@ import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocket;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Test;
 
-import org.apache.geode.test.junit.categories.MembershipTest;
-
-@Category({MembershipTest.class})
 public class SocketCreatorJUnitTest {
 
   private final SSLContext context = mock(SSLContext.class);
