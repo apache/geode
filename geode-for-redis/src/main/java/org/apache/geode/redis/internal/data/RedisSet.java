@@ -51,7 +51,6 @@ import org.apache.geode.redis.internal.services.RegionProvider;
 
 public class RedisSet extends AbstractRedisData {
   protected static final int REDIS_SET_OVERHEAD = memoryOverhead(RedisSet.class);
-  protected static final int RAND_METHOD_RATIO = 3;
   private MemberSet members;
 
   public RedisSet(Collection<byte[]> members) {
@@ -225,24 +224,23 @@ public class RedisSet extends AbstractRedisData {
   }
 
   public List<byte[]> spop(int count, Region<RedisKey, RedisData> region, RedisKey key) {
+    final int popMethodRatio = 5; // The ratio is based off command documentation
     List<byte[]> result = new ArrayList<>(Math.min(count, members.size()));
-    if (count * RAND_METHOD_RATIO < members.size()) {
+    if (count * popMethodRatio < members.size()) {
       /*
        * Count is small enough to add random elements to result.
        * Random indexes are generated to get members that are stored in the backing array of the
-       * MemberSet.
-       * The members are then removed from the set, allowing for a unique random number to be
-       * generated every time.
+       * MemberSet. The members are then removed from the set, allowing for a unique random
+       * number to be generated every time.
        */
       spopWithSmallCount(count, result);
     } else {
       /*
        * The count is close to the number of members in the set.
        * Since members are being removed from the set, there is a possibility of rehashing. With a
-       * large count,
-       * there is a chance that it can rehash multiple times, copying the set to the result and
-       * removing members
-       * from that help limit the amount of rehashes that need to be preformed.
+       * large count, there is a chance that it can rehash multiple times, copying
+       * the set to the result and removing members from that help limit the amount of
+       * rehashes that need to be preformed.
        */
       spopWithLargeCount(count, result);
     }
@@ -279,15 +277,17 @@ public class RedisSet extends AbstractRedisData {
   }
 
   public List<byte[]> srandmember(int count) {
+    final int randMethodRatio = 3; // The ratio is based off command documentation
     List<byte[]> result;
     if (count < 0) {
       result = new ArrayList<>(-count);
       srandomDuplicateList(-count, result);
-    } else if (count * RAND_METHOD_RATIO < members.size()) {
+    } else if (count * randMethodRatio < members.size()) {
       /*
        * Count is small enough to add random elements to result.
        * Random indexes are generated to get members that are stored in the backing array of the
        * MemberSet.
+       *
        * Since the MemberSet is not being modified, the members previously found are tracked.
        */
       result = new ArrayList<>(count);
@@ -296,20 +296,16 @@ public class RedisSet extends AbstractRedisData {
       /*
        * The count is close to the number of members in the set.
        * If the same method were used as srandomUniqueListWithSmallCount, when the result size
-       * approaches the count,
-       * it gets to a point where a specific random index would need to be generated to get a valid
-       * member (A member
-       * that has not been added to the result).
+       * approaches the count, it gets to a point where a specific random index would need
+       * to be generated to get a valid member (A member that has not been added to the result).
        *
        * Copying the members to the result and generating a random index of members we want to
-       * remove
-       * from the result solves that issue.
+       * remove from the result solves that issue.
        *
        * For example, if you have a set with 100 members, and the backing array has a length of 100.
-       * If we want to
-       * get 99 random members, it would take more effort to generate 99 unique random indexes to
-       * add unique members
-       * to the list than it would be generate 1 random index for a 1 member to be removed.
+       * If we want to get 99 random members, it would take more effort to generate 99 unique
+       * random indexes to add unique members to the list than it would be generate 1 random
+       * index for a 1 member to be removed.
        */
       result = new ArrayList<>(Math.min(count, members.size()));
       srandomUniqueListWithLargeCount(count, result);
