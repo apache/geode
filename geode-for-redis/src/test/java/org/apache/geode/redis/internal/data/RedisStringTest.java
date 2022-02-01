@@ -38,6 +38,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
@@ -75,7 +76,7 @@ public class RedisStringTest {
 
   @Test
   public void getsetSetsValueAndReturnsOldValue() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     byte[] oldBytes = {0, 1};
     byte[] newBytes = {0, 1, 2};
     RedisString string = new RedisString(oldBytes);
@@ -88,7 +89,7 @@ public class RedisStringTest {
 
   @Test
   public void appendResizesByteArray() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     RedisString redisString = new RedisString(new byte[] {0, 1});
     int redisStringSize = redisString.strlen();
     byte[] bytesToAppend = {2, 3, 4, 5};
@@ -99,7 +100,7 @@ public class RedisStringTest {
 
   @Test
   public void appendStoresStableDelta() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     final byte[] baseBytes = {'0', '1'};
     final byte[] bytesToAppend = {'2', '3'};
 
@@ -115,7 +116,7 @@ public class RedisStringTest {
 
   @Test
   public void setStoresStableDelta() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     final byte[] baseBytes = {'0', '1'};
     final byte[] bytesToSet = {'2', '3'};
 
@@ -131,7 +132,7 @@ public class RedisStringTest {
 
   @Test
   public void incrStoresStableDelta() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     final byte[] baseBytes = {'1'};
 
     when(region.put(any(), any()))
@@ -146,7 +147,7 @@ public class RedisStringTest {
 
   @Test
   public void incrbyStoresStableDelta() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     final byte[] baseBytes = {'1'};
 
     when(region.put(any(), any()))
@@ -161,7 +162,7 @@ public class RedisStringTest {
 
   @Test
   public void incrbyfloatStoresStableDelta() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     final byte[] baseBytes = {'1'};
 
     when(region.put(any(), any()))
@@ -176,7 +177,7 @@ public class RedisStringTest {
 
   @Test
   public void setbitStoresStableDelta() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     final byte[] baseBytes = {'0', '1'};
 
     when(region.put(any(), any()))
@@ -206,7 +207,7 @@ public class RedisStringTest {
 
   @Test
   public void decrStoresStableDelta() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     final byte[] baseBytes = {'1'};
 
     when(region.put(any(), any()))
@@ -221,7 +222,7 @@ public class RedisStringTest {
 
   @Test
   public void decrbyStoresStableDelta() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     final byte[] baseBytes = {'1'};
 
     when(region.put(any(), any()))
@@ -236,7 +237,7 @@ public class RedisStringTest {
 
   @Test
   public void decrbyfloatStoresStableDelta() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     final byte[] baseBytes = {'1'};
 
     when(region.put(any(), any()))
@@ -259,7 +260,7 @@ public class RedisStringTest {
 
   @Test
   public void incrThrowsArithmeticErrorWhenNotALong() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     byte[] bytes = stringToBytes("10 1");
     RedisString string = new RedisString(bytes);
     assertThatThrownBy(() -> string.incr(region, null)).isInstanceOf(NumberFormatException.class);
@@ -267,7 +268,7 @@ public class RedisStringTest {
 
   @Test
   public void incrErrorsWhenValueOverflows() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     byte[] bytes = longToBytes(Long.MAX_VALUE);
     RedisString string = new RedisString(bytes);
     assertThatThrownBy(() -> string.incr(region, null)).isInstanceOf(ArithmeticException.class);
@@ -275,7 +276,7 @@ public class RedisStringTest {
 
   @Test
   public void incrIncrementsValueAtGivenKey() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     byte[] bytes = stringToBytes("10");
     RedisString string = new RedisString(bytes);
     string.incr(region, null);
@@ -284,7 +285,7 @@ public class RedisStringTest {
 
   @Test
   public void incrbyThrowsNumberFormatExceptionWhenNotALong() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     byte[] bytes = stringToBytes("10 1");
     RedisString string = new RedisString(bytes);
     assertThatThrownBy(() -> string.incrby(region, null, 2L))
@@ -293,7 +294,7 @@ public class RedisStringTest {
 
   @Test
   public void incrbyErrorsWhenValueOverflows() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     byte[] bytes = longToBytes(Long.MAX_VALUE);
     RedisString string = new RedisString(bytes);
     assertThatThrownBy(() -> string.incrby(region, null, 2L))
@@ -302,7 +303,7 @@ public class RedisStringTest {
 
   @Test
   public void incrbyIncrementsValueByGivenLong() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     byte[] bytes = stringToBytes("10");
     RedisString string = new RedisString(bytes);
     string.incrby(region, null, 2L);
@@ -311,7 +312,7 @@ public class RedisStringTest {
 
   @Test
   public void incrbyfloatThrowsArithmeticErrorWhenNotADouble() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     byte[] bytes = stringToBytes("10 1");
     RedisString string = new RedisString(bytes);
     assertThatThrownBy(() -> string.incrbyfloat(region, null, new BigDecimal("1.1")))
@@ -320,7 +321,7 @@ public class RedisStringTest {
 
   @Test
   public void incrbyfloatIncrementsValueByGivenFloat() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     byte[] bytes = stringToBytes("10");
     RedisString string = new RedisString(bytes);
     string.incrbyfloat(region, null, new BigDecimal("2.20"));
@@ -329,7 +330,7 @@ public class RedisStringTest {
 
   @Test
   public void decrThrowsNumberFormatExceptionWhenNotALong() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     byte[] bytes = {0};
     RedisString string = new RedisString(bytes);
     assertThatThrownBy(() -> string.decr(region, null)).isInstanceOf(NumberFormatException.class);
@@ -337,7 +338,7 @@ public class RedisStringTest {
 
   @Test
   public void decrThrowsArithmeticExceptionWhenDecrementingMin() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     byte[] bytes = longToBytes(Long.MIN_VALUE);
     RedisString string = new RedisString(bytes);
     assertThatThrownBy(() -> string.decr(region, null)).isInstanceOf(ArithmeticException.class);
@@ -345,7 +346,7 @@ public class RedisStringTest {
 
   @Test
   public void decrDecrementsValue() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     byte[] bytes = stringToBytes("10");
     RedisString string = new RedisString(bytes);
     string.decr(region, null);
@@ -354,7 +355,7 @@ public class RedisStringTest {
 
   @Test
   public void decrbyThrowsNumberFormatExceptionWhenNotALong() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     byte[] bytes = {1};
     RedisString string = new RedisString(bytes);
     assertThatThrownBy(() -> string.decrby(region, null, 2))
@@ -363,7 +364,7 @@ public class RedisStringTest {
 
   @Test
   public void decrbyThrowsArithmeticExceptionWhenDecrementingMin() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     byte[] bytes = longToBytes(Long.MIN_VALUE);
     RedisString string = new RedisString(bytes);
     assertThatThrownBy(() -> string.decrby(region, null, 2))
@@ -372,7 +373,7 @@ public class RedisStringTest {
 
   @Test
   public void decrbyDecrementsValue() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     byte[] bytes = stringToBytes("10");
     RedisString string = new RedisString(bytes);
     string.decrby(region, null, 2);
@@ -425,7 +426,7 @@ public class RedisStringTest {
 
   @Test
   public void setExpirationTimestamp_stores_delta_that_is_stable() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     final byte[] bytes = {0, 1};
     when(region.put(any(), any()))
         .thenAnswer(invocation -> validateDeltaSerialization(bytes, invocation));

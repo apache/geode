@@ -45,6 +45,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
@@ -114,7 +115,7 @@ public class RedisHashTest {
   @SuppressWarnings("unchecked")
   @Test
   public void hset_stores_delta_that_is_stable() {
-    Region<RedisKey, RedisData> region = Mockito.mock(Region.class);
+    Region<RedisKey, RedisData> region = Mockito.mock(PartitionedRegion.class);
     when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
 
     RedisHash o1 = createRedisHash("k1", "v1", "k2", "v2");
@@ -146,7 +147,7 @@ public class RedisHashTest {
   @SuppressWarnings("unchecked")
   @Test
   public void hdel_stores_delta_that_is_stable() {
-    Region<RedisKey, RedisData> region = mock(Region.class);
+    Region<RedisKey, RedisData> region = mock(PartitionedRegion.class);
     when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
 
     RedisHash o1 = createRedisHash("k1", "v1", "k2", "v2");
@@ -164,7 +165,7 @@ public class RedisHashTest {
   @SuppressWarnings("unchecked")
   @Test
   public void setExpirationTimestamp_stores_delta_that_is_stable() {
-    Region<RedisKey, RedisData> region = mock(Region.class);
+    Region<RedisKey, RedisData> region = mock(PartitionedRegion.class);
     when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
 
     RedisHash o1 = createRedisHash("k1", "v1", "k2", "v2");
@@ -279,7 +280,7 @@ public class RedisHashTest {
     final String baseField = "field";
     final String baseValue = "value";
 
-    final Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    final Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     final RedisData returnData = mock(RedisData.class);
     when(region.put(any(), any())).thenReturn(returnData);
 
@@ -328,7 +329,7 @@ public class RedisHashTest {
 
   public void testThatSizeIsUpdatedWhenUpdatingValue(final RedisKey key, final String field,
       final String initialValue, final String finalValue) {
-    final Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    final Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     final RedisData returnData = mock(RedisData.class);
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
 
@@ -363,7 +364,7 @@ public class RedisHashTest {
     final String baseField = "field";
     final String baseValue = "value";
 
-    final Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    final Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     final RedisData returnData = mock(RedisData.class);
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
 
@@ -386,7 +387,7 @@ public class RedisHashTest {
     final String baseField = "field";
     final String baseValue = "value";
 
-    final Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    final Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     final RedisData returnData = mock(RedisData.class);
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
 
@@ -413,7 +414,7 @@ public class RedisHashTest {
     final String initialBaseValue = "value";
     final String finalBaseValue = "longerValue";
 
-    final Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    final Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     final RedisData returnData = mock(RedisData.class);
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
 
@@ -445,7 +446,7 @@ public class RedisHashTest {
     final RedisKey key = new RedisKey(stringToBytes("key"));
     final String baseField = "field";
     final String baseValue = "value";
-    final Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    final Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     final RedisData returnData = mock(RedisData.class);
     when(region.put(any(RedisKey.class), any(RedisData.class))).thenReturn(returnData);
 

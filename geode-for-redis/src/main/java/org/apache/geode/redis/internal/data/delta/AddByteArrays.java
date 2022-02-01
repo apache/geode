@@ -23,6 +23,7 @@ import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRA
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.DataSerializer;
@@ -32,8 +33,16 @@ import org.apache.geode.redis.internal.data.AbstractRedisData;
 public class AddByteArrays implements DeltaInfo {
   private final List<byte[]> byteArrays;
 
+  public AddByteArrays() {
+    byteArrays = new ArrayList<>();
+  }
+
   public AddByteArrays(List<byte[]> deltas) {
     this.byteArrays = deltas;
+  }
+
+  public void add(byte[] delta) {
+    byteArrays.add(delta);
   }
 
   public void serializeTo(DataOutput out) throws IOException {

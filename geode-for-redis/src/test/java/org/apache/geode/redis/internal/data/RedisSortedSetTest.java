@@ -59,6 +59,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
@@ -144,7 +145,7 @@ public class RedisSortedSetTest {
 
   @Test
   public void zadd_stores_delta_that_is_stable() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
     RedisSortedSet sortedSet1 = createRedisSortedSet("3.14159", "v1", "2.71828", "v2");
     List<byte[]> members = singletonList(stringToBytes("v3"));
@@ -160,7 +161,7 @@ public class RedisSortedSetTest {
   @Test
   public void sortedSetOpStoreResult_stores_delta_that_is_stable() {
     RegionProvider regionProvider = uncheckedCast(mock(RegionProvider.class));
-    Region<RedisKey, RedisData> dataRegion = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> dataRegion = uncheckedCast(mock(PartitionedRegion.class));
 
     RedisSortedSet sortedSet1 = createRedisSortedSet("3.14159", "v1", "2.71828", "v2");
     when(regionProvider.getTypedRedisDataElseRemove(REDIS_SORTED_SET, null, false))
@@ -185,7 +186,7 @@ public class RedisSortedSetTest {
   @Test
   public void sortedSetOpStoreResult_sets_expiration_time_to_zero() {
     RegionProvider regionProvider = uncheckedCast(mock(RegionProvider.class));
-    Region<RedisKey, RedisData> dataRegion = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> dataRegion = uncheckedCast(mock(PartitionedRegion.class));
 
     RedisSortedSet setDest = createRedisSortedSet("3.14159", "v1", "2.71828", "v2");
     setDest.setExpirationTimestamp(dataRegion, null, 100);
@@ -224,7 +225,7 @@ public class RedisSortedSetTest {
 
   @Test
   public void setExpirationTimestamp_stores_delta_that_is_stable() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
     RedisSortedSet sortedSet1 = createRedisSortedSet("3.14159", "v1", "2.71828", "v2");
 
@@ -240,7 +241,7 @@ public class RedisSortedSetTest {
     String score3 = "998955255.66361191";
     RedisSortedSet sortedSet =
         spy(createRedisSortedSet(score1, member1, score2, member2, score3, member3));
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     RedisKey key = new RedisKey();
     ArrayList<byte[]> membersToRemove = new ArrayList<>();
     membersToRemove.add(stringToBytes("nonExisting"));
@@ -632,7 +633,7 @@ public class RedisSortedSetTest {
   public void zpopminRemovesMemberWithLowestScore() {
     int originalSize = rangeSortedSet.getSortedSetSize();
     RedisSortedSet sortedSet = spy(rangeSortedSet);
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     RedisKey key = new RedisKey();
     int count = 1;
 
@@ -650,7 +651,7 @@ public class RedisSortedSetTest {
   public void zpopminRemovesMembersWithLowestScores_whenCountIsGreaterThanOne() {
     int originalSize = rangeSortedSet.getSortedSetSize();
     RedisSortedSet sortedSet = spy(rangeSortedSet);
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     RedisKey key = new RedisKey();
     int count = 3;
 
@@ -669,7 +670,7 @@ public class RedisSortedSetTest {
   @Test
   public void zpopminRemovesRegionEntryWhenSetBecomesEmpty() {
     RedisSortedSet sortedSet = spy(createRedisSortedSet(score1, member1));
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     RedisKey key = new RedisKey();
 
     List<byte[]> result = sortedSet.zpopmin(region, key, 1);
@@ -687,7 +688,7 @@ public class RedisSortedSetTest {
         "1.1", "member3",
         "1.1", "member2",
         "1.1", "member1"));
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     RedisKey key = new RedisKey();
 
     List<byte[]> result = sortedSet.zpopmin(region, key, 1);
@@ -698,7 +699,7 @@ public class RedisSortedSetTest {
   public void zpopmaxRemovesMemberWithHighestScore() {
     int originalSize = rangeSortedSet.getSortedSetSize();
     RedisSortedSet sortedSet = spy(rangeSortedSet);
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     RedisKey key = new RedisKey();
     int count = 1;
 
@@ -716,7 +717,7 @@ public class RedisSortedSetTest {
   public void zpopmaxRemovesMembersWithHighestScores_whenCountIsGreaterThanOne() {
     int originalSize = rangeSortedSet.getSortedSetSize();
     RedisSortedSet sortedSet = spy(rangeSortedSet);
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     RedisKey key = new RedisKey();
     int count = 3;
 
@@ -735,7 +736,7 @@ public class RedisSortedSetTest {
   @Test
   public void zpopmaxRemovesRegionEntryWhenSetBecomesEmpty() {
     RedisSortedSet sortedSet = spy(createRedisSortedSet(score1, member1));
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     RedisKey key = new RedisKey();
 
     List<byte[]> result = sortedSet.zpopmax(region, key, 1);
@@ -753,7 +754,7 @@ public class RedisSortedSetTest {
         "1.1", "member3",
         "1.1", "member2",
         "1.1", "member1"));
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     RedisKey key = new RedisKey();
 
     List<byte[]> result = sortedSet.zpopmax(region, key, 1);
@@ -792,7 +793,7 @@ public class RedisSortedSetTest {
 
   @Test
   public void redisSortedSetGetSizeInBytes_isAccurateForAdds() {
-    Region<RedisKey, RedisData> mockRegion = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> mockRegion = uncheckedCast(mock(PartitionedRegion.class));
     RedisKey mockKey = mock(RedisKey.class);
     ZAddOptions options = new ZAddOptions(ZAddOptions.Exists.NONE, false, false);
     RedisSortedSet sortedSet = new RedisSortedSet(Collections.emptyList(), new double[0]);
@@ -815,7 +816,7 @@ public class RedisSortedSetTest {
 
   @Test
   public void redisSortedSetGetSizeInBytes_isAccurateForUpdates() {
-    Region<RedisKey, RedisData> mockRegion = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> mockRegion = uncheckedCast(mock(PartitionedRegion.class));
     RedisKey mockKey = mock(RedisKey.class);
     ZAddOptions options = new ZAddOptions(ZAddOptions.Exists.NONE, false, false);
     RedisSortedSet sortedSet = new RedisSortedSet(Collections.emptyList(), new double[0]);
@@ -840,7 +841,7 @@ public class RedisSortedSetTest {
 
   @Test
   public void redisSortedSetGetSizeInBytes_isAccurateForRemoves() {
-    Region<RedisKey, RedisData> mockRegion = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> mockRegion = uncheckedCast(mock(PartitionedRegion.class));
     RedisKey mockKey = mock(RedisKey.class);
     ZAddOptions options = new ZAddOptions(ZAddOptions.Exists.NONE, false, false);
     RedisSortedSet sortedSet = new RedisSortedSet(Collections.emptyList(), new double[0]);
@@ -864,7 +865,7 @@ public class RedisSortedSetTest {
 
   @Test
   public void redisSortedSetGetSizeInBytes_isAccurateForZpopmax() {
-    Region<RedisKey, RedisData> mockRegion = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> mockRegion = uncheckedCast(mock(PartitionedRegion.class));
     RedisKey mockKey = mock(RedisKey.class);
     ZAddOptions options = new ZAddOptions(ZAddOptions.Exists.NONE, false, false);
     RedisSortedSet sortedSet = new RedisSortedSet(Collections.emptyList(), new double[0]);
@@ -887,7 +888,7 @@ public class RedisSortedSetTest {
 
   @Test
   public void redisSortedSetGetSizeInBytes_isAccurateForZpopmin() {
-    Region<RedisKey, RedisData> mockRegion = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> mockRegion = uncheckedCast(mock(PartitionedRegion.class));
     RedisKey mockKey = mock(RedisKey.class);
     ZAddOptions options = new ZAddOptions(ZAddOptions.Exists.NONE, false, false);
     RedisSortedSet sortedSet = new RedisSortedSet(Collections.emptyList(), new double[0]);
