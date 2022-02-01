@@ -17,6 +17,7 @@
 package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.DataSerializer.readEnum;
+import static org.apache.geode.internal.cache.TXManagerImpl.NOTX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_KEY_EXISTS;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAYS;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAY_DOUBLE_PAIRS;
@@ -44,6 +45,9 @@ import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.LocalDataSet;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.TXId;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
@@ -335,7 +339,9 @@ public abstract class AbstractRedisData implements RedisData {
       if (removeFromRegion()) {
         region.remove(key);
       } else {
-        setDelta(deltaInfo);
+        if (!txActive(region)) {
+          setDelta(deltaInfo);
+        }
         try {
           region.put(key, this);
         } finally {
@@ -343,6 +349,16 @@ public abstract class AbstractRedisData implements RedisData {
         }
       }
     }
+  }
+
+  private boolean txActive(Region<RedisKey, RedisData> region) {
+    TXId txId;
+    if (region instanceof LocalDataSet) {
+      txId = ((LocalDataSet) region).getProxy().getTXId();
+    } else {
+      txId = ((PartitionedRegion) region).getTXId();
+    }
+    return txId != null && txId.getUniqId() != NOTX;
   }
 
   protected abstract boolean removeFromRegion();
