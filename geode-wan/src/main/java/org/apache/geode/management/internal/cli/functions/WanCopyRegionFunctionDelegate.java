@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
@@ -186,13 +184,11 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
     return batch;
   }
 
-  private Set<?> getEntries(Region<?, ?> region, GatewaySender sender) {
+  private List<?> getEntries(Region<?, ?> region, GatewaySender sender) {
     if (region instanceof PartitionedRegion && sender.isParallel()) {
-      return ((PartitionedRegion) region).getDataStore().getAllLocalBucketRegions()
-          .stream()
-          .flatMap(br -> ((Set<?>) br.entrySet()).stream()).collect(Collectors.toSet());
+      return ((PartitionedRegion) region).getDataStore().getEntries();
     }
-    return region.entrySet();
+    return new ArrayList<>(region.entrySet());
   }
 
   /**
