@@ -85,19 +85,6 @@ public abstract class AbstractSetsIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
-  public void testSAdd_canStoreBinaryData() {
-    byte[] blob = new byte[256];
-    for (int i = 0; i < 256; i++) {
-      blob[i] = (byte) i;
-    }
-
-    jedis.sadd("key".getBytes(), blob, blob);
-    Set<byte[]> result = jedis.smembers("key".getBytes());
-
-    assertThat(result).containsExactly(blob);
-  }
-
-  @Test
   public void smembers_givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
     assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.SMEMBERS))
         .hasMessageContaining("ERR wrong number of arguments for 'smembers' command");

@@ -131,12 +131,6 @@ public class PubSubDUnitTest {
     subscriber2.disconnect();
     publisher1.disconnect();
     publisher2.disconnect();
-
-    server1.stop();
-    server2.stop();
-    server3.stop();
-    server4.stop();
-    server5.stop();
   }
 
   @Test
