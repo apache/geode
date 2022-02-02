@@ -308,15 +308,13 @@ public class RenameDUnitTest {
       final String oldKey = baseKey + "-" + iterationCount;
       final String newKey = baseKey + "-" + (iterationCount + 1);
 
-      // make sure oldKey exists since if previous rename failed
+      // it's possible previous rename failed, so make sure oldKey exists
       jedisCluster.setnx(oldKey, "value");
 
-      boolean err = false;
       try {
         jedisCluster.rename(oldKey, newKey);
       } catch (final Exception ex) {
         if (continueOnError) {
-          err = true;
           logger.error("Exception performing RENAME " + oldKey + " " + newKey, ex);
         } else {
           isRunning.set(false);
@@ -325,10 +323,8 @@ public class RenameDUnitTest {
       }
 
       // verify that renaming occurred as a unit of work / all or nothing
-      assertThat(jedisCluster.exists(newKey))
-          .as("key " + newKey + " should exist").isEqualTo(!err);
-      assertThat(jedisCluster.exists(oldKey))
-          .as("key " + oldKey + " should not exist").isEqualTo(err);
+      assertThat(jedisCluster.exists(newKey)).isEqualTo(!jedisCluster.exists(oldKey));
+
       iterationCount += 1;
     }
   }
