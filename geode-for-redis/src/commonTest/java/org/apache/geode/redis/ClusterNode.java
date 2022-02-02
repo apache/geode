@@ -64,4 +64,13 @@ public class ClusterNode {
         ", slots=" + slots +
         '}';
   }
+
+  public boolean isSlotOnNode(int slot) {
+    for (Pair<Long, Long> slotRange : slots) {
+      if (slotRange.getLeft() <= slot && slotRange.getRight() >= slot) {
+        return true;
+      }
+    }
+    return false;
+  }
 }

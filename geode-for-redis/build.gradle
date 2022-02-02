@@ -116,6 +116,16 @@ acceptanceTest {
   dependsOn(':geode-assembly:installDist')
 }
 
+distributedTest {
+  environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode"
+  dependsOn(':geode-assembly:installDist')
+}
+
+repeatDistributedTest {
+  environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode"
+  dependsOn(':geode-assembly:installDist')
+}
+
 tasks.register("redisAPITest") {
   dependsOn ':geode-assembly:installDist'
   doLast {
