@@ -121,7 +121,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.SerializationVersions;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.VersionedDataStream;
-import org.apache.geode.internal.serialization.filter.NullObjectInputFilter;
+import org.apache.geode.internal.serialization.filter.NullStreamSerialFilter;
 import org.apache.geode.internal.serialization.filter.ReflectiveFacadeStreamSerialFilterFactory;
 import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
 import org.apache.geode.internal.serialization.filter.SerializableObjectConfig;
@@ -291,7 +291,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       "org.apache.geode.cache.query.internal.cq.ServerCQImpl";
 
   @Immutable
-  private static final StreamSerialFilter defaultSerializationFilter = new NullObjectInputFilter();
+  private static final StreamSerialFilter defaultSerializationFilter = new NullStreamSerialFilter();
   /**
    * A deserialization filter for ObjectInputStreams
    */

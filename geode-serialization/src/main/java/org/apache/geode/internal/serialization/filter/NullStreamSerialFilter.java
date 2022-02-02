@@ -17,9 +17,9 @@ package org.apache.geode.internal.serialization.filter;
 import java.io.ObjectInputStream;
 
 /**
- * Implementation of {@code ObjectInputFilter} that does nothing.
+ * Implementation of {@code StreamSerialFilter} that does nothing.
  */
-public class NullObjectInputFilter implements StreamSerialFilter {
+public class NullStreamSerialFilter implements StreamSerialFilter {
 
   @Override
   public void setFilterOn(ObjectInputStream objectInputStream) {

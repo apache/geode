@@ -34,6 +34,6 @@ public class ReflectiveFacadeStreamSerialFilterFactory implements StreamSerialFi
 
       return new ReflectiveFacadeStreamSerialFilter(api, pattern, sanctionedClasses);
     }
-    return new NullObjectInputFilter();
+    return new NullStreamSerialFilter();
   }
 }
