@@ -315,7 +315,7 @@ public class RenameDUnitTest {
         jedisCluster.rename(oldKey, newKey);
       } catch (final Exception ex) {
         if (continueOnError) {
-          logger.error("Exception performing RENAME " + oldKey + " " + newKey, ex);
+          logger.warn("Exception performing RENAME " + oldKey + " " + newKey, ex);
         } else {
           isRunning.set(false);
           throw new RuntimeException("Exception performing RENAME " + oldKey + " " + newKey, ex);
