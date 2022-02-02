@@ -1,0 +1,69 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import org.apache.tools.ant.taskdefs.condition.Os
+
+apply plugin: 'de.undercouch.download'
+
+def getJavaVersionUrl(String version) {
+  final String os;
+  if (Os.isFamily(Os.FAMILY_MAC)) {
+    os = 'macos'
+  } else if (Os.FAMILY_WINDOWS) {
+    os = 'windows'
+  } else {
+    os = 'linux'
+  }
+  final url = new URL("https://api.bell-sw.com/v1/liberica/releases?version=${version}&bitness=64&os=${os}&arch=x86&package-type=zip&bundle-type=jdk&output=text&fields=downloadUrl")
+  final connection = url.openConnection()
+  connection.setRequestProperty("User-Agent", "Gradle/${gradle.gradleVersion}")
+  connection.setRequestProperty("Accept", "*/*")
+  final downloadUrl = connection.getInputStream().withCloseable {
+    it.text
+  }
+
+  return downloadUrl
+}
+
+ext.javaHomeForVersion = {Test test, String name, String version ->
+  final basePath = "${buildDir}/${name}"
+
+  final downloadTask = project.tasks.register(name + "Download", Download) {
+    final zipFile = new File(basePath + ".zip").absoluteFile
+    dest zipFile
+    overwrite false
+    if (zipFile.exists()) {
+      src zipFile.toURI().toString()
+    } else {
+      src getJavaVersionUrl(version)
+    }
+  }
+
+  final unzipTask = project.tasks.register(name + "Unzip", Copy) {
+    dependsOn downloadTask
+    from(zipTree(downloadTask.get().dest)) {
+      eachFile {
+        it.relativePath = new RelativePath(true, it.relativePath.segments.drop(1))
+      }
+    }
+    into basePath
+  }
+
+  test.dependsOn unzipTask
+
+  return unzipTask.get().outputs.files.first()
+}

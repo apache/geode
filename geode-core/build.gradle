@@ -22,6 +22,7 @@ apply plugin: 'antlr'
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 apply from: "${project.projectDir}/../gradle/pmd.gradle"
 apply from: "${project.projectDir}/../gradle/jmh.gradle"
+apply from: "${project.projectDir}/../gradle/javaVersions.gradle"
 
 sourceSets {
   jca {
@@ -418,6 +419,11 @@ tasks.eclipse.dependsOn(generateGrammarSource)
 distributedTest {
   // Some tests have inner tests that should be ignored
   exclude "**/*\$*.class"
+}
+
+upgradeTest {
+  environment "JAVA_HOME_8u265", javaHomeForVersion(it, "jdk8u265", "8u265+1")
+  environment "JAVA_HOME_8u272", javaHomeForVersion(it, "jdk8u272", "8u272+10")
 }
 
 rootProject.generate.dependsOn(generateGrammarSource)
