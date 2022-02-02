@@ -48,7 +48,7 @@ public class ReflectiveFacadeObjectInputFilterFactoryTest {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
 
     // arrange
-    StreamSerialFilterFactory factory = new ReflectiveFacadeObjectInputFilterFactory();
+    StreamSerialFilterFactory factory = new ReflectiveFacadeStreamSerialFilterFactory();
 
     // act
     StreamSerialFilter objectInputFilter = factory.create(config, SANCTIONED_CLASSES);
@@ -62,7 +62,7 @@ public class ReflectiveFacadeObjectInputFilterFactoryTest {
     assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
     // arrange
-    StreamSerialFilterFactory factory = new ReflectiveFacadeObjectInputFilterFactory();
+    StreamSerialFilterFactory factory = new ReflectiveFacadeStreamSerialFilterFactory();
 
     // act
     StreamSerialFilter objectInputFilter = factory.create(config, SANCTIONED_CLASSES);
