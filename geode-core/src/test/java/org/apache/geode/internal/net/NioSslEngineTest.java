@@ -90,8 +90,7 @@ public class NioSslEngineTest {
 
   @Test
   public void engineUsesDirectBuffers() throws IOException {
-    try (final ByteBufferSharing outputSharing =
-        nioSslEngine.getOutputBufferVendorForTestingOnly().open()) {
+    try (final ByteBufferSharing outputSharing = nioSslEngine.shareOutputBuffer()) {
       assertThat(outputSharing.getBuffer().isDirect()).isTrue();
     }
   }
@@ -190,8 +189,7 @@ public class NioSslEngineTest {
 
   @Test
   public void wrap() throws Exception {
-    try (final ByteBufferSharing outputSharing =
-        nioSslEngine.getOutputBufferVendorForTestingOnly().open()) {
+    try (final ByteBufferSharing outputSharing = nioSslEngine.shareOutputBuffer()) {
 
       // make the application data too big to fit into the engine's encryption buffer
       ByteBuffer appData =
@@ -222,8 +220,7 @@ public class NioSslEngineTest {
 
   @Test
   public void wrapFails() throws IOException {
-    try (final ByteBufferSharing outputSharing =
-        nioSslEngine.getOutputBufferVendorForTestingOnly().open()) {
+    try (final ByteBufferSharing outputSharing = nioSslEngine.shareOutputBuffer()) {
       // make the application data too big to fit into the engine's encryption buffer
       ByteBuffer appData =
           ByteBuffer.allocate(outputSharing.getBuffer().capacity() + 100);
@@ -246,8 +243,7 @@ public class NioSslEngineTest {
 
   @Test
   public void unwrapWithBufferOverflow() throws Exception {
-    try (final ByteBufferSharing inputSharing =
-        nioSslEngine.getInputBufferVendorForTestingOnly().open()) {
+    try (final ByteBufferSharing inputSharing = nioSslEngine.shareInputBuffer()) {
       // make the application data too big to fit into the engine's encryption buffer
       final ByteBuffer peerAppData = inputSharing.getBuffer();
 
@@ -287,8 +283,7 @@ public class NioSslEngineTest {
 
   @Test
   public void unwrapWithBufferUnderflow() throws Exception {
-    try (final ByteBufferSharing inputSharing =
-        nioSslEngine.getInputBufferVendorForTestingOnly().open()) {
+    try (final ByteBufferSharing inputSharing = nioSslEngine.shareInputBuffer()) {
       ByteBuffer wrappedData =
           ByteBuffer.allocate(inputSharing.getBuffer().capacity());
       byte[] netBytes = new byte[wrappedData.capacity() / 2];
@@ -313,8 +308,7 @@ public class NioSslEngineTest {
 
   @Test
   public void unwrapWithDecryptionError() throws IOException {
-    try (final ByteBufferSharing inputSharing =
-        nioSslEngine.getInputBufferVendorForTestingOnly().open()) {
+    try (final ByteBufferSharing inputSharing = nioSslEngine.shareInputBuffer()) {
       // make the application data too big to fit into the engine's encryption buffer
       ByteBuffer wrappedData =
           ByteBuffer.allocate(inputSharing.getBuffer().capacity());
@@ -373,10 +367,10 @@ public class NioSslEngineTest {
     when(mockEngine.wrap(any(ByteBuffer.class), any(ByteBuffer.class))).thenReturn(
         new SSLEngineResult(CLOSED, FINISHED, 0, 0));
     nioSslEngine.close(mockChannel);
-    assertThatThrownBy(() -> nioSslEngine.getOutputBufferVendorForTestingOnly().open().getBuffer())
+    assertThatThrownBy(() -> nioSslEngine.shareOutputBuffer().getBuffer())
         .isInstanceOf(IOException.class)
         .hasMessageContaining("NioSslEngine has been closed");
-    assertThatThrownBy(() -> nioSslEngine.getInputBufferVendorForTestingOnly().open().getBuffer())
+    assertThatThrownBy(() -> nioSslEngine.shareInputBuffer().getBuffer())
         .isInstanceOf(IOException.class)
         .hasMessageContaining("NioSslEngine has been closed");
     nioSslEngine.close(mockChannel);
@@ -406,8 +400,7 @@ public class NioSslEngineTest {
 
     when(mockEngine.isOutboundDone()).thenReturn(Boolean.FALSE);
     when(mockEngine.wrap(any(ByteBuffer.class), any(ByteBuffer.class))).thenAnswer((x) -> {
-      try (final ByteBufferSharing outputSharing =
-          nioSslEngine.getOutputBufferVendorForTestingOnly().open()) {
+      try (final ByteBufferSharing outputSharing = nioSslEngine.shareOutputBuffer()) {
         // give the NioSslEngine something to write on its socket channel, simulating a TLS close
         // message
         outputSharing.getBuffer().put("Goodbye cruel world".getBytes());
@@ -443,8 +436,7 @@ public class NioSslEngineTest {
     ByteBuffer wrappedBuffer = ByteBuffer.allocate(1000);
     SocketChannel mockChannel = mock(SocketChannel.class);
 
-    try (final ByteBufferSharing inputSharing =
-        nioSslEngine.getInputBufferVendorForTestingOnly().open()) {
+    try (final ByteBufferSharing inputSharing = nioSslEngine.shareInputBuffer()) {
       // force a compaction by making the decoded buffer appear near to being full
       ByteBuffer unwrappedBuffer = inputSharing.getBuffer();
       unwrappedBuffer.position(unwrappedBuffer.capacity() - individualRead);
@@ -494,7 +486,10 @@ public class NioSslEngineTest {
     ByteBuffer unwrappedBuffer = ByteBuffer.allocate(initialUnwrappedBufferSize);
     unwrappedBuffer.position(7).limit(preexistingBytes + 7); // 7 bytes of message header - ignored
 
-    nioSslEngine.getInputBufferVendorForTestingOnly().setBufferForTestingOnly(unwrappedBuffer);
+    try (final ByteBufferSharing inputSharing = nioSslEngine.shareInputBuffer()) {
+      final ByteBufferVendor inputSharingImpl = (ByteBufferVendor) inputSharing;
+      inputSharingImpl.setBufferForTestingOnly(unwrappedBuffer);
+    }
 
     // simulate some socket reads
     when(mockChannel.read(any(ByteBuffer.class))).thenAnswer(new Answer<Integer>() {
@@ -522,8 +517,7 @@ public class NioSslEngineTest {
       assertThat(data.limit()).isEqualTo(individualRead * 3 + preexistingBytes);
       // The initial available space in the unwrapped buffer should have doubled
       int initialFreeSpace = initialUnwrappedBufferSize - preexistingBytes;
-      try (final ByteBufferSharing inputSharing =
-          nioSslEngine.getInputBufferVendorForTestingOnly().open()) {
+      try (final ByteBufferSharing inputSharing = nioSslEngine.shareInputBuffer()) {
         assertThat(inputSharing.getBuffer().capacity())
             .isEqualTo(2 * initialFreeSpace + preexistingBytes);
       }
@@ -549,7 +543,10 @@ public class NioSslEngineTest {
     // force buffer expansion by making a small decoded buffer appear near to being full
     ByteBuffer unwrappedBuffer = ByteBuffer.allocate(initialUnwrappedBufferSize);
     unwrappedBuffer.position(7).limit(preexistingBytes + 7); // 7 bytes of message header - ignored
-    nioSslEngine.getInputBufferVendorForTestingOnly().setBufferForTestingOnly(unwrappedBuffer);
+    try (final ByteBufferSharing inputSharing = nioSslEngine.shareInputBuffer()) {
+      final ByteBufferVendor inputSharingImpl = (ByteBufferVendor) inputSharing;
+      inputSharingImpl.setBufferForTestingOnly(unwrappedBuffer);
+    }
 
     // simulate some socket reads
     when(mockChannel.read(any(ByteBuffer.class))).thenAnswer(new Answer<Integer>() {

@@ -17,7 +17,6 @@ package org.apache.geode.internal.net;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -28,49 +27,49 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.net.BufferPool.BufferType;
 
 /**
- * Produces (via {@link #open()}) an {@link ByteBufferSharing} meant to used only within a
- * try-with-resources block. The resource controls access to a secondary resource
- * (via {@link ByteBufferSharing#getBuffer()}) within the scope of try-with-resources.
- * Neither the object returned by {@link #open()}, nor the object returned by invoking
- * {@link ByteBufferSharing#getBuffer()} on that object may be used outside the scope of
+ * An {@link AutoCloseable} meant to be acquired in a try-with-resources statement. The resource (a
+ * {@link ByteBuffer}) is available (for reading and modification) in the scope of the
  * try-with-resources.
  */
-public class ByteBufferVendor {
+class ByteBufferVendor implements ByteBufferSharing {
 
   static class OpenAttemptTimedOut extends Exception {
   }
 
-  private interface ByteBufferSharingInternal extends ByteBufferSharing {
-    void releaseBuffer();
-  }
+  private final Lock lock;
+  private final AtomicBoolean isDestructed;
+  // mutable because in general our ByteBuffer may need to be resized (grown or compacted)
+  private volatile ByteBuffer buffer;
+  private final BufferType bufferType;
+  private final AtomicInteger counter;
+  private final BufferPool bufferPool;
 
-  private final Lock lock = new ReentrantLock();
-  private final AtomicBoolean isDestructed = new AtomicBoolean(false);
-  private final AtomicInteger counter = new AtomicInteger(1);
-  // the object referenced by sharing is guarded by lock
-  private final ByteBufferSharingInternal sharing;
-
-  /*
-   * These constructors are for use only by the owner of the shared resource.
+  /**
+   * This constructor is for use only by the owner of the shared resource (a {@link ByteBuffer}).
    *
    * A resource owner must invoke {@link #open()} once for each reference that escapes (is passed
    * to an external object or is returned to an external caller.)
    *
-   * Constructors acquire no locks. The reference count will be 1 after a constructor
+   * This constructor acquires no lock. The reference count will be 1 after this constructor
    * completes.
    */
+  ByteBufferVendor(final ByteBuffer buffer, final BufferType bufferType,
+                   final BufferPool bufferPool) {
+    this.buffer = buffer;
+    this.bufferType = bufferType;
+    this.bufferPool = bufferPool;
+    lock = new ReentrantLock();
+    counter = new AtomicInteger(1);
+    isDestructed = new AtomicBoolean(false);
+  }
 
   /**
-   * When you have a ByteBuffer available before construction, use this constructor.
-   *
-   * @param bufferArg is the ByteBuffer
-   * @param bufferType needed for freeing the buffer later
-   * @param bufferPool needed for freeing the buffer later
+   * The destructor. Called by the resource owner to undo the work of the constructor.
    */
-  public ByteBufferVendor(final ByteBuffer bufferArg,
-      final BufferType bufferType,
-      final BufferPool bufferPool) {
-    sharing = new ByteBufferSharingInternalImpl(bufferArg, bufferType, bufferPool);
+  void destruct() {
+    if (isDestructed.compareAndSet(false, true)) {
+      dropReference();
+    }
   }
 
   /**
@@ -79,19 +78,18 @@ public class ByteBufferVendor {
    *
    * Resource owners call this method as the last thing before returning a reference to the caller.
    * That caller binds that reference to a variable in a try-with-resources statement and relies on
-   * the AutoCloseable protocol to invoke {@link AutoCloseable#close()} on the object at
-   * the end of the block.
+   * the AutoCloseable protocol to invoke {@link #close()} on the object at the end of the block.
    */
-  public ByteBufferSharing open() throws IOException {
+  ByteBufferSharing open() throws IOException {
     lock.lock();
     addReferenceAfterLock();
-    return sharing;
+    return this;
   }
 
   /**
    * This variant throws {@link OpenAttemptTimedOut} if it can't acquire the lock in time.
    */
-  public ByteBufferSharing open(final long time, final TimeUnit unit)
+  ByteBufferSharing open(final long time, final TimeUnit unit)
       throws OpenAttemptTimedOut, IOException {
     try {
       if (!lock.tryLock(time, unit)) {
@@ -102,25 +100,24 @@ public class ByteBufferVendor {
       throw new OpenAttemptTimedOut();
     }
     addReferenceAfterLock();
-    return sharing;
+    return this;
   }
 
-  /**
-   * The destructor. Called by the resource owner to undo the work of the constructor.
-   */
-  public void destruct() {
-    if (isDestructed.compareAndSet(false, true)) {
-      dropReference();
-    }
-  }
-
-  private void exposingResource() throws IOException {
+  @Override
+  public ByteBuffer getBuffer() throws IOException {
     if (isDestructed.get()) {
       throwClosed();
     }
+    return buffer;
   }
 
-  private void close() {
+  @Override
+  public ByteBuffer expandWriteBufferIfNeeded(final int newCapacity) throws IOException {
+    return buffer = bufferPool.expandWriteBufferIfNeeded(bufferType, getBuffer(), newCapacity);
+  }
+
+  @Override
+  public void close() {
     /*
      * We are counting on our ReentrantLock throwing an exception if the current thread
      * does not hold the lock. In that case dropReference() will not be called. This
@@ -145,9 +142,14 @@ public class ByteBufferVendor {
   private int dropReference() {
     final int usages = counter.decrementAndGet();
     if (usages == 0) {
-      sharing.releaseBuffer();
+      bufferPool.releaseBuffer(bufferType, buffer);
     }
     return usages;
+  }
+
+  @VisibleForTesting
+  public void setBufferForTestingOnly(final ByteBuffer newBufferForTesting) {
+    buffer = newBufferForTesting;
   }
 
   private void addReferenceAfterLock() throws IOException {
@@ -163,54 +165,4 @@ public class ByteBufferVendor {
     throw new IOException("NioSslEngine has been closed");
   }
 
-  private class ByteBufferSharingInternalImpl implements ByteBufferSharingInternal {
-
-    /*
-     * mutable because in general our ByteBuffer may need to be resized (grown or compacted)
-     * no concurrency concerns since ByteBufferSharingNotNull is guarded by ByteBufferVendor.lock
-     */
-    private ByteBuffer buffer;
-    private final BufferType bufferType;
-    private final BufferPool bufferPool;
-
-    public ByteBufferSharingInternalImpl(final ByteBuffer buffer,
-        final BufferType bufferType,
-        final BufferPool bufferPool) {
-      Objects.requireNonNull(buffer);
-      this.buffer = buffer;
-      this.bufferType = bufferType;
-      this.bufferPool = bufferPool;
-    }
-
-    @Override
-    public ByteBuffer getBuffer() throws IOException {
-      exposingResource();
-      return buffer;
-    }
-
-    @Override
-    public ByteBuffer expandWriteBufferIfNeeded(final int newCapacity) throws IOException {
-      return buffer = bufferPool.expandWriteBufferIfNeeded(bufferType, getBuffer(), newCapacity);
-    }
-
-    @Override
-    public ByteBuffer expandReadBufferIfNeeded(final int newCapacity) throws IOException {
-      return buffer = bufferPool.expandReadBufferIfNeeded(bufferType, getBuffer(), newCapacity);
-    }
-
-    @Override
-    public void close() {
-      ByteBufferVendor.this.close();
-    }
-
-    @Override
-    public void releaseBuffer() {
-      bufferPool.releaseBuffer(bufferType, buffer);
-    }
-  }
-
-  @VisibleForTesting
-  public void setBufferForTestingOnly(final ByteBuffer newBufferForTesting) {
-    ((ByteBufferSharingInternalImpl) sharing).buffer = newBufferForTesting;
-  }
 }

@@ -42,25 +42,10 @@ public interface ByteBufferSharing extends AutoCloseable {
    *
    * Subsequent calls to {@link #getBuffer()} will return that new buffer too.
    *
-   * This variant is for use when the buffer is being written to.
-   *
    * @return the same buffer or a different (bigger) buffer
    * @throws IOException if the buffer is no longer accessible
    */
   ByteBuffer expandWriteBufferIfNeeded(final int newCapacity) throws IOException;
-
-  /**
-   * Expand the buffer if needed. This may return a different object so be sure to pay attention to
-   * the return value if you need access to the potentially- expanded buffer.
-   *
-   * Subsequent calls to {@link #getBuffer()} will return that new buffer too.
-   *
-   * This variant is for use when the buffer is being read from.
-   *
-   * @return the same buffer or a different (bigger) buffer
-   * @throws IOException if the buffer is no longer accessible
-   */
-  ByteBuffer expandReadBufferIfNeeded(final int newCapacity) throws IOException;
 
   /**
    * Override {@link AutoCloseable#close()} without throws clause since we don't need one.
