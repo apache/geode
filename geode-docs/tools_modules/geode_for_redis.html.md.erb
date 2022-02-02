@@ -141,17 +141,17 @@ For information on configuring the cluster for SSL, see [Configuring SSL](../man
 
 ### <a id="thingstoknowbeforyoubegin"></a>Things to know before you begin
 - Applications must be using a Redis client that **supports Redis Cluster mode**.
-- <%=vars.product_name%> for Redis currently implements a subset of the full set of Redis commands
+- <%=vars.product_name%> for Redis currently implements a [subset of the full set of Redis commands](#redis-commands)
 - If your application is using **Spring Session Data Redis** you will need to add the following code to disable Spring Session from calling CONFIG (CONFIG is not supported).
 
-```java
-@Bean
-public static ConfigureRedisAction configureRedisAction() {
-      return ConfigureRedisAction.NO_OP;
-}
-```
-This is a known solution for many Managed Redis products (ElastiCache, Azure Cache for Redis, etc.) that disable the CONFIG command for security reasons.
-You can read more about why this is done in the [Spring Session issue report](https://github.com/spring-projects/spring-session/issues/124).
+    ```java
+    @Bean
+    public static ConfigureRedisAction configureRedisAction() {
+          return ConfigureRedisAction.NO_OP;
+    }
+    ```
+    This is a known solution for many Managed Redis products (ElastiCache, Azure Cache for Redis, etc.) that disable the CONFIG command for security reasons.
+    You can read more about why this is done in the [Spring Session issue report](https://github.com/spring-projects/spring-session/issues/124).
 
 - If your application is using **redis-py-cluster** you will need to specificy the option **"skip_full_coverage_check=True"** when creating the connection to the cluster.
   This is a known solution for many Managed Redis products (ElastiCache, Azure Cache for Redis, etc) that disable the CONFIG command for security reasons.
@@ -216,7 +216,7 @@ These commands are supported for Redis 5.
 
 **[2]** COMMAND is implemented only with no subcommands.
 
-**[3]** Native Redis supports a range of values of +/- the capacity of unsigned 64-bit integers
+**[3]** HSCAN, SSCAN, ZSCAN. Native Redis supports a range of values of +/- the capacity of unsigned 64-bit integers
 (+/-&nbsp;1.8446744e+19) for the CURSOR, but 64-bit signed integers for COUNT. <%=vars.product_name%> for Redis matches
 native Redis's behavior for COUNT, but only supports values of +/- the capacity of a signed 64-bit
 integer (+/-&nbsp;9223372036854775807) for CURSOR.
