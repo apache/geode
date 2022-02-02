@@ -32,7 +32,7 @@ public class ReflectiveFacadeObjectInputFilterFactory implements StreamSerialFil
           .append(config.getSerializableObjectFilter())
           .pattern();
 
-      return new ReflectiveFacadeObjectInputFilter(api, pattern, sanctionedClasses);
+      return new ReflectiveFacadeStreamSerialFilter(api, pattern, sanctionedClasses);
     }
     return new NullObjectInputFilter();
   }

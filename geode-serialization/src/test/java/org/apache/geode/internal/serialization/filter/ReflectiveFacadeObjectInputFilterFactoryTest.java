@@ -72,7 +72,7 @@ public class ReflectiveFacadeObjectInputFilterFactoryTest {
   }
 
   private static ObjectInputFilterApi getObjectInputFilterApi(StreamSerialFilter result) {
-    ReflectiveFacadeObjectInputFilter impl = (ReflectiveFacadeObjectInputFilter) result;
+    ReflectiveFacadeStreamSerialFilter impl = (ReflectiveFacadeStreamSerialFilter) result;
     ObjectInputFilterApi objectInputFilterApi = impl.getObjectInputFilterApi();
     assertThat(objectInputFilterApi).isInstanceOf(ReflectiveObjectInputFilterApi.class);
     return objectInputFilterApi;

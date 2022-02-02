@@ -28,7 +28,7 @@ import org.jetbrains.annotations.TestOnly;
  * Implementation of {@code ObjectInputFilter} that delegates to {@code ObjectInputFilterApi} to
  * maintain independence from the JRE version.
  */
-class ReflectiveFacadeObjectInputFilter implements StreamSerialFilter {
+class ReflectiveFacadeStreamSerialFilter implements StreamSerialFilter {
 
   private final ObjectInputFilterApi api;
   private final String pattern;
@@ -37,7 +37,7 @@ class ReflectiveFacadeObjectInputFilter implements StreamSerialFilter {
   /**
    * Constructs instance with the specified collaborators.
    */
-  ReflectiveFacadeObjectInputFilter(ObjectInputFilterApi api, String pattern,
+  ReflectiveFacadeStreamSerialFilter(ObjectInputFilterApi api, String pattern,
       Collection<String> sanctionedClasses) {
     this.api = requireNonNull(api, "ObjectInputFilterApi is required");
     this.pattern = pattern;
@@ -84,24 +84,24 @@ class ReflectiveFacadeObjectInputFilter implements StreamSerialFilter {
     switch (className) {
       case "java.lang.IllegalAccessException":
         throw new UnableToSetSerialFilterException(
-            "Unable to configure an input serialization filter using reflection.",
+            "Unable to configure an input stream serialization filter using reflection.",
             e);
       case "java.lang.reflect.InvocationTargetException":
         if (getRootCause(e) instanceof IllegalStateException) {
           // ObjectInputFilter throws IllegalStateException
           // if the filter has already been set non-null
           throw new FilterAlreadyConfiguredException(
-              "Unable to configure an input serialization filter because filter has already been set non-null.",
+              "Unable to configure an input stream serialization filter because a non-null filter has already been set.",
               e);
         }
         String causeClassName = e.getCause() == null ? getClassName(e) : getClassName(e.getCause());
         throw new UnableToSetSerialFilterException(
-            "Unable to configure an input serialization serialization filter because invocation target threw "
+            "Unable to configure an input stream serialization filter because invocation target threw "
                 + causeClassName + ".",
             e);
       default:
         throw new UnableToSetSerialFilterException(
-            "Unable to configure an input serialization filter.",
+            "Unable to configure an input stream serialization filter.",
             e);
     }
   }
