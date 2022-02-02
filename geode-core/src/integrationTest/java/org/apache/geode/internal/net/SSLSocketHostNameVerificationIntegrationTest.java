@@ -215,9 +215,7 @@ public class SSLSocketHostNameVerificationIntegrationTest {
           final NioSslEngine nioSslEngine = engine;
           engine.close(socket.getChannel());
           assertThatThrownBy(() -> {
-            try (final ByteBufferSharing unused =
-                nioSslEngine.unwrap(ByteBuffer.wrap(new byte[0]))) {
-            }
+            nioSslEngine.unwrap(ByteBuffer.wrap(new byte[0]));
           })
               .isInstanceOf(IOException.class);
         }

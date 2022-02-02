@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
-import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.internal.Assert;
 
 /**
@@ -28,12 +27,6 @@ import org.apache.geode.internal.Assert;
  * secure communications.
  */
 public class NioPlainEngine implements NioFilter {
-
-  // this variable requires the MakeImmutable annotation but the buffer is empty and
-  // not really modifiable
-  @MakeImmutable
-  private static final ByteBuffer EMPTY_BUFFER = ByteBuffer.allocate(0);
-
   private final BufferPool bufferPool;
 
   int lastReadPosition;
@@ -45,14 +38,14 @@ public class NioPlainEngine implements NioFilter {
   }
 
   @Override
-  public ByteBufferSharing wrap(ByteBuffer buffer) {
-    return shareBuffer(buffer);
+  public ByteBuffer wrap(ByteBuffer buffer) {
+    return buffer;
   }
 
   @Override
-  public ByteBufferSharing unwrap(ByteBuffer wrappedBuffer) {
+  public ByteBuffer unwrap(ByteBuffer wrappedBuffer) {
     wrappedBuffer.position(wrappedBuffer.limit());
-    return shareBuffer(wrappedBuffer);
+    return wrappedBuffer;
   }
 
   @Override
@@ -89,7 +82,7 @@ public class NioPlainEngine implements NioFilter {
   }
 
   @Override
-  public ByteBufferSharing readAtLeast(SocketChannel channel, int bytes, ByteBuffer wrappedBuffer)
+  public ByteBuffer readAtLeast(SocketChannel channel, int bytes, ByteBuffer wrappedBuffer)
       throws IOException {
     ByteBuffer buffer = wrappedBuffer;
 
@@ -115,7 +108,7 @@ public class NioPlainEngine implements NioFilter {
     buffer.position(lastProcessedPosition);
     lastProcessedPosition += bytes;
 
-    return shareBuffer(buffer);
+    return buffer;
   }
 
   public void doneReading(ByteBuffer unwrappedBuffer) {
@@ -128,12 +121,8 @@ public class NioPlainEngine implements NioFilter {
   }
 
   @Override
-  public ByteBufferSharing getUnwrappedBuffer() {
-    return shareBuffer(EMPTY_BUFFER);
-  }
-
-  private ByteBufferSharingNoOp shareBuffer(final ByteBuffer wrappedBuffer) {
-    return new ByteBufferSharingNoOp(wrappedBuffer);
+  public ByteBuffer getUnwrappedBuffer(ByteBuffer wrappedBuffer) {
+    return wrappedBuffer;
   }
 
 }
