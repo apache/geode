@@ -252,6 +252,8 @@ public enum RedisCommandType {
   SMEMBERS(new SMembersExecutor(), SUPPORTED,
       new Parameter().exact(2).flags(READONLY, SORT_FOR_SCRIPT)),
   SMOVE(new SMoveExecutor(), SUPPORTED, new Parameter().exact(4).lastKey(2).flags(WRITE, FAST)),
+  SPOP(new SPopExecutor(), SUPPORTED,
+      new Parameter().min(2).max(3, ERROR_SYNTAX).flags(WRITE, RANDOM, FAST)),
   SRANDMEMBER(new SRandMemberExecutor(), SUPPORTED,
       new Parameter().min(2).max(3, ERROR_SYNTAX).flags(READONLY, RANDOM)),
   SREM(new SRemExecutor(), SUPPORTED, new Parameter().min(3).flags(WRITE, FAST)),
@@ -354,11 +356,6 @@ public enum RedisCommandType {
   BITPOS(new BitPosExecutor(), UNSUPPORTED, new Parameter().min(3).flags(READONLY)),
   GETBIT(new GetBitExecutor(), UNSUPPORTED, new Parameter().exact(3).flags(READONLY, FAST)),
   SETBIT(new SetBitExecutor(), UNSUPPORTED, new Parameter().exact(4).flags(WRITE, DENYOOM)),
-
-  /**************** Sets *****************/
-
-  SPOP(new SPopExecutor(), UNSUPPORTED,
-      new Parameter().min(2).max(3, ERROR_SYNTAX).flags(WRITE, RANDOM, FAST)),
 
   /*************** Server ****************/
 

@@ -16,52 +16,35 @@ package org.apache.geode.redis.internal.commands.executor.set;
 
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_VALUE_MUST_BE_POSITIVE;
-import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
-import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
+import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
 
-import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.redis.internal.commands.Command;
-import org.apache.geode.redis.internal.commands.executor.CommandExecutor;
-import org.apache.geode.redis.internal.commands.executor.RedisResponse;
-import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.data.RedisSet;
+import org.apache.geode.redis.internal.services.RegionProvider;
 
-public class SPopExecutor implements CommandExecutor {
+public class SPopExecutor extends SetRandomExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    List<byte[]> commandElems = command.getProcessedCommand();
-    boolean isCountPassed = false;
-    int popCount;
-
-    if (commandElems.size() == 3) {
-      isCountPassed = true;
-      try {
-        popCount = narrowLongToInt(bytesToLong(commandElems.get(2)));
-      } catch (NumberFormatException nex) {
-        return RedisResponse.error(ERROR_VALUE_MUST_BE_POSITIVE);
-      }
-    } else {
-      popCount = 1;
+  protected List<byte[]> performCommand(int count, RegionProvider regionProvider, RedisKey key) {
+    if (count < 0) {
+      throw new RedisException(getError());
     }
 
-    Region<RedisKey, RedisData> region = context.getRegion();
-    RedisKey key = command.getKey();
-    Collection<byte[]> popped = context.setLockedExecute(key, false,
-        set -> set.spop(region, key, popCount));
-
-    if (popped.isEmpty() && !isCountPassed) {
-      return RedisResponse.nil();
+    RedisSet set =
+        regionProvider.getTypedRedisData(REDIS_SET, key, false);
+    if (count == 0 || set.isNull()) {
+      return Collections.emptyList();
     }
 
-    if (!isCountPassed) {
-      return RedisResponse.bulkString(popped.iterator().next());
-    }
+    return set.spop(count, regionProvider.getDataRegion(), key);
+  }
 
-    return RedisResponse.array(popped, true);
+  @Override
+  protected String getError() {
+    return ERROR_VALUE_MUST_BE_POSITIVE;
   }
 }

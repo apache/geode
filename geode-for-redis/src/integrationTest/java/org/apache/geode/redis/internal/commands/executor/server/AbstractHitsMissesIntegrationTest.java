@@ -415,6 +415,13 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
     runMultiKeyCommandAndAssertNoStatUpdates(SET_KEY, (k1, k2) -> jedis.smove(k1, k2, "member"));
   }
 
+  // FYI - In Redis 5.x SPOP produces inconsistent results depending on whether a count was given
+  // or not. In Redis 6.x SPOP does not update any stats.
+  @Test
+  public void testSpop() {
+    runCommandAndAssertNoStatUpdates(SET_KEY, k -> jedis.spop(k));
+  }
+
   @Test
   public void testSrandmember() {
     runCommandAndAssertHitsAndMisses(SET_KEY, k -> jedis.srandmember(k));
@@ -561,14 +568,6 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   @Test
   public void testSetbit() {
     runCommandAndAssertNoStatUpdates(STRING_INT_KEY, k -> jedis.setbit(k, 0L, "1"));
-  }
-
-  /************* Set related commands *************/
-  // FYI - In Redis 5.x SPOP produces inconsistent results depending on whether a count was given
-  // or not. In Redis 6.x SPOP does not update any stats.
-  @Test
-  public void testSpop() {
-    runCommandAndAssertNoStatUpdates(SET_KEY, k -> jedis.spop(k));
   }
 
   /************* Helper Methods *************/
