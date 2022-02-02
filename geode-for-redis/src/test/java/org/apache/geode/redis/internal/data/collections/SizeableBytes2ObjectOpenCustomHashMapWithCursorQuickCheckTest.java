@@ -78,7 +78,11 @@ public class SizeableBytes2ObjectOpenCustomHashMapWithCursorQuickCheckTest {
     int cursor =
         map.scan(0, initialData.size() / 2, (data, key, value) -> data.add(value), scanned);
 
-    cursor = map.scan(cursor, 100000, (data, key, value) -> data.add(value), scanned);
+    // It's possible to scan the entire map in the first scan if the map is small and there are hash
+    // collisions, so only do a second scan if the first one was not a complete scan
+    if (cursor != 0) {
+      cursor = map.scan(cursor, 100000, (data, key, value) -> data.add(value), scanned);
+    }
     assertThat(cursor).isEqualTo(0);
 
     // Test that no duplicate entries were added and no entries were missed.
