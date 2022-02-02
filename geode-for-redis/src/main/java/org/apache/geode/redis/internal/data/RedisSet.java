@@ -16,7 +16,6 @@
 
 package org.apache.geode.redis.internal.data;
 
-import static java.util.Collections.emptyList;
 import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
@@ -224,45 +223,91 @@ public class RedisSet extends AbstractRedisData {
     }
   }
 
-  public Collection<byte[]> spop(Region<RedisKey, RedisData> region, RedisKey key, int popCount) {
-    int originalSize = scard();
-    if (originalSize == 0) {
-      return emptyList();
+  public List<byte[]> spop(int count, Region<RedisKey, RedisData> region, RedisKey key) {
+    final int popMethodRatio = 5; // The ratio is based off command documentation
+    List<byte[]> result = new ArrayList<>(Math.min(count, members.size()));
+    if (count * popMethodRatio < members.size()) {
+      /*
+       * Count is small enough to add random elements to result.
+       * Random indexes are generated to get members that are stored in the backing array of the
+       * MemberSet. The members are then removed from the set, allowing for a unique random
+       * number to be generated every time.
+       */
+      spopWithSmallCount(count, result);
+    } else {
+      /*
+       * The count is close to the number of members in the set.
+       * Since members are being removed from the set, there is a possibility of rehashing. With a
+       * large count, there is a chance that it can rehash multiple times, copying
+       * the set to the result and removing members from that help limit the amount of
+       * rehashes that need to be preformed.
+       */
+      spopWithLargeCount(count, result);
     }
+    storeChanges(region, key, new RemoveByteArrays(result));
+    return result;
+  }
 
-    if (popCount >= originalSize) {
-      region.remove(key, this);
-      return this.members;
-    }
-
-    List<byte[]> popped = new ArrayList<>();
-    byte[][] setMembers = members.toArray(new byte[originalSize][]);
+  private void spopWithSmallCount(int count, List<byte[]> result) {
     Random rand = new Random();
-    while (popped.size() < popCount) {
-      int idx = rand.nextInt(originalSize);
-      byte[] memberToPop = setMembers[idx];
-      if (memberToPop != null) {
-        setMembers[idx] = null;
-        popped.add(memberToPop);
-        membersRemove(memberToPop);
-      }
+    while (result.size() != count) {
+      byte[] member = members.getRandomMemberFromBackingArray(rand);
+      result.add(member);
+      members.remove(member);
     }
-    if (!popped.isEmpty()) {
-      storeChanges(region, key, new RemoveByteArrays(popped));
+  }
+
+  private void spopWithLargeCount(int count, List<byte[]> result) {
+    if (count >= members.size()) {
+      members.toList(result);
+      members.clear();
+      return;
     }
-    return popped;
+
+    Random rand = new Random();
+    MemberSet remainingMembers = new MemberSet(members.size() - count);
+    while (members.size() != count) {
+      byte[] member = members.getRandomMemberFromBackingArray(rand);
+      remainingMembers.add(member);
+      members.remove(member);
+    }
+
+    members.toList(result);
+    members = remainingMembers;
   }
 
   public List<byte[]> srandmember(int count) {
-    List<byte[]> result = new ArrayList<>();
-    int randMethodRatio = 3;
+    final int randMethodRatio = 3; // The ratio is based off command documentation
+    List<byte[]> result;
     if (count < 0) {
+      result = new ArrayList<>(-count);
       srandomDuplicateList(-count, result);
     } else if (count * randMethodRatio < members.size()) {
-      // Count is small enough to add random elements to result
+      /*
+       * Count is small enough to add random elements to result.
+       * Random indexes are generated to get members that are stored in the backing array of the
+       * MemberSet.
+       *
+       * Since the MemberSet is not being modified, the members previously found are tracked.
+       */
+      result = new ArrayList<>(count);
       srandomUniqueListWithSmallCount(count, result);
     } else {
-      // Count either equal or greater to member size or close to the member size
+      /*
+       * The count is close to the number of members in the set.
+       * If the same method were used as srandomUniqueListWithSmallCount, when the result size
+       * approaches the count, it gets to a point where a specific random index would need
+       * to be generated to get a valid member (A member that has not been added to the result).
+       *
+       * Copying the members to the result and generating a random index of members we want to
+       * remove from the result solves that issue.
+       *
+       * For example, if you have a set with 100 members, and the backing array has a length of 100.
+       * If we want to get 99 random members, it would take more effort to generate 99 unique
+       * random indexes to add unique members to the list than it would be generate 1 random
+       * index for a 1 member to be removed.
+       */
+      result = new ArrayList<>(Math.min(count, members.size()));
       srandomUniqueListWithLargeCount(count, result);
     }
     return result;
@@ -271,46 +316,38 @@ public class RedisSet extends AbstractRedisData {
   private void srandomDuplicateList(int count, List<byte[]> result) {
     Random rand = new Random();
     while (result.size() != count) {
-      int randIndex = rand.nextInt(members.getBackingArrayLength());
-      byte[] member = members.getFromBackingArray(randIndex);
-      if (member != null) {
-        result.add(member);
-      }
+      byte[] member = members.getRandomMemberFromBackingArray(rand);
+      result.add(member);
     }
   }
 
   private void srandomUniqueListWithSmallCount(int count, List<byte[]> result) {
     Random rand = new Random();
-    Set<Integer> indexesUsed = new HashSet<>();
+    Set<byte[]> membersUsed = new HashSet<>();
 
     while (result.size() != count) {
-      int randIndex = rand.nextInt(members.getBackingArrayLength());
-      byte[] member = members.getFromBackingArray(randIndex);
-      if (member != null && !indexesUsed.contains(randIndex)) {
+      byte[] member = members.getRandomMemberFromBackingArray(rand);
+      if (!membersUsed.contains(member)) {
         result.add(member);
-        indexesUsed.add(randIndex);
+        membersUsed.add(member);
       }
     }
   }
 
   private void srandomUniqueListWithLargeCount(int count, List<byte[]> result) {
     if (count >= members.size()) {
-      result.addAll(members);
+      members.toList(result);
       return;
     }
 
     Random rand = new Random();
     MemberSet duplicateSet = new MemberSet(members);
-
     while (duplicateSet.size() != count) {
-      int randIndex = rand.nextInt(duplicateSet.getBackingArrayLength());
-      byte[] member = duplicateSet.getFromBackingArray(randIndex);
-      if (member != null) {
-        duplicateSet.remove(member);
-      }
+      byte[] member = members.getRandomMemberFromBackingArray(rand);
+      duplicateSet.remove(member);
     }
 
-    result.addAll(duplicateSet);
+    duplicateSet.toList(result);
   }
 
   public boolean sismember(byte[] member) {
@@ -502,6 +539,12 @@ public class RedisSet extends AbstractRedisData {
     @Override
     protected int sizeElement(byte[] element) {
       return memoryOverhead(element);
+    }
+
+    private void toList(List<byte[]> list) {
+      for (byte[] member : this) {
+        list.add(member);
+      }
     }
   }
 

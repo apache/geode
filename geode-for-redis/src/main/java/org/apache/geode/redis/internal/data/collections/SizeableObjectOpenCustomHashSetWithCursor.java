@@ -19,6 +19,7 @@ import static it.unimi.dsi.fastutil.HashCommon.mix;
 import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 
 import java.util.Collection;
+import java.util.Random;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 
@@ -66,12 +67,22 @@ public abstract class SizeableObjectOpenCustomHashSetWithCursor<E>
     return removed;
   }
 
-  public E getFromBackingArray(final int pos) {
-    return key[pos];
-  }
-
-  public int getBackingArrayLength() {
-    return key.length;
+  /*
+   * Gets a random member given an index.
+   * If member does not exist at that index, then goes to closest member that is right of it.
+   */
+  public E getRandomMemberFromBackingArray(Random rand) {
+    final int backingArrayLength = key.length;
+    E member;
+    int index = rand.nextInt(backingArrayLength);
+    // ADD CHECK FOR NULLLLL
+    while ((member = key[index]) == null) {
+      ++index;
+      if (index >= backingArrayLength) {
+        index = 0;
+      }
+    }
+    return member;
   }
 
   @Override
