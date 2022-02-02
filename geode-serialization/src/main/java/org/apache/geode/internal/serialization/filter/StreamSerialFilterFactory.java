@@ -17,7 +17,7 @@ package org.apache.geode.internal.serialization.filter;
 import java.util.Set;
 
 @FunctionalInterface
-public interface ObjectInputFilterFactory {
+public interface StreamSerialFilterFactory {
 
   StreamSerialFilter create(SerializableObjectConfig serializableObjectConfig,
       Set<String> sanctionedClasses);

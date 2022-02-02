@@ -20,7 +20,7 @@ import java.util.Set;
  * Creates an instance of {@code ObjectInputFilter} that delegates to {@code ObjectInputFilterApi}
  * to maintain independence from the JRE version.
  */
-public class ReflectiveFacadeObjectInputFilterFactory implements ObjectInputFilterFactory {
+public class ReflectiveFacadeObjectInputFilterFactory implements StreamSerialFilterFactory {
 
   @Override
   public StreamSerialFilter create(SerializableObjectConfig config, Set<String> sanctionedClasses) {
