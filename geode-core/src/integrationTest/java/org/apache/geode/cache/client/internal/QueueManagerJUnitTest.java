@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -57,9 +58,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.NoSubscriptionServersAvailableException;
-import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.client.ServerRefusedConnectionException;
 import org.apache.geode.cache.client.SocketFactory;
 import org.apache.geode.cache.client.SubscriptionNotEnabledException;
@@ -297,28 +299,40 @@ public class QueueManagerJUnitTest {
     factory.addConnection(0, 0, 2);
     factory.addConnection(0, 0, 3);
 
-    Region testRegion = mock(Region.class);
+    LocalRegion testRegion = mock(LocalRegion.class);
 
     InternalPool localPool = mock(InternalPool.class);
     when(localPool.getSubscriptionAckInterval()).thenReturn(5000);
     when(localPool.getStats()).thenReturn(mock(PoolStats.class));
+    when(localPool.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
+    PoolImpl poolImpl = mock(PoolImpl.class);
+    ServerRegionProxy serverRegionProxy = new ServerRegionProxy("region", localPool);
+
+    when(testRegion.getServerProxy()).thenReturn(serverRegionProxy);
     // getPool().getRITracker()
     // .getRegionToInterestsMap(interestType, isDurable, !receiveValues)
     // .values()
-
-    RegisterInterestTracker registerInterestTracker = createRegisterInterestTracker(localPool, mock(
-        LocalRegion.class));
+    RegionAttributes regionAttributes = mock(RegionAttributes.class);
+    when(testRegion.getAttributes()).thenReturn(regionAttributes);
+    when(regionAttributes.getDataPolicy()).thenReturn(DataPolicy.DEFAULT);
+    RegisterInterestTracker registerInterestTracker =
+        createRegisterInterestTracker(localPool, testRegion);
 
     manager =
         new QueueManagerImpl(localPool, endpoints, source, factory, 2, 20, logger,
             ClientProxyMembershipID.getNewProxyMembership(ds));
     manager.start(background);
     // verify(spyManager, times(1)).markQueueAsReadyForEvents(any());
+    manager.setQueueConnections(mock(QueueManagerImpl.ConnectionList.class));
+    factory.addConnection(0, 0, 4);
     manager.recoverPrimary(excludedServers);
 
 
+    ConcurrentMap<String, RegisterInterestTracker.RegionInterestEntry> registerInterestEntriesMap =
+        registerInterestTracker.getRegionToInterestsMap(InterestType.KEY, true, false);
 
-    // verify(testRegion).
+    logger.info("Map of registerInterestEntries " + registerInterestEntriesMap);
+
 
     verify(localPool).executeOn(any(Connection.class),
         isA(ReadyForEventsOp.ReadyForEventsOpImpl.class));
@@ -374,7 +388,7 @@ public class QueueManagerJUnitTest {
 
     final ConcurrentHashMap<String, RegisterInterestTracker.RegionInterestEntry> oqlQueryConcurrentMap =
         new ConcurrentHashMap<>();
-    when(registerInterestTracker.getRegionToInterestsMap(eq(InterestType.CQ), anyBoolean(),
+    when(registerInterestTracker.getRegionToInterestsMap(eq(InterestType.OQL_QUERY), anyBoolean(),
         anyBoolean())).thenReturn(
             oqlQueryConcurrentMap);
     return registerInterestTracker;

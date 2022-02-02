@@ -383,5 +383,13 @@ public class RegisterInterestTracker {
     public ConcurrentMap<Object, InterestResultPolicy> getInterests() {
       return interests;
     }
+
+    @Override
+    public String toString() {
+      return "RegionInterestEntry{" +
+          "region=" + region +
+          ", interests=" + interests +
+          '}';
+    }
   }
 }

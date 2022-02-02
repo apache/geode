@@ -89,6 +89,16 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
     this.regionName = regionName;
   }
 
+  /**
+   * Used by tests to create proxies for "fake" regions.
+   */
+  public ServerRegionProxy(String regionName, InternalPool pool) {
+    super(pool);
+    region = null;
+    this.regionName = regionName;
+  }
+
+
   private static InternalPool calcPool(Region<?, ?> r) {
     String poolName = r.getAttributes().getPoolName();
     if (poolName == null || "".equals(poolName)) {

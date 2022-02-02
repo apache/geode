@@ -44,6 +44,7 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.NoSubscriptionServersAvailableException;
+import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerRefusedConnectionException;
 import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
@@ -109,6 +110,11 @@ public class QueueManagerImpl implements QueueManager {
 
   private ScheduledExecutorService recoveryThread;
   private volatile boolean sentClientReady;
+
+  public void setQueueConnections(
+      ConnectionList queueConnections) {
+    this.queueConnections = queueConnections;
+  }
 
   // queueConnections in maintained by using copy-on-write
   private volatile ConnectionList queueConnections = new ConnectionList();
@@ -1119,9 +1125,9 @@ public class QueueManagerImpl implements QueueManager {
     for (Map.Entry<CqQuery, Boolean> e : cqs.entrySet()) {
       ClientCQ cqi = (ClientCQ) e.getKey();
       String name = cqi.getName();
-      if (this.pool.getMultiuserAuthentication()) {
+      if (pool.getMultiuserAuthentication()) {
         UserAttributes.userAttributes
-            .set(((DefaultQueryService) this.pool.getQueryService()).getUserAttributes(name));
+            .set(((DefaultQueryService) pool.getQueryService()).getUserAttributes(name));
       }
       try {
         if (((CqStateImpl) cqi.getState()).getState() != CqStateImpl.INIT
