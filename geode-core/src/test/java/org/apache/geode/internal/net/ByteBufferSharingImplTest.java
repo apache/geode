@@ -29,14 +29,14 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ByteBufferVendorTest {
+public class ByteBufferSharingImplTest {
 
   @FunctionalInterface
   private static interface Foo {
     void run() throws IOException;
   }
 
-  private ByteBufferVendor sharing;
+  private ByteBufferSharingImpl sharing;
   private BufferPool poolMock;
   private CountDownLatch clientHasOpenedResource;
   private CountDownLatch clientMayComplete;
@@ -45,7 +45,7 @@ public class ByteBufferVendorTest {
   public void before() {
     poolMock = mock(BufferPool.class);
     sharing =
-        new ByteBufferVendor(mock(ByteBuffer.class), BufferPool.BufferType.TRACKED_SENDER,
+        new ByteBufferSharingImpl(mock(ByteBuffer.class), BufferPool.BufferType.TRACKED_SENDER,
             poolMock);
     clientHasOpenedResource = new CountDownLatch(1);
     clientMayComplete = new CountDownLatch(1);
