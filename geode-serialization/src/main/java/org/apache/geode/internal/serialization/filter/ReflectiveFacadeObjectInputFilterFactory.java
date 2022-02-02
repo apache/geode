@@ -23,7 +23,7 @@ import java.util.Set;
 public class ReflectiveFacadeObjectInputFilterFactory implements ObjectInputFilterFactory {
 
   @Override
-  public ObjectInputFilter create(SerializableObjectConfig config, Set<String> sanctionedClasses) {
+  public StreamSerialFilter create(SerializableObjectConfig config, Set<String> sanctionedClasses) {
     ObjectInputFilterApi api =
         new ReflectiveObjectInputFilterApiFactory().createObjectInputFilterApi();
 

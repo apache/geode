@@ -20,7 +20,7 @@ import java.io.ObjectInputStream;
  * Defines operation to set this serialization filter on an {@code ObjectInputStream}.
  */
 @FunctionalInterface
-public interface ObjectInputFilter {
+public interface StreamSerialFilter {
 
   /**
    * Sets this serialization filter on the specified {@code ObjectInputStream}.

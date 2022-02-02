@@ -19,6 +19,6 @@ import java.util.Set;
 @FunctionalInterface
 public interface ObjectInputFilterFactory {
 
-  ObjectInputFilter create(SerializableObjectConfig serializableObjectConfig,
+  StreamSerialFilter create(SerializableObjectConfig serializableObjectConfig,
       Set<String> sanctionedClasses);
 }

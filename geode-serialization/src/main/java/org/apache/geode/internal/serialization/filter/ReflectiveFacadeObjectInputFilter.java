@@ -28,7 +28,7 @@ import org.jetbrains.annotations.TestOnly;
  * Implementation of {@code ObjectInputFilter} that delegates to {@code ObjectInputFilterApi} to
  * maintain independence from the JRE version.
  */
-class ReflectiveFacadeObjectInputFilter implements ObjectInputFilter {
+class ReflectiveFacadeObjectInputFilter implements StreamSerialFilter {
 
   private final ObjectInputFilterApi api;
   private final String pattern;

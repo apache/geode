@@ -53,7 +53,7 @@ public class ReflectiveFacadeObjectInputFilterTest {
       throws InvocationTargetException, IllegalAccessException, UnableToSetSerialFilterException {
     String pattern = "the-pattern";
     Collection<String> sanctionedClasses = asList("class-name-one", "class-name-two");
-    ObjectInputFilter objectInputFilter =
+    StreamSerialFilter objectInputFilter =
         new ReflectiveFacadeObjectInputFilter(api, pattern, sanctionedClasses);
 
     objectInputFilter.setFilterOn(objectInputStream);
@@ -66,7 +66,7 @@ public class ReflectiveFacadeObjectInputFilterTest {
   @Test
   public void setsSerialFilter()
       throws InvocationTargetException, IllegalAccessException, UnableToSetSerialFilterException {
-    ObjectInputFilter objectInputFilter =
+    StreamSerialFilter objectInputFilter =
         new ReflectiveFacadeObjectInputFilter(api, "the-pattern", singleton("class-name"));
 
     objectInputFilter.setFilterOn(objectInputStream);
@@ -79,7 +79,7 @@ public class ReflectiveFacadeObjectInputFilterTest {
       throws InvocationTargetException, IllegalAccessException {
     IllegalAccessException illegalAccessException = new IllegalAccessException("testing");
     doThrow(illegalAccessException).when(api).setObjectInputFilter(same(objectInputStream), any());
-    ObjectInputFilter objectInputFilter =
+    StreamSerialFilter objectInputFilter =
         new ReflectiveFacadeObjectInputFilter(api, "the-pattern", singleton("class-name"));
 
     Throwable thrown = catchThrowable(() -> {
@@ -99,7 +99,7 @@ public class ReflectiveFacadeObjectInputFilterTest {
         new InvocationTargetException(new Exception("testing"), "testing");
     doThrow(invocationTargetException).when(api).setObjectInputFilter(same(objectInputStream),
         any());
-    ObjectInputFilter objectInputFilter =
+    StreamSerialFilter objectInputFilter =
         new ReflectiveFacadeObjectInputFilter(api, "the-pattern", singleton("class-name"));
 
     Throwable thrown = catchThrowable(() -> {
@@ -121,7 +121,7 @@ public class ReflectiveFacadeObjectInputFilterTest {
   @Test
   public void propagatesNestedIllegalStateExceptionInObjectInputFilterException()
       throws InvocationTargetException, IllegalAccessException {
-    ObjectInputFilter objectInputFilter =
+    StreamSerialFilter objectInputFilter =
         new ReflectiveFacadeObjectInputFilter(api, "the-pattern", singleton("class-name"));
     InvocationTargetException invocationTargetException =
         new InvocationTargetException(new IllegalStateException("testing"), "testing");
@@ -145,7 +145,7 @@ public class ReflectiveFacadeObjectInputFilterTest {
   public void delegatesToObjectInputFilterApiToCreateObjectInputFilter()
       throws InvocationTargetException, IllegalAccessException, UnableToSetSerialFilterException {
     ObjectInputFilterApi api = mock(ObjectInputFilterApi.class);
-    ObjectInputFilter filter = new ReflectiveFacadeObjectInputFilter(api, "pattern", emptySet());
+    StreamSerialFilter filter = new ReflectiveFacadeObjectInputFilter(api, "pattern", emptySet());
     Object objectInputFilter = mock(Object.class);
     ObjectInputStream objectInputStream = mock(ObjectInputStream.class);
 
@@ -161,7 +161,7 @@ public class ReflectiveFacadeObjectInputFilterTest {
   public void delegatesToObjectInputFilterApiToSetFilterOnObjectInputStream()
       throws InvocationTargetException, IllegalAccessException, UnableToSetSerialFilterException {
     ObjectInputFilterApi api = mock(ObjectInputFilterApi.class);
-    ObjectInputFilter filter = new ReflectiveFacadeObjectInputFilter(api, "pattern", emptySet());
+    StreamSerialFilter filter = new ReflectiveFacadeObjectInputFilter(api, "pattern", emptySet());
     Object objectInputFilter = mock(Object.class);
     ObjectInputStream objectInputStream = mock(ObjectInputStream.class);
 

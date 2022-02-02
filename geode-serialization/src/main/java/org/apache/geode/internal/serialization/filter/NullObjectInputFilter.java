@@ -19,7 +19,7 @@ import java.io.ObjectInputStream;
 /**
  * Implementation of {@code ObjectInputFilter} that does nothing.
  */
-public class NullObjectInputFilter implements ObjectInputFilter {
+public class NullObjectInputFilter implements StreamSerialFilter {
 
   @Override
   public void setFilterOn(ObjectInputStream objectInputStream) {
