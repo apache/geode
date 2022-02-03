@@ -121,26 +121,14 @@ public class PersistentBucketRecovererTest {
     int numberOfProxyBuckets = 5;
 
     ProxyBucketRegion[] bucs = new ProxyBucketRegion[numberOfProxyBuckets];
-
-    ProxyBucketRegion bucketRegion1 = mock(ProxyBucketRegion.class);
-    ProxyBucketRegion bucketRegion2 = mock(ProxyBucketRegion.class);
-    ProxyBucketRegion bucketRegion3 = mock(ProxyBucketRegion.class);
-    ProxyBucketRegion bucketRegion4 = mock(ProxyBucketRegion.class);
-    ProxyBucketRegion bucketRegion5 = mock(ProxyBucketRegion.class);
-
-    bucs[0] = bucketRegion1;
-    bucs[1] = bucketRegion2;
-    bucs[2] = bucketRegion3;
-    bucs[3] = bucketRegion4;
-    bucs[4] = bucketRegion5;
-    when(regionAdvisor.getProxyBucketArray()).thenReturn(bucs);
-
     BucketPersistenceAdvisor persistenceAdvisor = mock(BucketPersistenceAdvisor.class);
-    when(bucketRegion1.getPersistenceAdvisor()).thenReturn(persistenceAdvisor);
-    when(bucketRegion2.getPersistenceAdvisor()).thenReturn(persistenceAdvisor);
-    when(bucketRegion3.getPersistenceAdvisor()).thenReturn(persistenceAdvisor);
-    when(bucketRegion4.getPersistenceAdvisor()).thenReturn(persistenceAdvisor);
-    when(bucketRegion5.getPersistenceAdvisor()).thenReturn(persistenceAdvisor);
+
+    for (int i = 0; i < numberOfProxyBuckets; i++) {
+      bucs[i] = mock(ProxyBucketRegion.class);
+      when(bucs[i].getPersistenceAdvisor()).thenReturn(persistenceAdvisor);
+    }
+
+    when(regionAdvisor.getProxyBucketArray()).thenReturn(bucs);
     when(persistenceAdvisor.isClosed()).thenReturn(true);
 
     PRHARedundancyProvider redundancyProvider =
