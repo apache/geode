@@ -122,8 +122,6 @@ public class PubSubConcurrentDUnitTest {
 
   @After
   public void tearDown() {
-    server1.stop();
-    server2.stop();
     subscriberVM.invoke(() -> {
       subscribers.clear();
       mockSubscribers.clear();

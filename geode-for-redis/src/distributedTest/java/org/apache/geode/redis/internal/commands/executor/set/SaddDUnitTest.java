@@ -69,10 +69,6 @@ public class SaddDUnitTest {
   @AfterClass
   public static void tearDown() {
     jedis.close();
-
-    server1.stop();
-    server2.stop();
-    server3.stop();
   }
 
   @Test

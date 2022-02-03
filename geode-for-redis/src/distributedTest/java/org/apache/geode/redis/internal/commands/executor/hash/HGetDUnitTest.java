@@ -66,9 +66,6 @@ public class HGetDUnitTest {
   @AfterClass
   public static void tearDown() {
     jedis.close();
-
-    server1.stop();
-    server2.stop();
   }
 
   @Test
