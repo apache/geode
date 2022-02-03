@@ -47,7 +47,6 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -59,7 +58,6 @@ import org.apache.geode.cache.ssl.CertStores;
 import org.apache.geode.cache.ssl.CertificateBuilder;
 import org.apache.geode.cache.ssl.CertificateMaterial;
 import org.apache.geode.internal.UniquePortSupplier;
-import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 import org.apache.geode.test.version.TestVersion;
@@ -78,22 +76,22 @@ public class SocketCreatorUpgradeTest {
 
   private final String startLocator1;
   private final String startLocator2;
-  private final String connect;
+  // private final String connect;
 
   @Rule
   public TemporaryFolder tempFolder = new TemporaryFolder();
 
   @Rule
-  final public GfshRule gfshOldGeodeOldJava;
+  public final GfshRule gfshOldGeodeOldJava;
 
   @Rule
-  final public GfshRule gfshOldGeodeNewJava;
+  public final GfshRule gfshOldGeodeNewJava;
 
   @Rule
-  final public GfshRule gfshNewGeodeOldJava;
+  public final GfshRule gfshNewGeodeOldJava;
 
   @Rule
-  final public GfshRule gfshNewGeodeNewJava;
+  public final GfshRule gfshNewGeodeNewJava;
 
   private final File keyStoreFile;
   private final File trustStoreFile;
@@ -127,89 +125,96 @@ public class SocketCreatorUpgradeTest {
     final String hostName = InetAddress.getLocalHost().getCanonicalHostName();
     generateKeyAndTrustStore(hostName, keyStoreFile, trustStoreFile);
 
-    startLocator1 = startLocator("locator1", hostName, locator1Port, portSupplier.getAvailablePort(), securityPropertiesFile);
-    startLocator2 =
-        startLocator("locator2", hostName, locator2Port, portSupplier.getAvailablePort(), securityPropertiesFile);
-    connect =
-        format("connect --locator=%s[%d],%s[%d] --security-properties-file=%s", hostName,
-            locator1Port, hostName, locator2Port, securityPropertiesFile);
+    startLocator1 = startLocator("locator1", hostName, locator1Port,
+        portSupplier.getAvailablePort(), securityPropertiesFile, locator2Port);
+    startLocator2 = startLocator("locator2", hostName, locator2Port,
+        portSupplier.getAvailablePort(), securityPropertiesFile, locator1Port);
+    // connect =
+    // format("connect --locator=%s[%d],%s[%d] --security-properties-file=%s", hostName,
+    // locator1Port, hostName, locator2Port, securityPropertiesFile);
   }
 
-//  @Before
-//  public void before() {
-//    System.out.println(gfshOldGeodeOldJava.getTemporaryFolder().getRoot());
-//    System.out.println(gfshOldGeodeNewJava.getTemporaryFolder().getRoot());
-//  }
+  // @Before
+  // public void before() {
+  // System.out.println(gfshOldGeodeOldJava.getTemporaryFolder().getRoot());
+  // System.out.println(gfshOldGeodeNewJava.getTemporaryFolder().getRoot());
+  // }
 
   @Test
   public void upgradingGeodeWithProtocolsAny() throws IOException {
     generateSecurityProperties(PROTOCOL_ANY, securityPropertiesFile, keyStoreFile, trustStoreFile);
 
     gfshOldGeodeOldJava.execute(VERSION_FULL, startLocator1);
-    gfshNewGeodeOldJava.execute(VERSION_FULL, connect, startLocator2);
+    gfshNewGeodeOldJava.execute(VERSION_FULL, startLocator2);
   }
 
-//  @Test
-  public void upgradingGeodeWithProtocolsTLSv1_2() throws IOException {
-    generateSecurityProperties(PROTOCOL_TLSv1_2, securityPropertiesFile, keyStoreFile, trustStoreFile);
+  @Test
+  public void upgradingGeodeWithProtocolsTLSv1_2Hangs() throws IOException {
+    generateSecurityProperties(PROTOCOL_TLSv1_2, securityPropertiesFile, keyStoreFile,
+        trustStoreFile);
 
     gfshOldGeodeOldJava.execute(startLocator1);
-    gfshNewGeodeOldJava.execute(connect, startLocator2);
+    assertThatThrownBy(() -> gfshNewGeodeOldJava.execute(
+        GfshScript.of(startLocator2).awaitAtMost(1, TimeUnit.MINUTES)))
+            .hasRootCauseInstanceOf(TimeoutException.class);
+
+    killLocator(gfshNewGeodeOldJava, "locator2");
   }
 
-//  @Test
+  @Test
   public void upgradingGeodeWithProtocolsTLSv1_2_SSLv2Hello() throws IOException {
-    generateSecurityProperties(PROTOCOL_TLSv1_2_SSLv2Hello, securityPropertiesFile, keyStoreFile, trustStoreFile);
+    generateSecurityProperties(PROTOCOL_TLSv1_2_SSLv2Hello, securityPropertiesFile, keyStoreFile,
+        trustStoreFile);
 
     gfshOldGeodeOldJava.execute(startLocator1);
-    gfshNewGeodeOldJava.execute(connect, startLocator2);
+    gfshNewGeodeOldJava.execute(startLocator2);
   }
 
-  //  @Test
+  @Test
   public void upgradingJavaWithProtocolsAnyHangs() throws IOException {
     generateSecurityProperties(PROTOCOL_ANY, securityPropertiesFile, keyStoreFile, trustStoreFile);
 
     gfshOldGeodeOldJava.execute(startLocator1);
     assertThatThrownBy(() -> gfshOldGeodeNewJava.execute(
-        GfshScript.of(connect).and(startLocator2).awaitAtMost(1, TimeUnit.MINUTES))).hasRootCauseInstanceOf(TimeoutException.class);
+        GfshScript.of(startLocator2).awaitAtMost(1, TimeUnit.MINUTES)))
+            .hasRootCauseInstanceOf(TimeoutException.class);
 
     killLocator(gfshOldGeodeNewJava, "locator2");
   }
 
-//  @Test
+  @Test
   public void upgradingJavaWithProtocolsTLSv1_2Hangs() throws IOException {
-    generateSecurityProperties(PROTOCOL_TLSv1_2, securityPropertiesFile, keyStoreFile, trustStoreFile);
+    generateSecurityProperties(PROTOCOL_TLSv1_2, securityPropertiesFile, keyStoreFile,
+        trustStoreFile);
 
     gfshOldGeodeOldJava.execute(startLocator1);
     assertThatThrownBy(() -> gfshOldGeodeNewJava.execute(
-        GfshScript.of(connect).and(startLocator2).awaitAtMost(1, TimeUnit.MINUTES))).hasRootCauseInstanceOf(TimeoutException.class);
+        GfshScript.of(startLocator2).awaitAtMost(1, TimeUnit.MINUTES)))
+            .hasRootCauseInstanceOf(TimeoutException.class);
 
     killLocator(gfshOldGeodeNewJava, "locator2");
   }
 
-//  @Test
-  public void upgradingJavaWithProtocolsTLSv1_2_SSLv2Hello() throws IOException {
-    generateSecurityProperties(PROTOCOL_TLSv1_2_SSLv2Hello, securityPropertiesFile, keyStoreFile, trustStoreFile);
+  @Test
+  public void upgradingJavaWithProtocolsTLSv1_2_SSLv2HelloHangs() throws IOException {
+    generateSecurityProperties(PROTOCOL_TLSv1_2_SSLv2Hello, securityPropertiesFile, keyStoreFile,
+        trustStoreFile);
 
     gfshOldGeodeOldJava.execute(startLocator1);
-    gfshOldGeodeNewJava.execute(startLocator2);
-  }
+    assertThatThrownBy(() -> gfshOldGeodeNewJava.execute(
+        GfshScript.of(startLocator2).awaitAtMost(1, TimeUnit.MINUTES)))
+        .hasRootCauseInstanceOf(TimeoutException.class);
 
-  //  @Test
-  public void startingLocatorsWithDifferentJvms() throws IOException {
-    generateSecurityProperties(PROTOCOL_ANY, securityPropertiesFile, keyStoreFile, trustStoreFile);
-
-    final GfshExecution oldExecution = gfshOldGeodeOldJava.execute(startLocator1);
-    System.out.println(oldExecution.getOutputText());
-
-    final GfshExecution newExecution = gfshOldGeodeNewJava.execute(connect, startLocator2);
-    System.out.println(newExecution.getOutputText());
+    killLocator(gfshOldGeodeNewJava, "locator2");
   }
 
   private static String startLocator(final String name, final String bindAddress,
-      final int port, final int jmxPort, final File securityPropertiesFile) {
-    return format("start locator --name=%s --bind-address=%s --port=%d --J=-Dgemfire.jmx-manager-port=%d --security-properties-file=%s --http-service-port=0",
-        name, bindAddress, port, jmxPort, securityPropertiesFile.getAbsolutePath());
+      final int port, final int jmxPort, final File securityPropertiesFile,
+      final int otherLocatorPort) {
+    return format(
+        "start locator --name=%s --bind-address=%s --port=%d --J=-Dgemfire.jmx-manager-port=%d --security-properties-file=%s --http-service-port=0 --locators=%s[%d]",
+        name, bindAddress, port, jmxPort, securityPropertiesFile.getAbsolutePath(), bindAddress,
+        otherLocatorPort);
   }
 
   public static void generateKeyAndTrustStore(final String hostName, final File keyStoreFile,
@@ -233,7 +238,8 @@ public class SocketCreatorUpgradeTest {
     store.createTrustStore(trustStoreFile.getPath(), STORE_PASSWORD);
   }
 
-  private static void generateSecurityProperties(final String protocols, final File securityPropertiesFile,
+  private static void generateSecurityProperties(final String protocols,
+      final File securityPropertiesFile,
       final File keyStoreFile, final File trustStoreFile) throws IOException {
     final Properties properties = new Properties();
 
@@ -264,7 +270,8 @@ public class SocketCreatorUpgradeTest {
   }
 
   private static void killLocator(final GfshRule gfsh, final String name) {
-    killByPidFile(gfsh.getTemporaryFolder().getRoot().toPath().resolve(name).resolve("vf.gf.locator.pid"));
+    killByPidFile(
+        gfsh.getTemporaryFolder().getRoot().toPath().resolve(name).resolve("vf.gf.locator.pid"));
   }
 
 }
