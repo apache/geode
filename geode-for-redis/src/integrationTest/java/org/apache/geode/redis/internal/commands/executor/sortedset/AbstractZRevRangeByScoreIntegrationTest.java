@@ -40,7 +40,7 @@ import org.junit.runner.RunWith;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.Tuple;
+import redis.clients.jedis.resps.Tuple;
 
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;

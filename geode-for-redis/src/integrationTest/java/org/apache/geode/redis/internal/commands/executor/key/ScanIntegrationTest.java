@@ -22,8 +22,8 @@ import java.util.List;
 
 import org.junit.ClassRule;
 import org.junit.Test;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.params.ScanParams;
+import redis.clients.jedis.resps.ScanResult;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 

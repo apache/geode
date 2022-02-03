@@ -18,6 +18,8 @@ package org.apache.geode.redis.internal.commands.executor.server;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static redis.clients.jedis.Protocol.Command.FLUSHALL;
+import static redis.clients.jedis.Protocol.Command.INFO;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,10 +33,10 @@ import java.util.stream.Stream;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import redis.clients.jedis.CommandObjects;
+import redis.clients.jedis.Connection;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.RedisTestHelper;
@@ -46,7 +48,9 @@ public abstract class AbstractInfoIntegrationTest implements RedisIntegrationTes
   private static final String KEY = "key";
   private static final String KEYSPACE_START = "db0";
   protected JedisCluster jedisCluster;
-  protected Jedis jedis;
+  protected Connection connection;
+  private final CommandObjects commandObjects = new CommandObjects();
+
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
 
@@ -121,13 +125,13 @@ public abstract class AbstractInfoIntegrationTest implements RedisIntegrationTes
   @Before
   public void setUp() {
     jedisCluster = new JedisCluster(new HostAndPort(BIND_ADDRESS, getPort()), REDIS_CLIENT_TIMEOUT);
-    jedis = jedisCluster.getConnectionFromSlot(new RedisKey(KEY.getBytes()).getSlot());
+    connection = jedisCluster.getConnectionFromSlot(new RedisKey(KEY.getBytes()).getSlot());
   }
 
   @After
   public void tearDown() {
-    jedis.flushAll();
-    jedis.close();
+    connection.sendCommand(FLUSHALL);
+    connection.close();
     jedisCluster.close();
   }
 
@@ -135,8 +139,7 @@ public abstract class AbstractInfoIntegrationTest implements RedisIntegrationTes
   public void shouldReturnRedisMode() {
     String expectedResult = "redis_mode:cluster";
 
-    String actualResult = jedis.info();
-
+    final String actualResult = RedisTestHelper.getInfo(connection);
     assertThat(actualResult).contains(expectedResult);
   }
 
@@ -144,8 +147,7 @@ public abstract class AbstractInfoIntegrationTest implements RedisIntegrationTes
   public void shouldReturnLoadingProperty() {
     String expectedResult = "loading:0";
 
-    String actualResult = jedis.info();
-
+    final String actualResult = RedisTestHelper.getInfo(connection);
     assertThat(actualResult).contains(expectedResult);
   }
 
@@ -153,8 +155,7 @@ public abstract class AbstractInfoIntegrationTest implements RedisIntegrationTes
   public void shouldReturnClusterEnabledProperty() {
     String expectedResult = "cluster_enabled:1";
 
-    String actualResult = jedis.info();
-
+    final String actualResult = RedisTestHelper.getInfo(connection);
     assertThat(actualResult).contains(expectedResult);
   }
 
@@ -163,7 +164,7 @@ public abstract class AbstractInfoIntegrationTest implements RedisIntegrationTes
     List<String> nonServerProperties = new ArrayList<>(ALL_PROPERTIES);
     nonServerProperties.removeAll(SERVER_PROPERTIES);
 
-    String actualResult = jedis.info("server");
+    final String actualResult = RedisTestHelper.getInfo(connection, "server");
 
     assertThat(actualResult).contains(SERVER_PROPERTIES);
     assertThat(actualResult).doesNotContain(nonServerProperties);
@@ -174,7 +175,7 @@ public abstract class AbstractInfoIntegrationTest implements RedisIntegrationTes
     List<String> nonClusterProperties = new ArrayList<>(ALL_PROPERTIES);
     nonClusterProperties.removeAll(CLUSTER_PROPERTIES);
 
-    String actualResult = jedis.info("cluster");
+    final String actualResult = RedisTestHelper.getInfo(connection, "cluster");
 
     assertThat(actualResult).contains(CLUSTER_PROPERTIES);
     assertThat(actualResult).doesNotContain(nonClusterProperties);
@@ -185,7 +186,7 @@ public abstract class AbstractInfoIntegrationTest implements RedisIntegrationTes
     List<String> nonPersistenceProperties = new ArrayList<>(ALL_PROPERTIES);
     nonPersistenceProperties.removeAll(PERSISTENCE_PROPERTIES);
 
-    String actualResult = jedis.info("persistence");
+    final String actualResult = RedisTestHelper.getInfo(connection, "persistence");
 
     assertThat(actualResult).contains(PERSISTENCE_PROPERTIES);
     assertThat(actualResult).doesNotContain(nonPersistenceProperties);
@@ -196,7 +197,7 @@ public abstract class AbstractInfoIntegrationTest implements RedisIntegrationTes
     List<String> nonStatsProperties = new ArrayList<>(ALL_PROPERTIES);
     nonStatsProperties.removeAll(STATS_PROPERTIES);
 
-    String actualResult = jedis.info("stats");
+    final String actualResult = RedisTestHelper.getInfo(connection, "stats");
 
     assertThat(actualResult).contains(STATS_PROPERTIES);
     assertThat(actualResult).doesNotContain(nonStatsProperties);
@@ -207,7 +208,7 @@ public abstract class AbstractInfoIntegrationTest implements RedisIntegrationTes
     List<String> nonClientsProperties = new ArrayList<>(ALL_PROPERTIES);
     nonClientsProperties.removeAll(CLIENTS_PROPERTIES);
 
-    String actualResult = jedis.info("clients");
+    final String actualResult = RedisTestHelper.getInfo(connection, "clients");
 
     assertThat(actualResult).contains(CLIENTS_PROPERTIES);
     assertThat(actualResult).doesNotContain(nonClientsProperties);
@@ -218,7 +219,7 @@ public abstract class AbstractInfoIntegrationTest implements RedisIntegrationTes
     List<String> nonMemoryProperties = new ArrayList<>(ALL_PROPERTIES);
     nonMemoryProperties.removeAll(MEMORY_PROPERTIES);
 
-    String actualResult = jedis.info("memory");
+    final String actualResult = RedisTestHelper.getInfo(connection, "memory");
 
     assertThat(actualResult).contains(MEMORY_PROPERTIES);
     assertThat(actualResult).doesNotContain(nonMemoryProperties);
@@ -229,8 +230,8 @@ public abstract class AbstractInfoIntegrationTest implements RedisIntegrationTes
     List<String> nonKeyspaceProperties = new ArrayList<>(ALL_PROPERTIES);
     nonKeyspaceProperties.removeAll(KEYSPACE_PROPERTIES);
 
-    jedis.set("key", "value");
-    String actualResult = jedis.info("keyspace");
+    connection.executeCommand(commandObjects.set("key", "value"));
+    final String actualResult = RedisTestHelper.getInfo(connection, "keyspace");
 
     assertThat(actualResult).contains(KEYSPACE_PROPERTIES);
     assertThat(actualResult).doesNotContain(nonKeyspaceProperties);
@@ -241,7 +242,7 @@ public abstract class AbstractInfoIntegrationTest implements RedisIntegrationTes
     List<String> nonReplicationProperties = new ArrayList<>(ALL_PROPERTIES);
     nonReplicationProperties.removeAll(REPLICATION_PROPERTIES);
 
-    String actualResult = jedis.info("replication");
+    final String actualResult = RedisTestHelper.getInfo(connection, "replication");
 
     assertThat(actualResult).contains(REPLICATION_PROPERTIES);
     assertThat(actualResult).doesNotContain(nonReplicationProperties);
@@ -249,38 +250,40 @@ public abstract class AbstractInfoIntegrationTest implements RedisIntegrationTes
 
   @Test
   public void shouldReturnEmptyString_givenUnknownParameter() {
-    String actualResult = jedis.info("nonesuch");
+    final String actualResult = RedisTestHelper.getInfo(connection, "nonesuch");
     assertThat(actualResult).isEqualTo("");
   }
 
   @Test
   public void shouldReturnDefaults_givenDefaultParameter() {
-    jedis.set("key", "value");
-    String actualResult = jedis.info("default");
+    connection.executeCommand(commandObjects.set("key", "value"));
+    final String actualResult = RedisTestHelper.getInfo(connection, "default");
+
     assertThat(actualResult)
         .contains(ALL_PROPERTIES);
   }
 
   @Test
   public void shouldReturnDefaults_givenAllParameters() {
-    jedis.set("key", "value"); // make sure keyspace is there
-    String actualResult = jedis.info("all");
+    connection.executeCommand(commandObjects.set("key", "value")); // make sure keyspace is there
+    final String actualResult = RedisTestHelper.getInfo(connection, "all");
+
     assertThat(actualResult)
         .contains(ALL_PROPERTIES);
   }
 
   @Test
   public void shouldReturnKeySpaceSection_givenServerWithOneOrMoreKeys() {
-    jedis.set("key", "value");
+    connection.executeCommand(commandObjects.set("key", "value"));
 
-    Map<String, String> info = RedisTestHelper.getInfo(jedis);
+    final Map<String, String> info = RedisTestHelper.getInfoAsMap(connection);
 
     assertThat(info.get(KEYSPACE_START)).startsWith("keys=1");
   }
 
   @Test
   public void shouldNotReturnKeySpaceSection_givenServerWithNoKeys() {
-    Map<String, String> info = RedisTestHelper.getInfo(jedis);
+    final Map<String, String> info = RedisTestHelper.getInfoAsMap(connection);
 
     assertThat(info.get(KEYSPACE_START)).isNull();
   }
@@ -288,7 +291,8 @@ public abstract class AbstractInfoIntegrationTest implements RedisIntegrationTes
   @Test
   public void shouldThrowException_ifGivenMoreThanOneParameter() {
     assertThatThrownBy(
-        () -> jedis.sendCommand(
-            Protocol.Command.INFO, "Server", "Cluster")).hasMessageContaining("ERR syntax error");
+        () -> connection.sendCommand(
+            INFO, "Server", "Cluster")).hasMessageContaining("ERR syntax error");
   }
+
 }

@@ -25,9 +25,6 @@ import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADD
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static redis.clients.jedis.Protocol.PUBSUB_CHANNELS;
-import static redis.clients.jedis.Protocol.PUBSUB_NUMSUB;
-import static redis.clients.jedis.Protocol.PUBSUB_NUM_PAT;
 
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -81,7 +78,7 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
   public void channels_shouldError_givenTooManyArguments() {
     assertAtMostNArgsForSubCommand(introspector,
         Protocol.Command.PUBSUB,
-        PUBSUB_CHANNELS.getBytes(),
+        Protocol.Keyword.CHANNELS.toString().getBytes(),
         1);
   }
 
@@ -112,7 +109,7 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 2);
 
     List<byte[]> result =
-        uncheckedCast(introspector.sendCommand(Protocol.Command.PUBSUB, PUBSUB_CHANNELS));
+        uncheckedCast(introspector.sendCommand(Protocol.Command.PUBSUB, Protocol.Keyword.CHANNELS.toString()));
 
     assertThat(result).containsExactlyInAnyOrderElementsOf(expectedChannels);
 
@@ -165,7 +162,7 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
 
     List<byte[]> result =
-        uncheckedCast(introspector.sendCommand(Protocol.Command.PUBSUB, PUBSUB_CHANNELS));
+        uncheckedCast(introspector.sendCommand(Protocol.Command.PUBSUB, Protocol.Keyword.CHANNELS.toString()));
 
     assertThat(result).containsExactlyInAnyOrderElementsOf(expectedChannels);
 
@@ -187,7 +184,7 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
         && (mockSubscriber2.getSubscribedChannels() == 1));
 
     List<byte[]> result =
-        uncheckedCast(introspector.sendCommand(Protocol.Command.PUBSUB, PUBSUB_CHANNELS));
+        uncheckedCast(introspector.sendCommand(Protocol.Command.PUBSUB, Protocol.Keyword.CHANNELS.toString()));
 
     assertThat(result).containsExactlyInAnyOrderElementsOf(expectedChannels);
     assertThat(result.size()).isEqualTo(1);
@@ -205,7 +202,7 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
 
     List<Object> result =
-        uncheckedCast(introspector.sendCommand(Protocol.Command.PUBSUB, PUBSUB_NUMSUB));
+        uncheckedCast(introspector.sendCommand(Protocol.Command.PUBSUB, Protocol.Keyword.NUMSUB.toString()));
 
     assertThat(result).isEmpty();
 
@@ -222,12 +219,12 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1
         && fooAndBarSubscriber.getSubscribedChannels() == 2);
 
-    Map<String, String> result = introspector.pubsubNumSub("foo", "bar");
+    Map<String, Long> result = introspector.pubsubNumSub("foo", "bar");
 
     assertThat(result.containsKey("foo")).isTrue();
     assertThat(result.containsKey("bar")).isTrue();
-    assertThat(result.get("foo")).isEqualTo("2");
-    assertThat(result.get("bar")).isEqualTo("1");
+    assertThat(result.get("foo")).isEqualTo(2L);
+    assertThat(result.get("bar")).isEqualTo(1L);
 
     unsubscribeWithSuccess(mockSubscriber);
     unsubscribeWithSuccess(fooAndBarSubscriber);
@@ -239,10 +236,10 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
     executor.submit(() -> subscriber.subscribe(mockSubscriber, "foo"));
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
 
-    Map<String, String> result = introspector.pubsubNumSub("bar");
+    final Map<String, Long> result = introspector.pubsubNumSub("bar");
 
     assertThat(result.containsKey("bar")).isTrue();
-    assertThat(result.get("bar")).isEqualTo("0");
+    assertThat(result.get("bar")).isEqualTo(0L);
 
     unsubscribeWithSuccess(mockSubscriber);
   }
@@ -252,10 +249,10 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
     executor.submit(() -> subscriber.psubscribe(mockSubscriber, "f*"));
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
 
-    Map<String, String> result = introspector.pubsubNumSub("f*");
+    final Map<String, Long> result = introspector.pubsubNumSub("f*");
 
     assertThat(result.containsKey("f*")).isTrue();
-    assertThat(result.get("f*")).isEqualTo("0");
+    assertThat(result.get("f*")).isEqualTo(0L);
 
     punsubscribeWithSuccess(mockSubscriber);
   }
@@ -270,17 +267,17 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
     executor.submit(() -> subscriber2.subscribe(fooSubscriber, "foo"));
     waitFor(() -> fooSubscriber.getSubscribedChannels() == 1);
 
-    Map<String, String> result = introspector.pubsubNumSub("f*");
+    Map<String, Long> result = introspector.pubsubNumSub("f*");
 
     assertThat(result.containsKey("foo")).isFalse();
     assertThat(result.containsKey("f*")).isTrue();
-    assertThat(result.get("f*")).isEqualTo("0");
+    assertThat(result.get("f*")).isEqualTo(0L);
 
     result = introspector.pubsubNumSub("foo");
 
     assertThat(result.containsKey("foo")).isTrue();
     assertThat(result.containsKey("f*")).isFalse();
-    assertThat(result.get("foo")).isEqualTo("1");
+    assertThat(result.get("foo")).isEqualTo(1L);
 
     punsubscribeWithSuccess(mockSubscriber);
     unsubscribeWithSuccess(fooSubscriber);
@@ -294,7 +291,7 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
   public void numpat_shouldError_givenTooManyArguments() {
     assertAtMostNArgsForSubCommand(introspector,
         Protocol.Command.PUBSUB,
-        PUBSUB_NUM_PAT.getBytes(),
+        Protocol.Keyword.NUMPAT.toString().getBytes(),
         0);
   }
 

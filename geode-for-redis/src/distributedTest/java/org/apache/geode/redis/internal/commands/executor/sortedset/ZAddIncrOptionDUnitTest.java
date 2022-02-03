@@ -18,7 +18,7 @@ package org.apache.geode.redis.internal.commands.executor.sortedset;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
-import static redis.clients.jedis.BinaryJedisCluster.DEFAULT_MAX_ATTEMPTS;
+import static redis.clients.jedis.JedisCluster.DEFAULT_MAX_ATTEMPTS;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +33,7 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.exceptions.JedisClusterMaxAttemptsException;
+import redis.clients.jedis.exceptions.JedisClusterOperationException;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
@@ -156,7 +156,7 @@ public class ZAddIncrOptionDUnitTest {
     long memberSize;
     try {
       memberSize = jedis.zcard(sortedSetKey);
-    } catch (JedisClusterMaxAttemptsException e) {
+    } catch (JedisClusterOperationException e) {
       if (retries < maxRetries) {
         return false;
       }
@@ -188,7 +188,7 @@ public class ZAddIncrOptionDUnitTest {
     for (int i = 0; i < setSize; i++) {
       try {
         doCrashZAddIncr(i);
-      } catch (JedisClusterMaxAttemptsException ignore) {
+      } catch (JedisClusterOperationException ignore) {
         hitJedisClusterIssue2347.set(true);
       }
     }

@@ -22,9 +22,11 @@ import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CL
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
@@ -38,8 +40,8 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.Tuple;
-import redis.clients.jedis.ZParams;
+import redis.clients.jedis.params.ZParams;
+import redis.clients.jedis.resps.Tuple;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
@@ -253,7 +255,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     jedis.zadd(KEY1, 1.0, "key1Member");
 
     assertThat(jedis.zinterstore(NEW_SET, KEY1)).isEqualTo(1L);
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0L, 1L);
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0L, 1L);
     assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
   }
 
@@ -266,7 +268,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     assertThat(jedis.zinterstore(NEW_SET, new ZParams().weights(1), KEY1))
         .isEqualTo(expectedResults.size());
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
     assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
   }
 
@@ -279,7 +281,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     assertThat(jedis.zinterstore(NEW_SET, new ZParams().weights(0), KEY1))
         .isEqualTo(scores.size());
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
     assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
   }
 
@@ -293,7 +295,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     assertThat(jedis.zinterstore(NEW_SET, new ZParams().weights(Double.POSITIVE_INFINITY),
         KEY1)).isEqualTo(scores.size());
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
     assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
   }
 
@@ -312,7 +314,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     assertThat(jedis.zinterstore(NEW_SET, new ZParams().weights(Double.NEGATIVE_INFINITY),
         KEY1)).isEqualTo(scores.size());
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
     assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
   }
 
@@ -333,7 +335,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     assertThat(jedis.zinterstore(NEW_SET, new ZParams().weights(multiplier), KEY1))
         .isEqualTo(scores.size());
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
     assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
   }
 
@@ -353,7 +355,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     assertThat(jedis.zinterstore(NEW_SET, new ZParams(), KEY1, KEY2))
         .isEqualTo(expectedResults.size());
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
     assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
   }
 
@@ -373,7 +375,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     assertThat(jedis.zinterstore(NEW_SET, new ZParams().weights(1, 2), KEY1, KEY2))
         .isEqualTo(expectedResults.size());
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
+    final List <Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
     assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
   }
 
@@ -394,7 +396,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     assertThat(jedis.zinterstore(NEW_SET, new ZParams().weights(1D, 2D, 1.5D), KEY1, KEY2, KEY3))
         .isEqualTo(expectedResults.size());
 
-    Set<Tuple> actualResults = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
+    final List<Tuple> actualResults = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
     assertThatActualScoresAreVeryCloseToExpectedScores(expectedResults, actualResults);
   }
 
@@ -438,7 +440,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
       expected.add(tupleSumOfScores("player" + i, scores1, scores2, scores3));
     }
 
-    Set<Tuple> actual = jedis.zrangeWithScores(NEW_SET, 0, 10);
+    final List<Tuple> actual = jedis.zrangeWithScores(NEW_SET, 0, 10);
 
     assertThatActualScoresAreVeryCloseToExpectedScores(expected, actual);
   }
@@ -470,7 +472,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
       expected.add(tupleMaxOfScores("player" + i, scores1, scores2, scores3));
     }
 
-    Set<Tuple> actual = jedis.zrangeWithScores(NEW_SET, 0, 10);
+    final List<Tuple> actual = jedis.zrangeWithScores(NEW_SET, 0, 10);
 
     assertThatActualScoresAreVeryCloseToExpectedScores(expected, actual);
   }
@@ -493,7 +495,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
       expected.add(tupleMinOfScores("player" + i, scores1, scores2, scores3));
     }
 
-    Set<Tuple> actual = jedis.zrangeWithScores(NEW_SET, 0, 10);
+    final List<Tuple> actual = jedis.zrangeWithScores(NEW_SET, 0, 10);
 
     assertThatActualScoresAreVeryCloseToExpectedScores(expected, actual);
   }
@@ -523,7 +525,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
           weight2, weight3));
     }
 
-    Set<Tuple> actual = jedis.zrangeWithScores(NEW_SET, 0, 10);
+    final List<Tuple> actual = jedis.zrangeWithScores(NEW_SET, 0, 10);
 
     assertThatActualScoresAreVeryCloseToExpectedScores(expected, actual);
   }
@@ -553,7 +555,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
           weight2, weight3));
     }
 
-    Set<Tuple> actual = jedis.zrangeWithScores(NEW_SET, 0, 10);
+    final List<Tuple> actual = jedis.zrangeWithScores(NEW_SET, 0, 10);
 
     assertThatActualScoresAreVeryCloseToExpectedScores(expected, actual);
   }
@@ -583,7 +585,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
           weight2, weight3));
     }
 
-    Set<Tuple> actual = jedis.zrangeWithScores(NEW_SET, 0, 10);
+    final List<Tuple> actual = jedis.zrangeWithScores(NEW_SET, 0, 10);
 
     assertThatActualScoresAreVeryCloseToExpectedScores(expected, actual);
   }
@@ -608,7 +610,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
       expected.add(new Tuple("player" + i, score));
     }
 
-    Set<Tuple> actual = jedis.zrangeWithScores(NEW_SET, 0, 10);
+    final List<Tuple> actual = jedis.zrangeWithScores(NEW_SET, 0, 10);
 
     assertThatActualScoresAreVeryCloseToExpectedScores(expected, actual);
   }
@@ -633,7 +635,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
       expected.add(new Tuple("player" + i, score));
     }
 
-    Set<Tuple> actual = jedis.zrangeWithScores(NEW_SET, 0, 10);
+    final List<Tuple> actual = jedis.zrangeWithScores(NEW_SET, 0, 10);
 
     assertThatActualScoresAreVeryCloseToExpectedScores(expected, actual);
   }
@@ -656,7 +658,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "3",
         KEY1, KEY2, KEY3, "AGGREGATE", "MIN", "AGGREGATE", "MAX");
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
 
     assertThatActualScoresAreVeryCloseToExpectedScores(expected, results);
   }
@@ -672,7 +674,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     // destination key is a key that exists
     assertThat(jedis.zinterstore(KEY1, KEY1, KEY2)).isEqualTo(scores.size());
 
-    Set<Tuple> results = jedis.zrangeWithScores(KEY1, 0, 10);
+    final List<Tuple> results = jedis.zrangeWithScores(KEY1, 0, 10);
 
     assertThatActualScoresAreVeryCloseToExpectedScores(expectedResults, results);
   }
@@ -797,7 +799,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
 
   @Test
   public void test_assertThatActualScoresAreVeryCloseToExpectedScores() {
-    Set<Tuple> actualResult = new HashSet<>(3);
+    List<Tuple> actualResult = new ArrayList<>(3);
     Set<Tuple> expectedResult = new HashSet<>(2);
 
     actualResult.add(new Tuple("element1", 1.0));
@@ -823,7 +825,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
   }
 
   private void assertThatActualScoresAreVeryCloseToExpectedScores(
-      Set<Tuple> expectedResults, Set<Tuple> results) {
+      final Set<Tuple> expectedResults, final List<Tuple> results) {
     assertThat(expectedResults.size()).isEqualTo(results.size());
 
     for (Tuple expectedResult : expectedResults) {

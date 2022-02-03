@@ -19,6 +19,7 @@ import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADD
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static redis.clients.jedis.Protocol.Command.CLUSTER;
 
 import java.util.List;
 
@@ -26,6 +27,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import redis.clients.jedis.Connection;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
@@ -69,8 +71,10 @@ public abstract class AbstractRenameRedirectionsDUnitTest implements RedisIntegr
 
   private String getKeyOnDifferentServerAs(String antiKey, String prefix) {
     ClusterNodes clusterNodes;
-    try (Jedis j = jedis.getConnectionFromSlot(0)) {
-      clusterNodes = ClusterNodes.parseClusterNodes(j.clusterNodes());
+    try (final Connection cxn = jedis.getConnectionFromSlot(0)) {
+      cxn.sendCommand(CLUSTER, Protocol.ClusterKeyword.NODES);
+      final String reply = cxn.getBulkReply();
+      clusterNodes = ClusterNodes.parseClusterNodes(reply);
     }
     int antiSlot = JedisClusterCRC16.getCRC16(antiKey) % RegionProvider.REDIS_SLOTS;
 

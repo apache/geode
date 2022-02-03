@@ -32,12 +32,14 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import redis.clients.jedis.CommandObjects;
+import redis.clients.jedis.Connection;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.params.ScanParams;
+import redis.clients.jedis.resps.ScanResult;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
@@ -47,6 +49,8 @@ import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 
 public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTest {
   protected JedisCluster jedis;
+  private final CommandObjects commandObjects = new CommandObjects();
+
   public static final String KEY = "key";
   public static final byte[] KEY_BYTES = KEY.getBytes();
   public static final int SLOT_FOR_KEY = KeyHashUtil.slotForKey(KEY_BYTES);
@@ -381,20 +385,20 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
   public void should_returnAllConsistentlyPresentMembers_givenConcurrentThreadsAddingAndRemovingMembers() {
     final Set<String> initialMemberData = initializeThousandMemberSet();
     final int iterationCount = 500;
-    Jedis jedis1 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
-    Jedis jedis2 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
+    final Connection cxn1 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
+    final Connection cxn2 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
 
     new ConcurrentLoopingThreads(iterationCount,
-        (i) -> multipleSScanAndAssertOnContentOfResultSet(i, jedis1, initialMemberData),
-        (i) -> multipleSScanAndAssertOnContentOfResultSet(i, jedis2, initialMemberData),
+        (i) -> multipleSScanAndAssertOnContentOfResultSet(i, cxn1, initialMemberData),
+        (i) -> multipleSScanAndAssertOnContentOfResultSet(i, cxn2, initialMemberData),
         (i) -> {
           String member = "new_" + BASE_MEMBER_NAME + i;
           jedis.sadd(KEY, member);
           jedis.srem(KEY, member);
         }).run();
 
-    jedis1.close();
-    jedis2.close();
+    cxn1.close();
+    cxn2.close();
   }
 
   @Test
@@ -402,27 +406,27 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     final Set<String> initialMemberData = initializeThousandMemberSet();
     jedis.sadd(KEY, initialMemberData.toArray(new String[0]));
     final int iterationCount = 500;
-    Jedis jedis1 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
-    Jedis jedis2 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
+    final Connection cxn1 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
+    final Connection cxn2 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
 
     new ConcurrentLoopingThreads(iterationCount,
-        (i) -> multipleSScanAndAssertOnContentOfResultSet(i, jedis1, initialMemberData),
-        (i) -> multipleSScanAndAssertOnContentOfResultSet(i, jedis2, initialMemberData))
+        (i) -> multipleSScanAndAssertOnContentOfResultSet(i, cxn1, initialMemberData),
+        (i) -> multipleSScanAndAssertOnContentOfResultSet(i, cxn2, initialMemberData))
             .run();
     assertThat(jedis.smembers(KEY)).containsExactlyInAnyOrderElementsOf(initialMemberData);
 
-    jedis1.close();
-    jedis2.close();
+    cxn1.close();
+    cxn2.close();
   }
 
-  private void multipleSScanAndAssertOnContentOfResultSet(int iteration, Jedis jedis,
+  private void multipleSScanAndAssertOnContentOfResultSet(final int iteration, final Connection cxn,
       final Set<String> initialMemberData) {
     List<String> allEntries = new ArrayList<>();
     String cursor = ZERO_CURSOR;
     ScanResult<String> result;
 
     do {
-      result = jedis.sscan(KEY, cursor);
+      result = cxn.executeCommand(commandObjects.sscan(KEY, cursor, new ScanParams()));
       cursor = result.getCursor();
       List<String> resultEntries = result.getResult();
       allEntries.addAll(resultEntries);

@@ -289,7 +289,7 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisInte
   static synchronized Map<String, String> getInfo(Jedis jedis) {
     numInfoCalled.incrementAndGet();
 
-    return RedisTestHelper.getInfo(jedis);
+    return RedisTestHelper.getInfoAsMap(jedis);
   }
 
   private void validateNetworkBytesRead(Jedis jedis, long initialNetworkBytesRead,

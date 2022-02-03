@@ -26,7 +26,7 @@ import java.util.function.Consumer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.BitOP;
+import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.Jedis;
 
 import org.apache.geode.redis.RedisIntegrationTest;
@@ -567,35 +567,35 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   @Test
   public void testSetbit() {
-    runCommandAndAssertNoStatUpdates(STRING_INT_KEY, k -> jedis.setbit(k, 0L, "1"));
+    runCommandAndAssertNoStatUpdates(STRING_INT_KEY, k -> jedis.setbit(k, 0L, true));
   }
 
   /************* Helper Methods *************/
   private void runCommandAndAssertHitsAndMisses(String key, Consumer<String> command) {
-    Map<String, String> info = RedisTestHelper.getInfo(jedis);
+    Map<String, String> info = RedisTestHelper.getInfoAsMap(jedis);
     long currentHits = Long.parseLong(info.get(HITS));
     long currentMisses = Long.parseLong(info.get(MISSES));
 
     command.accept(key);
-    info = RedisTestHelper.getInfo(jedis);
+    info = RedisTestHelper.getInfoAsMap(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 1));
     assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
 
     command.accept("missed");
-    info = RedisTestHelper.getInfo(jedis);
+    info = RedisTestHelper.getInfoAsMap(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 1));
     assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses + 1));
   }
 
   private void runCommandAndAssertNoStatUpdates(String key, Consumer<String> command) {
-    Map<String, String> info = RedisTestHelper.getInfo(jedis);
+    Map<String, String> info = RedisTestHelper.getInfoAsMap(jedis);
     String currentHits = info.get(HITS);
     String currentMisses = info.get(MISSES);
 
     command.accept(key);
-    info = RedisTestHelper.getInfo(jedis);
+    info = RedisTestHelper.getInfoAsMap(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(currentHits);
     assertThat(info.get(MISSES)).isEqualTo(currentMisses);
@@ -603,18 +603,18 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   private void runMultiKeyCommandAndAssertHitsAndMisses(String key,
       BiConsumer<String, String> command) {
-    Map<String, String> info = RedisTestHelper.getInfo(jedis);
+    Map<String, String> info = RedisTestHelper.getInfoAsMap(jedis);
     long currentHits = Long.parseLong(info.get(HITS));
     long currentMisses = Long.parseLong(info.get(MISSES));
 
     command.accept(key, key);
-    info = RedisTestHelper.getInfo(jedis);
+    info = RedisTestHelper.getInfoAsMap(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 2));
     assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses));
 
     command.accept(key, HASHTAG + "missed");
-    info = RedisTestHelper.getInfo(jedis);
+    info = RedisTestHelper.getInfoAsMap(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(String.valueOf(currentHits + 3));
     assertThat(info.get(MISSES)).isEqualTo(String.valueOf(currentMisses + 1));
@@ -622,18 +622,18 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   private void runMultiKeyCommandAndAssertNoStatUpdates(String key,
       BiConsumer<String, String> command) {
-    Map<String, String> info = RedisTestHelper.getInfo(jedis);
+    Map<String, String> info = RedisTestHelper.getInfoAsMap(jedis);
     String currentHits = info.get(HITS);
     String currentMisses = info.get(MISSES);
 
     command.accept(key, key);
-    info = RedisTestHelper.getInfo(jedis);
+    info = RedisTestHelper.getInfoAsMap(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(currentHits);
     assertThat(info.get(MISSES)).isEqualTo(currentMisses);
 
     command.accept(key, HASHTAG + "missed");
-    info = RedisTestHelper.getInfo(jedis);
+    info = RedisTestHelper.getInfoAsMap(jedis);
 
     assertThat(info.get(HITS)).isEqualTo(currentHits);
     assertThat(info.get(MISSES)).isEqualTo(currentMisses);

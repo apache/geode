@@ -91,10 +91,11 @@ public abstract class AbstractCommandPipeliningIntegrationTest implements RedisI
     final int NUMBER_OF_COMMANDS_IN_PIPELINE = 100;
     int numberOfPipeLineRequests = 1000;
 
+    jedis.set("x", "-1");
     do {
       Pipeline p = jedis.pipelined();
       for (int i = 0; i < NUMBER_OF_COMMANDS_IN_PIPELINE; i++) {
-        p.echo(String.valueOf(i));
+        p.incr("x");
       }
 
       List<Object> results = p.syncAndReturnAll();

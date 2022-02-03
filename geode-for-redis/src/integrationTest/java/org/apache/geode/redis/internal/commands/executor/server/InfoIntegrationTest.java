@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.ClassRule;
 import org.junit.Test;
+import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
@@ -38,7 +39,8 @@ public class InfoIntegrationTest extends AbstractInfoIntegrationTest {
   public void shouldReturnRedisVersion() {
     String expectedResult = "redis_version:5.0";
 
-    String actualResult = jedis.info();
+    connection.sendCommand(Protocol.Command.INFO);
+    final String actualResult = connection.getBulkReply();
 
     assertThat(actualResult).contains(expectedResult);
   }

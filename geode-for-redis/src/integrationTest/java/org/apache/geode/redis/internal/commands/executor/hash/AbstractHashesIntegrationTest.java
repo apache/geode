@@ -38,8 +38,8 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.resps.ScanResult;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;

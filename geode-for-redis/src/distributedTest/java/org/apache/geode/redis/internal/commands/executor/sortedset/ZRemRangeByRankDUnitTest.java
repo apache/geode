@@ -33,7 +33,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.exceptions.JedisClusterMaxAttemptsException;
+import redis.clients.jedis.exceptions.JedisClusterOperationException;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -162,7 +162,7 @@ public class ZRemRangeByRankDUnitTest {
         Double score = jedis.zscore(KEY, member);
         assertThat(score).isNull();
       }
-    } catch (JedisClusterMaxAttemptsException e) {
+    } catch (JedisClusterOperationException e) {
       return false;
     }
     return true;
@@ -191,7 +191,7 @@ public class ZRemRangeByRankDUnitTest {
     long removed;
     try {
       removed = jedis.zremrangeByRank(KEY, 0, -1);
-    } catch (JedisClusterMaxAttemptsException e) {
+    } catch (JedisClusterOperationException e) {
       if (retries < maxRetries) {
         return false;
       }

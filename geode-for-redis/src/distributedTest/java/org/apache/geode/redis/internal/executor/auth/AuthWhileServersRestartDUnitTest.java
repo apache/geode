@@ -18,7 +18,7 @@ package org.apache.geode.redis.internal.executor.auth;
 import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_PORT;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
-import static redis.clients.jedis.BinaryJedisCluster.DEFAULT_MAX_ATTEMPTS;
+import static redis.clients.jedis.JedisCluster.DEFAULT_MAX_ATTEMPTS;
 
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;

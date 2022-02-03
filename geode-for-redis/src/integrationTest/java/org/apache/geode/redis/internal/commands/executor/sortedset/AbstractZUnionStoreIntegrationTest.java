@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -33,8 +34,8 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.Tuple;
-import redis.clients.jedis.ZParams;
+import redis.clients.jedis.params.ZParams;
+import redis.clients.jedis.resps.Tuple;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
@@ -234,20 +235,20 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
 
     jedis.zunionstore(NEW_SET, new ZParams().weights(1), KEY1);
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
-    assertThat(results).containsExactlyElementsOf(expectedResults);
+    List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
+    assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
 
     jedis.zunionstore(NEW_SET, new ZParams().weights(0), KEY1);
 
     expectedResults = convertToTuples(scores, (i, x) -> 0D);
     results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
-    assertThat(results).containsExactlyElementsOf(expectedResults);
+    assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
 
     jedis.zunionstore(NEW_SET, new ZParams().weights(Double.POSITIVE_INFINITY), KEY1);
 
     expectedResults = convertToTuples(scores, (i, x) -> x == 1 ? Double.POSITIVE_INFINITY : x);
     results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
-    assertThat(results).containsExactlyElementsOf(expectedResults);
+    assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
 
     jedis.zunionstore(NEW_SET, new ZParams().weights(Double.NEGATIVE_INFINITY), KEY1);
 
@@ -257,7 +258,7 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     expectedResults.add(new Tuple("player2", 0D));
     expectedResults.add(new Tuple("player1", Double.POSITIVE_INFINITY));
     results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
-    assertThat(results).containsExactlyElementsOf(expectedResults);
+    assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
   }
 
   @Test
@@ -268,9 +269,9 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
 
     assertThat(jedis.zunionstore(NEW_SET, KEY1)).isEqualTo(10);
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
 
-    assertThat(results).containsExactlyElementsOf(expectedResults);
+    assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
   }
 
   @Test
@@ -281,9 +282,9 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
 
     jedis.zunionstore(NEW_SET, KEY1, KEY2);
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
 
-    assertThat(results).containsExactlyElementsOf(expectedResults);
+    assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
   }
 
   @Test
@@ -294,7 +295,7 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
 
     jedis.zunionstore(KEY1, new ZParams().weights(1.5), KEY1);
 
-    Set<Tuple> results = jedis.zrangeWithScores(KEY1, 0, 10);
+    final List<Tuple> results = jedis.zrangeWithScores(KEY1, 0, 10);
 
     assertThat(results).containsExactlyElementsOf(expectedResults);
   }
@@ -307,13 +308,13 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     Map<String, Double> scores2 = makeScoreMap(10, x -> (double) (9 - x));
     jedis.zadd(KEY2, scores2);
 
-    Set<Tuple> expectedResults = convertToTuples(scores1, (i, x) -> (x * 2.0) + ((9 - x) * 1.5));
+    final Set<Tuple> expectedResults = convertToTuples(scores1, (i, x) -> (x * 2.0) + ((9 - x) * 1.5));
 
     jedis.zunionstore(NEW_SET, new ZParams().weights(2.0, 1.5), KEY1, KEY2);
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
 
-    assertThat(results).containsExactlyElementsOf(expectedResults);
+    assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
   }
 
   @Test
@@ -329,9 +330,9 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     jedis.zunionstore(NEW_SET, new ZParams().aggregate(ZParams.Aggregate.MIN),
         KEY1, KEY2);
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
 
-    assertThat(results).containsExactlyElementsOf(expectedResults);
+    assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
   }
 
   @Test
@@ -347,9 +348,9 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     jedis.zunionstore(NEW_SET, new ZParams().aggregate(ZParams.Aggregate.MAX),
         KEY1, KEY2);
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
 
-    assertThat(results).containsExactlyElementsOf(expectedResults);
+    assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
   }
 
   @Test
@@ -365,9 +366,9 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "2",
         KEY1, KEY2, "AGGREGATE", "MIN", "AGGREGATE", "MAX");
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
 
-    assertThat(results).containsExactlyElementsOf(expectedResults);
+    assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
   }
 
   @Test
@@ -383,9 +384,9 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     jedis.zunionstore(NEW_SET, new ZParams().aggregate(ZParams.Aggregate.MAX).weights(2, 2),
         KEY1, KEY2);
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
 
-    assertThat(results).containsExactlyElementsOf(expectedResults);
+    assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
   }
 
   @Test
@@ -404,9 +405,9 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     jedis.zunionstore(NEW_SET, new ZParams().aggregate(ZParams.Aggregate.SUM),
         KEY1, KEY2, SORTED_SET_KEY3);
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
 
-    assertThat(results).containsExactlyElementsOf(expectedResults);
+    assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
   }
 
   @Test
@@ -422,9 +423,9 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
 
     jedis.zunionstore(NEW_SET, KEY1, KEY2);
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 20);
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 20);
 
-    assertThat(results).containsExactlyElementsOf(expectedResults);
+    assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
   }
 
   @Test
@@ -440,13 +441,13 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
 
     jedis.zunionstore(NEW_SET, KEY1, KEY2);
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 20);
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 20);
 
-    assertThat(results).containsExactlyElementsOf(expectedResults);
+    assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
   }
 
   @Test
-  public void ensureWeightsAreAppliedBeforeAggregation() {
+  public void ensureWeightsAreAppliedBeforeAxggregation() {
     Map<String, Double> scores1 = makeScoreMap(10, x -> (double) x * 5);
     jedis.zadd(KEY1, scores1);
 
@@ -458,9 +459,9 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     jedis.zunionstore(KEY1,
         new ZParams().weights(1, 10).aggregate(ZParams.Aggregate.MAX), KEY1, KEY2);
 
-    Set<Tuple> results = jedis.zrangeWithScores(KEY1, 0, 20);
+    final List<Tuple> results = jedis.zrangeWithScores(KEY1, 0, 20);
 
-    assertThat(results).containsExactlyElementsOf(expectedResults);
+    assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
   }
 
   @Test
@@ -473,9 +474,9 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     // Default aggregation is SUM
     jedis.zunionstore(KEY1, KEY1, KEY1);
 
-    Set<Tuple> results = jedis.zrangeWithScores(KEY1, 0, 10);
+    final List<Tuple> results = jedis.zrangeWithScores(KEY1, 0, 10);
 
-    assertThat(results).containsExactlyElementsOf(expectedResults);
+    assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
   }
 
   @Test
@@ -487,9 +488,9 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
 
     jedis.zunionstore(KEY1, KEY1);
 
-    Set<Tuple> results = jedis.zrangeWithScores(KEY1, 0, 10);
+    final List<Tuple> results = jedis.zrangeWithScores(KEY1, 0, 10);
 
-    assertThat(results).containsExactlyElementsOf(expectedResults);
+    assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
   }
 
   @Test

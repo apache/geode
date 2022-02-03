@@ -36,7 +36,7 @@ import org.junit.runner.RunWith;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.Tuple;
+import redis.clients.jedis.resps.Tuple;
 
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
@@ -132,7 +132,7 @@ public abstract class AbstractZRevRangeIntegrationTest implements RedisIntegrati
     List<Tuple> expectedRevrange = entries.subList(subListStartIndex, subListEndIndex);
     Collections.reverse(expectedRevrange);
 
-    Set<Tuple> revrange = jedis.zrevrangeWithScores(KEY, start, end);
+    final List<Tuple> revrange = jedis.zrevrangeWithScores(KEY, start, end);
 
     assertThat(revrange).containsExactlyElementsOf(expectedRevrange);
   }
@@ -176,7 +176,7 @@ public abstract class AbstractZRevRangeIntegrationTest implements RedisIntegrati
     List<String> expectedRevrange = entries.subList(subListStartIndex, subListEndIndex);
     Collections.reverse(expectedRevrange);
 
-    Set<String> revrange = jedis.zrevrange(KEY, start, end);
+    final List<String> revrange = jedis.zrevrange(KEY, start, end);
 
     assertThat(revrange).containsExactlyElementsOf(expectedRevrange);
   }

@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.ClassRule;
 import org.junit.Test;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Connection;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
@@ -36,7 +36,7 @@ public class ClusterIntegrationTest extends AbstractClusterIntegrationTest {
 
   @Test
   public void errorMessageContainsListOfSupportedSubcommands() {
-    final Jedis connection = jedis.getConnectionFromSlot(0);
+    final Connection connection = jedis.getConnectionFromSlot(0);
 
     String invalidSubcommand = "subcommand";
     assertThatThrownBy(() -> connection.sendCommand(Protocol.Command.CLUSTER, invalidSubcommand))

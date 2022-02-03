@@ -17,6 +17,7 @@ package org.apache.geode.redis.mocks;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,9 +25,8 @@ import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import redis.clients.jedis.Client;
+import redis.clients.jedis.Connection;
 import redis.clients.jedis.JedisPubSub;
-import redis.clients.jedis.exceptions.JedisConnectionException;
 
 
 public class MockSubscriber extends JedisPubSub {
@@ -46,7 +46,6 @@ public class MockSubscriber extends JedisPubSub {
   private CountDownLatch messageReceivedLatch = new CountDownLatch(0);
   private CountDownLatch pMessageReceivedLatch = new CountDownLatch(0);
   private String localSocketAddress;
-  private Client client;
 
   public MockSubscriber() {
     this(new CountDownLatch(1));
@@ -66,9 +65,16 @@ public class MockSubscriber extends JedisPubSub {
   }
 
   @Override
-  public void proceed(Client client, String... channels) {
-    localSocketAddress = client.getSocket().getLocalSocketAddress().toString();
-    this.client = client;
+  public void proceed(final Connection client, final String... channels) {
+    try {
+      // Kludge due to socket becoming private in jedis 4.1.1
+      // TODO find a safe public way of getting local socket address
+      // Would client.getHostAndPort().getHost() be sufficient?
+      final Socket socket = (Socket)client.getClass().getField("socket").get(client);
+      localSocketAddress = socket.getLocalSocketAddress().toString();
+    } catch (final NoSuchFieldException | IllegalAccessException ex) {
+      throw new RuntimeException("Error in accessing private field 'socket' via reflection", ex);
+    }
     super.proceed(client, channels);
   }
 
@@ -131,16 +137,6 @@ public class MockSubscriber extends JedisPubSub {
   public void onPong(String pattern) {
     switchThreadName(String.format("PONG %s", pattern));
     receivedPings.add(pattern);
-  }
-
-  // JedisPubSub ping with message is not currently possible, will submit a PR
-  // (https://github.com/xetorthio/jedis/issues/2049)
-  public void ping(String message) {
-    if (client == null) {
-      throw new JedisConnectionException("JedisPubSub is not subscribed to a Jedis instance.");
-    } else {
-      client.ping(message);
-    }
   }
 
   private static final int AWAIT_TIMEOUT_MILLIS = 30000;

@@ -40,13 +40,15 @@ import org.assertj.core.data.Offset;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import redis.clients.jedis.CommandObjects;
+import redis.clients.jedis.Connection;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
-import redis.clients.jedis.Tuple;
+import redis.clients.jedis.params.ScanParams;
+import redis.clients.jedis.resps.ScanResult;
+import redis.clients.jedis.resps.Tuple;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
@@ -71,6 +73,8 @@ public abstract class AbstractZScanIntegrationTest implements RedisIntegrationTe
 
   public static final String BASE_MEMBER = "baseMember_";
   private final int SIZE_OF_ENTRY_SET = 100;
+
+  private final CommandObjects commandObjects = new CommandObjects();
 
   @Before
   public void setUp() {
@@ -480,16 +484,16 @@ public abstract class AbstractZScanIntegrationTest implements RedisIntegrationTe
     jedis.zadd(KEY, initialSortedSetData);
     final int iterationCount = 500;
 
-    Jedis jedis1 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
-    Jedis jedis2 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
+    final Connection cxn1 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
+    final Connection cxn2 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
 
     new ConcurrentLoopingThreads(iterationCount,
-        (i) -> multipleZScanAndAssertOnContentOfResultSet(jedis1, initialSortedSetData, true),
-        (i) -> multipleZScanAndAssertOnContentOfResultSet(jedis2, initialSortedSetData, true),
+        (i) -> multipleZScanAndAssertOnContentOfResultSet(cxn1, initialSortedSetData, true),
+        (i) -> multipleZScanAndAssertOnContentOfResultSet(cxn2, initialSortedSetData, true),
         (i) -> jedis.zadd(KEY, i + SIZE_OF_ENTRY_SET, BASE_MEMBER + i % SIZE_OF_ENTRY_SET)).run();
 
-    jedis1.close();
-    jedis2.close();
+    cxn1.close();
+    cxn2.close();
   }
 
   @Test
@@ -498,30 +502,30 @@ public abstract class AbstractZScanIntegrationTest implements RedisIntegrationTe
     jedis.zadd(KEY, initialSortedSetData);
     final int iterationCount = 500;
 
-    Jedis jedis1 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
-    Jedis jedis2 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
+    Connection cxn1 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
+    Connection cxn2 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
 
     new ConcurrentLoopingThreads(iterationCount,
-        (i) -> multipleZScanAndAssertOnContentOfResultSet(jedis1, initialSortedSetData, false),
-        (i) -> multipleZScanAndAssertOnContentOfResultSet(jedis2, initialSortedSetData, false),
+        (i) -> multipleZScanAndAssertOnContentOfResultSet(cxn1, initialSortedSetData, false),
+        (i) -> multipleZScanAndAssertOnContentOfResultSet(cxn2, initialSortedSetData, false),
         (i) -> {
           String member = "new_" + BASE_MEMBER + i;
           jedis.zadd(KEY, 0.1, member);
           jedis.zrem(KEY, member);
         }).run();
 
-    jedis1.close();
-    jedis2.close();
+    cxn1.close();
+    cxn2.close();
   }
 
-  private void multipleZScanAndAssertOnContentOfResultSet(Jedis jedis,
+  private void multipleZScanAndAssertOnContentOfResultSet(Connection cxn,
       final Map<String, Double> initialSortedSetData, boolean assertOnSizeOnly) {
     Set<Tuple> allEntries = new HashSet<>();
     ScanResult<Tuple> result;
     String cursor = ZERO_CURSOR;
 
     do {
-      result = jedis.zscan(KEY, cursor);
+      result = cxn.executeCommand(commandObjects.zscan(KEY, cursor, new ScanParams()));
       cursor = result.getCursor();
       allEntries.addAll(result.getResult());
     } while (!result.isCompleteIteration());

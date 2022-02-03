@@ -18,11 +18,13 @@ package org.apache.geode.redis.internal.commands.executor.cluster;
 import static org.apache.geode.redis.internal.services.RegionProvider.REDIS_SLOTS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static redis.clients.jedis.Protocol.Command.CLUSTER;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import redis.clients.jedis.Connection;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
@@ -49,7 +51,7 @@ public abstract class AbstractClusterIntegrationTest implements RedisIntegration
 
   @Test
   public void testCluster_givenWrongNumberOfArguments() {
-    final Jedis connection = jedis.getConnectionFromSlot(0);
+    final Connection connection = jedis.getConnectionFromSlot(0);
     assertThatThrownBy(() -> connection.sendCommand(Protocol.Command.CLUSTER))
         .hasMessage("ERR wrong number of arguments for 'cluster' command");
     assertThatThrownBy(
@@ -77,24 +79,30 @@ public abstract class AbstractClusterIntegrationTest implements RedisIntegration
 
   @Test
   public void keyslot_ReturnsCorrectSlot() {
-    final Jedis connection = jedis.getConnectionFromSlot(0);
-    assertThat(connection.clusterKeySlot("nohash")).isEqualTo(9072);
-    assertThat(connection.clusterKeySlot("with{hash}")).isEqualTo(238);
-    assertThat(connection.clusterKeySlot("with{two}{hashes}")).isEqualTo(2127);
-    assertThat(connection.clusterKeySlot("with{borked{hashes}")).isEqualTo(1058);
-    assertThat(connection.clusterKeySlot("with{unmatched")).isEqualTo(10479);
-    assertThat(connection.clusterKeySlot("aaa}bbb{tag}ccc")).isEqualTo(8338);
-    assertThat(connection.clusterKeySlot("withunmatchedright}")).isEqualTo(10331);
-    assertThat(connection.clusterKeySlot("somekey")).isEqualTo(11058L);
-    assertThat(connection.clusterKeySlot("foo{hash_tag}")).isEqualTo(2515L);
-    assertThat(connection.clusterKeySlot("bar{hash_tag}")).isEqualTo(2515L);
-    assertThat(connection.clusterKeySlot("hash_tag")).isEqualTo(2515L);
+    final Connection cxn = jedis.getConnectionFromSlot(0);
+
+    assertThat(clusterKeySlot(cxn, "nohash")).isEqualTo(9072);
+    assertThat(clusterKeySlot(cxn, "with{hash}")).isEqualTo(238);
+    assertThat(clusterKeySlot(cxn, "with{two}{hashes}")).isEqualTo(2127);
+    assertThat(clusterKeySlot(cxn, "with{borked{hashes}")).isEqualTo(1058);
+    assertThat(clusterKeySlot(cxn, "with{unmatched")).isEqualTo(10479);
+    assertThat(clusterKeySlot(cxn, "aaa}bbb{tag}ccc")).isEqualTo(8338);
+    assertThat(clusterKeySlot(cxn, "withunmatchedright}")).isEqualTo(10331);
+    assertThat(clusterKeySlot(cxn, "somekey")).isEqualTo(11058L);
+    assertThat(clusterKeySlot(cxn, "foo{hash_tag}")).isEqualTo(2515L);
+    assertThat(clusterKeySlot(cxn, "bar{hash_tag}")).isEqualTo(2515L);
+    assertThat(clusterKeySlot(cxn, "hash_tag")).isEqualTo(2515L);
 
     for (int i = 0; i < NUM_KEYS_TO_TEST; i++) {
       String key = RandomStringUtils.random(i % MAX_KEY_LENGTH + 1);
-      assertThat(connection.clusterKeySlot(key))
+      assertThat(clusterKeySlot(cxn, key))
           .withFailMessage("Failure for key %s", key)
           .isEqualTo(JedisClusterCRC16.getCRC16(key) % (long) REDIS_SLOTS);
     }
+  }
+
+  private Long clusterKeySlot(final Connection cxn, final String arg) {
+    cxn.sendCommand(CLUSTER, Protocol.ClusterKeyword.KEYSLOT.toString(), arg);
+    return cxn.getIntegerReply();
   }
 }
