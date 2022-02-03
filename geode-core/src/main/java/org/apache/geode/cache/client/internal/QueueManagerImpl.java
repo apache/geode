@@ -981,8 +981,7 @@ public class QueueManagerImpl implements QueueManager {
   // connection but CCU may died as endpoint closed....
   // so before putting connection need to see if something(crash) happen we should be able to
   // recover from it
-  @VisibleForTesting
-  protected boolean addToConnectionList(QueueConnectionImpl connection, boolean isPrimary) {
+  private boolean addToConnectionList(QueueConnectionImpl connection, boolean isPrimary) {
     boolean isBadConnection;
     synchronized (lock) {
       ClientUpdater cu = connection.getUpdater();

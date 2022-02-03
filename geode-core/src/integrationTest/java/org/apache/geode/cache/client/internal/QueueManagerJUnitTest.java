@@ -26,7 +26,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
@@ -277,28 +276,22 @@ public class QueueManagerJUnitTest {
   }
 
   @Test
-  public void testAddToConnectionListCallsCloseConnectionOpWithKeepAliveTrue() throws Exception {
-    // Create and start the QueueManager
-    manager = new QueueManagerImpl(pool, endpoints, source, factory, 0, 2000, logger,
+  public void testAddToConnectionListCallsCloseConnectionOpWithKeepAliveTrue2() {
+    // Create a DummyConnection
+    DummyConnection connection = factory.addConnection(0, 0, 1);
+    assertThat(connection.keepAlive).isFalse();
+
+    // Get and close its Endpoint
+    Endpoint endpoint = connection.getEndpoint();
+    endpoint.close();
+
+    //Create and start a QueueManagerImpl
+    manager = new QueueManagerImpl(pool, endpoints, source, factory, 2, 20, logger,
         ClientProxyMembershipID.getNewProxyMembership(ds));
-    QueueManagerImpl managerImpl = (QueueManagerImpl) manager;
+    manager.start(background);
 
-    // Create a QueueConnectionImpl
-    Connection connection = mock(Connection.class);
-    Endpoint endpoint = mock(Endpoint.class);
-    when(connection.getEndpoint()).thenReturn(endpoint);
-    when(endpoint.isClosed()).thenReturn(true);
-    // The ClientUpdater is not mocked because isAlive is final and addToConnectionList verifies it
-    // is true.
-    ClientUpdater updater = factory.createServerToClientConnection(endpoint, manager, true, null);
-    QueueConnectionImpl queueConnection =
-        new QueueConnectionImpl(managerImpl, connection, updater, null);
-
-    // Invoke addToConnectionList with the Endpoint in closed state
-    managerImpl.addToConnectionList(queueConnection, true);
-
-    // Verify Connection.close is called with keepAlive = true
-    verify(connection).close(true);
+    // Assert that the connection keepAlive is true
+    assertThat(connection.keepAlive).isTrue();
   }
 
   private static void assertPortEquals(int expected, Connection actual) {
@@ -622,8 +615,10 @@ public class QueueManagerJUnitTest {
       nextConnections.add(null);
     }
 
-    private void addConnection(int endpointType, int queueSize, int port) {
-      nextConnections.add(new DummyConnection(endpointType, queueSize, port));
+    private DummyConnection addConnection(int endpointType, int queueSize, int port) {
+      DummyConnection connection = new DummyConnection(endpointType, queueSize, port);
+      nextConnections.add(connection);
+      return connection;
     }
 
     @Override
@@ -746,6 +741,7 @@ public class QueueManagerJUnitTest {
     private final ServerQueueStatus status;
     private final ServerLocation location;
     private final Endpoint endpoint;
+    private boolean keepAlive;
 
     private DummyConnection(int endpointType, int queueSize, int port) {
       InternalDistributedMember member = new InternalDistributedMember("localhost", 555);
@@ -756,7 +752,7 @@ public class QueueManagerJUnitTest {
 
     @Override
     public void close(boolean keepAlive) {
-      // nothing
+      this.keepAlive = keepAlive;
     }
 
     @Override
