@@ -129,9 +129,6 @@ public class SocketCreatorUpgradeTest {
         portSupplier.getAvailablePort(), securityPropertiesFile, locator2Port);
     startLocator2 = startLocator("locator2", hostName, locator2Port,
         portSupplier.getAvailablePort(), securityPropertiesFile, locator1Port);
-    // connect =
-    // format("connect --locator=%s[%d],%s[%d] --security-properties-file=%s", hostName,
-    // locator1Port, hostName, locator2Port, securityPropertiesFile);
   }
 
   // @Before
@@ -203,7 +200,7 @@ public class SocketCreatorUpgradeTest {
     gfshOldGeodeOldJava.execute(startLocator1);
     assertThatThrownBy(() -> gfshOldGeodeNewJava.execute(
         GfshScript.of(startLocator2).awaitAtMost(1, TimeUnit.MINUTES)))
-        .hasRootCauseInstanceOf(TimeoutException.class);
+            .hasRootCauseInstanceOf(TimeoutException.class);
 
     killLocator(gfshOldGeodeNewJava, "locator2");
   }
@@ -212,7 +209,7 @@ public class SocketCreatorUpgradeTest {
       final int port, final int jmxPort, final File securityPropertiesFile,
       final int otherLocatorPort) {
     return format(
-        "start locator --name=%s --bind-address=%s --port=%d --J=-Dgemfire.jmx-manager-port=%d --security-properties-file=%s --http-service-port=0 --locators=%s[%d]",
+        "start locator --connect=false --http-service-port=0 --name=%s --bind-address=%s --port=%d --J=-Dgemfire.jmx-manager-port=%d --security-properties-file=%s --locators=%s[%d]",
         name, bindAddress, port, jmxPort, securityPropertiesFile.getAbsolutePath(), bindAddress,
         otherLocatorPort);
   }
