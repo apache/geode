@@ -1037,7 +1037,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
 
   @Test
   public void testPRTXPerformance() {
-    PRColocationDUnitTestHelper.defaultStringSize = 1024;
+    PRColocationDistributedTestHelper.defaultStringSize = 1024;
 
     createPopulateAndVerifyCoLocatedPRs(1);
 
