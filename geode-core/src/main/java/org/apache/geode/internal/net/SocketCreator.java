@@ -52,13 +52,10 @@ import javax.net.ssl.SSLSocket;
 import javax.net.ssl.StandardConstants;
 import javax.net.ssl.TrustManager;
 
-import org.apache.commons.validator.routines.InetAddressValidator;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.DeprecatedButRequiredForBackwardsCompatibilityTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
@@ -92,10 +89,6 @@ import org.apache.geode.util.internal.GeodeGlossary;
 public class SocketCreator extends TcpSocketCreatorImpl {
 
   private static final Logger logger = LogService.getLogger();
-
-  @Immutable
-  private static final InetAddressValidator INET_ADDRESS_VALIDATOR =
-      InetAddressValidator.getInstance();
 
   /**
    * flag to force always using DNS (regardless of the fact that these lookups can hang)
@@ -625,8 +618,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   /**
    * returns true if the SSLParameters are altered, false if not
    */
-  private boolean setServerNames(final @NotNull SSLParameters modifiedParams,
-      final @NotNull HostAndPort addr) {
+  private boolean setServerNames(SSLParameters modifiedParams, HostAndPort addr) {
     List<SNIServerName> oldNames = modifiedParams.getServerNames();
     oldNames = oldNames == null ? Collections.emptyList() : oldNames;
     final List<SNIServerName> serverNames = new ArrayList<>(oldNames);
@@ -638,20 +630,10 @@ public class SocketCreator extends TcpSocketCreatorImpl {
       return false;
     }
 
-    final String hostName = convertToHostNameIfIpAddress(addr.getHostName());
+    String hostName = addr.getHostName();
     serverNames.add(new SNIHostName(hostName));
     modifiedParams.setServerNames(serverNames);
     return true;
-  }
-
-  static @NotNull String convertToHostNameIfIpAddress(final @NotNull String hostName) {
-    if (INET_ADDRESS_VALIDATOR.isValid(hostName)) {
-      try {
-        return InetAddress.getByName(hostName).getCanonicalHostName();
-      } catch (Exception ignored) {
-      }
-    }
-    return hostName;
   }
 
   /**
@@ -682,7 +664,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     if (className != null) {
       Object o;
       try {
-        Class<?> c = ClassPathLoader.getLatest().forName(className);
+        Class c = ClassPathLoader.getLatest().forName(className);
         o = c.newInstance();
       } catch (Exception e) {
         // No cache exists yet, so this can't be logged.
