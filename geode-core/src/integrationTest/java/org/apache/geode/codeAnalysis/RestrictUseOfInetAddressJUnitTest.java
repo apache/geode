@@ -206,7 +206,9 @@ public class RestrictUseOfInetAddressJUnitTest {
         "org/apache/geode/internal/tcp/Connection",
         // new management API
         "org/apache/geode/management/internal/JmxManagerLocatorResponse",
-        "org/apache/geode/management/internal/ManagementAgent"));
+        "org/apache/geode/management/internal/ManagementAgent",
+        // SSL configuration
+        "org/apache/geode/internal/net/SocketCreator"));
   }
 
   /**
