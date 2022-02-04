@@ -89,6 +89,12 @@ public class ReflectiveObjectInputFilterApiTest {
 
     Object filter = api.getSerialFilter();
 
+    if (filter != null) {
+      Throwable setSerialFilterStack =
+          ((ReflectiveObjectInputFilterApi) api).getSerialFilterStack();
+      assertThat(setSerialFilterStack).as("Throwable setSerialFilterStack").isNull();
+    }
+
     assertThat(filter)
         .as("ObjectInputFilter$Config.getSerialFilter()")
         .isNull();

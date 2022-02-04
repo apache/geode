@@ -20,6 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.geode.annotations.VisibleForTesting;
 
@@ -112,6 +113,13 @@ public class ReflectiveObjectInputFilterApi implements ObjectInputFilterApi {
   public void setSerialFilter(Object objectInputFilter)
       throws InvocationTargetException, IllegalAccessException {
     ObjectInputFilter_Config_setSerialFilter.invoke(ObjectInputFilter_Config, objectInputFilter);
+    setSerialFilterStack.set(new Throwable("KIRK: setSerialFilter was invoked"));
+  }
+
+  private final AtomicReference<Throwable> setSerialFilterStack = new AtomicReference<>();
+
+  Throwable getSerialFilterStack() {
+    return setSerialFilterStack.get();
   }
 
   @Override
