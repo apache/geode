@@ -285,7 +285,7 @@ public class QueueManagerJUnitTest {
     Endpoint endpoint = connection.getEndpoint();
     endpoint.close();
 
-    //Create and start a QueueManagerImpl
+    // Create and start a QueueManagerImpl
     manager = new QueueManagerImpl(pool, endpoints, source, factory, 2, 20, logger,
         ClientProxyMembershipID.getNewProxyMembership(ds));
     manager.start(background);
