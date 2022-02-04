@@ -23,6 +23,7 @@ import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTC
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.LogWriterUtils.getDUnitLogLevel;
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -47,7 +48,6 @@ import javax.transaction.RollbackException;
 import javax.transaction.Synchronization;
 import javax.transaction.UserTransaction;
 
-import org.assertj.core.api.Assertions;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -118,7 +118,6 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -190,7 +189,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
   private Integer createRegionOnServerWithTimeout(VM vm, final boolean startServer,
       final boolean accessor, final int redundantCopies, final int txTimeoutSecs) {
-    return (Integer) vm.invoke(new SerializableCallable() {
+    return (Integer) vm.invoke(new SerializableCallable<Object>() {
       @Override
       public Object call() throws Exception {
         createRegion(accessor, redundantCopies, null);
@@ -209,7 +208,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
   }
 
   private Integer createRegionOnDisconnectedServer(VM vm, final boolean startServer) {
-    return (Integer) vm.invoke(new SerializableCallable() {
+    return (Integer) vm.invoke(new SerializableCallable<Object>() {
       @Override
       public Object call() throws Exception {
         AttributesFactory af = new AttributesFactory();
@@ -246,9 +245,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
   private void createClientRegionAndPopulateData(VM vm, final int port, final boolean isEmpty) {
     createClientRegion(vm, port, isEmpty);
-    vm.invoke(new SerializableCallable() {
+    vm.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         populateData();
         return null;
       }
@@ -256,9 +255,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
   }
 
   private void createClientRegion2(VM vm, final int port, final boolean isEmpty, final boolean ri) {
-    vm.invoke(new SerializableCallable() {
+    vm.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         ClientCacheFactory ccf = new ClientCacheFactory();
         setCCF(port, ccf);
         // these settings were used to manually check that tx operation stats were being updated
@@ -473,7 +472,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     SerializableCallable verifyExists =
         new SerializableCallable("verify txstate for client exists") {
           @Override
-          public Object call() throws Exception {
+          public Object call() {
             TXManagerImpl txmgr = getGemfireCache().getTxManager();
             Set states = txmgr.getTransactionsForClient((InternalDistributedMember) myId);
             assertEquals(1, states.size()); // only one in-progress transaction
@@ -488,22 +487,14 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     SerializableCallable verifyExpired = new SerializableCallable("verify txstate is expired") {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         final TXManagerImpl txmgr = getGemfireCache().getTxManager();
         try {
-          GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
-            @Override
-            public boolean done() {
-              Set states = txmgr.getTransactionsForClient((InternalDistributedMember) myId);
-              getLogWriter()
-                  .info("found " + states.size() + " tx states for " + myId);
-              return states.isEmpty();
-            }
-
-            @Override
-            public String description() {
-              return "Waiting for transaction state to expire";
-            }
+          GeodeAwaitility.await().untilAsserted(() -> {
+            Set states = txmgr.getTransactionsForClient((InternalDistributedMember) myId);
+            getLogWriter()
+                .info("found " + states.size() + " tx states for " + myId);
+            assertThat(states).as("Waiting for transaction state to expire").isEmpty();
           });
           return null;
         } finally {
@@ -553,7 +544,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     SerializableCallable verifyExists =
         new SerializableCallable("verify txstate for client exists") {
           @Override
-          public Object call() throws Exception {
+          public Object call() {
             TXManagerImpl txmgr = getGemfireCache().getTxManager();
             Set states = txmgr.getTransactionsForClient((InternalDistributedMember) myId);
             assertEquals(1, states.size()); // only one in-progress transaction
@@ -569,7 +560,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     SerializableCallable verifyExpired = new SerializableCallable("verify txstate is expired") {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         final TXManagerImpl txmgr = getGemfireCache().getTxManager();
         return verifyTXStateExpired(myId, txmgr);
       }
@@ -637,7 +628,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     SerializableCallable verifyExists =
         new SerializableCallable("verify txstate for client exists") {
           @Override
-          public Object call() throws Exception {
+          public Object call() {
             TXManagerImpl txmgr = getGemfireCache().getTxManager();
             Set<TXId> states = txmgr.getTransactionsForClient((InternalDistributedMember) myId);
             assertEquals(1, states.size()); // only one in-progress transaction
@@ -649,7 +640,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     SerializableCallable getProxyServer = new SerializableCallable("get proxy server") {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         final TXManagerImpl txmgr = getGemfireCache().getTxManager();
         DistributedMember proxyServer = null;
         TXStateProxyImpl tx = null;
@@ -682,7 +673,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     SerializableCallable verifyProxyServerChanged =
         new SerializableCallable("verify proxy server is updated") {
           @Override
-          public Object call() throws Exception {
+          public Object call() {
             final TXManagerImpl txmgr = getGemfireCache().getTxManager();
             TXStateProxyImpl tx = null;
             Set<TXStateProxy> states =
@@ -754,7 +745,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       createClientRegion(client, port1, false);
     }
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
       public Object call() throws Exception {
         String suffix = prePopulateData ? "Updated" : "";
@@ -841,9 +832,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    server.invoke(new SerializableCallable() {
+    server.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<Integer, String> r = getGemfireCache().getRegion(D_REFERENCE);
         Region<CustId, Customer> pr = getGemfireCache().getRegion(CUSTOMER);
         int expectedRegionSize = isCommit ? MAX_ENTRIES : 5;
@@ -855,9 +846,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    server.invoke(new SerializableCallable() {
+    server.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         String suffix = prePopulateData ? "Updated" : "";
         Region<Integer, String> r = getGemfireCache().getRegion(D_REFERENCE);
         Region<Integer, String> pr = getGemfireCache().getRegion(CUSTOMER);
@@ -881,17 +872,17 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
   @Override
   @Test
-  public void testTXCreationAndCleanupAtCommit() throws Exception {
+  public void testTXCreationAndCleanupAtCommit() {
     doBasicChecks(true);
   }
 
   @Override
   @Test
-  public void testTXCreationAndCleanupAtRollback() throws Exception {
+  public void testTXCreationAndCleanupAtRollback() {
     doBasicChecks(false);
   }
 
-  private void doBasicChecks(final boolean commit) throws Exception {
+  private void doBasicChecks(final boolean commit) {
     Host host = Host.getHost(0);
     VM server = host.getVM(0);
     VM client = host.getVM(1);
@@ -902,16 +893,16 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     server.invoke(new SerializableCallable("verify tx") {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
         assertTrue(mgr.isHostedTxInProgress(txId));
         return null;
       }
     });
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
         mgr.resume(txId);
         TXStateProxy tx = mgr.pauseTransaction();
@@ -926,38 +917,28 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    server.invoke(new SerializableCallable() {
+    server.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         final TXManagerImpl mgr = getGemfireCache().getTxManager();
-        WaitCriterion w = new WaitCriterion() {
-          @Override
-          public boolean done() {
-            return !mgr.isHostedTxInProgress(txId);
-          }
-
-          @Override
-          public String description() {
-            return "waiting for hosted tx in progress to terminate";
-          }
-        };
-        GeodeAwaitility.await().untilAsserted(w);
+        GeodeAwaitility.await().untilAsserted(() -> assertThat(mgr.isHostedTxInProgress(txId))
+            .as("waiting for hosted tx in progress to terminate").isFalse());
         return null;
       }
     });
     if (commit) {
-      client.invoke(new SerializableCallable() {
+      client.invoke(new SerializableCallable<Object>() {
         @Override
-        public Object call() throws Exception {
+        public Object call() {
           verifyAfterCommit(OP.PUT);
           System.out.println("expected verification to fail for this VM");
           return null;
         }
       });
     } else {
-      client.invoke(new SerializableCallable() {
+      client.invoke(new SerializableCallable<Object>() {
         @Override
-        public Object call() throws Exception {
+        public Object call() {
           verifyAfterRollback(OP.PUT);
           return null;
         }
@@ -1027,7 +1008,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     server.invoke(new SerializableCallable("verify tx") {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
         Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         mgr.begin();
@@ -1054,7 +1035,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     server.invoke(new SerializableCallable("verify tx") {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
         Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         mgr.begin();
@@ -1079,7 +1060,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     server.invoke(new SerializableCallable("verify tx") {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
         Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         mgr.begin();
@@ -1105,7 +1086,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     server.invoke(new SerializableCallable("verify getAll tx") {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
         Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         orderRegion.getAttributesMutator().setCacheLoader(new CacheLoader() {
@@ -1142,7 +1123,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     server.invoke(new SerializableCallable("add cache loader") {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         orderRegion.getAttributesMutator().setCacheLoader(new CacheLoader() {
           @Override
@@ -1159,7 +1140,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     client.invoke(new SerializableCallable("verify getAll uses tx") {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         TXManagerImpl mgr = getGemfireCache().getTxManager();
         mgr.begin();
@@ -1190,9 +1171,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     createClientRegion(client, port, false, true);
 
-    datastore.invoke(new SerializableCallable() {
+    datastore.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region custRegion = getCache().getRegion(CUSTOMER);
         custRegion.getAttributesMutator().addCacheListener(new ServerListener());
         return null;
@@ -1200,9 +1181,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     });
 
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
         // Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         // Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
@@ -1217,9 +1198,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    datastore.invoke(new SerializableCallable() {
+    datastore.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
         // Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         // Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
@@ -1245,9 +1226,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     createClientRegion(client, port, false, true);
 
-    datastore.invoke(new SerializableCallable() {
+    datastore.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region custRegion = getCache().getRegion(CUSTOMER);
         custRegion.getAttributesMutator().addCacheListener(new ClientListener());
         return null;
@@ -1255,9 +1236,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     });
 
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
         // Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         // Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
@@ -1290,9 +1271,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     createClientRegion(client, port, false, true);
 
-    datastore.invoke(new SerializableCallable() {
+    datastore.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region custRegion = getCache().getRegion(CUSTOMER);
         custRegion.getAttributesMutator().addCacheListener(new ClientListener());
         return null;
@@ -1300,9 +1281,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     });
 
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
         // Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         // Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
@@ -1332,9 +1313,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     createClientRegion(client, port, false, true);
 
-    datastore.invoke(new SerializableCallable() {
+    datastore.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region custRegion = getCache().getRegion(CUSTOMER);
         custRegion.getAttributesMutator().addCacheListener(new ClientListener());
         return null;
@@ -1342,9 +1323,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     });
 
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
         // Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         // Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
@@ -1388,9 +1369,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     createClientRegion(client, port, false, true);
 
-    datastore.invoke(new SerializableCallable() {
+    datastore.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region custRegion = getCache().getRegion(CUSTOMER);
         custRegion.getAttributesMutator().addCacheListener(new ClientListener());
         return null;
@@ -1398,9 +1379,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     });
 
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
         // Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         // Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
@@ -1415,9 +1396,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
         // Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         // Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
@@ -1441,9 +1422,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     createClientRegion(client, port, false, true);
 
-    datastore.invoke(new SerializableCallable() {
+    datastore.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region custRegion = getCache().getRegion(CUSTOMER);
         custRegion.getAttributesMutator().addCacheListener(new ClientListener());
         return null;
@@ -1451,9 +1432,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     });
 
 
-    datastore.invoke(new SerializableCallable() {
+    datastore.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
         // Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         // Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
@@ -1470,26 +1451,16 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         final Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
         // Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         // Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
         final ClientListener cl =
             (ClientListener) custRegion.getAttributes().getCacheListeners()[0];
-        GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
-
-          @Override
-          public boolean done() {
-            return cl.invoked;
-          }
-
-          @Override
-          public String description() {
-            return "Listener was not invoked in 30 seconds";
-          }
-        });
+        GeodeAwaitility.await().untilAsserted(() -> assertThat(cl.invoked)
+            .as("Listener was not invoked in 30 seconds").isTrue());
 
         assertEquals(1, cl.invokeCount);
         return null;
@@ -1511,9 +1482,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     createClientRegion(client, port, false, true);
 
-    datastore.invoke(new SerializableCallable() {
+    datastore.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region custRegion = getCache().getRegion(CUSTOMER);
         custRegion.getAttributesMutator().addCacheListener(new ClientListener());
         return null;
@@ -1521,9 +1492,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     });
 
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
         // Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         // Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
@@ -1540,9 +1511,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
         // Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         // Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
@@ -1569,9 +1540,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     createClientRegion(client, port, false, true);
 
-    datastore.invoke(new SerializableCallable() {
+    datastore.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region custRegion = getCache().getRegion(CUSTOMER);
         custRegion.getAttributesMutator().addCacheListener(new ClientListener());
         return null;
@@ -1579,9 +1550,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     });
 
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
         // Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         // Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
@@ -1598,9 +1569,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
         // Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         // Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
@@ -1626,9 +1597,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     createClientRegion(client, port, false, true);
 
-    datastore.invoke(new SerializableCallable() {
+    datastore.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region custRegion = getCache().getRegion(CUSTOMER);
         custRegion.getAttributesMutator().addCacheListener(new ClientListener());
         return null;
@@ -1640,9 +1611,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
      * Test a no-op commit: put/invalidate
      */
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
         // Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         // Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
@@ -1660,9 +1631,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     /*
      * Validate nothing came through
      */
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
         // Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         // Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
@@ -1680,9 +1651,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    datastore.invoke(new SerializableCallable() {
+    datastore.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
         // Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         // Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
@@ -1707,9 +1678,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     client.invoke(doAPutInTx);
     client.invoke(doAnInvalidateInTx);
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
         // Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         // Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
@@ -1726,9 +1697,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    datastore.invoke(new SerializableCallable() {
+    datastore.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
         // Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         // Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
@@ -1748,9 +1719,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
 
 
-  SerializableCallable validateNoEvents = new SerializableCallable() {
+  SerializableCallable validateNoEvents = new SerializableCallable<Object>() {
     @Override
-    public Object call() throws Exception {
+    public Object call() {
       Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
       // Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
       // Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
@@ -1763,9 +1734,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
   };
 
 
-  SerializableCallable doAPutInTx = new SerializableCallable() {
+  SerializableCallable doAPutInTx = new SerializableCallable<Object>() {
     @Override
-    public Object call() throws Exception {
+    public Object call() {
       Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
       // Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
       // Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
@@ -1779,9 +1750,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
   };
 
 
-  SerializableCallable doAnInvalidateInTx = new SerializableCallable() {
+  SerializableCallable doAnInvalidateInTx = new SerializableCallable<Object>() {
     @Override
-    public Object call() throws Exception {
+    public Object call() {
       Region<CustId, Customer> custRegion = getCache().getRegion(CUSTOMER);
       // Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
       // Region<CustId,Customer> refRegion = getCache().getRegion(D_REFERENCE);
@@ -1809,9 +1780,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     createClientRegion(client, port, false);
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
         Region<Integer, String> r = getGemfireCache().getRegion(D_REFERENCE);
         Region<CustId, Customer> pr = getGemfireCache().getRegion(CUSTOMER);
@@ -1827,9 +1798,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         return null;
       }
     });
-    server1.invoke(new SerializableCallable() {
+    server1.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<Integer, String> r = getGemfireCache().getRegion(D_REFERENCE);
         Region<CustId, Customer> pr = getGemfireCache().getRegion(CUSTOMER);
         assertEquals(new Customer("name10", "address10"), pr.get(new CustId(10)));
@@ -1860,9 +1831,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     TransactionId txId = client.invoke(() -> doTransactionPut(port1));
 
-    SerializableCallable countActiveTx = new SerializableCallable() {
+    SerializableCallable countActiveTx = new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
         return mgr.hostedTransactionsInProgressForTest();
       }
@@ -1896,9 +1867,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     final int port2 = createRegionsAndStartServer(server2, false);
 
 
-    SerializableCallable hostedSize = new SerializableCallable() {
+    SerializableCallable hostedSize = new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
         return mgr.hostedTransactionsInProgressForTest();
       }
@@ -1909,9 +1880,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
 
 
-    final TXId txid = (TXId) client.invoke(new SerializableCallable() {
+    final TXId txid = (TXId) client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         ClientCacheFactory ccf = new ClientCacheFactory();
         ccf.addPoolServer("localhost"/* getServerHostName(Host.getHost(0)) */, port1);
         ccf.addPoolServer("localhost", port2);
@@ -1941,9 +1912,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    SerializableCallable activeTx = new SerializableCallable() {
+    SerializableCallable activeTx = new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
         TXStateProxy tx = mgr.getHostedTXState(txid);
         mgr.getCache().getLogger().info("SWAP:activeTx:" + tx);
@@ -1964,9 +1935,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     int myCount = (Integer) server1.invoke(activeTx) + (Integer) server2.invoke(activeTx);
     assertTrue("expected count to be 11 or 12 but was " + myCount, myCount >= 11 && myCount <= 12);
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
         mgr.resume(txid);
         mgr.commit();
@@ -2034,9 +2005,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     final int port3 = serverOnDatastore ? createRegionsAndStartServer(datastore, false)
         : createRegionOnServer(datastore, false, false);
 
-    final TXId txid = (TXId) client.invoke(new SerializableCallable() {
+    final TXId txid = (TXId) client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
             "true");
         ClientCacheFactory ccf = new ClientCacheFactory();
@@ -2071,9 +2042,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    accessor1.invoke(new SerializableCallable() {
+    accessor1.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         for (CacheServer s : getCache().getCacheServers()) {
           getCache().getLogger().info("SWAP:Stopping " + s);
           s.stop();
@@ -2082,9 +2053,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
         mgr.resume(txid);
         Region<Integer, String> r = getGemfireCache().getRegion(D_REFERENCE);
@@ -2100,18 +2071,18 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    datastore.invoke(new SerializableCallable() {
+    datastore.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
         assertEquals(1, mgr.hostedTransactionsInProgressForTest());
         return null;
       }
     });
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
         mgr.resume(txid);
         Region<Integer, String> r = getGemfireCache().getRegion(D_REFERENCE);
@@ -2140,9 +2111,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     int port = createRegionsAndStartServer(datastore, false);
     createClientRegion(client, port, true);
 
-    datastore.invoke(new SerializableCallable() {
+    datastore.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> pr = getGemfireCache().getRegion(CUSTOMER);
         pr.getAttributesMutator().setCacheLoader(new CacheLoader<CustId, Customer>() {
           @Override
@@ -2159,9 +2130,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
         // Region<Integer, String> r = getGemfireCache().getRegion(D_REFERENCE);
         Region<CustId, Customer> pr = getGemfireCache().getRegion(CUSTOMER);
@@ -2195,17 +2166,17 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     int port = createRegionsAndStartServer(datastore, false);
     createClientRegion(client, port, true);
 
-    datastore.invoke(new SerializableCallable() {
+    datastore.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> pr = getGemfireCache().getRegion(CUSTOMER);
         pr.getAttributesMutator().setCacheWriter(new ServerWriter());
         return null;
       }
     });
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> pr = getGemfireCache().getRegion(CUSTOMER);
         /* CacheTransactionManager mgr = */ getCache().getCacheTransactionManager();
         pr.put(new CustId(0), new Customer("name0", "address0"));
@@ -2324,9 +2295,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     }
 
-    datastore.invoke(new SerializableCallable() {
+    datastore.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         CacheTransactionManager mgr = getCache().getCacheTransactionManager();
         mgr.addListener(new ClientTxListener());
         mgr.setWriter(new ClientTxWriter());
@@ -2337,9 +2308,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         CacheTransactionManager mgr = getCache().getCacheTransactionManager();
         mgr.addListener(new ClientTxListener());
         try {
@@ -2383,10 +2354,10 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     }
     client.invoke(new doOps(false));
 
-    datastore.invoke(new SerializableCallable() {
+    datastore.invoke(new SerializableCallable<Object>() {
       @Override
       @SuppressWarnings("synthetic-access")
-      public Object call() throws Exception {
+      public Object call() {
         CacheTransactionManager mgr = getGemfireCache().getCacheTransactionManager();
         ClientTxListener l = (ClientTxListener) mgr.getListeners()[0];
         assertTrue(l.afterRollbackInvoked);
@@ -2396,9 +2367,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     client.invoke(new doOps(true));
 
-    datastore.invoke(new SerializableCallable() {
+    datastore.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         CacheTransactionManager mgr = getGemfireCache().getCacheTransactionManager();
         ClientTxListener l = (ClientTxListener) mgr.getListeners()[0];
         assertTrue(l.afterCommitInvoked);
@@ -2408,9 +2379,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         CacheTransactionManager mgr = getGemfireCache().getCacheTransactionManager();
         ClientTxListener l = (ClientTxListener) mgr.getListeners()[0];
         assertFalse(l.afterCommitInvoked);
@@ -2441,9 +2412,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     }
 
-    SerializableCallable registerTxListener = new SerializableCallable() {
+    SerializableCallable registerTxListener = new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         getCache().getCacheTransactionManager().addListener(new RedundantListener());
         return null;
       }
@@ -2452,9 +2423,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     datastore1.invoke(registerTxListener);
     datastore2.invoke(registerTxListener);
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> pr = getGemfireCache().getRegion(CUSTOMER);
         getGemfireCache().getCacheTransactionManager().begin();
         pr.put(new CustId(1), new Customer("name1", "address1"));
@@ -2463,9 +2434,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    SerializableCallable listenerInvoked = new SerializableCallable() {
+    SerializableCallable listenerInvoked = new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         RedundantListener l =
             (RedundantListener) getCache().getCacheTransactionManager().getListeners()[0];
         return l.invoked;
@@ -2526,9 +2497,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     }
 
-    SerializableCallable registerFunction = new SerializableCallable() {
+    SerializableCallable registerFunction = new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         FunctionService.registerFunction(new BasicTransactionalFunction());
         return null;
       }
@@ -2539,9 +2510,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       accessor.invoke(registerFunction);
     }
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         FunctionService.registerFunction(new BasicTransactionalFunction());
         Region<CustId, Customer> pr = getGemfireCache().getRegion(CUSTOMER);
         Region<CustId, Customer> r = getGemfireCache().getRegion(D_REFERENCE);
@@ -2583,9 +2554,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     int port = createRegionsAndStartServer(datastore, false);
     createClientRegion(client, port, false);
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> pr = getGemfireCache().getRegion(CUSTOMER);
         getCache().getCacheTransactionManager().begin();
         pr.size();
@@ -2604,7 +2575,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     final int port1 = createRegionsAndStartServer(server1, false);
     final int port2 = createRegionsAndStartServer(server2, false);
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
       public Object call() throws Exception {
         ClientCacheFactory ccf = new ClientCacheFactory();
@@ -2798,7 +2769,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
   @Override
   @Test
-  public void testTXWithRI() throws Exception {}
+  public void testTXWithRI() {}
 
   @Override
   @Test
@@ -2806,7 +2777,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
   @Override
   @Test
-  public void testTXWithRICommitInDatastore() throws Exception {}
+  public void testTXWithRICommitInDatastore() {}
 
   @Override
   @Test
@@ -2835,9 +2806,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     createClientRegion(client, port, false);
     final CustId key = new CustId(1);
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> pr = getCache().getRegion(CUSTOMER);
         assertNull(pr.get(key));
         getCache().getCacheTransactionManager().begin();
@@ -2847,17 +2818,17 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    datastore.invoke(new SerializableCallable() {
+    datastore.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         getCache().close();
         return null;
       }
     });
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         try {
           getCache().getCacheTransactionManager().commit();
           fail("expected exception not thrown");
@@ -2880,9 +2851,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     createRegionOnServer(datastore, false, false);
     createClientRegion(client, port, false);
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> pr = getCache().getRegion(CUSTOMER);
         pr.put(new CustId(1), new Customer("name1", "address"));
         getCache().getCacheTransactionManager().begin();
@@ -2900,9 +2871,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     VM client = host.getVM(1);
 
     int port = createRegionsAndStartServer(server, false);
-    server.invoke(new SerializableCallable() {
+    server.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> pr = getCache().getRegion(CUSTOMER);
         Region<String, String> r = getCache().getRegion(D_REFERENCE);
         pr.getAttributesMutator().addCacheListener(new ServerListener());
@@ -2911,9 +2882,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
     createClientRegion(client, port, false);
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> pr = getCache().getRegion(CUSTOMER);
         Region<String, String> r = getCache().getRegion(D_REFERENCE);
         pr.getAttributesMutator().addCacheListener(new ClientListener());
@@ -2921,9 +2892,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         return null;
       }
     });
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> pr = getCache().getRegion(CUSTOMER);
         Region<String, String> r = getCache().getRegion(D_REFERENCE);
         pr.put(new CustId(1), new Customer("name1", "address1"));
@@ -2951,9 +2922,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         return null;
       }
     });
-    server.invoke(new SerializableCallable() {
+    server.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region<CustId, Customer> pr = getCache().getRegion(CUSTOMER);
         Region<String, String> r = getCache().getRegion(D_REFERENCE);
         ServerListener prl = (ServerListener) pr.getAttributes().getCacheListeners()[0];
@@ -2998,9 +2969,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     VM client = host.getVM(3);
 
     final int port1 = createRegionsAndStartServer(accessor, true);
-    final int port2 = (Integer) datastore1.invoke(new SerializableCallable() {
+    final int port2 = (Integer) datastore1.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         return getRandomAvailableTCPPort();
       }
     });
@@ -3009,9 +2980,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     accessor.invoke(new CreateReplicateRegion("r2"));
 
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         disconnectFromDS();
         System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
             "true");
@@ -3034,9 +3005,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     datastore1.invoke(new CreateReplicateRegion("r1"));
     datastore2.invoke(new CreateReplicateRegion("r2"));
 
-    final TransactionId txId = (TransactionId) client.invoke(new SerializableCallable() {
+    final TransactionId txId = (TransactionId) client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         ClientCache cCache = (ClientCache) getCache();
         Region r1 = cCache.getRegion("r1");
         Region r2 = cCache.getRegion("r2");
@@ -3048,7 +3019,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    datastore1.invoke(new SerializableCallable() {
+    datastore1.invoke(new SerializableCallable<Object>() {
       @Override
       public Object call() throws Exception {
         CacheServer s = getCache().addCacheServer();
@@ -3059,9 +3030,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    accessor.invoke(new SerializableCallable() {
+    accessor.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         getCache().getLogger().info("SWAP:accessor");
         final TXManagerImpl mgr = (TXManagerImpl) getCache().getCacheTransactionManager();
         assertTrue(mgr.isHostedTxInProgress((TXId) txId));
@@ -3082,9 +3053,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         getCache().getLogger().info("SWAP:commiting transaction");
         getCache().getCacheTransactionManager().resume(txId);
         getCache().getCacheTransactionManager().commit();
@@ -3202,7 +3173,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     VM client = host.getVM(1);
     int port = createRegionsAndStartServer(server, false);
     createClientRegion(client, port, false);
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
       public Object call() throws Exception {
         final Region r = getCache().getRegion(CUSTOMER);
@@ -3289,9 +3260,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
 
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region cust = getCache().getRegion(CUSTOMER);
         assertNull(cust.get(new CustId(0)));
         assertNull(cust.get(new CustId(1)));
@@ -3360,9 +3331,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     server2.invoke(suspectStrings);
 
     try {
-      client.invoke(new SerializableCallable() {
+      client.invoke(new SerializableCallable<Object>() {
         @Override
-        public Object call() throws Exception {
+        public Object call() {
           System.setProperty(
               GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints", "true");
           ClientCacheFactory ccf = new ClientCacheFactory(getDistributedSystemProperties());
@@ -3472,9 +3443,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     createClientRegion(client, port, true);
 
-    final TransactionId txId = (TransactionId) client.invoke(new SerializableCallable() {
+    final TransactionId txId = (TransactionId) client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region cust = getCache().getRegion(CUSTOMER);
         assertNull(cust.get(new CustId(0)));
         assertNull(cust.get(new CustId(1)));
@@ -3506,17 +3477,17 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    server2.invoke(new SerializableCallable() {
+    server2.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         disconnectFromDS();
         return null;
       }
     });
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region cust = getCache().getRegion(CUSTOMER);
         try {
           List list = null;
@@ -3559,9 +3530,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     createRegionOnServer(peer2);
     createRegionOnServer(accessor, false, true);
 
-    final TransactionId txId = (TransactionId) peer1.invoke(new SerializableCallable() {
+    final TransactionId txId = (TransactionId) peer1.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         PartitionedRegion r = (PartitionedRegion) getCache().getRegion(CUSTOMER);
         CustId cust = null;
         DistributedMember myId = getCache().getDistributedSystem().getDistributedMember();
@@ -3585,9 +3556,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     assertNotNull(txId);
 
-    accessor.invoke(new SerializableCallable() {
+    accessor.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Execution exe = FunctionService.onMember(((TXId) txId).getMemberId()).setArguments(txId);
         List list = null;
         if (commit) {
@@ -3612,9 +3583,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     createRegionOnServer(server1);
     createRegionOnServer(server2);
 
-    server1.invoke(new SerializableCallable() {
+    server1.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region r = getCache().getRegion(CUSTOMER);
         CacheTransactionManager mgr = getCache().getCacheTransactionManager();
         mgr.begin();
@@ -3642,9 +3613,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     final int port = createRegionsAndStartServer(server, false);
     createClientRegion(client, port, true);
 
-    final TransactionId txId = (TransactionId) client.invoke(new SerializableCallable() {
+    final TransactionId txId = (TransactionId) client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         TXManagerImpl mgr = (TXManagerImpl) getCache().getCacheTransactionManager();
         mgr.setSuspendedTransactionTimeout(1);
         Region r = getCache().getRegion(CUSTOMER);
@@ -3654,20 +3625,10 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         assertTrue(txState.isInProgress());
         r.put(new CustId(101), new Customer("name101", "address101"));
         TransactionId txId = mgr.suspend(MILLISECONDS);
-        WaitCriterion waitForTxTimeout = new WaitCriterion() {
-          @Override
-          public boolean done() {
-            return !txState.isInProgress();
-          }
-
-          @Override
-          public String description() {
-            return "txState stayed in progress indicating that the suspend did not timeout";
-          }
-        };
         // tx should timeout after 1 ms but to deal with loaded machines and thread
         // scheduling latency wait for 10 seconds before reporting an error.
-        GeodeAwaitility.await().untilAsserted(waitForTxTimeout);
+        GeodeAwaitility.await().untilAsserted(() -> assertThat(txState.isInProgress())
+            .as("txState suspend did not timeout").isFalse());
         try {
           mgr.resume(txId);
           fail("expected exception not thrown");
@@ -3677,9 +3638,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         return txId;
       }
     });
-    server.invoke(new SerializableCallable() {
+    server.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         TXManagerImpl mgr = (TXManagerImpl) getCache().getCacheTransactionManager();
         assertNull(mgr.getHostedTXState((TXId) txId));
         assertEquals(0, mgr.hostedTransactionsInProgressForTest());
@@ -3701,9 +3662,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     final int port1 = createRegionsAndStartServer(delegate, true);
     final int port2 = createRegionsAndStartServer(server, false);
 
-    final TXId txid = (TXId) client.invoke(new SerializableCallable() {
+    final TXId txid = (TXId) client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
             "true");
         ClientCacheFactory ccf = new ClientCacheFactory();
@@ -3731,9 +3692,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
         mgr.resume(txid);
         EntryEventImpl event = null;
@@ -3752,9 +3713,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    server.invoke(new SerializableCallable() {
+    server.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
         TXStateProxyImpl txProxy = (TXStateProxyImpl) mgr.getHostedTXState(txid);
         assert txProxy.isRealDealLocal();
@@ -3766,9 +3727,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    delegate.invoke(new SerializableCallable() {
+    delegate.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         for (CacheServer s : getCache().getCacheServers()) {
           getCache().getLogger().info("SWAP:Stopping " + s);
           s.stop();
@@ -3777,9 +3738,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    client.invoke(new SerializableCallable() {
+    client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         TXManagerImpl mgr = getGemfireCache().getTxManager();
         mgr.resume(txid);
         mgr.commit();
@@ -3831,9 +3792,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         }
       }
     }
-    server1.invoke(new SerializableCallable() {
+    server1.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region ref = getCache().getRegion(D_REFERENCE);
         getCache().getLogger().info("SWAP:ADDWRITER:server1");
         ref.getAttributesMutator().setCacheWriter(new ExceptionWriter());
@@ -3841,9 +3802,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    /* final TXId txid = (TXId) */client.invoke(new SerializableCallable() {
+    /* final TXId txid = (TXId) */client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
             "true");
         ClientCacheFactory ccf = new ClientCacheFactory();
@@ -3878,9 +3839,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     });
 
     // make sure tx has not failed over to server2
-    server2.invoke(new SerializableCallable() {
+    server2.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         GemFireCacheImpl cache = getGemfireCache();
         assertEquals(0, cache.getTxManager().hostedTransactionsInProgressForTest());
         return null;
@@ -3922,9 +3883,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     }
 
-    server.invoke(new SerializableCallable() {
+    server.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region ref = getCache().getRegion(D_REFERENCE);
         Region r = getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
         ref.getAttributesMutator().setCacheWriter(new SecurityWriter());
@@ -3932,9 +3893,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       }
     });
 
-    /* final TXId txid = (TXId) */client.invoke(new SerializableCallable() {
+    /* final TXId txid = (TXId) */client.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
             "true");
         ClientCacheFactory ccf = new ClientCacheFactory();
@@ -3975,9 +3936,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     final int port1 = createRegionsAndStartServer(server1, false);
     final int port2 = createRegionsAndStartServer(server2, false);
 
-    SerializableCallable createServerRegionWithInterest = new SerializableCallable() {
+    SerializableCallable createServerRegionWithInterest = new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         RegionFactory rf = getCache().createRegionFactory(RegionShortcut.PARTITION);
         rf.setSubscriptionAttributes(new SubscriptionAttributes(InterestPolicy.CACHE_CONTENT));
         rf.create(regionName);
@@ -3988,9 +3949,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     server2.invoke(createServerRegionWithInterest);
 
     // get two colocated keys on server1
-    final List<String> keys = (List<String>) server1.invoke(new SerializableCallable() {
+    final List<String> keys = (List<String>) server1.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region r = getCache().getRegion(regionName);
         PartitionedRegion pr = (PartitionedRegion) r;
         List<String> server1Keys = new ArrayList<>();
@@ -4026,9 +3987,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         keys.add(event.getKey());
       }
     }
-    client2.invoke(new SerializableCallable() {
+    client2.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
             "true");
         ClientCacheFactory ccf = new ClientCacheFactory();
@@ -4045,9 +4006,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         return null;
       }
     });
-    client1.invoke(new SerializableCallable() {
+    client1.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "bridge.disableShufflingOfEndpoints",
             "true");
         ClientCacheFactory ccf = new ClientCacheFactory();
@@ -4066,9 +4027,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
         return null;
       }
     });
-    client2.invoke(new SerializableCallable() {
+    client2.invoke(new SerializableCallable<Object>() {
       @Override
-      public Object call() throws Exception {
+      public Object call() {
         Region r = getCache().getRegion(regionName);
         CacheListener[] listeners = r.getAttributes().getCacheListeners();
         boolean foundListener = false;
@@ -4076,18 +4037,8 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
           if (listener instanceof ClientListener) {
             foundListener = true;
             final ClientListener clientListener = (ClientListener) listener;
-            WaitCriterion wc = new WaitCriterion() {
-              @Override
-              public boolean done() {
-                return clientListener.keys.containsAll(keys);
-              }
-
-              @Override
-              public String description() {
-                return "expected:" + keys + " found:" + clientListener.keys;
-              }
-            };
-            GeodeAwaitility.await().untilAsserted(wc);
+            GeodeAwaitility.await().untilAsserted(
+                () -> assertThat(clientListener.keys).containsExactlyElementsOf(keys));
           }
         }
         assertTrue(foundListener);
@@ -4208,19 +4159,11 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
   Object verifyTXStateExpired(final DistributedMember myId, final TXManagerImpl txmgr) {
     try {
-      GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
-        @Override
-        public boolean done() {
-          Set states = txmgr.getTransactionsForClient((InternalDistributedMember) myId);
-          getLogWriter()
-              .info("found " + states.size() + " tx states for " + myId);
-          return states.isEmpty();
-        }
-
-        @Override
-        public String description() {
-          return "Waiting for transaction state to expire";
-        }
+      GeodeAwaitility.await().untilAsserted(() -> {
+        Set states = txmgr.getTransactionsForClient((InternalDistributedMember) myId);
+        getLogWriter()
+            .info("found " + states.size() + " tx states for " + myId);
+        assertThat(states).isEmpty();
       });
       return null;
     } finally {
@@ -4269,7 +4212,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
     client1.invoke(() -> verifyClientCacheData(regionName));
 
-    client1.invoke(new SerializableCallable() {
+    client1.invoke(new SerializableCallable<Object>() {
       @Override
       public Object call() throws Exception {
         final CountDownLatch latch1 = new CountDownLatch(1);
@@ -4298,9 +4241,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     // There exists a race that TXState is yet to be removed when client JTA tx is finished.
     // Add the wait before checking the TXState.
     await()
-        .untilAsserted(() -> Assertions
-            .assertThat(txmgr.getTransactionsForClient((InternalDistributedMember) clientId).size())
-            .isEqualTo(0));
+        .untilAsserted(() -> assertThat(
+            txmgr.getTransactionsForClient((InternalDistributedMember) clientId).size())
+                .isEqualTo(0));
   }
 
   private SerializableCallable getClientDM() {
