@@ -24,6 +24,7 @@ import static org.apache.commons.lang3.SerializationUtils.serialize;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -92,12 +93,11 @@ public class ReflectiveObjectInputFilterApiTest {
     if (filter != null) {
       Throwable setSerialFilterStack =
           ((ReflectiveObjectInputFilterApi) api).getSerialFilterStack();
-      assertThat(setSerialFilterStack).as("Throwable setSerialFilterStack").isNull();
-    }
 
-    assertThat(filter)
-        .as("ObjectInputFilter$Config.getSerialFilter()")
-        .isNull();
+      fail(
+          "getSerialFilter returned non-null value. ObjectInputFilter$Config.setSerialFilter())",
+          setSerialFilterStack);
+    }
   }
 
   @Test
