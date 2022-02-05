@@ -111,7 +111,7 @@ fi
 function failMsg2 {
   errln=$1
   echo "ERROR: set_versions script did NOT complete successfully"
-  echo "Comment out any steps that already succeeded (approximately lines 76-$(( errln - 1 ))) and try again"
+  echo "Comment out any steps that already succeeded (approximately lines 87-$(( errln - 1 ))) and try again"
 }
 trap 'failMsg2 $LINENO' ERR
 

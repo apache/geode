@@ -24,7 +24,7 @@ usage() {
     exit 1
 }
 
-if [[ "$2" == "" ]] ; then
+if [[ "$3" == "" ]] ; then
     usage
 fi
 
@@ -38,7 +38,7 @@ shift 2
 function failMsg {
   errln=$1
   echo "ERROR: set_copyright script did NOT complete successfully"
-  echo "Comment out any steps that already succeeded (approximately lines 37-$(( errln - 1 ))) and try again"
+  echo "Comment out any steps that already succeeded (approximately lines 46-$(( errln - 1 ))) and try again"
 }
 trap 'failMsg $LINENO' ERR
 
