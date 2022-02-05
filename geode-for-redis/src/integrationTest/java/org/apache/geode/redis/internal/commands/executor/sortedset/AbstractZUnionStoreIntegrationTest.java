@@ -308,7 +308,8 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     Map<String, Double> scores2 = makeScoreMap(10, x -> (double) (9 - x));
     jedis.zadd(KEY2, scores2);
 
-    final Set<Tuple> expectedResults = convertToTuples(scores1, (i, x) -> (x * 2.0) + ((9 - x) * 1.5));
+    final Set<Tuple> expectedResults =
+        convertToTuples(scores1, (i, x) -> (x * 2.0) + ((9 - x) * 1.5));
 
     jedis.zunionstore(NEW_SET, new ZParams().weights(2.0, 1.5), KEY1, KEY2);
 

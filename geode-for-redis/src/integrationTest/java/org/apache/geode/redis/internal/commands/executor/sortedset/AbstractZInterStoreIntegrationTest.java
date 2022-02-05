@@ -375,7 +375,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     assertThat(jedis.zinterstore(NEW_SET, new ZParams().weights(1, 2), KEY1, KEY2))
         .isEqualTo(expectedResults.size());
 
-    final List <Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
     assertThat(results).containsExactlyInAnyOrderElementsOf(expectedResults);
   }
 

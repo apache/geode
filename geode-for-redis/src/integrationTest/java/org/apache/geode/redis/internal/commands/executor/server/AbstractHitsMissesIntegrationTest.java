@@ -26,8 +26,8 @@ import java.util.function.Consumer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.args.BitOP;
 
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.RedisTestHelper;

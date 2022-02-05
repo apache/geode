@@ -29,7 +29,6 @@ import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.util.JedisClusterCRC16;

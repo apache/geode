@@ -70,7 +70,7 @@ public class MockSubscriber extends JedisPubSub {
       // Kludge due to socket becoming private in jedis 4.1.1
       // TODO find a safe public way of getting local socket address
       // Would client.getHostAndPort().getHost() be sufficient?
-      final Socket socket = (Socket)client.getClass().getField("socket").get(client);
+      final Socket socket = (Socket) client.getClass().getField("socket").get(client);
       localSocketAddress = socket.getLocalSocketAddress().toString();
     } catch (final NoSuchFieldException | IllegalAccessException ex) {
       throw new RuntimeException("Error in accessing private field 'socket' via reflection", ex);
