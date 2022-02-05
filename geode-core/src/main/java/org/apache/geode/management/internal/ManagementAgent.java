@@ -18,7 +18,6 @@ package org.apache.geode.management.internal;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -563,11 +562,9 @@ public class ManagementAgent {
     return remoteStreamExporter;
   }
 
-  private static class GemFireRMIServerSocketFactory
-      implements RMIServerSocketFactory, Serializable {
+  private static class GemFireRMIServerSocketFactory implements RMIServerSocketFactory {
 
-    private static final long serialVersionUID = -811909050641332716L;
-    private final transient SocketCreator sc;
+    private final SocketCreator sc;
     private final InetAddress bindAddress;
 
     public GemFireRMIServerSocketFactory(SocketCreator sc, InetAddress bindAddress) {
