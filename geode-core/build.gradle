@@ -364,6 +364,7 @@ dependencies {
   integrationTestImplementation('org.apache.logging.log4j:log4j-core')
   integrationTestImplementation('pl.pragmatists:JUnitParams')
   integrationTestImplementation('com.tngtech.archunit:archunit-junit4')
+  integrationTestImplementation('org.junit-pioneer:junit-pioneer')
 
   integrationTestRuntimeOnly('org.apache.derby:derby')
   integrationTestRuntimeOnly('xerces:xercesImpl')

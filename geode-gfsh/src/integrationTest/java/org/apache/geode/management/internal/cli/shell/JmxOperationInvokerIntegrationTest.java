@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.cli.shell;
 import static java.lang.String.valueOf;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
@@ -108,6 +109,19 @@ public class JmxOperationInvokerIntegrationTest {
 
   @Test
   public void canConnectToLocatorWithSslAndEndpointValidationEnabled() throws Exception {
+    properties.putAll(generateSecurityProperties(true, keyStoreFile, trustStoreFile));
+
+    final Locator locator = Locator.startLocatorAndDS(locatorPort, null, properties);
+    try {
+      new JmxOperationInvoker(hostName, jmxPort, properties).stop();
+    } finally {
+      locator.stop();
+    }
+  }
+
+  @Test
+  public void canConnectToLocatorWithSslAndEndpointValidationEnabledBindAddress() throws Exception {
+    properties.setProperty(JMX_MANAGER_BIND_ADDRESS, hostName);
     properties.putAll(generateSecurityProperties(true, keyStoreFile, trustStoreFile));
 
     final Locator locator = Locator.startLocatorAndDS(locatorPort, null, properties);
