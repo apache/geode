@@ -468,7 +468,11 @@ fi
 
 if [ -z "$LATER" ] ; then
   #also update benchmark baseline for develop to this new minor
-  sed -e "s/^  baseline_version_default:.*/  baseline_version_default: '${VERSION}'/" \
+  sed \
+    -e "s/^    baseline_version:.*/    baseline_version: '${VERSION}'/" \
+    -e "s/^  baseline_version_default:.*/  baseline_version_default: '${VERSION}'/" \
+    -e "s/^    baseline_branch:.*/    baseline_branch: ''/" \
+    -e "s/^  baseline_branch_default:.*/  baseline_branch_default: ''/" \
     -i.bak ci/pipelines/shared/jinja.variables.yml
   rm ci/pipelines/shared/jinja.variables.yml.bak
   BENCHMSG=" and set as Benchmarks baseline"
@@ -507,7 +511,10 @@ else
   #also update benchmark baseline for support branch to its new minor
   sed \
     -e "s/^  baseline_version:.*/  baseline_version: '${VERSION}'/" \
+    -e "s/^    baseline_version:.*/    baseline_version: '${VERSION}'/" \
     -e "s/^  baseline_version_default:.*/  baseline_version_default: '${VERSION}'/" \
+    -e "s/^    baseline_branch:.*/    baseline_branch: ''/" \
+    -e "s/^  baseline_branch_default:.*/  baseline_branch_default: ''/" \
     -i.bak ci/pipelines/shared/jinja.variables.yml
   rm ci/pipelines/shared/jinja.variables.yml.bak
   BENCHMSG2=" and set as Benchmarks baseline"
