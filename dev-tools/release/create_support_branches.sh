@@ -18,17 +18,22 @@
 set -e
 
 usage() {
-    echo "Usage: create_support_branches.sh -v version_number -g your_github_username"
+    echo "Usage: create_support_branches.sh -j ticket -v version_number -g your_github_username"
+    echo "  -j   The GEODE-nnnnn Jira identifier for this release"
     echo "  -v   The #.# version number of the support branch to create"
     echo "  -g   Your github username"
     exit 1
 }
 
+JIRA=""
 VERSION_MM=""
 GITHUB_USER=""
 
-while getopts ":v:g:" opt; do
+while getopts ":j:v:g:" opt; do
   case ${opt} in
+    j )
+      JIRA=$OPTARG
+      ;;
     v )
       VERSION_MM=$OPTARG
       ;;
@@ -41,7 +46,7 @@ while getopts ":v:g:" opt; do
   esac
 done
 
-if [[ ${VERSION_MM} == "" ]] || [[ ${GITHUB_USER} == "" ]] ; then
+if [[ ${JIRA} == "" ]] || [[ ${VERSION_MM} == "" ]] || [[ ${GITHUB_USER} == "" ]] ; then
     usage
 fi
 
@@ -116,7 +121,7 @@ trap 'failMsg2 $LINENO' ERR
 
 cd ${GEODE}/../..
 set -x
-${0%/*}/set_copyright.sh ${GEODE} ${GEODE_DEVELOP} ${GEODE_EXAMPLES} ${GEODE_EXAMPLES_DEVELOP} ${GEODE_NATIVE} ${GEODE_BENCHMARKS}
+${0%/*}/set_copyright.sh -j $JIRA ${GEODE} ${GEODE_DEVELOP} ${GEODE_EXAMPLES} ${GEODE_EXAMPLES_DEVELOP} ${GEODE_NATIVE} ${GEODE_BENCHMARKS}
 set +x
 
 
@@ -216,7 +221,7 @@ rm gradle.properties.bak
 set -x
 git add gradle.properties
 git diff --staged --color | cat
-git commit -m "pair develop examples with ${NEWVERSION} now that support/${VERSION_MM} has been created"
+git commit -m "$JIRA: pair develop examples with ${NEWVERSION} now that support/${VERSION_MM} has been created"
 git push -u origin
 set +x
 
@@ -236,7 +241,7 @@ git add README.md
 cd ${GEODE}
 [ ! -r CODEOWNERS ] || git rm CODEOWNERS
 [ ! -r CODEWATCHERS ] || git rm CODEWATCHERS
-git commit -m "remove outdated copies of release scripts to ensure they are not run by accident + remove CODEOWNERS to avoid confusion"
+git commit -m "$JIRA: remove outdated copies of release scripts to ensure they are not run by accident + remove CODEOWNERS to avoid confusion"
 git push -u origin
 set +x
 
@@ -247,7 +252,7 @@ echo "Setting version on support/${VERSION_MM}"
 echo "============================================================"
 cd ${GEODE}/../..
 set -x
-${0%/*}/set_versions.sh -v ${VERSION_MM}.0 -s -w "${WORKSPACE}"
+${0%/*}/set_versions.sh -j $JIRA -v ${VERSION_MM}.0 -s -w "${WORKSPACE}"
 set +x
 
 

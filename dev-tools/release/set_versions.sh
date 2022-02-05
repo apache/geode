@@ -18,17 +18,21 @@
 set -e
 
 usage() {
-    echo "Usage: set_versions.sh -v version_number [-s]"
+    echo "Usage: set_versions.sh -j ticket -v version_number [-s]"
+    echo "  -j   The GEODE-nnnnn Jira identifier for this release"
     echo "  -v   The #.#.# version number for the next release"
     echo "  -s   configure examples to use latest snapshot instead of release"
     exit 1
 }
 
+JIRA=""
 FULL_VERSION=""
 
-
-while getopts ":v:snw:" opt; do
+while getopts ":j:v:snw:" opt; do
   case ${opt} in
+    j )
+      JIRA=$OPTARG
+      ;;
     v )
       VERSION=$OPTARG
       ;;
@@ -48,7 +52,7 @@ while getopts ":v:snw:" opt; do
   esac
 done
 
-if [[ ${VERSION} == "" ]] ; then
+if [[ ${JIRA} == "" ]] || [[ ${VERSION} == "" ]] ; then
     usage
 fi
 
@@ -139,7 +143,7 @@ set -x
 git add gradle.properties geode-book/config.yml ci/docker/cache_dependencies.sh ci/images/google-geode-builder/scripts/cache_dependencies.sh
 if [ $(git diff --staged | wc -l) -gt 0 ] ; then
   git diff --staged --color | cat
-  git commit -m "Bumping version to ${VERSION}"
+  git commit -m "$JIRA: Bumping version to ${VERSION}"
   [ "$NOPUSH" = "true" ] || git push -u origin
 fi
 set +x
@@ -165,7 +169,7 @@ set -x
 git add .
 if [ $(git diff --staged | wc -l) -gt 0 ] ; then
   git diff --staged --color | cat
-  git commit -m "Bumping version to ${VERSION}"
+  git commit -m "$JIRA: Bumping version to ${VERSION}"
   [ "$NOPUSH" = "true" ] || git push -u origin
 fi
 set +x
@@ -189,7 +193,7 @@ set -x
 git add gradle.properties
 if [ $(git diff --staged | wc -l) -gt 0 ] ; then
   git diff --staged --color | cat
-  git commit -m "Bumping version to ${VERSION}"
+  git commit -m "$JIRA: Bumping version to ${VERSION}"
   [ "$NOPUSH" = "true" ] || git push -u origin
 fi
 set +x

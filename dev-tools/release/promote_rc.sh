@@ -18,19 +18,24 @@
 set -e
 
 usage() {
-    echo "Usage: promote_rc.sh -v version_number -k your_full_gpg_public_key -g your_github_username"
+    echo "Usage: promote_rc.sh -j ticket -v version_number -k your_full_gpg_public_key -g your_github_username"
+    echo "  -j   The GEODE-nnnnn Jira identifier for this release"
     echo "  -v   The #.#.#.RC# version number to ship"
     echo "  -k   Your 8 digit GPG key id (the last 8 digits of your gpg fingerprint)"
     echo "  -g   Your github username"
     exit 1
 }
 
+JIRA=""
 FULL_VERSION=""
 SIGNING_KEY=""
 GITHUB_USER=""
 
-while getopts ":v:k:g:" opt; do
+while getopts ":j:v:k:g:" opt; do
   case ${opt} in
+    j )
+      JIRA=$OPTARG
+      ;;
     v )
       FULL_VERSION=$OPTARG
       ;;
@@ -46,7 +51,7 @@ while getopts ":v:k:g:" opt; do
   esac
 done
 
-if [[ ${FULL_VERSION} == "" ]] || [[ ${SIGNING_KEY} == "" ]] || [[ ${GITHUB_USER} == "" ]]; then
+if [[ ${JIRA} == "" ]] || [[ ${FULL_VERSION} == "" ]] || [[ ${SIGNING_KEY} == "" ]] || [[ ${GITHUB_USER} == "" ]]; then
     usage
 fi
 
@@ -153,7 +158,7 @@ cd ${SVN_DIR}/../..
 svn update
 svn mv dev/geode/${FULL_VERSION} release/geode/${VERSION}
 cp dev/geode/KEYS release/geode/KEYS
-svn commit -m "Releasing Apache Geode ${VERSION} distribution"
+svn commit -m "$JIRA: Releasing Apache Geode ${VERSION} distribution"
 set +x
 
 
@@ -231,7 +236,7 @@ else
   set -x
   git add apache-geode.rb
   git diff --staged --color | cat
-  git commit -m "apache-geode ${VERSION}"
+  git commit -m "$JIRA: apache-geode ${VERSION}"
   git push -u myfork
   set +x
 fi
@@ -255,7 +260,7 @@ rm Dockerfile.bak
 set -x
 git add Dockerfile
 git diff --staged --color | cat
-git commit -m "update Dockerfile to apache-geode ${VERSION}"
+git commit -m "$JIRA: update Dockerfile to apache-geode ${VERSION}"
 git push
 set +x
 
@@ -279,7 +284,7 @@ rm $(find . -name '*.bak')
 set -x
 git add .
 git diff --staged --color | cat
-git commit -m "update Dockerfile and other variables to apache-geode ${VERSION}"
+git commit -m "$JIRA: update Dockerfile and other variables to apache-geode ${VERSION}"
 git push
 set +x
 
@@ -370,7 +375,7 @@ if [ -z "$LATER" ] ; then
   git add .
   if [ $(git diff --staged | wc -l) -gt 0 ] ; then
     git diff --staged --color | cat
-    git commit -m "Bumping Geode version to ${VERSION} for CI"
+    git commit -m "$JIRA: Bumping Geode version to ${VERSION} for CI"
     git push -u myfork
   fi
   set +x
@@ -391,7 +396,7 @@ rm gradle.properties.bak
 set -x
 git add gradle.properties
 git diff --staged --color | cat
-git commit -m 'Revert "temporarily point to staging repo for CI purposes"'
+git commit -m "Revert $JIRA: "'"temporarily point to staging repo for CI purposes"'
 git push
 set +x
 
@@ -473,7 +478,7 @@ fi
 set -x
 git add settings.gradle
 git diff --staged --color | cat
-git commit -m "add ${VERSION} to old versions${BENCHMSG} on develop"
+git commit -m "$JIRA: add ${VERSION} to old versions${BENCHMSG} on develop"
 git push -u myfork
 set +x
 
@@ -512,7 +517,7 @@ fi
 set -x
 git add settings.gradle
 git diff --staged --color | cat
-git commit -m "add ${VERSION} to old versions${BENCHMSG2} on support/$VERSION_MM"
+git commit -m "$JIRA: add ${VERSION} to old versions${BENCHMSG2} on support/$VERSION_MM"
 git push
 set +x
 
@@ -538,7 +543,7 @@ if [ -z "$LATER" ] ; then
     git add infrastructure/scripts/aws/run_against_baseline.sh
     if [ $(git diff --staged | wc -l) -gt 0 ] ; then
       git diff --staged --color | cat
-      git commit -m "update default benchmark baseline on $branch"
+      git commit -m "$JIRA: update default benchmark baseline on $branch"
       git push
     fi
     set +x
@@ -562,7 +567,7 @@ rm -f ../did.remove
 (ls | grep '^[0-9]'; cat ../keep ../keep)|sort|uniq -u|while read oldVersion; do
     set -x
     svn rm $oldVersion
-    svn commit -m "remove $oldVersion from mirrors (it is still available at http://archive.apache.org/dist/geode)"
+    svn commit -m "$JIRA: remove $oldVersion from mirrors (it is still available at http://archive.apache.org/dist/geode)"
     set +x
     [ ! -r ../did.remove ] || echo -n " and " >> ../did.remove
     echo -n $oldVersion >> ../did.remove
@@ -577,7 +582,7 @@ NEWVERSION="${VERSION_MM}.$(( PATCH + 1 ))"
 echo "============================================================"
 echo -n "Bumping version to ${NEWVERSION}"
 cd "${WORKSPACE}/.."
-${0%/*}/set_versions.sh -v ${NEWVERSION} -s -w "${WORKSPACE}"
+${0%/*}/set_versions.sh -j $JIRA -v ${NEWVERSION} -s -w "${WORKSPACE}"
 
 
 echo ""
