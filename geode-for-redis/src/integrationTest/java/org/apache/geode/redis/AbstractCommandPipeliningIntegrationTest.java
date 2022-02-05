@@ -20,6 +20,7 @@ import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CL
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -55,27 +56,25 @@ public abstract class AbstractCommandPipeliningIntegrationTest implements RedisI
 
   @Test
   public void whenPipelining_commandResponsesAreNotCorrupted() {
-    List<String> expectedMessages = Arrays.asList("hello");
+    final List<String> expectedMessages = Collections.singletonList("hello");
 
-    MockSubscriber mockSubscriber = new MockSubscriber();
+    final MockSubscriber mockSubscriber = new MockSubscriber();
 
-    Runnable runnable = () -> {
-      subscriber.subscribe(mockSubscriber, "salutations");
-    };
+    final Runnable runnable = () -> subscriber.subscribe(mockSubscriber, "salutations");
 
-    Thread subscriberThread = new Thread(runnable);
+    final Thread subscriberThread = new Thread(runnable);
     subscriberThread.start();
     waitFor(() -> mockSubscriber.getSubscribedChannels() == 1);
 
     publisher.sadd("foo", "bar");
 
     // Publish and smembers in a pipeline
-    Pipeline pipe = publisher.pipelined();
+    final Pipeline pipe = publisher.pipelined();
 
     pipe.publish("salutations", "hello");
     pipe.smembers("foo");
 
-    List<Object> responses = pipe.syncAndReturnAll();
+    final List<Object> responses = pipe.syncAndReturnAll();
 
     GeodeAwaitility.await().untilAsserted(
         () -> assertThat(mockSubscriber.getReceivedMessages()).isEqualTo(expectedMessages));
@@ -87,18 +86,21 @@ public abstract class AbstractCommandPipeliningIntegrationTest implements RedisI
 
   @Test
   public void should_returnResultsOfPipelinedCommands_inCorrectOrder() {
-    Jedis jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    final Jedis jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
     final int NUMBER_OF_COMMANDS_IN_PIPELINE = 100;
     int numberOfPipeLineRequests = 1000;
 
-    jedis.set("x", "-1");
     do {
-      Pipeline p = jedis.pipelined();
+      // use a unique key for each pipeline for incrementing
+      final String key = "P" + numberOfPipeLineRequests;
+      jedis.set(key, "-1");
+
+      final Pipeline p = jedis.pipelined();
       for (int i = 0; i < NUMBER_OF_COMMANDS_IN_PIPELINE; i++) {
-        p.incr("x");
+        p.incr(key);
       }
 
-      List<Object> results = p.syncAndReturnAll();
+      final List<Object> results = p.syncAndReturnAll();
 
       verifyResultOrder(NUMBER_OF_COMMANDS_IN_PIPELINE, results);
       numberOfPipeLineRequests--;
@@ -108,16 +110,16 @@ public abstract class AbstractCommandPipeliningIntegrationTest implements RedisI
     jedis.close();
   }
 
-  private void verifyResultOrder(final int numberOfCommandInPipeline, List<Object> results) {
+  private void verifyResultOrder(final int numberOfCommandInPipeline, final List<Object> results) {
     for (int i = 0; i < numberOfCommandInPipeline; i++) {
       final Long expected = (long) i;
       final long currentVal = (long) results.get(i);
 
-      assertThat(currentVal).isEqualTo(expected);
+      assertThat(currentVal).as("Results: " + results).isEqualTo(expected);
     }
   }
 
-  private void waitFor(Callable<Boolean> booleanCallable) {
+  private void waitFor(final Callable<Boolean> booleanCallable) {
     GeodeAwaitility.await()
         .ignoreExceptions() // ignoring socket closed exceptions
         .until(booleanCallable);
