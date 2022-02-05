@@ -17,6 +17,7 @@ package org.apache.geode.redis.mocks;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.lang.reflect.Field;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -65,17 +66,18 @@ public class MockSubscriber extends JedisPubSub {
   }
 
   @Override
-  public void proceed(final Connection client, final String... channels) {
+  public void proceed(final Connection connection, final String... channels) {
     try {
       // Kludge due to socket becoming private in jedis 4.1.1
       // TODO find a safe public way of getting local socket address
-      // Would client.getHostAndPort().getHost() be sufficient?
-      final Socket socket = (Socket) client.getClass().getField("socket").get(client);
+      final Field privateSocketField = Connection.class.getDeclaredField("socket");
+      privateSocketField.setAccessible(true);
+      final Socket socket = (Socket) privateSocketField.get(connection);
       localSocketAddress = socket.getLocalSocketAddress().toString();
     } catch (final NoSuchFieldException | IllegalAccessException ex) {
       throw new RuntimeException("Error in accessing private field 'socket' via reflection", ex);
     }
-    super.proceed(client, channels);
+    super.proceed(connection, channels);
   }
 
   private void switchThreadName(String suffix) {

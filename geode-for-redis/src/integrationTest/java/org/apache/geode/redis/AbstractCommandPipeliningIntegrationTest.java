@@ -110,8 +110,8 @@ public abstract class AbstractCommandPipeliningIntegrationTest implements RedisI
 
   private void verifyResultOrder(final int numberOfCommandInPipeline, List<Object> results) {
     for (int i = 0; i < numberOfCommandInPipeline; i++) {
-      String expected = String.valueOf(i);
-      String currentVal = (String) results.get(i);
+      final Long expected = (long) i;
+      final long currentVal = (long) results.get(i);
 
       assertThat(currentVal).isEqualTo(expected);
     }
