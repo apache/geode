@@ -185,14 +185,14 @@ public class DUnitLauncher {
   }
 
   private static boolean runClassloaderIsolated() {
-    return Boolean.parseBoolean(System.getProperty("CLASSLOADER_ISOLATED", "true"))
+    return Boolean.parseBoolean(System.getProperty("classloader.isolated"))
         && RUN_VM_CLASSLOADER_ISOLATED;
   }
 
   public static void launchIfNeeded(int vmCount, boolean launchLocator,
       boolean classloaderIsolated) {
     NUM_VMS = vmCount;
-    launchIfNeeded(launchLocator, classloaderIsolated);
+    launchIfNeeded(launchLocator, classloaderIsolated && runClassloaderIsolated());
   }
 
   /**

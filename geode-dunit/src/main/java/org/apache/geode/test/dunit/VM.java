@@ -78,7 +78,7 @@ public class VM implements Serializable {
 
   private final transient ChildVMLauncher childVMLauncher;
 
-  private boolean classLoaderIsolated = false;
+  private final boolean classLoaderIsolated;
 
   /**
    * Returns the {@code VM} identity. For {@link StandAloneDUnitEnv} the number returned is a

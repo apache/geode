@@ -261,6 +261,7 @@ distributedTest {
   environment 'GEODE_DISTRIBUTED_TEST_MODULE_NAME', project.getName()
   environment 'GEODE_DISTRIBUTED_TEST_HOME', "${project(':geode-assembly').buildDir}/install/apache-geode-distributed-testing"
   environment 'CLASSLOADER_ISOLATED' , 'true'
+  systemProperty 'classloader.isolated', System.getProperty("classloader.isolated", "false")
 }
 
 // Make precheckin task run all validation tests for checking in code.
