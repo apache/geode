@@ -15,15 +15,22 @@
 
 package org.apache.geode.internal.tcp;
 
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.TreeMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 import javax.crypto.AEADBadTagException;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLServerSocketFactory;
 
 import org.apache.commons.io.HexDump;
 
@@ -230,5 +237,53 @@ public class BufferDebugging {
           String.format("(Failed to format content; position: %d, limit: %d)", position, limit);
     }
     return result;
+  }
+
+  public static void setCipher(final Properties securityProperties) {
+    /*
+     * Null ciphers:
+     * SSL_RSA_WITH_NULL_MD5
+     * SSL_RSA_WITH_NULL_SHA
+     * TLS_ECDHE_ECDSA_WITH_NULL_SHA
+     * TLS_ECDHE_RSA_WITH_NULL_SHA
+     * TLS_ECDH_ECDSA_WITH_NULL_SHA
+     * TLS_ECDH_RSA_WITH_NULL_SHA
+     * TLS_RSA_WITH_NULL_SHA256
+     */
+    if (ALLOW_NULL_CIPHER) {
+      securityProperties.setProperty(SSL_CIPHERS, "SSL_RSA_WITH_NULL_MD5");
+    }
+  }
+
+  /*
+   * Run this in a JVM to see what ciphers are available.
+   */
+  public static void listCiphers()
+      throws Exception {
+    SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+
+    String[] defaultCiphers = ssf.getDefaultCipherSuites();
+    String[] availableCiphers = ssf.getSupportedCipherSuites();
+
+    TreeMap ciphers = new TreeMap();
+
+    for (int i = 0; i < availableCiphers.length; ++i)
+      ciphers.put(availableCiphers[i], Boolean.FALSE);
+
+    for (int i = 0; i < defaultCiphers.length; ++i)
+      ciphers.put(defaultCiphers[i], Boolean.TRUE);
+
+    System.out.println("Default\tCipher");
+    for (Iterator i = ciphers.entrySet().iterator(); i.hasNext();) {
+      Map.Entry cipher = (Map.Entry) i.next();
+
+      if (Boolean.TRUE.equals(cipher.getValue()))
+        System.out.print('*');
+      else
+        System.out.print(' ');
+
+      System.out.print('\t');
+      System.out.println(cipher.getKey());
+    }
   }
 }

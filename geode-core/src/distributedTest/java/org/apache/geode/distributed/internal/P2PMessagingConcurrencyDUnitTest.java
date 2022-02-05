@@ -48,6 +48,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.tcp.BufferDebugging;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedExecutorServiceRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -397,7 +398,9 @@ public class P2PMessagingConcurrencyDUnitTest {
       memberStore.withCertificate("member", serverCertificate);
       memberStore.trust("ca", ca);
       // we want to exercise the ByteBufferSharing code paths; we don't care about client auth etc
-      securityProperties = memberStore.propertiesWith("all", false, false);
+      final Properties props = memberStore.propertiesWith("all", false, false);
+      BufferDebugging.setCipher(props);
+      securityProperties = props;
     }
     return securityProperties;
   }
