@@ -22,7 +22,6 @@ import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
 import static org.apache.commons.lang3.JavaVersion.JAVA_9;
 import static org.apache.commons.lang3.SerializationUtils.serialize;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
-import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 import static org.apache.geode.internal.serialization.filter.SerialFilterAssertions.assertThatSerialFilterIsNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -33,7 +32,6 @@ import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
@@ -98,27 +96,10 @@ public class ReflectiveObjectInputFilterApiTest {
 
     Object filter = api.getSerialFilter();
 
-    ReflectiveObjectInputFilterApi apiImpl = (ReflectiveObjectInputFilterApi) api;
-    List<Throwable> stackTraces = apiImpl.getSerialFilterStackTraces();
-
-    assertThat(filter)
-        .withFailMessage(formatFailMessage(filter, stackTraces))
-        .isNull();
+    assertThat(filter).isNull();
   }
 
-  private String formatFailMessage(Object filter, List<Throwable> stackTraces) {
-    StringBuilder formattedStackTraces = new StringBuilder();
-    for (Throwable stackTrace : stackTraces) {
-      formattedStackTraces.append(System.lineSeparator());
-      formattedStackTraces.append(getStackTrace(stackTrace));
-    }
-    return String.format(
-        "getSerialFilter returned non-null value %s. Stack traces for setSerialFilter: '%s'.",
-        filter,
-        formattedStackTraces);
-  }
-
-  // @Test
+  @Test
   public void getObjectInputFilterReturnsNullWhenFilterDoesNotExist()
       throws IllegalAccessException, InvocationTargetException, IOException {
     Serializable object = "hello";
