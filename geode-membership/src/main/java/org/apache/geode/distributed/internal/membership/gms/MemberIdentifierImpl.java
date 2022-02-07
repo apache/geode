@@ -633,7 +633,6 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
 
   public void toDataPre_GFE_9_0_0_0(DataOutput out, SerializationContext context)
       throws IOException {
-    // Assert.assertTrue(vmKind > 0);
     // NOTE: If you change the serialized format of this class
     // then bump Connection.HANDSHAKE_VERSION since an
     // instance of this class is sent during Connection handshake.
@@ -676,7 +675,14 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
         durableId == null ? 300 : memberData.getDurableTimeout(),
         out);
 
-    short version = memberData.getVersionOrdinal();
+    final short version;
+    if (context.getSerializationVersion().isNewerThan(KnownVersion.GFE_90)) {
+      version = memberData.getVersionOrdinal();
+    } else {
+      // This version of geode-native could not parse the longer version ordinals.
+      // Let's make these older clients think the server is still 1.14.
+      version = KnownVersion.GEODE_1_14_0.ordinal();
+    }
     VersioningIO.writeOrdinal(out, version, true);
   }
 
