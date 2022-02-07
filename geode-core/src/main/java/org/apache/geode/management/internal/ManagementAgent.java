@@ -12,10 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.management.internal;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 import java.io.IOException;
-import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -50,6 +52,7 @@ import javax.management.remote.rmi.RMIServerImpl;
 import com.healthmarketscience.rmiio.exporter.RemoteStreamExporter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.VisibleForTesting;
@@ -92,6 +95,8 @@ public class ManagementAgent {
   private static final Logger logger = LogService.getLogger();
   public static final String SPRING_PROFILES_ACTIVE = "spring.profiles.active";
 
+  static final String JAVA_RMI_SERVER_HOSTNAME = "java.rmi.server.hostname";
+
   /**
    * True if running. Protected by synchronizing on this Manager instance. I used synchronization
    * because I think we'll want to hold the same synchronize while configuring, starting, and
@@ -101,7 +106,6 @@ public class ManagementAgent {
   private Registry registry;
 
   private JMXConnectorServer jmxConnectorServer;
-  private JMXShiroAuthenticator shiroAuthenticator;
   private final DistributionConfig config;
   private final SecurityService securityService;
   private final InternalCache cache;
@@ -211,7 +215,7 @@ public class ManagementAgent {
         } else {
           System.setProperty(SPRING_PROFILES_ACTIVE, "pulse.authentication.gemfire");
         }
-      } else if (StringUtils.isNotBlank(pwFile)) {
+      } else if (isNotBlank(pwFile)) {
         System.setProperty(SPRING_PROFILES_ACTIVE, "pulse.authentication.gemfire");
       }
     }
@@ -302,9 +306,9 @@ public class ManagementAgent {
   }
 
   private String getHost(final String bindAddress) throws UnknownHostException {
-    if (StringUtils.isNotBlank(config.getJmxManagerHostnameForClients())) {
+    if (isNotBlank(config.getJmxManagerHostnameForClients())) {
       return config.getJmxManagerHostnameForClients();
-    } else if (StringUtils.isNotBlank(bindAddress)) {
+    } else if (isNotBlank(bindAddress)) {
       return InetAddress.getByName(bindAddress).getHostAddress();
     } else {
       return LocalHostUtil.getLocalHost().getHostAddress();
@@ -327,18 +331,13 @@ public class ManagementAgent {
     // get the port for RMI Registry and RMI Connector Server
     port = config.getJmxManagerPort();
     final String hostname;
-    final InetAddress bindAddr;
+    final InetAddress bindAddress;
     if (StringUtils.isBlank(config.getJmxManagerBindAddress())) {
       hostname = LocalHostUtil.getLocalHostName();
-      bindAddr = null;
+      bindAddress = null;
     } else {
       hostname = config.getJmxManagerBindAddress();
-      bindAddr = InetAddress.getByName(hostname);
-    }
-
-    String jmxManagerHostnameForClients = config.getJmxManagerHostnameForClients();
-    if (StringUtils.isNotBlank(jmxManagerHostnameForClients)) {
-      System.setProperty("java.rmi.server.hostname", jmxManagerHostnameForClients);
+      bindAddress = InetAddress.getByName(hostname);
     }
 
     final SocketCreator socketCreator =
@@ -346,12 +345,15 @@ public class ManagementAgent {
 
     final boolean ssl = socketCreator.forClient().useSSL();
 
+    setRmiServerHostname(
+        getRmiServerHostname(config.getJmxManagerHostnameForClients(), hostname, ssl));
+
     if (logger.isDebugEnabled()) {
       logger.debug("Starting jmx manager agent on port {}{}", port,
-          (bindAddr != null ? (" bound to " + bindAddr) : "") + (ssl ? " using SSL" : ""));
+          (bindAddress != null ? (" bound to " + bindAddress) : "") + (ssl ? " using SSL" : ""));
     }
     rmiClientSocketFactory = ssl ? new ContextAwareSSLRMIClientSocketFactory() : null;
-    rmiServerSocketFactory = new GemFireRMIServerSocketFactory(socketCreator, bindAddr);
+    rmiServerSocketFactory = new GemFireRMIServerSocketFactory(socketCreator, bindAddress);
 
     // Following is done to prevent rmi causing stop the world gcs
     System.setProperty("sun.rmi.dgc.server.gcInterval", Long.toString(Long.MAX_VALUE - 1));
@@ -440,11 +442,44 @@ public class ManagementAgent {
     }
   }
 
+  /**
+   * Sets the {@code java.rmi.server.hostname} System Property.
+   *
+   * @param rmiHostname to set property to if not blank
+   */
+  static void setRmiServerHostname(final @Nullable String rmiHostname) {
+    if (isNotBlank(rmiHostname)) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Setting RMI hostname to : {}", rmiHostname);
+      }
+      System.setProperty(JAVA_RMI_SERVER_HOSTNAME, rmiHostname);
+    }
+  }
+
+  /**
+   * Gets the hostname that should be set on the RMI server for based on the given values.
+   *
+   * @param hostnameForClients the hostname clients will expect to access.
+   * @param hostnameForServer the hostname that this server is bound to.
+   * @param sslEnabled is SSL enabled.
+   * @return {@code hostnameForClients} if not blank, otherwise {@code hostnameForServer} if not
+   *         blank and {@code sslEnabled}, otherwise {@code null}.
+   */
+  static @Nullable String getRmiServerHostname(final @Nullable String hostnameForClients,
+      final @Nullable String hostnameForServer, final boolean sslEnabled) {
+    if (isNotBlank(hostnameForClients)) {
+      return hostnameForClients;
+    } else if (sslEnabled && isNotBlank(hostnameForServer)) {
+      return hostnameForServer;
+    }
+    return null;
+  }
+
   @VisibleForTesting
   void setMBeanServerForwarder(MBeanServer mbs, HashMap<String, Object> env)
       throws IOException {
     if (securityService.isIntegratedSecurity()) {
-      shiroAuthenticator = new JMXShiroAuthenticator(securityService);
+      JMXShiroAuthenticator shiroAuthenticator = new JMXShiroAuthenticator(securityService);
       env.put(JMXConnectorServer.AUTHENTICATOR, shiroAuthenticator);
       jmxConnectorServer.addNotificationListener(shiroAuthenticator, null,
           jmxConnectorServer.getAttributes());
@@ -527,21 +562,19 @@ public class ManagementAgent {
     return remoteStreamExporter;
   }
 
-  private static class GemFireRMIServerSocketFactory
-      implements RMIServerSocketFactory, Serializable {
+  private static class GemFireRMIServerSocketFactory implements RMIServerSocketFactory {
 
-    private static final long serialVersionUID = -811909050641332716L;
-    private final transient SocketCreator sc;
-    private final InetAddress bindAddr;
+    private final SocketCreator sc;
+    private final InetAddress bindAddress;
 
-    public GemFireRMIServerSocketFactory(SocketCreator sc, InetAddress bindAddr) {
+    public GemFireRMIServerSocketFactory(SocketCreator sc, InetAddress bindAddress) {
       this.sc = sc;
-      this.bindAddr = bindAddr;
+      this.bindAddress = bindAddress;
     }
 
     @Override
     public ServerSocket createServerSocket(int port) throws IOException {
-      return sc.forCluster().createServerSocket(port, TCPConduit.getBackLog(), bindAddr);
+      return sc.forCluster().createServerSocket(port, TCPConduit.getBackLog(), bindAddress);
     }
   }
 }
