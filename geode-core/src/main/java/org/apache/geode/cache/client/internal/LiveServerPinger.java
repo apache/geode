@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
 
@@ -27,6 +28,7 @@ import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Responsible for pinging live servers to make sure they are still alive.
@@ -41,6 +43,14 @@ public class LiveServerPinger extends EndpointListenerAdapter {
   protected final InternalPool pool;
   protected final long pingIntervalNanos;
 
+  /**
+   * Initial delay offset time between LiveServerPinger tasks. Time in milliseconds.
+   */
+  public static final int OFFSET =
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "InitialServerPinger.OFFSET", 0);
+
+  private final AtomicInteger offsetIndex = new AtomicInteger(0);
+
   public LiveServerPinger(InternalPool pool) {
     this.pool = pool;
     pingIntervalNanos = ((pool.getPingInterval() + 1) / 2) * NANOS_PER_MS;
@@ -48,19 +58,22 @@ public class LiveServerPinger extends EndpointListenerAdapter {
 
   @Override
   public void endpointCrashed(Endpoint endpoint) {
+    offsetIndex.set(0);
     cancelFuture(endpoint);
   }
 
   @Override
   public void endpointNoLongerInUse(Endpoint endpoint) {
+    offsetIndex.set(0);
     cancelFuture(endpoint);
   }
 
   @Override
   public void endpointNowInUse(Endpoint endpoint) {
     try {
+      long initDelay = (offsetIndex.getAndIncrement() * OFFSET * NANOS_PER_MS) + pingIntervalNanos;
       Future future = pool.getBackgroundProcessor().scheduleWithFixedDelay(new PingTask(endpoint),
-          pingIntervalNanos, pingIntervalNanos, TimeUnit.NANOSECONDS);
+          initDelay, pingIntervalNanos, TimeUnit.NANOSECONDS);
       taskFutures.put(endpoint, future);
     } catch (RejectedExecutionException e) {
       if (!pool.getCancelCriterion().isCancelInProgress()) {
