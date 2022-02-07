@@ -88,6 +88,11 @@ public class NullOffHeapMemoryStats implements OffHeapMemoryStats {
   }
 
   @Override
+  public long getFreedChunks() {
+    return 0;
+  }
+
+  @Override
   public void setLargestFragment(int value) {}
 
   @Override
@@ -105,6 +110,9 @@ public class NullOffHeapMemoryStats implements OffHeapMemoryStats {
 
   @Override
   public void setFragmentation(int value) {}
+
+  @Override
+  public void setFreedChunks(int value) {}
 
   @Override
   public int getFragmentation() {

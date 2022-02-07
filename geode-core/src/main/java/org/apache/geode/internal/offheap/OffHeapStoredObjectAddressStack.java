@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.offheap;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.offheap.FreeListManager.LongStack;
@@ -26,6 +28,8 @@ import org.apache.geode.internal.offheap.FreeListManager.LongStack;
 public class OffHeapStoredObjectAddressStack implements LongStack {
   // Ok to read without sync but must be synced on write
   private volatile long topAddr;
+
+  private final AtomicInteger length = new AtomicInteger(0);
 
   public OffHeapStoredObjectAddressStack(long addr) {
     if (addr != 0L) {
@@ -48,7 +52,12 @@ public class OffHeapStoredObjectAddressStack implements LongStack {
     synchronized (this) {
       OffHeapStoredObject.setNext(e, topAddr);
       topAddr = e;
+      length.incrementAndGet();
     }
+  }
+
+  public int getLength() {
+    return length.get();
   }
 
   @Override
@@ -58,7 +67,9 @@ public class OffHeapStoredObjectAddressStack implements LongStack {
       result = topAddr;
       if (result != 0L) {
         topAddr = OffHeapStoredObject.getNext(result);
+        length.decrementAndGet();
       }
+
     }
     return result;
   }
@@ -81,6 +92,7 @@ public class OffHeapStoredObjectAddressStack implements LongStack {
       if (result != 0L) {
         topAddr = 0L;
       }
+      length.set(0);
     }
     return result;
   }

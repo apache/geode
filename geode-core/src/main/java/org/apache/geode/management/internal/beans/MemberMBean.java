@@ -696,6 +696,18 @@ public class MemberMBean extends NotificationBroadcasterSupport implements Membe
     return bridge.getOffHeapFragmentation();
   }
 
+  public long getOffHeapFragments() {
+    return bridge.getOffHeapFragments();
+  }
+
+  public long getOffHeapFreedChunks() {
+    return bridge.getOffHeapFreedChunks();
+  }
+
+  public int getOffHeapLargestFragment() {
+    return bridge.getOffHeapLargestFragment();
+  }
+
   @Override
   public long getOffHeapCompactionTime() {
     return bridge.getOffHeapCompactionTime();

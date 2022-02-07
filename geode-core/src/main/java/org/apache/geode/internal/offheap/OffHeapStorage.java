@@ -60,6 +60,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
   private static final int largestFragmentId;
   private static final int defragmentationTimeId;
   private static final int fragmentationId;
+  private static final int freedChunksId;
   private static final int defragmentationsInProgressId;
   // NOTE!!!! When adding new stats make sure and update the initialize method on this class
 
@@ -77,7 +78,9 @@ public class OffHeapStorage implements OffHeapMemoryStats {
     final String fragmentationDesc =
         "The percentage of off-heap free memory that is fragmented.  Updated every time a defragmentation is performed.";
     final String fragmentsDesc =
-        "The number of fragments of free off-heap memory. Updated every time a defragmentation is done.";
+        "The number of fragments of free off-heap memory. Updated every time a defragmentation is done and periodically according to update-off-heap-stats-frequency-ms system property (default 60 seconds).";
+    final String freedChunksDesc =
+        "The number of freed chunks of off-heap memory. Updated every time a defragmentation is done and periodically according to update-off-heap-stats-frequency-ms system property (default 60 seconds).";
     final String freeMemoryDesc =
         "The amount of off-heap memory, in bytes, that is not being used.";
     final String largestFragmentDesc =
@@ -94,6 +97,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
     final String defragmentationTime = "defragmentationTime";
     final String fragmentation = "fragmentation";
     final String fragments = "fragments";
+    final String freedChunks = "freedChunks";
     final String freeMemory = "freeMemory";
     final String largestFragment = "largestFragment";
     final String objects = "objects";
@@ -108,6 +112,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
             f.createLongCounter(defragmentationTime, defragmentationTimeDesc, "nanoseconds", false),
             f.createIntGauge(fragmentation, fragmentationDesc, "percentage"),
             f.createLongGauge(fragments, fragmentsDesc, "fragments"),
+            f.createLongGauge(freedChunks, freedChunksDesc, "freedChunks"),
             f.createLongGauge(freeMemory, freeMemoryDesc, "bytes"),
             f.createIntGauge(largestFragment, largestFragmentDesc, "bytes"),
             f.createIntGauge(objects, objectsDesc, "objects"),
@@ -116,6 +121,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
 
     usedMemoryId = statsType.nameToId(usedMemory);
     defragmentationId = statsType.nameToId(defragmentations);
+    freedChunksId = statsType.nameToId(freedChunks);
     defragmentationsInProgressId = statsType.nameToId(defragmentationsInProgress);
     defragmentationTimeId = statsType.nameToId(defragmentationTime);
     fragmentationId = statsType.nameToId(fragmentation);
@@ -343,6 +349,11 @@ public class OffHeapStorage implements OffHeapMemoryStats {
   }
 
   @Override
+  public long getFreedChunks() {
+    return this.stats.getLong(freedChunksId);
+  }
+
+  @Override
   public void setLargestFragment(int value) {
     stats.setInt(largestFragmentId, value);
   }
@@ -381,6 +392,12 @@ public class OffHeapStorage implements OffHeapMemoryStats {
   public void setFragmentation(int value) {
     stats.setInt(fragmentationId, value);
   }
+
+  @Override
+  public void setFreedChunks(int value) {
+    this.stats.setInt(freedChunksId, value);
+  }
+
 
   @Override
   public int getFragmentation() {

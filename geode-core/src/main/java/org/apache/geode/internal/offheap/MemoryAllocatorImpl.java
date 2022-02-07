@@ -33,6 +33,7 @@ import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.lang.SystemProperty;
 import org.apache.geode.internal.offheap.annotations.OffHeapIdentifier;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -54,6 +55,11 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
 
   public static final String FREE_OFF_HEAP_MEMORY_PROPERTY =
       GeodeGlossary.GEMFIRE_PREFIX + "free-off-heap-memory";
+
+  public static final int UPDATE_OFF_HEAP_STATS_FREQUENCY_MS =
+      SystemProperty.getProductIntegerProperty(
+          "update-off-heap-stats-frequency-ms").orElse(60000);
+
 
   private volatile OffHeapMemoryStats stats;
 
@@ -82,6 +88,8 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
 
   private static final boolean DO_EXPENSIVE_VALIDATION =
       Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_DO_EXPENSIVE_VALIDATION");
+
+  private volatile Thread updateStatsTask;
 
   public static MemoryAllocator create(OutOfOffHeapMemoryListener ooohml, OffHeapMemoryStats stats,
       int slabCount, long offHeapMemorySize, long maxSlabSize) {
@@ -139,9 +147,14 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
         singleton = result;
         LifecycleListener.invokeAfterCreate(result);
         created = true;
+        singleton.updateStatsTask = createUpdateFreeListStatsThread();
+        singleton.updateStatsTask.start();
       }
     } finally {
       if (!created) {
+        if (singleton != null && singleton.updateStatsTask != null) {
+          singleton.updateStatsTask.interrupt();
+        }
         if (stats != null) {
           stats.close();
         }
@@ -151,6 +164,22 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
       }
     }
     return result;
+  }
+
+  private static Thread createUpdateFreeListStatsThread() {
+    return new Thread(() -> {
+      while (true) {
+        if (singleton != null) {
+          singleton.freeList.updateNonRealTimeStats();
+        }
+        try {
+          Thread.sleep(UPDATE_OFF_HEAP_STATS_FREQUENCY_MS);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          return;
+        }
+      }
+    });
   }
 
   static MemoryAllocatorImpl createForUnitTest(OutOfOffHeapMemoryListener ooohml,
@@ -360,6 +389,9 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
     try {
       LifecycleListener.invokeBeforeClose(this);
     } finally {
+      if (updateStatsTask != null) {
+        updateStatsTask.interrupt();
+      }
       ooohml.close();
       if (Boolean.getBoolean(FREE_OFF_HEAP_MEMORY_PROPERTY)) {
         realClose();
