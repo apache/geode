@@ -32,6 +32,7 @@ import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -90,16 +91,24 @@ public class ReflectiveObjectInputFilterApiTest {
 
     Object filter = api.getSerialFilter();
 
-    Throwable setSerialFilterStack =
-        ((ReflectiveObjectInputFilterApi) api).getSerialFilterStack();
+    ReflectiveObjectInputFilterApi apiImpl = (ReflectiveObjectInputFilterApi) api;
+    List<Throwable> stackTraces = apiImpl.getSerialFilterStackTraces();
 
     assertThat(filter)
-        .withFailMessage(String
-            .format(
-                "getSerialFilter returned non-null value %s. Caller to setSerialFilter was: '%s'.",
-                filter,
-                setSerialFilterStack == null ? "null" : getStackTrace(setSerialFilterStack)))
+        .withFailMessage(formatFailMessage(filter, stackTraces))
         .isNull();
+  }
+
+  private String formatFailMessage(Object filter, List<Throwable> stackTraces) {
+    StringBuilder formattedStackTraces = new StringBuilder();
+    for (Throwable stackTrace : stackTraces) {
+      formattedStackTraces.append(System.lineSeparator());
+      formattedStackTraces.append(getStackTrace(stackTrace));
+    }
+    return String.format(
+        "getSerialFilter returned non-null value %s. Stack traces for setSerialFilter: '%s'.",
+        filter,
+        formattedStackTraces);
   }
 
   // @Test
