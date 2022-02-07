@@ -26,7 +26,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_TYPE;
 
-import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -137,7 +136,7 @@ public class CertStores {
     KeyStore ks = KeyStore.getInstance("JKS");
     try (InputStream in = Files.newInputStream(Paths.get(filename))) {
       ks.load(in, password.toCharArray());
-    } catch (EOFException e) {
+    } catch (IOException e) {
       ks = createEmptyKeyStore();
     }
     for (Map.Entry<String, CertificateMaterial> cert : trustedCerts.entrySet()) {
