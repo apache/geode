@@ -43,11 +43,17 @@ class GlobalSerialFilterConfiguration implements FilterConfiguration {
    */
   GlobalSerialFilterConfiguration(SerializableObjectConfig serializableObjectConfig) {
     this(serializableObjectConfig,
-        new DefaultFilterPatternFactory(),
-        () -> loadSanctionedClassNames(loadSanctionedSerializablesServices()),
-        LOGGER,
         (pattern, sanctionedClasses) -> new ReflectiveFacadeGlobalSerialFilterFactory()
             .create(pattern, sanctionedClasses));
+  }
+
+  @TestOnly
+  GlobalSerialFilterConfiguration(
+      SerializableObjectConfig serializableObjectConfig,
+      GlobalSerialFilterFactory globalSerialFilterFactory) {
+    this(serializableObjectConfig,
+        LOGGER,
+        globalSerialFilterFactory);
   }
 
   @TestOnly

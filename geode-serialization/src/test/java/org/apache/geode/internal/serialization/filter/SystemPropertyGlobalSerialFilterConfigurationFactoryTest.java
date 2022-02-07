@@ -14,10 +14,14 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+import static org.apache.geode.internal.serialization.filter.SerialFilterAssertions.assertThatSerialFilterIsNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.mock;
 
+import java.lang.reflect.InvocationTargetException;
+
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,6 +37,11 @@ public class SystemPropertyGlobalSerialFilterConfigurationFactoryTest {
   @Before
   public void setUp() {
     config = mock(SerializableObjectConfig.class);
+  }
+
+  @After
+  public void serialFilterIsNull() throws InvocationTargetException, IllegalAccessException {
+    assertThatSerialFilterIsNull();
   }
 
   @Test

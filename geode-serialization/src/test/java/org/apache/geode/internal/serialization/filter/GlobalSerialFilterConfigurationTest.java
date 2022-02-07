@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+import static org.apache.geode.internal.serialization.filter.SerialFilterAssertions.assertThatSerialFilterIsNull;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -23,26 +24,36 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.apache.logging.log4j.Logger;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class GlobalSerialFilterConfigurationTest {
 
-  private SerializableObjectConfig config;
+  private SerializableObjectConfig serializableObjectConfig;
   private GlobalSerialFilter globalSerialFilter;
   private Logger logger;
 
   @Before
   public void setUp() {
-    config = mock(SerializableObjectConfig.class);
+    serializableObjectConfig = mock(SerializableObjectConfig.class);
     globalSerialFilter = mock(GlobalSerialFilter.class);
     logger = uncheckedCast(mock(Logger.class));
   }
 
+  @After
+  public void serialFilterIsNull() throws InvocationTargetException, IllegalAccessException {
+    assertThatSerialFilterIsNull();
+  }
+
   @Test
   public void logsInfo_whenOperationIsSuccessful() throws UnableToSetSerialFilterException {
-    FilterConfiguration filterConfiguration = new GlobalSerialFilterConfiguration(config, logger,
+    FilterConfiguration filterConfiguration = new GlobalSerialFilterConfiguration(
+        serializableObjectConfig,
+        logger,
         (pattern, sanctionedClasses) -> globalSerialFilter);
 
     filterConfiguration.configure();
@@ -58,8 +69,9 @@ public class GlobalSerialFilterConfigurationTest {
     doThrow(new UnableToSetSerialFilterException(
         new IllegalStateException("Serial filter can only be set once")))
             .when(globalSerialFilter).setFilter();
-    FilterConfiguration filterConfiguration = new GlobalSerialFilterConfiguration(config,
-        logger, (pattern, sanctionedClasses) -> globalSerialFilter);
+    FilterConfiguration filterConfiguration = new GlobalSerialFilterConfiguration(
+        serializableObjectConfig,
+        (pattern, sanctionedClasses) -> globalSerialFilter);
 
     Throwable thrown = catchThrowable(() -> {
       filterConfiguration.configure();
@@ -78,7 +90,8 @@ public class GlobalSerialFilterConfigurationTest {
     doThrow(new UnableToSetSerialFilterException(
         new ClassNotFoundException("sun.misc.ObjectInputFilter")))
             .when(globalSerialFilter).setFilter();
-    FilterConfiguration filterConfiguration = new GlobalSerialFilterConfiguration(config, logger,
+    FilterConfiguration filterConfiguration = new GlobalSerialFilterConfiguration(
+        serializableObjectConfig,
         (pattern, sanctionedClasses) -> globalSerialFilter);
 
     Throwable thrown = catchThrowable(() -> {
@@ -94,9 +107,9 @@ public class GlobalSerialFilterConfigurationTest {
 
   @Test
   public void setsValidateSerializableObjects() throws UnableToSetSerialFilterException {
-    SerializableObjectConfig serializableObjectConfig = mock(SerializableObjectConfig.class);
-    FilterConfiguration filterConfiguration =
-        new GlobalSerialFilterConfiguration(serializableObjectConfig);
+    FilterConfiguration filterConfiguration = new GlobalSerialFilterConfiguration(
+        serializableObjectConfig,
+        (pattern, sanctionedClasses) -> globalSerialFilter);
 
     filterConfiguration.configure();
 

@@ -15,12 +15,15 @@
 package org.apache.geode.internal.serialization.filter;
 
 import static java.util.Collections.emptySet;
+import static org.apache.geode.internal.serialization.filter.SerialFilterAssertions.assertThatSerialFilterIsNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.function.Supplier;
 
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
@@ -29,6 +32,11 @@ public class ReflectiveFacadeGlobalSerialFilterFactoryTest {
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
+  @After
+  public void serialFilterIsNull() throws InvocationTargetException, IllegalAccessException {
+    assertThatSerialFilterIsNull();
+  }
 
   /**
    * Creates an instance of ReflectiveFacadeGlobalSerialFilter.
