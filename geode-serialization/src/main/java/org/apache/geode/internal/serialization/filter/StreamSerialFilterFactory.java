@@ -14,17 +14,11 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
-/**
- * Defines operation to set this serialization filter as the JVMs process-wide filter.
- */
-@FunctionalInterface
-interface GlobalSerialFilter {
+import java.util.Set;
 
-  /**
-   * Sets this serialization filter as the process-wide filter.
-   *
-   * @throws FilterAlreadyConfiguredException if a non-null serialization filter already exists
-   * @throws UnableToSetSerialFilterException if there's any failure setting a serialization filter
-   */
-  void setFilter() throws UnableToSetSerialFilterException;
+@FunctionalInterface
+public interface StreamSerialFilterFactory {
+
+  StreamSerialFilter create(SerializableObjectConfig serializableObjectConfig,
+      Set<String> sanctionedClasses);
 }

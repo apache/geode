@@ -15,16 +15,22 @@
 package org.apache.geode.internal.serialization.filter;
 
 /**
- * Defines operation to set this serialization filter as the JVMs process-wide filter.
+ * Checked exception thrown when configuring a filter fails because a non-null filter already
+ * exists. All uses of this exception are caught and rethrown before reaching the user.
  */
-@FunctionalInterface
-interface GlobalSerialFilter {
+public class FilterAlreadyConfiguredException extends UnableToSetSerialFilterException {
 
-  /**
-   * Sets this serialization filter as the process-wide filter.
-   *
-   * @throws FilterAlreadyConfiguredException if a non-null serialization filter already exists
-   * @throws UnableToSetSerialFilterException if there's any failure setting a serialization filter
-   */
-  void setFilter() throws UnableToSetSerialFilterException;
+  public FilterAlreadyConfiguredException(String message) {
+    super(message);
+  }
+
+  public FilterAlreadyConfiguredException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public FilterAlreadyConfiguredException(Throwable cause) {
+    super(cause);
+  }
+
+  private static final long serialVersionUID = -6102549374563510704L;
 }
