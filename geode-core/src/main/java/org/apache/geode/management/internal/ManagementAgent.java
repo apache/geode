@@ -65,6 +65,7 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.shiro.JMXShiroAuthenticator;
 import org.apache.geode.internal.serialization.filter.FilterConfiguration;
+import org.apache.geode.internal.serialization.filter.UnableToSetSerialFilterException;
 import org.apache.geode.internal.tcp.TCPConduit;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementException;
@@ -132,7 +133,11 @@ public class ManagementAgent {
   }
 
   public synchronized void startAgent() {
-    filterConfiguration.configure();
+    try {
+      filterConfiguration.configure();
+    } catch (UnableToSetSerialFilterException e) {
+      throw new RuntimeException(e);
+    }
     loadWebApplications();
 
     if (!this.running && this.config.getJmxManagerPort() != 0) {

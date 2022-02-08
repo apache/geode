@@ -29,7 +29,7 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.junit.rules.CloseableReference;
 
-abstract class ServerLauncherWithJmxManager {
+public abstract class ServerLauncherWithJmxManager {
 
   static final String NAME = "server";
   static final String JDK_PROPERTY = "jdk.serialFilter";
