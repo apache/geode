@@ -35,10 +35,12 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -1141,10 +1143,19 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
           isParallelGatewaySender, 100, 10, false,
           false, null, false));
     }
+
+    List<AsyncInvocation> tasks = new LinkedList<>();
     for (VM server : serversInA) {
-      server.invoke(() -> createSender(senderIdInA, 2, isParallelGatewaySender,
+      tasks.add(server.invokeAsync(() -> createSender(senderIdInA, 2, isParallelGatewaySender,
           100, 10, false,
-          false, null, true));
+          false, null, true)));
+    }
+    for (AsyncInvocation invocation : tasks) {
+      try {
+        invocation.await();
+      } catch (InterruptedException e) {
+        fail("Starting senders was interrupted");
+      }
     }
     startSenderInVMsAsync(senderIdInA, serversInA.toArray(new VM[0]));
   }

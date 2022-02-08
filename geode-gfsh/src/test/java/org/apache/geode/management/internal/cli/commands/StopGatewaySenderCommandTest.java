@@ -131,7 +131,8 @@ public class StopGatewaySenderCommandTest {
 
     // check that cluster configuration is updated
     CacheConfig.GatewaySender config = (CacheConfig.GatewaySender) result.getConfigObject();
-    assertThat(config.getStartupAction()).isEqualTo(GatewaySenderStartupAction.STOP.name().toLowerCase());
+    assertThat(config.getStartupAction())
+        .isEqualTo(GatewaySenderStartupAction.STOP.name().toLowerCase());
 
     ArgumentCaptor<Collection> callablesCaptor =
         ArgumentCaptor.forClass(Collection.class);
