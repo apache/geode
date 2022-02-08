@@ -1010,7 +1010,7 @@ public class QueueManagerImpl implements QueueManager {
             connection.getEndpoint());
       }
       try {
-        connection.internalClose(pool.getKeepAlive());
+        connection.internalClose(true);
       } catch (Exception e) {
         if (logger.isDebugEnabled()) {
           logger.debug("Error destroying client to server connection to {}",

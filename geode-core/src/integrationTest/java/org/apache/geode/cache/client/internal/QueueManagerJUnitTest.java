@@ -275,6 +275,25 @@ public class QueueManagerJUnitTest {
         .hasMessageContaining(serverRefusedConnectionExceptionMessage);
   }
 
+  @Test
+  public void testAddToConnectionListCallsCloseConnectionOpWithKeepAliveTrue2() {
+    // Create a DummyConnection
+    DummyConnection connection = factory.addConnection(0, 0, 1);
+    assertThat(connection.keepAlive).isFalse();
+
+    // Get and close its Endpoint
+    Endpoint endpoint = connection.getEndpoint();
+    endpoint.close();
+
+    // Create and start a QueueManagerImpl
+    manager = new QueueManagerImpl(pool, endpoints, source, factory, 2, 20, logger,
+        ClientProxyMembershipID.getNewProxyMembership(ds));
+    manager.start(background);
+
+    // Assert that the connection keepAlive is true
+    assertThat(connection.keepAlive).isTrue();
+  }
+
   private static void assertPortEquals(int expected, Connection actual) {
     assertThat(actual.getServer().getPort()).isEqualTo(expected);
   }
@@ -596,8 +615,10 @@ public class QueueManagerJUnitTest {
       nextConnections.add(null);
     }
 
-    private void addConnection(int endpointType, int queueSize, int port) {
-      nextConnections.add(new DummyConnection(endpointType, queueSize, port));
+    private DummyConnection addConnection(int endpointType, int queueSize, int port) {
+      DummyConnection connection = new DummyConnection(endpointType, queueSize, port);
+      nextConnections.add(connection);
+      return connection;
     }
 
     @Override
@@ -720,6 +741,7 @@ public class QueueManagerJUnitTest {
     private final ServerQueueStatus status;
     private final ServerLocation location;
     private final Endpoint endpoint;
+    private boolean keepAlive;
 
     private DummyConnection(int endpointType, int queueSize, int port) {
       InternalDistributedMember member = new InternalDistributedMember("localhost", 555);
@@ -730,7 +752,7 @@ public class QueueManagerJUnitTest {
 
     @Override
     public void close(boolean keepAlive) {
-      // nothing
+      this.keepAlive = keepAlive;
     }
 
     @Override
