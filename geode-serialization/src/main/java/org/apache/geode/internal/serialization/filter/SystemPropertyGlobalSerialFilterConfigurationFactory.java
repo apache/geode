@@ -16,6 +16,8 @@ package org.apache.geode.internal.serialization.filter;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+import java.util.function.BooleanSupplier;
+
 import org.apache.geode.internal.lang.SystemProperty;
 
 /**
@@ -30,9 +32,15 @@ public class SystemPropertyGlobalSerialFilterConfigurationFactory
 
   public SystemPropertyGlobalSerialFilterConfigurationFactory() {
     // enable GlobalSerialFilter only under these conditions:
-    // (1) jdk.serialFilter must be blank
-    // (2) geode.enableGlobalSerialFilter must be set "true"
-    this(isBlank(System.getProperty("jdk.serialFilter")) &&
+    // (1) JRE supports ObjectInputFilter in either sun.misc. or java.io. package
+    // (2) jdk.serialFilter must be blank
+    // (3) geode.enableGlobalSerialFilter must be set "true"
+    this(ObjectInputFilterUtils::supportsObjectInputFilter);
+  }
+
+  SystemPropertyGlobalSerialFilterConfigurationFactory(BooleanSupplier supportsObjectInputFilter) {
+    this(supportsObjectInputFilter.getAsBoolean() &&
+        isBlank(System.getProperty("jdk.serialFilter")) &&
         SystemProperty
             .getProductBooleanProperty("enableGlobalSerialFilter")
             .orElse(false));
@@ -47,6 +55,14 @@ public class SystemPropertyGlobalSerialFilterConfigurationFactory
     if (enabled) {
       return new GlobalSerialFilterConfiguration(serializableObjectConfig);
     }
-    return () -> false;
+    return new NullFilterConfiguration();
+  }
+
+  private static class NullFilterConfiguration implements FilterConfiguration {
+
+    @Override
+    public boolean configure() {
+      return false;
+    }
   }
 }
