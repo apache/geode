@@ -91,4 +91,7 @@ public interface Version extends Comparable<Version> {
    */
   boolean isNotNewerThan(Version version);
 
+  static Version min(Version a, Version b) {
+    return a.isOlderThan(b) ? a : b;
+  }
 }

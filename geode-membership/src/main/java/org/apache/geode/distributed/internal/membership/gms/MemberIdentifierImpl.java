@@ -681,7 +681,7 @@ public class MemberIdentifierImpl implements MemberIdentifier, DataSerializableF
     } else {
       // This version of geode-native could not parse the longer version ordinals.
       // Let's make these older clients think the server is still 1.14.
-      version = KnownVersion.GEODE_1_14_0.ordinal();
+      version = Version.min(memberData.getVersion(), KnownVersion.GEODE_1_14_0).ordinal();
     }
     VersioningIO.writeOrdinal(out, version, true);
   }
