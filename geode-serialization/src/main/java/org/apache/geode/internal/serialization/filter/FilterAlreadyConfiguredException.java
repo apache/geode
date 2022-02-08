@@ -14,22 +14,23 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyNoInteractions;
+/**
+ * Checked exception thrown when configuring a filter fails because a non-null filter already
+ * exists. All uses of this exception are caught and rethrown before reaching the user.
+ */
+public class FilterAlreadyConfiguredException extends UnableToSetSerialFilterException {
 
-import java.io.ObjectInputStream;
-
-import org.junit.Test;
-
-public class NullObjectInputFilterTest {
-
-  @Test
-  public void doesNothing() throws UnableToSetSerialFilterException {
-    ObjectInputStream objectInputStream = mock(ObjectInputStream.class);
-    StreamSerialFilter filter = new NullStreamSerialFilter();
-
-    filter.setFilterOn(objectInputStream);
-
-    verifyNoInteractions(objectInputStream);
+  public FilterAlreadyConfiguredException(String message) {
+    super(message);
   }
+
+  public FilterAlreadyConfiguredException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public FilterAlreadyConfiguredException(Throwable cause) {
+    super(cause);
+  }
+
+  private static final long serialVersionUID = -6102549374563510704L;
 }
