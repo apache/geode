@@ -805,9 +805,7 @@ public class CacheClientProxy implements ClientSession {
         }
       }
     } catch (Exception ex) {
-      if (_cache.getSecurityLogger().warningEnabled()) {
-        _cache.getSecurityLogger().warning(String.format("%s : %s", this, ex));
-      }
+      logger.warn("{}", this, ex);
     }
     // Notify the caller whether to keep this proxy. If the proxy is durable
     // and should be paused, then return true; otherwise return false.
