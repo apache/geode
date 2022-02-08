@@ -23,5 +23,5 @@ public interface FilterConfiguration {
   /**
    * Returns true if serialization filter was successfully configured.
    */
-  boolean configure();
+  boolean configure() throws UnableToSetSerialFilterException;
 }
