@@ -20,7 +20,7 @@ import org.apache.tools.ant.taskdefs.condition.Os
 apply plugin: 'de.undercouch.download'
 
 def getJavaVersionUrl(String version) {
-  final String os;
+  final String os
   if (Os.isFamily(Os.FAMILY_MAC)) {
     os = 'macos'
   } else if (Os.FAMILY_WINDOWS) {
@@ -42,7 +42,9 @@ def getJavaVersionUrl(String version) {
 ext.javaHomeForVersion = {Test test, String name, String version ->
   final basePath = "${buildDir}/${name}"
 
-  final downloadTask = project.tasks.register(name + "Download", Download) {
+  def downloadTaskName = name + "Download"
+  final downloadTask = project.tasks.findByName(downloadTaskName) ?:
+      project.tasks.register(downloadTaskName, Download) {
     final zipFile = new File(basePath + ".zip").absoluteFile
     dest zipFile
     overwrite false
@@ -51,19 +53,21 @@ ext.javaHomeForVersion = {Test test, String name, String version ->
     } else {
       src getJavaVersionUrl(version)
     }
-  }
+  }.get()
 
-  final unzipTask = project.tasks.register(name + "Unzip", Copy) {
+  def unzipTaskName = name + "Unzip"
+  final unzipTask = project.tasks.findByName(unzipTaskName) ?:
+      project.tasks.register(unzipTaskName, Copy) {
     dependsOn downloadTask
-    from(zipTree(downloadTask.get().dest)) {
+    from(zipTree(downloadTask.dest)) {
       eachFile {
         it.relativePath = new RelativePath(true, it.relativePath.segments.drop(1))
       }
     }
     into basePath
-  }
+  }.get()
 
   test.dependsOn unzipTask
 
-  return unzipTask.get().outputs.files.first()
+  return unzipTask.outputs.files.first()
 }

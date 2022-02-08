@@ -119,14 +119,6 @@ jar {
 
 jar.dependsOn(createVersionPropertiesFile)
 
-upgradeTest {
-  environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode/"
-}
-
-repeatUpgradeTest {
-  environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode/"
-}
-
 task raJar(type: Jar, dependsOn: classes) {
   description 'Assembles the jar archive that contains the JCA classes'
   from sourceSets.jca.output
@@ -421,9 +413,15 @@ distributedTest {
   exclude "**/*\$*.class"
 }
 
-upgradeTest {
+configure([
+    upgradeTest,
+    repeatUpgradeTest
+]) {
+  dependsOn(':geode-assembly:installDist')
+
   environment "JAVA_HOME_8u265", javaHomeForVersion(it, "jdk8u265", "8u265+1")
   environment "JAVA_HOME_8u272", javaHomeForVersion(it, "jdk8u272", "8u272+10")
+  environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode"
 }
 
 rootProject.generate.dependsOn(generateGrammarSource)
