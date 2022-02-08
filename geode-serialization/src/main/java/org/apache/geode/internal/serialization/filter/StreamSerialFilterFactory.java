@@ -14,22 +14,11 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyNoInteractions;
+import java.util.Set;
 
-import java.io.ObjectInputStream;
+@FunctionalInterface
+public interface StreamSerialFilterFactory {
 
-import org.junit.Test;
-
-public class NullObjectInputFilterTest {
-
-  @Test
-  public void doesNothing() throws UnableToSetSerialFilterException {
-    ObjectInputStream objectInputStream = mock(ObjectInputStream.class);
-    StreamSerialFilter filter = new NullStreamSerialFilter();
-
-    filter.setFilterOn(objectInputStream);
-
-    verifyNoInteractions(objectInputStream);
-  }
+  StreamSerialFilter create(SerializableObjectConfig serializableObjectConfig,
+      Set<String> sanctionedClasses);
 }

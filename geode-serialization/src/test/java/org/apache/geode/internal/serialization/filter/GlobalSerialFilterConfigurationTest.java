@@ -14,60 +14,102 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+import static org.apache.geode.internal.serialization.filter.SerialFilterAssertions.assertThatSerialFilterIsNull;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 
-import java.util.function.Consumer;
+import java.lang.reflect.InvocationTargetException;
 
+import org.apache.logging.log4j.Logger;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class GlobalSerialFilterConfigurationTest {
 
-  private SerializableObjectConfig config;
+  private SerializableObjectConfig serializableObjectConfig;
   private GlobalSerialFilter globalSerialFilter;
-  private Consumer<String> logger;
+  private Logger logger;
 
   @Before
   public void setUp() {
-    config = mock(SerializableObjectConfig.class);
+    serializableObjectConfig = mock(SerializableObjectConfig.class);
     globalSerialFilter = mock(GlobalSerialFilter.class);
-    logger = uncheckedCast(mock(Consumer.class));
+    logger = uncheckedCast(mock(Logger.class));
+  }
+
+  @After
+  public void serialFilterIsNull() throws InvocationTargetException, IllegalAccessException {
+    assertThatSerialFilterIsNull();
   }
 
   @Test
-  public void configureLogs_whenUnsupportedOperationExceptionIsThrown_withCause() {
-    doThrow(new UnsupportedOperationException(
+  public void logsInfo_whenOperationIsSuccessful() throws UnableToSetSerialFilterException {
+    FilterConfiguration filterConfiguration = new GlobalSerialFilterConfiguration(
+        serializableObjectConfig,
+        logger,
+        (pattern, sanctionedClasses) -> globalSerialFilter);
+
+    filterConfiguration.configure();
+
+    verify(logger).info("Global serialization filter is now configured.");
+    verify(logger, never()).warn(any(Object.class));
+    verify(logger, never()).error(any(Object.class));
+  }
+
+  @Test
+  public void rethrowsWhenIllegalStateExceptionIsThrownByApi()
+      throws UnableToSetSerialFilterException {
+    doThrow(new UnableToSetSerialFilterException(
         new IllegalStateException("Serial filter can only be set once")))
             .when(globalSerialFilter).setFilter();
     FilterConfiguration filterConfiguration = new GlobalSerialFilterConfiguration(
-        config, logger, (pattern, sanctionedClasses) -> globalSerialFilter);
+        serializableObjectConfig,
+        (pattern, sanctionedClasses) -> globalSerialFilter);
 
-    filterConfiguration.configure();
+    Throwable thrown = catchThrowable(() -> {
+      filterConfiguration.configure();
+    });
 
-    verify(logger).accept("Global serial filter is already configured.");
+    assertThat(thrown)
+        .isInstanceOf(UnableToSetSerialFilterException.class)
+        .hasMessage("java.lang.IllegalStateException: Serial filter can only be set once")
+        .hasRootCauseInstanceOf(IllegalStateException.class)
+        .hasRootCauseMessage("Serial filter can only be set once");
   }
 
   @Test
-  public void configureDoesNotLog_whenUnsupportedOperationExceptionIsThrown_withoutCause() {
-    doThrow(new UnsupportedOperationException("testing with no root cause"))
-        .when(globalSerialFilter).setFilter();
+  public void rethrowsWhenClassNotFoundExceptionIsThrownByApi()
+      throws UnableToSetSerialFilterException {
+    doThrow(new UnableToSetSerialFilterException(
+        new ClassNotFoundException("sun.misc.ObjectInputFilter")))
+            .when(globalSerialFilter).setFilter();
     FilterConfiguration filterConfiguration = new GlobalSerialFilterConfiguration(
-        config, logger, (pattern, sanctionedClasses) -> globalSerialFilter);
+        serializableObjectConfig,
+        (pattern, sanctionedClasses) -> globalSerialFilter);
 
-    filterConfiguration.configure();
+    Throwable thrown = catchThrowable(() -> {
+      filterConfiguration.configure();
+    });
 
-    verifyNoInteractions(logger);
+    assertThat(thrown)
+        .isInstanceOf(UnableToSetSerialFilterException.class)
+        .hasMessage("java.lang.ClassNotFoundException: sun.misc.ObjectInputFilter")
+        .hasRootCauseInstanceOf(ClassNotFoundException.class)
+        .hasRootCauseMessage("sun.misc.ObjectInputFilter");
   }
 
   @Test
-  public void configureSetsValidateSerializableObjects() {
-    SerializableObjectConfig serializableObjectConfig = mock(SerializableObjectConfig.class);
-    FilterConfiguration filterConfiguration =
-        new GlobalSerialFilterConfiguration(serializableObjectConfig);
+  public void setsValidateSerializableObjects() throws UnableToSetSerialFilterException {
+    FilterConfiguration filterConfiguration = new GlobalSerialFilterConfiguration(
+        serializableObjectConfig,
+        (pattern, sanctionedClasses) -> globalSerialFilter);
 
     filterConfiguration.configure();
 

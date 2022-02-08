@@ -14,12 +14,14 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+import static java.lang.System.lineSeparator;
+import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.lang.reflect.InvocationTargetException;
 
-@SuppressWarnings({"unused", "WeakerAccess"})
-public class SerialFilterAssertions {
+@SuppressWarnings("unused")
+class SerialFilterAssertions {
 
   private static final ObjectInputFilterApi API = new ReflectiveObjectInputFilterApiFactory()
       .createObjectInputFilterApi();
@@ -28,31 +30,40 @@ public class SerialFilterAssertions {
     // do not instantiate
   }
 
-  public static void assertThatSerialFilterIsNull()
+  static void assertThatSerialFilterIsNull()
       throws InvocationTargetException, IllegalAccessException {
     assertThat(API.getSerialFilter())
         .as("ObjectInputFilter$Config.getSerialFilter()")
         .isNull();
   }
 
-  public static void assertThatSerialFilterIsNotNull()
+  static void assertThatSerialFilterIsNotNull()
       throws InvocationTargetException, IllegalAccessException {
     assertThat(API.getSerialFilter())
         .as("ObjectInputFilter$Config.getSerialFilter()")
         .isNotNull();
   }
 
-  public static void assertThatSerialFilterIsSameAs(Object objectInputFilter)
+  static void assertThatSerialFilterIsSameAs(Object objectInputFilter)
       throws InvocationTargetException, IllegalAccessException {
     assertThat(API.getSerialFilter())
         .as("ObjectInputFilter$Config.getSerialFilter()")
         .isSameAs(objectInputFilter);
   }
 
-  public static void assertThatSerialFilterIsNotSameAs(Object objectInputFilter)
+  static void assertThatSerialFilterIsNotSameAs(Object objectInputFilter)
       throws InvocationTargetException, IllegalAccessException {
     assertThat(API.getSerialFilter())
         .as("ObjectInputFilter$Config.getSerialFilter()")
         .isNotSameAs(objectInputFilter);
+  }
+
+  static String failMessageWithStackTraces(String message, Iterable<Throwable> stackTraces) {
+    StringBuilder formattedStackTraces = new StringBuilder(message);
+    for (Throwable stackTrace : stackTraces) {
+      formattedStackTraces.append(lineSeparator());
+      formattedStackTraces.append(getStackTrace(stackTrace));
+    }
+    return formattedStackTraces.toString();
   }
 }
