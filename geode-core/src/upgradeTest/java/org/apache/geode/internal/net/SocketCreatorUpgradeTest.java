@@ -73,6 +73,8 @@ public class SocketCreatorUpgradeTest {
   public static final String PROTOCOL_TLSv1_2_SSLv2Hello = "TLSv1.2,SSLv2Hello";
   public static final String PROTOCOL_ANY = "any";
   public static final String VERSION_FULL = "version --full";
+  public static final String LOCATOR_1 = "locator1";
+  public static final String LOCATOR_2 = "locator2";
 
   private final String startLocator1;
   private final String startLocator2;
@@ -125,9 +127,9 @@ public class SocketCreatorUpgradeTest {
     final String hostName = InetAddress.getLocalHost().getCanonicalHostName();
     generateKeyAndTrustStore(hostName, keyStoreFile, trustStoreFile);
 
-    startLocator1 = startLocator("locator1", hostName, locator1Port,
+    startLocator1 = startLocator(LOCATOR_1, hostName, locator1Port,
         portSupplier.getAvailablePort(), securityPropertiesFile, locator2Port);
-    startLocator2 = startLocator("locator2", hostName, locator2Port,
+    startLocator2 = startLocator(LOCATOR_2, hostName, locator2Port,
         portSupplier.getAvailablePort(), securityPropertiesFile, locator1Port);
   }
 
@@ -155,7 +157,7 @@ public class SocketCreatorUpgradeTest {
         GfshScript.of(startLocator2).awaitAtMost(1, TimeUnit.MINUTES)))
             .hasRootCauseInstanceOf(TimeoutException.class);
 
-    killLocator(gfshNewGeodeOldJava, "locator2");
+    killLocator(gfshNewGeodeOldJava, LOCATOR_2);
   }
 
   @Test
@@ -176,7 +178,7 @@ public class SocketCreatorUpgradeTest {
         GfshScript.of(startLocator2).awaitAtMost(1, TimeUnit.MINUTES)))
             .hasRootCauseInstanceOf(TimeoutException.class);
 
-    killLocator(gfshOldGeodeNewJava, "locator2");
+    killLocator(gfshOldGeodeNewJava, LOCATOR_2);
   }
 
   @Test
@@ -189,7 +191,7 @@ public class SocketCreatorUpgradeTest {
         GfshScript.of(startLocator2).awaitAtMost(1, TimeUnit.MINUTES)))
             .hasRootCauseInstanceOf(TimeoutException.class);
 
-    killLocator(gfshOldGeodeNewJava, "locator2");
+    killLocator(gfshOldGeodeNewJava, LOCATOR_2);
   }
 
   @Test
@@ -202,7 +204,45 @@ public class SocketCreatorUpgradeTest {
         GfshScript.of(startLocator2).awaitAtMost(1, TimeUnit.MINUTES)))
             .hasRootCauseInstanceOf(TimeoutException.class);
 
-    killLocator(gfshOldGeodeNewJava, "locator2");
+    killLocator(gfshOldGeodeNewJava, LOCATOR_2);
+  }
+
+  @Test
+  public void upgradingGeodeAndJavaWithProtocolsAnyHangs() throws IOException {
+    generateSecurityProperties(PROTOCOL_ANY, securityPropertiesFile, keyStoreFile, trustStoreFile);
+
+    gfshOldGeodeOldJava.execute(startLocator1);
+    assertThatThrownBy(() -> gfshNewGeodeNewJava.execute(
+        GfshScript.of(startLocator2).awaitAtMost(1, TimeUnit.MINUTES)))
+        .hasRootCauseInstanceOf(TimeoutException.class);
+
+    killLocator(gfshNewGeodeNewJava, LOCATOR_2);
+  }
+
+  @Test
+  public void upgradingGeodeAndJavaWithProtocolsTLSv1_2Hangs() throws IOException {
+    generateSecurityProperties(PROTOCOL_TLSv1_2, securityPropertiesFile, keyStoreFile,
+        trustStoreFile);
+
+    gfshOldGeodeOldJava.execute(startLocator1);
+    assertThatThrownBy(() -> gfshNewGeodeNewJava.execute(
+        GfshScript.of(startLocator2).awaitAtMost(1, TimeUnit.MINUTES)))
+        .hasRootCauseInstanceOf(TimeoutException.class);
+
+    killLocator(gfshNewGeodeNewJava, LOCATOR_2);
+  }
+
+  @Test
+  public void upgradingGeodeAndJavaWithProtocolsTLSv1_2_SSLv2HelloHangs() throws IOException {
+    generateSecurityProperties(PROTOCOL_TLSv1_2_SSLv2Hello, securityPropertiesFile, keyStoreFile,
+        trustStoreFile);
+
+    gfshOldGeodeOldJava.execute(startLocator1);
+    assertThatThrownBy(() -> gfshNewGeodeNewJava.execute(
+        GfshScript.of(startLocator2).awaitAtMost(1, TimeUnit.MINUTES)))
+        .hasRootCauseInstanceOf(TimeoutException.class);
+
+    killLocator(gfshNewGeodeNewJava, LOCATOR_2);
   }
 
   private static String startLocator(final String name, final String bindAddress,
