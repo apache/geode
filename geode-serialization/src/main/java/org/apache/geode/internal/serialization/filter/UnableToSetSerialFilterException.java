@@ -14,22 +14,23 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyNoInteractions;
+/**
+ * Checked exception thrown when there's a failure using Java's ObjectInputFilter. All uses of this
+ * exception are caught and rethrown before reaching the user.
+ */
+public class UnableToSetSerialFilterException extends Exception {
 
-import java.io.ObjectInputStream;
-
-import org.junit.Test;
-
-public class NullObjectInputFilterTest {
-
-  @Test
-  public void doesNothing() throws UnableToSetSerialFilterException {
-    ObjectInputStream objectInputStream = mock(ObjectInputStream.class);
-    StreamSerialFilter filter = new NullStreamSerialFilter();
-
-    filter.setFilterOn(objectInputStream);
-
-    verifyNoInteractions(objectInputStream);
+  public UnableToSetSerialFilterException(String message) {
+    super(message);
   }
+
+  public UnableToSetSerialFilterException(String message, Throwable cause) {
+    super(message, cause);
+  }
+
+  public UnableToSetSerialFilterException(Throwable cause) {
+    super(cause);
+  }
+
+  private static final long serialVersionUID = 3406028558181224120L;
 }

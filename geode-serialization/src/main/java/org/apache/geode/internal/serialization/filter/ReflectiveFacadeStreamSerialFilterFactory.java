@@ -14,15 +14,26 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
-import java.io.ObjectInputStream;
+import java.util.Set;
 
 /**
- * Implementation of {@code ObjectInputFilter} that does nothing.
+ * Creates an instance of {@code ObjectInputFilter} that delegates to {@code ObjectInputFilterApi}
+ * to maintain independence from the JRE version.
  */
-public class NullObjectInputFilter implements ObjectInputFilter {
+public class ReflectiveFacadeStreamSerialFilterFactory implements StreamSerialFilterFactory {
 
   @Override
-  public void setFilterOn(ObjectInputStream objectInputStream) {
-    // Do nothing, this is the case where we don't filter.
+  public StreamSerialFilter create(SerializableObjectConfig config, Set<String> sanctionedClasses) {
+    ObjectInputFilterApi api =
+        new ReflectiveObjectInputFilterApiFactory().createObjectInputFilterApi();
+
+    if (config.getValidateSerializableObjects()) {
+      String pattern = new SanctionedSerializablesFilterPattern()
+          .append(config.getSerializableObjectFilter())
+          .pattern();
+
+      return new ReflectiveFacadeStreamSerialFilter(api, pattern, sanctionedClasses);
+    }
+    return new NullStreamSerialFilter();
   }
 }
