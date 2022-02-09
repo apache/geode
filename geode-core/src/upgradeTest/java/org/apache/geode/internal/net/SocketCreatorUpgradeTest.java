@@ -83,7 +83,6 @@ public class SocketCreatorUpgradeTest {
   private final String stopLocator1;
   private final String stopLocator2;
   private final String hostName;
-  private final UniquePortSupplier portSupplier;
   private final int locator1Port;
   private final int locator2Port;
   private final int locator1JmxPort;
@@ -124,7 +123,7 @@ public class SocketCreatorUpgradeTest {
     gfshNewGeodeOldJava = new GfshRule(oldJavaHome);
     gfshNewGeodeNewJava = new GfshRule(newJavaHome);
 
-    portSupplier = new UniquePortSupplier();
+    UniquePortSupplier portSupplier = new UniquePortSupplier();
     locator1Port = portSupplier.getAvailablePort();
     locator1JmxPort = portSupplier.getAvailablePort();
     locator2Port = portSupplier.getAvailablePort();
@@ -177,7 +176,7 @@ public class SocketCreatorUpgradeTest {
     gfshOldGeodeOldJava.execute(startLocator2);
 
     final File newSecurityPropertiesFile = tempFolder.newFile();
-    generateSecurityProperties(PROTOCOL_TLSv1_2, PROTOCOL_TLSv1_2, PROTOCOL_TLSv1_2_SSLv2Hello,
+    generateSecurityProperties(PROTOCOL_TLSv1_2, PROTOCOL_TLSv1_2_SSLv2Hello,
         newSecurityPropertiesFile, keyStoreFile, trustStoreFile);
 
     final String startLocator1New = startLocator(LOCATOR_1, hostName, locator1Port,
@@ -201,7 +200,7 @@ public class SocketCreatorUpgradeTest {
     gfshOldGeodeOldJava.execute(startLocator2);
 
     final File newSecurityPropertiesFile = tempFolder.newFile();
-    generateSecurityProperties(PROTOCOL_TLSv1_2, PROTOCOL_TLSv1_2, PROTOCOL_TLSv1_2_SSLv2Hello,
+    generateSecurityProperties(PROTOCOL_TLSv1_2, PROTOCOL_TLSv1_2_SSLv2Hello,
         newSecurityPropertiesFile, keyStoreFile, trustStoreFile);
 
     final String startLocator1New = startLocator(LOCATOR_1, hostName, locator1Port,
@@ -299,7 +298,7 @@ public class SocketCreatorUpgradeTest {
     gfshOldGeodeOldJava.execute(startLocator2);
 
     final File newSecurityPropertiesFile = tempFolder.newFile();
-    generateSecurityProperties(PROTOCOL_TLSv1_2, PROTOCOL_TLSv1_2, PROTOCOL_TLSv1_2_SSLv2Hello,
+    generateSecurityProperties(PROTOCOL_TLSv1_2, PROTOCOL_TLSv1_2_SSLv2Hello,
         newSecurityPropertiesFile, keyStoreFile, trustStoreFile);
 
     final String startLocator1New = startLocator(LOCATOR_1, hostName, locator1Port,
@@ -323,7 +322,7 @@ public class SocketCreatorUpgradeTest {
     gfshOldGeodeOldJava.execute(startLocator2);
 
     final File newSecurityPropertiesFile = tempFolder.newFile();
-    generateSecurityProperties(PROTOCOL_TLSv1_2, PROTOCOL_TLSv1_2, PROTOCOL_TLSv1_2_SSLv2Hello,
+    generateSecurityProperties(PROTOCOL_TLSv1_2, PROTOCOL_TLSv1_2_SSLv2Hello,
         newSecurityPropertiesFile, keyStoreFile, trustStoreFile);
 
     final String startLocator1New = startLocator(LOCATOR_1, hostName, locator1Port,
@@ -388,15 +387,22 @@ public class SocketCreatorUpgradeTest {
   }
 
   private static void generateSecurityProperties(final String protocols,
-      final File securityPropertiesFile,
-      final File keyStoreFile, final File trustStoreFile) throws IOException {
+      final File securityPropertiesFile, final File keyStoreFile, final File trustStoreFile)
+      throws IOException {
     generateSecurityProperties(protocols, null, null, securityPropertiesFile, keyStoreFile,
         trustStoreFile);
   }
 
+  private static void generateSecurityProperties(final String clientProtocols,
+      final String serverProtocols, final File securityPropertiesFile, final File keyStoreFile,
+      final File trustStoreFile) throws IOException {
+    generateSecurityProperties(null, clientProtocols, serverProtocols, securityPropertiesFile,
+        keyStoreFile,
+        trustStoreFile);
+  }
+
   private static void generateSecurityProperties(final String protocols,
-      final String clientProtocols, final String serverProtocols,
-      final File securityPropertiesFile,
+      final String clientProtocols, final String serverProtocols, final File securityPropertiesFile,
       final File keyStoreFile, final File trustStoreFile) throws IOException {
     final Properties properties = new Properties();
 

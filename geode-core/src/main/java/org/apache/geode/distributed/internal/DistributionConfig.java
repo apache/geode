@@ -1084,16 +1084,16 @@ public interface DistributionConfig
   /**
    * The default {@link ConfigurationProperties#SSL_CLIENT_PROTOCOLS} value.
    * <p>
-   * Actual value of this constant is <code>any</code>.
+   * Actual value of this constant is <code>null</code>.
    */
-  String DEFAULT_SSL_CLIENT_PROTOCOLS = "any";
+  String DEFAULT_SSL_CLIENT_PROTOCOLS = null;
 
   /**
    * The default {@link ConfigurationProperties#SSL_SERVER_PROTOCOLS} value.
    * <p>
-   * Actual value of this constant is <code>any</code>.
+   * Actual value of this constant is <code>null</code>.
    */
-  String DEFAULT_SSL_SERVER_PROTOCOLS = "any";
+  String DEFAULT_SSL_SERVER_PROTOCOLS = null;
 
   /**
    * The name of the {@link ConfigurationProperties#CLUSTER_SSL_PROTOCOLS} property

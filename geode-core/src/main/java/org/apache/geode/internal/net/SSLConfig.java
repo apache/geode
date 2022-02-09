@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.net;
 
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_PROTOCOLS;
@@ -23,6 +24,8 @@ import java.security.KeyStore;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -69,30 +72,30 @@ public class SSLConfig {
   @Immutable
   private final SSLParameterExtension sslParameterExtension;
 
-  private SSLConfig(boolean endpointIdentification,
-      boolean useDefaultSSLContext,
-      boolean enabled,
-      String protocols,
-      String clientProtocols,
-      String serverProtocols,
-      String ciphers,
-      boolean requireAuth,
-      String keystore,
-      String keystoreType,
-      String keystorePassword,
-      String truststore,
-      String truststorePassword,
-      String truststoreType,
-      String alias,
-      SecurableCommunicationChannel securableCommunicationChannel,
-      Properties properties,
-      SSLParameterExtension sslParameterExtension) {
+  private SSLConfig(final boolean endpointIdentification,
+      final boolean useDefaultSSLContext,
+      final boolean enabled,
+      final @NotNull String protocols,
+      final @Nullable String clientProtocols,
+      final @Nullable String serverProtocols,
+      final String ciphers,
+      final boolean requireAuth,
+      final String keystore,
+      final String keystoreType,
+      final String keystorePassword,
+      final String truststore,
+      final String truststorePassword,
+      final String truststoreType,
+      final String alias,
+      final SecurableCommunicationChannel securableCommunicationChannel,
+      final Properties properties,
+      final SSLParameterExtension sslParameterExtension) {
     this.endpointIdentification = endpointIdentification;
     this.useDefaultSSLContext = useDefaultSSLContext;
     this.enabled = enabled;
     this.protocols = protocols;
-    this.clientProtocols = clientProtocols;
-    this.serverProtocols = serverProtocols;
+    this.clientProtocols = isEmpty(clientProtocols) ? protocols : clientProtocols;
+    this.serverProtocols = isEmpty(serverProtocols) ? protocols : serverProtocols;
     this.ciphers = ciphers;
     this.requireAuth = requireAuth;
     this.keystore = keystore;
@@ -277,9 +280,8 @@ public class SSLConfig {
     public SSLConfig build() {
       return new SSLConfig(endpointIdentification, useDefaultSSLContext, enabled,
           protocols, clientProtocols, serverProtocols, ciphers, requireAuth, keystore, keystoreType,
-          keystorePassword,
-          truststore, truststorePassword, truststoreType, alias, securableCommunicationChannel,
-          properties, sslParameterExtension);
+          keystorePassword, truststore, truststorePassword, truststoreType, alias,
+          securableCommunicationChannel, properties, sslParameterExtension);
     }
 
     public Builder setAlias(final String alias) {
