@@ -39,9 +39,8 @@ import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.CommandObjects;
-import redis.clients.jedis.Connection;
 import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.params.ScanParams;
@@ -71,8 +70,6 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
 
   public static final String BASE_FIELD = "baseField_";
   private final int SIZE_OF_ENTRY_MAP = 100;
-
-  private final CommandObjects commandObjects = new CommandObjects();
 
   @Before
   public void setUp() {
@@ -480,8 +477,8 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     jedis.hset(HASH_KEY, initialHashData);
     final int iterationCount = 500;
 
-    Connection jedis1 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
-    Connection jedis2 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
+    final Jedis jedis1 = new Jedis(jedis.getConnectionFromSlot(SLOT_FOR_KEY));
+    final Jedis jedis2 = new Jedis(jedis.getConnectionFromSlot(SLOT_FOR_KEY));
 
     new ConcurrentLoopingThreads(iterationCount,
         (i) -> multipleHScanAndAssertOnSizeOfResultSet(jedis1, initialHashData),
@@ -501,20 +498,20 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     jedis.hset(HASH_KEY, initialHashData);
     final int iterationCount = 500;
 
-    Connection cxn1 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
-    Connection cxn2 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
+    final Jedis jedis1 = new Jedis(jedis.getConnectionFromSlot(SLOT_FOR_KEY));
+    final Jedis jedis2 = new Jedis(jedis.getConnectionFromSlot(SLOT_FOR_KEY));
 
     new ConcurrentLoopingThreads(iterationCount,
-        (i) -> multipleHScanAndAssertOnContentOfResultSet(i, cxn1, initialHashData),
-        (i) -> multipleHScanAndAssertOnContentOfResultSet(i, cxn2, initialHashData),
+        (i) -> multipleHScanAndAssertOnContentOfResultSet(i, jedis1, initialHashData),
+        (i) -> multipleHScanAndAssertOnContentOfResultSet(i, jedis2, initialHashData),
         (i) -> {
           String field = "new_" + BASE_FIELD + i;
           jedis.hset(HASH_KEY, field, "whatever");
           jedis.hdel(HASH_KEY, field);
         }).run();
 
-    cxn1.close();
-    cxn2.close();
+    jedis1.close();
+    jedis2.close();
   }
 
   @Test
@@ -523,22 +520,22 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     jedis.hset(HASH_KEY, initialHashData);
     final int iterationCount = 500;
 
-    Connection cxn1 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
-    Connection cxn2 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
+    final Jedis jedis1 = new Jedis(jedis.getConnectionFromSlot(SLOT_FOR_KEY));
+    final Jedis jedis2 = new Jedis(jedis.getConnectionFromSlot(SLOT_FOR_KEY));
 
     new ConcurrentLoopingThreads(iterationCount,
-        (i) -> multipleHScanAndAssertOnContentOfResultSet(i, cxn1, initialHashData),
-        (i) -> multipleHScanAndAssertOnContentOfResultSet(i, cxn2, initialHashData))
+        (i) -> multipleHScanAndAssertOnContentOfResultSet(i, jedis1, initialHashData),
+        (i) -> multipleHScanAndAssertOnContentOfResultSet(i, jedis2, initialHashData))
             .run();
 
     initialHashData
         .forEach((field, value) -> assertThat(jedis.hget(HASH_KEY, field).equals(value)));
 
-    cxn1.close();
-    cxn2.close();
+    jedis1.close();
+    jedis2.close();
   }
 
-  private void multipleHScanAndAssertOnContentOfResultSet(int iteration, Connection cxn,
+  private void multipleHScanAndAssertOnContentOfResultSet(int iteration, Jedis jedis,
       final Map<String, String> initialHashData) {
 
     List<String> allEntries = new ArrayList<>();
@@ -546,7 +543,7 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     String cursor = ZERO_CURSOR;
 
     do {
-      result = cxn.executeCommand(commandObjects.hscan(HASH_KEY, cursor, new ScanParams()));
+      result = jedis.hscan(HASH_KEY, cursor);
       cursor = result.getCursor();
       List<Map.Entry<String, String>> resultEntries = result.getResult();
       resultEntries
@@ -557,14 +554,14 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
         .containsAll(initialHashData.keySet());
   }
 
-  private void multipleHScanAndAssertOnSizeOfResultSet(final Connection cxn,
+  private void multipleHScanAndAssertOnSizeOfResultSet(Jedis jedis,
       final Map<String, String> initialHashData) {
     List<Map.Entry<String, String>> allEntries = new ArrayList<>();
     ScanResult<Map.Entry<String, String>> result;
     String cursor = ZERO_CURSOR;
 
     do {
-      result = cxn.executeCommand(commandObjects.hscan(HASH_KEY, cursor, new ScanParams()));
+      result = jedis.hscan(HASH_KEY, cursor);
       cursor = result.getCursor();
       allEntries.addAll(result.getResult());
     } while (!result.isCompleteIteration());

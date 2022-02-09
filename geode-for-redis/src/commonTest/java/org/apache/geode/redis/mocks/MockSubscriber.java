@@ -69,7 +69,7 @@ public class MockSubscriber extends JedisPubSub {
   public void proceed(final Connection connection, final String... channels) {
     try {
       // Kludge due to socket becoming private in jedis 4.1.1
-      // TODO find a safe public way of getting local socket address
+      // TODO is there a safe public way of getting local socket address
       final Field privateSocketField = Connection.class.getDeclaredField("socket");
       privateSocketField.setAccessible(true);
       final Socket socket = (Socket) privateSocketField.get(connection);

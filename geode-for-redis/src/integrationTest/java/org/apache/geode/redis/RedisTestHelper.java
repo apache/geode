@@ -14,28 +14,21 @@
  */
 package org.apache.geode.redis;
 
-import static redis.clients.jedis.Protocol.Command.INFO;
-
 import java.util.HashMap;
 import java.util.Map;
 
-import redis.clients.jedis.Connection;
 import redis.clients.jedis.Jedis;
 
 public class RedisTestHelper {
   /**
    * Convert the values returned by the INFO command into a basic param:value map.
    */
-  public static Map<String, String> getInfoAsMap(Jedis jedis) {
-    return getInfoAsMap(jedis.getConnection());
-  }
-
-  public static Map<String, String> getInfoAsMap(Connection cxn) {
+  public static Map<String, String> getInfo(Jedis jedis) {
     // Since this info is often used to get memory numbers in various tests, we want those to be
     // as accurate as possible.
     System.gc();
     Map<String, String> results = new HashMap<>();
-    final String rawInfo = getInfo(cxn);
+    String rawInfo = jedis.info();
 
     for (String line : rawInfo.split("\r\n")) {
       int colonIndex = line.indexOf(":");
@@ -48,15 +41,4 @@ public class RedisTestHelper {
 
     return results;
   }
-
-  public static String getInfo(final Connection cxn) {
-    cxn.sendCommand(INFO);
-    return cxn.getBulkReply();
-  }
-
-  public static String getInfo(final Connection cxn, final String section) {
-    cxn.sendCommand(INFO, section);
-    return cxn.getBulkReply();
-  }
-
 }
