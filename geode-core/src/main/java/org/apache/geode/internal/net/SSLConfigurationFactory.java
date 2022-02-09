@@ -20,7 +20,7 @@ import java.util.Properties;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -35,17 +35,10 @@ public class SSLConfigurationFactory {
   public static final String GEODE_SSL_CONFIG_PROPERTIES =
       "org.apache.geode.internal.net.ssl.config";
 
-  @MakeNotStatic
-  private static SSLConfigurationFactory instance = new SSLConfigurationFactory();
+  @Immutable
+  private static final SSLConfigurationFactory instance = new SSLConfigurationFactory();
 
   private SSLConfigurationFactory() {}
-
-  private static synchronized SSLConfigurationFactory getInstance() {
-    if (instance == null) {
-      instance = new SSLConfigurationFactory();
-    }
-    return instance;
-  }
 
   private SSLConfig createSSLConfigForComponent(final DistributionConfig distributionConfig,
       final SecurableCommunicationChannel sslEnabledComponent) {
@@ -137,6 +130,8 @@ public class SSLConfigurationFactory {
     sslConfigBuilder.setTruststorePassword(distributionConfig.getSSLTrustStorePassword());
     sslConfigBuilder.setTruststoreType(distributionConfig.getSSLTrustStoreType());
     sslConfigBuilder.setProtocols(distributionConfig.getSSLProtocols());
+    sslConfigBuilder.setClientProtocols(distributionConfig.getSSLClientProtocols());
+    sslConfigBuilder.setServerProtocols(distributionConfig.getSSLServerProtocols());
     sslConfigBuilder.setRequireAuth(distributionConfig.getSSLRequireAuthentication());
     sslConfigBuilder.setAlias(distributionConfig.getSSLDefaultAlias());
     sslConfigBuilder.setUseDefaultSSLContext(distributionConfig.getSSLUseDefaultContext());
@@ -162,6 +157,7 @@ public class SSLConfigurationFactory {
    * @return A SSLConfig.Builder object describing the ssl config for the server component
    * @deprecated as of Geode 1.0
    */
+  @Deprecated
   private SSLConfig.Builder configureLegacyClusterSSL(final DistributionConfig distributionConfig,
       SSLConfig.Builder sslConfigBuilder) {
     sslConfigBuilder.setCiphers(distributionConfig.getClusterSSLCiphers());
@@ -183,6 +179,7 @@ public class SSLConfigurationFactory {
    * @return A SSLConfig.Builder object describing the ssl config for the server component
    * @deprecated as of Geode 1.0
    */
+  @Deprecated
   private SSLConfig.Builder configureLegacyServerSSL(final DistributionConfig distributionConfig,
       final SSLConfig.Builder sslConfigBuilder) {
     sslConfigBuilder.setCiphers(distributionConfig.getServerSSLCiphers());
@@ -204,6 +201,7 @@ public class SSLConfigurationFactory {
    * @return A SSLConfig.Builder object describing the ssl config for the jmx component
    * @deprecated as of Geode 1.0
    */
+  @Deprecated
   private SSLConfig.Builder configureLegacyJMXSSL(final DistributionConfig distributionConfig,
       SSLConfig.Builder sslConfigBuilder) {
     sslConfigBuilder.setCiphers(distributionConfig.getJmxManagerSSLCiphers());
@@ -225,6 +223,7 @@ public class SSLConfigurationFactory {
    * @return A sslConfig object describing the ssl config for the gateway component
    * @deprecated as of Geode 1.0
    */
+  @Deprecated
   private SSLConfig.Builder configureLegacyGatewaySSL(final DistributionConfig distributionConfig,
       SSLConfig.Builder sslConfigBuilder) {
     sslConfigBuilder.setCiphers(distributionConfig.getGatewaySSLCiphers());
@@ -245,6 +244,7 @@ public class SSLConfigurationFactory {
    * @return A SSLConfig.Builder object describing the ssl config for the http service component
    * @deprecated as of Geode 1.0
    */
+  @Deprecated
   private SSLConfig.Builder configureLegacyHttpServiceSSL(
       final DistributionConfig distributionConfig,
       SSLConfig.Builder sslConfigBuilder) {
@@ -322,19 +322,19 @@ public class SSLConfigurationFactory {
     sslConfigBuilder.setRequireAuth(needClientAuth);
     sslConfigBuilder.setEnabled(useSSL);
 
-    getInstance().configureSSLPropertiesFromSystemProperties(sslConfigBuilder, gfsecurityProps);
+    instance.configureSSLPropertiesFromSystemProperties(sslConfigBuilder, gfsecurityProps);
 
     return sslConfigBuilder.build();
   }
 
   public static SSLConfig getSSLConfigForComponent(DistributionConfig distributionConfig,
       SecurableCommunicationChannel sslEnabledComponent) {
-    return getInstance().createSSLConfigForComponent(distributionConfig, sslEnabledComponent);
+    return instance.createSSLConfigForComponent(distributionConfig, sslEnabledComponent);
   }
 
   public static SSLConfig getSSLConfigForComponent(Properties properties,
       SecurableCommunicationChannel sslEnabledComponent) {
-    return getInstance().createSSLConfigForComponent(new DistributionConfigImpl(properties),
+    return instance.createSSLConfigForComponent(new DistributionConfigImpl(properties),
         sslEnabledComponent);
   }
 }

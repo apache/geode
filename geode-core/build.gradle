@@ -414,8 +414,8 @@ distributedTest {
 }
 
 configure([
-    upgradeTest,
-    repeatUpgradeTest
+  upgradeTest,
+  repeatUpgradeTest
 ]) {
   dependsOn(':geode-assembly:installDist')
 

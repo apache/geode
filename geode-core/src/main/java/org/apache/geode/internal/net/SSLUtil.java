@@ -20,6 +20,7 @@ import static org.apache.geode.internal.net.filewatch.FileWatchingX509ExtendedTr
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.util.stream.Stream;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -46,7 +47,11 @@ public class SSLUtil {
 
   public static SSLContext getSSLContextInstance(SSLConfig sslConfig)
       throws NoSuchAlgorithmException {
-    String[] protocols = sslConfig.getProtocolsAsStringArray();
+    final String[] protocols = Stream.concat(
+        Stream.of(sslConfig.getClientProtocolsAsStringArray()),
+        Stream.of(sslConfig.getServerProtocolsAsStringArray()))
+        .distinct()
+        .toArray(String[]::new);
     return findSSLContextForProtocols(protocols, DEFAULT_ALGORITMS);
   }
 

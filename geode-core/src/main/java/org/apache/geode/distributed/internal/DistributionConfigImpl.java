@@ -619,6 +619,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   private boolean sslUseDefaultSSLContext = DEFAULT_SSL_USE_DEFAULT_CONTEXT;
   private String sslProtocols = DEFAULT_SSL_PROTOCOLS;
+  private String sslClientProtocols = DEFAULT_SSL_CLIENT_PROTOCOLS;
+  private String sslServerProtocols = DEFAULT_SSL_SERVER_PROTOCOLS;
   private String sslCiphers = DEFAULT_SSL_CIPHERS;
   private boolean sslRequireAuthentication = DEFAULT_SSL_REQUIRE_AUTHENTICATION;
   private String sslKeyStore = DEFAULT_SSL_KEYSTORE;
@@ -3059,6 +3061,26 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   public void setSSLProtocols(final String protocols) {
     // This conversion is required due to backwards compatibility of the existing protocols code
     sslProtocols = convertCommaDelimitedToSpaceDelimitedString(protocols);
+  }
+
+  @Override
+  public String getSSLClientProtocols() {
+    return sslClientProtocols;
+  }
+
+  @Override
+  public void setSSLClientProtocols(final String sslClientProtocols) {
+    this.sslClientProtocols = sslClientProtocols;
+  }
+
+  @Override
+  public String getSSLServerProtocols() {
+    return sslServerProtocols;
+  }
+
+  @Override
+  public void setSSLServerProtocols(final String sslServerProtocols) {
+    this.sslServerProtocols = sslServerProtocols;
   }
 
   @Override

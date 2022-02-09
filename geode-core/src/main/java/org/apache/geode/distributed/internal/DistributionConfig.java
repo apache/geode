@@ -150,6 +150,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_TR
 import static org.apache.geode.distributed.ConfigurationProperties.SOCKET_BUFFER_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.SOCKET_LEASE_TIME;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_CLIENT_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_CLUSTER_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_DEFAULT_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
@@ -164,6 +165,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_PARAMETER
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_SERVER_ALIAS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_SERVER_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_TYPE;
@@ -1073,11 +1075,25 @@ public interface DistributionConfig
   void setClusterSSLProtocols(String protocols);
 
   /**
-   * The default {@link ConfigurationProperties#CLUSTER_SSL_PROTOCOLS} value.
+   * The default {@link ConfigurationProperties#SSL_PROTOCOLS} value.
    * <p>
    * Actual value of this constant is <code>any</code>.
    */
   String DEFAULT_SSL_PROTOCOLS = "any";
+
+  /**
+   * The default {@link ConfigurationProperties#SSL_CLIENT_PROTOCOLS} value.
+   * <p>
+   * Actual value of this constant is <code>any</code>.
+   */
+  String DEFAULT_SSL_CLIENT_PROTOCOLS = "any";
+
+  /**
+   * The default {@link ConfigurationProperties#SSL_SERVER_PROTOCOLS} value.
+   * <p>
+   * Actual value of this constant is <code>any</code>.
+   */
+  String DEFAULT_SSL_SERVER_PROTOCOLS = "any";
 
   /**
    * The name of the {@link ConfigurationProperties#CLUSTER_SSL_PROTOCOLS} property
@@ -5111,6 +5127,36 @@ public interface DistributionConfig
    */
   @ConfigAttribute(type = String.class)
   String SSL_PROTOCOLS_NAME = SSL_PROTOCOLS;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#SSL_CLIENT_PROTOCOLS} property.
+   */
+  @ConfigAttributeGetter(name = SSL_CLIENT_PROTOCOLS)
+  String getSSLClientProtocols();
+
+  @ConfigAttributeSetter(name = SSL_CLIENT_PROTOCOLS)
+  void setSSLClientProtocols(String sslClientProtocols);
+
+  /**
+   * The name of the {@link ConfigurationProperties#SSL_CLIENT_PROTOCOLS} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SSL_CLIENT_PROTOCOLS_NAME = SSL_CLIENT_PROTOCOLS;
+
+  /**
+   * Returns the value of the {@link ConfigurationProperties#SSL_SERVER_PROTOCOLS} property.
+   */
+  @ConfigAttributeGetter(name = SSL_SERVER_PROTOCOLS)
+  String getSSLServerProtocols();
+
+  @ConfigAttributeSetter(name = SSL_SERVER_PROTOCOLS)
+  void setSSLServerProtocols(String sslServerProtocols);
+
+  /**
+   * The name of the {@link ConfigurationProperties#SSL_SERVER_PROTOCOLS} property
+   */
+  @ConfigAttribute(type = String.class)
+  String SSL_SERVER_PROTOCOLS_NAME = SSL_SERVER_PROTOCOLS;
 
   /**
    * Returns the value of the {@link ConfigurationProperties#SSL_CIPHERS} property.

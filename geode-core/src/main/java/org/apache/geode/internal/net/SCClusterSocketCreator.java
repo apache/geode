@@ -79,13 +79,12 @@ class SCClusterSocketCreator extends ClusterSocketCreatorImpl {
     SSLConfig sslConfig = coreSocketCreator.getSslConfig();
     serverSocket.setUseClientMode(false);
     if (sslConfig.isRequireAuth()) {
-      // serverSocket.setWantClientAuth( true );
       serverSocket.setNeedClientAuth(true);
     }
     serverSocket.setEnableSessionCreation(true);
 
     // restrict protocols
-    String[] protocols = sslConfig.getProtocolsAsStringArray();
+    final String[] protocols = sslConfig.getServerProtocolsAsStringArray();
     if (!"any".equalsIgnoreCase(protocols[0])) {
       serverSocket.setEnabledProtocols(protocols);
     }

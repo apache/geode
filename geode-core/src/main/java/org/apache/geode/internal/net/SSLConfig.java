@@ -45,6 +45,8 @@ public class SSLConfig {
   private final boolean useDefaultSSLContext;
   private final boolean enabled;
   private final String protocols;
+  private final String serverProtocols;
+  private final String clientProtocols;
   private final String ciphers;
   private final boolean requireAuth;
   private final String keystore;
@@ -71,6 +73,8 @@ public class SSLConfig {
       boolean useDefaultSSLContext,
       boolean enabled,
       String protocols,
+      String clientProtocols,
+      String serverProtocols,
       String ciphers,
       boolean requireAuth,
       String keystore,
@@ -87,6 +91,8 @@ public class SSLConfig {
     this.useDefaultSSLContext = useDefaultSSLContext;
     this.enabled = enabled;
     this.protocols = protocols;
+    this.clientProtocols = clientProtocols;
+    this.serverProtocols = serverProtocols;
     this.ciphers = ciphers;
     this.requireAuth = requireAuth;
     this.keystore = keystore;
@@ -145,6 +151,22 @@ public class SSLConfig {
     return SSLUtil.readArray(protocols);
   }
 
+  public String getClientProtocols() {
+    return clientProtocols;
+  }
+
+  public String[] getClientProtocolsAsStringArray() {
+    return SSLUtil.readArray(clientProtocols);
+  }
+
+  public String getServerProtocols() {
+    return serverProtocols;
+  }
+
+  public String[] getServerProtocolsAsStringArray() {
+    return SSLUtil.readArray(serverProtocols);
+  }
+
   public String getCiphers() {
     return ciphers;
   }
@@ -189,10 +211,11 @@ public class SSLConfig {
 
   @Override
   public String toString() {
-    return "SSLConfig{" + "enabled=" + enabled + ", protocols='" + protocols + '\'' + ", ciphers='"
-        + ciphers + '\'' + ", requireAuth=" + requireAuth + ", keystore='" + keystore + '\''
-        + ", keystoreType='" + keystoreType + '\'' + ", keystorePassword='" + keystorePassword
-        + '\'' + ", truststore='" + truststore + '\'' + ", truststorePassword='"
+    return "SSLConfig{" + "enabled=" + enabled + ", protocols='" + protocols + '\''
+        + ", clientProtocols='" + clientProtocols + '\'' + ", serverProtocols='" + serverProtocols
+        + '\'' + ", ciphers='" + ciphers + '\'' + ", requireAuth=" + requireAuth + ", keystore='"
+        + keystore + '\'' + ", keystoreType='" + keystoreType + '\'' + ", keystorePassword='"
+        + keystorePassword + '\'' + ", truststore='" + truststore + '\'' + ", truststorePassword='"
         + truststorePassword + '\'' + ", truststoreType='" + truststoreType + '\'' + ", alias='"
         + alias + '\'' + ", securableCommunicationChannel=" + securableCommunicationChannel
         + ", properties=" + properties + '\'' + ", sslParameterExtension=" + sslParameterExtension
@@ -234,6 +257,8 @@ public class SSLConfig {
     private boolean useDefaultSSLContext = DistributionConfig.DEFAULT_SSL_USE_DEFAULT_CONTEXT;
     private boolean enabled = DistributionConfig.DEFAULT_SSL_ENABLED;
     private String protocols = DistributionConfig.DEFAULT_SSL_PROTOCOLS;
+    private String clientProtocols = DistributionConfig.DEFAULT_SSL_CLIENT_PROTOCOLS;
+    private String serverProtocols = DistributionConfig.DEFAULT_SSL_SERVER_PROTOCOLS;
     private String ciphers = DistributionConfig.DEFAULT_SSL_CIPHERS;
     private boolean requireAuth = DistributionConfig.DEFAULT_SSL_REQUIRE_AUTHENTICATION;
     private String keystore = DistributionConfig.DEFAULT_SSL_KEYSTORE;
@@ -251,7 +276,8 @@ public class SSLConfig {
 
     public SSLConfig build() {
       return new SSLConfig(endpointIdentification, useDefaultSSLContext, enabled,
-          protocols, ciphers, requireAuth, keystore, keystoreType, keystorePassword,
+          protocols, clientProtocols, serverProtocols, ciphers, requireAuth, keystore, keystoreType,
+          keystorePassword,
           truststore, truststorePassword, truststoreType, alias, securableCommunicationChannel,
           properties, sslParameterExtension);
     }
@@ -303,6 +329,16 @@ public class SSLConfig {
 
     public Builder setProtocols(String protocols) {
       this.protocols = protocols;
+      return this;
+    }
+
+    public Builder setClientProtocols(String clientProtocols) {
+      this.clientProtocols = clientProtocols;
+      return this;
+    }
+
+    public Builder setServerProtocols(String serverProtocols) {
+      this.serverProtocols = serverProtocols;
       return this;
     }
 

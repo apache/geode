@@ -384,7 +384,8 @@ public class SocketCreator extends TcpSocketCreatorImpl {
       parameters.setNeedClientAuth(sslConfig.isRequireAuth());
     }
 
-    final String[] protocols = sslConfig.getProtocolsAsStringArray();
+    final String[] protocols = clientSocket ? sslConfig.getClientProtocolsAsStringArray()
+        : sslConfig.getServerProtocolsAsStringArray();
     if (protocols != null && !"any".equalsIgnoreCase(protocols[0])) {
       parameters.setProtocols(protocols);
     }
@@ -574,9 +575,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
         sslSocket.setSSLParameters(parameters);
       }
 
-      String[] protocols = sslConfig.getProtocolsAsStringArray();
-
-      // restrict cyphers
+      String[] protocols = sslConfig.getClientProtocolsAsStringArray();
       if (protocols != null && !"any".equalsIgnoreCase(protocols[0])) {
         sslSocket.setEnabledProtocols(protocols);
       }
