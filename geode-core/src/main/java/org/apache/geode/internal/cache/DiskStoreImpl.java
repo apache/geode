@@ -3225,10 +3225,8 @@ public class DiskStoreImpl implements DiskStore {
 
     @Override
     public RuntimeException generateCancelledException(Throwable e) {
-      logger.info("DiskStoreImpl.isClosed(): " + isClosed() + " isClosing(): " + isClosing());
-
       if (isClosed()) {
-        return new CacheClosedException("The disk store is closed", e);
+        return new CacheClosedException("The disk store is closed.", e);
       } else {
         return null;
       }

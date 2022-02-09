@@ -1308,8 +1308,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     writeIFRecord(bb, true);
   }
 
-  private void writeIFRecord(ByteBuffer bb, boolean doStats) throws IOException {
-    assert lock.isHeldByCurrentThread();
+  private void checkClosed() {
     if (closed) {
       parent.getCache().getCancelCriterion().checkCancelInProgress();
 
@@ -1322,6 +1321,11 @@ public class DiskInitFile implements DiskInitFileInterpreter {
 
       throw dae;
     }
+  }
+
+  private void writeIFRecord(ByteBuffer bb, boolean doStats) throws IOException {
+    assert lock.isHeldByCurrentThread();
+    checkClosed();
 
     ifRAF.write(bb.array(), 0, bb.position());
     if (logger.isTraceEnabled(LogMarker.PERSIST_WRITES_VERBOSE)) {
@@ -1337,18 +1341,8 @@ public class DiskInitFile implements DiskInitFileInterpreter {
 
   private void writeIFRecord(HeapDataOutputStream hdos, boolean doStats) throws IOException {
     assert lock.isHeldByCurrentThread();
-    if (closed) {
-      parent.getCache().getCancelCriterion().checkCancelInProgress();
+    checkClosed();
 
-      if (parent.isClosed() || parent.isClosing()) {
-        throw new CacheClosedException("The disk store is closed or closing");
-      }
-
-      DiskAccessException dae = new DiskAccessException("The disk init file is closed", parent);
-      parent.handleDiskAccessException(dae);
-
-      throw dae;
-    }
     hdos.sendTo(ifRAF);
     if (logger.isTraceEnabled(LogMarker.PERSIST_WRITES_VERBOSE)) {
       logger.trace(LogMarker.PERSIST_WRITES_VERBOSE, "DiskInitFile writeIFRecord HDOS");

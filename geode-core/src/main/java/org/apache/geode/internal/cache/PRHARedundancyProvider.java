@@ -43,6 +43,7 @@ import java.util.function.BiFunction;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
@@ -728,9 +729,10 @@ public class PRHARedundancyProvider {
           }
         }
       } catch (DiskAccessException dae) {
-        if (partitionedRegion.getCancelCriterion().isCancelInProgress()) {
+        CancelCriterion cancelCriterion = partitionedRegion.getCancelCriterion();
+        if (cancelCriterion.isCancelInProgress()) {
           needToElectPrimary = false;
-          partitionedRegion.getCancelCriterion().checkCancelInProgress(dae);
+          cancelCriterion.checkCancelInProgress(dae);
         }
 
         throw dae;
