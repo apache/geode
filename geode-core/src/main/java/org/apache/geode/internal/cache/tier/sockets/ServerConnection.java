@@ -45,6 +45,7 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadState;
+import org.jetbrains.annotations.TestOnly;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
@@ -959,9 +960,12 @@ public class ServerConnection implements Runnable {
     }
   }
 
-  private void cleanClientAuths() {
+  // this needs to be synchronized to avoid NPE betweeen null check and cleanup
+  @VisibleForTesting
+  synchronized void cleanClientAuths() {
     if (clientUserAuths != null) {
       clientUserAuths.cleanup(false);
+      clientUserAuths = null;
     }
   }
 
@@ -1042,18 +1046,19 @@ public class ServerConnection implements Runnable {
         chmRegistered = false;
       }
     }
-    if (unregisterClient) {
-      // last server connection call all close on auth objects
-      secureLogger.debug("ServerConnection.handleTermination clean client auths");
-      cleanClientAuths();
-    }
-    clientUserAuths = null;
+
     if (needsUnregister) {
       acceptor.getClientHealthMonitor().removeConnection(proxyId, this);
       if (unregisterClient) {
         acceptor.getClientHealthMonitor().unregisterClient(proxyId, getAcceptor(),
             clientDisconnectedCleanly, clientDisconnectedException);
       }
+    }
+
+    if (unregisterClient) {
+      // last server connection call all close on auth objects
+      secureLogger.debug("ServerConnection.handleTermination clean client auths");
+      cleanClientAuths();
     }
 
     if (cleanupStats) {
@@ -1231,9 +1236,14 @@ public class ServerConnection implements Runnable {
     return uniqueId;
   }
 
-  @VisibleForTesting
+  @TestOnly
   protected ClientUserAuths getClientUserAuths() {
     return clientUserAuths;
+  }
+
+  @TestOnly
+  protected void setClientUserAuths(ClientUserAuths clientUserAuths) {
+    this.clientUserAuths = clientUserAuths;
   }
 
   private void setSecurityPart() {
@@ -1930,7 +1940,7 @@ public class ServerConnection implements Runnable {
   }
 
   /**
-   * For legacy auth?
+   * For legacy auth
    */
   private long getUniqueId(Principal principal)
       throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException,

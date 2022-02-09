@@ -34,6 +34,7 @@ import static org.mockito.quality.Strictness.STRICT_STUBS;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.HashMap;
 
 import org.apache.shiro.subject.Subject;
 import org.junit.Before;
@@ -62,7 +63,6 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category(ClientServerTest.class)
 public class ServerConnectionTest {
-
   @Rule
   public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
 
@@ -81,6 +81,7 @@ public class ServerConnectionTest {
   private DistributionManager distributionManager;
   private ThreadsMonitoring threadsMonitoring;
   private CacheClientNotifier notifier;
+  private ClientHealthMonitor clientHealthMonitor;
 
   @Before
   public void setUp() throws IOException {
@@ -92,6 +93,7 @@ public class ServerConnectionTest {
     securityService = mock(SecurityService.class);
     command = mock(Command.class);
     notifier = mock(CacheClientNotifier.class);
+    clientHealthMonitor = mock(ClientHealthMonitor.class);
 
     when(inetAddress.getHostAddress()).thenReturn("localhost");
     when(socket.getInetAddress()).thenReturn(inetAddress);
@@ -275,5 +277,27 @@ public class ServerConnectionTest {
     spy.doNormalMessage();
     assertThat(spy.getProcessMessages()).isFalse();
     verify(spy, never()).resumeThreadMonitoring();
+  }
+
+  @Test
+  public void cleanClientAuthShouldNullIt() {
+    ClientUserAuths clientUserAuths = mock(ClientUserAuths.class);
+    ServerConnection spy = spy(serverConnection);
+    spy.setClientUserAuths(clientUserAuths);
+    spy.cleanClientAuths();
+    assertThat(spy.getClientUserAuths()).isNull();
+  }
+
+  @Test
+  public void handleTerminationShouldNotNullClientAuths() {
+    when(acceptor.getClientHealthMonitor()).thenReturn(clientHealthMonitor);
+    ClientUserAuths clientUserAuths = mock(ClientUserAuths.class);
+    ServerConnection spy = spy(serverConnection);
+    doReturn(new HashMap<>()).when(clientHealthMonitor).getCleanupTable();
+    doReturn(new HashMap<>()).when(clientHealthMonitor).getCleanupProxyIdTable();
+    spy.setClientUserAuths(clientUserAuths);
+
+    spy.handleTermination(false);
+    assertThat(spy.getClientUserAuths()).isNotNull();
   }
 }
