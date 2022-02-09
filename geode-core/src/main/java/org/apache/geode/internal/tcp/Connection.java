@@ -3023,32 +3023,75 @@ public class Connection implements Runnable {
     }
   }
 
+  @VisibleForTesting
+  public static class MessageHeaderParsing {
+    final int messageLength;
+    final byte messageType;
+    final short messageId;
+    final boolean directAck;
+    final boolean lengthSet;
+    final boolean invalidMessageHeader;
+
+    private MessageHeaderParsing(final int messageLength, final byte messageType,
+        final short messageId,
+        final boolean directAck,
+        final boolean lengthSet, final boolean invalidMessageHeader) {
+      this.messageLength = messageLength;
+      this.messageType = messageType;
+      this.messageId = messageId;
+      this.directAck = directAck;
+      this.lengthSet = lengthSet;
+      this.invalidMessageHeader = invalidMessageHeader;
+    }
+  }
+
   private boolean readMessageHeader(ByteBuffer peerDataBuffer) throws IOException {
-    int headerStartPos = peerDataBuffer.position();
-    messageLength = peerDataBuffer.getInt();
+
+    // call pure function to parse header
+    final MessageHeaderParsing messageHeaderParsing =
+        readMessageHeaderFunction(peerDataBuffer, lengthSet);
+
+    // update fields
+    messageLength = messageHeaderParsing.messageLength;
+    messageType = messageHeaderParsing.messageType;
+    messageId = messageHeaderParsing.messageId;
+    directAck = messageHeaderParsing.directAck;
+    lengthSet = messageHeaderParsing.lengthSet;
+
+    // more side effects
+    if (messageHeaderParsing.invalidMessageHeader) {
+      logger.fatal("Unknown P2P message type: {}", messageHeaderParsing.messageType);
+      readerShuttingDown = true;
+      requestClose(format("Unknown P2P message type: %s",
+          messageHeaderParsing.messageType));
+    }
+
+    return messageHeaderParsing.invalidMessageHeader;
+  }
+
+  @VisibleForTesting
+  public static MessageHeaderParsing readMessageHeaderFunction(final ByteBuffer peerDataBuffer,
+      final boolean lengthSetParameter) throws IOException {
+    final int headerStartPos = peerDataBuffer.position();
+    final int headerSize = peerDataBuffer.getInt();
     /* nioMessageVersion = */
-    calcHdrVersion(messageLength);
-    messageLength = calcMsgByteSize(messageLength);
-    messageType = peerDataBuffer.get();
-    messageId = peerDataBuffer.getShort();
-    directAck = (messageType & DIRECT_ACK_BIT) != 0;
+    calcHdrVersion(headerSize);
+    final int messageLength = calcMsgByteSize(headerSize);
+    byte messageType = peerDataBuffer.get();
+    final short messageId = peerDataBuffer.getShort();
+    final boolean directAck = (messageType & DIRECT_ACK_BIT) != 0;
     if (directAck) {
       // clear the ack bit
       messageType &= ~DIRECT_ACK_BIT;
     }
     if (!validMsgType(messageType)) {
-      Integer nioMessageTypeInteger = (int) messageType;
-      logger.fatal("Unknown P2P message type: {}", nioMessageTypeInteger);
-      readerShuttingDown = true;
-      requestClose(format("Unknown P2P message type: %s",
-          nioMessageTypeInteger));
-      return true;
+      return new MessageHeaderParsing(messageLength, messageType, messageId, directAck,
+          lengthSetParameter, true);
     }
-    lengthSet = true;
     // keep the header "in" the buffer until we have read the entire msg.
     // Trust me: this will reduce copying on large messages.
     peerDataBuffer.position(headerStartPos);
-    return false;
+    return new MessageHeaderParsing(messageLength, messageType, messageId, directAck, true, false);
   }
 
   private void readMessage(ByteBuffer peerDataBuffer, AbstractExecutor threadMonitorExecutor) {
