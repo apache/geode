@@ -80,13 +80,10 @@ public class SocketCreatorUpgradeTest {
 
   private final String startLocator1;
   private final String startLocator2;
+  private final String startLocator1New;
+  private final String startLocator2New;
   private final String stopLocator1;
   private final String stopLocator2;
-  private final String hostName;
-  private final int locator1Port;
-  private final int locator2Port;
-  private final int locator1JmxPort;
-  private final int locator2JmxPort;
 
   @Rule
   public TemporaryFolder tempFolder = new TemporaryFolder();
@@ -106,11 +103,12 @@ public class SocketCreatorUpgradeTest {
   private final File keyStoreFile;
   private final File trustStoreFile;
   private final File securityPropertiesFile;
+  private final File newSecurityPropertiesFile;
 
   @Parameters(name = "{0}")
   public static Collection<String> data() {
     final List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
-    result.removeIf(s -> TestVersion.compare(s, "1.12.0") < 0);
+    result.removeIf(s -> TestVersion.compare(s, "1.12.1") < 0);
     return result;
   }
 
@@ -118,29 +116,36 @@ public class SocketCreatorUpgradeTest {
       GeneralSecurityException {
     final Path oldJavaHome = Paths.get(getenv("JAVA_HOME_8u265"));
     final Path newJavaHome = Paths.get(getenv("JAVA_HOME_8u272"));
+
     gfshOldGeodeOldJava = new GfshRule(version, oldJavaHome);
     gfshOldGeodeNewJava = new GfshRule(version, newJavaHome);
     gfshNewGeodeOldJava = new GfshRule(oldJavaHome);
     gfshNewGeodeNewJava = new GfshRule(newJavaHome);
 
-    UniquePortSupplier portSupplier = new UniquePortSupplier();
-    locator1Port = portSupplier.getAvailablePort();
-    locator1JmxPort = portSupplier.getAvailablePort();
-    locator2Port = portSupplier.getAvailablePort();
-    locator2JmxPort = portSupplier.getAvailablePort();
+    final UniquePortSupplier portSupplier = new UniquePortSupplier();
+    final int locator1Port = portSupplier.getAvailablePort();
+    final int locator1JmxPort = portSupplier.getAvailablePort();
+    final int locator2Port = portSupplier.getAvailablePort();
+    final int locator2JmxPort = portSupplier.getAvailablePort();
 
     tempFolder.create();
     keyStoreFile = tempFolder.newFile();
     trustStoreFile = tempFolder.newFile();
     securityPropertiesFile = tempFolder.newFile();
+    newSecurityPropertiesFile = tempFolder.newFile();
 
-    hostName = InetAddress.getLocalHost().getCanonicalHostName();
+    final String hostName = InetAddress.getLocalHost().getCanonicalHostName();
     generateKeyAndTrustStore(hostName, keyStoreFile, trustStoreFile);
 
     startLocator1 = startLocator(LOCATOR_1, hostName, locator1Port, locator1JmxPort,
         securityPropertiesFile, locator2Port);
     startLocator2 = startLocator(LOCATOR_2, hostName, locator2Port, locator2JmxPort,
         securityPropertiesFile, locator1Port);
+
+    startLocator1New = startLocator(LOCATOR_1, hostName, locator1Port, locator1JmxPort,
+        newSecurityPropertiesFile, locator2Port);
+    startLocator2New = startLocator(LOCATOR_2, hostName, locator2Port, locator2JmxPort,
+        newSecurityPropertiesFile, locator1Port);
 
     stopLocator1 = stopLocator(LOCATOR_1);
     stopLocator2 = stopLocator(LOCATOR_2);
@@ -172,17 +177,11 @@ public class SocketCreatorUpgradeTest {
     generateSecurityProperties(PROTOCOL_TLSv1_2,
         securityPropertiesFile, keyStoreFile, trustStoreFile);
 
-    gfshOldGeodeOldJava.execute(startLocator1);
-    gfshOldGeodeOldJava.execute(startLocator2);
-
-    final File newSecurityPropertiesFile = tempFolder.newFile();
     generateSecurityProperties(PROTOCOL_TLSv1_2, PROTOCOL_TLSv1_2_SSLv2Hello,
         newSecurityPropertiesFile, keyStoreFile, trustStoreFile);
 
-    final String startLocator1New = startLocator(LOCATOR_1, hostName, locator1Port,
-        locator1JmxPort, newSecurityPropertiesFile, locator2Port);
-    final String startLocator2New = startLocator(LOCATOR_2, hostName, locator2Port,
-        locator2JmxPort, newSecurityPropertiesFile, locator1Port);
+    gfshOldGeodeOldJava.execute(startLocator1);
+    gfshOldGeodeOldJava.execute(startLocator2);
 
     // upgrade with new security properties
     gfshOldGeodeOldJava.execute(stopLocator1);
@@ -196,17 +195,11 @@ public class SocketCreatorUpgradeTest {
     generateSecurityProperties(PROTOCOL_TLSv1_2,
         securityPropertiesFile, keyStoreFile, trustStoreFile);
 
-    gfshOldGeodeOldJava.execute(startLocator1);
-    gfshOldGeodeOldJava.execute(startLocator2);
-
-    final File newSecurityPropertiesFile = tempFolder.newFile();
     generateSecurityProperties(PROTOCOL_TLSv1_2, PROTOCOL_TLSv1_2_SSLv2Hello,
         newSecurityPropertiesFile, keyStoreFile, trustStoreFile);
 
-    final String startLocator1New = startLocator(LOCATOR_1, hostName, locator1Port,
-        locator1JmxPort, newSecurityPropertiesFile, locator2Port);
-    final String startLocator2New = startLocator(LOCATOR_2, hostName, locator2Port,
-        locator2JmxPort, newSecurityPropertiesFile, locator1Port);
+    gfshOldGeodeOldJava.execute(startLocator1);
+    gfshOldGeodeOldJava.execute(startLocator2);
 
     // upgrade with new security properties
     gfshOldGeodeOldJava.execute(stopLocator1);
@@ -294,17 +287,11 @@ public class SocketCreatorUpgradeTest {
     generateSecurityProperties(PROTOCOL_TLSv1_2,
         securityPropertiesFile, keyStoreFile, trustStoreFile);
 
-    gfshOldGeodeOldJava.execute(startLocator1);
-    gfshOldGeodeOldJava.execute(startLocator2);
-
-    final File newSecurityPropertiesFile = tempFolder.newFile();
     generateSecurityProperties(PROTOCOL_TLSv1_2, PROTOCOL_TLSv1_2_SSLv2Hello,
         newSecurityPropertiesFile, keyStoreFile, trustStoreFile);
 
-    final String startLocator1New = startLocator(LOCATOR_1, hostName, locator1Port,
-        locator1JmxPort, newSecurityPropertiesFile, locator2Port);
-    final String startLocator2New = startLocator(LOCATOR_2, hostName, locator2Port,
-        locator2JmxPort, newSecurityPropertiesFile, locator1Port);
+    gfshOldGeodeOldJava.execute(startLocator1);
+    gfshOldGeodeOldJava.execute(startLocator2);
 
     // upgrade with new security properties
     gfshOldGeodeOldJava.execute(stopLocator1);
@@ -318,17 +305,11 @@ public class SocketCreatorUpgradeTest {
     generateSecurityProperties(PROTOCOL_TLSv1_2,
         securityPropertiesFile, keyStoreFile, trustStoreFile);
 
-    gfshOldGeodeOldJava.execute(startLocator1);
-    gfshOldGeodeOldJava.execute(startLocator2);
-
-    final File newSecurityPropertiesFile = tempFolder.newFile();
     generateSecurityProperties(PROTOCOL_TLSv1_2, PROTOCOL_TLSv1_2_SSLv2Hello,
         newSecurityPropertiesFile, keyStoreFile, trustStoreFile);
 
-    final String startLocator1New = startLocator(LOCATOR_1, hostName, locator1Port,
-        locator1JmxPort, newSecurityPropertiesFile, locator2Port);
-    final String startLocator2New = startLocator(LOCATOR_2, hostName, locator2Port,
-        locator2JmxPort, newSecurityPropertiesFile, locator1Port);
+    gfshOldGeodeOldJava.execute(startLocator1);
+    gfshOldGeodeOldJava.execute(startLocator2);
 
     // upgrade with new security properties
     gfshOldGeodeOldJava.execute(stopLocator1);
