@@ -3217,7 +3217,7 @@ public class DiskStoreImpl implements DiskStore {
     @Override
     public String cancelInProgress() {
       if (isClosed()) {
-        return "The disk store is closed";
+        return "The disk store is closed.";
       } else {
         return null;
       }
@@ -3226,7 +3226,7 @@ public class DiskStoreImpl implements DiskStore {
     @Override
     public RuntimeException generateCancelledException(Throwable e) {
       if (isClosed()) {
-        return new CacheClosedException("The disk store is closed.", e);
+        return new CacheClosedException("The disk store is closed", e);
       } else {
         return null;
       }
