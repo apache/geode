@@ -420,4 +420,10 @@ distributedTest {
   exclude "**/*\$*.class"
 }
 
+rootProject.combineReports.dependsOn(':geode-old-versions:test')
+
 rootProject.generate.dependsOn(generateGrammarSource)
+
+project.tasks.named("processIntegrationTestResources") {
+  duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}

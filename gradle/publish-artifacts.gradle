@@ -38,8 +38,8 @@ publishing {
         withXml {
           // This black magic checks to see if a dependency has the flag ext.optional=true
           // set on it, and if so marks the dependency as optional in the maven pom
-          def depMap = project.configurations.compile.dependencies.collectEntries { [it.name, it] }
-          def runtimeDeps = project.configurations.runtime.dependencies.collectEntries {
+          def depMap = project.configurations.compileClasspath.dependencies.collectEntries { [it.name, it] }
+          def runtimeDeps = project.configurations.runtimeClasspath.dependencies.collectEntries {
             [it.name, it]
           }
           depMap.putAll(runtimeDeps)

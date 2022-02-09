@@ -314,7 +314,7 @@ tasks.register('defaultDistributionConfig', JavaExec) {
     project(':geode-core').sourceSets.main.runtimeClasspath
   }
   outputs.file file("$buildDir/gemfire.properties")
-  main 'org.apache.geode.distributed.internal.DefaultPropertiesGenerator'
+  mainClass = 'org.apache.geode.distributed.internal.DefaultPropertiesGenerator'
   classpath configurations.defaultDistributionConfigClasspath
   workingDir buildDir
 
@@ -328,7 +328,7 @@ tasks.register('defaultCacheConfig', JavaExec) {
     project(':geode-core').sourceSets.main.runtimeClasspath
   }
   outputs.file file("$buildDir/cache.xml")
-  main 'org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator'
+  mainClass =  'org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator'
   classpath configurations.defaultCacheConfigClasspath
   workingDir buildDir
 
@@ -558,6 +558,11 @@ tasks.withType(Test) {
   dependsOn installDist
   environment 'GEODE_HOME', "$buildDir/install/${distributions.main.distributionBaseName.get()}"
 }
+
+processDistributedTestResources {
+  dependsOn('downloadWebServers')
+}
+
 
 
 acceptanceTest.dependsOn(rootProject.getTasksByName("publishToMavenLocal", true))
