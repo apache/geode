@@ -21,7 +21,7 @@ import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTC
 import static org.apache.geode.internal.cache.ExpiryTask.permitExpiration;
 import static org.apache.geode.internal.cache.ExpiryTask.suspendExpiration;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -439,13 +439,16 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         assertThat(custRegion.getEntry(custId)).isNotNull();
         assertThat(expectedCust).isEqualTo(custRegion.getEntry(custId).getValue());
         /*
-         * assertThat(orderRegion.getEntry(orderId)).isNotNull(); assertIndexDetailsEquals(expectedOrder,
+         * assertThat(orderRegion.getEntry(orderId)).isNotNull();
+         * assertIndexDetailsEquals(expectedOrder,
          * orderRegion.getEntry(orderId).getValue());
          *
-         * assertThat(orderRegion.getEntry(orderId2)).isNotNull(); assertIndexDetailsEquals(expectedOrder2,
+         * assertThat(orderRegion.getEntry(orderId2)).isNotNull();
+         * assertIndexDetailsEquals(expectedOrder2,
          * orderRegion.getEntry(orderId2).getValue());
          *
-         * assertThat(orderRegion.getEntry(orderId3)).isNotNull(); assertIndexDetailsEquals(expectedOrder3,
+         * assertThat(orderRegion.getEntry(orderId3)).isNotNull();
+         * assertIndexDetailsEquals(expectedOrder3,
          * orderRegion.getEntry(orderId3).getValue());
          */
         assertThat(refRegion.getEntry(custId)).isNotNull();
@@ -995,7 +998,8 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         TXManagerImpl mgr = getCache().getTxManager();
         assertThat(mgr.isHostedTxInProgress(txId)).isTrue();
         TXStateProxy tx = mgr.getHostedTXState(txId);
-        assertThat(3 + (hash1 == hash10 ? 0 : 1)).isEqualTo(tx.getRegions().size());// 2 buckets for the two
+        assertThat(3 + (hash1 == hash10 ? 0 : 1)).isEqualTo(tx.getRegions().size());// 2 buckets for
+                                                                                    // the two
         // puts we
         // did in the accessor one dist. region, and one more bucket if Cust1 and Cust10 resolve to
         // different buckets
@@ -1028,11 +1032,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         TXStateProxy tx = mgr.pauseTransaction();
         cust.put(conflictCust, new Customer("foo", "bar"));
         mgr.unpauseTransaction(tx);
-        try {
-          mgr.commit();
-          fail("expected exception that was not thrown");
-        } catch (CommitConflictException ignored) {
-        }
+        assertThatThrownBy(mgr::commit).isInstanceOf(CommitConflictException.class);
         return null;
       }
     });
@@ -1112,11 +1112,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         TXStateProxy tx = mgr.pauseTransaction();
         cust.put(conflictCust, new Customer("foo", "bar"));
         mgr.unpauseTransaction(tx);
-        try {
-          mgr.commit();
-          fail("expected exception that was not thrown");
-        } catch (CommitConflictException ignored) {
-        }
+        assertThatThrownBy(mgr::commit).isInstanceOf(CommitConflictException.class);
         return null;
       }
     });
@@ -1197,11 +1193,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         assertThat(cust.get(custId20)).isNotNull();
         cust.put(custId4, new Customer("foo", "bar"));
         mgr.unpauseTransaction(tx);
-        try {
-          mgr.commit();
-          fail("expected exception that was not thrown");
-        } catch (CommitConflictException ignored) {
-        }
+        assertThatThrownBy(mgr::commit).isInstanceOf(CommitConflictException.class);
         assertThat(cust.get(custId3)).isNotNull();
         assertThat(cust.get(custId4)).isNotNull();
         assertThat(cust.get(custId20)).isNotNull();
@@ -1255,10 +1247,12 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         Customer customer2 = new Customer("customer2", "address2");
         Customer fakeCust = new Customer("foo2", "bar2");
         try {
-          cust.removeAll(Arrays.asList(custId0, custId4, custId1, custId2, custId3, custId20));
-          fail("expected exception that was not thrown");
-        } catch (TransactionDataNotColocatedException e) {
+          assertThatThrownBy(() -> cust
+              .removeAll(Arrays.asList(custId0, custId4, custId1, custId2, custId3, custId20)))
+                  .isInstanceOf(TransactionDataNotColocatedException.class);
+        } catch (Throwable e) {
           mgr.rollback();
+          throw e;
         }
         assertThat(cust.get(custId0)).isNotNull();
         assertThat(cust.get(custId1)).isNotNull();
@@ -1387,15 +1381,12 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         CustId conflictCust = new CustId(2);
         Customer customer = new Customer("customer2", "address2");
         getCache().getLogger().fine("SWAP:removeConflict");
-        assertThat(cust.replace(conflictCust, customer, new Customer("conflict", "conflict"))).isTrue();
+        assertThat(cust.replace(conflictCust, customer, new Customer("conflict", "conflict")))
+            .isTrue();
         TXStateProxy tx = mgr.pauseTransaction();
         cust.put(conflictCust, new Customer("foo", "bar"));
         mgr.unpauseTransaction(tx);
-        try {
-          mgr.commit();
-          fail("expected exception that was not thrown");
-        } catch (CommitConflictException ignored) {
-        }
+        assertThatThrownBy(mgr::commit).isInstanceOf(CommitConflictException.class);
         return null;
       }
     });
@@ -1430,20 +1421,15 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
         CacheTransactionManager mgr = getCache().getTxManager();
         mgr.begin();
-        try {
-          put10Entries(custRegion, orderRegion);
-          fail("Expected TransactionDataNotColocatedException not thrown");
-        } catch (TransactionDataNotColocatedException ignored) {
-        }
+        assertThatThrownBy(() -> put10Entries(custRegion, orderRegion))
+            .isInstanceOf(TransactionDataNotColocatedException.class);
         mgr.rollback();
         put10Entries(custRegion, orderRegion);
 
         mgr.begin();
-        try {
-          put10Entries(custRegion, orderRegion);
-          fail("Expected TransactionDataNotColocatedException not thrown");
-        } catch (TransactionDataNotColocatedException ignored) {
-        }
+
+        assertThatThrownBy(() -> put10Entries(custRegion, orderRegion))
+            .isInstanceOf(TransactionDataNotColocatedException.class);
         mgr.rollback();
         return null;
       }
@@ -1872,12 +1858,8 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         getCache().getTxManager().begin();
         Region r = getCache().getRegion(CUSTOMER);
         r.put(new CustId(8), new Customer("name8", "address8"));
-        try {
-          getCache().getTxManager().commit();
-          fail("expected exception that was not thrown");
-        } catch (Exception e) {
-          assertThat("AssertionError").isEqualTo(e.getCause().getMessage());
-        }
+        assertThatThrownBy(() -> getCache().getTxManager().commit())
+            .isInstanceOf(CommitConflictException.class);
         return null;
       }
     });
@@ -2442,42 +2424,13 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         CacheTransactionManager mgr = getCache().getTXMgr();
         mgr.begin();
         // now we allow for using non-TX iterators in TX context
-        try {
-          keySet.size();
-          fail("expected exception that was not thrown");
-        } catch (IllegalStateException expected) {
-          // ignore
-        }
-        try {
-          entrySet.size();
-          fail("expected exception that was not thrown");
-        } catch (IllegalStateException expected) {
-          // ignore
-        }
-        try {
-          valueSet.size();
-          fail("expected exception that was not thrown");
-        } catch (IllegalStateException expected) {
-          // ignore
-        }
-        try {
-          keySet.iterator();
-          fail("expected exception that was not thrown");
-        } catch (IllegalStateException expected) {
-          // ignore
-        }
-        try {
-          entrySet.iterator();
-          fail("expected exception that was not thrown");
-        } catch (IllegalStateException expected) {
-          // ignore
-        }
-        try {
-          valueSet.iterator();
-          fail("expected exception that was not thrown");
-        } catch (IllegalStateException expected) {
-          // ignore
-        }
+        assertThatThrownBy(keySet::size).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(entrySet::size).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(valueSet::size).isInstanceOf(IllegalStateException.class);
+
+        assertThatThrownBy(keySet::iterator).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(entrySet::iterator).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(valueSet::iterator).isInstanceOf(IllegalStateException.class);
 
         // TX iterators
         keySet = r.keySet();
@@ -2485,42 +2438,14 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         valueSet = (Set) r.values();
         mgr.commit();
         // don't allow for TX iterator after TX has committed
-        try {
-          keySet.size();
-          fail("expected exception that was not thrown");
-        } catch (IllegalStateException expected) {
-          // ignore
-        }
-        try {
-          entrySet.size();
-          fail("expected exception that was not thrown");
-        } catch (IllegalStateException expected) {
-          // ignore
-        }
-        try {
-          valueSet.size();
-          fail("expected exception that was not thrown");
-        } catch (IllegalStateException expected) {
-          // ignore
-        }
-        try {
-          keySet.iterator();
-          fail("expected exception that was not thrown");
-        } catch (IllegalStateException expected) {
-          // ignore
-        }
-        try {
-          entrySet.iterator();
-          fail("expected exception that was not thrown");
-        } catch (IllegalStateException expected) {
-          // ignore
-        }
-        try {
-          valueSet.iterator();
-          fail("expected exception that was not thrown");
-        } catch (IllegalStateException expected) {
-          // ignore
-        }
+        assertThatThrownBy(keySet::size).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(entrySet::size).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(valueSet::size).isInstanceOf(IllegalStateException.class);
+
+        assertThatThrownBy(keySet::iterator).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(entrySet::iterator).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(valueSet::iterator).isInstanceOf(IllegalStateException.class);
+
         return null;
       }
     };
@@ -2607,7 +2532,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         regions.add(custRegion);
         regions.add(getCache().getRegion(ORDER));
         mgr.begin();
-        try {
+        assertThatThrownBy(() -> {
           switch (e) {
             case OnRegion:
               FunctionService.onRegion(custRegion).execute(TXFunction.id).getResult();
@@ -2616,14 +2541,11 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
               FunctionService.onMembers().execute(TXFunction.id).getResult();
               break;
           }
-          fail("expected exception that was not thrown");
-        } catch (TransactionException ignored) {
-        }
-        try {
-          InternalFunctionService.onRegions(regions).execute(TXFunction.id).getResult();
-          fail("expected exception that was not thrown");
-        } catch (TransactionException ignored) {
-        }
+        }).isInstanceOf(TransactionException.class);
+
+        assertThatThrownBy(
+            () -> InternalFunctionService.onRegions(regions).execute(TXFunction.id).getResult())
+                .isInstanceOf(TransactionException.class);
         Set filter = new HashSet();
         filter.add(expectedCustId);
         switch (e) {
@@ -2690,11 +2612,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         TXStateProxy tx = mgr.pauseTransaction();
         custRegion.put(expectedCustId, new Customer("Cust6", "updated6"));
         mgr.unpauseTransaction(tx);
-        try {
-          mgr.commit();
-          fail("expected commit conflict not thrown");
-        } catch (CommitConflictException ignored) {
-        }
+        assertThatThrownBy(mgr::commit).isInstanceOf(CommitConflictException.class);
         return null;
       }
     });
@@ -2715,11 +2633,8 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       public void execute(FunctionContext context) {
         TXManagerImpl mgr = getCache().getTxManager();
         assertThat(mgr.getTXState()).isNotNull();
-        try {
-          mgr.commit();
-          fail("expected exceptio not thrown");
-        } catch (UnsupportedOperationInTransactionException ignored) {
-        }
+        assertThatThrownBy(mgr::commit)
+            .isInstanceOf(UnsupportedOperationInTransactionException.class);
         context.getResultSender().lastResult(Boolean.TRUE);
       }
 
@@ -2903,11 +2818,9 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         Region custRegion = getCache().getRegion(CUSTOMER);
         TXManagerImpl mgr = getCache().getTXMgr();
         mgr.begin();
-        try {
-          FunctionService.onRegion(custRegion).execute(TXFunction.id).getResult();
-          fail("expected exception that was not thrown");
-        } catch (TransactionException ignored) {
-        }
+        assertThatThrownBy(
+            () -> FunctionService.onRegion(custRegion).execute(TXFunction.id).getResult())
+                .isInstanceOf(TransactionException.class);
         Set filter = new HashSet();
         filter.add(expectedCustId);
         FunctionService.onRegion(custRegion).withFilter(filter).execute(TXFunction.id).getResult();
@@ -2961,11 +2874,9 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         Set<DistributedMember> members = new HashSet<>();
         members.add(ds1);
         members.add(ds2);
-        try {
-          FunctionService.onMembers(members).execute(TXFunction.id).getResult();
-          fail("expected exception that was not thrown");
-        } catch (TransactionException ignored) {
-        }
+        assertThatThrownBy(
+            () -> FunctionService.onMembers(members).execute(TXFunction.id).getResult())
+                .isInstanceOf(TransactionException.class);
         FunctionService.onMember(owner).execute(TXFunction.id).getResult();
         assertThat(expectedCustomer).isEqualTo(pr.get(expectedCustId));
         TXStateProxy tx = mgr.pauseTransaction();
@@ -3024,7 +2935,8 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
 
       final Integer txOnDatastore1_2 = (Integer) datastore1.invoke(getNumberOfTXInProgress);
       final Integer txOnDatastore2_2 = (Integer) datastore2.invoke(getNumberOfTXInProgress);
-      assertThat(0).isEqualTo(txOnDatastore1_2 + txOnDatastore2_2);// ds1 has a local transaction, not
+      assertThat(0).isEqualTo(txOnDatastore1_2 + txOnDatastore2_2);// ds1 has a local transaction,
+                                                                   // not
       // remote
       CloseFnOnDsTx closeFnOnDsTx = new CloseFnOnDsTx(dsTxId);
       datastore1.invoke(closeFnOnDsTx);
@@ -3033,7 +2945,8 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
 
       final Integer txOnDatastore1_2 = (Integer) datastore1.invoke(getNumberOfTXInProgress);
       final Integer txOnDatastore2_2 = (Integer) datastore2.invoke(getNumberOfTXInProgress);
-      assertThat(0).isEqualTo(txOnDatastore1_2 + txOnDatastore2_2);// ds1 has a local transaction, not
+      assertThat(0).isEqualTo(txOnDatastore1_2 + txOnDatastore2_2);// ds1 has a local transaction,
+                                                                   // not
       // remote
       CloseFnOnDsTx closeFnOnDsTx = new CloseFnOnDsTx(dsTxId);
       datastore2.invoke(closeFnOnDsTx);
@@ -3051,16 +2964,11 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         pr.get(keyOnDs1);// bootstrap txState
         Set filter = new HashSet();
         filter.add(keyOnDs2);
-        try {
-          FunctionService.onRegion(pr).withFilter(filter).execute(TXFunction.id).getResult();
-          fail("expected exception that was not thrown");
-        } catch (TransactionDataRebalancedException ignored) {
-        }
-        try {
-          FunctionService.onMember(ds2).execute(TXFunction.id).getResult();
-          fail("expected exception that was not thrown");
-        } catch (TransactionDataNotColocatedException ignored) {
-        }
+        assertThatThrownBy(() -> FunctionService.onRegion(pr).withFilter(filter)
+            .execute(TXFunction.id).getResult())
+                .isInstanceOf(TransactionDataRebalancedException.class);
+        assertThatThrownBy(() -> FunctionService.onMember(ds2).execute(TXFunction.id).getResult())
+            .isInstanceOf(TransactionDataNotColocatedException.class);
         mgr.commit();
         return null;
       }
@@ -3417,7 +3325,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         InternalCache cache = getCache();
         cache.getCacheTransactionManager().begin();
         Region<CustId, Customer> r = cache.getRegion(CUSTOMER);
-        try {
+        assertThatThrownBy(() -> {
           switch (op) {
             case PUTALL:
               r.putAll(custMap);
@@ -3429,9 +3337,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
             default:
               break;
           }
-          fail("expected exception that was not thrown");
-        } catch (TransactionDataNotColocatedException ignored) {
-        }
+        }).isInstanceOf(TransactionDataNotColocatedException.class);
         cache.getCacheTransactionManager().rollback();
         return null;
       }
@@ -3636,9 +3542,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         Region cust = getCache().getRegion(D_REFERENCE);
         OneUpdateCacheListener rat =
             (OneUpdateCacheListener) cust.getAttributes().getCacheListener();
-        if (!rat.getSuccess()) {
-          fail("The OneUpdateCacheListener didnt get an update");
-        }
+        assertThat(rat.getSuccess()).isTrue();
         return null;
       }
     });
@@ -3666,27 +3570,24 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public void afterCreate(EntryEvent event) {
-      fail("create not expected");
+      throw new UnsupportedOperationException("create not expected");
     }
 
     @Override
     public void afterUpdate(EntryEvent event) {
-      if (!success) {
-        System.out.println("WE WIN!");
-        success = true;
-      } else {
-        fail("Should have only had one update");
-      }
+      assertThat(success).as("Should have only had one update").isTrue();
+      System.out.println("WE WIN!");
+      success = true;
     }
 
     @Override
     public void afterDestroy(EntryEvent event) {
-      fail("destroy not expected");
+      throw new UnsupportedOperationException("destroy not expected");
     }
 
     @Override
     public void afterInvalidate(EntryEvent event) {
-      fail("invalidate not expected");
+      throw new UnsupportedOperationException("invalidate not expected");
     }
   }
 
@@ -3695,42 +3596,26 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     private boolean oneCreate;
 
     public void checkSuccess() {
-      if (oneDestroy && oneCreate) {
-        // chill
-      } else {
-        fail("Didn't get both events. oneDestroy=" + oneDestroy + " oneCreate=" + oneCreate);
-      }
+      assertThat(oneDestroy && oneCreate).isTrue();
     }
 
     @Override
     public void beforeCreate(EntryEvent event) throws CacheWriterException {
-      if (!oneDestroy) {
-        fail("destroy should have arrived in writer before create");
-      } else {
-        if (oneCreate) {
-          fail("more than one create detected! expecting destroy then create");
-        } else {
-          oneCreate = true;
-        }
-      }
+      assertThat(oneDestroy).isTrue();
+      assertThat(oneCreate).isFalse();
+      oneCreate = true;
     }
 
     @Override
     public void beforeUpdate(EntryEvent event) throws CacheWriterException {
-      fail("update not expected");
+      throw new UnsupportedOperationException("update not expected");
     }
 
     @Override
     public void beforeDestroy(EntryEvent event) throws CacheWriterException {
-      if (oneDestroy) {
-        fail("only one destroy expected");
-      } else {
-        if (oneCreate) {
-          fail("destroy is supposed to precede create");
-        } else {
-          oneDestroy = true;
-        }
-      }
+      assertThat(oneDestroy).isFalse();
+      assertThat(oneCreate).isFalse();
+      oneDestroy = true;
     }
 
   }
@@ -4163,12 +4048,10 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     datastore1.invoke(new SerializableCallable<Object>() {
       @Override
       public Object call() {
-        try {
+        assertThatThrownBy(() -> {
           getCache().getCacheTransactionManager().resume(txId);
           getCache().getCacheTransactionManager().commit();
-          fail("expected commit conflict not thrown");
-        } catch (CommitConflictException ignored) {
-        }
+        }).isInstanceOf(CommitConflictException.class);
         return null;
       }
     });
@@ -4248,12 +4131,10 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       });
       t.start();
       latch.await();
-      try {
+      assertThatThrownBy(() -> {
         pr.put(new CustId(1), new Customer("name11", "address11"));
         tx.commit();
-        fail("expected exception that was not thrown");
-      } catch (RollbackException ignored) {
-      }
+      }).isInstanceOf(RollbackException.class);
     }
   }
 
@@ -4455,11 +4336,8 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         r.cache.getLogger().info("SWAP:sending:remoteTagRequest");
         VersionTag remote = r.fetchRemoteVersionTag("key");
         r.cache.getLogger().info("SWAP:remoteTag:" + remote);
-        try {
-          remote = r.fetchRemoteVersionTag("nonExistentKey");
-          fail("expected exception that was not thrown");
-        } catch (EntryNotFoundException ignored) {
-        }
+        assertThatThrownBy(() -> r.fetchRemoteVersionTag("nonExistentKey"))
+            .isInstanceOf(EntryNotFoundException.class);
         assertThat(tag).isEqualTo(remote);
         return null;
       }
