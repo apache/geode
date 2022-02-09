@@ -141,9 +141,9 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       } catch (CacheClosedException e) {
         return null;
       }
-      // TXManagerImpl mgr = getGemfireCache().getTxManager();
+      // TXManagerImpl mgr = getCache().getTxManager();
       // assertIndexDetailsEquals(0, mgr.hostedTransactionsInProgressForTest());
-      final TXManagerImpl mgr = getGemfireCache().getTxManager();
+      final TXManagerImpl mgr = getCache().getTxManager();
       GeodeAwaitility.await().atMost(Duration.ofMillis(30000)).untilAsserted(
           () -> assertThat(mgr.hostedTransactionsInProgressForTest()).isZero());
       return null;
@@ -1246,14 +1246,10 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         Customer customer = new Customer("customer1", "address1");
         Customer customer2 = new Customer("customer2", "address2");
         Customer fakeCust = new Customer("foo2", "bar2");
-        try {
-          assertThatThrownBy(() -> cust
-              .removeAll(Arrays.asList(custId0, custId4, custId1, custId2, custId3, custId20)))
-                  .isInstanceOf(TransactionDataNotColocatedException.class);
-        } catch (Throwable e) {
-          mgr.rollback();
-          throw e;
-        }
+        assertThatThrownBy(() -> cust
+            .removeAll(Arrays.asList(custId0, custId4, custId1, custId2, custId3, custId20)))
+                .isInstanceOf(TransactionDataNotColocatedException.class);
+        mgr.rollback();
         assertThat(cust.get(custId0)).isNotNull();
         assertThat(cust.get(custId1)).isNotNull();
         assertThat(cust.get(custId2)).isNotNull();
@@ -3575,7 +3571,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public void afterUpdate(EntryEvent event) {
-      assertThat(success).as("Should have only had one update").isTrue();
+      assertThat(success).as("Should have only had one update").isFalse();
       System.out.println("WE WIN!");
       success = true;
     }
