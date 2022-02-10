@@ -513,7 +513,8 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         getCache().getLogger().info("SWAP:verifyRollback:" + orderRegion);
         getCache().getLogger().info("SWAP:verifyRollback:" + orderRegion.getEntry(orderId2));
         assertThat(getCache().getTXMgr().getTXState()).isNull();
-        assertThat(orderRegion.getEntry(orderId2)).as("" + orderRegion.getEntry(orderId2));
+        assertThat(orderRegion.getEntry(orderId2))
+            .as("" + orderRegion.getEntry(orderId2)).isNull();
         assertThat(orderRegion.getEntry(orderId3)).isNull();
         assertThat(orderRegion.get(orderId2)).isNull();
         assertThat(orderRegion.get(orderId3)).isNull();
@@ -635,7 +636,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         assertThat(mgr.isHostedTxInProgress(txId)).isTrue();
         TXStateProxy tx = mgr.getHostedTXState(txId);
         System.out.println("TXRS:" + tx.getRegions());
-        assertThat(3).isEqualTo(tx.getRegions().size());// 2 buckets for the two puts we
+        assertThat(tx.getRegions().size()).isEqualTo(3);// 2 buckets for the two puts we
         // did in the accessor
         // plus the dist. region
         for (InternalRegion r : tx.getRegions()) {
@@ -825,7 +826,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         TXManagerImpl mgr = getCache().getTxManager();
         assertThat(mgr.isHostedTxInProgress(txId)).isTrue();
         TXStateProxy tx = mgr.getHostedTXState(txId);
-        assertThat(3).isEqualTo(tx.getRegions().size());// 2 buckets for the two puts we
+        assertThat(tx.getRegions().size()).isEqualTo(3);// 2 buckets for the two puts we
         // did in the accessor
         // +1 for the dist_region
         for (InternalRegion r : tx.getRegions()) {
@@ -871,7 +872,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         TXManagerImpl mgr = getCache().getTxManager();
         assertThat(mgr.isHostedTxInProgress(txId)).isTrue();
         TXStateProxy tx = mgr.getHostedTXState(txId);
-        assertThat(3).isEqualTo(tx.getRegions().size());// 2 buckets for the two puts we
+        assertThat(tx.getRegions().size()).isEqualTo(3);// 2 buckets for the two puts we
         // did in the accessor
         // plus the dist. region
         for (InternalRegion r : tx.getRegions()) {
@@ -915,7 +916,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         TXManagerImpl mgr = getCache().getTxManager();
         assertThat(mgr.isHostedTxInProgress(txId)).isTrue();
         TXStateProxy tx = mgr.getHostedTXState(txId);
-        assertThat(3).isEqualTo(tx.getRegions().size());// 2 buckets for the two puts we
+        assertThat(tx.getRegions().size()).isEqualTo(3);// 2 buckets for the two puts we
         // did in the accessor
         // plus the dist. region
         for (InternalRegion r : tx.getRegions()) {
@@ -998,11 +999,9 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         TXManagerImpl mgr = getCache().getTxManager();
         assertThat(mgr.isHostedTxInProgress(txId)).isTrue();
         TXStateProxy tx = mgr.getHostedTXState(txId);
-        assertThat(3 + (hash1 == hash10 ? 0 : 1)).isEqualTo(tx.getRegions().size());// 2 buckets for
-                                                                                    // the two
-        // puts we
-        // did in the accessor one dist. region, and one more bucket if Cust1 and Cust10 resolve to
-        // different buckets
+        assertThat(tx.getRegions().size()).isEqualTo(3 + (hash1 == hash10 ? 0 : 1));// 2 buckets for
+        // the two puts we did in the accessor one dist. region, and one more bucket if Cust1 and
+        // Cust10 resolve to different buckets
         for (InternalRegion r : tx.getRegions()) {
           assertThat(r instanceof DistributedRegion).isTrue();
           TXRegionState rs = tx.readRegion(r);
@@ -1078,7 +1077,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         TXManagerImpl mgr = getCache().getTxManager();
         assertThat(mgr.isHostedTxInProgress(txId)).isTrue();
         TXStateProxy tx = mgr.getHostedTXState(txId);
-        assertThat(2).isEqualTo(tx.getRegions().size());// 2 buckets for the two puts we
+        assertThat(tx.getRegions().size()).isEqualTo(2);// 2 buckets for the two puts we
         // did in the accessor one dist. region, and one more bucket if Cust1 and Cust10 resolve to
         // different buckets
         for (InternalRegion r : tx.getRegions()) {
@@ -1154,7 +1153,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         TXManagerImpl mgr = getCache().getTxManager();
         assertThat(mgr.isHostedTxInProgress(txId)).isTrue();
         TXStateProxy tx = mgr.getHostedTXState(txId);
-        assertThat(4).isEqualTo(tx.getRegions().size());// 2 buckets for the two puts we
+        assertThat(tx.getRegions().size()).isEqualTo(4);// 2 buckets for the two puts we
         // did in the accessor one dist. region, and one more bucket if Cust1 and Cust10 resolve to
         // different buckets
         for (InternalRegion r : tx.getRegions()) {
@@ -1347,7 +1346,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         TXManagerImpl mgr = getCache().getTxManager();
         assertThat(mgr.isHostedTxInProgress(txId)).isTrue();
         TXStateProxy tx = mgr.getHostedTXState(txId);
-        assertThat(2).isEqualTo(tx.getRegions().size());// 2 buckets for the two puts we
+        assertThat(tx.getRegions().size()).isEqualTo(2);// 2 buckets for the two puts we
         // did in the accessor one dist. region, and one more bucket if Cust1 and Cust10 resolve to
         // different buckets
         for (InternalRegion r : tx.getRegions()) {
@@ -1854,8 +1853,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         getCache().getTxManager().begin();
         Region r = getCache().getRegion(CUSTOMER);
         r.put(new CustId(8), new Customer("name8", "address8"));
-        assertThatThrownBy(() -> getCache().getTxManager().commit())
-            .isInstanceOf(CommitConflictException.class);
+        getCache().getTxManager().commit();
         return null;
       }
     });
@@ -1886,7 +1884,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         Region custRegion = getCache().getRegion(CUSTOMER);
         TXManagerImpl mgr = getCache().getTxManager();
         mgr.begin();
-        assertThat(5).isEqualTo(custRegion.size());
+        assertThat(custRegion.size()).isEqualTo(5);
         assertThat(mgr.getTXState()).isNotNull();
         return mgr.suspend();
       }
@@ -1920,14 +1918,14 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         getCache().getLogger()
             .info("Putting " + custId + ", keyInfo:" + custPR.getKeyInfo(new CustId(remoteKey)));
         orderRegion.put(orderId, new Order("order" + remoteKey));
-        assertThat(6).isEqualTo(custRegion.size());
+        assertThat(custRegion.size()).isEqualTo(6);
         mgr.suspend();
         return null;
       }
     });
     final Integer txOnDatastore1 = (Integer) datastore1.invoke(getNumberOfTXInProgress);
     final Integer txOnDatastore2 = (Integer) datastore2.invoke(getNumberOfTXInProgress);
-    assertThat(1).isEqualTo(txOnDatastore1 + txOnDatastore2);
+    assertThat(txOnDatastore1 + txOnDatastore2).isOne();
 
     taskVM.invoke(new SerializableCallable<Object>() {
       @Override
@@ -1944,8 +1942,8 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
 
     final Integer txOnDatastore1_1 = (Integer) datastore1.invoke(getNumberOfTXInProgress);
     final Integer txOnDatastore2_2 = (Integer) datastore2.invoke(getNumberOfTXInProgress);
-    assertThat(0).isEqualTo(txOnDatastore1_1.intValue());
-    assertThat(0).isEqualTo(txOnDatastore2_2.intValue());
+    assertThat(txOnDatastore1_1.intValue()).isZero();
+    assertThat(txOnDatastore2_2.intValue()).isZero();
   }
 
   @Test
@@ -2025,12 +2023,12 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
           case KEYS:
             originalSet = getCustIdSet(5);
             assertThat(originalSet.containsAll(custRegion.keySet())).isTrue();
-            assertThat(5).isEqualTo(custRegion.keySet().size());
+            assertThat(custRegion.keySet().size()).isEqualTo(5);
             break;
           case VALUES:
             originalSet = getCustomerSet(5);
             assertThat(originalSet.containsAll(custRegion.values())).isTrue();
-            assertThat(5).isEqualTo(custRegion.values().size());
+            assertThat(custRegion.values().size()).isEqualTo(5);
             break;
           case ENTRIES:
             Set<CustId> originalKeySet = getCustIdSet(5);
@@ -2045,7 +2043,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
               assertThat(originalKeySet.contains(entry.getKey())).isTrue();
               assertThat(originalValueSet.contains(entry.getValue())).isTrue();
             }
-            assertThat(5).isEqualTo(custRegion.entrySet().size());
+            assertThat(custRegion.entrySet().size()).isEqualTo(5);
             break;
           default:
             throw new IllegalArgumentException();
@@ -2119,7 +2117,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     });
     final Integer txOnDatastore1 = (Integer) datastore1.invoke(getNumberOfTXInProgress);
     final Integer txOnDatastore2 = (Integer) datastore2.invoke(getNumberOfTXInProgress);
-    assertThat(1).isEqualTo(txOnDatastore1 + txOnDatastore2);
+    assertThat(txOnDatastore1 + txOnDatastore2).isOne();
 
     accessor.invoke(new SerializableCallable<Object>() {
       @Override
@@ -2132,7 +2130,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     });
     final Integer txOnDatastore1_1 = (Integer) datastore1.invoke(getNumberOfTXInProgress);
     final Integer txOnDatastore2_2 = (Integer) datastore2.invoke(getNumberOfTXInProgress);
-    assertThat(0).isEqualTo(txOnDatastore1_1 + txOnDatastore2_2);
+    assertThat(txOnDatastore1_1 + txOnDatastore2_2).isZero();
 
     datastore1.invoke(new SerializableCallable<Object>() {
       CustId custId;
@@ -2274,9 +2272,9 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
           i++;
           it.next();
         }
-        assertThat(5).isEqualTo(i);
+        assertThat(i).isEqualTo(5);
         assertThat(getCustIdSet(5)).isEqualTo(set);
-        assertThat(5).isEqualTo(rr.keySet().size());
+        assertThat(rr.keySet().size()).isEqualTo(5);
         rr.put(custId, customer);
         set = rr.keySet();
         assertThat(getCustIdSet(6)).isEqualTo(set);
@@ -2286,12 +2284,12 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
           i++;
           it.next();
         }
-        assertThat(6).isEqualTo(i);
-        assertThat(6).isEqualTo(rr.keySet().size());
+        assertThat(i).isEqualTo(6);
+        assertThat(rr.keySet().size()).isEqualTo(6);
         assertThat(rr.get(custId)).isNotNull();
         TXStateProxy tx = mgr.pauseTransaction();
         assertThat(getCustIdSet(5)).isEqualTo(rr.keySet());
-        assertThat(5).isEqualTo(rr.keySet().size());
+        assertThat(rr.keySet().size()).isEqualTo(5);
         assertThat(rr.get(custId)).isNull();
         mgr.unpauseTransaction(tx);
         mgr.commit();
@@ -2325,9 +2323,9 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
           i++;
           it.next();
         }
-        assertThat(5).isEqualTo(i);
+        assertThat(i).isEqualTo(5);
         assertThat(getCustomerSet(5)).isEqualTo(set);
-        assertThat(5).isEqualTo(rr.values().size());
+        assertThat(rr.values().size()).isEqualTo(5);
         rr.put(custId, customer);
         set = (Set) rr.values();
         assertThat(getCustomerSet(6)).isEqualTo(set);
@@ -2337,12 +2335,12 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
           i++;
           it.next();
         }
-        assertThat(6).isEqualTo(i);
-        assertThat(6).isEqualTo(rr.values().size());
+        assertThat(i).isEqualTo(6);
+        assertThat(rr.values().size()).isEqualTo(6);
         assertThat(rr.get(custId)).isNotNull();
         TXStateProxy tx = mgr.pauseTransaction();
         assertThat(getCustomerSet(5)).isEqualTo(rr.values());
-        assertThat(5).isEqualTo(rr.values().size());
+        assertThat(rr.values().size()).isEqualTo(5);
         assertThat(rr.get(custId)).isNull();
         mgr.unpauseTransaction(tx);
         mgr.commit();
@@ -2376,9 +2374,9 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
           i++;
           it.next();
         }
-        assertThat(5).isEqualTo(i);
+        assertThat(i).isEqualTo(5);
         // assertThat(getCustIdSet(5).equals(set)).isTrue();
-        assertThat(5).isEqualTo(rr.entrySet().size());
+        assertThat(rr.entrySet().size()).isEqualTo(5);
         rr.put(custId, customer);
         set = rr.entrySet();
         // assertThat(getCustIdSet(6).equals(set)).isTrue();
@@ -2388,12 +2386,12 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
           i++;
           it.next();
         }
-        assertThat(6).isEqualTo(i);
-        assertThat(6).isEqualTo(rr.entrySet().size());
+        assertThat(i).isEqualTo(6);
+        assertThat(rr.entrySet().size()).isEqualTo(6);
         assertThat(rr.get(custId)).isNotNull();
         TXStateProxy tx = mgr.pauseTransaction();
         // assertIndexDetailsEquals(getCustIdSet(5), rr.entrySet());
-        assertThat(5).isEqualTo(rr.entrySet().size());
+        assertThat(rr.entrySet().size()).isEqualTo(5);
         assertThat(rr.get(custId)).isNull();
         mgr.unpauseTransaction(tx);
         mgr.commit();
@@ -2565,7 +2563,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
 
     final Integer txOnDatastore1 = (Integer) datastore1.invoke(getNumberOfTXInProgress);
     final Integer txOnDatastore2 = (Integer) datastore2.invoke(getNumberOfTXInProgress);
-    assertThat(1).isEqualTo(txOnDatastore1 + txOnDatastore2);
+    assertThat(txOnDatastore1 + txOnDatastore2).isOne();
 
     accessor.invoke(new SerializableCallable<Object>() {
       @Override
@@ -2830,7 +2828,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
 
     final Integer txOnDatastore1 = (Integer) datastore1.invoke(getNumberOfTXInProgress);
     final Integer txOnDatastore2 = (Integer) datastore2.invoke(getNumberOfTXInProgress);
-    assertThat(1).isEqualTo(txOnDatastore1 + txOnDatastore2);
+    assertThat(txOnDatastore1 + txOnDatastore2).isOne();
 
     accessor.invoke(new SerializableCallable<Object>() {
       @Override
@@ -2883,7 +2881,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     });
     final Integer txOnDatastore1_1 = (Integer) datastore1.invoke(getNumberOfTXInProgress);
     final Integer txOnDatastore2_1 = (Integer) datastore2.invoke(getNumberOfTXInProgress);
-    assertThat(1).isEqualTo(txOnDatastore1_1 + txOnDatastore2_1);
+    assertThat(txOnDatastore1_1 + txOnDatastore2_1).isOne();
 
     accessor.invoke(new SerializableCallable<Object>() {
       @Override
@@ -2931,9 +2929,8 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
 
       final Integer txOnDatastore1_2 = (Integer) datastore1.invoke(getNumberOfTXInProgress);
       final Integer txOnDatastore2_2 = (Integer) datastore2.invoke(getNumberOfTXInProgress);
-      assertThat(0).isEqualTo(txOnDatastore1_2 + txOnDatastore2_2);// ds1 has a local transaction,
-                                                                   // not
-      // remote
+      assertThat(txOnDatastore1_2 + txOnDatastore2_2).isZero();// ds1 has a local transaction,
+                                                               // not remote
       CloseFnOnDsTx closeFnOnDsTx = new CloseFnOnDsTx(dsTxId);
       datastore1.invoke(closeFnOnDsTx);
     } else {
@@ -2941,9 +2938,8 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
 
       final Integer txOnDatastore1_2 = (Integer) datastore1.invoke(getNumberOfTXInProgress);
       final Integer txOnDatastore2_2 = (Integer) datastore2.invoke(getNumberOfTXInProgress);
-      assertThat(0).isEqualTo(txOnDatastore1_2 + txOnDatastore2_2);// ds1 has a local transaction,
-                                                                   // not
-      // remote
+      assertThat(txOnDatastore1_2 + txOnDatastore2_2).isZero();// ds1 has a local transaction,
+                                                               // not remote
       CloseFnOnDsTx closeFnOnDsTx = new CloseFnOnDsTx(dsTxId);
       datastore2.invoke(closeFnOnDsTx);
     }
@@ -3199,9 +3195,9 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       public Object call() {
         Region refRegion = getCache().getRegion(D_REFERENCE);
         OriginRemoteRRWriter w = (OriginRemoteRRWriter) refRegion.getAttributes().getCacheWriter();
-        assertThat(1).isEqualTo(w.fireC);
-        assertThat(1).isEqualTo(w.fireD);
-        assertThat(1).isEqualTo(w.fireU);
+        assertThat(w.fireC).isOne();
+        assertThat(w.fireD).isOne();
+        assertThat(w.fireU).isOne();
         return null;
       }
     });
@@ -3245,7 +3241,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() {
         Region refRegion = getCache().getRegion(D_REFERENCE);
-        assertThat("dawg").isEqualTo(refRegion.get("sup"));
+        assertThat(refRegion.get("sup")).isEqualTo("dawg");
         return null;
       }
     });
@@ -3279,9 +3275,9 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() {
         TXManagerImpl mgr = getCache().getTxManager();
-        assertThat(1).isEqualTo(mgr.hostedTransactionsInProgressForTest());
+        assertThat(mgr.hostedTransactionsInProgressForTest()).isOne();
         mgr.memberDeparted(getCache().getDistributionManager(), member, true);
-        assertThat(0).isEqualTo(mgr.hostedTransactionsInProgressForTest());
+        assertThat(mgr.hostedTransactionsInProgressForTest()).isZero();
         return null;
       }
     });
@@ -3538,7 +3534,8 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         Region cust = getCache().getRegion(D_REFERENCE);
         OneUpdateCacheListener rat =
             (OneUpdateCacheListener) cust.getAttributes().getCacheListener();
-        assertThat(rat.getSuccess()).isTrue();
+        assertThat(rat.getSuccess())
+            .as("The OneUpdateCacheListener didnt get an update").isTrue();
         return null;
       }
     });
@@ -3592,7 +3589,9 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     private boolean oneCreate;
 
     public void checkSuccess() {
-      assertThat(oneDestroy && oneCreate).isTrue();
+      assertThat(oneDestroy && oneCreate)
+          .as("Didn't get both events. oneDestroy=" + oneDestroy + " oneCreate=" + oneCreate)
+          .isTrue();
     }
 
     @Override
@@ -3890,7 +3889,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         getCache().getLogger().info("SWAP:callingCommit");
         getCache().getCacheTransactionManager().commit();
         assertThat(ref.containsKey("one")).isTrue();
-        assertThat("value1").isEqualTo(ref.get("one"));
+        assertThat(ref.get("one")).isEqualTo("value1");
         assertThat(empty.containsKey("eone")).isFalse();
         assertThat(empty.get("eone")).isNull();
         return null;
@@ -4000,7 +3999,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
 
     int totalInvocation = (Integer) datastore1.invoke(getListenerCount)
         + (Integer) datastore2.invoke(getListenerCount);
-    assertThat(1).isEqualTo(totalInvocation);
+    assertThat(totalInvocation).isOne();
   }
 
   private class ListenerInvocationCounter extends CacheListenerAdapter {
@@ -4192,13 +4191,13 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         assertThat(rgn.get("txkey")).isNull();
         TXManagerImpl txMgr = getCache().getTxManager();
         TXStateProxy tx = txMgr.getHostedTXState((TXId) txid);
-        assertThat(1).isEqualTo(tx.getRegions().size());
+        assertThat(tx.getRegions().size()).isOne();
         for (InternalRegion r : tx.getRegions()) {
           assertThat(r instanceof DistributedRegion).isTrue();
           TXRegionState rs = tx.readRegion(r);
           for (Object key : rs.getEntryKeys()) {
             TXEntryState es = rs.readEntry(key);
-            assertThat("txkey").isEqualTo(key);
+            assertThat(key).isEqualTo("txkey");
             assertThat(es.getValue(key, r, false)).isNotNull();
             if (key.equals("txkey")) {
               assertThat(es.isDirty()).isTrue();
@@ -4217,8 +4216,8 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         mgr.resume(txid);
         mgr.commit();
         CountingListener cl = (CountingListener) rgn.getAttributes().getCacheListeners()[0];
-        assertThat(0).isEqualTo(cl.count);
-        assertThat("txvalue").isEqualTo(rgn.get("txkey"));
+        assertThat(cl.count).isZero();
+        assertThat(rgn.get("txkey")).isEqualTo("txvalue");
         return null;
       }
     });
@@ -4227,7 +4226,7 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
       public Object call() {
         Region rgn = getCache().getRegion(name);
         CountingListener cl = (CountingListener) rgn.getAttributes().getCacheListeners()[0];
-        assertThat(2).isEqualTo(cl.count);
+        assertThat(cl.count).isEqualTo(2);
         return null;
       }
     });
