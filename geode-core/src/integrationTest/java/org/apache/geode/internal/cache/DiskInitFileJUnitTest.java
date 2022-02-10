@@ -15,10 +15,15 @@
 package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -31,8 +36,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 
@@ -133,5 +141,69 @@ public class DiskInitFileJUnitTest {
     assertThat(dif.hasKrf(1)).isFalse();
     assertThat(dif.hasKrf(2)).isFalse();
     dif.destroy();
+  }
+
+  @Test
+  public void markInitializedThrowsDiskAccessExceptionWhenInitFileClosedAndParentAndCacheNotClosing() {
+    markInitializedTestSetup();
+
+    DiskInitFile diskInitFile =
+        new DiskInitFile("testThrows", mockedDiskStoreImpl, false, Collections.emptySet());
+    diskInitFile.close();
+
+    assertThatThrownBy(() -> diskInitFile.markInitialized(mockDiskRegionView)).isInstanceOf(
+        DiskAccessException.class);
+  }
+
+  @Test
+  public void markInitializedThrowsCacheClosedExceptionWhenInitFileClosedAndParentIsClosedOrClosing() {
+    markInitializedTestSetup();
+    when(mockedDiskStoreImpl.isClosed()).thenReturn(Boolean.TRUE);
+
+    DiskInitFile diskInitFile =
+        new DiskInitFile("testThrows", mockedDiskStoreImpl, false, Collections.emptySet());
+    diskInitFile.close();
+
+    assertThatThrownBy(() -> diskInitFile.markInitialized(mockDiskRegionView)).isInstanceOf(
+        CacheClosedException.class);
+  }
+
+  @Test
+  public void markInitializedThrowsCacheClosedExceptionWhenCacheIsClosing() {
+    CancelCriterion cancelCriterion = markInitializedTestSetup();
+    CacheClosedException cacheClosedException = new CacheClosedException("boom");
+    doThrow(cacheClosedException).when(cancelCriterion).checkCancelInProgress();
+
+    DiskInitFile diskInitFile =
+        new DiskInitFile("testThrows", mockedDiskStoreImpl, false, Collections.emptySet());
+    diskInitFile.close();
+
+    assertThatThrownBy(() -> diskInitFile.markInitialized(mockDiskRegionView)).isEqualTo(
+        cacheClosedException);
+  }
+
+  @Test
+  public void markInitializedCacheCloseIsCalledWhenParentHandlesDiskAccessException() {
+    markInitializedTestSetup();
+
+    DiskInitFile diskInitFile =
+        new DiskInitFile("testThrows", mockedDiskStoreImpl, false, Collections.emptySet());
+    diskInitFile.close();
+
+    assertThatThrownBy(() -> diskInitFile.markInitialized(mockDiskRegionView))
+        .isInstanceOf(DiskAccessException.class);
+    verify(mockedDiskStoreImpl, times(1)).handleDiskAccessException(any(DiskAccessException.class));
+  }
+
+  private CancelCriterion markInitializedTestSetup() {
+    InternalCache internalCache = mock(InternalCache.class);
+    CancelCriterion cancelCriterion = mock(CancelCriterion.class);
+    DiskRegion diskRegion = mock(DiskRegion.class);
+
+    when(mockedDiskStoreImpl.getCache()).thenReturn(internalCache);
+    when(mockedDiskStoreImpl.getById(anyLong())).thenReturn(diskRegion);
+    when(internalCache.getCancelCriterion()).thenReturn(cancelCriterion);
+
+    return cancelCriterion;
   }
 }
