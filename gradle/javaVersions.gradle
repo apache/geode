@@ -19,7 +19,7 @@ import org.apache.tools.ant.taskdefs.condition.Os
 
 apply plugin: 'de.undercouch.download'
 
-def getPlatformInfo() {
+static def getPlatformInfo() {
   if (Os.isFamily(Os.FAMILY_MAC)) {
     return ['macos', 'zip']
   } else if (Os.isFamily(Os.FAMILY_WINDOWS)) {
@@ -49,11 +49,11 @@ ext.javaHomeForVersion = {Test test, String name, String version ->
   final downloadTaskName = name + "Download"
   final downloadTask = project.tasks.findByName(downloadTaskName) ?:
       project.tasks.register(downloadTaskName, Download) {
-    final zipFile = new File(basePath + "." + packageType).absoluteFile
-    dest zipFile
+    final packageFile = new File(basePath + "." + packageType).absoluteFile
+    dest packageFile
     overwrite false
-    if (zipFile.exists()) {
-      src zipFile.toURI().toString()
+    if (packageFile.exists()) {
+      src packageFile.toURI().toString()
     } else {
       src getJavaVersionUrl(version, os, packageType)
     }
