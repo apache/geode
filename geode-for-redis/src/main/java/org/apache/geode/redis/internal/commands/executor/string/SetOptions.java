@@ -26,17 +26,11 @@ public class SetOptions extends BaseSetOptions {
 
   private final long expirationMillis;
   private final boolean keepTTL;
-  private final boolean inTransaction;
 
   public SetOptions(Exists exists, long expiration, boolean keepTTL) {
-    this(exists, expiration, keepTTL, false);
-  }
-
-  public SetOptions(Exists exists, long expiration, boolean keepTTL, boolean inTransaction) {
     super(exists);
     expirationMillis = expiration;
     this.keepTTL = keepTTL;
-    this.inTransaction = inTransaction;
   }
 
   public long getExpiration() {
@@ -45,9 +39,5 @@ public class SetOptions extends BaseSetOptions {
 
   public boolean isKeepTTL() {
     return keepTTL;
-  }
-
-  public boolean inTransaction() {
-    return inTransaction;
   }
 }

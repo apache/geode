@@ -15,18 +15,24 @@
 package org.apache.geode.redis.internal.commands.executor.string;
 
 
+import static org.apache.geode.redis.internal.commands.executor.BaseSetOptions.Exists.NONE;
+
 import java.util.List;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.redis.internal.commands.executor.RedisResponse;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class MSetExecutor extends AbstractMSetExecutor {
 
+  @Immutable
+  private static final SetOptions msetOptions = new SetOptions(NONE, 0L, false);
+
   @Override
   protected void executeMSet(ExecutionHandlerContext context, List<RedisKey> keys,
       List<byte[]> values) {
-    mset(context, keys, values, false);
+    mset(context, keys, values, msetOptions);
   }
 
   @Override
