@@ -49,6 +49,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -108,7 +109,10 @@ public class SocketCreatorUpgradeTest {
   @Parameters(name = "{0}")
   public static Collection<String> data() {
     final List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
+
+    // Skip 1.12.0 - It can't properly use SSL endpoint validation.
     result.removeIf(s -> TestVersion.compare(s, "1.12.1") < 0);
+
     return result;
   }
 
@@ -138,12 +142,12 @@ public class SocketCreatorUpgradeTest {
     generateKeyAndTrustStore(hostName, keyStoreFile, trustStoreFile);
 
     startLocator1 = startLocator(LOCATOR_1, hostName, locator1Port, locator1JmxPort,
-        securityPropertiesFile, locator2Port);
+        securityPropertiesFile, 0);
     startLocator2 = startLocator(LOCATOR_2, hostName, locator2Port, locator2JmxPort,
         securityPropertiesFile, locator1Port);
 
     startLocator1New = startLocator(LOCATOR_1, hostName, locator1Port, locator1JmxPort,
-        newSecurityPropertiesFile, locator2Port);
+        newSecurityPropertiesFile, 0);
     startLocator2New = startLocator(LOCATOR_2, hostName, locator2Port, locator2JmxPort,
         newSecurityPropertiesFile, locator1Port);
 
@@ -151,7 +155,13 @@ public class SocketCreatorUpgradeTest {
     stopLocator2 = stopLocator(LOCATOR_2);
   }
 
-  @Test
+  @Before
+  public void before() {
+    System.out.println(gfshOldGeodeOldJava.getTemporaryFolder().getRoot());
+    System.out.println(gfshOldGeodeNewJava.getTemporaryFolder().getRoot());
+  }
+
+  // @Test
   public void upgradingGeodeWithProtocolsAny() throws IOException {
     generateSecurityProperties(PROTOCOL_ANY, securityPropertiesFile, keyStoreFile, trustStoreFile);
 
@@ -337,9 +347,9 @@ public class SocketCreatorUpgradeTest {
       final int port, final int jmxPort, final File securityPropertiesFile,
       final int otherLocatorPort) {
     return format(
-        "start locator --connect=false --http-service-port=0 --name=%s --bind-address=%s --port=%d --J=-Dgemfire.jmx-manager-port=%d --security-properties-file=%s --locators=%s[%d]",
-        name, bindAddress, port, jmxPort, securityPropertiesFile.getAbsolutePath(), bindAddress,
-        otherLocatorPort);
+        "start locator --connect=false --http-service-port=0 --name=%s --bind-address=%s --port=%d --J=-Dgemfire.jmx-manager-port=%d --security-properties-file=%s",
+        name, bindAddress, port, jmxPort, securityPropertiesFile.getAbsolutePath()) +
+        ((otherLocatorPort > 0) ? format(" --locators=%s[%d]", bindAddress, otherLocatorPort) : "");
   }
 
   private static String stopLocator(final String name) {
