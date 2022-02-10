@@ -24,7 +24,7 @@ repositories {
 }
 
 dependencies {
-  compileOnly("${project.group}:geode-core:${project.version}")
+  implementation("${project.group}:geode-core:${project.version}")
   runtime('org.apache.logging.log4j:log4j-slf4j-impl:2.12.0')
 }
 
