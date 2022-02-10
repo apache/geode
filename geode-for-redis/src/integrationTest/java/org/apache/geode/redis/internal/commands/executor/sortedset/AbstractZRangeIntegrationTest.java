@@ -139,7 +139,7 @@ public abstract class AbstractZRangeIntegrationTest implements RedisIntegrationT
 
   @Test
   public void shouldAlsoReturnScores_whenWithScoresSpecified() {
-    Set<Tuple> expected = new LinkedHashSet<>();
+    final List<Tuple> expected = new ArrayList<>();
     for (int i = 0; i < members.size(); i++) {
       expected.add(new Tuple(members.get(i), scores.get(i)));
     }
