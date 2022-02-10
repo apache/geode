@@ -303,7 +303,9 @@ public class SSLConfigurationFactoryJUnitTest {
           .isEqualTo(properties.getProperty(SSL_TRUSTSTORE_PASSWORD));
       assertThat(sslConfig.getCiphers())
           .isEqualTo(properties.getProperty(SSL_CIPHERS).replace(",", " "));
-      assertThat(sslConfig.getProtocols())
+      assertThat(sslConfig.getClientProtocols())
+          .isEqualTo(properties.getProperty(SSL_PROTOCOLS).replace(",", " "));
+      assertThat(sslConfig.getServerProtocols())
           .isEqualTo(properties.getProperty(SSL_PROTOCOLS).replace(",", " "));
       assertThat(sslConfig.getAlias())
           .isEqualTo(getCorrectAlias(expectedSecurableComponent, properties));

@@ -146,19 +146,11 @@ public class SSLConfig {
     return useDefaultSSLContext;
   }
 
-  public String getProtocols() {
-    return protocols;
-  }
-
-  public String[] getProtocolsAsStringArray() {
-    return SSLUtil.readArray(protocols);
-  }
-
   public String getClientProtocols() {
     return clientProtocols;
   }
 
-  public String[] getClientProtocolsAsStringArray() {
+  public @NotNull String[] getClientProtocolsAsStringArray() {
     return SSLUtil.readArray(clientProtocols);
   }
 
@@ -166,7 +158,7 @@ public class SSLConfig {
     return serverProtocols;
   }
 
-  public String[] getServerProtocolsAsStringArray() {
+  public @NotNull String[] getServerProtocolsAsStringArray() {
     return SSLUtil.readArray(serverProtocols);
   }
 
@@ -174,7 +166,7 @@ public class SSLConfig {
     return ciphers;
   }
 
-  public String[] getCiphersAsStringArray() {
+  public @NotNull String[] getCiphersAsStringArray() {
     return SSLUtil.readArray(ciphers);
   }
 
