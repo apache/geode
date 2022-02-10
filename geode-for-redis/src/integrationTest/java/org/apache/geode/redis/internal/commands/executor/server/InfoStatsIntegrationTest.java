@@ -20,7 +20,7 @@ import redis.clients.jedis.Jedis;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
-public class InfoStatsIntegrationTest extends AbstractRedisInfoStatsIntegrationTest {
+public class InfoStatsIntegrationTest extends AbstractInfoStatsIntegrationTest {
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
