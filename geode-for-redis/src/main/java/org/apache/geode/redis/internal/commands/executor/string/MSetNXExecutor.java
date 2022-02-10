@@ -15,8 +15,11 @@
 package org.apache.geode.redis.internal.commands.executor.string;
 
 
+import static org.apache.geode.redis.internal.commands.executor.BaseSetOptions.Exists.NX;
+
 import java.util.List;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.redis.internal.commands.executor.RedisResponse;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -27,10 +30,13 @@ public class MSetNXExecutor extends AbstractMSetExecutor {
 
   private static final int NO_KEY_SET = 0;
 
+  @Immutable
+  private static final SetOptions msetnxOptions = new SetOptions(NX, 0L, false);
+
   @Override
   protected void executeMSet(ExecutionHandlerContext context, List<RedisKey> keys,
       List<byte[]> values) {
-    mset(context, keys, values, true);
+    mset(context, keys, values, msetnxOptions);
   }
 
   @Override

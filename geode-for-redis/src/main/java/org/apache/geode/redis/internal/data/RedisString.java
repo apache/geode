@@ -68,14 +68,7 @@ public class RedisString extends AbstractRedisData {
       SetOptions options) {
     value = newValue;
     handleSetExpiration(options);
-    if (options != null && options.inTransaction()) {
-      // In a tx, delta requires cloning-enabled which is very expensive.
-      // So just do a put instead of storeChanges which uses delta.
-      region.put(key, this);
-    } else {
-      storeChanges(region, key,
-          new SetByteArrayAndTimestamp(newValue, getExpirationTimestamp()));
-    }
+    storeChanges(region, key, new SetByteArrayAndTimestamp(newValue, getExpirationTimestamp()));
   }
 
   public int append(Region<RedisKey, RedisData> region, RedisKey key, byte[] appendValue) {
