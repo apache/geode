@@ -32,7 +32,9 @@ public class SSLUtilTest {
   @Test(expected = NoSuchAlgorithmException.class)
   public void failWhenNothingIsRequested() throws Exception {
     SSLConfig sslConfig = mock(SSLConfig.class);
-    when(sslConfig.getProtocolsAsStringArray())
+    when(sslConfig.getClientProtocolsAsStringArray())
+        .thenReturn(new String[0]);
+    when(sslConfig.getServerProtocolsAsStringArray())
         .thenReturn(new String[0]);
     SSLUtil.getSSLContextInstance(sslConfig);
   }
@@ -40,7 +42,9 @@ public class SSLUtilTest {
   @Test(expected = NoSuchAlgorithmException.class)
   public void failWithAnUnknownProtocol() throws Exception {
     SSLConfig sslConfig = mock(SSLConfig.class);
-    when(sslConfig.getProtocolsAsStringArray())
+    when(sslConfig.getClientProtocolsAsStringArray())
+        .thenReturn(new String[] {"boulevard of broken dreams"});
+    when(sslConfig.getServerProtocolsAsStringArray())
         .thenReturn(new String[] {"boulevard of broken dreams"});
     SSLUtil.getSSLContextInstance(sslConfig);
   }
@@ -48,7 +52,8 @@ public class SSLUtilTest {
   @Test
   public void getASpecificProtocol() throws Exception {
     SSLConfig sslConfig = mock(SSLConfig.class);
-    when(sslConfig.getProtocolsAsStringArray()).thenReturn(new String[] {"TLSv1.2"});
+    when(sslConfig.getClientProtocolsAsStringArray()).thenReturn(new String[] {"TLSv1.2"});
+    when(sslConfig.getServerProtocolsAsStringArray()).thenReturn(new String[] {"TLSv1.2"});
     final SSLContext sslContextInstance = SSLUtil.getSSLContextInstance(sslConfig);
     assertThat(sslContextInstance.getProtocol().equalsIgnoreCase("TLSv1.2")).isTrue();
   }
@@ -56,7 +61,9 @@ public class SSLUtilTest {
   @Test
   public void getAnyProtocolWithAnUnknownInTheList() throws Exception {
     SSLConfig sslConfig = mock(SSLConfig.class);
-    when(sslConfig.getProtocolsAsStringArray())
+    when(sslConfig.getClientProtocolsAsStringArray())
+        .thenReturn(new String[] {"the dream of the blue turtles", "any", "SSL"});
+    when(sslConfig.getServerProtocolsAsStringArray())
         .thenReturn(new String[] {"the dream of the blue turtles", "any", "SSL"});
     final SSLContext sslContextInstance = SSLUtil.getSSLContextInstance(sslConfig);
     // make sure that we don't continue past "any" and use the following protocol (SSL)

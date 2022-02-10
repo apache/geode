@@ -39,8 +39,11 @@ import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAM
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -50,13 +53,8 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.FileWriter;
 import java.net.Inet4Address;
-import java.net.Inet6Address;
 import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -365,7 +363,7 @@ public class InternalDistributedSystemJUnitTest {
     props.setProperty(LOCATORS, "");
     props.put(STATISTIC_SAMPLING_ENABLED, "true");
     DistributionConfig config = createSystem(props).getConfig();
-    assertEquals(true, config.getStatisticSamplingEnabled());
+    assertTrue(config.getStatisticSamplingEnabled());
   }
 
   @Test
@@ -400,13 +398,8 @@ public class InternalDistributedSystemJUnitTest {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     props.setProperty(MEMBERSHIP_PORT_RANGE, "5200-5100");
-    Object exception = null;
-    try {
-      createSystem(props).getConfig();
-    } catch (IllegalArgumentException expected) {
-      exception = expected;
-    }
-    assertNotNull("Expected an IllegalArgumentException", exception);
+    assertThatThrownBy(() -> createSystem(props).getConfig())
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
@@ -563,7 +556,7 @@ public class InternalDistributedSystemJUnitTest {
     // TODO: fix this test on Windows: the File renameTo and delete in finally fails on Windows
     String os = System.getProperty("os.name");
     if (os != null) {
-      if (os.indexOf("Windows") != -1) {
+      if (os.contains("Windows")) {
         return;
       }
     }
@@ -596,7 +589,7 @@ public class InternalDistributedSystemJUnitTest {
         fw.close();
       }
       DistributionConfigImpl dci = new DistributionConfigImpl(apiProps);
-      assertEquals(null, dci.getAttributeSource(MCAST_PORT));
+      assertNull(dci.getAttributeSource(MCAST_PORT));
       assertEquals(ConfigSource.api(), dci.getAttributeSource(GROUPS));
       assertEquals(ConfigSource.sysprop(), dci.getAttributeSource(LOG_LEVEL));
       assertEquals(ConfigSource.Type.FILE, dci.getAttributeSource("name").getType());
@@ -651,9 +644,9 @@ public class InternalDistributedSystemJUnitTest {
     props.setProperty(START_LOCATOR, "localhost[" + unusedPort + "],server=false,peer=true");
     deleteStateFile(unusedPort);
     createSystem(props);
-    Collection locators = Locator.getLocators();
+    Collection<Locator> locators = Locator.getLocators();
     Assert.assertEquals(1, locators.size());
-    Locator locator = (Locator) locators.iterator().next();
+    Locator locator = locators.iterator().next();
     // Assert.assertIndexDetailsEquals("127.0.0.1", locator.getBindAddress().getHostAddress());
     // removed this check for ipv6 testing
     Assert.assertEquals(unusedPort, locator.getPort().intValue());
@@ -704,15 +697,15 @@ public class InternalDistributedSystemJUnitTest {
     Properties props1 = config1.toProperties();
     assertEquals("true", props1.getProperty(CLUSTER_SSL_ENABLED));
     Config config2 = new DistributionConfigImpl(props1, false);
-    assertEquals(true, config1.sameAs(config2));
+    assertTrue(config1.sameAs(config2));
     Properties props3 = new Properties(props1);
     props3.setProperty(CLUSTER_SSL_ENABLED, "false");
     Config config3 = new DistributionConfigImpl(props3, false);
-    assertEquals(false, config1.sameAs(config3));
+    assertFalse(config1.sameAs(config3));
   }
 
   @Test
-  public void testEmptySecurityAuthTokenProp() throws Exception {
+  public void testEmptySecurityAuthTokenProp() {
     Properties props = getCommonProperties();
     props.setProperty(SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS, "");
     DistributionConfig config1 = new DistributionConfigImpl(props, false);
@@ -723,7 +716,7 @@ public class InternalDistributedSystemJUnitTest {
   }
 
   @Test
-  public void testSecurityAuthTokenProp() throws Exception {
+  public void testSecurityAuthTokenProp() {
     Properties props = getCommonProperties();
     props.setProperty(SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS, "management");
     DistributionConfig config1 = new DistributionConfigImpl(props, false);
@@ -864,73 +857,4 @@ public class InternalDistributedSystemJUnitTest {
     return address;
   }
 
-  public static InetAddress getIPAddress() {
-    return Boolean.getBoolean("java.net.preferIPv6Addresses") ? getIPv6Address() : getIPv4Address();
-  }
-
-  protected static InetAddress getIPv4Address() {
-    InetAddress host = null;
-    try {
-      host = InetAddress.getLocalHost();
-      if (host instanceof Inet4Address) {
-        return host;
-      }
-    } catch (UnknownHostException e) {
-      String s = "Local host not found";
-      throw new RuntimeException(s, e);
-    }
-    try {
-      Enumeration i = NetworkInterface.getNetworkInterfaces();
-      while (i.hasMoreElements()) {
-        NetworkInterface ni = (NetworkInterface) i.nextElement();
-        Enumeration j = ni.getInetAddresses();
-        while (j.hasMoreElements()) {
-          InetAddress addr = (InetAddress) j.nextElement();
-          // gemfire won't form connections using link-local addresses
-          if (!addr.isLinkLocalAddress() && !addr.isLoopbackAddress()
-              && (addr instanceof Inet4Address)) {
-            return addr;
-          }
-        }
-      }
-      String s = "IPv4 address not found";
-      throw new RuntimeException(s);
-    } catch (SocketException e) {
-      String s = "Problem reading IPv4 address";
-      throw new RuntimeException(s, e);
-    }
-  }
-
-  public static InetAddress getIPv6Address() {
-    try {
-      Enumeration i = NetworkInterface.getNetworkInterfaces();
-      while (i.hasMoreElements()) {
-        NetworkInterface ni = (NetworkInterface) i.nextElement();
-        Enumeration j = ni.getInetAddresses();
-        while (j.hasMoreElements()) {
-          InetAddress addr = (InetAddress) j.nextElement();
-          // gemfire won't form connections using link-local addresses
-          if (!addr.isLinkLocalAddress() && !addr.isLoopbackAddress()
-              && (addr instanceof Inet6Address) && !isIPv6LinkLocalAddress((Inet6Address) addr)) {
-            return addr;
-          }
-        }
-      }
-      String s = "IPv6 address not found";
-      throw new RuntimeException(s);
-    } catch (SocketException e) {
-      String s = "Problem reading IPv6 address";
-      throw new RuntimeException(s, e);
-    }
-  }
-
-  /**
-   * Detect LinkLocal IPv6 address where the interface is missing, ie %[0-9].
-   *
-   * @see InetAddress#isLinkLocalAddress()
-   */
-  private static boolean isIPv6LinkLocalAddress(Inet6Address addr) {
-    byte[] addrBytes = addr.getAddress();
-    return ((addrBytes[0] == (byte) 0xfe) && (addrBytes[1] == (byte) 0x80));
-  }
 }

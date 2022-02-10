@@ -60,6 +60,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.UnmodifiableException;
 import org.apache.geode.internal.ConfigSource;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.serialization.filter.SerializableObjectConfig;
 import org.apache.geode.security.TestPostProcessor;
 import org.apache.geode.security.TestSecurityManager;
@@ -102,15 +103,15 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testGetAttributeNames() {
     String[] attNames = AbstractDistributionConfig._getAttNames();
-    assertThat(attNames).hasSize(170);
+    assertThat(attNames).hasSize(172);
 
-    List boolList = new ArrayList();
-    List intList = new ArrayList();
-    List fileList = new ArrayList();
-    List stringList = new ArrayList();
-    List otherList = new ArrayList();
+    List<String> boolList = new ArrayList<>();
+    List<String> intList = new ArrayList<>();
+    List<String> fileList = new ArrayList<>();
+    List<String> stringList = new ArrayList<>();
+    List<String> otherList = new ArrayList<>();
     for (String attName : attNames) {
-      Class clazz = AbstractDistributionConfig._getAttributeType(attName);
+      Class<?> clazz = AbstractDistributionConfig._getAttributeType(attName);
       if (clazz.equals(Boolean.class)) {
         boolList.add(attName);
       } else if (clazz.equals(Integer.class)) {
@@ -128,9 +129,9 @@ public class DistributionConfigJUnitTest {
     System.out.println();
     System.out.println("intList: " + intList);
     System.out.println();
-    System.out.println("stringlList: " + stringList);
+    System.out.println("stringList: " + stringList);
     System.out.println();
-    System.out.println("filelList: " + fileList);
+    System.out.println("fileList: " + fileList);
     System.out.println();
     System.out.println("otherList: " + otherList);
 
@@ -138,22 +139,22 @@ public class DistributionConfigJUnitTest {
     // are.
     assertThat(boolList).hasSize(36);
     assertThat(intList).hasSize(36);
-    assertThat(stringList).hasSize(88);
+    assertThat(stringList).hasSize(90);
     assertThat(fileList).hasSize(5);
     assertThat(otherList).hasSize(5);
   }
 
   @Test
   public void testAttributeDesc() {
-    String[] attNames = AbstractDistributionConfig._getAttNames();
-    for (String attName : attNames) {
-      assertThat(AbstractDistributionConfig.dcAttDescriptions).containsKey(attName)
-          .as("Does not contain description for attribute " + attName);
+    final String[] attNames = AbstractDistributionConfig._getAttNames();
+    for (final String attName : attNames) {
+      assertThat(AbstractDistributionConfig.dcAttDescriptions)
+          .as("Does not contain description for attribute " + attName).containsKey(attName);
     }
-    List<String> attList = Arrays.asList(attNames);
-    for (Object attName : AbstractDistributionConfig.dcAttDescriptions.keySet()) {
+    final List<String> attList = Arrays.asList(attNames);
+    for (final String attName : AbstractDistributionConfig.dcAttDescriptions.keySet()) {
       if (!attList.contains(attName)) {
-        System.out.println("Has unused description for " + attName.toString());
+        System.out.println("Has unused description for " + attName);
       }
     }
   }
@@ -173,7 +174,7 @@ public class DistributionConfigJUnitTest {
       assertThat(setter.getParameterCount()).isEqualTo(1);
 
       if (!(attr.equalsIgnoreCase(LOG_LEVEL) || attr.equalsIgnoreCase(SECURITY_LOG_LEVEL))) {
-        Class clazz = attributes.get(attr).type();
+        Class<?> clazz = attributes.get(attr).type();
         try {
           setter.invoke(mock(DistributionConfig.class), any(clazz));
         } catch (Exception e) {
@@ -194,18 +195,19 @@ public class DistributionConfigJUnitTest {
     // make sure that DS_QUORUM_CHECKER_NAME is tested (GEODE-8389)
     assertThat(internalAttributeNames).contains(DistributionConfig.DS_QUORUM_CHECKER_NAME);
     for (String attributeName : config.getInternalAttributeNames()) {
-      assertThat(config.isInternalAttribute(attributeName)).isTrue()
+      assertThat(config.isInternalAttribute(attributeName))
           .withFailMessage(
-              attributeName + " is not considered to be internal, but is annotated to be internal");
-      assertThat(config.sameAs(DistributionConfigImpl.produce(configProperties, false))).isTrue()
-          .withFailMessage("sameAs failed for " + attributeName);
-      assertThat(config.sameAs(DistributionConfigImpl.produce(configProperties, true))).isTrue()
-          .withFailMessage("sameAs failed for " + attributeName);
+              attributeName + " is not considered to be internal, but is annotated to be internal")
+          .isTrue();
+      assertThat(config.sameAs(DistributionConfigImpl.produce(configProperties, false)))
+          .withFailMessage("sameAs failed for " + attributeName).isTrue();
+      assertThat(config.sameAs(DistributionConfigImpl.produce(configProperties, true)))
+          .withFailMessage("sameAs failed for " + attributeName).isTrue();
       configProperties.put(attributeName, new Object());
-      assertThat(config.sameAs(DistributionConfigImpl.produce(configProperties, false))).isTrue()
-          .withFailMessage("sameAs failed for " + attributeName);
-      assertThat(config.sameAs(DistributionConfigImpl.produce(configProperties, true))).isTrue()
-          .withFailMessage("sameAs failed for " + attributeName);
+      assertThat(config.sameAs(DistributionConfigImpl.produce(configProperties, false)))
+          .withFailMessage("sameAs failed for " + attributeName).isTrue();
+      assertThat(config.sameAs(DistributionConfigImpl.produce(configProperties, true)))
+          .withFailMessage("sameAs failed for " + attributeName).isTrue();
     }
   }
 
@@ -218,8 +220,8 @@ public class DistributionConfigJUnitTest {
       assertThat(getter.getParameterCount()).isEqualTo(0);
 
       if (!(attr.equalsIgnoreCase(LOG_LEVEL) || attr.equalsIgnoreCase(SECURITY_LOG_LEVEL))) {
-        Class clazz = attributes.get(attr).type();
-        Class returnClass = getter.getReturnType();
+        Class<?> clazz = attributes.get(attr).type();
+        Class<?> returnClass = getter.getReturnType();
         if (returnClass.isPrimitive()) {
           returnClass = classMap.get(returnClass);
         }
@@ -289,7 +291,7 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testDistributionConfigImplModifiable() {
     // default DistributionConfigImpl contains only 2 modifiable attributes
-    List modifiables = new ArrayList<>();
+    List<String> modifiables = new ArrayList<>();
     for (String attName : attNames) {
       if (config.isAttributeModifiable(attName)) {
         modifiables.add(attName);
@@ -305,7 +307,7 @@ public class DistributionConfigJUnitTest {
     InternalDistributedSystem ds = mock(InternalDistributedSystem.class);
     when(ds.getOriginalConfig()).thenReturn(config);
     RuntimeDistributionConfigImpl runtime = new RuntimeDistributionConfigImpl(ds);
-    List modifiables = new ArrayList<>();
+    List<String> modifiables = new ArrayList<>();
     for (String attName : attNames) {
       if (runtime.isAttributeModifiable(attName)) {
         modifiables.add(attName);
@@ -426,9 +428,11 @@ public class DistributionConfigJUnitTest {
     props.put(SSL_ENABLED_COMPONENTS, "all");
 
     DistributionConfig config = new DistributionConfigImpl(props);
+    assertThat(config.getSecurableCommunicationChannels()).containsExactlyInAnyOrder(
+        SecurableCommunicationChannel.ALL);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void testSSLEnabledComponentsLegacyFail() {
     Properties props = new Properties();
     props.put(MCAST_PORT, "0");
@@ -436,7 +440,8 @@ public class DistributionConfigJUnitTest {
     props.put(HTTP_SERVICE_SSL_ENABLED, "true");
     props.put(SSL_ENABLED_COMPONENTS, "all");
 
-    DistributionConfig config = new DistributionConfigImpl(props);
+    assertThatThrownBy(() -> new DistributionConfigImpl(props))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
@@ -448,6 +453,8 @@ public class DistributionConfigJUnitTest {
     props.put(SSL_ENABLED_COMPONENTS, "");
 
     DistributionConfig config = new DistributionConfigImpl(props);
+    assertThat(config.getClusterSSLEnabled()).isTrue();
+    assertThat(config.getHttpServiceSSLEnabled()).isTrue();
   }
 
   @Test
@@ -479,7 +486,7 @@ public class DistributionConfigJUnitTest {
   }
 
   @Test
-  public void invalidAuthToken() throws Exception {
+  public void invalidAuthToken() {
     Properties props = new Properties();
     props.put(SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS, "manager");
     assertThatThrownBy(() -> new DistributionConfigImpl(props))
@@ -487,7 +494,7 @@ public class DistributionConfigJUnitTest {
   }
 
   @Test
-  public void authTokenIsCaseInsensitive() throws Exception {
+  public void authTokenIsCaseInsensitive() {
     Properties props = new Properties();
     props.put(SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS, "MANAGEment");
     DistributionConfig config = new DistributionConfigImpl(props);

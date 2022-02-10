@@ -90,7 +90,7 @@ public class SSLUtil {
   /** Read an array of values from a string, whitespace or comma separated. */
   public static String[] readArray(String text) {
     if (StringUtils.isBlank(text)) {
-      return null;
+      return new String[0];
     }
 
     return text.split("[\\s,]+");

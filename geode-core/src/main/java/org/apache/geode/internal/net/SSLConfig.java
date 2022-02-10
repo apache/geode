@@ -208,7 +208,7 @@ public class SSLConfig {
   /**
    * Returns true if protocols is either null, empty or is set to "any" (ignoring case)
    */
-  public boolean isAnyProtocols() {
+  public static boolean isAnyProtocols(final String protocols) {
     return StringUtils.isBlank(protocols) || "any".equalsIgnoreCase(protocols);
   }
 

@@ -150,6 +150,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_TR
 import static org.apache.geode.distributed.ConfigurationProperties.SOCKET_BUFFER_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.SOCKET_LEASE_TIME;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_CLIENT_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_CLUSTER_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_DEFAULT_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
@@ -164,6 +165,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_PARAMETER
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_SERVER_ALIAS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_SERVER_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_TYPE;
@@ -908,7 +910,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
   }
 
   @Immutable
-  static final Map dcAttDescriptions;
+  static final Map<String, String> dcAttDescriptions;
 
   static {
     Map<String, String> m = new HashMap<>();
@@ -1464,6 +1466,14 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         + DEFAULT_SSL_CIPHERS + "\" meaning your provider's defaults.");
     m.put(SSL_PROTOCOLS, "List of available SSL protocols that are to be enabled. Defaults to \""
         + DEFAULT_SSL_PROTOCOLS + "\" meaning defaults of your provider.");
+    m.put(SSL_CLIENT_PROTOCOLS,
+        "List of available SSL protocols that are to be enabled on the client side of SSL socket. Defaults to \""
+            + DEFAULT_SSL_SERVER_PROTOCOLS + "\" meaning defaults of your provider" + SSL_PROTOCOLS
+            + ".");
+    m.put(SSL_SERVER_PROTOCOLS,
+        "List of available SSL protocols that are to be enabled on the server side of SSL socket. Defaults to \""
+            + DEFAULT_SSL_SERVER_PROTOCOLS + "\" meaning defaults to the value of " + SSL_PROTOCOLS
+            + ".");
     m.put(SSL_REQUIRE_AUTHENTICATION,
         "If set to false, ciphers and protocols that permit anonymous clients are allowed. Defaults to \""
             + DEFAULT_SSL_REQUIRE_AUTHENTICATION + "\".");
