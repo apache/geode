@@ -18,7 +18,6 @@ package org.apache.geode.redis.internal.commands;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.commands.RedisCommandSupportLevel.SUPPORTED;
 import static org.apache.geode.redis.internal.commands.RedisCommandSupportLevel.UNSUPPORTED;
-import static org.apache.geode.redis.internal.commands.RedisCommandType.Flag.ADMIN;
 import static org.apache.geode.redis.internal.commands.RedisCommandType.Flag.DENYOOM;
 import static org.apache.geode.redis.internal.commands.RedisCommandType.Flag.FAST;
 import static org.apache.geode.redis.internal.commands.RedisCommandType.Flag.LOADING;
@@ -32,7 +31,10 @@ import static org.apache.geode.redis.internal.commands.RedisCommandType.Flag.SOR
 import static org.apache.geode.redis.internal.commands.RedisCommandType.Flag.STALE;
 import static org.apache.geode.redis.internal.commands.RedisCommandType.Flag.WRITE;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.geode.redis.internal.commands.executor.CommandExecutor;
 import org.apache.geode.redis.internal.commands.executor.RedisResponse;
@@ -81,7 +83,7 @@ import org.apache.geode.redis.internal.commands.executor.pubsub.PublishExecutor;
 import org.apache.geode.redis.internal.commands.executor.pubsub.PunsubscribeExecutor;
 import org.apache.geode.redis.internal.commands.executor.pubsub.SubscribeExecutor;
 import org.apache.geode.redis.internal.commands.executor.pubsub.UnsubscribeExecutor;
-import org.apache.geode.redis.internal.commands.executor.server.COMMANDCommandExecutor;
+import org.apache.geode.redis.internal.commands.executor.server.CommandCommandExecutor;
 import org.apache.geode.redis.internal.commands.executor.server.DBSizeExecutor;
 import org.apache.geode.redis.internal.commands.executor.server.FlushAllExecutor;
 import org.apache.geode.redis.internal.commands.executor.server.InfoExecutor;
@@ -164,172 +166,233 @@ public enum RedisCommandType {
    ***************************************/
 
   /*************** Connection ****************/
-  AUTH(new AuthExecutor(), SUPPORTED, new Parameter().min(2).max(3, ERROR_SYNTAX).firstKey(0)
+  AUTH(new AuthExecutor(), Category.CONNECTION, SUPPORTED, new Parameter().min(2).max(3, ERROR_SYNTAX).firstKey(0)
       .flags(NOSCRIPT, LOADING, STALE, FAST, NO_AUTH)),
-  CLIENT(new ClientExecutor(), SUPPORTED,
-      new Parameter().min(2).firstKey(0).flags(ADMIN, NOSCRIPT, RANDOM, LOADING, STALE)),
-  ECHO(new EchoExecutor(), SUPPORTED, new Parameter().exact(2).firstKey(0).flags(FAST)),
-  PING(new PingExecutor(), SUPPORTED, new Parameter().min(1).max(2).firstKey(0).flags(STALE, FAST)),
-  QUIT(new QuitExecutor(), SUPPORTED, new Parameter().firstKey(0)),
+  CLIENT(new ClientExecutor(), Category.CONNECTION, SUPPORTED,
+      new Parameter().min(2).firstKey(0).flags(Flag.ADMIN, NOSCRIPT, RANDOM, LOADING, STALE)),
+  ECHO(new EchoExecutor(), Category.CONNECTION, SUPPORTED,
+      new Parameter().exact(2).firstKey(0).flags(FAST)),
+  PING(new PingExecutor(), Category.CONNECTION, SUPPORTED,
+      new Parameter().min(1).max(2).firstKey(0).flags(STALE, FAST)),
+  QUIT(new QuitExecutor(), Category.ADMIN, SUPPORTED, new Parameter().firstKey(0)),
 
   /*************** Keys ******************/
 
-  DEL(new DelExecutor(), SUPPORTED, new Parameter().min(2).lastKey(-1).flags(WRITE)),
-  DUMP(new DumpExecutor(), SUPPORTED, new Parameter().exact(2).flags(READONLY, RANDOM)),
-  EXISTS(new ExistsExecutor(), SUPPORTED, new Parameter().min(2).lastKey(-1).flags(READONLY, FAST)),
-  EXPIRE(new ExpireExecutor(), SUPPORTED, new Parameter().exact(3).flags(WRITE, FAST)),
-  EXPIREAT(new ExpireAtExecutor(), SUPPORTED, new Parameter().exact(3).flags(WRITE, FAST)),
-  KEYS(new KeysExecutor(), SUPPORTED,
+  DEL(new DelExecutor(), Category.KEYSPACE, SUPPORTED, new Parameter().min(2).lastKey(-1).flags(WRITE)),
+  DUMP(new DumpExecutor(), Category.KEYSPACE, SUPPORTED,
+      new Parameter().exact(2).flags(READONLY, RANDOM)),
+  EXISTS(new ExistsExecutor(), Category.KEYSPACE, SUPPORTED,
+      new Parameter().min(2).lastKey(-1).flags(READONLY, FAST)),
+  EXPIRE(new ExpireExecutor(), Category.KEYSPACE, SUPPORTED,
+      new Parameter().exact(3).flags(WRITE, FAST)),
+  EXPIREAT(new ExpireAtExecutor(), Category.KEYSPACE, SUPPORTED,
+      new Parameter().exact(3).flags(WRITE, FAST)),
+  KEYS(new KeysExecutor(), Category.KEYSPACE, SUPPORTED,
       new Parameter().exact(2).firstKey(0).flags(READONLY, SORT_FOR_SCRIPT)),
-  PERSIST(new PersistExecutor(), SUPPORTED, new Parameter().exact(2).flags(WRITE, FAST)),
-  PEXPIRE(new PExpireExecutor(), SUPPORTED, new Parameter().exact(3).flags(WRITE, FAST)),
-  PEXPIREAT(new PExpireAtExecutor(), SUPPORTED, new Parameter().exact(3).flags(WRITE, FAST)),
-  PTTL(new PTTLExecutor(), SUPPORTED, new Parameter().exact(2).flags(READONLY, RANDOM, FAST)),
-  RENAME(new RenameExecutor(), SUPPORTED, new Parameter().exact(3).lastKey(2).flags(WRITE)),
-  RENAMENX(new RenameNXExecutor(), SUPPORTED,
+  PERSIST(new PersistExecutor(), Category.KEYSPACE, SUPPORTED,
+      new Parameter().exact(2).flags(WRITE, FAST)),
+  PEXPIRE(new PExpireExecutor(), Category.KEYSPACE, SUPPORTED,
+      new Parameter().exact(3).flags(WRITE, FAST)),
+  PEXPIREAT(new PExpireAtExecutor(), Category.KEYSPACE, SUPPORTED,
+      new Parameter().exact(3).flags(WRITE, FAST)),
+  PTTL(new PTTLExecutor(), Category.KEYSPACE, SUPPORTED,
+      new Parameter().exact(2).flags(READONLY, RANDOM, FAST)),
+  RENAME(new RenameExecutor(), Category.KEYSPACE, SUPPORTED,
+      new Parameter().exact(3).lastKey(2).flags(WRITE)),
+  RENAMENX(new RenameNXExecutor(), Category.KEYSPACE, SUPPORTED,
       new Parameter().exact(3).lastKey(2).flags(WRITE, FAST)),
-  RESTORE(new RestoreExecutor(), SUPPORTED, new Parameter().min(4).flags(WRITE, DENYOOM)),
-  TTL(new TTLExecutor(), SUPPORTED, new Parameter().exact(2).flags(READONLY, RANDOM, FAST)),
-  TYPE(new TypeExecutor(), SUPPORTED, new Parameter().exact(2).flags(READONLY, FAST)),
+  RESTORE(new RestoreExecutor(), Category.KEYSPACE, SUPPORTED,
+      new Parameter().min(4).flags(WRITE, DENYOOM)),
+  TTL(new TTLExecutor(), Category.KEYSPACE, SUPPORTED,
+      new Parameter().exact(2).flags(READONLY, RANDOM, FAST)),
+  TYPE(new TypeExecutor(), Category.KEYSPACE, SUPPORTED,
+      new Parameter().exact(2).flags(READONLY, FAST)),
 
   /************* Strings *****************/
 
-  APPEND(new AppendExecutor(), SUPPORTED, new Parameter().exact(3).flags(WRITE, DENYOOM, FAST)),
-  DECR(new DecrExecutor(), SUPPORTED, new Parameter().exact(2).flags(WRITE, DENYOOM, FAST)),
-  DECRBY(new DecrByExecutor(), SUPPORTED, new Parameter().exact(3).flags(WRITE, DENYOOM, FAST)),
-  GET(new GetExecutor(), SUPPORTED, new Parameter().exact(2).flags(READONLY, FAST)),
-  GETSET(new GetSetExecutor(), SUPPORTED, new Parameter().exact(3).flags(WRITE, DENYOOM, FAST)),
-  INCRBY(new IncrByExecutor(), SUPPORTED, new Parameter().exact(3).flags(WRITE, DENYOOM, FAST)),
-  INCR(new IncrExecutor(), SUPPORTED, new Parameter().exact(2).flags(WRITE, DENYOOM, FAST)),
-  GETRANGE(new GetRangeExecutor(), SUPPORTED, new Parameter().exact(4).flags(READONLY)),
-  INCRBYFLOAT(new IncrByFloatExecutor(), SUPPORTED,
+  APPEND(new AppendExecutor(), Category.STRING, SUPPORTED, new Parameter().exact(3).flags(WRITE, DENYOOM, FAST)),
+  DECR(new DecrExecutor(), Category.STRING, SUPPORTED,
+      new Parameter().exact(2).flags(WRITE, DENYOOM, FAST)),
+  DECRBY(new DecrByExecutor(), Category.STRING, SUPPORTED,
       new Parameter().exact(3).flags(WRITE, DENYOOM, FAST)),
-  MGET(new MGetExecutor(), SUPPORTED, new Parameter().min(2).lastKey(-1).flags(READONLY, FAST)),
-  MSET(new MSetExecutor(), SUPPORTED,
+  GET(new GetExecutor(), Category.STRING, SUPPORTED,
+      new Parameter().exact(2).flags(READONLY, FAST)),
+  GETSET(new GetSetExecutor(), Category.STRING, SUPPORTED,
+      new Parameter().exact(3).flags(WRITE, DENYOOM, FAST)),
+  INCRBY(new IncrByExecutor(), Category.STRING, SUPPORTED,
+      new Parameter().exact(3).flags(WRITE, DENYOOM, FAST)),
+  INCR(new IncrExecutor(), Category.STRING, SUPPORTED,
+      new Parameter().exact(2).flags(WRITE, DENYOOM, FAST)),
+  GETRANGE(new GetRangeExecutor(), Category.STRING, SUPPORTED,
+      new Parameter().exact(4).flags(READONLY)),
+  INCRBYFLOAT(new IncrByFloatExecutor(), Category.STRING, SUPPORTED,
+      new Parameter().exact(3).flags(WRITE, DENYOOM, FAST)),
+  MGET(new MGetExecutor(), Category.STRING, SUPPORTED,
+      new Parameter().min(2).lastKey(-1).flags(READONLY, FAST)),
+  MSET(new MSetExecutor(), Category.STRING, SUPPORTED,
       new Parameter().min(3).odd().lastKey(-1).step(2).flags(WRITE, DENYOOM)),
-  MSETNX(new MSetNXExecutor(), SUPPORTED,
+  MSETNX(new MSetNXExecutor(), Category.STRING, SUPPORTED,
       new Parameter().min(3).odd().lastKey(-1).step(2).flags(WRITE, DENYOOM)),
-  PSETEX(new PSetEXExecutor(), SUPPORTED, new Parameter().exact(4).flags(WRITE, DENYOOM)),
-  SET(new SetExecutor(), SUPPORTED, new Parameter().min(3).flags(WRITE, DENYOOM)),
-  SETEX(new SetEXExecutor(), SUPPORTED, new Parameter().exact(4).flags(WRITE, DENYOOM)),
-  SETNX(new SetNXExecutor(), SUPPORTED, new Parameter().exact(3).flags(WRITE, DENYOOM, FAST)),
-  SETRANGE(new SetRangeExecutor(), SUPPORTED, new Parameter().exact(4).flags(WRITE, DENYOOM)),
-  STRLEN(new StrlenExecutor(), SUPPORTED, new Parameter().exact(2).flags(READONLY, FAST)),
+  PSETEX(new PSetEXExecutor(), Category.STRING, SUPPORTED,
+      new Parameter().exact(4).flags(WRITE, DENYOOM)),
+  SET(new SetExecutor(), Category.STRING, SUPPORTED,
+      new Parameter().min(3).flags(WRITE, DENYOOM)),
+  SETEX(new SetEXExecutor(), Category.STRING, SUPPORTED,
+      new Parameter().exact(4).flags(WRITE, DENYOOM)),
+  SETNX(new SetNXExecutor(), Category.STRING, SUPPORTED,
+      new Parameter().exact(3).flags(WRITE, DENYOOM, FAST)),
+  SETRANGE(new SetRangeExecutor(), Category.STRING, SUPPORTED,
+      new Parameter().exact(4).flags(WRITE, DENYOOM)),
+  STRLEN(new StrlenExecutor(), Category.STRING, SUPPORTED,
+      new Parameter().exact(2).flags(READONLY, FAST)),
 
   /************* Hashes *****************/
 
-  HDEL(new HDelExecutor(), SUPPORTED, new Parameter().min(3).flags(WRITE, FAST)),
-  HGET(new HGetExecutor(), SUPPORTED, new Parameter().exact(3).flags(READONLY, FAST)),
-  HGETALL(new HGetAllExecutor(), SUPPORTED, new Parameter().exact(2).flags(READONLY, RANDOM)),
-  HINCRBYFLOAT(new HIncrByFloatExecutor(), SUPPORTED,
+  HDEL(new HDelExecutor(), Category.HASH, SUPPORTED, new Parameter().min(3).flags(WRITE, FAST)),
+  HGET(new HGetExecutor(), Category.HASH, SUPPORTED,
+      new Parameter().exact(3).flags(READONLY, FAST)),
+  HGETALL(new HGetAllExecutor(), Category.HASH, SUPPORTED,
+      new Parameter().exact(2).flags(READONLY, RANDOM)),
+  HINCRBYFLOAT(new HIncrByFloatExecutor(), Category.HASH, SUPPORTED,
       new Parameter().exact(4).flags(WRITE, DENYOOM, FAST)),
-  HLEN(new HLenExecutor(), SUPPORTED, new Parameter().exact(2).flags(READONLY, FAST)),
-  HMGET(new HMGetExecutor(), SUPPORTED, new Parameter().min(3).flags(READONLY, FAST)),
-  HMSET(new HMSetExecutor(), SUPPORTED, new Parameter().min(4).even().flags(WRITE, DENYOOM, FAST)),
-  HSET(new HSetExecutor(), SUPPORTED, new Parameter().min(4).even().flags(WRITE, DENYOOM, FAST)),
-  HSETNX(new HSetNXExecutor(), SUPPORTED, new Parameter().exact(4).flags(WRITE, DENYOOM, FAST)),
-  HSTRLEN(new HStrLenExecutor(), SUPPORTED, new Parameter().exact(3).flags(READONLY, FAST)),
-  HINCRBY(new HIncrByExecutor(), SUPPORTED, new Parameter().exact(4).flags(WRITE, DENYOOM, FAST)),
-  HVALS(new HValsExecutor(), SUPPORTED, new Parameter().exact(2).flags(READONLY, SORT_FOR_SCRIPT)),
-  HSCAN(new HScanExecutor(), SUPPORTED, new Parameter().min(3).flags(READONLY, RANDOM),
+  HLEN(new HLenExecutor(), Category.HASH, SUPPORTED,
+      new Parameter().exact(2).flags(READONLY, FAST)),
+  HMGET(new HMGetExecutor(), Category.HASH, SUPPORTED,
+      new Parameter().min(3).flags(READONLY, FAST)),
+  HMSET(new HMSetExecutor(), Category.HASH, SUPPORTED,
+      new Parameter().min(4).even().flags(WRITE, DENYOOM, FAST)),
+  HSET(new HSetExecutor(), Category.HASH, SUPPORTED,
+      new Parameter().min(4).even().flags(WRITE, DENYOOM, FAST)),
+  HSETNX(new HSetNXExecutor(), Category.HASH, SUPPORTED,
+      new Parameter().exact(4).flags(WRITE, DENYOOM, FAST)),
+  HSTRLEN(new HStrLenExecutor(), Category.HASH, SUPPORTED,
+      new Parameter().exact(3).flags(READONLY, FAST)),
+  HINCRBY(new HIncrByExecutor(), Category.HASH, SUPPORTED,
+      new Parameter().exact(4).flags(WRITE, DENYOOM, FAST)),
+  HVALS(new HValsExecutor(), Category.HASH, SUPPORTED,
+      new Parameter().exact(2).flags(READONLY, SORT_FOR_SCRIPT)),
+  HSCAN(new HScanExecutor(), Category.HASH, SUPPORTED,
+      new Parameter().min(3).flags(READONLY, RANDOM),
       new Parameter().odd(ERROR_SYNTAX)),
-  HEXISTS(new HExistsExecutor(), SUPPORTED, new Parameter().exact(3).flags(READONLY, FAST)),
-  HKEYS(new HKeysExecutor(), SUPPORTED, new Parameter().exact(2).flags(READONLY, SORT_FOR_SCRIPT)),
+  HEXISTS(new HExistsExecutor(), Category.HASH, SUPPORTED,
+      new Parameter().exact(3).flags(READONLY, FAST)),
+  HKEYS(new HKeysExecutor(), Category.HASH, SUPPORTED,
+      new Parameter().exact(2).flags(READONLY, SORT_FOR_SCRIPT)),
 
   /************* Sets *****************/
 
-  SADD(new SAddExecutor(), SUPPORTED, new Parameter().min(3).flags(WRITE, DENYOOM, FAST)),
-  SCARD(new SCardExecutor(), SUPPORTED, new Parameter().exact(2).flags(READONLY, FAST)),
-  SDIFF(new SDiffExecutor(), SUPPORTED,
+  SADD(new SAddExecutor(), Category.SET, SUPPORTED, new Parameter().min(3).flags(WRITE, DENYOOM, FAST)),
+  SCARD(new SCardExecutor(), Category.SET, SUPPORTED,
+      new Parameter().exact(2).flags(READONLY, FAST)),
+  SDIFF(new SDiffExecutor(), Category.SET, SUPPORTED,
       new Parameter().min(2).lastKey(-1).flags(READONLY, SORT_FOR_SCRIPT)),
-  SDIFFSTORE(new SDiffStoreExecutor(), SUPPORTED,
+  SDIFFSTORE(new SDiffStoreExecutor(), Category.SET, SUPPORTED,
       new Parameter().min(3).lastKey(-1).flags(WRITE, DENYOOM)),
-  SINTER(new SInterExecutor(), SUPPORTED,
+  SINTER(new SInterExecutor(), Category.SET, SUPPORTED,
       new Parameter().min(2).lastKey(-1).flags(READONLY, SORT_FOR_SCRIPT)),
-  SINTERSTORE(new SInterStoreExecutor(), SUPPORTED,
+  SINTERSTORE(new SInterStoreExecutor(), Category.SET, SUPPORTED,
       new Parameter().min(3).lastKey(-1).flags(WRITE, DENYOOM)),
-  SISMEMBER(new SIsMemberExecutor(), SUPPORTED, new Parameter().exact(3).flags(READONLY, FAST)),
-  SMEMBERS(new SMembersExecutor(), SUPPORTED,
+  SISMEMBER(new SIsMemberExecutor(), Category.SET, SUPPORTED,
+      new Parameter().exact(3).flags(READONLY, FAST)),
+  SMEMBERS(new SMembersExecutor(), Category.SET, SUPPORTED,
       new Parameter().exact(2).flags(READONLY, SORT_FOR_SCRIPT)),
-  SMOVE(new SMoveExecutor(), SUPPORTED, new Parameter().exact(4).lastKey(2).flags(WRITE, FAST)),
-  SPOP(new SPopExecutor(), SUPPORTED,
+  SMOVE(new SMoveExecutor(), Category.SET, SUPPORTED,
+      new Parameter().exact(4).lastKey(2).flags(WRITE, FAST)),
+  SPOP(new SPopExecutor(), Category.SET, SUPPORTED,
       new Parameter().min(2).max(3, ERROR_SYNTAX).flags(WRITE, RANDOM, FAST)),
-  SRANDMEMBER(new SRandMemberExecutor(), SUPPORTED,
+  SRANDMEMBER(new SRandMemberExecutor(), Category.SET, SUPPORTED,
       new Parameter().min(2).max(3, ERROR_SYNTAX).flags(READONLY, RANDOM)),
-  SREM(new SRemExecutor(), SUPPORTED, new Parameter().min(3).flags(WRITE, FAST)),
-  SSCAN(new SScanExecutor(), SUPPORTED, new Parameter().min(3).flags(READONLY, RANDOM),
+  SREM(new SRemExecutor(), Category.SET, SUPPORTED, new Parameter().min(3).flags(WRITE, FAST)),
+  SSCAN(new SScanExecutor(), Category.SET, SUPPORTED,
+      new Parameter().min(3).flags(READONLY, RANDOM),
       new Parameter().odd(ERROR_SYNTAX)),
-  SUNION(new SUnionExecutor(), SUPPORTED,
+  SUNION(new SUnionExecutor(), Category.SET, SUPPORTED,
       new Parameter().min(2).lastKey(-1).flags(READONLY, SORT_FOR_SCRIPT)),
-  SUNIONSTORE(new SUnionStoreExecutor(), SUPPORTED,
+  SUNIONSTORE(new SUnionStoreExecutor(), Category.SET, SUPPORTED,
       new Parameter().min(3).lastKey(-1).flags(WRITE, DENYOOM)),
 
   /************ Sorted Sets **************/
 
-  ZADD(new ZAddExecutor(), SUPPORTED, new Parameter().min(4).flags(WRITE, DENYOOM, FAST)),
-  ZCARD(new ZCardExecutor(), SUPPORTED, new Parameter().exact(2).flags(READONLY, FAST)),
-  ZCOUNT(new ZCountExecutor(), SUPPORTED, new Parameter().exact(4).flags(READONLY, FAST)),
-  ZINCRBY(new ZIncrByExecutor(), SUPPORTED, new Parameter().exact(4).flags(WRITE, DENYOOM, FAST)),
-  ZINTERSTORE(new ZInterStoreExecutor(), SUPPORTED,
+  ZADD(new ZAddExecutor(), Category.SORTEDSET, SUPPORTED, new Parameter().min(4).flags(WRITE, DENYOOM, FAST)),
+  ZCARD(new ZCardExecutor(), Category.SORTEDSET, SUPPORTED,
+      new Parameter().exact(2).flags(READONLY, FAST)),
+  ZCOUNT(new ZCountExecutor(), Category.SORTEDSET, SUPPORTED,
+      new Parameter().exact(4).flags(READONLY, FAST)),
+  ZINCRBY(new ZIncrByExecutor(), Category.SORTEDSET, SUPPORTED,
+      new Parameter().exact(4).flags(WRITE, DENYOOM, FAST)),
+  ZINTERSTORE(new ZInterStoreExecutor(), Category.SORTEDSET, SUPPORTED,
       new Parameter().min(4).flags(WRITE, DENYOOM, MOVABLEKEYS)),
-  ZLEXCOUNT(new ZLexCountExecutor(), SUPPORTED, new Parameter().exact(4).flags(READONLY, FAST)),
-  ZPOPMAX(new ZPopMaxExecutor(), SUPPORTED,
+  ZLEXCOUNT(new ZLexCountExecutor(), Category.SORTEDSET, SUPPORTED,
+      new Parameter().exact(4).flags(READONLY, FAST)),
+  ZPOPMAX(new ZPopMaxExecutor(), Category.SORTEDSET, SUPPORTED,
       new Parameter().min(2).max(3, ERROR_SYNTAX).flags(WRITE, FAST)),
-  ZPOPMIN(new ZPopMinExecutor(), SUPPORTED,
+  ZPOPMIN(new ZPopMinExecutor(), Category.SORTEDSET, SUPPORTED,
       new Parameter().min(2).max(3, ERROR_SYNTAX).flags(WRITE, FAST)),
-  ZRANGE(new ZRangeExecutor(), SUPPORTED,
+  ZRANGE(new ZRangeExecutor(), Category.SORTEDSET, SUPPORTED,
       new Parameter().min(4).max(5, ERROR_SYNTAX).flags(READONLY)),
-  ZRANGEBYLEX(new ZRangeByLexExecutor(), SUPPORTED, new Parameter().min(4).flags(READONLY)),
-  ZRANGEBYSCORE(new ZRangeByScoreExecutor(), SUPPORTED, new Parameter().min(4).flags(READONLY)),
-  ZRANK(new ZRankExecutor(), SUPPORTED, new Parameter().exact(3).flags(READONLY, FAST)),
-  ZREM(new ZRemExecutor(), SUPPORTED, new Parameter().min(3).flags(WRITE, FAST)),
-  ZREMRANGEBYLEX(new ZRemRangeByLexExecutor(), SUPPORTED, new Parameter().exact(4).flags(WRITE)),
-  ZREMRANGEBYRANK(new ZRemRangeByRankExecutor(), SUPPORTED, new Parameter().exact(4).flags(WRITE)),
-  ZREMRANGEBYSCORE(new ZRemRangeByScoreExecutor(), SUPPORTED,
-      new Parameter().exact(4).flags(WRITE)),
-  ZREVRANGE(new ZRevRangeExecutor(), SUPPORTED,
-      new Parameter().min(4).max(5, ERROR_SYNTAX).flags(READONLY)),
-  ZREVRANGEBYLEX(new ZRevRangeByLexExecutor(), SUPPORTED, new Parameter().min(4).flags(READONLY)),
-  ZREVRANGEBYSCORE(new ZRevRangeByScoreExecutor(), SUPPORTED,
+  ZRANGEBYLEX(new ZRangeByLexExecutor(), Category.SORTEDSET, SUPPORTED,
       new Parameter().min(4).flags(READONLY)),
-  ZREVRANK(new ZRevRankExecutor(), SUPPORTED, new Parameter().exact(3).flags(READONLY, FAST)),
-  ZSCAN(new ZScanExecutor(), SUPPORTED, new Parameter().min(3).flags(READONLY, RANDOM),
+  ZRANGEBYSCORE(new ZRangeByScoreExecutor(), Category.SORTEDSET, SUPPORTED,
+      new Parameter().min(4).flags(READONLY)),
+  ZRANK(new ZRankExecutor(), Category.SORTEDSET, SUPPORTED,
+      new Parameter().exact(3).flags(READONLY, FAST)),
+  ZREM(new ZRemExecutor(), Category.SORTEDSET, SUPPORTED,
+      new Parameter().min(3).flags(WRITE, FAST)),
+  ZREMRANGEBYLEX(new ZRemRangeByLexExecutor(), Category.SORTEDSET, SUPPORTED,
+      new Parameter().exact(4).flags(WRITE)),
+  ZREMRANGEBYRANK(new ZRemRangeByRankExecutor(), Category.SORTEDSET, SUPPORTED,
+      new Parameter().exact(4).flags(WRITE)),
+  ZREMRANGEBYSCORE(new ZRemRangeByScoreExecutor(), Category.SORTEDSET, SUPPORTED,
+      new Parameter().exact(4).flags(WRITE)),
+  ZREVRANGE(new ZRevRangeExecutor(), Category.SORTEDSET, SUPPORTED,
+      new Parameter().min(4).max(5, ERROR_SYNTAX).flags(READONLY)),
+  ZREVRANGEBYLEX(new ZRevRangeByLexExecutor(), Category.SORTEDSET, SUPPORTED,
+      new Parameter().min(4).flags(READONLY)),
+  ZREVRANGEBYSCORE(new ZRevRangeByScoreExecutor(), Category.SORTEDSET, SUPPORTED,
+      new Parameter().min(4).flags(READONLY)),
+  ZREVRANK(new ZRevRankExecutor(), Category.SORTEDSET, SUPPORTED,
+      new Parameter().exact(3).flags(READONLY, FAST)),
+  ZSCAN(new ZScanExecutor(), Category.SORTEDSET, SUPPORTED,
+      new Parameter().min(3).flags(READONLY, RANDOM),
       new Parameter().odd(ERROR_SYNTAX)),
-  ZSCORE(new ZScoreExecutor(), SUPPORTED, new Parameter().exact(3).flags(READONLY, FAST)),
-  ZUNIONSTORE(new ZUnionStoreExecutor(), SUPPORTED,
+  ZSCORE(new ZScoreExecutor(), Category.SORTEDSET, SUPPORTED,
+      new Parameter().exact(3).flags(READONLY, FAST)),
+  ZUNIONSTORE(new ZUnionStoreExecutor(), Category.SORTEDSET, SUPPORTED,
       new Parameter().min(4).flags(WRITE, DENYOOM, MOVABLEKEYS)),
 
   /************* Server *****************/
-  COMMAND(new COMMANDCommandExecutor(), SUPPORTED, new Parameter().min(1).firstKey(0).flags(RANDOM,
+  COMMAND(new CommandCommandExecutor(), Category.CONNECTION, SUPPORTED, new Parameter().min(1).firstKey(0).flags(RANDOM,
       LOADING, STALE)),
-  SLOWLOG(new SlowlogExecutor(), SUPPORTED, new Parameter().min(2)
+  SLOWLOG(new SlowlogExecutor(), Category.ADMIN, SUPPORTED, new Parameter().min(2)
       .custom(SlowlogParameterRequirements.checkParameters()).firstKey(0)
-      .flags(ADMIN, RANDOM, LOADING, STALE)),
-  INFO(new InfoExecutor(), SUPPORTED, new Parameter().min(1).max(2, ERROR_SYNTAX).firstKey(0)
-      .flags(RANDOM, LOADING, STALE)),
-  LOLWUT(new LolWutExecutor(), SUPPORTED, new Parameter().min(1).firstKey(0).flags(READONLY, FAST)),
+      .flags(Flag.ADMIN, RANDOM, LOADING, STALE)),
+  INFO(new InfoExecutor(), Category.IGNORED, SUPPORTED,
+      new Parameter().min(1).max(2, ERROR_SYNTAX).firstKey(0)
+          .flags(RANDOM, LOADING, STALE)),
+  LOLWUT(new LolWutExecutor(), Category.IGNORED, SUPPORTED,
+      new Parameter().min(1).firstKey(0).flags(READONLY, FAST)),
 
 
   /********** Publish Subscribe **********/
-  SUBSCRIBE(new SubscribeExecutor(), SUPPORTED, new Parameter().min(2).firstKey(0).flags(
+  SUBSCRIBE(new SubscribeExecutor(), Category.PUBSUB, SUPPORTED, new Parameter().min(2).firstKey(0).flags(
       Flag.PUBSUB,
       NOSCRIPT,
       LOADING, STALE)),
-  PUBLISH(new PublishExecutor(), SUPPORTED,
+  PUBLISH(new PublishExecutor(), Category.PUBSUB, SUPPORTED,
       new Parameter().exact(3).firstKey(0).flags(Flag.PUBSUB, LOADING, STALE, FAST, MAY_REPLICATE)),
-  PSUBSCRIBE(new PsubscribeExecutor(), SUPPORTED,
+  PSUBSCRIBE(new PsubscribeExecutor(), Category.PUBSUB, SUPPORTED,
       new Parameter().min(2).firstKey(0).flags(Flag.PUBSUB, NOSCRIPT, LOADING, STALE)),
-  PUNSUBSCRIBE(new PunsubscribeExecutor(), SUPPORTED,
+  PUNSUBSCRIBE(new PunsubscribeExecutor(), Category.PUBSUB, SUPPORTED,
       new Parameter().min(1).firstKey(0).flags(Flag.PUBSUB, NOSCRIPT, LOADING, STALE)),
-  UNSUBSCRIBE(new UnsubscribeExecutor(), SUPPORTED,
+  UNSUBSCRIBE(new UnsubscribeExecutor(), Category.PUBSUB, SUPPORTED,
       new Parameter().min(1).firstKey(0).flags(Flag.PUBSUB, NOSCRIPT, LOADING, STALE)),
-  PUBSUB(new PubSubExecutor(), SUPPORTED,
+  PUBSUB(new PubSubExecutor(), Category.PUBSUB, SUPPORTED,
       new Parameter().min(2).firstKey(0).flags(Flag.PUBSUB, RANDOM, LOADING, STALE)),
 
   /************* Cluster *****************/
-  CLUSTER(new ClusterExecutor(), SUPPORTED, new Parameter().min(2)
+  CLUSTER(new ClusterExecutor(), Category.ADMIN, SUPPORTED, new Parameter().min(2)
       .custom(ClusterParameterRequirements.checkParameters()).firstKey(0)
-      .flags(ADMIN, RANDOM, STALE)),
+      .flags(Flag.ADMIN, RANDOM, STALE)),
 
   /***************************************
    ******** Unsupported Commands *********
@@ -337,41 +400,59 @@ public enum RedisCommandType {
 
   /*************** Connection *************/
 
-  SELECT(new SelectExecutor(), UNSUPPORTED, new Parameter().exact(2).firstKey(0).flags(LOADING,
+  SELECT(new SelectExecutor(), Category.KEYSPACE, UNSUPPORTED, new Parameter().exact(2).firstKey(0).flags(LOADING,
       STALE,
       FAST)),
 
   /*************** Keys ******************/
 
-  SCAN(new ScanExecutor(), UNSUPPORTED, new Parameter().min(2).even(ERROR_SYNTAX).firstKey(0).flags(
+  SCAN(new ScanExecutor(), Category.KEYSPACE, UNSUPPORTED, new Parameter().min(2).even(ERROR_SYNTAX).firstKey(0).flags(
       READONLY,
       RANDOM)),
-  UNLINK(new DelExecutor(), UNSUPPORTED, new Parameter().min(2).lastKey(-1).flags(WRITE, FAST)),
+  UNLINK(new DelExecutor(), Category.KEYSPACE, UNSUPPORTED,
+      new Parameter().min(2).lastKey(-1).flags(WRITE, FAST)),
 
   /************** Strings ****************/
 
-  BITCOUNT(new BitCountExecutor(), UNSUPPORTED, new Parameter().min(2).flags(READONLY)),
-  BITOP(new BitOpExecutor(), UNSUPPORTED,
+  BITCOUNT(new BitCountExecutor(), Category.BITMAP, UNSUPPORTED, new Parameter().min(2).flags(READONLY)),
+  BITOP(new BitOpExecutor(), Category.BITMAP, UNSUPPORTED,
       new Parameter().min(4).firstKey(2).lastKey(-1).flags(WRITE, DENYOOM)),
-  BITPOS(new BitPosExecutor(), UNSUPPORTED, new Parameter().min(3).flags(READONLY)),
-  GETBIT(new GetBitExecutor(), UNSUPPORTED, new Parameter().exact(3).flags(READONLY, FAST)),
-  SETBIT(new SetBitExecutor(), UNSUPPORTED, new Parameter().exact(4).flags(WRITE, DENYOOM)),
+  BITPOS(new BitPosExecutor(), Category.BITMAP, UNSUPPORTED,
+      new Parameter().min(3).flags(READONLY)),
+  GETBIT(new GetBitExecutor(), Category.BITMAP, UNSUPPORTED,
+      new Parameter().exact(3).flags(READONLY, FAST)),
+  SETBIT(new SetBitExecutor(), Category.BITMAP, UNSUPPORTED,
+      new Parameter().exact(4).flags(WRITE, DENYOOM)),
 
   /*************** Server ****************/
 
-  DBSIZE(new DBSizeExecutor(), UNSUPPORTED, new Parameter().exact(1).firstKey(0).flags(READONLY,
+  DBSIZE(new DBSizeExecutor(), Category.KEYSPACE, UNSUPPORTED, new Parameter().exact(1).firstKey(0).flags(READONLY,
       FAST)),
-  FLUSHALL(new FlushAllExecutor(), UNSUPPORTED,
+  FLUSHALL(new FlushAllExecutor(), Category.KEYSPACE, UNSUPPORTED,
       new Parameter().min(1).max(2, ERROR_SYNTAX).firstKey(0).flags(WRITE)),
-  FLUSHDB(new FlushAllExecutor(), UNSUPPORTED,
+  FLUSHDB(new FlushAllExecutor(), Category.KEYSPACE, UNSUPPORTED,
       new Parameter().min(1).max(2, ERROR_SYNTAX).firstKey(0).flags(WRITE)),
-  TIME(new TimeExecutor(), UNSUPPORTED,
+  TIME(new TimeExecutor(), Category.IGNORED, UNSUPPORTED,
       new Parameter().exact(1).firstKey(0).flags(RANDOM, LOADING, STALE, FAST)),
 
   /***************************************
    *********** Unknown Commands **********
    ***************************************/
-  UNKNOWN(new UnknownExecutor(), RedisCommandSupportLevel.UNKNOWN);
+  UNKNOWN(new UnknownExecutor(), Category.IGNORED, RedisCommandSupportLevel.UNKNOWN);
+
+  public enum Category {
+    ADMIN,
+    BITMAP,
+    CONNECTION,
+    HASH,
+    IGNORED,
+    KEYSPACE,
+    LIST,
+    PUBSUB,
+    SET,
+    SORTEDSET,
+    STRING
+  }
 
   public enum Flag {
     ADMIN,
@@ -394,22 +475,28 @@ public enum RedisCommandType {
   private final Parameter parameterRequirements;
   private final Parameter deferredParameterRequirements;
   private final RedisCommandSupportLevel supportLevel;
+  private final Category category;
 
-  RedisCommandType(CommandExecutor commandExecutor, RedisCommandSupportLevel supportLevel) {
-    this(commandExecutor, supportLevel, new Parameter().custom(c -> {
+  RedisCommandType(CommandExecutor commandExecutor, Category category,
+      RedisCommandSupportLevel supportLevel) {
+    this(commandExecutor, category, supportLevel, new Parameter().custom(c -> {
     }));
   }
 
-  RedisCommandType(CommandExecutor commandExecutor, RedisCommandSupportLevel supportLevel,
+  RedisCommandType(CommandExecutor commandExecutor, Category category,
+      RedisCommandSupportLevel supportLevel,
       Parameter parameterRequirements) {
-    this(commandExecutor, supportLevel, parameterRequirements, new Parameter().custom(c -> {
-    }));
+    this(commandExecutor, category, supportLevel, parameterRequirements,
+        new Parameter().custom(c -> {
+        }));
   }
 
-  RedisCommandType(CommandExecutor commandExecutor, RedisCommandSupportLevel supportLevel,
+  RedisCommandType(CommandExecutor commandExecutor, Category category,
+      RedisCommandSupportLevel supportLevel,
       Parameter parameterRequirements,
       Parameter deferredParameterRequirements) {
     this.commandExecutor = commandExecutor;
+    this.category = category;
     this.supportLevel = supportLevel;
     this.parameterRequirements = parameterRequirements;
     this.deferredParameterRequirements = deferredParameterRequirements;
@@ -433,6 +520,10 @@ public enum RedisCommandType {
 
   public int step() {
     return parameterRequirements.getStep();
+  }
+
+  public Category category() {
+    return category;
   }
 
   public boolean isSupported() {
@@ -476,5 +567,11 @@ public enum RedisCommandType {
     parameterRequirements.checkParameters(command, executionHandlerContext);
 
     return commandExecutor.executeCommand(command, executionHandlerContext);
+  }
+
+  public static List<RedisCommandType> getCommandsForCategory(Category type) {
+    return Arrays.stream(RedisCommandType.values())
+        .filter(c -> c.category == type && c.category != Category.IGNORED)
+        .collect(Collectors.toList());
   }
 }

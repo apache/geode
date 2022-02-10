@@ -126,6 +126,13 @@ public class CommandIntegrationTest {
     softly.assertThat(actual.lastKey).as(expected.name + ".lastKey").isEqualTo(expected.lastKey);
     softly.assertThat(actual.stepCount).as(expected.name + ".stepCount")
         .isEqualTo(expected.stepCount);
+    if (!actual.categories.get(0).equals("@ignored")) {
+      softly.assertThat(actual.categories.get(0)).as(expected.name + ".category")
+          .isIn(expected.categories);
+    } else {
+      softly.assertThat(actual.name).as("command " + actual.name + " is categorized as IGNORED")
+          .isIn("info", "lolwut", "time");
+    }
     softly.assertAll();
   }
 
@@ -143,7 +150,8 @@ public class CommandIntegrationTest {
           (List<String>) entry.get(2),
           (long) entry.get(3),
           (long) entry.get(4),
-          (long) entry.get(5));
+          (long) entry.get(5),
+          (List<String>) entry.get(6));
 
       commands.put(key, cmd);
     }
@@ -158,15 +166,17 @@ public class CommandIntegrationTest {
     final List<String> flags;
     final long lastKey;
     final long stepCount;
+    final List<String> categories;
 
     public CommandStructure(String name, long arity, List<String> flags, long firstKey,
-        long lastKey, long stepCount) {
+        long lastKey, long stepCount, List<String> categories) {
       this.name = name;
       this.arity = arity;
       this.flags = flags;
       this.firstKey = firstKey;
       this.lastKey = lastKey;
       this.stepCount = stepCount;
+      this.categories = categories;
     }
   }
 }
