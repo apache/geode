@@ -54,9 +54,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import org.apache.geode.UnmodifiableException;
 import org.apache.geode.internal.ConfigSource;
@@ -64,9 +64,8 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.serialization.filter.SerializableObjectConfig;
 import org.apache.geode.security.TestPostProcessor;
 import org.apache.geode.security.TestSecurityManager;
-import org.apache.geode.test.junit.categories.MembershipTest;
 
-@Category({MembershipTest.class})
+@Tag("membership")
 public class DistributionConfigJUnitTest {
 
   private Map<Class<?>, Class<?>> classMap;
@@ -79,7 +78,7 @@ public class DistributionConfigJUnitTest {
 
   private DistributionConfigImpl config;
 
-  @Before
+  @BeforeEach
   public void before() {
     classMap = new HashMap<>();
     classMap.put(boolean.class, Boolean.class);
@@ -327,14 +326,15 @@ public class DistributionConfigJUnitTest {
     assertThat(modifiables.get(9)).isEqualTo(STATISTIC_SAMPLING_ENABLED);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test()
   public void testSetInvalidAttributeObject() {
-    config.setAttributeObject("fake attribute", "test", ConfigSource.api());
+    assertThatThrownBy(() -> config.setAttributeObject("fake attribute", "test", ConfigSource.api())).isInstanceOf(IllegalArgumentException.class);
   }
 
-  @Test(expected = UnmodifiableException.class)
+  @Test()
   public void testSetUnmodifiableAttributeObject() {
-    config.setAttributeObject(ARCHIVE_DISK_SPACE_LIMIT, 0, ConfigSource.api());
+    assertThatThrownBy(() ->
+    config.setAttributeObject(ARCHIVE_DISK_SPACE_LIMIT, 0, ConfigSource.api())).isInstanceOf(UnmodifiableException.class);
   }
 
   @Test
@@ -343,9 +343,9 @@ public class DistributionConfigJUnitTest {
     assertThat(config.getHttpServicePort()).isEqualTo(8080);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test()
   public void testOutOfRangeAttributeObject() {
-    config.setAttributeObject(HTTP_SERVICE_PORT, -1, ConfigSource.api());
+    assertThatThrownBy(()->config.setAttributeObject(HTTP_SERVICE_PORT, -1, ConfigSource.api())).isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
