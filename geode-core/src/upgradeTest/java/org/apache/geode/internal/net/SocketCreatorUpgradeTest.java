@@ -32,7 +32,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_SERVER_PR
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_TYPE;
-import static org.apache.geode.internal.process.ProcessUtils.killProcess;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
@@ -60,6 +59,7 @@ import org.apache.geode.cache.ssl.CertStores;
 import org.apache.geode.cache.ssl.CertificateBuilder;
 import org.apache.geode.cache.ssl.CertificateMaterial;
 import org.apache.geode.internal.UniquePortSupplier;
+import org.apache.geode.internal.shared.NativeCalls;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 import org.apache.geode.test.version.TestVersion;
@@ -415,7 +415,7 @@ public class SocketCreatorUpgradeTest {
   private static void killByPidFile(final Path pidFile) {
     try {
       final int pid = parseInt(readFileToString(pidFile.toFile(), defaultCharset()));
-      killProcess(pid);
+      NativeCalls.getInstance().killProcess(pid);
       Files.delete(pidFile);
     } catch (IOException e) {
       e.printStackTrace();
