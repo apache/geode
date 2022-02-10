@@ -15,20 +15,34 @@
 package org.apache.geode.internal.serialization.filter;
 
 import static java.util.Collections.emptySet;
+import static org.apache.geode.internal.serialization.filter.SerialFilterAssertions.assertThatSerialFilterIsNull;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.function.Supplier;
 
+import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 
 public class ReflectiveFacadeGlobalSerialFilterFactoryTest {
 
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
+  @After
+  public void serialFilterIsNull() throws InvocationTargetException, IllegalAccessException {
+    assertThatSerialFilterIsNull();
+  }
+
+  /**
+   * Creates an instance of ReflectiveFacadeGlobalSerialFilter.
+   */
   @Test
-  public void constructsDelegatingGlobalSerialFilter() {
+  public void createsReflectiveFacadeGlobalSerialFilter() {
     ObjectInputFilterApi api = mock(ObjectInputFilterApi.class);
     GlobalSerialFilterFactory factory = new ReflectiveFacadeGlobalSerialFilterFactory(api);
 
@@ -37,35 +51,26 @@ public class ReflectiveFacadeGlobalSerialFilterFactoryTest {
     assertThat(filter).isInstanceOf(ReflectiveFacadeGlobalSerialFilter.class);
   }
 
+  /**
+   * Throws ClassNotFoundException nested inside an UnsupportedOperationException when the trying \
+   * to load the JDK ObjectInputFilter via reflection throws ClassNotFoundException.
+   */
   @Test
-  public void delegatesToObjectInputFilterApiToCreateObjectInputFilter()
-      throws InvocationTargetException, IllegalAccessException {
-    ObjectInputFilterApi api = mock(ObjectInputFilterApi.class);
-    GlobalSerialFilterFactory factory = new ReflectiveFacadeGlobalSerialFilterFactory(api);
-    GlobalSerialFilter filter = factory.create("pattern", emptySet());
-    Object objectInputFilter = mock(Object.class);
+  public void throws_whenObjectInputFilterClassNotFound() {
+    Supplier<ObjectInputFilterApi> objectInputFilterApiSupplier = () -> {
+      throw new UnsupportedOperationException("ObjectInputFilter is not available.",
+          new ClassNotFoundException("sun.misc.ObjectInputFilter"));
+    };
 
-    when(api.createObjectInputFilterProxy(any(), any()))
-        .thenReturn(objectInputFilter);
+    Throwable thrown = catchThrowable(() -> {
+      new ReflectiveFacadeGlobalSerialFilterFactory(objectInputFilterApiSupplier)
+          .create("pattern", emptySet());
+    });
 
-    filter.setFilter();
-
-    verify(api).createObjectInputFilterProxy(any(), any());
-  }
-
-  @Test
-  public void delegatesToObjectInputFilterApiToSetSerialFilter()
-      throws InvocationTargetException, IllegalAccessException {
-    ObjectInputFilterApi api = mock(ObjectInputFilterApi.class);
-    GlobalSerialFilterFactory factory = new ReflectiveFacadeGlobalSerialFilterFactory(api);
-    GlobalSerialFilter filter = factory.create("pattern", emptySet());
-    Object objectInputFilter = mock(Object.class);
-
-    when(api.createObjectInputFilterProxy(any(), any()))
-        .thenReturn(objectInputFilter);
-
-    filter.setFilter();
-
-    verify(api).setSerialFilter(objectInputFilter);
+    assertThat(thrown)
+        .isInstanceOf(UnsupportedOperationException.class)
+        .hasMessage("ObjectInputFilter is not available.")
+        .hasRootCauseInstanceOf(ClassNotFoundException.class)
+        .hasRootCauseMessage("sun.misc.ObjectInputFilter");
   }
 }
