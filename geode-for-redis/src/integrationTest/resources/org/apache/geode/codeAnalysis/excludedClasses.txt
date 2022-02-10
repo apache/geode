@@ -15,4 +15,5 @@ org/apache/geode/redis/internal/commands/executor/string/BitOpExecutor$BitOp
 org/apache/geode/redis/internal/pubsub/Publisher$PublishFunction
 org/apache/geode/redis/internal/services/locking/StripedExecutorService$State
 org/apache/geode/redis/internal/commands/RedisCommandType
+org/apache/geode/redis/internal/commands/RedisCommandType$Category
 org/apache/geode/redis/internal/commands/RedisCommandType$Flag
