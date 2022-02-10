@@ -165,20 +165,32 @@ public enum RedisCommandType {
    *** Supported Commands ***
    ***************************************/
 
+  /***************** Admin *******************/
+  CLUSTER(new ClusterExecutor(), Category.ADMIN, SUPPORTED,
+      new Parameter().min(2).custom(ClusterParameterRequirements.checkParameters()).firstKey(0)
+          .flags(Flag.ADMIN, RANDOM, STALE)),
+  QUIT(new QuitExecutor(), Category.ADMIN, SUPPORTED, new Parameter().firstKey(0)),
+  SLOWLOG(new SlowlogExecutor(), Category.ADMIN, SUPPORTED, new Parameter().min(2)
+      .custom(SlowlogParameterRequirements.checkParameters()).firstKey(0)
+      .flags(Flag.ADMIN, RANDOM, LOADING, STALE)),
+
   /*************** Connection ****************/
-  AUTH(new AuthExecutor(), Category.CONNECTION, SUPPORTED, new Parameter().min(2).max(3, ERROR_SYNTAX).firstKey(0)
-      .flags(NOSCRIPT, LOADING, STALE, FAST, NO_AUTH)),
+  AUTH(new AuthExecutor(), Category.CONNECTION, SUPPORTED,
+      new Parameter().min(2).max(3, ERROR_SYNTAX).firstKey(0)
+          .flags(NOSCRIPT, LOADING, STALE, FAST, NO_AUTH)),
   CLIENT(new ClientExecutor(), Category.CONNECTION, SUPPORTED,
       new Parameter().min(2).firstKey(0).flags(Flag.ADMIN, NOSCRIPT, RANDOM, LOADING, STALE)),
   ECHO(new EchoExecutor(), Category.CONNECTION, SUPPORTED,
       new Parameter().exact(2).firstKey(0).flags(FAST)),
   PING(new PingExecutor(), Category.CONNECTION, SUPPORTED,
       new Parameter().min(1).max(2).firstKey(0).flags(STALE, FAST)),
-  QUIT(new QuitExecutor(), Category.ADMIN, SUPPORTED, new Parameter().firstKey(0)),
+  COMMAND(new CommandCommandExecutor(), Category.CONNECTION, SUPPORTED,
+      new Parameter().min(1).firstKey(0).flags(RANDOM, LOADING, STALE)),
 
-  /*************** Keys ******************/
+  /*************** Keyspace ******************/
 
-  DEL(new DelExecutor(), Category.KEYSPACE, SUPPORTED, new Parameter().min(2).lastKey(-1).flags(WRITE)),
+  DEL(new DelExecutor(), Category.KEYSPACE, SUPPORTED,
+      new Parameter().min(2).lastKey(-1).flags(WRITE)),
   DUMP(new DumpExecutor(), Category.KEYSPACE, SUPPORTED,
       new Parameter().exact(2).flags(READONLY, RANDOM)),
   EXISTS(new ExistsExecutor(), Category.KEYSPACE, SUPPORTED,
@@ -210,7 +222,8 @@ public enum RedisCommandType {
 
   /************* Strings *****************/
 
-  APPEND(new AppendExecutor(), Category.STRING, SUPPORTED, new Parameter().exact(3).flags(WRITE, DENYOOM, FAST)),
+  APPEND(new AppendExecutor(), Category.STRING, SUPPORTED,
+      new Parameter().exact(3).flags(WRITE, DENYOOM, FAST)),
   DECR(new DecrExecutor(), Category.STRING, SUPPORTED,
       new Parameter().exact(2).flags(WRITE, DENYOOM, FAST)),
   DECRBY(new DecrByExecutor(), Category.STRING, SUPPORTED,
@@ -281,7 +294,8 @@ public enum RedisCommandType {
 
   /************* Sets *****************/
 
-  SADD(new SAddExecutor(), Category.SET, SUPPORTED, new Parameter().min(3).flags(WRITE, DENYOOM, FAST)),
+  SADD(new SAddExecutor(), Category.SET, SUPPORTED,
+      new Parameter().min(3).flags(WRITE, DENYOOM, FAST)),
   SCARD(new SCardExecutor(), Category.SET, SUPPORTED,
       new Parameter().exact(2).flags(READONLY, FAST)),
   SDIFF(new SDiffExecutor(), Category.SET, SUPPORTED,
@@ -313,7 +327,8 @@ public enum RedisCommandType {
 
   /************ Sorted Sets **************/
 
-  ZADD(new ZAddExecutor(), Category.SORTEDSET, SUPPORTED, new Parameter().min(4).flags(WRITE, DENYOOM, FAST)),
+  ZADD(new ZAddExecutor(), Category.SORTEDSET, SUPPORTED,
+      new Parameter().min(4).flags(WRITE, DENYOOM, FAST)),
   ZCARD(new ZCardExecutor(), Category.SORTEDSET, SUPPORTED,
       new Parameter().exact(2).flags(READONLY, FAST)),
   ZCOUNT(new ZCountExecutor(), Category.SORTEDSET, SUPPORTED,
@@ -360,24 +375,10 @@ public enum RedisCommandType {
   ZUNIONSTORE(new ZUnionStoreExecutor(), Category.SORTEDSET, SUPPORTED,
       new Parameter().min(4).flags(WRITE, DENYOOM, MOVABLEKEYS)),
 
-  /************* Server *****************/
-  COMMAND(new CommandCommandExecutor(), Category.CONNECTION, SUPPORTED, new Parameter().min(1).firstKey(0).flags(RANDOM,
-      LOADING, STALE)),
-  SLOWLOG(new SlowlogExecutor(), Category.ADMIN, SUPPORTED, new Parameter().min(2)
-      .custom(SlowlogParameterRequirements.checkParameters()).firstKey(0)
-      .flags(Flag.ADMIN, RANDOM, LOADING, STALE)),
-  INFO(new InfoExecutor(), Category.IGNORED, SUPPORTED,
-      new Parameter().min(1).max(2, ERROR_SYNTAX).firstKey(0)
-          .flags(RANDOM, LOADING, STALE)),
-  LOLWUT(new LolWutExecutor(), Category.IGNORED, SUPPORTED,
-      new Parameter().min(1).firstKey(0).flags(READONLY, FAST)),
-
-
   /********** Publish Subscribe **********/
-  SUBSCRIBE(new SubscribeExecutor(), Category.PUBSUB, SUPPORTED, new Parameter().min(2).firstKey(0).flags(
-      Flag.PUBSUB,
-      NOSCRIPT,
-      LOADING, STALE)),
+
+  SUBSCRIBE(new SubscribeExecutor(), Category.PUBSUB, SUPPORTED,
+      new Parameter().min(2).firstKey(0).flags(Flag.PUBSUB, NOSCRIPT, LOADING, STALE)),
   PUBLISH(new PublishExecutor(), Category.PUBSUB, SUPPORTED,
       new Parameter().exact(3).firstKey(0).flags(Flag.PUBSUB, LOADING, STALE, FAST, MAY_REPLICATE)),
   PSUBSCRIBE(new PsubscribeExecutor(), Category.PUBSUB, SUPPORTED,
@@ -389,32 +390,38 @@ public enum RedisCommandType {
   PUBSUB(new PubSubExecutor(), Category.PUBSUB, SUPPORTED,
       new Parameter().min(2).firstKey(0).flags(Flag.PUBSUB, RANDOM, LOADING, STALE)),
 
-  /************* Cluster *****************/
-  CLUSTER(new ClusterExecutor(), Category.ADMIN, SUPPORTED, new Parameter().min(2)
-      .custom(ClusterParameterRequirements.checkParameters()).firstKey(0)
-      .flags(Flag.ADMIN, RANDOM, STALE)),
+  /************* Uncategorized *****************/
+
+  INFO(new InfoExecutor(), Category.UNCATEGORIZED, SUPPORTED,
+      new Parameter().min(1).max(2, ERROR_SYNTAX).firstKey(0)
+          .flags(RANDOM, LOADING, STALE)),
+  LOLWUT(new LolWutExecutor(), Category.UNCATEGORIZED, SUPPORTED,
+      new Parameter().min(1).firstKey(0).flags(READONLY, FAST)),
+
 
   /***************************************
    ******** Unsupported Commands *********
    ***************************************/
 
-  /*************** Connection *************/
+  /*************** Keyspace ******************/
 
-  SELECT(new SelectExecutor(), Category.KEYSPACE, UNSUPPORTED, new Parameter().exact(2).firstKey(0).flags(LOADING,
-      STALE,
-      FAST)),
-
-  /*************** Keys ******************/
-
-  SCAN(new ScanExecutor(), Category.KEYSPACE, UNSUPPORTED, new Parameter().min(2).even(ERROR_SYNTAX).firstKey(0).flags(
-      READONLY,
-      RANDOM)),
+  DBSIZE(new DBSizeExecutor(), Category.KEYSPACE, UNSUPPORTED,
+      new Parameter().exact(1).firstKey(0).flags(READONLY, FAST)),
+  FLUSHALL(new FlushAllExecutor(), Category.KEYSPACE, UNSUPPORTED,
+      new Parameter().min(1).max(2, ERROR_SYNTAX).firstKey(0).flags(WRITE)),
+  FLUSHDB(new FlushAllExecutor(), Category.KEYSPACE, UNSUPPORTED,
+      new Parameter().min(1).max(2, ERROR_SYNTAX).firstKey(0).flags(WRITE)),
+  SCAN(new ScanExecutor(), Category.KEYSPACE, UNSUPPORTED,
+      new Parameter().min(2).even(ERROR_SYNTAX).firstKey(0).flags(READONLY, RANDOM)),
+  SELECT(new SelectExecutor(), Category.KEYSPACE, UNSUPPORTED,
+      new Parameter().exact(2).firstKey(0).flags(LOADING, STALE, FAST)),
   UNLINK(new DelExecutor(), Category.KEYSPACE, UNSUPPORTED,
       new Parameter().min(2).lastKey(-1).flags(WRITE, FAST)),
 
-  /************** Strings ****************/
+  /************** Bitmap ****************/
 
-  BITCOUNT(new BitCountExecutor(), Category.BITMAP, UNSUPPORTED, new Parameter().min(2).flags(READONLY)),
+  BITCOUNT(new BitCountExecutor(), Category.BITMAP, UNSUPPORTED,
+      new Parameter().min(2).flags(READONLY)),
   BITOP(new BitOpExecutor(), Category.BITMAP, UNSUPPORTED,
       new Parameter().min(4).firstKey(2).lastKey(-1).flags(WRITE, DENYOOM)),
   BITPOS(new BitPosExecutor(), Category.BITMAP, UNSUPPORTED,
@@ -424,34 +431,28 @@ public enum RedisCommandType {
   SETBIT(new SetBitExecutor(), Category.BITMAP, UNSUPPORTED,
       new Parameter().exact(4).flags(WRITE, DENYOOM)),
 
-  /*************** Server ****************/
+  /*************** Uncategorized ****************/
 
-  DBSIZE(new DBSizeExecutor(), Category.KEYSPACE, UNSUPPORTED, new Parameter().exact(1).firstKey(0).flags(READONLY,
-      FAST)),
-  FLUSHALL(new FlushAllExecutor(), Category.KEYSPACE, UNSUPPORTED,
-      new Parameter().min(1).max(2, ERROR_SYNTAX).firstKey(0).flags(WRITE)),
-  FLUSHDB(new FlushAllExecutor(), Category.KEYSPACE, UNSUPPORTED,
-      new Parameter().min(1).max(2, ERROR_SYNTAX).firstKey(0).flags(WRITE)),
-  TIME(new TimeExecutor(), Category.IGNORED, UNSUPPORTED,
+  TIME(new TimeExecutor(), Category.UNCATEGORIZED, UNSUPPORTED,
       new Parameter().exact(1).firstKey(0).flags(RANDOM, LOADING, STALE, FAST)),
 
   /***************************************
    *********** Unknown Commands **********
    ***************************************/
-  UNKNOWN(new UnknownExecutor(), Category.IGNORED, RedisCommandSupportLevel.UNKNOWN);
+  UNKNOWN(new UnknownExecutor(), Category.UNCATEGORIZED, RedisCommandSupportLevel.UNKNOWN);
 
   public enum Category {
     ADMIN,
     BITMAP,
     CONNECTION,
     HASH,
-    IGNORED,
     KEYSPACE,
     LIST,
     PUBSUB,
     SET,
     SORTEDSET,
-    STRING
+    STRING,
+    UNCATEGORIZED,
   }
 
   public enum Flag {
@@ -479,16 +480,13 @@ public enum RedisCommandType {
 
   RedisCommandType(CommandExecutor commandExecutor, Category category,
       RedisCommandSupportLevel supportLevel) {
-    this(commandExecutor, category, supportLevel, new Parameter().custom(c -> {
-    }));
+    this(commandExecutor, category, supportLevel, new Parameter());
   }
 
   RedisCommandType(CommandExecutor commandExecutor, Category category,
       RedisCommandSupportLevel supportLevel,
       Parameter parameterRequirements) {
-    this(commandExecutor, category, supportLevel, parameterRequirements,
-        new Parameter().custom(c -> {
-        }));
+    this(commandExecutor, category, supportLevel, parameterRequirements, new Parameter());
   }
 
   RedisCommandType(CommandExecutor commandExecutor, Category category,
@@ -571,7 +569,7 @@ public enum RedisCommandType {
 
   public static List<RedisCommandType> getCommandsForCategory(Category type) {
     return Arrays.stream(RedisCommandType.values())
-        .filter(c -> c.category == type && c.category != Category.IGNORED)
+        .filter(c -> c.category == type)
         .collect(Collectors.toList());
   }
 }

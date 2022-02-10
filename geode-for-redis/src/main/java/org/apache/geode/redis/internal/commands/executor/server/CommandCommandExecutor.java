@@ -32,12 +32,10 @@ import org.apache.geode.redis.internal.commands.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 /**
- * This class implements execution for the redis COMMAND command.
- * For clarity and to avoid this class name from getting mixed
- * up with the interface name it implements, both COMMAND and Command
- * are in the class name.
- * COMMAND refers to the redis command being implemented.
- * CommandExecutor refers to the interface being implemented.
+ * This class implements execution for the redis COMMAND command. In keeping with the naming
+ * conventions of {@link CommandExecutor}s; being "{@code &lt;command name&gt;CommandExecutor}",
+ * the name of this class is deliberately {@code CommandCommandExecutor} since it is the concrete
+ * implementation of the {@code CommandExecutor} interface for the COMMAND command.
  */
 public class CommandCommandExecutor implements CommandExecutor {
   @Immutable

@@ -126,11 +126,12 @@ public class CommandIntegrationTest {
     softly.assertThat(actual.lastKey).as(expected.name + ".lastKey").isEqualTo(expected.lastKey);
     softly.assertThat(actual.stepCount).as(expected.name + ".stepCount")
         .isEqualTo(expected.stepCount);
-    if (!actual.categories.get(0).equals("@ignored")) {
+    if (!actual.categories.get(0).equals("@uncategorized")) {
       softly.assertThat(actual.categories.get(0)).as(expected.name + ".category")
           .isIn(expected.categories);
     } else {
-      softly.assertThat(actual.name).as("command " + actual.name + " is categorized as IGNORED")
+      softly.assertThat(actual.name)
+          .as("command " + actual.name + " is categorized as UNCATEGORIZED")
           .isIn("info", "lolwut", "time");
     }
     softly.assertAll();
