@@ -23,7 +23,7 @@ def getJavaVersionUrl(String version) {
   final String os
   if (Os.isFamily(Os.FAMILY_MAC)) {
     os = 'macos'
-  } else if (Os.FAMILY_WINDOWS) {
+  } else if (Os.isFamily(Os.FAMILY_WINDOWS)) {
     os = 'windows'
   } else {
     os = 'linux'
