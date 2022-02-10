@@ -85,7 +85,7 @@ class SCClusterSocketCreator extends ClusterSocketCreatorImpl {
 
     // restrict protocols
     final String[] protocols = sslConfig.getServerProtocolsAsStringArray();
-    if (!"any".equalsIgnoreCase(protocols[0])) {
+    if (!SSLConfig.isAnyProtocols(protocols)) {
       serverSocket.setEnabledProtocols(protocols);
     }
     // restrict ciphers

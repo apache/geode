@@ -32,15 +32,17 @@ import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocket;
 
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-public class SocketCreatorJUnitTest {
+@Tag("membership")
+public class SocketCreatorTest {
 
   private final SSLContext context = mock(SSLContext.class);
   private final SSLParameters parameters = mock(SSLParameters.class);
   private final SSLEngine engine = mock(SSLEngine.class);
 
-  public SocketCreatorJUnitTest() {
+  public SocketCreatorTest() {
     when(engine.getSSLParameters()).thenReturn(parameters);
   }
 

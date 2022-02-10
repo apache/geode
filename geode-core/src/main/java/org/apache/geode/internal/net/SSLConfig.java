@@ -23,6 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_R
 import java.security.KeyStore;
 import java.util.Properties;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -204,6 +205,13 @@ public class SSLConfig {
     return StringUtils.isBlank(protocols) || "any".equalsIgnoreCase(protocols);
   }
 
+  /**
+   * Returns true if protocols is either null, empty or is set to "any" (ignoring case)
+   */
+  public static boolean isAnyProtocols(final String... protocols) {
+    return ArrayUtils.isEmpty(protocols) || "any".equalsIgnoreCase(protocols[0]);
+  }
+
   @Override
   public String toString() {
     return "SSLConfig{" + "enabled=" + enabled + ", protocols='" + protocols + '\''
@@ -231,6 +239,10 @@ public class SSLConfig {
       props.setProperty(CLUSTER_SSL_CIPHERS, ciphers);
       props.setProperty(CLUSTER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(requireAuth));
     }
+  }
+
+  public static Builder builder() {
+    return new Builder();
   }
 
   /**
