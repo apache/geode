@@ -1396,8 +1396,14 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
                   .warn(
                       "{} secs have elapsed waiting for a primary for bucket {}. Current bucket owners {}",
                       new Object[] {warnTime / 1000L, this, adviseInitialized()});
-              this.getRegionForDeltaGII().dumpBackingMap();
               // log a warning;
+              Set<InternalDistributedMember> memberToClear = adviseInitialized();
+              for (InternalDistributedMember member : memberToClear) {
+                ProfileId id = getProfileIdForMember(member);
+                logger.info("MLH removing the profile for member " + member + " profileid = " + id
+                    + " stack trace ", new Exception("Stack trace"));
+                removeId(id, false, false, false);
+              }
               loggedWarning = true;
             } else {
               timeLeft = timeLeft > timeUntilWarning ? timeUntilWarning : timeLeft;

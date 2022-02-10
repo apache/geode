@@ -1321,6 +1321,24 @@ public class DistributionAdvisor {
 
   }
 
+  /**
+   * Perform work of removing the given member from this advisor.
+   */
+  protected synchronized ProfileId getProfileIdForMember(InternalDistributedMember member) {
+    // must synchronize when modifying profile array
+    dumpProfiles("Preparing to remove a profile.");
+
+    Profile[] locProfiles = profiles; // grab current profiles
+    for (int i = 0; i < locProfiles.length; i++) {
+      if (locProfiles[i].getDistributedMember().getId() == member.getId()) {
+        return locProfiles[i].getId();
+      }
+    }
+    return null;
+  }
+
+
+
   private int indexOfMemberId(ProfileId id) {
     Assert.assertHoldsLock(this, true);
     Profile[] profs = profiles; // volatile read
