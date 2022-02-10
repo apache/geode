@@ -62,7 +62,7 @@ public class ShutdownIntegrationTest implements RedisIntegrationTest {
     assertThatThrownBy(
         () -> jedis.shutdown())
             .isInstanceOf(JedisDataException.class)
-                .hasMessageContaining(EXPECTED_ERROR_MSG);
+            .hasMessageContaining(EXPECTED_ERROR_MSG);
     assertThat(jedis.keys("*")).isEmpty();
   }
 }

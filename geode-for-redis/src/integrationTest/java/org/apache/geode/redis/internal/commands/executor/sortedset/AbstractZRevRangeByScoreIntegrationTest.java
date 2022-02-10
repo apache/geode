@@ -216,16 +216,17 @@ public abstract class AbstractZRevRangeByScoreIntegrationTest implements RedisIn
   public void shouldReturnRange_boundedByLimit() {
     createZSetRangeTestMap();
 
-/* Fails in Jedis 4.1.1 for both Geode and Native Redis, so must be a Jedis bug
-   TODO submit GitHub issue for this
-
-    assertThat(jedis.zrevrangeByScore(KEY, "10", "0", 0, 2))  --> returns empty list
-        .containsExactly("f", "e");
-    assertThat(jedis.zrevrangeByScore(KEY, "10", "0", 2, 3))
-        .containsExactly("d", "c", "b");
-    assertThat(jedis.zrevrangeByScore(KEY, "10", "0", 2, 10))
-        .containsExactly("d", "c", "b");
-*/
+    /*
+     * Fails in Jedis 4.1.1 for both Geode and Native Redis, so must be a Jedis bug
+     * TODO submit GitHub issue for this
+     *
+     * assertThat(jedis.zrevrangeByScore(KEY, "10", "0", 0, 2)) --> returns empty list
+     * .containsExactly("f", "e");
+     * assertThat(jedis.zrevrangeByScore(KEY, "10", "0", 2, 3))
+     * .containsExactly("d", "c", "b");
+     * assertThat(jedis.zrevrangeByScore(KEY, "10", "0", 2, 10))
+     * .containsExactly("d", "c", "b");
+     */
     assertThat(jedis.zrevrangeByScore(KEY, 10d, 0d, 0, 2))
         .containsExactly("f", "e");
     assertThat(jedis.zrevrangeByScore(KEY, 10d, 0d, 2, 3))
