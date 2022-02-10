@@ -74,7 +74,6 @@ public class SocketCreatorUpgradeTest {
   public static final String PROTOCOL_TLSv1_2 = "TLSv1.2";
   public static final String PROTOCOL_TLSv1_2_SSLv2Hello = "TLSv1.2,SSLv2Hello";
   public static final String PROTOCOL_ANY = "any";
-  public static final String VERSION_FULL = "version --full";
   public static final String LOCATOR_1 = "locator1";
   public static final String LOCATOR_2 = "locator2";
 

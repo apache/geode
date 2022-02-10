@@ -19,16 +19,18 @@ import org.apache.tools.ant.taskdefs.condition.Os
 
 apply plugin: 'de.undercouch.download'
 
-def getJavaVersionUrl(String version) {
-  final String os
+def getPlatformInfo() {
   if (Os.isFamily(Os.FAMILY_MAC)) {
-    os = 'macos'
+    return ['macos', 'zip']
   } else if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-    os = 'windows'
+    return ['windows', 'zip']
   } else {
-    os = 'linux'
+    return ['linux', 'tar.gz']
   }
-  final url = new URL("https://api.bell-sw.com/v1/liberica/releases?version=${version}&bitness=64&os=${os}&arch=x86&package-type=zip&bundle-type=jdk&output=text&fields=downloadUrl")
+}
+
+def getJavaVersionUrl(String version, String os, String packageType) {
+  final url = new URL("https://api.bell-sw.com/v1/liberica/releases?version=${version}&bitness=64&os=${os}&arch=x86&package-type=${packageType}&bundle-type=jdk&output=text&fields=downloadUrl")
   final connection = url.openConnection()
   connection.setRequestProperty("User-Agent", "Gradle/${gradle.gradleVersion}")
   connection.setRequestProperty("Accept", "*/*")
@@ -42,32 +44,34 @@ def getJavaVersionUrl(String version) {
 ext.javaHomeForVersion = {Test test, String name, String version ->
   final basePath = "${buildDir}/${name}"
 
-  def downloadTaskName = name + "Download"
+  def (os, packageType) = getPlatformInfo()
+
+  final downloadTaskName = name + "Download"
   final downloadTask = project.tasks.findByName(downloadTaskName) ?:
       project.tasks.register(downloadTaskName, Download) {
-    final zipFile = new File(basePath + ".zip").absoluteFile
+    final zipFile = new File(basePath + "." + packageType).absoluteFile
     dest zipFile
     overwrite false
     if (zipFile.exists()) {
       src zipFile.toURI().toString()
     } else {
-      src getJavaVersionUrl(version)
+      src getJavaVersionUrl(version, os, packageType)
     }
   }.get()
 
-  def unzipTaskName = name + "Unzip"
-  final unzipTask = project.tasks.findByName(unzipTaskName) ?:
-      project.tasks.register(unzipTaskName, Copy) {
-    dependsOn downloadTask
-    from(zipTree(downloadTask.dest)) {
-      eachFile {
-        it.relativePath = new RelativePath(true, it.relativePath.segments.drop(1))
-      }
-    }
-    into basePath
-  }.get()
+  final extractTaskName = name + "Extract"
+  final extractTask = project.tasks.findByName(extractTaskName) ?:
+      project.tasks.register(extractTaskName, Copy) {
+        dependsOn downloadTask
+        from(("zip" == packageType) ? zipTree(downloadTask.dest) : tarTree(downloadTask.dest)) {
+          eachFile {
+            it.relativePath = new RelativePath(true, it.relativePath.segments.drop(1))
+          }
+        }
+        into basePath
+      }.get()
 
-  test.dependsOn unzipTask
+  test.dependsOn extractTask
 
-  return unzipTask.outputs.files.first()
+  return extractTask.outputs.files.first()
 }
