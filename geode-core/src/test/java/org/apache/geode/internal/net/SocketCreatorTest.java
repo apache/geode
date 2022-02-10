@@ -107,7 +107,7 @@ public class SocketCreatorTest {
   }
 
   @Test
-  public void configureSSLParametersSetsProtocols() {
+  public void configureSSLParametersSetsProtocolsWhenSetProtocolsAndWhenClientSocket() {
     final SSLConfig config = new SSLConfig.Builder().setProtocols("protocol1,protocol2").build();
     final SocketCreator socketCreator = new SocketCreator(config, context);
 
@@ -118,12 +118,80 @@ public class SocketCreatorTest {
   }
 
   @Test
-  public void configureSSLParametersDoesNotSetProtocols() {
+  public void configureSSLParametersSetsProtocolsWhenSetProtocolsAndServerSocket() {
+    final SSLConfig config = new SSLConfig.Builder().setProtocols("protocol1,protocol2").build();
+    final SocketCreator socketCreator = new SocketCreator(config, context);
+
+    socketCreator.configureSSLParameters(parameters, "localhost", 123, false);
+
+    verify(parameters).setProtocols(eq(new String[] {"protocol1", "protocol2"}));
+    verify(parameters).setNeedClientAuth(anyBoolean());
+    verifyNoMoreInteractions(parameters);
+  }
+
+  @Test
+  public void configureSSLParametersSetsProtocolsWhenSetClientProtocols() {
+    final SSLConfig config =
+        new SSLConfig.Builder().setClientProtocols("protocol1,protocol2").build();
+    final SocketCreator socketCreator = new SocketCreator(config, context);
+
+    socketCreator.configureSSLParameters(parameters, "localhost", 123, true);
+
+    verify(parameters).setProtocols(eq(new String[] {"protocol1", "protocol2"}));
+    verifyNoMoreInteractions(parameters);
+  }
+
+  @Test
+  public void configureSSLParametersSetsProtocolsWhenSetServerProtocols() {
+    final SSLConfig config =
+        new SSLConfig.Builder().setServerProtocols("protocol1,protocol2").build();
+    final SocketCreator socketCreator = new SocketCreator(config, context);
+
+    socketCreator.configureSSLParameters(parameters, "localhost", 123, false);
+
+    verify(parameters).setProtocols(eq(new String[] {"protocol1", "protocol2"}));
+    verify(parameters).setNeedClientAuth(anyBoolean());
+    verifyNoMoreInteractions(parameters);
+  }
+
+  @Test
+  public void configureSSLParametersDoesNotSetProtocolsWhenSetProtocolsIsAnyAndClientSocket() {
     final SSLConfig config = new SSLConfig.Builder().setProtocols("any").build();
     final SocketCreator socketCreator = new SocketCreator(config, context);
 
     socketCreator.configureSSLParameters(parameters, "localhost", 123, true);
 
+    verifyNoMoreInteractions(parameters);
+  }
+
+  @Test
+  public void configureSSLParametersDoesNotSetProtocolsWhenSetProtocolsIsAnyAndServerSocket() {
+    final SSLConfig config = new SSLConfig.Builder().setProtocols("any").build();
+    final SocketCreator socketCreator = new SocketCreator(config, context);
+
+    socketCreator.configureSSLParameters(parameters, "localhost", 123, true);
+
+    verifyNoMoreInteractions(parameters);
+  }
+
+  @Test
+  public void configureSSLParametersDoesNotSetProtocolsWhenSetClientProtocolsIsAny() {
+    final SSLConfig config = new SSLConfig.Builder().setClientProtocols("any").build();
+    final SocketCreator socketCreator = new SocketCreator(config, context);
+
+    socketCreator.configureSSLParameters(parameters, "localhost", 123, true);
+
+    verifyNoMoreInteractions(parameters);
+  }
+
+  @Test
+  public void configureSSLParametersDoesNotSetProtocolsWhenSetServerProtocolsIsAny() {
+    final SSLConfig config = new SSLConfig.Builder().setProtocols("any").build();
+    final SocketCreator socketCreator = new SocketCreator(config, context);
+
+    socketCreator.configureSSLParameters(parameters, "localhost", 123, false);
+
+    verify(parameters).setNeedClientAuth(anyBoolean());
     verifyNoMoreInteractions(parameters);
   }
 
