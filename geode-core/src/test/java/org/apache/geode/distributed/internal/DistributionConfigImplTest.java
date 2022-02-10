@@ -31,13 +31,19 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_AUTH
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_CLIENT_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_SERVER_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_USE_DEFAULT_CONTEXT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
+import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_SSL_CLIENT_PROTOCOLS;
+import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_SSL_PROTOCOLS;
+import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_SSL_SERVER_PROTOCOLS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -66,7 +72,7 @@ import org.apache.geode.security.TestPostProcessor;
 import org.apache.geode.security.TestSecurityManager;
 
 @Tag("membership")
-public class DistributionConfigJUnitTest {
+public class DistributionConfigImplTest {
 
   private Map<Class<?>, Class<?>> classMap;
 
@@ -328,13 +334,16 @@ public class DistributionConfigJUnitTest {
 
   @Test()
   public void testSetInvalidAttributeObject() {
-    assertThatThrownBy(() -> config.setAttributeObject("fake attribute", "test", ConfigSource.api())).isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(
+        () -> config.setAttributeObject("fake attribute", "test", ConfigSource.api()))
+            .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test()
   public void testSetUnmodifiableAttributeObject() {
-    assertThatThrownBy(() ->
-    config.setAttributeObject(ARCHIVE_DISK_SPACE_LIMIT, 0, ConfigSource.api())).isInstanceOf(UnmodifiableException.class);
+    assertThatThrownBy(
+        () -> config.setAttributeObject(ARCHIVE_DISK_SPACE_LIMIT, 0, ConfigSource.api()))
+            .isInstanceOf(UnmodifiableException.class);
   }
 
   @Test
@@ -345,7 +354,8 @@ public class DistributionConfigJUnitTest {
 
   @Test()
   public void testOutOfRangeAttributeObject() {
-    assertThatThrownBy(()->config.setAttributeObject(HTTP_SERVICE_PORT, -1, ConfigSource.api())).isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> config.setAttributeObject(HTTP_SERVICE_PORT, -1, ConfigSource.api()))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
@@ -507,4 +517,176 @@ public class DistributionConfigJUnitTest {
 
     assertThat(config).isInstanceOf(SerializableObjectConfig.class);
   }
+
+  @Test
+  void getSSLProtocolsReturnsValueOfPropertySSL_PROTOCOLS() {
+    final Properties props = new Properties();
+    final String protocols = "SuperProtocol1";
+    props.put(SSL_PROTOCOLS, protocols);
+    final DistributionConfig config = new DistributionConfigImpl(props);
+    assertThat(config.getSSLProtocols()).isEqualTo(protocols);
+  }
+
+  @Test
+  void getSSLProtocolsReturnsDefaultValue() {
+    final DistributionConfig config = new DistributionConfigImpl(new Properties());
+    assertThat(config.getSSLProtocols()).isEqualTo(DEFAULT_SSL_PROTOCOLS);
+  }
+
+  @Test
+  void getSSLProtocolsReturnsValueFromSetSSLProtocols() {
+    final DistributionConfig config = new DistributionConfigImpl(new Properties());
+    final String protocols = "SuperProtocol1";
+    config.setSSLProtocols(protocols);
+    assertThat(config.getSSLProtocols()).isEqualTo(protocols);
+  }
+
+  @Test
+  void getSSLProtocolsReturnsValueAfterCopyConstructed() {
+    final Properties props = new Properties();
+    final String protocols = "SuperProtocol1";
+    props.put(SSL_PROTOCOLS, protocols);
+    final DistributionConfig config = new DistributionConfigImpl(props);
+    final DistributionConfig copy = new DistributionConfigImpl(config);
+    assertThat(copy.getSSLProtocols()).isEqualTo(protocols);
+  }
+
+  @Test
+  void equalsConsidersSSLProtocols() {
+    final DistributionConfig configA = new DistributionConfigImpl(new Properties());
+    final DistributionConfig configB = new DistributionConfigImpl(new Properties());
+    assertThat(configA).isEqualTo(configB);
+    final String protocols = "SuperProtocol1";
+    configA.setSSLProtocols(protocols);
+    assertThat(configA).isNotEqualTo(configB);
+    configB.setSSLProtocols(protocols);
+    assertThat(configA).isEqualTo(configB);
+  }
+
+  @Test
+  void hashCodeConsidersSSLProtocols() {
+    final DistributionConfig configA = new DistributionConfigImpl(new Properties());
+    final DistributionConfig configB = new DistributionConfigImpl(new Properties());
+    assertThat(configA).hasSameHashCodeAs(configB);
+    final String protocols = "SuperProtocol1";
+    configA.setSSLProtocols(protocols);
+    assertThat(configA).doesNotHaveSameHashCodeAs(configB);
+    configB.setSSLProtocols(protocols);
+    assertThat(configA).hasSameHashCodeAs(configB);
+  }
+
+  @Test
+  void getSSLClientProtocolsReturnsValueOfPropertySSL_CLIENT_PROTOCOLS() {
+    final Properties props = new Properties();
+    final String protocols = "SuperProtocol1";
+    props.put(SSL_CLIENT_PROTOCOLS, protocols);
+    final DistributionConfig config = new DistributionConfigImpl(props);
+    assertThat(config.getSSLClientProtocols()).isEqualTo(protocols);
+  }
+
+  @Test
+  void getSSLClientProtocolsReturnsDefaultValue() {
+    final DistributionConfig config = new DistributionConfigImpl(new Properties());
+    assertThat(config.getSSLClientProtocols()).isEqualTo(DEFAULT_SSL_CLIENT_PROTOCOLS);
+  }
+
+  @Test
+  void getSSLClientProtocolsReturnsValueFromSetSSLClientProtocols() {
+    final DistributionConfig config = new DistributionConfigImpl(new Properties());
+    final String protocols = "SuperProtocol1";
+    config.setSSLClientProtocols(protocols);
+    assertThat(config.getSSLClientProtocols()).isEqualTo(protocols);
+  }
+
+  @Test
+  void getSSLClientProtocolsReturnsValueAfterCopyConstructed() {
+    final Properties props = new Properties();
+    final String protocols = "SuperProtocol1";
+    props.put(SSL_PROTOCOLS, protocols);
+    final DistributionConfig config = new DistributionConfigImpl(props);
+    final DistributionConfig copy = new DistributionConfigImpl(config);
+    assertThat(copy.getSSLClientProtocols()).isEqualTo(protocols);
+  }
+
+  @Test
+  void equalsConsidersSSLClientProtocols() {
+    final DistributionConfig configA = new DistributionConfigImpl(new Properties());
+    final DistributionConfig configB = new DistributionConfigImpl(new Properties());
+    assertThat(configA).isEqualTo(configB);
+    final String protocols = "SuperProtocol1";
+    configA.setSSLClientProtocols(protocols);
+    assertThat(configA).isNotEqualTo(configB);
+    configB.setSSLClientProtocols(protocols);
+    assertThat(configA).isEqualTo(configB);
+  }
+
+  @Test
+  void hashCodeConsidersSSLClientProtocols() {
+    final DistributionConfig configA = new DistributionConfigImpl(new Properties());
+    final DistributionConfig configB = new DistributionConfigImpl(new Properties());
+    assertThat(configA).hasSameHashCodeAs(configB);
+    final String protocols = "SuperProtocol1";
+    configA.setSSLClientProtocols(protocols);
+    assertThat(configA).doesNotHaveSameHashCodeAs(configB);
+    configB.setSSLClientProtocols(protocols);
+    assertThat(configA).hasSameHashCodeAs(configB);
+  }
+
+  @Test
+  void getSSLServerProtocolsReturnsValueOfPropertySSL_SERVER_PROTOCOLS() {
+    final Properties props = new Properties();
+    final String protocols = "SuperProtocol1";
+    props.put(SSL_SERVER_PROTOCOLS, protocols);
+    final DistributionConfig config = new DistributionConfigImpl(props);
+    assertThat(config.getSSLServerProtocols()).isEqualTo(protocols);
+  }
+
+  @Test
+  void getSSLServerProtocolsReturnsDefaultValue() {
+    final DistributionConfig config = new DistributionConfigImpl(new Properties());
+    assertThat(config.getSSLServerProtocols()).isEqualTo(DEFAULT_SSL_SERVER_PROTOCOLS);
+  }
+
+  @Test
+  void getSSLServerProtocolsReturnsValueFromSetSSLServerProtocols() {
+    final DistributionConfig config = new DistributionConfigImpl(new Properties());
+    final String protocols = "SuperProtocol1";
+    config.setSSLServerProtocols(protocols);
+    assertThat(config.getSSLServerProtocols()).isEqualTo(protocols);
+  }
+
+  @Test
+  void getSSLServerProtocolsReturnsValueAfterCopyConstructed() {
+    final Properties props = new Properties();
+    final String protocols = "SuperProtocol1";
+    props.put(SSL_PROTOCOLS, protocols);
+    final DistributionConfig config = new DistributionConfigImpl(props);
+    final DistributionConfig copy = new DistributionConfigImpl(config);
+    assertThat(copy.getSSLServerProtocols()).isEqualTo(protocols);
+  }
+
+  @Test
+  void equalsConsidersSSLServerProtocols() {
+    final DistributionConfig configA = new DistributionConfigImpl(new Properties());
+    final DistributionConfig configB = new DistributionConfigImpl(new Properties());
+    assertThat(configA).isEqualTo(configB);
+    final String protocols = "SuperProtocol1";
+    configA.setSSLServerProtocols(protocols);
+    assertThat(configA).isNotEqualTo(configB);
+    configB.setSSLServerProtocols(protocols);
+    assertThat(configA).isEqualTo(configB);
+  }
+
+  @Test
+  void hashCodeConsidersSSLServerProtocols() {
+    final DistributionConfig configA = new DistributionConfigImpl(new Properties());
+    final DistributionConfig configB = new DistributionConfigImpl(new Properties());
+    assertThat(configA).hasSameHashCodeAs(configB);
+    final String protocols = "SuperProtocol1";
+    configA.setSSLServerProtocols(protocols);
+    assertThat(configA).doesNotHaveSameHashCodeAs(configB);
+    configB.setSSLServerProtocols(protocols);
+    assertThat(configA).hasSameHashCodeAs(configB);
+  }
+
 }
