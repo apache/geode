@@ -22,6 +22,9 @@ interface GlobalSerialFilter {
 
   /**
    * Sets this serialization filter as the process-wide filter.
+   *
+   * @throws FilterAlreadyConfiguredException if a non-null serialization filter already exists
+   * @throws UnableToSetSerialFilterException if there's any failure setting a serialization filter
    */
-  void setFilter();
+  void setFilter() throws UnableToSetSerialFilterException;
 }

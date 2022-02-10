@@ -30,7 +30,7 @@ import org.apache.geode.distributed.internal.InternalLocator;
 public class LocatorLauncherTest {
 
   @Test
-  public void canBeMocked() throws Exception {
+  public void canBeMocked() {
     LocatorLauncher mockLocatorLauncher = mock(LocatorLauncher.class);
     InternalLocator mockInternalLocator = mock(InternalLocator.class);
 
