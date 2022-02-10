@@ -1853,7 +1853,8 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
         getCache().getTxManager().begin();
         Region r = getCache().getRegion(CUSTOMER);
         r.put(new CustId(8), new Customer("name8", "address8"));
-        getCache().getTxManager().commit();
+        assertThatThrownBy(() -> getCache().getTxManager().commit())
+            .isInstanceOf(CommitConflictException.class);
         return null;
       }
     });
