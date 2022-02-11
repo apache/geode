@@ -33,6 +33,7 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientUpdater;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.net.SocketCreatorFactory;
@@ -146,6 +147,46 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
 
     return connection;
   }
+
+
+  @Override
+  public Connection createClientToServerConnection(
+      ServerLocationAndMemberId serverLocationAndMemberId, boolean forQueue)
+      throws GemFireSecurityException {
+    FailureTracker failureTracker =
+        denyList.getFailureTracker(serverLocationAndMemberId.getServerLocation());
+
+    Connection connection = null;
+    try {
+      connection = connectionConnector.connectClientToServer(serverLocationAndMemberId, forQueue);
+      failureTracker.reset();
+      authenticateIfRequired(connection);
+    } catch (GemFireConfigException | CancelException | GemFireSecurityException
+        | GatewayConfigurationException e) {
+      throw e;
+    } catch (ServerRefusedConnectionException src) {
+      // propagate this up, don't retry
+      logger.warn("Could not create a new connection to server: {}",
+          src.getMessage());
+      testFailedConnectionToServer = true;
+      throw src;
+    } catch (Exception e) {
+      String message = e.getMessage();
+      if (message != null && (message.contains("Connection refused")
+          || message.contains("Connection reset"))) {
+        // this is the most common case, so don't print an exception
+        if (logger.isDebugEnabled()) {
+          logger.debug("Unable to connect to {}: connection refused", serverLocationAndMemberId);
+        }
+      } else {
+        logger.warn("Could not connect to: " + serverLocationAndMemberId, e);
+      }
+      testFailedConnectionToServer = true;
+    }
+
+    return connection;
+  }
+
 
   @VisibleForTesting
   void authenticateIfRequired(Connection conn) {

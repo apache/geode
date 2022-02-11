@@ -17,6 +17,7 @@ package org.apache.geode.cache.client.internal;
 import java.util.Set;
 
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
 import org.apache.geode.security.GemFireSecurityException;
 
 /**
@@ -36,6 +37,18 @@ public interface ConnectionFactory {
    *         connections.
    */
   Connection createClientToServerConnection(ServerLocation location, boolean forQueue)
+      throws GemFireSecurityException;
+
+  /**
+   * Create a client to server connection to the given server
+   *
+   * @param serverLocationAndMemberId the server to connection
+   * @return a connection to that server, or null if a connection could not be established.
+   * @throws GemFireSecurityException if there was a security exception while trying to establish a
+   *         connections.
+   */
+  Connection createClientToServerConnection(ServerLocationAndMemberId serverLocationAndMemberId,
+      boolean forQueue)
       throws GemFireSecurityException;
 
   /**

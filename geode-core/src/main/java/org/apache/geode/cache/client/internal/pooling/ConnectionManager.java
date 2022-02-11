@@ -25,6 +25,7 @@ import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.distributed.PoolCancelledException;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
 
 /**
  * A pool for managing client to server connections. This interface allows connections to be checked
@@ -70,6 +71,29 @@ public interface ConnectionManager {
   Connection borrowConnection(ServerLocation server, long acquireTimeout,
       boolean onlyUseExistingCnx)
       throws AllConnectionsInUseException, NoAvailableServersException;
+
+  /**
+   * Borrow an existing idle connection or create a new one to a specific server. Fails after one
+   * failed attempt to create a new connection. May cause pool to exceed maxConnections by one, if
+   * no connection is available.
+   *
+   * @param serverLocationAndMemberId The server the connection needs to be to.
+   * @param acquireTimeout The amount of time to wait for a connection to become available, if
+   *        onlyUseExistingCnx is set to true.
+   * @param onlyUseExistingCnx if true, will not create a new connection if none are available.
+   * @return A connection to use.
+   * @throws AllConnectionsInUseException If there is no available connection on the desired server,
+   *         and onlyUseExistingCnx is set.
+   * @throws NoAvailableServersException If we can't connect to any server
+   * @throws ServerConnectivityException If finding a connection and creating a connection both fail
+   *         to return a connection
+   *
+   */
+  Connection borrowConnection(ServerLocationAndMemberId serverLocationAndMemberId,
+      long acquireTimeout,
+      boolean onlyUseExistingCnx)
+      throws AllConnectionsInUseException, NoAvailableServersException;
+
 
   /**
    * Return a connection to the pool. The connection should not be used after it is returned.

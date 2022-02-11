@@ -71,7 +71,9 @@ public class LiveServerPinger extends EndpointListenerAdapter {
   @Override
   public void endpointNowInUse(Endpoint endpoint) {
     try {
-      long initDelay = (offsetIndex.getAndIncrement() * OFFSET * NANOS_PER_MS) + pingIntervalNanos;
+      long initDelay = offsetIndex.getAndIncrement();
+      initDelay = (initDelay * OFFSET * NANOS_PER_MS) + pingIntervalNanos;
+
       Future future = pool.getBackgroundProcessor().scheduleWithFixedDelay(new PingTask(endpoint),
           initDelay, pingIntervalNanos, TimeUnit.NANOSECONDS);
       taskFutures.put(endpoint, future);

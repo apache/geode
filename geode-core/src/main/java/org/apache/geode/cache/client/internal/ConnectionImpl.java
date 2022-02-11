@@ -33,6 +33,7 @@ import org.apache.geode.cache.client.SocketFactory;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.cache.tier.ClientSideHandshake;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
@@ -114,6 +115,47 @@ public class ConnectionImpl implements Connection {
     endpoint = endpointManager.referenceEndpoint(location, status.getMemberId());
     connectFinished = true;
     endpoint.getStats().incConnections(1);
+    return status;
+  }
+
+  public ServerQueueStatus connect(EndpointManager endpointManager,
+      ServerLocationAndMemberId serverLocationAndMemberId,
+      ClientSideHandshake handshake, int socketBufferSize, int handshakeTimeout, int readTimeout,
+      CommunicationMode communicationMode, GatewaySender sender, SocketCreator sc,
+      SocketFactory socketFactory)
+      throws IOException {
+    theSocket =
+        sc.forClient()
+            .connect(new HostAndPort(serverLocationAndMemberId.getServerLocation().getHostName(),
+                serverLocationAndMemberId.getServerLocation().getPort()),
+                handshakeTimeout,
+                socketBufferSize, socketFactory::createSocket);
+    theSocket.setTcpNoDelay(true);
+    theSocket.setSendBufferSize(socketBufferSize);
+
+    // Verify buffer sizes
+    verifySocketBufferSize(socketBufferSize, theSocket.getReceiveBufferSize(), "receive");
+    verifySocketBufferSize(socketBufferSize, theSocket.getSendBufferSize(), "send");
+
+    theSocket.setSoTimeout(handshakeTimeout);
+    out = theSocket.getOutputStream();
+    in = theSocket.getInputStream();
+    status = handshake.handshakeWithServer(this, serverLocationAndMemberId.getServerLocation(),
+        communicationMode);
+    commBuffer = ServerConnection.allocateCommBuffer(socketBufferSize, theSocket);
+    if (sender != null) {
+      commBufferForAsyncRead = ServerConnection.allocateCommBuffer(socketBufferSize, theSocket);
+    }
+    theSocket.setSoTimeout(readTimeout);
+
+    endpoint = endpointManager.getEndpointMap().get(serverLocationAndMemberId);
+    if (endpoint == null) {
+      // this is possible in DT
+      endpoint = endpointManager.referenceEndpoint(serverLocationAndMemberId.getServerLocation(),
+          status.getMemberId());
+    }
+    endpoint.getStats().incConnections(1);
+    connectFinished = true;
     return status;
   }
 

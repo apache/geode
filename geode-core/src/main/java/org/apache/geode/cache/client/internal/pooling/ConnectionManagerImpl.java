@@ -53,6 +53,7 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
 import org.apache.geode.distributed.PoolCancelledException;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
 import org.apache.geode.internal.cache.PoolManagerImpl;
 import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.logging.InternalLogWriter;
@@ -206,6 +207,13 @@ public class ConnectionManagerImpl implements ConnectionManager {
     return addConnection(connectionFactory.createClientToServerConnection(serverLocation, false));
   }
 
+  private PooledConnection createPooledConnection(
+      ServerLocationAndMemberId serverLocationAndMemberId)
+      throws ServerRefusedConnectionException, GemFireSecurityException {
+    return addConnection(
+        connectionFactory.createClientToServerConnection(serverLocationAndMemberId, false));
+  }
+
   /**
    * Always creates a connection and may cause {@link ConnectionAccounting} to exceed maximum.
    */
@@ -224,6 +232,28 @@ public class ConnectionManagerImpl implements ConnectionManager {
       }
     }
   }
+
+
+  /**
+   * Always creates a connection and may cause {@link ConnectionAccounting} to exceed maximum.
+   */
+  private PooledConnection forceCreateConnection(
+      ServerLocationAndMemberId serverLocationAndMemberId)
+      throws ServerRefusedConnectionException, ServerOperationException {
+    PooledConnection connection = null;
+    connectionAccounting.create();
+    try {
+      connection = createPooledConnection(serverLocationAndMemberId);
+      return connection;
+    } catch (GemFireSecurityException e) {
+      throw new ServerOperationException(e);
+    } finally {
+      if (connection == null) {
+        connectionAccounting.cancelTryCreate();
+      }
+    }
+  }
+
 
   /**
    * Always creates a connection and may cause {@link ConnectionAccounting} to exceed maximum.
@@ -336,6 +366,54 @@ public class ConnectionManagerImpl implements ConnectionManager {
             return connection;
           }
           throw new ServerConnectivityException(BORROW_CONN_ERROR_MSG + server);
+        }
+
+        if (checkShutdownInterruptedOrTimeout(timeout)) {
+          break;
+        }
+
+        waitStart = beginConnectionWaitStatIfNotStarted(waitStart);
+
+        Thread.yield();
+      }
+    } finally {
+      endConnectionWaitStatIfStarted(waitStart);
+    }
+
+    cancelCriterion.checkCancelInProgress(null);
+
+    throw new AllConnectionsInUseException();
+  }
+
+
+  @Override
+  public Connection borrowConnection(ServerLocationAndMemberId serverLocationAndMemberId,
+      long acquireTimeout,
+      boolean onlyUseExistingCnx)
+      throws ServerConnectivityException {
+
+    Connection connection;
+    logger.trace("Connection borrowConnection single hop connection SLAMI");
+
+    long waitStart = NOT_WAITING;
+    try {
+      long timeout = System.nanoTime() + MILLISECONDS.toNanos(acquireTimeout);
+      while (true) {
+
+        connection =
+            availableConnectionManager.useFirst(
+                (c) -> c.getServer().equals(serverLocationAndMemberId.getServerLocation()));
+
+        if (null != connection) {
+          return connection;
+        }
+
+        if (!onlyUseExistingCnx) {
+          connection = forceCreateConnection(serverLocationAndMemberId);
+          if (null != connection) {
+            return connection;
+          }
+          throw new ServerConnectivityException(BORROW_CONN_ERROR_MSG + serverLocationAndMemberId);
         }
 
         if (checkShutdownInterruptedOrTimeout(timeout)) {

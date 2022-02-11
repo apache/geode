@@ -63,7 +63,8 @@ public class ConnectionConnectorTest {
     doReturn(connection).when(spyConnector).getConnection(ds);
     doReturn(handshake).when(spyConnector).getClientSideHandshake(handshake);
 
-    when(connection.connect(any(), any(), any(), anyInt(), anyInt(), anyInt(), any(), any(), any(),
+    when(connection.connect(any(), any(ServerLocation.class), any(), anyInt(), anyInt(), anyInt(),
+        any(), any(), any(),
         any()))
             .thenThrow(new GemFireSecurityException("Expected exception"));
     try {

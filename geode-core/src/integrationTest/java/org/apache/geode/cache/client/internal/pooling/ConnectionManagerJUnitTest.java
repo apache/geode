@@ -68,6 +68,7 @@ import org.apache.geode.cache.client.internal.pooling.ConnectionManagerImpl.Conn
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
@@ -984,6 +985,126 @@ public class ConnectionManagerJUnitTest {
         }
       };
     }
+
+
+    @Override
+    public Connection createClientToServerConnection(
+        final ServerLocationAndMemberId serverLocationAndMemberId,
+        boolean forQueue) {
+      creates.incrementAndGet();
+      DistributedMember member = new InternalDistributedMember("localhost", 555);
+      return new Connection() {
+
+        private final Endpoint endpoint = endpointManager
+            .referenceEndpoint(serverLocationAndMemberId.getServerLocation(), member);
+
+        @Override
+        public void destroy() {
+          destroys.incrementAndGet();
+        }
+
+        @Override
+        public ServerLocation getServer() {
+          return serverLocationAndMemberId.getServerLocation();
+        }
+
+        @Override
+        public ByteBuffer getCommBuffer() {
+          return null;
+        }
+
+        @Override
+        public Socket getSocket() {
+          return null;
+        }
+
+        @Override
+        public long getBirthDate() {
+          return 0;
+        }
+
+        @Override
+        public void setBirthDate(long ts) {
+          // nothing
+        }
+
+        @Override
+        public ConnectionStats getStats() {
+          return null;
+        }
+
+        @Override
+        public boolean isActive() {
+          return false;
+        }
+
+        @Override
+        public void close(boolean keepAlive) {
+          closes.incrementAndGet();
+        }
+
+        @Override
+        public Endpoint getEndpoint() {
+          return endpoint;
+        }
+
+        @Override
+        public ServerQueueStatus getQueueStatus() {
+          return null;
+        }
+
+        @Override
+        public Object execute(Op op) throws Exception {
+          return op.attempt(this);
+        }
+
+        @Override
+        public boolean isDestroyed() {
+          return false;
+        }
+
+        @Override
+        public void emergencyClose() {
+          // nothing
+        }
+
+        @Override
+        public short getWanSiteVersion() {
+          return -1;
+        }
+
+        @Override
+        public int getDistributedSystemId() {
+          return -1;
+        }
+
+        @Override
+        public void setWanSiteVersion(short wanSiteVersion) {
+          // nothing
+        }
+
+        @Override
+        public InputStream getInputStream() {
+          return null;
+        }
+
+        @Override
+        public OutputStream getOutputStream() {
+          return null;
+        }
+
+        @Override
+        public void setConnectionID(long id) {
+          // nothing
+        }
+
+        @Override
+        public long getConnectionID() {
+          return 0;
+        }
+      };
+    }
+
 
     @Override
     public ClientUpdater createServerToClientConnection(Endpoint endpoint, QueueManager manager,

@@ -22,6 +22,7 @@ import org.apache.geode.cache.client.SocketFactory;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
 import org.apache.geode.internal.cache.tier.ClientSideHandshake;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientUpdater;
@@ -82,6 +83,32 @@ public class ConnectionConnector {
       if (!initialized && connection != null) {
         if (logger.isDebugEnabled()) {
           logger.debug("Destroying failed connection to {}", location);
+        }
+        destroyConnection(connection);
+      }
+    }
+  }
+
+
+  public ConnectionImpl connectClientToServer(ServerLocationAndMemberId serverLocationAndMemberId,
+      boolean forQueue)
+      throws IOException {
+    ConnectionImpl connection = null;
+    boolean initialized = false;
+    try {
+      connection = getConnection(distributedSystem);
+      ClientSideHandshake connHandShake = getClientSideHandshake(handshake);
+      connection.connect(endpointManager, serverLocationAndMemberId, connHandShake,
+          socketBufferSize,
+          handshakeTimeout, readTimeout, getCommMode(forQueue), gatewaySender, socketCreator,
+          socketFactory);
+      connection.setHandshake(connHandShake);
+      initialized = true;
+      return connection;
+    } finally {
+      if (!initialized && connection != null) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("Destroying failed connection to {}", serverLocationAndMemberId);
         }
         destroyConnection(connection);
       }
