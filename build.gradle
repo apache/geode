@@ -17,7 +17,7 @@
 
 plugins {
   id "wrapper"
-  id "nebula.facet" version "9.5.2" apply false
+  id "nebula.facet" version "8.0.0" apply false
   id "base"
   id "idea"
   id "eclipse"
