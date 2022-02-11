@@ -152,7 +152,7 @@ public class SSLConfig {
   }
 
   public @NotNull String[] getClientProtocolsAsStringArray() {
-    return SSLUtil.readArray(clientProtocols);
+    return SSLUtil.split(clientProtocols);
   }
 
   public String getServerProtocols() {
@@ -160,7 +160,7 @@ public class SSLConfig {
   }
 
   public @NotNull String[] getServerProtocolsAsStringArray() {
-    return SSLUtil.readArray(serverProtocols);
+    return SSLUtil.split(serverProtocols);
   }
 
   public String getCiphers() {
@@ -168,7 +168,7 @@ public class SSLConfig {
   }
 
   public @NotNull String[] getCiphersAsStringArray() {
-    return SSLUtil.readArray(ciphers);
+    return SSLUtil.split(ciphers);
   }
 
   public boolean isRequireAuth() {

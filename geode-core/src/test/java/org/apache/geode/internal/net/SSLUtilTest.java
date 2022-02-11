@@ -16,6 +16,7 @@
 package org.apache.geode.internal.net;
 
 import static org.apache.geode.internal.net.SSLUtil.combineProtocols;
+import static org.apache.geode.internal.net.SSLUtil.split;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -135,5 +136,55 @@ public class SSLUtilTest {
     when(config.getServerProtocolsAsStringArray()).thenReturn(new String[] {"a", "b"});
 
     assertThat(combineProtocols(config)).isEqualTo(new String[] {"a", "b", "c"});
+  }
+
+  @Test
+  void splitReturnsEmptyWhenNull() {
+    assertThat(split(null)).isEmpty();
+  }
+
+  @Test
+  void splitReturnsEmptyWhenEmpty() {
+    assertThat(split("")).isEmpty();
+  }
+
+  @Test
+  void splitReturnsEmptyWhenBlank() {
+    assertThat(split("  ")).isEmpty();
+  }
+
+  @Test
+  void splitReturnsOneWhenSingleValue() {
+    assertThat(split("a")).containsExactly("a");
+  }
+
+  @Test
+  void splitReturnsOneWhenSingleValueTailingSpace() {
+    assertThat(split("a ")).containsExactly("a");
+  }
+
+  @Test
+  void splitReturnsOneWhenSingleValueTrailingComma() {
+    assertThat(split("a,")).containsExactly("a");
+  }
+
+  @Test
+  void splitReturnsTwoWhenSpaceSeparatedValues() {
+    assertThat(split("a b")).containsExactly("a", "b");
+  }
+
+  @Test
+  void splitReturnsTwoWhenCommaSeparatedValues() {
+    assertThat(split("a,b")).containsExactly("a", "b");
+  }
+
+  @Test
+  void splitReturnsTwoWhenCommaWithSpaceSeparatedValues() {
+    assertThat(split("a, b")).containsExactly("a", "b");
+  }
+
+  @Test
+  void splitReturnsThreeWhenMixedCommaAndSpaceSeparatedValues() {
+    assertThat(split("a, b c")).containsExactly("a", "b", "c");
   }
 }

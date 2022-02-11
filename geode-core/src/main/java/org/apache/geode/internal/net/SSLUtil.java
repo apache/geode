@@ -87,8 +87,8 @@ public class SSLUtil {
     throw new NoSuchAlgorithmException();
   }
 
-  /** Read an array of values from a string, whitespace or comma separated. */
-  public static @NotNull String[] readArray(final @Nullable String text) {
+  /** Splits an array of values from a string, whitespace or comma separated. */
+  static @NotNull String[] split(final @Nullable String text) {
     if (StringUtils.isBlank(text)) {
       return new String[0];
     }

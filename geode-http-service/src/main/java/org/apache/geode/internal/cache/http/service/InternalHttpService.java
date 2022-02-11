@@ -114,10 +114,9 @@ public class InternalHttpService implements HttpService {
 
       sslContextFactory.setNeedClientAuth(sslConfig.isRequireAuth());
 
-      if (StringUtils.isNotBlank(sslConfig.getCiphers())
-          && !"any".equalsIgnoreCase(sslConfig.getCiphers())) {
+      if (!sslConfig.isAnyCiphers()) {
         sslContextFactory.setExcludeCipherSuites();
-        sslContextFactory.setIncludeCipherSuites(SSLUtil.readArray(sslConfig.getCiphers()));
+        sslContextFactory.setIncludeCipherSuites(sslConfig.getCiphersAsStringArray());
       }
 
       sslContextFactory.setSslContext(SSLUtil.createAndConfigureSSLContext(sslConfig, false));
