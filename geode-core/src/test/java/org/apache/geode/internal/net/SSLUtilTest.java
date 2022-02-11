@@ -15,7 +15,9 @@
 
 package org.apache.geode.internal.net;
 
+import static org.apache.geode.internal.net.SSLUtil.combineProtocols;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -25,28 +27,32 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
 
 public class SSLUtilTest {
 
-  @Test(expected = NoSuchAlgorithmException.class)
-  public void failWhenNothingIsRequested() throws Exception {
+  @Test
+  public void failWhenNothingIsRequested() {
     SSLConfig sslConfig = mock(SSLConfig.class);
     when(sslConfig.getClientProtocolsAsStringArray())
         .thenReturn(new String[0]);
     when(sslConfig.getServerProtocolsAsStringArray())
         .thenReturn(new String[0]);
-    SSLUtil.getSSLContextInstance(sslConfig);
+
+    assertThatThrownBy(() -> SSLUtil.getSSLContextInstance(sslConfig))
+        .isInstanceOf(NoSuchAlgorithmException.class);
   }
 
-  @Test(expected = NoSuchAlgorithmException.class)
+  @Test
   public void failWithAnUnknownProtocol() throws Exception {
     SSLConfig sslConfig = mock(SSLConfig.class);
     when(sslConfig.getClientProtocolsAsStringArray())
         .thenReturn(new String[] {"boulevard of broken dreams"});
     when(sslConfig.getServerProtocolsAsStringArray())
         .thenReturn(new String[] {"boulevard of broken dreams"});
-    SSLUtil.getSSLContextInstance(sslConfig);
+    assertThatThrownBy(() -> SSLUtil.getSSLContextInstance(sslConfig))
+        .isInstanceOf(NoSuchAlgorithmException.class);
   }
 
   @Test
@@ -70,15 +76,14 @@ public class SSLUtilTest {
     assertThat(sslContextInstance.getProtocol().equalsIgnoreCase("SSL")).isFalse();
     String selectedProtocol = sslContextInstance.getProtocol();
     String matchedProtocol = null;
-    for (String algorithm : SSLUtil.DEFAULT_ALGORITMS) {
+    for (String algorithm : SSLUtil.DEFAULT_ALGORITHMS) {
       if (algorithm.equalsIgnoreCase(selectedProtocol)) {
         matchedProtocol = algorithm;
       }
     }
-    assertThat(matchedProtocol).isNotNull().withFailMessage("selected protocol ("
-        + selectedProtocol +
-        ") is not in the list of default algorithms, "
-        + "indicating that the \"any\" setting did not work correctly");
+    assertThat(matchedProtocol).withFailMessage(
+        "selected protocol (%s) is not in the list of default algorithms, indicating that the \"any\" setting did not work correctly",
+        selectedProtocol).isNotNull();
   }
 
   @Test
@@ -103,5 +108,32 @@ public class SSLUtilTest {
     assertThat(trustManagerFactory).isNotNull();
     assertThat(trustManagerFactory.getAlgorithm())
         .isEqualTo(TrustManagerFactory.getDefaultAlgorithm());
+  }
+
+  @Test
+  void combineProtocolsReturnsEmptyWhenBothProtocolListsAreEmpty() {
+    final SSLConfig config = mock(SSLConfig.class);
+    when(config.getClientProtocolsAsStringArray()).thenReturn(new String[0]);
+    when(config.getServerProtocolsAsStringArray()).thenReturn(new String[0]);
+
+    assertThat(combineProtocols(config)).isEmpty();
+  }
+
+  @Test
+  void combineProtocolsReturnsUniqueValues() {
+    final SSLConfig config = mock(SSLConfig.class);
+    when(config.getClientProtocolsAsStringArray()).thenReturn(new String[] {"a"});
+    when(config.getServerProtocolsAsStringArray()).thenReturn(new String[] {"a", "b"});
+
+    assertThat(combineProtocols(config)).isEqualTo(new String[] {"a", "b"});
+  }
+
+  @Test
+  void combineProtocolsReturnPrefersSSLServerProtocols() {
+    final SSLConfig config = mock(SSLConfig.class);
+    when(config.getClientProtocolsAsStringArray()).thenReturn(new String[] {"a", "c"});
+    when(config.getServerProtocolsAsStringArray()).thenReturn(new String[] {"a", "b"});
+
+    assertThat(combineProtocols(config)).isEqualTo(new String[] {"a", "b", "c"});
   }
 }
