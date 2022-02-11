@@ -179,7 +179,6 @@ public abstract class AbstractConfig implements Config {
   @Override
   public String getAttribute(String name) {
     Object result = getAttributeObject(name);
-
     if (result instanceof String) {
       return (String) result;
     }
