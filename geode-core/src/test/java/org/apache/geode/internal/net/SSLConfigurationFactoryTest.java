@@ -12,11 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.internal.net;
 
-import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_CLIENT_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_CLUSTER_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_DEFAULT_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
@@ -28,6 +28,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_LOCATOR_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_SERVER_ALIAS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_SERVER_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_ALIAS;
@@ -35,30 +36,19 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_SERVI
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.security.KeyStore;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.test.junit.categories.MembershipTest;
 
-@Category(MembershipTest.class)
-public class SSLConfigurationFactoryJUnitTest {
-
-  @Rule
-  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
-
-  @After
-  public void tearDownTest() {}
+@Tag("membership")
+public class SSLConfigurationFactoryTest {
 
   @Test
   public void getNonSSLConfiguration() {
@@ -191,54 +181,9 @@ public class SSLConfigurationFactoryJUnitTest {
   }
 
   @Test
-  public void getSSLConfigUsingJavaProperties() {
-    Properties properties = new Properties();
-    properties.setProperty(CLUSTER_SSL_ENABLED, "true");
-    properties.setProperty(MCAST_PORT, "0");
-    System.setProperty(SSLConfigurationFactory.JAVAX_KEYSTORE, "keystore");
-    System.setProperty(SSLConfigurationFactory.JAVAX_KEYSTORE_TYPE, KeyStore.getDefaultType());
-    System.setProperty(SSLConfigurationFactory.JAVAX_KEYSTORE_PASSWORD, "keystorePassword");
-    System.setProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE, "truststore");
-    System.setProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE_PASSWORD, "truststorePassword");
-    System.setProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE_TYPE, KeyStore.getDefaultType());
-    DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
-    SSLConfig sslConfig =
-        SSLConfigurationFactory.getSSLConfigForComponent(distributionConfig,
-            SecurableCommunicationChannel.CLUSTER);
-
-    assertThat(sslConfig.isEnabled()).isTrue();
-    assertThat(sslConfig.getKeystore())
-        .isEqualTo(System.getProperty(SSLConfigurationFactory.JAVAX_KEYSTORE));
-    assertThat(sslConfig.getKeystorePassword())
-        .isEqualTo(System.getProperty(SSLConfigurationFactory.JAVAX_KEYSTORE_PASSWORD));
-    assertThat(sslConfig.getKeystoreType())
-        .isEqualTo(System.getProperty(SSLConfigurationFactory.JAVAX_KEYSTORE_TYPE));
-    assertThat(sslConfig.getTruststore())
-        .isEqualTo(System.getProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE));
-    assertThat(sslConfig.getTruststorePassword())
-        .isEqualTo(System.getProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE_PASSWORD));
-    assertThat(sslConfig.getTruststoreType())
-        .isEqualTo(System.getProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE_TYPE));
-    assertThat(sslConfig.isEnabled()).isTrue();
-    assertThat(sslConfig.getKeystore())
-        .isEqualTo(System.getProperty(SSLConfigurationFactory.JAVAX_KEYSTORE));
-    assertThat(sslConfig.getKeystorePassword())
-        .isEqualTo(System.getProperty(SSLConfigurationFactory.JAVAX_KEYSTORE_PASSWORD));
-    assertThat(sslConfig.getKeystoreType())
-        .isEqualTo(System.getProperty(SSLConfigurationFactory.JAVAX_KEYSTORE_TYPE));
-    assertThat(sslConfig.getTruststore())
-        .isEqualTo(System.getProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE));
-    assertThat(sslConfig.getTruststorePassword())
-        .isEqualTo(System.getProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE_PASSWORD));
-    assertThat(sslConfig.getTruststoreType())
-        .isEqualTo(System.getProperty(SSLConfigurationFactory.JAVAX_TRUSTSTORE_TYPE));
-  }
-
-  @Test
   public void getSSLHTTPMutualAuthenticationOffWithDefaultConfiguration() {
     Properties properties = new Properties();
-    properties.setProperty(CLUSTER_SSL_ENABLED, "true");
-    properties.setProperty(MCAST_PORT, "0");
+    properties.setProperty(SSL_ENABLED_COMPONENTS, "all");
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SSLConfig sslConfig =
         SSLConfigurationFactory.getSSLConfigForComponent(distributionConfig,
@@ -285,6 +230,34 @@ public class SSLConfigurationFactoryJUnitTest {
         SecurableCommunicationChannel.LOCATOR);
     assertThat(sslConfig.isEnabled()).isFalse();
     assertThat(sslConfig.getKeystore()).isEqualTo("someOtherKeyStore");
+  }
+
+  @Test
+  void createSSLConfigBuilderSetsSSLClientProtocols() {
+    Properties properties = new Properties();
+    properties.setProperty(SSL_ENABLED_COMPONENTS, "all");
+    properties.setProperty(SSL_CLIENT_PROTOCOLS, "SomeClientProtocol");
+    final DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
+
+    final SSLConfig sslConfig =
+        SSLConfigurationFactory.getSSLConfigForComponent(distributionConfig,
+            SecurableCommunicationChannel.LOCATOR);
+
+    assertThat(sslConfig.getClientProtocols()).isEqualTo("SomeClientProtocol");
+  }
+
+  @Test
+  void createSSLConfigBuilderSetsSSLServerProtocols() {
+    Properties properties = new Properties();
+    properties.setProperty(SSL_ENABLED_COMPONENTS, "all");
+    properties.setProperty(SSL_SERVER_PROTOCOLS, "SomeServerProtocol");
+    final DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
+
+    final SSLConfig sslConfig =
+        SSLConfigurationFactory.getSSLConfigForComponent(distributionConfig,
+            SecurableCommunicationChannel.LOCATOR);
+
+    assertThat(sslConfig.getServerProtocols()).isEqualTo("SomeServerProtocol");
   }
 
   private void assertSSLConfig(final Properties properties, final SSLConfig sslConfig,
@@ -342,8 +315,6 @@ public class SSLConfigurationFactoryJUnitTest {
   private String getCorrectAlias(final SecurableCommunicationChannel expectedSecurableComponent,
       final Properties properties) {
     switch (expectedSecurableComponent) {
-      case ALL:
-        return properties.getProperty(SSL_DEFAULT_ALIAS);
       case CLUSTER:
         return getAliasForComponent(properties, SSL_CLUSTER_ALIAS);
       case GATEWAY:
@@ -356,6 +327,7 @@ public class SSLConfigurationFactoryJUnitTest {
         return getAliasForComponent(properties, SSL_LOCATOR_ALIAS);
       case SERVER:
         return getAliasForComponent(properties, SSL_SERVER_ALIAS);
+      case ALL:
       default:
         return properties.getProperty(SSL_DEFAULT_ALIAS);
     }
