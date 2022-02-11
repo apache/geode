@@ -75,8 +75,8 @@ public class CommandCommandExecutor implements CommandExecutor {
       oneCommand.add(type.lastKey());
       oneCommand.add(type.step());
 
-      List<String> categories = new ArrayList<>();
-      categories.add("@" + type.category().name().toLowerCase());
+      List<String> categories =
+          Collections.singletonList("@" + type.category().name().toLowerCase());
       oneCommand.add(categories);
 
       response.add(oneCommand);
