@@ -190,7 +190,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('jackson-datatype-jsr310')
     }
 
-    dependencySet(group: 'com.jayway.jsonpath', version: '2.6.0') {
+    dependencySet(group: 'com.jayway.jsonpath', version: '2.7.0') {
       entry('json-path-assert')
       entry('json-path')
     }
