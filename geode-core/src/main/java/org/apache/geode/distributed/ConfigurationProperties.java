@@ -2147,7 +2147,9 @@ public interface ConfigurationProperties {
    * The static String definition of the <i>"ssl-protocols"</i> property <a
    * name="ssl-protocols"/a>
    * </p>
-   * <U>Description</U>: A space separated list of the SSL protocols to enable. Those listed must be
+   * <U>Description</U>: A space separated list of the SSL protocols to enable on both the client
+   * and server side of the SSL connection. See {@link #SSL_CLIENT_PROTOCOLS} and
+   * {@link #SSL_SERVER_PROTOCOLS} for configuring each side individually. Those listed must be
    * supported by the available providers.
    * </p>
    * <U>Default</U>: "any"
@@ -2163,7 +2165,7 @@ public interface ConfigurationProperties {
    * <U>Description</U>: A space separated list of the SSL protocols to enable on the client side
    * of the SSL connection. Those listed must be supported by the available providers.
    * </p>
-   * <U>Default</U>: "any"
+   * <U>Default</U>: The value of {@link #SSL_PROTOCOLS}.
    */
   String SSL_CLIENT_PROTOCOLS = "ssl-client-protocols";
 
@@ -2174,7 +2176,7 @@ public interface ConfigurationProperties {
    * <U>Description</U>: A space separated list of the SSL protocols to enable on the server side
    * of the SSL connection. Those listed must be supported by the available providers.
    * </p>
-   * <U>Default</U>: "any"
+   * <U>Default</U>: The value of {@link #SSL_PROTOCOLS}.
    */
   String SSL_SERVER_PROTOCOLS = "ssl-server-protocols";
 
