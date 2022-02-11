@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.commands.executor.server;
 
+import static org.apache.geode.redis.internal.RedisConstants.WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
@@ -46,7 +47,7 @@ public abstract class AbstractDBSizeIntegrationTest implements RedisIntegrationT
   @Test
   public void givenMoreThanOneArgument_returnsWrongNumberOfArgumentsError() {
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.DBSIZE, "extraArg"))
-        .hasMessageContaining("ERR wrong number of arguments for 'dbsize' command");
+        .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "dbsize"));
   }
 
 }

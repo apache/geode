@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.commands.executor.sortedset;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -78,7 +79,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     jedis.set(stringKey, "value");
 
     assertThatThrownBy(() -> jedis.zinterstore(NEW_SET, stringKey, KEY1, KEY2))
-        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -89,7 +90,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     jedis.set(stringKey, "value");
 
     assertThatThrownBy(() -> jedis.zinterstore(NEW_SET, KEY1, KEY2,
-        stringKey)).hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+        stringKey)).hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -99,7 +100,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     jedis.set(stringKey, "value");
 
     assertThatThrownBy(() -> jedis.zinterstore(NEW_SET, "{tag1}nonExistentKey", KEY1, stringKey))
-        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test

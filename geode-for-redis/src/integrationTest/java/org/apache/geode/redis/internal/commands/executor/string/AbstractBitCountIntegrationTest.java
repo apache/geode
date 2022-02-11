@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.commands.executor.string;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -53,7 +54,8 @@ public abstract class AbstractBitCountIntegrationTest implements RedisIntegratio
   @Test
   public void bitcount_givenSetFails() {
     jedis.sadd("key", "m1");
-    assertThatThrownBy(() -> jedis.bitcount("key")).hasMessageContaining("WRONGTYPE");
+    assertThatThrownBy(() -> jedis.bitcount("key"))
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test

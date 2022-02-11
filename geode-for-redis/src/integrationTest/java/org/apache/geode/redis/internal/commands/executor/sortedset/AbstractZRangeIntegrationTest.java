@@ -75,19 +75,19 @@ public abstract class AbstractZRangeIntegrationTest implements RedisIntegrationT
     assertThatThrownBy(
         () -> jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZRANGE, SORTED_SET_KEY,
             "NOT_AN_INT", "2"))
-                .hasMessageContaining(ERROR_NOT_INTEGER);
+                .hasMessage("ERR " + ERROR_NOT_INTEGER);
     assertThatThrownBy(
         () -> jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZRANGE, SORTED_SET_KEY, "1",
             "ALSO_NOT_AN_INT"))
-                .hasMessageContaining(ERROR_NOT_INTEGER);
+                .hasMessage("ERR " + ERROR_NOT_INTEGER);
     assertThatThrownBy(
         () -> jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZRANGE, SORTED_SET_KEY, tooSmall,
             "1"))
-                .hasMessageContaining(ERROR_NOT_INTEGER);
+                .hasMessage("ERR " + ERROR_NOT_INTEGER);
     assertThatThrownBy(
         () -> jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZRANGE, SORTED_SET_KEY, "1",
             tooBig))
-                .hasMessageContaining(ERROR_NOT_INTEGER);
+                .hasMessage("ERR " + ERROR_NOT_INTEGER);
   }
 
   @Test
@@ -96,7 +96,7 @@ public abstract class AbstractZRangeIntegrationTest implements RedisIntegrationT
     assertThatThrownBy(
         () -> jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZRANGE, SORTED_SET_KEY, "1", "2",
             "WITSCOREZ"))
-                .hasMessageContaining(ERROR_SYNTAX);
+                .hasMessage("ERR " + ERROR_SYNTAX);
   }
 
   @Test

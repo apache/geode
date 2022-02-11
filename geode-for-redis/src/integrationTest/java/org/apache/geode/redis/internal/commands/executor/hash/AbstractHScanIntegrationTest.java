@@ -95,7 +95,7 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
 
     assertThatThrownBy(
         () -> jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY, ZERO_CURSOR, "MATCH"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage("ERR " + ERROR_SYNTAX);
   }
 
   @Test
@@ -113,7 +113,7 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
 
     assertThatThrownBy(
         () -> jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY, ZERO_CURSOR, "COUNT"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage("ERR " + ERROR_SYNTAX);
   }
 
   @Test
@@ -130,7 +130,7 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     jedis.hset(HASH_KEY, FIELD_ONE, VALUE_ONE);
     assertThatThrownBy(
         () -> jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY, ZERO_CURSOR, "a*", "1"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage("ERR " + ERROR_SYNTAX);
   }
 
   @Test
@@ -139,7 +139,7 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     assertThatThrownBy(
         () -> jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY, ZERO_CURSOR, "COUNT",
             "MATCH"))
-                .hasMessageContaining(ERROR_NOT_INTEGER);
+                .hasMessage("ERR " + ERROR_NOT_INTEGER);
   }
 
   @Test
@@ -149,7 +149,7 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
         () -> jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY, ZERO_CURSOR, "COUNT",
             "3",
             "COUNT", "sjlfs", "COUNT", "1"))
-                .hasMessageContaining(ERROR_NOT_INTEGER);
+                .hasMessage("ERR " + ERROR_NOT_INTEGER);
   }
 
   @Test
@@ -159,7 +159,7 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     assertThatThrownBy(
         () -> jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY, ZERO_CURSOR, "COUNT",
             ZERO_CURSOR))
-                .hasMessageContaining(ERROR_SYNTAX);
+                .hasMessage("ERR " + ERROR_SYNTAX);
   }
 
   @Test
@@ -169,7 +169,7 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     assertThatThrownBy(
         () -> jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY, ZERO_CURSOR, "COUNT",
             "-37"))
-                .hasMessageContaining(ERROR_SYNTAX);
+                .hasMessage("ERR " + ERROR_SYNTAX);
   }
 
   @Test
@@ -181,7 +181,7 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
             "COUNT", "3",
             "COUNT", "0",
             "COUNT", "1"))
-                .hasMessageContaining(ERROR_SYNTAX);
+                .hasMessage("ERR " + ERROR_SYNTAX);
   }
 
   @Test
@@ -190,7 +190,7 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
 
     assertThatThrownBy(() -> jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY,
         ZERO_CURSOR))
-            .hasMessageContaining(ERROR_WRONG_TYPE);
+            .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -198,14 +198,14 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     jedis.sadd(HASH_KEY, "member");
 
     assertThatThrownBy(() -> jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY, "sjfls"))
-        .hasMessageContaining(ERROR_CURSOR);
+        .hasMessage("ERR " + ERROR_CURSOR);
   }
 
   @Test
   public void givenNonexistentKey_andCursorIsNotAnInteger_returnsCursorError() {
     assertThatThrownBy(
         () -> jedis.sendCommand("notReal", Protocol.Command.HSCAN, "notReal", "sjfls"))
-            .hasMessageContaining(ERROR_CURSOR);
+            .hasMessage("ERR " + ERROR_CURSOR);
   }
 
   @Test
@@ -213,7 +213,7 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     jedis.hset(HASH_KEY, FIELD_ONE, VALUE_ONE);
 
     assertThatThrownBy(() -> jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY, "sjfls"))
-        .hasMessageContaining(ERROR_CURSOR);
+        .hasMessage("ERR " + ERROR_CURSOR);
   }
 
   @Test
@@ -248,7 +248,7 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
 
     assertThatThrownBy(() -> jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY,
         UNSIGNED_LONG_CAPACITY.add(new BigInteger("10")).toString()))
-            .hasMessageContaining(ERROR_CURSOR);
+            .hasMessage("ERR " + ERROR_CURSOR);
   }
 
   @Test

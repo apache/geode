@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.commands.Command;
 import org.apache.geode.redis.internal.commands.executor.CommandExecutor;
 import org.apache.geode.redis.internal.commands.executor.RedisResponse;
@@ -31,9 +32,6 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.services.RegionProvider;
 
 public class BitOpExecutor implements CommandExecutor {
-
-  protected static final String ERROR_BITOP_NOT =
-      "BITOP NOT must be called with a single source key";
 
   @Override
   public RedisResponse executeCommand(Command command,
@@ -58,7 +56,7 @@ public class BitOpExecutor implements CommandExecutor {
       values.add(key);
     }
     if (operation.equals("NOT") && values.size() != 1) {
-      return RedisResponse.error(ERROR_BITOP_NOT);
+      return RedisResponse.error(RedisConstants.ERROR_BITOP_NOT_MUST_USE_SINGLE_KEY);
     }
 
     int result = bitop(context, operation, destKey, values);

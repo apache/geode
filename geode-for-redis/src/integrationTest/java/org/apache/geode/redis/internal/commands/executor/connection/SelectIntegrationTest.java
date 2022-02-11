@@ -39,6 +39,6 @@ public class SelectIntegrationTest extends AbstractSelectIntegrationTest {
   @Test
   public void givenAnyDBIndexOtherThanZero_returnsSelectError() {
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.SELECT, "9223372036854775807"))
-        .hasMessageContaining(ERROR_SELECT);
+        .hasMessage("ERR " + ERROR_SELECT);
   }
 }

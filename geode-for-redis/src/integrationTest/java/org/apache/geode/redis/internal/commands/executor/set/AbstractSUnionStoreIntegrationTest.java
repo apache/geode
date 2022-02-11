@@ -173,7 +173,7 @@ public abstract class AbstractSUnionStoreIntegrationTest implements RedisIntegra
     jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
     jedis.sadd(SET_KEY_2, "doorbell");
     assertThatThrownBy(() -> jedis.sunionstore(DESTINATION_KEY, stringKey, SET_KEY_1, SET_KEY_2))
-        .hasMessageContaining(ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -185,7 +185,7 @@ public abstract class AbstractSUnionStoreIntegrationTest implements RedisIntegra
     jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
     jedis.sadd(SET_KEY_2, "doorbell");
     assertThatThrownBy(() -> jedis.sunionstore(DESTINATION_KEY, SET_KEY_1, SET_KEY_2, stringKey))
-        .hasMessageContaining(ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -197,7 +197,7 @@ public abstract class AbstractSUnionStoreIntegrationTest implements RedisIntegra
     jedis.sadd(SET_KEY_2, "doorbell");
     assertThatThrownBy(
         () -> jedis.sunionstore(DESTINATION_KEY, NON_EXISTENT_SET, SET_KEY_1, stringKey))
-            .hasMessageContaining(ERROR_WRONG_TYPE);
+            .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test

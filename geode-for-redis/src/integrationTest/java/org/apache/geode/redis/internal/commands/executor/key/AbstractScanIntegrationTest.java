@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.commands.executor.key;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_CURSOR;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
+import static org.apache.geode.redis.internal.RedisConstants.WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -57,57 +58,57 @@ public abstract class AbstractScanIntegrationTest implements RedisIntegrationTes
   @Test
   public void givenNoCursorArgument_returnsWrongNumberOfArgsError() {
     assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.SCAN))
-        .hasMessageContaining("ERR wrong number of arguments for 'scan' command");
+        .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "scan"));
   }
 
   @Test
   public void givenCursorArgumentIsNotAnInteger_returnsCursorError() {
     assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.SCAN, "sljfs"))
-        .hasMessageContaining(ERROR_CURSOR);
+        .hasMessage("ERR " + ERROR_CURSOR);
   }
 
   @Test
   public void givenArgumentsAreNotEven_returnsSyntaxError() {
     assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.SCAN, "0", "a*"))
-        .hasMessageContaining(ERROR_SYNTAX);
+        .hasMessage("ERR " + ERROR_SYNTAX);
   }
 
   @Test
   public void givenMatchOrCountKeywordNotSpecified_returnsSyntaxError() {
     assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.SCAN, "0", "a*", "1"))
-        .hasMessageContaining(ERROR_SYNTAX);
+        .hasMessage("ERR " + ERROR_SYNTAX);
   }
 
   @Test
   public void givenCount_whenCountParameterIsNotAnInteger_returnsNotIntegerError() {
     assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.SCAN, "0", "COUNT", "MATCH"))
-        .hasMessageContaining(ERROR_NOT_INTEGER);
+        .hasMessage("ERR " + ERROR_NOT_INTEGER);
   }
 
   @Test
   public void givenCount_whenCountParameterIsZero_returnsSyntaxError() {
     assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.SCAN, "0", "COUNT", "0"))
-        .hasMessageContaining(ERROR_SYNTAX);
+        .hasMessage("ERR " + ERROR_SYNTAX);
   }
 
   @Test
   public void givenCount_whenCountParameterIsNegative_returnsSyntaxError() {
     assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.SCAN, "0", "COUNT", "-37"))
-        .hasMessageContaining(ERROR_SYNTAX);
+        .hasMessage("ERR " + ERROR_SYNTAX);
   }
 
   @Test
   public void givenMultipleCounts_whenAnyCountParameterIsNotAnInteger_returnsNotIntegerError() {
     assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.SCAN, "0", "COUNT", "2",
         "COUNT", "sjlfs", "COUNT", "1"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+            .hasMessage("ERR " + ERROR_NOT_INTEGER);
   }
 
   @Test
   public void givenMultipleCounts_whenAnyCountParameterIsLessThanOne_returnsSyntaxError() {
     assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.SCAN, "0", "COUNT", "2",
         "COUNT", "0", "COUNT", "1"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage("ERR " + ERROR_SYNTAX);
   }
 
   @Test
@@ -282,13 +283,13 @@ public abstract class AbstractScanIntegrationTest implements RedisIntegrationTes
   @Test
   public void givenCursorGreaterThanUnsignedLongCapacity_returnsCursorError() {
     assertThatThrownBy(() -> jedis.scan("18446744073709551616", new ScanParams().match("{a}*")))
-        .hasMessageContaining(ERROR_CURSOR);
+        .hasMessage("ERR " + ERROR_CURSOR);
   }
 
   @Test
   public void givenNegativeCursorGreaterThanUnsignedLongCapacity_returnsCursorError() {
     assertThatThrownBy(() -> jedis.scan("-18446744073709551616", new ScanParams().match("{a}*")))
-        .hasMessageContaining(ERROR_CURSOR);
+        .hasMessage("ERR " + ERROR_CURSOR);
   }
 
   @Test

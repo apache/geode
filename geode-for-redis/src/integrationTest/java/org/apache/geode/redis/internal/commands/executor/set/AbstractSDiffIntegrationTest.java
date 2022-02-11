@@ -181,7 +181,7 @@ public abstract class AbstractSDiffIntegrationTest implements RedisIntegrationTe
     String secondSetKey = "{tag1}secondKey";
     jedis.sadd(secondSetKey, members);
     assertThatThrownBy(() -> jedis.sdiff(stringKey, SET_KEY, secondSetKey))
-        .hasMessageContaining(ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -193,7 +193,7 @@ public abstract class AbstractSDiffIntegrationTest implements RedisIntegrationTe
     String secondSetKey = "{tag1}secondKey";
     jedis.sadd(secondSetKey, members);
     assertThatThrownBy(() -> jedis.sdiff(SET_KEY, secondSetKey, stringKey))
-        .hasMessageContaining(ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -203,7 +203,7 @@ public abstract class AbstractSDiffIntegrationTest implements RedisIntegrationTe
 
     jedis.sadd(SET_KEY, "member");
     assertThatThrownBy(() -> jedis.sdiff(NON_EXISTENT_SET_KEY, SET_KEY, stringKey))
-        .hasMessageContaining(ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test

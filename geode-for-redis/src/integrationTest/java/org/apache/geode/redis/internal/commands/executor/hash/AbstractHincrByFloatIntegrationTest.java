@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.commands.executor.hash;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.internal.RedisConstants.HASH_VALUE_NOT_FLOAT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.offset;
@@ -161,7 +162,7 @@ public abstract class AbstractHincrByFloatIntegrationTest implements RedisIntegr
     jedis.hset(key, field, "foobar");
     assertThatThrownBy(() -> jedis.hincrByFloat(key, field, 1.5))
         .isInstanceOf(JedisDataException.class)
-        .hasMessageContaining("ERR hash value is not a float");
+        .hasMessage("ERR " + HASH_VALUE_NOT_FLOAT);
   }
 
   @Test

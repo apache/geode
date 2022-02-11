@@ -70,44 +70,44 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
   @Parameters({"a", "--", "++"})
   public void shouldError_givenInvalidMinOrMax(String invalidArgument) {
     assertThatThrownBy(() -> jedis.zrangeByLex("fakeKey", invalidArgument, "+"))
-        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_VALID_STRING);
+        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_VALID_STRING);
     assertThatThrownBy(() -> jedis.zrangeByLex("fakeKey", "-", invalidArgument))
-        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_VALID_STRING);
+        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_VALID_STRING);
     assertThatThrownBy(() -> jedis.zrangeByLex("fakeKey", invalidArgument, invalidArgument))
-        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_VALID_STRING);
+        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_VALID_STRING);
   }
 
   @Test
   public void shouldError_givenInvalidLimitFormat() {
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYLEX, KEY, "-", "+",
         "LIMIT"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage("ERR " + ERROR_SYNTAX);
 
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYLEX, KEY, "-", "+",
         "LIMIT", "0"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage("ERR " + ERROR_SYNTAX);
 
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYLEX, KEY, "-", "+",
         "LAMAT", "0", "10"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage("ERR " + ERROR_SYNTAX);
   }
 
   @Test
   public void shouldError_givenNonIntegerLimitArguments() {
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYLEX, KEY, "-", "+",
         "LIMIT", "0", "invalid"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+            .hasMessage("ERR " + ERROR_NOT_INTEGER);
 
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYLEX, KEY, "-", "+",
         "LIMIT", "invalid", "10"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+            .hasMessage("ERR " + ERROR_NOT_INTEGER);
   }
 
   @Test
   public void shouldError_givenNegativeZeroLimitOffset() {
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYLEX, KEY, "-", "+",
         "LIMIT", "-0", "10"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+            .hasMessage("ERR " + ERROR_NOT_INTEGER);
   }
 
   @Test
@@ -115,12 +115,12 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYLEX, KEY, "-", "+",
         "LIMIT", "0", "invalid",
         "LIMIT", "0", "10"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+            .hasMessage("ERR " + ERROR_NOT_INTEGER);
 
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYLEX, KEY, "-", "+",
         "LIMIT", "0",
         "LIMIT", "0", "10"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+            .hasMessage("ERR " + ERROR_NOT_INTEGER);
   }
 
   @Test
@@ -128,12 +128,12 @@ public abstract class AbstractZRangeByLexIntegrationTest implements RedisIntegra
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYLEX, KEY, "-", "+",
         "LIMIT", "0", "10",
         "LIMIT", "0", "invalid"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+            .hasMessage("ERR " + ERROR_NOT_INTEGER);
 
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYLEX, KEY, "-", "+",
         "LIMIT", "0", "10",
         "LIMIT", "0"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage("ERR " + ERROR_SYNTAX);
   }
 
   @Test

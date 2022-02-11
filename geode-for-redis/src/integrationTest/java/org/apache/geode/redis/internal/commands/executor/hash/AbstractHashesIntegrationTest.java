@@ -16,6 +16,9 @@ package org.apache.geode.redis.internal.commands.executor.hash;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_CURSOR;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
+import static org.apache.geode.redis.internal.RedisConstants.WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -43,7 +46,6 @@ import redis.clients.jedis.resps.ScanResult;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractHashesIntegrationTest implements RedisIntegrationTest {
@@ -70,23 +72,25 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
   @Test
   public void testHMSet_givenWrongNumberOfArguments() {
     assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.HMSET, "key"))
-        .hasMessage("ERR wrong number of arguments for 'hmset' command");
+        .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "hmset"));
     assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.HMSET, "key", "1"))
-        .hasMessage("ERR wrong number of arguments for 'hmset' command");
-    // Redis is somewhat inconsistent with the error response here
+        .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "hmset"));
+    // The below error message is correct for Redis 6, but for Redis 5 is "ERR wrong number of
+    // arguments for HMSET"
     assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.HMSET, "key", "1", "2", "3"))
-        .hasMessageContaining("wrong number of arguments");
+        .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "hmset"));
   }
 
   @Test
   public void testHSet_givenWrongNumberOfArguments() {
     assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.HSET, "key"))
-        .hasMessage("ERR wrong number of arguments for 'hset' command");
+        .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "hset"));
     assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.HSET, "key", "1"))
-        .hasMessage("ERR wrong number of arguments for 'hset' command");
-    // Redis is somewhat inconsistent with the error response here
+        .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "hset"));
+    // The below error message is correct for Redis 6, but for Redis 5 is "ERR wrong number of
+    // arguments for HMSET"
     assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.HSET, "key", "1", "2", "3"))
-        .hasMessageContaining("wrong number of arguments");
+        .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "hset"));
   }
 
   @Test
@@ -115,12 +119,12 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
     jedis.set("farm", "chicken");
     assertThatThrownBy(() -> jedis.hmset("farm", animalMap))
         .isInstanceOf(JedisDataException.class)
-        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
 
     jedis.sadd("zoo", "elephant");
     assertThatThrownBy(() -> jedis.hmset("zoo", animalMap))
         .isInstanceOf(JedisDataException.class)
-        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -219,12 +223,12 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
     jedis.set("farm", "chicken");
     assertThatThrownBy(() -> jedis.hmget("farm", "chicken"))
         .isInstanceOf(JedisDataException.class)
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
 
     jedis.sadd("zoo", "elephant");
     assertThatThrownBy(() -> jedis.hmget("zoo", "chicken"))
         .isInstanceOf(JedisDataException.class)
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -232,7 +236,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
     jedis.set("farm", "chicken");
     assertThatThrownBy(() -> jedis.hdel("farm", "chicken"))
         .isInstanceOf(JedisDataException.class)
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -262,11 +266,11 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
   public void testHStrLen_failsForNonHashes() {
     jedis.sadd("farm", "chicken");
     assertThatThrownBy(() -> jedis.hstrlen("farm", "chicken"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
 
     jedis.set("tractor", "John Deere");
     assertThatThrownBy(() -> jedis.hstrlen("tractor", "chicken"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -283,11 +287,11 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
   public void testHKeys_failsGivenWrongType() {
     jedis.sadd("farm", "chicken");
     assertThatThrownBy(() -> jedis.hkeys("farm"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
 
     jedis.set("tractor", "John Deere");
     assertThatThrownBy(() -> jedis.hkeys("tractor"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -322,7 +326,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
   public void testHIncrBy_failsWhenPerformedOnNonIntegerValue() {
     jedis.sadd("key", "member");
     assertThatThrownBy(() -> jedis.hincrBy("key", "somefield", 1))
-        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -405,11 +409,11 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
   public void testHExists_failsForNonHashes() {
     jedis.sadd("farm", "chicken");
     assertThatThrownBy(() -> jedis.hexists("farm", "chicken"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
 
     jedis.set("tractor", "John Deere");
     assertThatThrownBy(() -> jedis.hexists("tractor", "chicken"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -423,7 +427,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
 
     assertThatThrownBy(
         () -> jedis.hscan(key, "this cursor is non-numeric and so completely invalid"))
-            .hasMessageContaining("invalid cursor");
+            .hasMessage("ERR " + ERROR_CURSOR);
 
     Map<String, String> hash = new HashMap<>();
     hash.put(field, value);
@@ -474,10 +478,10 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
     assertThatThrownBy(
         () -> jedis.hsetnx(string_key, field, "something else"))
             .isInstanceOf(JedisDataException.class)
-            .hasMessageContaining("WRONGTYPE");
+            .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
     assertThatThrownBy(
         () -> jedis.hsetnx(set_key, field, "something else")).isInstanceOf(JedisDataException.class)
-            .hasMessageContaining("WRONGTYPE");
+            .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
 
     jedis.del(string_key);
     jedis.del(set_key);
@@ -517,11 +521,11 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
   public void hvalsFailsForNonHash() {
     jedis.sadd("farm", "chicken");
     assertThatThrownBy(() -> jedis.hvals("farm"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
 
     jedis.set("tractor", "John Deere");
     assertThatThrownBy(() -> jedis.hvals("tractor"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -538,11 +542,11 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
   public void hgetFailsForNonHash() {
     jedis.sadd("farm", "chicken");
     assertThatThrownBy(() -> jedis.hget("farm", "chicken"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
 
     jedis.set("tractor", "John Deere");
     assertThatThrownBy(() -> jedis.hget("tractor", "John Deere"))
-        .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -609,7 +613,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
     jedis.set("farm", "chicken");
     assertThatThrownBy(() -> jedis.hlen("farm"))
         .isInstanceOf(JedisDataException.class)
-        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -826,7 +830,7 @@ public abstract class AbstractHashesIntegrationTest implements RedisIntegrationT
 
     assertThatThrownBy(
         () -> jedis.hset("key", "field", "something else")).isInstanceOf(JedisDataException.class)
-            .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+            .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test

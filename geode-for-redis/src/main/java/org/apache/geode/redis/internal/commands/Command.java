@@ -15,6 +15,7 @@
  */
 package org.apache.geode.redis.internal.commands;
 
+import static org.apache.geode.redis.internal.RedisConstants.WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 
 import java.nio.channels.SocketChannel;
@@ -216,7 +217,7 @@ public class Command {
 
   public String wrongNumberOfArgumentsErrorMessage() {
     String result;
-    result = String.format("wrong number of arguments for '%s' command",
+    result = String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND,
         getCommandType().toString().toLowerCase());
     return result;
   }

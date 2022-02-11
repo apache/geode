@@ -15,6 +15,8 @@
 package org.apache.geode.redis.internal.commands.executor.string;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
+import static org.apache.geode.redis.internal.RedisConstants.WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -54,13 +56,14 @@ public abstract class AbstractSetBitIntegrationTest implements RedisIntegrationT
   public void givenMoreThanFourArgumentsProvided_returnsWrongNumberOfArgumentsError() {
     assertThatThrownBy(
         () -> jedis.sendCommand("key", Protocol.Command.SETBIT, "key", "1", "value", "extraArg"))
-            .hasMessageContaining("ERR wrong number of arguments for 'setbit' command");
+            .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "setbit"));
   }
 
   @Test
   public void setbit_givenSetFails() {
     jedis.sadd("key", "m1");
-    assertThatThrownBy(() -> jedis.setbit("key", 1, true)).hasMessageContaining("WRONGTYPE");
+    assertThatThrownBy(() -> jedis.setbit("key", 1, true))
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test

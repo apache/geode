@@ -63,14 +63,14 @@ public abstract class AbstractGetRangeIntegrationTest implements RedisIntegratio
   public void givenStartIndexIsNotAnInteger_returnsNotIntegerError() {
     assertThatThrownBy(
         () -> jedis.sendCommand(key, Protocol.Command.GETRANGE, key, "NaN", "5"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+            .hasMessage("ERR " + ERROR_NOT_INTEGER);
   }
 
   @Test
   public void givenEndIndexIsNotAnInteger_returnsNotIntegerError() {
     assertThatThrownBy(
         () -> jedis.sendCommand(key, Protocol.Command.GETRANGE, key, "0", "NaN"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+            .hasMessage("ERR " + ERROR_NOT_INTEGER);
   }
 
   @Test

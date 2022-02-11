@@ -84,7 +84,7 @@ public abstract class AbstractSubscriptionsIntegrationTest implements RedisInteg
   public void unallowedCommandsWhileSubscribed() {
     client.sendCommand(Protocol.Command.SUBSCRIBE, "hello");
 
-    assertThatThrownBy(() -> client.set("not", "supported")).hasMessageContaining(
+    assertThatThrownBy(() -> client.set("not", "supported")).hasMessage("ERR " +
         String.format(ERROR_PUBSUB_WRONG_COMMAND, "set"));
     client.sendCommand(Protocol.Command.UNSUBSCRIBE);
   }

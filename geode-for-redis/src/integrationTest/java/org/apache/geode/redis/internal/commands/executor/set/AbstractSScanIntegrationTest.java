@@ -95,7 +95,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     jedis.sadd(KEY, MEMBER_ONE);
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, ZERO_CURSOR, "a*"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage("ERR " + ERROR_SYNTAX);
   }
 
   @Test
@@ -103,7 +103,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     jedis.sadd(KEY, MEMBER_ONE);
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, ZERO_CURSOR, "MATCH"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage("ERR " + ERROR_SYNTAX);
   }
 
   @Test
@@ -111,7 +111,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     jedis.sadd(KEY, MEMBER_ONE);
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, ZERO_CURSOR, "COUNT"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage("ERR " + ERROR_SYNTAX);
   }
 
   @Test
@@ -119,7 +119,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     jedis.sadd(KEY, MEMBER_ONE);
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, ZERO_CURSOR, "a*", "1"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage("ERR " + ERROR_SYNTAX);
   }
 
   @Test
@@ -128,7 +128,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, ZERO_CURSOR, "COUNT",
             "notAnInteger"))
-                .hasMessageContaining(ERROR_NOT_INTEGER);
+                .hasMessage("ERR " + ERROR_NOT_INTEGER);
   }
 
   @Test
@@ -137,7 +137,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, ZERO_CURSOR, "COUNT", "12",
             "COUNT", "notAnInteger", "COUNT", "1"))
-                .hasMessageContaining(ERROR_NOT_INTEGER);
+                .hasMessage("ERR " + ERROR_NOT_INTEGER);
   }
 
   @Test
@@ -146,7 +146,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, ZERO_CURSOR, "COUNT", "12",
             "COUNT", "0", "COUNT", "1"))
-                .hasMessageContaining(ERROR_SYNTAX);
+                .hasMessage("ERR " + ERROR_SYNTAX);
   }
 
   @Test
@@ -154,7 +154,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     jedis.sadd(KEY, MEMBER_ONE);
     assertThatThrownBy(
         () -> jedis.sscan(KEY_BYTES, ZERO_CURSOR_BYTES, new ScanParams().count(0)))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage("ERR " + ERROR_SYNTAX);
   }
 
   @Test
@@ -162,7 +162,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     jedis.sadd(KEY, MEMBER_ONE);
     assertThatThrownBy(
         () -> jedis.sscan(KEY_BYTES, ZERO_CURSOR_BYTES, new ScanParams().count(-37)))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage("ERR " + ERROR_SYNTAX);
   }
 
   @Test
@@ -170,7 +170,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     jedis.hset(KEY, "b", MEMBER_ONE);
     assertThatThrownBy(
         () -> jedis.sscan(KEY, ZERO_CURSOR))
-            .hasMessageContaining(ERROR_WRONG_TYPE);
+            .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -178,7 +178,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     jedis.hset(KEY, "b", MEMBER_ONE);
     assertThatThrownBy(
         () -> jedis.sscan(KEY_BYTES, ZERO_CURSOR_BYTES, new ScanParams().count(-37)))
-            .hasMessageContaining(ERROR_WRONG_TYPE);
+            .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -186,14 +186,14 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     jedis.hset(KEY, "b", MEMBER_ONE);
     assertThatThrownBy(
         () -> jedis.sscan(KEY, "notAnInteger"))
-            .hasMessageContaining(ERROR_CURSOR);
+            .hasMessage("ERR " + ERROR_CURSOR);
   }
 
   @Test
   public void givenNonexistentKey_andCursorIsNotInteger_returnsInvalidCursorError() {
     assertThatThrownBy(
         () -> jedis.sscan("nonexistentKey", "notAnInteger"))
-            .hasMessageContaining(ERROR_CURSOR);
+            .hasMessage("ERR " + ERROR_CURSOR);
   }
 
   @Test
@@ -201,7 +201,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     jedis.set(KEY, "b");
     assertThatThrownBy(
         () -> jedis.sscan(KEY, "notAnInteger"))
-            .hasMessageContaining(ERROR_CURSOR);
+            .hasMessage("ERR " + ERROR_CURSOR);
   }
 
   @Test

@@ -62,13 +62,13 @@ public abstract class AbstractSRandMemberIntegrationTest implements RedisIntegra
   public void srandmemberTooManyArgs_returnsError() {
     assertThatThrownBy(
         () -> jedis.sendCommand(SET_KEY, Protocol.Command.SRANDMEMBER, SET_KEY, "5", "5"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage("ERR " + ERROR_SYNTAX);
   }
 
   @Test
   public void srandmember_withInvalidCount_returnsError() {
     assertThatThrownBy(() -> jedis.sendCommand(SET_KEY, Protocol.Command.SRANDMEMBER, SET_KEY, "b"))
-        .hasMessageContaining(ERROR_NOT_INTEGER);
+        .hasMessage("ERR " + ERROR_NOT_INTEGER);
   }
 
   @Test
@@ -146,20 +146,20 @@ public abstract class AbstractSRandMemberIntegrationTest implements RedisIntegra
   public void srandmember_withoutCount_withWrongKeyType_returnsWrongTypeError() {
     String key = "ding";
     jedis.set(key, "dong");
-    assertThatThrownBy(() -> jedis.srandmember(key)).hasMessageContaining(ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.srandmember(key)).hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
   public void srandmember_withCount_withWrongKeyType_returnsWrongTypeError() {
     String key = "ding";
     jedis.set(key, "dong");
-    assertThatThrownBy(() -> jedis.srandmember(key, 5)).hasMessageContaining(ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.srandmember(key, 5)).hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
   public void srandmember_withCountAsZero_withWrongKeyType_returnsWrongTypeError() {
     String key = "ding";
     jedis.set(key, "dong");
-    assertThatThrownBy(() -> jedis.srandmember(key, 0)).hasMessageContaining(ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.srandmember(key, 0)).hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 }

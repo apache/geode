@@ -66,19 +66,19 @@ public abstract class AbstractSPopIntegrationTest implements RedisIntegrationTes
   public void spopTooManyArgs_returnsError() {
     assertThatThrownBy(
         () -> jedis.sendCommand(SET_KEY, Protocol.Command.SPOP, SET_KEY, "5", "5"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage("ERR " + ERROR_SYNTAX);
   }
 
   @Test
   public void spop_withNonNumericCount_returnsError() {
     assertThatThrownBy(() -> jedis.sendCommand(SET_KEY, Protocol.Command.SPOP, SET_KEY, "b"))
-        .hasMessageContaining(ERROR_VALUE_MUST_BE_POSITIVE);
+        .hasMessage("ERR " + ERROR_VALUE_MUST_BE_POSITIVE);
   }
 
   @Test
   public void spop_withNegativeCount_returnsError() {
     assertThatThrownBy(() -> jedis.spop(SET_KEY, -1))
-        .hasMessageContaining(ERROR_VALUE_MUST_BE_POSITIVE);
+        .hasMessage("ERR " + ERROR_VALUE_MUST_BE_POSITIVE);
   }
 
   @Test
@@ -158,7 +158,7 @@ public abstract class AbstractSPopIntegrationTest implements RedisIntegrationTes
   public void spop_withoutCount_withWrongKeyType_returnsWrongTypeError() {
     String key = "ding";
     jedis.set(key, "dong");
-    assertThatThrownBy(() -> jedis.spop(key)).hasMessageContaining(ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.spop(key)).hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
 
@@ -166,7 +166,7 @@ public abstract class AbstractSPopIntegrationTest implements RedisIntegrationTes
   public void spop_withCountAsZero_withWrongKeyType_returnsWrongTypeError() {
     String key = "ding";
     jedis.set(key, "dong");
-    assertThatThrownBy(() -> jedis.spop(key, 0)).hasMessageContaining(ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.spop(key, 0)).hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -174,7 +174,7 @@ public abstract class AbstractSPopIntegrationTest implements RedisIntegrationTes
     String key = "ding";
     jedis.set(key, "dong");
     assertThatThrownBy(() -> jedis.spop(key, -1))
-        .hasMessageContaining(ERROR_VALUE_MUST_BE_POSITIVE);
+        .hasMessage("ERR " + ERROR_VALUE_MUST_BE_POSITIVE);
   }
 
   @Test

@@ -20,6 +20,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_AUTH_CALLED_WITHOUT_SECURITY_CONFIGURED;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_AUTHENTICATED;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_AUTHORIZED;
 import static org.apache.geode.redis.internal.RedisConstants.SERVER_ERROR_MESSAGE;
 import static org.apache.geode.redis.internal.RedisProperties.REDIS_REGION_NAME_PROPERTY;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
@@ -47,7 +50,6 @@ import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.redis.internal.GeodeRedisServer;
-import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.security.AuthenticationExpiredException;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.ResourcePermission;
@@ -146,7 +148,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
     setupCacheWithoutSecurity();
 
     assertThatThrownBy(() -> jedis.auth("password"))
-        .hasMessageContaining(RedisConstants.ERROR_AUTH_CALLED_WITHOUT_SECURITY_CONFIGURED);
+        .hasMessage("ERR " + ERROR_AUTH_CALLED_WITHOUT_SECURITY_CONFIGURED);
   }
 
   @Test
@@ -154,7 +156,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
     setupCacheWithoutSecurity();
 
     assertThatThrownBy(() -> jedis.auth("username", "password"))
-        .hasMessageContaining(RedisConstants.ERROR_AUTH_CALLED_WITHOUT_SECURITY_CONFIGURED);
+        .hasMessage("ERR " + ERROR_AUTH_CALLED_WITHOUT_SECURITY_CONFIGURED);
   }
 
   @Test
@@ -182,7 +184,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
     jedis.auth("dataWrite", "dataWrite");
 
     assertThatThrownBy(() -> jedis.get("foo"))
-        .hasMessageContaining(RedisConstants.ERROR_NOT_AUTHORIZED);
+        .hasMessage("ERR " + ERROR_NOT_AUTHORIZED);
   }
 
   @Test
@@ -192,7 +194,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
     jedis.auth("dataRead", "dataRead");
 
     assertThatThrownBy(() -> jedis.set("foo", "bar"))
-        .hasMessageContaining(RedisConstants.ERROR_NOT_AUTHORIZED);
+        .hasMessage("ERR " + ERROR_NOT_AUTHORIZED);
   }
 
   @Test
@@ -204,7 +206,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
 
     try (Jedis jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT)) {
       assertThatThrownBy(() -> jedis2.set("foo", "bar"))
-          .hasMessageContaining(RedisConstants.ERROR_NOT_AUTHENTICATED);
+          .hasMessage("NOAUTH " + ERROR_NOT_AUTHENTICATED);
     }
   }
 
@@ -217,7 +219,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
 
     // Permissions are incorrect
     assertThatThrownBy(() -> jedis.set("foo", "bar"))
-        .hasMessageContaining(RedisConstants.ERROR_NOT_AUTHORIZED);
+        .hasMessage("ERR " + ERROR_NOT_AUTHORIZED);
   }
 
   @Test
@@ -242,7 +244,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
 
     assertThat(jedis.auth(getUsername(), getPassword())).isEqualTo("OK");
     assertThatThrownBy(() -> jedis.get("foo"))
-        .hasMessageContaining(RedisConstants.ERROR_NOT_AUTHORIZED);
+        .hasMessage("ERR " + ERROR_NOT_AUTHORIZED);
   }
 
   @Test

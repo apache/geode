@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.commands.executor.key;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -76,7 +77,7 @@ public abstract class AbstractDumpRestoreIntegrationTest implements RedisIntegra
   public void restoreErrorsWithUnknownOption() {
     assertThatThrownBy(
         () -> jedis.sendCommand("key", Protocol.Command.RESTORE, "key", "0", "", "FOO"))
-            .hasMessageContaining("ERR syntax error");
+            .hasMessage("ERR " + ERROR_SYNTAX);
   }
 
   @Test

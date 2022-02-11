@@ -15,6 +15,9 @@
 package org.apache.geode.redis.internal.commands.executor.string;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NAN_OR_INFINITY;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -31,7 +34,6 @@ import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractIncrByFloatIntegrationTest implements RedisIntegrationTest {
@@ -91,7 +93,7 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisIntegra
     jedis.set("nan", "abc");
 
     assertThatThrownBy(() -> jedis.incrByFloat("nan", 1))
-        .hasMessageContaining(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
+        .hasMessage("ERR " + ERROR_NOT_A_VALID_FLOAT);
   }
 
   @Test
@@ -99,7 +101,7 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisIntegra
     jedis.sadd("set", "abc");
 
     assertThatThrownBy(() -> jedis.incrByFloat("set", 1))
-        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -109,7 +111,7 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisIntegra
     jedis.set(key, "" + number1);
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, " a b c"))
-        .hasMessageContaining(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
+        .hasMessage("ERR " + ERROR_NOT_A_VALID_FLOAT);
   }
 
   @Test
@@ -118,28 +120,28 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisIntegra
     jedis.set(key, "1.4");
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "+inf"))
-        .hasMessageContaining(RedisConstants.ERROR_NAN_OR_INFINITY);
+        .hasMessage("ERR " + ERROR_NAN_OR_INFINITY);
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "-inf"))
-        .hasMessageContaining(RedisConstants.ERROR_NAN_OR_INFINITY);
+        .hasMessage("ERR " + ERROR_NAN_OR_INFINITY);
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "inf"))
-        .hasMessageContaining(RedisConstants.ERROR_NAN_OR_INFINITY);
+        .hasMessage("ERR " + ERROR_NAN_OR_INFINITY);
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "+infinity"))
-        .hasMessageContaining(RedisConstants.ERROR_NAN_OR_INFINITY);
+        .hasMessage("ERR " + ERROR_NAN_OR_INFINITY);
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "-infinity"))
-        .hasMessageContaining(RedisConstants.ERROR_NAN_OR_INFINITY);
+        .hasMessage("ERR " + ERROR_NAN_OR_INFINITY);
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "infinity"))
-        .hasMessageContaining(RedisConstants.ERROR_NAN_OR_INFINITY);
+        .hasMessage("ERR " + ERROR_NAN_OR_INFINITY);
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "nan"))
-        .hasMessageContaining(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
+        .hasMessage("ERR " + ERROR_NOT_A_VALID_FLOAT);
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "infant"))
-        .hasMessageContaining(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
+        .hasMessage("ERR " + ERROR_NOT_A_VALID_FLOAT);
   }
 
   @Test

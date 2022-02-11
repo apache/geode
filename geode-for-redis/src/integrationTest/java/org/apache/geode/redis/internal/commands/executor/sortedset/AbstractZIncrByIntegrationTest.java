@@ -18,6 +18,9 @@ package org.apache.geode.redis.internal.commands.executor.sortedset;
 import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Double.POSITIVE_INFINITY;
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_OPERATION_PRODUCED_NAN;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -35,7 +38,6 @@ import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.redis.internal.RedisConstants;
 
 public abstract class AbstractZIncrByIntegrationTest implements RedisIntegrationTest {
   JedisCluster jedis;
@@ -61,7 +63,7 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
     jedis.set(STRING_KEY, "value");
     assertThatThrownBy(
         () -> jedis.sendCommand(STRING_KEY, Protocol.Command.ZINCRBY, STRING_KEY, "1", "member"))
-            .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+            .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -77,7 +79,7 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
 
     assertThatThrownBy(() -> jedis.sendCommand(STRING_KEY, Protocol.Command.ZINCRBY, STRING_KEY,
         nonFloatIncrement, STRING_MEMBER))
-            .hasMessageContaining(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
+            .hasMessage("ERR " + ERROR_NOT_A_VALID_FLOAT);
   }
 
   @Test
@@ -87,7 +89,7 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
 
     assertThatThrownBy(() -> jedis.sendCommand(STRING_KEY, Protocol.Command.ZINCRBY, STRING_KEY,
         nanIncrement, STRING_MEMBER))
-            .hasMessageContaining(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
+            .hasMessage("ERR " + ERROR_NOT_A_VALID_FLOAT);
   }
 
   @Test
@@ -98,13 +100,13 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
 
     assertThatThrownBy(() -> jedis.sendCommand(STRING_KEY, Protocol.Command.ZINCRBY, STRING_KEY,
         increment, STRING_MEMBER))
-            .hasMessageContaining(RedisConstants.ERROR_OPERATION_PRODUCED_NAN);
+            .hasMessage("ERR " + ERROR_OPERATION_PRODUCED_NAN);
   }
 
   @Test
   public void shouldError_whenSettingNewScoreToNaN() {
     assertThatThrownBy(() -> jedis.zincrby(STRING_KEY, Double.NaN, STRING_MEMBER))
-        .hasMessageContaining(RedisConstants.ERROR_NOT_A_VALID_FLOAT);
+        .hasMessage("ERR " + ERROR_NOT_A_VALID_FLOAT);
   }
 
   /************* infinity *************/
@@ -207,7 +209,7 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
     jedis.zadd(KEY, POSITIVE_INFINITY, MEMBER);
 
     assertThatThrownBy(() -> jedis.zincrby(KEY, NEGATIVE_INFINITY, MEMBER))
-        .hasMessageContaining(RedisConstants.ERROR_OPERATION_PRODUCED_NAN);
+        .hasMessage("ERR " + ERROR_OPERATION_PRODUCED_NAN);
   }
 
   @Test
@@ -215,7 +217,7 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
     jedis.zadd(KEY, NEGATIVE_INFINITY, MEMBER);
 
     assertThatThrownBy(() -> jedis.zincrby(KEY, POSITIVE_INFINITY, MEMBER))
-        .hasMessageContaining(RedisConstants.ERROR_OPERATION_PRODUCED_NAN);
+        .hasMessage("ERR " + ERROR_OPERATION_PRODUCED_NAN);
   }
 
   @Test

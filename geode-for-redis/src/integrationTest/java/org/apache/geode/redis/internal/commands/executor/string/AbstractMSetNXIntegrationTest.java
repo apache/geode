@@ -15,6 +15,8 @@
 package org.apache.geode.redis.internal.commands.executor.string;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
+import static org.apache.geode.redis.internal.RedisConstants.WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND;
+import static org.apache.geode.redis.internal.RedisConstants.WRONG_NUMBER_OF_ARGUMENTS_FOR_MSET;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,22 +53,22 @@ public abstract class AbstractMSetNXIntegrationTest implements RedisIntegrationT
   @Test
   public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
     assertThatThrownBy(() -> jedis.sendCommand("any", Protocol.Command.MSETNX))
-        .hasMessageContaining("ERR wrong number of arguments for 'msetnx' command");
+        .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "msetnx"));
   }
 
   @Test
   public void givenValueNotProvided_returnsWrongNumberOfArgumentsError() {
     assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.MSETNX, "key"))
-        .hasMessageContaining("ERR wrong number of arguments for 'msetnx' command");
+        .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "msetnx"));
   }
 
   @Test
   public void givenEvenNumberOfArgumentsProvided_returnsWrongNumberOfArgumentsError() {
-    // Redis returns this message in this scenario: "ERR wrong number of arguments for MSETNX"
+    // Redis returns this message in this scenario: "ERR wrong number of arguments for MSET"
     assertThatThrownBy(
         () -> jedis.sendCommand(HASHTAG, Protocol.Command.MSETNX, "key1" + HASHTAG, "value1",
             "key2" + HASHTAG, "value2", "key3" + HASHTAG))
-                .hasMessageContaining("ERR wrong number of arguments");
+                .hasMessage("ERR " + WRONG_NUMBER_OF_ARGUMENTS_FOR_MSET);
   }
 
   @Test
@@ -74,7 +76,7 @@ public abstract class AbstractMSetNXIntegrationTest implements RedisIntegrationT
     assertThatThrownBy(
         () -> jedis.sendCommand("key1", Protocol.Command.MSETNX, "key1", "value1", "key2",
             "value2"))
-                .hasMessageContaining("CROSSSLOT " + ERROR_WRONG_SLOT);
+                .hasMessage("CROSSSLOT " + ERROR_WRONG_SLOT);
   }
 
   @Test

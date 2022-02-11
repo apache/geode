@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.commands.executor.cluster;
 
+import static org.apache.geode.redis.internal.RedisConstants.WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND;
 import static org.apache.geode.redis.internal.services.RegionProvider.REDIS_SLOTS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -51,7 +52,7 @@ public abstract class AbstractClusterIntegrationTest implements RedisIntegration
   public void testCluster_givenWrongNumberOfArguments() {
     final Jedis connection = new Jedis(jedis.getConnectionFromSlot(0));
     assertThatThrownBy(() -> connection.sendCommand(Protocol.Command.CLUSTER))
-        .hasMessage("ERR wrong number of arguments for 'cluster' command");
+        .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "cluster"));
     assertThatThrownBy(
         () -> connection.sendCommand(Protocol.Command.CLUSTER, "1", "2"))
             .hasMessageContaining(

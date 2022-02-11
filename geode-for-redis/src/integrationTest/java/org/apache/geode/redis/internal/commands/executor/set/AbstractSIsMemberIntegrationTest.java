@@ -105,6 +105,6 @@ public abstract class AbstractSIsMemberIntegrationTest implements RedisIntegrati
     String valueString = "alicia";
     jedis.set(keyString, valueString);
     assertThatThrownBy(() -> jedis.sismember(keyString, valueString))
-        .hasMessageContaining(ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 }

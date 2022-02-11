@@ -56,7 +56,7 @@ public abstract class AbstractPexpireIntegrationTest implements RedisIntegration
   public void givenInvalidTimestamp_returnsNotIntegerError() {
     assertThatThrownBy(
         () -> jedis.sendCommand("key", Protocol.Command.PEXPIRE, "key", "notInteger"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+            .hasMessage("ERR " + ERROR_NOT_INTEGER);
   }
 
   @Test

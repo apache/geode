@@ -95,4 +95,11 @@ public class RedisConstants {
   public static final String INTERNAL_SERVER_ERROR = "Internal server error: ";
   public static final String ERROR_PUBSUB_WRONG_COMMAND =
       "Can't execute '%s': only (P)SUBSCRIBE / (P)UNSUBSCRIBE / PING / QUIT / RESET are allowed in this context";
+  public static final String HASH_VALUE_NOT_FLOAT = "hash value is not a float";
+  public static final String WRONG_NUMBER_OF_ARGUMENTS_FOR_MSET =
+      "wrong number of arguments for MSET";
+  public static final String WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND =
+      "wrong number of arguments for '%s' command";
+  public static final String ERROR_BITOP_NOT_MUST_USE_SINGLE_KEY =
+      "BITOP NOT must be called with a single source key.";
 }

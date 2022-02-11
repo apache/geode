@@ -64,23 +64,23 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
   @Test
   public void shouldError_givenInvalidMinOrMax() {
     assertThatThrownBy(() -> jedis.zrangeByScore("fakeKey", "notANumber", "1"))
-        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
+        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_FLOAT);
     assertThatThrownBy(() -> jedis.zrangeByScore("fakeKey", "1", "notANumber"))
-        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
+        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_FLOAT);
     assertThatThrownBy(() -> jedis.zrangeByScore("fakeKey", "notANumber", "notANumber"))
-        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
+        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_FLOAT);
     assertThatThrownBy(() -> jedis.zrangeByScore("fakeKey", "((", "1"))
-        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
+        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_FLOAT);
     assertThatThrownBy(() -> jedis.zrangeByScore("fakeKey", "1", "(("))
-        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
+        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_FLOAT);
     assertThatThrownBy(() -> jedis.zrangeByScore("fakeKey", "(a", "(b"))
-        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
+        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_FLOAT);
     assertThatThrownBy(() -> jedis.zrangeByScore("fakeKey", "str", "1"))
-        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
+        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_FLOAT);
     assertThatThrownBy(() -> jedis.zrangeByScore("fakeKey", "1", "str"))
-        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
+        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_FLOAT);
     assertThatThrownBy(() -> jedis.zrangeByScore("fakeKey", "1", "NaN"))
-        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
+        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_FLOAT);
   }
 
   @Test
@@ -286,13 +286,13 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
 
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYSCORE, KEY, "0", "10", "LIMIT"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage("ERR " + ERROR_SYNTAX);
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYSCORE, KEY, "0", "10", "LIMIT", "0"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage("ERR " + ERROR_SYNTAX);
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYSCORE, KEY, "0", "10",
         "LIMIT", "0", "invalid"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+            .hasMessage("ERR " + ERROR_NOT_INTEGER);
   }
 
   @Test
@@ -300,12 +300,12 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYSCORE, KEY, "0", "10",
         "LIMIT", "0", "invalid",
         "LIMIT", "0", "10"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+            .hasMessage("ERR " + ERROR_NOT_INTEGER);
 
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYSCORE, KEY, "0", "10",
         "LIMIT", "0",
         "LIMIT", "0", "10"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+            .hasMessage("ERR " + ERROR_NOT_INTEGER);
   }
 
   @Test
@@ -313,12 +313,12 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYSCORE, KEY, "0", "10",
         "LIMIT", "0", "10",
         "LIMIT", "0", "invalid"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+            .hasMessage("ERR " + ERROR_NOT_INTEGER);
 
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYSCORE, KEY, "0", "10",
         "LIMIT", "0", "10",
         "LIMIT", "0"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage("ERR " + ERROR_SYNTAX);
   }
 
   @Test
@@ -327,13 +327,13 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
         "WITHSCORES",
         "LIMIT", "0", "invalid",
         "LIMIT", "0", "10"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+            .hasMessage("ERR " + ERROR_NOT_INTEGER);
 
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYSCORE, KEY, "0", "10",
         "LIMIT", "0",
         "LIMIT", "0", "10",
         "WITHSCORES"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+            .hasMessage("ERR " + ERROR_NOT_INTEGER);
   }
 
   @Test
@@ -342,13 +342,13 @@ public abstract class AbstractZRangeByScoreIntegrationTest implements RedisInteg
         "WITHSCORES",
         "LIMIT", "0", "10",
         "LIMIT", "0", "invalid"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+            .hasMessage("ERR " + ERROR_NOT_INTEGER);
 
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZRANGEBYSCORE, KEY, "0", "10",
         "LIMIT", "0", "10",
         "LIMIT", "0",
         "WITHSCORES"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+            .hasMessage("ERR " + ERROR_NOT_INTEGER);
   }
 
   @Test

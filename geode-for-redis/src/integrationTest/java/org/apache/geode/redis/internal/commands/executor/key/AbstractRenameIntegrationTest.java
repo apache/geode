@@ -45,7 +45,6 @@ import redis.clients.jedis.JedisCluster;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.services.locking.LockingStripedCoordinator;
 import org.apache.geode.redis.internal.services.locking.StripedCoordinator;
@@ -78,7 +77,7 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
     jedis.set(key1, "value1");
     jedis.set(key2, "value1");
     assertThatThrownBy(() -> jedis.sendCommand(key1, RENAME, key1, key2))
-        .hasMessageContaining("CROSSSLOT " + ERROR_WRONG_SLOT);
+        .hasMessage("CROSSSLOT " + ERROR_WRONG_SLOT);
   }
 
   @Test
@@ -98,7 +97,7 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
   @Test
   public void shouldReturnError_givenNonexistantKey() {
     assertThatThrownBy(() -> jedis.rename("{tag1}foo", "{tag1}newfoo"))
-        .hasMessageContaining(RedisConstants.ERROR_NO_SUCH_KEY);
+        .hasMessage("ERR " + ERROR_NO_SUCH_KEY);
   }
 
   @Test
@@ -139,7 +138,7 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
     jedis.set(oldKey, "value");
     jedis.rename(oldKey, newKey);
     assertThatThrownBy(() -> jedis.rename(oldKey, newKey))
-        .hasMessageContaining(ERROR_NO_SUCH_KEY);
+        .hasMessage("ERR " + ERROR_NO_SUCH_KEY);
   }
 
   @Test
@@ -147,7 +146,7 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
     String oldKey = "{1}key";
     String newKey = "{1}newKey";
     assertThatThrownBy(() -> jedis.renamenx(oldKey, newKey))
-        .hasMessageContaining(ERROR_NO_SUCH_KEY);
+        .hasMessage("ERR " + ERROR_NO_SUCH_KEY);
   }
 
   @Test
@@ -271,7 +270,7 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
                 jedis.set("{tag1}oldKey", "foo");
               });
     } catch (RuntimeException e) {
-      assertThat(e).hasMessageContaining(ERROR_NO_SUCH_KEY);
+      assertThat(e).getRootCause().hasMessage("ERR " + ERROR_NO_SUCH_KEY);
       return;
     }
 

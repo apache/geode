@@ -65,11 +65,11 @@ public abstract class AbstractZRemRangeByLexIntegrationTest implements RedisInte
   @Parameters({"a", "--", "++", "4"})
   public void shouldError_givenInvalidMinOrMax(String invalidArgument) {
     assertThatThrownBy(() -> jedis.zremrangeByLex("fakeKey", invalidArgument, "+"))
-        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_VALID_STRING);
+        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_VALID_STRING);
     assertThatThrownBy(() -> jedis.zremrangeByLex("fakeKey", "-", invalidArgument))
-        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_VALID_STRING);
+        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_VALID_STRING);
     assertThatThrownBy(() -> jedis.zremrangeByLex("fakeKey", invalidArgument, invalidArgument))
-        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_VALID_STRING);
+        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_VALID_STRING);
   }
 
   @Test

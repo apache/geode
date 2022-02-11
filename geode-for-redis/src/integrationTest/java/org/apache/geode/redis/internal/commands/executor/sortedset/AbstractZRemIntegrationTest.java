@@ -65,7 +65,7 @@ public abstract class AbstractZRemIntegrationTest implements RedisIntegrationTes
     jedis.sadd(key, member);
 
     assertThatThrownBy(() -> jedis.zrem(key, member))
-        .hasMessageContaining(ERROR_WRONG_TYPE);
+        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test

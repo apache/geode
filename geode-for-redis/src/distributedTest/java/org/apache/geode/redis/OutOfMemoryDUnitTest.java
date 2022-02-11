@@ -28,6 +28,7 @@ import static org.apache.geode.management.internal.i18n.CliStrings.START_SERVER_
 import static org.apache.geode.management.internal.i18n.CliStrings.START_SERVER__LOCATORS;
 import static org.apache.geode.management.internal.i18n.CliStrings.START_SERVER__MAXHEAP;
 import static org.apache.geode.management.internal.i18n.CliStrings.START_SERVER__SERVER_PORT;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_OOM_COMMAND_NOT_ALLOWED;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
@@ -182,7 +183,7 @@ public class OutOfMemoryDUnitTest {
 
     await()
         .untilAsserted(() -> assertThatThrownBy(() -> jedis.set(server1Tag + "oneMoreKey", "value"))
-            .hasMessageContaining("OOM"));
+            .hasMessage("OOM " + ERROR_OOM_COMMAND_NOT_ALLOWED));
 
     memoryPressure.cancel(true);
   }
@@ -199,7 +200,7 @@ public class OutOfMemoryDUnitTest {
 
     await()
         .untilAsserted(() -> assertThatThrownBy(() -> subJedis.subscribe(mockSubscriber, "channel"))
-            .hasMessageContaining("OOM"));
+            .hasMessage("OOM " + ERROR_OOM_COMMAND_NOT_ALLOWED));
 
     subJedis.close();
 
@@ -213,7 +214,7 @@ public class OutOfMemoryDUnitTest {
         executor.submit(() -> maintainMemoryPressure(jedis, false));
 
     await().untilAsserted(() -> assertThatThrownBy(() -> jedis.publish("channel", "message"))
-        .hasMessageContaining("OOM"));
+        .hasMessage("OOM " + ERROR_OOM_COMMAND_NOT_ALLOWED));
 
     memoryPressure.cancel(true);
   }
@@ -226,7 +227,7 @@ public class OutOfMemoryDUnitTest {
 
     await()
         .untilAsserted(() -> assertThatThrownBy(() -> jedis.set(server2Tag + "oneMoreKey", "value"))
-            .hasMessageContaining("OOM"));
+            .hasMessage("OOM " + ERROR_OOM_COMMAND_NOT_ALLOWED));
 
     memoryPressure.cancel(true);
   }
@@ -262,7 +263,7 @@ public class OutOfMemoryDUnitTest {
 
     await()
         .untilAsserted(() -> assertThatThrownBy(() -> jedis.set(server1Tag + "oneMoreKey", "value"))
-            .hasMessageContaining("OOM"));
+            .hasMessage("OOM " + ERROR_OOM_COMMAND_NOT_ALLOWED));
 
     memoryPressure.cancel(true);
 
@@ -281,7 +282,7 @@ public class OutOfMemoryDUnitTest {
 
     await()
         .untilAsserted(() -> assertThatThrownBy(() -> jedis.set(server2Tag + "oneMoreKey", "value"))
-            .hasMessageContaining("OOM"));
+            .hasMessage("OOM " + ERROR_OOM_COMMAND_NOT_ALLOWED));
 
     memoryPressure.cancel(true);
 
@@ -304,7 +305,8 @@ public class OutOfMemoryDUnitTest {
 
     String channel = "channel";
     await().untilAsserted(() -> assertThatThrownBy(
-        () -> subJedis.subscribe(mockSubscriber, channel)).hasMessageContaining("OOM"));
+        () -> subJedis.subscribe(mockSubscriber, channel))
+            .hasMessage("OOM " + ERROR_OOM_COMMAND_NOT_ALLOWED));
 
     memoryPressure.cancel(true);
 
@@ -325,7 +327,7 @@ public class OutOfMemoryDUnitTest {
         executor.submit(() -> maintainMemoryPressure(jedis, false));
 
     await().untilAsserted(() -> assertThatThrownBy(() -> jedis.publish("channel", "message"))
-        .hasMessageContaining("OOM"));
+        .hasMessage("OOM " + ERROR_OOM_COMMAND_NOT_ALLOWED));
 
     memoryPressure.cancel(true);
 
@@ -348,7 +350,7 @@ public class OutOfMemoryDUnitTest {
         }
         numberOfKeys.incrementAndGet();
       }
-    }).hasMessageContaining("OOM command not allowed");
+    }).hasMessage("OOM " + ERROR_OOM_COMMAND_NOT_ALLOWED);
   }
 
   private void maintainMemoryPressure(JedisCluster jedis, boolean withExpiration) {
