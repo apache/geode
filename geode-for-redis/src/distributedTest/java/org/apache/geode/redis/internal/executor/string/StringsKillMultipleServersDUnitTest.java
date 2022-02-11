@@ -17,7 +17,6 @@ package org.apache.geode.redis.internal.executor.string;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
-import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 
 import java.util.Random;
 import java.util.concurrent.Future;
@@ -57,11 +56,16 @@ public class StringsKillMultipleServersDUnitTest {
 
     int redisServerPort1 = cluster.getRedisPort(1);
     jedisCluster =
-        new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1), REDIS_CLIENT_TIMEOUT);
+        new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1), 10_000, 20);
 
     // This sequence ensures that servers 1, 2 and 3 are hosting all the buckets and server 4
     // has no buckets.
     cluster.startRedisVM(4, locatorPort);
+
+    cluster.enableDebugLogging(1);
+    cluster.enableDebugLogging(2);
+    cluster.enableDebugLogging(3);
+    cluster.enableDebugLogging(4);
   }
 
   @After
@@ -100,7 +104,12 @@ public class StringsKillMultipleServersDUnitTest {
   private Void doSetOps(AtomicBoolean running, AtomicInteger counter) {
     while (running.get()) {
       int i = counter.getAndIncrement();
-      jedisCluster.set("key-" + i, "value-" + i);
+      try {
+        jedisCluster.set("key-" + i, "value-" + i);
+      } catch (final Throwable t) {
+        t.printStackTrace();
+        throw t;
+      }
     }
     return null;
   }
