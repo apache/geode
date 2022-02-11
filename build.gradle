@@ -22,7 +22,7 @@ plugins {
   id "idea"
   id "eclipse"
   id "com.diffplug.spotless" version "6.2.2" apply false
-  id "com.github.ben-manes.versions" version "0.39.0" apply false
+  id "com.github.ben-manes.versions" version "0.42.0" apply false
   id "nebula.lint" version "17.1.1" apply false
   id "com.palantir.docker" version "0.32.0" apply false
   id "io.spring.dependency-management" version "1.0.11.RELEASE" apply false
