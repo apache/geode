@@ -40,14 +40,15 @@ public class PassiveExpirationManager {
   public static final int DEFAULT_REDIS_EXPIRATION_INTERVAL_SECONDS = 180;
 
   private final ScheduledExecutorService expirationExecutor;
+  private final int passiveExpirationInterval;
 
   public PassiveExpirationManager(RegionProvider regionProvider) {
-    int interval = getIntegerSystemProperty(EXPIRATION_INTERVAL_SECONDS,
+    passiveExpirationInterval = getIntegerSystemProperty(EXPIRATION_INTERVAL_SECONDS,
         DEFAULT_REDIS_EXPIRATION_INTERVAL_SECONDS, 1);
 
     expirationExecutor = newSingleThreadScheduledExecutor("GemFireRedis-PassiveExpiration-");
-    expirationExecutor.scheduleWithFixedDelay(() -> doDataExpiration(regionProvider), interval,
-        interval, SECONDS);
+    expirationExecutor.scheduleWithFixedDelay(() -> doDataExpiration(regionProvider),
+        passiveExpirationInterval, passiveExpirationInterval, SECONDS);
   }
 
   public void stop() {
@@ -55,7 +56,7 @@ public class PassiveExpirationManager {
   }
 
   private void doDataExpiration(RegionProvider regionProvider) {
-    final long start = regionProvider.getRedisStats().startPassiveExpirationCheck();
+    final long start = regionProvider.getRedisStats().getCurrentTimeNanos();
     long expireCount = 0;
     try {
       final long now = System.currentTimeMillis();
@@ -76,8 +77,8 @@ public class PassiveExpirationManager {
       }
     } catch (CacheClosedException ignore) {
     } catch (RuntimeException | Error ex) {
-      logger.warn("Passive expiration failed. Will try again in 1 second.",
-          ex);
+      logger.warn("Passive expiration failed. Will try again in " + passiveExpirationInterval
+          + " second(s).", ex);
     } finally {
       regionProvider.getRedisStats().endPassiveExpirationCheck(start, expireCount);
     }
