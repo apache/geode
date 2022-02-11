@@ -1048,7 +1048,7 @@ lib/netty-codec-4.1.74.Final.jar
 lib/netty-common-4.1.74.Final.jar
 lib/netty-handler-4.1.74.Final.jar
 lib/netty-resolver-4.1.74.Final.jar
-lib/netty-tcnative-classes-2.0.46.Final.jar
+lib/netty-tcnative-classes-2.0.48.Final.jar
 lib/netty-transport-4.1.74.Final.jar
 lib/ra.jar
 lib/rmiio-2.1.2.jar
