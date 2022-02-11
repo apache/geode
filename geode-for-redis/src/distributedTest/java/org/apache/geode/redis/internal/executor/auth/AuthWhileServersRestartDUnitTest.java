@@ -51,6 +51,7 @@ public class AuthWhileServersRestartDUnitTest {
   public static ExecutorServiceRule executor = new ExecutorServiceRule();
 
   private static int redisServerPort;
+  private static int locatorPort;
   private static SerializableFunction<ServerStarterRule> operatorForVM3;
   private static final String KEY = "key";
   private static final int SO_TIMEOUT = 10_000;
@@ -59,7 +60,7 @@ public class AuthWhileServersRestartDUnitTest {
   public static void classSetup() {
     MemberVM locator = clusterStartUp.startLocatorVM(0,
         x -> x.withSecurityManager(SimpleSecurityManager.class));
-    int locatorPort = locator.getPort();
+    locatorPort = locator.getPort();
 
     SerializableFunction<ServerStarterRule> serverOperator = s -> s
         .withCredential("cluster", "cluster")
@@ -72,7 +73,8 @@ public class AuthWhileServersRestartDUnitTest {
     String finalRedisPort = Integer.toString(server3Port);
 
     operatorForVM3 = serverOperator.compose(o -> o
-        .withProperty(GEODE_FOR_REDIS_PORT, finalRedisPort));
+        .withProperty(GEODE_FOR_REDIS_PORT, finalRedisPort)
+        .withConnectionToLocator(locatorPort));
 
     clusterStartUp.startRedisVM(3, operatorForVM3);
 
