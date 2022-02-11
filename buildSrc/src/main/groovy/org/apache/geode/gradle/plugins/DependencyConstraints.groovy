@@ -240,7 +240,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('junit-vintage-engine')
     }
 
-    dependencySet(group: 'io.netty', version: '4.1.72.Final') {
+    dependencySet(group: 'io.netty', version: '4.1.74.Final') {
       entry('netty-codec-redis')
       entry('netty-handler')
     }
