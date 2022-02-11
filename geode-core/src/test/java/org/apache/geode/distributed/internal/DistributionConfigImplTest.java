@@ -602,7 +602,7 @@ public class DistributionConfigImplTest {
   void getSSLClientProtocolsReturnsValueAfterCopyConstructed() {
     final Properties props = new Properties();
     final String protocols = "SuperProtocol1";
-    props.put(SSL_PROTOCOLS, protocols);
+    props.put(SSL_CLIENT_PROTOCOLS, protocols);
     final DistributionConfig config = new DistributionConfigImpl(props);
     final DistributionConfig copy = new DistributionConfigImpl(config);
     assertThat(copy.getSSLClientProtocols()).isEqualTo(protocols);
@@ -659,7 +659,7 @@ public class DistributionConfigImplTest {
   void getSSLServerProtocolsReturnsValueAfterCopyConstructed() {
     final Properties props = new Properties();
     final String protocols = "SuperProtocol1";
-    props.put(SSL_PROTOCOLS, protocols);
+    props.put(SSL_SERVER_PROTOCOLS, protocols);
     final DistributionConfig config = new DistributionConfigImpl(props);
     final DistributionConfig copy = new DistributionConfigImpl(config);
     assertThat(copy.getSSLServerProtocols()).isEqualTo(protocols);
