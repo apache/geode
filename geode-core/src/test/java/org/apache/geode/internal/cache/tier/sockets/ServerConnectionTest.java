@@ -35,7 +35,9 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.Map;
 
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.shiro.subject.Subject;
 import org.junit.Before;
 import org.junit.Rule;
@@ -280,16 +282,7 @@ public class ServerConnectionTest {
   }
 
   @Test
-  public void cleanClientAuthShouldNullIt() {
-    ClientUserAuths clientUserAuths = mock(ClientUserAuths.class);
-    ServerConnection spy = spy(serverConnection);
-    spy.setClientUserAuths(clientUserAuths);
-    spy.cleanClientAuths();
-    assertThat(spy.getClientUserAuths()).isNull();
-  }
-
-  @Test
-  public void handleTerminationShouldNotNullClientAuths() {
+  public void handleTerminationWithoutUnrgisterClientShouldNotNullClientAuths() {
     when(acceptor.getClientHealthMonitor()).thenReturn(clientHealthMonitor);
     ClientUserAuths clientUserAuths = mock(ClientUserAuths.class);
     ServerConnection spy = spy(serverConnection);
@@ -299,5 +292,29 @@ public class ServerConnectionTest {
 
     spy.handleTermination(false);
     assertThat(spy.getClientUserAuths()).isNotNull();
+  }
+
+  @Test
+  public void handleTerminationWithUnregisterClientShouldNullClientAuths() {
+    when(acceptor.getClientHealthMonitor()).thenReturn(clientHealthMonitor);
+    when(acceptor.getCacheClientNotifier()).thenReturn(notifier);
+    when(acceptor.getConnectionListener()).thenReturn(mock(ConnectionListener.class));
+    ClientUserAuths clientUserAuths = mock(ClientUserAuths.class);
+    ServerConnection spy = spy(serverConnection);
+    Map<ServerSideHandshake, MutableInt> cleanupTable = mock(Map.class);
+    when(cleanupTable.get(any())).thenReturn(mock(MutableInt.class));
+    doReturn(cleanupTable).when(clientHealthMonitor).getCleanupTable();
+    doReturn(new HashMap<>()).when(clientHealthMonitor).getCleanupProxyIdTable();
+    spy.setClientUserAuths(clientUserAuths);
+
+    ClientProxyMembershipID proxyId = mock(ClientProxyMembershipID.class);
+    when(proxyId.isDurable()).thenReturn(true);
+    when(proxyId.getDistributedMember()).thenReturn(mock(InternalDistributedMember.class));
+    spy.setProxyId(proxyId);
+
+    // this will make handleTermination to unregister the client
+    spy.processHandShake();
+    spy.handleTermination(false);
+    assertThat(spy.getClientUserAuths()).isNull();
   }
 }

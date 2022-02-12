@@ -262,6 +262,7 @@ public class ServerConnection implements Runnable {
 
 
   private ClientUserAuths clientUserAuths;
+  private final Object clientUserAuthsLock = new Object();
 
   // this is constant(server and client) for first user request, after that it is random
   // this also need to send in handshake
@@ -535,18 +536,13 @@ public class ServerConnection implements Runnable {
   }
 
   private long setUserAuthorizeAndPostAuthorizeRequest(AuthorizeRequest authzRequest,
-      AuthorizeRequestPP postAuthzRequest) throws IOException {
+      AuthorizeRequestPP postAuthzRequest) {
     UserAuthAttributes userAuthAttr = new UserAuthAttributes(authzRequest, postAuthzRequest);
-    if (clientUserAuths == null) {
-      initializeClientUserAuths();
-    }
-    try {
-      return clientUserAuths.putUserAuth(userAuthAttr);
-    } catch (NullPointerException exception) {
-      if (isTerminated()) {
-        throw new IOException("Server connection is terminated.");
+    synchronized (clientUserAuthsLock) {
+      if (clientUserAuths == null) {
+        initializeClientUserAuths();
       }
-      throw exception;
+      return clientUserAuths.putUserAuth(userAuthAttr);
     }
   }
 
@@ -960,12 +956,13 @@ public class ServerConnection implements Runnable {
     }
   }
 
-  // this needs to be synchronized to avoid NPE betweeen null check and cleanup
-  @VisibleForTesting
-  synchronized void cleanClientAuths() {
-    if (clientUserAuths != null) {
-      clientUserAuths.cleanup(false);
-      clientUserAuths = null;
+  // this needs to be synchronized to avoid NPE between null check and cleanup
+  private void cleanClientAuths() {
+    synchronized (clientUserAuthsLock) {
+      if (clientUserAuths != null) {
+        clientUserAuths.cleanup(false);
+        clientUserAuths = null;
+      }
     }
   }
 
@@ -1125,13 +1122,13 @@ public class ServerConnection implements Runnable {
         throw new AuthenticationFailedException("Authentication failed");
       }
 
-      try {
-        // first try integrated security
-        clientUserAuths.removeSubject(aIds.getUniqueId());
-        // then, try the old way
-        clientUserAuths.removeUserId(aIds.getUniqueId(), keepAlive);
-      } catch (NullPointerException exception) {
-        logger.debug("Exception", exception);
+      synchronized (clientUserAuthsLock) {
+        if (clientUserAuths != null) {
+          // first try integrated security
+          clientUserAuths.removeSubject(aIds.getUniqueId());
+          // then, try the old way
+          clientUserAuths.removeUserId(aIds.getUniqueId(), keepAlive);
+        }
       }
     } catch (Exception exception) {
       throw new AuthenticationFailedException("Authentication failed", exception);
@@ -1844,13 +1841,10 @@ public class ServerConnection implements Runnable {
     long uniqueId = getUniqueId();
 
     UserAuthAttributes uaa = null;
-    try {
-      uaa = clientUserAuths.getUserAuthAttributes(uniqueId);
-    } catch (NullPointerException npe) {
-      if (isTerminated()) {
-        throw new IOException("Server connection is terminated.");
+    synchronized (clientUserAuthsLock) {
+      if (clientUserAuths != null) {
+        uaa = clientUserAuths.getUserAuthAttributes(uniqueId);
       }
-      logger.debug("Unexpected exception {}", npe.toString());
     }
     if (uaa == null) {
       throw new AuthenticationRequiredException(USER_NOT_FOUND);
@@ -1888,14 +1882,12 @@ public class ServerConnection implements Runnable {
     long uniqueId = getUniqueId();
 
     UserAuthAttributes uaa = null;
-    try {
-      uaa = clientUserAuths.getUserAuthAttributes(uniqueId);
-    } catch (NullPointerException npe) {
-      if (isTerminated()) {
-        throw new IOException("Server connection is terminated.");
+    synchronized (clientUserAuthsLock) {
+      if (clientUserAuths != null) {
+        uaa = clientUserAuths.getUserAuthAttributes(uniqueId);
       }
-      logger.debug("Unexpected exception", npe);
     }
+
     if (uaa == null) {
       throw new AuthenticationRequiredException(USER_NOT_FOUND);
     }

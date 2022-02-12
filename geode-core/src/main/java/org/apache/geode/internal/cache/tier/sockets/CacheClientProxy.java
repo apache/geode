@@ -796,24 +796,26 @@ public class CacheClientProxy implements ClientSession {
   }
 
   // this needs to synchronized to avoid NPE between null check and operations
-  private synchronized void cleanClientAuths() {
-    // single user case -- old security
-    if (postAuthzCallback != null) {
-      postAuthzCallback.close();
-      postAuthzCallback = null;
-    }
-    // single user case -- integrated security
-    // connection is closed, so we can log out this subject
-    else if (subject != null) {
-      secureLogger.debug("CacheClientProxy.close, logging out {}. ", subject.getPrincipal());
-      subject.logout();
-      subject = null;
-    }
-    // for multiUser case, in non-durable case, we are closing the connection
-    else if (clientUserAuths != null) {
-      secureLogger.debug("CacheClientProxy.close, cleanup all client subjects. ");
-      clientUserAuths.cleanup(true);
-      clientUserAuths = null;
+  private void cleanClientAuths() {
+    synchronized (clientUserAuthsLock) {
+      // single user case -- old security
+      if (postAuthzCallback != null) {
+        postAuthzCallback.close();
+        postAuthzCallback = null;
+      }
+      // single user case -- integrated security
+      // connection is closed, so we can log out this subject
+      else if (subject != null) {
+        secureLogger.debug("CacheClientProxy.close, logging out {}. ", subject.getPrincipal());
+        subject.logout();
+        subject = null;
+      }
+      // for multiUser case, in non-durable case, we are closing the connection
+      else if (clientUserAuths != null) {
+        secureLogger.debug("CacheClientProxy.close, cleanup all client subjects. ");
+        clientUserAuths.cleanup(true);
+        clientUserAuths = null;
+      }
     }
   }
 
