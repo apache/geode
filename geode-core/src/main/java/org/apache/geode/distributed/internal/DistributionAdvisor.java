@@ -1334,11 +1334,10 @@ public class DistributionAdvisor {
    */
   protected synchronized ProfileId getProfileIdForMember(InternalDistributedMember member) {
     // must synchronize when modifying profile array
-
     Profile[] locProfiles = profiles; // grab current profiles
-    for (int i = 0; i < locProfiles.length; i++) {
-      if (locProfiles[i].getDistributedMember().getId() == member.getId()) {
-        return locProfiles[i].getId();
+    for (Profile locProfile : locProfiles) {
+      if (Objects.equals(locProfile.getDistributedMember().getId(), member.getId())) {
+        return locProfile.getId();
       }
     }
     return null;
