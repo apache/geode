@@ -68,7 +68,7 @@ import org.apache.geode.test.version.VersionManager;
 
 @RunWith(Parameterized.class)
 public class SocketCreatorUpgradeTest {
-  private static final TestVersion MINIMUM_VERSION = TestVersion.valueOf("1.12.0");
+  private static final TestVersion MINIMUM_VERSION = TestVersion.valueOf("1.12.1");
 
   private static final String ALGORITHM = "SHA256withRSA";
   private static final int EXPIRATION = 1;
@@ -113,7 +113,7 @@ public class SocketCreatorUpgradeTest {
   @Parameters(name = "{0}")
   public static Collection<String> data() {
     final List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
-    result.removeIf(v -> TestVersion.valueOf(v).greaterThanOrEqualTo(MINIMUM_VERSION));
+    result.removeIf(v -> TestVersion.valueOf(v).lessThan(MINIMUM_VERSION));
     return result;
   }
 
