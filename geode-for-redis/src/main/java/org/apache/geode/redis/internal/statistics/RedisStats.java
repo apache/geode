@@ -144,8 +144,16 @@ public class RedisStats {
     return keyspaceMisses.get();
   }
 
-  public void endPassiveExpirationCheck(long start, long expireCount) {
-    geodeRedisStats.endPassiveExpirationCheck(start, expireCount);
+  public long startActiveExpirationCheck() {
+    return getCurrentTimeNanos();
+  }
+
+  public void endActiveExpirationCheck(long start, long expireCount) {
+    geodeRedisStats.endActiveExpirationCheck(start, expireCount);
+  }
+
+  public long startExpiration() {
+    return getCurrentTimeNanos();
   }
 
   public void endExpiration(long start) {

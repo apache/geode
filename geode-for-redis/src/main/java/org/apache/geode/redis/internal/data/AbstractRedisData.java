@@ -106,7 +106,7 @@ public abstract class AbstractRedisData implements RedisData {
 
   @Override
   public void doExpiration(RegionProvider regionProvider, RedisKey key) {
-    long start = regionProvider.getRedisStats().getCurrentTimeNanos();
+    long start = regionProvider.getRedisStats().startExpiration();
     regionProvider.getLocalDataRegion().remove(key);
     regionProvider.getRedisStats().endExpiration(start);
   }

@@ -34,7 +34,7 @@ import org.apache.geode.redis.internal.netty.NettyRedisServer;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.pubsub.PubSubImpl;
 import org.apache.geode.redis.internal.pubsub.Subscriptions;
-import org.apache.geode.redis.internal.services.PassiveExpirationManager;
+import org.apache.geode.redis.internal.services.ActiveExpirationManager;
 import org.apache.geode.redis.internal.services.RegionProvider;
 import org.apache.geode.redis.internal.services.cluster.RedisMemberInfo;
 import org.apache.geode.redis.internal.services.cluster.RedisMemberInfoRetrievalFunction;
@@ -59,7 +59,7 @@ public class GeodeRedisServer {
   public static final String ENABLE_UNSUPPORTED_COMMANDS_PARAM = "enable-unsupported-commands";
   private static boolean unsupportedCommandsEnabled;
   private static final Logger logger = LogService.getLogger();
-  private final PassiveExpirationManager passiveExpirationManager;
+  private final ActiveExpirationManager activeExpirationManager;
   private final NettyRedisServer nettyRedisServer;
   private final RegionProvider regionProvider;
   private final PubSub pubSub;
@@ -86,7 +86,7 @@ public class GeodeRedisServer {
     regionProvider = new RegionProvider(cache, stripedCoordinator, redisStats);
     pubSub = new PubSubImpl(new Subscriptions(redisStats), regionProvider, redisStats);
 
-    passiveExpirationManager = new PassiveExpirationManager(regionProvider);
+    activeExpirationManager = new ActiveExpirationManager(regionProvider);
 
     DistributedMember member = cache.getDistributedSystem().getDistributedMember();
     RedisSecurityService securityService = new RedisSecurityService(cache.getSecurityService());
@@ -159,7 +159,7 @@ public class GeodeRedisServer {
     if (!shutdown) {
       logger.info("GeodeRedisServer shutting down");
       pubSub.close();
-      passiveExpirationManager.stop();
+      activeExpirationManager.stop();
       nettyRedisServer.stop();
       redisStats.close();
       shutdown = true;
