@@ -17,9 +17,9 @@ package org.apache.geode.internal.tcp;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
 import static org.apache.geode.internal.tcp.Connection.MSG_HEADER_BYTES;
+import static org.apache.geode.internal.tcp.Connection.readHandshakeForReceiverFunction;
 import static org.apache.geode.internal.tcp.Connection.readMessageHeaderFunction;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -293,24 +293,8 @@ public class BufferDebugging {
     }
   }
 
-  private static final String sx =
-      "070000894cffff0007040a5405130000a0285700316c72742d7365727665722d302e6c72742d7365727665722e636c75737465722e7376632e636c75737465722e6c6f63616c090000bb15000000010a0057000c6c72742d7365727665722d30570001325700000000012cff009631d6d79b535266a64c1a3bac0904df0f00000100000000000005ceff009600000002\n"
-          + "070000314cffff01390500146c9a29010c2902085300010010ff0007fc310007fc31cea4dbb6ed2f6e7c9507c0f941b38235134919fea7e9\n"
-          + "0700003a4cffff0200960100146e0e0100010010ff000b3ec1000b3ec18da9dbb6ed2f040a540a130000a028050a5700013457000c6c72742d7365727665722d32\n"
-          + "0700002c4cffff02009601001491170300010010ff00080a4400080a44b9abdcb6ed2f6e7c9507c0f941b38235134919fea7e9\n"
-          + "0700003e4cffff013905001492be29010129018800010010ff000b5612000b5612a6b0dcb6ed2f040a540a130000a028050a5700013457000c6c72742d7365727665722d32\n"
-          + "0700003a4cffff02009601001492c10100010010ff000b5614000b5614a9b0dcb6ed2f040a540a130000a028050a5700013457000c6c72742d7365727665722d32\n"
-          + "0700003a4cffff020096010014962b0100010010ff000b5555000b5555b3bcdcb6ed2f040a540a130000a028050a5700013457000c6c72742d7365727665722d32\n"
-          + "070000314cffff01390500149d792901012902085300010010ff0008142500081425b8d3dcb6ed2f6e7c9507c0f941b38235134919fea7e9\n"
-          + "0700003e4cffff0139050014a25a29010c29018800010010ff000b5f1a000b5f1af9e1dcb6ed2f040a540a130000a028050a5700013457000c6c72742d7365727665722d32\n"
-          + "070000314cffff0139050014a3522901012902085300010010ff0008162a0008162aafe5dcb6ed2f6e7c9507c0f941b38235134919fea7e9\n"
-          + "070000314cffff0139050014a57929010c2902085300010010ff0008128c0008128ce4ecdcb6ed2f6e7c9507c0f941b38235134919fea7e9\n";
-
-  private static final String s1 =
-      "070000894cffff0007040a5405130000a0285700316c72742d7365727665722d302e6c72742d7365727665722e636c75737465722e7376632e636c75737465722e6c6f63616c090000bb15000000010a0057000c6c72742d7365727665722d30570001325700000000012cff009631d6d79b535266a64c1a3bac0904df0f00000100000000000005ceff009600000002";
-
   private static final String s =
-      "070000894cffff0007040a5405130000a0285700316c72742d7365727665722d302e6c72742d7365727665722e636c75737465722e7376632e636c75737465722e6c6f63616c090000bb15000000010a0057000c6c72742d7365727665722d30570001325700000000012cff009631d6d79b535266a64c1a3bac0904df0f00000100000000000005ceff009600000002";
+      "070000034cffff014800";
 
   public static void main(String[] args) throws IOException, ClassNotFoundException {
     final Object deserializedGemFireObject = deserialize(s);
@@ -321,13 +305,32 @@ public class BufferDebugging {
       throws IOException, ClassNotFoundException {
     final byte[] bytes = hexStringToByteArray(gemFireP2PHexByteString);
 
-    final ByteBuffer wrap = ByteBuffer.wrap(bytes);
+    ByteBuffer unprocessed = ByteBuffer.wrap(bytes);
     final Connection.MessageHeaderParsing messageHeaderParsing =
-        readMessageHeaderFunction(wrap, false);
+        readMessageHeaderFunction(unprocessed, false);
 
-    final DataInputStream dataInputStream = new DataInputStream(
-        new ByteArrayInputStream(bytes, MSG_HEADER_BYTES, bytes.length - MSG_HEADER_BYTES));
-    return InternalDataSerializer.readDSFID(dataInputStream);
+    // make a new buffer to speculatively process the handshake
+    final ByteBuffer handshakeBuffer = unprocessed.duplicate();
+    handshakeBuffer.position(MSG_HEADER_BYTES);
+    Connection.HandshakeForReceiverParsing handshakeForReceiverParsing;
+    Object distributionMessage = null;
+
+    try (ByteBufferInputStream bbis = new ByteBufferInputStream(handshakeBuffer);
+        DataInputStream dis = new DataInputStream(bbis)) {
+      handshakeForReceiverParsing =
+          readHandshakeForReceiverFunction(dis);
+    } catch (final Throwable _ignored) {
+      // either handshake is corrupt or this is not a handshake (handshake previously seen)
+      handshakeForReceiverParsing = null;
+
+      final ByteBuffer postHeader = unprocessed.duplicate();
+      postHeader.position(MSG_HEADER_BYTES);
+      try (ByteBufferInputStream bbis = new ByteBufferInputStream(postHeader);
+          DataInputStream dis = new DataInputStream(bbis)) {
+        distributionMessage = InternalDataSerializer.readDSFID(dis);
+      }
+    }
+    return distributionMessage;
   }
 
   /* s must be an even-length string. */

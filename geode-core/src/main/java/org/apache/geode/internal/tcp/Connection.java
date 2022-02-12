@@ -2914,20 +2914,43 @@ public class Connection implements Runnable {
     inputBuffer.limit(inputBuffer.capacity());
   }
 
+  @VisibleForTesting
+  public static class HandshakeForReceiverParsing {
+    public final InternalDistributedMember remoteMember;
+    public final boolean sharedResource;
+    public final boolean preserveOrder;
+    public final long uniqueId;
+    public final KnownVersion remoteVersion;
+    public final int dominoNumber;
+
+    public HandshakeForReceiverParsing(
+        final InternalDistributedMember remoteMember, final boolean sharedResource,
+        final boolean preserveOrder, final long uniqueId,
+        final KnownVersion remoteVersion, final int dominoNumber) {
+      this.remoteMember = remoteMember;
+      this.sharedResource = sharedResource;
+      this.preserveOrder = preserveOrder;
+      this.uniqueId = uniqueId;
+      this.remoteVersion = remoteVersion;
+      this.dominoNumber = dominoNumber;
+    }
+  }
+
   private boolean readHandshakeForReceiver(final DataInput dis) {
     try {
-      checkHandshakeInitialByte(dis);
-      checkHandshakeVersion(dis);
-      remoteMember = DSFIDFactory.readInternalDistributedMember(dis);
-      sharedResource = dis.readBoolean();
-      preserveOrder = dis.readBoolean();
-      uniqueId = dis.readLong();
-      // read the product version ordinal for on-the-fly serialization
-      // transformations (for rolling upgrades)
-      remoteVersion = Versioning.getKnownVersionOrDefault(
-          Versioning.getVersion(VersioningIO.readOrdinal(dis)),
-          null);
-      final int dominoNumber = readDominoNumber(dis, sharedResource);
+      // parse handshake
+      final HandshakeForReceiverParsing parsing =
+          readHandshakeForReceiverFunction(dis);
+
+      // update fields
+      remoteMember = parsing.remoteMember;
+      sharedResource = parsing.sharedResource;
+      preserveOrder = parsing.preserveOrder;
+      uniqueId = parsing.uniqueId;
+      remoteVersion = parsing.remoteVersion;
+      final int dominoNumber = parsing.dominoNumber;
+
+      // other side effects...
       dominoCount.set(dominoNumber);
       if (!sharedResource) {
         if (tipDomino()) {
@@ -2993,6 +3016,26 @@ public class Connection implements Runnable {
       return true;
     }
     return false;
+  }
+
+  @VisibleForTesting
+  public static HandshakeForReceiverParsing readHandshakeForReceiverFunction(final DataInput dis)
+      throws IOException, ClassNotFoundException {
+    checkHandshakeInitialByte(dis);
+    checkHandshakeVersion(dis);
+    final InternalDistributedMember remoteMember = DSFIDFactory.readInternalDistributedMember(dis);
+    final boolean sharedResource = dis.readBoolean();
+    final boolean preserveOrder = dis.readBoolean();
+    final long uniqueId = dis.readLong();
+    // read the product version ordinal for on-the-fly serialization
+    // transformations (for rolling upgrades)
+    final KnownVersion remoteVersion = Versioning.getKnownVersionOrDefault(
+        Versioning.getVersion(VersioningIO.readOrdinal(dis)),
+        null);
+    final int dominoNumber = readDominoNumber(dis, sharedResource);
+    return new HandshakeForReceiverParsing(remoteMember, sharedResource,
+        preserveOrder, uniqueId,
+        remoteVersion, dominoNumber);
   }
 
   static int readDominoNumber(final DataInput dis, final boolean sharedResource)
