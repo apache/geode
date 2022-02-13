@@ -101,8 +101,8 @@ public final class PartitionRegionHelper {
         ret = Collections.emptyMap();
       }
     } else if (r instanceof LocalDataSet) {
-      LocalDataSet lds = (LocalDataSet) r;
-      InternalRegionFunctionContext fc = lds.getFunctionContext();
+      LocalDataSet<?, ?> lds = (LocalDataSet<?, ?>) r;
+      InternalRegionFunctionContext<?> fc = lds.getFunctionContext();
       if (fc != null) {
         ret = ColocationHelper.getAllColocatedLocalDataSets(lds.getProxy(), fc);
         if (ret.isEmpty()) {
@@ -344,10 +344,11 @@ public final class PartitionRegionHelper {
    * @return an unmodifiable map of {@linkplain Region#getFullPath() region name} to {@link Region}
    * @since GemFire 6.0
    */
-  public static Map<String, Region<?, ?>> getLocalColocatedRegions(final RegionFunctionContext c) {
+  public static Map<String, Region<?, ?>> getLocalColocatedRegions(
+      final RegionFunctionContext<?> c) {
     final Region<?, ?> r = c.getDataSet();
     isPartitionedCheck(r);
-    return uncheckedCast(((InternalRegionFunctionContext) c).getColocatedLocalDataSets());
+    return ((InternalRegionFunctionContext<?>) c).getColocatedLocalDataSets();
   }
 
   /**
@@ -368,10 +369,10 @@ public final class PartitionRegionHelper {
    * @return a Region for efficient reads
    * @since GemFire 6.0
    */
-  public static <K, V> Region<K, V> getLocalDataForContext(final RegionFunctionContext c) {
-    final Region<?, ?> r = c.getDataSet();
+  public static <K, V> Region<K, V> getLocalDataForContext(final RegionFunctionContext<?> c) {
+    final Region<K, V> r = c.getDataSet();
     isPartitionedCheck(r);
-    return uncheckedCast(((InternalRegionFunctionContext) c).getLocalDataSet(r));
+    return ((InternalRegionFunctionContext<?>) c).getLocalDataSet(r);
   }
 
   /**

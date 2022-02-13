@@ -21,7 +21,6 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
-import org.apache.geode.internal.cache.LocalDataSet;
 
 /**
  * Internal interface used to provide for some essential functionality for
@@ -53,7 +52,7 @@ public interface InternalRegionFunctionContext<T> extends RegionFunctionContext<
    *
    * @return an unmodifiable map of {@linkplain Region#getFullPath() region name} to {@link Region}
    */
-  Map<String, LocalDataSet> getColocatedLocalDataSets();
+  Map<String, Region<?, ?>> getColocatedLocalDataSets();
 
   /**
    * Get the int array of bucket IDs for this node as specified by the {@link #getFilter()} method

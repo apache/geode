@@ -704,8 +704,8 @@ public class DefaultQuery implements Query {
     try {
       indexObserver = startTrace();
       if (qe != null) {
-        LocalDataSet localDataSet =
-            (LocalDataSet) PartitionRegionHelper.getLocalDataForContext(context);
+        LocalDataSet<?, ?> localDataSet =
+            (LocalDataSet<?, ?>) PartitionRegionHelper.getLocalDataForContext(context);
         Set<Integer> buckets = localDataSet.getBucketSet();
         final ExecutionContext executionContext = new ExecutionContext(null, cache);
         result = qe.executeQuery(this, executionContext, params, buckets);

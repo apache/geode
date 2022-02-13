@@ -324,36 +324,34 @@ public class ColocationHelper {
     return colocatedLocalRegions;
   }
 
-  public static Map<String, LocalDataSet> constructAndGetAllColocatedLocalDataSet(
+  public static Map<String, LocalDataSet<?, ?>> constructAndGetAllColocatedLocalDataSet(
       PartitionedRegion region, int[] bucketArray) {
-    Map<String, LocalDataSet> colocatedLocalDataSets = new HashMap<>();
+    Map<String, LocalDataSet<?, ?>> colocatedLocalDataSets = new HashMap<>();
     if (region.getColocatedWith() == null && (!region.isColocatedBy())) {
-      colocatedLocalDataSets.put(region.getFullPath(),
-          new LocalDataSet(region, bucketArray));
+      colocatedLocalDataSets.put(region.getFullPath(), new LocalDataSet<>(region, bucketArray));
       return colocatedLocalDataSets;
     }
     Map<String, PartitionedRegion> colocatedRegions =
         ColocationHelper.getAllColocationRegions(region);
     for (PartitionedRegion colocatedRegion : colocatedRegions.values()) {
       colocatedLocalDataSets.put(colocatedRegion.getFullPath(),
-          new LocalDataSet(colocatedRegion, bucketArray));
+          new LocalDataSet<>(colocatedRegion, bucketArray));
     }
-    colocatedLocalDataSets.put(region.getFullPath(),
-        new LocalDataSet(region, bucketArray));
+    colocatedLocalDataSets.put(region.getFullPath(), new LocalDataSet<>(region, bucketArray));
     return colocatedLocalDataSets;
   }
 
-  public static Map<String, LocalDataSet> getColocatedLocalDataSetsForBuckets(
+  public static Map<String, LocalDataSet<?, ?>> getColocatedLocalDataSetsForBuckets(
       PartitionedRegion region, Set<Integer> bucketSet) {
     if (region.getColocatedWith() == null && (!region.isColocatedBy())) {
       return Collections.emptyMap();
     }
-    Map<String, LocalDataSet> ret = new HashMap<>();
+    Map<String, LocalDataSet<?, ?>> ret = new HashMap<>();
     Map<String, PartitionedRegion> colocatedRegions =
         ColocationHelper.getAllColocationRegions(region);
     for (PartitionedRegion colocatedRegion : colocatedRegions.values()) {
       ret.put(colocatedRegion.getFullPath(),
-          new LocalDataSet(colocatedRegion, bucketSet));
+          new LocalDataSet<>(colocatedRegion, bucketSet));
     }
     return ret;
   }
