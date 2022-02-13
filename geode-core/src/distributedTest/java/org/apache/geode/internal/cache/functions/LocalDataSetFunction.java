@@ -20,14 +20,14 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.LocalDataSet;
 
-public class LocalDataSetFunction extends FunctionAdapter {
+public class LocalDataSetFunction implements Function<Void> {
 
   private final boolean optimizeForWrite;
 
@@ -36,27 +36,30 @@ public class LocalDataSetFunction extends FunctionAdapter {
   }
 
   @Override
-  public void execute(FunctionContext context) {
-    RegionFunctionContext rContext = (RegionFunctionContext) context;
-    Region cust = rContext.getDataSet();
-    LocalDataSet localCust = (LocalDataSet) PartitionRegionHelper.getLocalDataForContext(rContext);
+  public void execute(FunctionContext<Void> context) {
+    RegionFunctionContext<Void> rContext = (RegionFunctionContext<Void>) context;
+    Region<?, ?> cust = rContext.getDataSet();
+    LocalDataSet<?, ?> localCust =
+        (LocalDataSet<?, ?>) PartitionRegionHelper.getLocalDataForContext(rContext);
     Map<String, Region<?, ?>> colocatedRegions = PartitionRegionHelper.getColocatedRegions(cust);
     Map<String, Region<?, ?>> localColocatedRegions =
         PartitionRegionHelper.getLocalColocatedRegions(rContext);
 
     Assert.assertTrue(colocatedRegions.size() == 2);
-    Set custKeySet = cust.keySet();
-    Set localCustKeySet = localCust.keySet();
+    Set<?> custKeySet = cust.keySet();
+    Set<?> localCustKeySet = localCust.keySet();
 
-    Region ord = colocatedRegions.get(SEPARATOR + "OrderPR");
-    LocalDataSet localOrd = (LocalDataSet) localColocatedRegions.get(SEPARATOR + "OrderPR");
-    Set ordKeySet = ord.keySet();
-    Set localOrdKeySet = localOrd.keySet();
+    Region<?, ?> ord = colocatedRegions.get(SEPARATOR + "OrderPR");
+    LocalDataSet<?, ?> localOrd =
+        (LocalDataSet<?, ?>) localColocatedRegions.get(SEPARATOR + "OrderPR");
+    Set<?> ordKeySet = ord.keySet();
+    Set<?> localOrdKeySet = localOrd.keySet();
 
-    Region ship = colocatedRegions.get(SEPARATOR + "ShipmentPR");
-    LocalDataSet localShip = (LocalDataSet) localColocatedRegions.get(SEPARATOR + "ShipmentPR");
-    Set shipKeySet = ship.keySet();
-    Set localShipKeySet = localShip.keySet();
+    Region<?, ?> ship = colocatedRegions.get(SEPARATOR + "ShipmentPR");
+    LocalDataSet<?, ?> localShip =
+        (LocalDataSet<?, ?>) localColocatedRegions.get(SEPARATOR + "ShipmentPR");
+    Set<?> shipKeySet = ship.keySet();
+    Set<?> localShipKeySet = localShip.keySet();
 
     Assert.assertTrue(localCust.getBucketSet().size() == localOrd.getBucketSet().size());
     Assert.assertTrue(localCust.getBucketSet().size() == localShip.getBucketSet().size());

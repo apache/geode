@@ -46,7 +46,7 @@ public class RegionFunctionContextImpl<T> extends FunctionContextImpl<T>
 
   private final Set<?> filter;
 
-  private final Map<String, LocalDataSet> colocatedLocalDataMap;
+  private final Map<String, LocalDataSet<?, ?>> colocatedLocalDataMap;
 
   private final int[] localBucketArray;
 
@@ -56,7 +56,7 @@ public class RegionFunctionContextImpl<T> extends FunctionContextImpl<T>
 
   public RegionFunctionContextImpl(final Cache cache, final String functionId,
       final Region<?, ?> dataSet, final T args, final Set<?> filter,
-      final Map<String, LocalDataSet> colocatedLocalDataMap, int[] localBucketArray,
+      final Map<String, LocalDataSet<?, ?>> colocatedLocalDataMap, int[] localBucketArray,
       ResultSender<?> resultSender, boolean isPossibleDuplicate) {
     this(cache, functionId, dataSet, args, filter, colocatedLocalDataMap, localBucketArray,
         resultSender, isPossibleDuplicate, null);
@@ -64,7 +64,7 @@ public class RegionFunctionContextImpl<T> extends FunctionContextImpl<T>
 
   public RegionFunctionContextImpl(final Cache cache, final String functionId,
       final Region<?, ?> dataSet, final T args, final Set<?> filter,
-      final Map<String, LocalDataSet> colocatedLocalDataMap, int[] localBucketArray,
+      final Map<String, LocalDataSet<?, ?>> colocatedLocalDataMap, int[] localBucketArray,
       ResultSender<?> resultSender, boolean isPossibleDuplicate, Object principal) {
     super(cache, functionId, args, resultSender);
     this.dataSet = dataSet;
@@ -83,7 +83,7 @@ public class RegionFunctionContextImpl<T> extends FunctionContextImpl<T>
 
   private void setFunctionContexts() {
     if (colocatedLocalDataMap != null) {
-      for (LocalDataSet ls : colocatedLocalDataMap.values()) {
+      for (LocalDataSet<?, ?> ls : colocatedLocalDataMap.values()) {
         ls.setFunctionContext(this);
       }
     }
@@ -118,14 +118,10 @@ public class RegionFunctionContextImpl<T> extends FunctionContextImpl<T>
   @Override
   public String toString() {
     return "[RegionFunctionContextImpl:"
-        + "dataSet="
-        + dataSet
-        + ";filter="
-        + filter
-        + ";args="
-        + getArguments()
-        + ";principal="
-        + getPrincipal()
+        + "dataSet=" + dataSet
+        + ";filter=" + filter
+        + ";args=" + getArguments()
+        + ";principal=" + getPrincipal()
         + ']';
   }
 
@@ -140,9 +136,9 @@ public class RegionFunctionContextImpl<T> extends FunctionContextImpl<T>
   }
 
   @Override
-  public Map<String, LocalDataSet> getColocatedLocalDataSets() {
+  public Map<String, Region<?, ?>> getColocatedLocalDataSets() {
     if (colocatedLocalDataMap != null) {
-      HashMap<String, LocalDataSet> ret = new HashMap<>(colocatedLocalDataMap);
+      final HashMap<String, LocalDataSet<?, ?>> ret = new HashMap<>(colocatedLocalDataMap);
       ret.remove(dataSet.getFullPath());
       return Collections.unmodifiableMap(ret);
     } else {

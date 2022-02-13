@@ -28,7 +28,7 @@ public class FlushAllExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    LocalDataSet local = (LocalDataSet) PartitionRegionHelper
+    LocalDataSet<?, ?> local = (LocalDataSet<?, ?>) PartitionRegionHelper
         .getLocalPrimaryData(context.getRegionProvider().getLocalDataRegion());
 
     for (Object skey : local.keySet()) {
