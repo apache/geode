@@ -2922,25 +2922,39 @@ public class Connection implements Runnable {
     public final long uniqueId;
     public final KnownVersion remoteVersion;
     public final int dominoNumber;
+    // one of ClassNotFoundException | IOException | IllegalStateException
+    public final Exception thrown;
 
     public HandshakeForReceiverParsing(
         final InternalDistributedMember remoteMember, final boolean sharedResource,
         final boolean preserveOrder, final long uniqueId,
-        final KnownVersion remoteVersion, final int dominoNumber) {
+        final KnownVersion remoteVersion, final int dominoNumber, final Exception thrown) {
       this.remoteMember = remoteMember;
       this.sharedResource = sharedResource;
       this.preserveOrder = preserveOrder;
       this.uniqueId = uniqueId;
       this.remoteVersion = remoteVersion;
       this.dominoNumber = dominoNumber;
+      this.thrown = thrown;
+    }
+
+    // If an exception is captured then rethrow it now
+    public void rethrow() throws Exception {
+      if (thrown != null) {
+        throw thrown;
+      }
     }
   }
+
 
   private boolean readHandshakeForReceiver(final DataInput dis) {
     try {
       // parse handshake
       final HandshakeForReceiverParsing parsing =
           readHandshakeForReceiverFunction(dis);
+
+      // process exceptions
+      parsing.rethrow();
 
       // update fields
       remoteMember = parsing.remoteMember;
@@ -3019,23 +3033,40 @@ public class Connection implements Runnable {
   }
 
   @VisibleForTesting
-  public static HandshakeForReceiverParsing readHandshakeForReceiverFunction(final DataInput dis)
-      throws IOException, ClassNotFoundException {
-    checkHandshakeInitialByte(dis);
-    checkHandshakeVersion(dis);
-    final InternalDistributedMember remoteMember = DSFIDFactory.readInternalDistributedMember(dis);
-    final boolean sharedResource = dis.readBoolean();
-    final boolean preserveOrder = dis.readBoolean();
-    final long uniqueId = dis.readLong();
-    // read the product version ordinal for on-the-fly serialization
-    // transformations (for rolling upgrades)
-    final KnownVersion remoteVersion = Versioning.getKnownVersionOrDefault(
-        Versioning.getVersion(VersioningIO.readOrdinal(dis)),
-        null);
-    final int dominoNumber = readDominoNumber(dis, sharedResource);
+  public static HandshakeForReceiverParsing readHandshakeForReceiverFunction(final DataInput dis) {
+
+    InternalDistributedMember remoteMember = null;
+    boolean sharedResource = false;
+    boolean preserveOrder = false;
+    long uniqueId = 0;
+    KnownVersion remoteVersion = null;
+    int dominoNumber = 0;
+    Exception caught = null;
+
+    try {
+      checkHandshakeInitialByte(dis);
+      checkHandshakeVersion(dis);
+      remoteMember = DSFIDFactory.readInternalDistributedMember(dis);
+      sharedResource = dis.readBoolean();
+      preserveOrder = dis.readBoolean();
+      uniqueId = dis.readLong();
+      // read the product version ordinal for on-the-fly serialization
+      // transformations (for rolling upgrades)
+      remoteVersion = Versioning.getKnownVersionOrDefault(
+          Versioning.getVersion(VersioningIO.readOrdinal(dis)),
+          null);
+      dominoNumber = readDominoNumber(dis, sharedResource);
+    } catch (final ClassNotFoundException | IOException | IllegalStateException e) {
+      /*
+       * We need to catch IllegalStateException for cases when this method is used as
+       * a protocol analyzer, i.e. for processing packet captures offline.
+       * Avoid catching other runtime exceptions.
+       */
+      caught = e;
+    }
     return new HandshakeForReceiverParsing(remoteMember, sharedResource,
         preserveOrder, uniqueId,
-        remoteVersion, dominoNumber);
+        remoteVersion, dominoNumber, caught);
   }
 
   static int readDominoNumber(final DataInput dis, final boolean sharedResource)
@@ -3074,17 +3105,20 @@ public class Connection implements Runnable {
     final boolean directAck;
     final boolean lengthSet;
     final boolean invalidMessageHeader;
+    final IOException thrown;
 
     private MessageHeaderParsing(final int messageLength, final byte messageType,
         final short messageId,
         final boolean directAck,
-        final boolean lengthSet, final boolean invalidMessageHeader) {
+        final boolean lengthSet, final boolean invalidMessageHeader,
+        final IOException thrown) {
       this.messageLength = messageLength;
       this.messageType = messageType;
       this.messageId = messageId;
       this.directAck = directAck;
       this.lengthSet = lengthSet;
       this.invalidMessageHeader = invalidMessageHeader;
+      this.thrown = thrown;
     }
   }
 
@@ -3112,13 +3146,24 @@ public class Connection implements Runnable {
     return messageHeaderParsing.invalidMessageHeader;
   }
 
+  /*
+   * Peek into buffer, looking for message header.
+   * On entry peerDataBuffer is readable
+   * On exit peerDataBuffer is still readable and its position has not changed
+   */
   @VisibleForTesting
   public static MessageHeaderParsing readMessageHeaderFunction(final ByteBuffer peerDataBuffer,
-      final boolean lengthSetParameter) throws IOException {
+      final boolean lengthSetParameter) {
     final int headerStartPos = peerDataBuffer.position();
     final int headerSize = peerDataBuffer.getInt();
+    IOException thrown = null;
+
     /* nioMessageVersion = */
-    calcHdrVersion(headerSize);
+    try {
+      calcHdrVersion(headerSize);
+    } catch (IOException e) {
+      thrown = e;
+    }
     final int messageLength = calcMsgByteSize(headerSize);
     byte messageType = peerDataBuffer.get();
     final short messageId = peerDataBuffer.getShort();
@@ -3129,12 +3174,13 @@ public class Connection implements Runnable {
     }
     if (!validMsgType(messageType)) {
       return new MessageHeaderParsing(messageLength, messageType, messageId, directAck,
-          lengthSetParameter, true);
+          lengthSetParameter, true, thrown);
     }
     // keep the header "in" the buffer until we have read the entire msg.
     // Trust me: this will reduce copying on large messages.
     peerDataBuffer.position(headerStartPos);
-    return new MessageHeaderParsing(messageLength, messageType, messageId, directAck, true, false);
+    return new MessageHeaderParsing(messageLength, messageType, messageId, directAck, true, false,
+        thrown);
   }
 
   private void readMessage(ByteBuffer peerDataBuffer, AbstractExecutor threadMonitorExecutor) {
