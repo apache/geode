@@ -32,14 +32,12 @@ import org.apache.geode.redis.internal.commands.executor.RedisResponse;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 /**
- * This class implements execution for the redis COMMAND command.
- * For clarity and to avoid this class name from getting mixed
- * up with the interface name it implements, both COMMAND and Command
- * are in the class name.
- * COMMAND refers to the redis command being implemented.
- * CommandExecutor refers to the interface being implemented.
+ * This class implements execution for the redis COMMAND command. In keeping with the naming
+ * conventions of {@link CommandExecutor}s; being "{@code &lt;command name&gt;CommandExecutor}",
+ * the name of this class is deliberately {@code CommandCommandExecutor} since it is the concrete
+ * implementation of the {@code CommandExecutor} interface for the COMMAND command.
  */
-public class COMMANDCommandExecutor implements CommandExecutor {
+public class CommandCommandExecutor implements CommandExecutor {
   @Immutable
   private static final List<String> supportedSubcommands =
       Collections.unmodifiableList(Arrays.asList("(no subcommand)"));
@@ -76,6 +74,10 @@ public class COMMANDCommandExecutor implements CommandExecutor {
       oneCommand.add(type.firstKey());
       oneCommand.add(type.lastKey());
       oneCommand.add(type.step());
+
+      List<String> categories =
+          Collections.singletonList("@" + type.category().name().toLowerCase());
+      oneCommand.add(categories);
 
       response.add(oneCommand);
     }

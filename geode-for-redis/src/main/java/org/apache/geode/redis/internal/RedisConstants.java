@@ -17,7 +17,7 @@ package org.apache.geode.redis.internal;
 
 import org.apache.geode.redis.internal.commands.executor.cluster.ClusterExecutor;
 import org.apache.geode.redis.internal.commands.executor.connection.ClientExecutor;
-import org.apache.geode.redis.internal.commands.executor.server.COMMANDCommandExecutor;
+import org.apache.geode.redis.internal.commands.executor.server.CommandCommandExecutor;
 
 public class RedisConstants {
 
@@ -64,7 +64,7 @@ public class RedisConstants {
           + ClusterExecutor.getSupportedSubcommands();
   public static final String ERROR_UNKNOWN_COMMAND_COMMAND_SUBCOMMAND =
       "Unknown subcommand or wrong number of arguments for '%s'. Supported subcommands are: "
-          + COMMANDCommandExecutor.getSupportedSubcommands();
+          + CommandCommandExecutor.getSupportedSubcommands();
   public static final String ERROR_INVALID_ZADD_OPTION_NX_XX =
       "XX and NX options at the same time are not compatible";
   public static final String ERROR_UNKNOWN_PUBSUB_SUBCOMMAND =
