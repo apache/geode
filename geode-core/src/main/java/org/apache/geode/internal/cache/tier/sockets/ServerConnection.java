@@ -795,7 +795,9 @@ public class ServerConnection implements Runnable {
     if (verifyClientConnection()) {
       initializeCommands();
       if (!getCommunicationMode().isWAN()) {
-        initializeClientUserAuths();
+        synchronized (clientUserAuthsLock) {
+          initializeClientUserAuths();
+        }
       }
     }
     if (TEST_VERSION_AFTER_HANDSHAKE_FLAG) {
@@ -1240,7 +1242,9 @@ public class ServerConnection implements Runnable {
 
   @TestOnly
   protected void setClientUserAuths(ClientUserAuths clientUserAuths) {
-    this.clientUserAuths = clientUserAuths;
+    synchronized (clientUserAuthsLock) {
+      this.clientUserAuths = clientUserAuths;
+    }
   }
 
   private void setSecurityPart() {

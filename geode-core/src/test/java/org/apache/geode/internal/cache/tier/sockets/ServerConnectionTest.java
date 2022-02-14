@@ -284,6 +284,7 @@ public class ServerConnectionTest {
   @Test
   public void handleTerminationWithoutUnrgisterClientShouldNotNullClientAuths() {
     when(acceptor.getClientHealthMonitor()).thenReturn(clientHealthMonitor);
+    when(acceptor.getCacheClientNotifier()).thenReturn(notifier);
     ClientUserAuths clientUserAuths = mock(ClientUserAuths.class);
     ServerConnection spy = spy(serverConnection);
     doReturn(new HashMap<>()).when(clientHealthMonitor).getCleanupTable();
@@ -292,6 +293,10 @@ public class ServerConnectionTest {
 
     spy.handleTermination(false);
     assertThat(spy.getClientUserAuths()).isNotNull();
+
+    // subsequent putSubject call will be successful
+    Subject subject = mock(Subject.class);
+    spy.putSubject(subject, -1);
   }
 
   @Test
