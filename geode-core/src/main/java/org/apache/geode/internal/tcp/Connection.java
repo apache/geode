@@ -3032,6 +3032,9 @@ public class Connection implements Runnable {
     return false;
   }
 
+  /*
+   * Mutates dis.
+   */
   @VisibleForTesting
   public static HandshakeForReceiverParsing readHandshakeForReceiverFunction(final DataInput dis) {
 
@@ -3376,16 +3379,22 @@ public class Connection implements Runnable {
 
   void readHandshakeForSender(DataInputStream dis, ByteBuffer peerDataBuffer) {
     try {
-      int replyCode = dis.readUnsignedByte();
-      switch (replyCode) {
+      // parse handshake
+      final HandshakeForSenderParsing parsing = readHandshakeForSenderFunction(dis);
+
+      // process exceptions
+      parsing.rethrow();
+
+      // update state
+      switch (parsing.replyCode) {
         case REPLY_CODE_OK:
           ioFilter.doneReading(peerDataBuffer);
           notifyHandshakeWaiter(true);
-          return;
+          break;
         case REPLY_CODE_OK_WITH_ASYNC_INFO:
-          asyncDistributionTimeout = dis.readInt();
-          asyncQueueTimeout = dis.readInt();
-          asyncMaxQueueSize = (long) dis.readInt() * (1024 * 1024);
+          asyncDistributionTimeout = parsing.asyncDistributionTimeout;
+          asyncQueueTimeout = parsing.asyncQueueTimeout;
+          asyncMaxQueueSize = (long) parsing.asyncMaxQueueSizeMB * (1024 * 1024);
           if (asyncDistributionTimeout != 0) {
             logger.info("{} async configuration received {}.", p2pReaderName(),
                 " asyncDistributionTimeout=" + asyncDistributionTimeout
@@ -3394,20 +3403,18 @@ public class Connection implements Runnable {
           }
           // read the product version ordinal for on-the-fly serialization
           // transformations (for rolling upgrades)
-          remoteVersion = Versioning.getKnownVersionOrDefault(
-              Versioning.getVersion(VersioningIO.readOrdinal(dis)),
-              null);
+          remoteVersion = parsing.remoteVersion;
           ioFilter.doneReading(peerDataBuffer);
           notifyHandshakeWaiter(true);
           if (preserveOrder && asyncDistributionTimeout != 0) {
             asyncMode = true;
           }
-
-          return;
+          break;
         default:
           String err =
-              "Unknown handshake reply code: " + replyCode + " messageLength: " + messageLength;
-          if (replyCode == 0 && logger.isDebugEnabled()) {
+              "Unknown handshake reply code: " + parsing.replyCode + " messageLength: "
+                  + messageLength;
+          if (parsing.replyCode == 0 && logger.isDebugEnabled()) {
             logger.debug(err + " (peer probably departed ungracefully)");
           } else {
             logger.fatal(err);
@@ -3437,6 +3444,68 @@ public class Connection implements Runnable {
       logger.fatal("Throwable deserializing P2P handshake reply", t);
       readerShuttingDown = true;
       requestClose("Throwable deserializing P2P handshake reply");
+    }
+  }
+
+  @VisibleForTesting
+  public static class HandshakeForSenderParsing {
+    final int replyCode;
+    final int asyncDistributionTimeout;
+    final int asyncQueueTimeout;
+    final int asyncMaxQueueSizeMB;
+    final KnownVersion remoteVersion;
+    final boolean validHandshakeForSenderSeen;
+    final IOException caught;
+
+    public HandshakeForSenderParsing(final int replyCode, final int asyncDistributionTimeout,
+        final int asyncQueueTimeout, final int asyncMaxQueueSizeMB,
+        final KnownVersion remoteVersion,
+        final boolean validHandshakeForSenderSeen,
+        final IOException caught) {
+      this.replyCode = replyCode;
+      this.asyncDistributionTimeout = asyncDistributionTimeout;
+      this.asyncQueueTimeout = asyncQueueTimeout;
+      this.asyncMaxQueueSizeMB = asyncMaxQueueSizeMB;
+      this.remoteVersion = remoteVersion;
+      this.validHandshakeForSenderSeen = validHandshakeForSenderSeen;
+      this.caught = caught;
+    }
+
+    public void rethrow() throws IOException {
+      if (caught != null) {
+        throw caught;
+      }
+    }
+  }
+
+  /*
+   * Mutates dis.
+   * Return true if valid handshake for sender was seen.
+   * Return false if what we saw was not a valid handshake for sender.
+   */
+  @VisibleForTesting
+  public static HandshakeForSenderParsing readHandshakeForSenderFunction(
+      final DataInputStream dis) {
+    int replyCode = 0;
+    try {
+      replyCode = dis.readUnsignedByte();
+      switch (replyCode) {
+        case REPLY_CODE_OK:
+          return new HandshakeForSenderParsing(replyCode, -1, -1, -1, null, true, null);
+        case REPLY_CODE_OK_WITH_ASYNC_INFO:
+          final int asyncDistributionTimeout = dis.readInt();
+          final int asyncQueueTimeout = dis.readInt();
+          final int asyncMaxQueueSizeMB = dis.readInt();
+          final KnownVersion remoteVersion = Versioning.getKnownVersionOrDefault(
+              Versioning.getVersion(VersioningIO.readOrdinal(dis)),
+              null);
+          return new HandshakeForSenderParsing(replyCode, asyncDistributionTimeout,
+              asyncQueueTimeout, asyncMaxQueueSizeMB, remoteVersion, true, null);
+        default:
+          return new HandshakeForSenderParsing(replyCode, -1, -1, -1, null, false, null);
+      }
+    } catch (final IOException e) {
+      return new HandshakeForSenderParsing(replyCode, -1, -1, -1, null, false, e);
     }
   }
 
