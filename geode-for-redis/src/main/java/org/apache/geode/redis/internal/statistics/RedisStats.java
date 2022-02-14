@@ -39,15 +39,14 @@ public class RedisStats {
   private final AtomicLong uniqueChannelSubscriptions = new AtomicLong();
   private final AtomicLong uniquePatternSubscriptions = new AtomicLong();
 
-  private final int rollingAverageSamplesPerSecond = 16;
+  private static final int ROLLING_AVERAGE_SAMPLES_PER_SECOND = 16;
   private final ScheduledExecutorService rollingAverageExecutor;
-  private volatile double networkKiloBytesReadOverLastSecond;
-  private final long[] networkBytesReadOverLastNSamples = new long[rollingAverageSamplesPerSecond];
-  private long totalNetworkBytesReadLastTick;
-  private double opsPerformedOverLastSecond;
-  private volatile long totalOpsPerformedLastTick;
-  private final long[] opsPerformedOverLastNSamples = new long[rollingAverageSamplesPerSecond];
   private int rollingAverageTick = 0;
+  private final RollingUpgradeStat networkKiloBytesReadRollingAverageStat =
+      new RollingUpgradeStat();
+  private volatile double networkKiloBytesReadOverLastSecond;
+  private final RollingUpgradeStat opsPerformedRollingAverageStat = new RollingUpgradeStat();
+  private volatile double opsPerformedOverLastSecond;
 
   private final StatisticsClock clock;
   private final GeodeRedisStats geodeRedisStats;
@@ -206,7 +205,7 @@ public class RedisStats {
 
   private ScheduledExecutorService startRollingAverageUpdater() {
     long microsPerSecond = 1_000_000;
-    final long delayMicros = microsPerSecond / rollingAverageSamplesPerSecond;
+    final long delayMicros = microsPerSecond / ROLLING_AVERAGE_SAMPLES_PER_SECOND;
 
     ScheduledExecutorService rollingAverageExecutor =
         newSingleThreadScheduledExecutor("GemFireRedis-RollingAverageStatUpdater-");
@@ -222,28 +221,25 @@ public class RedisStats {
   }
 
   private void doRollingAverageUpdates() {
-    updateNetworkKilobytesReadLastSecond(rollingAverageTick);
-    updateOpsPerformedOverLastSecond(rollingAverageTick);
+    networkKiloBytesReadOverLastSecond = networkKiloBytesReadRollingAverageStat
+        .calculate(getTotalNetworkBytesRead(), rollingAverageTick) / 1024.0;
+    opsPerformedOverLastSecond =
+        opsPerformedRollingAverageStat.calculate(getCommandsProcessed(), rollingAverageTick);
     rollingAverageTick++;
-    if (rollingAverageTick >= rollingAverageSamplesPerSecond) {
+    if (rollingAverageTick >= ROLLING_AVERAGE_SAMPLES_PER_SECOND) {
       rollingAverageTick = 0;
     }
   }
 
-  private void updateNetworkKilobytesReadLastSecond(int tickNumber) {
-    final long totalNetworkBytesRead = getTotalNetworkBytesRead();
-    long deltaNetworkBytesRead = totalNetworkBytesRead - totalNetworkBytesReadLastTick;
-    networkBytesReadOverLastNSamples[tickNumber] = deltaNetworkBytesRead;
-    networkKiloBytesReadOverLastSecond =
-        Arrays.stream(networkBytesReadOverLastNSamples).sum() / 1024.0;
-    totalNetworkBytesReadLastTick = totalNetworkBytesRead;
-  }
+  private static class RollingUpgradeStat {
+    private long valueReadLastTick;
+    private final long[] valuesReadOverLastNSamples = new long[ROLLING_AVERAGE_SAMPLES_PER_SECOND];
 
-  private void updateOpsPerformedOverLastSecond(int tickNumber) {
-    final long totalOpsPerformed = getCommandsProcessed();
-    long deltaOpsPerformed = totalOpsPerformed - totalOpsPerformedLastTick;
-    opsPerformedOverLastNSamples[tickNumber] = deltaOpsPerformed;
-    opsPerformedOverLastSecond = Arrays.stream(opsPerformedOverLastNSamples).sum();
-    totalOpsPerformedLastTick = totalOpsPerformed;
+    long calculate(long currentValue, int tickNumber) {
+      long delta = currentValue - valueReadLastTick;
+      valueReadLastTick = currentValue;
+      valuesReadOverLastNSamples[tickNumber] = delta;
+      return Arrays.stream(valuesReadOverLastNSamples).sum();
+    }
   }
 }
