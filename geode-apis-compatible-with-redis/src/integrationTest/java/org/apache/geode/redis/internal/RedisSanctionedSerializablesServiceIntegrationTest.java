@@ -18,7 +18,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.codeAnalysis.SanctionedSerializablesServiceIntegrationTestBase;
 import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
-import org.apache.geode.redis.internal.services.RedisSanctionedSerializablesService;
 import org.apache.geode.test.junit.categories.SanctionedSerializablesTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
