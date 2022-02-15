@@ -25,6 +25,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.internal.inet.LocalHostUtil.getLocalHost;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.File;
 import java.net.BindException;
@@ -72,6 +75,25 @@ public class LocatorLauncherLocalIntegrationTest extends LocatorLauncherIntegrat
     launcher = givenLocatorLauncher();
 
     assertThat(launcher.start().getStatus()).isEqualTo(ONLINE);
+  }
+
+  @Test
+  public void whenLocatorIsPresetThenItWillNotReadThePropertyFiles() {
+    launcher = givenLocatorLauncher();
+
+    assertThat(launcher.start().getStatus()).isEqualTo(ONLINE);
+    LocatorLauncher locatorLauncher = spy(launcher);
+    locatorLauncher.status();
+    /*
+     * We want to verify that no DistributedConfigImpl is constructed.
+     * But that's hard/impossible to mock.
+     * We happen to know that in the case where
+     * SSLConfigurationFactory.getSSLConfigForComponent()
+     * constructs one, getProperties() is always called first.
+     * That's why we're asserting getProperties()
+     * isn't called.
+     */
+    verify(locatorLauncher, times((0))).getProperties();
   }
 
   @Test
