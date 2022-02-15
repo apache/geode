@@ -785,24 +785,7 @@ public class CacheClientProxy implements ClientSession {
     // Close the Authorization callback or subject if we are not keeping the proxy
     try {
       if (!pauseDurable) {
-        // single user case -- old security
-        if (postAuthzCallback != null) {
-          postAuthzCallback.close();
-          postAuthzCallback = null;
-        }
-        // single user case -- integrated security
-        // connection is closed, so we can log out this subject
-        else if (subject != null) {
-          secureLogger.debug("CacheClientProxy.close, logging out {}. ", subject.getPrincipal());
-          subject.logout();
-          subject = null;
-        }
-        // for multiUser case, in non-durable case, we are closing the connection
-        else if (clientUserAuths != null) {
-          secureLogger.debug("CacheClientProxy.close, cleanup all client subjects. ");
-          clientUserAuths.cleanup(true);
-          clientUserAuths = null;
-        }
+        cleanClientAuths();
       }
     } catch (Exception ex) {
       logger.warn("{}", this, ex);
@@ -810,6 +793,30 @@ public class CacheClientProxy implements ClientSession {
     // Notify the caller whether to keep this proxy. If the proxy is durable
     // and should be paused, then return true; otherwise return false.
     return keepProxy;
+  }
+
+  // this needs to synchronized to avoid NPE between null check and operations
+  private void cleanClientAuths() {
+    synchronized (clientUserAuthsLock) {
+      // single user case -- old security
+      if (postAuthzCallback != null) {
+        postAuthzCallback.close();
+        postAuthzCallback = null;
+      }
+      // single user case -- integrated security
+      // connection is closed, so we can log out this subject
+      else if (subject != null) {
+        secureLogger.debug("CacheClientProxy.close, logging out {}. ", subject.getPrincipal());
+        subject.logout();
+        subject = null;
+      }
+      // for multiUser case, in non-durable case, we are closing the connection
+      else if (clientUserAuths != null) {
+        secureLogger.debug("CacheClientProxy.close, cleanup all client subjects. ");
+        clientUserAuths.cleanup(true);
+        clientUserAuths = null;
+      }
+    }
   }
 
   protected void pauseDispatching() {
