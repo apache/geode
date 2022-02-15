@@ -99,7 +99,7 @@ public abstract class AbstractPexpireIntegrationTest implements RedisIntegration
   }
 
   @Test
-  public void should_passivelyExpireKeys() {
+  public void should_activelyExpireKeys() {
     jedis.sadd("{tag1}key", "value");
     jedis.pexpire("{tag1}key", 100);
 

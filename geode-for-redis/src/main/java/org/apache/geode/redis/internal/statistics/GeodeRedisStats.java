@@ -40,9 +40,9 @@ public class GeodeRedisStats {
       new EnumMap<>(RedisCommandType.class);
 
   private static final int currentlyConnectedClients;
-  private static final int passiveExpirationChecksId;
-  private static final int passiveExpirationCheckTimeId;
-  private static final int passiveExpirationsId;
+  private static final int activeExpirationChecksId;
+  private static final int activeExpirationCheckTimeId;
+  private static final int activeExpirationsId;
   private static final int expirationsId;
   private static final int expirationTimeId;
   private static final int totalConnectionsReceived;
@@ -84,9 +84,9 @@ public class GeodeRedisStats {
     fillTimeIdMap();
 
     currentlyConnectedClients = type.nameToId("connectedClients");
-    passiveExpirationChecksId = type.nameToId("passiveExpirationChecks");
-    passiveExpirationCheckTimeId = type.nameToId("passiveExpirationCheckTime");
-    passiveExpirationsId = type.nameToId("passiveExpirations");
+    activeExpirationChecksId = type.nameToId("activeExpirationChecks");
+    activeExpirationCheckTimeId = type.nameToId("activeExpirationCheckTime");
+    activeExpirationsId = type.nameToId("activeExpirations");
     expirationsId = type.nameToId("expirations");
     expirationTimeId = type.nameToId("expirationTime");
     totalConnectionsReceived = type.nameToId("totalConnectionsReceived");
@@ -122,18 +122,18 @@ public class GeodeRedisStats {
     stats.incLong(currentlyConnectedClients, -1);
   }
 
-  public void endPassiveExpirationCheck(long start, long expireCount) {
+  public void endActiveExpirationCheck(long start, long expireCount) {
     if (expireCount > 0) {
-      incPassiveExpirations(expireCount);
+      incActiveExpirations(expireCount);
     }
     if (clock.isEnabled()) {
-      stats.incLong(passiveExpirationCheckTimeId, getCurrentTimeNanos() - start);
+      stats.incLong(activeExpirationCheckTimeId, getCurrentTimeNanos() - start);
     }
-    stats.incLong(passiveExpirationChecksId, 1);
+    stats.incLong(activeExpirationChecksId, 1);
   }
 
-  private void incPassiveExpirations(long count) {
-    stats.incLong(passiveExpirationsId, count);
+  private void incActiveExpirations(long count) {
+    stats.incLong(activeExpirationsId, count);
   }
 
   public void endExpiration(long start) {
@@ -255,18 +255,18 @@ public class GeodeRedisStats {
         "Total number of client connections received by this redis server since startup.",
         "connections"));
 
-    descriptorList.add(statisticsTypeFactory.createLongCounter("passiveExpirationChecks",
-        "Total number of passive expiration checks that have"
+    descriptorList.add(statisticsTypeFactory.createLongCounter("activeExpirationChecks",
+        "Total number of active expiration checks that have"
             + " completed. Checks include scanning and expiring.",
         "checks"));
 
-    descriptorList.add(statisticsTypeFactory.createLongCounter("passiveExpirationCheckTime",
-        "Total amount of time, in nanoseconds, spent in passive "
+    descriptorList.add(statisticsTypeFactory.createLongCounter("activeExpirationCheckTime",
+        "Total amount of time, in nanoseconds, spent in active "
             + "expiration checks on this server.",
         "nanoseconds"));
 
-    descriptorList.add(statisticsTypeFactory.createLongCounter("passiveExpirations",
-        "Total number of keys that have been passively expired on this server.",
+    descriptorList.add(statisticsTypeFactory.createLongCounter("activeExpirations",
+        "Total number of keys that have been actively expired on this server.",
         "expirations"));
 
     descriptorList.add(statisticsTypeFactory.createLongCounter("expirations",
