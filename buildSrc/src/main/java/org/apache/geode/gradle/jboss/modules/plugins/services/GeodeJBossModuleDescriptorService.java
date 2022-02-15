@@ -21,11 +21,8 @@ import static org.apache.geode.gradle.jboss.modules.plugins.utils.ProjectUtils.g
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -33,12 +30,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.StringJoiner;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
@@ -51,7 +45,6 @@ import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.DependencyConstraint;
 import org.gradle.api.artifacts.ModuleIdentifier;
 import org.gradle.api.artifacts.ModuleVersionIdentifier;
-import org.gradle.api.artifacts.MutableVersionConstraint;
 import org.gradle.api.artifacts.ResolvedArtifact;
 import org.gradle.api.artifacts.SelfResolvingDependency;
 import org.gradle.api.attributes.AttributeContainer;
@@ -80,19 +73,14 @@ public class GeodeJBossModuleDescriptorService implements GeodeModuleDescriptorS
   private static final String JBOSS_MODULAR = "jbossModular";
   private static final String EXTERNAL_LIBRARY_DEPENDENCIES_MODULE_NAME =
       "external-library-dependencies";
-  private static final String COMBINED_EXTERNAL_LIBRARY_DEPENDENCIES_MODULE_NAME =
-      "combined-external-library-dependencies";
+
   private static final String LIB_PATH_PREFIX = "../../../../../lib/";
   private static final String PLUGIN_ID = "geode.jboss-modules-plugin";
   private final ModuleDescriptorGenerator moduleDescriptorGenerator =
       new JBossModuleDescriptorGenerator();
-  private final Map<String, Set<ResolvedArtifact>> resolvedProjectRuntimeArtifacts =
-      new HashMap<>();
-  private final Map<String, List<DependencyWrapper>> apiProjectDependencies = new HashMap<>();
-  private final Map<String, List<DependencyWrapper>> runtimeProjectDependencies = new HashMap<>();
-  private final Map<String, List<DependencyWrapper>> jbossProjectDependencies = new HashMap<>();
-  private final Map<String, List<String>> embeddedArtifactNames = new HashMap<>();
+
   private List<Project> allProjects;
+  private static final String IS_GEODE_EXTENSION_STRING = "isGeodeExtension";
 
   @Override
   public void createModuleDescriptor(Project project, ModulesGeneratorConfig config,
@@ -110,16 +98,6 @@ public class GeodeJBossModuleDescriptorService implements GeodeModuleDescriptorS
 
   private void generateNewModuleDescriptor(Project project, ModulesGeneratorConfig config,
       List<ModuleDependency> moduleDependencies, Set<String> resourceRoots, String moduleVersion) {
-    List<DependencyWrapper> apiProjectDependencies = getApiProjectDependencies(project, config);
-    Set<ResolvedArtifact> resolvedProjectRuntimeArtifacts =
-        getResolvedRuntimeArtifactsForProject(project, config);
-
-    List<String> apiDependencies = apiProjectDependencies.stream()
-        .filter(
-            dependencyWrapper -> !dependencyWrapper.getDependency().getName().contains("geode-"))
-        .map(dependencyWrapper -> dependencyWrapper.getDependency().getName())
-        .collect(Collectors.toList());
-
 
     moduleDescriptorGenerator.generate(config.outputRoot.resolve(config.name), project.getName(),
         moduleVersion, resourceRoots, moduleDependencies, config.mainClass, Collections.EMPTY_LIST,
@@ -140,10 +118,10 @@ public class GeodeJBossModuleDescriptorService implements GeodeModuleDescriptorS
         getRuntimeProjectDependencies(project, config),
         getJBossProjectDependencies(project, config));
 
-    if(config.parentModule != null){
-      if(config.parentModule.getExtensions().getExtraProperties().has("isGeodeExtension") &&
-              (boolean) config.parentModule.getExtensions().getExtraProperties().get("isGeodeExtension")){
-        moduleDependencies.add(new ModuleDependency(config.parentModule.getName() + "-external-library",
+    if (config.parentModule != null) {
+      if (isGeodeExtensionProject(config.parentModule)) {
+        moduleDependencies
+            .add(new ModuleDependency(config.parentModule.getName() + "-external-library",
                 true, false));
       }
     }
@@ -151,8 +129,7 @@ public class GeodeJBossModuleDescriptorService implements GeodeModuleDescriptorS
     moduleDependencies.add(new ModuleDependency(EXTERNAL_LIBRARY_DEPENDENCIES_MODULE_NAME,
         false, false));
 
-    if (project.getExtensions().getExtraProperties().has("isGeodeExtension") &&
-            (boolean) project.getExtensions().getExtraProperties().get("isGeodeExtension")) {
+    if (isGeodeExtensionProject(project)) {
       moduleDependencies.add(new ModuleDependency(project.getName() + "-external-library",
           true, false));
     }
@@ -161,37 +138,35 @@ public class GeodeJBossModuleDescriptorService implements GeodeModuleDescriptorS
     return moduleDependencies;
   }
 
+  private static boolean isGeodeExtensionProject(Project project) {
+    ExtraPropertiesExtension extraProperties = project.getExtensions().getExtraProperties();
+    return extraProperties.has(IS_GEODE_EXTENSION_STRING) &&
+            (boolean) extraProperties.get(IS_GEODE_EXTENSION_STRING );
+  }
+
   private List<DependencyWrapper> getRuntimeProjectDependencies(Project project,
       ModulesGeneratorConfig config) {
-    return getOrPopulateCachedDependencies(runtimeProjectDependencies, project, config,
+    return getOrPopulateCachedDependencies(project, config,
         IMPLEMENTATION, RUNTIME_ONLY);
   }
 
   private List<DependencyWrapper> getJBossProjectDependencies(Project project,
       ModulesGeneratorConfig config) {
-    return getOrPopulateCachedDependencies(jbossProjectDependencies, project, config,
+    return getOrPopulateCachedDependencies(project, config,
         JBOSS_MODULAR);
   }
 
   private List<DependencyWrapper> getApiProjectDependencies(Project project,
       ModulesGeneratorConfig config) {
 
-    return getOrPopulateCachedDependencies(apiProjectDependencies, project, config, API);
+    return getOrPopulateCachedDependencies(project, config, API);
   }
 
   private List<DependencyWrapper> getOrPopulateCachedDependencies(
-      Map<String, List<DependencyWrapper>> dependenciesMap, Project project,
-      ModulesGeneratorConfig config, String... gradleConfigurations) {
-    String key = config.name + project.getName();
+      Project project, ModulesGeneratorConfig config, String... gradleConfigurations) {
     return Collections.unmodifiableList(
-            getProjectDependenciesForConfiguration(project, getTargetConfigurations(
-                    config.name, gradleConfigurations)));
-//    if (dependenciesMap.get(key) == null) {
-//      dependenciesMap.put(key, Collections.unmodifiableList(
-//          getProjectDependenciesForConfiguration(project, getTargetConfigurations(
-//              config.name, gradleConfigurations))));
-//    }
-//    return dependenciesMap.get(key);
+        getProjectDependenciesForConfiguration(project, getTargetConfigurations(
+            config.name, gradleConfigurations)));
   }
 
   @Override
@@ -206,13 +181,10 @@ public class GeodeJBossModuleDescriptorService implements GeodeModuleDescriptorS
         .getByName(targetConfigurations.get(0)).getResolvedConfiguration().getResolvedArtifacts();
 
     Set<ResolvedArtifact> resolvedArtifacts = resolvedDependencyArtifacts.stream()
-        .filter(resolvedArtifact -> resolvedClassPathArtifacts.contains(resolvedArtifact))
+        .filter(resolvedClassPathArtifacts::contains)
         .collect(Collectors.toSet());
 
-    Set<String> embeddedProjectArtifacts =
-        getEmbeddedArtifactsFromDependencyProjects(project, config, resolvedArtifacts);
-
-    Set<String> resourceRoots = getResourceRoots(project, config, embeddedProjectArtifacts, true);
+    Set<String> resourceRoots = getResourceRoots(project, config, true);
 
     ExtraPropertiesExtension extraProperties = project.getExtensions().getExtraProperties();
     boolean isGeodeExtension = extraProperties.has("isGeodeExtension")
@@ -230,10 +202,10 @@ public class GeodeJBossModuleDescriptorService implements GeodeModuleDescriptorS
     Path basePath =
         config.outputRoot.resolve(config.name).resolve(EXTERNAL_LIBRARY_DEPENDENCIES_MODULE_NAME);
 
-    if(config.parentModule != null){
-      if(config.parentModule.getExtensions().getExtraProperties().has("isGeodeExtension") &&
-              (boolean) config.parentModule.getExtensions().getExtraProperties().get("isGeodeExtension")){
-        moduleDependencies.add(new ModuleDependency(config.parentModule.getName() + "-external-library",
+    if (config.parentModule != null) {
+      if (isGeodeExtensionProject(config.parentModule)) {
+        moduleDependencies
+            .add(new ModuleDependency(config.parentModule.getName() + "-external-library",
                 true, false));
       }
     }
@@ -244,21 +216,6 @@ public class GeodeJBossModuleDescriptorService implements GeodeModuleDescriptorS
 
     moduleDescriptorGenerator
         .generateAlias(basePath, moduleName, project.getVersion().toString());
-  }
-
-  private Set<String> getEmbeddedArtifactsFromDependencyProjects(Project project,
-      ModulesGeneratorConfig config, Set<ResolvedArtifact> resolvedArtifacts) {
-    Set<String> embeddedProjectArtifacts =
-        new HashSet<>(getEmbeddedArtifactsNames(project, config));
-    for (ResolvedArtifact resolvedArtifact : resolvedArtifacts) {
-      // Iterate over all subprojects and exclude all "embedded" libraries from the subprojects
-      for (Project innerProject : getAllProjects(project)) {
-        if (innerProject.getName().equals(resolvedArtifact.getName())) {
-          embeddedProjectArtifacts.addAll(getEmbeddedArtifactsNames(innerProject, config));
-        }
-      }
-    }
-    return embeddedProjectArtifacts;
   }
 
   private List<ModuleDependency> getJBossJDKModuleDependencies(
@@ -297,61 +254,52 @@ public class GeodeJBossModuleDescriptorService implements GeodeModuleDescriptorS
   private Set<ResolvedArtifact> getResolvedRuntimeArtifactsForProject(Project project,
       ModulesGeneratorConfig config) {
 
-    String key = config.name + project.getName();
-//    if (resolvedProjectRuntimeArtifacts.get(key) == null) {
-      Set<ResolvedArtifact> artifacts = new HashSet<>();
-      List<String> targetConfigurations = getTargetConfigurations(config.name, API, IMPLEMENTATION);
-      Set<DependencyConstraint> constraints =
-          getDependencyConstraints(project, targetConfigurations);
+    Set<ResolvedArtifact> artifacts = new HashSet<>();
+    List<String> targetConfigurations = getTargetConfigurations(config.name, API, IMPLEMENTATION);
+    Set<DependencyConstraint> constraints =
+        getDependencyConstraints(project, targetConfigurations);
 
-      for (String targetConfiguration : targetConfigurations) {
-        Configuration configuration = project.getConfigurations().findByName(targetConfiguration);
+    for (String targetConfiguration : targetConfigurations) {
+      Configuration configuration = project.getConfigurations().findByName(targetConfiguration);
 
-        if (configuration != null) {
-          constraints.addAll(configuration.getAllDependencyConstraints());
-          configuration.getDependencies().stream()
-              .filter(dependency -> dependency instanceof DefaultExternalModuleDependency)
-              .forEach(dependency -> {
-                ModuleIdentifier moduleIdentifier =
-                    ((DefaultExternalModuleDependency) dependency).getModule();
-                Optional<DependencyConstraint> constraint =
-                    findConstraintForModuleIdentifier(constraints, moduleIdentifier);
+      if (configuration != null) {
+        constraints.addAll(configuration.getAllDependencyConstraints());
+        configuration.getDependencies().stream()
+            .filter(dependency -> dependency instanceof DefaultExternalModuleDependency)
+            .forEach(dependency -> {
+              ModuleIdentifier moduleIdentifier =
+                  ((DefaultExternalModuleDependency) dependency).getModule();
+              Optional<DependencyConstraint> constraint =
+                  findConstraintForModuleIdentifier(constraints, moduleIdentifier);
 
-                Dependency dependencyToProcess;
-                if (constraint.isPresent()) {
-                  dependencyToProcess = createModuleDependency(moduleIdentifier, constraint.get(),
-                      (DefaultExternalModuleDependency) dependency);
-                } else {
-                  dependencyToProcess = dependency;
-                }
-                Map<ModuleIdentifier, ResolvedArtifact> resolvedArtifacts =
-                    getLatestResolvedArtifacts(project, constraints,
-                        project.getConfigurations().detachedConfiguration(dependencyToProcess)
-                            .getResolvedConfiguration().getResolvedArtifacts(),
-                        new HashSet<>());
+              Dependency dependencyToProcess;
+              if (constraint.isPresent()) {
+                dependencyToProcess = createModuleDependency(moduleIdentifier, constraint.get(),
+                    (DefaultExternalModuleDependency) dependency);
+              } else {
+                dependencyToProcess = dependency;
+              }
+              Map<ModuleIdentifier, ResolvedArtifact> resolvedArtifacts =
+                  getLatestResolvedArtifacts(project, constraints,
+                      project.getConfigurations().detachedConfiguration(dependencyToProcess)
+                          .getResolvedConfiguration().getResolvedArtifacts(),
+                      new HashSet<>());
 
-                artifacts.addAll(resolvedArtifacts.values());
-              });
-        }
+              artifacts.addAll(resolvedArtifacts.values());
+            });
       }
+    }
 
-      List<String> targetConfigurations1 = getTargetConfigurations(config.name, RUNTIME_CLASSPATH);
-      Set<String> resolvedClassPathArtifacts = new HashSet<>();
-      targetConfigurations1.forEach(configuration -> {
-        project.getConfigurations().getByName(configuration)
-            .getResolvedConfiguration().getResolvedArtifacts().stream()
+    List<String> targetConfigurations1 = getTargetConfigurations(config.name, RUNTIME_CLASSPATH);
+    Set<String> resolvedClassPathArtifacts = new HashSet<>();
+    targetConfigurations1
+        .forEach(configuration -> project.getConfigurations().getByName(configuration)
+            .getResolvedConfiguration().getResolvedArtifacts()
             .forEach(resolvedArtifact -> resolvedClassPathArtifacts
-                .add(resolvedArtifact.getFile().getName()));
-      });
+                .add(resolvedArtifact.getFile().getName())));
 
-      Set<ResolvedArtifact> resolvedArtifacts =
-          artifacts.stream().filter(resolvedArtifact -> resolvedClassPathArtifacts
-              .contains(resolvedArtifact.getFile().getName())).collect(Collectors.toSet());
-
-//      resolvedProjectRuntimeArtifacts.put(key, resolvedArtifacts);
-//    }
-//    return resolvedProjectRuntimeArtifacts.get(key);
-    return resolvedArtifacts;
+    return artifacts.stream().filter(resolvedArtifact -> resolvedClassPathArtifacts
+        .contains(resolvedArtifact.getFile().getName())).collect(Collectors.toSet());
   }
 
   private DefaultExternalModuleDependency createModuleDependency(ModuleIdentifier moduleIdentifier,
@@ -452,12 +400,9 @@ public class GeodeJBossModuleDescriptorService implements GeodeModuleDescriptorS
 
   private Optional<DependencyConstraint> findConstraintForModuleIdentifier(
       Set<DependencyConstraint> constraints, ModuleIdentifier moduleIdentifier) {
-    Optional<DependencyConstraint> constraint = constraints.stream()
-        .filter(
-            dependencyConstraint -> dependencyConstraint.getModule()
-                .equals(moduleIdentifier))
+    return constraints.stream()
+        .filter(dependencyConstraint -> dependencyConstraint.getModule().equals(moduleIdentifier))
         .findFirst();
-    return constraint;
   }
 
   private List<String> getAdditionalSourceSets(Project project,
@@ -468,7 +413,9 @@ public class GeodeJBossModuleDescriptorService implements GeodeModuleDescriptorS
     List<String> resourcePaths = new LinkedList<>();
     for (DependencyWrapper wrapper : wrappers) {
       if (wrapper.getDependency() instanceof SelfResolvingDependency) {
-        resourcePaths.addAll((((SelfResolvingDependency) wrapper.getDependency()).resolve().stream()
+        resourcePaths.addAll((((SelfResolvingDependency) wrapper.getDependency())
+            .resolve()
+            .stream()
             .map(File::getAbsolutePath)
             .filter(path -> new File(path).exists())
             .collect(Collectors.toList())));
@@ -479,9 +426,7 @@ public class GeodeJBossModuleDescriptorService implements GeodeModuleDescriptorS
 
   private Set<String> generateResourceRoots(Project project, File resourceFile,
       ModulesGeneratorConfig config) {
-    List<String> embeddedArtifactNames = getEmbeddedArtifactsNames(project, config);
-
-    Set<String> resourceRoots = getResourceRoots(project, config, embeddedArtifactNames, false);
+    Set<String> resourceRoots = getResourceRoots(project, config, false);
 
     if (config.shouldAssembleFromSource()) {
       resourceRoots.addAll(getAdditionalSourceSets(project, config));
@@ -511,7 +456,7 @@ public class GeodeJBossModuleDescriptorService implements GeodeModuleDescriptorS
   }
 
   private Set<String> getResourceRoots(Project project, ModulesGeneratorConfig config,
-      Collection<String> embeddedArtifactNames, boolean forExternalLibraries) {
+      boolean forExternalLibraries) {
     Set<String> resourceRoots = new HashSet<>();
     Set<String> resourceToFilterOut = new HashSet<>();
 
@@ -520,20 +465,17 @@ public class GeodeJBossModuleDescriptorService implements GeodeModuleDescriptorS
     if (forExternalLibraries) {
       if (config.parentModule != null) {
         getResolvedRuntimeArtifactsForProject(config.parentModule, config)
-                .forEach(resolvedArtifact -> resourceToFilterOut.add(resolvedArtifact.getName()));
+            .forEach(resolvedArtifact -> resourceToFilterOut.add(resolvedArtifact.getName()));
 
         getResolvedRuntimeArtifactsForProject(project, config).stream()
             .filter(artifact -> !resourceToFilterOut.contains(artifact.getName()))
-            .filter(artifact -> !embeddedArtifactNames.contains(artifact.getName()))
             .forEach(artifact -> resourceRoots.add(LIB_PATH_PREFIX + artifact.getFile().getName()));
       } else {
         getResolvedRuntimeArtifactsForProject(project, config).stream()
-            .filter(artifact -> !embeddedArtifactNames.contains(artifact.getName()))
             .forEach(artifact -> resourceRoots.add(LIB_PATH_PREFIX + artifact.getFile().getName()));
       }
     } else {
       resolvedRuntimeArtifactsForProject.stream()
-          .filter(artifact -> embeddedArtifactNames.contains(artifact.getName()))
           .forEach(artifact -> resourceRoots.add(LIB_PATH_PREFIX + artifact.getFile().getName()));
     }
 
@@ -545,29 +487,6 @@ public class GeodeJBossModuleDescriptorService implements GeodeModuleDescriptorS
     if (new File(resourceRootToValidateAndAdd).exists()) {
       resourceRoots.add(resourceRootToValidateAndAdd);
     }
-  }
-
-  private List<String> getEmbeddedArtifactsNames(Project project, ModulesGeneratorConfig config) {
-    String key = config.name + project.getName();
-//    if (embeddedArtifactNames.get(key) == null) {
-      TreeSet<String> artifacts = new TreeSet<>();
-      artifacts.addAll(
-          getModuleNameForEmbeddedDependency(getApiProjectDependencies(project, config)));
-      artifacts
-          .addAll(
-              getModuleNameForEmbeddedDependency(getRuntimeProjectDependencies(project, config)));
-      embeddedArtifactNames
-          .put(key, Collections.unmodifiableList(new LinkedList<>(artifacts)));
-      return Collections.unmodifiableList(new LinkedList<>(artifacts));
-//    }
-//    return embeddedArtifactNames.get(key);
-  }
-
-  private List<String> getModuleNameForEmbeddedDependency(
-      List<DependencyWrapper> projectDependencies) {
-    return projectDependencies.stream().filter(DependencyWrapper::isEmbedded)
-        .map(dependencyWrapper -> dependencyWrapper.getDependency().getName())
-        .collect(Collectors.toList());
   }
 
   private List<String> getResourceRootsFromModuleXml(File moduleXml) {
@@ -627,31 +546,5 @@ public class GeodeJBossModuleDescriptorService implements GeodeModuleDescriptorS
           Collections.unmodifiableList(new LinkedList<>(project.getRootProject().getSubprojects()));
     }
     return allProjects;
-  }
-
-  private static Set<String> extractPackagesFromJarFile(String filePath) {
-    try {
-      ZipFile zipFile = new ZipFile(filePath);
-      Enumeration<? extends ZipEntry> entries = zipFile.entries();
-      Set<String> packages = new HashSet<>();
-      while (entries.hasMoreElements()) {
-        ZipEntry zipEntry = entries.nextElement();
-        if (!zipEntry.isDirectory() && zipEntry.getName().endsWith(".class")
-            && !zipEntry.getName().startsWith("META-INF")) {
-          String[] strings = zipEntry.getName().split("/");
-          if (strings.length > 1) {
-            StringJoiner stringJoiner = new StringJoiner("/");
-            for (int i = 0; i < strings.length - 1; i++) {
-              stringJoiner.add(strings[i]);
-            }
-            packages.add(stringJoiner.toString());
-          }
-        }
-      }
-      zipFile.close();
-      return packages;
-    } catch (IOException e) {
-      return Collections.emptySet();
-    }
   }
 }

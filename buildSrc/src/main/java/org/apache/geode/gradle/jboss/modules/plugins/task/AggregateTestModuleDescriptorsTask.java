@@ -36,13 +36,14 @@ import org.gradle.api.tasks.TaskProvider;
 
 public class AggregateTestModuleDescriptorsTask extends DefaultTask {
 
+  private static final String GENERATE_TEST_MODULE_DESCRIPTORS = "generateTestModuleDescriptors";
   @Internal
   public String facetToAssemble;
 
   @Inject
   public AggregateTestModuleDescriptorsTask(String facetToAssemble) {
     this.facetToAssemble = facetToAssemble;
-    String facetTaskName = getFacetTaskName("generateTestModuleDescriptors", facetToAssemble);
+    String facetTaskName = getFacetTaskName(GENERATE_TEST_MODULE_DESCRIPTORS, facetToAssemble);
     Set<TaskProvider<Task>> tasks = getProject().getRootProject().getSubprojects().stream()
             .filter(
                     project -> project.getTasks().findByName(facetTaskName) != null)
@@ -54,7 +55,7 @@ public class AggregateTestModuleDescriptorsTask extends DefaultTask {
   @InputFiles
   @PathSensitive(PathSensitivity.ABSOLUTE)
   public Set<File> getInputFiles() {
-    String facetTaskName = getFacetTaskName("generateTestModuleDescriptors", facetToAssemble);
+    String facetTaskName = getFacetTaskName(GENERATE_TEST_MODULE_DESCRIPTORS, facetToAssemble);
     return getProject().getRootProject().getSubprojects().stream()
         .filter(project -> project.getTasks().findByName(facetTaskName) != null)
         .map(project -> project.getTasks().getByName(facetTaskName).getOutputs()
@@ -64,7 +65,7 @@ public class AggregateTestModuleDescriptorsTask extends DefaultTask {
 
   @OutputDirectories
   public List<File> getOutputFiles() {
-    String facetTaskName = getFacetTaskName("generateTestModuleDescriptors", facetToAssemble);
+    String facetTaskName = getFacetTaskName(GENERATE_TEST_MODULE_DESCRIPTORS, facetToAssemble);
     return getProject().getRootProject().getSubprojects().stream()
         .filter(project -> project.getTasks().findByName(facetTaskName) != null)
         .map(project -> project.getTasks().getByName(facetTaskName).getOutputs()

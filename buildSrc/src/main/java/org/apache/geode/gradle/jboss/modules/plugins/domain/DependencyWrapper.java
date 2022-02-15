@@ -20,18 +20,12 @@ import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.SelfResolvingDependency;
 
 public class DependencyWrapper {
-  private final boolean embed;
   private final Dependency dependency;
   private final boolean projectDependency;
 
-  public DependencyWrapper(Dependency dependency, boolean embed, boolean isProjectDependency) {
-    this.embed = embed;
+  public DependencyWrapper(Dependency dependency, boolean isProjectDependency) {
     this.projectDependency = isProjectDependency;
     this.dependency = dependency;
-  }
-
-  public boolean isEmbedded() {
-    return embed;
   }
 
   public boolean isProjectDependency() {
@@ -49,9 +43,8 @@ public class DependencyWrapper {
   @Override
   public String toString() {
     return "DependencyWrapper{" +
-        "embed=" + embed +
         ", dependency=" + dependency +
         ", projectDependency=" + projectDependency +
-        '}';
+        "}";
   }
 }

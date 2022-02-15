@@ -64,14 +64,14 @@ public class JBossModuleDescriptorGenerator implements ModuleDescriptorGenerator
   public void generate(Path outputRoot, String moduleName, String moduleVersion,
                        Collection<String> resourceRoots, List<ModuleDependency> moduleDependencies) {
     generate(outputRoot, moduleName, moduleVersion, resourceRoots, moduleDependencies, null,
-        Collections.EMPTY_LIST, Collections.EMPTY_LIST,Collections.EMPTY_LIST);
+            Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
   }
 
   @Override
   public void generate(Path outputRoot, String moduleName, String moduleVersion,
       Collection<String> resourceRoots,
-      List<ModuleDependency> moduleDependencies, String mainClass, List libraryPackagesToExport,
-      List customPackagesToExport, List customPackagesToExclude) {
+      List<ModuleDependency> moduleDependencies, String mainClass, List<String> libraryPackagesToExport,
+                       List<String> customPackagesToExport, List<String> customPackagesToExclude) {
     File xmlFile = createModuleDescriptorFile(outputRoot, moduleName, moduleVersion);
 
     try {
@@ -97,25 +97,12 @@ public class JBossModuleDescriptorGenerator implements ModuleDescriptorGenerator
       // If extension add export filter on project files
       Element exportElement = document.createElement(EXPORTS);
       moduleElement.appendChild(exportElement);
-//      addPackageExportFilters(libraryPackagesToExport, exportElement, true);
       addPackageExportFilters(customPackagesToExport, exportElement, false);
-//      addExcludeFilterToPackageExportFilters(exportElement,
-//          (!libraryPackagesToExport.isEmpty() || !customPackagesToExport.isEmpty()));
 
       // write xml to file
       writeDocumentToFile(xmlFile, document);
     } catch (ParserConfigurationException | TransformerException e) {
       throw new RuntimeException("Module Definition could not be created", e);
-    }
-  }
-
-  private void addExcludeFilterToPackageExportFilters(Element moduleElement,
-      boolean shouldAddElement) {
-    if (shouldAddElement) {
-      Document document = moduleElement.getOwnerDocument();
-      Element excludeSetElement = document.createElement("exclude");
-      excludeSetElement.setAttribute("path", "*");
-      moduleElement.appendChild(excludeSetElement);
     }
   }
 

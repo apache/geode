@@ -19,21 +19,17 @@ package org.apache.geode.gradle.jboss.modules.plugins.utils;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
 import org.apache.commons.lang3.StringUtils;
 import org.gradle.api.Project;
 import org.gradle.api.UnknownDomainObjectException;
-import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.artifacts.ProjectDependency;
-import org.gradle.api.artifacts.ResolvedArtifact;
 
 import org.apache.geode.gradle.jboss.modules.plugins.domain.DependencyWrapper;
 
@@ -66,24 +62,12 @@ public class ProjectUtils {
         project.getConfigurations()
             .named(configuration).get()
             .getDependencies()
-            .forEach(dependency -> {
-              boolean embed = getExtensionProperty(dependency, "embed");
-              dependencies.add(new DependencyWrapper(dependency, embed, dependency instanceof ProjectDependency));
-            });
+            .forEach(dependency -> dependencies.add(new DependencyWrapper(dependency, dependency instanceof ProjectDependency)));
       } catch (UnknownDomainObjectException exception) {
         // ignore the exception
       }
     }
     return dependencies;
-  }
-
-  private static boolean getExtensionProperty(Dependency dependency, String property) {
-    boolean hasEmbedExtension = invokeGroovyCode("hasExtension", property,
-        dependency);
-    if (hasEmbedExtension) {
-      return invokeGroovyCode("getExtension", property, dependency);
-    }
-    return false;
   }
 
   public static List<String> getTargetConfigurations(String facet, String... configurations) {
@@ -96,18 +80,5 @@ public class ProjectUtils {
       }
     }
     return targetConfigurations;
-  }
-
-  public static List<ResolvedArtifact> getResolvedProjectRuntimeArtifacts(Project project,
-      List<String> configurations) {
-    Set<ResolvedArtifact> resolvedArtifacts = new HashSet<>();
-    for (String configToLookUp : configurations) {
-      Configuration configuration = project.getConfigurations().findByName(configToLookUp);
-      if (configuration != null) {
-        resolvedArtifacts
-            .addAll(configuration.getResolvedConfiguration().getResolvedArtifacts());
-      }
-    }
-    return new LinkedList<>(resolvedArtifacts);
   }
 }

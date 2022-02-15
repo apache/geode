@@ -47,15 +47,14 @@ public class ModulesGeneratorConfig {
     }
 
     public ModulesGeneratorConfig(String name, Path outputRoot) {
+        this(name);
         this.outputRoot = outputRoot;
-        this.name = name;
     }
 
     //This is for testing purposes only
     public ModulesGeneratorConfig(String name, String mainClass, Path outputRoot) {
-        this(name);
+        this(name,outputRoot);
         this.mainClass = mainClass;
-        this.outputRoot = outputRoot;
     }
 
     public boolean shouldAssembleFromSource() {

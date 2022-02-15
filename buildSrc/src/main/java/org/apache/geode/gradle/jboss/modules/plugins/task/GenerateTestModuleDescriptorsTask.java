@@ -104,8 +104,8 @@ public class GenerateTestModuleDescriptorsTask extends DefaultTask {
 
     jBossModuleDescriptorGenerator.generate(getRootPath(), GEODE,
         getProject().getVersion().toString(), resources, modules,
-        "org.apache.geode.test.dunit.internal.ChildVM", Collections.EMPTY_LIST,
-        Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+        "org.apache.geode.test.dunit.internal.ChildVM", Collections.emptyList(),
+            Collections.emptyList(), Collections.emptyList());
 
     jBossModuleDescriptorGenerator.generateAlias(getRootPath(), GEODE,
         getProject().getVersion().toString());
