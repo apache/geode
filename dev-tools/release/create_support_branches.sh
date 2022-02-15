@@ -221,7 +221,10 @@ rm gradle.properties.bak
 set -x
 git add gradle.properties
 git diff --staged --color | cat
-git commit -m "$JIRA: pair develop examples with ${NEWVERSION} now that support/${VERSION_MM} has been created"
+git commit -m "$JIRA: Update examples version
+
+Now that support/${VERSION_MM} has been created,
+pair develop examples with ${NEWVERSION}"
 git push -u origin
 set +x
 
@@ -241,7 +244,16 @@ git add README.md
 cd ${GEODE}
 [ ! -r CODEOWNERS ] || git rm CODEOWNERS
 [ ! -r CODEWATCHERS ] || git rm CODEWATCHERS
-git commit -m "$JIRA: remove outdated copies of release scripts to ensure they are not run by accident + remove CODEOWNERS to avoid confusion"
+git commit -m "$JIRA: Remove unneeded scripts
+
+Remove likely-to-become-outdated copies of release scripts to ensure
+they are not run by accident from a branch (they should always be run
+from develop).
+
+Also remove CODEOWNERS to avoid the confusion of GitHub showing owner
+names like on develop, but codeowner reviews not actually being
+required (due to lack of branch protection or minimum review count on
+support branches)"
 git push -u origin
 set +x
 

@@ -225,7 +225,7 @@ if [ "${FULL_VERSION##*.RC}" -gt 1 ] ; then
     git add gradle.properties
     if [ $(git diff --staged | wc -l) -gt 0 ] ; then
         git diff --staged --color | cat
-        git commit -m "Revert $JIRA: "'"temporarily point to staging repo for CI purposes"'
+        git commit -m "Revert "'"'"$JIRA: Set temporary staging repo"'"'
     fi
     set +x
 fi

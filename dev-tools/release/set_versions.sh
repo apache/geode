@@ -143,7 +143,10 @@ set -x
 git add gradle.properties geode-book/config.yml ci/docker/cache_dependencies.sh ci/images/google-geode-builder/scripts/cache_dependencies.sh
 if [ $(git diff --staged | wc -l) -gt 0 ] ; then
   git diff --staged --color | cat
-  git commit -m "$JIRA: Bumping version to ${VERSION}"
+  git commit -m "$JIRA: Bump version to ${VERSION}
+
+As part of the Geode Release Process, the build number must
+be rolled forward so work can begin on the next release"
   [ "$NOPUSH" = "true" ] || git push -u origin
 fi
 set +x
@@ -169,7 +172,10 @@ set -x
 git add .
 if [ $(git diff --staged | wc -l) -gt 0 ] ; then
   git diff --staged --color | cat
-  git commit -m "$JIRA: Bumping version to ${VERSION}"
+  git commit -m "$JIRA: Bump version to ${VERSION}
+
+As part of the Geode Release Process, the geode-examples build number
+must be rolled forward as work begins on the next release"
   [ "$NOPUSH" = "true" ] || git push -u origin
 fi
 set +x
@@ -193,7 +199,10 @@ set -x
 git add gradle.properties
 if [ $(git diff --staged | wc -l) -gt 0 ] ; then
   git diff --staged --color | cat
-  git commit -m "$JIRA: Bumping version to ${VERSION}"
+  git commit -m "$JIRA: Bump version to ${VERSION}
+
+As part of the Geode Release Process, the geode-benchmarks build number
+must be rolled forward as work begins on the next release"
   [ "$NOPUSH" = "true" ] || git push -u origin
 fi
 set +x

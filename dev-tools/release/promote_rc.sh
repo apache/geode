@@ -158,7 +158,11 @@ cd ${SVN_DIR}/../..
 svn update
 svn mv dev/geode/${FULL_VERSION} release/geode/${VERSION}
 cp dev/geode/KEYS release/geode/KEYS
-svn commit -m "$JIRA: Releasing Apache Geode ${VERSION} distribution"
+svn commit -m "$JIRA: Release Apache Geode ${VERSION}
+
+Publish the source, binary, and checksum artifacts to ASF svn server,
+from which they will be picked up and published within 15 minutes to
+the URLs on https://geode.apache.org/releases/"
 set +x
 
 
@@ -236,7 +240,9 @@ else
   set -x
   git add apache-geode.rb
   git diff --staged --color | cat
-  git commit -m "$JIRA: apache-geode ${VERSION}"
+  git commit -m "$JIRA: Brew apache-geode ${VERSION}
+
+This is the latest and greatest release of Apache Geode."
   git push -u myfork
   set +x
 fi
@@ -284,7 +290,10 @@ rm $(find . -name '*.bak')
 set -x
 git add .
 git diff --staged --color | cat
-git commit -m "$JIRA: update Dockerfile and other variables to apache-geode ${VERSION}"
+git commit -m "$JIRA: Update Dockerfile and vars
+
+Native client hardcodes Geode version to test with in several places.
+Update native Dockerfile and other variables to apache-geode ${VERSION}"
 git push
 set +x
 
@@ -375,7 +384,10 @@ if [ -z "$LATER" ] ; then
   git add .
   if [ $(git diff --staged | wc -l) -gt 0 ] ; then
     git diff --staged --color | cat
-    git commit -m "$JIRA: Bumping Geode version to ${VERSION} for CI"
+    git commit -m "$JIRA: Bump Geode version to ${VERSION}
+
+Native client hardcodes Geode version to test with in several places.
+Update those variables to latest-and-greatest apache-geode ${VERSION}"
     git push -u myfork
   fi
   set +x
@@ -396,7 +408,10 @@ rm gradle.properties.bak
 set -x
 git add gradle.properties
 git diff --staged --color | cat
-git commit -m "Revert $JIRA: "'"temporarily point to staging repo for CI purposes"'
+git commit -m "Revert "'"'"$JIRA: Set temporary staging repo"'"'"
+
+The staging repo no longest exists, so set this back to search the
+default location (mavencentral)"
 git push
 set +x
 
@@ -482,7 +497,9 @@ fi
 set -x
 git add settings.gradle
 git diff --staged --color | cat
-git commit -m "$JIRA: add ${VERSION} to old versions${BENCHMSG} on develop"
+git commit -m "$JIRA: Add ${VERSION} as old version
+
+Adds ${VERSION} to old versions${BENCHMSG} on develop"
 git push -u myfork
 set +x
 
@@ -524,7 +541,9 @@ fi
 set -x
 git add settings.gradle
 git diff --staged --color | cat
-git commit -m "$JIRA: add ${VERSION} to old versions${BENCHMSG2} on support/$VERSION_MM"
+git commit -m "$JIRA: Add ${VERSION} as old version
+
+Adds ${VERSION} to old versions${BENCHMSG2} on support/$VERSION_MM"
 git push
 set +x
 
@@ -550,7 +569,9 @@ if [ -z "$LATER" ] ; then
     git add infrastructure/scripts/aws/run_against_baseline.sh
     if [ $(git diff --staged | wc -l) -gt 0 ] ; then
       git diff --staged --color | cat
-      git commit -m "$JIRA: update default benchmark baseline on $branch"
+      git commit -m "$JIRA: Update benchmark baseline
+
+Updates the default benchmark baseline on $branch to ${BASEL}"
       git push
     fi
     set +x
@@ -574,7 +595,12 @@ rm -f ../did.remove
 (ls | grep '^[0-9]'; cat ../keep ../keep)|sort|uniq -u|while read oldVersion; do
     set -x
     svn rm $oldVersion
-    svn commit -m "$JIRA: remove $oldVersion from mirrors (it is still available at http://archive.apache.org/dist/geode)"
+    svn commit -m "$JIRA: Remove $oldVersion from mirrors
+
+ASF requests that we keep preferably one, and definitely fewer than 5
+releases on the mirrors, so aim for 3 to match N-2 support policy.
+
+Note: it is still archived at http://archive.apache.org/dist/geode"
     set +x
     [ ! -r ../did.remove ] || echo -n " and " >> ../did.remove
     echo -n $oldVersion >> ../did.remove

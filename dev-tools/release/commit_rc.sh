@@ -90,7 +90,11 @@ echo "Publishing artifacts to apache release location..."
 echo "============================================================"
 set -x
 cd ${SVN_DIR}
-svn commit -m "$JIRA: Releasing Apache Geode ${FULL_VERSION} distribution"
+svn commit -m "$JIRA: Release Apache Geode ${FULL_VERSION}
+
+Publish the source, binary, and checksum artifacts to ASF svn server,
+from which they will be picked up and published within 15 minutes to
+the URLs on https://geode.apache.org/releases/"
 set +x
 
 
@@ -107,7 +111,11 @@ rm gradle.properties.bak
 set -x
 git add gradle.properties
 git diff --staged --color | cat
-git commit -m "$JIRA: temporarily point to staging repo for CI purposes"
+git commit -m "$JIRA: Set temporary staging repo
+
+This serves two purposes: it gives the RC pipeline a way to get the
+nexus staging repo id needed for various tests, and it gives the
+Jenkins server a valid configuration during the voting period."
 git push
 set +x
 
