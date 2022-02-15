@@ -34,20 +34,21 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
 
-public class PassiveExpirationManager {
+public class ActiveExpirationManager {
   private static final Logger logger = LogService.getLogger();
 
   public static final int DEFAULT_REDIS_EXPIRATION_INTERVAL_SECONDS = 180;
 
   private final ScheduledExecutorService expirationExecutor;
+  private final int activeExpirationInterval;
 
-  public PassiveExpirationManager(RegionProvider regionProvider) {
-    int interval = getIntegerSystemProperty(EXPIRATION_INTERVAL_SECONDS,
+  public ActiveExpirationManager(RegionProvider regionProvider) {
+    activeExpirationInterval = getIntegerSystemProperty(EXPIRATION_INTERVAL_SECONDS,
         DEFAULT_REDIS_EXPIRATION_INTERVAL_SECONDS, 1);
 
-    expirationExecutor = newSingleThreadScheduledExecutor("GemFireRedis-PassiveExpiration-");
-    expirationExecutor.scheduleWithFixedDelay(() -> doDataExpiration(regionProvider), interval,
-        interval, SECONDS);
+    expirationExecutor = newSingleThreadScheduledExecutor("GemFireRedis-ActiveExpiration-");
+    expirationExecutor.scheduleWithFixedDelay(() -> doDataExpiration(regionProvider),
+        activeExpirationInterval, activeExpirationInterval, SECONDS);
   }
 
   public void stop() {
@@ -55,7 +56,7 @@ public class PassiveExpirationManager {
   }
 
   private void doDataExpiration(RegionProvider regionProvider) {
-    final long start = regionProvider.getRedisStats().startPassiveExpirationCheck();
+    final long start = regionProvider.getRedisStats().startActiveExpirationCheck();
     long expireCount = 0;
     try {
       final long now = System.currentTimeMillis();
@@ -76,10 +77,10 @@ public class PassiveExpirationManager {
       }
     } catch (CacheClosedException ignore) {
     } catch (RuntimeException | Error ex) {
-      logger.warn("Passive expiration failed. Will try again in 1 second.",
-          ex);
+      logger.warn("Active expiration failed. Will try again in " + activeExpirationInterval
+          + " second(s).", ex);
     } finally {
-      regionProvider.getRedisStats().endPassiveExpirationCheck(start, expireCount);
+      regionProvider.getRedisStats().endActiveExpirationCheck(start, expireCount);
     }
   }
 
