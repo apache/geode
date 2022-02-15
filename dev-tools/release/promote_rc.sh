@@ -18,19 +18,24 @@
 set -e
 
 usage() {
-    echo "Usage: promote_rc.sh -v version_number -k your_full_gpg_public_key -g your_github_username"
+    echo "Usage: promote_rc.sh -j ticket -v version_number -k your_full_gpg_public_key -g your_github_username"
+    echo "  -j   The GEODE-nnnnn Jira identifier for this release"
     echo "  -v   The #.#.#.RC# version number to ship"
     echo "  -k   Your 8 digit GPG key id (the last 8 digits of your gpg fingerprint)"
     echo "  -g   Your github username"
     exit 1
 }
 
+JIRA=""
 FULL_VERSION=""
 SIGNING_KEY=""
 GITHUB_USER=""
 
-while getopts ":v:k:g:" opt; do
+while getopts ":j:v:k:g:" opt; do
   case ${opt} in
+    j )
+      JIRA=$OPTARG
+      ;;
     v )
       FULL_VERSION=$OPTARG
       ;;
@@ -46,7 +51,7 @@ while getopts ":v:k:g:" opt; do
   esac
 done
 
-if [[ ${FULL_VERSION} == "" ]] || [[ ${SIGNING_KEY} == "" ]] || [[ ${GITHUB_USER} == "" ]]; then
+if [[ ${JIRA} == "" ]] || [[ ${FULL_VERSION} == "" ]] || [[ ${SIGNING_KEY} == "" ]] || [[ ${GITHUB_USER} == "" ]]; then
     usage
 fi
 
@@ -120,7 +125,7 @@ fi
 function failMsg {
   errln=$1
   echo "ERROR: script did NOT complete successfully"
-  echo "Comment out any steps that already succeeded (approximately lines 145-$(( errln - 1 ))) and try again"
+  echo "Comment out any steps that already succeeded (approximately lines 151-$(( errln - 1 ))) and try again"
 }
 trap 'failMsg $LINENO' ERR
 
@@ -153,7 +158,11 @@ cd ${SVN_DIR}/../..
 svn update
 svn mv dev/geode/${FULL_VERSION} release/geode/${VERSION}
 cp dev/geode/KEYS release/geode/KEYS
-svn commit -m "Releasing Apache Geode ${VERSION} distribution"
+svn commit -m "$JIRA: Release Apache Geode ${VERSION}
+
+Publish the source, binary, and checksum artifacts to ASF svn server,
+from which they will be picked up and published within 15 minutes to
+the URLs on https://geode.apache.org/releases/"
 set +x
 
 
@@ -231,7 +240,9 @@ else
   set -x
   git add apache-geode.rb
   git diff --staged --color | cat
-  git commit -m "apache-geode ${VERSION}"
+  git commit -m "$JIRA: Brew apache-geode ${VERSION}
+
+This is the latest and greatest release of Apache Geode."
   git push -u myfork
   set +x
 fi
@@ -255,7 +266,7 @@ rm Dockerfile.bak
 set -x
 git add Dockerfile
 git diff --staged --color | cat
-git commit -m "update Dockerfile to apache-geode ${VERSION}"
+git commit -m "$JIRA: update Dockerfile to apache-geode ${VERSION}"
 git push
 set +x
 
@@ -279,7 +290,10 @@ rm $(find . -name '*.bak')
 set -x
 git add .
 git diff --staged --color | cat
-git commit -m "update Dockerfile and other variables to apache-geode ${VERSION}"
+git commit -m "$JIRA: Update Dockerfile and vars
+
+Native client hardcodes Geode version to test with in several places.
+Update native Dockerfile and other variables to apache-geode ${VERSION}"
 git push
 set +x
 
@@ -370,7 +384,10 @@ if [ -z "$LATER" ] ; then
   git add .
   if [ $(git diff --staged | wc -l) -gt 0 ] ; then
     git diff --staged --color | cat
-    git commit -m "Bumping Geode version to ${VERSION} for CI"
+    git commit -m "$JIRA: Bump Geode version to ${VERSION}
+
+Native client hardcodes Geode version to test with in several places.
+Update those variables to latest-and-greatest apache-geode ${VERSION}"
     git push -u myfork
   fi
   set +x
@@ -391,7 +408,10 @@ rm gradle.properties.bak
 set -x
 git add gradle.properties
 git diff --staged --color | cat
-git commit -m 'Revert "temporarily point to staging repo for CI purposes"'
+git commit -m "Revert "'"'"$JIRA: Set temporary staging repo"'"'"
+
+The staging repo no longest exists, so set this back to search the
+default location (mavencentral)"
 git push
 set +x
 
@@ -463,7 +483,11 @@ fi
 
 if [ -z "$LATER" ] ; then
   #also update benchmark baseline for develop to this new minor
-  sed -e "s/^  baseline_version_default:.*/  baseline_version_default: '${VERSION}'/" \
+  sed \
+    -e "s/^    baseline_version:.*/    baseline_version: '${VERSION}'/" \
+    -e "s/^  baseline_version_default:.*/  baseline_version_default: '${VERSION}'/" \
+    -e "s/^    baseline_branch:.*/    baseline_branch: ''/" \
+    -e "s/^  baseline_branch_default:.*/  baseline_branch_default: ''/" \
     -i.bak ci/pipelines/shared/jinja.variables.yml
   rm ci/pipelines/shared/jinja.variables.yml.bak
   BENCHMSG=" and set as Benchmarks baseline"
@@ -473,7 +497,9 @@ fi
 set -x
 git add settings.gradle
 git diff --staged --color | cat
-git commit -m "add ${VERSION} to old versions${BENCHMSG} on develop"
+git commit -m "$JIRA: Add ${VERSION} as old version
+
+Adds ${VERSION} to old versions${BENCHMSG} on develop"
 git push -u myfork
 set +x
 
@@ -502,7 +528,10 @@ else
   #also update benchmark baseline for support branch to its new minor
   sed \
     -e "s/^  baseline_version:.*/  baseline_version: '${VERSION}'/" \
+    -e "s/^    baseline_version:.*/    baseline_version: '${VERSION}'/" \
     -e "s/^  baseline_version_default:.*/  baseline_version_default: '${VERSION}'/" \
+    -e "s/^    baseline_branch:.*/    baseline_branch: ''/" \
+    -e "s/^  baseline_branch_default:.*/  baseline_branch_default: ''/" \
     -i.bak ci/pipelines/shared/jinja.variables.yml
   rm ci/pipelines/shared/jinja.variables.yml.bak
   BENCHMSG2=" and set as Benchmarks baseline"
@@ -512,7 +541,9 @@ fi
 set -x
 git add settings.gradle
 git diff --staged --color | cat
-git commit -m "add ${VERSION} to old versions${BENCHMSG2} on support/$VERSION_MM"
+git commit -m "$JIRA: Add ${VERSION} as old version
+
+Adds ${VERSION} to old versions${BENCHMSG2} on support/$VERSION_MM"
 git push
 set +x
 
@@ -538,7 +569,9 @@ if [ -z "$LATER" ] ; then
     git add infrastructure/scripts/aws/run_against_baseline.sh
     if [ $(git diff --staged | wc -l) -gt 0 ] ; then
       git diff --staged --color | cat
-      git commit -m "update default benchmark baseline on $branch"
+      git commit -m "$JIRA: Update benchmark baseline
+
+Updates the default benchmark baseline on $branch to ${BASEL}"
       git push
     fi
     set +x
@@ -562,7 +595,12 @@ rm -f ../did.remove
 (ls | grep '^[0-9]'; cat ../keep ../keep)|sort|uniq -u|while read oldVersion; do
     set -x
     svn rm $oldVersion
-    svn commit -m "remove $oldVersion from mirrors (it is still available at http://archive.apache.org/dist/geode)"
+    svn commit -m "$JIRA: Remove $oldVersion from mirrors
+
+ASF requests that we keep preferably one, and definitely fewer than 5
+releases on the mirrors, so aim for 3 to match N-2 support policy.
+
+Note: it is still archived at http://archive.apache.org/dist/geode"
     set +x
     [ ! -r ../did.remove ] || echo -n " and " >> ../did.remove
     echo -n $oldVersion >> ../did.remove
@@ -577,7 +615,7 @@ NEWVERSION="${VERSION_MM}.$(( PATCH + 1 ))"
 echo "============================================================"
 echo -n "Bumping version to ${NEWVERSION}"
 cd "${WORKSPACE}/.."
-${0%/*}/set_versions.sh -v ${NEWVERSION} -s -w "${WORKSPACE}"
+${0%/*}/set_versions.sh -j $JIRA -v ${NEWVERSION} -s -w "${WORKSPACE}"
 
 
 echo ""

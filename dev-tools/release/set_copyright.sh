@@ -18,18 +18,27 @@
 set -e
 
 usage() {
-    echo "Usage: set_copyright.sh dirs"
+    echo "Usage: set_copyright.sh -j ticket dirs"
+    echo "  -j   The GEODE-nnnnn Jira identifier for this chore"
+    echo "  dirs one or more directories to search for copyrights"
     exit 1
 }
 
-if [[ "$1" == "" ]] ; then
+if [[ "$3" == "" ]] ; then
     usage
 fi
+
+if [[ "$1" != "-j" ]] ; then
+    usage
+fi
+
+JIRA=$2
+shift 2
 
 function failMsg {
   errln=$1
   echo "ERROR: set_copyright script did NOT complete successfully"
-  echo "Comment out any steps that already succeeded (approximately lines 37-$(( errln - 1 ))) and try again"
+  echo "Comment out any steps that already succeeded (approximately lines 46-$(( errln - 1 ))) and try again"
 }
 trap 'failMsg $LINENO' ERR
 
@@ -53,7 +62,7 @@ for DIR in $@ ; do
     done
     if [ $(git diff --staged | wc -l) -gt 0 ] ; then
       git diff --staged --color | cat
-      git commit -a -m "Bumping copyright year to ${year}"
+      git commit -a -m "$JIRA: Bumping copyright year to ${year}"
     fi
 done
 set +x
