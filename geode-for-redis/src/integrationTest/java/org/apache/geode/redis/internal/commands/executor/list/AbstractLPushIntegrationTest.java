@@ -95,8 +95,18 @@ public abstract class AbstractLPushIntegrationTest implements RedisIntegrationTe
   @Test
   public void lpush_addsElementsInCorrectOrder_givenMultipleElements() {
     jedis.lpush(KEY, "e1", "e2", "e3");
+    jedis.lpush(KEY, "e4", "e5", "e6");
 
     String result = jedis.lpop(KEY);
+    assertThat(result).isEqualTo("e6");
+
+    result = jedis.lpop(KEY);
+    assertThat(result).isEqualTo("e5");
+
+    result = jedis.lpop(KEY);
+    assertThat(result).isEqualTo("e4");
+
+    result = jedis.lpop(KEY);
     assertThat(result).isEqualTo("e3");
 
     result = jedis.lpop(KEY);

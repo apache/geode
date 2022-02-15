@@ -382,7 +382,8 @@ public enum RedisCommandType {
 
   LLEN(new LLenExecutor(), Category.LIST, SUPPORTED, new Parameter().exact(2).flags(READONLY, FAST)),
   LPOP(new LPopExecutor(), Category.LIST, SUPPORTED, new Parameter().exact(2).flags(WRITE, FAST)),
-  LPUSH(new LPushExecutor(), Category.LIST, SUPPORTED, new Parameter().min(3).flags(WRITE, DENYOOM, FAST)),
+  LPUSH(new LPushExecutor(), Category.LIST, SUPPORTED,
+      new Parameter().min(3).flags(WRITE, DENYOOM, FAST)),
 
   /********** Publish Subscribe **********/
 

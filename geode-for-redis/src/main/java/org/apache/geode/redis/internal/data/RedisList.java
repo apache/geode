@@ -49,9 +49,6 @@ public class RedisList extends AbstractRedisData {
    * @return the number of elements actually added
    */
   public long lpush(List<byte[]> elementsToAdd, Region<RedisKey, RedisData> region, RedisKey key) {
-    // for (byte[] element : elementsToAdd) {
-    // elementPush(element);
-    // }
     elementsPush(elementsToAdd);
     storeChanges(region, key, new AddByteArrays(elementsToAdd));
     return elementList.size();
@@ -133,7 +130,9 @@ public class RedisList extends AbstractRedisData {
   }
 
   public synchronized void elementsPush(List<byte[]> elementsToAdd) {
-    elementList.addAll(0, elementsToAdd);
+    for (byte[] element : elementsToAdd) {
+      elementPush(element);
+    }
   }
 
   @Override
