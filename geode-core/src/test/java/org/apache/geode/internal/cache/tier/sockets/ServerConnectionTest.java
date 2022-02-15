@@ -34,7 +34,10 @@ import static org.mockito.quality.Strictness.STRICT_STUBS;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.shiro.subject.Subject;
 import org.junit.Before;
 import org.junit.Rule;
@@ -62,7 +65,6 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category(ClientServerTest.class)
 public class ServerConnectionTest {
-
   @Rule
   public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
 
@@ -81,6 +83,7 @@ public class ServerConnectionTest {
   private DistributionManager distributionManager;
   private ThreadsMonitoring threadsMonitoring;
   private CacheClientNotifier notifier;
+  private ClientHealthMonitor clientHealthMonitor;
 
   @Before
   public void setUp() throws IOException {
@@ -92,6 +95,7 @@ public class ServerConnectionTest {
     securityService = mock(SecurityService.class);
     command = mock(Command.class);
     notifier = mock(CacheClientNotifier.class);
+    clientHealthMonitor = mock(ClientHealthMonitor.class);
 
     when(inetAddress.getHostAddress()).thenReturn("localhost");
     when(socket.getInetAddress()).thenReturn(inetAddress);
@@ -275,5 +279,47 @@ public class ServerConnectionTest {
     spy.doNormalMessage();
     assertThat(spy.getProcessMessages()).isFalse();
     verify(spy, never()).resumeThreadMonitoring();
+  }
+
+  @Test
+  public void handleTerminationWithoutUnrgisterClientShouldNotNullClientAuths() {
+    when(acceptor.getClientHealthMonitor()).thenReturn(clientHealthMonitor);
+    when(acceptor.getCacheClientNotifier()).thenReturn(notifier);
+    ClientUserAuths clientUserAuths = mock(ClientUserAuths.class);
+    ServerConnection spy = spy(serverConnection);
+    doReturn(new HashMap<>()).when(clientHealthMonitor).getCleanupTable();
+    doReturn(new HashMap<>()).when(clientHealthMonitor).getCleanupProxyIdTable();
+    spy.setClientUserAuths(clientUserAuths);
+
+    spy.handleTermination(false);
+    assertThat(spy.getClientUserAuths()).isNotNull();
+
+    // subsequent putSubject call will be successful
+    Subject subject = mock(Subject.class);
+    spy.putSubject(subject, -1);
+  }
+
+  @Test
+  public void handleTerminationWithUnregisterClientShouldNullClientAuths() {
+    when(acceptor.getClientHealthMonitor()).thenReturn(clientHealthMonitor);
+    when(acceptor.getCacheClientNotifier()).thenReturn(notifier);
+    when(acceptor.getConnectionListener()).thenReturn(mock(ConnectionListener.class));
+    ClientUserAuths clientUserAuths = mock(ClientUserAuths.class);
+    ServerConnection spy = spy(serverConnection);
+    Map<ServerSideHandshake, MutableInt> cleanupTable = mock(Map.class);
+    when(cleanupTable.get(any())).thenReturn(mock(MutableInt.class));
+    doReturn(cleanupTable).when(clientHealthMonitor).getCleanupTable();
+    doReturn(new HashMap<>()).when(clientHealthMonitor).getCleanupProxyIdTable();
+    spy.setClientUserAuths(clientUserAuths);
+
+    ClientProxyMembershipID proxyId = mock(ClientProxyMembershipID.class);
+    when(proxyId.isDurable()).thenReturn(true);
+    when(proxyId.getDistributedMember()).thenReturn(mock(InternalDistributedMember.class));
+    spy.setProxyId(proxyId);
+
+    // this will make handleTermination to unregister the client
+    spy.processHandShake();
+    spy.handleTermination(false);
+    assertThat(spy.getClientUserAuths()).isNull();
   }
 }
