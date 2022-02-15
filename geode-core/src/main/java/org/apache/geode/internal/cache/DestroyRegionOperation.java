@@ -92,7 +92,12 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
 
   @Override
   protected Set getRecipients() {
-    return getRegion().getSystem().getDistributionManager().getOtherDistributionManagerIds();
+    if (getRegion().getAttributes() instanceof BucketRegion) {
+      return getRegion().getSystem().getDistributionManager().getOtherDistributionManagerIds();
+    } else {
+      CacheDistributionAdvisor advisor = getRegion().getCacheDistributionAdvisor();
+      return advisor.adviseDestroyRegion();
+    }
   }
 
   @Override
