@@ -134,7 +134,7 @@ tests:
   RAM: '250'
   name: distributed
 - ARTIFACT_SLUG: distributedtestclasloaderisolatedfiles
-  CALL_STACK_TIMEOUT: '11700'
+  CALL_STACK_TIMEOUT: '13500'
   CPUS: '96'
   DISK: '200GB'
   DUNIT_PARALLEL_FORKS: '24'
