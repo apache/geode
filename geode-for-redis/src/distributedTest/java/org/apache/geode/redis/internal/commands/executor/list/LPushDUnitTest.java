@@ -128,8 +128,6 @@ public class LPushDUnitTest {
     for (int i = 0; i < MINIMUM_ITERATIONS; i++) {
       long listLength = jedis.llen(key);
       long newLength = jedis.lpush(key, elementList.toArray(new String[] {}));
-      assertThat(newLength - listLength).as("LPUSH returned %s, LLEN was %s, diff of %s not >= 3",
-          newLength, listLength, newLength - listLength).isGreaterThanOrEqualTo(3);
       assertThat((newLength - listLength) % 3).as("LPUSH, list length %s not multiple of 3",
           newLength).isEqualTo(0);
     }
