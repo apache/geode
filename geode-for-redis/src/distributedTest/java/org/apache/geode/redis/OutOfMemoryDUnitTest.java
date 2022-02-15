@@ -76,7 +76,8 @@ public class OutOfMemoryDUnitTest {
 
   private static final long KEY_TTL_SECONDS = 10;
   private static final int MAX_ITERATION_COUNT = 4000;
-  private static final int LARGE_VALUE_SIZE = 128 * 1024;
+  private static final int LARGE_VALUE_SIZE = 1024 * 1024;
+  private static final String LARGE_VALUE = StringUtils.leftPad("a", LARGE_VALUE_SIZE);
   private static final String KEY = "key";
 
   private static String locatorPort;
@@ -265,11 +266,10 @@ public class OutOfMemoryDUnitTest {
 
     memoryPressure.cancel(true);
 
-    String value = StringUtils.leftPad("a", LARGE_VALUE_SIZE);
     await().untilAsserted(() -> assertThatNoException().isThrownBy(
         () -> {
           removeAllKeysAndForceGC();
-          jedis.set(server1Tag + "newKey", value);
+          jedis.set(server1Tag + "newKey", LARGE_VALUE);
         }));
   }
 
@@ -285,11 +285,10 @@ public class OutOfMemoryDUnitTest {
 
     memoryPressure.cancel(true);
 
-    String value = StringUtils.leftPad("a", LARGE_VALUE_SIZE);
     await().untilAsserted(() -> assertThatNoException().isThrownBy(
         () -> {
           removeAllKeysAndForceGC();
-          jedis.set(server2Tag + "newKey", value);
+          jedis.set(server2Tag + "newKey", LARGE_VALUE);
         }));
   }
 
@@ -338,32 +337,24 @@ public class OutOfMemoryDUnitTest {
   }
 
   private void fillServer1Memory(JedisCluster jedis, boolean withExpiration) {
-    String valueString = StringUtils.leftPad("a", LARGE_VALUE_SIZE);
-
-    while (valueString.length() > 1) {
-      addMultipleKeysToServer1UntilOOMExceptionIsThrown(jedis, valueString, withExpiration);
-      valueString = valueString.substring(valueString.length() / 2);
-    }
+    assertThatThrownBy(() -> {
+      // First force GC to reduce the chances of dropping back below critical accidentally
+      gfsh.execute("gc");
+      for (int count = 0; count < MAX_ITERATION_COUNT; ++count) {
+        if (withExpiration) {
+          jedis.setex(server1Tag + KEY + numberOfKeys.get(), KEY_TTL_SECONDS, LARGE_VALUE);
+        } else {
+          jedis.set(server1Tag + KEY + numberOfKeys.get(), LARGE_VALUE);
+        }
+        numberOfKeys.incrementAndGet();
+      }
+    }).hasMessageContaining("OOM command not allowed");
   }
 
   private void maintainMemoryPressure(JedisCluster jedis, boolean withExpiration) {
     while (!Thread.interrupted()) {
       fillServer1Memory(jedis, withExpiration);
     }
-  }
-
-  private void addMultipleKeysToServer1UntilOOMExceptionIsThrown(JedisCluster jedis,
-      String valueString, boolean withExpiration) {
-    assertThatThrownBy(() -> {
-      for (int count = 0; count < MAX_ITERATION_COUNT; ++count) {
-        if (withExpiration) {
-          jedis.setex(server1Tag + KEY + numberOfKeys.get(), KEY_TTL_SECONDS, valueString);
-        } else {
-          jedis.set(server1Tag + KEY + numberOfKeys.get(), valueString);
-        }
-        numberOfKeys.incrementAndGet();
-      }
-    }).hasMessageContaining("OOM command not allowed");
   }
 
   void removeAllKeysAndForceGC() throws Exception {
