@@ -206,7 +206,7 @@ public abstract class AbstractInfoStatsIntegrationTest implements RedisIntegrati
     double reportedCommandsPerLastSecond =
         Double.parseDouble(getInfo(jedis).get(OPS_PERFORMED_OVER_LAST_SECOND));
 
-    assertThat(reportedCommandsPerLastSecond).isCloseTo(expected, withinPercentage(10));
+    assertThat(reportedCommandsPerLastSecond).isCloseTo(expected, withinPercentage(12.5));
 
     executeCommands.get(GeodeAwaitility.getTimeout().toMillis(), TimeUnit.MILLISECONDS);
 
@@ -279,7 +279,7 @@ public abstract class AbstractInfoStatsIntegrationTest implements RedisIntegrati
     double reportedKBReadPerLastSecond =
         Double.parseDouble(getInfo(jedis).get(NETWORK_KB_READ_OVER_LAST_SECOND));
 
-    assertThat(reportedKBReadPerLastSecond).isCloseTo(expected, withinPercentage(10));
+    assertThat(reportedKBReadPerLastSecond).isCloseTo(expected, withinPercentage(12.5));
 
     executeCommands.get(GeodeAwaitility.getTimeout().toMillis(), TimeUnit.MILLISECONDS);
 
