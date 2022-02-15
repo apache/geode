@@ -77,7 +77,7 @@ public class GeodeRedisServer {
 
     unsupportedCommandsEnabled = Boolean.getBoolean(ENABLE_UNSUPPORTED_COMMANDS_PARAM);
 
-    redisStats = createStats(cache, bindAddress, port);
+    redisStats = createStats(cache);
     StripedCoordinator stripedCoordinator = new LockingStripedCoordinator();
     RedisMemberInfoRetrievalFunction infoFunction = RedisMemberInfoRetrievalFunction.register();
 
@@ -102,7 +102,7 @@ public class GeodeRedisServer {
     return ((PubSubImpl) pubSub).getSubscriptionCount();
   }
 
-  private static RedisStats createStats(InternalCache cache, String bindAddress, int port) {
+  private static RedisStats createStats(InternalCache cache) {
     InternalDistributedSystem system = cache.getInternalDistributedSystem();
     StatisticsClock statisticsClock =
         StatisticsClockFactory.clock(true);
