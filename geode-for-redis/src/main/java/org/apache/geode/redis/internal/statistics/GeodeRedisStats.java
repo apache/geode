@@ -18,8 +18,6 @@ package org.apache.geode.redis.internal.statistics;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
@@ -34,10 +32,10 @@ import org.apache.geode.redis.internal.commands.RedisCommandType;
 public class GeodeRedisStats {
 
   public static final String STATS_BASENAME = "GeodeForRedisStats";
-  private static final String GENERAL_CATEGORY = "General";
 
   @Immutable
-  private static final Map<String, StatisticsType> statisticTypes = new HashMap<>();
+  private static final EnumMap<RedisCommandType.Category, StatisticsType> statisticTypes =
+      new EnumMap<>(RedisCommandType.Category.class);
   @Immutable
   private static final EnumMap<RedisCommandType, Integer> completedCommandStatIds =
       new EnumMap<>(RedisCommandType.class);
@@ -63,27 +61,26 @@ public class GeodeRedisStats {
   private static final int uniqueChannelSubscriptionsId;
   private static final int uniquePatternSubscriptionsId;
   private final Statistics generalStats;
-  private final Map<String, Statistics> statistics = new HashMap<>();
+  private final EnumMap<RedisCommandType.Category, Statistics> statistics =
+      new EnumMap<>(RedisCommandType.Category.class);
+  private static final StatisticsType generalType;
   private final StatisticsClock clock;
 
   public GeodeRedisStats(StatisticsFactory factory, StatisticsClock clock) {
     this.clock = clock;
-    generalStats =
-        factory.createAtomicStatistics(statisticTypes.get(GENERAL_CATEGORY), STATS_BASENAME);
-    statistics.put(GENERAL_CATEGORY, generalStats);
+    generalStats = factory.createAtomicStatistics(generalType, generalType.getName());
 
     for (RedisCommandType.Category category : RedisCommandType.Category.values()) {
-      String statName = STATS_BASENAME + ":" + category.name();
-      Statistics stats =
-          factory.createAtomicStatistics(statisticTypes.get(category.name()), statName);
-      statistics.put(category.name(), stats);
+      StatisticsType type = statisticTypes.get(category);
+      Statistics stats = factory.createAtomicStatistics(type, type.getName());
+      statistics.put(category, stats);
     }
   }
 
   static {
     StatisticsTypeFactory statisticsTypeFactory = StatisticsTypeFactoryImpl.singleton();
 
-    StatisticsType generalType = statisticsTypeFactory
+    generalType = statisticsTypeFactory
         .createType(STATS_BASENAME,
             "Statistics for a geode-for-redis server",
             createGeneralStatisticDescriptors(statisticsTypeFactory));
@@ -106,17 +103,15 @@ public class GeodeRedisStats {
     uniqueChannelSubscriptionsId = generalType.nameToId("uniqueChannelSubscriptions");
     uniquePatternSubscriptionsId = generalType.nameToId("uniquePatternSubscriptions");
 
-    statisticTypes.put(GENERAL_CATEGORY, generalType);
-
     for (RedisCommandType.Category category : RedisCommandType.Category.values()) {
       StatisticsType type = statisticsTypeFactory
           .createType(STATS_BASENAME + ":" + category.name(),
               category.name() + " statistics for a geode-for-redis server",
               createCategoryStatisticDescriptors(statisticsTypeFactory, category));
-      statisticTypes.put(category.name(), type);
+      statisticTypes.put(category, type);
 
-      fillCompletedIdMap(category);
-      fillTimeIdMap(category);
+      fillCompletedIdMap(category, type);
+      fillTimeIdMap(category, type);
     }
   }
 
@@ -125,7 +120,7 @@ public class GeodeRedisStats {
   }
 
   public void endCommand(RedisCommandType command, long start) {
-    Statistics stat = statistics.get(command.category().name());
+    Statistics stat = statistics.get(command.category());
     if (clock.isEnabled()) {
       stat.incLong(timeCommandStatIds.get(command), getCurrentTimeNanos() - start);
     }
@@ -235,21 +230,19 @@ public class GeodeRedisStats {
     return descriptors.toArray(new StatisticDescriptor[0]);
   }
 
-  private static void fillCompletedIdMap(RedisCommandType.Category category) {
-    String categoryName = category.name();
+  private static void fillCompletedIdMap(RedisCommandType.Category category, StatisticsType type) {
     for (RedisCommandType command : RedisCommandType.getCommandsForCategory(category)) {
       String name = command.name().toLowerCase();
       String statName = name + "Completed";
-      completedCommandStatIds.put(command, statisticTypes.get(categoryName).nameToId(statName));
+      completedCommandStatIds.put(command, type.nameToId(statName));
     }
   }
 
-  private static void fillTimeIdMap(RedisCommandType.Category category) {
-    String categoryName = category.name();
+  private static void fillTimeIdMap(RedisCommandType.Category category, StatisticsType type) {
     for (RedisCommandType command : RedisCommandType.getCommandsForCategory(category)) {
       String name = command.name().toLowerCase();
       String statName = name + "Time";
-      timeCommandStatIds.put(command, statisticTypes.get(categoryName).nameToId(statName));
+      timeCommandStatIds.put(command, type.nameToId(statName));
     }
   }
 
