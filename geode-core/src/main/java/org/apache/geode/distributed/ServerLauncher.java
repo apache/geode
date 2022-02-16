@@ -683,7 +683,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
   private static final String TWO_NEW_LINES = lineSeparator() + lineSeparator();
 
   /**
-   * Displays help for the specified Server launcher command to standard err. If the Server launcher
+   * Displays help for the specified Server launcher command to standard output. If the Server
+   * launcher
    * command is unspecified, then usage information is displayed instead.
    *
    * @param command the Server launcher command in which to display help information.
@@ -708,7 +709,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
   /**
    * Displays usage information on the proper invocation of the ServerLauncher from the command-line
-   * to standard err.
+   * to standard output.
    *
    * @see #help(ServerLauncher.Command)
    */
