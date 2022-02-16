@@ -19,7 +19,6 @@ import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADD
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -34,13 +33,12 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class LPopDUnitTest {
-  public static final int MINIMUM_ITERATIONS = 10000;
+  public static final int INITIAL_LIST_SIZE = 10000;
   private static MemberVM locator;
 
   @ClassRule
@@ -74,16 +72,16 @@ public class LPopDUnitTest {
   @Test
   public void shouldDistributeDataAmongCluster_andRetainDataAfterServerCrash() {
     String key = makeListKeyWithHashtag(1, clusterStartUp.getKeyOnServer("lpop", 1));
-    List<String> elementList = makeElementList(key, MINIMUM_ITERATIONS);
+    List<String> elementList = makeElementList(key, INITIAL_LIST_SIZE);
     lpushPerformAndVerify(key, elementList);
 
     // Remove all but last element
-    for (int i = MINIMUM_ITERATIONS - 1; i > 0; i--) {
+    for (int i = INITIAL_LIST_SIZE - 1; i > 0; i--) {
       assertThat(jedis.lpop(key)).isEqualTo(makeElementString(key, i));
     }
     clusterStartUp.crashVM(1); // kill primary server
 
-    assertThat(jedis.lpop(key)).isEqualTo(makeElementString(key, 0));
+    assertThat(jedis.lpop(key)).isEqualTo(elementList.get(0));
     assertThat(jedis.exists(key)).isFalse();
   }
 
@@ -93,9 +91,9 @@ public class LPopDUnitTest {
     List<String> listHashtags = makeListHashtags();
     List<String> keys = makeListKeys(listHashtags);
 
-    List<String> elementList1 = makeElementList(keys.get(0), MINIMUM_ITERATIONS);
-    List<String> elementList2 = makeElementList(keys.get(1), MINIMUM_ITERATIONS);
-    List<String> elementList3 = makeElementList(keys.get(2), MINIMUM_ITERATIONS);
+    List<String> elementList1 = makeElementList(keys.get(0), INITIAL_LIST_SIZE);
+    List<String> elementList2 = makeElementList(keys.get(1), INITIAL_LIST_SIZE);
+    List<String> elementList3 = makeElementList(keys.get(2), INITIAL_LIST_SIZE);
 
     lpushPerformAndVerify(keys.get(0), elementList1);
     lpushPerformAndVerify(keys.get(1), elementList2);
@@ -114,7 +112,7 @@ public class LPopDUnitTest {
 
     for (int i = 0; i < 50 && runningCount.get() > 0; i++) {
       clusterStartUp.moveBucketForKey(listHashtags.get(i % listHashtags.size()));
-      GeodeAwaitility.await().during(Duration.ofMillis(500)).until(() -> true);
+      Thread.sleep(500);
     }
 
     runningCount.set(0);
@@ -145,15 +143,15 @@ public class LPopDUnitTest {
     jedis.lpush(key, elementList.toArray(new String[] {}));
 
     Long listLength = jedis.llen(key);
-    assertThat(listLength).isEqualTo(elementList.size())
-        .as("Initial list lengths not equal for key %s'", key);
+    assertThat(listLength).as("Initial list lengths not equal for key %s'", key)
+        .isEqualTo(elementList.size());
   }
 
   private void lpopPerformAndVerify(String key, AtomicLong runningCount) {
-    assertThat(jedis.llen(key)).isGreaterThanOrEqualTo(MINIMUM_ITERATIONS);
-    assertThat(jedis.llen(key)).isGreaterThanOrEqualTo(MINIMUM_ITERATIONS);
+    assertThat(jedis.llen(key)).isEqualTo(INITIAL_LIST_SIZE);
+    assertThat(jedis.llen(key)).isEqualTo(INITIAL_LIST_SIZE);
 
-    int elementCount = MINIMUM_ITERATIONS - 1;
+    int elementCount = INITIAL_LIST_SIZE - 1;
     while (jedis.llen(key) > 0 && runningCount.get() > 0) {
       String expected = key + "-" + (elementCount - 1) + "-";
       String element = expected;

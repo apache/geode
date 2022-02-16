@@ -59,7 +59,7 @@ public abstract class AbstractLPopIntegrationTest implements RedisIntegrationTes
   @Test
   public void lpop_withNonListKey_Fails() {
     jedis.set("string", PREEXISTING_VALUE);
-    assertThatThrownBy(() -> jedis.lpop("string")).hasMessageContaining(ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.lpop("string")).hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -107,8 +107,7 @@ public abstract class AbstractLPopIntegrationTest implements RedisIntegrationTes
             .runWithAction(() -> {
               assertThat(lpopReference).satisfiesAnyOf(
                   lpopResult -> assertThat(lpopReference.get()).isEqualTo("orange"),
-                  lpopResult -> assertThat(lpopReference.get()).isEqualTo("troix"),
-                  lpopResult -> assertThat(lpopReference.get()).isNull());
+                  lpopResult -> assertThat(lpopReference.get()).isEqualTo("troix"));
               jedis.del(KEY);
               jedis.lpush(KEY, valuesInitial);
             });

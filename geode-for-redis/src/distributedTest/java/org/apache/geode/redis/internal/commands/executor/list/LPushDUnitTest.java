@@ -19,14 +19,13 @@ import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADD
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -35,7 +34,6 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
@@ -70,13 +68,13 @@ public class LPushDUnitTest {
     clusterStartUp.flushAll();
   }
 
-  @AfterClass
-  public static void tearDown() {
+  @After
+  public void tearDown() {
     jedis.close();
   }
 
   @Test
-  public void shouldPushMultipleElementsAtomically()
+  public void givenBucketsMovedDuringLPush_elementsAreAddedAtomically()
       throws ExecutionException, InterruptedException {
     AtomicLong runningCount = new AtomicLong(PUSHER_COUNT);
 
@@ -97,29 +95,24 @@ public class LPushDUnitTest {
     taskList.add(() -> verifyListLengthCondition(keys.get(1), runningCount));
     taskList.add(() -> verifyListLengthCondition(keys.get(2), runningCount));
 
-    List<Future> futureList = new ArrayList<>();
+    List<Future<Void>> futureList = new ArrayList<>();
     for (Runnable task : taskList) {
       futureList.add(executor.runAsync(task));
     }
 
     for (int i = 0; i < 50 && runningCount.get() > 0; i++) {
       clusterStartUp.moveBucketForKey(listHashtags.get(i % listHashtags.size()));
-      GeodeAwaitility.await().during(Duration.ofMillis(500)).until(() -> true);
+      Thread.sleep(500);
     }
 
     for (Future future : futureList) {
       future.get();
     }
 
-    int totalLength = 0;
-    Long length;
     for (String key : keys) {
-      length = jedis.llen(key);
-      assertThat(length).isGreaterThanOrEqualTo(MINIMUM_ITERATIONS * 2 * PUSH_LIST_SIZE);
-      totalLength += length;
+      assertThat(jedis.llen(key)).isGreaterThanOrEqualTo(MINIMUM_ITERATIONS * 2 * PUSH_LIST_SIZE);
     }
-    assertThat(totalLength)
-        .isGreaterThanOrEqualTo(MINIMUM_ITERATIONS * PUSHER_COUNT * PUSH_LIST_SIZE);
+
     clusterStartUp.crashVM(1); // kill primary server, just in case test order is reversed
   }
 
@@ -135,7 +128,7 @@ public class LPushDUnitTest {
   }
 
   @Test
-  public void shouldDistributeElementsAcrossCluster()
+  public void shouldNotLoseData_givenPrimaryServerCrashesDuringOperations()
       throws ExecutionException, InterruptedException {
     final int pusherCount = 6;
     final int pushListSize = 3;
@@ -158,12 +151,12 @@ public class LPushDUnitTest {
     taskList.add(() -> verifyListLengthCondition(keys.get(1), runningCount));
     taskList.add(() -> verifyListLengthCondition(keys.get(2), runningCount));
 
-    List<Future> futureList = new ArrayList<>();
+    List<Future<Void>> futureList = new ArrayList<>();
     for (Runnable task : taskList) {
       futureList.add(executor.runAsync(task));
     }
 
-    GeodeAwaitility.await().during(Duration.ofMillis(200)).until(() -> true);
+    Thread.sleep(200);
     clusterStartUp.crashVM(1); // kill primary server
 
     for (Future future : futureList) {
