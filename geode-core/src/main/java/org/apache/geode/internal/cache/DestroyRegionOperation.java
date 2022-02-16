@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
@@ -39,6 +40,7 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.distributed.internal.membership.api.MemberIdentifier;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
@@ -95,7 +97,9 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
     CacheDistributionAdvisor advisor = getRegion().getCacheDistributionAdvisor();
     if (advisor instanceof BucketAdvisor && getRegion() instanceof BucketRegion) {
       if (!((BucketAdvisor) advisor).getProxyBucketRegion().isPrimary()) {
-        return getRegion().getSystem().getDistributionManager().getOtherDistributionManagerIds();
+        return getRegion().getSystem().getDistributionManager().getOtherDistributionManagerIds()
+            .stream().filter(member -> member.getVmKind() != MemberIdentifier.LOCATOR_DM_TYPE)
+            .collect(Collectors.toSet());
       }
     }
     return advisor.adviseDestroyRegion();
