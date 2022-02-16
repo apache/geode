@@ -68,7 +68,6 @@ import org.apache.geode.test.version.VersionManager;
 
 @RunWith(Parameterized.class)
 public class SocketCreatorUpgradeTest {
-  private static final TestVersion MINIMUM_VERSION = TestVersion.valueOf("1.12.1");
 
   private static final String ALGORITHM = "SHA256withRSA";
   private static final int EXPIRATION = 1;
@@ -113,7 +112,7 @@ public class SocketCreatorUpgradeTest {
   @Parameters(name = "{0}")
   public static Collection<String> data() {
     final List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
-    result.removeIf(v -> TestVersion.valueOf(v).lessThan(MINIMUM_VERSION));
+    result.removeIf(v -> TestVersion.valueOf(v).lessThan(TestVersion.valueOf("1.8.0")));
     return result;
   }
 
@@ -147,14 +146,14 @@ public class SocketCreatorUpgradeTest {
     generateKeyAndTrustStore(hostName, keyStoreFile, trustStoreFile);
 
     startLocator1 = startLocator(LOCATOR_1, hostName, locator1Port, locator1JmxPort,
-        securityPropertiesFile, locator2Port);
+        securityPropertiesFile, locator2Port, this.version);
     startLocator2 = startLocator(LOCATOR_2, hostName, locator2Port, locator2JmxPort,
-        securityPropertiesFile, locator1Port);
+        securityPropertiesFile, locator1Port, this.version);
 
     startLocator1New = startLocator(LOCATOR_1, hostName, locator1Port, locator1JmxPort,
-        newSecurityPropertiesFile, locator2Port);
+        newSecurityPropertiesFile, locator2Port, this.version);
     startLocator2New = startLocator(LOCATOR_2, hostName, locator2Port, locator2JmxPort,
-        newSecurityPropertiesFile, locator1Port);
+        newSecurityPropertiesFile, locator1Port, this.version);
 
     stopLocator1 = stopLocator(LOCATOR_1);
     stopLocator2 = stopLocator(LOCATOR_2);
@@ -176,9 +175,6 @@ public class SocketCreatorUpgradeTest {
 
   @Test
   public void startingOldGeodeWithProtocolsTLSv1_2() throws IOException {
-    assumeThat(version).as("Geode 1.12 can't connect p2p with just TLSv1.2")
-        .isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0"));
-
     generateSecurityProperties(PROTOCOL_TLSv1_2, securityPropertiesFile, keyStoreFile,
         trustStoreFile);
 
@@ -187,9 +183,26 @@ public class SocketCreatorUpgradeTest {
   }
 
   @Test
-  public void startingOldGeode1_12WithProtocolsTLSv1_2Hangs() throws IOException {
-    assumeThat(version).as("Geode 1.12 can't connect p2p with just TLSv1.2")
-        .isGreaterThanOrEqualTo(MINIMUM_VERSION)
+  public void upgradingToNewGeodeOnOldJavaWithProtocolsTLSv1_2() throws IOException {
+    assumeThat(version).as("TODO")
+        .isLessThanOrEqualTo(TestVersion.valueOf("1.12.0"));
+    generateSecurityProperties(PROTOCOL_TLSv1_2, securityPropertiesFile, keyStoreFile,
+        trustStoreFile);
+
+    gfshOldGeodeOldJava.execute(root, startLocator1);
+    gfshOldGeodeOldJava.execute(root, startLocator2);
+
+    // upgrade to new version, no SSL configuration changes
+    gfshOldGeodeOldJava.execute(root, stopLocator1);
+    gfshNewGeodeOldJava.execute(root, startLocator1);
+    gfshOldGeodeOldJava.execute(root, stopLocator2);
+    gfshNewGeodeOldJava.execute(root, startLocator2);
+  }
+
+  @Test
+  public void startingOldGeode1_12_1_UpTo1_13_0WithProtocolsTLSv1_2Hangs() throws IOException {
+    assumeThat(version).as("Geode between [1.12.1, 1.3.0) can't connect p2p with just TLSv1.2")
+        .isGreaterThanOrEqualTo(TestVersion.valueOf("1.12.1"))
         .isLessThan(TestVersion.valueOf("1.13.0"));
 
     generateSecurityProperties(PROTOCOL_TLSv1_2, securityPropertiesFile, keyStoreFile,
@@ -205,7 +218,9 @@ public class SocketCreatorUpgradeTest {
 
   @Test
   public void upgradingToNewGeodeOnOldJavaWithProtocolsTLSv1_2Hangs() throws IOException {
-    assumeThat(version).as("Geode 1.12 can't connect p2p with just TLSv1.2")
+    assumeThat(version).as("Geode 1.12.0 and older can upgrade.")
+        .isGreaterThan(TestVersion.valueOf("1.12.0"));
+    assumeThat(version).as("Geode between [1.12.1, 1.3.0) can't connect p2p with just TLSv1.2")
         .isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0"));
 
     generateSecurityProperties(PROTOCOL_TLSv1_2, securityPropertiesFile, keyStoreFile,
@@ -222,8 +237,11 @@ public class SocketCreatorUpgradeTest {
   @Test
   public void upgradingToNewGeodeOnOldJavaWithProtocolsTLSv1_2WithNewProperties()
       throws IOException {
-    assumeThat(version).as("Geode 1.12 can't connect p2p with just TLSv1.2")
-        .isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0"));
+    assumeThat(version)
+        .as("Geode between [1.12.1, 1.3.0) can't connect p2p with just TLSv1.2")
+        .satisfiesAnyOf(
+            v -> assumeThat(v).isLessThanOrEqualTo(TestVersion.valueOf("1.12.0")),
+            v -> assumeThat(v).isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0")));
 
     generateSecurityProperties(PROTOCOL_TLSv1_2,
         securityPropertiesFile, keyStoreFile, trustStoreFile);
@@ -244,8 +262,11 @@ public class SocketCreatorUpgradeTest {
   @Test
   public void upgradingToNewGeodeOnOldJavaWithProtocolsTLSv1_2ThroughNewProperties()
       throws IOException {
-    assumeThat(version).as("Geode 1.12 can't connect p2p with just TLSv1.2")
-        .isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0"));
+    assumeThat(version)
+        .as("Geode between [1.12.1, 1.3.0) can't connect p2p with just TLSv1.2")
+        .satisfiesAnyOf(
+            v -> assumeThat(v).isLessThanOrEqualTo(TestVersion.valueOf("1.12.0")),
+            v -> assumeThat(v).isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0")));
 
     generateSecurityProperties(PROTOCOL_TLSv1_2,
         securityPropertiesFile, keyStoreFile, trustStoreFile);
@@ -295,8 +316,7 @@ public class SocketCreatorUpgradeTest {
 
   @Test
   public void upgradingToNewJavaOnOldGeodeWithProtocolsAny() throws IOException {
-    assumeThat(version).as("Only Geode 1.12 can directly upgrade Java version.")
-        .isGreaterThanOrEqualTo(MINIMUM_VERSION)
+    assumeThat(version).as("Only Geode older than 1.13.0 can directly upgrade Java version.")
         .isLessThan(TestVersion.valueOf("1.13.0"));
 
     generateSecurityProperties(PROTOCOL_ANY, securityPropertiesFile, keyStoreFile, trustStoreFile);
@@ -313,7 +333,7 @@ public class SocketCreatorUpgradeTest {
 
   @Test
   public void upgradingToNewJavaOnOldGeodeWithProtocolsAnyHangs() throws IOException {
-    assumeThat(version).as("Geode 1.12 can directly upgrade Java version.")
+    assumeThat(version).as("Geode older than 1.13.0 can directly upgrade Java version.")
         .isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0"));
 
     generateSecurityProperties(PROTOCOL_ANY, securityPropertiesFile, keyStoreFile, trustStoreFile);
@@ -328,8 +348,11 @@ public class SocketCreatorUpgradeTest {
 
   @Test
   public void upgradingToNewJavaOnOldGeodeWithProtocolsTLSv1_2Hangs() throws IOException {
-    assumeThat(version).as("Geode 1.12 can't connect p2p with just TLSv1.2")
-        .isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0"));
+    assumeThat(version)
+        .as("Geode between [1.12.1, 1.3.0) can't connect p2p with just TLSv1.2")
+        .satisfiesAnyOf(
+            v -> assumeThat(v).isLessThanOrEqualTo(TestVersion.valueOf("1.12.0")),
+            v -> assumeThat(v).isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0")));
 
     generateSecurityProperties(PROTOCOL_TLSv1_2, securityPropertiesFile, keyStoreFile,
         trustStoreFile);
@@ -344,8 +367,7 @@ public class SocketCreatorUpgradeTest {
 
   @Test
   public void upgradingToNewJavaOnOldGeodeWithProtocolsTLSv1_2_SSLv2Hello() throws IOException {
-    assumeThat(version).as("Only Geode 1.12 can directly upgrade Java version.")
-        .isGreaterThanOrEqualTo(MINIMUM_VERSION)
+    assumeThat(version).as("Only Geode older than 1.13.0 can directly upgrade Java version.")
         .isLessThan(TestVersion.valueOf("1.13.0"));
 
     generateSecurityProperties(PROTOCOL_TLSv1_2_SSLv2Hello, securityPropertiesFile, keyStoreFile,
@@ -364,7 +386,7 @@ public class SocketCreatorUpgradeTest {
   @Test
   public void upgradingToNewJavaOnOldGeodeWithProtocolsTLSv1_2_SSLv2HelloHangs()
       throws IOException {
-    assumeThat(version).as("Geode 1.12 can directly upgrade Java version.")
+    assumeThat(version).as("Geode older than 1.13.0 can directly upgrade Java version.")
         .isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0"));
 
     generateSecurityProperties(PROTOCOL_TLSv1_2_SSLv2Hello, securityPropertiesFile, keyStoreFile,
@@ -394,7 +416,9 @@ public class SocketCreatorUpgradeTest {
 
   @Test
   public void upgradingToNewGeodeAndNewJavaWithProtocolsTLSv1_2Hangs() throws IOException {
-    assumeThat(version).as("Geode 1.12 can't connect p2p with just TLSv1.2")
+    assumeThat(version).as("Geode 1.12.0 and older can upgrade.")
+        .isGreaterThan(TestVersion.valueOf("1.12.0"));
+    assumeThat(version).as("Geode between [1.12.1, 1.3.0) can't connect p2p with just TLSv1.2")
         .isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0"));
 
     generateSecurityProperties(PROTOCOL_TLSv1_2, securityPropertiesFile, keyStoreFile,
@@ -411,8 +435,11 @@ public class SocketCreatorUpgradeTest {
   @Test
   public void upgradingToNewGeodeAndNewJavaWithProtocolsTLSv1_2WithNewProperties()
       throws IOException {
-    assumeThat(version).as("Geode 1.12 can't connect p2p with just TLSv1.2")
-        .isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0"));
+    assumeThat(version)
+        .as("Geode between [1.12.1, 1.3.0) can't connect p2p with just TLSv1.2")
+        .satisfiesAnyOf(
+            v -> assumeThat(v).isLessThanOrEqualTo(TestVersion.valueOf("1.12.0")),
+            v -> assumeThat(v).isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0")));
 
     generateSecurityProperties(PROTOCOL_TLSv1_2,
         securityPropertiesFile, keyStoreFile, trustStoreFile);
@@ -433,8 +460,11 @@ public class SocketCreatorUpgradeTest {
   @Test
   public void upgradingToNewGeodeAndNewJavaWithProtocolsTLSv1_2ThroughNewProperties()
       throws IOException {
-    assumeThat(version).as("Geode 1.12 can't connect p2p with just TLSv1.2")
-        .isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0"));
+    assumeThat(version)
+        .as("Geode between [1.12.1, 1.3.0) can't connect p2p with just TLSv1.2")
+        .satisfiesAnyOf(
+            v -> assumeThat(v).isLessThanOrEqualTo(TestVersion.valueOf("1.12.0")),
+            v -> assumeThat(v).isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0")));
 
     generateSecurityProperties(PROTOCOL_TLSv1_2,
         securityPropertiesFile, keyStoreFile, trustStoreFile);
@@ -475,11 +505,16 @@ public class SocketCreatorUpgradeTest {
 
   private static String startLocator(final String name, final String bindAddress,
       final int port, final int jmxPort, final File securityPropertiesFile,
-      final int otherLocatorPort) {
-    return format(
-        "start locator --connect=false --http-service-port=0 --name=%s --bind-address=%s --port=%d --J=-Dgemfire.jmx-manager-port=%d --security-properties-file=%s",
-        name, bindAddress, port, jmxPort, securityPropertiesFile.getAbsolutePath()) +
-        ((otherLocatorPort > 0) ? format(" --locators=%s[%d]", bindAddress, otherLocatorPort) : "");
+      final int otherLocatorPort, final TestVersion version) {
+    String startLocator = format(
+        "start locator --connect=false --http-service-port=0 --name=%s --bind-address=%s --port=%d --J=-Dgemfire.jmx-manager-port=%d --security-properties-file=%s --locators=%s[%d]",
+        name, bindAddress, port, jmxPort, securityPropertiesFile.getAbsolutePath(), bindAddress,
+        otherLocatorPort);
+    if (version.lessThan(TestVersion.valueOf("1.12.1"))) {
+      // Older versions don't honor the bind-address hostname and require reverse lookups on IP
+      startLocator += " --J=-Djdk.tls.trustNameService=true";
+    }
+    return startLocator;
   }
 
   private static String stopLocator(final String name) {
