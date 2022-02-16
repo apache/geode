@@ -27,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static redis.clients.jedis.Protocol.Command.PUBSUB;
 import static redis.clients.jedis.Protocol.Keyword.CHANNELS;
+import static redis.clients.jedis.Protocol.Keyword.NUMPAT;
 import static redis.clients.jedis.Protocol.Keyword.NUMSUB;
 
 import java.net.SocketException;
@@ -39,7 +40,6 @@ import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.mocks.MockSubscriber;
@@ -81,7 +81,7 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
   public void channels_shouldError_givenTooManyArguments() {
     assertAtMostNArgsForSubCommand(introspector,
         PUBSUB,
-        CHANNELS.toString().getBytes(),
+        CHANNELS.getRaw(),
         1);
   }
 
@@ -294,7 +294,7 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
   public void numpat_shouldError_givenTooManyArguments() {
     assertAtMostNArgsForSubCommand(introspector,
         PUBSUB,
-        Protocol.Keyword.NUMPAT.toString().getBytes(),
+        NUMPAT.getRaw(),
         0);
   }
 

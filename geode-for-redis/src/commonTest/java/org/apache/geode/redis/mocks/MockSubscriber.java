@@ -43,9 +43,6 @@ public class MockSubscriber extends JedisPubSub {
       Collections.synchronizedList(new ArrayList<>());
   private CountDownLatch messageReceivedLatch = new CountDownLatch(0);
   private CountDownLatch pMessageReceivedLatch = new CountDownLatch(0);
-  /*
-   * private String localSocketAddress;
-   */
 
   public MockSubscriber() {
     this(new CountDownLatch(1));
@@ -63,25 +60,6 @@ public class MockSubscriber extends JedisPubSub {
     this.unsubscriptionLatch = unsubscriptionLatch;
     this.pUnsubscriptionLatch = pUnsubscriptionLatch;
   }
-
-  /*
-   * @Override
-   * public void proceed(final Connection connection, final String... channels) {
-   * try {
-   * // Kludge due to socket becoming private in jedis 4.1.1
-   * // TODO is there a safe public way of getting local socket address
-   * // This doesn't work (or no longer works in Jedis 4.1.1), results in null socket
-   * final Field privateSocketField = Connection.class.getDeclaredField("socket");
-   * privateSocketField.setAccessible(true);
-   * final Socket socket = (Socket) privateSocketField.get(connection);
-   *
-   * localSocketAddress = socket.getLocalSocketAddress().toString();
-   * } catch (final NoSuchFieldException | IllegalAccessException ex) {
-   * throw new RuntimeException("Error in accessing private field 'socket' via reflection", ex);
-   * }
-   * super.proceed(connection, channels);
-   * }
-   */
 
   private void switchThreadName(String suffix) {
     String threadName = Thread.currentThread().getName();

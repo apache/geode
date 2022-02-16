@@ -61,11 +61,6 @@ public class StringsKillMultipleServersDUnitTest {
     // This sequence ensures that servers 1, 2 and 3 are hosting all the buckets and server 4
     // has no buckets.
     cluster.startRedisVM(4, locatorPort);
-
-    cluster.enableDebugLogging(1);
-    cluster.enableDebugLogging(2);
-    cluster.enableDebugLogging(3);
-    cluster.enableDebugLogging(4);
   }
 
   @After
