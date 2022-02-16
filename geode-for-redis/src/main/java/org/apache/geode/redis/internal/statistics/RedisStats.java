@@ -42,10 +42,9 @@ public class RedisStats {
   private static final int ROLLING_AVERAGE_SAMPLES_PER_SECOND = 16;
   private final ScheduledExecutorService rollingAverageExecutor;
   private int rollingAverageTick = 0;
-  private final RollingUpgradeStat networkKiloBytesReadRollingAverageStat =
-      new RollingUpgradeStat();
+  private final RollingAverageStat networkBytesReadRollingAverageStat = new RollingAverageStat();
   private volatile double networkKiloBytesReadOverLastSecond;
-  private final RollingUpgradeStat opsPerformedRollingAverageStat = new RollingUpgradeStat();
+  private final RollingAverageStat opsPerformedRollingAverageStat = new RollingAverageStat();
   private volatile double opsPerformedOverLastSecond;
 
   private final StatisticsClock clock;
@@ -221,7 +220,7 @@ public class RedisStats {
   }
 
   private void doRollingAverageUpdates() {
-    networkKiloBytesReadOverLastSecond = networkKiloBytesReadRollingAverageStat
+    networkKiloBytesReadOverLastSecond = networkBytesReadRollingAverageStat
         .calculate(getTotalNetworkBytesRead(), rollingAverageTick) / 1024.0;
     opsPerformedOverLastSecond =
         opsPerformedRollingAverageStat.calculate(getCommandsProcessed(), rollingAverageTick);
@@ -231,7 +230,7 @@ public class RedisStats {
     }
   }
 
-  private static class RollingUpgradeStat {
+  private static class RollingAverageStat {
     private long valueReadLastTick;
     private final long[] valuesReadOverLastNSamples = new long[ROLLING_AVERAGE_SAMPLES_PER_SECOND];
 
