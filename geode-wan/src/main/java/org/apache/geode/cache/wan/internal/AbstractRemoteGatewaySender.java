@@ -12,8 +12,8 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache.wan.internal;
 
+package org.apache.geode.cache.wan.internal;
 
 import java.io.IOException;
 import java.net.ConnectException;
@@ -44,7 +44,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender {
   private static final Logger logger = LogService.getLogger();
 
-  /** used to reduce warning logs in case remote locator is down (#47634) */
+  /** used to reduce warning logs in case remote locator is down */
   protected int proxyFailureTries = 0;
 
   public AbstractRemoteGatewaySender(InternalCache cache, StatisticsClock statisticsClock,
@@ -73,7 +73,8 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
     RemoteLocatorRequest request =
         new RemoteLocatorRequest(remoteDSId, pf.getPoolAttributes().getServerGroup());
     String locators = cache.getInternalDistributedSystem().getConfig().getLocators();
-    if (logger.isDebugEnabled()) {
+    final boolean debugEnabled = logger.isDebugEnabled();
+    if (debugEnabled) {
       logger
           .debug("Gateway Sender is attempting to configure pool with remote locator information");
     }
@@ -82,7 +83,7 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
       String localLocator = locatorsOnThisVM.nextToken();
       DistributionLocatorId locatorID = new DistributionLocatorId(localLocator);
       try {
-        RemoteLocatorResponse response =
+        final RemoteLocatorResponse response =
             (RemoteLocatorResponse) new TcpClient(SocketCreatorFactory
                 .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
                 InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
@@ -96,12 +97,12 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
             if (logProxyFailure()) {
               logger.warn(
                   "Remote locator host port information for remote site {} is not available in local locator {}.",
-                  new Object[] {remoteDSId, localLocator});
+                  remoteDSId, localLocator);
             }
             continue;
           }
-          if (logger.isDebugEnabled()) {
-            logger.debug("Received the remote site {} location information:", remoteDSId,
+          if (debugEnabled) {
+            logger.debug("Received the remote site {} location information: {}", remoteDSId,
                 response.getLocators());
           }
           for (final String remoteLocator : response.getLocators()) {
@@ -111,10 +112,9 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
               locatorCount++;
             } catch (Exception e) {
               if (logProxyFailure()) {
-                logger.warn(String.format(
-                    "Caught the following exception attempting to add remote locator %s. The locator will be ignored.",
-                    remoteLocator),
-                    e);
+                logger.warn(
+                    "Caught the following exception attempting to add remote locator {}. The locator will be ignored.",
+                    remoteLocator, e);
               }
             }
           }
@@ -122,32 +122,28 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
         }
       } catch (IOException ioe) {
         if (logProxyFailure()) {
-          // don't print stack trace for connection failures
-          String ioeStr = "";
-          if (!logger.isDebugEnabled() && ioe instanceof ConnectException) {
-            ioeStr = ": " + ioe;
-            ioe = null;
+          if (ioe instanceof ConnectException && !debugEnabled) {
+            // don't print stack trace for connection failures
+            logger.warn("GatewaySender {} is not able to connect to local locator {} : {}", id,
+                localLocator, ioe);
+          } else {
+            logger.warn("GatewaySender {} is not able to connect to local locator {}", id,
+                localLocator, ioe);
           }
-          logger.warn(String.format("GatewaySender %s is not able to connect to local locator %s",
-              id, localLocator + ioeStr),
-              ioe);
         }
-        continue;
       } catch (ClassNotFoundException e) {
         if (logProxyFailure()) {
-          logger.warn(String.format("GatewaySender %s is not able to connect to local locator %s",
-              id, localLocator),
-              e);
+          logger.warn("GatewaySender {} is not able to connect to local locator {}", id,
+              localLocator, e);
         }
-        continue;
       }
     }
 
     if (locatorCount == 0) {
       if (logProxyFailure()) {
         logger.fatal(
-            "GatewaySender {} could not get remote locator information for remote site {}.",
-            new Object[] {id, remoteDSId});
+            "GatewaySender {} could not get remote locator information for remote site {}.", id,
+            remoteDSId);
       }
       proxyFailureTries++;
       throw new GatewaySenderConfigurationException(
@@ -160,7 +156,7 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
     if (proxyFailureTries > 0) {
       logger.info(
           "GatewaySender {} got remote locator information for remote site {} after {} failures in connecting to remote site.",
-          new Object[] {id, remoteDSId, proxyFailureTries});
+          id, remoteDSId, proxyFailureTries);
       proxyFailureTries = 0;
     }
   }
