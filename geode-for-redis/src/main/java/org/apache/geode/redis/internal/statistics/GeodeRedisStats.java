@@ -199,9 +199,7 @@ public class GeodeRedisStats {
   }
 
   public void close() {
-    if (generalStats != null) {
-      generalStats.close();
-    }
+    generalStats.close();
   }
 
   private static StatisticDescriptor[] createCategoryStatisticDescriptors(
