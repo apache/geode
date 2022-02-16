@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -260,6 +261,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
   public void shouldStoreIntersection_givenWeightOfOne_andOneRedisSortedSet() {
     Map<String, Double> scores = buildMapOfMembersAndScores();
     final List<Tuple> expectedResults = convertToTuples(scores, (ignore, value) -> value);
+    expectedResults.sort(Comparator.naturalOrder());
     jedis.zadd(KEY1, scores);
 
     assertThat(jedis.zinterstore(NEW_SET, new ZParams().weights(1), KEY1))
@@ -302,11 +304,11 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     jedis.zadd(KEY1, scores);
 
     final List<Tuple> expectedResults = new ArrayList<>();
-    expectedResults.add(new Tuple("player1", Double.POSITIVE_INFINITY));
-    expectedResults.add(new Tuple("player2", 0D));
     expectedResults.add(new Tuple("player3", Double.NEGATIVE_INFINITY));
     expectedResults.add(new Tuple("player4", Double.NEGATIVE_INFINITY));
     expectedResults.add(new Tuple("player5", Double.NEGATIVE_INFINITY));
+    expectedResults.add(new Tuple("player2", 0D));
+    expectedResults.add(new Tuple("player1", Double.POSITIVE_INFINITY));
 
     assertThat(jedis.zinterstore(NEW_SET, new ZParams().weights(Double.NEGATIVE_INFINITY),
         KEY1)).isEqualTo(scores.size());
@@ -326,8 +328,8 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     expectedResults.add(new Tuple("player1", Double.NEGATIVE_INFINITY));
     expectedResults.add(new Tuple("player2", 0D));
     expectedResults.add(new Tuple("player3", multiplier));
-    expectedResults.add(new Tuple("player4", Double.POSITIVE_INFINITY));
     expectedResults.add(new Tuple("player5", 3.2D * multiplier));
+    expectedResults.add(new Tuple("player4", Double.POSITIVE_INFINITY));
 
     assertThat(jedis.zinterstore(NEW_SET, new ZParams().weights(multiplier), KEY1))
         .isEqualTo(scores.size());
@@ -343,8 +345,8 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     expectedResults.add(new Tuple("player1", Double.NEGATIVE_INFINITY));
     expectedResults.add(new Tuple("player2", 0D));
     expectedResults.add(new Tuple("player3", 2D));
-    expectedResults.add(new Tuple("player4", Double.POSITIVE_INFINITY));
     expectedResults.add(new Tuple("player5", 3.2D * 2));
+    expectedResults.add(new Tuple("player4", Double.POSITIVE_INFINITY));
 
     jedis.zadd(KEY1, scores);
     jedis.zadd(KEY2, scores);
@@ -363,8 +365,8 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     expectedResults.add(new Tuple("player1", Double.NEGATIVE_INFINITY));
     expectedResults.add(new Tuple("player2", 0D));
     expectedResults.add(new Tuple("player3", 3D));
-    expectedResults.add(new Tuple("player4", Double.POSITIVE_INFINITY));
     expectedResults.add(new Tuple("player5", 3.2D * 3));
+    expectedResults.add(new Tuple("player4", Double.POSITIVE_INFINITY));
 
     jedis.zadd(KEY1, scores);
     jedis.zadd(KEY2, scores);
