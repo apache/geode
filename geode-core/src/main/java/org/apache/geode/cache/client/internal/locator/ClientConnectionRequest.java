@@ -56,7 +56,7 @@ public class ClientConnectionRequest extends ServerLocationRequest {
     SerializationHelper.writeServerLocationSet(excludedServers, out);
   }
 
-  public Set getExcludedServers() {
+  public Set<ServerLocation> getExcludedServers() {
     return excludedServers;
   }
 

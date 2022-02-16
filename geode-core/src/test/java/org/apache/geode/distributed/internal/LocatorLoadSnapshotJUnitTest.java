@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.server.ServerLoad;
+import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
@@ -631,28 +632,94 @@ public class LocatorLoadSnapshotJUnitTest {
   }
 
   @Test
-  public void updateMapWithServerLocationAndMemberId() {
+  public void updateConnectionMapWithServerLocationAndMemberId() {
     final LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
 
     final ServerLocation serverLocation = new ServerLocation("localhost", 1);
-    final String uniqueId = new InternalDistributedMember("localhost", 1).getUniqueId();
-    final ServerLocationAndMemberId sli = new ServerLocationAndMemberId(serverLocation, uniqueId);
-    LocatorLoadSnapshot.LoadHolder loadHolder =
-        new LocatorLoadSnapshot.LoadHolder(serverLocation, 50, 1, LOAD_POLL_INTERVAL);
-    Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder> groupServers = new HashMap<>();
-    groupServers.put(sli, loadHolder);
-    Map<String, Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder>> map =
-        new HashMap<>();
-    map.put(null, groupServers);
+    final String uniqueId = new InternalDistributedMember("localhost", 1).getUniqueId();;
 
-    loadSnapshot.updateMap(map, serverLocation, uniqueId, 60, 2);
+    loadSnapshot.addServer(serverLocation, uniqueId, new String[0], new ServerLoad(50, 1, 0, 1),
+        LOAD_POLL_INTERVAL);
+
+    loadSnapshot.updateConnectionLoadMap(serverLocation, uniqueId, 60, 2);
 
     LocatorLoadSnapshot.LoadHolder expectedLoadHolder =
         new LocatorLoadSnapshot.LoadHolder(serverLocation, 60, 2, LOAD_POLL_INTERVAL);
 
-    assertEquals(expectedLoadHolder.getLoad(), groupServers.get(sli).getLoad(), 0);
+    Map<ServerLocation, ServerLoad> serverLoadMap = loadSnapshot.getLoadMap();
+    assertEquals(expectedLoadHolder.getLoad(),
+        serverLoadMap.get(serverLocation).getConnectionLoad(), 0);
     assertEquals(expectedLoadHolder.getLoadPerConnection(),
-        groupServers.get(sli).getLoadPerConnection(), 0);
+        serverLoadMap.get(serverLocation).getLoadPerConnection(), 0);
+  }
+
+  @Test
+  public void updateConnectionMapWithServerLocationAndMemberIdGatewayReceiver() {
+    final LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
+
+    final ServerLocation serverLocation = new ServerLocation("localhost", 1);
+    final String uniqueId = new InternalDistributedMember("localhost", 1).getUniqueId();
+    final ServerLocationAndMemberId servLocAndMemberId =
+        new ServerLocationAndMemberId(serverLocation, uniqueId);
+
+    loadSnapshot.addServer(serverLocation, uniqueId, new String[] {GatewayReceiver.RECEIVER_GROUP},
+        new ServerLoad(50, 1, 0, 1),
+        LOAD_POLL_INTERVAL);
+
+    LocatorLoadSnapshot.LoadHolder expectedLoadHolder =
+        new LocatorLoadSnapshot.LoadHolder(serverLocation, 70, 8, LOAD_POLL_INTERVAL);
+
+    loadSnapshot.updateConnectionLoadMap(serverLocation, uniqueId, expectedLoadHolder.getLoad(),
+        expectedLoadHolder.getLoadPerConnection());
+
+    Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder> serverLoadMap =
+        loadSnapshot.getGatewayReceiverLoadMap();
+    assertEquals(expectedLoadHolder.getLoad(),
+        serverLoadMap.get(servLocAndMemberId).getLoad(), 0);
+    assertEquals(expectedLoadHolder.getLoadPerConnection(),
+        serverLoadMap.get(servLocAndMemberId).getLoadPerConnection(), 0);
+  }
+
+  @Test
+  public void updateConnectionMapWithServerLocationAndMemberIdTrafficConnectionAndGatewayReceiverGroup() {
+    final LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
+
+    final ServerLocation serverLocation = new ServerLocation("localhost", 1);
+    final ServerLocation gatewayReceiverLocation = new ServerLocation("gatewayReciverHost", 111);
+    final String uniqueId = new InternalDistributedMember("localhost", 1).getUniqueId();;
+    final ServerLocationAndMemberId servLocAndMemberId =
+        new ServerLocationAndMemberId(gatewayReceiverLocation, uniqueId);
+
+    loadSnapshot.addServer(gatewayReceiverLocation, uniqueId,
+        new String[] {GatewayReceiver.RECEIVER_GROUP}, new ServerLoad(50, 1, 0, 1),
+        LOAD_POLL_INTERVAL);
+
+    loadSnapshot.addServer(serverLocation, uniqueId, new String[0], new ServerLoad(50, 1, 0, 1),
+        LOAD_POLL_INTERVAL);
+
+    LocatorLoadSnapshot.LoadHolder expectedLoadHolder =
+        new LocatorLoadSnapshot.LoadHolder(serverLocation, 70, 8, LOAD_POLL_INTERVAL);
+    LocatorLoadSnapshot.LoadHolder expectedGatewayLoad =
+        new LocatorLoadSnapshot.LoadHolder(serverLocation, 90, 10, LOAD_POLL_INTERVAL);
+
+
+    loadSnapshot.updateConnectionLoadMap(serverLocation, uniqueId, expectedLoadHolder.getLoad(),
+        expectedLoadHolder.getLoadPerConnection());
+    loadSnapshot.updateConnectionLoadMap(gatewayReceiverLocation, uniqueId,
+        expectedGatewayLoad.getLoad(), expectedGatewayLoad.getLoadPerConnection());
+
+    Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder> gatewayReceiverLoadMap =
+        loadSnapshot.getGatewayReceiverLoadMap();
+    assertEquals(expectedGatewayLoad.getLoad(),
+        gatewayReceiverLoadMap.get(servLocAndMemberId).getLoad(), 0);
+    assertEquals(expectedGatewayLoad.getLoadPerConnection(),
+        gatewayReceiverLoadMap.get(servLocAndMemberId).getLoadPerConnection(), 0);
+
+    Map<ServerLocation, ServerLoad> serverLoadMap = loadSnapshot.getLoadMap();
+    assertEquals(expectedLoadHolder.getLoad(),
+        serverLoadMap.get(serverLocation).getConnectionLoad(), 0);
+    assertEquals(expectedLoadHolder.getLoadPerConnection(),
+        serverLoadMap.get(serverLocation).getLoadPerConnection(), 0);
   }
 
   @Test
@@ -661,53 +728,48 @@ public class LocatorLoadSnapshotJUnitTest {
 
     final ServerLocation serverLocation = new ServerLocation("localhost", 1);
     final String uniqueId = new InternalDistributedMember("localhost", 1).getUniqueId();
-    final ServerLocationAndMemberId sli = new ServerLocationAndMemberId(serverLocation, uniqueId);
-    Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder> groupServers = new HashMap<>();
-    Map<String, Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder>> map =
-        new HashMap<>();
-    map.put(null, groupServers);
 
-    loadSnapshot.updateMap(map, serverLocation, uniqueId, 50, 1);
+    loadSnapshot.updateConnectionLoadMap(serverLocation, uniqueId, 50, 1);
 
-    assertNull(groupServers.get(sli));
+    Map<ServerLocation, ServerLoad> serverLoadMap = loadSnapshot.getLoadMap();
+    assertTrue("Expected connection map to be empty", serverLoadMap.isEmpty());
   }
 
   @Test
-  public void updateMapWithServerLocation() {
+  public void updateQueueMapWithServerLocation() {
     final LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
 
     final ServerLocation serverLocation = new ServerLocation("localhost", 1);
     LocatorLoadSnapshot.LoadHolder loadHolder =
         new LocatorLoadSnapshot.LoadHolder(serverLocation, 50, 1, LOAD_POLL_INTERVAL);
-    Map<ServerLocation, LocatorLoadSnapshot.LoadHolder> groupServers = new HashMap<>();
-    groupServers.put(serverLocation, loadHolder);
-    Map<String, Map<ServerLocation, LocatorLoadSnapshot.LoadHolder>> map =
-        new HashMap<>();
-    map.put(null, groupServers);
+    final String uniqueId = "memberId1";
 
-    loadSnapshot.updateMap(map, serverLocation, 60, 2);
+    loadSnapshot.addServer(serverLocation, uniqueId, new String[0], new ServerLoad(50, 1, 0, 1),
+        LOAD_POLL_INTERVAL);
 
     LocatorLoadSnapshot.LoadHolder expectedLoadHolder =
         new LocatorLoadSnapshot.LoadHolder(serverLocation, 60, 2, LOAD_POLL_INTERVAL);
 
-    assertEquals(expectedLoadHolder.getLoad(), groupServers.get(serverLocation).getLoad(), 0);
+    loadSnapshot.updateQueueLoadMap(serverLocation, expectedLoadHolder.getLoad(),
+        expectedLoadHolder.getLoadPerConnection());
+
+    Map<ServerLocation, ServerLoad> serverLoadMap = loadSnapshot.getLoadMap();
+    ServerLoad queueServerLoad = serverLoadMap.get(serverLocation);
+    assertEquals(expectedLoadHolder.getLoad(), queueServerLoad.getSubscriptionConnectionLoad(), 0);
     assertEquals(expectedLoadHolder.getLoadPerConnection(),
-        groupServers.get(serverLocation).getLoadPerConnection(), 0);
+        queueServerLoad.getLoadPerSubscriptionConnection(), 0);
   }
 
   @Test
-  public void updateMapWithServerLocationKeyNotFound() {
+  public void updateQueueMapWithServerLocationKeyNotFound() {
     final LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
 
     final ServerLocation serverLocation = new ServerLocation("localhost", 1);
-    Map<ServerLocation, LocatorLoadSnapshot.LoadHolder> groupServers = new HashMap<>();
-    Map<String, Map<ServerLocation, LocatorLoadSnapshot.LoadHolder>> map =
-        new HashMap<>();
-    map.put(null, groupServers);
 
-    loadSnapshot.updateMap(map, serverLocation, 50, 1);
+    loadSnapshot.updateQueueLoadMap(serverLocation, 70, 1);
 
-    assertNull(groupServers.get(serverLocation));
+    Map<ServerLocation, ServerLoad> serverLoadMap = loadSnapshot.getLoadMap();
+    assertTrue("Expected connection map to be empty", serverLoadMap.isEmpty());
   }
 
   @Test

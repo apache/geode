@@ -49,9 +49,10 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class FindDurableQueueProcessor extends ReplyProcessor21 {
   private static final Logger logger = LogService.getLogger();
 
-  final ArrayList durableLocations = new ArrayList();
+  final ArrayList<ServerLocation> durableLocations = new ArrayList();
 
-  public static ArrayList sendAndFind(ServerLocator locator, ClientProxyMembershipID proxyId,
+  public static ArrayList<ServerLocation> sendAndFind(ServerLocator locator,
+      ClientProxyMembershipID proxyId,
       DistributionManager dm) {
     Set members = ((GridAdvisor) locator.getDistributionAdvisor()).adviseBridgeServers();
     if (members.contains(dm.getId())) {
@@ -68,7 +69,7 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
     } catch (ReplyException e) {
       e.handleCause();
     }
-    ArrayList locations = processor.durableLocations;
+    ArrayList<ServerLocation> locations = processor.durableLocations;
     // This will add any local queues to the list
     findLocalDurableQueues(proxyId, locations);
     return locations;

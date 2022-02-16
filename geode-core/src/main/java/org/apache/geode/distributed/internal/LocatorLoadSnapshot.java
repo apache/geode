@@ -129,7 +129,6 @@ public class LocatorLoadSnapshot {
    */
   synchronized void updateLoad(ServerLocation location, String memberId, ServerLoad newLoad,
       List<ClientProxyMembershipID> clientIds) {
-
     String[] groups = serverGroupMap.get(location);
     // the server was asynchronously removed, so don't do anything.
     if (groups == null) {
@@ -142,9 +141,9 @@ public class LocatorLoadSnapshot {
       }
     }
 
-    updateMap(connectionLoadMap, location, memberId, newLoad.getConnectionLoad(),
+    updateConnectionLoadMap(location, memberId, newLoad.getConnectionLoad(),
         newLoad.getLoadPerConnection());
-    updateMap(queueLoadMap, location, newLoad.getSubscriptionConnectionLoad(),
+    updateQueueLoadMap(location, newLoad.getSubscriptionConnectionLoad(),
         newLoad.getLoadPerSubscriptionConnection());
   }
 
@@ -254,17 +253,17 @@ public class LocatorLoadSnapshot {
     }
 
     {
-      List bestLHs = findBestServers(groupServers, excludedServers, 1);
+      List<LoadHolder> bestLHs = findBestServers(groupServers, excludedServers, 1);
       if (bestLHs.isEmpty()) {
         return null;
       }
-      LoadHolder lh = (LoadHolder) bestLHs.get(0);
+      LoadHolder lh = bestLHs.get(0);
       lh.incConnections();
       return lh.getLocation();
     }
   }
 
-  public synchronized ArrayList getServers(String group) {
+  public synchronized ArrayList<ServerLocation> getServers(String group) {
     if ("".equals(group)) {
       group = null;
     }
@@ -272,7 +271,7 @@ public class LocatorLoadSnapshot {
     if (groupServers == null || groupServers.isEmpty()) {
       return null;
     }
-    ArrayList result = new ArrayList<>();
+    ArrayList<ServerLocation> result = new ArrayList<>();
     for (ServerLocationAndMemberId locationAndMemberId : groupServers.keySet()) {
       result.add(locationAndMemberId.getServerLocation());
     }
@@ -333,7 +332,8 @@ public class LocatorLoadSnapshot {
    * @return a list containing the best servers. The size of the list will be less than or equal to
    *         count, depending on if there are enough servers available.
    */
-  public List getServersForQueue(String group, Set<ServerLocation> excludedServers, int count) {
+  public List<ServerLocation> getServersForQueue(String group, Set<ServerLocation> excludedServers,
+      int count) {
     return getServersForQueue(null, group, excludedServers, count);
   }
 
@@ -413,7 +413,19 @@ public class LocatorLoadSnapshot {
           new ServerLoad(connectionLoad.getLoad(), connectionLoad.getLoadPerConnection(),
               queueLoad.getLoad(), queueLoad.getLoadPerConnection()));
     }
+    return result;
+  }
 
+  public synchronized Map<ServerLocationAndMemberId, LoadHolder> getGatewayReceiverLoadMap() {
+    Map<ServerLocationAndMemberId, LoadHolder> connectionMap =
+        connectionLoadMap.get(GatewayReceiver.RECEIVER_GROUP);
+    Map<ServerLocationAndMemberId, LoadHolder> result = new HashMap<>();
+    for (Entry<ServerLocationAndMemberId, LoadHolder> entry : connectionMap.entrySet()) {
+      ServerLocationAndMemberId member = new ServerLocationAndMemberId(entry.getKey()
+          .getServerLocation(), entry.getKey().getMemberId());
+      result.put(member, entry.getValue());
+
+    }
     return result;
   }
 
@@ -425,7 +437,7 @@ public class LocatorLoadSnapshot {
       groupMap.put(holder.getLocation(), holder);
     }
     // Special case for GatewayReceiver where we don't put those serverlocation against holder
-    if (!(groups.length > 0 && groups[0].equals(GatewayReceiver.RECEIVER_GROUP))) {
+    if (!isGatewayReceiverGroup(groups)) {
       Map<ServerLocation, LoadHolder> groupMap = map.computeIfAbsent(null, k -> new HashMap<>());
       groupMap.put(holder.getLocation(), holder);
     }
@@ -441,11 +453,15 @@ public class LocatorLoadSnapshot {
       groupMap.put(new ServerLocationAndMemberId(holder.getLocation(), memberId), holder);
     }
     // Special case for GatewayReceiver where we don't put those serverlocation against holder
-    if (!(groups.length > 0 && groups[0].equals(GatewayReceiver.RECEIVER_GROUP))) {
+    if (!isGatewayReceiverGroup(groups)) {
       Map<ServerLocationAndMemberId, LoadHolder> groupMap =
           map.computeIfAbsent(null, k -> new HashMap<>());
       groupMap.put(new ServerLocationAndMemberId(holder.getLocation(), memberId), holder);
     }
+  }
+
+  boolean isGatewayReceiverGroup(String[] groups) {
+    return groups.length > 0 && groups[0].equals(GatewayReceiver.RECEIVER_GROUP);
   }
 
   @VisibleForTesting
@@ -460,7 +476,7 @@ public class LocatorLoadSnapshot {
         }
       }
     }
-    Map groupMap = map.get(null);
+    Map<ServerLocation, LoadHolder> groupMap = map.get(null);
     groupMap.remove(location);
   }
 
@@ -479,27 +495,33 @@ public class LocatorLoadSnapshot {
         }
       }
     }
-    Map groupMap = map.get(null);
+    Map<ServerLocationAndMemberId, LoadHolder> groupMap = map.get(null);
     groupMap.remove(locationAndMemberId);
   }
 
   @VisibleForTesting
-  void updateMap(Map map, ServerLocation location, float load, float loadPerConnection) {
-    updateMap(map, location, "", load, loadPerConnection);
+  void updateConnectionLoadMap(ServerLocation location, String memberId, float load,
+      float loadPerConnection) {
+    ServerLocationAndMemberId locationAndMemberId =
+        new ServerLocationAndMemberId(location, memberId);
+
+    Map<ServerLocationAndMemberId, LoadHolder> groupMap = connectionLoadMap.get(null);
+    LoadHolder holder = groupMap.get(locationAndMemberId);
+    if (holder == null) {
+      groupMap = connectionLoadMap.get(GatewayReceiver.RECEIVER_GROUP);
+      if (groupMap != null) {
+        holder = groupMap.get(locationAndMemberId);
+      }
+    }
+
+    if (holder != null) {
+      holder.setLoad(load, loadPerConnection);
+    }
   }
 
-  @VisibleForTesting
-  void updateMap(Map map, ServerLocation location, String memberId, float load,
-      float loadPerConnection) {
-    Map groupMap = (Map) map.get(null);
-    LoadHolder holder;
-    if (memberId.equals("")) {
-      holder = (LoadHolder) groupMap.get(location);
-    } else {
-      ServerLocationAndMemberId locationAndMemberId =
-          new ServerLocationAndMemberId(location, memberId);
-      holder = (LoadHolder) groupMap.get(locationAndMemberId);
-    }
+  void updateQueueLoadMap(ServerLocation location, float load, float loadPerConnection) {
+    Map<ServerLocation, LoadHolder> groupMap = queueLoadMap.get(null);
+    LoadHolder holder = groupMap.get(location);
     if (holder != null) {
       holder.setLoad(load, loadPerConnection);
     }

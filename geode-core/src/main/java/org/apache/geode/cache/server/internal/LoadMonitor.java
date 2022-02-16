@@ -87,7 +87,7 @@ public class LoadMonitor implements ConnectionListener {
 
   @Override
   public void connectionClosed(boolean lastConnection, CommunicationMode communicationMode) {
-    if (communicationMode.isClientOperations()) {
+    if (communicationMode.isClientOperations() || communicationMode.isWAN()) {
       metrics.decConnectionCount();
     }
     if (lastConnection) {
@@ -101,7 +101,7 @@ public class LoadMonitor implements ConnectionListener {
 
   @Override
   public void connectionOpened(boolean firstConnection, CommunicationMode communicationMode) {
-    if (communicationMode.isClientOperations()) {
+    if (communicationMode.isClientOperations() || communicationMode.isWAN()) {
       metrics.incConnectionCount();
     }
     if (firstConnection) {
