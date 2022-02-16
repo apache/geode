@@ -226,6 +226,7 @@ public class DistributedClearOperation extends DistributedCacheOperation {
           if (region.getDataPolicy().withStorage()) {
             DistributedClearOperation.regionLocked(getSender(), region.getFullPath(), region);
             region.lockLocallyForClear(dm, getSender(), event);
+
           }
           appliedOperation = true;
           break;

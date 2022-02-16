@@ -4318,6 +4318,7 @@ public class PartitionedRegion extends LocalRegion
         getCachePerfStats().endCacheWriterCall(start);
       }
       return true;
+
     }
     return false;
   }
@@ -8098,7 +8099,6 @@ public class PartitionedRegion extends LocalRegion
       this.maxTimeInRetry = maxTime;
     }
 
-
     /**
      * wait for {@link PartitionedRegionHelper#DEFAULT_WAIT_PER_RETRY_ITERATION}, updating the total
      * wait time. Use this method when the same node has been selected for consecutive attempts with
@@ -10146,6 +10146,44 @@ public class PartitionedRegion extends LocalRegion
     }
     getSystem().handleResourceEvent(ResourceEvent.REGION_CREATE, this);
     regionCreationNotified = true;
+  }
+
+  protected PartitionedRegionClear getPartitionedRegionClear() {
+    return partitionedRegionClear;
+  }
+
+  @Override
+  public void endClear(long startTime) {
+    getCachePerfStats().endClear(startTime);
+  }
+
+  @Override
+  public long startClear() {
+    return getCachePerfStats().startClear();
+  }
+
+  @Override
+  void cmnClearRegion(RegionEventImpl regionEvent, boolean cacheWrite, boolean useRVV) {
+    // Synchronized to avoid other threads invoking clear on this vm/node.
+    final long startTime = startClear();
+    try {
+      synchronized (clearLock) {
+        partitionedRegionClear.doClear(regionEvent, cacheWrite);
+      }
+    } finally {
+      endClear(startTime);
+    }
+  }
+
+  boolean hasAnyClientsInterested() {
+    // Check local filter
+    if (getFilterProfile() != null && (getFilterProfile().hasInterest() || getFilterProfile()
+        .hasCQs())) {
+      return true;
+    }
+    // check peer server filters
+    return (getRegionAdvisor().hasPRServerWithInterest()
+        || getRegionAdvisor().hasPRServerWithCQs());
   }
 
   protected PartitionedRegionClear getPartitionedRegionClear() {

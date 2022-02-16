@@ -24,6 +24,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -297,6 +298,7 @@ public class LocalRegionTest {
   @Test
   public void verifyBasicBridgePutSetsVersionTagOnClientEventIfConcurrencyConflictAndPossibleDuplicate() {
     // Create the region
+
     LocalRegion region =
         spy(new LocalRegion("region", regionAttributes, null, cache, internalRegionArguments,
             internalDataView, regionMapConstructor, serverRegionProxyConstructor, entryEventFactory,
@@ -336,5 +338,6 @@ public class LocalRegionTest {
     assertThat(clientEvent.isPossibleDuplicate()).isTrue();
     assertThat(clientEvent.isConcurrencyConflict()).isTrue();
     assertThat(clientEvent.getVersionTag()).isEqualTo(tag);
+
   }
 }

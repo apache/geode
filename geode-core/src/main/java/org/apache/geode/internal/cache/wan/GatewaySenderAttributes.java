@@ -327,6 +327,10 @@ public class GatewaySenderAttributes {
     return this.partitionedRegionClearUnsupported;
   }
 
+  public boolean isPartitionedRegionClearUnsupported() {
+    return this.partitionedRegionClearUnsupported;
+  }
+
   public boolean getEnforceThreadsConnectSameReceiver() {
     return enforceThreadsConnectSameReceiver;
   }

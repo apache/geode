@@ -126,6 +126,13 @@ public class PRQueryRegionClosedJUnitTest {
               errorBuf.append(failureString);
               throw (new Exception(failureString));
 
+            SelectResults<PortfolioData> resSetPR = region.query(s);
+            SelectResults<PortfolioData> resSetLocal = localRegion.query(s);
+            String failureString =
+                PartitionedRegionTestHelper.compareResultSets(resSetPR, resSetLocal);
+            Thread.sleep(delayQuery);
+            if (failureString != null) {
+              throw (new Exception(failureString));
             }
           } catch (InterruptedException ie) {
             fail("interrupted");

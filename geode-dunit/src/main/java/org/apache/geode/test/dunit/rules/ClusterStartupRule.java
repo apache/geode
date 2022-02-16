@@ -161,6 +161,7 @@ public class ClusterStartupRule implements SerializableTestRule {
       IgnoredException.addIgnoredException("committed = 538968064 should be < max = 536870912");
     }
     DUnitLauncher.launchIfNeeded(vmCount, false);
+
     restoreSystemProperties.beforeDistributedTest(description);
     occupiedVMs = new HashMap<>();
   }

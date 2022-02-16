@@ -399,6 +399,11 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   }
 
   @Override
+  public boolean isPartitionedRegionClearUnsupported() {
+    return this.partitionedRegionClearUnsupported;
+  }
+
+  @Override
   public boolean isManualStart() {
     return manualStart;
   }

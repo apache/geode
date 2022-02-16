@@ -40,6 +40,7 @@ public class City implements Serializable {
     /* this is for the test to have 50% of the objects belonging to one city */
     name = arr1[i % 2];
     zip = 425125 + i;
+
   }// end of constructor 2
 
   ////////////////////////////
