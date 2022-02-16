@@ -517,7 +517,8 @@ public class FetchKeysMessage extends PartitionMessage {
      */
     private volatile boolean lastChunkReceived;
 
-    public FetchKeysResponse(InternalDistributedSystem ds, Set<?> recipients) {
+    public FetchKeysResponse(InternalDistributedSystem ds,
+        Set<InternalDistributedMember> recipients) {
       super(ds, recipients);
       returnValue = new HashSet<>();
     }
