@@ -12,11 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.cache.wan.internal.client.locator;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListener;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -25,48 +26,39 @@ import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 
 /**
  * This is a helper class which helps to add the locator information to the allLocatorInfoMap.
- *
- *
  */
 public class LocatorHelper {
 
-  public static final Object locatorObject = new Object();
-
   /**
-   *
-   * This methods add the given locator to allLocatorInfoMap. It also invokes a locatorlistener to
+   * This method adds the given locator to allLocatorInfoMap. It also invokes a locatorListener to
    * inform other locators in allLocatorInfoMap about this newly added locator.
-   *
    */
   public static boolean addLocator(int distributedSystemId, DistributionLocatorId locator,
       LocatorMembershipListener locatorListener, DistributionLocatorId sourceLocator) {
-    ConcurrentHashMap<Integer, Set<DistributionLocatorId>> allLocatorsInfo =
-        (ConcurrentHashMap<Integer, Set<DistributionLocatorId>>) locatorListener
-            .getAllLocatorsInfo();
+    final ConcurrentMap<Integer, Set<DistributionLocatorId>> allLocatorsInfo = locatorListener
+        .getAllLocatorsInfo();
     Set<DistributionLocatorId> locatorsSet = new CopyOnWriteHashSet<>();
     locatorsSet.add(locator);
     Set<DistributionLocatorId> existingValue =
         allLocatorsInfo.putIfAbsent(distributedSystemId, locatorsSet);
     if (existingValue != null) {
       if (!locator.getMemberName().equals(DistributionConfig.DEFAULT_NAME)) {
-        DistributionLocatorId existingLocator =
+        final DistributionLocatorId existingLocator =
             getLocatorWithSameMemberName(existingValue, locator);
 
         if (existingLocator != null) {
           // if locator with same name exist, check did all parameters are same
           if (!locator.detailCompare(existingLocator)) {
-            // some parameters had changed for existing locator
-            // replace it
+            // some parameters had changed for existing locator replace it
             if (existingLocator.getTimeStamp() > locator.getTimeStamp()) {
               return false;
             }
 
             existingValue.remove(existingLocator);
-            ConcurrentHashMap<Integer, Set<String>> allServerLocatorsInfo =
-                (ConcurrentHashMap<Integer, Set<String>>) locatorListener
-                    .getAllServerLocatorsInfo();
-            Set<String> alllocators = allServerLocatorsInfo.get(distributedSystemId);
-            alllocators.remove(existingLocator.toString());
+            final ConcurrentMap<Integer, Set<String>> allServerLocatorsInfo = locatorListener
+                .getAllServerLocatorsInfo();
+            Set<String> allLocators = allServerLocatorsInfo.get(distributedSystemId);
+            allLocators.remove(existingLocator.toString());
             existingValue.add(locator);
             addServerLocator(distributedSystemId, locatorListener, locator);
             locatorListener.locatorJoined(distributedSystemId, locator, sourceLocator);
@@ -92,7 +84,7 @@ public class LocatorHelper {
           }
 
           // for new member name, existing host[port] received
-          // replace it, to contain latest info
+          // replace it, to contain the latest info
           existingValue.remove(oldLocator);
           // member name is not used in equals(), so this is the way to replace old locator
           existingValue.add(locator);
@@ -119,15 +111,13 @@ public class LocatorHelper {
   }
 
   /**
-   * This methods decides whether the given locator is server locator, if so then add this locator
+   * This method decides whether the given locator is server locator, if so then add this locator
    * in allServerLocatorsInfo map.
-   *
    */
   private static void addServerLocator(Integer distributedSystemId,
       LocatorMembershipListener locatorListener, DistributionLocatorId locator) {
-    ConcurrentHashMap<Integer, Set<String>> allServerLocatorsInfo =
-        (ConcurrentHashMap<Integer, Set<String>>) locatorListener.getAllServerLocatorsInfo();
-
+    ConcurrentMap<Integer, Set<String>> allServerLocatorsInfo =
+        locatorListener.getAllServerLocatorsInfo();
     Set<String> locatorsSet = new CopyOnWriteHashSet<>();
     locatorsSet.add(locator.marshal());
     Set<String> existingValue = allServerLocatorsInfo.putIfAbsent(distributedSystemId, locatorsSet);
@@ -137,15 +127,14 @@ public class LocatorHelper {
   }
 
   /**
-   * This method adds the map of locatorsinfo sent by other locator to this locator's allLocatorInfo
-   *
+   * This method adds the map of locators info sent by other locator to this locator's
+   * allLocatorInfo
    */
   public static boolean addExchangedLocators(Map<Integer, Set<DistributionLocatorId>> locators,
       LocatorMembershipListener locatorListener) {
 
-    ConcurrentHashMap<Integer, Set<DistributionLocatorId>> allLocators =
-        (ConcurrentHashMap<Integer, Set<DistributionLocatorId>>) locatorListener
-            .getAllLocatorsInfo();
+    ConcurrentMap<Integer, Set<DistributionLocatorId>> allLocators =
+        locatorListener.getAllLocatorsInfo();
     if (!allLocators.equals(locators)) {
       for (Map.Entry<Integer, Set<DistributionLocatorId>> entry : locators.entrySet()) {
         Set<DistributionLocatorId> existingValue = allLocators.putIfAbsent(entry.getKey(),
@@ -188,7 +177,6 @@ public class LocatorHelper {
 
   /**
    * This method gets locator with specific member name from collection of locators
-   *
    */
   private static DistributionLocatorId getLocatorWithSameMemberName(
       Set<DistributionLocatorId> locatorSet, DistributionLocatorId locator) {
@@ -202,7 +190,6 @@ public class LocatorHelper {
 
   /**
    * This method gets locator equal to specified from collection of locators
-   *
    */
   private static DistributionLocatorId getLocatorFromCollection(
       Set<DistributionLocatorId> locatorSet, DistributionLocatorId locator) {

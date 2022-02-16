@@ -12,8 +12,8 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache.wan.internal.client.locator;
 
+package org.apache.geode.cache.wan.internal.client.locator;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -55,8 +55,6 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 /**
  * An implementation of
  * {@link org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListener}
- *
- *
  */
 public class LocatorMembershipListenerImpl implements LocatorMembershipListener {
   private static final Logger logger = LogService.getLogger();
@@ -206,7 +204,7 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
   /**
    * A locator from the request is checked against the existing remote locator metadata. If it is
    * not available then added to existing remote locator metadata and LocatorMembershipListener is
-   * invoked to inform about the this newly added locator to all other locators available in remote
+   * invoked to inform about the newly added locator to all other locators available in remote
    * locator metadata. As a response, remote locator metadata is sent.
    *
    */
@@ -240,20 +238,11 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
         0, SECONDS, LOCATORS_DISTRIBUTOR_THREAD_NAME);
   }
 
-  @SuppressWarnings("unused")
-  private Object getPingResponse(RemoteLocatorPingRequest request) {
+  private Object getPingResponse(@SuppressWarnings("unused") RemoteLocatorPingRequest request) {
     return new RemoteLocatorPingResponse();
   }
 
   private Object informAboutRemoteLocators(LocatorJoinMessage request) {
-    // TODO: FInd out the importance of list locatorJoinMessages. During
-    // refactoring I could not understand its significance
-    // synchronized (locatorJoinObject) {
-    // if (locatorJoinMessages.contains(request)) {
-    // return null;
-    // }
-    // locatorJoinMessages.add(request);
-    // }
     int distributedSystemId = request.getDistributedSystemId();
     DistributionLocatorId locator = request.getLocator();
     DistributionLocatorId sourceLocatorId = request.getSourceLocator();
@@ -263,9 +252,7 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
   }
 
   private Object getRemoteLocators(RemoteLocatorRequest request) {
-    int dsId = request.getDsId();
-    Set<String> locators = getRemoteLocatorInfo(dsId);
-    return new RemoteLocatorResponse(locators);
+    return new RemoteLocatorResponse(getRemoteLocatorInfo(request.getDsId()));
   }
 
   @Override
@@ -323,8 +310,8 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
       } catch (Exception exception) {
         if (logger.isDebugEnabled()) {
           logger.debug(LISTENER_FAILURE_MESSAGE,
-              new Object[] {advertisedLocator.getHostName(), advertisedLocator.getPort(),
-                  targetLocator.getHostName(), targetLocator.getPort(), 1, exception});
+              advertisedLocator.getHostName(), advertisedLocator.getPort(),
+              targetLocator.getHostName(), targetLocator.getPort(), 1, exception);
         }
 
         if (!failedMessages.containsKey(targetLocator)) {
@@ -348,13 +335,13 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
       } catch (Exception exception) {
         if (retryAttempt == LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS) {
           logger.warn(LISTENER_FINAL_FAILURE_MESSAGE,
-              new Object[] {advertisedLocator.getHostName(), advertisedLocator.getPort(),
-                  targetLocator.getHostName(), targetLocator.getPort(), retryAttempt, exception});
+              advertisedLocator.getHostName(), advertisedLocator.getPort(),
+              targetLocator.getHostName(), targetLocator.getPort(), retryAttempt, exception);
         } else {
           if (logger.isDebugEnabled()) {
             logger.debug(LISTENER_FAILURE_MESSAGE,
-                new Object[] {advertisedLocator.getHostName(), advertisedLocator.getPort(),
-                    targetLocator.getHostName(), targetLocator.getPort(), retryAttempt, exception});
+                advertisedLocator.getHostName(), advertisedLocator.getPort(),
+                targetLocator.getHostName(), targetLocator.getPort(), retryAttempt, exception);
           }
         }
 
