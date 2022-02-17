@@ -145,40 +145,6 @@ public class StopGatewaySenderCommandDUnitTest implements Serializable {
     server3.invoke(() -> verifySenderState("ln", false, false));
   }
 
-  @Test
-  public void testStopGatewaySenderThenStartAndStopAgain() {
-    Integer locator1Port = locatorSite1.getPort();
-
-    // setup servers in Site #1 (London)
-    server1 = clusterStartupRule.startServerVM(3, locator1Port);
-    server2 = clusterStartupRule.startServerVM(4, locator1Port);
-    server3 = clusterStartupRule.startServerVM(5, locator1Port);
-
-    server1.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
-    server2.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
-    server3.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
-
-    server1.invoke(() -> startSender("ln"));
-    server2.invoke(() -> startSender("ln"));
-    server3.invoke(() -> startSender("ln"));
-
-    String command =
-        CliStrings.STOP_GATEWAYSENDER + " --" + CliStrings.STOP_GATEWAYSENDER__ID + "=ln";
-    CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
-    assertThat(cmdResult).isNotNull();
-    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
-
-    // Start again
-    server1.invoke(() -> startSender("ln"));
-    server2.invoke(() -> startSender("ln"));
-    server3.invoke(() -> startSender("ln"));
-
-    // Stop again
-    cmdResult = executeCommandWithIgnoredExceptions(command);
-    assertThat(cmdResult).isNotNull();
-    assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
-  }
-
   /**
    * test to validate that the start gateway sender starts the gateway sender on a member
    */

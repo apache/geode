@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.logging.internal.executors.LoggingExecutors.newCachedThreadPool;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -31,7 +32,6 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
@@ -48,7 +48,7 @@ public class StopGatewaySenderCommand extends GfshCommand {
 
   @SuppressWarnings("unused") // invoked by spring shell
   public StopGatewaySenderCommand() {
-    this(LoggingExecutors.newCachedThreadPool("Stop Sender Command Thread ", true),
+    this(newCachedThreadPool("Stop Sender Command Thread ", true),
         new StopGatewaySenderOnMemberWithBeanImpl());
   }
 
@@ -105,6 +105,8 @@ public class StopGatewaySenderCommand extends GfshCommand {
       return ResultModel.createError(
           CliStrings.format(CliStrings.GATEWAY_SENDER_STOP_0_COULD_NOT_BE_INVOKED_DUE_TO_1, id,
               ite.getMessage()));
+    } finally {
+      executorService.shutdown();
     }
 
     return buildResultModelFromMembersResponses(id, dsMembersList, futures);

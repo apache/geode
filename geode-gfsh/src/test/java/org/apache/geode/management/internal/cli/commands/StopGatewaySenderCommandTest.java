@@ -131,6 +131,7 @@ public class StopGatewaySenderCommandTest {
         ArgumentCaptor.forClass(Collection.class);
     verify(executorService, times(1)).invokeAll((callablesCaptor.capture()));
     assertThat(callablesCaptor.getValue().size()).isEqualTo(members.size());
+    verify(executorService, times(1)).shutdown();
   }
 
   @Test
