@@ -45,14 +45,13 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.MemberStarterRule;
 
 
-public class FunctionCommandsDUnitTestBase {
+public class FunctionCommandsDistributedTestBase {
   private static MemberVM locator;
   private static MemberVM server1;
   private static MemberVM server2;
 
   private static final String REGION_ONE = "RegionOne";
   private static final String REGION_TWO = "RegionTwo";
-  private static final String RESULT_HEADER = "Message";
 
   @ClassRule
   public static ClusterStartupRule lsRule = new ClusterStartupRule();
@@ -61,7 +60,7 @@ public class FunctionCommandsDUnitTestBase {
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
   @BeforeClass
-  public static void before() throws Exception {
+  public static void before() {
     locator = lsRule.startLocatorVM(0, MemberStarterRule::withHttpService);
 
     Properties props = new Properties();
@@ -73,9 +72,9 @@ public class FunctionCommandsDUnitTestBase {
     server1.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
 
-      RegionFactory<Integer, Integer> dataRegionFactory =
+      RegionFactory<String, String> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.PARTITION);
-      Region region = dataRegionFactory.create(REGION_ONE);
+      Region<String, String> region = dataRegionFactory.create(REGION_ONE);
       for (int i = 0; i < 10; i++) {
         region.put("key" + (i + 200), "value" + (i + 200));
       }
@@ -87,9 +86,9 @@ public class FunctionCommandsDUnitTestBase {
 
     server2.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
-      RegionFactory<Integer, Integer> dataRegionFactory =
+      RegionFactory<String, String> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.PARTITION);
-      Region region = dataRegionFactory.create(REGION_ONE);
+      Region<String, String> region = dataRegionFactory.create(REGION_ONE);
       for (int i = 0; i < 10000; i++) {
         region.put("key" + (i + 400), "value" + (i + 400));
       }
@@ -110,11 +109,12 @@ public class FunctionCommandsDUnitTestBase {
 
   @Before
   public void setup() throws Exception {
-    registerFunction(new TestFunction(true, TEST_FUNCTION1), locator, server1, server2);
-    registerFunction(new TestFunction(true, TEST_FUNCTION_RETURN_ARGS), locator, server1, server2);
-    registerFunction(new TestFunction(true, TEST_FUNCTION_ALWAYS_THROWS_EXCEPTION), locator,
+    registerFunction(new TestFunction<>(true, TEST_FUNCTION1), locator, server1, server2);
+    registerFunction(new TestFunction<>(true, TEST_FUNCTION_RETURN_ARGS), locator, server1,
+        server2);
+    registerFunction(new TestFunction<>(true, TEST_FUNCTION_ALWAYS_THROWS_EXCEPTION), locator,
         server1, server2);
-    registerFunction(new TestFunction(true, TEST_FUNCTION_ON_ONE_MEMBER_RETURN_ARGS), locator,
+    registerFunction(new TestFunction<>(true, TEST_FUNCTION_ON_ONE_MEMBER_RETURN_ARGS), locator,
         server1);
 
     connectGfsh();
@@ -128,14 +128,14 @@ public class FunctionCommandsDUnitTestBase {
     return locator;
   }
 
-  private static void registerFunction(Function function, MemberVM... vms) {
+  private static void registerFunction(Function<?> function, MemberVM... vms) {
     for (MemberVM vm : vms) {
       vm.invoke(() -> FunctionService.registerFunction(function));
     }
   }
 
   @Test
-  public void testExecuteFunctionOnRegion() throws Exception {
+  public void testExecuteFunctionOnRegion() {
     gfsh.executeAndAssertThat(
         "execute function --id=" + TEST_FUNCTION1 + " --region=" + SEPARATOR + REGION_ONE)
         .statusIsSuccess()
@@ -145,14 +145,14 @@ public class FunctionCommandsDUnitTestBase {
   }
 
   @Test
-  public void testExecuteFunctionOnUnknownRegion() throws Exception {
+  public void testExecuteFunctionOnUnknownRegion() {
     gfsh.executeAndAssertThat(
         "execute function --id=" + TEST_FUNCTION1 + " --region=" + SEPARATOR + "UNKNOWN")
         .statusIsError().containsOutput("No members found");
   }
 
   @Test
-  public void testExecuteUnknownFunction() throws Exception {
+  public void testExecuteUnknownFunction() {
     gfsh.executeAndAssertThat("execute function --id=UNKNOWN_FUNCTION").statusIsError()
         .containsOutput("UNKNOWN_FUNCTION is not registered on member");
   }

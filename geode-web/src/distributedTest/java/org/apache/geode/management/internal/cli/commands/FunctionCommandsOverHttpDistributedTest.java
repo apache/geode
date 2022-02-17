@@ -15,5 +15,15 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-public class FunctionCommandsDUnitTest extends FunctionCommandsDUnitTestBase {
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.test.junit.categories.GfshTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
+
+@Category({GfshTest.class})
+public class FunctionCommandsOverHttpDistributedTest extends FunctionCommandsDistributedTestBase {
+  @Override
+  public void connectGfsh() throws Exception {
+    gfsh.connectAndVerify(getLocator().getHttpPort(), GfshCommandRule.PortType.http);
+  }
 }
