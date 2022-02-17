@@ -373,8 +373,8 @@ public class QueueManagerImpl implements QueueManager {
                   ? (deadConnection.getUpdater().isPrimary() ? "Primary" : "Redundant")
                   : "Queue",
                   endpoint});
-      scheduleRedundancySatisfierIfNeeded(0);
       deadConnection.internalDestroy();
+      scheduleRedundancySatisfierIfNeeded(0);
     } else {
       if (logger.isDebugEnabled()) {
         logger.debug("Ignoring crashed endpoint {} it does not have a queue.", endpoint);
@@ -849,7 +849,7 @@ public class QueueManagerImpl implements QueueManager {
       return;
     }
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    if (queueConnections.getPrimary() != null) {
+    if (queueConnections.getPrimary() != null && !queueConnections.getPrimary().isDestroyed()) {
       if (isDebugEnabled) {
         logger.debug("Primary recovery not needed");
       }
@@ -989,7 +989,7 @@ public class QueueManagerImpl implements QueueManager {
       }
       // now still CCU can died but then it will execute Checkendpoint with lock it will remove
       // connection connection and it will reschedule it.
-      if (connection.getEndpoint().isClosed() || shuttingDown
+      if (connection.getEndpoint().isClosed() || connection.isDestroyed() || shuttingDown
           || pool.getPoolOrCacheCancelInProgress() != null) {
         isBadConnection = true;
       } else {
