@@ -105,8 +105,6 @@ public class StopGatewaySenderCommand extends GfshCommand {
       return ResultModel.createError(
           CliStrings.format(CliStrings.GATEWAY_SENDER_STOP_0_COULD_NOT_BE_INVOKED_DUE_TO_1, id,
               ite.getMessage()));
-    } finally {
-      executorService.shutdown();
     }
 
     return buildResultModelFromMembersResponses(id, dsMembersList, futures);
