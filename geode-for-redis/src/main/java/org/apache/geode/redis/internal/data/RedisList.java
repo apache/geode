@@ -43,6 +43,24 @@ public class RedisList extends AbstractRedisData {
   }
 
   /**
+   * @param index index of desired element. Positive index starts at the head. Negative index starts
+   *        at the tail.
+   * @return element at index. nil if index is out of range.
+   */
+  public byte[] lindex(int index) {
+    if (index < 0) {
+      // Changes negative index to corresponding positive index to utilize get(int index)
+      index = elementList.size() + index;
+    }
+
+    if (index < 0 || elementList.size() <= index) {
+      return null;
+    } else {
+      return elementList.get(index);
+    }
+  }
+
+  /**
    * @param elementsToAdd elements to add to this set; NOTE this list may by modified by this call
    * @param region the region this instance is stored in
    * @param key the name of the set to add to

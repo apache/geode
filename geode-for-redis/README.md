@@ -182,6 +182,7 @@ Geode for Redis implements a subset of the full Redis command set.
 - INCRBYFLOAT  
 - INFO <sup>2</sup>  
 - KEYS  
+- LINDEX
 - MGET
 - MSET
 - MSETNX
