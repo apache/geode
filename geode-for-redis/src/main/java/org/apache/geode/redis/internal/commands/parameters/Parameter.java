@@ -73,10 +73,10 @@ public class Parameter {
     return this;
   }
 
-  public Parameter min(int minumum) {
-    arity = -minumum;
+  public Parameter min(int minimum) {
+    arity = -minimum;
     predicates.add(c -> {
-      if (c.getProcessedCommand().size() < minumum) {
+      if (c.getProcessedCommand().size() < minimum) {
         throw new RedisParametersMismatchException(c.wrongNumberOfArgumentsErrorMessage());
       }
     });

@@ -24,6 +24,7 @@ import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRA
 import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAY_PAIRS;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.APPEND_BYTE_ARRAY;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REMOVE_BYTE_ARRAYS;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.REMOVE_ELEMENTS_BY_INDEX;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_ARRAYS;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_ARRAY_AT_OFFSET;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_ARRAY_DOUBLE_PAIRS;
@@ -37,6 +38,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 
 import org.apache.geode.DataSerializer;
@@ -58,6 +60,7 @@ import org.apache.geode.redis.internal.data.delta.AppendByteArray;
 import org.apache.geode.redis.internal.data.delta.DeltaInfo;
 import org.apache.geode.redis.internal.data.delta.DeltaType;
 import org.apache.geode.redis.internal.data.delta.RemoveByteArrays;
+import org.apache.geode.redis.internal.data.delta.RemoveElementsByIndex;
 import org.apache.geode.redis.internal.data.delta.ReplaceByteArrayAtOffset;
 import org.apache.geode.redis.internal.data.delta.ReplaceByteArrayDoublePairs;
 import org.apache.geode.redis.internal.data.delta.ReplaceByteArrays;
@@ -261,6 +264,9 @@ public abstract class AbstractRedisData implements RedisData {
       case REPLACE_BYTE_AT_OFFSET:
         ReplaceByteAtOffset.deserializeFrom(in, this);
         break;
+      case REMOVE_ELEMENTS_BY_INDEX:
+        RemoveElementsByIndex.deserializeFrom(in, this);
+        break;
     }
   }
 
@@ -311,6 +317,10 @@ public abstract class AbstractRedisData implements RedisData {
 
   public void applyReplaceByteAtOffsetDelta(int offset, byte bits) {
     throw new IllegalStateException("unexpected " + REPLACE_BYTE_AT_OFFSET);
+  }
+
+  public void applyRemoveElementsByIndex(List<Integer> indexes) {
+    throw new IllegalStateException("unexpected " + REMOVE_ELEMENTS_BY_INDEX);
   }
 
   @Override

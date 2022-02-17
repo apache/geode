@@ -36,7 +36,6 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 
 public class ZAddDUnitTest {
-
   private static final String KEY_BASE = "key";
   private static final int NUM_SORTED_SETS = 100;
   private static final String MEMBER_BASE = "member-";

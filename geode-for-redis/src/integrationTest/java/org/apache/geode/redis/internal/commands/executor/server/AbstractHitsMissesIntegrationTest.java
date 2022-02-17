@@ -40,6 +40,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   private static final String STRING_KEY = HASHTAG + "string";
   private static final String STRING_INT_KEY = HASHTAG + "int";
   private static final String SET_KEY = HASHTAG + "set";
+  private static final String LIST_KEY = HASHTAG + "list";
   private static final String HASH_KEY = HASHTAG + "hash";
   private static final String SORTED_SET_KEY = HASHTAG + "sortedSet";
 
@@ -52,6 +53,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
     jedis.set(STRING_KEY, "yarn");
     jedis.set(STRING_INT_KEY, "5");
     jedis.sadd(SET_KEY, "cotton");
+    jedis.lpush(LIST_KEY, "premier");
     jedis.hset(HASH_KEY, "green", "eggs");
     jedis.zadd(SORTED_SET_KEY, -2.0, "almonds");
   }
@@ -568,6 +570,22 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   @Test
   public void testSetbit() {
     runCommandAndAssertNoStatUpdates(STRING_INT_KEY, k -> jedis.setbit(k, 0L, "1"));
+  }
+
+  /************* List related commands *************/
+  @Test
+  public void testLpush() {
+    runCommandAndAssertNoStatUpdates(LIST_KEY, k -> jedis.lpush(k, "element"));
+  }
+
+  @Test
+  public void testLpop() {
+    runCommandAndAssertNoStatUpdates(LIST_KEY, k -> jedis.lpop(k));
+  }
+
+  @Test
+  public void testLlen() {
+    runCommandAndAssertHitsAndMisses(LIST_KEY, k -> jedis.llen(k));
   }
 
   /************* Helper Methods *************/

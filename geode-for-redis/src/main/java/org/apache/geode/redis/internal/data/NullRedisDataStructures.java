@@ -20,4 +20,5 @@ public class NullRedisDataStructures {
   public static final NullRedisSortedSet NULL_REDIS_SORTED_SET = new NullRedisSortedSet();
   public static final NullRedisHash NULL_REDIS_HASH = new NullRedisHash();
   public static final NullRedisData NULL_REDIS_DATA = new NullRedisData();
+  public static final NullRedisList NULL_REDIS_LIST = new NullRedisList();
 }
