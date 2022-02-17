@@ -74,9 +74,8 @@ public abstract class AbstractSubscriptionsIntegrationTest implements RedisInteg
     executor.submit(() -> client.subscribe(mockSubscriber, "same"));
     mockSubscriber.awaitSubscribe("same");
     mockSubscriber.ping("potato");
-    mockSubscriber.ping();
     GeodeAwaitility.await()
-        .untilAsserted(() -> assertThat(mockSubscriber.getReceivedPings().size()).isEqualTo(2));
+        .untilAsserted(() -> assertThat(mockSubscriber.getReceivedPings().size()).isOne());
     assertThat(mockSubscriber.getReceivedPings().get(0)).isEqualTo("potato");
     mockSubscriber.unsubscribe();
   }

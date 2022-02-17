@@ -447,7 +447,7 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
   }
 
   @Test
-  public void ensureWeightsAreAppliedBeforeAxggregation() {
+  public void ensureWeightsAreAppliedBeforeAggregation() {
     Map<String, Double> scores1 = makeScoreMap(10, x -> (double) x * 5);
     jedis.zadd(KEY1, scores1);
 
