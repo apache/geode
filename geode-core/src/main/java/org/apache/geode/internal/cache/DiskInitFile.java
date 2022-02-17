@@ -51,6 +51,7 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
@@ -1307,11 +1308,24 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     writeIFRecord(bb, true);
   }
 
+  private void checkClosed() {
+    if (closed) {
+      parent.getCache().getCancelCriterion().checkCancelInProgress();
+
+      if (parent.isClosed() || parent.isClosing()) {
+        throw new CacheClosedException("The disk store is closed or closing");
+      }
+
+      DiskAccessException dae = new DiskAccessException("The disk init file is closed", parent);
+      parent.handleDiskAccessException(dae);
+
+      throw dae;
+    }
+  }
+
   private void writeIFRecord(ByteBuffer bb, boolean doStats) throws IOException {
     assert lock.isHeldByCurrentThread();
-    if (closed) {
-      throw new DiskAccessException("The disk store is closed", parent);
-    }
+    checkClosed();
 
     ifRAF.write(bb.array(), 0, bb.position());
     if (logger.isTraceEnabled(LogMarker.PERSIST_WRITES_VERBOSE)) {
@@ -1327,9 +1341,8 @@ public class DiskInitFile implements DiskInitFileInterpreter {
 
   private void writeIFRecord(HeapDataOutputStream hdos, boolean doStats) throws IOException {
     assert lock.isHeldByCurrentThread();
-    if (closed) {
-      throw new DiskAccessException("The disk store is closed", parent);
-    }
+    checkClosed();
+
     hdos.sendTo(ifRAF);
     if (logger.isTraceEnabled(LogMarker.PERSIST_WRITES_VERBOSE)) {
       logger.trace(LogMarker.PERSIST_WRITES_VERBOSE, "DiskInitFile writeIFRecord HDOS");

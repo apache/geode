@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.PartitionedRegionStorageException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -339,9 +340,9 @@ public class CreateBucketMessage extends PartitionMessage {
         waitForRepliesUninterruptibly();
       } catch (ReplyException e) {
         Throwable t = e.getCause();
-        if (t instanceof CancelException) {
+        if (t instanceof DiskAccessException || t instanceof CancelException) {
           logger.debug(
-              "NodeResponse got remote cancellation, throwing PartitionedRegionCommunication Exception {}",
+              "NodeResponse got remote exception, throwing PartitionedRegionCommunication Exception {}",
               t.getMessage(), t);
           return null;
         }
