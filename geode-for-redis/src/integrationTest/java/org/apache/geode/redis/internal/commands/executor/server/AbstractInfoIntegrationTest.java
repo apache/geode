@@ -121,7 +121,7 @@ public abstract class AbstractInfoIntegrationTest implements RedisIntegrationTes
   @Before
   public void setUp() {
     jedisCluster = new JedisCluster(new HostAndPort(BIND_ADDRESS, getPort()), REDIS_CLIENT_TIMEOUT);
-    jedis = jedisCluster.getConnectionFromSlot(new RedisKey(KEY.getBytes()).getSlot());
+    jedis = new Jedis(jedisCluster.getConnectionFromSlot(new RedisKey(KEY.getBytes()).getSlot()));
   }
 
   @After

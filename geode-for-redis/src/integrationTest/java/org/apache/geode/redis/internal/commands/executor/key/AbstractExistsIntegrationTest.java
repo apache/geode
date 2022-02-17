@@ -125,9 +125,8 @@ public abstract class AbstractExistsIntegrationTest implements RedisIntegrationT
   public void shouldReturn1_givenBitMapExists() {
     String bitMapKey = "bitMapKey";
     long offset = 1L;
-    String bitMapValue = "0";
 
-    jedis.setbit(bitMapKey, offset, bitMapValue);
+    jedis.setbit(bitMapKey, offset, false);
 
     assertThat(jedis.exists(toArray(bitMapKey))).isEqualTo(1L);
   }
@@ -136,9 +135,8 @@ public abstract class AbstractExistsIntegrationTest implements RedisIntegrationT
   public void shouldReturn0_givenBitMapDoesNotExist() {
     String bitMapKey = "bitMapKey";
     long offset = 1L;
-    String bitMapValue = "0";
 
-    jedis.setbit(bitMapKey, offset, bitMapValue);
+    jedis.setbit(bitMapKey, offset, false);
     jedis.del(bitMapKey);
 
     assertThat(jedis.exists(toArray(bitMapKey))).isEqualTo(0L);

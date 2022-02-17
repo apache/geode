@@ -49,7 +49,7 @@ public abstract class AbstractClusterIntegrationTest implements RedisIntegration
 
   @Test
   public void testCluster_givenWrongNumberOfArguments() {
-    final Jedis connection = jedis.getConnectionFromSlot(0);
+    final Jedis connection = new Jedis(jedis.getConnectionFromSlot(0));
     assertThatThrownBy(() -> connection.sendCommand(Protocol.Command.CLUSTER))
         .hasMessage("ERR wrong number of arguments for 'cluster' command");
     assertThatThrownBy(
@@ -77,7 +77,7 @@ public abstract class AbstractClusterIntegrationTest implements RedisIntegration
 
   @Test
   public void keyslot_ReturnsCorrectSlot() {
-    final Jedis connection = jedis.getConnectionFromSlot(0);
+    final Jedis connection = new Jedis(jedis.getConnectionFromSlot(0));
     assertThat(connection.clusterKeySlot("nohash")).isEqualTo(9072);
     assertThat(connection.clusterKeySlot("with{hash}")).isEqualTo(238);
     assertThat(connection.clusterKeySlot("with{two}{hashes}")).isEqualTo(2127);

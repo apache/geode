@@ -36,8 +36,8 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.params.ScanParams;
+import redis.clients.jedis.resps.ScanResult;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
@@ -381,8 +381,8 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
   public void should_returnAllConsistentlyPresentMembers_givenConcurrentThreadsAddingAndRemovingMembers() {
     final Set<String> initialMemberData = initializeThousandMemberSet();
     final int iterationCount = 500;
-    Jedis jedis1 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
-    Jedis jedis2 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
+    final Jedis jedis1 = new Jedis(jedis.getConnectionFromSlot(SLOT_FOR_KEY));
+    final Jedis jedis2 = new Jedis(jedis.getConnectionFromSlot(SLOT_FOR_KEY));
 
     new ConcurrentLoopingThreads(iterationCount,
         (i) -> multipleSScanAndAssertOnContentOfResultSet(i, jedis1, initialMemberData),
@@ -402,8 +402,8 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     final Set<String> initialMemberData = initializeThousandMemberSet();
     jedis.sadd(KEY, initialMemberData.toArray(new String[0]));
     final int iterationCount = 500;
-    Jedis jedis1 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
-    Jedis jedis2 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
+    Jedis jedis1 = new Jedis(jedis.getConnectionFromSlot(SLOT_FOR_KEY));
+    Jedis jedis2 = new Jedis(jedis.getConnectionFromSlot(SLOT_FOR_KEY));
 
     new ConcurrentLoopingThreads(iterationCount,
         (i) -> multipleSScanAndAssertOnContentOfResultSet(i, jedis1, initialMemberData),

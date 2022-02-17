@@ -24,10 +24,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
@@ -35,7 +33,7 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.Tuple;
+import redis.clients.jedis.resps.Tuple;
 
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.internal.RedisConstants;
@@ -139,7 +137,7 @@ public abstract class AbstractZRangeIntegrationTest implements RedisIntegrationT
 
   @Test
   public void shouldAlsoReturnScores_whenWithScoresSpecified() {
-    Set<Tuple> expected = new LinkedHashSet<>();
+    final List<Tuple> expected = new ArrayList<>();
     for (int i = 0; i < members.size(); i++) {
       expected.add(new Tuple(members.get(i), scores.get(i)));
     }

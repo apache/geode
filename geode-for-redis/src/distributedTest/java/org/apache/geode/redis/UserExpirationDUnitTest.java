@@ -26,7 +26,6 @@ import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import redis.clients.jedis.BinaryJedisCluster;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 
@@ -64,7 +63,7 @@ public class UserExpirationDUnitTest {
     jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisPort),
         REDIS_CLIENT_TIMEOUT,
         REDIS_CLIENT_TIMEOUT,
-        BinaryJedisCluster.DEFAULT_MAX_ATTEMPTS,
+        JedisCluster.DEFAULT_MAX_ATTEMPTS,
         USER, USER, "test-client",
         new GenericObjectPoolConfig<>());
   }

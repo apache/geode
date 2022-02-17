@@ -96,9 +96,8 @@ public abstract class AbstractPersistIntegrationTest implements RedisIntegration
   public void shouldPersistKey_givenKeyWith_bitMapValue() {
     String bitMapKey = "bitMapKey";
     long offset = 1L;
-    String bitMapValue = "0";
 
-    jedis.setbit(bitMapKey, offset, bitMapValue);
+    jedis.setbit(bitMapKey, offset, false);
     jedis.expire(bitMapKey, 20L);
 
     assertThat(jedis.persist(bitMapKey)).isEqualTo(1L);

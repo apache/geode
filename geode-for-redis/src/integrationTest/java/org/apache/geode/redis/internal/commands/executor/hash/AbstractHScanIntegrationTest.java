@@ -43,8 +43,8 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
+import redis.clients.jedis.params.ScanParams;
+import redis.clients.jedis.resps.ScanResult;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
@@ -477,8 +477,8 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     jedis.hset(HASH_KEY, initialHashData);
     final int iterationCount = 500;
 
-    Jedis jedis1 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
-    Jedis jedis2 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
+    final Jedis jedis1 = new Jedis(jedis.getConnectionFromSlot(SLOT_FOR_KEY));
+    final Jedis jedis2 = new Jedis(jedis.getConnectionFromSlot(SLOT_FOR_KEY));
 
     new ConcurrentLoopingThreads(iterationCount,
         (i) -> multipleHScanAndAssertOnSizeOfResultSet(jedis1, initialHashData),
@@ -498,8 +498,8 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     jedis.hset(HASH_KEY, initialHashData);
     final int iterationCount = 500;
 
-    Jedis jedis1 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
-    Jedis jedis2 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
+    final Jedis jedis1 = new Jedis(jedis.getConnectionFromSlot(SLOT_FOR_KEY));
+    final Jedis jedis2 = new Jedis(jedis.getConnectionFromSlot(SLOT_FOR_KEY));
 
     new ConcurrentLoopingThreads(iterationCount,
         (i) -> multipleHScanAndAssertOnContentOfResultSet(i, jedis1, initialHashData),
@@ -520,8 +520,8 @@ public abstract class AbstractHScanIntegrationTest implements RedisIntegrationTe
     jedis.hset(HASH_KEY, initialHashData);
     final int iterationCount = 500;
 
-    Jedis jedis1 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
-    Jedis jedis2 = jedis.getConnectionFromSlot(SLOT_FOR_KEY);
+    final Jedis jedis1 = new Jedis(jedis.getConnectionFromSlot(SLOT_FOR_KEY));
+    final Jedis jedis2 = new Jedis(jedis.getConnectionFromSlot(SLOT_FOR_KEY));
 
     new ConcurrentLoopingThreads(iterationCount,
         (i) -> multipleHScanAndAssertOnContentOfResultSet(i, jedis1, initialHashData),

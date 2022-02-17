@@ -26,8 +26,8 @@ import java.util.function.Consumer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.BitOP;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.args.BitOP;
 
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.RedisTestHelper;
@@ -569,7 +569,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   @Test
   public void testSetbit() {
-    runCommandAndAssertNoStatUpdates(STRING_INT_KEY, k -> jedis.setbit(k, 0L, "1"));
+    runCommandAndAssertNoStatUpdates(STRING_INT_KEY, k -> jedis.setbit(k, 0L, true));
   }
 
   /************* List related commands *************/

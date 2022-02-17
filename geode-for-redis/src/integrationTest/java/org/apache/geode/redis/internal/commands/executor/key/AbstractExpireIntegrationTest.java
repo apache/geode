@@ -113,9 +113,8 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
 
     String key = "key";
     long offset = 1L;
-    String value = "0";
 
-    jedis.setbit(key, offset, value);
+    jedis.setbit(key, offset, false);
 
     Long timeToLive = jedis.ttl(key);
     assertThat(timeToLive).isEqualTo(-1);

@@ -40,7 +40,7 @@ import org.junit.runner.RunWith;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.Tuple;
+import redis.clients.jedis.resps.Tuple;
 
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
@@ -216,11 +216,11 @@ public abstract class AbstractZRevRangeByScoreIntegrationTest implements RedisIn
   public void shouldReturnRange_boundedByLimit() {
     createZSetRangeTestMap();
 
-    assertThat(jedis.zrevrangeByScore(KEY, "10", "0", 0, 2))
+    assertThat(jedis.zrevrangeByScore(KEY, 10d, 0d, 0, 2))
         .containsExactly("f", "e");
-    assertThat(jedis.zrevrangeByScore(KEY, "10", "0", 2, 3))
+    assertThat(jedis.zrevrangeByScore(KEY, 10d, 0d, 2, 3))
         .containsExactly("d", "c", "b");
-    assertThat(jedis.zrevrangeByScore(KEY, "10", "0", 2, 10))
+    assertThat(jedis.zrevrangeByScore(KEY, 10d, 0d, 2, 10))
         .containsExactly("d", "c", "b");
   }
 

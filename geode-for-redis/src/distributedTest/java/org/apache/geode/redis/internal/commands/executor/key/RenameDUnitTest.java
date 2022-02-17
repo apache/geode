@@ -89,7 +89,7 @@ public class RenameDUnitTest {
 
     int redisServerPort1 = clusterStartUp.getRedisPort(1);
     jedisCluster =
-        new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1), REDIS_CLIENT_TIMEOUT);
+        new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1), REDIS_CLIENT_TIMEOUT, 20);
   }
 
   @Before

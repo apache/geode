@@ -16,13 +16,16 @@
 
 package org.apache.geode.redis.internal.commands.executor.server;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_COMMAND;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.redis.RedisIntegrationTest;
@@ -53,10 +56,13 @@ public class ShutdownIntegrationTest implements RedisIntegrationTest {
 
   @Test
   public void shutdownIsDisabled_whenOnlySupportedCommandsAreAllowed() {
-    // Unfortunately Jedis' shutdown() doesn't seem to throw a JedisDataException when the command
-    // returns an error.
-    jedis.shutdown();
+    final String EXPECTED_ERROR_MSG =
+        String.format("ERR " + ERROR_UNKNOWN_COMMAND, "SHUTDOWN", "");
 
+    assertThatThrownBy(
+        () -> jedis.shutdown())
+            .isInstanceOf(JedisDataException.class)
+            .hasMessage(EXPECTED_ERROR_MSG);
     assertThat(jedis.keys("*")).isEmpty();
   }
 }

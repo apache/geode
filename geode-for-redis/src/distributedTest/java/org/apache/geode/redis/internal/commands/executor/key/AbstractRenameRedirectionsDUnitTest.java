@@ -69,7 +69,7 @@ public abstract class AbstractRenameRedirectionsDUnitTest implements RedisIntegr
 
   private String getKeyOnDifferentServerAs(String antiKey, String prefix) {
     ClusterNodes clusterNodes;
-    try (Jedis j = jedis.getConnectionFromSlot(0)) {
+    try (final Jedis j = new Jedis(jedis.getConnectionFromSlot(0))) {
       clusterNodes = ClusterNodes.parseClusterNodes(j.clusterNodes());
     }
     int antiSlot = JedisClusterCRC16.getCRC16(antiKey) % RegionProvider.REDIS_SLOTS;

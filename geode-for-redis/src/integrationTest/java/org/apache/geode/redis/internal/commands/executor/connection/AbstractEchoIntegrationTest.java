@@ -20,13 +20,13 @@ import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExact
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static redis.clients.jedis.Protocol.Command.ECHO;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.RedisIntegrationTest;
 
@@ -45,12 +45,12 @@ public abstract class AbstractEchoIntegrationTest implements RedisIntegrationTes
 
   @Test
   public void errors_GivenWrongNumberOfArguments() {
-    assertExactNumberOfArgs(jedis, Protocol.Command.ECHO, 1);
+    assertExactNumberOfArgs(jedis, ECHO, 1);
   }
 
   @Test
   public void returnsString_givenString() {
-    String string = "test";
-    assertThat(jedis.echo(string)).isEqualTo(string);
+    final byte[] bytes = "test".getBytes();
+    assertThat((byte[]) jedis.sendCommand(ECHO, bytes)).isEqualTo(bytes);
   }
 }
