@@ -169,15 +169,15 @@ public abstract class AbstractInfoStatsIntegrationTest implements RedisIntegrati
   @Test
   public void opsPerformedOverLastSecond_ShouldUpdate_givenOperationsOccurring()
       throws InterruptedException, ExecutionException, TimeoutException {
-    long numberSecondsToRun = 4;
+    final long numberSecondsToRun = 4;
     AtomicInteger totalOpsPerformed = new AtomicInteger();
 
-    long startTime = System.currentTimeMillis();
-    long endTime = startTime + Duration.ofSeconds(numberSecondsToRun).toMillis();
+    final long startTime = System.currentTimeMillis();
+    final long endTime = startTime + Duration.ofSeconds(numberSecondsToRun).toMillis();
 
     // Take a sample in the middle of performing operations to help eliminate warmup as a factor
-    long timeToSampleAt = startTime + Duration.ofSeconds(numberSecondsToRun / 2).toMillis();
-    long timeToGetBaselineOpsPerformed = timeToSampleAt - Duration.ofSeconds(1).toMillis();
+    final long timeToSampleAt = startTime + Duration.ofSeconds(numberSecondsToRun / 2).toMillis();
+    final long timeToGetBaselineOpsPerformed = timeToSampleAt - Duration.ofSeconds(1).toMillis();
 
     // Execute commands in the background
     Future<Void> executeCommands = executor.submit(() -> {
@@ -192,19 +192,20 @@ public abstract class AbstractInfoStatsIntegrationTest implements RedisIntegrati
     // Record the total number of operations performed a second before we plan to sample. A poll
     // interval less than the default of 100ms is used to increase the accuracy of the expected
     // value, as the stats update the value of instantaneous per second values every 62.5ms
-    await().pollInterval(Duration.ofMillis(50))
+    await().pollInterval(Duration.ofMillis(10))
         .until(() -> System.currentTimeMillis() >= timeToGetBaselineOpsPerformed);
-    int opsPerformedUntilASecondBeforeSampling = totalOpsPerformed.get();
+    final int opsPerformedUntilASecondBeforeSampling = totalOpsPerformed.get();
 
     // Calculate how many operations were performed in the last second. A poll interval less than
     // the default of 100ms is used to increase the accuracy of the expected value, as the stats
     // update the value of instantaneous per second values every 62.5ms
-    await().pollInterval(Duration.ofMillis(50))
+    await().pollInterval(Duration.ofMillis(10))
         .until(() -> System.currentTimeMillis() >= timeToSampleAt);
-    int expected = totalOpsPerformed.get() - opsPerformedUntilASecondBeforeSampling;
 
-    double reportedCommandsPerLastSecond =
+    final double reportedCommandsPerLastSecond =
         Double.parseDouble(getInfo(jedis).get(OPS_PERFORMED_OVER_LAST_SECOND));
+
+    final int expected = totalOpsPerformed.get() - opsPerformedUntilASecondBeforeSampling;
 
     assertThat(reportedCommandsPerLastSecond).isCloseTo(expected, withinPercentage(12.5));
 
@@ -234,23 +235,23 @@ public abstract class AbstractInfoStatsIntegrationTest implements RedisIntegrati
   @Test
   public void networkKiloBytesReadOverLastSecond_shouldBeCloseToBytesReadOverLastSecond()
       throws InterruptedException, ExecutionException, TimeoutException {
-    int numberSecondsToRun = 4;
-    String command = "set";
-    String key = "key";
-    String value = "value";
-    int bytesSentPerCommand =
+    final int numberSecondsToRun = 4;
+    final String command = "set";
+    final String key = "key";
+    final String value = "value";
+    final int bytesSentPerCommand =
         ("*3\r\n$" + command.length() + "\r\n" + command +
             "\r\n$" + key.length() + "\r\n" + key +
             "\r\n$" + value.length() + "\r\n" + value +
             "\r\n").length();
     AtomicInteger totalBytesSent = new AtomicInteger();
 
-    long startTime = System.currentTimeMillis();
-    long endTime = startTime + Duration.ofSeconds(numberSecondsToRun).toMillis();
+    final long startTime = System.currentTimeMillis();
+    final long endTime = startTime + Duration.ofSeconds(numberSecondsToRun).toMillis();
 
     // Take a sample in the middle of performing operations to help eliminate warmup as a factor
-    long timeToSampleAt = startTime + Duration.ofSeconds(numberSecondsToRun / 2).toMillis();
-    long timeToGetBaselineBytesSent = timeToSampleAt - Duration.ofSeconds(1).toMillis();
+    final long timeToSampleAt = startTime + Duration.ofSeconds(numberSecondsToRun / 2).toMillis();
+    final long timeToGetBaselineBytesSent = timeToSampleAt - Duration.ofSeconds(1).toMillis();
 
     // Execute commands in the background
     Future<Void> executeCommands = executor.submit(() -> {
@@ -265,19 +266,20 @@ public abstract class AbstractInfoStatsIntegrationTest implements RedisIntegrati
     // Record the total number of KB sent a second before we plan to sample. A poll interval less
     // than the default of 100ms is used to increase the accuracy of the expected value, as the
     // stats update the value of instantaneous per second values every 62.5ms
-    await().pollInterval(Duration.ofMillis(50))
+    await().pollInterval(Duration.ofMillis(10))
         .until(() -> System.currentTimeMillis() >= timeToGetBaselineBytesSent);
-    int bytesSentUntilASecondBeforeSampling = totalBytesSent.get();
+    final int bytesSentUntilASecondBeforeSampling = totalBytesSent.get();
 
     // Calculate how many KB were sent in the last second. A poll interval less than the default of
     // 100ms is used to increase the accuracy of the expected value, as the stats update the value
     // of instantaneous per second values every 62.5ms
-    await().pollInterval(Duration.ofMillis(50))
+    await().pollInterval(Duration.ofMillis(10))
         .until(() -> System.currentTimeMillis() >= timeToSampleAt);
-    double expected = (totalBytesSent.get() - bytesSentUntilASecondBeforeSampling) / 1024.0;
 
-    double reportedKBReadPerLastSecond =
+    final double reportedKBReadPerLastSecond =
         Double.parseDouble(getInfo(jedis).get(NETWORK_KB_READ_OVER_LAST_SECOND));
+
+    final double expected = (totalBytesSent.get() - bytesSentUntilASecondBeforeSampling) / 1024.0;
 
     assertThat(reportedKBReadPerLastSecond).isCloseTo(expected, withinPercentage(12.5));
 
