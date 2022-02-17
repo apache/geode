@@ -35,8 +35,11 @@ public class SystemPropertyJmxSerialFilterConfigurationFactory
 
   public SystemPropertyJmxSerialFilterConfigurationFactory() {
     // JmxSerialFilter requires Java 9 or greater
-    this(isJavaVersionAtLeast(JAVA_9) && isBlank(System.getProperty(PROPERTY_NAME)),
-        new OpenMBeanFilterPattern().pattern());
+    this(isJavaVersionAtLeast(JAVA_9) && isBlank(System.getProperty(PROPERTY_NAME)));
+  }
+
+  private SystemPropertyJmxSerialFilterConfigurationFactory(boolean enabled) {
+    this(enabled, enabled ? new OpenMBeanFilterPattern().pattern() : null);
   }
 
   @VisibleForTesting
