@@ -100,7 +100,7 @@ public class GeodeJBossModuleDescriptorService implements GeodeModuleDescriptorS
       List<ModuleDependency> moduleDependencies, Set<String> resourceRoots, String moduleVersion) {
 
     moduleDescriptorGenerator.generate(config.outputRoot.resolve(config.name), project.getName(),
-        moduleVersion, resourceRoots, moduleDependencies, config.mainClass, Collections.EMPTY_LIST,
+        moduleVersion, resourceRoots, moduleDependencies, config.mainClass, Collections.emptyList(),
         config.packagesToExport, config.packagesToExclude);
 
     moduleDescriptorGenerator
@@ -114,9 +114,9 @@ public class GeodeJBossModuleDescriptorService implements GeodeModuleDescriptorS
             PLUGIN_ID)).map(Project::getName).collect(Collectors.toList());
 
     List<ModuleDependency> moduleDependencies = getModuleDependencies(projectNames,
-        getApiProjectDependencies(project, config),
-        getRuntimeProjectDependencies(project, config),
-        getJBossProjectDependencies(project, config));
+            getDependenciesForConfig(project, config, API),
+            getDependenciesForConfig(project, config, IMPLEMENTATION, RUNTIME_ONLY),
+            getDependenciesForConfig(project, config, JBOSS_MODULAR));
 
     if (config.parentModule != null) {
       if (isGeodeExtensionProject(config.parentModule)) {
@@ -144,25 +144,7 @@ public class GeodeJBossModuleDescriptorService implements GeodeModuleDescriptorS
             (boolean) extraProperties.get(IS_GEODE_EXTENSION_STRING );
   }
 
-  private List<DependencyWrapper> getRuntimeProjectDependencies(Project project,
-      ModulesGeneratorConfig config) {
-    return getOrPopulateCachedDependencies(project, config,
-        IMPLEMENTATION, RUNTIME_ONLY);
-  }
-
-  private List<DependencyWrapper> getJBossProjectDependencies(Project project,
-      ModulesGeneratorConfig config) {
-    return getOrPopulateCachedDependencies(project, config,
-        JBOSS_MODULAR);
-  }
-
-  private List<DependencyWrapper> getApiProjectDependencies(Project project,
-      ModulesGeneratorConfig config) {
-
-    return getOrPopulateCachedDependencies(project, config, API);
-  }
-
-  private List<DependencyWrapper> getOrPopulateCachedDependencies(
+  private List<DependencyWrapper> getDependenciesForConfig(
       Project project, ModulesGeneratorConfig config, String... gradleConfigurations) {
     return Collections.unmodifiableList(
         getProjectDependenciesForConfiguration(project, getTargetConfigurations(
@@ -408,8 +390,10 @@ public class GeodeJBossModuleDescriptorService implements GeodeModuleDescriptorS
   private List<String> getAdditionalSourceSets(Project project,
       ModulesGeneratorConfig config) {
     List<DependencyWrapper> wrappers = new LinkedList<>();
-    wrappers.addAll(getApiProjectDependencies(project, config));
-    wrappers.addAll(getRuntimeProjectDependencies(project, config));
+
+    wrappers.addAll(getDependenciesForConfig(project, config, API));
+    wrappers.addAll(getDependenciesForConfig(project, config,
+            IMPLEMENTATION, RUNTIME_ONLY));
     List<String> resourcePaths = new LinkedList<>();
     for (DependencyWrapper wrapper : wrappers) {
       if (wrapper.getDependency() instanceof SelfResolvingDependency) {
@@ -471,11 +455,11 @@ public class GeodeJBossModuleDescriptorService implements GeodeModuleDescriptorS
             .filter(artifact -> !resourceToFilterOut.contains(artifact.getName()))
             .forEach(artifact -> resourceRoots.add(LIB_PATH_PREFIX + artifact.getFile().getName()));
       } else {
-        getResolvedRuntimeArtifactsForProject(project, config).stream()
+        getResolvedRuntimeArtifactsForProject(project, config)
             .forEach(artifact -> resourceRoots.add(LIB_PATH_PREFIX + artifact.getFile().getName()));
       }
     } else {
-      resolvedRuntimeArtifactsForProject.stream()
+      resolvedRuntimeArtifactsForProject
           .forEach(artifact -> resourceRoots.add(LIB_PATH_PREFIX + artifact.getFile().getName()));
     }
 

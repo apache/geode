@@ -243,7 +243,6 @@ class DependencyConstraints implements Plugin<Project> {
     dependencySet(group: 'io.netty', version: '4.1.74.Final') {
       entry('netty-codec-redis')
       entry('netty-handler')
-      entry('netty-all')
     }
 
     dependencySet(group: 'org.seleniumhq.selenium', version: '3.141.59') {

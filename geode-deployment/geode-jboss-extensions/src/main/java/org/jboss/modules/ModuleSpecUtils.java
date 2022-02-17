@@ -61,12 +61,13 @@ public class ModuleSpecUtils {
             .toURL().openConnection();
         if (urlConnection instanceof JarURLConnection) {
           File file = new File(((JarURLConnection) urlConnection).getJarFileURL().toURI());
-          JarFile jarFile = new JarFile(file);
-          Manifest manifest = jarFile.getManifest();
-          if (manifest != null) {
-            Attributes mainAttributes = manifest.getMainAttributes();
-            if (mainAttributes != null) {
-              addClassPathDependencies(builder, file.toPath(), mainAttributes);
+          try (JarFile jarFile = new JarFile(file)) {
+            Manifest manifest = jarFile.getManifest();
+            if (manifest != null) {
+              Attributes mainAttributes = manifest.getMainAttributes();
+              if (mainAttributes != null) {
+                addClassPathDependencies(builder, file.toPath(), mainAttributes);
+              }
             }
           }
         }
