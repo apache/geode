@@ -26,8 +26,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
@@ -39,26 +37,21 @@ import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class LPopDUnitTest {
   public static final int INITIAL_LIST_SIZE = 10000;
-  private static MemberVM locator;
 
-  @ClassRule
-  public static RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule();
+  @Rule
+  public RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule();
 
   @Rule
   public ExecutorServiceRule executor = new ExecutorServiceRule();
 
   private static JedisCluster jedis;
 
-  @BeforeClass
-  public static void classSetup() {
-    locator = clusterStartUp.startLocatorVM(0);
-    clusterStartUp.startRedisVM(2, locator.getPort());
-    clusterStartUp.startRedisVM(3, locator.getPort());
-  }
-
   @Before
   public void testSetup() {
+    MemberVM locator = clusterStartUp.startLocatorVM(0);
     clusterStartUp.startRedisVM(1, locator.getPort());
+    clusterStartUp.startRedisVM(2, locator.getPort());
+    clusterStartUp.startRedisVM(3, locator.getPort());
     int redisServerPort = clusterStartUp.getRedisPort(1);
     jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort), REDIS_CLIENT_TIMEOUT);
     clusterStartUp.flushAll();
@@ -137,7 +130,6 @@ public class LPopDUnitTest {
     keys.add(makeListKeyWithHashtag(3, listHashtags.get(2)));
     return keys;
   }
-
 
   private void lpushPerformAndVerify(String key, List<String> elementList) {
     jedis.lpush(key, elementList.toArray(new String[] {}));

@@ -28,8 +28,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
@@ -40,9 +38,15 @@ import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class LPushDUnitTest {
+  @Rule
+  public RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule();
+
+  @Rule
+  public ExecutorServiceRule executor = new ExecutorServiceRule();
+
   public static final int PUSHER_COUNT = 6;
   public static final int PUSH_LIST_SIZE = 3;
-  private static MemberVM locator;
+  private static final int MINIMUM_ITERATIONS = 10000;
 
   private static AtomicLong runningCount = new AtomicLong(PUSHER_COUNT);
   private static List<String> listHashtags;
@@ -50,30 +54,16 @@ public class LPushDUnitTest {
   private static HashMap<String, List<String>> keyToElementListMap;
   private static List<Runnable> taskList;
 
-  @ClassRule
-  public static RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule();
-
-  @Rule
-  public ExecutorServiceRule executor = new ExecutorServiceRule();
-
-  private static final int MINIMUM_ITERATIONS = 10000;
-  private static JedisCluster jedis;
-
-  @BeforeClass
-  public static void classSetup() {
-    locator = clusterStartUp.startLocatorVM(0);
-    clusterStartUp.startRedisVM(2, locator.getPort());
-    clusterStartUp.startRedisVM(3, locator.getPort());
-  }
+  private JedisCluster jedis;
 
   @Before
   public void testSetup() {
+    MemberVM locator = clusterStartUp.startLocatorVM(0);
     clusterStartUp.startRedisVM(1, locator.getPort());
-    clusterStartUp.rebalanceAllRegions();
+    clusterStartUp.startRedisVM(2, locator.getPort());
+    clusterStartUp.startRedisVM(3, locator.getPort());
     int redisServerPort = clusterStartUp.getRedisPort(1);
     jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort), REDIS_CLIENT_TIMEOUT);
-    clusterStartUp.flushAll();
-
     listHashtags = makeListHashtags();
     keys = makeListKeys(listHashtags);
     keyToElementListMap = new HashMap<>();
@@ -127,19 +117,6 @@ public class LPushDUnitTest {
       assertThat(length).isGreaterThanOrEqualTo(MINIMUM_ITERATIONS * 2 * PUSH_LIST_SIZE);
       validateListContents(key, length, keyToElementListMap);
     }
-
-    clusterStartUp.crashVM(1); // kill primary server, just in case test order is reversed
-  }
-
-  private void lpushPerformAndVerify(String key, List<String> elementList,
-      AtomicLong runningCount) {
-    for (int i = 0; i < MINIMUM_ITERATIONS; i++) {
-      long listLength = jedis.llen(key);
-      long newLength = jedis.lpush(key, elementList.toArray(new String[] {}));
-      assertThat((newLength - listLength) % 3).as("LPUSH, list length %s not multiple of 3",
-          newLength).isEqualTo(0);
-    }
-    runningCount.decrementAndGet();
   }
 
   @Test
@@ -164,6 +141,17 @@ public class LPushDUnitTest {
       assertThat(length % 3).isEqualTo(0);
       validateListContents(key, length, keyToElementListMap);
     }
+  }
+
+  private void lpushPerformAndVerify(String key, List<String> elementList,
+      AtomicLong runningCount) {
+    for (int i = 0; i < MINIMUM_ITERATIONS; i++) {
+      long listLength = jedis.llen(key);
+      long newLength = jedis.lpush(key, elementList.toArray(new String[] {}));
+      assertThat((newLength - listLength) % 3).as("LPUSH, list length %s not multiple of 3",
+          newLength).isEqualTo(0);
+    }
+    runningCount.decrementAndGet();
   }
 
   private void validateListContents(String key, long length,
