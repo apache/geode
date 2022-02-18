@@ -719,7 +719,6 @@ public class TCPConduit implements Runnable {
    *
    * @param memberAddress the IDS associated with the remoteId
    * @param preserveOrder whether this is an ordered or unordered connection
-   * @param retry false if this is the first attempt
    * @param startTime the time this operation started
    * @param ackTimeout the ack-wait-threshold * 1000 for the operation to be transmitted (or zero)
    * @param ackSATimeout the ack-severe-alert-threshold * 1000 for the operation to be transmitted
@@ -728,7 +727,7 @@ public class TCPConduit implements Runnable {
    * @return the connection
    */
   public Connection getConnection(InternalDistributedMember memberAddress,
-      final boolean preserveOrder, boolean retry, long startTime, long ackTimeout,
+      final boolean preserveOrder, long startTime, long ackTimeout,
       long ackSATimeout) throws IOException, DistributedSystemDisconnectedException {
     if (stopped) {
       throw new DistributedSystemDisconnectedException("The conduit is stopped");
@@ -742,7 +741,7 @@ public class TCPConduit implements Runnable {
       try {
         // If this is the second time through this loop, we had problems.
         // Tear down the connection so that it gets rebuilt.
-        if (retry || conn != null) { // not first time in loop
+        if (conn != null) { // not first time in loop
           if (!membership.memberExists(memberAddress)
               || membership.isShunned(memberAddress)
               || membership.shutdownInProgress()) {
@@ -777,18 +776,16 @@ public class TCPConduit implements Runnable {
 
           // Close the connection (it will get rebuilt later).
           getStats().incReconnectAttempts();
-          if (conn != null) {
-            try {
-              if (logger.isDebugEnabled()) {
-                logger.debug("Closing old connection.  conn={} before retrying. memberInTrouble={}",
-                    conn, memberInTrouble);
-              }
-              conn.closeForReconnect("closing before retrying");
-            } catch (CancelException ex) {
-              throw ex;
-            } catch (Exception ex) {
-              // ignored
+          try {
+            if (logger.isDebugEnabled()) {
+              logger.debug("Closing old connection.  conn={} before retrying. memberInTrouble={}",
+                  conn, memberInTrouble);
             }
+            conn.closeForReconnect("closing before retrying");
+          } catch (CancelException ex) {
+            throw ex;
+          } catch (Exception ex) {
+            // ignored
           }
         } // not first time in loop
 
@@ -801,7 +798,7 @@ public class TCPConduit implements Runnable {
           do {
             retryForOldConnection = false;
             conn = getConTable().get(memberAddress, preserveOrder, startTime, ackTimeout,
-                ackSATimeout);
+                ackSATimeout, false);
             if (conn == null) {
               // conduit may be closed - otherwise an ioexception would be thrown
               problem = new IOException(
@@ -908,6 +905,104 @@ public class TCPConduit implements Runnable {
       }
     }
   }
+
+
+  /**
+   * Return a connection to the given member. This method performs quick scan for connection.
+   * Only one attempt to create a connection to the given member .
+   *
+   * @param memberAddress the IDS associated with the remoteId
+   * @param preserveOrder whether this is an ordered or unordered connection
+   * @param startTime the time this operation started
+   * @param ackTimeout the ack-wait-threshold * 1000 for the operation to be transmitted (or zero)
+   * @param ackSATimeout the ack-severe-alert-threshold * 1000 for the operation to be transmitted
+   *        (or zero)
+   *
+   * @return the connection
+   */
+  public Connection getFirstScanForConnection(InternalDistributedMember memberAddress,
+      final boolean preserveOrder, long startTime, long ackTimeout,
+      long ackSATimeout) throws IOException, DistributedSystemDisconnectedException {
+    if (stopped) {
+      throw new DistributedSystemDisconnectedException("The conduit is stopped");
+    }
+
+    InternalDistributedMember memberInTrouble = null;
+    Connection conn = null;
+    stopper.checkCancelInProgress(null);
+    boolean interrupted = Thread.interrupted();
+    try {
+      // If this is the second time through this loop, we had problems.
+      // Tear down the connection so that it gets rebuilt.
+
+      Exception problem = null;
+      try {
+        // Get (or regenerate) the connection
+        // this could generate a ConnectionException, so it must be caught and retried
+        boolean retryForOldConnection;
+        boolean debugRetry = false;
+        do {
+          retryForOldConnection = false;
+          conn = getConTable().get(memberAddress, preserveOrder, startTime, ackTimeout,
+              ackSATimeout, true);
+          if (conn == null) {
+            // conduit may be closed - otherwise an ioexception would be thrown
+            problem = new IOException(
+                String.format("Unable to reconnect to server; possible shutdown: %s",
+                    memberAddress));
+          } else if (conn.isClosing() || !conn.getRemoteAddress().equals(memberAddress)) {
+            if (logger.isDebugEnabled()) {
+              logger.debug("Got an old connection for {}: {}@{}", memberAddress, conn,
+                  conn.hashCode());
+            }
+            conn.closeOldConnection("closing old connection");
+            conn = null;
+            retryForOldConnection = true;
+            debugRetry = true;
+          }
+        } while (retryForOldConnection);
+        if (debugRetry && logger.isDebugEnabled()) {
+          logger.debug("Done removing old connections");
+        }
+
+        // we have a connection; fall through and return it
+      } catch (ConnectionException e) {
+        // Race condition between acquiring the connection and attempting
+        // to use it: another thread closed it.
+        problem = e;
+        // No need to retry since Connection.createSender has already
+        // done retries and now member is really unreachable for some reason
+        // even though it may be in the view
+      } catch (IOException e) {
+        problem = e;
+        // don't keep trying to connect to an alert listener
+        if (AlertingAction.isThreadAlerting()) {
+          if (logger.isDebugEnabled()) {
+            logger.debug("Giving up connecting to alert listener {}", memberAddress);
+          }
+        }
+      }
+
+      if (problem != null) {
+        if (problem instanceof IOException) {
+          if (problem.getMessage().startsWith("Cannot form connection to alert listener")) {
+            throw new AlertingIOException((IOException) problem);
+          }
+          throw (IOException) problem;
+        }
+        throw new IOException(
+            String.format("Problem connecting to %s", memberAddress), problem);
+      }
+      // Success!
+
+      return conn;
+    } finally {
+      if (interrupted) {
+        Thread.currentThread().interrupt();
+      }
+    }
+  }
+
 
   @Override
   public String toString() {
