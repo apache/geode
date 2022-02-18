@@ -39,7 +39,6 @@ public abstract class AbstractLIndexIntegrationTest implements RedisIntegrationT
   private static final String LIST_KEY = "{tag1}listKey";
   private static final String[] LIST_ELEMENTS =
       {"aardvark", "bats", "chameleon", "deer", "elephant", "flamingo", "goat"};
-  private static final int INDEX = 3;
   private JedisCluster jedis;
 
   @Before
@@ -60,24 +59,32 @@ public abstract class AbstractLIndexIntegrationTest implements RedisIntegrationT
 
   @Test
   public void lindex_withPositiveIndex_withNonExistentList_returnsNull() {
-    assertThat(jedis.lindex(NON_EXISTENT_LIST_KEY, INDEX)).isNull();
+    assertThat(jedis.lindex(NON_EXISTENT_LIST_KEY, 2)).isNull();
   }
 
   @Test
   public void lindex_withNegativeIndex_withNonExistentList_returnsNull() {
-    assertThat(jedis.lindex(NON_EXISTENT_LIST_KEY, -INDEX)).isNull();
+    assertThat(jedis.lindex(NON_EXISTENT_LIST_KEY, -2)).isNull();
   }
 
   @Test
-  public void lindex_withPositiveIndex_returnsElemnt() {
+  public void lindex_withPositiveIndexes_returnsElement() {
     jedis.lpush(LIST_KEY, LIST_ELEMENTS);
-    assertThat(jedis.lindex(LIST_KEY, INDEX)).isEqualTo("deer");
+    for (int i = 0; i < LIST_ELEMENTS.length; i++) {
+      // LIST_ELEMENTS[LIST_ELEMENTS.length - 1 - i] iterates LIST_ELEMENTS backwards
+      System.out
+          .println(jedis.lindex(LIST_KEY, i) + " " + LIST_ELEMENTS[LIST_ELEMENTS.length - 1 - i]);
+      assertThat(jedis.lindex(LIST_KEY, i)).isEqualTo(LIST_ELEMENTS[LIST_ELEMENTS.length - 1 - i]);
+    }
   }
 
   @Test
-  public void lindex_withNegativeIndex_returnsElemnt() {
+  public void lindex_withNegativeIndexes_returnsElement() {
     jedis.lpush(LIST_KEY, LIST_ELEMENTS);
-    assertThat(jedis.lindex(LIST_KEY, -INDEX)).isEqualTo("chameleon");
+    for (int i = -7; i < 0; i++) {
+      // LIST_ELEMENTS[-(i + 1)] iterates LIST_ELEMENTS forwards
+      assertThat(jedis.lindex(LIST_KEY, i)).isEqualTo(LIST_ELEMENTS[-(i + 1)]);
+    }
   }
 
   @Test
@@ -122,15 +129,18 @@ public abstract class AbstractLIndexIntegrationTest implements RedisIntegrationT
 
   @Test
   public void ensureListConsistency_whenRunningConcurrently() {
+    jedis.lpush(LIST_KEY, LIST_ELEMENTS);
+
+    String elementToAdd = "zebra";
     final AtomicReference<String> lindexResultReference = new AtomicReference<>();
     new ConcurrentLoopingThreads(1000,
-        i -> jedis.lpush(LIST_KEY, LIST_ELEMENTS),
-        i -> lindexResultReference.set(jedis.lindex(LIST_KEY, -7)))
+        i -> jedis.lpush(LIST_KEY, elementToAdd),
+        i -> lindexResultReference.set(jedis.lindex(LIST_KEY, 0)))
             .runWithAction(() -> {
               assertThat(lindexResultReference).satisfiesAnyOf(
-                  lindexResult -> assertThat(lindexResult.get()).isNull(),
+                  lindexResult -> assertThat(lindexResult.get()).isEqualTo(elementToAdd),
                   lindexResult -> assertThat(lindexResult.get()).isEqualTo("goat"));
-              jedis.del(LIST_KEY);
+              jedis.lpop(LIST_KEY);
             });
   }
 }

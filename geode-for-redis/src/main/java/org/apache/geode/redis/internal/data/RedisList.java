@@ -45,7 +45,7 @@ public class RedisList extends AbstractRedisData {
   /**
    * @param index index of desired element. Positive index starts at the head. Negative index starts
    *        at the tail.
-   * @return element at index. nil if index is out of range.
+   * @return element at index. Null if index is out of range.
    */
   public byte[] lindex(int index) {
     if (index < 0) {
