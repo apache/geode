@@ -72,8 +72,6 @@ public abstract class AbstractLIndexIntegrationTest implements RedisIntegrationT
     jedis.lpush(LIST_KEY, LIST_ELEMENTS);
     for (int i = 0; i < LIST_ELEMENTS.length; i++) {
       // LIST_ELEMENTS[LIST_ELEMENTS.length - 1 - i] iterates LIST_ELEMENTS backwards
-      System.out
-          .println(jedis.lindex(LIST_KEY, i) + " " + LIST_ELEMENTS[LIST_ELEMENTS.length - 1 - i]);
       assertThat(jedis.lindex(LIST_KEY, i)).isEqualTo(LIST_ELEMENTS[LIST_ELEMENTS.length - 1 - i]);
     }
   }
@@ -81,9 +79,9 @@ public abstract class AbstractLIndexIntegrationTest implements RedisIntegrationT
   @Test
   public void lindex_withNegativeIndexes_returnsElement() {
     jedis.lpush(LIST_KEY, LIST_ELEMENTS);
-    for (int i = -7; i < 0; i++) {
-      // LIST_ELEMENTS[-(i + 1)] iterates LIST_ELEMENTS forwards
-      assertThat(jedis.lindex(LIST_KEY, i)).isEqualTo(LIST_ELEMENTS[-(i + 1)]);
+    for (int i = 0; i < LIST_ELEMENTS.length; i++) {
+      assertThat(jedis.lindex(LIST_KEY, -(i + 1))).isEqualTo(LIST_ELEMENTS[i]);
+
     }
   }
 
@@ -131,16 +129,17 @@ public abstract class AbstractLIndexIntegrationTest implements RedisIntegrationT
   public void ensureListConsistency_whenRunningConcurrently() {
     jedis.lpush(LIST_KEY, LIST_ELEMENTS);
 
-    String elementToAdd = "zebra";
+    String[] elementsToAdd = {"vulture", "walrus", "xouba fish", "yak", "zebra"};
     final AtomicReference<String> lindexResultReference = new AtomicReference<>();
     new ConcurrentLoopingThreads(1000,
-        i -> jedis.lpush(LIST_KEY, elementToAdd),
+        i -> jedis.lpush(LIST_KEY, elementsToAdd),
         i -> lindexResultReference.set(jedis.lindex(LIST_KEY, 0)))
             .runWithAction(() -> {
               assertThat(lindexResultReference).satisfiesAnyOf(
-                  lindexResult -> assertThat(lindexResult.get()).isEqualTo(elementToAdd),
+                  lindexResult -> assertThat(lindexResult.get()).isEqualTo("zebra"),
                   lindexResult -> assertThat(lindexResult.get()).isEqualTo("goat"));
-              jedis.lpop(LIST_KEY);
+              jedis.del(LIST_KEY);
+              jedis.lpush(LIST_KEY, LIST_ELEMENTS);
             });
   }
 }
