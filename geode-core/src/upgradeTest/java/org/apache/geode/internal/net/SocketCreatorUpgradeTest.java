@@ -514,6 +514,10 @@ public class SocketCreatorUpgradeTest {
       // Older versions don't honor the bind-address hostname and require reverse lookups on IP
       startLocator += " --J=-Djdk.tls.trustNameService=true";
     }
+    if (version.lessThan(TestVersion.valueOf("1.12.0"))) {
+      // Older versions don't honor the bind-address hostname and require reverse lookups on IP
+      startLocator += " --J=-Dgemfire.forceDnsUse=true";
+    }
     return startLocator;
   }
 
