@@ -281,17 +281,26 @@ public class DirectChannel {
           directReply = false;
         }
         if (ce != null) {
-          if (failedCe != null) {
-            failedCe.getMembers().addAll(ce.getMembers());
-            failedCe.getCauses().addAll(ce.getCauses());
+
+          if (!retry) {
+            retryInfo = ce;
           } else {
-            failedCe = ce;
+
+            if (failedCe != null) {
+              failedCe.getMembers().addAll(ce.getMembers());
+              failedCe.getCauses().addAll(ce.getCauses());
+            } else {
+              failedCe = ce;
+            }
           }
           ce = null;
         }
         if (cons.isEmpty()) {
           if (failedCe != null) {
             throw failedCe;
+          }
+          if (retryInfo != null) {
+            continue;
           }
           return bytesWritten;
         }
@@ -338,7 +347,12 @@ public class DirectChannel {
         }
 
         if (ce != null) {
-          retryInfo = ce;
+          if (retryInfo != null) {
+            retryInfo.getMembers().addAll(ce.getMembers());
+            retryInfo.getCauses().addAll(ce.getCauses());
+          } else {
+            retryInfo = ce;
+          }
           ce = null;
         }
 
@@ -458,8 +472,14 @@ public class DirectChannel {
           if (ackTimeout > 0) {
             startTime = System.currentTimeMillis();
           }
-          Connection con = conduit.getConnection(destination, preserveOrder, retry, startTime,
-              ackTimeout, ackSDTimeout);
+          Connection con;
+          if (!retry) {
+            con = conduit.getFirstScanForConnection(destination, preserveOrder, startTime,
+                ackTimeout, ackSDTimeout);
+          } else {
+            con = conduit.getConnection(destination, preserveOrder, startTime,
+                ackTimeout, ackSDTimeout);
+          }
 
           con.setInUse(true, startTime, 0, 0, null); // fix for bug#37657
           cons.add(con);
