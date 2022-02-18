@@ -355,7 +355,7 @@ public class QueueManagerImpl implements QueueManager {
     endpointCrashed(con.getEndpoint());
   }
 
-  private void endpointCrashed(Endpoint endpoint) {
+  void endpointCrashed(Endpoint endpoint) {
     QueueConnectionImpl deadConnection;
     // We must be synchronized while checking to see if we have a queue connection for the endpoint,
     // because when we need to prevent a race between adding a queue connection to the map
@@ -724,7 +724,7 @@ public class QueueManagerImpl implements QueueManager {
     }
   }
 
-  private QueueConnectionImpl promoteBackupToPrimary(List<Connection> backups) {
+  QueueConnectionImpl promoteBackupToPrimary(List<Connection> backups) {
     QueueConnectionImpl primary = null;
     for (int i = 0; primary == null && i < backups.size(); i++) {
       QueueConnectionImpl lastConnection = (QueueConnectionImpl) backups.get(i);
@@ -844,7 +844,7 @@ public class QueueManagerImpl implements QueueManager {
    * First we try to make a backup server the primary, but if run out of backup servers we will try
    * to find a new server.
    */
-  private void recoverPrimary(Set<ServerLocation> excludedServers) {
+  void recoverPrimary(Set<ServerLocation> excludedServers) {
     if (pool.getPoolOrCacheCancelInProgress() != null) {
       return;
     }
@@ -980,7 +980,7 @@ public class QueueManagerImpl implements QueueManager {
   // connection but CCU may died as endpoint closed....
   // so before putting connection need to see if something(crash) happen we should be able to
   // recover from it
-  private boolean addToConnectionList(QueueConnectionImpl connection, boolean isPrimary) {
+  boolean addToConnectionList(QueueConnectionImpl connection, boolean isPrimary) {
     boolean isBadConnection;
     synchronized (lock) {
       ClientUpdater cu = connection.getUpdater();
@@ -1022,7 +1022,7 @@ public class QueueManagerImpl implements QueueManager {
     return !isBadConnection;
   }
 
-  private void scheduleRedundancySatisfierIfNeeded(long delay) {
+  void scheduleRedundancySatisfierIfNeeded(long delay) {
     if (shuttingDown) {
       return;
     }
