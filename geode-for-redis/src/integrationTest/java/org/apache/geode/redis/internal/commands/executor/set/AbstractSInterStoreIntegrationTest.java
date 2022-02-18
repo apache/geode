@@ -171,7 +171,7 @@ public abstract class AbstractSInterStoreIntegrationTest implements RedisIntegra
     jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
     jedis.sadd(SET_KEY_2, "doorbell");
     assertThatThrownBy(() -> jedis.sinterstore(DESTINATION_KEY, stringKey, SET_KEY_1, SET_KEY_2))
-        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -183,7 +183,7 @@ public abstract class AbstractSInterStoreIntegrationTest implements RedisIntegra
     jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
     jedis.sadd(SET_KEY_2, "doorbell");
     assertThatThrownBy(() -> jedis.sinterstore(DESTINATION_KEY, SET_KEY_1, SET_KEY_2, stringKey))
-        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -195,7 +195,7 @@ public abstract class AbstractSInterStoreIntegrationTest implements RedisIntegra
     jedis.sadd(SET_KEY_2, "doorbell");
     assertThatThrownBy(
         () -> jedis.sinterstore(DESTINATION_KEY, NON_EXISTENT_SET, SET_KEY_1, stringKey))
-            .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+            .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -206,7 +206,7 @@ public abstract class AbstractSInterStoreIntegrationTest implements RedisIntegra
     jedis.sadd(setKeyDifferentSlot, secondSetMembers);
 
     assertThatThrownBy(() -> jedis.sendCommand(DESTINATION_KEY, SINTERSTORE, DESTINATION_KEY,
-        SET_KEY_1, setKeyDifferentSlot)).hasMessage("CROSSSLOT " + ERROR_WRONG_SLOT);
+        SET_KEY_1, setKeyDifferentSlot)).hasMessage(ERROR_WRONG_SLOT);
   }
 
   @Test

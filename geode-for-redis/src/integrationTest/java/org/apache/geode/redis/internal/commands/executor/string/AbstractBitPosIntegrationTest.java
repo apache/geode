@@ -54,10 +54,8 @@ public abstract class AbstractBitPosIntegrationTest implements RedisIntegrationT
   @Test
   public void bitpos_givenSetFails() {
     jedis.sadd("key", "m1");
-    assertThatThrownBy(() -> jedis.bitpos("key", false))
-        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
-    assertThatThrownBy(() -> jedis.bitpos("key", true))
-        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.bitpos("key", false)).hasMessage(ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.bitpos("key", true)).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test

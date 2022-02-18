@@ -148,7 +148,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
     setupCacheWithoutSecurity();
 
     assertThatThrownBy(() -> jedis.auth("password"))
-        .hasMessage("ERR " + ERROR_AUTH_CALLED_WITHOUT_SECURITY_CONFIGURED);
+        .hasMessage(ERROR_AUTH_CALLED_WITHOUT_SECURITY_CONFIGURED);
   }
 
   @Test
@@ -156,7 +156,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
     setupCacheWithoutSecurity();
 
     assertThatThrownBy(() -> jedis.auth("username", "password"))
-        .hasMessage("ERR " + ERROR_AUTH_CALLED_WITHOUT_SECURITY_CONFIGURED);
+        .hasMessage(ERROR_AUTH_CALLED_WITHOUT_SECURITY_CONFIGURED);
   }
 
   @Test
@@ -183,8 +183,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
 
     jedis.auth("dataWrite", "dataWrite");
 
-    assertThatThrownBy(() -> jedis.get("foo"))
-        .hasMessage("ERR " + ERROR_NOT_AUTHORIZED);
+    assertThatThrownBy(() -> jedis.get("foo")).hasMessage(ERROR_NOT_AUTHORIZED);
   }
 
   @Test
@@ -193,8 +192,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
 
     jedis.auth("dataRead", "dataRead");
 
-    assertThatThrownBy(() -> jedis.set("foo", "bar"))
-        .hasMessage("ERR " + ERROR_NOT_AUTHORIZED);
+    assertThatThrownBy(() -> jedis.set("foo", "bar")).hasMessage(ERROR_NOT_AUTHORIZED);
   }
 
   @Test
@@ -205,8 +203,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
     assertThat(jedis.set("foo", "bar")).isEqualTo("OK");
 
     try (Jedis jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT)) {
-      assertThatThrownBy(() -> jedis2.set("foo", "bar"))
-          .hasMessage("NOAUTH " + ERROR_NOT_AUTHENTICATED);
+      assertThatThrownBy(() -> jedis2.set("foo", "bar")).hasMessage(ERROR_NOT_AUTHENTICATED);
     }
   }
 
@@ -218,8 +215,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
     jedis.auth("dataWriteOther", "dataWriteOther");
 
     // Permissions are incorrect
-    assertThatThrownBy(() -> jedis.set("foo", "bar"))
-        .hasMessage("ERR " + ERROR_NOT_AUTHORIZED);
+    assertThatThrownBy(() -> jedis.set("foo", "bar")).hasMessage(ERROR_NOT_AUTHORIZED);
   }
 
   @Test
@@ -243,8 +239,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
     setupCacheWithSecurity(true);
 
     assertThat(jedis.auth(getUsername(), getPassword())).isEqualTo("OK");
-    assertThatThrownBy(() -> jedis.get("foo"))
-        .hasMessage("ERR " + ERROR_NOT_AUTHORIZED);
+    assertThatThrownBy(() -> jedis.get("foo")).hasMessage(ERROR_NOT_AUTHORIZED);
   }
 
   @Test
@@ -268,8 +263,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
     // The first AUTH command will authenticate the user, and the second will cause the authorize()
     // method on the ThrowsOnAuthorizeSecurityManager to be invoked, throwing an exception
     jedis.auth(LOGGED_PASSWORD);
-    assertThatThrownBy(() -> jedis.auth(LOGGED_PASSWORD))
-        .hasMessageContaining(SERVER_ERROR_MESSAGE);
+    assertThatThrownBy(() -> jedis.auth(LOGGED_PASSWORD)).hasMessage(SERVER_ERROR_MESSAGE);
 
     checkLogFileForPassword(logFile, LOGGED_PASSWORD);
   }

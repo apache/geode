@@ -56,14 +56,13 @@ public abstract class AbstractSetBitIntegrationTest implements RedisIntegrationT
   public void givenMoreThanFourArgumentsProvided_returnsWrongNumberOfArgumentsError() {
     assertThatThrownBy(
         () -> jedis.sendCommand("key", Protocol.Command.SETBIT, "key", "1", "value", "extraArg"))
-            .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "setbit"));
+            .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "setbit"));
   }
 
   @Test
   public void setbit_givenSetFails() {
     jedis.sadd("key", "m1");
-    assertThatThrownBy(() -> jedis.setbit("key", 1, true))
-        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.setbit("key", 1, true)).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test

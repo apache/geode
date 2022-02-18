@@ -66,16 +66,16 @@ public abstract class AbstractZRevRangeIntegrationTest implements RedisIntegrati
     String tooBig = Long.MAX_VALUE + "0";
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGE, KEY, "NOT_AN_INT", "2"))
-            .hasMessage("ERR " + ERROR_NOT_INTEGER);
+            .hasMessage(ERROR_NOT_INTEGER);
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGE, KEY, "1", "NOT_AN_INT"))
-            .hasMessage("ERR " + ERROR_NOT_INTEGER);
+            .hasMessage(ERROR_NOT_INTEGER);
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGE, KEY, tooSmall, "1"))
-            .hasMessage("ERR " + ERROR_NOT_INTEGER);
+            .hasMessage(ERROR_NOT_INTEGER);
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGE, KEY, "1", tooBig))
-            .hasMessage("ERR " + ERROR_NOT_INTEGER);
+            .hasMessage(ERROR_NOT_INTEGER);
   }
 
   @Test
@@ -83,7 +83,7 @@ public abstract class AbstractZRevRangeIntegrationTest implements RedisIntegrati
     jedis.zadd(KEY, 1.0, MEMBER_BASE_NAME);
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGE, KEY, "1", "2", "WITSCOREZ"))
-            .hasMessage("ERR " + ERROR_SYNTAX);
+            .hasMessage(ERROR_SYNTAX);
   }
 
   @Test

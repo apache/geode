@@ -63,7 +63,7 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
     jedis.set(STRING_KEY, "value");
     assertThatThrownBy(
         () -> jedis.sendCommand(STRING_KEY, Protocol.Command.ZINCRBY, STRING_KEY, "1", "member"))
-            .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+            .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -78,8 +78,7 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
     jedis.zadd(KEY, 1.0, MEMBER);
 
     assertThatThrownBy(() -> jedis.sendCommand(STRING_KEY, Protocol.Command.ZINCRBY, STRING_KEY,
-        nonFloatIncrement, STRING_MEMBER))
-            .hasMessage("ERR " + ERROR_NOT_A_VALID_FLOAT);
+        nonFloatIncrement, STRING_MEMBER)).hasMessage(ERROR_NOT_A_VALID_FLOAT);
   }
 
   @Test
@@ -88,8 +87,7 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
     jedis.zadd(STRING_KEY, 1.0, STRING_MEMBER);
 
     assertThatThrownBy(() -> jedis.sendCommand(STRING_KEY, Protocol.Command.ZINCRBY, STRING_KEY,
-        nanIncrement, STRING_MEMBER))
-            .hasMessage("ERR " + ERROR_NOT_A_VALID_FLOAT);
+        nanIncrement, STRING_MEMBER)).hasMessage(ERROR_NOT_A_VALID_FLOAT);
   }
 
   @Test
@@ -99,14 +97,13 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
     jedis.zincrby(STRING_KEY, POSITIVE_INFINITY, STRING_MEMBER);
 
     assertThatThrownBy(() -> jedis.sendCommand(STRING_KEY, Protocol.Command.ZINCRBY, STRING_KEY,
-        increment, STRING_MEMBER))
-            .hasMessage("ERR " + ERROR_OPERATION_PRODUCED_NAN);
+        increment, STRING_MEMBER)).hasMessage(ERROR_OPERATION_PRODUCED_NAN);
   }
 
   @Test
   public void shouldError_whenSettingNewScoreToNaN() {
     assertThatThrownBy(() -> jedis.zincrby(STRING_KEY, Double.NaN, STRING_MEMBER))
-        .hasMessage("ERR " + ERROR_NOT_A_VALID_FLOAT);
+        .hasMessage(ERROR_NOT_A_VALID_FLOAT);
   }
 
   /************* infinity *************/
@@ -209,7 +206,7 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
     jedis.zadd(KEY, POSITIVE_INFINITY, MEMBER);
 
     assertThatThrownBy(() -> jedis.zincrby(KEY, NEGATIVE_INFINITY, MEMBER))
-        .hasMessage("ERR " + ERROR_OPERATION_PRODUCED_NAN);
+        .hasMessage(ERROR_OPERATION_PRODUCED_NAN);
   }
 
   @Test
@@ -217,7 +214,7 @@ public abstract class AbstractZIncrByIntegrationTest implements RedisIntegration
     jedis.zadd(KEY, NEGATIVE_INFINITY, MEMBER);
 
     assertThatThrownBy(() -> jedis.zincrby(KEY, POSITIVE_INFINITY, MEMBER))
-        .hasMessage("ERR " + ERROR_OPERATION_PRODUCED_NAN);
+        .hasMessage(ERROR_OPERATION_PRODUCED_NAN);
   }
 
   @Test

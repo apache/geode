@@ -54,8 +54,7 @@ public abstract class AbstractGetBitIntegrationTest implements RedisIntegrationT
   @Test
   public void getbit_givenSetFails() {
     jedis.sadd("key", "m1");
-    assertThatThrownBy(() -> jedis.getbit("key", 1))
-        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.getbit("key", 1)).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test

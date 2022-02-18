@@ -290,6 +290,6 @@ public abstract class AbstractInfoIntegrationTest implements RedisIntegrationTes
   public void shouldThrowException_ifGivenMoreThanOneParameter() {
     assertThatThrownBy(
         () -> jedis.sendCommand(
-            Protocol.Command.INFO, "Server", "Cluster")).hasMessage("ERR " + ERROR_SYNTAX);
+            Protocol.Command.INFO, "Server", "Cluster")).hasMessage(ERROR_SYNTAX);
   }
 }

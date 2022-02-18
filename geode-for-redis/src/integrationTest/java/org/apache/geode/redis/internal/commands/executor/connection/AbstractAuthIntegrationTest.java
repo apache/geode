@@ -66,10 +66,10 @@ public abstract class AbstractAuthIntegrationTest {
   public void givenSecurity_authWithIncorrectNumberOfArguments_fails() throws Exception {
     setupCacheWithSecurity(false);
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.AUTH))
-        .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "auth"));
+        .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "auth"));
     assertThatThrownBy(
         () -> jedis.sendCommand(Protocol.Command.AUTH, "username", "password", "extraArg"))
-            .hasMessage("ERR " + ERROR_SYNTAX);
+            .hasMessage(ERROR_SYNTAX);
   }
 
   @Test
@@ -87,8 +87,7 @@ public abstract class AbstractAuthIntegrationTest {
   public void givenSecurity_authorizedUser_passes() throws Exception {
     setupCacheWithSecurity(true);
 
-    assertThatThrownBy(() -> jedis.set("foo", "bar"))
-        .hasMessage("NOAUTH Authentication required.");
+    assertThatThrownBy(() -> jedis.set("foo", "bar")).hasMessage("NOAUTH Authentication required.");
 
     assertThat(jedis.auth(getUsername(), getPassword())).isEqualTo("OK");
 

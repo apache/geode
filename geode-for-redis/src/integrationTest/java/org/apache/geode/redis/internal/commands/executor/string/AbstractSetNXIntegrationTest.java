@@ -51,20 +51,20 @@ public abstract class AbstractSetNXIntegrationTest implements RedisIntegrationTe
   @Test
   public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
     assertThatThrownBy(() -> jedis.sendCommand("any", Protocol.Command.SETNX))
-        .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "setnx"));
+        .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "setnx"));
   }
 
   @Test
   public void givenValueNotProvided_returnsWrongNumberOfArgumentsError() {
     assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.SETNX, "key"))
-        .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "setnx"));
+        .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "setnx"));
   }
 
   @Test
   public void givenMoreThanThreeArgumentsProvided_returnsWrongNumberOfArgumentsError() {
     assertThatThrownBy(
         () -> jedis.sendCommand("key", Protocol.Command.SETNX, "key", "value", "extraArg"))
-            .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "setnx"));
+            .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "setnx"));
   }
 
   @Test

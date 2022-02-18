@@ -92,16 +92,14 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisIntegra
   public void testCorrectErrorIsReturned_whenKeyIsNotANumber() {
     jedis.set("nan", "abc");
 
-    assertThatThrownBy(() -> jedis.incrByFloat("nan", 1))
-        .hasMessage("ERR " + ERROR_NOT_A_VALID_FLOAT);
+    assertThatThrownBy(() -> jedis.incrByFloat("nan", 1)).hasMessage(ERROR_NOT_A_VALID_FLOAT);
   }
 
   @Test
   public void testCorrectErrorIsReturned_whenKeyIsAnIncorrectType() {
     jedis.sadd("set", "abc");
 
-    assertThatThrownBy(() -> jedis.incrByFloat("set", 1))
-        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.incrByFloat("set", 1)).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -111,7 +109,7 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisIntegra
     jedis.set(key, "" + number1);
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, " a b c"))
-        .hasMessage("ERR " + ERROR_NOT_A_VALID_FLOAT);
+        .hasMessage(ERROR_NOT_A_VALID_FLOAT);
   }
 
   @Test
@@ -120,28 +118,28 @@ public abstract class AbstractIncrByFloatIntegrationTest implements RedisIntegra
     jedis.set(key, "1.4");
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "+inf"))
-        .hasMessage("ERR " + ERROR_NAN_OR_INFINITY);
+        .hasMessage(ERROR_NAN_OR_INFINITY);
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "-inf"))
-        .hasMessage("ERR " + ERROR_NAN_OR_INFINITY);
+        .hasMessage(ERROR_NAN_OR_INFINITY);
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "inf"))
-        .hasMessage("ERR " + ERROR_NAN_OR_INFINITY);
+        .hasMessage(ERROR_NAN_OR_INFINITY);
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "+infinity"))
-        .hasMessage("ERR " + ERROR_NAN_OR_INFINITY);
+        .hasMessage(ERROR_NAN_OR_INFINITY);
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "-infinity"))
-        .hasMessage("ERR " + ERROR_NAN_OR_INFINITY);
+        .hasMessage(ERROR_NAN_OR_INFINITY);
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "infinity"))
-        .hasMessage("ERR " + ERROR_NAN_OR_INFINITY);
+        .hasMessage(ERROR_NAN_OR_INFINITY);
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "nan"))
-        .hasMessage("ERR " + ERROR_NOT_A_VALID_FLOAT);
+        .hasMessage(ERROR_NOT_A_VALID_FLOAT);
 
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.INCRBYFLOAT, key, "infant"))
-        .hasMessage("ERR " + ERROR_NOT_A_VALID_FLOAT);
+        .hasMessage(ERROR_NOT_A_VALID_FLOAT);
   }
 
   @Test

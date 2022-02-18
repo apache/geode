@@ -62,13 +62,12 @@ public abstract class AbstractZRemRangeByRankIntegrationTest implements RedisInt
   public void shouldError_givenInvalidStartOrStop(String invalidArgument) {
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.ZREMRANGEBYRANK, KEY, "1", invalidArgument))
-            .hasMessage("ERR " + ERROR_NOT_INTEGER);
+            .hasMessage(ERROR_NOT_INTEGER);
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.ZREMRANGEBYRANK, KEY, invalidArgument, "5"))
-            .hasMessage("ERR " + ERROR_NOT_INTEGER);
+            .hasMessage(ERROR_NOT_INTEGER);
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZREMRANGEBYRANK, KEY,
-        invalidArgument, invalidArgument))
-            .hasMessage("ERR " + ERROR_NOT_INTEGER);
+        invalidArgument, invalidArgument)).hasMessage(ERROR_NOT_INTEGER);
   }
 
   @Test

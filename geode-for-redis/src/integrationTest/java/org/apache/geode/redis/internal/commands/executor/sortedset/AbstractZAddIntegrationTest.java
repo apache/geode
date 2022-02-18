@@ -75,7 +75,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
     jedis.set(STRING_KEY, "value");
     assertThatThrownBy(
         () -> jedis.sendCommand(STRING_KEY, Protocol.Command.ZADD, STRING_KEY, "1", member))
-            .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+            .hasMessage(RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -87,20 +87,19 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   public void shouldError_givenUnevenPairsOfArguments() {
     assertThatThrownBy(
         () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "1", member, "2"))
-            .hasMessage("ERR " + ERROR_SYNTAX);
+            .hasMessage(ERROR_SYNTAX);
   }
 
   @Test
   public void shouldError_givenNonNumericScore() {
     assertThatThrownBy(
         () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "invalidDoubleValue",
-            member))
-                .hasMessage("ERR " + ERROR_NOT_A_VALID_FLOAT);
+            member)).hasMessage(ERROR_NOT_A_VALID_FLOAT);
     assertThat(jedis.zscore("fakeKey", member)).isNull();
     assertThatThrownBy(
         () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "1.0", "member01",
             "invalidDoubleValue", "member02", "3.0", "member03"))
-                .hasMessage("ERR " + ERROR_NOT_A_VALID_FLOAT);
+                .hasMessage(ERROR_NOT_A_VALID_FLOAT);
     assertThat(jedis.zscore("fakeKey", "member01")).isNull();
     assertThat(jedis.zscore("fakeKey", "member02")).isNull();
     assertThat(jedis.zscore("fakeKey", "member03")).isNull();
@@ -110,32 +109,29 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   public void shouldError_givenBothNXAndXXOptions() {
     assertThatThrownBy(
         () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "NX", "XX", "1.0",
-            "fakeMember"))
-                .hasMessage("ERR " + ERROR_INVALID_ZADD_OPTION_NX_XX);
+            "fakeMember")).hasMessage(ERROR_INVALID_ZADD_OPTION_NX_XX);
   }
 
   @Test
   public void shouldPrioritizeErrors_inTheCorrectOrder() {
     assertThatThrownBy(
         () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "NX", "XX", "xlerb",
-            member, "2"))
-                .hasMessage("ERR " + ERROR_SYNTAX);
+            member, "2")).hasMessage(ERROR_SYNTAX);
     assertThatThrownBy(
         () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "NX", "XX", "xlerb",
-            member))
-                .hasMessage("ERR " + ERROR_INVALID_ZADD_OPTION_NX_XX);
+            member)).hasMessage(ERROR_INVALID_ZADD_OPTION_NX_XX);
     assertThatThrownBy(
         () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "xlerb", member))
-            .hasMessage("ERR " + ERROR_NOT_A_VALID_FLOAT);
+            .hasMessage(ERROR_NOT_A_VALID_FLOAT);
     assertThatThrownBy(
         () -> jedis.sendCommand("fakeKey", Protocol.Command.ZADD, "fakeKey", "nan", member))
-            .hasMessage("ERR " + ERROR_NOT_A_VALID_FLOAT);
+            .hasMessage(ERROR_NOT_A_VALID_FLOAT);
   }
 
   @Test
   public void shouldError_givenNaN() {
     assertThatThrownBy(() -> jedis.zadd(SORTED_SET_KEY, Double.NaN, "member"))
-        .hasMessage("ERR " + ERROR_NOT_A_VALID_FLOAT);
+        .hasMessage(ERROR_NOT_A_VALID_FLOAT);
   }
 
   @Test
@@ -347,13 +343,13 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   public void zaddIncrOptionSupportsOnlyOneIncrementingElementPair() {
     assertThatThrownBy(() -> jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZADD,
         SORTED_SET_KEY, incrOption, "1", member, "2", "member_1"))
-            .hasMessage("ERR " + ERROR_ZADD_OPTION_TOO_MANY_INCR_PAIR);
+            .hasMessage(ERROR_ZADD_OPTION_TOO_MANY_INCR_PAIR);
   }
 
   @Test
   public void zaddIncrOptionThrowsIfIncorrectScorePair() {
     assertThatThrownBy(() -> jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZADD,
-        SORTED_SET_KEY, incrOption, "1", member, "2")).hasMessage("ERR " + ERROR_SYNTAX);
+        SORTED_SET_KEY, incrOption, "1", member, "2")).hasMessage(ERROR_SYNTAX);
   }
 
   @Test
@@ -397,7 +393,7 @@ public abstract class AbstractZAddIntegrationTest implements RedisIntegrationTes
   public void zaddIncrOptionThrowsErrorIfBothNXAndXXOptionsSpecified() {
     assertThatThrownBy(
         () -> jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZADD, incrOption, "NX", "XX",
-            "1.0", member)).hasMessage("ERR " + ERROR_INVALID_ZADD_OPTION_NX_XX);
+            "1.0", member)).hasMessage(ERROR_INVALID_ZADD_OPTION_NX_XX);
   }
 
   @Test

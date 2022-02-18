@@ -57,23 +57,23 @@ public abstract class AbstractZRemRangeByScoreIntegrationTest implements RedisIn
   @Test
   public void shouldError_givenInvalidMinOrMax() {
     assertThatThrownBy(() -> jedis.zremrangeByScore("fakeKey", "notANumber", "1"))
-        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_FLOAT);
+        .hasMessage(ERROR_MIN_MAX_NOT_A_FLOAT);
     assertThatThrownBy(() -> jedis.zremrangeByScore("fakeKey", "1", "notANumber"))
-        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_FLOAT);
+        .hasMessage(ERROR_MIN_MAX_NOT_A_FLOAT);
     assertThatThrownBy(() -> jedis.zremrangeByScore("fakeKey", "notANumber", "notANumber"))
-        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_FLOAT);
+        .hasMessage(ERROR_MIN_MAX_NOT_A_FLOAT);
     assertThatThrownBy(() -> jedis.zremrangeByScore("fakeKey", "((", "1"))
-        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_FLOAT);
+        .hasMessage(ERROR_MIN_MAX_NOT_A_FLOAT);
     assertThatThrownBy(() -> jedis.zremrangeByScore("fakeKey", "1", "(("))
-        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_FLOAT);
+        .hasMessage(ERROR_MIN_MAX_NOT_A_FLOAT);
     assertThatThrownBy(() -> jedis.zremrangeByScore("fakeKey", "(a", "(b"))
-        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_FLOAT);
+        .hasMessage(ERROR_MIN_MAX_NOT_A_FLOAT);
     assertThatThrownBy(() -> jedis.zremrangeByScore("fakeKey", "str", "1"))
-        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_FLOAT);
+        .hasMessage(ERROR_MIN_MAX_NOT_A_FLOAT);
     assertThatThrownBy(() -> jedis.zremrangeByScore("fakeKey", "1", "str"))
-        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_FLOAT);
+        .hasMessage(ERROR_MIN_MAX_NOT_A_FLOAT);
     assertThatThrownBy(() -> jedis.zremrangeByScore("fakeKey", "1", "NaN"))
-        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_FLOAT);
+        .hasMessage(ERROR_MIN_MAX_NOT_A_FLOAT);
   }
 
   @Test

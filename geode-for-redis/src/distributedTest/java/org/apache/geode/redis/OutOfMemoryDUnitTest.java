@@ -183,7 +183,7 @@ public class OutOfMemoryDUnitTest {
 
     await()
         .untilAsserted(() -> assertThatThrownBy(() -> jedis.set(server1Tag + "oneMoreKey", "value"))
-            .hasMessage("OOM " + ERROR_OOM_COMMAND_NOT_ALLOWED));
+            .hasMessage(ERROR_OOM_COMMAND_NOT_ALLOWED));
 
     memoryPressure.cancel(true);
   }
@@ -200,7 +200,7 @@ public class OutOfMemoryDUnitTest {
 
     await()
         .untilAsserted(() -> assertThatThrownBy(() -> subJedis.subscribe(mockSubscriber, "channel"))
-            .hasMessage("OOM " + ERROR_OOM_COMMAND_NOT_ALLOWED));
+            .hasMessage(ERROR_OOM_COMMAND_NOT_ALLOWED));
 
     subJedis.close();
 
@@ -214,7 +214,7 @@ public class OutOfMemoryDUnitTest {
         executor.submit(() -> maintainMemoryPressure(jedis, false));
 
     await().untilAsserted(() -> assertThatThrownBy(() -> jedis.publish("channel", "message"))
-        .hasMessage("OOM " + ERROR_OOM_COMMAND_NOT_ALLOWED));
+        .hasMessage(ERROR_OOM_COMMAND_NOT_ALLOWED));
 
     memoryPressure.cancel(true);
   }
@@ -227,7 +227,7 @@ public class OutOfMemoryDUnitTest {
 
     await()
         .untilAsserted(() -> assertThatThrownBy(() -> jedis.set(server2Tag + "oneMoreKey", "value"))
-            .hasMessage("OOM " + ERROR_OOM_COMMAND_NOT_ALLOWED));
+            .hasMessage(ERROR_OOM_COMMAND_NOT_ALLOWED));
 
     memoryPressure.cancel(true);
   }
@@ -263,7 +263,7 @@ public class OutOfMemoryDUnitTest {
 
     await()
         .untilAsserted(() -> assertThatThrownBy(() -> jedis.set(server1Tag + "oneMoreKey", "value"))
-            .hasMessage("OOM " + ERROR_OOM_COMMAND_NOT_ALLOWED));
+            .hasMessage(ERROR_OOM_COMMAND_NOT_ALLOWED));
 
     memoryPressure.cancel(true);
 
@@ -282,7 +282,7 @@ public class OutOfMemoryDUnitTest {
 
     await()
         .untilAsserted(() -> assertThatThrownBy(() -> jedis.set(server2Tag + "oneMoreKey", "value"))
-            .hasMessage("OOM " + ERROR_OOM_COMMAND_NOT_ALLOWED));
+            .hasMessage(ERROR_OOM_COMMAND_NOT_ALLOWED));
 
     memoryPressure.cancel(true);
 
@@ -306,7 +306,7 @@ public class OutOfMemoryDUnitTest {
     String channel = "channel";
     await().untilAsserted(() -> assertThatThrownBy(
         () -> subJedis.subscribe(mockSubscriber, channel))
-            .hasMessage("OOM " + ERROR_OOM_COMMAND_NOT_ALLOWED));
+            .hasMessage(ERROR_OOM_COMMAND_NOT_ALLOWED));
 
     memoryPressure.cancel(true);
 
@@ -327,7 +327,7 @@ public class OutOfMemoryDUnitTest {
         executor.submit(() -> maintainMemoryPressure(jedis, false));
 
     await().untilAsserted(() -> assertThatThrownBy(() -> jedis.publish("channel", "message"))
-        .hasMessage("OOM " + ERROR_OOM_COMMAND_NOT_ALLOWED));
+        .hasMessage(ERROR_OOM_COMMAND_NOT_ALLOWED));
 
     memoryPressure.cancel(true);
 
@@ -350,7 +350,7 @@ public class OutOfMemoryDUnitTest {
         }
         numberOfKeys.incrementAndGet();
       }
-    }).hasMessage("OOM " + ERROR_OOM_COMMAND_NOT_ALLOWED);
+    }).hasMessage(ERROR_OOM_COMMAND_NOT_ALLOWED);
   }
 
   private void maintainMemoryPressure(JedisCluster jedis, boolean withExpiration) {

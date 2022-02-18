@@ -44,14 +44,14 @@ public class DumpRestoreIntegrationTest extends AbstractDumpRestoreIntegrationTe
   public void restoreWithIdletime_isNotSupported() {
     assertThatThrownBy(
         () -> jedis.sendCommand("key", Protocol.Command.RESTORE, "key", "0", "", "IDLETIME", "1"))
-            .hasMessage("ERR " + ERROR_SYNTAX);
+            .hasMessage(ERROR_SYNTAX);
   }
 
   @Test
   public void restoreWithFreq_isNotSupported() {
     assertThatThrownBy(
         () -> jedis.sendCommand("key", Protocol.Command.RESTORE, "key", "0", "", "FREQ", "1"))
-            .hasMessage("ERR " + ERROR_SYNTAX);
+            .hasMessage(ERROR_SYNTAX);
   }
 
   @Test
@@ -63,7 +63,7 @@ public class DumpRestoreIntegrationTest extends AbstractDumpRestoreIntegrationTe
 
     assertThatThrownBy(
         () -> jedis.restore("key", 0L, baos.toByteArray()))
-            .hasMessage("ERR " + ERROR_RESTORE_INVALID_PAYLOAD);
+            .hasMessage(ERROR_RESTORE_INVALID_PAYLOAD);
   }
 
 }

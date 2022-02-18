@@ -148,7 +148,7 @@ public class RenameDUnitTest {
     jedis.set(srcKey, "Fancy that");
 
     assertThatThrownBy(() -> jedis.rename(srcKey, dstKey))
-        .hasMessage("CROSSSLOT " + RedisConstants.ERROR_WRONG_SLOT);
+        .hasMessage(RedisConstants.ERROR_WRONG_SLOT);
   }
 
   private Set<String> getKeysOnSameRandomStripe(int numKeysNeeded) {

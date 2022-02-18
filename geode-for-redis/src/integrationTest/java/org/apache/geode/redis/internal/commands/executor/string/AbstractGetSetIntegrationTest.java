@@ -29,7 +29,6 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
@@ -109,8 +108,7 @@ public abstract class AbstractGetSetIntegrationTest implements RedisIntegrationT
     jedis.hset(key, "field", "some hash value");
 
     assertThatThrownBy(() -> jedis.getSet(key, "this value doesn't matter"))
-        .isInstanceOf(JedisDataException.class)
-        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test

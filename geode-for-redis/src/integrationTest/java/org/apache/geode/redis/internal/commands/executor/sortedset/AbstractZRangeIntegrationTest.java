@@ -64,7 +64,7 @@ public abstract class AbstractZRangeIntegrationTest implements RedisIntegrationT
     jedis.set(STRING_KEY, "value");
     assertThatThrownBy(
         () -> jedis.sendCommand(STRING_KEY, Protocol.Command.ZRANGE, STRING_KEY, "1", "2"))
-            .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+            .hasMessage(RedisConstants.ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -74,20 +74,16 @@ public abstract class AbstractZRangeIntegrationTest implements RedisIntegrationT
     String tooBig = Long.MAX_VALUE + "0";
     assertThatThrownBy(
         () -> jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZRANGE, SORTED_SET_KEY,
-            "NOT_AN_INT", "2"))
-                .hasMessage("ERR " + ERROR_NOT_INTEGER);
+            "NOT_AN_INT", "2")).hasMessage(ERROR_NOT_INTEGER);
     assertThatThrownBy(
         () -> jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZRANGE, SORTED_SET_KEY, "1",
-            "ALSO_NOT_AN_INT"))
-                .hasMessage("ERR " + ERROR_NOT_INTEGER);
+            "ALSO_NOT_AN_INT")).hasMessage(ERROR_NOT_INTEGER);
     assertThatThrownBy(
         () -> jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZRANGE, SORTED_SET_KEY, tooSmall,
-            "1"))
-                .hasMessage("ERR " + ERROR_NOT_INTEGER);
+            "1")).hasMessage(ERROR_NOT_INTEGER);
     assertThatThrownBy(
         () -> jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZRANGE, SORTED_SET_KEY, "1",
-            tooBig))
-                .hasMessage("ERR " + ERROR_NOT_INTEGER);
+            tooBig)).hasMessage(ERROR_NOT_INTEGER);
   }
 
   @Test
@@ -95,8 +91,7 @@ public abstract class AbstractZRangeIntegrationTest implements RedisIntegrationT
     jedis.zadd(SORTED_SET_KEY, 1.0, "member");
     assertThatThrownBy(
         () -> jedis.sendCommand(SORTED_SET_KEY, Protocol.Command.ZRANGE, SORTED_SET_KEY, "1", "2",
-            "WITSCOREZ"))
-                .hasMessage("ERR " + ERROR_SYNTAX);
+            "WITSCOREZ")).hasMessage(ERROR_SYNTAX);
   }
 
   @Test

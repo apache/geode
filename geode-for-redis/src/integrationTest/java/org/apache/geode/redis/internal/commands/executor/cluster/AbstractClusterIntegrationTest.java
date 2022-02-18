@@ -52,11 +52,10 @@ public abstract class AbstractClusterIntegrationTest implements RedisIntegration
   public void testCluster_givenWrongNumberOfArguments() {
     final Jedis connection = new Jedis(jedis.getConnectionFromSlot(0));
     assertThatThrownBy(() -> connection.sendCommand(Protocol.Command.CLUSTER))
-        .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "cluster"));
+        .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "cluster"));
     assertThatThrownBy(
         () -> connection.sendCommand(Protocol.Command.CLUSTER, "1", "2"))
-            .hasMessageContaining(
-                "ERR Unknown subcommand or wrong number of arguments for '1'.");
+            .hasMessageContaining("ERR Unknown subcommand or wrong number of arguments for '1'.");
     assertThatThrownBy(
         () -> connection.sendCommand(Protocol.Command.CLUSTER, "SLOTS", "1"))
             .hasMessageContaining(
@@ -70,10 +69,9 @@ public abstract class AbstractClusterIntegrationTest implements RedisIntegration
             .hasMessageContaining(
                 "ERR Unknown subcommand or wrong number of arguments for 'KEYSLOT'.");
     assertThatThrownBy(
-        () -> connection.sendCommand(Protocol.Command.CLUSTER, "KEYSLOT",
-            "blah", "fo"))
-                .hasMessageContaining(
-                    "ERR Unknown subcommand or wrong number of arguments for 'KEYSLOT'.");
+        () -> connection.sendCommand(Protocol.Command.CLUSTER, "KEYSLOT", "blah", "fo"))
+            .hasMessageContaining(
+                "ERR Unknown subcommand or wrong number of arguments for 'KEYSLOT'.");
   }
 
   @Test

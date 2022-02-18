@@ -64,7 +64,7 @@ public abstract class AbstractSInterIntegrationTest implements RedisIntegrationT
     jedis.sadd(setKeyDifferentSlot, "member2");
 
     assertThatThrownBy(() -> jedis.sendCommand(SET1, SINTER, SET1, setKeyDifferentSlot))
-        .hasMessage("CROSSSLOT " + ERROR_WRONG_SLOT);
+        .hasMessage(ERROR_WRONG_SLOT);
   }
 
   @Test
@@ -89,8 +89,7 @@ public abstract class AbstractSInterIntegrationTest implements RedisIntegrationT
     jedis.sadd(SET1, firstSet);
     jedis.set("{tag1}nonSet", nonSet);
 
-    assertThatThrownBy(() -> jedis.sinter(SET1, "{tag1}nonSet"))
-        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.sinter(SET1, "{tag1}nonSet")).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -103,8 +102,7 @@ public abstract class AbstractSInterIntegrationTest implements RedisIntegrationT
     String stringKey = "{tag1}ding";
     jedis.set(stringKey, "dong");
 
-    assertThatThrownBy(() -> jedis.sinter(stringKey, SET1, SET2))
-        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.sinter(stringKey, SET1, SET2)).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -117,8 +115,7 @@ public abstract class AbstractSInterIntegrationTest implements RedisIntegrationT
     String stringKey = "{tag1}ding";
     jedis.set(stringKey, "dong");
 
-    assertThatThrownBy(() -> jedis.sinter(SET1, SET2, stringKey))
-        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.sinter(SET1, SET2, stringKey)).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -130,7 +127,7 @@ public abstract class AbstractSInterIntegrationTest implements RedisIntegrationT
     jedis.set(stringKey, "dong");
 
     assertThatThrownBy(() -> jedis.sinter("{tag1}nonExistent", SET1, stringKey))
-        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test

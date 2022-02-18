@@ -39,14 +39,14 @@ public class SScanIntegrationTest extends AbstractSScanIntegrationTest {
   public void givenCursorGreaterThanSignedLongMaxValue_returnsCursorError() {
     assertThatThrownBy(
         () -> jedis.sscan(KEY, SIGNED_LONG_MAX.add(BigInteger.ONE).toString()))
-            .hasMessage("ERR " + ERROR_CURSOR);
+            .hasMessage(ERROR_CURSOR);
   }
 
   @Test
   public void givenNegativeCursorLessThanSignedLongMinValue_returnsCursorError() {
     assertThatThrownBy(
         () -> jedis.sscan(KEY, SIGNED_LONG_MIN.subtract(BigInteger.ONE).toString()))
-            .hasMessage("ERR " + ERROR_CURSOR);
+            .hasMessage(ERROR_CURSOR);
   }
 
   @Test

@@ -59,14 +59,14 @@ public abstract class AbstractZPopMinIntegrationTest implements RedisIntegration
   public void shouldError_givenTooManyArguments() {
     assertThatThrownBy(
         () -> jedis.sendCommand("key", Protocol.Command.ZPOPMIN, "key", "1", "2"))
-            .hasMessage("ERR " + ERROR_SYNTAX);
+            .hasMessage(ERROR_SYNTAX);
   }
 
   @Test
   public void shouldError_givenWrongNumberFormat() {
     assertThatThrownBy(
         () -> jedis.sendCommand("key", Protocol.Command.ZPOPMIN, "key", "wat"))
-            .hasMessage("ERR " + ERROR_NOT_INTEGER);
+            .hasMessage(ERROR_NOT_INTEGER);
   }
 
   @Test

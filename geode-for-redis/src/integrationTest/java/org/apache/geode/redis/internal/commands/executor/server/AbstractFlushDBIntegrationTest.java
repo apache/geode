@@ -47,13 +47,13 @@ public abstract class AbstractFlushDBIntegrationTest implements RedisIntegration
   @Test
   public void givenMoreThanTwoArguments_returnsSyntaxError() {
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.FLUSHDB, "ASYNC", "extraArg"))
-        .hasMessage("ERR " + ERROR_SYNTAX);
+        .hasMessage(ERROR_SYNTAX);
   }
 
   // @Test
   // public void givenSecondArgumentIsNotAsyncParameter_returnsSyntaxError() {
   // assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.FLUSHDB, "NOTASYNC"))
-  // .hasMessage("ERR " + ERROR_SYNTAX);
+  // .hasMessage(ERROR_SYNTAX);
   // }
 
 }

@@ -34,6 +34,6 @@ public class FlushAllIntegrationTest extends AbstractFlushAllIntegrationTest {
   // @Test
   // public void givenAsyncParameter_returnsUnimplementedError() {
   // assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.FLUSHALL, "ASYNC", "extraArg"))
-  // .hasMessage("ERR " + ERROR_SYNTAX);
+  // .hasMessage(ERROR_SYNTAX);
   // }
 }

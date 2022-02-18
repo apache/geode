@@ -53,7 +53,7 @@ public abstract class AbstractClientIntegrationTest implements RedisIntegrationT
   @Test
   public void clientWithNoSubcommand_returnError() {
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.CLIENT))
-        .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "client"));
+        .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "client"));
   }
 
   @Test
@@ -76,22 +76,19 @@ public abstract class AbstractClientIntegrationTest implements RedisIntegrationT
   @Test
   public void clientSetName_withSpace_returnError() {
     String clientName = " ";
-    assertThatThrownBy(() -> jedis.clientSetname(clientName)).hasMessage(
-        "ERR " + ERROR_INVALID_CLIENT_NAME);
+    assertThatThrownBy(() -> jedis.clientSetname(clientName)).hasMessage(ERROR_INVALID_CLIENT_NAME);
   }
 
   @Test
   public void clientSetName_withNewLine_returnError() {
     String clientName = "\n";
-    assertThatThrownBy(() -> jedis.clientSetname(clientName)).hasMessage(
-        "ERR " + ERROR_INVALID_CLIENT_NAME);
+    assertThatThrownBy(() -> jedis.clientSetname(clientName)).hasMessage(ERROR_INVALID_CLIENT_NAME);
   }
 
   @Test
   public void clientSetName_withInvalidCharacter_returnError() {
     byte[] clientName = {0};
-    assertThatThrownBy(() -> jedis.clientSetname(clientName)).hasMessage(
-        "ERR " + ERROR_INVALID_CLIENT_NAME);
+    assertThatThrownBy(() -> jedis.clientSetname(clientName)).hasMessage(ERROR_INVALID_CLIENT_NAME);
   }
 
   @Test

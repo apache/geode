@@ -26,6 +26,6 @@ public class RedisDataMovedException extends RedisException {
   }
 
   public RedisDataMovedException(Integer slot, String host, Integer port) {
-    super(String.format("%d %s:%d", slot, host, port));
+    super(String.format("MOVED %d %s:%d", slot, host, port));
   }
 }

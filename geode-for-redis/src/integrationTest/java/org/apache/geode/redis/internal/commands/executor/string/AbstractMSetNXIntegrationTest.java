@@ -53,13 +53,13 @@ public abstract class AbstractMSetNXIntegrationTest implements RedisIntegrationT
   @Test
   public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
     assertThatThrownBy(() -> jedis.sendCommand("any", Protocol.Command.MSETNX))
-        .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "msetnx"));
+        .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "msetnx"));
   }
 
   @Test
   public void givenValueNotProvided_returnsWrongNumberOfArgumentsError() {
     assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.MSETNX, "key"))
-        .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "msetnx"));
+        .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "msetnx"));
   }
 
   @Test
@@ -68,15 +68,14 @@ public abstract class AbstractMSetNXIntegrationTest implements RedisIntegrationT
     assertThatThrownBy(
         () -> jedis.sendCommand(HASHTAG, Protocol.Command.MSETNX, "key1" + HASHTAG, "value1",
             "key2" + HASHTAG, "value2", "key3" + HASHTAG))
-                .hasMessage("ERR " + WRONG_NUMBER_OF_ARGUMENTS_FOR_MSET);
+                .hasMessage(WRONG_NUMBER_OF_ARGUMENTS_FOR_MSET);
   }
 
   @Test
   public void givenDifferentSlots_returnsError() {
     assertThatThrownBy(
         () -> jedis.sendCommand("key1", Protocol.Command.MSETNX, "key1", "value1", "key2",
-            "value2"))
-                .hasMessage("CROSSSLOT " + ERROR_WRONG_SLOT);
+            "value2")).hasMessage(ERROR_WRONG_SLOT);
   }
 
   @Test

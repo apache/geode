@@ -77,7 +77,7 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
     jedis.set(key1, "value1");
     jedis.set(key2, "value1");
     assertThatThrownBy(() -> jedis.sendCommand(key1, RENAME, key1, key2))
-        .hasMessage("CROSSSLOT " + ERROR_WRONG_SLOT);
+        .hasMessage(ERROR_WRONG_SLOT);
   }
 
   @Test
@@ -97,7 +97,7 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
   @Test
   public void shouldReturnError_givenNonexistantKey() {
     assertThatThrownBy(() -> jedis.rename("{tag1}foo", "{tag1}newfoo"))
-        .hasMessage("ERR " + ERROR_NO_SUCH_KEY);
+        .hasMessage(ERROR_NO_SUCH_KEY);
   }
 
   @Test
@@ -137,16 +137,14 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
     String newKey = "{1}newKey";
     jedis.set(oldKey, "value");
     jedis.rename(oldKey, newKey);
-    assertThatThrownBy(() -> jedis.rename(oldKey, newKey))
-        .hasMessage("ERR " + ERROR_NO_SUCH_KEY);
+    assertThatThrownBy(() -> jedis.rename(oldKey, newKey)).hasMessage(ERROR_NO_SUCH_KEY);
   }
 
   @Test
   public void error_whenNeitherKeyExists() {
     String oldKey = "{1}key";
     String newKey = "{1}newKey";
-    assertThatThrownBy(() -> jedis.renamenx(oldKey, newKey))
-        .hasMessage("ERR " + ERROR_NO_SUCH_KEY);
+    assertThatThrownBy(() -> jedis.renamenx(oldKey, newKey)).hasMessage(ERROR_NO_SUCH_KEY);
   }
 
   @Test
@@ -270,7 +268,7 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
                 jedis.set("{tag1}oldKey", "foo");
               });
     } catch (RuntimeException e) {
-      assertThat(e).getRootCause().hasMessage("ERR " + ERROR_NO_SUCH_KEY);
+      assertThat(e).getRootCause().hasMessage(ERROR_NO_SUCH_KEY);
       return;
     }
 

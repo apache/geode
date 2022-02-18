@@ -77,7 +77,7 @@ public abstract class AbstractDumpRestoreIntegrationTest implements RedisIntegra
   public void restoreErrorsWithUnknownOption() {
     assertThatThrownBy(
         () -> jedis.sendCommand("key", Protocol.Command.RESTORE, "key", "0", "", "FOO"))
-            .hasMessage("ERR " + ERROR_SYNTAX);
+            .hasMessage(ERROR_SYNTAX);
   }
 
   @Test

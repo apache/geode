@@ -84,7 +84,7 @@ public abstract class AbstractSRemIntegrationTest implements RedisIntegrationTes
   @Test
   public void testSRem_should_ThrowError_givenOnlyKey() {
     assertThatThrownBy(() -> jedis.srem("key"))
-        .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "srem"));
+        .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "srem"));
   }
 
   @Test
@@ -119,8 +119,7 @@ public abstract class AbstractSRemIntegrationTest implements RedisIntegrationTes
     String value = "value";
     jedis.set(key, value);
 
-    assertThatThrownBy(() -> jedis.srem(key, value))
-        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.srem(key, value)).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test

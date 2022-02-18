@@ -17,35 +17,26 @@ package org.apache.geode.redis.internal.netty;
 
 import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Double.POSITIVE_INFINITY;
-import static org.apache.geode.redis.internal.RedisConstants.INTERNAL_SERVER_ERROR;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ARRAY_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.BULK_STRING_ID;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.BUSYKEY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.CRLF;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.CROSSSLOT;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.EMPTY_ARRAY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.EMPTY_STRING;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ERR;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ERROR_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.INFINITY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.INTEGER_ID;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.MOVED;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NIL;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NOAUTH;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.N_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.N_INFINITY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.N_INF_STRING;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NaN;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.OK;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ONE_INT;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.OOM;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.P_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.P_INFINITY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.P_INF_STRING;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.SIMPLE_STRING_ID;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.WRONGPASS;
-import static org.apache.geode.redis.internal.netty.StringBytesGlossary.WRONGTYPE;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ZERO_INT;
 
 import java.io.UnsupportedEncodingException;
@@ -209,49 +200,12 @@ public class Coder {
     return buffer;
   }
 
-  private static ByteBuf getErrorResponse0(ByteBuf buffer, byte[] type, String error) {
+  public static ByteBuf getErrorResponse(ByteBuf buffer, String error) {
     byte[] errorAr = stringToBytes(error);
     buffer.writeByte(ERROR_ID);
-    buffer.writeBytes(type);
     buffer.writeBytes(errorAr);
     buffer.writeBytes(CRLF);
     return buffer;
-  }
-
-  public static ByteBuf getInternalErrorResponse(ByteBuf buffer, String error) {
-    return getErrorResponse(buffer, INTERNAL_SERVER_ERROR + error);
-  }
-
-  public static ByteBuf getErrorResponse(ByteBuf buffer, String error) {
-    return getErrorResponse0(buffer, ERR, error);
-  }
-
-  public static ByteBuf getMovedResponse(ByteBuf buffer, String error) {
-    return getErrorResponse0(buffer, MOVED, error);
-  }
-
-  public static ByteBuf getOOMResponse(ByteBuf buffer, String error) {
-    return getErrorResponse0(buffer, OOM, error);
-  }
-
-  public static ByteBuf getWrongTypeResponse(ByteBuf buffer, String error) {
-    return getErrorResponse0(buffer, WRONGTYPE, error);
-  }
-
-  public static ByteBuf getCrossSlotResponse(ByteBuf buffer, String error) {
-    return getErrorResponse0(buffer, CROSSSLOT, error);
-  }
-
-  public static ByteBuf getWrongpassResponse(ByteBuf buffer, String error) {
-    return getErrorResponse0(buffer, WRONGPASS, error);
-  }
-
-  public static ByteBuf getBusyKeyResponse(ByteBuf buffer, String error) {
-    return getErrorResponse0(buffer, BUSYKEY, error);
-  }
-
-  public static ByteBuf getNoAuthResponse(ByteBuf buffer, String error) {
-    return getErrorResponse0(buffer, NOAUTH, error);
   }
 
   public static ByteBuf getIntegerResponse(ByteBuf buffer, int integer) {

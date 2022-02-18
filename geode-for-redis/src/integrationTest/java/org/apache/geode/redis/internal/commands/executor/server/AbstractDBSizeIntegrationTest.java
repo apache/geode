@@ -47,7 +47,7 @@ public abstract class AbstractDBSizeIntegrationTest implements RedisIntegrationT
   @Test
   public void givenMoreThanOneArgument_returnsWrongNumberOfArgumentsError() {
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.DBSIZE, "extraArg"))
-        .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "dbsize"));
+        .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "dbsize"));
   }
 
 }

@@ -29,7 +29,6 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
@@ -161,8 +160,7 @@ public abstract class AbstractHincrByFloatIntegrationTest implements RedisIntegr
     String field = "field";
     jedis.hset(key, field, "foobar");
     assertThatThrownBy(() -> jedis.hincrByFloat(key, field, 1.5))
-        .isInstanceOf(JedisDataException.class)
-        .hasMessage("ERR " + HASH_VALUE_NOT_FLOAT);
+        .hasMessage(HASH_VALUE_NOT_FLOAT);
   }
 
   @Test

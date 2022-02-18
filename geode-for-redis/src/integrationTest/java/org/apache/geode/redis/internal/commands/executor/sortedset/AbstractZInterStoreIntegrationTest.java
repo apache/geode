@@ -79,7 +79,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     jedis.set(stringKey, "value");
 
     assertThatThrownBy(() -> jedis.zinterstore(NEW_SET, stringKey, KEY1, KEY2))
-        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -90,7 +90,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     jedis.set(stringKey, "value");
 
     assertThatThrownBy(() -> jedis.zinterstore(NEW_SET, KEY1, KEY2,
-        stringKey)).hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+        stringKey)).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -100,7 +100,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     jedis.set(stringKey, "value");
 
     assertThatThrownBy(() -> jedis.zinterstore(NEW_SET, "{tag1}nonExistentKey", KEY1, stringKey))
-        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -108,87 +108,84 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     final String crossSlotKey = "{tag2}another";
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "2", crossSlotKey,
-            KEY1)).hasMessage("CROSSSLOT " + RedisConstants.ERROR_WRONG_SLOT);
+            KEY1)).hasMessage(RedisConstants.ERROR_WRONG_SLOT);
   }
 
   @Test
   public void shouldError_givenNumkeysTooLarge() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "2", KEY1))
-            .hasMessage("ERR " + RedisConstants.ERROR_SYNTAX);
+            .hasMessage(RedisConstants.ERROR_SYNTAX);
   }
 
   @Test
   public void shouldError_givenNumkeysTooSmall() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "1", KEY1, KEY2))
-            .hasMessage("ERR " + RedisConstants.ERROR_SYNTAX);
+            .hasMessage(RedisConstants.ERROR_SYNTAX);
   }
 
   @Test
   public void shouldError_givenNumKeysOfZero() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "0", KEY1, KEY2))
-            .hasMessage("ERR " + RedisConstants.ERROR_KEY_REQUIRED_ZINTERSTORE);
+            .hasMessage(RedisConstants.ERROR_KEY_REQUIRED_ZINTERSTORE);
   }
 
   @Test
   public void shouldError_givenNegativeNumKeys() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "-2", KEY1, KEY2))
-            .hasMessage("ERR " + RedisConstants.ERROR_KEY_REQUIRED_ZINTERSTORE);
+            .hasMessage(RedisConstants.ERROR_KEY_REQUIRED_ZINTERSTORE);
   }
 
   @Test
   public void shouldError_givenTooManyWeights() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "1",
-            KEY1, "WEIGHTS", "2", "3")).hasMessage("ERR " + RedisConstants.ERROR_SYNTAX);
+            KEY1, "WEIGHTS", "2", "3")).hasMessage(RedisConstants.ERROR_SYNTAX);
   }
 
   @Test
   public void shouldError_givenTooFewWeights() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "2",
-            KEY1, KEY2, "WEIGHTS", "1")).hasMessage("ERR " + RedisConstants.ERROR_SYNTAX);
+            KEY1, KEY2, "WEIGHTS", "1")).hasMessage(RedisConstants.ERROR_SYNTAX);
   }
 
   @Test
   public void shouldError_givenWeightNotAFloat() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "1",
-            KEY1, "WEIGHTS", "not-a-number"))
-                .hasMessage("ERR " + RedisConstants.ERROR_WEIGHT_NOT_A_FLOAT);
+            KEY1, "WEIGHTS", "not-a-number")).hasMessage(RedisConstants.ERROR_WEIGHT_NOT_A_FLOAT);
   }
 
   @Test
   public void shouldError_givenWeightsWithoutAnyValues() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "1",
-            KEY1, "WEIGHTS")).hasMessage("ERR " + RedisConstants.ERROR_SYNTAX);
+            KEY1, "WEIGHTS")).hasMessage(RedisConstants.ERROR_SYNTAX);
   }
 
   @Test
   public void shouldError_givenMultipleWeightKeywords() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "1",
-            KEY1, "WEIGHT", "1.0", "WEIGHT", "2.0"))
-                .hasMessage("ERR " + RedisConstants.ERROR_SYNTAX);
+            KEY1, "WEIGHT", "1.0", "WEIGHT", "2.0")).hasMessage(RedisConstants.ERROR_SYNTAX);
   }
 
   @Test
   public void shouldError_givenUnknownAggregate() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "1",
-            KEY1, "AGGREGATE", "UNKNOWN", "WEIGHTS", "1"))
-                .hasMessage("ERR " + RedisConstants.ERROR_SYNTAX);
+            KEY1, "AGGREGATE", "UNKNOWN", "WEIGHTS", "1")).hasMessage(RedisConstants.ERROR_SYNTAX);
   }
 
   @Test
   public void shouldError_givenAggregateKeywordWithoutValue() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "1",
-            KEY1, "AGGREGATE")).hasMessage("ERR " + RedisConstants.ERROR_SYNTAX);
+            KEY1, "AGGREGATE")).hasMessage(RedisConstants.ERROR_SYNTAX);
   }
 
   @Test
@@ -196,7 +193,7 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "1",
             KEY1, "WEIGHTS", "1", "AGGREGATE", "SUM", "MIN"))
-                .hasMessage("ERR " + RedisConstants.ERROR_SYNTAX);
+                .hasMessage(RedisConstants.ERROR_SYNTAX);
   }
 
   @Test
@@ -204,14 +201,14 @@ public abstract class AbstractZInterStoreIntegrationTest implements RedisIntegra
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "3",
             KEY1, KEY2, KEY3, "WEIGHTS", "1", "AGGREGATE", "SUM"))
-                .hasMessage("ERR " + RedisConstants.ERROR_WEIGHT_NOT_A_FLOAT);
+                .hasMessage(RedisConstants.ERROR_WEIGHT_NOT_A_FLOAT);
   }
 
   @Test
   public void shouldError_givenNumKeysNotAnInteger() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZINTERSTORE, NEW_SET, "fish", KEY1, KEY2))
-            .hasMessage("ERR " + RedisConstants.ERROR_NOT_INTEGER);
+            .hasMessage(RedisConstants.ERROR_NOT_INTEGER);
   }
 
   @Test

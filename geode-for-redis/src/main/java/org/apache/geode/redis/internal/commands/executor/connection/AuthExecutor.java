@@ -16,7 +16,6 @@
 package org.apache.geode.redis.internal.commands.executor.connection;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_AUTH_CALLED_WITHOUT_SECURITY_CONFIGURED;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_USERNAME_OR_PASSWORD;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 
 import java.util.List;
@@ -44,7 +43,7 @@ public class AuthExecutor implements CommandExecutor {
     try {
       context.login(props);
     } catch (AuthenticationFailedException | AuthenticationExpiredException ex) {
-      return RedisResponse.wrongpass(ERROR_INVALID_USERNAME_OR_PASSWORD);
+      return RedisResponse.wrongpass();
     }
 
     return RedisResponse.ok();

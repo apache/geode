@@ -65,8 +65,7 @@ public abstract class AbstractIncrByIntegrationTest implements RedisIntegrationT
   public void testIncrBy_failsWhenPerformedOnNonIntegerValue() {
     String key = "key";
     jedis1.sadd(key, "member");
-    assertThatThrownBy(() -> jedis1.incrBy(key, 1))
-        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis1.incrBy(key, 1)).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -103,8 +102,7 @@ public abstract class AbstractIncrByIntegrationTest implements RedisIntegrationT
     Long increment = Long.MAX_VALUE / 2;
 
     jedis1.set(key, String.valueOf(Long.MAX_VALUE));
-    assertThatThrownBy(() -> jedis1.incrBy(key, increment))
-        .hasMessage("ERR " + ERROR_OVERFLOW);
+    assertThatThrownBy(() -> jedis1.incrBy(key, increment)).hasMessage(ERROR_OVERFLOW);
   }
 
   @Test
@@ -133,7 +131,7 @@ public abstract class AbstractIncrByIntegrationTest implements RedisIntegrationT
   public void testIncrByErrorsForValuesGreaterThatMaxInt() {
     jedis1.set("key", "9223372036854775808");
 
-    assertThatThrownBy(() -> jedis1.incrBy("key", 1)).hasMessage("ERR " + ERROR_NOT_INTEGER);
+    assertThatThrownBy(() -> jedis1.incrBy("key", 1)).hasMessage(ERROR_NOT_INTEGER);
   }
 
 }

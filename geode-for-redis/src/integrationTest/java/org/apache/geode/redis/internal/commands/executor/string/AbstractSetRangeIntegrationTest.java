@@ -103,8 +103,7 @@ public abstract class AbstractSetRangeIntegrationTest implements RedisIntegratio
   @Test
   public void setRange_givenSetFails() {
     jedis.sadd("key", "m1");
-    assertThatThrownBy(() -> jedis.setrange("key", 0, "abc"))
-        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.setrange("key", 0, "abc")).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test

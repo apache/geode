@@ -67,7 +67,7 @@ public abstract class AbstractSDiffStoreIntegrationTest implements RedisIntegrat
     jedis.sadd(setKeyDifferentSlot, "member2");
 
     assertThatThrownBy(() -> jedis.sendCommand(SET_KEY, SDIFFSTORE, SET_KEY, setKeyDifferentSlot))
-        .hasMessage("CROSSSLOT " + ERROR_WRONG_SLOT);
+        .hasMessage(ERROR_WRONG_SLOT);
   }
 
   @Test
@@ -79,7 +79,7 @@ public abstract class AbstractSDiffStoreIntegrationTest implements RedisIntegrat
     jedis.sadd(SET_KEY, SET_MEMBERS);
     jedis.sadd(secondSetKey, SET_MEMBERS);
     assertThatThrownBy(() -> jedis.sdiffstore(DESTINATION_KEY, stringKey, SET_KEY, secondSetKey))
-        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -91,7 +91,7 @@ public abstract class AbstractSDiffStoreIntegrationTest implements RedisIntegrat
     jedis.sadd(SET_KEY, SET_MEMBERS);
     jedis.sadd(secondSetKey, SET_MEMBERS);
     assertThatThrownBy(() -> jedis.sdiffstore(DESTINATION_KEY, SET_KEY, secondSetKey, stringKey))
-        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -102,7 +102,7 @@ public abstract class AbstractSDiffStoreIntegrationTest implements RedisIntegrat
     jedis.sadd(SET_KEY, SET_MEMBERS);
     assertThatThrownBy(
         () -> jedis.sdiffstore(DESTINATION_KEY, NON_EXISTENT_SET, SET_KEY, stringKey))
-            .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+            .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test

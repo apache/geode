@@ -25,7 +25,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 import org.apache.geode.redis.RedisIntegrationTest;
@@ -57,12 +56,10 @@ public class ShutdownIntegrationTest implements RedisIntegrationTest {
   @Test
   public void shutdownIsDisabled_whenOnlySupportedCommandsAreAllowed() {
     final String EXPECTED_ERROR_MSG =
-        String.format("ERR " + ERROR_UNKNOWN_COMMAND, "SHUTDOWN", "");
+        String.format(ERROR_UNKNOWN_COMMAND, "SHUTDOWN", "");
 
     assertThatThrownBy(
-        () -> jedis.shutdown())
-            .isInstanceOf(JedisDataException.class)
-            .hasMessage(EXPECTED_ERROR_MSG);
+        () -> jedis.shutdown()).hasMessage(EXPECTED_ERROR_MSG);
     assertThat(jedis.keys("*")).isEmpty();
   }
 }

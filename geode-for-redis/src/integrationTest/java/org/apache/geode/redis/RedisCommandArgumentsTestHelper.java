@@ -45,7 +45,7 @@ public class RedisCommandArgumentsTestHelper {
       if (i != numArgs) {
         byte[][] args = buildArgs(i);
         assertThatThrownBy(() -> runMe.apply(command, args))
-            .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND,
+            .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND,
                 command.toString().toLowerCase()));
       }
     }
@@ -67,7 +67,7 @@ public class RedisCommandArgumentsTestHelper {
     for (int i = 0; i < minNumArgs; i++) {
       byte[][] args = buildArgs(i);
       assertThatThrownBy(() -> runMe.apply(command, args))
-          .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND,
+          .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND,
               command.toString().toLowerCase()));
     }
   }
@@ -95,7 +95,7 @@ public class RedisCommandArgumentsTestHelper {
     for (int i = maxNumArgs + 1; i <= 5; i++) {
       byte[][] args = buildArgs(i);
       assertThatThrownBy(() -> runMe.apply(command, args))
-          .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND,
+          .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND,
               command.toString().toLowerCase()));
     }
   }

@@ -29,7 +29,6 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
 import org.apache.geode.redis.RedisIntegrationTest;
@@ -66,7 +65,7 @@ public abstract class AbstractSetsIntegrationTest implements RedisIntegrationTes
     setValue[0] = "set value that should never get added";
 
     jedis.set(key, stringValue);
-    assertThatThrownBy(() -> jedis.sadd(key, setValue)).hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.sadd(key, setValue)).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -78,7 +77,7 @@ public abstract class AbstractSetsIntegrationTest implements RedisIntegrationTes
 
     jedis.set(key, stringValue);
 
-    assertThatThrownBy(() -> jedis.sadd(key, setValue)).isInstanceOf(JedisDataException.class);
+    assertThatThrownBy(() -> jedis.sadd(key, setValue)).hasMessage(ERROR_WRONG_TYPE);
 
     String result = jedis.get(key);
 
@@ -88,14 +87,14 @@ public abstract class AbstractSetsIntegrationTest implements RedisIntegrationTes
   @Test
   public void smembers_givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
     assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.SMEMBERS))
-        .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "smembers"));
+        .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "smembers"));
   }
 
   @Test
   public void smembers_givenMoreThanTwoArguments_returnsWrongNumberOfArgumentsError() {
     assertThatThrownBy(() -> jedis
         .sendCommand("key", Protocol.Command.SMEMBERS, "key", "extraArg"))
-            .hasMessage("ERR " + String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "smembers"));
+            .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "smembers"));
   }
 
   @Test

@@ -56,17 +56,17 @@ public abstract class AbstractZCountIntegrationTest implements RedisIntegrationT
   @Test
   public void shouldError_givenInvalidMinOrMax() {
     assertThatThrownBy(() -> jedis.zcount("fakeKey", "notANumber", "1"))
-        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_FLOAT);
+        .hasMessage(ERROR_MIN_MAX_NOT_A_FLOAT);
     assertThatThrownBy(() -> jedis.zcount("fakeKey", "1", "notANumber"))
-        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_FLOAT);
+        .hasMessage(ERROR_MIN_MAX_NOT_A_FLOAT);
     assertThatThrownBy(() -> jedis.zcount("fakeKey", "notANumber", "notANumber"))
-        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_FLOAT);
+        .hasMessage(ERROR_MIN_MAX_NOT_A_FLOAT);
     assertThatThrownBy(() -> jedis.zcount("fakeKey", "((", "1"))
-        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_FLOAT);
+        .hasMessage(ERROR_MIN_MAX_NOT_A_FLOAT);
     assertThatThrownBy(() -> jedis.zcount("fakeKey", "1", "(("))
-        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_FLOAT);
+        .hasMessage(ERROR_MIN_MAX_NOT_A_FLOAT);
     assertThatThrownBy(() -> jedis.zcount("fakeKey", "(a", "(b"))
-        .hasMessage("ERR " + ERROR_MIN_MAX_NOT_A_FLOAT);
+        .hasMessage(ERROR_MIN_MAX_NOT_A_FLOAT);
   }
 
   @Test

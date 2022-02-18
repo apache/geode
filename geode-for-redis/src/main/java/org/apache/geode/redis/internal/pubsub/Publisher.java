@@ -18,8 +18,9 @@ package org.apache.geode.redis.internal.pubsub;
 import static java.util.Arrays.asList;
 import static org.apache.geode.internal.lang.utils.JavaWorkarounds.computeIfAbsent;
 import static org.apache.geode.logging.internal.executors.LoggingExecutors.newCachedThreadPool;
+import static org.apache.geode.redis.internal.RedisConstants.INTERNAL_SERVER_ERROR;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
-import static org.apache.geode.redis.internal.netty.Coder.getInternalErrorResponse;
+import static org.apache.geode.redis.internal.netty.Coder.getErrorResponse;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.MESSAGE;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.PMESSAGE;
 
@@ -193,7 +194,7 @@ public class Publisher {
       Coder.getArrayResponse(buffer, asList(items), true);
     } catch (CoderException e) {
       buffer.resetWriterIndex();
-      getInternalErrorResponse(buffer, e.getMessage());
+      getErrorResponse(buffer, INTERNAL_SERVER_ERROR + e.getMessage());
     }
   }
 

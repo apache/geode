@@ -16,7 +16,6 @@
 package org.apache.geode.redis.internal.commands.executor.key;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_TTL;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_KEY_EXISTS;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.ABSTTL;
@@ -66,7 +65,7 @@ public class RestoreExecutor implements CommandExecutor {
     try {
       restore(context, key, ttl, commandElems.get(3), options);
     } catch (RedisKeyExistsException redisKeyExistsException) {
-      return RedisResponse.busykey(ERROR_KEY_EXISTS);
+      return RedisResponse.busykey();
     }
 
     return RedisResponse.ok();

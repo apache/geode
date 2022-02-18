@@ -54,8 +54,7 @@ public abstract class AbstractBitCountIntegrationTest implements RedisIntegratio
   @Test
   public void bitcount_givenSetFails() {
     jedis.sadd("key", "m1");
-    assertThatThrownBy(() -> jedis.bitcount("key"))
-        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.bitcount("key")).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test

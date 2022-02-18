@@ -50,17 +50,15 @@ public abstract class AbstractUnknownIntegrationTest implements RedisIntegration
   @Test
   public void givenUnknownCommand_withArguments_returnsUnknownCommandErrorWithArgumentsListed() {
     assertThatThrownBy(() -> jedis.sendCommand("fhqwhgads"::getBytes, "EVERYBODY",
-        "TO THE LIMIT"))
-            .hasMessage(
-                "ERR unknown command `fhqwhgads`, with args beginning with: `EVERYBODY`, `TO THE LIMIT`, ");
+        "TO THE LIMIT")).hasMessage(
+            "ERR unknown command `fhqwhgads`, with args beginning with: `EVERYBODY`, `TO THE LIMIT`, ");
   }
 
   @Test
   public void givenUnknownCommand_withEmptyStringArgument_returnsUnknownCommandErrorWithArgumentsListed() {
     assertThatThrownBy(
-        () -> jedis.sendCommand("fhqwhgads"::getBytes, "EVERYBODY", ""))
-            .hasMessage(
-                "ERR unknown command `fhqwhgads`, with args beginning with: `EVERYBODY`, ``, ");
+        () -> jedis.sendCommand("fhqwhgads"::getBytes, "EVERYBODY", "")).hasMessage(
+            "ERR unknown command `fhqwhgads`, with args beginning with: `EVERYBODY`, ``, ");
   }
 
 }
