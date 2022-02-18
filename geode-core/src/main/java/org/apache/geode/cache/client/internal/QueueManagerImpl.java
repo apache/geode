@@ -41,6 +41,7 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.GemFireException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.NoSubscriptionServersAvailableException;
 import org.apache.geode.cache.client.ServerConnectivityException;
@@ -355,6 +356,7 @@ public class QueueManagerImpl implements QueueManager {
     endpointCrashed(con.getEndpoint());
   }
 
+  @VisibleForTesting
   void endpointCrashed(Endpoint endpoint) {
     QueueConnectionImpl deadConnection;
     // We must be synchronized while checking to see if we have a queue connection for the endpoint,
@@ -724,6 +726,7 @@ public class QueueManagerImpl implements QueueManager {
     }
   }
 
+  @VisibleForTesting
   QueueConnectionImpl promoteBackupToPrimary(List<Connection> backups) {
     QueueConnectionImpl primary = null;
     for (int i = 0; primary == null && i < backups.size(); i++) {
@@ -844,6 +847,7 @@ public class QueueManagerImpl implements QueueManager {
    * First we try to make a backup server the primary, but if run out of backup servers we will try
    * to find a new server.
    */
+  @VisibleForTesting
   void recoverPrimary(Set<ServerLocation> excludedServers) {
     if (pool.getPoolOrCacheCancelInProgress() != null) {
       return;
@@ -980,6 +984,7 @@ public class QueueManagerImpl implements QueueManager {
   // connection but CCU may died as endpoint closed....
   // so before putting connection need to see if something(crash) happen we should be able to
   // recover from it
+  @VisibleForTesting
   boolean addToConnectionList(QueueConnectionImpl connection, boolean isPrimary) {
     boolean isBadConnection;
     synchronized (lock) {
@@ -1022,6 +1027,7 @@ public class QueueManagerImpl implements QueueManager {
     return !isBadConnection;
   }
 
+  @VisibleForTesting
   void scheduleRedundancySatisfierIfNeeded(long delay) {
     if (shuttingDown) {
       return;
