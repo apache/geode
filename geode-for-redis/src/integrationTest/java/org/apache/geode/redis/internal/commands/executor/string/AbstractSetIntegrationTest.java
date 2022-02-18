@@ -87,7 +87,7 @@ public abstract class AbstractSetIntegrationTest implements RedisIntegrationTest
   public void givenEXKeyword_whenParameterIsZero_returnsInvalidExpireTimeError() {
     assertThatThrownBy(
         () -> jedis.sendCommand(key, Protocol.Command.SET, key, value, "PX", "0"))
-            .hasMessage(ERROR_INVALID_EXPIRE_TIME);
+            .hasMessage(String.format(ERROR_INVALID_EXPIRE_TIME, "set"));
   }
 
   @Test
@@ -107,7 +107,7 @@ public abstract class AbstractSetIntegrationTest implements RedisIntegrationTest
   public void givenPXKeyword_whenParameterIsZero_returnsInvalidExpireTimeError() {
     assertThatThrownBy(
         () -> jedis.sendCommand(key, Protocol.Command.SET, key, value, "PX", "0"))
-            .hasMessage(ERROR_INVALID_EXPIRE_TIME);
+            .hasMessage(String.format(ERROR_INVALID_EXPIRE_TIME, "set"));
   }
 
   @Test
@@ -279,7 +279,13 @@ public abstract class AbstractSetIntegrationTest implements RedisIntegrationTest
     setParams.ex(millisecondsUntilExpiration);
 
     assertThatThrownBy(() -> jedis.set(key, value, setParams))
-        .hasMessage(ERROR_INVALID_EXPIRE_TIME);
+        .hasMessage(String.format(ERROR_INVALID_EXPIRE_TIME, "set"));
+  }
+
+  @Test
+  public void set_withEX_withNonIntegerExpiration_returnsError() {
+    assertThatThrownBy(() -> jedis.sendCommand("key", SET, "key", "value", "EX", "notAnInteger"))
+        .hasMessage(ERROR_NOT_INTEGER);
   }
 
   @Test
@@ -304,7 +310,13 @@ public abstract class AbstractSetIntegrationTest implements RedisIntegrationTest
     setParams.px(millisecondsUntilExpiration);
 
     assertThatThrownBy(() -> jedis.set(key, value, setParams))
-        .hasMessage(ERROR_INVALID_EXPIRE_TIME);
+        .hasMessage(String.format(ERROR_INVALID_EXPIRE_TIME, "set"));
+  }
+
+  @Test
+  public void set_withPX_withNonIntegerExpiration_returnsError() {
+    assertThatThrownBy(() -> jedis.sendCommand("key", SET, "key", "value", "EX", "notAnInteger"))
+        .hasMessage(ERROR_NOT_INTEGER);
   }
 
   @Test

@@ -250,8 +250,8 @@ public enum RedisCommandType {
       new Parameter().min(2).lastKey(-1).flags(READONLY, FAST)),
   MSET(new MSetExecutor(), Category.STRING, SUPPORTED, new Parameter().min(3)
       .odd(WRONG_NUMBER_OF_ARGUMENTS_FOR_MSET).lastKey(-1).step(2).flags(WRITE, DENYOOM)),
-  MSETNX(new MSetNXExecutor(), Category.STRING, SUPPORTED,
-      new Parameter().min(3).odd().lastKey(-1).step(2).flags(WRITE, DENYOOM)),
+  MSETNX(new MSetNXExecutor(), Category.STRING, SUPPORTED, new Parameter().min(3)
+      .odd(WRONG_NUMBER_OF_ARGUMENTS_FOR_MSET).odd().lastKey(-1).step(2).flags(WRITE, DENYOOM)),
   PSETEX(new PSetEXExecutor(), Category.STRING, SUPPORTED,
       new Parameter().exact(4).flags(WRITE, DENYOOM)),
   SET(new SetExecutor(), Category.STRING, SUPPORTED,

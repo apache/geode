@@ -21,6 +21,7 @@ import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADD
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static redis.clients.jedis.Protocol.Command.MSETNX;
 
 import java.util.List;
 
@@ -29,7 +30,6 @@ import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
@@ -52,29 +52,28 @@ public abstract class AbstractMSetNXIntegrationTest implements RedisIntegrationT
 
   @Test
   public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand("any", Protocol.Command.MSETNX))
+    assertThatThrownBy(() -> jedis.sendCommand("any", MSETNX))
         .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "msetnx"));
   }
 
   @Test
   public void givenValueNotProvided_returnsWrongNumberOfArgumentsError() {
-    assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.MSETNX, "key"))
+    assertThatThrownBy(() -> jedis.sendCommand("key", MSETNX, "key"))
         .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "msetnx"));
   }
 
   @Test
   public void givenEvenNumberOfArgumentsProvided_returnsWrongNumberOfArgumentsError() {
     // Redis returns this message in this scenario: "ERR wrong number of arguments for MSET"
-    assertThatThrownBy(
-        () -> jedis.sendCommand(HASHTAG, Protocol.Command.MSETNX, "key1" + HASHTAG, "value1",
-            "key2" + HASHTAG, "value2", "key3" + HASHTAG))
-                .hasMessage(WRONG_NUMBER_OF_ARGUMENTS_FOR_MSET);
+    assertThatThrownBy(() -> jedis.sendCommand(HASHTAG, MSETNX, "key1" + HASHTAG, "value1",
+        "key2" + HASHTAG, "value2", "key3" + HASHTAG))
+            .hasMessage(WRONG_NUMBER_OF_ARGUMENTS_FOR_MSET);
   }
 
   @Test
   public void givenDifferentSlots_returnsError() {
     assertThatThrownBy(
-        () -> jedis.sendCommand("key1", Protocol.Command.MSETNX, "key1", "value1", "key2",
+        () -> jedis.sendCommand("key1", MSETNX, "key1", "value1", "key2",
             "value2")).hasMessage(ERROR_WRONG_SLOT);
   }
 

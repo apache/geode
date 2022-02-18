@@ -15,15 +15,17 @@
 package org.apache.geode.redis.internal.commands.executor.string;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_EXPIRE_TIME;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static redis.clients.jedis.Protocol.Command.PSETEX;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -47,7 +49,7 @@ public abstract class AbstractPSetEXIntegrationTest implements RedisIntegrationT
 
   @Test
   public void errors_givenWrongNumberOfArguments() {
-    assertExactNumberOfArgs(jedis, Protocol.Command.PSETEX, 3);
+    assertExactNumberOfArgs(jedis, PSETEX, 3);
   }
 
   @Test
@@ -58,8 +60,14 @@ public abstract class AbstractPSetEXIntegrationTest implements RedisIntegrationT
   }
 
   @Test
-  public void testSetEXWithIllegalMilliseconds() {
+  public void testPSetEXWithIllegalMilliseconds() {
     assertThatThrownBy(() -> jedis.psetex("key", -1L, "value"))
-        .hasMessage("ERR invalid expire time in psetex");
+        .hasMessage(String.format(ERROR_INVALID_EXPIRE_TIME, "psetex"));
+  }
+
+  @Test
+  public void pSetEXWithNonIntegerExpiration_returnsError() {
+    assertThatThrownBy(() -> jedis.sendCommand("key", PSETEX, "key", "notAnInteger", "value"))
+        .hasMessage(ERROR_NOT_INTEGER);
   }
 }

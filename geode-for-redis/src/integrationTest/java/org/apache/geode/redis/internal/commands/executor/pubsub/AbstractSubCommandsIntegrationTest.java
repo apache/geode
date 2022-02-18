@@ -71,7 +71,8 @@ public abstract class AbstractSubCommandsIntegrationTest implements RedisIntegra
   public void pubsub_shouldReturnError_givenUnknownSubcommand() {
     String expected = String.format(ERROR_UNKNOWN_PUBSUB_SUBCOMMAND, "nonesuch");
 
-    assertThatThrownBy(() -> introspector.sendCommand(PUBSUB, "nonesuch")).hasMessage(expected);
+    assertThatThrownBy(() -> introspector.sendCommand(PUBSUB, "nonesuch"))
+        .hasMessageContaining(expected);
   }
 
   /** -- CHANNELS-- **/

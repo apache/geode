@@ -46,7 +46,7 @@ public class RedisConstants {
       "ERR resulting score is not a number (NaN)";
   public static final String ERROR_NO_SUCH_KEY = "ERR no such key";
   public static final String ERROR_SYNTAX = "ERR syntax error";
-  public static final String ERROR_INVALID_EXPIRE_TIME = "ERR invalid expire time in set";
+  public static final String ERROR_INVALID_EXPIRE_TIME = "ERR invalid expire time in %s";
   public static final String ERROR_NOT_A_VALID_FLOAT = "ERR value is not a valid float";
   public static final String ERROR_MIN_MAX_NOT_A_VALID_STRING =
       "ERR min or max not valid string range item";
