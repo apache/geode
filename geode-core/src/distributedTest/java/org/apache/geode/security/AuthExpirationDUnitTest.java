@@ -165,6 +165,7 @@ public class AuthExpirationDUnitTest {
         .containsExactly("DATA:READ:region:key0");
   }
 
+  // @Ignore("unnecessary test case for re-auth, but it manifests GEODE-9704")
   @Test
   public void registeredInterest_slowReAuth_policyKeys_durableClient() throws Exception {
     int serverPort = server.getPort();
@@ -181,7 +182,7 @@ public class AuthExpirationDUnitTest {
       Region<Object, Object> region = clientCache
           .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("region");
 
-      region.registerInterestForAllKeys(InterestResultPolicy.NONE, true);
+      region.registerInterestForAllKeys(InterestResultPolicy.KEYS, true);
       clientCache.readyForEvents();
       UpdatableUserAuthInitialize.setUser("user11");
       // wait for time longer than server's max time to wait to re-authenticate
