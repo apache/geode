@@ -46,6 +46,7 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.client.internal.EndpointManager;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.cache.ForceReattemptException;
@@ -214,6 +215,55 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
 
   }
 
+
+
+  /**
+   * The aim of this test is verify that when several gateway receivers in a remote site share the
+   * same port and hostname-for-senders, the pings sent from the gateway senders reach the right
+   * gateway receiver and not just any of the receivers. Failure to do this may result in the
+   * closing of connections by a gateway receiver for not having received the ping in time.
+   */
+  @Test
+  public void testPingsToReceiversWithSamePortAndHostnameForSendersReachTheRightReceiver()
+      throws InterruptedException {
+    String senderId = "ln";
+    String regionName = "region-wan";
+    final int remoteLocPort = docker.getExternalPortForService("haproxy", 20334);
+
+    int locPort = createLocator(VM.getVM(0), 1, remoteLocPort);
+
+    VM vm1 = VM.getVM(1);
+    createCache(vm1, locPort);
+
+    // We must use more than one dispatcher thread. With just one dispatcher thread, only one
+    // connection will be created by the sender towards one of the receivers and it will be
+    // monitored by the one ping thread for that remote receiver.
+    // With more than one thread, several connections will be opened and there should be one ping
+    // thread per remote receiver.
+    createGatewaySender(vm1, senderId, 2, true, 5,
+        1, GatewaySender.DEFAULT_ORDER_POLICY);
+
+    createPartitionedRegion(vm1, regionName, senderId, 0, 10);
+
+    int NUM_PUTS = 10;
+
+    putKeyValues(vm1, NUM_PUTS, regionName);
+
+    await()
+        .untilAsserted(() -> assertThat(getQueuedEvents(vm1, senderId)).isEqualTo(0));
+
+
+    // Wait longer than the value set in the receivers for
+    // maximum-time-between-pings: 10000 (see geode-starter-create.gfsh)
+    // to verify that connections are not closed
+    // by the receivers because each has received the pings timely.
+    int maxTimeBetweenPingsInReceiver = 15000;
+    Thread.sleep(maxTimeBetweenPingsInReceiver);
+
+    int poolEndPointSize = getPoolEndPointSize(vm1, senderId);
+    assertEquals(1, poolEndPointSize);
+  }
+
   private boolean allDispatchersConnectedToSameReceiver(int server) {
 
     String gfshOutput = runListGatewayReceiversCommandInServer(server);
@@ -344,6 +394,14 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
       AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(senderId);
       GatewaySenderStats statistics = sender.getStatistics();
       return statistics.getEventQueueSize();
+    });
+  }
+
+  private static int getPoolEndPointSize(VM vm, String senderId) {
+    return vm.invoke(() -> {
+      AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(senderId);
+      EndpointManager manager = sender.getProxy().getEndpointManager();
+      return manager.getEndpointMap().size();
     });
   }
 
