@@ -19,6 +19,7 @@ import static java.lang.Integer.parseInt;
 import static java.lang.String.format;
 import static java.lang.System.getenv;
 import static java.nio.charset.Charset.defaultCharset;
+import static java.util.concurrent.CompletableFuture.runAsync;
 import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_CLIENT_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
@@ -32,10 +33,12 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_SERVER_PR
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_TYPE;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -44,11 +47,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -62,7 +67,6 @@ import org.apache.geode.cache.ssl.CertificateMaterial;
 import org.apache.geode.internal.UniquePortSupplier;
 import org.apache.geode.internal.shared.NativeCalls;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
-import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 import org.apache.geode.test.version.TestVersion;
 import org.apache.geode.test.version.VersionManager;
 
@@ -109,10 +113,14 @@ public class SocketCreatorUpgradeTest {
   private final File securityPropertiesFile;
   private final File newSecurityPropertiesFile;
 
+  private File locator1LogFile;
+  private File locator2LogFile;
+
   @Parameters(name = "{0}")
   public static Collection<String> data() {
     final List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
     result.removeIf(v -> TestVersion.valueOf(v).lessThan(TestVersion.valueOf("1.8.0")));
+    Collections.reverse(result);
     return result;
   }
 
@@ -159,6 +167,20 @@ public class SocketCreatorUpgradeTest {
     stopLocator2 = stopLocator(LOCATOR_2);
   }
 
+  @Before
+  public void before() {
+    locator1LogFile = root.toPath().resolve(LOCATOR_1).resolve(LOCATOR_1 + ".log")
+        .toAbsolutePath().toFile();
+    locator2LogFile = root.toPath().resolve(LOCATOR_2).resolve(LOCATOR_2 + ".log")
+        .toAbsolutePath().toFile();
+  }
+
+  @After
+  public void after() {
+    killLocator(root, LOCATOR_1);
+    killLocator(root, LOCATOR_2);
+  }
+
   @Test
   public void upgradingToNewGeodeOnOldJavaWithProtocolsAny() throws IOException {
     generateSecurityProperties(PROTOCOL_ANY, securityPropertiesFile, keyStoreFile, trustStoreFile);
@@ -175,11 +197,33 @@ public class SocketCreatorUpgradeTest {
 
   @Test
   public void startingOldGeodeWithProtocolsTLSv1_2() throws IOException {
+    assumeThat(version)
+        .as("Geode between [1.12.1, 1.3.0) can't connect p2p with just TLSv1.2")
+        .satisfiesAnyOf(
+            v -> assertThat(v).isLessThanOrEqualTo(TestVersion.valueOf("1.12.0")),
+            v -> assertThat(v).isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0")));
+
     generateSecurityProperties(PROTOCOL_TLSv1_2, securityPropertiesFile, keyStoreFile,
         trustStoreFile);
 
     gfshOldGeodeOldJava.execute(root, startLocator1);
     gfshOldGeodeOldJava.execute(root, startLocator2);
+  }
+
+  @Test
+  public void startingOldGeode1_12_1_UpTo1_13_0WithProtocolsTLSv1_2Hangs() throws IOException {
+    assumeThat(version).as("Geode between [1.12.1, 1.3.0) can't connect p2p with just TLSv1.2")
+        .isGreaterThanOrEqualTo(TestVersion.valueOf("1.12.1"))
+        .isLessThan(TestVersion.valueOf("1.13.0"));
+
+    generateSecurityProperties(PROTOCOL_TLSv1_2, securityPropertiesFile, keyStoreFile,
+        trustStoreFile);
+
+    gfshOldGeodeOldJava.execute(root, startLocator1);
+    runAsync(() -> gfshOldGeodeOldJava.execute(root, startLocator2));
+
+    await().untilAsserted(
+        () -> assertThat(locator1LogFile).content().contains("SSLv2Hello is disabled"));
   }
 
   @Test
@@ -200,23 +244,6 @@ public class SocketCreatorUpgradeTest {
   }
 
   @Test
-  public void startingOldGeode1_12_1_UpTo1_13_0WithProtocolsTLSv1_2Hangs() throws IOException {
-    assumeThat(version).as("Geode between [1.12.1, 1.3.0) can't connect p2p with just TLSv1.2")
-        .isGreaterThanOrEqualTo(TestVersion.valueOf("1.12.1"))
-        .isLessThan(TestVersion.valueOf("1.13.0"));
-
-    generateSecurityProperties(PROTOCOL_TLSv1_2, securityPropertiesFile, keyStoreFile,
-        trustStoreFile);
-
-    gfshOldGeodeOldJava.execute(root, startLocator1);
-    assertThatThrownBy(() -> gfshOldGeodeOldJava.execute(
-        GfshScript.of(startLocator2).awaitAtMost(1, TimeUnit.MINUTES), root))
-            .hasRootCauseInstanceOf(TimeoutException.class);
-
-    killLocator(root, LOCATOR_2);
-  }
-
-  @Test
   public void upgradingToNewGeodeOnOldJavaWithProtocolsTLSv1_2Hangs() throws IOException {
     assumeThat(version).as("Geode 1.12.0 and older can upgrade.")
         .isGreaterThan(TestVersion.valueOf("1.12.0"));
@@ -227,11 +254,10 @@ public class SocketCreatorUpgradeTest {
         trustStoreFile);
 
     gfshOldGeodeOldJava.execute(root, startLocator1);
-    assertThatThrownBy(() -> gfshNewGeodeOldJava.execute(
-        GfshScript.of(startLocator2).awaitAtMost(1, TimeUnit.MINUTES), root))
-            .hasRootCauseInstanceOf(TimeoutException.class);
+    runAsync(() -> gfshNewGeodeOldJava.execute(root, startLocator2));
 
-    killLocator(root, LOCATOR_2);
+    await().untilAsserted(
+        () -> assertThat(locator2LogFile).content().contains("SSLv2Hello is disabled"));
   }
 
   @Test
@@ -240,8 +266,8 @@ public class SocketCreatorUpgradeTest {
     assumeThat(version)
         .as("Geode between [1.12.1, 1.3.0) can't connect p2p with just TLSv1.2")
         .satisfiesAnyOf(
-            v -> assumeThat(v).isLessThanOrEqualTo(TestVersion.valueOf("1.12.0")),
-            v -> assumeThat(v).isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0")));
+            v -> assertThat(v).isLessThanOrEqualTo(TestVersion.valueOf("1.12.0")),
+            v -> assertThat(v).isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0")));
 
     generateSecurityProperties(PROTOCOL_TLSv1_2,
         securityPropertiesFile, keyStoreFile, trustStoreFile);
@@ -265,8 +291,8 @@ public class SocketCreatorUpgradeTest {
     assumeThat(version)
         .as("Geode between [1.12.1, 1.3.0) can't connect p2p with just TLSv1.2")
         .satisfiesAnyOf(
-            v -> assumeThat(v).isLessThanOrEqualTo(TestVersion.valueOf("1.12.0")),
-            v -> assumeThat(v).isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0")));
+            v -> assertThat(v).isLessThanOrEqualTo(TestVersion.valueOf("1.12.0")),
+            v -> assertThat(v).isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0")));
 
     generateSecurityProperties(PROTOCOL_TLSv1_2,
         securityPropertiesFile, keyStoreFile, trustStoreFile);
@@ -339,30 +365,47 @@ public class SocketCreatorUpgradeTest {
     generateSecurityProperties(PROTOCOL_ANY, securityPropertiesFile, keyStoreFile, trustStoreFile);
 
     gfshOldGeodeOldJava.execute(root, startLocator1);
-    assertThatThrownBy(() -> gfshOldGeodeNewJava.execute(
-        GfshScript.of(startLocator2).awaitAtMost(1, TimeUnit.MINUTES), root))
-            .hasRootCauseInstanceOf(TimeoutException.class);
+    runAsync(() -> gfshOldGeodeNewJava.execute(root, startLocator2));
 
-    killLocator(root, LOCATOR_2);
+    await().atMost(1, TimeUnit.MINUTES).untilAsserted(
+        () -> assertThat(locator2LogFile).content().contains("SSLv2Hello is not enabled"));
+  }
+
+  @Test
+  public void upgradingToNewJavaOnOldGeodeWithProtocolsTLSv1_2() throws IOException {
+    assumeThat(version).as("Only Geode older than 1.12.1 can directly upgrade Java version.")
+        .isLessThan(TestVersion.valueOf("1.12.1"));
+
+    generateSecurityProperties(PROTOCOL_ANY, securityPropertiesFile, keyStoreFile, trustStoreFile);
+
+    gfshOldGeodeOldJava.execute(root, startLocator1);
+    gfshOldGeodeOldJava.execute(root, startLocator2);
+
+    // upgrade to new java, no SSL configuration changes
+    gfshOldGeodeOldJava.execute(root, stopLocator1);
+    gfshOldGeodeNewJava.execute(root, startLocator1);
+    gfshOldGeodeOldJava.execute(root, stopLocator2);
+    gfshOldGeodeNewJava.execute(root, startLocator2);
   }
 
   @Test
   public void upgradingToNewJavaOnOldGeodeWithProtocolsTLSv1_2Hangs() throws IOException {
+    assumeThat(version).as("Geode 1.12.0 and older can upgrade.")
+        .isGreaterThan(TestVersion.valueOf("1.12.0"));
     assumeThat(version)
         .as("Geode between [1.12.1, 1.3.0) can't connect p2p with just TLSv1.2")
         .satisfiesAnyOf(
-            v -> assumeThat(v).isLessThanOrEqualTo(TestVersion.valueOf("1.12.0")),
-            v -> assumeThat(v).isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0")));
+            v -> assertThat(v).isLessThanOrEqualTo(TestVersion.valueOf("1.12.0")),
+            v -> assertThat(v).isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0")));
 
     generateSecurityProperties(PROTOCOL_TLSv1_2, securityPropertiesFile, keyStoreFile,
         trustStoreFile);
 
     gfshOldGeodeOldJava.execute(root, startLocator1);
-    assertThatThrownBy(() -> gfshOldGeodeNewJava.execute(
-        GfshScript.of(startLocator2).awaitAtMost(1, TimeUnit.MINUTES), root))
-            .hasRootCauseInstanceOf(TimeoutException.class);
+    runAsync(() -> gfshOldGeodeNewJava.execute(root, startLocator2));
 
-    killLocator(root, LOCATOR_2);
+    await().atMost(1, TimeUnit.MINUTES).untilAsserted(
+        () -> assertThat(locator2LogFile).content().contains("SSLv2Hello is not enabled"));
   }
 
   @Test
@@ -393,11 +436,10 @@ public class SocketCreatorUpgradeTest {
         trustStoreFile);
 
     gfshOldGeodeOldJava.execute(root, startLocator1);
-    assertThatThrownBy(() -> gfshOldGeodeNewJava.execute(
-        GfshScript.of(startLocator2).awaitAtMost(1, TimeUnit.MINUTES), root))
-            .hasRootCauseInstanceOf(TimeoutException.class);
+    runAsync(() -> gfshOldGeodeNewJava.execute(root, startLocator2));
 
-    killLocator(root, LOCATOR_2);
+    await().atMost(1, TimeUnit.MINUTES).untilAsserted(
+        () -> assertThat(locator2LogFile).content().contains("SSLv2Hello is not enabled"));
   }
 
   @Test
@@ -425,11 +467,28 @@ public class SocketCreatorUpgradeTest {
         trustStoreFile);
 
     gfshOldGeodeOldJava.execute(root, startLocator1);
-    assertThatThrownBy(() -> gfshNewGeodeNewJava.execute(
-        GfshScript.of(startLocator2).awaitAtMost(1, TimeUnit.MINUTES), root))
-            .hasRootCauseInstanceOf(TimeoutException.class);
+    runAsync(() -> gfshNewGeodeNewJava.execute(root, startLocator2));
 
-    killLocator(root, LOCATOR_2);
+    await().atMost(1, TimeUnit.MINUTES).untilAsserted(
+        () -> assertThat(locator2LogFile).content().contains("SSLv2Hello is not enabled"));
+  }
+
+  @Test
+  public void upgradingToNewGeodeAndNewJavaWithProtocolsTLSv1_2() throws IOException {
+    assumeThat(version)
+        .as("Only Geode older than 1.12.1 can directly upgrade Geode and Java version.")
+        .isLessThan(TestVersion.valueOf("1.12.1"));
+
+    generateSecurityProperties(PROTOCOL_ANY, securityPropertiesFile, keyStoreFile, trustStoreFile);
+
+    gfshOldGeodeOldJava.execute(root, startLocator1);
+    gfshOldGeodeOldJava.execute(root, startLocator2);
+
+    // upgrade to new java, no SSL configuration changes
+    gfshOldGeodeOldJava.execute(root, stopLocator1);
+    gfshOldGeodeNewJava.execute(root, startLocator1);
+    gfshOldGeodeOldJava.execute(root, stopLocator2);
+    gfshOldGeodeNewJava.execute(root, startLocator2);
   }
 
   @Test
@@ -438,8 +497,8 @@ public class SocketCreatorUpgradeTest {
     assumeThat(version)
         .as("Geode between [1.12.1, 1.3.0) can't connect p2p with just TLSv1.2")
         .satisfiesAnyOf(
-            v -> assumeThat(v).isLessThanOrEqualTo(TestVersion.valueOf("1.12.0")),
-            v -> assumeThat(v).isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0")));
+            v -> assertThat(v).isLessThanOrEqualTo(TestVersion.valueOf("1.12.0")),
+            v -> assertThat(v).isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0")));
 
     generateSecurityProperties(PROTOCOL_TLSv1_2,
         securityPropertiesFile, keyStoreFile, trustStoreFile);
@@ -463,8 +522,8 @@ public class SocketCreatorUpgradeTest {
     assumeThat(version)
         .as("Geode between [1.12.1, 1.3.0) can't connect p2p with just TLSv1.2")
         .satisfiesAnyOf(
-            v -> assumeThat(v).isLessThanOrEqualTo(TestVersion.valueOf("1.12.0")),
-            v -> assumeThat(v).isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0")));
+            v -> assertThat(v).isLessThanOrEqualTo(TestVersion.valueOf("1.12.0")),
+            v -> assertThat(v).isGreaterThanOrEqualTo(TestVersion.valueOf("1.13.0")));
 
     generateSecurityProperties(PROTOCOL_TLSv1_2,
         securityPropertiesFile, keyStoreFile, trustStoreFile);
@@ -595,6 +654,7 @@ public class SocketCreatorUpgradeTest {
       final int pid = parseInt(readFileToString(pidFile.toFile(), defaultCharset()));
       NativeCalls.getInstance().killProcess(pid);
       Files.delete(pidFile);
+    } catch (FileNotFoundException ignore) {
     } catch (IOException e) {
       e.printStackTrace();
     }
