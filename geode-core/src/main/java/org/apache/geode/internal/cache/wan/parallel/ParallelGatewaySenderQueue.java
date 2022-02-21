@@ -1781,14 +1781,25 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         for (Object o : objects) {
           GatewaySenderEventImpl gse = (GatewaySenderEventImpl) o;
           if (gse.getPossibleDuplicate()) {
+<<<<<<< HEAD
             numberOfPossibleDuplicateEvents++;
+=======
+            numberOfPosssibleDuplicateEvents++;
+>>>>>>> GEODE-9997: added test
           }
         }
       }
     }
+<<<<<<< HEAD
     return numberOfPossibleDuplicateEvents;
   }
 
+=======
+    return numberOfPosssibleDuplicateEvents;
+  }
+
+
+>>>>>>> GEODE-9997: added test
   /**
    * This method does the cleanup of any threads, sockets, connection that are held up by the queue.
    * Note that this cleanup doesn't clean the data held by the queue.

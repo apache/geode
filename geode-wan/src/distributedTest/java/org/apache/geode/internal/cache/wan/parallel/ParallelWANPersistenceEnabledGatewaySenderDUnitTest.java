@@ -15,7 +15,11 @@
 package org.apache.geode.internal.cache.wan.parallel;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.assertThat;
+=======
+import static org.junit.Assert.assertEquals;
+>>>>>>> GEODE-9997: added test
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -2327,6 +2331,59 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
   }
 
 
+  @Test
+  public void testpersistentWanGateway_checkPossibleDuplicateEvents_afterServerDown() {
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+
+    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
+
+    // keep a larger batch to minimize number of exception occurrences in the log
+    vm4.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 200, false, true, null, true));
+    vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 200, false, true, null, true));
+    vm6.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 200, false, true, null, true));
+    vm7.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 200, false, true, null, true));
+
+    vm4.invoke(createPartitionedRegionRunnable());
+    vm5.invoke(createPartitionedRegionRunnable());
+    vm6.invoke(createPartitionedRegionRunnable());
+    vm7.invoke(createPartitionedRegionRunnable());
+
+    startSenderInVMs("ln", vm4, vm5, vm6, vm7);
+
+    // make sure all the senders are running before doing any puts
+    vm4.invoke(waitForSenderRunnable());
+    vm5.invoke(waitForSenderRunnable());
+    vm6.invoke(waitForSenderRunnable());
+    vm7.invoke(waitForSenderRunnable());
+
+    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName(), 3000));
+
+    // Just making sure that though the remote site is started later,
+    // remote site is still able to get the data. Since the receivers are
+    // started before creating partition region it is quite possible that the
+    // region may loose some of the events. This needs to be handled by the code
+
+    vm4.invoke(() -> stopSender("ln"));
+    vm5.invoke(() -> stopSender("ln"));
+    vm6.invoke(() -> stopSender("ln"));
+    vm7.invoke(() -> stopSender("ln"));
+
+    Integer vm4NumDupplicate = vm4.invoke(() -> WANTestBase.getNumOfPossibleDuplicateEvents("ln"));
+    Integer vm5NumDupplicate = vm5.invoke(() -> WANTestBase.getNumOfPossibleDuplicateEvents("ln"));
+    Integer vm6NumDupplicate = vm6.invoke(() -> WANTestBase.getNumOfPossibleDuplicateEvents("ln"));
+    Integer vm7NumDupplicate = vm7.invoke(() -> WANTestBase.getNumOfPossibleDuplicateEvents("ln"));
+
+    assertEquals(800, (vm4NumDupplicate + vm5NumDupplicate + vm6NumDupplicate + vm7NumDupplicate));
+
+    vm5.invoke(() -> WANTestBase.killSender());
+
+    vm4NumDupplicate = vm4.invoke(() -> WANTestBase.getNumOfPossibleDuplicateEvents("ln"));
+    vm6NumDupplicate = vm6.invoke(() -> WANTestBase.getNumOfPossibleDuplicateEvents("ln"));
+    vm7NumDupplicate = vm7.invoke(() -> WANTestBase.getNumOfPossibleDuplicateEvents("ln"));
+
+    assertEquals(800, (vm4NumDupplicate + vm6NumDupplicate + vm7NumDupplicate));
+  }
 
   private static class BlockingDestroyRegionObserver extends DistributionMessageObserver {
     private final CountDownLatch startedBlocking = new CountDownLatch(1);

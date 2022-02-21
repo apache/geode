@@ -1352,9 +1352,11 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
       dm.retainMembersWithSameOrNewerVersion(recipients, KnownVersion.GEODE_1_16_0);
 
       if (!recipients.isEmpty()) {
-        logger.info(
-            "notifyPossibleDuplicate send ParallelQueueSetPossibleDuplicateMessage recipients {}.",
-            recipients);
+        if (logger.isDebugEnabled()) {
+          logger.debug(
+              "notifyPossibleDuplicate send ParallelQueueSetPossibleDuplicateMessage recipients {}.",
+              recipients);
+        }
 
         ParallelQueueSetPossibleDuplicateMessage pqspdm =
             new ParallelQueueSetPossibleDuplicateMessage(regionToDispatchedKeysMap);
