@@ -22,7 +22,11 @@ import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_LIST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Objects;
 
 import org.apache.geode.DataSerializer;
@@ -43,21 +47,75 @@ public class RedisList extends AbstractRedisData {
   }
 
   /**
+   * @param start start index of desired elments
+   * @param stop stop index of desired elments
+   * @return list of elements in the range (inclusive).
+   */
+  public List<byte[]> lrange(int start, int stop) {
+    start = transformNegIndexToPosIndex(start);
+    stop = transformNegIndexToPosIndex(stop);
+
+    // Out of range negative index changes to 0
+    start = start < 0 ? 0 : start;
+
+    int elementSize = elementList.size();
+    if (start > stop || elementSize <= start) {
+      return Collections.emptyList();
+    }
+
+    // Out of range positive stop index changes to last index available
+    stop = elementSize <= stop ? elementSize - 1 : stop;
+
+    List<byte[]> result = new LinkedList<>();
+    int curIndex;
+
+    // Finds the shortest distance to access nodes in range
+    if (start <= elementSize - stop - 1) {
+      // Starts at head to access nodes at start index then iterates forwards
+      ListIterator<byte[]> iterator = elementList.listIterator();
+      curIndex = -1;
+
+      while (iterator.hasNext() && curIndex < stop) {
+        curIndex = iterator.nextIndex();
+        byte[] element = iterator.next();
+        if (start <= curIndex) {
+          result.add(element);
+        }
+      }
+    } else {
+      // Starts at tail to access nodes at stop index then iterates backwards
+      Iterator<byte[]> iterator = elementList.descendingIterator();
+      curIndex = elementSize;
+
+      while (iterator.hasNext() && start < curIndex) {
+        --curIndex;
+        byte[] element = iterator.next();
+        if (curIndex <= stop) {
+          result.add(0, element); // LinkedList is used to add to head
+        }
+      }
+    }
+    return result;
+  }
+
+  /**
    * @param index index of desired element. Positive index starts at the head. Negative index starts
    *        at the tail.
    * @return element at index. Null if index is out of range.
    */
   public byte[] lindex(int index) {
-    if (index < 0) {
-      // Changes negative index to corresponding positive index to utilize get(int index)
-      index = elementList.size() + index;
-    }
+    index = transformNegIndexToPosIndex(index);
 
     if (index < 0 || elementList.size() <= index) {
       return null;
     } else {
       return elementList.get(index);
     }
+  }
+
+  /** Changes negative index to corresponding positive index */
+  private int transformNegIndexToPosIndex(int index) {
+    return index < 0 ? (elementList.size() + index) : index;
   }
 
   /**

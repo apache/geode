@@ -579,6 +579,11 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   }
 
   @Test
+  public void testLlen() {
+    runCommandAndAssertHitsAndMisses(LIST_KEY, k -> jedis.llen(k));
+  }
+
+  @Test
   public void testLpush() {
     runCommandAndAssertNoStatUpdates(LIST_KEY, k -> jedis.lpush(k, "element"));
   }
@@ -594,8 +599,8 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   }
 
   @Test
-  public void testLlen() {
-    runCommandAndAssertHitsAndMisses(LIST_KEY, k -> jedis.llen(k));
+  public void testLrange() {
+    runCommandAndAssertHitsAndMisses(LIST_KEY, k -> jedis.lrange(k, 0, 0));
   }
 
   /************* Helper Methods *************/
