@@ -16,10 +16,7 @@ package org.apache.geode.deployment.internal.chained;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
-import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.management.internal.utils.JarFileUtils;
 
 
@@ -29,22 +26,9 @@ import org.apache.geode.management.internal.utils.JarFileUtils;
  * @since GemFire 7.0
  */
 public class DeployedJar {
-
-  @MakeNotStatic("This object gets updated in the production code")
-  private static final MessageDigest messageDigest = getMessageDigest();
-
   private final String artifactId;
   private final File file;
   private final byte[] md5hash;
-
-  private static MessageDigest getMessageDigest() {
-    try {
-      return MessageDigest.getInstance("MD5");
-    } catch (NoSuchAlgorithmException ignored) {
-      // Failure just means we can't do a simple compare for content equality
-    }
-    return null;
-  }
 
   public File getFile() {
     return file;
@@ -70,9 +54,7 @@ public class DeployedJar {
 
     byte[] digest = null;
     try {
-      if (messageDigest != null) {
-        digest = JarFileUtils.fileDigest(file);
-      }
+      digest = JarFileUtils.fileDigest(file);
     } catch (IOException e) {
       // Ignored
     }

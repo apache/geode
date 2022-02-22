@@ -96,7 +96,7 @@ public class JarFileUtils {
 
   private static MessageDigest getMessageDigest() {
     try {
-      return MessageDigest.getInstance("MD5");
+      return MessageDigest.getInstance("SHA-256");
     } catch (NoSuchAlgorithmException ignored) {
       // Failure just means we can't do a simple compare for content equality
     }
