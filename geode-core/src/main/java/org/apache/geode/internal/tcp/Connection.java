@@ -2914,57 +2914,20 @@ public class Connection implements Runnable {
     inputBuffer.limit(inputBuffer.capacity());
   }
 
-  @VisibleForTesting
-  public static class HandshakeForReceiverParsing {
-    public final InternalDistributedMember remoteMember;
-    public final boolean sharedResource;
-    public final boolean preserveOrder;
-    public final long uniqueId;
-    public final KnownVersion remoteVersion;
-    public final int dominoNumber;
-    // one of ClassNotFoundException | IOException | IllegalStateException
-    public final Exception thrown;
-
-    public HandshakeForReceiverParsing(
-        final InternalDistributedMember remoteMember, final boolean sharedResource,
-        final boolean preserveOrder, final long uniqueId,
-        final KnownVersion remoteVersion, final int dominoNumber, final Exception thrown) {
-      this.remoteMember = remoteMember;
-      this.sharedResource = sharedResource;
-      this.preserveOrder = preserveOrder;
-      this.uniqueId = uniqueId;
-      this.remoteVersion = remoteVersion;
-      this.dominoNumber = dominoNumber;
-      this.thrown = thrown;
-    }
-
-    // If an exception is captured then rethrow it now
-    public void rethrow() throws Exception {
-      if (thrown != null) {
-        throw thrown;
-      }
-    }
-  }
-
-
   private boolean readHandshakeForReceiver(final DataInput dis) {
     try {
-      // parse handshake
-      final HandshakeForReceiverParsing parsing =
-          readHandshakeForReceiverFunction(dis);
-
-      // process exceptions
-      parsing.rethrow();
-
-      // update fields
-      remoteMember = parsing.remoteMember;
-      sharedResource = parsing.sharedResource;
-      preserveOrder = parsing.preserveOrder;
-      uniqueId = parsing.uniqueId;
-      remoteVersion = parsing.remoteVersion;
-      final int dominoNumber = parsing.dominoNumber;
-
-      // other side effects...
+      checkHandshakeInitialByte(dis);
+      checkHandshakeVersion(dis);
+      remoteMember = DSFIDFactory.readInternalDistributedMember(dis);
+      sharedResource = dis.readBoolean();
+      preserveOrder = dis.readBoolean();
+      uniqueId = dis.readLong();
+      // read the product version ordinal for on-the-fly serialization
+      // transformations (for rolling upgrades)
+      remoteVersion = Versioning.getKnownVersionOrDefault(
+          Versioning.getVersion(VersioningIO.readOrdinal(dis)),
+          null);
+      final int dominoNumber = readDominoNumber(dis, sharedResource);
       dominoCount.set(dominoNumber);
       if (!sharedResource) {
         if (tipDomino()) {
@@ -3032,46 +2995,6 @@ public class Connection implements Runnable {
     return false;
   }
 
-  /*
-   * Mutates dis.
-   */
-  @VisibleForTesting
-  public static HandshakeForReceiverParsing readHandshakeForReceiverFunction(final DataInput dis) {
-
-    InternalDistributedMember remoteMember = null;
-    boolean sharedResource = false;
-    boolean preserveOrder = false;
-    long uniqueId = 0;
-    KnownVersion remoteVersion = null;
-    int dominoNumber = 0;
-    Exception caught = null;
-
-    try {
-      checkHandshakeInitialByte(dis);
-      checkHandshakeVersion(dis);
-      remoteMember = DSFIDFactory.readInternalDistributedMember(dis);
-      sharedResource = dis.readBoolean();
-      preserveOrder = dis.readBoolean();
-      uniqueId = dis.readLong();
-      // read the product version ordinal for on-the-fly serialization
-      // transformations (for rolling upgrades)
-      remoteVersion = Versioning.getKnownVersionOrDefault(
-          Versioning.getVersion(VersioningIO.readOrdinal(dis)),
-          null);
-      dominoNumber = readDominoNumber(dis, sharedResource);
-    } catch (final ClassNotFoundException | IOException | IllegalStateException e) {
-      /*
-       * We need to catch IllegalStateException for cases when this method is used as
-       * a protocol analyzer, i.e. for processing packet captures offline.
-       * Avoid catching other runtime exceptions.
-       */
-      caught = e;
-    }
-    return new HandshakeForReceiverParsing(remoteMember, sharedResource,
-        preserveOrder, uniqueId,
-        remoteVersion, dominoNumber, caught);
-  }
-
   static int readDominoNumber(final DataInput dis, final boolean sharedResource)
       throws IOException {
     final int dominoNumber = dis.readInt();
@@ -3100,90 +3023,32 @@ public class Connection implements Runnable {
     }
   }
 
-  @VisibleForTesting
-  public static class MessageHeaderParsing {
-    final int messageLength;
-    final byte messageType;
-    final short messageId;
-    final boolean directAck;
-    final boolean lengthSet;
-    final boolean invalidMessageHeader;
-    final IOException thrown;
-
-    private MessageHeaderParsing(final int messageLength, final byte messageType,
-        final short messageId,
-        final boolean directAck,
-        final boolean lengthSet, final boolean invalidMessageHeader,
-        final IOException thrown) {
-      this.messageLength = messageLength;
-      this.messageType = messageType;
-      this.messageId = messageId;
-      this.directAck = directAck;
-      this.lengthSet = lengthSet;
-      this.invalidMessageHeader = invalidMessageHeader;
-      this.thrown = thrown;
-    }
-  }
-
   private boolean readMessageHeader(ByteBuffer peerDataBuffer) throws IOException {
-
-    // call pure function to parse header
-    final MessageHeaderParsing messageHeaderParsing =
-        readMessageHeaderFunction(peerDataBuffer, lengthSet);
-
-    // update fields
-    messageLength = messageHeaderParsing.messageLength;
-    messageType = messageHeaderParsing.messageType;
-    messageId = messageHeaderParsing.messageId;
-    directAck = messageHeaderParsing.directAck;
-    lengthSet = messageHeaderParsing.lengthSet;
-
-    // more side effects
-    if (messageHeaderParsing.invalidMessageHeader) {
-      logger.fatal("Unknown P2P message type: {}", messageHeaderParsing.messageType);
-      readerShuttingDown = true;
-      requestClose(format("Unknown P2P message type: %s",
-          messageHeaderParsing.messageType));
-    }
-
-    return messageHeaderParsing.invalidMessageHeader;
-  }
-
-  /*
-   * Peek into buffer, looking for message header.
-   * On entry peerDataBuffer is readable
-   * On exit peerDataBuffer is still readable and its position has not changed
-   */
-  @VisibleForTesting
-  public static MessageHeaderParsing readMessageHeaderFunction(final ByteBuffer peerDataBuffer,
-      final boolean lengthSetParameter) {
-    final int headerStartPos = peerDataBuffer.position();
-    final int headerSize = peerDataBuffer.getInt();
-    IOException thrown = null;
-
+    int headerStartPos = peerDataBuffer.position();
+    messageLength = peerDataBuffer.getInt();
     /* nioMessageVersion = */
-    try {
-      calcHdrVersion(headerSize);
-    } catch (IOException e) {
-      thrown = e;
-    }
-    final int messageLength = calcMsgByteSize(headerSize);
-    byte messageType = peerDataBuffer.get();
-    final short messageId = peerDataBuffer.getShort();
-    final boolean directAck = (messageType & DIRECT_ACK_BIT) != 0;
+    calcHdrVersion(messageLength);
+    messageLength = calcMsgByteSize(messageLength);
+    messageType = peerDataBuffer.get();
+    messageId = peerDataBuffer.getShort();
+    directAck = (messageType & DIRECT_ACK_BIT) != 0;
     if (directAck) {
       // clear the ack bit
       messageType &= ~DIRECT_ACK_BIT;
     }
     if (!validMsgType(messageType)) {
-      return new MessageHeaderParsing(messageLength, messageType, messageId, directAck,
-          lengthSetParameter, true, thrown);
+      Integer nioMessageTypeInteger = (int) messageType;
+      logger.fatal("Unknown P2P message type: {}", nioMessageTypeInteger);
+      readerShuttingDown = true;
+      requestClose(format("Unknown P2P message type: %s",
+          nioMessageTypeInteger));
+      return true;
     }
+    lengthSet = true;
     // keep the header "in" the buffer until we have read the entire msg.
     // Trust me: this will reduce copying on large messages.
     peerDataBuffer.position(headerStartPos);
-    return new MessageHeaderParsing(messageLength, messageType, messageId, directAck, true, false,
-        thrown);
+    return false;
   }
 
   private void readMessage(ByteBuffer peerDataBuffer, AbstractExecutor threadMonitorExecutor) {
@@ -3379,22 +3244,16 @@ public class Connection implements Runnable {
 
   void readHandshakeForSender(DataInputStream dis, ByteBuffer peerDataBuffer) {
     try {
-      // parse handshake
-      final HandshakeForSenderParsing parsing = readHandshakeForSenderFunction(dis);
-
-      // process exceptions
-      parsing.rethrow();
-
-      // update state
-      switch (parsing.replyCode) {
+      int replyCode = dis.readUnsignedByte();
+      switch (replyCode) {
         case REPLY_CODE_OK:
           ioFilter.doneReading(peerDataBuffer);
           notifyHandshakeWaiter(true);
-          break;
+          return;
         case REPLY_CODE_OK_WITH_ASYNC_INFO:
-          asyncDistributionTimeout = parsing.asyncDistributionTimeout;
-          asyncQueueTimeout = parsing.asyncQueueTimeout;
-          asyncMaxQueueSize = (long) parsing.asyncMaxQueueSizeMB * (1024 * 1024);
+          asyncDistributionTimeout = dis.readInt();
+          asyncQueueTimeout = dis.readInt();
+          asyncMaxQueueSize = (long) dis.readInt() * (1024 * 1024);
           if (asyncDistributionTimeout != 0) {
             logger.info("{} async configuration received {}.", p2pReaderName(),
                 " asyncDistributionTimeout=" + asyncDistributionTimeout
@@ -3403,18 +3262,20 @@ public class Connection implements Runnable {
           }
           // read the product version ordinal for on-the-fly serialization
           // transformations (for rolling upgrades)
-          remoteVersion = parsing.remoteVersion;
+          remoteVersion = Versioning.getKnownVersionOrDefault(
+              Versioning.getVersion(VersioningIO.readOrdinal(dis)),
+              null);
           ioFilter.doneReading(peerDataBuffer);
           notifyHandshakeWaiter(true);
           if (preserveOrder && asyncDistributionTimeout != 0) {
             asyncMode = true;
           }
-          break;
+
+          return;
         default:
           String err =
-              "Unknown handshake reply code: " + parsing.replyCode + " messageLength: "
-                  + messageLength;
-          if (parsing.replyCode == 0 && logger.isDebugEnabled()) {
+              "Unknown handshake reply code: " + replyCode + " messageLength: " + messageLength;
+          if (replyCode == 0 && logger.isDebugEnabled()) {
             logger.debug(err + " (peer probably departed ungracefully)");
           } else {
             logger.fatal(err);
@@ -3444,68 +3305,6 @@ public class Connection implements Runnable {
       logger.fatal("Throwable deserializing P2P handshake reply", t);
       readerShuttingDown = true;
       requestClose("Throwable deserializing P2P handshake reply");
-    }
-  }
-
-  @VisibleForTesting
-  public static class HandshakeForSenderParsing {
-    final int replyCode;
-    final int asyncDistributionTimeout;
-    final int asyncQueueTimeout;
-    final int asyncMaxQueueSizeMB;
-    final KnownVersion remoteVersion;
-    final boolean validHandshakeForSenderSeen;
-    final IOException caught;
-
-    public HandshakeForSenderParsing(final int replyCode, final int asyncDistributionTimeout,
-        final int asyncQueueTimeout, final int asyncMaxQueueSizeMB,
-        final KnownVersion remoteVersion,
-        final boolean validHandshakeForSenderSeen,
-        final IOException caught) {
-      this.replyCode = replyCode;
-      this.asyncDistributionTimeout = asyncDistributionTimeout;
-      this.asyncQueueTimeout = asyncQueueTimeout;
-      this.asyncMaxQueueSizeMB = asyncMaxQueueSizeMB;
-      this.remoteVersion = remoteVersion;
-      this.validHandshakeForSenderSeen = validHandshakeForSenderSeen;
-      this.caught = caught;
-    }
-
-    public void rethrow() throws IOException {
-      if (caught != null) {
-        throw caught;
-      }
-    }
-  }
-
-  /*
-   * Mutates dis.
-   * Return true if valid handshake for sender was seen.
-   * Return false if what we saw was not a valid handshake for sender.
-   */
-  @VisibleForTesting
-  public static HandshakeForSenderParsing readHandshakeForSenderFunction(
-      final DataInputStream dis) {
-    int replyCode = 0;
-    try {
-      replyCode = dis.readUnsignedByte();
-      switch (replyCode) {
-        case REPLY_CODE_OK:
-          return new HandshakeForSenderParsing(replyCode, -1, -1, -1, null, true, null);
-        case REPLY_CODE_OK_WITH_ASYNC_INFO:
-          final int asyncDistributionTimeout = dis.readInt();
-          final int asyncQueueTimeout = dis.readInt();
-          final int asyncMaxQueueSizeMB = dis.readInt();
-          final KnownVersion remoteVersion = Versioning.getKnownVersionOrDefault(
-              Versioning.getVersion(VersioningIO.readOrdinal(dis)),
-              null);
-          return new HandshakeForSenderParsing(replyCode, asyncDistributionTimeout,
-              asyncQueueTimeout, asyncMaxQueueSizeMB, remoteVersion, true, null);
-        default:
-          return new HandshakeForSenderParsing(replyCode, -1, -1, -1, null, false, null);
-      }
-    } catch (final IOException e) {
-      return new HandshakeForSenderParsing(replyCode, -1, -1, -1, null, false, e);
     }
   }
 

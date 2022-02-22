@@ -16,13 +16,8 @@
 package org.apache.geode.internal.tcp;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
-import static org.apache.geode.internal.tcp.Connection.MSG_HEADER_BYTES;
-import static org.apache.geode.internal.tcp.Connection.readHandshakeForReceiverFunction;
-import static org.apache.geode.internal.tcp.Connection.readHandshakeForSenderFunction;
-import static org.apache.geode.internal.tcp.Connection.readMessageHeaderFunction;
 
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -38,9 +33,6 @@ import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLServerSocketFactory;
 
 import org.apache.commons.io.HexDump;
-import org.jetbrains.annotations.NotNull;
-
-import org.apache.geode.internal.InternalDataSerializer;
 
 public class BufferDebugging {
 
@@ -293,117 +285,5 @@ public class BufferDebugging {
       System.out.print('\t');
       System.out.println(cipher.getKey());
     }
-  }
-
-  // header, handshake-for-receiver
-  private static final String s0 =
-      "070000894cffff0007040a5405130000a0285700316c72742d7365727665722d302e6c72742d7365727665722e636c75737465722e7376632e636c75737465722e6c6f63616c090000bb15000000010a0057000c6c72742d7365727665722d30570001325700000000012cff009631d6d79b535266a64c1a3bac0904df0f00000100000000000005d3ff009600000001";
-  // header, handshake-for-sender
-  private static final String s1 = "070000104cffff46000000000000ea6000000008ff0096";
-  // header, distribution-message (tcp.Connection$MessageHeaderParsing)
-  private static final String s2 =
-      "070005126cffff015d188000005700102f5472616465735265706c69636174650100000000ff000cf66e0020788587a8dcb6ed2f0000017ed6d714070a1f040a54091e0000c256050d5700083632316262326436570006636c69656e740a020007b8af02000eeeeeffffffff000057000139fe043b5d0000043200e4a85b570001395700045342555800000003605700063834332e3339fe0400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000017ed6d714060000017ed6d714060019000f0004012662015c040a54091e0000c25657001a6c72742d636c69656e742d6664376263373437622d677071356c0900000000000000010d00570006636c69656e7457000836323162623264365700000000012cff0096000000000000000000000000000000000000000001";
-  // header, distribution-message (ReplyMessage)
-  private static final String s3 = "070000034cffff014800";
-
-  public static void main(String[] args) throws IOException, ClassNotFoundException {
-    final Object deserializedGemFireObject = parseGemFireP2PProtocolMessage(s2);
-    System.out.println("done");
-  };
-
-  /*
-   * TODO:
-   * implement readHandshakeForSender parsing
-   */
-  private static Object parseGemFireP2PProtocolMessage(final String gemFireP2PHexByteString) {
-    final byte[] bytes = hexStringToByteArray(gemFireP2PHexByteString);
-
-    final ByteBuffer unprocessed = ByteBuffer.wrap(bytes);
-    final Connection.MessageHeaderParsing messageHeaderParsing =
-        readMessageHeaderFunction(unprocessed, false);
-
-    if (messageHeaderParsing.thrown == null) {
-      System.out.println("Header parsed: " + messageHeaderParsing);
-    } else {
-      System.out.println("Exception while parsing message header: " + messageHeaderParsing.thrown);
-      return null;
-    }
-
-    // make a new buffer to speculatively process any handshakes
-    final ByteBuffer handshakeBuffer = createBufferAfterHeader(unprocessed);
-    Connection.HandshakeForReceiverParsing handshakeForReceiverParsing = null;
-    Object distributionMessage = null;
-
-    try (ByteBufferInputStream bbis = new ByteBufferInputStream(handshakeBuffer);
-        DataInputStream dis = new DataInputStream(bbis)) {
-      handshakeForReceiverParsing =
-          readHandshakeForReceiverFunction(dis);
-    } catch (IOException e) {
-      System.out.println("While looking for a handshake for receiver: " + e);
-      return null;
-    }
-
-    final ByteBuffer distributionMessageBuffer;
-    if (handshakeForReceiverParsing.thrown == null) {
-      System.out.println("Handshake for receiver parsed: " + handshakeForReceiverParsing);
-      // handshake was seen: keep processing bytes after handshake
-      distributionMessageBuffer = handshakeBuffer;
-    } else {
-      // maybe we have a handshake for sender
-      final ByteBuffer handshakeForSenderBuffer = createBufferAfterHeader(unprocessed);
-
-      Connection.HandshakeForSenderParsing handshakeForSenderParsing = null;
-
-      try (ByteBufferInputStream bbis = new ByteBufferInputStream(handshakeForSenderBuffer);
-          DataInputStream dis = new DataInputStream(bbis)) {
-        handshakeForSenderParsing = readHandshakeForSenderFunction(dis);
-      } catch (IOException e) {
-        System.out.println("While looking for a handshake for sender: " + e);
-        return null;
-      }
-
-      if (handshakeForSenderParsing.validHandshakeForSenderSeen) {
-        System.out.println("Handshake for sender parsed: " + handshakeForSenderParsing);
-        distributionMessageBuffer = handshakeForSenderBuffer;
-      } else {
-        // no handshake was seen: re-read bytes after header
-        distributionMessageBuffer = createBufferAfterHeader(unprocessed);
-      }
-    }
-
-    if (distributionMessageBuffer.remaining() < 1) {
-      return null;
-    }
-
-    try (ByteBufferInputStream bbis = new ByteBufferInputStream(distributionMessageBuffer);
-        DataInputStream dis = new DataInputStream(bbis)) {
-      distributionMessage = InternalDataSerializer.readDSFID(dis);
-    } catch (IOException | ClassNotFoundException e) {
-      System.out.println("While trying to process bytes after header: " + e);
-      return null;
-    }
-
-    if (distributionMessage != null) {
-      System.out.println("DistributionMessage parsed: " + distributionMessage);
-    }
-    return distributionMessage;
-  }
-
-  @NotNull
-  private static ByteBuffer createBufferAfterHeader(final ByteBuffer unprocessed) {
-    final ByteBuffer afterHeader = unprocessed.duplicate();
-    afterHeader.position(MSG_HEADER_BYTES); // header parsing left position at 0
-    return afterHeader;
-  }
-
-  /* s must be an even-length string. */
-  private static byte[] hexStringToByteArray(String s) {
-    int len = s.length();
-    byte[] data = new byte[len / 2];
-    for (int i = 0; i < len; i += 2) {
-      data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-          + Character.digit(s.charAt(i + 1), 16));
-    }
-    return data;
   }
 }
