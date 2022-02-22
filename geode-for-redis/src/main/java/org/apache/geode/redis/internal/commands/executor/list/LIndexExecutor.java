@@ -34,11 +34,11 @@ public class LIndexExecutor implements CommandExecutor {
     RedisKey key = command.getKey();
 
     return context.listLockedExecute(key, true,
-        list -> preformCommand(commandElems.get(2), list));
+        list -> performCommand(commandElems.get(2), list));
   }
 
   // Used to not throw an error if the list does not exist and has an invalid index
-  private RedisResponse preformCommand(byte[] unprocessedIndex, RedisList list) {
+  private RedisResponse performCommand(byte[] unprocessedIndex, RedisList list) {
     if (list.isNull()) {
       return RedisResponse.nil();
     }
