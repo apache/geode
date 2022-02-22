@@ -36,6 +36,7 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.NoAvailableLocatorsException;
 import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.ssl.CertStores;
 import org.apache.geode.cache.ssl.CertificateBuilder;
@@ -63,9 +64,9 @@ public class ClientServerHostNameVerificationDistributedTest {
   }
 
   private static void createServerRegion() {
-    RegionFactory factory =
+    RegionFactory<String, String> factory =
         ClusterStartupRule.getCache().createRegionFactory(RegionShortcut.REPLICATE);
-    Region r = factory.create("region");
+    Region<String, String> r = factory.create("region");
     r.put("serverkey", "servervalue");
   }
 
@@ -129,7 +130,7 @@ public class ClientServerHostNameVerificationDistributedTest {
 
     validateClientConnection(locatorCertificate, serverCertificate, clientCertificate, false, false,
         true,
-        IllegalStateException.class);
+        NoAvailableLocatorsException.class);
   }
 
   @Test
@@ -155,7 +156,7 @@ public class ClientServerHostNameVerificationDistributedTest {
 
     validateClientConnection(locatorCertificate, serverCertificate, clientCertificate, false, false,
         true,
-        IllegalStateException.class);
+        NoAvailableLocatorsException.class);
   }
 
   @Test

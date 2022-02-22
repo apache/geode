@@ -119,7 +119,7 @@ public class GfshHostNameVerificationDistributedTest {
         .issuedBy(ca)
         .generate();
 
-    validateGfshConnection(locatorCertificate);
+    validateGfshConnectionFailure(locatorCertificate, "No name matching");
   }
 
   @Test
@@ -130,10 +130,11 @@ public class GfshHostNameVerificationDistributedTest {
         .sanDnsName("example.com")
         .generate();
 
-    validateGfshConnection(locatorCertificate);
+    validateGfshConnectionFailure(locatorCertificate, "No subject alternative DNS name matching");
   }
 
-  private void validateGfshConnection(CertificateMaterial locatorCertificate)
+  private void validateGfshConnectionFailure(final CertificateMaterial locatorCertificate,
+      final String failure)
       throws Exception {
     CertificateMaterial gfshCertificate = new CertificateBuilder()
         .commonName("gfsh")
@@ -165,7 +166,7 @@ public class GfshHostNameVerificationDistributedTest {
         "connect --locator=" + locator.getVM().getHost().getHostName() + "[" + locator.getPort()
             + "] --security-properties-file=" + sslConfigFile.getAbsolutePath();
     gfsh.executeAndAssertThat(connectCommand).statusIsError()
-        .containsOutput("Unable to form SSL connection");
+        .containsOutput(failure);
     IgnoredException.removeAllExpectedExceptions();
   }
 

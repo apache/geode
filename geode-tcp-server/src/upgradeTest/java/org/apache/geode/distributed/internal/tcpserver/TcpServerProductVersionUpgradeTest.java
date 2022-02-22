@@ -72,7 +72,7 @@ import org.apache.geode.test.version.VersionManager;
 @Category({MembershipTest.class})
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
-public class TcpServerProductVersionDUnitTest implements Serializable {
+public class TcpServerProductVersionUpgradeTest implements Serializable {
 
   private static final TestVersion FIRST_NEW_VERSION = TestVersion.valueOf("1.12.0");
 
@@ -112,7 +112,7 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
     final List<TestVersion> olderVersions = groups.get(true);
 
     if (olderVersions.size() < 1) {
-      throw new AssertionError("Time to decommission TcpServerProductVersionDUnitTest "
+      throw new AssertionError("Time to decommission TcpServerProductVersionUpgradeTest "
           + "because there are no supported versions older than " + FIRST_NEW_VERSION);
     }
 
@@ -144,7 +144,7 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
 
   private final VersionConfiguration versions;
 
-  public TcpServerProductVersionDUnitTest(final VersionConfiguration versions) {
+  public TcpServerProductVersionUpgradeTest(final VersionConfiguration versions) {
     this.versions = versions;
   }
 
@@ -201,6 +201,7 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
             InfoResponse.class.getName()));
   }
 
+  @SuppressWarnings("JavaReflectionMemberAccess")
   private SerializableRunnableIF createRequestResponseFunction(
       final int locatorPort,
       final String requestClassName,
@@ -229,10 +230,9 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
         response = requestToServer.invoke(tcpClient, localHost, locatorPort,
             requestMessage, 1000);
       } catch (NoSuchMethodException e) {
-        response = tcpClient
-            .requestToServer(
-                new HostAndPort(localHost.getHostAddress(), locatorPort),
-                requestMessage, 1000);
+        response =
+            tcpClient.requestToServer(new HostAndPort(localHost.getHostAddress(), locatorPort),
+                requestMessage, 1000, true);
       }
 
       final Class<?> responseClass = Class.forName(responseClassName);
@@ -241,16 +241,16 @@ public class TcpServerProductVersionDUnitTest implements Serializable {
     };
 
   }
-  /*
+
+  /**
    * The TcpClient class changed in version FIRST_NEW_VERSION. That version (and later)
    * no longer has the old constructor TcpClient(final Properties), so we have to access
    * that constructor via reflection.
    */
-
+  @SuppressWarnings("JavaReflectionMemberAccess")
   private TcpClient getLegacyTcpClient()
       throws NoSuchMethodException, IllegalAccessException, InvocationTargetException,
       InstantiationException {
-
     final Constructor<TcpClient> constructor = TcpClient.class.getConstructor(Properties.class);
     return constructor.newInstance(getDistributedSystemProperties());
   }

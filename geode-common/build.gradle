@@ -36,11 +36,13 @@ dependencies {
   testImplementation('com.github.stefanbirkner:system-rules') {
     exclude module: 'junit-dep'
   }
+  testImplementation('org.junit.jupiter:junit-jupiter-api')
   testImplementation('junit:junit')
   testImplementation('org.apache.commons:commons-lang3')
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')
   testRuntimeOnly('org.junit.vintage:junit-vintage-engine')
+  testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine')
 
 
   // jmhTest

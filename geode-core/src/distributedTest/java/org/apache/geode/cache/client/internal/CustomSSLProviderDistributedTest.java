@@ -46,6 +46,7 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.client.NoAvailableLocatorsException;
 import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.internal.provider.CustomKeyManagerFactory;
 import org.apache.geode.cache.client.internal.provider.CustomTrustManagerFactory;
@@ -75,9 +76,6 @@ public class CustomSSLProviderDistributedTest {
         .generate();
   }
 
-  private CustomKeyManagerFactory.PKIXFactory keyManagerFactory;
-  private CustomTrustManagerFactory.PKIXFactory trustManagerFactory;
-
   private void setupCluster(Properties locatorSSLProps, Properties serverSSLProps) {
     // create a cluster
     locator = cluster.startLocatorVM(0, locatorSSLProps);
@@ -89,9 +87,9 @@ public class CustomSSLProviderDistributedTest {
   }
 
   private static void createServerRegion() {
-    RegionFactory factory =
+    RegionFactory<String, String> factory =
         ClusterStartupRule.getCache().createRegionFactory(RegionShortcut.REPLICATE);
-    Region r = factory.create("region");
+    Region<String, String> r = factory.create("region");
     r.put("serverkey", "servervalue");
   }
 
@@ -166,7 +164,7 @@ public class CustomSSLProviderDistributedTest {
         .generate();
 
     validateClientSSLConnection(locatorCertificate, serverCertificate, clientCertificate, false,
-        false, false, IllegalStateException.class);
+        false, false, NoAvailableLocatorsException.class);
   }
 
   @Test
@@ -193,7 +191,7 @@ public class CustomSSLProviderDistributedTest {
     validateClientSSLConnection(locatorCertificate, serverCertificate, clientCertificate, false,
         false,
         false,
-        IllegalStateException.class);
+        NoAvailableLocatorsException.class);
   }
 
   @Test
@@ -226,7 +224,7 @@ public class CustomSSLProviderDistributedTest {
       CertificateMaterial serverCertificate, CertificateMaterial clientCertificate,
       boolean enableHostNameVerficationForLocator, boolean enableHostNameVerificationForServer,
       boolean disableHostNameVerificationForClient,
-      Class expectedExceptionOnClient)
+      Class<? extends Throwable> expectedExceptionOnClient)
       throws GeneralSecurityException, IOException {
 
     CertStores locatorStore = CertStores.locatorStore();
@@ -254,11 +252,11 @@ public class CustomSSLProviderDistributedTest {
     setupCluster(locatorSSLProps, serverSSLProps);
 
     // setup client
-    keyManagerFactory =
+    CustomKeyManagerFactory.PKIXFactory keyManagerFactory =
         new CustomKeyManagerFactory.PKIXFactory(clientSSLProps.getProperty(SSL_KEYSTORE));
     keyManagerFactory.engineInit(null, null);
 
-    trustManagerFactory =
+    CustomTrustManagerFactory.PKIXFactory trustManagerFactory =
         new CustomTrustManagerFactory.PKIXFactory(clientSSLProps.getProperty(SSL_TRUSTSTORE));
     trustManagerFactory.engineInit((KeyStore) null);
 

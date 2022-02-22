@@ -18,7 +18,6 @@ package org.apache.geode.internal.serialization;
 import java.io.DataOutputStream;
 import java.io.OutputStream;
 
-
 /**
  * An extension of {@link DataOutputStream} that implements {@link VersionedDataStream}.
  *
@@ -39,9 +38,6 @@ public class VersionedDataOutputStream extends DataOutputStream implements Versi
     this.version = version;
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public KnownVersion getVersion() {
     return version;

@@ -84,7 +84,7 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category(ClientServerTest.class)
-public class AutoConnectionSourceImplJUnitTest {
+public class AutoConnectionSourceImplIntegrationTest {
 
   private Cache cache;
   private int port;
@@ -162,7 +162,7 @@ public class AutoConnectionSourceImplJUnitTest {
   }
 
   /**
-   * This test validates the AutoConnectionSourceImpl.addbadLocators method. That method adds
+   * This test validates the AutoConnectionSourceImpl.addBadLocators method. That method adds
    * badLocator from badLocator list to new Locator list. And it make sure that new locator list
    * doesn't have similar entry. For that it checks hostname and port only.
    */
@@ -184,7 +184,7 @@ public class AutoConnectionSourceImplJUnitTest {
     badLocators.add(new HostAndPort(badLocator1.getHostName(), badLocator1.getPort()));
     badLocators.add(new HostAndPort(badLocator2.getHostName(), badLocator2.getPort()));
 
-    autoConnectionSource.addbadLocators(hostAndPortList, badLocators);
+    autoConnectionSource.addBadLocators(hostAndPortList, badLocators);
 
     System.out.println("new locatores " + hostAndPortList);
     assertThat(hostAndPortList).hasSize(3);
