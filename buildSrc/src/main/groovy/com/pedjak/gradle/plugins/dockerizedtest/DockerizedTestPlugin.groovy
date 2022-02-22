@@ -93,6 +93,11 @@ class DockerizedTestPlugin implements Plugin<Project> {
         boolean unsupportedVersion = new ComparableVersion(project.gradle.gradleVersion).compareTo(new ComparableVersion(supportedVersion)) < 0
         if (unsupportedVersion) throw new GradleException("dockerized-test plugin requires Gradle ${supportedVersion}+")
 
+        if (project.dunitDockerImage) {
+            println "DHE: Got docker image $project.dunitDockerImage. Using dockerized Test Executer"
+        } else {
+            println "DHE: No docker image. Using normal test executer."
+        }
         project.tasks.withType(Test).each { test -> configureTest(project, test) }
         project.tasks.whenTaskAdded { task ->
             if (task instanceof Test) configureTest(project, task)
