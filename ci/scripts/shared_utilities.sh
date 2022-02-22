@@ -100,13 +100,13 @@ is_source_from_pr_testable() {
   fi
 
   # shellcheck disable=SC2164
-  pushd "${repo_dir}" >> /dev/null
+  pushd "${repo_dir}" 2>&1 >> /dev/null
     local base_dir
     base_dir=$(git rev-parse --show-toplevel)
     local github_pr_dir
     github_pr_dir="${base_dir}/.git/resource"
     # shellcheck disable=SC2164
-    pushd "${base_dir}" >> /dev/null
+    pushd "${base_dir}" 2>&1 >> /dev/null
       local return_code=0
       if [ -d "${github_pr_dir}" ]; then
         # Modify this path list with directories to exclude
@@ -116,12 +116,12 @@ is_source_from_pr_testable() {
           exclude_pathspec="${exclude_pathspec} :(exclude,glob)${d}/**"
         done
         # shellcheck disable=SC2164
-        pushd "${base_dir}" &> /dev/null
+        pushd "${base_dir}" 2>&1 >> /dev/null
           local files
           # shellcheck disable=SC2046
           files=$(git diff --name-only "$(cat "${github_pr_dir}/base_sha")" -- . $(echo "${exclude_pathspec}"))
         # shellcheck disable=SC2164
-        popd &> /dev/null
+        popd 2>&1 >> /dev/null
         if [[ -z "${files}" ]]; then
           >&2 echo "CI changes only, skipping tests..."
           return_code=1
@@ -132,8 +132,8 @@ is_source_from_pr_testable() {
         >&2 echo "Running tests..."
       fi
     # shellcheck disable=SC2164
-    popd >> /dev/null
+    popd 2>&1 >> /dev/null
   # shellcheck disable=SC2164
-  popd >> /dev/null
+  popd 2>&1 >> /dev/null
   return ${return_code}
 }
