@@ -144,7 +144,8 @@ public class ManagementAgent {
       try {
         configureAndStart();
       } catch (IOException e) {
-        throw new ManagementException(e);
+        String info = getPortAndProcessInformation(Integer.toString(port));
+        throw new ManagementException(info, e);
       }
       this.running = true;
     }
@@ -427,8 +428,7 @@ public class ManagementAgent {
             try {
               registry.bind("jmxrmi", stub.toStub());
             } catch (AlreadyBoundException x) {
-              String info = getPortAndProcessInformation(Integer.toString(port));
-              throw new IOException(x.getMessage() + "\n" + info, x);
+              throw new IOException(x.getMessage(), x);
             }
           }
         };
