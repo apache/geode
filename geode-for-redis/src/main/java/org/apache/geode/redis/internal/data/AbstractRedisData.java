@@ -24,6 +24,7 @@ import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRA
 import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAY_DOUBLE_PAIRS;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAY_PAIRS;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.APPEND_BYTE_ARRAY;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.INSERT_BYTE_ARRAY;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REMOVE_BYTE_ARRAYS;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REMOVE_ELEMENTS_BY_INDEX;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_ARRAYS;
@@ -312,6 +313,10 @@ public abstract class AbstractRedisData implements RedisData {
 
   public void applyAddByteArrayTailDelta(byte[] bytes) {
     throw new IllegalStateException("unexpected " + ADD_BYTE_ARRAYS_TAIL);
+  }
+
+  public void applyInsertByteArrayDelta(byte[] bytes, int index) {
+    throw new IllegalStateException("unexpected " + INSERT_BYTE_ARRAY);
   }
 
   public void applyRemoveByteArrayDelta(byte[] bytes) {

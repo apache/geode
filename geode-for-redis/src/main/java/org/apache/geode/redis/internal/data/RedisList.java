@@ -23,6 +23,7 @@ import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_LIST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,6 +40,7 @@ import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.data.collections.SizeableByteArrayList;
 import org.apache.geode.redis.internal.data.delta.AddByteArrays;
 import org.apache.geode.redis.internal.data.delta.AddByteArraysTail;
+import org.apache.geode.redis.internal.data.delta.InsertByteArray;
 import org.apache.geode.redis.internal.data.delta.RemoveElementsByIndex;
 import org.apache.geode.redis.internal.data.delta.ReplaceByteArrayAtOffset;
 
@@ -128,6 +130,25 @@ public class RedisList extends AbstractRedisData {
       }
     }
     return listIndex;
+  }
+
+  /**
+   * @param elementToInsert element to insert into the set
+   * @param referenceElement element to insert next to
+   * @param before true if inserting before reference element, false if it is after
+   * @param region the region this instance is store in
+   * @param key the name of the set to add to
+   * @return the number of elements in the list after the element is inserted
+   */
+  public long linsert(byte[] elementToInsert, byte[] referenceElement, boolean before,
+      Region<RedisKey, RedisData> region, RedisKey key) {
+    int index = elementInsert(elementToInsert, referenceElement, before);
+    if (index == -1) {
+      return index;
+    }
+    storeChanges(region, key, new InsertByteArray(elementToInsert, index));
+
+    return elementList.size();
   }
 
   /**
@@ -238,6 +259,11 @@ public class RedisList extends AbstractRedisData {
   }
 
   @Override
+  public void applyInsertByteArrayDelta(byte[] toInsert, int index) {
+    elementInsert(toInsert, index);
+  }
+
+  @Override
   public void applyRemoveElementsByIndex(List<Integer> indexes) {
     for (int index : indexes) {
       removeElement(index);
@@ -278,6 +304,27 @@ public class RedisList extends AbstractRedisData {
   @Override
   public int getDSFID() {
     return REDIS_LIST_ID;
+  }
+
+  public synchronized int elementInsert(byte[] elementToInsert, byte[] referenceElement,
+                                        boolean before) {
+    for (int i = 0; i < elementList.size(); i++) {
+      if (Arrays.equals(elementList.get(i), referenceElement)) {
+        if (before) {
+          elementList.add(i, elementToInsert);
+          return i;
+        } else {
+          elementList.add(i + 1, elementToInsert);
+          return i + 1;
+        }
+      }
+    }
+
+    return -1;
+  }
+
+  public synchronized void elementInsert(byte[] toInsert, int index) {
+    elementList.add(index, toInsert);
   }
 
   public synchronized byte[] removeElement(int index) {
