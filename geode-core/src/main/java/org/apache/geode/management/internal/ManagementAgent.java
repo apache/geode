@@ -14,7 +14,9 @@
  */
 package org.apache.geode.management.internal;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
@@ -425,7 +427,8 @@ public class ManagementAgent {
             try {
               registry.bind("jmxrmi", stub.toStub());
             } catch (AlreadyBoundException x) {
-              throw new IOException(x.getMessage(), x);
+              String info = getPortAndProcessInformation(Integer.toString(port));
+              throw new IOException(x.getMessage() + "\n" + info, x);
             }
           }
         };
@@ -438,6 +441,32 @@ public class ManagementAgent {
     if (logger.isDebugEnabled()) {
       logger.debug("Finished starting jmx manager agent.");
     }
+  }
+
+  private String getPortAndProcessInformation(String port) {
+    StringBuilder sb = new StringBuilder();
+    try {
+      Process p = Runtime.getRuntime().exec("lsof -i :" + port);
+      p.waitFor();
+
+      BufferedReader reader =
+          new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+      String line;
+      while ((line = reader.readLine()) != null) {
+        sb.append(line).append("\n");
+      }
+
+      p = Runtime.getRuntime().exec("jps");
+
+      reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+      while ((line = reader.readLine()) != null) {
+        sb.append(line).append("\n");
+      }
+    } catch (IOException | InterruptedException e) {
+      return "Getting information failed: " + e.getMessage();
+    }
+    return sb.toString();
   }
 
   @VisibleForTesting
