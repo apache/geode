@@ -389,7 +389,8 @@ public enum RedisCommandType {
   /************** Lists *****************/
 
   LINDEX(new LIndexExecutor(), Category.LIST, SUPPORTED, new Parameter().exact(3).flags(READONLY)),
-  LINSERT(new LInsertExecutor(), Category.LIST, SUPPORTED, new Parameter().exact(5).flags(WRITE)),
+  LINSERT(new LInsertExecutor(), Category.LIST, SUPPORTED,
+      new Parameter().exact(5).flags(WRITE, DENYOOM)),
   LLEN(new LLenExecutor(), Category.LIST, SUPPORTED,
       new Parameter().exact(2).flags(READONLY, FAST)),
   LPOP(new LPopExecutor(), Category.LIST, SUPPORTED, new Parameter().exact(2).flags(WRITE, FAST)),
