@@ -64,12 +64,12 @@ public abstract class AbstractLRangeIntegrationTest implements RedisIntegrationT
   }
 
   @Test
-  public void lrange_withNonExistentSet_withStartIndexLessThanStopIndex_returnsEmptyList() {
+  public void lrange_withNonExistentList_withStartIndexLessThanStopIndex_returnsEmptyList() {
     assertThat(jedis.lrange(NON_EXISTENT_LIST_KEY, -10, 10)).isEmpty();
   }
 
   @Test
-  public void lrange_withNonExistentSet_withStartIndexGreaterThanStopIndex_returnsEmptyList() {
+  public void lrange_withNonExistentList_withStartIndexGreaterThanStopIndex_returnsEmptyList() {
     assertThat(jedis.lrange(NON_EXISTENT_LIST_KEY, 10, -10)).isEmpty();
   }
 
@@ -205,20 +205,22 @@ public abstract class AbstractLRangeIntegrationTest implements RedisIntegrationT
 
   @Test
   public void lrange_withInvalidStart_withValidStop_returnsError() {
+    jedis.lpush(LIST_KEY, LIST_ELEMENTS);
     assertThatThrownBy(
-        () -> jedis.sendCommand(LIST_KEY, Protocol.Command.LRANGE, NON_EXISTENT_LIST_KEY, "b", "2"))
+        () -> jedis.sendCommand(LIST_KEY, Protocol.Command.LRANGE, LIST_KEY, "b", "2"))
             .hasMessage("ERR " + ERROR_NOT_INTEGER);
   }
 
   @Test
   public void lrange_withValidStart_withInvalidStop_returnsError() {
+    jedis.lpush(LIST_KEY, LIST_ELEMENTS);
     assertThatThrownBy(
-        () -> jedis.sendCommand(LIST_KEY, Protocol.Command.LRANGE, NON_EXISTENT_LIST_KEY, "2", "b"))
+        () -> jedis.sendCommand(LIST_KEY, Protocol.Command.LRANGE, LIST_KEY, "2", "b"))
             .hasMessage("ERR " + ERROR_NOT_INTEGER);
   }
 
   @Test
-  public void lrange_withwrongTypeKey_returnsError() {
+  public void lrange_withWrongTypeKey_returnsError() {
     String key = "{tag1}ding";
     jedis.set(key, "dong");
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.LRANGE, key, "0", "2"))
@@ -226,7 +228,7 @@ public abstract class AbstractLRangeIntegrationTest implements RedisIntegrationT
   }
 
   @Test
-  public void lrange_withwrongTypeKey_withInvalidStart_withValidStop_returnsError() {
+  public void lrange_withWrongTypeKey_withInvalidStart_withValidStop_returnsError() {
     String key = "{tag1}ding";
     jedis.set(key, "dong");
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.LRANGE, key, "b", "2"))
@@ -234,7 +236,7 @@ public abstract class AbstractLRangeIntegrationTest implements RedisIntegrationT
   }
 
   @Test
-  public void lrange_withwrongTypeKey_withValidStart_withInvalidStop_returnsError() {
+  public void lrange_withWrongTypeKey_withValidStart_withInvalidStop_returnsError() {
     String key = "{tag1}ding";
     jedis.set(key, "dong");
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.LRANGE, key, "2", "b"))
