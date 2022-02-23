@@ -172,6 +172,8 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
 
   private VersionTag versionTag;
 
+  private boolean generateCallbacks = true;
+
   // additional bitmask flags used for serialization/deserialization
 
   protected static final short CACHE_WRITE = UNRESERVED_FLAGS_START;
@@ -183,7 +185,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
       getNextByteMask(DistributedCacheOperation.DESERIALIZATION_POLICY_END);
   protected static final int HAS_ORIGINAL_SENDER = getNextByteMask(HAS_BRIDGE_CONTEXT);
   protected static final int HAS_DELTA_WITH_FULL_VALUE = getNextByteMask(HAS_ORIGINAL_SENDER);
-  protected static final int HAS_CALLBACKARG = getNextByteMask(HAS_DELTA_WITH_FULL_VALUE);
+  protected static final int DO_NOT_GENERATE_CALLBACKS = getNextByteMask(HAS_DELTA_WITH_FULL_VALUE);
   // TODO this should really have been at the PartitionMessage level but all
   // masks there are taken
   // also switching the masks will impact backwards compatibility. Need to
@@ -499,6 +501,9 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
     if ((extraFlags & HAS_ORIGINAL_SENDER) != 0) {
       originalSender = DataSerializer.readObject(in);
     }
+    if ((extraFlags & DO_NOT_GENERATE_CALLBACKS) != 0) {
+      generateCallbacks = false;
+    }
     eventId = new EventID();
     InternalDataSerializer.invokeFromData(eventId, in);
 
@@ -554,6 +559,9 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
     }
     if (originalSender != null) {
       extraFlags |= HAS_ORIGINAL_SENDER;
+    }
+    if (!event.isGenerateCallbacks()) {
+      extraFlags |= DO_NOT_GENERATE_CALLBACKS;
     }
     out.writeByte(extraFlags);
 
@@ -664,7 +672,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
     final EntryEventImpl ev =
         EntryEventImpl.create(r, getOperation(), getKey(), null, /* newValue */
             getCallbackArg(), false/* originRemote - false to force distribution in buckets */,
-            eventSender, true/* generateCallbacks */, false/* initializeId */);
+            eventSender, generateCallbacks/* generateCallbacks */, false/* initializeId */);
     try {
       if (versionTag != null) {
         versionTag.replaceNullIDs(getSender());

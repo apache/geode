@@ -38,7 +38,9 @@ import static org.junit.Assert.assertNotNull;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -87,6 +89,7 @@ import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
   protected static VM vm8;
+  protected static VM vm9;
 
   private static final long serialVersionUID = 1L;
 
@@ -106,19 +109,20 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
   @BeforeClass
   public static void beforeClassWanCopyRegionCommandDUnitTest() {
     vm8 = VM.getVM(8);
+    vm9 = VM.getVM(9);
   }
 
   @Test
   public void testUnsuccessfulExecution_RegionNotFound() throws Exception {
     List<VM> serversInA = Arrays.asList(vm5, vm6, vm7);
-    VM serverInB = vm3;
+    List<VM> serversInB = Collections.singletonList(vm3);
     VM serverInC = vm4;
     VM client = vm8;
     String senderIdInA = "B";
     String senderIdInB = "C";
 
     int senderLocatorPort = create3WanSitesAndClient(true, vm0,
-        vm1, vm2, serversInA, serverInB, serverInC, client,
+        vm1, vm2, serversInA, serversInB, serverInC, client,
         senderIdInA, senderIdInB, true);
 
     int wanCopyRegionBatchSize = 20;
@@ -134,7 +138,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     // Check command status and output
     CommandResultAssert command =
-        verifyStatusIsError(gfsh.executeAndAssertThat(commandString));
+        verifyStatusIsError(gfsh.executeAndAssertThat(commandString), serversInA.size());
     String message =
         CliStrings.format(WAN_COPY_REGION__MSG__REGION__NOT__FOUND,
             regionName);
@@ -147,14 +151,14 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
   @Test
   public void testUnsuccessfulExecution_SenderNotFound() throws Exception {
     List<VM> serversInA = Arrays.asList(vm5, vm6, vm7);
-    VM serverInB = vm3;
+    List<VM> serversInB = Collections.singletonList(vm3);
     VM serverInC = vm4;
     VM client = vm8;
     String senderIdInA = "B";
     String senderIdInB = "C";
 
     int senderLocatorPort = create3WanSitesAndClient(true, vm0,
-        vm1, vm2, serversInA, serverInB, serverInC, client,
+        vm1, vm2, serversInA, serversInB, serverInC, client,
         senderIdInA, senderIdInB, true);
 
     int wanCopyRegionBatchSize = 20;
@@ -170,7 +174,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     // Check command status and output
     CommandResultAssert command =
-        verifyStatusIsError(gfsh.executeAndAssertThat(commandString));
+        verifyStatusIsError(gfsh.executeAndAssertThat(commandString), serversInA.size());
     String message =
         CliStrings.format(WAN_COPY_REGION__MSG__SENDER__NOT__FOUND, senderIdInA);
     command
@@ -184,14 +188,14 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
   public void testUnsuccessfulExecution_ExceptionAtReceiver(
       boolean isPartitionedRegion, boolean isParallelGatewaySender) throws Exception {
     List<VM> serversInA = Arrays.asList(vm5, vm6, vm7);
-    VM serverInB = vm3;
+    List<VM> serversInB = Collections.singletonList(vm3);
     VM serverInC = vm4;
     VM client = vm8;
     String senderIdInA = "B";
     String senderIdInB = "C";
 
     int senderLocatorPort = create3WanSitesAndClient(isPartitionedRegion, vm0,
-        vm1, vm2, serversInA, serverInB, serverInC, client,
+        vm1, vm2, serversInA, serversInB, serverInC, client,
         senderIdInA, senderIdInB, true);
 
     String regionName = getRegionName(isPartitionedRegion);
@@ -207,12 +211,14 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     }
 
     // destroy region to provoke the exception
-    serverInB.invoke(() -> destroyRegion(regionName));
+    for (VM server : serversInB) {
+      server.invoke(() -> destroyRegion(regionName));
+    }
 
-    // Create senders and receivers with replication as follows: "A" -> "B" -> "C"
-    createSenders(isParallelGatewaySender, serversInA, serverInB,
-        senderIdInA, senderIdInB);
-    createReceivers(serverInB, serverInC);
+    // Create senders and receivers
+    createSender(isParallelGatewaySender, serversInA, senderIdInA, 2);
+    createSender(isParallelGatewaySender, serversInB, senderIdInB, 3);
+    createReceivers(serversInB, serverInC);
 
     // Execute wan-copy region command
     gfsh.connectAndVerify(senderLocatorPort, GfshCommandRule.PortType.locator);
@@ -225,7 +231,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     // Check command status and output
     if (isParallelGatewaySender) {
       CommandResultAssert command =
-          verifyStatusIsError(gfsh.executeAndAssertThat(commandString));
+          verifyStatusIsError(gfsh.executeAndAssertThat(commandString), serversInA.size());
       Condition<String> exceptionError =
           new Condition<>(s -> s.startsWith("Error ("), "Error");
       command
@@ -325,11 +331,11 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     // Create senders and receivers with replication as follows: "A" -> "B"
     if (useParallel) {
       createReceiverInVMs(server1InB, server2InB, server3InB);
-      createSenders(useParallel, serversInA, null, senderIdInA, null);
+      createSender(useParallel, serversInA, senderIdInA, 2);
     } else {
       // Senders will connect to receiver in server1InB
       server1InB.invoke(WANTestBase::createReceiver);
-      createSenders(useParallel, serversInA, null, senderIdInA, null);
+      createSender(useParallel, serversInA, senderIdInA, 2);
       createReceiverInVMs(server2InB, server3InB);
     }
 
@@ -360,7 +366,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
           wanCopyCommandFuture);
     } else if (gwToBeStopped == Gateway.RECEIVER) {
       stopReceiverAndVerifyResult(useParallel, stopPrimarySender, entries, regionName, server1InB,
-          server2InB, server3InB, wanCopyCommandFuture);
+          server2InB, server3InB, serversInA.size(), wanCopyCommandFuture);
     }
   }
 
@@ -384,7 +390,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     // Site B
     VM locatorInB = vm4;
     VM server1InB = vm5;
-    List<VM> serversInB = ImmutableList.of(server1InB);
+    List<VM> serversInB = Collections.singletonList(server1InB);
     VM client = vm8;
 
     int locatorAPort = create2WanSitesAndClient(locatorInA, serversInA, senderIdInA, locatorInB,
@@ -398,7 +404,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     // Create senders and receivers with replication as follows: "A" -> "B"
     createReceiverInVMs(server1InB);
-    createSenders(isParallelGatewaySender, serversInA, null, senderIdInA, null);
+    createSender(isParallelGatewaySender, serversInA, senderIdInA, 2);
 
     Callable<CommandResultAssert> wanCopyCommandCallable = () -> {
       String command = new CommandStringBuilder(WAN_COPY_REGION)
@@ -493,11 +499,11 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     // Create senders and receivers with replication as follows: "A" -> "B"
     if (useParallel) {
       createReceiverInVMs(server1InB, server2InB, server3InB);
-      createSenders(useParallel, serversInA, null, senderIdInA, null);
+      createSender(useParallel, serversInA, senderIdInA, 2);
     } else {
       // Senders will connect to receiver in server1InB
       server1InB.invoke(WANTestBase::createReceiver);
-      createSenders(useParallel, serversInA, null, senderIdInA, null);
+      createSender(useParallel, serversInA, senderIdInA, 2);
       createReceiverInVMs(server2InB, server3InB);
     }
 
@@ -536,7 +542,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         "already running");
     if (useParallel) {
       CommandResultAssert command =
-          verifyStatusIsError(gfsh.executeAndAssertThat(commandString));
+          verifyStatusIsError(gfsh.executeAndAssertThat(commandString), serversInA.size());
       command
           .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
           .hasColumn("Message")
@@ -595,14 +601,14 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
   public void testSuccessfulExecution(boolean isPartitionedRegion,
       boolean isParallelGatewaySender, boolean concurrencyChecksEnabled) throws Exception {
     List<VM> serversInA = Arrays.asList(vm5, vm6, vm7);
-    VM serverInB = vm3;
+    List<VM> serversInB = Arrays.asList(vm9, vm3);
     VM serverInC = vm4;
     VM client = vm8;
     String senderIdInA = "B";
     String senderIdInB = "C";
 
     int senderLocatorPort = create3WanSitesAndClient(isPartitionedRegion, vm0,
-        vm1, vm2, serversInA, serverInB, serverInC, client,
+        vm1, vm2, serversInA, serversInB, serverInC, client,
         senderIdInA, senderIdInB, concurrencyChecksEnabled);
 
     int wanCopyRegionBatchSize = 20;
@@ -619,16 +625,18 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     }
 
     // Check that entries are not copied to "B" nor "C"
-    serverInB.invoke(() -> validateRegionSize(regionName, 0));
+    for (VM serverInB : serversInB) {
+      serverInB.invoke(() -> validateRegionSize(regionName, 0));
+    }
     serverInC.invoke(() -> validateRegionSize(regionName, 0));
 
     // Create senders and receivers with replication as follows: "A" -> "B" -> "C"
-    createSenders(isParallelGatewaySender, serversInA, serverInB,
-        senderIdInA, senderIdInB);
-    createReceivers(serverInB, serverInC);
+    createSender(isParallelGatewaySender, serversInA, senderIdInA, 2);
+    createSender(isParallelGatewaySender, serversInB, senderIdInB, 3);
+    createReceivers(serversInB, serverInC);
 
     // Check that entries are not copied to "B" nor "C"
-    serverInB.invoke(() -> validateRegionSize(regionName, 0));
+    serversInB.get(0).invoke(() -> validateRegionSize(regionName, 0));
     serverInC.invoke(() -> validateRegionSize(regionName, 0));
 
     // Execute wan-copy region command
@@ -641,7 +649,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     // Check command status and output
     CommandResultAssert command =
-        verifyStatusIsOk(gfsh.executeAndAssertThat(commandString));
+        verifyStatusIsOk(gfsh.executeAndAssertThat(commandString), serversInA.size());
     if (isPartitionedRegion && isParallelGatewaySender) {
       String msg1 = CliStrings.format(WAN_COPY_REGION__MSG__COPIED__ENTRIES, 33);
       String msg2 = CliStrings.format(WAN_COPY_REGION__MSG__COPIED__ENTRIES, 34);
@@ -650,7 +658,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
           .hasColumn("Message")
           .containsExactlyInAnyOrder(msg1, msg1, msg2);
     } else {
-      String msg1 = CliStrings.format(WAN_COPY_REGION__MSG__COPIED__ENTRIES, 100);
+      String msg1 = CliStrings.format(WAN_COPY_REGION__MSG__COPIED__ENTRIES, entries);
       String msg2 = CliStrings
           .format(WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY, senderIdInA);
       command
@@ -660,13 +668,24 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     }
 
     // Check that entries are copied in "B"
-    serverInB.invoke(() -> validateRegionSize(regionName, entries));
+    for (VM serverInB : serversInB) {
+      serverInB.invoke(() -> validateRegionSize(regionName, entries));
+    }
+
+    // Check that no entries are left in the queue from B to C
+    for (VM serverInB : serversInB) {
+      List<Integer> stats1 = serverInB.invoke(() -> getSenderStats(senderIdInB, 0));
+    }
 
     // Check that the region's data is the same in sites "A" and "B"
-    checkEqualRegionData(regionName, serversInA.get(0), serverInB, concurrencyChecksEnabled);
+    checkEqualRegionData(regionName, serversInA.get(0), serversInB.get(0),
+        concurrencyChecksEnabled);
 
     // Check that wanCopyRegionBatchSize is correctly used by the command
-    long receivedBatches = serverInB.invoke(() -> getReceiverStats().get(2));
+    long receivedBatches = 0;
+    for (VM serverInB : serversInB) {
+      receivedBatches += serverInB.invoke(() -> getReceiverStats().get(2));
+    }
     if (isPartitionedRegion && isParallelGatewaySender) {
       assertThat(receivedBatches).isEqualTo(6);
     } else {
@@ -700,14 +719,14 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
       boolean isPartitionedRegion,
       boolean isParallelGatewaySender) throws Exception {
     List<VM> serversInA = Arrays.asList(vm5, vm6, vm7);
-    VM serverInB = vm3;
+    List<VM> serversInB = Collections.singletonList(vm3);
     VM serverInC = vm4;
     VM client = vm8;
     String senderIdInA = "B";
     String senderIdInB = "C";
 
     int senderLocatorPort = create3WanSitesAndClient(isPartitionedRegion, vm0,
-        vm1, vm2, serversInA, serverInB, serverInC, client,
+        vm1, vm2, serversInA, serversInB, serverInC, client,
         senderIdInA, senderIdInB, true);
 
     int wanCopyRegionBatchSize = 20;
@@ -722,10 +741,10 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
       member.invoke(() -> validateRegionSize(regionName, entries));
     }
 
-    // Create senders and receivers with replication as follows: "A" -> "B" -> "C"
-    createSenders(isParallelGatewaySender, serversInA, serverInB,
-        senderIdInA, senderIdInB);
-    createReceivers(serverInB, serverInC);
+    // Create senders and receivers
+    createSender(isParallelGatewaySender, serversInA, senderIdInA, 2);
+    createSender(isParallelGatewaySender, serversInB, senderIdInB, 3);
+    createReceivers(serversInB, serverInC);
 
     // Let maxRate be a 5th of the number of entries in order to have the
     // command running for about 5 seconds so that there is time
@@ -766,7 +785,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     // Check command status and output
     CommandResultAssert command = wanCopyCommandFuture.get();
-    verifyStatusIsOk(command);
+    verifyStatusIsOk(command, serversInA.size());
 
     // Wait for random operations to finish
     asyncOps1.await();
@@ -779,7 +798,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     }
 
     // Check that the region's data is the same in sites "A" and "B"
-    checkEqualRegionData(regionName, serversInA.get(0), serverInB, true);
+    checkEqualRegionData(regionName, serversInA.get(0), serversInB.get(0), true);
   }
 
   /**
@@ -809,14 +828,14 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
       boolean isPartitionedRegion,
       boolean isParallelGatewaySender) throws Exception {
     List<VM> serversInA = Arrays.asList(vm5, vm6, vm7);
-    VM serverInB = vm3;
+    List<VM> serversInB = Collections.singletonList(vm3);
     VM serverInC = vm4;
     VM client = vm8;
     String senderIdInA = "B";
     String senderIdInB = "C";
 
     int senderLocatorPort = create3WanSitesAndClient(isPartitionedRegion, vm0,
-        vm1, vm2, serversInA, serverInB, serverInC, client,
+        vm1, vm2, serversInA, serversInB, serverInC, client,
         senderIdInA, senderIdInB, true);
 
     int entries = 50000;
@@ -829,10 +848,10 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
       member.invoke(() -> validateRegionSize(regionName, entries));
     }
 
-    // Create senders and receivers with replication as follows: "A" -> "B" -> "C"
-    createSenders(isParallelGatewaySender, serversInA, serverInB,
-        senderIdInA, senderIdInB);
-    createReceivers(serverInB, serverInC);
+    // Create senders and receivers
+    createSender(isParallelGatewaySender, serversInA, senderIdInA, 2);
+    createSender(isParallelGatewaySender, serversInB, senderIdInB, 3);
+    createReceivers(serversInB, serverInC);
 
     int wanCopyRegionBatchSize = 20;
     // Let maxRate be a 5th of the number of entries in order to have the
@@ -864,7 +883,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     // Wait for the command to have copied at least one entry.
     // This way, the below puts will not be replicated by the command.
     await().untilAsserted(
-        () -> assertThat(serverInB.invoke(() -> getRegionSize(regionName)))
+        () -> assertThat(serversInB.get(0).invoke(() -> getRegionSize(regionName)))
             .isGreaterThan(0));
 
     // While the command is running, send some random operations over a different set of keys
@@ -872,7 +891,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     // Check command status and output
     CommandResultAssert command = wanCopyCommandFuture.get();
-    verifyStatusIsOk(command);
+    verifyStatusIsOk(command, serversInA.size());
 
     // Wait for entries to be replicated (replication queues empty)
     for (VM server : serversInA) {
@@ -880,7 +899,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     }
 
     // Check that the region's data is the same in sites "A" and "B"
-    checkEqualRegionData(regionName, serversInA.get(0), serverInB, true);
+    checkEqualRegionData(regionName, serversInA.get(0), serversInB.get(0), true);
 
     // Check that the number of entries copied is equal to the number of
     // entries put before the command was executed.
@@ -895,22 +914,22 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
   public void testUnsuccessfulCancelExecution(boolean isPartitionedRegion,
       boolean isParallelGatewaySender) throws Exception {
     List<VM> serversInA = Arrays.asList(vm5, vm6, vm7);
-    VM serverInB = vm3;
+    List<VM> serversInB = Collections.singletonList(vm3);
     VM serverInC = vm4;
     VM client = vm8;
     String senderIdInA = "B";
     String senderIdInB = "C";
 
     int senderLocatorPort = create3WanSitesAndClient(isPartitionedRegion, vm0,
-        vm1, vm2, serversInA, serverInB, serverInC, client,
+        vm1, vm2, serversInA, serversInB, serverInC, client,
         senderIdInA, senderIdInB, true);
 
     String regionName = getRegionName(isPartitionedRegion);
 
-    // Create senders and receivers with replication as follows: "A" -> "B" -> "C"
-    createSenders(isParallelGatewaySender, serversInA, serverInB,
-        senderIdInA, senderIdInB);
-    createReceivers(serverInB, serverInC);
+    // Create senders and receivers
+    createSender(isParallelGatewaySender, serversInA, senderIdInA, 2);
+    createSender(isParallelGatewaySender, serversInB, senderIdInB, 3);
+    createReceivers(serversInB, serverInC);
 
     // Execute cancel wan-copy region command
     gfsh.connectAndVerify(senderLocatorPort, GfshCommandRule.PortType.locator);
@@ -921,13 +940,13 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         .getCommandString();
 
     CommandResultAssert cancelCommandResult =
-        verifyStatusIsError(gfsh.executeAndAssertThat(cancelCommand));
-    String msg1 = CliStrings.format(WAN_COPY_REGION__MSG__NO__RUNNING__COMMAND,
+        verifyStatusIsError(gfsh.executeAndAssertThat(cancelCommand), serversInA.size());
+    String msg = CliStrings.format(WAN_COPY_REGION__MSG__NO__RUNNING__COMMAND,
         regionName, senderIdInA);
     cancelCommandResult
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Message")
-        .containsExactlyInAnyOrder(msg1, msg1, msg1);
+        .containsExactlyInAnyOrder(msg, msg, msg);
   }
 
   /**
@@ -956,14 +975,14 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
   public void testSuccessfulCancelExecution(boolean isPartitionedRegion,
       boolean isParallelGatewaySender) throws Exception {
     List<VM> serversInA = Arrays.asList(vm5, vm6, vm7);
-    VM serverInB = vm3;
+    List<VM> serversInB = Collections.singletonList(vm3);
     VM serverInC = vm4;
     VM client = vm8;
     String senderIdInA = "B";
     String senderIdInB = "C";
 
     int senderLocatorPort = create3WanSitesAndClient(isPartitionedRegion, vm0,
-        vm1, vm2, serversInA, serverInB, serverInC, client,
+        vm1, vm2, serversInA, serversInB, serverInC, client,
         senderIdInA, senderIdInB, true);
 
     int wanCopyRegionBatchSize = 20;
@@ -972,10 +991,10 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     // Put entries
     client.invoke(() -> doPutsFrom(regionName, 0, entries));
 
-    // Create senders and receivers with replication as follows: "A" -> "B" -> "C"
-    createSenders(isParallelGatewaySender, serversInA, serverInB,
-        senderIdInA, senderIdInB);
-    createReceivers(serverInB, serverInC);
+    // Create senders and receivers
+    createSender(isParallelGatewaySender, serversInA, senderIdInA, 2);
+    createSender(isParallelGatewaySender, serversInB, senderIdInB, 3);
+    createReceivers(serversInB, serverInC);
 
     Callable<CommandResultAssert> wanCopyCommandCallable = () -> {
       String command = new CommandStringBuilder(WAN_COPY_REGION)
@@ -1010,7 +1029,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         gfshCancelCommand.executeAndAssertThat(cancelCommand);
 
     if (isPartitionedRegion && isParallelGatewaySender) {
-      verifyStatusIsOk(cancelCommandResult);
+      verifyStatusIsOk(cancelCommandResult, serversInA.size());
       cancelCommandResult
           .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
           .hasColumn("Message")
@@ -1030,7 +1049,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     // Check wan-copy region command output
     CommandResultAssert wanCopyCommandResult = wanCopyCommandFuture.get();
     if (isPartitionedRegion && isParallelGatewaySender) {
-      verifyStatusIsError(wanCopyCommandResult);
+      verifyStatusIsError(wanCopyCommandResult, serversInA.size());
       String msg = WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED;
       wanCopyCommandResult
           .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
@@ -1050,8 +1069,8 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
   }
 
   private int create3WanSitesAndClient(boolean isPartitionedRegion, VM locatorSender,
-      VM locatorSenderReceiver, VM locatorReceiver, List<VM> serversInA, VM serverInB,
-      VM serverInC, VM client, String senderIdInA, String senderIdInB,
+      VM locatorSenderReceiver, VM locatorReceiver, List<VM> serversInA, List<VM> serversInB,
+      VM serverInC, VM client, String sendersIdInA, String sendersIdInB,
       boolean concurrencyChecksEnabled) {
     // Create locators
     int receiverLocatorPort =
@@ -1070,7 +1089,9 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     // Create servers
     Properties properties = new Properties();
-    serverInB.invoke(() -> createServer(senderReceiverLocatorPort, -1, properties));
+    for (VM serverInB : serversInB) {
+      serverInB.invoke(() -> createServer(senderReceiverLocatorPort, -1, properties));
+    }
     serverInC.invoke(() -> createServer(receiverLocatorPort, -1, properties));
     for (VM server : serversInA) {
       server.invoke(() -> createServer(senderLocatorPort, -1, properties));
@@ -1081,24 +1102,28 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     if (isPartitionedRegion) {
       for (VM server : serversInA) {
         server
-            .invoke(() -> createPartitionedRegion(regionName, senderIdInA, 1, 100,
+            .invoke(() -> createPartitionedRegion(regionName, sendersIdInA, 1, 100,
                 isOffHeap(), RegionShortcut.PARTITION, true, concurrencyChecksEnabled));
       }
-      serverInB.invoke(
-          () -> createPartitionedRegion(regionName, senderIdInB, 0, 100,
-              isOffHeap(), RegionShortcut.PARTITION, true, concurrencyChecksEnabled));
+      for (VM serverInB : serversInB) {
+        serverInB.invoke(
+            () -> createPartitionedRegion(regionName, sendersIdInB, 0, 100,
+                isOffHeap(), RegionShortcut.PARTITION, true, concurrencyChecksEnabled));
+      }
       serverInC.invoke(() -> createPartitionedRegion(regionName, null, 0, 100,
           isOffHeap(), RegionShortcut.PARTITION, true, concurrencyChecksEnabled));
     } else {
       for (VM server : serversInA) {
-        server.invoke(() -> createReplicatedRegion(regionName, senderIdInA,
+        server.invoke(() -> createReplicatedRegion(regionName, sendersIdInA,
             Scope.GLOBAL, DataPolicy.REPLICATE,
             isOffHeap(), true, concurrencyChecksEnabled));
       }
-      serverInB
-          .invoke(() -> createReplicatedRegion(regionName, senderIdInB,
-              Scope.GLOBAL, DataPolicy.REPLICATE,
-              isOffHeap(), true, concurrencyChecksEnabled));
+      for (VM serverInB : serversInB) {
+        serverInB
+            .invoke(() -> createReplicatedRegion(regionName, sendersIdInB,
+                Scope.GLOBAL, DataPolicy.REPLICATE,
+                isOffHeap(), true, concurrencyChecksEnabled));
+      }
       serverInC.invoke(() -> createReplicatedRegion(regionName, null,
           Scope.GLOBAL, DataPolicy.REPLICATE, isOffHeap(), true, concurrencyChecksEnabled));
     }
@@ -1137,29 +1162,26 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     return locatorAPort;
   }
 
-  private void createSenders(boolean isParallelGatewaySender, List<VM> serversInA,
-      VM serverInB, String senderIdInA, String senderIdInB) {
-    if (serverInB != null && senderIdInB != null) {
-      serverInB.invoke(() -> createSender(senderIdInB, 3,
-          isParallelGatewaySender, 100, 10, false,
-          false, null, false));
-    }
-    for (VM server : serversInA) {
-      server.invoke(() -> createSender(senderIdInA, 2, isParallelGatewaySender,
+  private void createSender(boolean isParallelGatewaySender, List<VM> servers,
+      String senderId, int remoteDsId) {
+    for (VM server : servers) {
+      server.invoke(() -> createSender(senderId, remoteDsId, isParallelGatewaySender,
           100, 10, false,
           false, null, true));
     }
-    startSenderInVMsAsync(senderIdInA, serversInA.toArray(new VM[0]));
+    startSenderInVMsAsync(senderId, servers.toArray(new VM[0]));
   }
 
-  private void createReceivers(VM serverInB, VM serverInC) {
-    createReceiverInVMs(serverInB);
+  private void createReceivers(List<VM> serversInB, VM serverInC) {
+    for (VM serverInB : serversInB) {
+      createReceiverInVMs(serverInB);
+    }
     createReceiverInVMs(serverInC);
   }
 
   private void stopReceiverAndVerifyResult(boolean useParallel, boolean stopPrimarySender,
       int entries, String regionName, VM server1InB, VM server2InB, VM server3InB,
-      Future<CommandResultAssert> commandFuture)
+      int members, Future<CommandResultAssert> commandFuture)
       throws InterruptedException, java.util.concurrent.ExecutionException {
     // if parallel sender: stop any receiver
     // if serial sender: stop receiver connected to primary or secondary
@@ -1178,9 +1200,9 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     CommandResultAssert result = commandFuture.get();
     // Verify result
     if (useParallel) {
-      verifyResultOfStoppingReceiverWhenUsingParallelSender(result);
+      verifyResultOfStoppingReceiverWhenUsingParallelSender(result, members);
     } else {
-      verifyResultOfStoppingReceiverWhenUsingSerialSender(result);
+      verifyResultOfStoppingReceiverWhenUsingSerialSender(result, members);
       server2InB.invoke(() -> validateRegionSize(regionName, entries));
     }
   }
@@ -1223,8 +1245,8 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
   }
 
   public void verifyResultOfStoppingReceiverWhenUsingSerialSender(
-      CommandResultAssert command) {
-    verifyStatusIsOk(command);
+      CommandResultAssert command, int members) {
+    verifyStatusIsOk(command, members);
     Condition<String> haveEntriesCopied =
         new Condition<>(s -> s.startsWith("Entries copied: "), "Entries copied");
     Condition<String> senderNotPrimary = new Condition<>(
@@ -1240,8 +1262,8 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
   }
 
   public void verifyResultOfStoppingReceiverWhenUsingParallelSender(
-      CommandResultAssert command) {
-    verifyStatusIsOk(command);
+      CommandResultAssert command, int members) {
+    verifyStatusIsOk(command, members);
     Condition<String> haveEntriesCopied =
         new Condition<>(s -> s.startsWith("Entries copied: "), "Entries copied");
 
@@ -1249,7 +1271,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Message")
         .asList()
-        .haveExactly(3, haveEntriesCopied);
+        .haveExactly(members, haveEntriesCopied);
   }
 
   public void verifyResultOfStoppingParallelSender(CommandResultAssert command) {
@@ -1359,7 +1381,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     }
   }
 
-  public CommandResultAssert verifyStatusIsOk(CommandResultAssert command) {
+  public CommandResultAssert verifyStatusIsOk(CommandResultAssert command, int members) {
     command.statusIsSuccess();
     command
         .hasTableSection()
@@ -1368,19 +1390,21 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     command
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Member")
-        .hasSize(3);
+        .hasSize(members);
+    String[] oksList =
+        (String[]) (new ArrayList(Collections.nCopies(members, "OK"))).toArray(new String[0]);
     command
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Status")
-        .containsExactly("OK", "OK", "OK");
+        .containsExactly(oksList);
     command
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Message")
-        .hasSize(3);
+        .hasSize(members);
     return command;
   }
 
-  public CommandResultAssert verifyStatusIsError(CommandResultAssert command) {
+  public CommandResultAssert verifyStatusIsError(CommandResultAssert command, int members) {
     command.statusIsError();
     command
         .hasTableSection()
@@ -1389,15 +1413,17 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     command
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Member")
-        .hasSize(3);
+        .hasSize(members);
     command
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Message")
-        .hasSize(3);
+        .hasSize(members);
+    String[] errorsList =
+        (String[]) (new ArrayList(Collections.nCopies(members, "ERROR"))).toArray(new String[0]);
     command
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Status")
-        .containsExactly("ERROR", "ERROR", "ERROR");
+        .containsExactly(errorsList);
     return command;
   }
 
