@@ -16,7 +16,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assumptions.assumeThat;
+import static org.junit.Assume.assumeFalse;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -55,7 +55,7 @@ public class DeploySemanticVersionJarDUnitTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    assumeThat(System.getenv("CLASSLOADER_ISOLATED")).isEqualTo("false");
+    assumeFalse(Boolean.parseBoolean(System.getProperty("classloader.isolated")));
     stagedDir = stagingTempDir.getRoot();
     JarBuilder jarBuilder = new JarBuilder();
     semanticJarVersion0 = new File(stagedDir, "def-1.0.jar");
