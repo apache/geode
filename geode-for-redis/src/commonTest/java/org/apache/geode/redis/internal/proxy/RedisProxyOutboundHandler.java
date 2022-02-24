@@ -16,7 +16,6 @@
 package org.apache.geode.redis.internal.proxy;
 
 import java.util.Queue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
@@ -29,11 +28,13 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class RedisProxyOutboundHandler extends ChannelInboundHandlerAdapter {
 
   private static final Logger logger = LogService.getLogger();
-  private final Queue<RedisResponseProcessor> processors = new LinkedBlockingQueue<>();
+  private final Queue<RedisResponseProcessor> processors;
   private final Channel inboundChannel;
 
-  public RedisProxyOutboundHandler(Channel inboundChannel) {
+  public RedisProxyOutboundHandler(Channel inboundChannel,
+      Queue<RedisResponseProcessor> processors) {
     this.inboundChannel = inboundChannel;
+    this.processors = processors;
   }
 
   @Override
@@ -71,7 +72,4 @@ public class RedisProxyOutboundHandler extends ChannelInboundHandlerAdapter {
     RedisProxyInboundHandler.closeOnFlush(ctx.channel());
   }
 
-  public void addResponseProcessor(RedisResponseProcessor processor) {
-    processors.add(processor);
-  }
 }
