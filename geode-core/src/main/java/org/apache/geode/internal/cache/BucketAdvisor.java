@@ -1290,11 +1290,9 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
         Assert.assertHoldsLock(childBA, false);
         boolean acquireForChild = false;
 
-        if (logger.isDebugEnabled()) {
-          logger.debug(
-              "BucketAdvisor.acquirePrimaryRecursivelyForColocated: about to take lock for bucket: {} of PR: {} with isHosting={}",
-              getBucket().getId(), childPR.getFullPath(), childBA.isHosting());
-        }
+        logger.info(
+            "BucketAdvisor.acquirePrimaryRecursivelyForColocated: about to take lock for bucket: {} of PR: {} with isHosting={}",
+            getBucket().getId(), childPR.getFullPath(), childBA.isHosting());
         childBA.primaryMoveWriteLock.lock();
         try {
           if (childBA.isHosting()) {
@@ -1424,8 +1422,9 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
                       "{} secs have elapsed waiting for a primary for bucket {}. Current bucket owners {}",
                       new Object[] {warnTime / 1000L, this, adviseInitialized()});
               // log a warning;
-              InternalDistributedMember member = adviseInitialized().iterator().next();
-              if (member != null) {
+              if (adviseInitialized().iterator().hasNext()) {
+                InternalDistributedMember member = adviseInitialized().iterator().next();
+
                 ProfileId id = getProfileIdForMember(member);
                 logger.warn("Removing profile for member " + member + " profileid = " + id
                     + " because we think it is stale");
@@ -2530,6 +2529,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
               } // parentAdvisor == null
             }
             if (acquiredLock) {
+              logger.info("Got primary lock volunteerForPrimary for {}", BucketAdvisor.this);
+
               // if the lock has been acquired then try to do the same for colocated PR's too
               // Here if somehow a bucket can't acquire a lock
               // we assume that it is in the process of becoming primary through
