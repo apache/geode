@@ -23,7 +23,7 @@ import org.apache.geode.cache.snapshot.RegionSnapshotService;
 import org.apache.geode.cache.snapshot.SnapshotOptions;
 import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 import org.apache.geode.management.internal.i18n.CliStrings;
 
@@ -32,7 +32,7 @@ import org.apache.geode.management.internal.i18n.CliStrings;
  * RegionSnapshotService to import the data
  *
  */
-public class ImportDataFunction implements InternalFunction<Object[]> {
+public class ImportDataFunction extends CliFunction<Object[]> {
   private static final long serialVersionUID = 1L;
 
   private static final String ID =
@@ -44,7 +44,7 @@ public class ImportDataFunction implements InternalFunction<Object[]> {
   }
 
   @Override
-  public void execute(FunctionContext<Object[]> context) {
+  public CliFunctionResult executeFunction(FunctionContext<Object[]> context) throws Exception {
     final Object[] args = context.getArguments();
     if (args.length < 4) {
       throw new IllegalStateException(
@@ -56,32 +56,27 @@ public class ImportDataFunction implements InternalFunction<Object[]> {
     final boolean parallel = (boolean) args[3];
 
     CliFunctionResult result;
-    try {
-      final Cache cache =
-          ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
-      final Region<Object, Object> region = cache.getRegion(regionName);
-      final String hostName = cache.getDistributedSystem().getDistributedMember().getHost();
-      if (region != null) {
-        RegionSnapshotService<Object, Object> snapshotService = region.getSnapshotService();
-        SnapshotOptions<Object, Object> options = snapshotService.createOptions();
-        options.invokeCallbacks(invokeCallbacks);
-        options.setParallelMode(parallel);
-        File importFile = new File(importFileName);
-        snapshotService.load(new File(importFileName), SnapshotFormat.GEODE, options);
-        String successMessage = CliStrings.format(CliStrings.IMPORT_DATA__SUCCESS__MESSAGE,
-            importFile.getCanonicalPath(), hostName, regionName);
-        result = new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
-            successMessage);
-      } else {
-        result = new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
-            CliStrings.format(CliStrings.REGION_NOT_FOUND, regionName));
-      }
-
-    } catch (Exception e) {
+    final Cache cache =
+        ((InternalCache) context.getCache()).getCacheForProcessingClientRequests();
+    final Region<Object, Object> region = cache.getRegion(regionName);
+    final String hostName = cache.getDistributedSystem().getDistributedMember().getHost();
+    if (region != null) {
+      RegionSnapshotService<Object, Object> snapshotService = region.getSnapshotService();
+      SnapshotOptions<Object, Object> options = snapshotService.createOptions();
+      options.invokeCallbacks(invokeCallbacks);
+      options.setParallelMode(parallel);
+      File importFile = new File(importFileName);
+      snapshotService.load(new File(importFileName), SnapshotFormat.GEODE, options);
+      String successMessage = CliStrings.format(CliStrings.IMPORT_DATA__SUCCESS__MESSAGE,
+          importFile.getCanonicalPath(), hostName, regionName);
+      result = new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
+          successMessage);
+    } else {
       result = new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
-          e.getMessage());
+          CliStrings.format(CliStrings.REGION_NOT_FOUND, regionName));
     }
 
-    context.getResultSender().lastResult(result);
+    return result;
   }
+
 }
