@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.ByteBuffer;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
 public class BufferDebuggingCircularBufferTest {
@@ -28,40 +29,57 @@ public class BufferDebuggingCircularBufferTest {
   public void testFirstPutGet() {
     final BufferDebuggingCircularBuffer c =
         new BufferDebuggingCircularBuffer(5);
-    final byte[] inBytes = {0x01, 0x02, 0x03};
-    final ByteBuffer inBuf = ByteBuffer.wrap(inBytes);
-    c.put(inBuf);
-    final byte[] outBytes = new byte[3];
-    c.get(outBytes, 0, 3);
-    assertThat(outBytes).isEqualTo(inBytes);
+    putBytes(asBytes(1, 2, 3), c);
+    final byte[] outBytes = getBytes(c, 3);
+    assertThat(outBytes).isEqualTo(asBytes(1, 2, 3));
   }
 
   @Test
   public void testFillThenGet() {
     final BufferDebuggingCircularBuffer c =
         new BufferDebuggingCircularBuffer(3);
-    final byte[] inBytes = {0x01, 0x02, 0x03};
-    final ByteBuffer inBuf = ByteBuffer.wrap(inBytes);
-    c.put(inBuf);
-    final byte[] outBytes = new byte[3];
-    c.get(outBytes, 0, 3);
-    assertThat(outBytes).isEqualTo(inBytes);
+    putBytes(asBytes(1, 2, 3), c);
+    final byte[] outBytes = getBytes(c, 3);
+    assertThat(outBytes).isEqualTo(asBytes(1, 2, 3));
+  }
+
+  @Test
+  public void testWrapThenGet() {
+    final BufferDebuggingCircularBuffer c =
+        new BufferDebuggingCircularBuffer(2);
+    putBytes(asBytes(1, 2, 3), c);
+    final byte[] outBytes1 = getBytes(c, 2);
+    assertThat(outBytes1).isEqualTo(asBytes(2, 3));
   }
 
   @Test
   public void testFillThenWrapThenGet() {
     final BufferDebuggingCircularBuffer c =
         new BufferDebuggingCircularBuffer(3);
-    final byte[] inBytes = {0x01, 0x02, 0x03};
+    putBytes(asBytes(1, 2, 3), c);
+    putBytes(asBytes(4), c);
+    final byte[] outBytes = getBytes(c, 3);
+    assertThat(outBytes).isEqualTo(asBytes(2, 3, 4));
+  }
+
+  @NotNull
+  private byte[] getBytes(final BufferDebuggingCircularBuffer c, final int n) {
+    final byte[] outBytes = new byte[n];
+    c.get(outBytes, 0, n);
+    return outBytes;
+  }
+
+  private void putBytes(final byte[] inBytes, final BufferDebuggingCircularBuffer c) {
     final ByteBuffer inBuf = ByteBuffer.wrap(inBytes);
     c.put(inBuf);
-    final byte[] inBytes2 = {0x04};
-    final ByteBuffer inBuf2 = ByteBuffer.wrap(inBytes2);
-    c.put(inBuf2);
-    final byte[] outBytes = new byte[3];
-    c.get(outBytes, 0, 3);
-    final byte[] expect = {0x02, 0x03, 0x04};
-    assertThat(outBytes).isEqualTo(expect);
+  }
+
+  private byte[] asBytes(final int... ints) {
+    final byte[] bytes = new byte[ints.length];
+    for (int i = 0; i < ints.length; ++i) {
+      bytes[i] = (byte) ints[i];
+    }
+    return bytes;
   }
 
   @Test
