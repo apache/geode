@@ -31,18 +31,19 @@ import org.mockito.ArgumentCaptor;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.functions.CliFunctionResult;
 
-public class ImportDataFunctionTest {
+public class CliFunctionTest {
 
-  private ImportDataFunction importer;
+  private CliFunction function;
   private FunctionContext<Object[]> context;
   private ResultSender<Object> resultSender;
 
   @SuppressWarnings("unchecked")
   @Before
   public void before() {
-    importer = spy(ImportDataFunction.class);
+    function = spy(CliFunction.class);
     context = mock(FunctionContext.class);
     resultSender = mock(ResultSender.class);
     when(context.getResultSender()).thenReturn(resultSender);
@@ -50,8 +51,8 @@ public class ImportDataFunctionTest {
 
   @Test
   public void executeShouldSendCliFunctionResultIfErrorHappens() throws Exception {
-    doThrow(new InternalGemFireError("test")).when(importer).executeFunction(context);
-    importer.execute(context);
+    doThrow(new InternalGemFireError("test")).when(function).executeFunction(context);
+    function.execute(context);
 
     ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
     verify(resultSender).lastResult(captor.capture());
