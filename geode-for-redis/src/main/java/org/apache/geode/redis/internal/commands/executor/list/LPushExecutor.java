@@ -27,16 +27,21 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class LPushExecutor implements CommandExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+  public final RedisResponse executeCommand(final Command command,
+      final ExecutionHandlerContext context) {
     List<byte[]> commandElements = command.getProcessedCommand();
     Region<RedisKey, RedisData> region = context.getRegion();
     RedisKey key = command.getKey();
 
     List<byte[]> elementsToAdd = commandElements.subList(2, commandElements.size());
 
-    long entriesAdded = context.listLockedExecute(key, false,
-        list -> list.lpush(elementsToAdd, region, key));
+    final long newLength = context.listLockedExecute(key, false,
+        list -> list.lpush(elementsToAdd, region, key, shouldPushOnlyIfKeyExists()));
 
-    return RedisResponse.integer(entriesAdded);
+    return RedisResponse.integer(newLength);
+  }
+
+  protected boolean shouldPushOnlyIfKeyExists() {
+    return false;
   }
 }
