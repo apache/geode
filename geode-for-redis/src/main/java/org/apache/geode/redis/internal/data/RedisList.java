@@ -23,7 +23,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -56,7 +55,7 @@ public class RedisList extends AbstractRedisData {
     stop = transformNegIndexToPosIndex(stop);
 
     // Out of range negative index changes to 0
-    start = start < 0 ? 0 : start;
+    start = Math.max(0, start);
 
     int elementSize = elementList.size();
     if (start > stop || elementSize <= start) {
@@ -72,27 +71,27 @@ public class RedisList extends AbstractRedisData {
     // Finds the shortest distance to access nodes in range
     if (start <= elementSize - stop - 1) {
       // Starts at head to access nodes at start index then iterates forwards
-      ListIterator<byte[]> iterator = elementList.listIterator();
-      curIndex = -1;
+      curIndex = 0;
+      ListIterator<byte[]> iterator = elementList.listIterator(curIndex);
 
-      while (iterator.hasNext() && curIndex < stop) {
-        curIndex = iterator.nextIndex();
+      while (iterator.hasNext() && curIndex <= stop) {
         byte[] element = iterator.next();
         if (start <= curIndex) {
           result.add(element);
         }
+        curIndex = iterator.nextIndex();
       }
     } else {
       // Starts at tail to access nodes at stop index then iterates backwards
-      Iterator<byte[]> iterator = elementList.descendingIterator();
-      curIndex = elementSize;
+      curIndex = elementSize - 1;
+      ListIterator<byte[]> iterator = elementList.listIterator(elementSize);
 
-      while (iterator.hasNext() && start < curIndex) {
-        --curIndex;
-        byte[] element = iterator.next();
+      while (iterator.hasPrevious() && start <= curIndex) {
+        byte[] element = iterator.previous();
         if (curIndex <= stop) {
           result.add(0, element); // LinkedList is used to add to head
         }
+        curIndex = iterator.previousIndex();
       }
     }
     return result;
