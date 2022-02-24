@@ -36,8 +36,8 @@ import org.apache.commons.io.HexDump;
 
 public class BufferDebugging {
 
-  private static final boolean SIMULATE_TAG_MISMATCH = false;
-  private static final boolean ALLOW_NULL_CIPHER = false;
+  private static final boolean SIMULATE_TAG_MISMATCH = true;
+  private static final boolean ALLOW_NULL_CIPHER = true;
 
   private static final int NEVER_THROW = Integer.MAX_VALUE;
 
@@ -284,6 +284,46 @@ public class BufferDebugging {
 
       System.out.print('\t');
       System.out.println(cipher.getKey());
+    }
+  }
+
+  @FunctionalInterface
+  public interface BufferWriting {
+    int write(ByteBuffer buff) throws IOException;
+  }
+
+  @FunctionalInterface
+  public interface SenderProcessing {
+    void process() throws IOException;
+  }
+
+  public static class SenderDebugging {
+
+    public void doProcessingForSender(final SenderProcessing processing) throws IOException {
+      try {
+        processing.process();
+      } catch (final IOException e) {
+        dumpCircularBufferForSender();
+        throw e;
+      }
+    }
+
+    public int doWriteForSender(
+        final ByteBuffer encodedBuffer,
+        final BufferWriting writing)
+        throws IOException {
+      final int bytesWritten = writing.write(encodedBuffer);
+      afterWritingForSender(bytesWritten, encodedBuffer);
+      return bytesWritten;
+    }
+
+    private void afterWritingForSender(final int bytesWritten, final ByteBuffer buff) {
+      System.out.println("BGB: after: " + bytesWritten);
+
+    }
+
+    private void dumpCircularBufferForSender() {
+      System.out.println("BGB: dumping sender's circular buffer!");
     }
   }
 }

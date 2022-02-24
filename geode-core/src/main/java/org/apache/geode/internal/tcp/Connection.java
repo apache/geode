@@ -497,6 +497,9 @@ public class Connection implements Runnable {
    */
   private volatile boolean hasResidualReaderThread;
 
+  private volatile BufferDebugging.SenderDebugging senderDebugging =
+      new BufferDebugging.SenderDebugging();
+
   /**
    * creates a "reader" connection that we accepted (it was initiated by an explicit connect being
    * done on the other side).
@@ -1178,6 +1181,8 @@ public class Connection implements Runnable {
     asyncMode = false;
 
     uniqueId = ID_COUNTER.getAndIncrement();
+
+    senderDebugging = new BufferDebugging.SenderDebugging();
 
     // connect to listening socket
 
@@ -2502,6 +2507,12 @@ public class Connection implements Runnable {
 
   private void writeAsync(SocketChannel channel, ByteBuffer buffer, boolean forceAsync,
       DistributionMessage p_msg, final DMStats stats) throws IOException {
+    senderDebugging
+        .doProcessingForSender(() -> _writeAsync(channel, buffer, forceAsync, p_msg, stats));
+  }
+
+  private void _writeAsync(SocketChannel channel, ByteBuffer buffer, boolean forceAsync,
+      DistributionMessage p_msg, final DMStats stats) throws IOException {
     DistributionMessage msg = p_msg;
     // async/non-blocking
     boolean socketWriteStarted = false;
@@ -2542,7 +2553,8 @@ public class Connection implements Runnable {
               if (FORCE_ASYNC_QUEUE) {
                 amtWritten = 0;
               } else {
-                amtWritten = channel.write(wrappedBuffer);
+                amtWritten = senderDebugging.doWriteForSender(
+                    wrappedBuffer, buf -> channel.write(buf));
               }
               if (amtWritten == 0) {
                 now = System.currentTimeMillis();
@@ -2666,6 +2678,11 @@ public class Connection implements Runnable {
   @VisibleForTesting
   void writeFully(SocketChannel channel, ByteBuffer buffer, boolean forceAsync,
       DistributionMessage msg) throws IOException, ConnectionException {
+    senderDebugging.doProcessingForSender(() -> _writeFully(channel, buffer, forceAsync, msg));
+  }
+
+  private void _writeFully(SocketChannel channel, ByteBuffer buffer, boolean forceAsync,
+      DistributionMessage msg) throws IOException, ConnectionException {
     final DMStats stats = owner.getConduit().getStats();
     if (!sharedResource) {
       stats.incTOSentMsg();
@@ -2693,7 +2710,8 @@ public class Connection implements Runnable {
             int amtWritten = 0;
             long start = stats.startSocketWrite(true);
             try {
-              amtWritten = channel.write(wrappedBuffer);
+              amtWritten = senderDebugging.doWriteForSender(
+                  wrappedBuffer, buf -> channel.write(buf));
             } finally {
               stats.endSocketWrite(true, start, amtWritten, 0);
             }
