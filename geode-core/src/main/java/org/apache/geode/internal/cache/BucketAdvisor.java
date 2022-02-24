@@ -1424,8 +1424,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
                       "{} secs have elapsed waiting for a primary for bucket {}. Current bucket owners {}",
                       new Object[] {warnTime / 1000L, this, adviseInitialized()});
               // log a warning;
-              Set<InternalDistributedMember> memberToClear = adviseInitialized();
-              for (InternalDistributedMember member : memberToClear) {
+              InternalDistributedMember member = adviseInitialized().iterator().next();
+              if (member != null) {
                 ProfileId id = getProfileIdForMember(member);
                 logger.warn("Removing profile for member " + member + " profileid = " + id
                     + " because we think it is stale");
