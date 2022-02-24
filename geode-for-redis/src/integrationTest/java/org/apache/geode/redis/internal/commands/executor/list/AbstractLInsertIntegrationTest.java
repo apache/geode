@@ -15,9 +15,11 @@
 package org.apache.geode.redis.internal.commands.executor.list;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.internal.RedisConstants.WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static redis.clients.jedis.args.ListPosition.AFTER;
 import static redis.clients.jedis.args.ListPosition.BEFORE;
 
@@ -27,8 +29,10 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.RedisIntegrationTest;
+import org.apache.geode.redis.internal.RedisConstants;
 
 public abstract class AbstractLInsertIntegrationTest implements RedisIntegrationTest {
   public static final String KEY = "key";
@@ -67,6 +71,17 @@ public abstract class AbstractLInsertIntegrationTest implements RedisIntegration
 
     assertThat(jedis.lpop(KEY)).isEqualTo(initialValue);
     assertThat(jedis.lpop(KEY)).isNull();
+  }
+
+  @Test
+  public void linsert_withInvalidBEFORE_errors() {
+    jedis.lpush(KEY, initialValue);
+
+    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.LINSERT, KEY, "LINSERT",
+        "notBefore", initialValue, insertedValue))
+            .isInstanceOf(JedisDataException.class)
+            .hasMessage(
+                String.format("ERR " + WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "linsert"));
   }
 
   @Test
