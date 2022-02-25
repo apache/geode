@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 
 import io.netty.channel.ChannelHandlerContext;
 
-import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.commands.executor.RedisResponse;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;

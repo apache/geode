@@ -23,7 +23,6 @@ import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_LIST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;

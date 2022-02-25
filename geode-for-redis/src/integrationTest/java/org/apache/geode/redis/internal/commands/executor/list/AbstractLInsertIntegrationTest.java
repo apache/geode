@@ -32,7 +32,6 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.redis.internal.RedisConstants;
 
 public abstract class AbstractLInsertIntegrationTest implements RedisIntegrationTest {
   public static final String KEY = "key";
