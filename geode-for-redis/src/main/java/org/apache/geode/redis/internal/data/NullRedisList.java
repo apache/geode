@@ -76,4 +76,9 @@ class NullRedisList extends RedisList {
   public int llen() {
     return 0;
   }
+
+  @Override
+  public boolean lset(Region<RedisKey, RedisData> region, RedisKey key, int index, byte[] value) {
+    return false;
+  }
 }

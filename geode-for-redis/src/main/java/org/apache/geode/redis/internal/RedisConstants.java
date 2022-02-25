@@ -45,6 +45,7 @@ public class RedisConstants {
   public static final String ERROR_OPERATION_PRODUCED_NAN =
       "ERR resulting score is not a number (NaN)";
   public static final String ERROR_NO_SUCH_KEY = "ERR no such key";
+  public static final String ERROR_INDEX_OUT_OF_RANGE = "ERR index out of range";
   public static final String ERROR_SYNTAX = "ERR syntax error";
   public static final String ERROR_INVALID_EXPIRE_TIME = "ERR invalid expire time in %s";
   public static final String ERROR_NOT_A_VALID_FLOAT = "ERR value is not a valid float";

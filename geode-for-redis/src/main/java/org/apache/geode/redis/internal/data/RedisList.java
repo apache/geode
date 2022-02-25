@@ -38,6 +38,7 @@ import org.apache.geode.redis.internal.data.collections.SizeableByteArrayList;
 import org.apache.geode.redis.internal.data.delta.AddByteArrays;
 import org.apache.geode.redis.internal.data.delta.AddByteArraysTail;
 import org.apache.geode.redis.internal.data.delta.RemoveElementsByIndex;
+import org.apache.geode.redis.internal.data.delta.ReplaceByteArrayAtOffset;
 
 public class RedisList extends AbstractRedisData {
   protected static final int REDIS_LIST_OVERHEAD = memoryOverhead(RedisList.class);
@@ -181,6 +182,17 @@ public class RedisList extends AbstractRedisData {
     return elementList.size();
   }
 
+  /**
+   * @param index, the adjusted index to set (adjusted to a positive index)
+   * @param value, the value to set
+   * @return boolean if set
+   */
+  public boolean lset(Region<RedisKey, RedisData> region, RedisKey key, int index, byte[] value) {
+    byte[] delta = elementList.set(index, value);
+    storeChanges(region, key, new ReplaceByteArrayAtOffset(index, delta));
+    return true;
+  }
+
   @Override
   public void applyAddByteArrayDelta(byte[] bytes) {
     elementPushHead(bytes);
@@ -196,6 +208,11 @@ public class RedisList extends AbstractRedisData {
     for (int index : indexes) {
       elementRemove(index);
     }
+  }
+
+  @Override
+  public void applyReplaceByteArrayAtOffsetDelta(int offset, byte[] newValue) {
+    elementReplace(offset, newValue);
   }
 
   /**
@@ -238,6 +255,11 @@ public class RedisList extends AbstractRedisData {
   }
 
   protected synchronized void elementPushHead(byte[] element) {
+  public synchronized void elementReplace(int index, byte[] newValue) {
+    elementList.set(index, newValue);
+  }
+
+  public synchronized void elementPush(byte[] element) {
     elementList.addFirst(element);
   }
 
