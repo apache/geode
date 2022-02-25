@@ -1417,30 +1417,23 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
           if (!loggedWarning) {
             long timeUntilWarning = warnTime - elapsed;
             if (timeUntilWarning <= 0) {
-              if ((!this.getBucket().isPrimary()) && (!this.getBucket().isHosting())) {
-                logger
-                    .warn(
-                        warnTime / 1000L + " secs have elapsed waiting for a primary for bucket "
-                            + this + ". Current bucket owners " + adviseInitialized() + " stack = ",
-                        new Exception("StackTrace"));
-              } else {
-                logger
-                    .warn(
-                        "{} secs have elapsed waiting for a primary for bucket {}. Current bucket owners {}",
-                        new Object[] {warnTime / 1000L, this, adviseInitialized()});
-              }
+              logger
+                  .warn(
+                      warnTime / 1000L + " secs have elapsed waiting for a primary for bucket "
+                          + this + ". Current bucket owners " + adviseInitialized() + " stack = ",
+                      new Exception("StackTrace"));
               // log a warning;
-              if (adviseInitialized().iterator().hasNext() && (!this.getBucket().isPrimary())
-                  && (!this.getBucket().isHosting())) {
-                InternalDistributedMember member = adviseInitialized().iterator().next();
-
-                ProfileId id = getProfileIdForMember(member);
-                logger.warn("For Bucket " + this + " Removing profile for member " + member
-                    + " profileid = " + id
-                    + " because we think it is stale");
-                removeId(id, false, false, false);
-                break;
-              }
+              // if (adviseInitialized().iterator().hasNext() && (!this.getBucket().isPrimary())
+              // && (!this.getBucket().isHosting())) {
+              // InternalDistributedMember member = adviseInitialized().iterator().next();
+              //
+              // ProfileId id = getProfileIdForMember(member);
+              // logger.warn("For Bucket " + this + " Removing profile for member " + member
+              // + " profileid = " + id
+              // + " because we think it is stale");
+              // removeId(id, false, false, false);
+              // break;
+              // }
               loggedWarning = true;
             } else {
               timeLeft = Math.min(timeLeft, timeUntilWarning);

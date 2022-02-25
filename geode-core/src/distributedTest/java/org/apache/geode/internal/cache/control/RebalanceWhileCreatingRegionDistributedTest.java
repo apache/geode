@@ -19,6 +19,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -54,6 +55,7 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
 
   private static final Logger logger = LogService.getLogger();
 
+  @Ignore
   @Test
   public void testRebalanceDuringRegionCreation() throws Exception {
     // Init Blackboard
