@@ -48,7 +48,6 @@ class NullRedisList extends RedisList {
 
   @Override
   public byte[] lpop(Region<RedisKey, RedisData> region, RedisKey key) {
-    System.out.println("popping from NullRedisList");
     return null;
   }
 
