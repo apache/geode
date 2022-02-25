@@ -183,6 +183,8 @@ public class RedisList extends AbstractRedisData {
   }
 
   /**
+   * @param region, the region to set on
+   * @param key, the key to set on
    * @param index, the adjusted index to set (adjusted to a positive index)
    * @param value, the value to set
    * @return boolean if set
