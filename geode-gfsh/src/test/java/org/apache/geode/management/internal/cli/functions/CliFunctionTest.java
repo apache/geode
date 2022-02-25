@@ -36,7 +36,7 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 
 public class CliFunctionTest {
 
-  private CliFunction function;
+  private CliFunction<Object[]> function;
   private FunctionContext<Object[]> context;
   private ResultSender<Object> resultSender;
 
