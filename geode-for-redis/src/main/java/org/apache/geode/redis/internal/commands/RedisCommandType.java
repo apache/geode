@@ -395,7 +395,8 @@ public enum RedisCommandType {
   LPUSHX(new LPushXExecutor(), Category.LIST, SUPPORTED,
       new Parameter().min(3).flags(WRITE, DENYOOM, FAST)),
   LRANGE(new LRangeExecutor(), Category.LIST, SUPPORTED, new Parameter().exact(4).flags(READONLY)),
-  LSET(new LSetExecutor(), Category.LIST, SUPPORTED, new Parameter().exact(4).flags(WRITE)),
+  LSET(new LSetExecutor(), Category.LIST, SUPPORTED,
+      new Parameter().exact(4).flags(WRITE, DENYOOM)),
   RPUSH(new RPushExecutor(), Category.LIST, SUPPORTED,
       new Parameter().min(3).flags(WRITE, DENYOOM, FAST)),
 
