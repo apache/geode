@@ -73,7 +73,6 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.logging.internal.log4j.api.LogService;
-import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Specialized {@link CacheDistributionAdvisor} for {@link BucketRegion BucketRegions}. The
@@ -820,8 +819,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     // failure detection period
     long timeout = config.getMemberTimeout() * 3L;
     // plus time for a new member to become primary
-    timeout += Long.getLong(GeodeGlossary.GEMFIRE_PREFIX + "BucketAdvisor.getPrimaryTimeout",
-        15000L);
+    timeout += 45000L;
     return waitForPrimaryMember(timeout);
   }
 
@@ -1426,7 +1424,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
                 InternalDistributedMember member = adviseInitialized().iterator().next();
 
                 ProfileId id = getProfileIdForMember(member);
-                logger.warn("Removing profile for member " + member + " profileid = " + id
+                logger.warn("For Bucket " + this + " Removing profile for member " + member
+                    + " profileid = " + id
                     + " because we think it is stale");
                 removeId(id, false, false, false);
                 break;
