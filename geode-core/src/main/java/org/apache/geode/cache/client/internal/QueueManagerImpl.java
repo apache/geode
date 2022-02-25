@@ -41,6 +41,7 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.GemFireException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.NoSubscriptionServersAvailableException;
 import org.apache.geode.cache.client.ServerConnectivityException;
@@ -355,7 +356,8 @@ public class QueueManagerImpl implements QueueManager {
     endpointCrashed(con.getEndpoint());
   }
 
-  private void endpointCrashed(Endpoint endpoint) {
+  @VisibleForTesting
+  void endpointCrashed(Endpoint endpoint) {
     QueueConnectionImpl deadConnection;
     // We must be synchronized while checking to see if we have a queue connection for the endpoint,
     // because when we need to prevent a race between adding a queue connection to the map
@@ -373,8 +375,8 @@ public class QueueManagerImpl implements QueueManager {
                   ? (deadConnection.getUpdater().isPrimary() ? "Primary" : "Redundant")
                   : "Queue",
                   endpoint});
-      scheduleRedundancySatisfierIfNeeded(0);
       deadConnection.internalDestroy();
+      scheduleRedundancySatisfierIfNeeded(0);
     } else {
       if (logger.isDebugEnabled()) {
         logger.debug("Ignoring crashed endpoint {} it does not have a queue.", endpoint);
@@ -724,7 +726,8 @@ public class QueueManagerImpl implements QueueManager {
     }
   }
 
-  private QueueConnectionImpl promoteBackupToPrimary(List<Connection> backups) {
+  @VisibleForTesting
+  QueueConnectionImpl promoteBackupToPrimary(List<Connection> backups) {
     QueueConnectionImpl primary = null;
     for (int i = 0; primary == null && i < backups.size(); i++) {
       QueueConnectionImpl lastConnection = (QueueConnectionImpl) backups.get(i);
@@ -844,12 +847,13 @@ public class QueueManagerImpl implements QueueManager {
    * First we try to make a backup server the primary, but if run out of backup servers we will try
    * to find a new server.
    */
-  private void recoverPrimary(Set<ServerLocation> excludedServers) {
+  @VisibleForTesting
+  void recoverPrimary(Set<ServerLocation> excludedServers) {
     if (pool.getPoolOrCacheCancelInProgress() != null) {
       return;
     }
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    if (queueConnections.getPrimary() != null) {
+    if (queueConnections.getPrimary() != null && !queueConnections.getPrimary().isDestroyed()) {
       if (isDebugEnabled) {
         logger.debug("Primary recovery not needed");
       }
@@ -980,7 +984,8 @@ public class QueueManagerImpl implements QueueManager {
   // connection but CCU may died as endpoint closed....
   // so before putting connection need to see if something(crash) happen we should be able to
   // recover from it
-  private boolean addToConnectionList(QueueConnectionImpl connection, boolean isPrimary) {
+  @VisibleForTesting
+  boolean addToConnectionList(QueueConnectionImpl connection, boolean isPrimary) {
     boolean isBadConnection;
     synchronized (lock) {
       ClientUpdater cu = connection.getUpdater();
@@ -989,7 +994,7 @@ public class QueueManagerImpl implements QueueManager {
       }
       // now still CCU can died but then it will execute Checkendpoint with lock it will remove
       // connection connection and it will reschedule it.
-      if (connection.getEndpoint().isClosed() || shuttingDown
+      if (connection.getEndpoint().isClosed() || connection.isDestroyed() || shuttingDown
           || pool.getPoolOrCacheCancelInProgress() != null) {
         isBadConnection = true;
       } else {
@@ -1022,7 +1027,8 @@ public class QueueManagerImpl implements QueueManager {
     return !isBadConnection;
   }
 
-  private void scheduleRedundancySatisfierIfNeeded(long delay) {
+  @VisibleForTesting
+  void scheduleRedundancySatisfierIfNeeded(long delay) {
     if (shuttingDown) {
       return;
     }
