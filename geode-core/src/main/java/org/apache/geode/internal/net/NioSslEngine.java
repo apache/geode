@@ -218,6 +218,8 @@ public class NioSslEngine implements NioFilter {
             engine.getHandshakeStatus());
       }
     }
+    logger.info("TLS handshake successful. Protocol: {}, Cipher Suite: {}",
+        engine.getSession().getProtocol(), engine.getSession().getCipherSuite());
     return true;
   }
 

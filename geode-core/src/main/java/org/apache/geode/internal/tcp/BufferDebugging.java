@@ -41,7 +41,7 @@ public class BufferDebugging {
 
   private static final Logger logger = LogService.getLogger();
 
-  private static final boolean SIMULATE_TAG_MISMATCH_IN_GEODE_PRODUCT = false;
+  private static final boolean SIMULATE_TAG_MISMATCH_IN_GEODE_PRODUCT = true;
   private static final boolean USE_NULL_CIPHER_IN_DUNIT_TESTS = true;
 
   public static final int SENDER_BUFFER_LOGGING_CAPACITY = 16 * 1024; // bytes
