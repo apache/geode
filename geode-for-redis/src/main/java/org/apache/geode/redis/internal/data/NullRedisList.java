@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.commands.RedisCommandType;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 class NullRedisList extends RedisList {
 
@@ -44,17 +46,18 @@ class NullRedisList extends RedisList {
   }
 
   @Override
-  public long lpush(List<byte[]> elementsToAdd, Region<RedisKey, RedisData> region, RedisKey key,
-      final boolean onlyIfExists) {
+  public long lpush(ExecutionHandlerContext context, List<byte[]> elementsToAdd, RedisKey key,
+      boolean onlyIfExists) {
     if (onlyIfExists) {
       return 0;
     }
-
     RedisList newList = new RedisList();
     for (byte[] element : elementsToAdd) {
       newList.elementPushHead(element);
     }
-    region.create(key, newList);
+    context.getRegion().create(key, newList);
+    context.fireEvent(RedisCommandType.LPUSH, key);
+
     return elementsToAdd.size();
   }
 

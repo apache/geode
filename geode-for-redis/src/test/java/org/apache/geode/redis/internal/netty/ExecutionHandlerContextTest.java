@@ -42,7 +42,7 @@ public class ExecutionHandlerContextTest {
     when(channel.closeFuture()).thenReturn(mock(ChannelFuture.class));
     RedisStats redisStats = mock(RedisStats.class);
     return new ExecutionHandlerContext(channel, null, null, null, redisStats, null, 0, null,
-        securityService);
+        securityService, null);
   }
 
   @Test

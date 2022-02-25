@@ -14,31 +14,39 @@
  */
 package org.apache.geode.redis.internal.commands.executor.list;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.commands.Command;
 import org.apache.geode.redis.internal.commands.executor.CommandExecutor;
 import org.apache.geode.redis.internal.commands.executor.RedisResponse;
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.data.RedisList;
+import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class LPushExecutor implements CommandExecutor {
+public class BLPopExecutor implements CommandExecutor {
 
   @Override
-  public final RedisResponse executeCommand(final Command command,
-      final ExecutionHandlerContext context) {
-    List<byte[]> commandElements = command.getProcessedCommand();
-    RedisKey key = command.getKey();
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
+    List<byte[]> arguments = command.getCommandArguments();
+    int keyCount = arguments.size() - 1;
+    double timeoutMillis;
+    try {
+      timeoutMillis = Coder.bytesToDouble(arguments.get(keyCount)) * 1000;
+    } catch (NumberFormatException e) {
+      return RedisResponse.error(RedisConstants.ERROR_TIMEOUT_INVALID);
+    }
 
-    List<byte[]> elementsToAdd = commandElements.subList(2, commandElements.size());
+    List<RedisKey> keys = new ArrayList<>(keyCount);
+    for (int i = 0; i < keyCount; i++) {
+      keys.add(new RedisKey(arguments.get(i)));
+    }
 
-    final long newLength = context.listLockedExecute(key, false,
-        list -> list.lpush(context, elementsToAdd, key, shouldPushOnlyIfKeyExists()));
+    List<byte[]> popped = context.lockedExecute(keys.get(0), keys,
+        () -> RedisList.blpop(context, keys, (int) timeoutMillis));
 
-    return RedisResponse.integer(newLength);
-  }
-
-  protected boolean shouldPushOnlyIfKeyExists() {
-    return false;
+    return popped == null ? null : RedisResponse.array(popped, true);
   }
 }

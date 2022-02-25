@@ -104,4 +104,5 @@ public class RedisConstants {
       "ERR wrong number of arguments for '%s' command";
   public static final String ERROR_BITOP_NOT_MUST_USE_SINGLE_KEY =
       "ERR BITOP NOT must be called with a single source key.";
+  public static final String ERROR_TIMEOUT_INVALID = "ERR timeout is not a float or out of range";
 }

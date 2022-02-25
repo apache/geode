@@ -27,6 +27,7 @@ import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsClockFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.eventing.EventDistributor;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.NettyRedisServer;
 import org.apache.geode.redis.internal.pubsub.PubSub;
@@ -62,6 +63,7 @@ public class GeodeRedisServer {
   private final RegionProvider regionProvider;
   private final PubSub pubSub;
   private final RedisStats redisStats;
+  private final EventDistributor eventDistributor;
   private boolean shutdown;
 
   /**
@@ -81,7 +83,8 @@ public class GeodeRedisServer {
     StripedCoordinator stripedCoordinator = new LockingStripedCoordinator();
     RedisMemberInfoRetrievalFunction infoFunction = RedisMemberInfoRetrievalFunction.register();
 
-    regionProvider = new RegionProvider(cache, stripedCoordinator, redisStats);
+    eventDistributor = new EventDistributor();
+    regionProvider = new RegionProvider(cache, stripedCoordinator, redisStats, eventDistributor);
     pubSub = new PubSubImpl(new Subscriptions(redisStats), regionProvider, redisStats);
 
     activeExpirationManager = new ActiveExpirationManager(regionProvider);
@@ -92,7 +95,7 @@ public class GeodeRedisServer {
     nettyRedisServer = new NettyRedisServer(() -> cache.getInternalDistributedSystem().getConfig(),
         regionProvider, pubSub,
         this::allowUnsupportedCommands, port, bindAddress, redisStats,
-        member, securityService);
+        member, securityService, eventDistributor);
 
     infoFunction.initialize(member, bindAddress, nettyRedisServer.getPort());
   }
@@ -100,6 +103,11 @@ public class GeodeRedisServer {
   @VisibleForTesting
   public int getSubscriptionCount() {
     return ((PubSubImpl) pubSub).getSubscriptionCount();
+  }
+
+  @VisibleForTesting
+  public EventDistributor getEventDistributor() {
+    return eventDistributor;
   }
 
   private static RedisStats createStats(InternalCache cache) {

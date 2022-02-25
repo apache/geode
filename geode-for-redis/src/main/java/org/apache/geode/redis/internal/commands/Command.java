@@ -22,8 +22,6 @@ import java.nio.channels.SocketChannel;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import io.netty.channel.ChannelHandlerContext;
-
 import org.apache.geode.redis.internal.commands.executor.RedisResponse;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -45,6 +43,16 @@ public class Command {
   Command() {
     commandElems = null;
     commandType = null;
+  }
+
+  public Command(RedisCommandType command, List<byte[]> commandElems) {
+    if (commandElems == null || commandElems.isEmpty()) {
+      throw new IllegalArgumentException(
+          "List of command elements cannot be empty -> List:" + commandElems);
+    }
+
+    this.commandType = command;
+    this.commandElems = commandElems;
   }
 
   /**
@@ -222,13 +230,4 @@ public class Command {
     return result;
   }
 
-  private ChannelHandlerContext channelHandlerContext;
-
-  public void setChannelHandlerContext(ChannelHandlerContext ctx) {
-    channelHandlerContext = ctx;
-  }
-
-  public ChannelHandlerContext getChannelHandlerContext() {
-    return channelHandlerContext;
-  }
 }

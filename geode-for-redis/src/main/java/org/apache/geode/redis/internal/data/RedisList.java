@@ -35,12 +35,15 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.redis.internal.commands.RedisCommandType;
 import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.data.collections.SizeableByteArrayList;
 import org.apache.geode.redis.internal.data.delta.AddByteArrays;
 import org.apache.geode.redis.internal.data.delta.AddByteArraysTail;
 import org.apache.geode.redis.internal.data.delta.InsertByteArray;
 import org.apache.geode.redis.internal.data.delta.RemoveElementsByIndex;
+import org.apache.geode.redis.internal.eventing.BlockingCommandListener;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.data.delta.ReplaceByteArrayAtOffset;
 
 public class RedisList extends AbstractRedisData {
@@ -158,21 +161,23 @@ public class RedisList extends AbstractRedisData {
   }
 
   /**
-   * @param elementsToAdd elements to add to this list; NOTE this list may be modified by this call
-   * @param region the region this instance is stored in
-   * @param key the name of the list to add to
+   * @param context the context of the executing command
+   * @param elementsToAdd elements to add to this list
+   * @param key the name of the set to add to
    * @param onlyIfExists if true then the elements should only be added if the key already exists
    *        and holds a list, otherwise no operation is performed.
    * @return the length of the list after the operation
    */
-  public long lpush(List<byte[]> elementsToAdd, Region<RedisKey, RedisData> region,
-      RedisKey key, final boolean onlyIfExists) {
+  public long lpush(ExecutionHandlerContext context, List<byte[]> elementsToAdd,
+                    RedisKey key, boolean onlyIfExists) {
     byte newVersion;
     synchronized (this) {
       newVersion = incrementAndGetVersion();
       elementsPushHead(elementsToAdd);
     }
-    storeChanges(region, key, new AddByteArrays(elementsToAdd, newVersion));
+    storeChanges(context.getRegion(), key, new AddByteArrays(elementsToAdd, newVersion));
+    context.fireEvent(RedisCommandType.LPUSH, key);
+
     return elementList.size();
   }
 
@@ -212,6 +217,29 @@ public class RedisList extends AbstractRedisData {
     removed.add(0);
     storeChanges(region, key, removed);
     return popped;
+  }
+
+  public static List<byte[]> blpop(ExecutionHandlerContext context, List<RedisKey> keys,
+      int timeout) {
+    Region<RedisKey, RedisData> region = context.getRegion();
+    for (RedisKey key : keys) {
+      if (region.containsKey(key)) {
+        RedisList list =
+            context.getRegionProvider().getTypedRedisData(REDIS_LIST, key, false);
+        byte[] poppedValue = list.lpop(context.getRegion(), key);
+
+        // return the key and value
+        List<byte[]> result = new ArrayList<>(2);
+        result.add(key.toBytes());
+        result.add(poppedValue);
+        return result;
+      }
+    }
+
+    context.registerListener(new BlockingCommandListener(context, RedisCommandType.BLPOP,
+        timeout, keys));
+
+    return null;
   }
 
   /**
