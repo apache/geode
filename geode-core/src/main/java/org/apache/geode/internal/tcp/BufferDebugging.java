@@ -205,15 +205,23 @@ public class BufferDebugging {
      * TLS_RSA_WITH_NULL_SHA256
      */
     if (USE_NULL_CIPHER_IN_DUNIT_TESTS) {
+      // TLSv1.3 will not allow any null ciphers.
+      // a TLSv1.2 one: TLS_RSA_WITH_NULL_SHA256
+      // an SSL v3 one: SSL_RSA_WITH_NULL_MD5
       securityProperties.setProperty(SSL_CIPHERS, "SSL_RSA_WITH_NULL_MD5");
+      // securityProperties.setProperty(SSL_PROTOCOLS, "TLSv1.3");
     }
+  }
+
+  public static void main(final String[] args) {
+    System.out.println(availableCiphers());
   }
 
   /*
    * Run this in a JVM to see what ciphers are available.
    */
-  public static void listCiphers()
-      throws Exception {
+  public static String availableCiphers() {
+    final StringBuffer buf = new StringBuffer();
     SSLServerSocketFactory ssf = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
 
     String[] defaultCiphers = ssf.getDefaultCipherSuites();
@@ -227,18 +235,20 @@ public class BufferDebugging {
     for (int i = 0; i < defaultCiphers.length; ++i)
       ciphers.put(defaultCiphers[i], Boolean.TRUE);
 
-    System.out.println("Default\tCipher");
+    buf.append("Default\tCipher\n");
     for (Iterator i = ciphers.entrySet().iterator(); i.hasNext();) {
       Map.Entry cipher = (Map.Entry) i.next();
 
       if (Boolean.TRUE.equals(cipher.getValue()))
-        System.out.print('*');
+        buf.append('*');
       else
-        System.out.print(' ');
+        buf.append(' ');
 
-      System.out.print('\t');
-      System.out.println(cipher.getKey());
+      buf.append('\t');
+      buf.append(cipher.getKey());
+      buf.append('\n');
     }
+    return buf.toString();
   }
 
   @FunctionalInterface
