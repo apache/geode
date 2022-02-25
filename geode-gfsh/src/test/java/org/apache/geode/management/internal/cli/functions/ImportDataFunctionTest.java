@@ -19,7 +19,6 @@ package org.apache.geode.management.internal.cli.functions;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -41,7 +40,7 @@ public class ImportDataFunctionTest {
   @SuppressWarnings("unchecked")
   @Before
   public void before() {
-    importer = spy(ImportDataFunction.class);
+    importer = new ImportDataFunction();
     context = mock(FunctionContext.class);
     resultSender = mock(ResultSender.class);
     when(context.getResultSender()).thenReturn(resultSender);
