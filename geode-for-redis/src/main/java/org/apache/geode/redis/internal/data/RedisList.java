@@ -197,8 +197,8 @@ public class RedisList extends AbstractRedisData {
       throw new RedisException(ERROR_INDEX_OUT_OF_RANGE);
     }
 
-    byte[] delta = elementList.set(adjustedIndex, value);
-    storeChanges(region, key, new ReplaceByteArrayAtOffset(index, delta));
+    elementList.set(adjustedIndex, value);
+    storeChanges(region, key, new ReplaceByteArrayAtOffset(index, value));
     return true;
   }
 
