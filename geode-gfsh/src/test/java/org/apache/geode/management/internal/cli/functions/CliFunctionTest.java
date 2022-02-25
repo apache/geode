@@ -20,6 +20,7 @@ package org.apache.geode.management.internal.cli.functions;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -42,7 +43,7 @@ public class CliFunctionTest {
   @SuppressWarnings("unchecked")
   @Before
   public void before() {
-    function = mock(CliFunction.class);
+    function = spy(CliFunction.class);
     context = mock(FunctionContext.class);
     resultSender = mock(ResultSender.class);
     when(context.getResultSender()).thenReturn(resultSender);
