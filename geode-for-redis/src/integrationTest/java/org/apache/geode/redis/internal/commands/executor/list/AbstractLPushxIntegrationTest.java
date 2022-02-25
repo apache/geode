@@ -54,11 +54,13 @@ public abstract class AbstractLPushxIntegrationTest implements RedisIntegrationT
   @Test
   public void lpushx_withExistingKey_ofWrongType_returnsWrongTypeError_shouldNotOverWriteExistingKey() {
     String elementValue = "list element value that should never get added";
+    String errorMessage = "WRONGTYPE Operation against a key holding the wrong kind of value";
 
     jedis.set(KEY, PREEXISTING_VALUE);
 
     assertThatThrownBy(() -> jedis.lpushx(KEY, elementValue))
-        .isInstanceOf(JedisDataException.class);
+        .isInstanceOf(JedisDataException.class)
+        .hasMessage(errorMessage);
 
     String result = jedis.get(KEY);
 
