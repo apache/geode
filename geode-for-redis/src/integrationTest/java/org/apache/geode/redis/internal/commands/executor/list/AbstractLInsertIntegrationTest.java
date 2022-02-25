@@ -36,7 +36,6 @@ import org.apache.geode.redis.internal.RedisConstants;
 
 public abstract class AbstractLInsertIntegrationTest implements RedisIntegrationTest {
   public static final String KEY = "key";
-  public static final String PREEXISTING_VALUE = "preexistingValue";
   public static final String initialValue = "initialValue";
   public static final String insertedValue = "insertedValue";
   private JedisCluster jedis;
