@@ -22,8 +22,9 @@ import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_LIST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
@@ -51,50 +52,39 @@ public class RedisList extends AbstractRedisData {
    * @return list of elements in the range (inclusive).
    */
   public List<byte[]> lrange(int start, int stop) {
-    start = transformNegIndexToPosIndex(start);
-    stop = transformNegIndexToPosIndex(stop);
-
-    // Out of range negative index changes to 0
-    start = Math.max(0, start);
+    start = normalizeStartIndex(start);
+    stop = normalizeStopIndex(stop);
 
     int elementSize = elementList.size();
     if (start > stop || elementSize <= start) {
       return Collections.emptyList();
     }
 
-    // Out of range positive stop index changes to last index available
-    stop = elementSize <= stop ? elementSize - 1 : stop;
-
-    List<byte[]> result = new LinkedList<>();
-    int curIndex;
+    int resultLength = stop - start + 1;
 
     // Finds the shortest distance to access nodes in range
     if (start <= elementSize - stop - 1) {
       // Starts at head to access nodes at start index then iterates forwards
-      curIndex = 0;
-      ListIterator<byte[]> iterator = elementList.listIterator(curIndex);
+      List<byte[]> result = new ArrayList<>(resultLength);
+      ListIterator<byte[]> iterator = elementList.listIterator(start);
 
-      while (iterator.hasNext() && curIndex <= stop) {
+      for (int i = start; i <= stop; i++) {
         byte[] element = iterator.next();
-        if (start <= curIndex) {
-          result.add(element);
-        }
-        curIndex = iterator.nextIndex();
+        result.add(element);
       }
+      return result;
+
     } else {
       // Starts at tail to access nodes at stop index then iterates backwards
-      curIndex = elementSize - 1;
-      ListIterator<byte[]> iterator = elementList.listIterator(elementSize);
+      byte[][] result = new byte[resultLength][];
+      ListIterator<byte[]> iterator = elementList.listIterator(stop + 1);
 
-      while (iterator.hasPrevious() && start <= curIndex) {
+      for (int i = resultLength - 1; i >= 0; i--) {
         byte[] element = iterator.previous();
-        if (curIndex <= stop) {
-          result.add(0, element); // LinkedList is used to add to head
-        }
-        curIndex = iterator.previousIndex();
+        result[i] = element;
       }
+      return Arrays.asList(result);
     }
-    return result;
   }
 
   /**
@@ -103,7 +93,7 @@ public class RedisList extends AbstractRedisData {
    * @return element at index. Null if index is out of range.
    */
   public byte[] lindex(int index) {
-    index = transformNegIndexToPosIndex(index);
+    index = getArrayIndex(index);
 
     if (index < 0 || elementList.size() <= index) {
       return null;
@@ -112,9 +102,20 @@ public class RedisList extends AbstractRedisData {
     }
   }
 
-  /** Changes negative index to corresponding positive index */
-  private int transformNegIndexToPosIndex(int index) {
-    return index < 0 ? (elementList.size() + index) : index;
+  private int normalizeStartIndex(int startIndex) {
+    return Math.max(0, getArrayIndex(startIndex));
+  }
+
+  private int normalizeStopIndex(int stopIndex) {
+    return Math.min(elementList.size() - 1, getArrayIndex(stopIndex));
+  }
+
+  /**
+   * Changes negative index to corresponding positive index.
+   * The index will still be negative if there is no corresponding positive index.
+   */
+  private int getArrayIndex(int listIndex) {
+    return listIndex < 0 ? (elementList.size() + listIndex) : listIndex;
   }
 
   /**
