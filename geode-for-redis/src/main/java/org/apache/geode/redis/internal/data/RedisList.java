@@ -190,7 +190,7 @@ public class RedisList extends AbstractRedisData {
    * @param index the index specified by the user
    * @param value the value to set
    */
-  public boolean lset(Region<RedisKey, RedisData> region, RedisKey key, int index, byte[] value) {
+  public void lset(Region<RedisKey, RedisData> region, RedisKey key, int index, byte[] value) {
     int listSize = elementList.size();
     int adjustedIndex = index >= 0 ? index : listSize + index;
     if (adjustedIndex > listSize - 1 || adjustedIndex < 0) {
@@ -199,7 +199,6 @@ public class RedisList extends AbstractRedisData {
 
     elementList.set(adjustedIndex, value);
     storeChanges(region, key, new ReplaceByteArrayAtOffset(index, value));
-    return true;
   }
 
   @Override

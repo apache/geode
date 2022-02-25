@@ -81,7 +81,7 @@ class NullRedisList extends RedisList {
   }
 
   @Override
-  public boolean lset(Region<RedisKey, RedisData> region, RedisKey key, int index, byte[] value) {
+  public void lset(Region<RedisKey, RedisData> region, RedisKey key, int index, byte[] value) {
     throw new RedisException(ERROR_NO_SUCH_KEY);
   }
 }

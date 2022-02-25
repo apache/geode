@@ -39,7 +39,10 @@ public class LSetExecutor implements CommandExecutor {
     long index = Coder.bytesToLong(commandElements.get(2));
     byte[] value = commandElements.get(3);
 
-    context.listLockedExecute(key, false, list -> list.lset(region, key, (int) index, value));
+    context.listLockedExecute(key, false, list -> {
+      list.lset(region, key, (int) index, value);
+      return null;
+    });
 
     return RedisResponse.ok();
   }
