@@ -275,6 +275,13 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     }
 
     newSSLContext.init(keyManagers, trustManagers, null /* use the default secure random */);
+
+    final SSLParameters defaultParameters = newSSLContext.getDefaultSSLParameters();
+    final String[] protocols = defaultParameters.getProtocols();
+    final String[] cipherSuites = defaultParameters.getCipherSuites();
+    logger.info("TLS settings before handshake: Protocols: {}, Cipher Suites: {}",
+        protocols, cipherSuites);
+
     return newSSLContext;
   }
 
