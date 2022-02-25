@@ -1417,7 +1417,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
           if (!loggedWarning) {
             long timeUntilWarning = warnTime - elapsed;
             if (timeUntilWarning <= 0) {
-              if ((!this.getBucket().isPrimary()) && (this.getBucket().isHosting())) {
+              if ((!this.getBucket().isPrimary()) && (!this.getBucket().isHosting())) {
                 logger
                     .warn(
                         warnTime / 1000L + " secs have elapsed waiting for a primary for bucket "
@@ -1430,7 +1430,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
                         new Object[] {warnTime / 1000L, this, adviseInitialized()});
               }
               // log a warning;
-              if (adviseInitialized().iterator().hasNext()) {
+              if (adviseInitialized().iterator().hasNext() && (!this.getBucket().isPrimary())
+                  && (!this.getBucket().isHosting())) {
                 InternalDistributedMember member = adviseInitialized().iterator().next();
 
                 ProfileId id = getProfileIdForMember(member);
