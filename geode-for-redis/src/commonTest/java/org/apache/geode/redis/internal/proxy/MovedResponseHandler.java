@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.proxy;
 
 import java.util.Map;
+import java.util.Queue;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -26,14 +27,17 @@ public class MovedResponseHandler extends ChannelInboundHandlerAdapter {
 
   private final Map<HostPort, HostPort> mappings;
   private final Channel inboundChannel;
+  private final Queue<RedisResponseProcessor> processors;
 
-  public MovedResponseHandler(Channel inboundChannel, Map<HostPort, HostPort> mappings) {
+  public MovedResponseHandler(Channel inboundChannel, Map<HostPort, HostPort> mappings,
+      Queue<RedisResponseProcessor> processors) {
     this.inboundChannel = inboundChannel;
     this.mappings = mappings;
+    this.processors = processors;
   }
 
   @Override
-  public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+  public void channelRead(ChannelHandlerContext ctx, Object msg) {
     if (msg instanceof ErrorRedisMessage) {
       String content = ((ErrorRedisMessage) msg).content();
       if (content.startsWith("MOVED")) {
@@ -44,6 +48,8 @@ public class MovedResponseHandler extends ChannelInboundHandlerAdapter {
             String newHostPort = entry.getValue().getHost() + ":" + entry.getValue().getPort();
             String response = content.substring(0, index) + newHostPort;
             inboundChannel.writeAndFlush(new ErrorRedisMessage(response));
+            // No need to have a processor deal with this now
+            processors.poll();
             return;
           }
         }
