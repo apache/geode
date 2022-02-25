@@ -1429,6 +1429,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
                 logger.warn("Removing profile for member " + member + " profileid = " + id
                     + " because we think it is stale");
                 removeId(id, false, false, false);
+                break;
               }
               loggedWarning = true;
             } else {
