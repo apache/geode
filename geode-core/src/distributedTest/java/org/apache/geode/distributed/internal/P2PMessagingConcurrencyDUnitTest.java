@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -85,8 +86,12 @@ public class P2PMessagingConcurrencyDUnitTest {
   // (exclusive) upper bound of random message size, in bytes
   private static final int LARGEST_MESSAGE_BOUND = 32 * 1024 + 2; // 32KiB + 2
 
-  // random seed
+  private static boolean RANDOMIZE_PAYLOAD_CONTENT = false;
+
   private static final int RANDOM_SEED = 1234;
+
+  private static final byte[] NON_RANDOM_PAYLOAD_PATTERN =
+      "EVERYGOODBOYDOESFINE".getBytes(StandardCharsets.UTF_8);
 
   private static Properties securityProperties;
 
@@ -319,7 +324,12 @@ public class P2PMessagingConcurrencyDUnitTest {
       out.writeInt(length);
 
       final byte[] payload = new byte[length];
-      random.nextBytes(payload);
+
+      if (RANDOMIZE_PAYLOAD_CONTENT) {
+        random.nextBytes(payload);
+      } else {
+        nextBytesNonRandom(payload);
+      }
 
       out.write(payload);
 
@@ -349,6 +359,12 @@ public class P2PMessagingConcurrencyDUnitTest {
     @Override
     public int getDSFID() {
       return NO_FIXED_ID; // for testing only!
+    }
+
+    public void nextBytesNonRandom(byte[] bytes) {
+      for (int i = 0; i < bytes.length; i++) {
+        bytes[i] = NON_RANDOM_PAYLOAD_PATTERN[i % NON_RANDOM_PAYLOAD_PATTERN.length];
+      }
     }
   }
 

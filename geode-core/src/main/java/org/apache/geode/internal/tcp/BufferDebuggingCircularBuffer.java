@@ -50,6 +50,16 @@ public class BufferDebuggingCircularBuffer {
     circularBuffer = ByteBuffer.allocateDirect(capacity);
   }
 
+  public int bytesAvailableForReading() {
+    if (isFull()) {
+      return circularBuffer.capacity();
+    } else if (readPosition <= readLimit) {
+      return readLimit - readPosition;
+    } else {
+      return circularBuffer.capacity() - readPosition + readLimit;
+    }
+  }
+
   // readableSourceBuffer is readable on entry and exit
   // readableSourceBuffer is mutated (it is read)
   public BufferDebuggingCircularBuffer put(ByteBuffer wholeReadableSourceBuffer) {

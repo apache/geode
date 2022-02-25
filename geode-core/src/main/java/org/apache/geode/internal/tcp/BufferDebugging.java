@@ -33,11 +33,18 @@ import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLServerSocketFactory;
 
 import org.apache.commons.io.HexDump;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class BufferDebugging {
 
-  private static final boolean SIMULATE_TAG_MISMATCH = true;
-  private static final boolean ALLOW_NULL_CIPHER = true;
+  private static final Logger logger = LogService.getLogger();
+
+  private static final boolean SIMULATE_TAG_MISMATCH_IN_GEODE_PRODUCT = false;
+  private static final boolean USE_NULL_CIPHER_IN_DUNIT_TESTS = true;
+
+  public static final int SENDER_BUFFER_LOGGING_CAPACITY = 16 * 1024; // bytes
 
   private static final int NEVER_THROW = Integer.MAX_VALUE;
 
@@ -47,7 +54,7 @@ public class BufferDebugging {
    * its exception. 1_000 is a good, empirically-derived value for testing.
    */
   private static final int INVERSE_PROBABILITY_OF_EXCEPTION =
-      SIMULATE_TAG_MISMATCH ? 1_000 : NEVER_THROW;
+      SIMULATE_TAG_MISMATCH_IN_GEODE_PRODUCT ? 1_000 : NEVER_THROW;
 
   /*
    * TODO: eliminate hard-coded absolute path here. As it stands it only works on
@@ -57,7 +64,7 @@ public class BufferDebugging {
       "-Djava.security.properties=/Users/bburcham/Projects/geode/geode-core/src/distributedTest/resources/org/apache/geode/distributed/internal/java.security";
 
   public static void overrideJVMSecurityPropertiesFile(final ArrayList<String> cmds) {
-    if (ALLOW_NULL_CIPHER) {
+    if (USE_NULL_CIPHER_IN_DUNIT_TESTS) {
       cmds.add(SECURITY_PROPERTIES_OVERRIDE_JVM_ARG);
     }
   }
@@ -94,7 +101,6 @@ public class BufferDebugging {
    */
   private byte[] bufferContent;
 
-  private Offsets readableOffsetsBeforeProcessing;
   private Offsets writeableOffsetsBeforeProcessing;
   private Offsets readableOffsetsAfterProcessing;
 
@@ -127,39 +133,12 @@ public class BufferDebugging {
     }
   }
 
-  /*
-   * Buffer is readable before processing. When an exception is thrown,
-   * the buffer is still in a readable state. Contrast with doProcessingForReceiver().
-   */
-  public void doProcessingForSender(
-      final ByteBuffer buff,
-      final BufferProcessing processing)
-      throws IOException {
-    beforeProcessingForSender(buff);
-    try {
-      processing.process(buff);
-    } catch (final IOException e) {
-      onIOExceptionForSender(buff);
-      throw e;
-    }
-  }
-
   public String dumpBufferForReceiver() {
     String result = postProcessingMessage();
     if (writeableOffsetsBeforeProcessing != null) {
       result += preProcessingMessage(writeableOffsetsBeforeProcessing);
       result += String.format("Current buffer array from 0 to pre-processing position:\n%s\n",
           dump(bufferContent, 0, writeableOffsetsBeforeProcessing.position));
-    }
-    return result;
-  }
-
-  public String dumpBufferForSender() {
-    String result = postProcessingMessage();
-    if (readableOffsetsBeforeProcessing != null) {
-      result += preProcessingMessage(readableOffsetsBeforeProcessing);
-      result += String.format("Current buffer array from 0 to pre-processing limit:\n%s\n",
-          dump(bufferContent, 0, readableOffsetsBeforeProcessing.limit));
     }
     return result;
   }
@@ -187,14 +166,6 @@ public class BufferDebugging {
   }
 
   /*
-   * buff is readable on entry and exit
-   */
-  private void beforeProcessingForSender(final ByteBuffer buff) {
-    // lightweight capture of pre-processing offsets in case we see an exception later
-    readableOffsetsBeforeProcessing = new Offsets(buff);
-  }
-
-  /*
    * we encountered an exception in receiver processing so capture the buffer
    * buff is readable on entry and exit
    */
@@ -208,24 +179,7 @@ public class BufferDebugging {
     readableOffsetsAfterProcessing.reposition(buff);
   }
 
-  /*
-   * we encountered an exception in sender processing so capture the buffer
-   * buff is readable on entry and exit
-   *
-   * this method differs from onIOExceptionForReceiver() since in this case
-   * we've captured readableOffsetsBeforeProcessing since, unlike in the
-   * receiver case, in this case, the buffer was readable before processing
-   */
-  private void onIOExceptionForSender(final ByteBuffer buff) {
-    readableOffsetsAfterProcessing = new Offsets(buff);
-    readableOffsetsBeforeProcessing.reposition(buff);
-    final int length = buff.remaining();
-    bufferContent = new byte[length];
-    buff.get(bufferContent, 0, length);
-    readableOffsetsAfterProcessing.reposition(buff);
-  }
-
-  private String dump(final byte[] content, final int position, final int limit) {
+  private static String dump(final byte[] content, final int position, final int limit) {
     final byte[] slice = Arrays.copyOfRange(content, position, limit);
     final ByteArrayOutputStream formatted = new ByteArrayOutputStream();
     String result;
@@ -250,7 +204,7 @@ public class BufferDebugging {
      * TLS_ECDH_RSA_WITH_NULL_SHA
      * TLS_RSA_WITH_NULL_SHA256
      */
-    if (ALLOW_NULL_CIPHER) {
+    if (USE_NULL_CIPHER_IN_DUNIT_TESTS) {
       securityProperties.setProperty(SSL_CIPHERS, "SSL_RSA_WITH_NULL_MD5");
     }
   }
@@ -299,31 +253,43 @@ public class BufferDebugging {
 
   public static class SenderDebugging {
 
-    public void doProcessingForSender(final SenderProcessing processing) throws IOException {
+    private final BufferDebuggingCircularBuffer circularBuffer = new BufferDebuggingCircularBuffer(
+        SENDER_BUFFER_LOGGING_CAPACITY);
+
+    public void doProcessingForSender(final Connection connection,
+        final SenderProcessing processing) throws IOException {
       try {
         processing.process();
       } catch (final IOException e) {
-        dumpCircularBufferForSender();
+        final int bytesAvailable = circularBuffer.bytesAvailableForReading();
+        final byte[] bytes = new byte[bytesAvailable];
+        circularBuffer.get(bytes, 0, bytesAvailable);
+        logger.info("Sender (for connection {}) caught IO exception", connection, e);
+        logger.info("Sender (for connection {}) recently sent\n{}",
+            connection, dump(bytes, 0, bytes.length));
         throw e;
       }
     }
 
     public int doWriteForSender(
-        final ByteBuffer encodedBuffer,
+        final ByteBuffer readableEncodedBuffer,
         final BufferWriting writing)
         throws IOException {
-      final int bytesWritten = writing.write(encodedBuffer);
-      afterWritingForSender(bytesWritten, encodedBuffer);
+      final int bytesWritten = writing.write(readableEncodedBuffer);
+      afterWritingForSender(bytesWritten, readableEncodedBuffer);
       return bytesWritten;
     }
 
-    private void afterWritingForSender(final int bytesWritten, final ByteBuffer buff) {
-      System.out.println("BGB: after: " + bytesWritten);
-
+    /*
+     * We just wrote to the network (channel). Bytes came from readableBuffer. So its position is
+     * one past the last byte written to the network.
+     */
+    private void afterWritingForSender(final int bytesWritten, final ByteBuffer readableBuffer) {
+      final ByteBuffer justWritten = readableBuffer.duplicate();
+      final int nextReadPosition = justWritten.position();
+      justWritten.position(nextReadPosition - bytesWritten).limit(nextReadPosition);
+      circularBuffer.put(justWritten);
     }
 
-    private void dumpCircularBufferForSender() {
-      System.out.println("BGB: dumping sender's circular buffer!");
-    }
   }
 }

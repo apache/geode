@@ -1708,8 +1708,9 @@ public class Connection implements Runnable {
           // "Socket closed" check needed for Solaris jdk 1.4.2_08
           if (!isSocketClosed() && !"Socket closed".equalsIgnoreCase(e.getMessage())) {
             if (logger.isInfoEnabled() && !isIgnorableIOException(e)) {
-              logger.info("{} io exception for {}", p2pReaderName(), this, e);
-              logger.info("{} receiver's ByteBuffer before/after processing for {}\n{}",
+              logger.info("{} caught IO exception (for connection {})", p2pReaderName(), this, e);
+              logger.info(
+                  "{} receiver's ByteBuffer before/after processing (for connection {})\n{}",
                   p2pReaderName(), this, bufferDebugging.dumpBufferForReceiver());
             }
             if (logger.isDebugEnabled()) {
@@ -2508,7 +2509,7 @@ public class Connection implements Runnable {
   private void writeAsync(SocketChannel channel, ByteBuffer buffer, boolean forceAsync,
       DistributionMessage p_msg, final DMStats stats) throws IOException {
     senderDebugging
-        .doProcessingForSender(() -> _writeAsync(channel, buffer, forceAsync, p_msg, stats));
+        .doProcessingForSender(this, () -> _writeAsync(channel, buffer, forceAsync, p_msg, stats));
   }
 
   private void _writeAsync(SocketChannel channel, ByteBuffer buffer, boolean forceAsync,
@@ -2678,7 +2679,8 @@ public class Connection implements Runnable {
   @VisibleForTesting
   void writeFully(SocketChannel channel, ByteBuffer buffer, boolean forceAsync,
       DistributionMessage msg) throws IOException, ConnectionException {
-    senderDebugging.doProcessingForSender(() -> _writeFully(channel, buffer, forceAsync, msg));
+    senderDebugging.doProcessingForSender(this,
+        () -> _writeFully(channel, buffer, forceAsync, msg));
   }
 
   private void _writeFully(SocketChannel channel, ByteBuffer buffer, boolean forceAsync,

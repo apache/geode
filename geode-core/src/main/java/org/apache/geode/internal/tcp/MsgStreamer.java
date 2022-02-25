@@ -308,17 +308,13 @@ public class MsgStreamer extends OutputStream
       conflationMsg = msg;
     }
     stats.endMsgSerialization(serStartTime);
-    final BufferDebugging bufferDebugging = new BufferDebugging();
     for (final Iterator<Connection> it = connections.iterator(); it.hasNext();) {
       final Connection connection = it.next();
       try {
-        final DistributionMessage finalConflationMessage = conflationMsg;
-        bufferDebugging.doProcessingForSender(
+        connection.sendPreserialized(
             buffer,
-            _ignored -> connection.sendPreserialized(
-                buffer,
-                lastFlushForMessage && msg.containsRegionContentChange(),
-                finalConflationMessage));
+            lastFlushForMessage && msg.containsRegionContentChange(),
+            conflationMsg);
       } catch (IOException ex) {
         it.remove();
         if (connectExceptions == null) {
@@ -328,8 +324,6 @@ public class MsgStreamer extends OutputStream
         if (logger.isInfoEnabled()) {
           logger.info("io exception for {}",
               connection, ex);
-          logger.info("sender's ByteBuffer before/after processing for {}\n{}",
-              connection, bufferDebugging.dumpBufferForSender());
         }
         connection.closeForReconnect(
             String.format("closing due to %s", "IOException"));
