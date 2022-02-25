@@ -19,6 +19,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -177,7 +178,6 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
   @Override
   public void run2() {
     try {
-      List<RegionStatus> destroyedRegions = new ArrayList<>();
       boolean warningLogged = false;
       while (getLatchCount() > 0) {
         int sleepMillis = SLEEP_PERIOD;
@@ -193,16 +193,13 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
 
         if (membershipChanged) {
           membershipChanged = false;
-          for (RegionStatus region : regions) {
+          for (Iterator<RegionStatus> itr = regions.iterator(); itr.hasNext();) {
+            RegionStatus region = itr.next();
             try {
               region.logWaitingForMembers();
             } catch (RegionDestroyedException e) {
-              destroyedRegions.add(region);
+              itr.remove();
             }
-          }
-          if (!destroyedRegions.isEmpty()) {
-            regions.removeAll(destroyedRegions);
-            destroyedRegions.clear();
           }
           warningLogged = true;
         }
