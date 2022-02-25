@@ -16,10 +16,13 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NO_SUCH_KEY;
+
 import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.redis.internal.RedisException;
 
 class NullRedisList extends RedisList {
 
@@ -79,6 +82,6 @@ class NullRedisList extends RedisList {
 
   @Override
   public boolean lset(Region<RedisKey, RedisData> region, RedisKey key, int index, byte[] value) {
-    return false;
+    throw new RedisException(ERROR_NO_SUCH_KEY);
   }
 }

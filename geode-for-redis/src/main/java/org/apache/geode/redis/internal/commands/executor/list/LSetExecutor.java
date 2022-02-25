@@ -15,8 +15,6 @@
 
 package org.apache.geode.redis.internal.commands.executor.list;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_INDEX_OUT_OF_RANGE;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NO_SUCH_KEY;
 
 import java.util.List;
 
@@ -26,7 +24,6 @@ import org.apache.geode.redis.internal.commands.executor.CommandExecutor;
 import org.apache.geode.redis.internal.commands.executor.RedisResponse;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.data.RedisList;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -37,22 +34,13 @@ public class LSetExecutor implements CommandExecutor {
     List<byte[]> commandElements = command.getProcessedCommand();
 
     RedisKey key = command.getKey();
-    if (!context.listLockedExecute(key, false, RedisData::exists)) {
-      return RedisResponse.error(ERROR_NO_SUCH_KEY);
-    }
+    context.listLockedExecute(key, false, RedisData::exists);
 
     long index = Coder.bytesToLong(commandElements.get(2));
     byte[] value = commandElements.get(3);
-    long listSize = (long) context.listLockedExecute(key, false, RedisList::llen);
 
-    final int adjustedIndex = (int) (index >= 0 ? index : listSize + index);
-    if (adjustedIndex > listSize - 1 || adjustedIndex < 0) {
-      return RedisResponse.error(ERROR_INDEX_OUT_OF_RANGE);
-    }
+    context.listLockedExecute(key, false, list -> list.lset(region, key, (int) index, value));
 
-    boolean success = context.listLockedExecute(key, false,
-        list -> list.lset(region, key, adjustedIndex, value));
-
-    return success ? RedisResponse.ok() : RedisResponse.error(ERROR_NO_SUCH_KEY);
+    return RedisResponse.ok();
   }
 }

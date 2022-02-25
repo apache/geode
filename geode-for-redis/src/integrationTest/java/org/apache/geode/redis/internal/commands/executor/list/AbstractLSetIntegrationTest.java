@@ -22,6 +22,8 @@ import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CL
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.Random;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +31,9 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
+import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
+import org.apache.geode.redis.internal.RedisException;
 
 public abstract class AbstractLSetIntegrationTest implements RedisIntegrationTest {
   public static final String KEY = "key";
@@ -109,5 +113,35 @@ public abstract class AbstractLSetIntegrationTest implements RedisIntegrationTes
     assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "2");
     assertThat(jedis.lpop(KEY)).isEqualTo(newValue);
     assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "4");
+  }
+
+  @Test
+  public void lset_whenRunConcurrently_doesNotThrowRedisException() {
+    jedis.lpush(KEY, initialValue);
+
+    Random random = new Random();
+    String[] elementsToAdd = {"adder", "boa", "copperhead", "dekays", "eggEating", "flying",
+        "garter", "hognose", "indigo", "jararacussu", "krait", "lancehead", "mamba"};
+    new ConcurrentLoopingThreads(1000,
+        i -> jedis.lpush(KEY, elementsToAdd[random.nextInt(elementsToAdd.length - 1)]),
+        i -> {
+          try {
+            jedis.lset(KEY, random.nextInt(), newValue);
+          } catch (Exception e) {
+            assertThat(e).isNotInstanceOf(IndexOutOfBoundsException.class);
+            assertThat(e).isInstanceOf(RedisException.class)
+                .hasMessage("ERR " + ERROR_INDEX_OUT_OF_RANGE);
+          }
+        },
+        i -> {
+          try {
+            jedis.lset(KEY, random.nextInt(), newValue);
+          } catch (Exception e) {
+            assertThat(e).isNotInstanceOf(IndexOutOfBoundsException.class);
+            assertThat(e).isInstanceOf(RedisException.class)
+                .hasMessage("ERR " + ERROR_INDEX_OUT_OF_RANGE);
+          }
+        },
+        i -> jedis.lpop(KEY));
   }
 }
