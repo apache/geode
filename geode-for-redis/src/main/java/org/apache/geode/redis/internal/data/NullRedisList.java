@@ -38,7 +38,7 @@ class NullRedisList extends RedisList {
   }
 
   @Override
-  public long linsert(byte[] elementToInsert, byte[] referenceElement, boolean before,
+  public int linsert(byte[] elementToInsert, byte[] referenceElement, boolean before,
       Region<RedisKey, RedisData> region, RedisKey key) {
     return 0;
   }

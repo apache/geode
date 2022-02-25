@@ -139,7 +139,7 @@ public class RedisList extends AbstractRedisData {
    * @param key the name of the set to add to
    * @return the number of elements in the list after the element is inserted
    */
-  public long linsert(byte[] elementToInsert, byte[] referenceElement, boolean before,
+  public int linsert(byte[] elementToInsert, byte[] referenceElement, boolean before,
       Region<RedisKey, RedisData> region, RedisKey key) {
     int index = elementInsert(elementToInsert, referenceElement, before);
     if (index == -1) {
@@ -305,18 +305,18 @@ public class RedisList extends AbstractRedisData {
     return REDIS_LIST_ID;
   }
 
-  public synchronized int elementInsert(byte[] elementToInsert, byte[] referenceElement,
-                                        boolean before) {
-    for (int i = 0; i < elementList.size(); i++) {
-      if (Arrays.equals(elementList.get(i), referenceElement)) {
-        if (before) {
-          elementList.add(i, elementToInsert);
-          return i;
-        } else {
-          elementList.add(i + 1, elementToInsert);
-          return i + 1;
+  public int elementInsert(byte[] elementToInsert, byte[] referenceElement,
+      boolean before) {
+    int i = 0;
+    for (byte[] element : elementList) {
+      if (Arrays.equals(element, referenceElement)) {
+        if (!before) {
+          i++;
         }
+        elementList.add(i, elementToInsert);
+        return elementList.size();
       }
+      i++;
     }
 
     return -1;

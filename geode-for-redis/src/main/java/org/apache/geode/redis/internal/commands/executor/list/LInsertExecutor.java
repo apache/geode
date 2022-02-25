@@ -47,7 +47,7 @@ public class LInsertExecutor implements CommandExecutor {
       return RedisResponse.error(RedisConstants.ERROR_SYNTAX);
     }
 
-    long numEntries = context.listLockedExecute(key, false,
+    int numEntries = context.listLockedExecute(key, false,
         list -> list.linsert(elementToInsert, referenceElement, before, region, key));
 
     return RedisResponse.integer(numEntries);
