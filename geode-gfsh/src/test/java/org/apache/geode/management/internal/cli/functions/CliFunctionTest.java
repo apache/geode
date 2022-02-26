@@ -18,9 +18,7 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -36,14 +34,12 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 
 public class CliFunctionTest {
 
-  private CliFunction<Object[]> function;
   private FunctionContext<Object[]> context;
   private ResultSender<Object> resultSender;
 
   @SuppressWarnings("unchecked")
   @Before
   public void before() {
-    function = spy(CliFunction.class);
     context = mock(FunctionContext.class);
     resultSender = mock(ResultSender.class);
     when(context.getResultSender()).thenReturn(resultSender);
@@ -51,7 +47,12 @@ public class CliFunctionTest {
 
   @Test
   public void executeShouldSendCliFunctionResultIfErrorHappens() throws Exception {
-    doThrow(new InternalGemFireError("test")).when(function).executeFunction(context);
+    CliFunction<Object[]> function = new CliFunction<Object[]>() {
+      @Override
+      public CliFunctionResult executeFunction(FunctionContext<Object[]> context) {
+        throw new InternalGemFireError("test");
+      }
+    };
     function.execute(context);
 
     ArgumentCaptor<Object> captor = ArgumentCaptor.forClass(Object.class);
