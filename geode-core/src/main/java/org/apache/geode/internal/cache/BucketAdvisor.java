@@ -1416,25 +1416,28 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
           // Log a warning if we have waited for the ack wait threshold time.
           if (!loggedWarning) {
             long timeUntilWarning = warnTime - elapsed;
+
             if (timeUntilWarning <= 0) {
+              // log a warning;
               logger
                   .warn(
                       warnTime / 1000L + " secs have elapsed waiting for a primary for bucket "
                           + this + ". Current bucket owners " + adviseInitialized() + " stack = ",
                       new Exception("StackTrace"));
-              // log a warning;
-              // if (adviseInitialized().iterator().hasNext() && (!this.getBucket().isPrimary())
-              // && (!this.getBucket().isHosting())) {
-              // InternalDistributedMember member = adviseInitialized().iterator().next();
-              //
-              // ProfileId id = getProfileIdForMember(member);
-              // logger.warn("For Bucket " + this + " Removing profile for member " + member
-              // + " profileid = " + id
-              // + " because we think it is stale");
-              // removeId(id, false, false, false);
-              // break;
-              // }
+
               loggedWarning = true;
+              if ((adviseInitialized().iterator().hasNext()) && (!this.getBucket().isPrimary())
+                  && (!this.getBucket().isHosting())) {
+                InternalDistributedMember member = adviseInitialized().iterator().next();
+
+                ProfileId id = getProfileIdForMember(member);
+                logger.warn("For Bucket " + this + " Removing profile for member " + member
+                    + " profileid = " + id
+                    + " because we think it is stale");
+                removeId(id, true, false, false);
+                loggedWarning = true;
+                break;
+              }
             } else {
               timeLeft = Math.min(timeLeft, timeUntilWarning);
             }
