@@ -59,7 +59,6 @@ public class Size extends BaseCommand {
       final @NotNull ServerConnection serverConnection,
       final @NotNull SecurityService securityService, long start)
       throws IOException, InterruptedException {
-    StringBuilder errMessage = new StringBuilder();
     CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
     CacheServerStats stats = serverConnection.getCacheServerStats();
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
@@ -73,10 +72,8 @@ public class Size extends BaseCommand {
 
     if (regionName == null) {
       logger.warn("The input region name for the %s request is null", "size");
-      errMessage
-          .append(String.format("The input region name for the %s request is null",
-              "size"));
-      writeErrorResponse(clientMessage, MessageType.SIZE_ERROR, errMessage.toString(),
+      writeErrorResponse(clientMessage, MessageType.SIZE_ERROR,
+          "The input region name for the size request is null",
           serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
