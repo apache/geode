@@ -1129,7 +1129,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   private void getInitialImageAndRecovery(InputStream snapshotInputStream,
       InternalDistributedMember imageSrc, InternalRegionArguments internalRegionArgs,
       boolean recoverFromDisk, PersistentMemberID persistentId) throws TimeoutException {
-    logger.info("Initializing region {}",
+    logger.info("Initializing region {} ",
         getName());
 
     ImageState imgState = getImageState();
