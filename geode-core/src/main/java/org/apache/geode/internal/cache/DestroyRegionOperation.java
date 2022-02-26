@@ -171,14 +171,15 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
           Throwable thr = null;
           try {
             if (lclRgn == null) {
-              // following block is specific to buckets...
-              // need to wait for queued bucket profiles to be processed
-              // or this destroy may do nothing and result in a stale profile
-              boolean waitForBucketInitializationToComplete = true;
-              CacheDistributionAdvisee advisee = null;
               try {
-                advisee = PartitionedRegionHelper.getProxyBucketRegion(dm.getCache(), regionPath,
-                    waitForBucketInitializationToComplete);
+                PartitionedRegion partitionedRegion = PartitionedRegionHelper
+                    .getPartitionedRegionUsingBucketRegionName(dm.getCache(), regionPath);
+                if (partitionedRegion != null) {
+                  partitionedRegion.getRegionAdvisor().removeIdAndBuckets(getSender(),
+                      partitionedRegion.getSerialNumber(),
+                      new int[] {serialNum},
+                      op.isRegionDestroy() && !op.isClose());
+                }
               } catch (PRLocallyDestroyedException ignore) {
                 // region not found - it's been destroyed
               } catch (RegionDestroyedException ignore) {
@@ -188,14 +189,6 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
                   throw e;
                 }
                 // region failed registration & is unusable
-              }
-
-              if (advisee != null) {
-                boolean isDestroy = op.isRegionDestroy() && !op.isClose();
-                advisee.getDistributionAdvisor().removeIdWithSerial(getSender(), serialNum,
-                    isDestroy);
-              } else if (logger.isDebugEnabled()) {
-                logger.debug("{} region not found, nothing to do", this);
               }
               return;
             } // lclRegion == null
