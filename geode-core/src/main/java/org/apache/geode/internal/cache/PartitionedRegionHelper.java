@@ -667,6 +667,32 @@ public class PartitionedRegionHelper {
     return getBucketName(fullPath) != null;
   }
 
+  public static PartitionedRegion getPartitionedRegionUsingBucketRegionName(Cache cache,
+      String fullPath)
+      throws PRLocallyDestroyedException {
+    if (cache == null) {
+      // No cache
+      return null;
+    }
+    // fullPath = /__PR/_B_1_10
+    String bucketName = getBucketName(fullPath);
+    if (bucketName == null) {
+      return null;
+    }
+    String prid = getPRPath(bucketName);
+    Region region;
+    final InitializationLevel oldLevel = LocalRegion.setThreadInitLevelRequirement(ANY_INIT);
+    try {
+      region = cache.getRegion(prid);
+    } finally {
+      LocalRegion.setThreadInitLevelRequirement(oldLevel);
+    }
+    if (!(region instanceof PartitionedRegion)) {
+      return null;
+    }
+    return (PartitionedRegion) region;
+  }
+
   /**
    * Find a ProxyBucketRegion by parsing the region fullPath
    *
