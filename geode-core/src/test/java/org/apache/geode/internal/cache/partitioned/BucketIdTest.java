@@ -15,9 +15,10 @@
 
 package org.apache.geode.internal.cache.partitioned;
 
+import static org.apache.geode.internal.cache.partitioned.BucketId.nonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class BucketIdTest {
 
@@ -46,4 +47,19 @@ public class BucketIdTest {
     assertThat(BucketId.valueOf(-1)).isSameAs(BucketId.UNKNOWN_BUCKET);
   }
 
+  @Test
+  public void nonNullReturnsOriginalBucketIdWhenNotNull() {
+    final BucketId bucketId = BucketId.valueOf(2);
+    assertThat(nonNull(bucketId)).isSameAs(bucketId);
+  }
+
+  @Test
+  public void nonNullReturnsUnknownBucketWhenUnknownBucket() {
+    assertThat(nonNull(BucketId.UNKNOWN_BUCKET)).isSameAs(BucketId.UNKNOWN_BUCKET);
+  }
+
+  @Test
+  public void nonNullReturnsUnknownBucketWhenNull() {
+    assertThat(nonNull(null)).isSameAs(BucketId.UNKNOWN_BUCKET);
+  }
 }

@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import io.micrometer.core.lang.NonNull;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -72,6 +73,17 @@ public final class BucketId implements Comparable<BucketId> {
       return UNKNOWN_BUCKET;
     }
     return values[bucketId];
+  }
+
+  /**
+   * Non-null protection for {@link BucketId}.
+   *
+   * @param bucketId to protect from {@code null}.
+   * @return {@code bucketId} if {@code bucketId} is not {@code null}, otherwise
+   *         {@link #UNKNOWN_BUCKET}.
+   */
+  public static @NonNull BucketId nonNull(final @Nullable BucketId bucketId) {
+    return null == bucketId ? UNKNOWN_BUCKET : bucketId;
   }
 
   public static @Nullable Set<BucketId> fromIntValues(final int @Nullable [] intValues) {

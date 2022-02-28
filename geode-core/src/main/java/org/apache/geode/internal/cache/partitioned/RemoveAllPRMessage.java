@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.partitioned;
 
 import static org.apache.commons.lang3.ObjectUtils.isEmpty;
+import static org.apache.geode.internal.cache.partitioned.BucketId.nonNull;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -242,11 +243,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
       SerializationContext context) throws IOException {
 
     super.toData(out, context);
-    if (bucketId == null) {
-      InternalDataSerializer.writeSignedVL(BucketId.UNKNOWN_BUCKET.intValue(), out);
-    } else {
-      InternalDataSerializer.writeSignedVL(bucketId.intValue(), out);
-    }
+    InternalDataSerializer.writeSignedVL(nonNull(bucketId).intValue(), out);
     if (bridgeContext != null) {
       DataSerializer.writeObject(bridgeContext, out);
     }
