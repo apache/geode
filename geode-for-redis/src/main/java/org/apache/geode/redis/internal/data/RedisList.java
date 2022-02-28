@@ -64,9 +64,12 @@ public class RedisList extends AbstractRedisData {
    * @param elementsToAdd elements to add to this set; NOTE this list may by modified by this call
    * @param region the region this instance is stored in
    * @param key the name of the set to add to
-   * @return the number of elements actually added
+   * @param onlyIfExists if true then the elements should only be added if the key already exists
+   *        and holds a list, otherwise no operation is performed.
+   * @return the length of the list after the operation
    */
-  public long lpush(List<byte[]> elementsToAdd, Region<RedisKey, RedisData> region, RedisKey key) {
+  public long lpush(List<byte[]> elementsToAdd, Region<RedisKey, RedisData> region, RedisKey key,
+      final boolean onlyIfExists) {
     elementsPush(elementsToAdd);
     storeChanges(region, key, new AddByteArrays(elementsToAdd));
     return elementList.size();

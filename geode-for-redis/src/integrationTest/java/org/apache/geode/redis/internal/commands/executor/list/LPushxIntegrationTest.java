@@ -11,48 +11,20 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
+package org.apache.geode.redis.internal.commands.executor.list;
 
-package org.apache.geode.redis.internal.data;
+import org.junit.ClassRule;
 
-import java.util.List;
+import org.apache.geode.redis.GeodeRedisServerRule;
 
-import org.apache.geode.cache.Region;
+public class LPushxIntegrationTest extends AbstractLPushxIntegrationTest {
 
-class NullRedisList extends RedisList {
-
-  NullRedisList() {
-    super();
-  }
+  @ClassRule
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
   @Override
-  public boolean isNull() {
-    return true;
-  }
-
-  @Override
-  public long lpush(List<byte[]> elementsToAdd, Region<RedisKey, RedisData> region, RedisKey key,
-      final boolean onlyIfExists) {
-    if (onlyIfExists) {
-      return 0;
-    }
-
-    RedisList newList = new RedisList();
-    for (byte[] element : elementsToAdd) {
-      newList.elementPush(element);
-    }
-    region.create(key, newList);
-    return elementsToAdd.size();
-  }
-
-  @Override
-  public byte[] lpop(Region<RedisKey, RedisData> region, RedisKey key) {
-    return null;
-  }
-
-  @Override
-  public int llen() {
-    return 0;
+  public int getPort() {
+    return server.getPort();
   }
 }

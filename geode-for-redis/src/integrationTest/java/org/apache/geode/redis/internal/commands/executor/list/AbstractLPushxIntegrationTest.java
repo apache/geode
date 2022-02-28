@@ -30,7 +30,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.RedisIntegrationTest;
 
-public abstract class AbstractLPushIntegrationTest implements RedisIntegrationTest {
+public abstract class AbstractLPushxIntegrationTest implements RedisIntegrationTest {
   public static final String KEY = "key";
   public static final String PREEXISTING_VALUE = "preexistingValue";
   private JedisCluster jedis;
@@ -47,18 +47,18 @@ public abstract class AbstractLPushIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
-  public void lpushErrors_givenTooFewArguments() {
-    assertAtLeastNArgs(jedis, Protocol.Command.LPUSH, 2);
+  public void lpushxErrors_givenTooFewArguments() {
+    assertAtLeastNArgs(jedis, Protocol.Command.LPUSHX, 2);
   }
 
   @Test
-  public void lpush_withExistingKey_ofWrongType_returnsWrongTypeError_shouldNotOverWriteExistingKey() {
+  public void lpushx_withExistingKey_ofWrongType_returnsWrongTypeError_shouldNotOverWriteExistingKey() {
     String elementValue = "list element value that should never get added";
     String errorMessage = "WRONGTYPE Operation against a key holding the wrong kind of value";
 
     jedis.set(KEY, PREEXISTING_VALUE);
 
-    assertThatThrownBy(() -> jedis.lpush(KEY, elementValue))
+    assertThatThrownBy(() -> jedis.lpushx(KEY, elementValue))
         .isInstanceOf(JedisDataException.class)
         .hasMessage(errorMessage);
 
@@ -68,22 +68,34 @@ public abstract class AbstractLPushIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
-  public void lpush_returnsUpdatedListLength() {
-    Long result = jedis.lpush(KEY, "e1");
-    assertThat(result).isEqualTo(1);
-
-    result = jedis.lpush(KEY, "e2");
-    assertThat(result).isEqualTo(2);
-
-    result = jedis.lpush(KEY, "e3", "e4");
-    assertThat(result).isEqualTo(4);
+  public void lpushx_doesNothingIfKeyDoesntExist() {
+    assertThat(jedis.exists(KEY)).isFalse();
+    Long result = jedis.lpushx(KEY, "e1");
+    assertThat(result).isEqualTo(0);
+    assertThat(jedis.exists(KEY)).isFalse();
   }
 
   @Test
-  public void lpush_addsElementsInCorrectOrder_onRepeatedInvocation() {
-    jedis.lpush(KEY, "e1");
-    jedis.lpush(KEY, "e2");
-    jedis.lpush(KEY, "e3");
+  public void lpushx_returnsUpdatedListLength() {
+    Long result = jedis.lpush(KEY, "e0");
+    assertThat(result).isEqualTo(1);
+
+    result = jedis.lpushx(KEY, "e1");
+    assertThat(result).isEqualTo(2);
+
+    result = jedis.lpushx(KEY, "e2");
+    assertThat(result).isEqualTo(3);
+
+    result = jedis.lpushx(KEY, "e3", "e4");
+    assertThat(result).isEqualTo(5);
+  }
+
+  @Test
+  public void lpushx_addsElementsInCorrectOrder_onRepeatedInvocation() {
+    jedis.lpush(KEY, "e0");
+    jedis.lpushx(KEY, "e1");
+    jedis.lpushx(KEY, "e2");
+    jedis.lpushx(KEY, "e3");
 
     String result = jedis.lpop(KEY);
     assertThat(result).isEqualTo("e3");
@@ -96,9 +108,10 @@ public abstract class AbstractLPushIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
-  public void lpush_addsElementsInCorrectOrder_givenMultipleElements() {
-    jedis.lpush(KEY, "e1", "e2", "e3");
-    jedis.lpush(KEY, "e4", "e5", "e6");
+  public void lpushx_addsElementsInCorrectOrder_givenMultipleElements() {
+    jedis.lpush(KEY, "e0");
+    jedis.lpushx(KEY, "e1", "e2", "e3");
+    jedis.lpushx(KEY, "e4", "e5", "e6");
 
     String result = jedis.lpop(KEY);
     assertThat(result).isEqualTo("e6");
