@@ -30,6 +30,12 @@ class NullRedisList extends RedisList {
   }
 
   @Override
+  public Void ltrim(int start, int end, Region<RedisKey, RedisData> region,
+      RedisKey key) {
+    return null;
+  }
+
+  @Override
   public List<byte[]> lrange(int start, int stop) {
     return Collections.emptyList();
   }

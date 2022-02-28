@@ -141,6 +141,28 @@ public class RedisListTest {
     assertThat(list.getVersion()).isEqualTo(originalVersion);
   }
 
+  @Test
+  public void versionDoesNotUpdateWhenLtrimDoesNotModifyList() {
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
+    RedisList list = createRedisListWithDuplicateElements();
+
+    byte originalVersion = list.getVersion();
+    list.ltrim(0, -1, region, null);
+
+    assertThat(list.getVersion()).isEqualTo(originalVersion);
+  }
+
+  @Test
+  public void versionDoesNotUpdateWhenLtrimDoesNotModifyOneElementList() {
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
+    RedisList list = createRedisListWithOneElement();
+
+    byte originalVersion = list.getVersion();
+    list.ltrim(0, 1, region, null);
+
+    assertThat(list.getVersion()).isEqualTo(originalVersion);
+  }
+
   private Object validateDeltaSerialization(InvocationOnMock invocation) throws IOException {
     RedisList value = invocation.getArgument(1, RedisList.class);
     assertThat(value.hasDelta()).isTrue();
@@ -169,6 +191,12 @@ public class RedisListTest {
     RedisList newList = new RedisList();
     newList.elementPushHead(new byte[] {(byte) e1});
     newList.elementPushHead(new byte[] {(byte) e2});
+    return newList;
+  }
+
+  private RedisList createRedisListWithOneElement() {
+    RedisList newList = new RedisList();
+    newList.elementPushHead("e1".getBytes());
     return newList;
   }
 }

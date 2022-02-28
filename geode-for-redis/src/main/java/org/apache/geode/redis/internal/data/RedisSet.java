@@ -437,9 +437,9 @@ public class RedisSet extends AbstractRedisData {
           membersAdded++;
         }
       }
-      if (membersAdded == 0) {
-        return 0;
-      }
+    }
+    if (membersAdded == 0) {
+      return 0;
     }
     storeChanges(region, key, delta);
     return membersAdded;

@@ -88,6 +88,7 @@ import org.apache.geode.redis.internal.commands.executor.list.LPushXExecutor;
 import org.apache.geode.redis.internal.commands.executor.list.LRangeExecutor;
 import org.apache.geode.redis.internal.commands.executor.list.LRemExecutor;
 import org.apache.geode.redis.internal.commands.executor.list.LSetExecutor;
+import org.apache.geode.redis.internal.commands.executor.list.LTrimExecutor;
 import org.apache.geode.redis.internal.commands.executor.list.RPopExecutor;
 import org.apache.geode.redis.internal.commands.executor.list.RPopLPushExecutor;
 import org.apache.geode.redis.internal.commands.executor.list.RPushExecutor;
@@ -408,6 +409,7 @@ public enum RedisCommandType {
   LREM(new LRemExecutor(), Category.LIST, SUPPORTED, new Parameter().exact(4).flags(WRITE)),
   LSET(new LSetExecutor(), Category.LIST, SUPPORTED,
       new Parameter().exact(4).flags(WRITE, DENYOOM)),
+  LTRIM(new LTrimExecutor(), Category.LIST, SUPPORTED, new Parameter().exact(4).flags(WRITE)),
   RPUSH(new RPushExecutor(), Category.LIST, SUPPORTED,
       new Parameter().min(3).flags(WRITE, DENYOOM, FAST)),
   RPUSHX(new RPushXExecutor(), Category.LIST, SUPPORTED,
