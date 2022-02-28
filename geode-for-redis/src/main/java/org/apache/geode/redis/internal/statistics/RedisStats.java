@@ -21,11 +21,13 @@ import static org.apache.geode.internal.statistics.StatisticsClockFactory.getTim
 import static org.apache.geode.logging.internal.executors.LoggingExecutors.newSingleThreadScheduledExecutor;
 
 import java.util.Arrays;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.commands.RedisCommandType;
 
 public class RedisStats {
@@ -39,22 +41,20 @@ public class RedisStats {
   private final AtomicLong uniqueChannelSubscriptions = new AtomicLong();
   private final AtomicLong uniquePatternSubscriptions = new AtomicLong();
 
-  private static final int ROLLING_AVERAGE_SAMPLES_PER_SECOND = 16;
   private final ScheduledExecutorService rollingAverageExecutor;
-  private int rollingAverageTick = 0;
-  private final RollingAverageStat networkBytesReadRollingAverageStat = new RollingAverageStat();
+  private static final int ROLLING_AVERAGE_SAMPLES_PER_SECOND = 16;
+  private final RollingAverageStat networkBytesReadRollingAverageStat =
+      new RollingAverageStat(ROLLING_AVERAGE_SAMPLES_PER_SECOND, this::getTotalNetworkBytesRead);
   private volatile double networkKiloBytesReadOverLastSecond;
-  private final RollingAverageStat opsPerformedRollingAverageStat = new RollingAverageStat();
+  private final RollingAverageStat opsPerformedRollingAverageStat =
+      new RollingAverageStat(ROLLING_AVERAGE_SAMPLES_PER_SECOND, this::getCommandsProcessed);
   private volatile double opsPerformedOverLastSecond;
 
   private final StatisticsClock clock;
   private final GeodeRedisStats geodeRedisStats;
   private final long startTimeInNanos;
 
-
-  public RedisStats(StatisticsClock clock,
-      GeodeRedisStats geodeRedisStats) {
-
+  public RedisStats(StatisticsClock clock, GeodeRedisStats geodeRedisStats) {
     this.clock = clock;
     this.geodeRedisStats = geodeRedisStats;
     rollingAverageExecutor = startRollingAverageUpdater();
@@ -220,24 +220,35 @@ public class RedisStats {
   }
 
   private void doRollingAverageUpdates() {
-    networkKiloBytesReadOverLastSecond = networkBytesReadRollingAverageStat
-        .calculate(getTotalNetworkBytesRead(), rollingAverageTick) / 1024.0;
-    opsPerformedOverLastSecond =
-        opsPerformedRollingAverageStat.calculate(getCommandsProcessed(), rollingAverageTick);
-    rollingAverageTick++;
-    if (rollingAverageTick >= ROLLING_AVERAGE_SAMPLES_PER_SECOND) {
-      rollingAverageTick = 0;
-    }
+    networkKiloBytesReadOverLastSecond = networkBytesReadRollingAverageStat.calculate() / 1024.0;
+    opsPerformedOverLastSecond = opsPerformedRollingAverageStat.calculate();
   }
 
   private static class RollingAverageStat {
+    private int tickNumber = 0;
     private long valueReadLastTick;
-    private final long[] valuesReadOverLastNSamples = new long[ROLLING_AVERAGE_SAMPLES_PER_SECOND];
+    private final long[] valuesReadOverLastNSamples;
+    private final Callable<Long> statCallable;
 
-    long calculate(long currentValue, int tickNumber) {
+    private RollingAverageStat(int samplesPerSecond, Callable<Long> getCurrentValue) {
+      valuesReadOverLastNSamples = new long[samplesPerSecond];
+      statCallable = getCurrentValue;
+    }
+
+    long calculate() {
+      long currentValue;
+      try {
+        currentValue = statCallable.call();
+      } catch (Exception e) {
+        throw new RedisException("Error while calculating RollingAverage stats", e);
+      }
       long delta = currentValue - valueReadLastTick;
       valueReadLastTick = currentValue;
       valuesReadOverLastNSamples[tickNumber] = delta;
+      tickNumber++;
+      if (tickNumber >= valuesReadOverLastNSamples.length) {
+        tickNumber = 0;
+      }
       return Arrays.stream(valuesReadOverLastNSamples).sum();
     }
   }
