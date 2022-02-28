@@ -16,6 +16,10 @@
 package org.apache.geode.redis.internal.commands.executor.key;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_TTL;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_KEY_EXISTS;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_RESTORE_INVALID_PAYLOAD;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
@@ -85,26 +89,26 @@ public abstract class AbstractDumpRestoreIntegrationTest implements RedisIntegra
     lettuce.set("restored", "already exists");
 
     assertThatThrownBy(() -> lettuce.restore("restored", 0, RESTORE_BYTES))
-        .hasMessage("BUSYKEY Target key name already exists.");
+        .hasMessage(ERROR_KEY_EXISTS);
   }
 
   @Test
   public void restoreFails_whenTTLisNegative() {
     assertThatThrownBy(() -> lettuce.restore("restored", -1, RESTORE_BYTES))
-        .hasMessage("ERR Invalid TTL value, must be >= 0");
+        .hasMessage(ERROR_INVALID_TTL);
   }
 
   @Test
   public void restoreFails_whenTTLisNotANumber() {
     assertThatThrownBy(() -> jedis.sendCommand("restored".getBytes(), Protocol.Command.RESTORE,
         "restored".getBytes(), "not-an-integer".getBytes(), RESTORE_BYTES))
-            .hasMessage("ERR value is not an integer or out of range");
+            .hasMessage(ERROR_NOT_INTEGER);
   }
 
   @Test
   public void restoreFails_withInvalidBytes() {
     assertThatThrownBy(() -> lettuce.restore("restored", 0, new byte[] {0, 1, 2, 3}))
-        .hasMessage("ERR DUMP payload version or checksum are wrong");
+        .hasMessage(ERROR_RESTORE_INVALID_PAYLOAD);
   }
 
   @Test

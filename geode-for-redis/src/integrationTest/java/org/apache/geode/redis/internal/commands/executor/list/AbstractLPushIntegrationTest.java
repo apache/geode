@@ -56,7 +56,7 @@ public abstract class AbstractLPushIntegrationTest implements RedisIntegrationTe
     String elementValue = "list element value that should never get added";
 
     jedis.set(KEY, PREEXISTING_VALUE);
-    
+
     assertThatThrownBy(() -> jedis.lpush(KEY, elementValue)).hasMessage(ERROR_WRONG_TYPE);
 
     String result = jedis.get(KEY);

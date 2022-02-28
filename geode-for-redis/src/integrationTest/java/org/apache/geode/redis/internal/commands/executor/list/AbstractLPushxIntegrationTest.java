@@ -26,7 +26,6 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.RedisIntegrationTest;
 
@@ -59,7 +58,6 @@ public abstract class AbstractLPushxIntegrationTest implements RedisIntegrationT
     jedis.set(KEY, PREEXISTING_VALUE);
 
     assertThatThrownBy(() -> jedis.lpushx(KEY, elementValue))
-        .isInstanceOf(JedisDataException.class)
         .hasMessage(errorMessage);
 
     String result = jedis.get(KEY);

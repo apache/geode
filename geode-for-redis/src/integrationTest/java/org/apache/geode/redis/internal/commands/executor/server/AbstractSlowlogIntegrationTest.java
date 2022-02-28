@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.commands.executor.server;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -118,7 +119,7 @@ public abstract class AbstractSlowlogIntegrationTest implements RedisIntegration
     assertThatThrownBy(
         () -> jedis.sendCommand(
             Protocol.Command.SLOWLOG, "GET", "I am not a number"))
-                .hasMessage("ERR value is not an integer or out of range");
+                .hasMessage(ERROR_NOT_INTEGER);
   }
 
   @Test
