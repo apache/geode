@@ -174,11 +174,15 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
               // following block is specific to buckets...
               // need to wait for queued bucket profiles to be processed
               // or this destroy may do nothing and result in a stale profile
-              boolean waitForBucketInitializationToComplete = true;
               CacheDistributionAdvisee advisee = null;
               try {
-                advisee = PartitionedRegionHelper.getProxyBucketRegion(dm.getCache(), regionPath,
-                    waitForBucketInitializationToComplete);
+                if (op.isRegionDestroy() && !op.isClose() && op.isLocal()) {
+                  advisee = PartitionedRegionHelper.getProxyBucketRegion(dm.getCache(), regionPath,
+                          false);
+                } else {
+                  advisee = PartitionedRegionHelper.getProxyBucketRegion(dm.getCache(), regionPath,
+                          true);
+                }
               } catch (PRLocallyDestroyedException ignore) {
                 // region not found - it's been destroyed
               } catch (RegionDestroyedException ignore) {
