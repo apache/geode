@@ -64,7 +64,6 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -291,8 +290,7 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
         region.put(1, 20);
       }
     });
-    //
-    Wait.pause(3000);
+
     // Run getAll
     client1.invoke(new CacheSerializableRunnable("Get entry from client") {
       @Override
@@ -300,7 +298,8 @@ public class InstantiatorPropagationDUnitTest extends JUnit4DistributedTestCase 
         // Invoke getAll
         Region region = cache.getRegion(REGION_NAME);
         // Verify result size is correct
-        assertEquals(20, region.get(1));
+        GeodeAwaitility.await().atMost(3, TimeUnit.SECONDS)
+            .untilAsserted(() -> assertEquals(20, region.get(1)));
       }
     });
 

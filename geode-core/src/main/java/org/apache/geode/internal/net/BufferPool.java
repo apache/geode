@@ -261,12 +261,12 @@ public class BufferPool {
   }
 
   ByteBuffer acquireDirectBuffer(BufferPool.BufferType type, int capacity) {
-    switch (type.toString()) {
-      case "UNTRACKED":
+    switch (type) {
+      case UNTRACKED:
         return ByteBuffer.allocate(capacity);
-      case "TRACKED_SENDER":
+      case TRACKED_SENDER:
         return acquireDirectSenderBuffer(capacity);
-      case "TRACKED_RECEIVER":
+      case TRACKED_RECEIVER:
         return acquireDirectReceiveBuffer(capacity);
     }
     throw new IllegalArgumentException("Unexpected buffer type " + type);
