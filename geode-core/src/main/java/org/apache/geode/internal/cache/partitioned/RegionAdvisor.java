@@ -388,21 +388,6 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
    */
   public void removeIdAndBuckets(InternalDistributedMember memberId, int prSerial, int[] serials,
       boolean regionDestroyed) {
-    if (removeBucketIDs(memberId, serials, regionDestroyed) && buckets != null) {
-      super.removeIdWithSerial(memberId, prSerial, regionDestroyed);
-    }
-  }
-
-  /**
-   * Clear the knowledge of given member from this advisor. In particular, clear the knowledge of
-   * remote Bucket locations so that we avoid sending partition messages to buckets that will soon
-   * be destroyed.
-   *
-   * @param memberId member that has closed the region
-   * @param serials serial numbers of buckets that need to be removed
-   */
-  public boolean removeBucketIDs(InternalDistributedMember memberId, int[] serials,
-      boolean regionDestroyed) {
     if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE)) {
       logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
           "RegionAdvisor#removeIdAndBuckets: removing member from region {}: {}; buckets = ({}) serials",
@@ -415,7 +400,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
         // Queue profile during pre-initialization
         QueuedBucketProfile qbf = new QueuedBucketProfile(memberId, serials, regionDestroyed);
         preInitQueue.add(qbf);
-        return false;
+        return;
       }
     }
 
@@ -436,8 +421,9 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
           buckets[i].getBucketAdvisor().removeIdWithSerial(memberId, s, regionDestroyed);
         }
       }
+
+      super.removeIdWithSerial(memberId, prSerial, regionDestroyed);
     }
-    return true;
   }
 
   /**
