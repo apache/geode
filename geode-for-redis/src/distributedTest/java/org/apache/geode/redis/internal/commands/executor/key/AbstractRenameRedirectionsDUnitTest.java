@@ -64,7 +64,7 @@ public abstract class AbstractRenameRedirectionsDUnitTest implements RedisIntegr
 
     jedis.set(oldKey, "value");
     assertThatThrownBy(() -> jedis.sendCommand(oldKey, Protocol.Command.RENAME, oldKey, newKey))
-        .hasMessage("CROSSSLOT " + RedisConstants.ERROR_WRONG_SLOT);
+        .hasMessage(RedisConstants.ERROR_WRONG_SLOT);
   }
 
   private String getKeyOnDifferentServerAs(String antiKey, String prefix) {

@@ -181,9 +181,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     if (rootCause instanceof RedisDataMovedException) {
       return RedisResponse.moved(rootCause.getMessage());
     } else if (rootCause instanceof RedisDataTypeMismatchException) {
-      return RedisResponse.wrongType(rootCause.getMessage());
+      return RedisResponse.wrongType();
     } else if (rootCause instanceof RedisCrossSlotException) {
-      return RedisResponse.crossSlot(rootCause.getMessage());
+      return RedisResponse.crossSlot();
     } else if (rootCause instanceof IllegalStateException
         || rootCause instanceof RedisParametersMismatchException
         || rootCause instanceof RedisException
@@ -191,7 +191,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         || rootCause instanceof ArithmeticException) {
       return RedisResponse.error(rootCause.getMessage());
     } else if (rootCause instanceof LowMemoryException) {
-      return RedisResponse.oom(RedisConstants.ERROR_OOM_COMMAND_NOT_ALLOWED);
+      return RedisResponse.oom();
     } else if (rootCause instanceof RedisCommandParserException) {
       return RedisResponse
           .error(RedisConstants.PARSING_EXCEPTION_MESSAGE + ": " + rootCause.getMessage());
@@ -296,7 +296,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     if (command.isOfType(RedisCommandType.AUTH)) {
       response = command.execute(this);
     } else {
-      response = RedisResponse.noAuth(RedisConstants.ERROR_NOT_AUTHENTICATED);
+      response = RedisResponse.noAuth();
     }
     return response;
   }

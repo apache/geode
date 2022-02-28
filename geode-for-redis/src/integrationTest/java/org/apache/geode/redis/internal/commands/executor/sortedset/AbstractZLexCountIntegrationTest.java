@@ -65,11 +65,11 @@ public abstract class AbstractZLexCountIntegrationTest implements RedisIntegrati
   @Parameters({"a", "--", "++"})
   public void shouldError_givenInvalidMinOrMax(String invalidArgument) {
     assertThatThrownBy(() -> jedis.zlexcount("fakeKey", invalidArgument, "+"))
-        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_VALID_STRING);
+        .hasMessage(ERROR_MIN_MAX_NOT_A_VALID_STRING);
     assertThatThrownBy(() -> jedis.zlexcount("fakeKey", "-", invalidArgument))
-        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_VALID_STRING);
+        .hasMessage(ERROR_MIN_MAX_NOT_A_VALID_STRING);
     assertThatThrownBy(() -> jedis.zlexcount("fakeKey", invalidArgument, invalidArgument))
-        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_VALID_STRING);
+        .hasMessage(ERROR_MIN_MAX_NOT_A_VALID_STRING);
   }
 
   @Test

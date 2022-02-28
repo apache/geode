@@ -107,14 +107,14 @@ public abstract class AbstractLIndexIntegrationTest implements RedisIntegrationT
   public void lindex_withInvalidIndex_returnsError() {
     jedis.lpush(LIST_KEY, LIST_ELEMENTS);
     assertThatThrownBy(() -> jedis.sendCommand(LIST_KEY, Protocol.Command.LINDEX, LIST_KEY, "b"))
-        .hasMessage("ERR " + ERROR_NOT_INTEGER);
+        .hasMessage(ERROR_NOT_INTEGER);
   }
 
   @Test
   public void lindex_withWrongKeyType_returnsWrongTypeError() {
     String key = "{tag1}ding";
     jedis.set(key, "dong");
-    assertThatThrownBy(() -> jedis.lindex(key, 2)).hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.lindex(key, 2)).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -122,7 +122,7 @@ public abstract class AbstractLIndexIntegrationTest implements RedisIntegrationT
     String key = "{tag1}ding";
     jedis.set(key, "dong");
     assertThatThrownBy(() -> jedis.sendCommand(LIST_KEY, Protocol.Command.LINDEX, key, "b"))
-        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test

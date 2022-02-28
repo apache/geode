@@ -16,6 +16,7 @@ package org.apache.geode.redis.internal.commands.executor.set;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,7 +34,6 @@ import redis.clients.jedis.JedisCluster;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.redis.internal.RedisConstants;
 
 public abstract class AbstractSMoveIntegrationTest implements RedisIntegrationTest {
   private JedisCluster jedis;
@@ -66,7 +66,7 @@ public abstract class AbstractSMoveIntegrationTest implements RedisIntegrationTe
     jedis.sadd(DESTINATION_KEY, DESTINATION_MEMBERS);
 
     assertThatThrownBy(() -> jedis.smove(SOURCE_KEY, DESTINATION_KEY, MOVED_MEMBER))
-        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -75,7 +75,7 @@ public abstract class AbstractSMoveIntegrationTest implements RedisIntegrationTe
     jedis.set(DESTINATION_KEY, "value");
 
     assertThatThrownBy(() -> jedis.smove(SOURCE_KEY, DESTINATION_KEY, MOVED_MEMBER))
-        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -84,7 +84,7 @@ public abstract class AbstractSMoveIntegrationTest implements RedisIntegrationTe
     jedis.set(DESTINATION_KEY, "destMember");
 
     assertThatThrownBy(() -> jedis.smove(SOURCE_KEY, DESTINATION_KEY, MOVED_MEMBER))
-        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -169,7 +169,7 @@ public abstract class AbstractSMoveIntegrationTest implements RedisIntegrationTe
 
     assertThatThrownBy(
         () -> jedis.sendCommand(SOURCE_KEY, SMOVE, SOURCE_KEY, setKeyDifferentSlot, MOVED_MEMBER))
-            .hasMessage("CROSSSLOT " + ERROR_WRONG_SLOT);
+            .hasMessage(ERROR_WRONG_SLOT);
   }
 
   @Test

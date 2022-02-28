@@ -29,9 +29,4 @@ public class RedisDataTypeMismatchException extends RedisException {
   public RedisDataTypeMismatchException() {
     super();
   }
-
-  public RedisDataTypeMismatchException(String message) {
-    super(message);
-  }
-
 }

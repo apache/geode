@@ -23,8 +23,4 @@ public class RedisCrossSlotException extends RedisException {
   public RedisCrossSlotException() {
     super();
   }
-
-  public RedisCrossSlotException(String message) {
-    super(message);
-  }
 }

@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis;
 
+import static org.apache.geode.redis.internal.RedisConstants.WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.function.BiFunction;
@@ -44,8 +45,8 @@ public class RedisCommandArgumentsTestHelper {
       if (i != numArgs) {
         byte[][] args = buildArgs(i);
         assertThatThrownBy(() -> runMe.apply(command, args))
-            .hasMessageContaining("ERR wrong number of arguments for '"
-                + command.toString().toLowerCase() + "' command");
+            .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND,
+                command.toString().toLowerCase()));
       }
     }
   }
@@ -66,8 +67,8 @@ public class RedisCommandArgumentsTestHelper {
     for (int i = 0; i < minNumArgs; i++) {
       byte[][] args = buildArgs(i);
       assertThatThrownBy(() -> runMe.apply(command, args))
-          .hasMessageContaining("ERR wrong number of arguments for '"
-              + command.toString().toLowerCase() + "' command");
+          .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND,
+              command.toString().toLowerCase()));
     }
   }
 
@@ -94,8 +95,8 @@ public class RedisCommandArgumentsTestHelper {
     for (int i = maxNumArgs + 1; i <= 5; i++) {
       byte[][] args = buildArgs(i);
       assertThatThrownBy(() -> runMe.apply(command, args))
-          .hasMessageContaining("ERR wrong number of arguments for '"
-              + command.toString().toLowerCase() + "' command");
+          .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND,
+              command.toString().toLowerCase()));
     }
   }
 

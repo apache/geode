@@ -14,7 +14,6 @@
  */
 package org.apache.geode.redis.internal.services;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
 import static org.apache.geode.redis.internal.RedisProperties.REDIS_REGION_NAME_PROPERTY;
 import static org.apache.geode.redis.internal.RedisProperties.REGION_BUCKETS;
 import static org.apache.geode.redis.internal.RedisProperties.getIntegerSystemProperty;
@@ -45,7 +44,6 @@ import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
-import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.commands.executor.cluster.RedisPartitionResolver;
 import org.apache.geode.redis.internal.data.RedisCrossSlotException;
@@ -147,7 +145,7 @@ public class RegionProvider {
   public <T> T lockedExecute(RedisKey key, List<RedisKey> keysToLock, Callable<T> callable) {
     try {
       if (areKeysCrossSlots(keysToLock)) {
-        throw new RedisCrossSlotException(ERROR_WRONG_SLOT);
+        throw new RedisCrossSlotException();
       }
       return partitionedRegion.computeWithPrimaryLocked(key,
           () -> stripedCoordinator.execute(keysToLock, callable));
@@ -289,7 +287,7 @@ public class RegionProvider {
       return null;
     }
     if (redisData.getType() != type) {
-      throw new RedisDataTypeMismatchException(RedisConstants.ERROR_WRONG_TYPE);
+      throw new RedisDataTypeMismatchException();
     }
     return UncheckedUtils.uncheckedCast(redisData);
   }

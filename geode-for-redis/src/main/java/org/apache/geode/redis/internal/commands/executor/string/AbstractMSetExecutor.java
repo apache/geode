@@ -14,8 +14,6 @@
  */
 package org.apache.geode.redis.internal.commands.executor.string;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +42,7 @@ public abstract class AbstractMSetExecutor implements CommandExecutor {
       RedisKey key = new RedisKey(commandElems.get(i));
 
       if (previousKey != null && key.getSlot() != previousKey.getSlot()) {
-        return RedisResponse.crossSlot(ERROR_WRONG_SLOT);
+        return RedisResponse.crossSlot();
       }
       keys.add(key);
       values.add(commandElems.get(i + 1));

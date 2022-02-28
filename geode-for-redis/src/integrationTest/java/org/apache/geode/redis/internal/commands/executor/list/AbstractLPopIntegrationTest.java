@@ -59,7 +59,7 @@ public abstract class AbstractLPopIntegrationTest implements RedisIntegrationTes
   @Test
   public void lpop_withNonListKey_Fails() {
     jedis.set("string", PREEXISTING_VALUE);
-    assertThatThrownBy(() -> jedis.lpop("string")).hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.lpop("string")).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test

@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.commands.executor.server;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -289,6 +290,6 @@ public abstract class AbstractInfoIntegrationTest implements RedisIntegrationTes
   public void shouldThrowException_ifGivenMoreThanOneParameter() {
     assertThatThrownBy(
         () -> jedis.sendCommand(
-            Protocol.Command.INFO, "Server", "Cluster")).hasMessageContaining("ERR syntax error");
+            Protocol.Command.INFO, "Server", "Cluster")).hasMessage(ERROR_SYNTAX);
   }
 }

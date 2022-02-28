@@ -52,7 +52,7 @@ public abstract class AbstractLLenIntegrationTest implements RedisIntegrationTes
   @Test
   public void llen_withStringFails() {
     jedis.set("string", PREEXISTING_VALUE);
-    assertThatThrownBy(() -> jedis.llen("string")).hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.llen("string")).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test

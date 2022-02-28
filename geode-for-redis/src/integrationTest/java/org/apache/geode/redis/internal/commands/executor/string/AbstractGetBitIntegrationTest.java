@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.commands.executor.string;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -53,7 +54,7 @@ public abstract class AbstractGetBitIntegrationTest implements RedisIntegrationT
   @Test
   public void getbit_givenSetFails() {
     jedis.sadd("key", "m1");
-    assertThatThrownBy(() -> jedis.getbit("key", 1)).hasMessageContaining("WRONGTYPE");
+    assertThatThrownBy(() -> jedis.getbit("key", 1)).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test

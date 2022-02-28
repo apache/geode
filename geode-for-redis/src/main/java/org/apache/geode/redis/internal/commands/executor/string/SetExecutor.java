@@ -82,7 +82,7 @@ public class SetExecutor implements CommandExecutor {
     }
 
     if ((executorState.foundPX || executorState.foundEX) && executorState.expirationMillis <= 0) {
-      throw new IllegalArgumentException(ERROR_INVALID_EXPIRE_TIME);
+      throw new IllegalArgumentException(String.format(ERROR_INVALID_EXPIRE_TIME, "set"));
     }
 
     return new SetOptions(executorState.existsOption, executorState.expirationMillis, false);

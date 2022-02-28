@@ -127,7 +127,7 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
     jedis.sadd(setKeyDifferentSlot, secondSetMembers);
 
     assertThatThrownBy(() -> jedis.sendCommand(SET_KEY_1, SUNION, SET_KEY_1, setKeyDifferentSlot))
-        .hasMessage("CROSSSLOT " + ERROR_WRONG_SLOT);
+        .hasMessage(ERROR_WRONG_SLOT);
   }
 
 
@@ -140,7 +140,7 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
     String diffKey = "{tag1}diffKey";
     jedis.set(diffKey, "dong");
     assertThatThrownBy(() -> jedis.sunion(diffKey, SET_KEY_1, SET_KEY_2))
-        .hasMessageContaining(ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -152,7 +152,7 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
     String diffKey = "{tag1}diffKey";
     jedis.set(diffKey, "dong");
     assertThatThrownBy(() -> jedis.sunion(SET_KEY_1, SET_KEY_2, diffKey))
-        .hasMessageContaining(ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -162,7 +162,7 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
 
     jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
     assertThatThrownBy(() -> jedis.sunion(NON_EXISTENT_SET, SET_KEY_1, stringKey))
-        .hasMessageContaining(ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test

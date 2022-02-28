@@ -95,7 +95,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     jedis.sadd(KEY, MEMBER_ONE);
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, ZERO_CURSOR, "a*"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage(ERROR_SYNTAX);
   }
 
   @Test
@@ -103,7 +103,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     jedis.sadd(KEY, MEMBER_ONE);
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, ZERO_CURSOR, "MATCH"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage(ERROR_SYNTAX);
   }
 
   @Test
@@ -111,7 +111,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     jedis.sadd(KEY, MEMBER_ONE);
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, ZERO_CURSOR, "COUNT"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage(ERROR_SYNTAX);
   }
 
   @Test
@@ -119,7 +119,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     jedis.sadd(KEY, MEMBER_ONE);
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, ZERO_CURSOR, "a*", "1"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage(ERROR_SYNTAX);
   }
 
   @Test
@@ -127,8 +127,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     jedis.sadd(KEY, MEMBER_ONE);
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, ZERO_CURSOR, "COUNT",
-            "notAnInteger"))
-                .hasMessageContaining(ERROR_NOT_INTEGER);
+            "notAnInteger")).hasMessage(ERROR_NOT_INTEGER);
   }
 
   @Test
@@ -136,8 +135,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     jedis.sadd(KEY, MEMBER_ONE);
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, ZERO_CURSOR, "COUNT", "12",
-            "COUNT", "notAnInteger", "COUNT", "1"))
-                .hasMessageContaining(ERROR_NOT_INTEGER);
+            "COUNT", "notAnInteger", "COUNT", "1")).hasMessage(ERROR_NOT_INTEGER);
   }
 
   @Test
@@ -145,8 +143,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     jedis.sadd(KEY, MEMBER_ONE);
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.SSCAN, KEY, ZERO_CURSOR, "COUNT", "12",
-            "COUNT", "0", "COUNT", "1"))
-                .hasMessageContaining(ERROR_SYNTAX);
+            "COUNT", "0", "COUNT", "1")).hasMessage(ERROR_SYNTAX);
   }
 
   @Test
@@ -154,7 +151,7 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     jedis.sadd(KEY, MEMBER_ONE);
     assertThatThrownBy(
         () -> jedis.sscan(KEY_BYTES, ZERO_CURSOR_BYTES, new ScanParams().count(0)))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage(ERROR_SYNTAX);
   }
 
   @Test
@@ -162,15 +159,14 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     jedis.sadd(KEY, MEMBER_ONE);
     assertThatThrownBy(
         () -> jedis.sscan(KEY_BYTES, ZERO_CURSOR_BYTES, new ScanParams().count(-37)))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage(ERROR_SYNTAX);
   }
 
   @Test
   public void givenKeyIsNotASet_returnsWrongTypeError() {
     jedis.hset(KEY, "b", MEMBER_ONE);
     assertThatThrownBy(
-        () -> jedis.sscan(KEY, ZERO_CURSOR))
-            .hasMessageContaining(ERROR_WRONG_TYPE);
+        () -> jedis.sscan(KEY, ZERO_CURSOR)).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -178,30 +174,27 @@ public abstract class AbstractSScanIntegrationTest implements RedisIntegrationTe
     jedis.hset(KEY, "b", MEMBER_ONE);
     assertThatThrownBy(
         () -> jedis.sscan(KEY_BYTES, ZERO_CURSOR_BYTES, new ScanParams().count(-37)))
-            .hasMessageContaining(ERROR_WRONG_TYPE);
+            .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
   public void givenKeyIsNotASet_andCursorIsNotAnInteger_returnsInvalidCursorError() {
     jedis.hset(KEY, "b", MEMBER_ONE);
     assertThatThrownBy(
-        () -> jedis.sscan(KEY, "notAnInteger"))
-            .hasMessageContaining(ERROR_CURSOR);
+        () -> jedis.sscan(KEY, "notAnInteger")).hasMessage(ERROR_CURSOR);
   }
 
   @Test
   public void givenNonexistentKey_andCursorIsNotInteger_returnsInvalidCursorError() {
     assertThatThrownBy(
-        () -> jedis.sscan("nonexistentKey", "notAnInteger"))
-            .hasMessageContaining(ERROR_CURSOR);
+        () -> jedis.sscan("nonexistentKey", "notAnInteger")).hasMessage(ERROR_CURSOR);
   }
 
   @Test
   public void givenExistentSetKey_andCursorIsNotAnInteger_returnsInvalidCursorError() {
     jedis.set(KEY, "b");
     assertThatThrownBy(
-        () -> jedis.sscan(KEY, "notAnInteger"))
-            .hasMessageContaining(ERROR_CURSOR);
+        () -> jedis.sscan(KEY, "notAnInteger")).hasMessage(ERROR_CURSOR);
   }
 
   @Test

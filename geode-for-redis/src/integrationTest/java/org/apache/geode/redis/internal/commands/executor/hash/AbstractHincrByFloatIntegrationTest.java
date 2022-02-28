@@ -16,6 +16,9 @@
 package org.apache.geode.redis.internal.commands.executor.hash;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NAN_OR_INFINITY;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_A_VALID_FLOAT;
+import static org.apache.geode.redis.internal.RedisConstants.HASH_VALUE_NOT_FLOAT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.offset;
@@ -28,7 +31,6 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
@@ -64,35 +66,35 @@ public abstract class AbstractHincrByFloatIntegrationTest implements RedisIntegr
 
     assertThatThrownBy(
         () -> jedis.sendCommand("key", Protocol.Command.HINCRBYFLOAT, "key", "number", "+inf"))
-            .hasMessage("ERR increment would produce NaN or Infinity");
+            .hasMessage(ERROR_NAN_OR_INFINITY);
 
     assertThatThrownBy(
         () -> jedis.sendCommand("key", Protocol.Command.HINCRBYFLOAT, "key", "number", "-inf"))
-            .hasMessage("ERR increment would produce NaN or Infinity");
+            .hasMessage(ERROR_NAN_OR_INFINITY);
 
     assertThatThrownBy(
         () -> jedis.sendCommand("key", Protocol.Command.HINCRBYFLOAT, "key", "number", "inf"))
-            .hasMessage("ERR increment would produce NaN or Infinity");
+            .hasMessage(ERROR_NAN_OR_INFINITY);
 
     assertThatThrownBy(
         () -> jedis.sendCommand("key", Protocol.Command.HINCRBYFLOAT, "key", "number", "+infinity"))
-            .hasMessage("ERR increment would produce NaN or Infinity");
+            .hasMessage(ERROR_NAN_OR_INFINITY);
 
     assertThatThrownBy(
         () -> jedis.sendCommand("key", Protocol.Command.HINCRBYFLOAT, "key", "number", "-infinity"))
-            .hasMessage("ERR increment would produce NaN or Infinity");
+            .hasMessage(ERROR_NAN_OR_INFINITY);
 
     assertThatThrownBy(
         () -> jedis.sendCommand("key", Protocol.Command.HINCRBYFLOAT, "key", "number", "infinity"))
-            .hasMessage("ERR increment would produce NaN or Infinity");
+            .hasMessage(ERROR_NAN_OR_INFINITY);
 
     assertThatThrownBy(
         () -> jedis.sendCommand("key", Protocol.Command.HINCRBYFLOAT, "key", "number", "nan"))
-            .hasMessage("ERR value is not a valid float");
+            .hasMessage(ERROR_NOT_A_VALID_FLOAT);
 
     assertThatThrownBy(
         () -> jedis.sendCommand("key", Protocol.Command.HINCRBYFLOAT, "key", "number", "infant"))
-            .hasMessage("ERR value is not a valid float");
+            .hasMessage(ERROR_NOT_A_VALID_FLOAT);
   }
 
   @Test
@@ -160,8 +162,7 @@ public abstract class AbstractHincrByFloatIntegrationTest implements RedisIntegr
     String field = "field";
     jedis.hset(key, field, "foobar");
     assertThatThrownBy(() -> jedis.hincrByFloat(key, field, 1.5))
-        .isInstanceOf(JedisDataException.class)
-        .hasMessageContaining("ERR hash value is not a float");
+        .hasMessage(HASH_VALUE_NOT_FLOAT);
   }
 
   @Test

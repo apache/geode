@@ -53,7 +53,7 @@ public abstract class AbstractExpireIntegrationTest implements RedisIntegrationT
   @Test
   public void givenInvalidTimestamp_returnsNotIntegerError() {
     assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.EXPIRE, "key", "notInteger"))
-        .hasMessageContaining(ERROR_NOT_INTEGER);
+        .hasMessage(ERROR_NOT_INTEGER);
   }
 
   @Test

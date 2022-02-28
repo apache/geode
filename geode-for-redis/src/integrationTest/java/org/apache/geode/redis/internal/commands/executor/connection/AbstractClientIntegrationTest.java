@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal.commands.executor.connection;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_CLIENT_NAME;
+import static org.apache.geode.redis.internal.RedisConstants.WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,7 +53,7 @@ public abstract class AbstractClientIntegrationTest implements RedisIntegrationT
   @Test
   public void clientWithNoSubcommand_returnError() {
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.CLIENT))
-        .hasMessageContaining("ERR wrong number of arguments for 'client' command");
+        .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "client"));
   }
 
   @Test
@@ -74,22 +76,19 @@ public abstract class AbstractClientIntegrationTest implements RedisIntegrationT
   @Test
   public void clientSetName_withSpace_returnError() {
     String clientName = " ";
-    assertThatThrownBy(() -> jedis.clientSetname(clientName)).hasMessageContaining(
-        "ERR Client names cannot contain spaces, newlines or special characters.");
+    assertThatThrownBy(() -> jedis.clientSetname(clientName)).hasMessage(ERROR_INVALID_CLIENT_NAME);
   }
 
   @Test
   public void clientSetName_withNewLine_returnError() {
     String clientName = "\n";
-    assertThatThrownBy(() -> jedis.clientSetname(clientName)).hasMessageContaining(
-        "ERR Client names cannot contain spaces, newlines or special characters.");
+    assertThatThrownBy(() -> jedis.clientSetname(clientName)).hasMessage(ERROR_INVALID_CLIENT_NAME);
   }
 
   @Test
   public void clientSetName_withInvalidCharacter_returnError() {
     byte[] clientName = {0};
-    assertThatThrownBy(() -> jedis.clientSetname(clientName)).hasMessageContaining(
-        "ERR Client names cannot contain spaces, newlines or special characters.");
+    assertThatThrownBy(() -> jedis.clientSetname(clientName)).hasMessage(ERROR_INVALID_CLIENT_NAME);
   }
 
   @Test

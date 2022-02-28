@@ -50,42 +50,15 @@ public abstract class AbstractUnknownIntegrationTest implements RedisIntegration
   @Test
   public void givenUnknownCommand_withArguments_returnsUnknownCommandErrorWithArgumentsListed() {
     assertThatThrownBy(() -> jedis.sendCommand("fhqwhgads"::getBytes, "EVERYBODY",
-        "TO THE LIMIT"))
-            .hasMessage(
-                "ERR unknown command `fhqwhgads`, with args beginning with: `EVERYBODY`, `TO THE LIMIT`, ");
+        "TO THE LIMIT")).hasMessage(
+            "ERR unknown command `fhqwhgads`, with args beginning with: `EVERYBODY`, `TO THE LIMIT`, ");
   }
 
   @Test
   public void givenUnknownCommand_withEmptyStringArgument_returnsUnknownCommandErrorWithArgumentsListed() {
     assertThatThrownBy(
-        () -> jedis.sendCommand("fhqwhgads"::getBytes, "EVERYBODY", ""))
-            .hasMessage(
-                "ERR unknown command `fhqwhgads`, with args beginning with: `EVERYBODY`, ``, ");
-  }
-
-  @Test
-  public void givenInternalSMembersCommand_returnsUnknownCommandErrorWithArgumentsListed() {
-    assertThatThrownBy(
-        () -> jedis.sendCommand("INTERNALSMEMBERS"::getBytes, "something",
-            "somethingElse"))
-                .hasMessage(
-                    "ERR unknown command `INTERNALSMEMBERS`, with args beginning with: `something`, `somethingElse`, ");
-  }
-
-  @Test
-  public void givenInternalPTTLCommand_returnsUnknownCommandErrorWithArgumentsListed() {
-    assertThatThrownBy(
-        () -> jedis.sendCommand("INTERNALPTTL"::getBytes, "something"))
-            .hasMessage(
-                "ERR unknown command `INTERNALPTTL`, with args beginning with: `something`, ");
-  }
-
-  @Test
-  public void givenInternalTypeCommand_returnsUnknownCommandErrorWithArgumentsListed() {
-    assertThatThrownBy(
-        () -> jedis.sendCommand("INTERNALTYPE"::getBytes, "something"))
-            .hasMessage(
-                "ERR unknown command `INTERNALTYPE`, with args beginning with: `something`, ");
+        () -> jedis.sendCommand("fhqwhgads"::getBytes, "EVERYBODY", "")).hasMessage(
+            "ERR unknown command `fhqwhgads`, with args beginning with: `EVERYBODY`, ``, ");
   }
 
 }

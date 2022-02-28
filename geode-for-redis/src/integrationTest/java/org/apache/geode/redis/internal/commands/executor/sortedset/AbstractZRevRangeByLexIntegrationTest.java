@@ -71,70 +71,60 @@ public abstract class AbstractZRevRangeByLexIntegrationTest implements RedisInte
   @Parameters({"a", "--", "++"})
   public void shouldError_givenInvalidMinOrMax(String invalidArgument) {
     assertThatThrownBy(() -> jedis.zrevrangeByLex("fakeKey", invalidArgument, "-"))
-        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_VALID_STRING);
+        .hasMessage(ERROR_MIN_MAX_NOT_A_VALID_STRING);
     assertThatThrownBy(() -> jedis.zrevrangeByLex("fakeKey", "+", invalidArgument))
-        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_VALID_STRING);
+        .hasMessage(ERROR_MIN_MAX_NOT_A_VALID_STRING);
     assertThatThrownBy(() -> jedis.zrevrangeByLex("fakeKey", invalidArgument, invalidArgument))
-        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_VALID_STRING);
+        .hasMessage(ERROR_MIN_MAX_NOT_A_VALID_STRING);
   }
 
   @Test
   public void shouldError_givenInvalidLimitFormat() {
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYLEX, KEY, "+", "-",
-        "LIMIT"))
-            .hasMessageContaining(ERROR_SYNTAX);
+        "LIMIT")).hasMessage(ERROR_SYNTAX);
 
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYLEX, KEY, "+", "-",
-        "LIMIT", "0"))
-            .hasMessageContaining(ERROR_SYNTAX);
+        "LIMIT", "0")).hasMessage(ERROR_SYNTAX);
 
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYLEX, KEY, "+", "-",
-        "LAMAT", "0", "10"))
-            .hasMessageContaining(ERROR_SYNTAX);
+        "LAMAT", "0", "10")).hasMessage(ERROR_SYNTAX);
   }
 
   @Test
   public void shouldError_givenNonIntegerLimitArguments() {
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYLEX, KEY, "+", "-",
-        "LIMIT", "0", "invalid"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+        "LIMIT", "0", "invalid")).hasMessage(ERROR_NOT_INTEGER);
 
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYLEX, KEY, "+", "-",
-        "LIMIT", "invalid", "10"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+        "LIMIT", "invalid", "10")).hasMessage(ERROR_NOT_INTEGER);
   }
 
   @Test
   public void shouldError_givenNegativeZeroLimitOffset() {
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYLEX, KEY, "+", "-",
-        "LIMIT", "-0", "10"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+        "LIMIT", "-0", "10")).hasMessage(ERROR_NOT_INTEGER);
   }
 
   @Test
   public void shouldError_givenMultipleLimits_withFirstLimitIncorrectlySpecified() {
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYLEX, KEY, "+", "-",
         "LIMIT", "0", "invalid",
-        "LIMIT", "0", "10"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+        "LIMIT", "0", "10")).hasMessage(ERROR_NOT_INTEGER);
 
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYLEX, KEY, "+", "-",
         "LIMIT", "0",
-        "LIMIT", "0", "10"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+        "LIMIT", "0", "10")).hasMessage(ERROR_NOT_INTEGER);
   }
 
   @Test
   public void shouldError_givenMultipleLimits_withLastLimitIncorrectlySpecified() {
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYLEX, KEY, "+", "-",
         "LIMIT", "0", "10",
-        "LIMIT", "0", "invalid"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+        "LIMIT", "0", "invalid")).hasMessage(ERROR_NOT_INTEGER);
 
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYLEX, KEY, "+", "-",
         "LIMIT", "0", "10",
-        "LIMIT", "0"))
-            .hasMessageContaining(ERROR_SYNTAX);
+        "LIMIT", "0")).hasMessage(ERROR_SYNTAX);
   }
 
   @Test

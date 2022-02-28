@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.commands.executor.cluster;
 
+import static org.apache.geode.redis.internal.RedisConstants.WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND;
 import static org.apache.geode.redis.internal.services.RegionProvider.REDIS_SLOTS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -51,11 +52,10 @@ public abstract class AbstractClusterIntegrationTest implements RedisIntegration
   public void testCluster_givenWrongNumberOfArguments() {
     final Jedis connection = new Jedis(jedis.getConnectionFromSlot(0));
     assertThatThrownBy(() -> connection.sendCommand(Protocol.Command.CLUSTER))
-        .hasMessage("ERR wrong number of arguments for 'cluster' command");
+        .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "cluster"));
     assertThatThrownBy(
         () -> connection.sendCommand(Protocol.Command.CLUSTER, "1", "2"))
-            .hasMessageContaining(
-                "ERR Unknown subcommand or wrong number of arguments for '1'.");
+            .hasMessageContaining("ERR Unknown subcommand or wrong number of arguments for '1'.");
     assertThatThrownBy(
         () -> connection.sendCommand(Protocol.Command.CLUSTER, "SLOTS", "1"))
             .hasMessageContaining(
@@ -69,10 +69,9 @@ public abstract class AbstractClusterIntegrationTest implements RedisIntegration
             .hasMessageContaining(
                 "ERR Unknown subcommand or wrong number of arguments for 'KEYSLOT'.");
     assertThatThrownBy(
-        () -> connection.sendCommand(Protocol.Command.CLUSTER, "KEYSLOT",
-            "blah", "fo"))
-                .hasMessageContaining(
-                    "ERR Unknown subcommand or wrong number of arguments for 'KEYSLOT'.");
+        () -> connection.sendCommand(Protocol.Command.CLUSTER, "KEYSLOT", "blah", "fo"))
+            .hasMessageContaining(
+                "ERR Unknown subcommand or wrong number of arguments for 'KEYSLOT'.");
   }
 
   @Test

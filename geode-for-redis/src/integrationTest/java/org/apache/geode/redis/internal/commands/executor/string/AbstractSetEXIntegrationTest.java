@@ -15,16 +15,18 @@
 package org.apache.geode.redis.internal.commands.executor.string;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_EXPIRE_TIME;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static redis.clients.jedis.Protocol.Command.SETEX;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.RedisIntegrationTest;
 
@@ -52,12 +54,18 @@ public abstract class AbstractSetEXIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void errors_givenWrongNumberOfArguments() {
-    assertExactNumberOfArgs(jedis, Protocol.Command.SETEX, 3);
+    assertExactNumberOfArgs(jedis, SETEX, 3);
   }
 
   @Test
   public void testSetEXWithIllegalSeconds() {
     assertThatThrownBy(() -> jedis.setex("key", -1L, "value"))
-        .hasMessage("ERR invalid expire time in setex");
+        .hasMessage(String.format(ERROR_INVALID_EXPIRE_TIME, "setex"));
+  }
+
+  @Test
+  public void setEXWithNonIntegerExpiration_returnsError() {
+    assertThatThrownBy(() -> jedis.sendCommand("key", SETEX, "key", "notAnInteger", "value"))
+        .hasMessage(ERROR_NOT_INTEGER);
   }
 }

@@ -88,6 +88,6 @@ public abstract class AbstractGetIntegrationTest implements RedisIntegrationTest
     String member = "member";
 
     jedis.sadd(key, field, member);
-    assertThatThrownBy(() -> jedis.get(key)).hasMessageContaining(ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.get(key)).hasMessage(ERROR_WRONG_TYPE);
   }
 }

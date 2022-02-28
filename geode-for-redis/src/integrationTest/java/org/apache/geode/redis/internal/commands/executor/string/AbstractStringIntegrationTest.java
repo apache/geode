@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.commands.executor.string;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -26,10 +27,8 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractStringIntegrationTest implements RedisIntegrationTest {
@@ -76,9 +75,7 @@ public abstract class AbstractStringIntegrationTest implements RedisIntegrationT
     String key = "hashKey";
     jedis1.hset(key, "field", "this value doesn't matter");
 
-    assertThatThrownBy(() -> jedis1.strlen(key))
-        .isInstanceOf(JedisDataException.class)
-        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis1.strlen(key)).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -134,9 +131,7 @@ public abstract class AbstractStringIntegrationTest implements RedisIntegrationT
     String key = "hashKey";
     jedis1.hset(key, "field", "non-int value");
 
-    assertThatThrownBy(() -> jedis1.decr(key))
-        .isInstanceOf(JedisDataException.class)
-        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis1.decr(key)).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test

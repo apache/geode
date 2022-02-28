@@ -111,8 +111,7 @@ public abstract class AbstractDecrByIntegrationTest implements RedisIntegrationT
 
     assertThatThrownBy(
         () -> jedis.sendCommand(hashTag, Protocol.Command.DECRBY,
-            someKey, String.valueOf(biggerThanMaxLongValue)))
-                .hasMessageContaining(ERROR_NOT_INTEGER);
+            someKey, String.valueOf(biggerThanMaxLongValue))).hasMessage(ERROR_NOT_INTEGER);
 
     jedis.set("key", String.valueOf((Long.MIN_VALUE)));
   }
@@ -128,8 +127,7 @@ public abstract class AbstractDecrByIntegrationTest implements RedisIntegrationT
     assertThatThrownBy(
         () -> jedis.sendCommand(hashTag,
             Protocol.Command.DECRBY, someKey,
-            smallerThanMinLongValue.toString()))
-                .hasMessageContaining(ERROR_NOT_INTEGER);
+            smallerThanMinLongValue.toString())).hasMessage(ERROR_NOT_INTEGER);
   }
 
   @Test
@@ -141,8 +139,7 @@ public abstract class AbstractDecrByIntegrationTest implements RedisIntegrationT
     assertThatThrownBy(
         () -> jedis.sendCommand(hashTag,
             Protocol.Command.DECRBY, someKey,
-            "1"))
-                .hasMessageContaining(ERROR_OVERFLOW);
+            "1")).hasMessage(ERROR_OVERFLOW);
   }
 
 
@@ -151,7 +148,7 @@ public abstract class AbstractDecrByIntegrationTest implements RedisIntegrationT
 
     jedis.hset("setKey", "1", "1");
     assertThatThrownBy(
-        () -> jedis.decrBy("setKey", 1)).hasMessageContaining(ERROR_WRONG_TYPE);
+        () -> jedis.decrBy("setKey", 1)).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -160,6 +157,6 @@ public abstract class AbstractDecrByIntegrationTest implements RedisIntegrationT
     jedis.set("key", "walrus");
 
     assertThatThrownBy(
-        () -> jedis.decrBy("key", 1)).hasMessageContaining(ERROR_NOT_INTEGER);
+        () -> jedis.decrBy("key", 1)).hasMessage(ERROR_NOT_INTEGER);
   }
 }

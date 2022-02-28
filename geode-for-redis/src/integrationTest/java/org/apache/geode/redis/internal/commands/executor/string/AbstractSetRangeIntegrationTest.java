@@ -15,6 +15,7 @@
 package org.apache.geode.redis.internal.commands.executor.string;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -102,7 +103,7 @@ public abstract class AbstractSetRangeIntegrationTest implements RedisIntegratio
   @Test
   public void setRange_givenSetFails() {
     jedis.sadd("key", "m1");
-    assertThatThrownBy(() -> jedis.setrange("key", 0, "abc")).hasMessageContaining("WRONGTYPE");
+    assertThatThrownBy(() -> jedis.setrange("key", 0, "abc")).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test

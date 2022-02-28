@@ -14,9 +14,12 @@
  */
 package org.apache.geode.redis.internal.commands.executor.connection;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_USERNAME_OR_PASSWORD;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_AUTHENTICATED;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNAUTHENTICATED_BULK;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNAUTHENTICATED_MULTIBULK;
+import static org.apache.geode.redis.internal.RedisConstants.WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -64,10 +67,10 @@ public abstract class AbstractAuthIntegrationTest {
   public void givenSecurity_authWithIncorrectNumberOfArguments_fails() throws Exception {
     setupCacheWithSecurity(false);
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.AUTH))
-        .hasMessageContaining("ERR wrong number of arguments for 'auth' command");
+        .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "auth"));
     assertThatThrownBy(
         () -> jedis.sendCommand(Protocol.Command.AUTH, "username", "password", "extraArg"))
-            .hasMessageContaining("ERR syntax error");
+            .hasMessage(ERROR_SYNTAX);
   }
 
   @Test
@@ -75,7 +78,7 @@ public abstract class AbstractAuthIntegrationTest {
     setupCacheWithSecurity(false);
 
     assertThatThrownBy(() -> jedis.auth(getUsername(), "wrongpwd"))
-        .hasMessageContaining("WRONGPASS invalid username-password pair or user is disabled.");
+        .hasMessage(ERROR_INVALID_USERNAME_OR_PASSWORD);
 
     assertThat(jedis.auth(getUsername(), getPassword())).isEqualTo("OK");
     assertThat(jedis.ping()).isEqualTo("PONG");
@@ -85,8 +88,7 @@ public abstract class AbstractAuthIntegrationTest {
   public void givenSecurity_authorizedUser_passes() throws Exception {
     setupCacheWithSecurity(true);
 
-    assertThatThrownBy(() -> jedis.set("foo", "bar"))
-        .hasMessage("NOAUTH Authentication required.");
+    assertThatThrownBy(() -> jedis.set("foo", "bar")).hasMessage(ERROR_NOT_AUTHENTICATED);
 
     assertThat(jedis.auth(getUsername(), getPassword())).isEqualTo("OK");
 
@@ -106,7 +108,7 @@ public abstract class AbstractAuthIntegrationTest {
     setupCacheWithSecurity(false);
 
     assertThatThrownBy(() -> jedis.auth("wrong-password"))
-        .hasMessage("WRONGPASS invalid username-password pair or user is disabled.");
+        .hasMessage(ERROR_INVALID_USERNAME_OR_PASSWORD);
   }
 
   /**
@@ -126,7 +128,7 @@ public abstract class AbstractAuthIntegrationTest {
     assertThat(authorizedJedis.set("foo", "bar")).isEqualTo("OK");
 
     assertThatThrownBy(() -> nonAuthorizedJedis.set("foo", "bar"))
-        .hasMessage("NOAUTH Authentication required.");
+        .hasMessage(ERROR_NOT_AUTHENTICATED);
 
     authorizedJedis.close();
     nonAuthorizedJedis.close();

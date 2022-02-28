@@ -15,6 +15,8 @@
 package org.apache.geode.redis.internal.commands.executor.sortedset;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,7 +35,6 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.resps.Tuple;
 
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.redis.internal.RedisConstants;
 
 public abstract class AbstractZPopMinIntegrationTest implements RedisIntegrationTest {
   private JedisCluster jedis;
@@ -58,14 +59,14 @@ public abstract class AbstractZPopMinIntegrationTest implements RedisIntegration
   public void shouldError_givenTooManyArguments() {
     assertThatThrownBy(
         () -> jedis.sendCommand("key", Protocol.Command.ZPOPMIN, "key", "1", "2"))
-            .hasMessageContaining(RedisConstants.ERROR_SYNTAX);
+            .hasMessage(ERROR_SYNTAX);
   }
 
   @Test
   public void shouldError_givenWrongNumberFormat() {
     assertThatThrownBy(
         () -> jedis.sendCommand("key", Protocol.Command.ZPOPMIN, "key", "wat"))
-            .hasMessageContaining(RedisConstants.ERROR_NOT_INTEGER);
+            .hasMessage(ERROR_NOT_INTEGER);
   }
 
   @Test

@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.commands.executor.server;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -133,7 +134,7 @@ public class LolWutIntegrationTest implements RedisIntegrationTest {
   public void shouldError_givenNonNumericArg() {
     assertThatThrownBy(() -> jedis.sendCommand(() -> SafeEncoder.encode("lolwut"),
         SafeEncoder.encode("notEvenCloseToANumber")))
-            .hasMessage("ERR value is not an integer or out of range");
+            .hasMessage(ERROR_NOT_INTEGER);
   }
 
 }

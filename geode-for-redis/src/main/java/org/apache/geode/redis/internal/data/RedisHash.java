@@ -19,6 +19,7 @@ package org.apache.geode.redis.internal.data;
 import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_OVERFLOW;
+import static org.apache.geode.redis.internal.RedisConstants.HASH_VALUE_NOT_FLOAT;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 
@@ -296,14 +297,14 @@ public class RedisHash extends AbstractRedisData {
 
     String valueS = bytesToString(oldValue);
     if (valueS.contains(" ")) {
-      throw new NumberFormatException("hash value is not a float");
+      throw new NumberFormatException(HASH_VALUE_NOT_FLOAT);
     }
 
     BigDecimal value;
     try {
       value = new BigDecimal(valueS);
     } catch (NumberFormatException ex) {
-      throw new NumberFormatException("hash value is not a float");
+      throw new NumberFormatException(HASH_VALUE_NOT_FLOAT);
     }
 
     value = value.add(increment);

@@ -100,6 +100,6 @@ public abstract class AbstractSCardIntegrationTest implements RedisIntegrationTe
   @Test
   public void scardWithWrongKeyType_returnsWrongTypeError() {
     jedis.set("ding", "dong");
-    assertThatThrownBy(() -> jedis.scard("ding")).hasMessageContaining(ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.scard("ding")).hasMessage(ERROR_WRONG_TYPE);
   }
 }
