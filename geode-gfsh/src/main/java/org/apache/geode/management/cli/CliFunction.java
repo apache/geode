@@ -37,7 +37,7 @@ public abstract class CliFunction<T> implements InternalFunction<T> {
       context.getResultSender().lastResult(executeFunction(context));
     } catch (EntityNotFoundException nfe) {
       context.getResultSender().lastResult(new CliFunctionResult(context.getMemberName(), nfe));
-    } catch (Exception e) {
+    } catch (Throwable e) {
       logger.error(e.getMessage(), e);
       context.getResultSender().lastResult(new CliFunctionResult(context.getMemberName(), e));
     }
