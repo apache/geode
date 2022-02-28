@@ -277,7 +277,7 @@ geode-core/**/org/apache/geode/internal/cache/control/**          @kirklund @Don
 geode-dunit/**                                                    @mhansonp @kirklund
 geode-junit/**                                                    @mhansonp @kirklund
 #geode-jmh/**
-geode-junit/**/org/apache/geode/test/util/**                      @jdeppe-pivotal @onichols-pivotal @kirklund
+geode-junit/**/org/apache/geode/test/util/**                      @jdeppe-pivotal @kirklund
 geode-assembly/**/org/apache/geode/test/junit/**                  @jdeppe-pivotal @jinmeiliao @kirklund
 geode-assembly/**/org/apache/geode/rules/**                       @jdeppe-pivotal @jinmeiliao @kirklund
 geode-assembly/**/org/apache/geode/launchers/**                   @dschneider-pivotal @boglesby @kirklund @nabarunnag
@@ -292,23 +292,23 @@ geode-for-redis/**                                                @jdeppe-pivota
 # Build and tooling
 #-----------------------------------------------------------------
 #etc/**
-*gradle*                                                          @rhoughton-pivot @onichols-pivotal
+*gradle*                                                          @rhoughton-pivot
 buildSrc/**                                                       @rhoughton-pivot @jdeppe-pivotal
-buildSrc/**/DependencyConstraints.groovy                          @onichols-pivotal @dickcav @rhoughton-pivot
-ci/**                                                             @onichols-pivotal @dickcav @rhoughton-pivot @smgoller
-ci/scripts/**                                                     @onichols-pivotal @dickcav @rhoughton-pivot @smgoller
-ci/scripts/repeat-new-tests.sh                                    @onichols-pivotal @dickcav @rhoughton-pivot @smgoller @upthewaterspout @jdeppe-pivotal
-dev-tools/dependencies/**                                         @onichols-pivotal @dickcav
-dev-tools/release/**                                              @onichols-pivotal @dickcav
-docker/**                                                         @onichols-pivotal @dickcav @smgoller
-geode-management/src/test/script/update-management-wiki.sh        @onichols-pivotal @dickcav
+buildSrc/**/DependencyConstraints.groovy                          @dickcav @rhoughton-pivot
+ci/**                                                             @dickcav @rhoughton-pivot @smgoller
+ci/scripts/**                                                     @dickcav @rhoughton-pivot @smgoller
+ci/scripts/repeat-new-tests.sh                                    @dickcav @rhoughton-pivot @smgoller @upthewaterspout @jdeppe-pivotal
+dev-tools/dependencies/**                                         @dickcav
+dev-tools/release/**                                              @dickcav
+docker/**                                                         @dickcav @smgoller
+geode-management/src/test/script/update-management-wiki.sh        @dickcav
 #boms/**
-static-analysis/**                                                @rhoughton-pivot @onichols-pivotal
-geode-old-versions/**                                             @onichols-pivotal @dickcav
-KEYS                                                              @onichols-pivotal @dickcav
-assembly_content.txt                                              @rhoughton-pivot @onichols-pivotal
-dependency_classpath.txt                                          @rhoughton-pivot @onichols-pivotal
-expected-pom.xml                                                  @rhoughton-pivot @onichols-pivotal
+static-analysis/**                                                @rhoughton-pivot
+geode-old-versions/**                                             @dickcav
+KEYS                                                              @dickcav
+assembly_content.txt                                              @rhoughton-pivot
+dependency_classpath.txt                                          @rhoughton-pivot
+expected-pom.xml                                                  @rhoughton-pivot
 
 #-----------------------------------------------------------------
 # Documentation
@@ -316,7 +316,7 @@ expected-pom.xml                                                  @rhoughton-piv
 apache-copyright-notice.txt                                       @upthewaterspout @pivotal-amurmann
 BUILDING.md                                                       @rhoughton-pivot @upthewaterspout
 CODE_OF_CONDUCT.md                                                @upthewaterspout @pivotal-amurmann @nonbinaryprogrammer @kirklund
-LICENSE                                                           @onichols-pivotal @dickcav
-NOTICE                                                            @onichols-pivotal @dickcav
+LICENSE                                                           @dickcav
+NOTICE                                                            @dickcav
 /README.md                                                        @upthewaterspout @pivotal-amurmann @kirklund
 #TESTING.md
