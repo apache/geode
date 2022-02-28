@@ -42,6 +42,8 @@ public class RedisList extends AbstractRedisData {
   protected static final int REDIS_LIST_OVERHEAD = memoryOverhead(RedisList.class);
   private final SizeableByteArrayList elementList;
 
+  private static final int INVALID_INDEX = -1;
+
   public RedisList() {
     this.elementList = new SizeableByteArrayList();
   }
@@ -95,7 +97,7 @@ public class RedisList extends AbstractRedisData {
   public byte[] lindex(int index) {
     index = getArrayIndex(index);
 
-    if (index < 0 || elementList.size() <= index) {
+    if (index == INVALID_INDEX || elementList.size() <= index) {
       return null;
     } else {
       return elementList.get(index);
@@ -115,7 +117,11 @@ public class RedisList extends AbstractRedisData {
    * The index will still be negative if there is no corresponding positive index.
    */
   private int getArrayIndex(int listIndex) {
-    return listIndex < 0 ? (elementList.size() + listIndex) : listIndex;
+    if (listIndex < 0) {
+      listIndex = elementList.size() + listIndex;
+      listIndex = Math.max(listIndex, INVALID_INDEX);
+    }
+    return listIndex;
   }
 
   /**
