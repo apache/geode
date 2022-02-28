@@ -49,8 +49,8 @@ public class RedisList extends AbstractRedisData {
   }
 
   /**
-   * @param start start index of desired elments
-   * @param stop stop index of desired elments
+   * @param start start index of desired elements
+   * @param stop stop index of desired elements
    * @return list of elements in the range (inclusive).
    */
   public List<byte[]> lrange(int start, int stop) {
@@ -114,12 +114,14 @@ public class RedisList extends AbstractRedisData {
 
   /**
    * Changes negative index to corresponding positive index.
-   * The index will still be negative if there is no corresponding positive index.
+   * If there is no corresponding positive index, returns INVALID_INDEX.
    */
   private int getArrayIndex(int listIndex) {
     if (listIndex < 0) {
       listIndex = elementList.size() + listIndex;
-      listIndex = Math.max(listIndex, INVALID_INDEX);
+      if (listIndex < 0) {
+        return INVALID_INDEX;
+      }
     }
     return listIndex;
   }

@@ -30,7 +30,6 @@ public class LRangeExecutor implements CommandExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
-    RedisKey key = command.getKey();
 
     int startIndex;
     int stopIndex;
@@ -41,6 +40,7 @@ public class LRangeExecutor implements CommandExecutor {
       return RedisResponse.error(ERROR_NOT_INTEGER);
     }
 
+    RedisKey key = command.getKey();
     List<byte[]> result = context.listLockedExecute(key, true,
         list -> list.lrange(startIndex, stopIndex));
     return RedisResponse.array(result, true);
