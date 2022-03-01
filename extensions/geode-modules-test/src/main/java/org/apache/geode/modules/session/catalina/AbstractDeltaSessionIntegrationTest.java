@@ -17,8 +17,12 @@ package org.apache.geode.modules.session.catalina;
 
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -30,6 +34,8 @@ import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionBindingEvent;
 
 import org.apache.catalina.Context;
+import org.apache.geode.modules.session.catalina.internal.DeltaSessionDestroyAttributeEvent;
+import org.apache.geode.modules.session.catalina.internal.DeltaSessionUpdateAttributeEvent;
 import org.apache.juli.logging.Log;
 import org.junit.Before;
 import org.junit.Rule;
@@ -41,6 +47,8 @@ import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.modules.session.catalina.callback.SessionExpirationCacheListener;
 import org.apache.geode.modules.session.catalina.internal.DeltaSessionStatistics;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
+import org.mockito.InOrder;
+import org.mockito.Mockito;
 
 public abstract class AbstractDeltaSessionIntegrationTest<DeltaSessionManagerT extends DeltaSessionManager<?>, DeltaSessionT extends DeltaSession> {
   protected static final String KEY = "key1";
@@ -106,5 +114,77 @@ public abstract class AbstractDeltaSessionIntegrationTest<DeltaSessionManagerT e
     verify(listener).attributeRemoved(event.capture());
     verifyNoMoreInteractions(listener);
     assertThat(event.getValue().getValue()).isEqualTo(value1);
+  }
+
+  @Test
+  public void setNewAttributeWithNullValueInvokesRemove() {
+    final HttpSessionAttributeListener listener = mock(HttpSessionAttributeListener.class);
+    when(context.getApplicationEventListeners()).thenReturn(new Object[] {listener});
+    when(manager.isBackingCacheAvailable()).thenReturn(true);
+
+    final DeltaSessionT session = spy(newSession(manager));
+    session.setId(KEY, false);
+    session.setValid(true);
+    session.setOwner(manager);
+
+    final String name = "attribute";
+    final Object nullValue = null;
+
+    session.setAttribute(name, nullValue);
+    assertThat(session.getAttributes().size()).isEqualTo(0);
+
+    //Mockito.inOrder
+    verify(session).queueAttributeEvent(any(DeltaSessionDestroyAttributeEvent.class), anyBoolean());
+    verify(session, times(0)).queueAttributeEvent(any(DeltaSessionUpdateAttributeEvent.class), anyBoolean());
+    verify(session).removeAttribute(eq(name));
+  }
+
+  @Test
+  public void setExistingAttributeWithNullValueInvokesRemove() {
+    final HttpSessionAttributeListener listener = mock(HttpSessionAttributeListener.class);
+    when(context.getApplicationEventListeners()).thenReturn(new Object[] {listener});
+    when(manager.isBackingCacheAvailable()).thenReturn(true);
+
+    final DeltaSessionT session = spy(newSession(manager));
+    session.setId(KEY, false);
+    session.setValid(true);
+    session.setOwner(manager);
+
+    final String name = "attribute";
+    final Object value = "value";
+    final Object nullValue = null;
+
+    session.setAttribute(name, value);
+    assertThat(session.getAttributes().size()).isEqualTo(1);
+
+    session.setAttribute(name, nullValue);
+    assertThat(session.getAttributes().size()).isEqualTo(0);
+
+
+    InOrder inOrder = Mockito.inOrder(session);
+    inOrder.verify(session).queueAttributeEvent(any(DeltaSessionUpdateAttributeEvent.class), anyBoolean());
+    inOrder.verify(session).removeAttribute(eq(name));
+    inOrder.verify(session).queueAttributeEvent(any(DeltaSessionDestroyAttributeEvent.class), anyBoolean());
+  }
+
+  @Test
+  public void getAttributeWithNullValueReturnsNull() throws IOException, ClassNotFoundException {
+    final HttpSessionAttributeListener listener = mock(HttpSessionAttributeListener.class);
+    when(context.getApplicationEventListeners()).thenReturn(new Object[] {listener});
+    when(manager.isBackingCacheAvailable()).thenReturn(true);
+
+    final DeltaSessionT session = spy(newSession(manager));
+    session.setId(KEY, false);
+    session.setValid(true);
+    session.setOwner(manager);
+
+    final String name = "attribute";
+    final Object value = null;
+
+    final byte[] serializedValue1 = BlobHelper.serializeToBlob(value);
+    // simulates initial deserialized state with serialized attribute values.
+    session.getAttributes().put(name, serializedValue1);
+
+    assertThat(session.getAttribute(name)).isNull();
   }
 }
