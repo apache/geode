@@ -254,7 +254,7 @@ public class DeltaSession extends StandardSession
 
     synchronized (changeLock) {
       // Serialize the value
-      byte[] serializedValue = serialize(value);
+      final byte[] serializedValue = value == null ? null : serialize(value);
 
       // Store the attribute locally
       if (preferDeserializedForm) {
@@ -266,6 +266,7 @@ public class DeltaSession extends StandardSession
         super.setAttribute(name, serializedValue, true);
       }
 
+      // super.setAttribute above performed a removeAttribute for a value which was null once deserialized.
       if (value == null) {
         return;
       }
@@ -332,6 +333,9 @@ public class DeltaSession extends StandardSession
 
   @Override
   public Object getAttribute(String name) {
+    if(name == null) {
+      return null;
+    }
     checkBackingCacheAvailable();
     Object value = deserializeAttribute(name, super.getAttribute(name), preferDeserializedForm);
 

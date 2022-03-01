@@ -133,7 +133,6 @@ public abstract class AbstractDeltaSessionIntegrationTest<DeltaSessionManagerT e
     session.setAttribute(name, nullValue);
     assertThat(session.getAttributes().size()).isEqualTo(0);
 
-    // Mockito.inOrder
     verify(session).queueAttributeEvent(any(DeltaSessionDestroyAttributeEvent.class), anyBoolean());
     verify(session, times(0)).queueAttributeEvent(any(DeltaSessionUpdateAttributeEvent.class),
         anyBoolean());
@@ -187,6 +186,22 @@ public abstract class AbstractDeltaSessionIntegrationTest<DeltaSessionManagerT e
     final byte[] serializedValue1 = BlobHelper.serializeToBlob(value);
     // simulates initial deserialized state with serialized attribute values.
     session.getAttributes().put(name, serializedValue1);
+
+    assertThat(session.getAttribute(name)).isNull();
+  }
+
+  @Test
+  public void getAttributeWithNullNameReturnsNull() throws IOException, ClassNotFoundException {
+    final HttpSessionAttributeListener listener = mock(HttpSessionAttributeListener.class);
+    when(context.getApplicationEventListeners()).thenReturn(new Object[] {listener});
+    when(manager.isBackingCacheAvailable()).thenReturn(true);
+
+    final DeltaSessionT session = spy(newSession(manager));
+    session.setId(KEY, false);
+    session.setValid(true);
+    session.setOwner(manager);
+
+    final String name = null;
 
     assertThat(session.getAttribute(name)).isNull();
   }
