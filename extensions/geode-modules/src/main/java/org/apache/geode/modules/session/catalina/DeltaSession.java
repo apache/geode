@@ -266,7 +266,8 @@ public class DeltaSession extends StandardSession
         super.setAttribute(name, serializedValue, true);
       }
 
-      // super.setAttribute above performed a removeAttribute for a value which was null once deserialized.
+      // super.setAttribute above performed a removeAttribute for a value which was null once
+      // deserialized.
       if (value == null) {
         return;
       }
@@ -333,7 +334,7 @@ public class DeltaSession extends StandardSession
 
   @Override
   public Object getAttribute(String name) {
-    if(name == null) {
+    if (name == null) {
       return null;
     }
     checkBackingCacheAvailable();
