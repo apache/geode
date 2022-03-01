@@ -119,7 +119,7 @@ public abstract class AbstractBLPopIntegrationTest implements RedisIntegrationTe
     }
 
     GeodeAwaitility.await().atMost(Duration.ofSeconds(5))
-        .untilAsserted(() -> assertThat(accumulated).hasSize(totalElements));
+        .untilAsserted(() -> assertThat(accumulated.size()).isEqualTo(totalElements));
 
     running.set(false);
 
