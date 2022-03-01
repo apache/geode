@@ -353,7 +353,7 @@ public class DeltaSession extends StandardSession
     if (value instanceof byte[]) {
       try {
         final Object deserialized = BlobHelper.deserializeBlob((byte[]) value);
-        if(deserialized == null) {
+        if (deserialized == null) {
           removeAttributeInternal(name, false);
           return null;
         }

@@ -34,21 +34,21 @@ import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionBindingEvent;
 
 import org.apache.catalina.Context;
-import org.apache.geode.modules.session.catalina.internal.DeltaSessionDestroyAttributeEvent;
-import org.apache.geode.modules.session.catalina.internal.DeltaSessionUpdateAttributeEvent;
 import org.apache.juli.logging.Log;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
+import org.mockito.Mockito;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.modules.session.catalina.callback.SessionExpirationCacheListener;
+import org.apache.geode.modules.session.catalina.internal.DeltaSessionDestroyAttributeEvent;
 import org.apache.geode.modules.session.catalina.internal.DeltaSessionStatistics;
+import org.apache.geode.modules.session.catalina.internal.DeltaSessionUpdateAttributeEvent;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
-import org.mockito.InOrder;
-import org.mockito.Mockito;
 
 public abstract class AbstractDeltaSessionIntegrationTest<DeltaSessionManagerT extends DeltaSessionManager<?>, DeltaSessionT extends DeltaSession> {
   protected static final String KEY = "key1";
@@ -133,9 +133,10 @@ public abstract class AbstractDeltaSessionIntegrationTest<DeltaSessionManagerT e
     session.setAttribute(name, nullValue);
     assertThat(session.getAttributes().size()).isEqualTo(0);
 
-    //Mockito.inOrder
+    // Mockito.inOrder
     verify(session).queueAttributeEvent(any(DeltaSessionDestroyAttributeEvent.class), anyBoolean());
-    verify(session, times(0)).queueAttributeEvent(any(DeltaSessionUpdateAttributeEvent.class), anyBoolean());
+    verify(session, times(0)).queueAttributeEvent(any(DeltaSessionUpdateAttributeEvent.class),
+        anyBoolean());
     verify(session).removeAttribute(eq(name));
   }
 
@@ -162,9 +163,11 @@ public abstract class AbstractDeltaSessionIntegrationTest<DeltaSessionManagerT e
 
 
     InOrder inOrder = Mockito.inOrder(session);
-    inOrder.verify(session).queueAttributeEvent(any(DeltaSessionUpdateAttributeEvent.class), anyBoolean());
+    inOrder.verify(session).queueAttributeEvent(any(DeltaSessionUpdateAttributeEvent.class),
+        anyBoolean());
     inOrder.verify(session).removeAttribute(eq(name));
-    inOrder.verify(session).queueAttributeEvent(any(DeltaSessionDestroyAttributeEvent.class), anyBoolean());
+    inOrder.verify(session).queueAttributeEvent(any(DeltaSessionDestroyAttributeEvent.class),
+        anyBoolean());
   }
 
   @Test
