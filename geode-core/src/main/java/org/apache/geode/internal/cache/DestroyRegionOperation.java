@@ -178,10 +178,10 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
               try {
                 if (op.isRegionDestroy() && !op.isClose() && op.isLocal()) {
                   advisee = PartitionedRegionHelper.getProxyBucketRegion(dm.getCache(), regionPath,
-                          false);
+                      false);
                 } else {
                   advisee = PartitionedRegionHelper.getProxyBucketRegion(dm.getCache(), regionPath,
-                          true);
+                      true);
                 }
               } catch (PRLocallyDestroyedException ignore) {
                 // region not found - it's been destroyed
