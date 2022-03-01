@@ -1,9 +1,13 @@
 {
   "Class org.apache.geode.management.builder.GeodeClusterManagementServiceBuilder": "Moved internal class to fix split packages between geode-core and geode-management",
   "Class org.apache.geode.management.api.ClusterManagementOperation": "Fixed missing @Experimental annotation",
+  "Class org.apache.geode.management.MemberMXBean": "Added new stats",
   "Method org.apache.geode.management.api.ClusterManagementOperation.getEndpoint()": "Fixed missing @Experimental annotation",
   "Method org.apache.geode.management.api.ClusterManagementOperation.getOperator()": "Fixed missing @Experimental annotation",
   "Class org.apache.geode.cache.query.IndexStatistics": "Added new methods.",
   "Method org.apache.geode.cache.query.IndexStatistics.getNumberOfBucketIndexesLong()": "Added new methods.",
-  "Method org.apache.geode.cache.query.IndexStatistics.getReadLockCountLong()": "Added new methods."
+  "Method org.apache.geode.cache.query.IndexStatistics.getReadLockCountLong()": "Added new methods.",
+  "Method org.apache.geode.management.MemberMXBean.getOffHeapFragments()": "Added new stat",
+  "Method org.apache.geode.management.MemberMXBean.getOffHeapFreedChunks()": "Added new stat",
+  "Method org.apache.geode.management.MemberMXBean.getOffHeapLargestFragment()": "Added new stat"
 }

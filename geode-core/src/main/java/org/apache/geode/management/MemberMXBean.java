@@ -877,6 +877,12 @@ public interface MemberMXBean {
    */
   int getOffHeapFragmentation();
 
+  long getOffHeapFragments();
+
+  long getOffHeapFreedChunks();
+
+  int getOffHeapLargestFragment();
+
   /**
    * Returns the total time spent compacting in milliseconds.
    */

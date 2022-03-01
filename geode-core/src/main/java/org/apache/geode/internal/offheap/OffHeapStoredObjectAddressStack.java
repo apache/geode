@@ -27,6 +27,8 @@ public class OffHeapStoredObjectAddressStack implements LongStack {
   // Ok to read without sync but must be synced on write
   private volatile long topAddr;
 
+  private volatile int length = 0;
+
   public OffHeapStoredObjectAddressStack(long addr) {
     if (addr != 0L) {
       MemoryAllocatorImpl.validateAddress(addr);
@@ -48,7 +50,12 @@ public class OffHeapStoredObjectAddressStack implements LongStack {
     synchronized (this) {
       OffHeapStoredObject.setNext(e, topAddr);
       topAddr = e;
+      length++;
     }
+  }
+
+  public int getLength() {
+    return length;
   }
 
   @Override
@@ -58,7 +65,9 @@ public class OffHeapStoredObjectAddressStack implements LongStack {
       result = topAddr;
       if (result != 0L) {
         topAddr = OffHeapStoredObject.getNext(result);
+        length--;
       }
+
     }
     return result;
   }
@@ -81,6 +90,7 @@ public class OffHeapStoredObjectAddressStack implements LongStack {
       if (result != 0L) {
         topAddr = 0L;
       }
+      length = 0;
     }
     return result;
   }

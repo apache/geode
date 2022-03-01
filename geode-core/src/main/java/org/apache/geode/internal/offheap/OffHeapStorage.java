@@ -61,6 +61,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
   private static final int defragmentationTimeId;
   private static final int fragmentationId;
   private static final int defragmentationsInProgressId;
+  private static final int freedChunksId;
   // NOTE!!!! When adding new stats make sure and update the initialize method on this class
 
   // creates and registers the statistics type
@@ -78,10 +79,12 @@ public class OffHeapStorage implements OffHeapMemoryStats {
         "The percentage of off-heap free memory that is fragmented.  Updated every time a defragmentation is performed.";
     final String fragmentsDesc =
         "The number of fragments of free off-heap memory. Updated every time a defragmentation is done.";
+    final String freedChunksDesc =
+        "The number of off-heap memory chunks that have been freed since the last defragmentation and that are not currently being used to store an object in the off-heap memory space. Updated every time a defragmentation is done and periodically according to update-off-heap-stats-frequency-ms system property (default 3600 seconds).";
     final String freeMemoryDesc =
         "The amount of off-heap memory, in bytes, that is not being used.";
     final String largestFragmentDesc =
-        "The largest fragment of memory found by the last defragmentation of off heap memory. Updated every time a defragmentation is done.";
+        "The largest fragment of off-heap memory that can be used to allocate an object. Updated every time a defragmentation is done and periodically according to update-off-heap-stats-frequency-ms system property (default 3600 seconds)";
     final String objectsDesc = "The number of objects stored in off-heap memory.";
     final String readsDesc =
         "The total number of reads of off-heap memory. Only reads of a full object increment this statistic. If only a part of the object is read this statistic is not incremented.";
@@ -94,6 +97,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
     final String defragmentationTime = "defragmentationTime";
     final String fragmentation = "fragmentation";
     final String fragments = "fragments";
+    final String freedChunks = "freedChunks";
     final String freeMemory = "freeMemory";
     final String largestFragment = "largestFragment";
     final String objects = "objects";
@@ -108,6 +112,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
             f.createLongCounter(defragmentationTime, defragmentationTimeDesc, "nanoseconds", false),
             f.createIntGauge(fragmentation, fragmentationDesc, "percentage"),
             f.createLongGauge(fragments, fragmentsDesc, "fragments"),
+            f.createLongGauge(freedChunks, freedChunksDesc, "freedChunks"),
             f.createLongGauge(freeMemory, freeMemoryDesc, "bytes"),
             f.createIntGauge(largestFragment, largestFragmentDesc, "bytes"),
             f.createIntGauge(objects, objectsDesc, "objects"),
@@ -116,6 +121,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
 
     usedMemoryId = statsType.nameToId(usedMemory);
     defragmentationId = statsType.nameToId(defragmentations);
+    freedChunksId = statsType.nameToId(freedChunks);
     defragmentationsInProgressId = statsType.nameToId(defragmentationsInProgress);
     defragmentationTimeId = statsType.nameToId(defragmentationTime);
     fragmentationId = statsType.nameToId(fragmentation);
@@ -343,6 +349,11 @@ public class OffHeapStorage implements OffHeapMemoryStats {
   }
 
   @Override
+  public long getFreedChunks() {
+    return this.stats.getLong(freedChunksId);
+  }
+
+  @Override
   public void setLargestFragment(int value) {
     stats.setInt(largestFragmentId, value);
   }
@@ -381,6 +392,12 @@ public class OffHeapStorage implements OffHeapMemoryStats {
   public void setFragmentation(int value) {
     stats.setInt(fragmentationId, value);
   }
+
+  @Override
+  public void setFreedChunks(int value) {
+    this.stats.setInt(freedChunksId, value);
+  }
+
 
   @Override
   public int getFragmentation() {

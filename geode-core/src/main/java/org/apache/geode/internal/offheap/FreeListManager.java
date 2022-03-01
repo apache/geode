@@ -252,8 +252,10 @@ public class FreeListManager {
     OffHeapMemoryStats stats = ma.getStats();
     lw.info("OutOfOffHeapMemory allocating size of " + chunkSize + ". allocated="
         + allocatedSize.get() + " defragmentations=" + defragmentationCount.get()
-        + " objects=" + stats.getObjects() + " free=" + stats.getFreeMemory() + " fragments="
-        + stats.getFragments() + " largestFragment=" + stats.getLargestFragment()
+        + " objects=" + stats.getObjects() + " free=" + stats.getFreeMemory()
+        + " freedChunks=" + stats.getFreedChunks()
+        + " fragments=" + stats.getFragments()
+        + " largestFragment=" + stats.getLargestFragment()
         + " fragmentation=" + stats.getFragmentation());
     logFragmentState(lw);
     logTinyState(lw);
@@ -518,8 +520,56 @@ public class FreeListManager {
     ma.getStats().setLargestFragment(largestFragment);
     ma.getStats().setFragments(tmp.size());
     ma.getStats().setFragmentation(getFragmentation());
+    ma.getStats().setFreedChunks(0);
 
     return result;
+  }
+
+  public void updateNonRealTimeStats() {
+    ma.getStats().setLargestFragment(getLargestFragment());
+    ma.getStats().setFreedChunks(getFreedChunks());
+  }
+
+  public int getFreedChunks() {
+    int elementCountFromTinyFreeLists =
+        getElementCountFromTinyFreeLists();
+    int elementCountFromHugeFreeLists =
+        getElementCountFromHugeFreeLists();
+
+    return elementCountFromTinyFreeLists + elementCountFromHugeFreeLists;
+  }
+
+  private int getElementCountFromTinyFreeLists() {
+    int fragmentCount = 0;
+    for (int i = 0; i < tinyFreeLists.length(); i++) {
+      OffHeapStoredObjectAddressStack cl = tinyFreeLists.get(i);
+      if (cl != null) {
+        int length = cl.getLength();
+        fragmentCount += length;
+      }
+    }
+    return fragmentCount;
+  }
+
+  private int getElementCountFromHugeFreeLists() {
+    return hugeChunkSet.size();
+  }
+
+  private int getLargestFragment() {
+    int largestFreeSpaceFromFragments = 0;
+    for (Fragment f : fragmentList) {
+      int offset = f.getFreeIndex();
+      int diff = f.getSize() - offset;
+      if (diff < OffHeapStoredObject.MIN_CHUNK_SIZE) {
+        assert diff == 0;
+        continue;
+      }
+      if (diff > largestFreeSpaceFromFragments) {
+        largestFreeSpaceFromFragments = diff;
+      }
+    }
+    return largestFreeSpaceFromFragments;
+
   }
 
   /**

@@ -43,6 +43,8 @@ public interface OffHeapMemoryStats {
 
   void setFragmentation(int value);
 
+  void setFreedChunks(int value);
+
   long getFreeMemory();
 
   long getMaxMemory();
@@ -58,6 +60,8 @@ public interface OffHeapMemoryStats {
   int getDefragmentationsInProgress();
 
   long getFragments();
+
+  long getFreedChunks();
 
   int getLargestFragment();
 

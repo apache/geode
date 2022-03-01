@@ -23,6 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
+import static org.apache.geode.distributed.ConfigurationProperties.OFF_HEAP_MEMORY_SIZE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 import static org.apache.geode.internal.process.ProcessUtils.identifyPidAsUnchecked;
@@ -41,6 +42,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
 import org.apache.geode.internal.statistics.HostStatSampler;
 import org.apache.geode.internal.statistics.SampleCollector;
 import org.apache.geode.management.internal.SystemManagementService;
@@ -162,6 +164,50 @@ public class MemberMXBeanAttributesDistributedTest extends CacheTestCase {
     assertThat(memberMXBean.isManagerCreated()).isFalse();
   }
 
+  @Test
+  public void testOffHeapMemoryAttributes() {
+    MemberMXBean memberMXBean = getSystemManagementService().getMemberMXBean();
+    sampleStatistics();
+
+    int initialLargestFragment = (int) (((4096 * BYTES_PER_MEGABYTE) / 2) - 1);
+    assertThat(memberMXBean.getOffHeapFragments()).isEqualTo(2);
+    assertThat(memberMXBean.getOffHeapLargestFragment()).isEqualTo(initialLargestFragment);
+    assertThat(memberMXBean.getOffHeapFreedChunks()).isEqualTo(0);
+
+    RegionFactory regionFactory =
+        getCache().createRegionFactory(PARTITION_REDUNDANT);
+    regionFactory.setConcurrencyChecksEnabled(false);
+    regionFactory.setOffHeap(true);
+
+    regionFactory.create("testPRRegion1");
+    Region region1 = getCache().getRegion(SEPARATOR + "testPRRegion1");
+
+    // fill first fragment
+    int hugeAllocations = 100;
+    for (int i = 0; i < hugeAllocations; i++) {
+      region1.put(i + 10, new byte[initialLargestFragment / hugeAllocations]);
+    }
+    for (int i = 0; i < hugeAllocations; i++) {
+      region1.remove(i + 10);
+    }
+
+    region1.put(1, new byte[100]);
+    region1.remove(1);
+    // Release the memory of the object so that the next allocation reuses the freed chunk
+    region1.put(2, new byte[100]);
+    region1.remove(2);
+    region1.put(3, new byte[200]);
+    region1.remove(3);
+
+    sampleStatistics();
+
+    assertThat(memberMXBean.getOffHeapFragments()).isEqualTo(2);
+    await().untilAsserted(() -> assertThat(memberMXBean.getOffHeapLargestFragment())
+        .isLessThan(initialLargestFragment));
+    await().untilAsserted(
+        () -> assertThat(memberMXBean.getOffHeapFreedChunks()).isEqualTo(hugeAllocations + 2));
+  }
+
   @Override
   public Properties getDistributedSystemProperties() {
     Properties props = new Properties();
@@ -174,7 +220,10 @@ public class MemberMXBeanAttributesDistributedTest extends CacheTestCase {
   }
 
   private void createMember() {
-    getCache(getDistributedSystemProperties());
+    Properties props = getDistributedSystemProperties();
+    props.setProperty(OFF_HEAP_MEMORY_SIZE, "4096");
+    MemoryAllocatorImpl.setUpdateOffHeapStatsFrequencyMs(1000);
+    getCache(props);
   }
 
   private void createManager() {
