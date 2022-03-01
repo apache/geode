@@ -20,7 +20,7 @@ import redis.clients.jedis.Jedis;
 
 import org.apache.geode.redis.GeodeRedisServerRule;
 
-public class InfoStatsIntegrationTest extends AbstractInfoStatsIntegrationTest {
+public class InfoStatsIntegrationTest extends AbstractRedisInfoStatsIntegrationTest {
   @ClassRule
   public static GeodeRedisServerRule server = new GeodeRedisServerRule();
 
@@ -35,5 +35,7 @@ public class InfoStatsIntegrationTest extends AbstractInfoStatsIntegrationTest {
   }
 
   @Override
-  public void configureMaxMemory(Jedis jedis) {}
+  public void configureMaxMemory(Jedis jedis) {
+    return;
+  }
 }
