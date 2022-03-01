@@ -31,8 +31,6 @@ public class LInsertExecutor implements CommandExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElements = command.getProcessedCommand();
-    Region<RedisKey, RedisData> region = context.getRegion();
-    RedisKey key = command.getKey();
 
     String direction = Coder.bytesToString(commandElements.get(2));
     boolean before;
@@ -47,9 +45,12 @@ public class LInsertExecutor implements CommandExecutor {
       return RedisResponse.error(RedisConstants.ERROR_SYNTAX);
     }
 
-    int numEntries = context.listLockedExecute(key, false,
+    Region<RedisKey, RedisData> region = context.getRegion();
+    RedisKey key = command.getKey();
+
+    int result = context.listLockedExecute(key, false,
         list -> list.linsert(elementToInsert, referenceElement, before, region, key));
 
-    return RedisResponse.integer(numEntries);
+    return RedisResponse.integer(result);
   }
 }

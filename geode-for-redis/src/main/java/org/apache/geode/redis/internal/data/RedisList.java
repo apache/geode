@@ -136,7 +136,7 @@ public class RedisList extends AbstractRedisData {
    * @param referenceElement element to insert next to
    * @param before true if inserting before reference element, false if it is after
    * @param region the region this instance is store in
-   * @param key the name of the set to add to
+   * @param key the name of the list to add to
    * @return the number of elements in the list after the element is inserted
    */
   public int linsert(byte[] elementToInsert, byte[] referenceElement, boolean before,
