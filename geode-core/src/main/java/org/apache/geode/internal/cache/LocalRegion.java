@@ -2111,9 +2111,20 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       // if this is a client with no tombstones then we subtract the number
       // of entries being affected by register-interest refresh
       if (imageState.isClient() && !getConcurrencyChecksEnabled()) {
-        return result - imageState.getDestroyedEntriesCount();
+        int destroyedEntriesCount = imageState.getDestroyedEntriesCount();
+        if (result < destroyedEntriesCount) {
+          logger.error("Incorrect region size: mapSize={}, destroyedEntriesCount={}.", result,
+              destroyedEntriesCount);
+        }
+        return result - destroyedEntriesCount;
       }
-      return result - tombstoneCount.get();
+
+      int tombstoneNumber = tombstoneCount.get();
+      if (result < tombstoneNumber) {
+        logger.error("Incorrect region size: mapSize={}, tombstoneCount={}.", result,
+            tombstoneNumber);
+      }
+      return result - tombstoneNumber;
     }
   }
 
