@@ -42,9 +42,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,8 +56,10 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.CancelException;
 import org.apache.geode.Statistics;
 import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.Operation;
@@ -65,6 +70,9 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.TransactionDataRebalancedException;
 import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.MultiIndexCreationException;
+import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -635,6 +643,85 @@ public class PartitionedRegionTest {
     partitionedRegion.notifyRegionCreated();
 
     assertThat(partitionedRegion.isRegionCreateNotified()).isTrue();
+  }
+
+  @Test
+  public void populateEmptyIndexesThrowsIfBucketRegionDestroyedDueToCacheClose() {
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+    BucketRegion bucketRegion = mock(BucketRegion.class);
+    when(bucketRegion.isDestroyed()).thenReturn(true);
+
+    Set<Index> indexes = setupIndexes();
+    ConcurrentMap<Integer, BucketRegion> map = setupBuckets(bucketRegion);
+    setupDataStore(spyPartitionedRegion, map);
+    CacheClosedException cacheClosedException = new CacheClosedException();
+    setupCancelCriterion(cacheClosedException);
+
+    assertThatThrownBy(() -> spyPartitionedRegion.populateEmptyIndexes(indexes, new HashMap<>()))
+        .isInstanceOf(CancelException.class).isEqualTo(cacheClosedException);
+  }
+
+  @NotNull
+  private Set<Index> setupIndexes() {
+    Set<Index> indexes = new HashSet<>();
+    Index index = mock(Index.class);
+    indexes.add(index);
+    return indexes;
+  }
+
+  @NotNull
+  private ConcurrentMap<Integer, BucketRegion> setupBuckets(BucketRegion bucketRegion) {
+    ConcurrentMap<Integer, BucketRegion> map = new ConcurrentHashMap<>();
+    map.put(1, bucketRegion);
+    return map;
+  }
+
+  private void setupDataStore(PartitionedRegion spyPartitionedRegion,
+      ConcurrentMap<Integer, BucketRegion> map) {
+    PartitionedRegionDataStore dataStore = mock(PartitionedRegionDataStore.class);
+    doReturn(dataStore).when(spyPartitionedRegion).getDataStore();
+    when(dataStore.getAllLocalBuckets()).thenReturn(map.entrySet());
+  }
+
+  private void setupCancelCriterion(CacheClosedException cacheClosedException) {
+    CancelCriterion cancelCriterion = mock(CancelCriterion.class);
+    when(cache.getCancelCriterion()).thenReturn(cancelCriterion);
+    doThrow(cacheClosedException).when(cancelCriterion).checkCancelInProgress();
+  }
+
+  @Test
+  public void populateEmptyIndexesReturnsFalseIfIndexManagerPopulateIndexesSuccessfully() {
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+    IndexManager indexManager = mock(IndexManager.class);
+    BucketRegion bucketRegion = mock(BucketRegion.class);
+    when(bucketRegion.getIndexManager()).thenReturn(indexManager);
+
+    Set<Index> indexes = setupIndexes();
+    ConcurrentMap<Integer, BucketRegion> map = setupBuckets(bucketRegion);
+    setupDataStore(spyPartitionedRegion, map);
+    doReturn(indexes).when(spyPartitionedRegion).getBucketIndexesForPRIndexes(bucketRegion,
+        indexes);
+
+    assertThat(spyPartitionedRegion.populateEmptyIndexes(indexes, new HashMap<>())).isFalse();
+  }
+
+  @Test
+  public void populateEmptyIndexesReturnsTrueIfIndexManagerPopulateIndexesThrows()
+      throws Exception {
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+    IndexManager indexManager = mock(IndexManager.class);
+    BucketRegion bucketRegion = mock(BucketRegion.class);
+    when(bucketRegion.getIndexManager()).thenReturn(indexManager);
+    MultiIndexCreationException exception = mock(MultiIndexCreationException.class);
+
+    Set<Index> indexes = setupIndexes();
+    ConcurrentMap<Integer, BucketRegion> map = setupBuckets(bucketRegion);
+    setupDataStore(spyPartitionedRegion, map);
+    doReturn(indexes).when(spyPartitionedRegion).getBucketIndexesForPRIndexes(bucketRegion,
+        indexes);
+    doThrow(exception).when(indexManager).populateIndexes(indexes);
+
+    assertThat(spyPartitionedRegion.populateEmptyIndexes(indexes, new HashMap<>())).isTrue();
   }
 
   private static <K> Set<K> asSet(K... values) {
