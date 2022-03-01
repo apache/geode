@@ -266,7 +266,7 @@ public class DeltaSession extends StandardSession
         super.setAttribute(name, serializedValue, true);
       }
 
-      if (serializedValue == null) {
+      if (value == null) {
         return;
       }
 
@@ -353,6 +353,10 @@ public class DeltaSession extends StandardSession
     if (value instanceof byte[]) {
       try {
         final Object deserialized = BlobHelper.deserializeBlob((byte[]) value);
+        if(deserialized == null) {
+          removeAttributeInternal(name, false);
+          return null;
+        }
         if (store) {
           setAttributeInternal(name, deserialized);
         }
@@ -478,7 +482,7 @@ public class DeltaSession extends StandardSession
     }
   }
 
-  private void queueAttributeEvent(DeltaSessionAttributeEvent event,
+  void queueAttributeEvent(DeltaSessionAttributeEvent event,
       boolean checkAddToCurrentGatewayDelta) {
     // Add to current gateway delta if necessary
     if (checkAddToCurrentGatewayDelta) {
