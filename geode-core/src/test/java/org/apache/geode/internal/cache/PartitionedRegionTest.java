@@ -56,7 +56,6 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.CancelException;
 import org.apache.geode.Statistics;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheClosedException;
@@ -658,7 +657,7 @@ public class PartitionedRegionTest {
     setupCancelCriterion(cacheClosedException);
 
     assertThatThrownBy(() -> spyPartitionedRegion.populateEmptyIndexes(indexes, new HashMap<>()))
-        .isInstanceOf(CancelException.class).isEqualTo(cacheClosedException);
+        .isEqualTo(cacheClosedException);
   }
 
   @NotNull
