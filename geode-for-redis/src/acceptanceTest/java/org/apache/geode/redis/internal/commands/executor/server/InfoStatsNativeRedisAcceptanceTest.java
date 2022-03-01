@@ -20,7 +20,7 @@ import redis.clients.jedis.Jedis;
 
 import org.apache.geode.NativeRedisTestRule;
 
-public class InfoStatsNativeRedisAcceptanceTest extends AbstractInfoStatsIntegrationTest {
+public class InfoStatsNativeRedisAcceptanceTest extends AbstractRedisInfoStatsIntegrationTest {
   @ClassRule
   public static NativeRedisTestRule redis = new NativeRedisTestRule();
 
