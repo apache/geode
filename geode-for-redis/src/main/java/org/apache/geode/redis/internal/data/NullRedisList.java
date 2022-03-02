@@ -46,7 +46,22 @@ class NullRedisList extends RedisList {
 
     RedisList newList = new RedisList();
     for (byte[] element : elementsToAdd) {
-      newList.elementPush(element);
+      newList.elementPushHead(element);
+    }
+    region.create(key, newList);
+    return elementsToAdd.size();
+  }
+
+  @Override
+  public long rpush(List<byte[]> elementsToAdd, Region<RedisKey, RedisData> region, RedisKey key,
+      final boolean onlyIfExists) {
+    if (onlyIfExists) {
+      return 0;
+    }
+
+    RedisList newList = new RedisList();
+    for (byte[] element : elementsToAdd) {
+      newList.elementPushTail(element);
     }
     region.create(key, newList);
     return elementsToAdd.size();

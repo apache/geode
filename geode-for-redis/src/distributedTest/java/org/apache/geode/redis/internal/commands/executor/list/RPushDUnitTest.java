@@ -36,7 +36,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-public class LPushDUnitTest {
+public class RPushDUnitTest {
   @Rule
   public RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule();
 
@@ -47,7 +47,7 @@ public class LPushDUnitTest {
   public static final int PUSH_LIST_SIZE = 3;
   private static final int MINIMUM_ITERATIONS = 10000;
 
-  private static AtomicLong runningCount = new AtomicLong(PUSHER_COUNT);
+  private static final AtomicLong runningCount = new AtomicLong(PUSHER_COUNT);
   private static List<String> listHashtags;
   private static List<String> keys;
   private static HashMap<String, List<String>> keyToElementListMap;
@@ -71,17 +71,17 @@ public class LPushDUnitTest {
     }
 
     taskList = new ArrayList<>();
-    taskList.add(() -> lpushPerformAndVerify(keys.get(0), keyToElementListMap.get(keys.get(0)),
+    taskList.add(() -> rpushPerformAndVerify(keys.get(0), keyToElementListMap.get(keys.get(0)),
         runningCount));
-    taskList.add(() -> lpushPerformAndVerify(keys.get(0), keyToElementListMap.get(keys.get(0)),
+    taskList.add(() -> rpushPerformAndVerify(keys.get(0), keyToElementListMap.get(keys.get(0)),
         runningCount));
-    taskList.add(() -> lpushPerformAndVerify(keys.get(1), keyToElementListMap.get(keys.get(1)),
+    taskList.add(() -> rpushPerformAndVerify(keys.get(1), keyToElementListMap.get(keys.get(1)),
         runningCount));
-    taskList.add(() -> lpushPerformAndVerify(keys.get(1), keyToElementListMap.get(keys.get(1)),
+    taskList.add(() -> rpushPerformAndVerify(keys.get(1), keyToElementListMap.get(keys.get(1)),
         runningCount));
-    taskList.add(() -> lpushPerformAndVerify(keys.get(2), keyToElementListMap.get(keys.get(2)),
+    taskList.add(() -> rpushPerformAndVerify(keys.get(2), keyToElementListMap.get(keys.get(2)),
         runningCount));
-    taskList.add(() -> lpushPerformAndVerify(keys.get(2), keyToElementListMap.get(keys.get(2)),
+    taskList.add(() -> rpushPerformAndVerify(keys.get(2), keyToElementListMap.get(keys.get(2)),
         runningCount));
     taskList.add(() -> verifyListLengthCondition(keys.get(0), runningCount));
     taskList.add(() -> verifyListLengthCondition(keys.get(1), runningCount));
@@ -94,7 +94,7 @@ public class LPushDUnitTest {
   }
 
   @Test
-  public void givenBucketsMovedDuringLPush_elementsAreAddedAtomically()
+  public void givenBucketsMovedDuringRPush_elementsAreAddedAtomically()
       throws ExecutionException, InterruptedException {
 
     List<Future<Void>> futureList = new ArrayList<>();
@@ -102,19 +102,19 @@ public class LPushDUnitTest {
       futureList.add(executor.runAsync(task));
     }
 
-    for (int i = 0; i < 50 && runningCount.get() > 0; i++) {
+    for (int i = 0; i < 10 && runningCount.get() > 0; i++) {
       clusterStartUp.moveBucketForKey(listHashtags.get(i % listHashtags.size()));
       Thread.sleep(500);
     }
 
-    for (Future future : futureList) {
+    for (Future<Void> future : futureList) {
       future.get();
     }
 
     for (String key : keys) {
       long length = jedis.llen(key);
       assertThat(length).isGreaterThanOrEqualTo(MINIMUM_ITERATIONS * 2 * PUSH_LIST_SIZE);
-      validateListContents(key, length, keyToElementListMap);
+      validateListContents(key, keyToElementListMap);
     }
   }
 
@@ -129,7 +129,7 @@ public class LPushDUnitTest {
     Thread.sleep(200);
     clusterStartUp.crashVM(1); // kill primary server
 
-    for (Future future : futureList) {
+    for (Future<Void> future : futureList) {
       future.get();
     }
 
@@ -138,36 +138,36 @@ public class LPushDUnitTest {
       length = jedis.llen(key);
       assertThat(length).isGreaterThanOrEqualTo(MINIMUM_ITERATIONS * 2 * PUSH_LIST_SIZE);
       assertThat(length % 3).isEqualTo(0);
-      validateListContents(key, length, keyToElementListMap);
+      validateListContents(key, keyToElementListMap);
     }
   }
 
-  private void lpushPerformAndVerify(String key, List<String> elementList,
+  private void rpushPerformAndVerify(String key, List<String> elementList,
       AtomicLong runningCount) {
     for (int i = 0; i < MINIMUM_ITERATIONS; i++) {
       long listLength = jedis.llen(key);
-      long newLength = jedis.lpush(key, elementList.toArray(new String[] {}));
-      assertThat((newLength - listLength) % 3).as("LPUSH, list length %s not multiple of 3",
+      long newLength = jedis.rpush(key, elementList.toArray(new String[] {}));
+      assertThat((newLength - listLength) % 3).as("RPUSH, list length %s not multiple of 3",
           newLength).isEqualTo(0);
     }
     runningCount.decrementAndGet();
   }
 
-  private void validateListContents(String key, long length,
+  private void validateListContents(String key,
       HashMap<String, List<String>> keyToElementListMap) {
     while (jedis.llen(key) > 0) {
       List<String> elementList = keyToElementListMap.get(key);
-      assertThat(jedis.lpop(key)).isEqualTo(elementList.get(2));
-      assertThat(jedis.lpop(key)).isEqualTo(elementList.get(1));
       assertThat(jedis.lpop(key)).isEqualTo(elementList.get(0));
+      assertThat(jedis.lpop(key)).isEqualTo(elementList.get(1));
+      assertThat(jedis.lpop(key)).isEqualTo(elementList.get(2));
     }
   }
 
   private List<String> makeListHashtags() {
     List<String> listHashtags = new ArrayList<>();
-    listHashtags.add(clusterStartUp.getKeyOnServer("lpush", 1));
-    listHashtags.add(clusterStartUp.getKeyOnServer("lpush", 2));
-    listHashtags.add(clusterStartUp.getKeyOnServer("lpush", 3));
+    listHashtags.add(clusterStartUp.getKeyOnServer("rpush", 1));
+    listHashtags.add(clusterStartUp.getKeyOnServer("rpush", 2));
+    listHashtags.add(clusterStartUp.getKeyOnServer("rpush", 3));
     return listHashtags;
   }
 
@@ -185,7 +185,7 @@ public class LPushDUnitTest {
 
   private void verifyListLengthCondition(String key, AtomicLong runningCount) {
     while (runningCount.get() > 0) {
-      Long listLength = jedis.llen(key);
+      long listLength = jedis.llen(key);
       assertThat(listLength % 3).as("List length not a multiple of three: %s", listLength)
           .isEqualTo(0);
     }
