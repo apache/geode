@@ -37,7 +37,7 @@ public class EventDistributor extends PartitionListenerAdapter {
   private static final Logger logger = LogService.getLogger();
   private final Map<RedisKey, List<EventListener>> listeners = new HashMap<>();
   private final Map<EventListener, TimerTask> timerTasks = new HashMap<>();
-  private final Timer timer = new Timer("GeodeForRedisEventTimer");
+  private final Timer timer = new Timer("GeodeForRedisEventTimer", true);
   private int keysRegistered = 0;
 
   public synchronized void registerListener(EventListener listener) {
