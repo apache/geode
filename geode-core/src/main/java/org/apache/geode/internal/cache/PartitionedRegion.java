@@ -8581,7 +8581,8 @@ public class PartitionedRegion extends LocalRegion
     }
   }
 
-  private boolean populateEmptyIndexes(Set<Index> indexes,
+  @VisibleForTesting
+  boolean populateEmptyIndexes(Set<Index> indexes,
       HashMap<String, Exception> exceptionsMap) {
     boolean throwException = false;
     if (getDataStore() != null && indexes.size() > 0) {
@@ -8594,6 +8595,9 @@ public class PartitionedRegion extends LocalRegion
           continue;
         }
         IndexManager bucketIndexManager = IndexUtils.getIndexManager(cache, bucket, true);
+        if (bucketIndexManager == null) {
+          cache.getCancelCriterion().checkCancelInProgress();
+        }
         Set<Index> bucketIndexes = getBucketIndexesForPRIndexes(bucket, indexes);
         try {
           bucketIndexManager.populateIndexes(bucketIndexes);
@@ -8606,7 +8610,8 @@ public class PartitionedRegion extends LocalRegion
     return throwException;
   }
 
-  private Set<Index> getBucketIndexesForPRIndexes(Region bucket, Set<Index> indexes) {
+  @VisibleForTesting
+  Set<Index> getBucketIndexesForPRIndexes(Region bucket, Set<Index> indexes) {
     Set<Index> bucketIndexes = new HashSet<>();
     for (Index ind : indexes) {
       bucketIndexes.addAll(((PartitionedIndex) ind).getBucketIndexes(bucket));
