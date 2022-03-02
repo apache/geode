@@ -1055,7 +1055,7 @@ lib/mx4j-3.0.2.jar
 lib/mx4j-remote-3.0.2.jar
 lib/mx4j-tools-3.0.1.jar
 lib/netty-all-4.1.48.Final.jar
-lib/protobuf-java-3.11.4.jar
+lib/protobuf-java-3.15.8.jar
 lib/ra.jar
 lib/rmiio-2.1.2.jar
 lib/shiro-cache-1.8.0.jar

@@ -61,9 +61,9 @@ class DependencyConstraints implements Plugin<Project> {
 
     // These version numbers are consumed by protobuf configurations that are plugin-specific and not
     // part of the typical Gradle dependency configurations.
-    deps.put("protoc.version", "3.11.4")
+    deps.put("protoc.version", "3.15.8")
     deps.put("protobuf-gradle-plugin.version", "0.8.10")
-    deps.put("protobuf-java.version", "3.11.4")
+    deps.put("protobuf-java.version", "3.15.8")
 
     // These versions are referenced in test.gradle, which is aggressively injected into all projects.
     deps.put("junit.version", "4.12")
