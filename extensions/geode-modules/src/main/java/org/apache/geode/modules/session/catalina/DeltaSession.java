@@ -253,7 +253,7 @@ public class DeltaSession extends StandardSession
 
     synchronized (changeLock) {
       // Serialize the value
-      byte[] serializedValue = serialize(value);
+      final byte[] serializedValue = value == null ? null : serialize(value);
 
       // Store the attribute locally
       if (preferDeserializedForm) {
@@ -265,7 +265,9 @@ public class DeltaSession extends StandardSession
         super.setAttribute(name, serializedValue, true);
       }
 
-      if (serializedValue == null) {
+      // super.setAttribute above performed a removeAttribute for a value which was null once
+      // deserialized.
+      if (value == null) {
         return;
       }
 
@@ -331,6 +333,9 @@ public class DeltaSession extends StandardSession
 
   @Override
   public Object getAttribute(String name) {
+    if (name == null) {
+      return null;
+    }
     checkBackingCacheAvailable();
     Object value = deserializeAttribute(name, super.getAttribute(name), preferDeserializedForm);
 
@@ -352,6 +357,10 @@ public class DeltaSession extends StandardSession
     if (value instanceof byte[]) {
       try {
         final Object deserialized = BlobHelper.deserializeBlob((byte[]) value);
+        if (deserialized == null) {
+          removeAttributeInternal(name, false);
+          return null;
+        }
         if (store) {
           setAttributeInternal(name, deserialized);
         }
@@ -477,7 +486,7 @@ public class DeltaSession extends StandardSession
     }
   }
 
-  private void queueAttributeEvent(DeltaSessionAttributeEvent event,
+  void queueAttributeEvent(DeltaSessionAttributeEvent event,
       boolean checkAddToCurrentGatewayDelta) {
     // Add to current gateway delta if necessary
     if (checkAddToCurrentGatewayDelta) {
