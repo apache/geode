@@ -135,8 +135,8 @@ public class RedisList extends AbstractRedisData {
    *        and holds a list, otherwise no operation is performed.
    * @return the length of the list after the operation
    */
-  public long lpush(List<byte[]> elementsToAdd, Region<RedisKey, RedisData> region, RedisKey key,
-      final boolean onlyIfExists) {
+  public synchronized long lpush(List<byte[]> elementsToAdd, Region<RedisKey, RedisData> region,
+      RedisKey key, final boolean onlyIfExists) {
     elementsPushHead(elementsToAdd);
     storeChanges(region, key, new AddByteArrays(elementsToAdd));
     return elementList.size();
@@ -150,8 +150,8 @@ public class RedisList extends AbstractRedisData {
    *        and holds a list, otherwise no operation is performed.
    * @return the length of the list after the operation
    */
-  public long rpush(List<byte[]> elementsToAdd, Region<RedisKey, RedisData> region, RedisKey key,
-      final boolean onlyIfExists) {
+  public synchronized long rpush(List<byte[]> elementsToAdd, Region<RedisKey, RedisData> region,
+      RedisKey key, final boolean onlyIfExists) {
     elementsPushTail(elementsToAdd);
     storeChanges(region, key, new AddByteArraysTail(elementsToAdd));
     return elementList.size();
@@ -225,29 +225,29 @@ public class RedisList extends AbstractRedisData {
     return REDIS_LIST_ID;
   }
 
-  public synchronized byte[] elementRemove(int index) {
+  protected synchronized byte[] elementRemove(int index) {
     return elementList.remove(index);
   }
 
-  public synchronized boolean elementRemove(byte[] element) {
+  protected synchronized boolean elementRemove(byte[] element) {
     return elementList.remove(element);
   }
 
-  public synchronized void elementPushHead(byte[] element) {
+  protected synchronized void elementPushHead(byte[] element) {
     elementList.addFirst(element);
   }
 
-  public synchronized void elementsPushHead(List<byte[]> elementsToAdd) {
+  protected synchronized void elementsPushHead(List<byte[]> elementsToAdd) {
     for (byte[] element : elementsToAdd) {
       elementPushHead(element);
     }
   }
 
-  public synchronized void elementPushTail(byte[] element) {
+  protected synchronized void elementPushTail(byte[] element) {
     elementList.addLast(element);
   }
 
-  public synchronized void elementsPushTail(List<byte[]> elementsToAdd) {
+  protected synchronized void elementsPushTail(List<byte[]> elementsToAdd) {
     for (byte[] element : elementsToAdd) {
       elementPushTail(element);
     }
