@@ -23,9 +23,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static redis.clients.jedis.args.ListPosition.AFTER;
 import static redis.clients.jedis.args.ListPosition.BEFORE;
 
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -225,25 +222,23 @@ public abstract class AbstractLInsertIntegrationTest implements RedisIntegration
 
     new ConcurrentLoopingThreads(1000,
         i -> jedis.lpush(KEY, elementsToPush),
-        i -> jedis.linsert(KEY, BEFORE, "snake", insertedValue)
-    ).runWithAction(() -> {
-      assertThat(jedis.llen(KEY)).isEqualTo(initialElements.length + elementsToPush.length + 1);
+        i -> jedis.linsert(KEY, BEFORE, "snake", insertedValue)).runWithAction(() -> {
+          assertThat(jedis.llen(KEY)).isEqualTo(initialElements.length + elementsToPush.length + 1);
 
-      assertThat(jedis).satisfiesAnyOf(
-          //LINSERT happened first
-          jedisClient -> {
-            assertThat(jedisClient.lindex(KEY, 8))
-                .as("failure 1")
-                .isEqualTo(insertedValue);
-            assertThat(jedisClient.lindex(KEY, 0)).isEqualTo("snake");
-          },
-      //LPUSH happened first
-      jedisClient -> assertThat(jedisClient.lindex(KEY, 0))
-          .as("failure 1").isEqualTo(insertedValue)
-      );
+          assertThat(jedis).satisfiesAnyOf(
+              // LINSERT happened first
+              jedisClient -> {
+                assertThat(jedisClient.lindex(KEY, 8))
+                    .as("failure 1")
+                    .isEqualTo(insertedValue);
+                assertThat(jedisClient.lindex(KEY, 0)).isEqualTo("snake");
+              },
+              // LPUSH happened first
+              jedisClient -> assertThat(jedisClient.lindex(KEY, 0))
+                  .as("failure 1").isEqualTo(insertedValue));
 
-      jedis.del(KEY);
-      jedis.lpush(KEY, initialElements);
-    });
+          jedis.del(KEY);
+          jedis.lpush(KEY, initialElements);
+        });
   }
 }

@@ -16,14 +16,11 @@
 
 package org.apache.geode.redis.internal.data.delta;
 
-import static org.apache.geode.DataSerializer.readByteArray;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.INSERT_BYTE_ARRAY;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-
-import javax.xml.crypto.Data;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.redis.internal.data.AbstractRedisData;

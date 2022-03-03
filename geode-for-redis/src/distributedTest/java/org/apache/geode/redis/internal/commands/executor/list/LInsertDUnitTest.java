@@ -34,7 +34,6 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.args.ListPosition;
 
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
@@ -78,7 +77,7 @@ public class LInsertDUnitTest {
 
     assertThat(jedis.lindex(key, 2)).isEqualTo(insertedValue);
 
-    clusterStartUp.crashVM(1); //kill primary
+    clusterStartUp.crashVM(1); // kill primary
 
     assertThat(jedis.llen(key)).isEqualTo(elementList.size() + 1);
     assertThat(jedis.lindex(key, 2)).isEqualTo(insertedValue);
@@ -139,21 +138,21 @@ public class LInsertDUnitTest {
   }
 
   private void linsertPerformAndVerify(String key, ListPosition pos, String pivot, String value,
-        AtomicLong runningCount) {
+      AtomicLong runningCount) {
     long startLength = jedis.llen(key);
     assertThat(jedis.linsert(key, pos, pivot, value)).isEqualTo(startLength + 1);
     runningCount.incrementAndGet();
 
-    for(int i=0; i<startLength + 1; i++) {
-      if(pos == BEFORE && jedis.lindex(key, i).equalsIgnoreCase(value)) {
-        assertThat(jedis.lindex(key, i+1)).isEqualTo(pivot);
+    for (int i = 0; i < startLength + 1; i++) {
+      if (pos == BEFORE && jedis.lindex(key, i).equalsIgnoreCase(value)) {
+        assertThat(jedis.lindex(key, i + 1)).isEqualTo(pivot);
         break;
-      } else if(pos == AFTER && jedis.lindex(key, i).equalsIgnoreCase(pivot)) {
-        assertThat(jedis.lindex(key, i+1)).isEqualTo(value);
+      } else if (pos == AFTER && jedis.lindex(key, i).equalsIgnoreCase(pivot)) {
+        assertThat(jedis.lindex(key, i + 1)).isEqualTo(value);
         break;
       }
 
-      if(i == startLength) {
+      if (i == startLength) {
         assertThat(jedis.lindex(key, startLength))
             .as("neither element nor pivot was found")
             .isEqualTo(value);
