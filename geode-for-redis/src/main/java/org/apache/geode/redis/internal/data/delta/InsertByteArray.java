@@ -23,6 +23,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import javax.xml.crypto.Data;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.redis.internal.data.AbstractRedisData;
 
@@ -43,6 +45,7 @@ public class InsertByteArray implements DeltaInfo {
 
   public static void deserializeFrom(DataInput in, AbstractRedisData redisData) throws IOException {
     int index = DataSerializer.readPrimitiveInt(in);
-    redisData.applyInsertByteArrayDelta(readByteArray(in), index);
+    byte[] bytearray = DataSerializer.readByteArray(in);
+    redisData.applyInsertByteArrayDelta(bytearray, index);
   }
 }

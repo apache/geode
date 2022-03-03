@@ -62,6 +62,7 @@ import org.apache.geode.redis.internal.data.delta.AddByteArraysTail;
 import org.apache.geode.redis.internal.data.delta.AppendByteArray;
 import org.apache.geode.redis.internal.data.delta.DeltaInfo;
 import org.apache.geode.redis.internal.data.delta.DeltaType;
+import org.apache.geode.redis.internal.data.delta.InsertByteArray;
 import org.apache.geode.redis.internal.data.delta.RemoveByteArrays;
 import org.apache.geode.redis.internal.data.delta.RemoveElementsByIndex;
 import org.apache.geode.redis.internal.data.delta.ReplaceByteArrayAtOffset;
@@ -272,6 +273,11 @@ public abstract class AbstractRedisData implements RedisData {
       case ADD_BYTE_ARRAY_PAIRS:
         synchronized (this) {
           AddByteArrayPairs.deserializeFrom(in, this);
+        }
+        break;
+      case INSERT_BYTE_ARRAY:
+        synchronized (this) {
+          InsertByteArray.deserializeFrom(in, this);
         }
         break;
       case ADD_BYTE_ARRAY_DOUBLE_PAIRS:

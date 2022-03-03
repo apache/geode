@@ -305,7 +305,7 @@ public class RedisList extends AbstractRedisData {
     return REDIS_LIST_ID;
   }
 
-  public int elementInsert(byte[] elementToInsert, byte[] referenceElement,
+  public synchronized int elementInsert(byte[] elementToInsert, byte[] referenceElement,
       boolean before) {
     int i = 0;
     for (byte[] element : elementList) {
@@ -314,7 +314,7 @@ public class RedisList extends AbstractRedisData {
           i++;
         }
         elementList.add(i, elementToInsert);
-        return elementList.size();
+        return i;
       }
       i++;
     }

@@ -23,6 +23,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static redis.clients.jedis.args.ListPosition.AFTER;
 import static redis.clients.jedis.args.ListPosition.BEFORE;
 
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +34,7 @@ import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 
+import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
 
 public abstract class AbstractLInsertIntegrationTest implements RedisIntegrationTest {
@@ -209,5 +213,37 @@ public abstract class AbstractLInsertIntegrationTest implements RedisIntegration
     assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "4");
     assertThat(jedis.lpop(KEY)).isEqualTo(insertedValue);
     assertThat(jedis.lpop(KEY)).isNull();
+  }
+
+  @Test
+  public void testConcurrentLInserts() {
+    // we should never see "snake", "inserted value", "snake", etc.
+    String[] initialElements = {"lizard", "lizard", "lizard", "snake", "lizard", "lizard"};
+    String[] elementsToPush = {"snake", "snake", "snake", "snake", "snake", "snake"};
+
+    jedis.lpush(KEY, initialElements);
+
+    new ConcurrentLoopingThreads(1000,
+        i -> jedis.lpush(KEY, elementsToPush),
+        i -> jedis.linsert(KEY, BEFORE, "snake", insertedValue)
+    ).runWithAction(() -> {
+      assertThat(jedis.llen(KEY)).isEqualTo(initialElements.length + elementsToPush.length + 1);
+
+      assertThat(jedis).satisfiesAnyOf(
+          //LINSERT happened first
+          jedisClient -> {
+            assertThat(jedisClient.lindex(KEY, 8))
+                .as("failure 1")
+                .isEqualTo(insertedValue);
+            assertThat(jedisClient.lindex(KEY, 0)).isEqualTo("snake");
+          },
+      //LPUSH happened first
+      jedisClient -> assertThat(jedisClient.lindex(KEY, 0))
+          .as("failure 1").isEqualTo(insertedValue)
+      );
+
+      jedis.del(KEY);
+      jedis.lpush(KEY, initialElements);
+    });
   }
 }
