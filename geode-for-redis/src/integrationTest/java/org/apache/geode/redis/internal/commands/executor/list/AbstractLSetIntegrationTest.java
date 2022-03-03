@@ -78,14 +78,14 @@ public abstract class AbstractLSetIntegrationTest implements RedisIntegrationTes
     jedis.lpush(KEY, initialValue);
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.LSET, KEY, "notAnInteger", "newElement"))
-            .hasMessage("ERR " + ERROR_NOT_INTEGER);
+            .hasMessage(ERROR_NOT_INTEGER);
   }
 
   @Test
   public void lset_returnsNoSuchKeyError_givenKeyDoesNotExistAndIndexIsNotAValidInteger() {
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.LSET, KEY, "notAnInteger", "newElement"))
-            .hasMessage("ERR " + ERROR_NO_SUCH_KEY);
+            .hasMessage(ERROR_NO_SUCH_KEY);
   }
 
   @Test
@@ -178,7 +178,7 @@ public abstract class AbstractLSetIntegrationTest implements RedisIntegrationTes
                   // LPOP was applied first
                   poppedValue -> {
                     assertThat(poppedValue).isEqualTo(initialValue);
-                    assertThat(lsetException.get()).hasMessage("ERR " + ERROR_NO_SUCH_KEY);
+                    assertThat(lsetException.get()).hasMessage(ERROR_NO_SUCH_KEY);
                   },
                   // LSET was applied first
                   poppedValue -> {
