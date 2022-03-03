@@ -97,7 +97,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'com.google.protobuf', name: 'protobuf-java', version: get('protobuf-java.version'))
         api(group: 'com.healthmarketscience.rmiio', name: 'rmiio', version: '2.1.2')
         api(group: 'com.mockrunner', name: 'mockrunner-servlet', version: '2.0.4')
-        api(group: 'com.nimbusds', name:'nimbus-jose-jwt', version:'8.11')
+        api(group: 'com.nimbusds', name:'nimbus-jose-jwt', version:'9.9.3')
         // Pinning transitive dependency from spring-security-oauth2 to clean up our licenses.
         api(group: 'com.nimbusds', name: 'oauth2-oidc-sdk', version: '9.3.1')
         api(group: 'com.sun.istack', name: 'istack-commons-runtime', version: '3.0.11')
