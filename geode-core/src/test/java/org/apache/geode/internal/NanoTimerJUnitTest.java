@@ -119,12 +119,12 @@ public class NanoTimerJUnitTest {
     private long now;
 
     public void incTime() {
-      this.now++;
+      now++;
     }
 
     @Override
     public long getTime() {
-      return this.now;
+      return now;
     }
   }
 }

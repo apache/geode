@@ -61,7 +61,7 @@ public class AddHealthListenerRequest extends AdminRequest {
    */
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    return AddHealthListenerResponse.create(dm, this.getSender(), this.cfg);
+    return AddHealthListenerResponse.create(dm, getSender(), cfg);
   }
 
   @Override
@@ -73,18 +73,18 @@ public class AddHealthListenerRequest extends AdminRequest {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.cfg, out);
+    DataSerializer.writeObject(cfg, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.cfg = (GemFireHealthConfig) DataSerializer.readObject(in);
+    cfg = DataSerializer.readObject(in);
   }
 
   @Override
   public String toString() {
-    return "AddHealthListenerRequest from " + this.getRecipient() + " cfg=" + this.cfg;
+    return "AddHealthListenerRequest from " + getRecipient() + " cfg=" + cfg;
   }
 }

@@ -53,10 +53,10 @@ public class PreferSerializedHARegionQueueTest extends JUnit4CacheTestCase {
     VM vm6 = host.getVM(6);
 
     // Set prefer serialized
-    vm1.invoke(() -> setPreferSerialized());
-    vm2.invoke(() -> setPreferSerialized());
-    vm3.invoke(() -> setPreferSerialized());
-    vm4.invoke(() -> setPreferSerialized());
+    vm1.invoke(PreferSerializedHARegionQueueTest::setPreferSerialized);
+    vm2.invoke(PreferSerializedHARegionQueueTest::setPreferSerialized);
+    vm3.invoke(PreferSerializedHARegionQueueTest::setPreferSerialized);
+    vm4.invoke(PreferSerializedHARegionQueueTest::setPreferSerialized);
 
     String regionName = getTestMethodName() + "_PR";
     try {
@@ -88,7 +88,7 @@ public class PreferSerializedHARegionQueueTest extends JUnit4CacheTestCase {
       vm3.invoke(() -> initializeServer(regionName));
 
       // Stop one of the original cache servers
-      vm1.invoke(() -> closeCache());
+      vm1.invoke(JUnit4CacheTestCase::closeCache);
 
       // Wait for new cache server to establish proxies
       vm3.invoke(() -> waitForCacheClientProxies(1));
@@ -100,7 +100,7 @@ public class PreferSerializedHARegionQueueTest extends JUnit4CacheTestCase {
       vm4.invoke(() -> initializeServer(regionName));
 
       // Stop other original cache server
-      vm2.invoke(() -> closeCache());
+      vm2.invoke(JUnit4CacheTestCase::closeCache);
 
       // Wait for new cache server to establish proxies
       vm4.invoke(() -> waitForCacheClientProxies(1));
@@ -109,14 +109,14 @@ public class PreferSerializedHARegionQueueTest extends JUnit4CacheTestCase {
       vm4.invoke(() -> waitForHARegionSize(numPuts));
 
       // Stop the clients to prevent suspect strings when the servers are stopped
-      vm5.invoke(() -> closeCache());
-      vm6.invoke(() -> closeCache());
+      vm5.invoke(JUnit4CacheTestCase::closeCache);
+      vm6.invoke(JUnit4CacheTestCase::closeCache);
     } finally {
       // Clear prefer serialized
-      vm1.invoke(() -> clearPreferSerialized());
-      vm2.invoke(() -> clearPreferSerialized());
-      vm3.invoke(() -> clearPreferSerialized());
-      vm4.invoke(() -> clearPreferSerialized());
+      vm1.invoke(PreferSerializedHARegionQueueTest::clearPreferSerialized);
+      vm2.invoke(PreferSerializedHARegionQueueTest::clearPreferSerialized);
+      vm3.invoke(PreferSerializedHARegionQueueTest::clearPreferSerialized);
+      vm4.invoke(PreferSerializedHARegionQueueTest::clearPreferSerialized);
     }
   }
 

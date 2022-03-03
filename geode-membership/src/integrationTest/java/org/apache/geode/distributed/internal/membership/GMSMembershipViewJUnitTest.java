@@ -67,8 +67,8 @@ public class GMSMembershipViewJUnitTest {
   private void setFailureDetectionPorts(GMSMembershipView view) {
     int numMembers = members.size();
     // use the membership port as the FD port so it's easy to figure out problems
-    for (int i = 0; i < numMembers; i++) {
-      view.setFailureDetectionPort(members.get(i), members.get(i).getMembershipPort());
+    for (MemberIdentifier member : members) {
+      view.setFailureDetectionPort(member, member.getMembershipPort());
     }
   }
 
@@ -88,8 +88,7 @@ public class GMSMembershipViewJUnitTest {
     assertEquals(members.get(numMembers - 1), view.getNewMembers().iterator().next());
     assertEquals(members.get(0), view.getCoordinator());
 
-    for (int i = 0; i < numMembers; i++) {
-      MemberIdentifier mbr = members.get(i);
+    for (MemberIdentifier mbr : members) {
       assertEquals(mbr.getMembershipPort(), view.getFailureDetectionPort(mbr));
     }
 
@@ -104,7 +103,7 @@ public class GMSMembershipViewJUnitTest {
 
     members.get(numMembers - 1).setPreferredForCoordinator(true);
     List<MemberIdentifier> preferred = view.getPreferredCoordinators(
-        Collections.<MemberIdentifier>singleton(members.get(1)), members.get(0), 2);
+        Collections.singleton(members.get(1)), members.get(0), 2);
     assertEquals(2, preferred.size());
     assertEquals(members.get(numMembers - 1), preferred.get(0));
   }
@@ -122,9 +121,8 @@ public class GMSMembershipViewJUnitTest {
 
     List<MemberIdentifier> remainingMembers = view.getMembers();
     int num = remainingMembers.size();
-    for (int i = 0; i < num; i++) {
-      MemberIdentifier mbr = remainingMembers.get(i);
-      assertEquals(mbr.getMembershipPort(), view.getFailureDetectionPort((MemberIdentifier) mbr));
+    for (MemberIdentifier mbr : remainingMembers) {
+      assertEquals(mbr.getMembershipPort(), view.getFailureDetectionPort(mbr));
     }
   }
 
@@ -147,9 +145,8 @@ public class GMSMembershipViewJUnitTest {
 
     List<MemberIdentifier> remainingMembers = view.getMembers();
     int num = remainingMembers.size();
-    for (int i = 0; i < num; i++) {
-      MemberIdentifier mbr = remainingMembers.get(i);
-      assertEquals(mbr.getMembershipPort(), view.getFailureDetectionPort((MemberIdentifier) mbr));
+    for (MemberIdentifier mbr : remainingMembers) {
+      assertEquals(mbr.getMembershipPort(), view.getFailureDetectionPort(mbr));
     }
   }
 
@@ -206,12 +203,12 @@ public class GMSMembershipViewJUnitTest {
 
     GMSMembershipView newView = new GMSMembershipView(view, 3);
     for (MemberIdentifier member : view.getMembers()) {
-      view.setPublicKey((MemberIdentifier) member, null);
+      view.setPublicKey(member, null);
     }
     newView.setPublicKeys(view);
     for (MemberIdentifier member : view.getMembers()) {
-      assertNull(newView.getPublicKey((MemberIdentifier) member));
-      assertNull(view.getPublicKey((MemberIdentifier) member));
+      assertNull(newView.getPublicKey(member));
+      assertNull(view.getPublicKey(member));
     }
   }
 
@@ -223,7 +220,7 @@ public class GMSMembershipViewJUnitTest {
     // in #47342 a new view was created that contained a member that was joining but
     // was no longer reachable. The member was included in the failed-weight and not
     // in the previous view-weight, causing a spurious network partition to be declared
-    MemberIdentifier members[] =
+    MemberIdentifier[] members =
         new MemberIdentifier[] {
             createMemberID(1),
             createMemberID(2),
@@ -256,9 +253,9 @@ public class GMSMembershipViewJUnitTest {
       vmbrs.add(members[i]);
     }
     GMSMembershipView lastView =
-        new GMSMembershipView((MemberIdentifier) members[0], 4,
-            (List<MemberIdentifier>) (List<?>) vmbrs);
-    MemberIdentifier leader = (MemberIdentifier) members[2];
+        new GMSMembershipView(members[0], 4,
+            vmbrs);
+    MemberIdentifier leader = members[2];
     assertTrue(!leader.preferredForCoordinator());
 
     MemberIdentifier joiningMember = createMemberID(7);
@@ -276,8 +273,8 @@ public class GMSMembershipViewJUnitTest {
         new ArrayList<>(lastView.getGMSMembers());
     newMbrs.removeAll(failedMembers);
     GMSMembershipView newView =
-        new GMSMembershipView(members[0], 5, (List<MemberIdentifier>) (List<?>) newMbrs,
-            Collections.emptySet(), (Set<MemberIdentifier>) (Set<?>) failedMembers);
+        new GMSMembershipView(members[0], 5, newMbrs,
+            Collections.emptySet(), failedMembers);
 
     int failedWeight = newView.getCrashedMemberWeight(lastView);
     // System.out.println("last view = " + lastView);

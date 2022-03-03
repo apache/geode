@@ -235,7 +235,7 @@ public class ParallelGatewaySenderAndCQDurableClientDUnitTest implements Seriali
   }
 
   void resetHooks(MemberVM server) {
-    server.invoke(() -> InitialImageOperation.resetAllGIITestHooks());
+    server.invoke(InitialImageOperation::resetAllGIITestHooks);
   }
 
   public static boolean isHookTriggered() {

@@ -43,11 +43,13 @@ import java.util.function.BiFunction;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.PartitionedRegionStorageException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -726,6 +728,14 @@ public class PRHARedundancyProvider {
             return bucketPrimary;
           }
         }
+      } catch (DiskAccessException dae) {
+        CancelCriterion cancelCriterion = partitionedRegion.getCancelCriterion();
+        if (cancelCriterion.isCancelInProgress()) {
+          needToElectPrimary = false;
+          cancelCriterion.checkCancelInProgress(dae);
+        }
+
+        throw dae;
       } catch (CancelException | RegionDestroyedException e) {
         // We don't need to elect a primary if the cache was closed. The other members will
         // take care of it. This ensures we don't compromise redundancy.

@@ -80,7 +80,7 @@ public class LoginHandlerInterceptor implements AsyncHandlerInterceptor, Servlet
   @Override
   public boolean preHandle(final HttpServletRequest request, final HttpServletResponse response,
       final Object handler) throws Exception {
-    final Map<String, String> requestParameterValues = new HashMap<String, String>();
+    final Map<String, String> requestParameterValues = new HashMap<>();
 
     for (Enumeration<String> requestParameters = request.getParameterNames(); requestParameters
         .hasMoreElements();) {
@@ -109,7 +109,7 @@ public class LoginHandlerInterceptor implements AsyncHandlerInterceptor, Servlet
         credentials.put(ResourceConstants.PASSWORD, password);
       }
     }
-    this.securityService.login(credentials);
+    securityService.login(credentials);
 
     return true;
   }
@@ -118,7 +118,7 @@ public class LoginHandlerInterceptor implements AsyncHandlerInterceptor, Servlet
   public void afterCompletion(final HttpServletRequest request, final HttpServletResponse response,
       final Object handler, final Exception ex) throws Exception {
     afterConcurrentHandlingStarted(request, response, handler);
-    this.securityService.logout();
+    securityService.logout();
   }
 
   @Override

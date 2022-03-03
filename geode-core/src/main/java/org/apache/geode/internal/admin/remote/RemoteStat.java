@@ -42,13 +42,13 @@ public class RemoteStat implements Stat, DataSerializable {
   // constructor
 
   public RemoteStat(Statistics rsrc, StatisticDescriptor stat) {
-    this.id = stat.getId();
-    this.name = stat.getName();
-    this.units = stat.getUnit();
-    this.isCounter = stat.isCounter();
-    this.desc = stat.getDescription();
-    this.typeCode = ((StatisticDescriptorImpl) stat).getTypeCode();
-    this.value = rsrc.get(stat);
+    id = stat.getId();
+    name = stat.getName();
+    units = stat.getUnit();
+    isCounter = stat.isCounter();
+    desc = stat.getDescription();
+    typeCode = ((StatisticDescriptorImpl) stat).getTypeCode();
+    value = rsrc.get(stat);
   }
 
   /**
@@ -60,39 +60,39 @@ public class RemoteStat implements Stat, DataSerializable {
 
   @Override
   public Number getValue() {
-    return this.value;
+    return value;
   }
 
   @Override
   public String getUnits() {
-    return this.units;
+    return units;
   }
 
   @Override
   public boolean isCounter() {
-    return this.isCounter;
+    return isCounter;
   }
 
   // GfObject methods
 
   @Override
   public int getID() {
-    return this.id;
+    return id;
   }
 
   @Override
   public String getName() {
-    return this.name;
+    return name;
   }
 
   @Override
   public String getType() {
-    return StatisticDescriptorImpl.getTypeCodeName(this.typeCode);
+    return StatisticDescriptorImpl.getTypeCodeName(typeCode);
   }
 
   @Override
   public String getDescription() {
-    return this.desc;
+    return desc;
   }
 
   // Object methods
@@ -105,25 +105,25 @@ public class RemoteStat implements Stat, DataSerializable {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.name, out);
-    out.writeByte(this.typeCode);
-    out.writeInt(this.id);
-    DataSerializer.writeString(this.units, out);
-    DataSerializer.writeString(this.desc, out);
-    DataSerializer.writeObject(this.value, out);
-    out.writeBoolean(this.isCounter);
+    DataSerializer.writeString(name, out);
+    out.writeByte(typeCode);
+    out.writeInt(id);
+    DataSerializer.writeString(units, out);
+    DataSerializer.writeString(desc, out);
+    DataSerializer.writeObject(value, out);
+    out.writeBoolean(isCounter);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
 
-    this.name = DataSerializer.readString(in);
-    this.typeCode = in.readByte();
-    this.id = in.readInt();
-    this.units = DataSerializer.readString(in);
-    this.desc = DataSerializer.readString(in);
-    this.value = (Number) DataSerializer.readObject(in);
-    this.isCounter = in.readBoolean();
+    name = DataSerializer.readString(in);
+    typeCode = in.readByte();
+    id = in.readInt();
+    units = DataSerializer.readString(in);
+    desc = DataSerializer.readString(in);
+    value = DataSerializer.readObject(in);
+    isCounter = in.readBoolean();
   }
 
 }

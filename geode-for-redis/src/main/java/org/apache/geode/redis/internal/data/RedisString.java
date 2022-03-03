@@ -68,14 +68,7 @@ public class RedisString extends AbstractRedisData {
       SetOptions options) {
     value = newValue;
     handleSetExpiration(options);
-    if (options != null && options.inTransaction()) {
-      // In a tx, delta requires cloning-enabled which is very expensive.
-      // So just do a put instead of storeChanges which uses delta.
-      region.put(key, this);
-    } else {
-      storeChanges(region, key,
-          new SetByteArrayAndTimestamp(newValue, getExpirationTimestamp()));
-    }
+    storeChanges(region, key, new SetByteArrayAndTimestamp(newValue, getExpirationTimestamp()));
   }
 
   public int append(Region<RedisKey, RedisData> region, RedisKey key, byte[] appendValue) {
@@ -190,7 +183,9 @@ public class RedisString extends AbstractRedisData {
   public void applyReplaceByteArrayAtOffsetDelta(int offset, byte[] valueToAdd) {
     int totalLength = offset + valueToAdd.length;
     if (totalLength < value.length) {
-      System.arraycopy(valueToAdd, 0, value, offset, valueToAdd.length);
+      synchronized (this) {
+        System.arraycopy(valueToAdd, 0, value, offset, valueToAdd.length);
+      }
     } else {
       byte[] newBytes = Arrays.copyOf(value, totalLength);
       System.arraycopy(valueToAdd, 0, newBytes, offset, valueToAdd.length);
@@ -362,7 +357,7 @@ public class RedisString extends AbstractRedisData {
   /**
    * Since GII (getInitialImage) can come in and call toData while other threads
    * are modifying this object, the striped executor will not protect toData.
-   * So any methods that modify "value", "appendSequence" need to be thread safe with toData.
+   * So any methods that modify "value" need to be thread safe with toData.
    */
 
   @Override

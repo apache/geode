@@ -43,7 +43,7 @@ public class RegionSubRegionSizeRequest extends AdminRequest implements Cancella
   protected AdminResponse createResponse(DistributionManager dm) {
     CancellationRegistry.getInstance().registerMessage(this);
 
-    resp = RegionSubRegionsSizeResponse.create(dm, this.getSender());
+    resp = RegionSubRegionsSizeResponse.create(dm, getSender());
     if (cancelled) {
       return null;
     }
@@ -85,8 +85,8 @@ public class RegionSubRegionSizeRequest extends AdminRequest implements Cancella
 
   @Override
   public String toString() {
-    return "RegionSubRegionSizeRequest sent to " + this.getRecipient() + " from "
-        + this.getSender();
+    return "RegionSubRegionSizeRequest sent to " + getRecipient() + " from "
+        + getSender();
   }
 
   private transient boolean cancelled = false;

@@ -105,7 +105,7 @@ public class ChangeLogLevelCommand extends GfshCommand {
       return ResultModel.createError(CliStrings.CHANGE_LOGLEVEL__MSG__CANNOT_EXECUTE);
     }
     List<?> resultList =
-        (List<?>) this.executeFunction(logFunction, functionArgs, dsMembers).getResult();
+        (List<?>) executeFunction(logFunction, functionArgs, dsMembers).getResult();
 
 
     TabularResultModel tableInfo = result.addTable("result");

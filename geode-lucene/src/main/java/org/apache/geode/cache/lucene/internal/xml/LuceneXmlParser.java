@@ -64,7 +64,7 @@ public class LuceneXmlParser extends AbstractXmlParser {
 
   private void startSerializer(Attributes atts) {
     // Ignore any whitespace noise between fields
-    if (stack.peek() instanceof StringBuffer) {
+    if (stack.peek() instanceof StringBuilder) {
       stack.pop();
     }
 
@@ -77,7 +77,7 @@ public class LuceneXmlParser extends AbstractXmlParser {
 
   private void startField(Attributes atts) {
     // Ignore any whitespace noise between fields
-    if (stack.peek() instanceof StringBuffer) {
+    if (stack.peek() instanceof StringBuilder) {
       stack.pop();
     }
 
@@ -126,7 +126,7 @@ public class LuceneXmlParser extends AbstractXmlParser {
 
   private void endIndex() {
     // Ignore any whitespace noise between fields
-    if (stack.peek() instanceof StringBuffer) {
+    if (stack.peek() instanceof StringBuilder) {
       stack.pop();
     }
 

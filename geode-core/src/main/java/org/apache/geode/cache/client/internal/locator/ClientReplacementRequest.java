@@ -47,19 +47,19 @@ public class ClientReplacementRequest extends ClientConnectionRequest {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.currentServer = new ServerLocation();
-    InternalDataSerializer.invokeFromData(this.currentServer, in);
+    currentServer = new ServerLocation();
+    InternalDataSerializer.invokeFromData(currentServer, in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    InternalDataSerializer.invokeToData(this.currentServer, out);
+    InternalDataSerializer.invokeToData(currentServer, out);
   }
 
   public ServerLocation getCurrentServer() {
-    return this.currentServer;
+    return currentServer;
   }
 
   @Override

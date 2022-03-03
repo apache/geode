@@ -14,10 +14,17 @@
  */
 package org.apache.geode.redis.internal.commands.executor.set;
 
-public class SUnionStoreExecutor extends SUnionExecutor {
+import static org.apache.geode.redis.internal.data.RedisSet.sunionstore;
+
+import java.util.List;
+
+import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.services.RegionProvider;
+
+public class SUnionStoreExecutor extends SetOpIntegerResult {
 
   @Override
-  protected boolean isStorage() {
-    return true;
+  protected int getResult(RegionProvider regionProvider, List<RedisKey> setKeys, RedisKey destKey) {
+    return sunionstore(regionProvider, setKeys, destKey);
   }
 }

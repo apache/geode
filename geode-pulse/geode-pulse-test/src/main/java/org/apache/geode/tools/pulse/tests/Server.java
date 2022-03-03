@@ -52,14 +52,14 @@ public class Server {
   private static final String DEFAULT_HOST = "127.0.0.1"; // "localhost"
   private static final int DEFAULT_PORT = 9999;
   private final JMXServiceURL url;
-  private MBeanServer mbs;
+  private final MBeanServer mbs;
   private JMXConnectorServer cs;
-  private String propFile;
-  private int jmxPort;
-  private String jsonAuthFile;
+  private final String propFile;
+  private final int jmxPort;
+  private final String jsonAuthFile;
 
   public Server(int jmxPort, String properties, String jsonAuthFile) throws Exception {
-    this.propFile = properties;
+    propFile = properties;
     mbs = ManagementFactory.getPlatformMBeanServer();
     url = new JMXServiceURL(formJMXServiceURLString(DEFAULT_HOST, jmxPort));
     this.jmxPort = jmxPort;

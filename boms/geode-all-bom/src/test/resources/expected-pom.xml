@@ -50,7 +50,7 @@
       <dependency>
         <groupId>com.arakelian</groupId>
         <artifactId>java-jq</artifactId>
-        <version>1.2.0</version>
+        <version>1.3.0</version>
       </dependency>
       <dependency>
         <groupId>com.carrotsearch.randomizedtesting</groupId>
@@ -190,12 +190,12 @@
       <dependency>
         <groupId>io.lettuce</groupId>
         <artifactId>lettuce-core</artifactId>
-        <version>6.1.5.RELEASE</version>
+        <version>6.1.6.RELEASE</version>
       </dependency>
       <dependency>
         <groupId>io.micrometer</groupId>
         <artifactId>micrometer-core</artifactId>
-        <version>1.8.1</version>
+        <version>1.8.2</version>
       </dependency>
       <dependency>
         <groupId>io.swagger</groupId>
@@ -205,7 +205,7 @@
       <dependency>
         <groupId>it.unimi.dsi</groupId>
         <artifactId>fastutil</artifactId>
-        <version>8.5.6</version>
+        <version>8.5.8</version>
       </dependency>
       <dependency>
         <groupId>javax.annotation</groupId>
@@ -290,12 +290,12 @@
       <dependency>
         <groupId>net.sourceforge.pmd</groupId>
         <artifactId>pmd-java</artifactId>
-        <version>6.41.0</version>
+        <version>6.42.0</version>
       </dependency>
       <dependency>
         <groupId>net.sourceforge.pmd</groupId>
         <artifactId>pmd-test</artifactId>
-        <version>6.41.0</version>
+        <version>6.42.0</version>
       </dependency>
       <dependency>
         <groupId>net.spy</groupId>
@@ -350,7 +350,7 @@
       <dependency>
         <groupId>org.buildobjects</groupId>
         <artifactId>jproc</artifactId>
-        <version>2.6.2</version>
+        <version>2.8.0</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.cargo</groupId>
@@ -435,7 +435,7 @@
       <dependency>
         <groupId>org.springframework.hateoas</groupId>
         <artifactId>spring-hateoas</artifactId>
-        <version>1.4.0</version>
+        <version>1.4.1</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.ldap</groupId>
@@ -460,7 +460,7 @@
       <dependency>
         <groupId>redis.clients</groupId>
         <artifactId>jedis</artifactId>
-        <version>3.6.3</version>
+        <version>4.1.1</version>
       </dependency>
       <dependency>
         <groupId>xerces</groupId>
@@ -471,6 +471,11 @@
         <groupId>xml-apis</groupId>
         <artifactId>xml-apis</artifactId>
         <version>1.4.01</version>
+      </dependency>
+      <dependency>
+        <groupId>org.junit-pioneer</groupId>
+        <artifactId>junit-pioneer</artifactId>
+        <version>1.5.0</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
@@ -500,12 +505,12 @@
       <dependency>
         <groupId>com.jayway.jsonpath</groupId>
         <artifactId>json-path-assert</artifactId>
-        <version>2.6.0</version>
+        <version>2.7.0</version>
       </dependency>
       <dependency>
         <groupId>com.jayway.jsonpath</groupId>
         <artifactId>json-path</artifactId>
-        <version>2.6.0</version>
+        <version>2.7.0</version>
       </dependency>
       <dependency>
         <groupId>com.pholser</groupId>
@@ -615,12 +620,12 @@
       <dependency>
         <groupId>io.netty</groupId>
         <artifactId>netty-codec-redis</artifactId>
-        <version>4.1.72.Final</version>
+        <version>4.1.74.Final</version>
       </dependency>
       <dependency>
         <groupId>io.netty</groupId>
         <artifactId>netty-handler</artifactId>
-        <version>4.1.72.Final</version>
+        <version>4.1.74.Final</version>
       </dependency>
       <dependency>
         <groupId>org.seleniumhq.selenium</groupId>
@@ -685,72 +690,72 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-aspects</artifactId>
-        <version>5.3.14</version>
+        <version>5.3.15</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-beans</artifactId>
-        <version>5.3.14</version>
+        <version>5.3.15</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-context</artifactId>
-        <version>5.3.14</version>
+        <version>5.3.15</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-core</artifactId>
-        <version>5.3.14</version>
+        <version>5.3.15</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-expression</artifactId>
-        <version>5.3.14</version>
+        <version>5.3.15</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-oxm</artifactId>
-        <version>5.3.14</version>
+        <version>5.3.15</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-test</artifactId>
-        <version>5.3.14</version>
+        <version>5.3.15</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-tx</artifactId>
-        <version>5.3.14</version>
+        <version>5.3.15</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-web</artifactId>
-        <version>5.3.14</version>
+        <version>5.3.15</version>
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-webmvc</artifactId>
-        <version>5.3.14</version>
+        <version>5.3.15</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter</artifactId>
-        <version>2.6.2</version>
+        <version>2.6.3</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-jetty</artifactId>
-        <version>2.6.2</version>
+        <version>2.6.3</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-web</artifactId>
-        <version>2.6.2</version>
+        <version>2.6.3</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-data-redis</artifactId>
-        <version>2.6.2</version>
+        <version>2.6.3</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.session</groupId>

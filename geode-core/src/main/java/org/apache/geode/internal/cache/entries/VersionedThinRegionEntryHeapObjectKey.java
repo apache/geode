@@ -74,7 +74,7 @@ public class VersionedThinRegionEntryHeapObjectKey extends VersionedThinRegionEn
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   protected Object getValueField() {
-    return this.value;
+    return value;
   }
 
   @Override
@@ -94,7 +94,7 @@ public class VersionedThinRegionEntryHeapObjectKey extends VersionedThinRegionEn
 
   @Override
   public int getEntryHash() {
-    return this.hash;
+    return hash;
   }
 
   @Override
@@ -104,7 +104,7 @@ public class VersionedThinRegionEntryHeapObjectKey extends VersionedThinRegionEn
 
   @Override
   public HashEntry<Object, Object> getNextEntry() {
-    return this.nextEntry;
+    return nextEntry;
   }
 
   @Override
@@ -136,25 +136,25 @@ public class VersionedThinRegionEntryHeapObjectKey extends VersionedThinRegionEn
 
   @Override
   public VersionSource getMemberID() {
-    return this.memberId;
+    return memberId;
   }
 
   @Override
   public int getDistributedSystemId() {
-    return this.distributedSystemId;
+    return distributedSystemId;
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   public void setVersions(final VersionTag versionTag) {
-    this.memberId = versionTag.getMemberID();
+    memberId = versionTag.getMemberID();
     int eVersion = versionTag.getEntryVersion();
-    this.entryVersionLowBytes = (short) (eVersion & 0xffff);
-    this.entryVersionHighByte = (byte) ((eVersion & 0xff0000) >> 16);
-    this.regionVersionHighBytes = versionTag.getRegionVersionHighBytes();
-    this.regionVersionLowBytes = versionTag.getRegionVersionLowBytes();
+    entryVersionLowBytes = (short) (eVersion & 0xffff);
+    entryVersionHighByte = (byte) ((eVersion & 0xff0000) >> 16);
+    regionVersionHighBytes = versionTag.getRegionVersionHighBytes();
+    regionVersionLowBytes = versionTag.getRegionVersionLowBytes();
     if (!versionTag.isGatewayTag()
-        && this.distributedSystemId == versionTag.getDistributedSystemId()) {
+        && distributedSystemId == versionTag.getDistributedSystemId()) {
       if (getVersionTimeStamp() <= versionTag.getVersionTimeStamp()) {
         setVersionTimeStamp(versionTag.getVersionTimeStamp());
       } else {
@@ -163,7 +163,7 @@ public class VersionedThinRegionEntryHeapObjectKey extends VersionedThinRegionEn
     } else {
       setVersionTimeStamp(versionTag.getVersionTimeStamp());
     }
-    this.distributedSystemId = (byte) (versionTag.getDistributedSystemId() & 0xff);
+    distributedSystemId = (byte) (versionTag.getDistributedSystemId() & 0xff);
   }
 
   @Override
@@ -181,9 +181,9 @@ public class VersionedThinRegionEntryHeapObjectKey extends VersionedThinRegionEn
   public VersionTag asVersionTag() {
     VersionTag tag = VersionTag.create(memberId);
     tag.setEntryVersion(getEntryVersion());
-    tag.setRegionVersion(this.regionVersionHighBytes, this.regionVersionLowBytes);
+    tag.setRegionVersion(regionVersionHighBytes, regionVersionLowBytes);
     tag.setVersionTimeStamp(getVersionTimeStamp());
-    tag.setDistributedSystemId(this.distributedSystemId);
+    tag.setDistributedSystemId(distributedSystemId);
     return tag;
   }
 
@@ -204,20 +204,20 @@ public class VersionedThinRegionEntryHeapObjectKey extends VersionedThinRegionEn
   /** get rvv internal high byte. Used by region entries for transferring to storage */
   @Override
   public short getRegionVersionHighBytes() {
-    return this.regionVersionHighBytes;
+    return regionVersionHighBytes;
   }
 
   /** get rvv internal low bytes. Used by region entries for transferring to storage */
   @Override
   public int getRegionVersionLowBytes() {
-    return this.regionVersionLowBytes;
+    return regionVersionLowBytes;
   }
 
   // ----------------------------------------- key code -------------------------------------------
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   public Object getKey() {
-    return this.key;
+    return key;
   }
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 }

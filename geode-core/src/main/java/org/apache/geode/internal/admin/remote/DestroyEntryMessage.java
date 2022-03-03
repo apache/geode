@@ -63,7 +63,7 @@ public class DestroyEntryMessage extends RegionAdminMessage {
         }
       } catch (Exception e) {
         logger.warn("Failed attempt to destroy or invalidate entry {} {} from console at {}",
-            new Object[] {r.getFullPath(), key, this.getSender()});
+            new Object[] {r.getFullPath(), key, getSender()});
       }
     }
   }
@@ -77,21 +77,21 @@ public class DestroyEntryMessage extends RegionAdminMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.action, out);
-    DataSerializer.writeObject(this.key, out);
+    DataSerializer.writeObject(action, out);
+    DataSerializer.writeObject(key, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.action = (ExpirationAction) DataSerializer.readObject(in);
-    this.key = DataSerializer.readObject(in);
+    action = DataSerializer.readObject(in);
+    key = DataSerializer.readObject(in);
   }
 
   @Override
   public String toString() {
     return String.format("DestroyEntryMessage from %s",
-        this.getSender());
+        getSender());
   }
 }

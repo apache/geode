@@ -28,7 +28,6 @@ import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.StatisticsDisabledException;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
@@ -76,7 +75,7 @@ public class CacheStatisticsDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testHitMissCount() throws CacheException {
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     Object key = "KEY"; // value exists
     Object key2 = "KEY2"; // no entry
     Object key3 = "KEY3"; // entry, invalid
@@ -187,7 +186,7 @@ public class CacheStatisticsDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testTimeStats() throws CacheException, InterruptedException {
     final long ESTAT_RES = 100; // the resolution, in ms, of entry stats
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     Object key = "KEY";
     Object key2 = "KEY2";
     Object value = "VALUE";
@@ -200,11 +199,11 @@ public class CacheStatisticsDUnitTest extends JUnit4CacheTestCase {
     factory.setScope(Scope.LOCAL);
     factory.setStatisticsEnabled(true);
 
-    before = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
+    before = getCache().cacheTimeMillis();
     Region region = createRegion(name, factory.create());
     CacheStatistics rStats = region.getStatistics();
     CacheStatistics rootStats = getRootRegion().getStatistics();
-    after = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
+    after = getCache().cacheTimeMillis();
 
     assertInRange(before, after, rStats.getLastAccessedTime());
     assertInRange(before, after, rStats.getLastModifiedTime());
@@ -214,19 +213,19 @@ public class CacheStatisticsDUnitTest extends JUnit4CacheTestCase {
     oldBefore = before;
     oldAfter = after;
     Wait.pause(150);
-    before = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
+    before = getCache().cacheTimeMillis();
     region.get(key);
-    after = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
+    after = getCache().cacheTimeMillis();
     assertInRange(before, after, rStats.getLastAccessedTime());
     assertInRange(oldBefore, oldAfter, rStats.getLastModifiedTime());
     assertInRange(before, after, rootStats.getLastAccessedTime());
     assertInRange(oldBefore, oldAfter, rootStats.getLastModifiedTime());
 
     Wait.pause(150);
-    before = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
+    before = getCache().cacheTimeMillis();
     region.put(key, value);
     CacheStatistics eStats = region.getEntry(key).getStatistics();
-    after = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
+    after = getCache().cacheTimeMillis();
     assertInRange(before, after, rStats.getLastAccessedTime());
     assertInRange(before, after, rStats.getLastModifiedTime());
     assertInRange(before, after, rootStats.getLastAccessedTime());
@@ -238,9 +237,9 @@ public class CacheStatisticsDUnitTest extends JUnit4CacheTestCase {
     oldBefore = before;
     oldAfter = after;
     Wait.pause(150);
-    before = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
+    before = getCache().cacheTimeMillis();
     region.get(key);
-    after = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
+    after = getCache().cacheTimeMillis();
     assertInRange(before, after, rStats.getLastAccessedTime());
     assertInRange(oldBefore, oldAfter, rStats.getLastModifiedTime());
     assertInRange(before, after, rootStats.getLastAccessedTime());
@@ -253,10 +252,10 @@ public class CacheStatisticsDUnitTest extends JUnit4CacheTestCase {
     oldBefore = before;
     oldAfter = after;
     Wait.pause(150);
-    before = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
+    before = getCache().cacheTimeMillis();
     region.create(key2, null);
     CacheStatistics eStats2 = region.getEntry(key2).getStatistics();
-    after = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
+    after = getCache().cacheTimeMillis();
     assertInRange(before, after, rStats.getLastAccessedTime());
     assertInRange(before, after, rStats.getLastModifiedTime());
     assertInRange(before, after, rootStats.getLastAccessedTime());
@@ -273,9 +272,9 @@ public class CacheStatisticsDUnitTest extends JUnit4CacheTestCase {
     oldBefore = before;
     oldAfter = after;
     Wait.pause(150);
-    before = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
+    before = getCache().cacheTimeMillis();
     region.invalidate(key2);
-    after = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
+    after = getCache().cacheTimeMillis();
     assertInRange(oldBefore - ESTAT_RES, oldAfter + ESTAT_RES, eStats2.getLastAccessedTime());
     assertInRange(oldBefore - ESTAT_RES, oldAfter + ESTAT_RES, eStats2.getLastModifiedTime());
     assertInRange(oldBefore, oldAfter, rStats.getLastAccessedTime());
@@ -284,17 +283,17 @@ public class CacheStatisticsDUnitTest extends JUnit4CacheTestCase {
     assertInRange(oldBefore, oldAfter, rootStats.getLastModifiedTime());
 
     Wait.pause(150);
-    before = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
+    before = getCache().cacheTimeMillis();
     region.destroy(key2);
-    after = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
+    after = getCache().cacheTimeMillis();
     assertInRange(oldBefore, oldAfter, rStats.getLastAccessedTime());
     assertInRange(oldBefore, oldAfter, rStats.getLastModifiedTime());
     assertInRange(oldBefore, oldAfter, rootStats.getLastAccessedTime());
     assertInRange(oldBefore, oldAfter, rootStats.getLastModifiedTime());
 
-    before = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
+    before = getCache().cacheTimeMillis();
     Region sub = region.createSubregion("sub", region.getAttributes());
-    after = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
+    after = getCache().cacheTimeMillis();
     assertInRange(before, after, rStats.getLastAccessedTime());
     assertInRange(before, after, rStats.getLastModifiedTime());
     assertInRange(before, after, rootStats.getLastAccessedTime());
@@ -302,9 +301,9 @@ public class CacheStatisticsDUnitTest extends JUnit4CacheTestCase {
 
     oldBefore = before;
     oldAfter = after;
-    before = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
+    before = getCache().cacheTimeMillis();
     sub.destroyRegion();
-    after = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
+    after = getCache().cacheTimeMillis();
     assertInRange(oldBefore, oldAfter, rStats.getLastAccessedTime());
     assertInRange(oldBefore, oldAfter, rStats.getLastModifiedTime());
     assertInRange(oldBefore, oldAfter, rootStats.getLastAccessedTime());
@@ -325,7 +324,7 @@ public class CacheStatisticsDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testDistributedStats() {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final Object key = "KEY";
     final Object value = "VALUE";
 
@@ -481,7 +480,7 @@ public class CacheStatisticsDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testDisabledStatistics() throws CacheException {
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     Object key = "KEY";
     Object value = "VALUE";
 

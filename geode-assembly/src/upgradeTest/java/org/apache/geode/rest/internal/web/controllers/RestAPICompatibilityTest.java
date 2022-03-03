@@ -60,7 +60,7 @@ import org.apache.geode.util.internal.GeodeJsonMapper;
 @RunWith(Parameterized.class)
 public class RestAPICompatibilityTest {
   private final String oldVersion;
-  private static ObjectMapper mapper = GeodeJsonMapper.getMapper();
+  private static final ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
   @Parameterized.Parameters(name = "{0}")
   public static Collection<String> data() {

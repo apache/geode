@@ -27,8 +27,8 @@ class TabularResultModelSliceAssert<T> {
 
   TabularResultModelSliceAssert(TabularResultModelAssert tabularResultModelAssert,
       List<T> valuesInSlice) {
-    this.parent = tabularResultModelAssert;
-    this.values = valuesInSlice;
+    parent = tabularResultModelAssert;
+    values = valuesInSlice;
   }
 
   /**
@@ -94,6 +94,6 @@ class TabularResultModelSliceAssert<T> {
    * or columns in the table after this).
    */
   public final ListAssert<T> asList() {
-    return new ListAssert<>(this.values);
+    return new ListAssert<>(values);
   }
 }

@@ -45,7 +45,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class CacheUtils {
   private static final Logger logger = LogService.getLogger();
 
-  private static Properties props = new Properties();
+  private static final Properties props = new Properties();
   private static DistributedSystem ds;
   static volatile InternalCache cache;
   static QueryService qs;

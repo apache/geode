@@ -24,7 +24,6 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.naming.Context;
@@ -111,8 +110,8 @@ public class TXOrderDUnitTest extends JUnit4CacheTestCase {
   }
 
   Object getCurrentExpectedKey() {
-    Object result = this.expectedKeys.get(this.clCount);
-    this.clCount += 1;
+    Object result = expectedKeys.get(clCount);
+    clCount += 1;
     return result;
   }
 
@@ -140,26 +139,25 @@ public class TXOrderDUnitTest extends JUnit4CacheTestCase {
       public void afterCommit(TransactionEvent e) {
         assertEquals(6, e.getEvents().size());
         ArrayList keys = new ArrayList();
-        Iterator it = e.getEvents().iterator();
-        while (it.hasNext()) {
-          EntryEvent ee = (EntryEvent) it.next();
+        for (final CacheEvent<?, ?> cacheEvent : e.getEvents()) {
+          EntryEvent ee = (EntryEvent) cacheEvent;
           keys.add(ee.getKey());
           assertEquals(null, ee.getCallbackArgument());
           assertEquals(true, ee.isCallbackArgumentAvailable());
         }
-        assertEquals(TXOrderDUnitTest.this.expectedKeys, keys);
-        TXOrderDUnitTest.this.invokeCount = 1;
+        assertEquals(expectedKeys, keys);
+        invokeCount = 1;
       }
     };
     CacheTransactionManager ctm = getCache().getCacheTransactionManager();
     ctm.addListener(tl1);
 
-    this.invokeCount = 0;
-    this.clCount = 0;
-    this.expectedKeys = Arrays.asList(new String[] {"b", "c", "a", "a2", "c2", "b2"});
+    invokeCount = 0;
+    clCount = 0;
+    expectedKeys = Arrays.asList("b", "c", "a", "a2", "c2", "b2");
     doCommitOtherVm();
-    assertEquals(1, this.invokeCount);
-    assertEquals(6, this.clCount);
+    assertEquals(1, invokeCount);
+    assertEquals(6, clCount);
   }
 
   /**
@@ -370,7 +368,7 @@ public class TXOrderDUnitTest extends JUnit4CacheTestCase {
         Context ctx = getCache().getJNDIContext();
         UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
         Region region = getRootRegion("sample");
-        Integer x = new Integer(0);
+        Integer x = 0;
         utx.begin();
         region.create(x, new Person("xyz", 45));
         utx.commit();

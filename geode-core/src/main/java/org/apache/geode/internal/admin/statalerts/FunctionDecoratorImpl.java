@@ -55,10 +55,8 @@ public class FunctionDecoratorImpl extends BaseDecoratorImpl {
 
   @Override
   public String toString() {
-    StringBuffer buffer = new StringBuffer(super.toString());
-    buffer.append("Function ID:" + functorId + "\n");
 
-    return buffer.toString();
+    return super.toString() + "Function ID:" + functorId + "\n";
   }
 
   /**
@@ -112,13 +110,13 @@ public class FunctionDecoratorImpl extends BaseDecoratorImpl {
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
-    DataSerializer.writePrimitiveShort(this.functorId, out);
+    DataSerializer.writePrimitiveShort(functorId, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.functorId = DataSerializer.readPrimitiveShort(in);
+    functorId = DataSerializer.readPrimitiveShort(in);
   }
 
   public static final String ID = "NonSystemFunction";

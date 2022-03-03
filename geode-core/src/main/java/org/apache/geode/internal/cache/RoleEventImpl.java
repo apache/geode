@@ -62,7 +62,7 @@ public class RoleEventImpl extends RegionEventImpl implements RoleEvent {
 
   @Override
   public Set getRequiredRoles() {
-    return this.requiredRoles; // already unmodifiableSet
+    return requiredRoles; // already unmodifiableSet
   }
 
   @Override
@@ -74,8 +74,8 @@ public class RoleEventImpl extends RegionEventImpl implements RoleEvent {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    String[] requiredRoleNames = new String[this.requiredRoles.size()];
-    Iterator iter = this.requiredRoles.iterator();
+    String[] requiredRoleNames = new String[requiredRoles.size()];
+    Iterator iter = requiredRoles.iterator();
     for (int i = 0; i < requiredRoleNames.length; i++) {
       Role role = (Role) iter.next();
       requiredRoleNames[i] = role.getName();
@@ -89,11 +89,11 @@ public class RoleEventImpl extends RegionEventImpl implements RoleEvent {
     super.fromData(in, context);
     String[] requiredRoleNames = DataSerializer.readStringArray(in);
     Set requiredRolesSet = new HashSet(requiredRoleNames.length);
-    for (int i = 0; i < requiredRoleNames.length; i++) {
-      Role role = InternalRole.getRole(requiredRoleNames[i]);
+    for (final String requiredRoleName : requiredRoleNames) {
+      Role role = InternalRole.getRole(requiredRoleName);
       requiredRolesSet.add(role);
     }
-    this.requiredRoles = Collections.unmodifiableSet(requiredRolesSet);
+    requiredRoles = Collections.unmodifiableSet(requiredRolesSet);
   }
 
 }

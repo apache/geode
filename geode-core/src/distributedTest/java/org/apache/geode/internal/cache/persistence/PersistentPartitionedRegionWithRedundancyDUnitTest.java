@@ -149,10 +149,10 @@ public class PersistentPartitionedRegionWithRedundancyDUnitTest implements Seria
 
     vm0.invoke(() -> createData(0, numEntries));
 
-    Set<Integer> bucketsOnVM0 = vm0.invoke(() -> getBucketList());
-    Set<Integer> bucketsOnVM1 = vm1.invoke(() -> getBucketList());
-    Set<Integer> bucketsOnVM2 = vm2.invoke(() -> getBucketList());
-    Set<Integer> bucketsOnVM3 = vm3.invoke(() -> getBucketList());
+    Set<Integer> bucketsOnVM0 = vm0.invoke(this::getBucketList);
+    Set<Integer> bucketsOnVM1 = vm1.invoke(this::getBucketList);
+    Set<Integer> bucketsOnVM2 = vm2.invoke(this::getBucketList);
+    Set<Integer> bucketsOnVM3 = vm3.invoke(this::getBucketList);
 
     vm1.invoke(() -> getCache().close());
 
@@ -173,7 +173,7 @@ public class PersistentPartitionedRegionWithRedundancyDUnitTest implements Seria
 
     createPartitionedRegionOnVM1.await(2, MINUTES);
 
-    assertThat(vm1.invoke(() -> getBucketList())).isEqualTo(bucketsOnVM1);
+    assertThat(vm1.invoke(this::getBucketList)).isEqualTo(bucketsOnVM1);
     assertThat(vm0.invoke(() -> getRegionStats().getGetRetries())).isEqualTo(0);
   }
 

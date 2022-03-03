@@ -21,7 +21,7 @@ import org.apache.geode.internal.monitoring.executor.AbstractExecutor;
 
 public interface ThreadsMonitoring {
 
-  public enum Mode {
+  enum Mode {
     FunctionExecutor,
     PooledExecutor,
     SerialQueuedExecutor,
@@ -30,7 +30,7 @@ public interface ThreadsMonitoring {
     AGSExecutor,
     P2PReaderExecutor,
     ServerConnectionExecutor
-  };
+  }
 
   Map<Long, AbstractExecutor> getMonitorMap();
 
@@ -45,12 +45,12 @@ public interface ThreadsMonitoring {
    * @param mode describes the group the calling thread should be associated with.
    * @return true - if succeeded , false - if failed.
    */
-  public boolean startMonitor(Mode mode);
+  boolean startMonitor(Mode mode);
 
   /**
    * Stops monitoring the calling thread if it is currently being monitored.
    */
-  public void endMonitor();
+  void endMonitor();
 
   /**
    * Creates a new executor that is associated with the calling thread.
@@ -60,7 +60,7 @@ public interface ThreadsMonitoring {
    * @param mode describes the group the calling thread should be associated with.
    * @return the created {@link AbstractExecutor} instance.
    */
-  public AbstractExecutor createAbstractExecutor(Mode mode);
+  AbstractExecutor createAbstractExecutor(Mode mode);
 
   /**
    * Call to cause this thread monitor to start monitoring
@@ -69,7 +69,7 @@ public interface ThreadsMonitoring {
    * @param executor the executor to monitor.
    * @return true - if succeeded , false - if failed.
    */
-  public boolean register(AbstractExecutor executor);
+  boolean register(AbstractExecutor executor);
 
   /**
    * Call to cause this thread monitor to stop monitoring
@@ -77,11 +77,11 @@ public interface ThreadsMonitoring {
    *
    * @param executor the executor to stop monitoring.
    */
-  public void unregister(AbstractExecutor executor);
+  void unregister(AbstractExecutor executor);
 
   /**
    * A long-running thread that may appear stuck should periodically update its "alive"
    * status by invoking this method
    */
-  public void updateThreadStatus();
+  void updateThreadStatus();
 }

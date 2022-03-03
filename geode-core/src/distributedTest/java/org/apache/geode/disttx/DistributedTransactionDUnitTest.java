@@ -169,7 +169,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
     if (interestPolicy != null) {
       af.setSubscriptionAttributes(new SubscriptionAttributes(interestPolicy));
     }
-    af.setPartitionAttributes(new PartitionAttributesFactory<CustId, Customer>()
+    af.setPartitionAttributes(new PartitionAttributesFactory<>()
         .setTotalNumBuckets(4).setLocalMaxMemory(accessor ? 0 : 1)
         .setPartitionResolver(new CustomerIDPartitionResolver("resolver1"))
         .setRedundantCopies(redundantCopies).create());
@@ -197,13 +197,13 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
     if (interestPolicy != null) {
       af.setSubscriptionAttributes(new SubscriptionAttributes(interestPolicy));
     }
-    af.setPartitionAttributes(new PartitionAttributesFactory<CustId, Customer>()
+    af.setPartitionAttributes(new PartitionAttributesFactory<>()
         .setTotalNumBuckets(4).setLocalMaxMemory(accessor ? 0 : 1)
         .setPartitionResolver(new CustomerIDPartitionResolver("resolver1"))
         .setRedundantCopies(redundantCopies).create());
     getCache().createRegion(CUSTOMER_PR, af.create());
     af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
-    af.setPartitionAttributes(new PartitionAttributesFactory<OrderId, Order>().setTotalNumBuckets(4)
+    af.setPartitionAttributes(new PartitionAttributesFactory<>().setTotalNumBuckets(4)
         .setLocalMaxMemory(accessor ? 0 : 1)
         .setPartitionResolver(new CustomerIDPartitionResolver("resolver2"))
         .setRedundantCopies(redundantCopies).setColocatedWith(CUSTOMER_PR).create());
@@ -668,7 +668,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         AttributesFactory af = new AttributesFactory();
         af.setConcurrencyChecksEnabled(getConcurrencyChecksEnabled());
-        af.setPartitionAttributes(new PartitionAttributesFactory<CustId, Customer>()
+        af.setPartitionAttributes(new PartitionAttributesFactory<>()
             .setTotalNumBuckets(4).setLocalMaxMemory(1)
             .setPartitionResolver(new CustomerIDPartitionResolver("resolver1"))
             .setRedundantCopies(0).create());
@@ -683,7 +683,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         AttributesFactory af = new AttributesFactory();
         af.setConcurrencyChecksEnabled(getConcurrencyChecksEnabled());
-        af.setPartitionAttributes(new PartitionAttributesFactory<CustId, Customer>()
+        af.setPartitionAttributes(new PartitionAttributesFactory<>()
             .setTotalNumBuckets(4).setLocalMaxMemory(1)
             .setPartitionResolver(new CustomerIDPartitionResolver("resolver2"))
             .setRedundantCopies(0).create());
@@ -698,7 +698,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         AttributesFactory af = new AttributesFactory();
         af.setConcurrencyChecksEnabled(getConcurrencyChecksEnabled());
-        af.setPartitionAttributes(new PartitionAttributesFactory<CustId, Customer>()
+        af.setPartitionAttributes(new PartitionAttributesFactory<>()
             .setTotalNumBuckets(4).setLocalMaxMemory(0) // since this is an accessor
             .setPartitionResolver(new CustomerIDPartitionResolver("resolver1"))
             .setRedundantCopies(0).create());
@@ -712,7 +712,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         AttributesFactory af = new AttributesFactory();
         af.setConcurrencyChecksEnabled(getConcurrencyChecksEnabled());
-        af.setPartitionAttributes(new PartitionAttributesFactory<CustId, Customer>()
+        af.setPartitionAttributes(new PartitionAttributesFactory<>()
             .setTotalNumBuckets(4).setLocalMaxMemory(0) // since this is an accessor
             .setPartitionResolver(new CustomerIDPartitionResolver("resolver2"))
             .setRedundantCopies(0).create());
@@ -973,7 +973,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         AttributesFactory af = new AttributesFactory();
         af.setConcurrencyChecksEnabled(getConcurrencyChecksEnabled());
-        af.setPartitionAttributes(new PartitionAttributesFactory<CustId, Customer>()
+        af.setPartitionAttributes(new PartitionAttributesFactory<>()
             .setTotalNumBuckets(4).setLocalMaxMemory(1)
             .setPartitionResolver(new CustomerIDPartitionResolver("resolver1"))
             .setRedundantCopies(0).create());
@@ -1161,7 +1161,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         AttributesFactory af = new AttributesFactory();
         af.setConcurrencyChecksEnabled(getConcurrencyChecksEnabled());
-        af.setPartitionAttributes(new PartitionAttributesFactory<CustId, Customer>()
+        af.setPartitionAttributes(new PartitionAttributesFactory<>()
             .setTotalNumBuckets(4).setLocalMaxMemory(1)
             .setPartitionResolver(new CustomerIDPartitionResolver("resolver1"))
             .setRedundantCopies(0).create());
@@ -1176,7 +1176,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws Exception {
         AttributesFactory af = new AttributesFactory();
         af.setConcurrencyChecksEnabled(getConcurrencyChecksEnabled());
-        af.setPartitionAttributes(new PartitionAttributesFactory<CustId, Customer>()
+        af.setPartitionAttributes(new PartitionAttributesFactory<>()
             .setTotalNumBuckets(4).setLocalMaxMemory(1)
             .setPartitionResolver(new CustomerIDPartitionResolver("resolver2"))
             .setRedundantCopies(0).create());
@@ -1348,8 +1348,8 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       }
     });
 
-    final VM primary = isPrimary.booleanValue() ? server1 : server2;
-    final VM secondary = !isPrimary.booleanValue() ? server1 : server2;
+    final VM primary = isPrimary ? server1 : server2;
+    final VM secondary = !isPrimary ? server1 : server2;
 
     System.out.println("TEST:SERVER-1:VM-" + server1.getId());
     System.out.println("TEST:SERVER-2:VM-" + server2.getId());
@@ -1357,7 +1357,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
     System.out.println("TEST:SECONDARY=VM-" + secondary.getId());
 
     class WaitRelease implements Runnable {
-      CountDownLatch cdl;
+      final CountDownLatch cdl;
       String op;
 
       public WaitRelease(CountDownLatch cdl, String member) {
@@ -1370,7 +1370,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
           GemFireCacheImpl.getExisting().getLogger().fine("TEST:TX WAITING - " + op);
           cdl.await();
           GemFireCacheImpl.getExisting().getLogger().fine("TEST:TX END WAITING");
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignored) {
         }
       }
 
@@ -1436,7 +1436,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Let the TX op be applied on primary first
-    Thread.currentThread().sleep(200);
+    Thread.sleep(200);
 
     // Perform a non-tx op on the same key on primary
     execute(primary, new SerializableCallable() {
@@ -1454,7 +1454,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
 
 
     // Wait for a few milliseconds
-    Thread.currentThread().sleep(200);
+    Thread.sleep(200);
 
     // Release the waiting non-tx op first, on secondary
     execute(secondary, new SerializableCallable() {
@@ -1773,10 +1773,10 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
 
         // Install the hook at this point
         TestObserver o = TestObserver.getInstance();
-        o.setFlag(true);
+        TestObserver.setFlag(true);
 
         while (o.getFlag()) {
-          Thread.currentThread().sleep(1000);
+          Thread.sleep(1000);
         }
 
         mgr.commit();
@@ -1800,7 +1800,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         TestObserver o = TestObserver.getInstance();
-        o.setFlag(false);
+        TestObserver.setFlag(false);
         return null;
       }
     });
@@ -1839,7 +1839,7 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       mgr.begin();
 
       // Perform a put
-      Region<CustId, Customer> custRegion = getCache().getRegion(this.regionName);
+      Region<CustId, Customer> custRegion = getCache().getRegion(regionName);
 
       CustId custIdOne = new CustId(1);
       Customer customerOne = new Customer("name1", "addr1");
@@ -1877,8 +1877,8 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
         // [DISTTX] TODO after conflict detection either
         // CommitIncompleteException or CommitConflictException is thrown.
         // Should it always be CommitConflictException?
-      } catch (CommitIncompleteException cie) {
-      } catch (CommitConflictException ce) {
+      } catch (CommitIncompleteException ignored) {
+      } catch (CommitConflictException ignored) {
       }
 
       // verify data
@@ -2010,10 +2010,10 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       ((TXStateProxyImpl) ((TXManagerImpl) mgr).getTXState()).forceLocalBootstrap();
       TXStateInterface txp = ((TXManagerImpl) mgr).getTXState();
       DistTXState tx = (DistTXState) ((TXStateProxyImpl) txp).getRealDeal(null, null);
-      tx.setAfterReservation(new TxConflictRunnable(this.regionName)); // callback
+      tx.setAfterReservation(new TxConflictRunnable(regionName)); // callback
 
       // Perform a put
-      Region<CustId, Customer> custRegion = getCache().getRegion(this.regionName);
+      Region<CustId, Customer> custRegion = getCache().getRegion(regionName);
 
       CustId custIdOne = new CustId(1);
       Customer customerOne = new Customer("name1", "addr1");
@@ -2142,10 +2142,10 @@ public class DistributedTransactionDUnitTest extends JUnit4CacheTestCase {
       ((TXStateProxyImpl) ((TXManagerImpl) mgr).getTXState()).forceLocalBootstrap();
       TXStateInterface txp = ((TXManagerImpl) mgr).getTXState();
       DistTXState tx = (DistTXState) ((TXStateProxyImpl) txp).getRealDeal(null, null);
-      tx.setAfterReservation(new TxRunnable(this.regionName)); // callback
+      tx.setAfterReservation(new TxRunnable(regionName)); // callback
 
       // Perform a put
-      Region<CustId, Customer> custRegion = getCache().getRegion(this.regionName);
+      Region<CustId, Customer> custRegion = getCache().getRegion(regionName);
 
       CustId custIdOne = new CustId(1);
       Customer customerOne = new Customer("name1", "addr1");

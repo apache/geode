@@ -20,7 +20,7 @@ import org.apache.catalina.session.StandardSessionFacade;
 
 public class DeltaSessionFacade extends StandardSessionFacade {
 
-  private DeltaSessionInterface session;
+  private final DeltaSessionInterface session;
 
   /**
    * Construct a new session facade.
@@ -33,10 +33,10 @@ public class DeltaSessionFacade extends StandardSessionFacade {
 
   // ----------- DeltaSession Methods
   void commit() {
-    this.session.commit();
+    session.commit();
   }
 
   boolean isValid() {
-    return this.session.isValid();
+    return session.isValid();
   }
 }

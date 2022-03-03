@@ -53,12 +53,12 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
 
   private MultiRegionFunctionExecutor(MultiRegionFunctionExecutor drfe) {
     super(drfe);
-    this.regions = drfe.regions;
+    regions = drfe.regions;
     if (drfe.filter != null) {
-      this.filter.clear();
-      this.filter.addAll(drfe.filter);
+      filter.clear();
+      filter.addAll(drfe.filter);
     }
-    this.sender = drfe.sender;
+    sender = drfe.sender;
   }
 
   private MultiRegionFunctionExecutor(Set<Region> regions, Set filter2, Object args,
@@ -67,54 +67,54 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
       this.args = args;
     } else if (memberMappedArg != null) {
       this.memberMappedArg = memberMappedArg;
-      this.isMemberMappedArgument = true;
+      isMemberMappedArgument = true;
     }
-    this.sender = resultSender;
+    sender = resultSender;
     if (filter2 != null) {
-      this.filter.clear();
-      this.filter.addAll(filter2);
+      filter.clear();
+      filter.addAll(filter2);
     }
     this.regions = regions;
-    this.isClientServerMode = true;
+    isClientServerMode = true;
   }
 
   private MultiRegionFunctionExecutor(MultiRegionFunctionExecutor executor,
       MemberMappedArgument argument) {
     super(executor);
-    this.regions = executor.getRegions();
-    this.filter.clear();
-    this.filter.addAll(executor.filter);
-    this.sender = executor.getServerResultSender();
-    this.memberMappedArg = argument;
-    this.isMemberMappedArgument = true;
+    regions = executor.getRegions();
+    filter.clear();
+    filter.addAll(executor.filter);
+    sender = executor.getServerResultSender();
+    memberMappedArg = argument;
+    isMemberMappedArgument = true;
 
   }
 
   private MultiRegionFunctionExecutor(MultiRegionFunctionExecutor executor, ResultCollector rs) {
     super(executor);
-    this.regions = executor.getRegions();
-    this.filter.clear();
-    this.filter.addAll(executor.filter);
-    this.sender = executor.getServerResultSender();
-    this.rc = rs;
+    regions = executor.getRegions();
+    filter.clear();
+    filter.addAll(executor.filter);
+    sender = executor.getServerResultSender();
+    rc = rs;
   }
 
   public MultiRegionFunctionExecutor(MultiRegionFunctionExecutor executor, Object args) {
     super(executor);
-    this.regions = executor.getRegions();
-    this.filter.clear();
-    this.filter.addAll(executor.filter);
-    this.sender = executor.getServerResultSender();
+    regions = executor.getRegions();
+    filter.clear();
+    filter.addAll(executor.filter);
+    sender = executor.getServerResultSender();
 
     this.args = args;
   }
 
   public MultiRegionFunctionExecutor(MultiRegionFunctionExecutor executor, boolean isReExecute) {
     super(executor);
-    this.regions = executor.getRegions();
-    this.filter.clear();
-    this.filter.addAll(executor.filter);
-    this.sender = executor.getServerResultSender();
+    regions = executor.getRegions();
+    filter.clear();
+    filter.addAll(executor.filter);
+    sender = executor.getServerResultSender();
 
     this.isReExecute = isReExecute;
   }
@@ -130,11 +130,11 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
   }
 
   public Set<Region> getRegions() {
-    return this.regions;
+    return regions;
   }
 
   public ServerToClientFunctionResultSender getServerResultSender() {
-    return this.sender;
+    return sender;
   }
 
   @Override
@@ -205,7 +205,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
     final Map<InternalDistributedMember, Set<String>> memberToRegionMap =
         calculateMemberToRegionMap();
     final Set<InternalDistributedMember> dest =
-        new HashSet<InternalDistributedMember>(memberToRegionMap.keySet());
+        new HashSet<>(memberToRegionMap.keySet());
 
     if (dest.isEmpty()) {
       throw new FunctionException(
@@ -237,7 +237,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
       // if member is local VM
       dest.remove(localVM);
       Set<String> regionPathSet = memberToRegionMap.get(localVM);
-      Set<Region> regions = new HashSet<Region>();
+      Set<Region> regions = new HashSet<>();
       if (regionPathSet != null) {
         InternalCache cache1 = GemFireCacheImpl.getInstance();
         for (String regionPath : regionPathSet) {
@@ -246,13 +246,13 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
       }
       final FunctionContextImpl context =
           new MultiRegionFunctionContextImpl(cache, function.getId(),
-              getArgumentsForMember(localVM.getId()), resultSender, regions, this.isReExecute);
-      boolean isTx = cache.getTxManager().getTXState() == null ? false : true;
+              getArgumentsForMember(localVM.getId()), resultSender, regions, isReExecute);
+      boolean isTx = cache.getTxManager().getTXState() != null;
       executeFunctionOnLocalNode(function, context, resultSender, dm, isTx);
     }
     if (!dest.isEmpty()) {
       HashMap<InternalDistributedMember, Object> memberArgs =
-          new HashMap<InternalDistributedMember, Object>();
+          new HashMap<>();
       for (InternalDistributedMember recip : dest) {
         memberArgs.put(recip, getArgumentsForMember(recip.getId()));
       }
@@ -267,9 +267,9 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
 
   private Map<InternalDistributedMember, Set<String>> calculateMemberToRegionMap() {
     Map<InternalDistributedMember, Set<String>> memberToRegions =
-        new HashMap<InternalDistributedMember, Set<String>>();
+        new HashMap<>();
     // nodes is maintained for node pruning logic
-    Set<InternalDistributedMember> nodes = new HashSet<InternalDistributedMember>();
+    Set<InternalDistributedMember> nodes = new HashSet<>();
     for (Region region : regions) {
       DataPolicy dp = region.getAttributes().getDataPolicy();
       if (region instanceof PartitionedRegion) {
@@ -281,7 +281,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
           InternalDistributedMember localVm = cache.getMyId();
           Set<String> regions = memberToRegions.get(localVm);
           if (regions == null) {
-            regions = new HashSet<String>();
+            regions = new HashSet<>();
           }
           regions.add(pr.getFullPath());
           memberToRegions.put(localVm, regions);
@@ -290,7 +290,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
           for (InternalDistributedMember member : prMembers) {
             Set<String> regions = memberToRegions.get(member);
             if (regions == null) {
-              regions = new HashSet<String>();
+              regions = new HashSet<>();
             }
             regions.add(pr.getFullPath());
             memberToRegions.put(member, regions);
@@ -310,7 +310,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
               added = true;
               Set<String> regions = memberToRegions.get(member);
               if (regions == null) {
-                regions = new HashSet<String>();
+                regions = new HashSet<>();
               }
               regions.add(dr.getFullPath());
               memberToRegions.put(member, regions);
@@ -324,7 +324,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
                 .toArray()[new Random().nextInt(replicates.size())]);
             Set<String> regions = memberToRegions.get(member);
             if (regions == null) {
-              regions = new HashSet<String>();
+              regions = new HashSet<>();
             }
             regions.add(dr.getFullPath());
             memberToRegions.put(member, regions);
@@ -335,7 +335,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
           InternalDistributedMember local = cache.getMyId();
           Set<String> regions = memberToRegions.get(local);
           if (regions == null) {
-            regions = new HashSet<String>();
+            regions = new HashSet<>();
           }
           regions.add(region.getFullPath());
           memberToRegions.put(local, regions);
@@ -346,7 +346,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
         InternalDistributedMember local = cache.getMyId();
         Set<String> regions = memberToRegions.get(local);
         if (regions == null) {
-          regions = new HashSet<String>();
+          regions = new HashSet<>();
         }
         regions.add(region.getFullPath());
         memberToRegions.put(local, regions);

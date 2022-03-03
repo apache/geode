@@ -30,8 +30,8 @@ class PasswordDialog {
         label(text: prompt)
         input = passwordField()
         button(defaultButton: true, text: 'OK', actionPerformed: {
-          password = input.password.toString(); // Set pass variable to value of input field
-          dispose(); // Close dialog
+          password = input.password.toString() // Set pass variable to value of input field
+          dispose() // Close dialog
         })
       }
       }

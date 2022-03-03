@@ -112,7 +112,7 @@ public class OrderedStatisticTreeQuickCheckTest {
       Iterator<E> iterator = iterator();
       E value = null;
 
-      if (this.size() < index) {
+      if (size() < index) {
         return null;
       }
       for (int i = 0; i <= index; i++) {

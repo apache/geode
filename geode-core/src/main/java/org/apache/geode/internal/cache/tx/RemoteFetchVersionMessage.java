@@ -94,14 +94,14 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.key = DataSerializer.readObject(in);
+    key = DataSerializer.readObject(in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.key, out);
+    DataSerializer.writeObject(key, out);
   }
 
   @Override
@@ -160,7 +160,7 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
       if (isDebugEnabled) {
         logger.trace(LogMarker.DM_VERBOSE,
             "FetchVersionReplyMessage process invoking reply processor with processorId:{}",
-            this.processorId);
+            processorId);
       }
 
       if (processor == null) {
@@ -186,14 +186,14 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeObject(this.tag, out);
+      DataSerializer.writeObject(tag, out);
     }
 
     @Override
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.tag = DataSerializer.readObject(in);
+      tag = DataSerializer.readObject(in);
     }
   }
 
@@ -214,9 +214,9 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
       try {
         if (msg instanceof FetchVersionReplyMessage) {
           FetchVersionReplyMessage reply = (FetchVersionReplyMessage) msg;
-          this.tag = reply.tag;
+          tag = reply.tag;
           if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
-            logger.trace(LogMarker.DM_VERBOSE, "FetchVersionResponse return tag is {}", this.tag);
+            logger.trace(LogMarker.DM_VERBOSE, "FetchVersionResponse return tag is {}", tag);
           }
         }
       } finally {

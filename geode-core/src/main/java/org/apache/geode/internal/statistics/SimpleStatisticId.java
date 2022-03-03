@@ -38,12 +38,12 @@ public class SimpleStatisticId implements StatisticId {
 
   @Override
   public StatisticDescriptor getStatisticDescriptor() {
-    return this.descriptor;
+    return descriptor;
   }
 
   @Override
   public Statistics getStatistics() {
-    return this.statistics;
+    return statistics;
   }
 
   /**

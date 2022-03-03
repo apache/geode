@@ -25,9 +25,9 @@ public class PdxQueryTestObject
     implements PdxSerializable, Serializable /* just to pass around in test code */ {
   public int id = -1;
   private String name;
-  private int age = 1;
+  private final int age = 1;
 
-  private boolean shouldThrowException = true;
+  private final boolean shouldThrowException = true;
 
 
   public PdxQueryTestObject() {
@@ -68,7 +68,7 @@ public class PdxQueryTestObject
   public boolean equals(Object o) {
     if (o instanceof PdxQueryTestObject) {
       PdxQueryTestObject other = (PdxQueryTestObject) o;
-      return other.id == this.id && other.name.equals(this.name);
+      return other.id == id && other.name.equals(name);
     }
     return false;
   }

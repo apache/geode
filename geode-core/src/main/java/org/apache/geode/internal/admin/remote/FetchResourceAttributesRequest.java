@@ -41,7 +41,7 @@ public class FetchResourceAttributesRequest extends AdminRequest {
 
   @Override
   public AdminResponse createResponse(DistributionManager dm) {
-    return FetchResourceAttributesResponse.create(dm, this.getSender(), resourceUniqueId);
+    return FetchResourceAttributesResponse.create(dm, getSender(), resourceUniqueId);
   }
 
   @Override
@@ -66,7 +66,7 @@ public class FetchResourceAttributesRequest extends AdminRequest {
   @Override
   public String toString() {
     return String.format("Fetch statistics for %s",
-        this.getRecipient());
+        getRecipient());
   }
 
 }

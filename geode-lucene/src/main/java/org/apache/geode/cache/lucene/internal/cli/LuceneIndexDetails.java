@@ -35,7 +35,7 @@ public class LuceneIndexDetails extends LuceneFunctionSerializable
   private final String[] searchableFieldNames;
   private Map<String, String> fieldAnalyzers = null;
   private final Map<String, Integer> indexStats;
-  private LuceneIndexStatus status;
+  private final LuceneIndexStatus status;
   private String serializer;
 
   public LuceneIndexDetails(final String indexName, final String regionPath,
@@ -67,16 +67,16 @@ public class LuceneIndexDetails extends LuceneFunctionSerializable
   public LuceneIndexDetails(LuceneIndexCreationProfile indexProfile, final String serverName) {
     this(indexProfile.getIndexName(), indexProfile.getRegionPath(), indexProfile.getFieldNames(),
         null, null, LuceneIndexStatus.NOT_INITIALIZED, serverName, null);
-    this.fieldAnalyzers = getFieldAnalyzerStringsFromProfile(indexProfile.getFieldAnalyzers());
-    this.serializer = indexProfile.getSerializerClass();
+    fieldAnalyzers = getFieldAnalyzerStringsFromProfile(indexProfile.getFieldAnalyzers());
+    serializer = indexProfile.getSerializerClass();
   }
 
   public LuceneIndexDetails(LuceneIndexCreationProfile indexProfile, final String serverName,
       final LuceneIndexStatus status) {
     this(indexProfile.getIndexName(), indexProfile.getRegionPath(), indexProfile.getFieldNames(),
         null, null, status, serverName, null);
-    this.fieldAnalyzers = getFieldAnalyzerStringsFromProfile(indexProfile.getFieldAnalyzers());
-    this.serializer = indexProfile.getSerializerClass();
+    fieldAnalyzers = getFieldAnalyzerStringsFromProfile(indexProfile.getFieldAnalyzers());
+    serializer = indexProfile.getSerializerClass();
   }
 
   public Map<String, Integer> getIndexStats() {
@@ -142,21 +142,19 @@ public class LuceneIndexDetails extends LuceneFunctionSerializable
   }
 
   public String getSerializerString() {
-    return this.serializer;
+    return serializer;
   }
 
   @Override
   public String toString() {
-    final StringBuffer buffer = new StringBuffer();
-    buffer.append("{\n\tIndex Name = " + indexName);
-    buffer.append(",\tRegion Path = " + regionPath);
-    buffer.append(",\tIndexed Fields = " + getSearchableFieldNamesString());
-    buffer.append(",\tField Analyzer = " + getFieldAnalyzersString());
-    buffer.append(",\tSerializer = " + getSerializerString());
-    buffer.append(",\tStatus =\n\t" + getStatus());
-    buffer.append(",\tIndex Statistics =\n\t" + getIndexStatsString());
-    buffer.append("\n}\n");
-    return buffer.toString();
+    return "{\n\tIndex Name = " + indexName
+        + ",\tRegion Path = " + regionPath
+        + ",\tIndexed Fields = " + getSearchableFieldNamesString()
+        + ",\tField Analyzer = " + getFieldAnalyzersString()
+        + ",\tSerializer = " + getSerializerString()
+        + ",\tStatus =\n\t" + getStatus()
+        + ",\tIndex Statistics =\n\t" + getIndexStatsString()
+        + "\n}\n";
   }
 
   public LuceneIndexStatus getStatus() {

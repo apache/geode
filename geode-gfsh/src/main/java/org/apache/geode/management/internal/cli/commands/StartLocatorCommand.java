@@ -230,7 +230,7 @@ public class StartLocatorCommand extends OfflineGfshCommand {
     final ProcessStreamReader.ReadingMode readingMode = SystemUtils.isWindows()
         ? ProcessStreamReader.ReadingMode.NON_BLOCKING : ProcessStreamReader.ReadingMode.BLOCKING;
 
-    final StringBuffer message = new StringBuffer(); // need thread-safe StringBuffer
+    final StringBuilder message = new StringBuilder(); // need thread-safe StringBuilder
     ProcessStreamReader.InputListener inputListener = line -> {
       message.append(line);
       if (readingMode == ProcessStreamReader.ReadingMode.BLOCKING) {
@@ -271,7 +271,7 @@ public class StartLocatorCommand extends OfflineGfshCommand {
           if (locatorState.isStartingOrNotResponding()
               && !(StringUtils.isBlank(currentLocatorStatusMessage)
                   || currentLocatorStatusMessage.equalsIgnoreCase(previousLocatorStatusMessage)
-                  || currentLocatorStatusMessage.trim().toLowerCase().equals("null"))) {
+                  || currentLocatorStatusMessage.trim().equalsIgnoreCase("null"))) {
             Gfsh.println();
             Gfsh.println(currentLocatorStatusMessage);
             previousLocatorStatusMessage = currentLocatorStatusMessage;
@@ -281,7 +281,7 @@ public class StartLocatorCommand extends OfflineGfshCommand {
 
           return ResultModel.createError(
               String.format(CliStrings.START_LOCATOR__PROCESS_TERMINATED_ABNORMALLY_ERROR_MESSAGE,
-                  exitValue, locatorLauncher.getWorkingDirectory(), message.toString()));
+                  exitValue, locatorLauncher.getWorkingDirectory(), message));
         }
       } while (!(registeredLocatorSignalListener && locatorSignalListener.isSignaled())
           && locatorState.isStartingOrNotResponding());

@@ -211,7 +211,7 @@ public class PdxInstanceHelper implements JSONToPdxMapper {
   }
 
   private void addIdentityField(String fieldName) {
-    if (this.identityFields.contains(fieldName)) {
+    if (identityFields.contains(fieldName)) {
       m_pdxInstanceFactory.markIdentityField(fieldName);
     }
   }

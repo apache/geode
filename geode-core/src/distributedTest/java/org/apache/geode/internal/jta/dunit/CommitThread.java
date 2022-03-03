@@ -43,7 +43,7 @@ public class CommitThread implements Runnable {
 
   public Thread thd;
   public String threadName;
-  private LogWriter log;
+  private final LogWriter log;
 
   public CommitThread(String name, LogWriter log) {
     threadName = name;

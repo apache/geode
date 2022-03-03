@@ -146,7 +146,7 @@ public class PartitionAttributesFactory<K, V> {
    *        PartitionAttributesFactory
    */
   public PartitionAttributesFactory(PartitionAttributes pa) {
-    this.partitionAttributes.setAll(pa);
+    partitionAttributes.setAll(pa);
 
   }
 
@@ -164,7 +164,7 @@ public class PartitionAttributesFactory<K, V> {
    *
    */
   public PartitionAttributesFactory<K, V> setRedundantCopies(int redundantCopies) {
-    this.partitionAttributes.setRedundantCopies(redundantCopies);
+    partitionAttributes.setRedundantCopies(redundantCopies);
     return this;
   }
 
@@ -173,7 +173,7 @@ public class PartitionAttributesFactory<K, V> {
    * not set, a default of 90% of available heap is used.
    */
   public PartitionAttributesFactory<K, V> setLocalMaxMemory(int mb) {
-    this.partitionAttributes.setLocalMaxMemory(mb);
+    partitionAttributes.setLocalMaxMemory(mb);
     return this;
   }
 
@@ -187,7 +187,7 @@ public class PartitionAttributesFactory<K, V> {
    */
   @Deprecated
   public PartitionAttributesFactory<K, V> setTotalMaxMemory(long mb) {
-    this.partitionAttributes.setTotalMaxMemory(mb);
+    partitionAttributes.setTotalMaxMemory(mb);
     return this;
   }
 
@@ -210,7 +210,7 @@ public class PartitionAttributesFactory<K, V> {
    * The default number of buckets for a PartitionedRegion is 113.
    */
   public PartitionAttributesFactory<K, V> setTotalNumBuckets(int numBuckets) {
-    this.partitionAttributes.setTotalNumBuckets(numBuckets);
+    partitionAttributes.setTotalNumBuckets(numBuckets);
     return this;
   }
 
@@ -218,7 +218,7 @@ public class PartitionAttributesFactory<K, V> {
    * Sets the <code>PartitionResolver</code> for the PartitionRegion.
    */
   public PartitionAttributesFactory<K, V> setPartitionResolver(PartitionResolver<K, V> resolver) {
-    this.partitionAttributes.setPartitionResolver(resolver);
+    partitionAttributes.setPartitionResolver(resolver);
     return this;
   }
 
@@ -227,7 +227,7 @@ public class PartitionAttributesFactory<K, V> {
    * colocated
    */
   public PartitionAttributesFactory<K, V> setColocatedWith(String colocatedRegionFullPath) {
-    this.partitionAttributes.setColocatedWith(colocatedRegionFullPath);
+    partitionAttributes.setColocatedWith(colocatedRegionFullPath);
     return this;
   }
 
@@ -239,7 +239,7 @@ public class PartitionAttributesFactory<K, V> {
    * @since GemFire 6.0
    */
   public PartitionAttributesFactory<K, V> setRecoveryDelay(long recoveryDelay) {
-    this.partitionAttributes.setRecoveryDelay(recoveryDelay);
+    partitionAttributes.setRecoveryDelay(recoveryDelay);
     return this;
   }
 
@@ -251,7 +251,7 @@ public class PartitionAttributesFactory<K, V> {
    * @since GemFire 6.0
    */
   public PartitionAttributesFactory<K, V> setStartupRecoveryDelay(long startupRecoveryDelay) {
-    this.partitionAttributes.setStartupRecoveryDelay(startupRecoveryDelay);
+    partitionAttributes.setStartupRecoveryDelay(startupRecoveryDelay);
     return this;
   }
 
@@ -265,8 +265,8 @@ public class PartitionAttributesFactory<K, V> {
       throw new IllegalArgumentException(
           "PartitionListner parameter was null");
     }
-    synchronized (this.partitionAttributes) {
-      this.partitionAttributes.addPartitionListener(listener);
+    synchronized (partitionAttributes) {
+      partitionAttributes.addPartitionListener(listener);
     }
     return this;
   }
@@ -285,7 +285,7 @@ public class PartitionAttributesFactory<K, V> {
     if (localProps == null) {
       return this;
     }
-    this.partitionAttributes.setLocalProperties(localProps);
+    partitionAttributes.setLocalProperties(localProps);
 
     return this;
   }
@@ -304,7 +304,7 @@ public class PartitionAttributesFactory<K, V> {
    */
   @Deprecated
   public PartitionAttributesFactory<K, V> setGlobalProperties(Properties globalProps) {
-    this.partitionAttributes.setGlobalProperties(globalProps);
+    partitionAttributes.setGlobalProperties(globalProps);
     return this;
   }
 
@@ -315,8 +315,8 @@ public class PartitionAttributesFactory<K, V> {
    */
   public PartitionAttributesFactory<K, V> addFixedPartitionAttributes(
       FixedPartitionAttributes fpa) {
-    synchronized (this.partitionAttributes) {
-      this.partitionAttributes.addFixedPartitionAttributes(fpa);
+    synchronized (partitionAttributes) {
+      partitionAttributes.addFixedPartitionAttributes(fpa);
       return this;
     }
   }
@@ -330,8 +330,8 @@ public class PartitionAttributesFactory<K, V> {
    */
   @SuppressWarnings("unchecked")
   public PartitionAttributes<K, V> create() {
-    this.partitionAttributes.validateAttributes();
+    partitionAttributes.validateAttributes();
     // defaults are set in the PartitionedRegion when the attributes are applied
-    return (PartitionAttributes<K, V>) this.partitionAttributes.clone();
+    return (PartitionAttributes<K, V>) partitionAttributes.clone();
   }
 }

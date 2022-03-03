@@ -113,9 +113,9 @@ public class SerializationRegistrationType {
    */
   public List<Serializer> getSerializers() {
     if (serializers == null) {
-      serializers = new ArrayList<Serializer>();
+      serializers = new ArrayList<>();
     }
-    return this.serializers;
+    return serializers;
   }
 
   /**
@@ -143,9 +143,9 @@ public class SerializationRegistrationType {
    */
   public List<Instantiator> getInstantiators() {
     if (instantiators == null) {
-      instantiators = new ArrayList<Instantiator>();
+      instantiators = new ArrayList<>();
     }
-    return this.instantiators;
+    return instantiators;
   }
 
 
@@ -200,7 +200,7 @@ public class SerializationRegistrationType {
      *
      */
     public void setClassName(String value) {
-      this.className = value;
+      className = value;
     }
 
     /**
@@ -222,7 +222,7 @@ public class SerializationRegistrationType {
      *
      */
     public void setId(String value) {
-      this.id = value;
+      id = value;
     }
 
   }
@@ -276,7 +276,7 @@ public class SerializationRegistrationType {
      *
      */
     public void setClassName(String value) {
-      this.className = value;
+      className = value;
     }
 
   }

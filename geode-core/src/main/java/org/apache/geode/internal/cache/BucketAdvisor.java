@@ -164,7 +164,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   private BucketAdvisor startingBucketAdvisor;
 
-  private PartitionedRegion pRegion;
+  private final PartitionedRegion pRegion;
 
   final ConcurrentMap<String, Boolean> destroyedShadowBuckets = new ConcurrentHashMap<>();
 
@@ -599,7 +599,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     private static final long serialVersionUID = 2454657854757543876L;
 
     // must named as it, to pass serialization compatibility test.
-    private Map<E, Boolean> m;
+    private final Map<E, Boolean> m;
 
     private transient Set<E> backingSet;
 
@@ -1768,7 +1768,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     return redundancyTracker.getCurrentRedundancy();
   }
 
-  Set<InternalDistributedMember> adviseInitialized() {
+  public Set<InternalDistributedMember> adviseInitialized() {
     return adviseFilter(profile -> {
       assert profile instanceof BucketProfile;
       BucketProfile bucketProfile = (BucketProfile) profile;

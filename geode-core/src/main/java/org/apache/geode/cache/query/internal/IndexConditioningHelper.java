@@ -125,21 +125,21 @@ class IndexConditioningHelper {
      * not null
      *
      */
-    this.indxInfo = indexInfo;
+    indxInfo = indexInfo;
     List grpItrs = null;
     int size = indexInfo.mapping.length;
-    this.indpndntItr = grpIndpndntItr;
-    this.indexFieldToItrsMapping = new RuntimeIterator[indexFieldsSize];
+    indpndntItr = grpIndpndntItr;
+    indexFieldToItrsMapping = new RuntimeIterator[indexFieldsSize];
     // Obtain the grpIndpndt iterator if it is passed as null
-    if (this.indpndntItr == null) {
+    if (indpndntItr == null) {
       Set set1 = new HashSet();
       context.computeUltimateDependencies(indexInfo._path, set1);
       Support.Assert(set1.size() == 1,
           " Since we are in Indexed Evaluate that means there has to be exactly one independent iterator for this compiled comparison");
       // The ultimate independent RuntimeIterator
-      this.indpndntItr = (RuntimeIterator) set1.iterator().next();
+      indpndntItr = (RuntimeIterator) set1.iterator().next();
       Support.Assert(
-          this.indpndntItr.getScopeID() == context.currentScope()
+          indpndntItr.getScopeID() == context.currentScope()
               .getScopeID()/* context.getScopeCount() */,
           " Since we are in Indexed Evaluate that means the current scope count & indpenedent iterator's scope count should match");
     }
@@ -152,7 +152,7 @@ class IndexConditioningHelper {
         Support.Assert(indexInfo._index.getResultSetType() instanceof StructType,
             " If the match level is zero & the size of mapping array is 1 then Index is surely ResultBag else StructBag");
         // The independent iterator is added as the first element
-        grpItrs = context.getCurrScopeDpndntItrsBasedOnSingleIndpndntItr(this.indpndntItr);
+        grpItrs = context.getCurrScopeDpndntItrsBasedOnSingleIndpndntItr(indpndntItr);
         // Check if reshuffling is needed or just changing the struct
         // type will suffice
         boolean isReshufflingNeeded = false;
@@ -160,27 +160,27 @@ class IndexConditioningHelper {
         for (int i = 0; i < size; ++i) {
           pos = indexInfo.mapping[i];
           isReshufflingNeeded = isReshufflingNeeded || (pos != (i + 1));
-          this.indexFieldToItrsMapping[pos - 1] = (RuntimeIterator) grpItrs.get(i);
+          indexFieldToItrsMapping[pos - 1] = (RuntimeIterator) grpItrs.get(i);
         }
-        this.finalList = grpItrs;
+        finalList = grpItrs;
         // Even if Reshuffle is not need but if the iter conditions are
         // present we need to do evaluation
         // We can avoid iterating over the set iff reshuffling is not needed &
         // there is no iter eval condition
         if (isReshufflingNeeded || iterOperands != null) {
           // this.expansionList = Collections.EMPTY_LIST;
-          this.checkList = null;
+          checkList = null;
           // indexReults = QueryUtils.cutDownAndExpandIndexResults(indexReults,
           // indexFieldToItrsMapping, Collections.EMPTY_LIST, grpItrs,
           // context, Collections.EMPTY_LIST, iterOperands);
         } else {
-          this.structType = QueryUtils.createStructTypeForRuntimeIterators(grpItrs);
+          structType = QueryUtils.createStructTypeForRuntimeIterators(grpItrs);
           // indexReults.setElementType(structType);
           // Shuffling is not needed. Index results is a StructBag
           // with match level zero & no expansion needed & index fields map
           // with the RuntimeIterators. But we need to change the StructType
           // of the StructBag
-          this.shufflingNeeded = false;
+          shufflingNeeded = false;
         }
       } else {
         // The finalList should not be left uninitialized, & if the match
@@ -188,27 +188,27 @@ class IndexConditioningHelper {
         // & the Index Results is a ResultBag ( & not an StructBag ) implying
         // indexFieldsSize of
         // 1 , then the final List should contain only the independent iterator
-        this.finalList = new ArrayList();
-        this.finalList.add(this.indpndntItr);
-        Support.Assert(this.indexFieldToItrsMapping.length == 1,
+        finalList = new ArrayList();
+        finalList.add(indpndntItr);
+        Support.Assert(indexFieldToItrsMapping.length == 1,
             "In this else block , it should be guaranteed that there exists only one iterator in query as well as index from clause & that should be nothing but the independent RuntimeIterator of the group  ");
-        this.indexFieldToItrsMapping[0] = this.indpndntItr;
+        indexFieldToItrsMapping[0] = indpndntItr;
         // Shuffling is needed if iter operand is not null even if index results is a
         // ResultSet
         // with match level zero & no expansion needed
-        this.shufflingNeeded = (iterOperands != null);
+        shufflingNeeded = (iterOperands != null);
       }
     } else {
       // There is some expansion or truncation needed on the data
       // obtained from index.Identify a the iterators belonging to this group
       // The independent iterator is added as the first element
-      grpItrs = context.getCurrScopeDpndntItrsBasedOnSingleIndpndntItr(this.indpndntItr);
+      grpItrs = context.getCurrScopeDpndntItrsBasedOnSingleIndpndntItr(indpndntItr);
       // Create an array of RuntimeIterators which map to the fields of the
       // Index set.
       // For those fields which do not have corresponding RuntimeIterator , keep
       // it as null;
       int pos = -1;
-      this.finalList = completeExpansion ? context.getCurrentIterators() : grpItrs;
+      finalList = completeExpansion ? context.getCurrentIterators() : grpItrs;
       // This is the List of runtimeIterators which have corresponding fields
       // in the resultset obtained from Index usage. This List will be populated
       // only if there exists fields in index resultset which will not be
@@ -216,10 +216,10 @@ class IndexConditioningHelper {
       // If all the fields of index resultset will be used , then this List
       // should
       // be null or empty
-      this.checkList = new ArrayList();
+      checkList = new ArrayList();
       // This List contains the RuntimeIterators which are missing from
       // index resultset but are present in the final iterators
-      this.expansionList = new LinkedList(finalList);
+      expansionList = new LinkedList(finalList);
       RuntimeIterator tempItr = null;
       // boolean cutDownNeeded = false;
       int unMappedFields = indexFieldsSize;
@@ -227,15 +227,15 @@ class IndexConditioningHelper {
         pos = indexInfo.mapping[i];
         if (pos > 0) {
           tempItr = (RuntimeIterator) grpItrs.get(i);
-          this.indexFieldToItrsMapping[pos - 1] = tempItr;
-          this.expansionList.remove(tempItr);
-          this.checkList.add(tempItr);
+          indexFieldToItrsMapping[pos - 1] = tempItr;
+          expansionList.remove(tempItr);
+          checkList.add(tempItr);
           --unMappedFields;
         }
       }
       boolean cutDownNeeded = unMappedFields > 0;
       if (!cutDownNeeded) {
-        this.checkList = null;
+        checkList = null;
       }
       /*
        * indexReults = QueryUtils.cutDownAndExpandIndexResults(indexReults, indexFieldToItrsMapping,

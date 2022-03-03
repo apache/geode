@@ -40,8 +40,8 @@ import org.apache.geode.management.internal.exceptions.EntityExistsException;
  * this is used to validate all the common attributes of CacheElement, eg. name and group
  */
 public class MemberValidator {
-  private ConfigurationPersistenceService persistenceService;
-  private InternalCache cache;
+  private final ConfigurationPersistenceService persistenceService;
+  private final InternalCache cache;
 
   public MemberValidator(InternalCache cache, ConfigurationPersistenceService persistenceService) {
     this.cache = cache;
@@ -65,7 +65,7 @@ public class MemberValidator {
 
     // if configuration is groupable, then check if it's already in the group
     String configGroup = AbstractConfiguration.getGroupName(config.getGroup());
-    if (existingElementsAndTheirGroups.keySet().contains(configGroup)) {
+    if (existingElementsAndTheirGroups.containsKey(configGroup)) {
       throw new EntityExistsException(
           config.getClass().getSimpleName() + " '" + config.getId()
               + "' already exists in group " + configGroup);

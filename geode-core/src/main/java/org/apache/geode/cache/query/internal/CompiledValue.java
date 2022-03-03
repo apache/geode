@@ -73,7 +73,7 @@ public interface CompiledValue {
     @Override
     public void generateCanonicalizedExpression(StringBuilder clauseBuffer,
         ExecutionContext context)
-        throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+        throws TypeMismatchException, NameResolutionException {
       throw new QueryInvalidException(
           "* cannot be used with index operator. To use as key for map lookup, "
               + "it should be enclosed in ' '");
@@ -119,7 +119,7 @@ public interface CompiledValue {
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException;
 
   Set computeDependencies(ExecutionContext context)
-      throws TypeMismatchException, AmbiguousNameException, NameResolutionException;
+      throws TypeMismatchException, NameResolutionException;
 
   boolean isDependentOnIterator(RuntimeIterator itr, ExecutionContext context);
 
@@ -129,7 +129,7 @@ public interface CompiledValue {
    * general-purpose visitor (will be used for extracting region path)
    */
   void generateCanonicalizedExpression(StringBuilder clauseBuffer, ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException;
+      throws TypeMismatchException, NameResolutionException;
 
   /**
    * Populates the Set passed with the name of the Region which, if any , will be the bottommost

@@ -24,7 +24,6 @@ import java.util.ServiceLoader;
 import org.junit.Test;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import org.xml.sax.ext.EntityResolver2;
 
 import org.apache.geode.internal.classloader.ClassPathLoader;
@@ -88,7 +87,7 @@ public abstract class AbstractEntityResolverTest {
    * @since GemFire 8.1
    */
   @Test
-  public void testResolveEntityNullSystemId() throws SAXException, Exception {
+  public void testResolveEntityNullSystemId() throws Exception {
     final String systemId = null;
     final InputSource inputSource = getEntityResolver().resolveEntity(null, systemId);
     assertNull(inputSource);

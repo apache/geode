@@ -17,7 +17,6 @@ package org.apache.geode.security.generator;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -84,8 +83,8 @@ public abstract class CredentialGenerator {
    * @throws IllegalArgumentException when there is a problem during initialization
    */
   public void init() throws IllegalArgumentException {
-    this.systemProperties = initialize();
-    logger.info("Generating CredentialGenerator with {}", this.systemProperties);
+    systemProperties = initialize();
+    logger.info("Generating CredentialGenerator with {}", systemProperties);
   }
 
   /**
@@ -93,7 +92,7 @@ public abstract class CredentialGenerator {
    *         null.
    */
   public Properties getSystemProperties() {
-    return this.systemProperties;
+    return systemProperties;
   }
 
   /**
@@ -101,7 +100,7 @@ public abstract class CredentialGenerator {
    *         null.
    */
   public Properties getJavaProperties() {
-    return this.javaProperties;
+    return javaProperties;
   }
 
   /**
@@ -222,25 +221,25 @@ public abstract class CredentialGenerator {
     private ClassCode(final String name, final byte classType) {
       this.name = name;
       this.classType = classType;
-      this.ordinal = nextOrdinal++;
-      VALUES[this.ordinal] = this;
+      ordinal = nextOrdinal++;
+      VALUES[ordinal] = this;
       CODE_NAME_MAP.put(name, this);
     }
 
     public boolean isDummy() {
-      return this.classType == ID_DUMMY;
+      return classType == ID_DUMMY;
     }
 
     public boolean isLDAP() {
-      return this.classType == ID_LDAP;
+      return classType == ID_LDAP;
     }
 
     public boolean isPKCS() {
-      return this.classType == ID_PKCS;
+      return classType == ID_PKCS;
     }
 
     public boolean isSSL() {
-      return this.classType == ID_SSL;
+      return classType == ID_SSL;
     }
 
     /**
@@ -262,8 +261,8 @@ public abstract class CredentialGenerator {
      */
     public static List getAll() {
       final List codes = new ArrayList();
-      for (Iterator iter = CODE_NAME_MAP.values().iterator(); iter.hasNext();) {
-        codes.add(iter.next());
+      for (final Object o : CODE_NAME_MAP.values()) {
+        codes.add(o);
       }
       return codes;
     }
@@ -274,7 +273,7 @@ public abstract class CredentialGenerator {
      * @return the ordinal of this operation.
      */
     public byte toOrdinal() {
-      return this.ordinal;
+      return ordinal;
     }
 
     /**
@@ -284,7 +283,7 @@ public abstract class CredentialGenerator {
      */
     @Override
     public String toString() {
-      return this.name;
+      return name;
     }
 
     /**
@@ -301,7 +300,7 @@ public abstract class CredentialGenerator {
         return false;
       }
       final ClassCode other = (ClassCode) obj;
-      return other.ordinal == this.ordinal;
+      return other.ordinal == ordinal;
     }
 
     /**
@@ -310,7 +309,7 @@ public abstract class CredentialGenerator {
      * @return true if other {@code ClassCode} is same as this one.
      */
     public boolean equals(final ClassCode opCode) {
-      return opCode != null && opCode.ordinal == this.ordinal;
+      return opCode != null && opCode.ordinal == ordinal;
     }
 
     /**
@@ -320,7 +319,7 @@ public abstract class CredentialGenerator {
      */
     @Override
     public int hashCode() {
-      return this.ordinal;
+      return ordinal;
     }
   }
 }

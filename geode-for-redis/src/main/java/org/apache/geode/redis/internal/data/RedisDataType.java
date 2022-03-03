@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_DATA;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_HASH;
+import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_LIST;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SET;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_STRING;
@@ -28,6 +29,7 @@ public enum RedisDataType {
   REDIS_STRING("string", NULL_REDIS_STRING),
   REDIS_HASH("hash", NULL_REDIS_HASH),
   REDIS_SET("set", NULL_REDIS_SET),
+  REDIS_LIST("list", NULL_REDIS_LIST),
   REDIS_SORTED_SET("sortedset", NULL_REDIS_SORTED_SET);
 
   private final String toStringValue;

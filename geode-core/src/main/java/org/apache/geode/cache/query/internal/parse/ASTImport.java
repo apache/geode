@@ -34,7 +34,7 @@ public class ASTImport extends GemFireAST {
 
   @Override
   public void compile(QCompiler compiler) {
-    StringBuffer nameBuf = new StringBuffer();
+    StringBuilder nameBuf = new StringBuilder();
     String asName = null;
     AST child = getFirstChild();
     while (child != null) {

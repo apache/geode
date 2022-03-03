@@ -29,7 +29,7 @@ import org.apache.geode.management.ServerLoadData;
  */
 public class CacheServerMBean extends NotificationBroadcasterSupport implements CacheServerMXBean {
 
-  private CacheServerBridge bridge;
+  private final CacheServerBridge bridge;
 
   public CacheServerMBean(CacheServerBridge bridge) {
     this.bridge = bridge;

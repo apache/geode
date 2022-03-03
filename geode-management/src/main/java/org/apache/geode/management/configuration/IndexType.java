@@ -27,5 +27,5 @@ public enum IndexType {
   RANGE,
   // this is used to represent deprecated index types not supported by the management API.
   @Deprecated
-  HASH_DEPRECATED;
+  HASH_DEPRECATED
 }

@@ -46,7 +46,7 @@ public class SerializableTestWatcherTest {
     FakeSerializableTestWatcher instance = new FakeSerializableTestWatcher().value(1);
 
     FakeSerializableTestWatcher cloned =
-        (FakeSerializableTestWatcher) SerializationUtils.clone(instance);
+        SerializationUtils.clone(instance);
 
     assertThat(instance.value()).isEqualTo(1);
     assertThat(cloned.value()).isEqualTo(1);
@@ -70,7 +70,7 @@ public class SerializableTestWatcherTest {
     }
 
     private int value() {
-      return this.value;
+      return value;
     }
   }
 }

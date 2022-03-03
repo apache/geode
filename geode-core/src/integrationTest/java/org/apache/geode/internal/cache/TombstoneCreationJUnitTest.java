@@ -45,13 +45,13 @@ public class TombstoneCreationJUnitTest {
 
   @Before
   public void setUp() {
-    this.cache = (GemFireCacheImpl) new CacheFactory().set(LOCATORS, "").set(MCAST_PORT, "0")
+    cache = (GemFireCacheImpl) new CacheFactory().set(LOCATORS, "").set(MCAST_PORT, "0")
         .set(LOG_LEVEL, "config").create();
   }
 
   @After
   public void tearDown() {
-    this.cache.close();
+    cache.close();
   }
 
   @Test

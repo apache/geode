@@ -34,11 +34,11 @@ public class RemoteCacheStatistics implements CacheStatistics, DataSerializable 
   private float hitRatio;
 
   public RemoteCacheStatistics(CacheStatistics stats) {
-    this.lastModified = stats.getLastModifiedTime();
-    this.lastAccessed = stats.getLastAccessedTime();
-    this.hitCount = stats.getHitCount();
-    this.missCount = stats.getMissCount();
-    this.hitRatio = stats.getHitRatio();
+    lastModified = stats.getLastModifiedTime();
+    lastAccessed = stats.getLastAccessedTime();
+    hitCount = stats.getHitCount();
+    missCount = stats.getMissCount();
+    hitRatio = stats.getHitRatio();
   }
 
   /**

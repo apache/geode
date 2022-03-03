@@ -61,8 +61,8 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
     this.txEvent = txEvent;
     this.pendingCallbacks = pendingCallbacks;
     this.txEntryState = txEntryState;
-    this.remoteOrigin = !txId.getMemberId().equals(owner.getMyId());
-    this.invokeCallbacks = shouldInvokeCallbacks();
+    remoteOrigin = !txId.getMemberId().equals(owner.getMyId());
+    invokeCallbacks = shouldInvokeCallbacks();
     final boolean isTXHost = txEntryState != null;
     // If the transaction originated on another member and we do not host the transaction entry
     // and are not a replicate or partitioned (i.e. !isAllEvents)
@@ -72,7 +72,7 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
     // then only apply the update to existing entries when the operation is an update and we
     // are initialized.
     // Otherwise use the standard create/update logic.
-    this.onlyExisting = remoteOrigin && !isTXHost
+    onlyExisting = remoteOrigin && !isTXHost
         && (!owner.isAllEvents() || (!putOp.isCreate() && isOwnerInitialized()));
   }
 
@@ -103,11 +103,11 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
   }
 
   private void setCallbackEventInPending(boolean v) {
-    this.callbackEventInPending = v;
+    callbackEventInPending = v;
   }
 
   boolean isCallbackEventInPending() {
-    return this.callbackEventInPending;
+    return callbackEventInPending;
   }
 
   private void makePutOpCreate() {
@@ -120,7 +120,7 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
 
   @Override
   protected boolean isOnlyExisting() {
-    return this.onlyExisting;
+    return onlyExisting;
   }
 
   @Override
@@ -166,10 +166,7 @@ public class RegionMapCommitPut extends AbstractRegionMapPut {
 
   @Override
   protected boolean checkPreconditions() {
-    if (isOnlyExisting() && isPutOpCreate()) {
-      return false;
-    }
-    return true;
+    return !isOnlyExisting() || !isPutOpCreate();
   }
 
   @Override

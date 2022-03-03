@@ -514,7 +514,7 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
         Paths.get(tempDir.getRoot().getAbsolutePath() + File.separator + "nonExistingDiskStore");
     assertThat(Files.exists(nonExistingDiskStorePath)).isFalse();
     gfsh.executeAndAssertThat(baseCommand + " --name=" + DISKSTORE + " --disk-dirs="
-        + nonExistingDiskStorePath.toAbsolutePath().toString()).statusIsError()
+        + nonExistingDiskStorePath.toAbsolutePath()).statusIsError()
         .containsOutput("Could not find disk-dirs:");
     assertThat(Files.exists(nonExistingDiskStorePath)).isFalse();
   }
@@ -533,7 +533,7 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
             + DiskInitFile.IF_FILE_EXT);
     assertThat(Files.exists(diskStoreFilePath)).isFalse();
     gfsh.executeAndAssertThat(baseCommand + " --name=nonExistingDiskStore --disk-dirs="
-        + diskStorePath.toAbsolutePath().toString()).statusIsError()
+        + diskStorePath.toAbsolutePath()).statusIsError()
         .containsOutput("The init file " + diskStoreFilePath + " does not exist.");
     assertThat(Files.exists(diskStoreFilePath)).isFalse();
   }

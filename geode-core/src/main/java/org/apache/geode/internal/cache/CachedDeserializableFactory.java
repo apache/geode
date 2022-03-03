@@ -203,8 +203,7 @@ public class CachedDeserializableFactory {
         result += dos.size();
       } catch (IOException ex) {
         RuntimeException ex2 = new IllegalArgumentException(
-            "Could not calculate size of object");
-        ex2.initCause(ex);
+            "Could not calculate size of object", ex);
         throw ex2;
       }
     } else {
@@ -246,8 +245,7 @@ public class CachedDeserializableFactory {
         result += dos.size();
       } catch (IOException ex) {
         RuntimeException ex2 = new IllegalArgumentException(
-            "Could not calculate size of object");
-        ex2.initCause(ex);
+            "Could not calculate size of object", ex);
         throw ex2;
       }
     }

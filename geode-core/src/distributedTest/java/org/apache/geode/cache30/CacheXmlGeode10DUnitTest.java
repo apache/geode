@@ -208,7 +208,7 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
     try {
       testXml(cache);
       fail("Expected IllegalArgumentException to be thrown");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     } finally {
       expectedException.remove();
       closeCache();
@@ -254,7 +254,7 @@ public class CacheXmlGeode10DUnitTest extends CacheXml81DUnitTest {
   @SuppressWarnings("rawtypes")
   @Test
   public void testAsyncEventQueueIsForwardExpirationDestroyAttribute() throws Exception {
-    final String regionName = this.testName.getMethodName();
+    final String regionName = testName.getMethodName();
 
     // Create AsyncEventQueue with Listener
     final CacheCreation cache = new CacheCreation();

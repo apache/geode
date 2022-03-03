@@ -34,7 +34,7 @@ public abstract class TestCacheWriter<K, V> extends TestCacheCallback implements
   @Override
   public void beforeUpdate(EntryEvent<K, V> event) throws CacheWriterException {
 
-    this.invoked = true;
+    invoked = true;
     beforeUpdate2(event);
   }
 
@@ -53,7 +53,7 @@ public abstract class TestCacheWriter<K, V> extends TestCacheCallback implements
   @Override
   public void beforeCreate(EntryEvent<K, V> event) throws CacheWriterException {
 
-    this.invoked = true;
+    invoked = true;
     beforeCreate2(event);
   }
 
@@ -75,7 +75,7 @@ public abstract class TestCacheWriter<K, V> extends TestCacheCallback implements
   @Override
   public void beforeDestroy(EntryEvent<K, V> event) throws CacheWriterException {
 
-    this.invoked = true;
+    invoked = true;
     beforeDestroy2(event);
   }
 
@@ -99,7 +99,7 @@ public abstract class TestCacheWriter<K, V> extends TestCacheCallback implements
       return;
     }
 
-    this.invoked = true;
+    invoked = true;
     beforeRegionDestroy2(event);
   }
 

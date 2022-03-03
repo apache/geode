@@ -28,11 +28,11 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class SerializerCreation {
   private static final Logger logger = LogService.getLogger();
 
-  private final Vector<Class> serializerReg = new Vector<Class>();
-  private final HashMap<Class, Integer> instantiatorReg = new HashMap<Class, Integer>();
+  private final Vector<Class> serializerReg = new Vector<>();
+  private final HashMap<Class, Integer> instantiatorReg = new HashMap<>();
 
   public static class InstantiatorImpl extends Instantiator {
-    private Class m_class;
+    private final Class m_class;
 
     public InstantiatorImpl(Class<? extends DataSerializable> c, int classId) {
       super(c, classId);
@@ -50,7 +50,7 @@ public class SerializerCreation {
         return (DataSerializable) m_class.newInstance();
       } catch (Exception ex) {
         logger.error(String.format("Failed to create a new instance of DataSerializable class %s",
-            new Object[] {m_class.getName()}),
+            m_class.getName()),
             ex);
         return null;
       }

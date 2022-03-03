@@ -107,8 +107,8 @@ public class OrderByComparator implements Comparator {
       return 0;
     }
     assert !(obj1 instanceof VMCachedDeserializable || obj2 instanceof VMCachedDeserializable);
-    if ((this.objType.isStructType() && obj1 instanceof Object[] && obj2 instanceof Object[])
-        || !this.objType.isStructType()) {
+    if ((objType.isStructType() && obj1 instanceof Object[] && obj2 instanceof Object[])
+        || !objType.isStructType()) {
       if (((result = evaluateSortCriteria(obj1, obj2)) != 0) && (orderByAttrs != null)) {
         return result;
       }
@@ -116,7 +116,7 @@ public class OrderByComparator implements Comparator {
         QueryObserverHolder.getInstance().orderByColumnsEqual();
       }
       // Comparable fields are equal - check if overall keys are equal
-      if (this.objType.isStructType()) {
+      if (objType.isStructType()) {
         int i = 0;
         for (Object o1 : (Object[]) obj1) {
           Object o2 = ((Object[]) obj2)[i++];

@@ -33,7 +33,7 @@ public class AvgPRQueryNode extends Sum {
   @Override
   public void accumulate(Object value) {
     Object[] array = (Object[]) value;
-    this.count += ((Long) array[0]);
+    count += ((Long) array[0]);
     super.accumulate(array[1]);
   }
 

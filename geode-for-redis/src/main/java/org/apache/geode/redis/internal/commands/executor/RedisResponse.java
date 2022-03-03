@@ -16,6 +16,14 @@
 
 package org.apache.geode.redis.internal.commands.executor;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_USERNAME_OR_PASSWORD;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_KEY_EXISTS;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_AUTHENTICATED;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_OOM_COMMAND_NOT_ALLOWED;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
+import static org.apache.geode.redis.internal.RedisConstants.INTERNAL_SERVER_ERROR;
+
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -91,7 +99,7 @@ public class RedisResponse {
       try {
         return Coder.getStringResponse(buffer, value, true);
       } catch (CoderException e) {
-        return Coder.getInternalErrorResponse(buffer, e.getMessage());
+        return Coder.getErrorResponse(buffer, INTERNAL_SERVER_ERROR + e.getMessage());
       }
     });
   }
@@ -121,7 +129,7 @@ public class RedisResponse {
       try {
         return Coder.getFlattenedArrayResponse(buffer, nestedCollection);
       } catch (CoderException e) {
-        return Coder.getInternalErrorResponse(buffer, e.getMessage());
+        return Coder.getErrorResponse(buffer, INTERNAL_SERVER_ERROR + e.getMessage());
       }
     });
   }
@@ -134,7 +142,7 @@ public class RedisResponse {
       try {
         return Coder.getArrayResponse(buffer, collection, useBulkStrings);
       } catch (CoderException e) {
-        return Coder.getInternalErrorResponse(buffer, e.getMessage());
+        return Coder.getErrorResponse(buffer, INTERNAL_SERVER_ERROR + e.getMessage());
       }
     });
   }
@@ -163,31 +171,33 @@ public class RedisResponse {
   }
 
   public static RedisResponse moved(String error) {
-    return new RedisResponse((buffer) -> Coder.getMovedResponse(buffer, error));
+    return new RedisResponse((buffer) -> Coder.getErrorResponse(buffer, error));
   }
 
-  public static RedisResponse oom(String error) {
-    return new RedisResponse((bba) -> Coder.getOOMResponse(bba, error));
+  public static RedisResponse oom() {
+    return new RedisResponse(
+        buffer -> Coder.getErrorResponse(buffer, ERROR_OOM_COMMAND_NOT_ALLOWED));
   }
 
-  public static RedisResponse crossSlot(String error) {
-    return new RedisResponse((bba) -> Coder.getCrossSlotResponse(bba, error));
+  public static RedisResponse crossSlot() {
+    return new RedisResponse(buffer -> Coder.getErrorResponse(buffer, ERROR_WRONG_SLOT));
   }
 
-  public static RedisResponse busykey(String error) {
-    return new RedisResponse((bba) -> Coder.getBusyKeyResponse(bba, error));
+  public static RedisResponse busykey() {
+    return new RedisResponse(buffer -> Coder.getErrorResponse(buffer, ERROR_KEY_EXISTS));
   }
 
-  public static RedisResponse wrongpass(String error) {
-    return new RedisResponse((bba) -> Coder.getWrongpassResponse(bba, error));
+  public static RedisResponse wrongpass() {
+    return new RedisResponse(
+        buffer -> Coder.getErrorResponse(buffer, ERROR_INVALID_USERNAME_OR_PASSWORD));
   }
 
-  public static RedisResponse wrongType(String error) {
-    return new RedisResponse((buffer) -> Coder.getWrongTypeResponse(buffer, error));
+  public static RedisResponse wrongType() {
+    return new RedisResponse(buffer -> Coder.getErrorResponse(buffer, ERROR_WRONG_TYPE));
   }
 
-  public static RedisResponse noAuth(String error) {
-    return new RedisResponse((buffer) -> Coder.getNoAuthResponse(buffer, error));
+  public static RedisResponse noAuth() {
+    return new RedisResponse(buffer -> Coder.getErrorResponse(buffer, ERROR_NOT_AUTHENTICATED));
   }
 
   public static RedisResponse scan(int cursor, List<?> scanResult) {

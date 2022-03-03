@@ -93,7 +93,7 @@ public class GemFireTransactionDataSourceIntegrationTest {
 
     when(transactionManager.getTransaction()).thenThrow(new SystemException("SQL exception"));
 
-    Throwable thrown = catchThrowable(() -> dataSource.getConnection());
+    Throwable thrown = catchThrowable(dataSource::getConnection);
 
     assertThat(thrown)
         .isInstanceOf(SQLException.class)
@@ -132,7 +132,7 @@ public class GemFireTransactionDataSourceIntegrationTest {
     when(xaDataSource.getXAConnection(any(), any())).thenReturn(xaConnection);
     when(xaConnection.getConnection()).thenThrow(new SQLException("SQL exception2"));
 
-    Throwable thrown = catchThrowable(() -> dataSource.getConnection());
+    Throwable thrown = catchThrowable(dataSource::getConnection);
 
     assertThat(thrown)
         .isInstanceOf(SQLException.class)

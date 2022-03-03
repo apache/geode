@@ -66,7 +66,7 @@ public class ClassPathLoaderIntegrationTest {
 
   private File tempFile;
   private File tempFile2;
-  private ClassBuilder classBuilder = new ClassBuilder();
+  private final ClassBuilder classBuilder = new ClassBuilder();
 
   @Rule
   public RestoreTCCLRule restoreTCCLRule = new RestoreTCCLRule();
@@ -81,13 +81,13 @@ public class ClassPathLoaderIntegrationTest {
   public void setUp() throws Exception {
     System.setProperty(ClassPathLoader.EXCLUDE_TCCL_PROPERTY, "false");
 
-    this.tempFile = this.temporaryFolder.newFile("tempFile1.tmp");
-    FileOutputStream fos = new FileOutputStream(this.tempFile);
+    tempFile = temporaryFolder.newFile("tempFile1.tmp");
+    FileOutputStream fos = new FileOutputStream(tempFile);
     fos.write(new byte[TEMP_FILE_BYTES_COUNT]);
     fos.close();
 
-    this.tempFile2 = this.temporaryFolder.newFile("tempFile2.tmp");
-    fos = new FileOutputStream(this.tempFile2);
+    tempFile2 = temporaryFolder.newFile("tempFile2.tmp");
+    fos = new FileOutputStream(tempFile2);
     fos.write(new byte[TEMP_FILE_BYTES_COUNT]);
     fos.close();
 
@@ -368,7 +368,7 @@ public class ClassPathLoaderIntegrationTest {
             + "public boolean optimizeForWrite() {return false;}"
             + "public boolean isHA() {return false;}}";
 
-    byte[] jarBytes = this.classBuilder
+    byte[] jarBytes = classBuilder
         .createJarFromClassContent("JarClassLoaderJUnitFunctionNoXml", functionString);
     File jarFile = temporaryFolder.newFile(jarFilename);
     writeJarBytesToFile(jarFile, jarBytes);
@@ -392,51 +392,51 @@ public class ClassPathLoaderIntegrationTest {
     final File usesJarFile = temporaryFolder.newFile("JarClassLoaderJUnitUses.jar");
 
     // Write out a JAR files.
-    StringBuffer stringBuffer = new StringBuffer();
-    stringBuffer.append("package jcljunit.parent;");
-    stringBuffer.append("public class JarClassLoaderJUnitParent {");
-    stringBuffer.append("public String getValueParent() {");
-    stringBuffer.append("return \"PARENT\";}}");
+    StringBuilder StringBuilder = new StringBuilder();
+    StringBuilder.append("package jcljunit.parent;");
+    StringBuilder.append("public class JarClassLoaderJUnitParent {");
+    StringBuilder.append("public String getValueParent() {");
+    StringBuilder.append("return \"PARENT\";}}");
 
-    byte[] jarBytes = this.classBuilder.createJarFromClassContent(
-        "jcljunit/parent/JarClassLoaderJUnitParent", stringBuffer.toString());
+    byte[] jarBytes = classBuilder.createJarFromClassContent(
+        "jcljunit/parent/JarClassLoaderJUnitParent", StringBuilder.toString());
     writeJarBytesToFile(parentJarFile, jarBytes);
     Deployment parentDeployment = createDeploymentFromJar(parentJarFile);
     ClassPathLoader.getLatest().getJarDeploymentService().deploy(parentDeployment);
 
-    stringBuffer = new StringBuffer();
-    stringBuffer.append("package jcljunit.uses;");
-    stringBuffer.append("public class JarClassLoaderJUnitUses {");
-    stringBuffer.append("public String getValueUses() {");
-    stringBuffer.append("return \"USES\";}}");
+    StringBuilder = new StringBuilder();
+    StringBuilder.append("package jcljunit.uses;");
+    StringBuilder.append("public class JarClassLoaderJUnitUses {");
+    StringBuilder.append("public String getValueUses() {");
+    StringBuilder.append("return \"USES\";}}");
 
-    jarBytes = this.classBuilder.createJarFromClassContent("jcljunit/uses/JarClassLoaderJUnitUses",
-        stringBuffer.toString());
+    jarBytes = classBuilder.createJarFromClassContent("jcljunit/uses/JarClassLoaderJUnitUses",
+        StringBuilder.toString());
     writeJarBytesToFile(usesJarFile, jarBytes);
     Deployment userDeployment = createDeploymentFromJar(usesJarFile);
     ClassPathLoader.getLatest().getJarDeploymentService().deploy(userDeployment);
 
-    stringBuffer = new StringBuffer();
-    stringBuffer.append("package jcljunit.function;");
-    stringBuffer.append("import jcljunit.parent.JarClassLoaderJUnitParent;");
-    stringBuffer.append("import jcljunit.uses.JarClassLoaderJUnitUses;");
-    stringBuffer.append("import org.apache.geode.cache.execute.Function;");
-    stringBuffer.append("import org.apache.geode.cache.execute.FunctionContext;");
-    stringBuffer.append(
+    StringBuilder = new StringBuilder();
+    StringBuilder.append("package jcljunit.function;");
+    StringBuilder.append("import jcljunit.parent.JarClassLoaderJUnitParent;");
+    StringBuilder.append("import jcljunit.uses.JarClassLoaderJUnitUses;");
+    StringBuilder.append("import org.apache.geode.cache.execute.Function;");
+    StringBuilder.append("import org.apache.geode.cache.execute.FunctionContext;");
+    StringBuilder.append(
         "public class JarClassLoaderJUnitFunction  extends JarClassLoaderJUnitParent implements Function {");
-    stringBuffer.append("private JarClassLoaderJUnitUses uses = new JarClassLoaderJUnitUses();");
-    stringBuffer.append("public boolean hasResult() {return true;}");
-    stringBuffer.append(
+    StringBuilder.append("private JarClassLoaderJUnitUses uses = new JarClassLoaderJUnitUses();");
+    StringBuilder.append("public boolean hasResult() {return true;}");
+    StringBuilder.append(
         "public void execute(FunctionContext context) {context.getResultSender().lastResult(getValueParent() + \":\" + uses.getValueUses());}");
-    stringBuffer.append("public String getId() {return \"JarClassLoaderJUnitFunction\";}");
-    stringBuffer.append("public boolean optimizeForWrite() {return false;}");
-    stringBuffer.append("public boolean isHA() {return false;}}");
+    StringBuilder.append("public String getId() {return \"JarClassLoaderJUnitFunction\";}");
+    StringBuilder.append("public boolean optimizeForWrite() {return false;}");
+    StringBuilder.append("public boolean isHA() {return false;}}");
 
     ClassBuilder functionClassBuilder = new ClassBuilder();
     functionClassBuilder.addToClassPath(parentJarFile.getAbsolutePath());
     functionClassBuilder.addToClassPath(usesJarFile.getAbsolutePath());
     jarBytes = functionClassBuilder.createJarFromClassContent(
-        "jcljunit/function/JarClassLoaderJUnitFunction", stringBuffer.toString());
+        "jcljunit/function/JarClassLoaderJUnitFunction", StringBuilder.toString());
     File jarFunction = temporaryFolder.newFile("JarClassLoaderJUnitFunction.jar");
     writeJarBytesToFile(jarFunction, jarBytes);
 
@@ -457,7 +457,7 @@ public class ClassPathLoaderIntegrationTest {
     final String fileName = "file.txt";
     final String fileContent = "FILE CONTENT";
 
-    byte[] jarBytes = this.classBuilder.createJarFromFileContent(fileName, fileContent);
+    byte[] jarBytes = classBuilder.createJarFromFileContent(fileName, fileContent);
     File tempJar = temporaryFolder.newFile("JarClassLoaderJUnitResource.jar");
     writeJarBytesToFile(tempJar, jarBytes);
     Deployment deployment = createDeploymentFromJar(tempJar);
@@ -476,7 +476,7 @@ public class ClassPathLoaderIntegrationTest {
   @Test
   public void testUpdateClassInJar() throws Exception {
     // First use of the JAR file
-    byte[] jarBytes = this.classBuilder.createJarFromClassContent("JarClassLoaderJUnitTestClass",
+    byte[] jarBytes = classBuilder.createJarFromClassContent("JarClassLoaderJUnitTestClass",
         "public class JarClassLoaderJUnitTestClass { public Integer getValue5() { return new Integer(5); } }");
     File jarFile = temporaryFolder.newFile("JarClassLoaderJUnitUpdate.jar");
     writeJarBytesToFile(jarFile, jarBytes);
@@ -491,7 +491,7 @@ public class ClassPathLoaderIntegrationTest {
 
     // Now create an updated JAR file and make sure that the method from the new
     // class is available.
-    jarBytes = this.classBuilder.createJarFromClassContent("JarClassLoaderJUnitTestClass",
+    jarBytes = classBuilder.createJarFromClassContent("JarClassLoaderJUnitTestClass",
         "public class JarClassLoaderJUnitTestClass { public Integer getValue10() { return new Integer(10); } }");
     File jarFile2 = new File(temporaryFolder.getRoot(), "JarClassLoaderJUnitUpdate.jar");
     writeJarBytesToFile(jarFile2, jarBytes);
@@ -551,7 +551,7 @@ public class ClassPathLoaderIntegrationTest {
       try {
         url = getTempFile().getAbsoluteFile().toURI().toURL();
         System.out.println("GeneratingClassLoader#findResource returning " + url);
-      } catch (IOException e) {
+      } catch (IOException ignored) {
       }
       return url;
     }
@@ -562,9 +562,9 @@ public class ClassPathLoaderIntegrationTest {
       try {
         url = getTempFile().getAbsoluteFile().toURI().toURL();
         System.out.println("GeneratingClassLoader#findResources returning " + url);
-      } catch (IOException e) {
+      } catch (IOException ignored) {
       }
-      Vector<URL> urls = new Vector<URL>();
+      Vector<URL> urls = new Vector<>();
       urls.add(url);
       return urls.elements();
     }
@@ -597,12 +597,12 @@ public class ClassPathLoaderIntegrationTest {
     public TestResultSender() {}
 
     protected Object getResults() {
-      return this.result;
+      return result;
     }
 
     @Override
     public void lastResult(final Object lastResult) {
-      this.result = lastResult;
+      result = lastResult;
     }
 
     @Override

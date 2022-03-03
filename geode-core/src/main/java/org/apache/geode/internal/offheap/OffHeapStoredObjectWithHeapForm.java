@@ -28,7 +28,7 @@ public class OffHeapStoredObjectWithHeapForm extends OffHeapStoredObject {
 
   @Override
   protected byte[] getRawBytes() {
-    return this.heapForm;
+    return heapForm;
   }
 
   @Override

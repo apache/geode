@@ -39,14 +39,14 @@ public class ServerRule extends ExternalResource {
   private InternalHttpService jetty;
   private Server server;
   private String pulseURL;
-  private String jsonAuthFile;
+  private final String jsonAuthFile;
 
   public ServerRule(String jsonAuthFile) {
     this.jsonAuthFile = jsonAuthFile;
   }
 
   public String getPulseURL() {
-    return this.pulseURL;
+    return pulseURL;
   }
 
   @Override

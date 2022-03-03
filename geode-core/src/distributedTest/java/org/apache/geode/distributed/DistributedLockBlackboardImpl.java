@@ -51,7 +51,7 @@ public class DistributedLockBlackboardImpl extends UnicastRemoteObject
     if (blackboard == null) {
       System.out.println(
           DUnitLauncher.RMI_PORT_PARAM + "=" + System.getProperty(DUnitLauncher.RMI_PORT_PARAM));
-      int namingPort = Integer.getInteger(DUnitLauncher.RMI_PORT_PARAM).intValue();
+      int namingPort = Integer.getInteger(DUnitLauncher.RMI_PORT_PARAM);
       String name = "//localhost:" + namingPort + "/" + "DistributedLockBlackboard";
       try {
         blackboard = (DistributedLockBlackboard) Naming.lookup(name);

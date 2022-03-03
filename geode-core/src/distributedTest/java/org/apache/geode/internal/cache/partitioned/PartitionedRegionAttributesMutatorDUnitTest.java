@@ -100,9 +100,7 @@ public class PartitionedRegionAttributesMutatorDUnitTest extends CacheTestCase {
   }
 
   private void createRegionsOnVM(int i) {
-    VM.getVM(i).invoke(() -> {
-      createRegions();
-    });
+    VM.getVM(i).invoke(this::createRegions);
   }
 
   private void createRegions() {

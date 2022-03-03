@@ -42,7 +42,7 @@ public class AdminFailureResponse extends AdminResponse {
   }
 
   public Exception getCause() {
-    return this.cause;
+    return cause;
   }
 
   @Override
@@ -54,18 +54,18 @@ public class AdminFailureResponse extends AdminResponse {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.cause, out);
+    DataSerializer.writeObject(cause, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.cause = DataSerializer.readObject(in);
+    cause = DataSerializer.readObject(in);
   }
 
   @Override
   public String toString() {
-    return "AdminFailureResponse from " + getRecipient() + " cause=" + this.cause;
+    return "AdminFailureResponse from " + getRecipient() + " cause=" + cause;
   }
 }

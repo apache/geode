@@ -164,11 +164,8 @@ public class Helper {
       CliOption cliOption = getAnnotation(annotation, CliOption.class);
       String option = getPrimaryKey(cliOption);
       boolean required = cliOption.mandatory();
-      boolean requiredWithEquals = true;
+      boolean requiredWithEquals = !isNonEmptyAnnotation(cliOption.specifiedDefaultValue());
 
-      if (isNonEmptyAnnotation(cliOption.specifiedDefaultValue())) {
-        requiredWithEquals = false;
-      }
       if (isNonEmptyAnnotation(cliOption.unspecifiedDefaultValue())) {
         required = false;
       }
@@ -227,7 +224,7 @@ public class Helper {
   }
 
   public String getHint(String buffer) {
-    List<String> topicKeys = this.topics.keySet()
+    List<String> topicKeys = topics.keySet()
         .stream()
         .filter(t -> buffer == null || t.toLowerCase().startsWith(buffer.toLowerCase()))
         .sorted()
@@ -239,7 +236,7 @@ public class Helper {
       builder.append(CliStrings.format(CliStrings.HINT__MSG__UNKNOWN_TOPIC, buffer))
           .append(LINE_SEPARATOR).append(LINE_SEPARATOR);
     } else if (topicKeys.size() == 1) {
-      Topic oneTopic = this.topics.get(topicKeys.get(0));
+      Topic oneTopic = topics.get(topicKeys.get(0));
       builder.append(oneTopic.desc).append(LINE_SEPARATOR)
           .append(LINE_SEPARATOR);
       oneTopic.relatedCommands.stream().sorted().forEach(command -> builder.append(command.command)
@@ -357,7 +354,7 @@ public class Helper {
         }
         builder.append(string);
       }
-      optionNode.addChild(new HelpBlock(SYNONYMS_SUB_NAME + builder.toString()));
+      optionNode.addChild(new HelpBlock(SYNONYMS_SUB_NAME + builder));
     }
     optionNode.addChild(
         new HelpBlock(REQUIRED_SUB_NAME + ((cliOption.mandatory()) ? TRUE_TOKEN : FALSE_TOKEN)));

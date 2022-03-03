@@ -40,7 +40,6 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.IndexExistsException;
 import org.apache.geode.cache.query.IndexInvalidException;
@@ -104,7 +103,7 @@ public class IndexManager {
    */
   private final ConcurrentMap indexes = new ConcurrentHashMap();
   // TODO Asif : Fix the appropriate size of the Map & the concurrency level
-  private ConcurrentMap canonicalizedIteratorNameMap = new ConcurrentHashMap();
+  private final ConcurrentMap canonicalizedIteratorNameMap = new ConcurrentHashMap();
   private IndexUpdaterThread updater;
 
   // Threshold for Queue.
@@ -129,13 +128,13 @@ public class IndexManager {
    * without this the old-values are not removed from the index-maps thus resulting in inconsistent
    * results.
    */
-  public static final boolean INPLACE_OBJECT_MODIFICATION = Boolean.valueOf(System.getProperty(
+  public static final boolean INPLACE_OBJECT_MODIFICATION = Boolean.parseBoolean(System.getProperty(
       GeodeGlossary.GEMFIRE_PREFIX + "index.INPLACE_OBJECT_MODIFICATION", "false"));
 
   /**
    * System property to turn-off the compact-index support.
    */
-  public static final boolean RANGEINDEX_ONLY = Boolean.valueOf(
+  public static final boolean RANGEINDEX_ONLY = Boolean.parseBoolean(
       System.getProperty(GeodeGlossary.GEMFIRE_PREFIX + "index.RANGEINDEX_ONLY", "false"));
 
   @MutableForTesting
@@ -173,9 +172,9 @@ public class IndexManager {
     indexMaintenanceSynchronous = region.getAttributes().getIndexMaintenanceSynchronous();
     isOverFlowToDisk =
         region.getAttributes().getEvictionAttributes().getAction().isOverflowToDisk();
-    this.offHeap = region.getAttributes().getOffHeap();
+    offHeap = region.getAttributes().getOffHeap();
     if (!indexMaintenanceSynchronous) {
-      updater = new IndexUpdaterThread(this.INDEX_MAINTENANCE_BUFFER,
+      updater = new IndexUpdaterThread(INDEX_MAINTENANCE_BUFFER,
           "OqlIndexUpdater:" + region.getFullPath());
       updater.start();
     }
@@ -246,7 +245,7 @@ public class IndexManager {
    * Used by tests to access the updater thread to determine its progress
    */
   public IndexUpdaterThread getUpdaterThread() {
-    return this.updater;
+    return updater;
   }
 
   // @todo need more specific list of exceptions
@@ -271,12 +270,12 @@ public class IndexManager {
           "Index creation canceled due to low memory");
     }
 
-    boolean oldReadSerialized = this.cache.getPdxReadSerializedOverride();
-    this.cache.setPdxReadSerializedOverride(true);
+    boolean oldReadSerialized = cache.getPdxReadSerializedOverride();
+    cache.setPdxReadSerializedOverride(true);
 
     TXStateProxy tx = null;
-    if (!((InternalCache) this.cache).isClient()) {
-      tx = ((TXManagerImpl) this.cache.getCacheTransactionManager()).pauseTransaction();
+    if (!cache.isClient()) {
+      tx = ((TXManagerImpl) cache.getCacheTransactionManager()).pauseTransaction();
     }
 
     try {
@@ -353,7 +352,7 @@ public class IndexManager {
           logger.debug("IndexManager TestHook is set.");
         }
 
-        if (((LocalRegion) this.region).isInitialized()) {
+        if (((LocalRegion) region).isInitialized()) {
           testHook.hook(1);
         } else {
           testHook.hook(0);
@@ -362,8 +361,8 @@ public class IndexManager {
 
       IndexTask indexTask = new IndexTask(cache, indexName, indexType, origFromClause,
           origIndexedExpression, helper, isCompactOrHash, prIndex, loadEntries);
-      FutureTask<Index> indexFutureTask = new FutureTask<Index>(indexTask);
-      Object oldIndex = this.indexes.putIfAbsent(indexTask, indexFutureTask);
+      FutureTask<Index> indexFutureTask = new FutureTask<>(indexTask);
+      Object oldIndex = indexes.putIfAbsent(indexTask, indexFutureTask);
 
       Index index = null;
 
@@ -373,7 +372,7 @@ public class IndexManager {
           // Initialize index.
           indexFutureTask.run();
           // Set the index.
-          index = (Index) indexFutureTask.get();
+          index = indexFutureTask.get();
         } else {
           // Index with same name or characteristic already exists.
           // Check if index creation is complete.
@@ -411,9 +410,9 @@ public class IndexManager {
         // If the index is not successfully created, remove IndexTask from
         // the map.
         if (oldIndex == null && index == null) {
-          Object ind = this.indexes.get(indexTask);
+          Object ind = indexes.get(indexTask);
           if (ind != null && !(ind instanceof Index)) {
-            this.indexes.remove(indexTask);
+            indexes.remove(indexTask);
           }
         }
         if (interrupted) {
@@ -428,8 +427,8 @@ public class IndexManager {
       return index;
 
     } finally {
-      this.cache.setPdxReadSerializedOverride(oldReadSerialized);
-      ((TXManagerImpl) this.cache.getCacheTransactionManager()).unpauseTransaction(tx);
+      cache.setPdxReadSerializedOverride(oldReadSerialized);
+      ((TXManagerImpl) cache.getCacheTransactionManager()).unpauseTransaction(tx);
 
     }
   }
@@ -461,7 +460,7 @@ public class IndexManager {
     do {
       nodeType = cv.getType();
       if (nodeType == CompiledValue.PATH) {
-        cv = ((CompiledPath) cv).getReceiver();
+        cv = cv.getReceiver();
       }
     } while (nodeType == CompiledValue.PATH);
     // end of path, nodeType at this point should be an Identifier
@@ -492,15 +491,12 @@ public class IndexManager {
 
     }
     String tailId = ((CompiledPath) missingLink).getTailID();
-    if (!(tailId.equals("value") || tailId.equals("key"))) {
-      return false;
-    }
-    return true;
+    return tailId.equals("value") || tailId.equals("key");
   }
 
   public Index getIndex(String indexName) {
     IndexTask indexTask = new IndexTask(cache, indexName);
-    Object ind = this.indexes.get(indexTask);
+    Object ind = indexes.get(indexTask);
     // Check if the returned value is instance of Index (this means
     // the index is not in create phase, its created successfully).
     if (ind instanceof Index) {
@@ -511,7 +507,7 @@ public class IndexManager {
 
   public void addIndex(String indexName, Index index) {
     IndexTask indexTask = new IndexTask(cache, indexName);
-    this.indexes.put(indexTask, index);
+    indexes.put(indexTask, index);
   }
 
   /**
@@ -529,15 +525,15 @@ public class IndexManager {
    */
   public IndexData getIndex(IndexType indexType, String[] definitions,
       CompiledValue indexedExpression, ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     IndexData indxData = null;
     int qItrSize = definitions.length;
-    Iterator it = this.indexes.values().iterator();
+    Iterator it = indexes.values().iterator();
     StringBuilder sb = new StringBuilder();
     indexedExpression.generateCanonicalizedExpression(sb, context);
     String indexExprStr = sb.toString();
     while (it.hasNext()) {
-      int mapping[] = new int[qItrSize];
+      int[] mapping = new int[qItrSize];
       Object ind = it.next();
       // Check if the returned value is instance of Index (this means
       // the index is not in create phase, its created successfully).
@@ -564,7 +560,7 @@ public class IndexManager {
 
   public int compareIndexData(IndexType indexType, String[] indexDefinitions,
       String indexExpression, IndexType otherType, String[] otherDefinitions,
-      String otherExpression, int mapping[]) {
+      String otherExpression, int[] mapping) {
 
     int matchLevel = -2;
 
@@ -591,7 +587,7 @@ public class IndexManager {
    */
   public IndexData getBestMatchIndex(IndexType indexType, String[] definitions,
       CompiledValue indexedExpression, ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
 
     Index bestIndex = null;
     Index bestPRIndex = null;
@@ -599,7 +595,7 @@ public class IndexManager {
 
     int qItrSize = definitions.length;
     int bestIndexMatchLevel = qItrSize;
-    Iterator iter = this.indexes.values().iterator();
+    Iterator iter = indexes.values().iterator();
     StringBuilder sb = new StringBuilder();
     indexedExpression.generateCanonicalizedExpression(sb, context);
     String indexExprStr = sb.toString();
@@ -669,9 +665,9 @@ public class IndexManager {
          * criteria for match level is the absence or presence of extra iterators. The order of
          * preference will be 0 , <0 , > 0 for first cut.
          */
-        String indexDefinitions[] = ((IndexProtocol) index).getCanonicalizedIteratorDefinitions();
+        String[] indexDefinitions = ((IndexProtocol) index).getCanonicalizedIteratorDefinitions();
 
-        int mapping[] = new int[qItrSize];
+        int[] mapping = new int[qItrSize];
         int matchLevel = getMatchLevel(definitions, indexDefinitions, mapping);
 
         if (matchLevel == 0) {
@@ -789,9 +785,7 @@ public class IndexManager {
    */
   public Collection getIndexes(IndexType indexType) {
     ArrayList<Index> list = new ArrayList<>();
-    Iterator it = this.indexes.values().iterator();
-    while (it.hasNext()) {
-      Object ind = it.next();
+    for (final Object ind : indexes.values()) {
       // Check if the value is instance of FutureTask, this means
       // the index is in create phase.
       if (ind instanceof FutureTask) {
@@ -823,7 +817,7 @@ public class IndexManager {
    * @param index the Index to remove
    */
   public void removeIndex(Index index) {
-    if (index.getRegion() != this.region) {
+    if (index.getRegion() != region) {
       throw new IllegalArgumentException(
           "Index does not belong to this IndexManager");
     }
@@ -836,7 +830,7 @@ public class IndexManager {
     // the index invalid , that is OK. Because of this flag a query
     // may or may not use the Index
     IndexTask indexTask = new IndexTask(cache, index.getName());
-    if (this.indexes.remove(indexTask) != null) {
+    if (indexes.remove(indexTask) != null) {
       AbstractIndex indexHandle = (AbstractIndex) index;
       indexHandle.destroy();
     }
@@ -849,9 +843,8 @@ public class IndexManager {
   public int removeIndexes() {
     // Remove indexes which are available (create completed).
     int numIndexes = 0;
-    Iterator it = this.indexes.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry entry = (Map.Entry) it.next();
+    for (final Object o : indexes.entrySet()) {
+      Map.Entry entry = (Map.Entry) o;
       Object ind = entry.getValue();
       // Check if the returned value is instance of Index (this means
       // the index is not in create phase, its created successfully).
@@ -860,7 +853,7 @@ public class IndexManager {
       }
       numIndexes++;
       IndexTask indexTask = (IndexTask) entry.getKey();
-      this.indexes.remove(indexTask);
+      indexes.remove(indexTask);
     }
     return numIndexes;
   }
@@ -901,9 +894,9 @@ public class IndexManager {
       region.getCache().getLogger().info("Populating indexes for region " + region.getName());
     }
     boolean throwException = false;
-    HashMap<String, Exception> exceptionsMap = new HashMap<String, Exception>();
-    boolean oldReadSerialized = this.cache.getPdxReadSerializedOverride();
-    this.cache.setPdxReadSerializedOverride(true);
+    HashMap<String, Exception> exceptionsMap = new HashMap<>();
+    boolean oldReadSerialized = cache.getPdxReadSerializedOverride();
+    cache.setPdxReadSerializedOverride(true);
     try {
       Iterator entryIter = ((LocalRegion) region).getBestIterator(true);
       while (entryIter.hasNext()) {
@@ -914,16 +907,16 @@ public class IndexManager {
         // Fault in the value once before index update so that every index
         // update does not have
         // to read the value from disk every time.
-        entry.getValue((LocalRegion) this.region);
+        entry.getValue((LocalRegion) region);
         Iterator<Index> indexSetIterator = indexSet.iterator();
         while (indexSetIterator.hasNext()) {
           AbstractIndex index = (AbstractIndex) indexSetIterator.next();
           if (!index.isPopulated() && index.getType() != IndexType.PRIMARY_KEY) {
             if (logger.isDebugEnabled()) {
               logger.debug("Adding to index :{}{} value :{}", index.getName(),
-                  this.region.getFullPath(), entry.getKey());
+                  region.getFullPath(), entry.getKey());
             }
-            long start = ((AbstractIndex) index).updateIndexUpdateStats();
+            long start = index.updateIndexUpdateStats();
             try {
               index.addIndexMapping(entry);
             } catch (IMQException e) {
@@ -935,7 +928,7 @@ public class IndexManager {
               indexSetIterator.remove();
               throwException = true;
             }
-            ((AbstractIndex) index).updateIndexUpdateStats(start);
+            index.updateIndexUpdateStats(start);
           }
         }
       }
@@ -944,7 +937,7 @@ public class IndexManager {
         throw new MultiIndexCreationException(exceptionsMap);
       }
     } finally {
-      this.cache.setPdxReadSerializedOverride(oldReadSerialized);
+      cache.setPdxReadSerializedOverride(oldReadSerialized);
       notifyAfterUpdate();
     }
   }
@@ -976,7 +969,7 @@ public class IndexManager {
   public void updateIndexes(RegionEntry entry, int action, int opCode,
       boolean isDiskRecoveryInProgress) throws QueryException {
     if (isDiskRecoveryInProgress) {
-      assert !((LocalRegion) this.region).isInitialized();
+      assert !((LocalRegion) region).isInitialized();
     } else {
       assert Assert.assertHoldsLock(entry, true);
     }
@@ -1000,11 +993,11 @@ public class IndexManager {
    */
   private void processAction(RegionEntry entry, int action, int opCode) throws QueryException {
     final long startPA = getCachePerfStats().startIndexUpdate();
-    Boolean initialPdxReadSerialized = this.cache.getPdxReadSerializedOverride();
-    this.cache.setPdxReadSerializedOverride(true);
+    Boolean initialPdxReadSerialized = cache.getPdxReadSerializedOverride();
+    cache.setPdxReadSerializedOverride(true);
     TXStateProxy tx = null;
-    if (!this.cache.isClient()) {
-      tx = ((TXManagerImpl) this.cache.getCacheTransactionManager()).pauseTransaction();
+    if (!cache.isClient()) {
+      tx = ((TXManagerImpl) cache.getCacheTransactionManager()).pauseTransaction();
     }
 
     try {
@@ -1041,9 +1034,7 @@ public class IndexManager {
           // so we need to remove the mapping even if it is an Add action
           // as otherwise the new results will get added into the
           // old results instead of replacement
-          Iterator iter = this.indexes.values().iterator();
-          while (iter.hasNext()) {
-            Object ind = iter.next();
+          for (final Object ind : indexes.values()) {
             // Check if the value is instance of FutureTask, this means
             // the index is in create phase.
             if (ind instanceof FutureTask) {
@@ -1060,7 +1051,7 @@ public class IndexManager {
               if (!index.containsEntry(entry)) {
                 if (logger.isDebugEnabled()) {
                   logger.debug("Adding to index: {}{} value: {}", index.getName(),
-                      this.region.getFullPath(), entry.getKey());
+                      region.getFullPath(), entry.getKey());
                 }
                 start = ((AbstractIndex) index).updateIndexUpdateStats();
                 addIndexMapping(entry, index);
@@ -1082,9 +1073,7 @@ public class IndexManager {
 
           // this action is only called with opCode AFTER_UPDATE_OP
           assert opCode == IndexProtocol.AFTER_UPDATE_OP;
-          Iterator iter = this.indexes.values().iterator();
-          while (iter.hasNext()) {
-            Object ind = iter.next();
+          for (final Object ind : indexes.values()) {
             // Check if the value is instance of FutureTask, this means
             // the index is in create phase.
             if (ind instanceof FutureTask) {
@@ -1095,7 +1084,7 @@ public class IndexManager {
             if (((AbstractIndex) index).isPopulated() && index.getType() != IndexType.PRIMARY_KEY) {
               if (logger.isDebugEnabled()) {
                 logger.debug("Updating index: {}{} value: {}", index.getName(),
-                    this.region.getFullPath(), entry.getKey());
+                    region.getFullPath(), entry.getKey());
               }
               start = ((AbstractIndex) index).updateIndexUpdateStats();
 
@@ -1115,9 +1104,7 @@ public class IndexManager {
             testHook.hook(5);
             testHook.hook(10);
           }
-          Iterator iter = this.indexes.values().iterator();
-          while (iter.hasNext()) {
-            Object ind = iter.next();
+          for (final Object ind : indexes.values()) {
             // Check if the value is instance of FutureTask, this means
             // the index is in create phase.
             if (ind instanceof FutureTask) {
@@ -1129,7 +1116,7 @@ public class IndexManager {
               AbstractIndex abstractIndex = (AbstractIndex) index;
               if (logger.isDebugEnabled()) {
                 logger.debug("Removing from index: {}{} value: {}", index.getName(),
-                    this.region.getFullPath(), entry.getKey());
+                    region.getFullPath(), entry.getKey());
               }
               start = ((AbstractIndex) index).updateIndexUpdateStats();
 
@@ -1146,8 +1133,8 @@ public class IndexManager {
         }
       }
     } finally {
-      this.cache.setPdxReadSerializedOverride(initialPdxReadSerialized);
-      ((TXManagerImpl) this.cache.getCacheTransactionManager()).unpauseTransaction(tx);
+      cache.setPdxReadSerializedOverride(initialPdxReadSerialized);
+      ((TXManagerImpl) cache.getCacheTransactionManager()).unpauseTransaction(tx);
 
       getCachePerfStats().endIndexUpdate(startPA);
     }
@@ -1237,9 +1224,7 @@ public class IndexManager {
     waitBeforeUpdate();
     try {
       // opCode is ignored for this operation
-      Iterator iter = this.indexes.values().iterator();
-      while (iter.hasNext()) {
-        Object ind = iter.next();
+      for (final Object ind : indexes.values()) {
         // Check if the value is instance of FutureTask, this means
         // the index is in create phase.
         if (ind instanceof FutureTask) {
@@ -1268,13 +1253,13 @@ public class IndexManager {
    * getting region entry lock to avoid deadlock (#44431).
    */
   public void waitForIndexInit() {
-    synchronized (this.indexes) {
-      ++this.numUpdatersInWaiting;
-      while (this.numCreators > 0) {
-        ((LocalRegion) this.getRegion()).getCancelCriterion().checkCancelInProgress(null);
+    synchronized (indexes) {
+      ++numUpdatersInWaiting;
+      while (numCreators > 0) {
+        ((LocalRegion) getRegion()).getCancelCriterion().checkCancelInProgress(null);
         boolean interrupted = Thread.interrupted();
         try {
-          this.indexes.wait();
+          indexes.wait();
         } catch (InterruptedException ignored) {
           interrupted = true;
         } finally {
@@ -1283,8 +1268,8 @@ public class IndexManager {
           }
         }
       } // while
-      --this.numUpdatersInWaiting;
-      ++this.numUpdatersInProgress;
+      --numUpdatersInWaiting;
+      ++numUpdatersInProgress;
     }
   }
 
@@ -1292,27 +1277,27 @@ public class IndexManager {
    * Necessary finally block call for above method.
    */
   public void countDownIndexUpdaters() {
-    synchronized (this.indexes) {
-      --this.numUpdatersInProgress;
+    synchronized (indexes) {
+      --numUpdatersInProgress;
       // Asif: Since Index creator threads can progress only if
       // there is no update threads in progress, thus we need to issue
       // notify all iff there are any creator threads in action & also
       // if the upDateInProgress Count has dipped to 0
-      if (this.numUpdatersInProgress == 0 && this.numCreators > 0) {
-        this.indexes.notifyAll();
+      if (numUpdatersInProgress == 0 && numCreators > 0) {
+        indexes.notifyAll();
       }
     }
   }
 
   private CachePerfStats getCachePerfStats() {
-    return ((HasCachePerfStats) this.region).getCachePerfStats();
+    return ((HasCachePerfStats) region).getCachePerfStats();
   }
 
   /**
    * Callback for destroying IndexManager Called after Region.destroy() called
    */
   public void destroy() throws QueryException {
-    this.indexes.clear();
+    indexes.clear();
     if (!isIndexMaintenanceTypeSynchronous()) {
       updater.shutdown();
     }
@@ -1327,12 +1312,11 @@ public class IndexManager {
   public void removeBucketIndexes(PartitionedRegion prRegion) throws QueryException {
     IndexManager parentManager = prRegion.getIndexManager();
     if (parentManager != null) {
-      Iterator bucketIndexIterator = indexes.values().iterator();
-      while (bucketIndexIterator.hasNext()) {
-        Index bucketIndex = (Index) bucketIndexIterator.next();
+      for (final Object o : indexes.values()) {
+        Index bucketIndex = (Index) o;
         Index prIndex = parentManager.getIndex(bucketIndex.getName());
         if (prIndex instanceof PartitionedIndex) {
-          ((PartitionedIndex) prIndex).removeFromBucketIndexes(this.region, bucketIndex);
+          ((PartitionedIndex) prIndex).removeFromBucketIndexes(region, bucketIndex);
         }
       }
     }
@@ -1341,9 +1325,7 @@ public class IndexManager {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    Iterator iter = this.indexes.values().iterator();
-    while (iter.hasNext()) {
-      Object ind = iter.next();
+    for (final Object ind : indexes.values()) {
       // Check if the value is instance of FutureTask, this means
       // the index is in create phase.
       if (ind instanceof FutureTask) {
@@ -1355,15 +1337,15 @@ public class IndexManager {
   }
 
   public boolean isIndexMaintenanceTypeSynchronous() {
-    return this.indexMaintenanceSynchronous;
+    return indexMaintenanceSynchronous;
   }
 
   public boolean isOverFlowRegion() {
-    return this.isOverFlowToDisk;
+    return isOverFlowToDisk;
   }
 
   public boolean isOffHeap() {
-    return this.offHeap;
+    return offHeap;
   }
 
   public static boolean isObjectModificationInplace() {
@@ -1381,11 +1363,11 @@ public class IndexManager {
   public String putCanonicalizedIteratorNameIfAbsent(String definition) {
     String str = null;
     synchronized (canonicalizedIteratorNameMap) {
-      if ((str = (String) this.canonicalizedIteratorNameMap.get(definition)) == null) {
-        str = new StringBuilder("index_iter").append(this.getIncrementedCounter()).toString();
+      if ((str = (String) canonicalizedIteratorNameMap.get(definition)) == null) {
+        str = "index_iter" + getIncrementedCounter();
         String temp;
         if ((temp =
-            (String) this.canonicalizedIteratorNameMap.putIfAbsent(definition, str)) != null) {
+            (String) canonicalizedIteratorNameMap.putIfAbsent(definition, str)) != null) {
           str = temp;
         }
       }
@@ -1395,12 +1377,12 @@ public class IndexManager {
 
   public void putCanonicalizedIteratorName(String definition, String name) {
     synchronized (canonicalizedIteratorNameMap) {
-      this.canonicalizedIteratorNameMap.put(definition, name);
+      canonicalizedIteratorNameMap.put(definition, name);
     }
   }
 
   private synchronized int getIncrementedCounter() {
-    return ++this.iternameCounter;
+    return ++iternameCounter;
   }
 
   /**
@@ -1409,7 +1391,7 @@ public class IndexManager {
    *
    */
   public String getCanonicalizedIteratorName(String definition) {
-    return ((String) (this.canonicalizedIteratorNameMap.get(definition)));
+    return ((String) (canonicalizedIteratorNameMap.get(definition)));
   }
 
   ////////////////////// Inner Classes //////////////////////
@@ -1420,7 +1402,7 @@ public class IndexManager {
 
     private volatile boolean shutdownRequested = false;
 
-    private volatile BlockingQueue pendingTasks;
+    private final BlockingQueue pendingTasks;
 
     /**
      * Creates instance of IndexUpdaterThread
@@ -1449,13 +1431,13 @@ public class IndexManager {
      * Stops this thread. Does not return until it has stopped.
      */
     public void shutdown() {
-      if (!this.running) {
+      if (!running) {
         return;
       }
-      this.shutdownRequested = true;
-      this.interrupt();
+      shutdownRequested = true;
+      interrupt();
       try {
-        this.join();
+        join();
       } catch (InterruptedException ignore) {
         Thread.currentThread().interrupt();
         // just return, we're done
@@ -1468,7 +1450,7 @@ public class IndexManager {
       // logger.debug("DiskRegion writer started (writer=" + this + ")");
       org.apache.geode.CancelCriterion stopper = ((LocalRegion) region).getCancelCriterion();
       try {
-        while (!this.shutdownRequested) {
+        while (!shutdownRequested) {
           // Termination checks
           SystemFailure.checkFailure();
           if (stopper.isCancelInProgress()) {
@@ -1476,7 +1458,7 @@ public class IndexManager {
           }
           try {
             Object[] task = (Object[]) pendingTasks.take();
-            if (this.shutdownRequested) {
+            if (shutdownRequested) {
               break;
             }
             updateIndexes(task);
@@ -1485,7 +1467,7 @@ public class IndexManager {
           }
         }
       } finally {
-        this.running = false;
+        running = false;
       }
     }
 
@@ -1520,7 +1502,7 @@ public class IndexManager {
      * point of view.
      */
     public synchronized boolean isDone() {
-      return this.pendingTasks.size() == 0;
+      return pendingTasks.size() == 0;
     }
 
   }
@@ -1558,7 +1540,7 @@ public class IndexManager {
         PartitionedIndex prIndex, boolean loadEntries) {
       this.cache = cache;
       this.indexName = indexName;
-      this.indexType = type;
+      indexType = type;
       this.origFromClause = origFromClause;
       this.origIndexedExpression = origIndexedExpression;
       this.helper = helper;
@@ -1580,25 +1562,22 @@ public class IndexManager {
       }
       IndexTask otherIndexTask = (IndexTask) other;
       // compare indexName.
-      if (this.indexName.equals(otherIndexTask.indexName)) {
+      if (indexName.equals(otherIndexTask.indexName)) {
         return true;
       }
 
-      if (otherIndexTask.helper == null || this.helper == null) {
+      if (otherIndexTask.helper == null || helper == null) {
         return false;
       }
 
-      String[] indexDefinitions = this.helper.getCanonicalizedIteratorDefinitions();
+      String[] indexDefinitions = helper.getCanonicalizedIteratorDefinitions();
       // TODO: avoid object creation in equals
       int[] mapping = new int[indexDefinitions.length];
       // compare index based on its type, expression and definition.
-      if (compareIndexData(this.indexType, indexDefinitions,
-          this.helper.getCanonicalizedIndexedExpression(), otherIndexTask.indexType,
+      return compareIndexData(indexType, indexDefinitions,
+          helper.getCanonicalizedIndexedExpression(), otherIndexTask.indexType,
           otherIndexTask.helper.getCanonicalizedIteratorDefinitions(),
-          otherIndexTask.helper.getCanonicalizedIndexedExpression(), mapping) == 0) {
-        return true;
-      }
-      return false;
+          otherIndexTask.helper.getCanonicalizedIndexedExpression(), mapping) == 0;
     }
 
     public int hashCode() {
@@ -1620,10 +1599,10 @@ public class IndexManager {
       String projectionAttributes = helper.getCanonicalizedProjectionAttributes();
       String[] definitions = helper.getCanonicalizedIteratorDefinitions();
       IndexStatistics stats = null;
-      this.isLDM = IndexManager.IS_TEST_LDM;
+      isLDM = IndexManager.IS_TEST_LDM;
 
-      if (this.prIndex != null) {
-        stats = this.prIndex.getStatistics();
+      if (prIndex != null) {
+        stats = prIndex.getStatistics();
       }
       if (indexType == IndexType.PRIMARY_KEY) {
         index = new PrimaryKeyIndex(cache, indexName, region, fromClause, indexedExpression,
@@ -1639,7 +1618,7 @@ public class IndexManager {
       } else {
         // boolean isCompact = !helper.isMapTypeIndex() &&
         // shouldCreateCompactIndex((FunctionalIndexCreationHelper)helper);
-        if (this.isCompactOrHash || this.isLDM) {
+        if (isCompactOrHash || isLDM) {
           if (indexType == IndexType.FUNCTIONAL && !helper.isMapTypeIndex()) {
             index = new CompactRangeIndex(cache, indexName, region, fromClause, indexedExpression,
                 projectionAttributes, origFromClause, origIndexedExpression, definitions, stats);
@@ -1687,8 +1666,8 @@ public class IndexManager {
           indexCreatedSuccessfully = true;
           if (loadEntries) {
             aIndex.setPopulated(true);
-            if (this.prIndex != null) {
-              ((AbstractIndex) this.prIndex).setPopulated(true);
+            if (prIndex != null) {
+              prIndex.setPopulated(true);
             }
           }
           indexes.put(this, index);
@@ -1712,8 +1691,8 @@ public class IndexManager {
         if (region instanceof BucketRegion && prIndex != null) {
           prIndex.addToBucketIndexes(region, index);
         }
-        if (this.prIndex != null) {
-          ((AbstractIndex) this.prIndex).setPopulated(true);
+        if (prIndex != null) {
+          prIndex.setPopulated(true);
         }
       }
       return index;

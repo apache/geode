@@ -113,7 +113,7 @@ public class GemfireSessionManager implements SessionManager {
   /**
    * Set up properties with default values
    */
-  private TypeAwareMap<CacheProperty, Object> properties =
+  private final TypeAwareMap<CacheProperty, Object> properties =
       new TypeAwareMap<CacheProperty, Object>(CacheProperty.class) {
         {
           put(CacheProperty.REGION_NAME, RegionHelper.NAME + "_sessions");
@@ -140,7 +140,7 @@ public class GemfireSessionManager implements SessionManager {
    */
   @Override
   public void start(Object conf, ClassLoader loader) {
-    this.referenceClassLoader = loader;
+    referenceClassLoader = loader;
     FilterConfig config = (FilterConfig) conf;
 
     startDistributedSystem(config);

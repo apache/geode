@@ -40,7 +40,7 @@ public class TestDelta implements Delta, DataSerializable, Cloneable {
   public TestDelta(boolean hasDelta, String info) {
     this.hasDelta = hasDelta;
     this.info = info;
-    this.forceRecalculateSize = false;
+    forceRecalculateSize = false;
   }
 
   public TestDelta(boolean hasDelta, String info, boolean forceRecalculateSize) {
@@ -67,7 +67,7 @@ public class TestDelta implements Delta, DataSerializable, Cloneable {
 
   @Override
   public synchronized void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
-    this.hasDelta = true;
+    hasDelta = true;
     info = DataSerializer.readString(in);
     forceRecalculateSize = DataSerializer.readBoolean(in);
     deltas++;

@@ -28,8 +28,8 @@ public class BucketRollup extends Bucket {
   }
 
   void addColocatedBucket(String region, Bucket b) {
-    if (!this.getColocatedBuckets().containsKey(region)) {
-      this.getColocatedBuckets().put(region, b);
+    if (!getColocatedBuckets().containsKey(region)) {
+      getColocatedBuckets().put(region, b);
       changeLoad(b.getLoad());
       changePrimaryLoad(b.getPrimaryLoad());
       changeBytes(b.getBytes());
@@ -40,7 +40,7 @@ public class BucketRollup extends Bucket {
       for (Member member : getMembersHosting()) {
         MemberRollup rollup = (MemberRollup) member;
         float primaryLoad = 0;
-        if (this.getPrimary() == member) {
+        if (getPrimary() == member) {
           primaryLoad = b.getPrimaryLoad();
         }
         rollup.updateLoad(b.getLoad(), primaryLoad, b.getBytes());
@@ -99,6 +99,6 @@ public class BucketRollup extends Bucket {
   }
 
   Map<String, Bucket> getColocatedBuckets() {
-    return this.colocatedBuckets;
+    return colocatedBuckets;
   }
 }

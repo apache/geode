@@ -305,11 +305,11 @@ public class ClientHealthMonitor {
   }
 
   public void removeAllConnectionsAndUnregisterClient(ClientProxyMembershipID proxyID,
-      Throwable t) {
+      Throwable throwable) {
     // Remove all connections
-    cleanupClientThreads(proxyID, false);
+    cleanupClientThreads(proxyID, false, throwable);
 
-    unregisterClient(proxyID, false, t);
+    unregisterClient(proxyID, false, throwable);
   }
 
   /**
@@ -401,7 +401,7 @@ public class ClientHealthMonitor {
           if (socketAddress == null) {
             clientString = "client member id=" + membershipID;
           } else {
-            clientString = "host name=" + socketAddress.toString() + " host ip="
+            clientString = "host name=" + socketAddress + " host ip="
                 + socketAddress.getHostAddress() + " client port=" + socketPort
                 + " client member id=" + membershipID;
           }
@@ -499,7 +499,8 @@ public class ClientHealthMonitor {
     return connectedIncomingGateways;
   }
 
-  private boolean cleanupClientThreads(ClientProxyMembershipID proxyID, boolean timedOut) {
+  private boolean cleanupClientThreads(ClientProxyMembershipID proxyID, boolean timedOut,
+      Throwable reason) {
     boolean result = false;
     Set<ServerConnection> serverConnections = null;
     synchronized (proxyIdConnections) {
@@ -512,6 +513,9 @@ public class ClientHealthMonitor {
       if (serverConnections != null) {
         result = true;
         for (ServerConnection serverConnection : serverConnections) {
+          if (reason != null) {
+            serverConnection.setClientDisconnectedException(reason);
+          }
           serverConnection.handleTermination(timedOut);
         }
       }
@@ -803,7 +807,7 @@ public class ClientHealthMonitor {
                 // any of its ServerConnection threads are currently processing
                 // a message. If so, let it go. If not, disconnect it.
                 if (prepareToTerminateIfNoConnectionIsProcessing(proxyID)) {
-                  if (cleanupClientThreads(proxyID, true)) {
+                  if (cleanupClientThreads(proxyID, true, null)) {
                     logger.warn(
                         "Monitoring client with member id {}. It had been {} ms since the latest heartbeat. Max interval is {}. Terminated client.",
                         entry.getKey(), currentTime - latestHeartbeat,
@@ -836,7 +840,7 @@ public class ClientHealthMonitor {
           // An exception occurred while monitoring the clients. If the monitor
           // is not stopped, log it and continue processing.
           if (!_isStopped) {
-            logger.fatal(ClientHealthMonitor.this.toString() + ": An unexpected Exception occurred",
+            logger.fatal(ClientHealthMonitor.this + ": An unexpected Exception occurred",
                 e);
           }
         }

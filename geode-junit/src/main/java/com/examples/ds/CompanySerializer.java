@@ -63,7 +63,7 @@ public class CompanySerializer extends DataSerializer {
   public Object fromData(DataInput in) throws IOException, ClassNotFoundException {
 
     String name = in.readUTF();
-    Address address = (Address) readObject(in);
+    Address address = readObject(in);
     return new Company(name, address);
   }
 }

@@ -54,9 +54,9 @@ public abstract class MBeanStatsTestCase {
     props.setProperty(STATISTIC_SAMPLING_ENABLED, "false");
     props.setProperty(STATISTIC_SAMPLE_RATE, "60000");
 
-    this.system = (InternalDistributedSystem) DistributedSystem.connect(props);
-    assertNotNull(this.system.getStatSampler());
-    assertNotNull(this.system.getStatSampler().waitForSampleCollector(TIMEOUT));
+    system = (InternalDistributedSystem) DistributedSystem.connect(props);
+    assertNotNull(system.getStatSampler());
+    assertNotNull(system.getStatSampler().waitForSampleCollector(TIMEOUT));
 
     new CacheFactory().create();
 
@@ -68,17 +68,17 @@ public abstract class MBeanStatsTestCase {
   @After
   public void tearDown() throws Exception {
     // System.clearProperty("gemfire.stats.debug.debugSampleCollector");
-    this.system.disconnect();
-    this.system = null;
+    system.disconnect();
+    system = null;
   }
 
   protected void waitForNotification() throws InterruptedException {
-    this.system.getStatSampler().waitForSample(TIMEOUT);
+    system.getStatSampler().waitForSample(TIMEOUT);
     Thread.sleep(SLEEP);
   }
 
   protected void sample() throws InterruptedException {
-    this.system.getStatSampler().getSampleCollector().sample(NanoTimer.getTime());
+    system.getStatSampler().getSampleCollector().sample(NanoTimer.getTime());
     Thread.sleep(SLEEP);
   }
 

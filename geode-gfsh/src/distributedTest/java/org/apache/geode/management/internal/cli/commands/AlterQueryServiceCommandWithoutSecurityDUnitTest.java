@@ -38,7 +38,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 public class AlterQueryServiceCommandWithoutSecurityDUnitTest {
   private static MemberVM locator;
-  private static List<MemberVM> servers = new ArrayList<>();
+  private static final List<MemberVM> servers = new ArrayList<>();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();

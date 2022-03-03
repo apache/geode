@@ -188,27 +188,27 @@ public interface GemFireHealth {
      * Returns the appropriate canonical instance of <code>Health</code>.
      */
     public Object readResolve() {
-      if (this.healthString == null) {
+      if (healthString == null) {
         return null;
       }
-      if (this.healthString.equals(GOOD_STRING)) {
+      if (healthString.equals(GOOD_STRING)) {
         return GemFireHealth.GOOD_HEALTH;
 
-      } else if (this.healthString.equals(OKAY_STRING)) {
+      } else if (healthString.equals(OKAY_STRING)) {
         return GemFireHealth.OKAY_HEALTH;
 
-      } else if (this.healthString.equals(POOR_STRING)) {
+      } else if (healthString.equals(POOR_STRING)) {
         return GemFireHealth.POOR_HEALTH;
 
       } else {
-        Assert.assertTrue(false, "Unknown healthString: " + this.healthString);
+        Assert.assertTrue(false, "Unknown healthString: " + healthString);
         return null;
       }
     }
 
     @Override
     public String toString() {
-      return this.healthString;
+      return healthString;
     }
 
   }

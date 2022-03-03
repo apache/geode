@@ -54,7 +54,7 @@ public class CommandExecutor {
   public static final String SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED =
       "Cluster configuration service is not running. Configuration change is not persisted.";
 
-  private Logger logger = LogService.getLogger();
+  private final Logger logger = LogService.getLogger();
   private final DistributedLockService cmsDlockService;
 
   // this cmsDlockService could be null for offline commands

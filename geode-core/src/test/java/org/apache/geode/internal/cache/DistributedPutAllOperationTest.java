@@ -77,7 +77,7 @@ public class DistributedPutAllOperationTest {
     when(bucketRegion.getKeyInfo(any(), any(), any())).thenReturn(new KeyInfo(key, null, null));
     when(internalCache.getDistributedSystem()).thenReturn(internalDistributedSystem);
     when(internalCache.getCqService()).thenReturn(cqService);
-    when(serverCQ.getFilterID()).thenReturn(new Long(1L));
+    when(serverCQ.getFilterID()).thenReturn(1L);
     doNothing().when(serverCQ).removeFromCqResultKeys(isA(Object.class), isA(Boolean.class));
 
     distributedPutAllOperation.doRemoveDestroyTokensFromCqResultKeys(filterInfo, serverCQ);

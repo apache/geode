@@ -54,14 +54,14 @@ public class PulseConfig {
   private String queryHistoryFileName;
 
   public PulseConfig() {
-    this.setLogFileName(PulseConstants.PULSE_LOG_FILE_NAME);
-    this.LogFileLocation = PulseConstants.PULSE_LOG_FILE_LOCATION;
-    this.logFileSize = PulseConstants.PULSE_LOG_FILE_SIZE;
-    this.logFileCount = PulseConstants.PULSE_LOG_FILE_COUNT;
-    this.logDatePattern = PulseConstants.PULSE_LOG_MESSAGE_DATE_PATTERN;
-    this.logLevel = PulseConstants.PULSE_LOG_LEVEL;
-    this.logAppend = PulseConstants.PULSE_LOG_APPEND;
-    this.queryHistoryFileName = PulseConstants.PULSE_QUERY_HISTORY_FILE_LOCATION
+    setLogFileName(PulseConstants.PULSE_LOG_FILE_NAME);
+    LogFileLocation = PulseConstants.PULSE_LOG_FILE_LOCATION;
+    logFileSize = PulseConstants.PULSE_LOG_FILE_SIZE;
+    logFileCount = PulseConstants.PULSE_LOG_FILE_COUNT;
+    logDatePattern = PulseConstants.PULSE_LOG_MESSAGE_DATE_PATTERN;
+    logLevel = PulseConstants.PULSE_LOG_LEVEL;
+    logAppend = PulseConstants.PULSE_LOG_APPEND;
+    queryHistoryFileName = PulseConstants.PULSE_QUERY_HISTORY_FILE_LOCATION
         + System.getProperty("file.separator") + PulseConstants.PULSE_QUERY_HISTORY_FILE_NAME;
 
   }
@@ -71,7 +71,7 @@ public class PulseConfig {
   }
 
   public void setLogFileName(String logFileName) {
-    this.LogFileName = logFileName + "_%g.log";
+    LogFileName = logFileName + "_%g.log";
   }
 
   public String getLogFileLocation() {
@@ -79,11 +79,11 @@ public class PulseConfig {
   }
 
   public void setLogFileLocation(String logFileLocation) {
-    this.LogFileLocation = logFileLocation;
+    LogFileLocation = logFileLocation;
   }
 
   public String getLogFileFullName() {
-    return this.LogFileLocation + "/" + this.LogFileName;
+    return LogFileLocation + "/" + LogFileName;
   }
 
   public int getLogFileSize() {

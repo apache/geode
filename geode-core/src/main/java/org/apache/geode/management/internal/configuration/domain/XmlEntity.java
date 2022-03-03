@@ -532,7 +532,6 @@ public class XmlEntity implements VersionedDataSerializable {
      *
      * @since GemFire 8.1
      */
-    @SuppressWarnings("deprecation")
     XmlEntityBuilder() {
       xmlEntity = new XmlEntity();
     }
@@ -545,7 +544,6 @@ public class XmlEntity implements VersionedDataSerializable {
      *
      * @since GemFire 8.1
      */
-    @SuppressWarnings("deprecation")
     public XmlEntity build() {
       xmlEntity.init();
 

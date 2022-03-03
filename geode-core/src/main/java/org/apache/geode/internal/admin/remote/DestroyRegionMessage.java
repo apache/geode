@@ -61,7 +61,7 @@ public class DestroyRegionMessage extends RegionAdminMessage {
         }
       } catch (Exception e) {
         logger.warn("Failed attempt to destroy or invalidate region {} from console at {}",
-            new Object[] {r.getFullPath(), this.getSender()});
+            new Object[] {r.getFullPath(), getSender()});
       }
     }
   }
@@ -75,19 +75,19 @@ public class DestroyRegionMessage extends RegionAdminMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.action, out);
+    DataSerializer.writeObject(action, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.action = (ExpirationAction) DataSerializer.readObject(in);
+    action = DataSerializer.readObject(in);
   }
 
   @Override
   public String toString() {
     return String.format("DestroyRegionMessage from %s",
-        this.getSender());
+        getSender());
   }
 }

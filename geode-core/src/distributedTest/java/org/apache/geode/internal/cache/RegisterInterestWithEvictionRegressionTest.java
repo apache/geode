@@ -87,8 +87,8 @@ public class RegisterInterestWithEvictionRegressionTest extends ClientServerTest
 
   @Test
   public void registerInterestKeysValuesShouldHonorEvictionLimit() {
-    serverPort = server.invoke(() -> createServer());
-    client.invoke(() -> createClient());
+    serverPort = server.invoke(this::createServer);
+    client.invoke(this::createClient);
 
     client.invoke(() -> {
       Region region = getRootRegion(uniqueName);
@@ -98,7 +98,7 @@ public class RegisterInterestWithEvictionRegressionTest extends ClientServerTest
       assertThat(region.size()).isEqualTo(2);
     });
 
-    server.invoke(() -> stopServer());
+    server.invoke(this::stopServer);
   }
 
   private int createServer() throws IOException {

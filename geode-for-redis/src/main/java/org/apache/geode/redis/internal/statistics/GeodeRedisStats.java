@@ -30,8 +30,12 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.redis.internal.commands.RedisCommandType;
 
 public class GeodeRedisStats {
+
+  public static final String STATS_BASENAME = "GeodeForRedisStats";
+
   @Immutable
-  private static final StatisticsType type;
+  private static final EnumMap<RedisCommandType.Category, StatisticsType> statisticTypes =
+      new EnumMap<>(RedisCommandType.Category.class);
   @Immutable
   private static final EnumMap<RedisCommandType, Integer> completedCommandStatIds =
       new EnumMap<>(RedisCommandType.class);
@@ -39,67 +43,76 @@ public class GeodeRedisStats {
   private static final EnumMap<RedisCommandType, Integer> timeCommandStatIds =
       new EnumMap<>(RedisCommandType.class);
 
-  private static final int currentlyConnectedClients;
-  private static final int passiveExpirationChecksId;
-  private static final int passiveExpirationCheckTimeId;
-  private static final int passiveExpirationsId;
+  private static final int currentlyConnectedClientsId;
+  private static final int activeExpirationChecksId;
+  private static final int activeExpirationCheckTimeId;
+  private static final int activeExpirationsId;
   private static final int expirationsId;
   private static final int expirationTimeId;
-  private static final int totalConnectionsReceived;
-  private static final int commandsProcessed;
-  private static final int keyspaceHits;
-  private static final int keyspaceMisses;
-  private static final int totalNetworkBytesRead;
+  private static final int totalConnectionsReceivedId;
+  private static final int commandsProcessedId;
+  private static final int keyspaceHitsId;
+  private static final int keyspaceMissesId;
+  private static final int totalNetworkBytesReadId;
   private static final int publishRequestsCompletedId;
   private static final int publishRequestsInProgressId;
   private static final int publishRequestTimeId;
   private static final int subscribersId;
   private static final int uniqueChannelSubscriptionsId;
   private static final int uniquePatternSubscriptionsId;
-  private final Statistics stats;
+  private final Statistics generalStats;
+  private final EnumMap<RedisCommandType.Category, Statistics> statistics =
+      new EnumMap<>(RedisCommandType.Category.class);
+  private static final StatisticsType generalType;
   private final StatisticsClock clock;
 
-  public GeodeRedisStats(StatisticsFactory factory, String name, StatisticsClock clock) {
+  public GeodeRedisStats(StatisticsFactory factory, StatisticsClock clock) {
     this.clock = clock;
-    stats = factory == null ? null : factory.createAtomicStatistics(type, name);
+    generalStats = factory.createAtomicStatistics(generalType, generalType.getName());
+
+    for (RedisCommandType.Category category : RedisCommandType.Category.values()) {
+      StatisticsType type = statisticTypes.get(category);
+      Statistics stats = factory.createAtomicStatistics(type, type.getName());
+      statistics.put(category, stats);
+    }
   }
 
   static {
     StatisticsTypeFactory statisticsTypeFactory = StatisticsTypeFactoryImpl.singleton();
-    ArrayList<StatisticDescriptor> descriptorList = new ArrayList<>();
 
-    fillListWithCompletedCommandDescriptors(statisticsTypeFactory, descriptorList);
-    fillListWithTimeCommandDescriptors(statisticsTypeFactory, descriptorList);
-    fillListWithCommandDescriptors(statisticsTypeFactory, descriptorList);
-
-    StatisticDescriptor[] descriptorArray =
-        descriptorList.toArray(new StatisticDescriptor[0]);
-
-    type = statisticsTypeFactory
-        .createType("GeodeForRedisStats",
+    generalType = statisticsTypeFactory
+        .createType(STATS_BASENAME,
             "Statistics for a geode-for-redis server",
-            descriptorArray);
+            createGeneralStatisticDescriptors(statisticsTypeFactory));
 
-    fillCompletedIdMap();
-    fillTimeIdMap();
+    currentlyConnectedClientsId = generalType.nameToId("connectedClients");
+    activeExpirationChecksId = generalType.nameToId("activeExpirationChecks");
+    activeExpirationCheckTimeId = generalType.nameToId("activeExpirationCheckTime");
+    activeExpirationsId = generalType.nameToId("activeExpirations");
+    expirationsId = generalType.nameToId("expirations");
+    expirationTimeId = generalType.nameToId("expirationTime");
+    totalConnectionsReceivedId = generalType.nameToId("totalConnectionsReceived");
+    commandsProcessedId = generalType.nameToId("commandsProcessed");
+    totalNetworkBytesReadId = generalType.nameToId("totalNetworkBytesRead");
+    keyspaceHitsId = generalType.nameToId("keyspaceHits");
+    keyspaceMissesId = generalType.nameToId("keyspaceMisses");
+    publishRequestsCompletedId = generalType.nameToId("publishRequestsCompleted");
+    publishRequestsInProgressId = generalType.nameToId("publishRequestsInProgress");
+    publishRequestTimeId = generalType.nameToId("publishRequestTime");
+    subscribersId = generalType.nameToId("subscribers");
+    uniqueChannelSubscriptionsId = generalType.nameToId("uniqueChannelSubscriptions");
+    uniquePatternSubscriptionsId = generalType.nameToId("uniquePatternSubscriptions");
 
-    currentlyConnectedClients = type.nameToId("connectedClients");
-    passiveExpirationChecksId = type.nameToId("passiveExpirationChecks");
-    passiveExpirationCheckTimeId = type.nameToId("passiveExpirationCheckTime");
-    passiveExpirationsId = type.nameToId("passiveExpirations");
-    expirationsId = type.nameToId("expirations");
-    expirationTimeId = type.nameToId("expirationTime");
-    totalConnectionsReceived = type.nameToId("totalConnectionsReceived");
-    commandsProcessed = type.nameToId("commandsProcessed");
-    totalNetworkBytesRead = type.nameToId("totalNetworkBytesRead");
-    keyspaceHits = type.nameToId("keyspaceHits");
-    keyspaceMisses = type.nameToId("keyspaceMisses");
-    publishRequestsCompletedId = type.nameToId("publishRequestsCompleted");
-    publishRequestsInProgressId = type.nameToId("publishRequestsInProgress");
-    publishRequestTimeId = type.nameToId("publishRequestTime");
-    subscribersId = type.nameToId("subscribers");
-    uniqueChannelSubscriptionsId = type.nameToId("uniqueChannelSubscriptions");
-    uniquePatternSubscriptionsId = type.nameToId("uniquePatternSubscriptions");
+    for (RedisCommandType.Category category : RedisCommandType.Category.values()) {
+      StatisticsType type = statisticsTypeFactory
+          .createType(STATS_BASENAME + ":" + category.name(),
+              category.name() + " statistics for a geode-for-redis server",
+              createCategoryStatisticDescriptors(statisticsTypeFactory, category));
+      statisticTypes.put(category, type);
+
+      fillCompletedIdMap(category, type);
+      fillTimeIdMap(category, type);
+    }
   }
 
   private long getCurrentTimeNanos() {
@@ -107,202 +120,201 @@ public class GeodeRedisStats {
   }
 
   public void endCommand(RedisCommandType command, long start) {
+    Statistics stat = statistics.get(command.category());
     if (clock.isEnabled()) {
-      stats.incLong(timeCommandStatIds.get(command), getCurrentTimeNanos() - start);
+      stat.incLong(timeCommandStatIds.get(command), getCurrentTimeNanos() - start);
     }
-    stats.incLong(completedCommandStatIds.get(command), 1);
+    stat.incLong(completedCommandStatIds.get(command), 1);
   }
 
   public void addClient() {
-    stats.incLong(currentlyConnectedClients, 1);
-    stats.incLong(totalConnectionsReceived, 1);
+    generalStats.incLong(currentlyConnectedClientsId, 1);
+    generalStats.incLong(totalConnectionsReceivedId, 1);
   }
 
   public void removeClient() {
-    stats.incLong(currentlyConnectedClients, -1);
+    generalStats.incLong(currentlyConnectedClientsId, -1);
   }
 
-  public void endPassiveExpirationCheck(long start, long expireCount) {
+  public void endActiveExpirationCheck(long start, long expireCount) {
     if (expireCount > 0) {
-      incPassiveExpirations(expireCount);
+      incActiveExpirations(expireCount);
     }
     if (clock.isEnabled()) {
-      stats.incLong(passiveExpirationCheckTimeId, getCurrentTimeNanos() - start);
+      generalStats.incLong(activeExpirationCheckTimeId, getCurrentTimeNanos() - start);
     }
-    stats.incLong(passiveExpirationChecksId, 1);
+    generalStats.incLong(activeExpirationChecksId, 1);
   }
 
-  private void incPassiveExpirations(long count) {
-    stats.incLong(passiveExpirationsId, count);
+  private void incActiveExpirations(long count) {
+    generalStats.incLong(activeExpirationsId, count);
   }
 
   public void endExpiration(long start) {
     if (clock.isEnabled()) {
-      stats.incLong(expirationTimeId, getCurrentTimeNanos() - start);
+      generalStats.incLong(expirationTimeId, getCurrentTimeNanos() - start);
     }
-    stats.incLong(expirationsId, 1);
+    generalStats.incLong(expirationsId, 1);
   }
 
   public void incrementCommandsProcessed() {
-    stats.incLong(commandsProcessed, 1);
+    generalStats.incLong(commandsProcessedId, 1);
   }
 
   public void incrementTotalNetworkBytesRead(long bytes) {
-    stats.incLong(totalNetworkBytesRead, bytes);
+    generalStats.incLong(totalNetworkBytesReadId, bytes);
   }
 
   public void incrementKeyspaceHits() {
-    stats.incLong(keyspaceHits, 1);
+    generalStats.incLong(keyspaceHitsId, 1);
   }
 
   public void incrementKeyspaceMisses() {
-    stats.incLong(keyspaceMisses, 1);
+    generalStats.incLong(keyspaceMissesId, 1);
   }
 
   public long startPublish() {
-    stats.incLong(publishRequestsInProgressId, 1);
+    generalStats.incLong(publishRequestsInProgressId, 1);
     return getCurrentTimeNanos();
   }
 
   public void endPublish(long publishCount, long time) {
-    stats.incLong(publishRequestsInProgressId, -publishCount);
-    stats.incLong(publishRequestsCompletedId, publishCount);
+    generalStats.incLong(publishRequestsInProgressId, -publishCount);
+    generalStats.incLong(publishRequestsCompletedId, publishCount);
     if (clock.isEnabled()) {
-      stats.incLong(publishRequestTimeId, time);
+      generalStats.incLong(publishRequestTimeId, time);
     }
   }
 
   public void changeSubscribers(long delta) {
-    stats.incLong(subscribersId, delta);
+    generalStats.incLong(subscribersId, delta);
   }
 
   public void changeUniqueChannelSubscriptions(long delta) {
-    stats.incLong(uniqueChannelSubscriptionsId, delta);
+    generalStats.incLong(uniqueChannelSubscriptionsId, delta);
   }
 
   public void changeUniquePatternSubscriptions(long delta) {
-    stats.incLong(uniquePatternSubscriptionsId, delta);
+    generalStats.incLong(uniquePatternSubscriptionsId, delta);
   }
 
   public void close() {
-    if (stats != null) {
-      stats.close();
-    }
+    generalStats.close();
   }
 
-  private static void fillListWithTimeCommandDescriptors(StatisticsTypeFactory factory,
-      ArrayList<StatisticDescriptor> descriptorList) {
+  private static StatisticDescriptor[] createCategoryStatisticDescriptors(
+      StatisticsTypeFactory factory,
+      RedisCommandType.Category category) {
+    ArrayList<StatisticDescriptor> descriptors = new ArrayList<>();
 
-    for (RedisCommandType command : RedisCommandType.values()) {
+    for (RedisCommandType command : RedisCommandType.getCommandsForCategory(category)) {
       String name = command.name().toLowerCase();
-      String statName = name + "Time";
-      String statDescription =
+      String statCompletedName = name + "Completed";
+      String statCompletedDescription = "Total number of redis '" + name
+          + "' operations that have completed execution on this server.";
+
+      descriptors.add(
+          factory.createLongCounter(statCompletedName, statCompletedDescription, "operations"));
+
+      String statTimeName = name + "Time";
+      String statTimeDescription =
           "Total amount of time, in nanoseconds, spent executing redis '"
               + name + "' operations on this server.";
-      String units = "nanoseconds";
 
-      descriptorList.add(factory.createLongCounter(statName, statDescription, units));
+      descriptors.add(
+          factory.createLongCounter(statTimeName, statTimeDescription, "nanoseconds"));
     }
+
+    return descriptors.toArray(new StatisticDescriptor[0]);
   }
 
-  private static void fillListWithCompletedCommandDescriptors(StatisticsTypeFactory factory,
-      ArrayList<StatisticDescriptor> descriptorList) {
-    for (RedisCommandType command : RedisCommandType.values()) {
+  private static void fillCompletedIdMap(RedisCommandType.Category category, StatisticsType type) {
+    for (RedisCommandType command : RedisCommandType.getCommandsForCategory(category)) {
       String name = command.name().toLowerCase();
       String statName = name + "Completed";
-      String statDescription = "Total number of redis '" + name
-          + "' operations that have completed execution on this server.";
-      String units = "operations";
-
-      descriptorList.add(factory.createLongCounter(statName, statDescription, units));
-    }
-  }
-
-  private static void fillCompletedIdMap() {
-    for (RedisCommandType command : RedisCommandType.values()) {
-      String name = command.name().toLowerCase();
-      String statName = name + "Completed";
-
       completedCommandStatIds.put(command, type.nameToId(statName));
     }
   }
 
-  private static void fillListWithCommandDescriptors(StatisticsTypeFactory statisticsTypeFactory,
-      ArrayList<StatisticDescriptor> descriptorList) {
-
-    descriptorList.add(statisticsTypeFactory.createLongGauge("connectedClients",
-        "Current client connections to this redis server.",
-        "clients"));
-
-    descriptorList.add(statisticsTypeFactory.createLongCounter("commandsProcessed",
-        "Total number of commands processed by this redis server.",
-        "commands"));
-
-    descriptorList.add(statisticsTypeFactory.createLongCounter("keyspaceHits",
-        "Total number of successful key lookups on this redis server"
-            + " from cache on this redis server.",
-        "hits"));
-
-    descriptorList.add(statisticsTypeFactory.createLongCounter("keyspaceMisses",
-        "Total number of keys requested but not found on this redis server.",
-        "misses"));
-
-    descriptorList.add(statisticsTypeFactory.createLongCounter("totalNetworkBytesRead",
-        "Total number of bytes read by this redis server.",
-        "bytes"));
-
-    descriptorList.add(statisticsTypeFactory.createLongCounter("totalConnectionsReceived",
-        "Total number of client connections received by this redis server since startup.",
-        "connections"));
-
-    descriptorList.add(statisticsTypeFactory.createLongCounter("passiveExpirationChecks",
-        "Total number of passive expiration checks that have"
-            + " completed. Checks include scanning and expiring.",
-        "checks"));
-
-    descriptorList.add(statisticsTypeFactory.createLongCounter("passiveExpirationCheckTime",
-        "Total amount of time, in nanoseconds, spent in passive "
-            + "expiration checks on this server.",
-        "nanoseconds"));
-
-    descriptorList.add(statisticsTypeFactory.createLongCounter("passiveExpirations",
-        "Total number of keys that have been passively expired on this server.",
-        "expirations"));
-
-    descriptorList.add(statisticsTypeFactory.createLongCounter("expirations",
-        "Total number of keys that have been expired, actively or passively, on this server.",
-        "expirations"));
-
-    descriptorList.add(statisticsTypeFactory.createLongCounter("expirationTime",
-        "Total amount of time, in nanoseconds, spent expiring keys on this server.",
-        "nanoseconds"));
-
-    descriptorList.add(statisticsTypeFactory.createLongCounter("publishRequestsCompleted",
-        "Total number of publish requests received by this server that have completed processing.",
-        "ops"));
-    descriptorList.add(statisticsTypeFactory.createLongGauge("publishRequestsInProgress",
-        "Current number of publish requests received by this server that are still being processed.",
-        "ops"));
-    descriptorList.add(statisticsTypeFactory.createLongCounter("publishRequestTime",
-        "Total amount of time, in nanoseconds, processing publish requests on this server. For each request this stat measures the time elapsed between when the request arrived on the server and when the request was delivered to all subscribers.",
-        "nanoseconds"));
-    descriptorList.add(statisticsTypeFactory.createLongGauge("subscribers",
-        "Current number of subscribers connected to this server.",
-        "subscribers"));
-    descriptorList.add(statisticsTypeFactory.createLongGauge("uniqueChannelSubscriptions",
-        "Current number of unique channel subscriptions on this server. Multiple subscribers can be on the same channel.",
-        "subscriptions"));
-    descriptorList.add(statisticsTypeFactory.createLongGauge("uniquePatternSubscriptions",
-        "Current number of unique pattern subscriptions on this server. Multiple subscribers can be on the same pattern.",
-        "subscriptions"));
-
-  }
-
-  private static void fillTimeIdMap() {
-    for (RedisCommandType command : RedisCommandType.values()) {
+  private static void fillTimeIdMap(RedisCommandType.Category category, StatisticsType type) {
+    for (RedisCommandType command : RedisCommandType.getCommandsForCategory(category)) {
       String name = command.name().toLowerCase();
       String statName = name + "Time";
       timeCommandStatIds.put(command, type.nameToId(statName));
     }
   }
+
+  private static StatisticDescriptor[] createGeneralStatisticDescriptors(
+      StatisticsTypeFactory statisticsTypeFactory) {
+    ArrayList<StatisticDescriptor> descriptors = new ArrayList<>();
+
+    descriptors.add(statisticsTypeFactory.createLongGauge("connectedClients",
+        "Current client connections to this redis server.",
+        "clients"));
+
+    descriptors.add(statisticsTypeFactory.createLongCounter("commandsProcessed",
+        "Total number of commands processed by this redis server.",
+        "commands"));
+
+    descriptors.add(statisticsTypeFactory.createLongCounter("keyspaceHits",
+        "Total number of successful key lookups on this redis server"
+            + " from cache on this redis server.",
+        "hits"));
+
+    descriptors.add(statisticsTypeFactory.createLongCounter("keyspaceMisses",
+        "Total number of keys requested but not found on this redis server.",
+        "misses"));
+
+    descriptors.add(statisticsTypeFactory.createLongCounter("totalNetworkBytesRead",
+        "Total number of bytes read by this redis server.",
+        "bytes"));
+
+    descriptors.add(statisticsTypeFactory.createLongCounter("totalConnectionsReceived",
+        "Total number of client connections received by this redis server since startup.",
+        "connections"));
+
+    descriptors.add(statisticsTypeFactory.createLongCounter("activeExpirationChecks",
+        "Total number of active expiration checks that have"
+            + " completed. Checks include scanning and expiring.",
+        "checks"));
+
+    descriptors.add(statisticsTypeFactory.createLongCounter("activeExpirationCheckTime",
+        "Total amount of time, in nanoseconds, spent in active "
+            + "expiration checks on this server.",
+        "nanoseconds"));
+
+    descriptors.add(statisticsTypeFactory.createLongCounter("activeExpirations",
+        "Total number of keys that have been actively expired on this server.",
+        "expirations"));
+
+    descriptors.add(statisticsTypeFactory.createLongCounter("expirations",
+        "Total number of keys that have been expired, actively or passively, on this server.",
+        "expirations"));
+
+    descriptors.add(statisticsTypeFactory.createLongCounter("expirationTime",
+        "Total amount of time, in nanoseconds, spent expiring keys on this server.",
+        "nanoseconds"));
+
+    descriptors.add(statisticsTypeFactory.createLongCounter("publishRequestsCompleted",
+        "Total number of publish requests received by this server that have completed processing.",
+        "ops"));
+    descriptors.add(statisticsTypeFactory.createLongGauge("publishRequestsInProgress",
+        "Current number of publish requests received by this server that are still being processed.",
+        "ops"));
+    descriptors.add(statisticsTypeFactory.createLongCounter("publishRequestTime",
+        "Total amount of time, in nanoseconds, processing publish requests on this server. For each request this stat measures the time elapsed between when the request arrived on the server and when the request was delivered to all subscribers.",
+        "nanoseconds"));
+    descriptors.add(statisticsTypeFactory.createLongGauge("subscribers",
+        "Current number of subscribers connected to this server.",
+        "subscribers"));
+    descriptors.add(statisticsTypeFactory.createLongGauge("uniqueChannelSubscriptions",
+        "Current number of unique channel subscriptions on this server. Multiple subscribers can be on the same channel.",
+        "subscriptions"));
+    descriptors.add(statisticsTypeFactory.createLongGauge("uniquePatternSubscriptions",
+        "Current number of unique pattern subscriptions on this server. Multiple subscribers can be on the same pattern.",
+        "subscriptions"));
+
+    return descriptors.toArray(new StatisticDescriptor[0]);
+  }
+
 }

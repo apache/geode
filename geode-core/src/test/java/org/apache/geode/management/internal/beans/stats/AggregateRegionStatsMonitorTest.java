@@ -71,7 +71,7 @@ public class AggregateRegionStatsMonitorTest {
     sampleCollector.initialize(mockStatArchiveHandlerConfig, NanoTimer.getTime(),
         new MainWithChildrenRollingFileHandler());
     aggregateRegionStatsMonitor =
-        spy(new AggregateRegionStatsMonitor(this.testName.getMethodName()));
+        spy(new AggregateRegionStatsMonitor(testName.getMethodName()));
 
     assertThat(aggregateRegionStatsMonitor).isNotNull();
     assertThat(aggregateRegionStatsMonitor.getMonitors()).isEmpty();
@@ -250,6 +250,7 @@ public class AggregateRegionStatsMonitorTest {
   public void decreaseDiskStoreStatsShouldNotThrowNPE() {
     Statistics statistics = mock(Statistics.class);
     aggregateRegionStatsMonitor.addStatisticsToMonitor(statistics);
-    aggregateRegionStatsMonitor.getListeners().values().forEach((l) -> l.decreaseParStats());
+    aggregateRegionStatsMonitor.getListeners().values().forEach(
+        AggregateRegionStatsMonitor.MemberLevelRegionStatisticsListener::decreaseParStats);
   }
 }

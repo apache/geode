@@ -64,7 +64,7 @@ public class IndexUsageInNestedQueryJUnitTest {
 
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] = {
+    String[] queries = {
         "select distinct * from " + SEPARATOR + "portfolios p, (select distinct pos  as poos from "
             + SEPARATOR + "portfolios x, x.positions.values pos"
             + " where pos.secId = 'YHOO') as k",
@@ -92,7 +92,7 @@ public class IndexUsageInNestedQueryJUnitTest {
             + "portfolios p, p.positions.values vals where vals.secId = 'YHOO')",
 
     };
-    SelectResults r[][] = new SelectResults[queries.length][2];
+    SelectResults[][] r = new SelectResults[queries.length][2];
 
     for (int i = 0; i < queries.length; i++) {
       Query q = null;

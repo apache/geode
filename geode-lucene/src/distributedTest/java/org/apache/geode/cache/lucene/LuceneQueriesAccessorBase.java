@@ -95,7 +95,7 @@ public class LuceneQueriesAccessorBase extends LuceneDUnitTest {
       assertEquals(3, results.size());
       List<LuceneResultStruct<Integer, TestObject>> page = results.next();
 
-      Map<Integer, TestObject> data = new HashMap<Integer, TestObject>();
+      Map<Integer, TestObject> data = new HashMap<>();
       for (LuceneResultStruct<Integer, TestObject> row : page) {
         data.put(row.getKey(), row.getValue());
       }
@@ -233,13 +233,9 @@ public class LuceneQueriesAccessorBase extends LuceneDUnitTest {
       }
       TestObject other = (TestObject) obj;
       if (text == null) {
-        if (other.text != null) {
-          return false;
-        }
-      } else if (!text.equals(other.text)) {
-        return false;
-      }
-      return true;
+        return other.text == null;
+      } else
+        return text.equals(other.text);
     }
 
     @Override

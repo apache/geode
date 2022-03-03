@@ -46,13 +46,13 @@ public class LuceneRegionListener implements RegionListener {
 
   private final String[] fields;
 
-  private LuceneSerializer serializer;
+  private final LuceneSerializer serializer;
 
   private InternalLuceneIndex luceneIndex;
 
-  private AtomicBoolean beforeCreateInvoked = new AtomicBoolean();
+  private final AtomicBoolean beforeCreateInvoked = new AtomicBoolean();
 
-  private AtomicBoolean afterCreateInvoked = new AtomicBoolean();
+  private final AtomicBoolean afterCreateInvoked = new AtomicBoolean();
 
   private static final Logger logger = LogService.getLogger();
 
@@ -69,11 +69,11 @@ public class LuceneRegionListener implements RegionListener {
   }
 
   public String getRegionPath() {
-    return this.regionPath;
+    return regionPath;
   }
 
   public String getIndexName() {
-    return this.indexName;
+    return indexName;
   }
 
   @Override
@@ -83,11 +83,11 @@ public class LuceneRegionListener implements RegionListener {
     String path =
         parent == null ? SEPARATOR + regionName : parent.getFullPath() + SEPARATOR + regionName;
 
-    if (path.equals(this.regionPath) && this.beforeCreateInvoked.compareAndSet(false, true)) {
+    if (path.equals(regionPath) && beforeCreateInvoked.compareAndSet(false, true)) {
 
       LuceneServiceImpl.validateRegionAttributes(attrs);
 
-      String aeqId = LuceneServiceImpl.getUniqueIndexName(this.indexName, this.regionPath);
+      String aeqId = LuceneServiceImpl.getUniqueIndexName(indexName, regionPath);
       if (!attrs.getAsyncEventQueueIds().contains(aeqId)) {
         RegionAttributesCreation regionAttributesCreation =
             new RegionAttributesCreation(attrs, false);
@@ -96,11 +96,11 @@ public class LuceneRegionListener implements RegionListener {
       }
 
       // Add index creation profile
-      internalRegionArgs.addCacheServiceProfile(new LuceneIndexCreationProfile(this.indexName,
-          this.regionPath, this.fields, this.analyzer, this.fieldAnalyzers, serializer));
+      internalRegionArgs.addCacheServiceProfile(new LuceneIndexCreationProfile(indexName,
+          regionPath, fields, analyzer, fieldAnalyzers, serializer));
 
-      luceneIndex = this.service.beforeDataRegionCreated(this.indexName, this.regionPath, attrs,
-          this.analyzer, this.fieldAnalyzers, aeqId, serializer, this.fields);
+      luceneIndex = service.beforeDataRegionCreated(indexName, regionPath, attrs,
+          analyzer, fieldAnalyzers, aeqId, serializer, fields);
 
       // Add internal async event id
       internalRegionArgs.addInternalAsyncEventQueueId(aeqId);
@@ -110,35 +110,35 @@ public class LuceneRegionListener implements RegionListener {
 
   @Override
   public void afterCreate(Region region) {
-    if (region.getFullPath().equals(this.regionPath)
-        && this.afterCreateInvoked.compareAndSet(false, true)) {
+    if (region.getFullPath().equals(regionPath)
+        && afterCreateInvoked.compareAndSet(false, true)) {
       try {
-        this.service.afterDataRegionCreated(this.luceneIndex);
+        service.afterDataRegionCreated(luceneIndex);
       } catch (LuceneIndexDestroyedException e) {
         logger.warn(String.format("Lucene index %s on region %s was destroyed while being created",
             indexName, regionPath));
         return;
       }
-      this.service.createLuceneIndexOnDataRegion((PartitionedRegion) region, luceneIndex);
+      service.createLuceneIndexOnDataRegion((PartitionedRegion) region, luceneIndex);
     }
   }
 
   @Override
   public void beforeDestroyed(Region region) {
-    if (region.getFullPath().equals(this.regionPath)) {
-      this.service.beforeRegionDestroyed(region);
+    if (region.getFullPath().equals(regionPath)) {
+      service.beforeRegionDestroyed(region);
     }
   }
 
   @Override
   public void cleanupFailedInitialization(Region region) {
     // Reset the booleans
-    this.beforeCreateInvoked.set(false);
-    this.afterCreateInvoked.set(false);
+    beforeCreateInvoked.set(false);
+    afterCreateInvoked.set(false);
 
     // Clean up the region in the LuceneService
-    if (region.getFullPath().equals(this.regionPath)) {
-      this.service.cleanupFailedInitialization(region);
+    if (region.getFullPath().equals(regionPath)) {
+      service.cleanupFailedInitialization(region);
     }
   }
 }

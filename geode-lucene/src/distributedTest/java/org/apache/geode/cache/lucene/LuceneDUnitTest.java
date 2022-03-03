@@ -135,9 +135,9 @@ public abstract class LuceneDUnitTest extends JUnit4CacheTestCase {
 
     ExpirationAttributes expirationAttributes = null;
     EvictionAttributes evictionAttributes = null;
-    private RegionShortcut serverRegionShortcut;
-    private RegionShortcut clientRegionShortcut;
-    private int numBuckets;
+    private final RegionShortcut serverRegionShortcut;
+    private final RegionShortcut clientRegionShortcut;
+    private final int numBuckets;
 
     RegionTestableType(RegionShortcut clientRegionShortcut, RegionShortcut serverRegionShortcut) {
       this(clientRegionShortcut, serverRegionShortcut, null);
@@ -165,7 +165,7 @@ public abstract class LuceneDUnitTest extends JUnit4CacheTestCase {
     }
 
     public Region createDataStore(Cache cache, String regionName) {
-      if (this.equals(FIXED_PARTITION)) {
+      if (equals(FIXED_PARTITION)) {
         try {
           return LuceneDistributedTestUtilities.initDataStoreForFixedPR(cache);
         } catch (Exception e) {
@@ -188,10 +188,10 @@ public abstract class LuceneDUnitTest extends JUnit4CacheTestCase {
     }
 
     public Region createAccessor(Cache cache, String regionName) {
-      if (this.equals(PARTITION_WITH_CLIENT)) {
+      if (equals(PARTITION_WITH_CLIENT)) {
         return null;
       }
-      if (this.equals(FIXED_PARTITION)) {
+      if (equals(FIXED_PARTITION)) {
         return LuceneTestUtilities.createFixedPartitionedRegion(cache, regionName, null, 0);
       }
       if (evictionAttributes == null) {

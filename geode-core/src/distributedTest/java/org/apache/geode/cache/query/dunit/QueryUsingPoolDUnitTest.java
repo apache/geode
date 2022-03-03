@@ -90,17 +90,17 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void postSetUp() throws Exception {
-    this.rootRegionName = "root";
-    this.regionName = this.getName();
-    this.regName = SEPARATOR + this.rootRegionName + SEPARATOR + this.regionName;
+    rootRegionName = "root";
+    regionName = getName();
+    regName = SEPARATOR + rootRegionName + SEPARATOR + regionName;
 
-    this.queryString =
-        new String[] {"SELECT itr.value FROM " + this.regName + ".entries itr where itr.key = $1", // 0
-            "SELECT DISTINCT * FROM " + this.regName + " WHERE id < $1 ORDER BY   id", // 1
-            "SELECT DISTINCT * FROM " + this.regName + " WHERE id < $1 ORDER BY id", // 2
-            "(SELECT DISTINCT * FROM " + this.regName + " WHERE id < $1).size", // 3
-            "SELECT * FROM " + this.regName + " WHERE id = $1 and Ticker = $2", // 4
-            "SELECT * FROM " + this.regName + " WHERE id < $1 and Ticker = $2", // 5
+    queryString =
+        new String[] {"SELECT itr.value FROM " + regName + ".entries itr where itr.key = $1", // 0
+            "SELECT DISTINCT * FROM " + regName + " WHERE id < $1 ORDER BY   id", // 1
+            "SELECT DISTINCT * FROM " + regName + " WHERE id < $1 ORDER BY id", // 2
+            "(SELECT DISTINCT * FROM " + regName + " WHERE id < $1).size", // 3
+            "SELECT * FROM " + regName + " WHERE id = $1 and Ticker = $2", // 4
+            "SELECT * FROM " + regName + " WHERE id < $1 and Ticker = $2", // 5
         };
 
     disconnectAllFromDS();
@@ -151,7 +151,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testRemoteImportQueries() throws CacheException {
 
-    final String name = this.getName();
+    final String name = getName();
     final String rootRegionName = "root";
 
     final Host host = Host.getHost(0);
@@ -176,7 +176,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     });
 
     final int port =
-        vm0.invoke("GetCacheServerPort", () -> QueryUsingPoolDUnitTest.getCacheServerPort());
+        vm0.invoke("GetCacheServerPort", QueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
     final String regionName = SEPARATOR + rootRegionName + SEPARATOR + name;
 
@@ -282,7 +282,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testRemoteStructQueries() throws CacheException {
 
-    final String name = this.getName();
+    final String name = getName();
     final String rootRegionName = "root";
 
     final Host host = Host.getHost(0);
@@ -404,7 +404,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     createAndStartBridgeServer();
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
-    createRegion(this.regionName, this.rootRegionName, factory.create());
+    createRegion(regionName, rootRegionName, factory.create());
     Region region = getRootRegion().getSubregion(name);
     for (int i = 0; i < numberOfEntries; i++) {
       region.put("key-" + i, new TestObject(i, "ibm"));
@@ -418,7 +418,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testRemoteFullRegionQueries() throws CacheException {
 
-    final String name = this.getName();
+    final String name = getName();
     final String rootRegionName = "root";
 
     final Host host = Host.getHost(0);
@@ -443,7 +443,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Create client region
-    final int port = vm0.invoke(() -> QueryUsingPoolDUnitTest.getCacheServerPort());
+    final int port = vm0.invoke(QueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     final String regionName = SEPARATOR + rootRegionName + SEPARATOR + name;
@@ -558,7 +558,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
       assertEquals(1, results.size());
       Object result = results.iterator().next();
       assertTrue(result instanceof Integer);
-      int resultInt = ((Integer) result).intValue();
+      int resultInt = (Integer) result;
       assertEquals(resultInt, 100);
 
       // query with leading/trailing spaces
@@ -616,7 +616,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
         50, // 5
     };
 
-    assertNotNull(this.regionName);
+    assertNotNull(regionName);
 
     // Start server
     final int port = vm0.invoke("Create cache server", () -> {
@@ -783,8 +783,8 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
       assertEquals(queryString.length, compiledQueryCount);
     });
 
-    vm2.invoke("closeClient", () -> closeClient());
-    vm3.invoke("closeClient", () -> closeClient());
+    vm2.invoke("closeClient", this::closeClient);
+    vm3.invoke("closeClient", this::closeClient);
 
     // Validate maintained compiled queries.
     // All the queries will be still present in the server.
@@ -835,7 +835,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testClientServerCompiledQueryRegisterAndCleanup() throws CacheException {
 
-    final String name = this.getName();
+    final String name = getName();
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -876,7 +876,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
       assertEquals(queryString.length, compiledQueryCount);
     });
 
-    vm1.invoke("closeClient", () -> closeClient());
+    vm1.invoke("closeClient", this::closeClient);
 
     // Validate maintained compiled queries.
     vm0.invoke("validate compiled query.", () -> {
@@ -895,7 +895,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testClientServerCompiledQueryTimeBasedCleanup() throws CacheException {
 
-    final String name = this.getName();
+    final String name = getName();
 
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -957,8 +957,8 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Close clients
 
-    vm1.invoke("closeClient", () -> closeClient());
-    vm2.invoke("closeClient", () -> closeClient());
+    vm1.invoke("closeClient", this::closeClient);
+    vm2.invoke("closeClient", this::closeClient);
 
     // Validate maintained compiled queries.
     vm0.invoke("validate Compiled query", () -> validateCompiledQuery(0));
@@ -974,7 +974,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testClientServerCompiledQueryCleanup() throws CacheException {
 
-    final String name = this.getName();
+    final String name = getName();
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
@@ -1050,8 +1050,8 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Close clients
-    vm2.invoke("closeClient", () -> closeClient());
-    vm1.invoke("closeClient", () -> closeClient());
+    vm2.invoke("closeClient", this::closeClient);
+    vm1.invoke("closeClient", this::closeClient);
 
     // Validate maintained compiled queries.
     // since not used it should get cleaned up after sometime.
@@ -1182,9 +1182,9 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     vm2.invoke("executeQueries", () -> executeQueries);
     vm3.invoke("executeQueries", () -> executeQueries);
 
-    vm1.invoke("closeClient", () -> closeClient());
-    vm2.invoke("closeClient", () -> closeClient());
-    vm3.invoke("closeClient", () -> closeClient());
+    vm1.invoke("closeClient", this::closeClient);
+    vm2.invoke("closeClient", this::closeClient);
+    vm3.invoke("closeClient", this::closeClient);
 
     // Stop server
     vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
@@ -1196,7 +1196,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testRemoteJoinRegionQueries() throws CacheException {
 
-    final String name = this.getName();
+    final String name = getName();
     final String rootRegionName = "root";
 
     final Host host = Host.getHost(0);
@@ -1227,7 +1227,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Create client region
     final int port =
-        vm0.invoke("getCacheServerPort", () -> QueryUsingPoolDUnitTest.getCacheServerPort());
+        vm0.invoke("getCacheServerPort", QueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
     final String regionName1 = SEPARATOR + rootRegionName + SEPARATOR + name + "1";
     final String regionName2 = SEPARATOR + rootRegionName + SEPARATOR + name + "2";
@@ -1283,7 +1283,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
   @Test
   public void testRemoteBridgeClientQueries() throws CacheException {
 
-    final String name = this.getName();
+    final String name = getName();
     final String rootRegionName = "root";
 
     final Host host = Host.getHost(0);
@@ -1308,7 +1308,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
       }
     });
 
-    final int port = vm0.invoke("getCacheServerPort", () -> getCacheServerPort());
+    final int port = vm0.invoke("getCacheServerPort", QueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     final String regionName = SEPARATOR + rootRegionName + SEPARATOR + name;
@@ -1379,7 +1379,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testBug36969() throws Exception {
-    final String name = this.getName();
+    final String name = getName();
     final String rootRegionName = "root";
 
     final Host host = Host.getHost(0);
@@ -1410,7 +1410,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     });
 
     final int port =
-        vm0.invoke("getCachedServerPort", () -> QueryUsingPoolDUnitTest.getCacheServerPort());
+        vm0.invoke("getCachedServerPort", QueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     final String regionName1 = SEPARATOR + rootRegionName + SEPARATOR + name;
@@ -1453,7 +1453,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testRemoteSortQueriesUsingIndex() throws CacheException {
-    final String name = this.getName();
+    final String name = getName();
     final String rootRegionName = "root";
 
     final Host host = Host.getHost(0);
@@ -1482,7 +1482,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     // Create client region
     final int port =
-        vm0.invoke("getCacheServerPort", () -> QueryUsingPoolDUnitTest.getCacheServerPort());
+        vm0.invoke("getCacheServerPort", QueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     final String regionName = SEPARATOR + rootRegionName + SEPARATOR + name;
@@ -1511,8 +1511,8 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
       String[] qString = {"SELECT DISTINCT * FROM " + regionName + " WHERE id < 101 ORDER BY id",
           "SELECT DISTINCT id FROM " + regionName + " WHERE id < 101 ORDER BY id",};
 
-      for (int cnt = 0; cnt < qString.length; cnt++) {
-        queryString = qString[cnt];
+      for (final String value : qString) {
+        queryString = value;
         try {
           Query query = qService.newQuery(queryString);
           results = (SelectResults) query.execute();
@@ -1551,8 +1551,8 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
           "SELECT DISTINCT ticker, id FROM " + regionName + " WHERE id < 101  ORDER BY id",
           "SELECT DISTINCT id, ticker FROM " + regionName + " WHERE id < 101  ORDER BY id asc",};
 
-      for (int cnt = 0; cnt < qString2.length; cnt++) {
-        queryString = qString2[cnt];
+      for (final String s : qString2) {
+        queryString = s;
         try {
           Query query = qService.newQuery(queryString);
           results = (SelectResults) query.execute();
@@ -1586,7 +1586,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testUnSupportedOps() throws Exception {
-    final String name = this.getName();
+    final String name = getName();
     final String rootRegionName = "root";
 
     final Host host = Host.getHost(0);
@@ -1609,7 +1609,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     });
 
     final int port =
-        vm0.invoke("getCacheServerPort", () -> QueryUsingPoolDUnitTest.getCacheServerPort());
+        vm0.invoke("getCacheServerPort", QueryUsingPoolDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     final String regionName1 = SEPARATOR + rootRegionName + SEPARATOR + name;
@@ -1624,7 +1624,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
           .createClientRegionFactory(ClientRegionShortcut.LOCAL).create(name);
 
       String queryString = "select distinct * from " + regionName1 + " where ticker = $1";
-      Object[] params = new Object[] {new String("ibm")};
+      Object[] params = new Object[] {"ibm"};
       // SelectResults results = null;
       QueryService qService = null;
 
@@ -1825,7 +1825,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
    * Stops the cache server that serves up the given cache.
    */
   protected void stopBridgeServer(Cache cache) {
-    CacheServer bridge = (CacheServer) cache.getCacheServers().iterator().next();
+    CacheServer bridge = cache.getCacheServers().iterator().next();
     bridge.stop();
     assertFalse(bridge.isRunning());
   }
@@ -1865,8 +1865,8 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public int compare(Object obj1, Object obj2) {
-      int obj1Id = ((Integer) obj1).intValue();
-      int obj2Id = ((Integer) obj2).intValue();
+      int obj1Id = (Integer) obj1;
+      int obj2Id = (Integer) obj2;
       if (obj1Id > obj2Id) {
         return 1;
       } else if (obj1Id < obj2Id) {
@@ -1881,8 +1881,8 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public int compare(Object obj1, Object obj2) {
-      int obj1Id = ((Integer) ((Struct) obj1).get("id")).intValue();
-      int obj2Id = ((Integer) ((Struct) obj2).get("id")).intValue();
+      int obj1Id = (Integer) ((Struct) obj1).get("id");
+      int obj2Id = (Integer) ((Struct) obj2).get("id");
       if (obj1Id > obj2Id) {
         return 1;
       } else if (obj1Id < obj2Id) {

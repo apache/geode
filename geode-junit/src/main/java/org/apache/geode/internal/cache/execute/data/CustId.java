@@ -29,30 +29,30 @@ public class CustId implements DataSerializable {
   }
 
   public CustId(int i) {
-    this.custId = new Integer(i);
+    custId = i;
   }
 
   public int hashCode() {
-    int i = custId.intValue();
+    int i = custId;
     return i;
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.custId = DataSerializer.readInteger(in);
+    custId = DataSerializer.readInteger(in);
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeInteger(this.custId, out);
+    DataSerializer.writeInteger(custId, out);
   }
 
   public String toString() {
-    return "(CustId:" + this.custId + ")";
+    return "(CustId:" + custId + ")";
   }
 
   public Integer getCustId() {
-    return this.custId;
+    return custId;
   }
 
   public boolean equals(Object o) {

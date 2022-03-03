@@ -16,6 +16,8 @@ package org.apache.geode.redis.internal.commands.executor.string;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_OVERFLOW;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -63,8 +65,7 @@ public abstract class AbstractIncrByIntegrationTest implements RedisIntegrationT
   public void testIncrBy_failsWhenPerformedOnNonIntegerValue() {
     String key = "key";
     jedis1.sadd(key, "member");
-    assertThatThrownBy(() -> jedis1.incrBy(key, 1))
-        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
+    assertThatThrownBy(() -> jedis1.incrBy(key, 1)).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -101,8 +102,7 @@ public abstract class AbstractIncrByIntegrationTest implements RedisIntegrationT
     Long increment = Long.MAX_VALUE / 2;
 
     jedis1.set(key, String.valueOf(Long.MAX_VALUE));
-    assertThatThrownBy(() -> jedis1.incrBy(key, increment))
-        .hasMessageContaining("ERR increment or decrement would overflow");
+    assertThatThrownBy(() -> jedis1.incrBy(key, increment)).hasMessage(ERROR_OVERFLOW);
   }
 
   @Test
@@ -131,7 +131,7 @@ public abstract class AbstractIncrByIntegrationTest implements RedisIntegrationT
   public void testIncrByErrorsForValuesGreaterThatMaxInt() {
     jedis1.set("key", "9223372036854775808");
 
-    assertThatThrownBy(() -> jedis1.incrBy("key", 1)).hasMessageContaining(ERROR_NOT_INTEGER);
+    assertThatThrownBy(() -> jedis1.incrBy("key", 1)).hasMessage(ERROR_NOT_INTEGER);
   }
 
 }

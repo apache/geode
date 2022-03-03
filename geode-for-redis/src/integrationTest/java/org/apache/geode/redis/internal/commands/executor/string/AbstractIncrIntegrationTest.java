@@ -81,7 +81,7 @@ public abstract class AbstractIncrIntegrationTest implements RedisIntegrationTes
     String max64BitIntegerValue = "9223372036854775807";
     jedis.set(key, max64BitIntegerValue);
 
-    assertThatThrownBy(() -> jedis.incr(key)).hasMessageContaining(ERROR_OVERFLOW);
+    assertThatThrownBy(() -> jedis.incr(key)).hasMessage(ERROR_OVERFLOW);
     assertThat(jedis.get(key)).isEqualTo(max64BitIntegerValue);
   }
 
@@ -91,7 +91,7 @@ public abstract class AbstractIncrIntegrationTest implements RedisIntegrationTes
     String nonIntegerValue = "I am not a number! I am a free man!";
 
     assertThat(jedis.set(key, nonIntegerValue)).isEqualTo("OK");
-    assertThatThrownBy(() -> jedis.incr(key)).hasMessageContaining(ERROR_NOT_INTEGER);
+    assertThatThrownBy(() -> jedis.incr(key)).hasMessage(ERROR_NOT_INTEGER);
     assertThat(jedis.get(key)).isEqualTo(nonIntegerValue);
   }
 
@@ -112,7 +112,7 @@ public abstract class AbstractIncrIntegrationTest implements RedisIntegrationTes
   public void testIncr_shouldError_onValueGreaterThanMax() {
     jedis.set("key", "9223372036854775808");
 
-    assertThatThrownBy(() -> jedis.incr("key")).hasMessageContaining(ERROR_NOT_INTEGER);
+    assertThatThrownBy(() -> jedis.incr("key")).hasMessage(ERROR_NOT_INTEGER);
   }
 
   private String randString() {

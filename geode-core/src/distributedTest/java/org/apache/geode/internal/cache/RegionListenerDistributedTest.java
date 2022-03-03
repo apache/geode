@@ -54,8 +54,8 @@ public class RegionListenerDistributedTest implements Serializable {
     VM vm1 = getVM(1);
 
     // Add RegionListener in both members
-    vm0.invoke(() -> installRegionListener());
-    vm1.invoke(() -> installRegionListener());
+    vm0.invoke(this::installRegionListener);
+    vm1.invoke(this::installRegionListener);
 
     // Create region in one member
     String regionName = "testCleanupFailedInitializationInvoked";
@@ -66,7 +66,7 @@ public class RegionListenerDistributedTest implements Serializable {
     vm1.invoke(() -> createRegion(regionName, IllegalStateException.class));
 
     // Verify the RegionListener cleanupFailedInitialization callback was invoked
-    vm1.invoke(() -> verifyRegionListenerCleanupFailedInitializationInvoked());
+    vm1.invoke(this::verifyRegionListenerCleanupFailedInitializationInvoked);
   }
 
   private void installRegionListener() {

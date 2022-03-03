@@ -17,7 +17,6 @@ package org.apache.geode.cache.query.data;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -54,11 +53,11 @@ public class PortfolioNoDS implements Serializable {
   }
 
   public long getCreateTime() {
-    return this.createTime;
+    return createTime;
   }
 
   public void setCreateTime(long time) {
-    this.createTime = time;
+    createTime = time;
   }
 
   public String getPk() {
@@ -105,7 +104,7 @@ public class PortfolioNoDS implements Serializable {
     return status.equals("active");
   }
 
-  public static String secIds[] = {"SUN", "IBM", "YHOO", "GOOG", "MSFT", "AOL", "APPL", "ORCL",
+  public static String[] secIds = {"SUN", "IBM", "YHOO", "GOOG", "MSFT", "AOL", "APPL", "ORCL",
       "SAP", "DELL", "RHAT", "NOVL", "HP"};
 
   /* public no-arg constructor required for Deserializable */
@@ -148,12 +147,12 @@ public class PortfolioNoDS implements Serializable {
 
   public PortfolioNoDS(int i, int j) {
     this(i);
-    this.position1.portfolioId = j;
-    this.position3 = new PositionNoDS[3];
+    position1.portfolioId = j;
+    position3 = new PositionNoDS[3];
     for (int k = 0; k < position3.length; k++) {
       PositionNoDS p = new PositionNoDS(secIds[k], (k + 1) * 1000L);
       p.portfolioId = (k + 1);
-      this.position3[k] = p;
+      position3[k] = p;
     }
   }
 
@@ -166,20 +165,19 @@ public class PortfolioNoDS implements Serializable {
       return false;
     }
     PortfolioNoDS p2 = (PortfolioNoDS) o;
-    return this.ID == p2.ID;
+    return ID == p2.ID;
   }
 
   public int hashCode() {
-    return this.ID;
+    return ID;
   }
 
 
   public String toString() {
     String out =
         "Portfolio [ID=" + ID + " status=" + status + " type=" + type + " pkid=" + pkid + "\n ";
-    Iterator iter = positions.entrySet().iterator();
-    while (iter.hasNext()) {
-      Map.Entry entry = (Map.Entry) iter.next();
+    for (final Object o : positions.entrySet()) {
+      Map.Entry entry = (Map.Entry) o;
       out += entry.getKey() + ":" + entry.getValue() + ", ";
     }
     out += "\n P1:" + position1 + ", P2:" + position2;
@@ -192,7 +190,7 @@ public class PortfolioNoDS implements Serializable {
    * @return Value of property type.
    */
   public String getType() {
-    return this.type;
+    return type;
   }
 
   public boolean boolFunction(String strArg) {
@@ -212,15 +210,15 @@ public class PortfolioNoDS implements Serializable {
   }
 
   public float getFloatMinValue() {
-    return this.floatMinValue;
+    return floatMinValue;
   }
 
   public float getLongMinValue() {
-    return this.longMinValue;
+    return longMinValue;
   }
 
   public double getDoubleMinValue() {
-    return this.doubleMinValue;
+    return doubleMinValue;
   }
 
   public static void resetInstanceCount() {

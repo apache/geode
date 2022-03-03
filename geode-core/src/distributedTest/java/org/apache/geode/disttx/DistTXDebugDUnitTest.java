@@ -88,10 +88,10 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
   }
 
   protected void createCacheInAllVms() {
-    dataStore1.invoke(() -> createCacheInVm());
-    dataStore2.invoke(() -> createCacheInVm());
-    dataStore3.invoke(() -> createCacheInVm());
-    accessor.invoke(() -> createCacheInVm());
+    dataStore1.invoke(this::createCacheInVm);
+    dataStore2.invoke(this::createCacheInVm);
+    dataStore3.invoke(this::createCacheInVm);
+    accessor.invoke(this::createCacheInVm);
   }
 
   public static void createPR(String partitionedRegionName, Integer redundancy,
@@ -128,7 +128,7 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
     Region<String, String> pr = basicGetCache().createRegion(partitionedRegionName, attr.create());
     assertNotNull(pr);
     LogWriterUtils.getLogWriter().info(
-        "Partitioned Region " + partitionedRegionName + " created Successfully :" + pr.toString());
+        "Partitioned Region " + partitionedRegionName + " created Successfully :" + pr);
   }
 
   protected void createPartitionedRegion(Object[] attributes) {
@@ -136,7 +136,7 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
     dataStore2.invoke(DistTXDebugDUnitTest.class, "createPR", attributes);
     dataStore3.invoke(DistTXDebugDUnitTest.class, "createPR", attributes);
     // make Local max memory = o for accessor
-    attributes[2] = new Integer(0);
+    attributes[2] = 0;
     accessor.invoke(DistTXDebugDUnitTest.class, "createPR", attributes);
   }
 
@@ -164,7 +164,7 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
     Region rr = basicGetCache().createRegion(replicatedRegionName, af.create());
     assertNotNull(rr);
     LogWriterUtils.getLogWriter().info(
-        "Replicated Region " + replicatedRegionName + " created Successfully :" + rr.toString());
+        "Replicated Region " + replicatedRegionName + " created Successfully :" + rr);
   }
 
   protected void createReplicatedRegion(Object[] attributes) {
@@ -374,7 +374,7 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
           LogWriterUtils.getLogWriter().info(" calling pr.put non-tx PR1_entry__" + i);
           pr1.put(dummy, "PR1_entry__" + i);
           LogWriterUtils.getLogWriter().info(" calling rr.put non-tx RR1_entry__" + i);
-          rr1.put(new Integer(i), "RR1_entry__" + i);
+          rr1.put(i, "RR1_entry__" + i);
         }
 
         // put in tx and commit
@@ -388,7 +388,7 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
           LogWriterUtils.getLogWriter().info(" calling pr.put in tx PR2_entry__" + i);
           pr1.put(dummy, "PR2_entry__" + i);
           LogWriterUtils.getLogWriter().info(" calling rr.put in tx RR2_entry__" + i);
-          rr1.put(new Integer(i), "RR2_entry__" + i);
+          rr1.put(i, "RR2_entry__" + i);
         }
         ctx.commit();
 
@@ -398,7 +398,7 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
           LogWriterUtils.getLogWriter().info(" calling pr.get PR2_entry__" + i);
           assertEquals("PR2_entry__" + i, pr1.get(dummy));
           LogWriterUtils.getLogWriter().info(" calling rr.get RR2_entry__" + i);
-          assertEquals("RR2_entry__" + i, rr1.get(new Integer(i)));
+          assertEquals("RR2_entry__" + i, rr1.get(i));
         }
         return null;
       }
@@ -540,7 +540,7 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
           pr1.create(dummy, "2_entry__" + i);
 
           LogWriterUtils.getLogWriter().info(" calling rr.create " + "2_entry__" + i);
-          rr1.create(new Integer(i), "2_entry__" + i);
+          rr1.create(i, "2_entry__" + i);
         }
         ctx.commit();
 
@@ -550,8 +550,8 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
           LogWriterUtils.getLogWriter().info(" calling pr.get " + pr1.get(dummy));
           assertEquals("2_entry__" + i, pr1.get(dummy));
 
-          LogWriterUtils.getLogWriter().info(" calling rr.get " + rr1.get(new Integer(i)));
-          assertEquals("2_entry__" + i, rr1.get(new Integer(i)));
+          LogWriterUtils.getLogWriter().info(" calling rr.get " + rr1.get(i));
+          assertEquals("2_entry__" + i, rr1.get(i));
         }
         return null;
       }
@@ -597,8 +597,8 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
         ctx.setDistributed(true);
         ctx.begin();
         HashMap<DummyKeyBasedRoutingResolver, String> phm =
-            new HashMap<DummyKeyBasedRoutingResolver, String>();
-        HashMap<Integer, String> rhm = new HashMap<Integer, String>();
+            new HashMap<>();
+        HashMap<Integer, String> rhm = new HashMap<>();
         for (int i = 1; i <= 3; i++) {
           DummyKeyBasedRoutingResolver dummy = new DummyKeyBasedRoutingResolver(i);
           phm.put(dummy, "2_entry__" + i);
@@ -614,8 +614,8 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
           LogWriterUtils.getLogWriter().info(" calling pr.get " + pr1.get(dummy));
           assertEquals("2_entry__" + i, pr1.get(dummy));
 
-          LogWriterUtils.getLogWriter().info(" calling rr.get " + rr1.get(new Integer(i)));
-          assertEquals("2_entry__" + i, rr1.get(new Integer(i)));
+          LogWriterUtils.getLogWriter().info(" calling rr.get " + rr1.get(i));
+          assertEquals("2_entry__" + i, rr1.get(i));
         }
         return null;
       }
@@ -659,8 +659,8 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
         ctx.setDistributed(true);
         ctx.begin();
         HashMap<DummyKeyBasedRoutingResolver, String> phm =
-            new HashMap<DummyKeyBasedRoutingResolver, String>();
-        HashMap<Integer, String> rhm = new HashMap<Integer, String>();
+            new HashMap<>();
+        HashMap<Integer, String> rhm = new HashMap<>();
         for (int i = 1; i <= 3; i++) {
           DummyKeyBasedRoutingResolver dummy = new DummyKeyBasedRoutingResolver(i);
           phm.put(dummy, "2_entry__" + i);
@@ -723,7 +723,7 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws CacheException {
         Region rr1 = basicGetCache().getRegion("rregion1");
         // put some data
-        HashMap<Integer, String> rhm = new HashMap<Integer, String>();
+        HashMap<Integer, String> rhm = new HashMap<>();
         for (int i = 1; i <= 3; i++) {
           rhm.put(i, "2_entry__" + i);
         }
@@ -738,8 +738,8 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
 
         // verify the data
         for (int i = 1; i <= 3; i++) {
-          LogWriterUtils.getLogWriter().info(" calling rr.get " + rr1.get(new Integer(i)));
-          assertEquals(null, rr1.get(new Integer(i)));
+          LogWriterUtils.getLogWriter().info(" calling rr.get " + rr1.get(i));
+          assertEquals(null, rr1.get(i));
         }
         return null;
       }
@@ -779,7 +779,7 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws CacheException {
         PartitionedRegion pr1 = (PartitionedRegion) basicGetCache().getRegion("pregion1");
         HashMap<DummyKeyBasedRoutingResolver, String> phm =
-            new HashMap<DummyKeyBasedRoutingResolver, String>();
+            new HashMap<>();
         for (int i = 1; i <= 3; i++) {
           DummyKeyBasedRoutingResolver dummy = new DummyKeyBasedRoutingResolver(i);
           phm.put(dummy, "2_entry__" + i);
@@ -838,14 +838,14 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
         ctx.begin();
         for (int i = 1; i <= 3; i++) {
           LogWriterUtils.getLogWriter().info(" calling rr.put " + "2_entry__" + i);
-          rr1.put(new Integer(i), "2_entry__" + i);
+          rr1.put(i, "2_entry__" + i);
         }
         ctx.commit();
 
         // verify the data
         for (int i = 1; i <= 3; i++) {
-          LogWriterUtils.getLogWriter().info(" calling rr.get " + rr1.get(new Integer(i)));
-          assertEquals("2_entry__" + i, rr1.get(new Integer(i)));
+          LogWriterUtils.getLogWriter().info(" calling rr.get " + rr1.get(i));
+          assertEquals("2_entry__" + i, rr1.get(i));
         }
         return null;
       }
@@ -880,15 +880,15 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
         ctx.begin();
         for (int i = 1; i <= 3; i++) {
           LogWriterUtils.getLogWriter().info(" calling rr.put for rollback no_entry__" + i);
-          rr1.put(new Integer(i), "no_entry__" + i);
+          rr1.put(i, "no_entry__" + i);
         }
-        ctx.rollback();;
+        ctx.rollback();
 
         // verify the data
         for (int i = 1; i <= 3; i++) {
           LogWriterUtils.getLogWriter()
-              .info(" calling rr.get after rollback " + rr1.get(new Integer(i)));
-          assertEquals("2_entry__" + i, rr1.get(new Integer(i)));
+              .info(" calling rr.get after rollback " + rr1.get(i));
+          assertEquals("2_entry__" + i, rr1.get(i));
         }
         return null;
       }
@@ -917,7 +917,7 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
     public DummyKeyBasedRoutingResolver() {}
 
     public DummyKeyBasedRoutingResolver(int id) {
-      this.dummyID = new Integer(id);
+      dummyID = id;
     }
 
     @Override
@@ -938,17 +938,17 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      this.dummyID = DataSerializer.readInteger(in);
+      dummyID = DataSerializer.readInteger(in);
     }
 
     @Override
     public void toData(DataOutput out) throws IOException {
-      DataSerializer.writeInteger(this.dummyID, out);
+      DataSerializer.writeInteger(dummyID, out);
     }
 
     @Override
     public int hashCode() {
-      int i = this.dummyID.intValue();
+      int i = dummyID;
       return i;
     }
 

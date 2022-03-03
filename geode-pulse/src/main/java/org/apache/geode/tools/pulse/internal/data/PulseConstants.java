@@ -421,7 +421,7 @@ public class PulseConstants {
   public static final String[] SF_TABLE_MBEAN_ATTRIBUTES =
       {MBEAN_ATTRIBUTE_ENTRYSIZE, MBEAN_ATTRIBUTE_NUMBEROFROWS};
 
-  public static final String PULSE_ROLES[] = {"CLUSTER:READ", "DATA:READ"};
+  public static final String[] PULSE_ROLES = {"CLUSTER:READ", "DATA:READ"};
 
   // SSL Related attributes
 

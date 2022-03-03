@@ -173,8 +173,8 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
     vm6.invoke(() -> createCache(lnPort));
     vm7.invoke(() -> createCache(lnPort));
 
-    vm4.invoke(() -> createSenderInVm4());
-    vm5.invoke(() -> createSenderInVm5());
+    vm4.invoke(this::createSenderInVm4);
+    vm5.invoke(this::createSenderInVm5);
 
     vm2.invoke(() -> createReplicatedRegion(className + "_RR", null));
     vm3.invoke(() -> createReplicatedRegion(className + "_RR", null));
@@ -208,8 +208,8 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
     vm6.invoke(() -> createCache(lnPort));
     vm7.invoke(() -> createCache(lnPort));
 
-    vm4.invoke(() -> createSenderInVm4());
-    vm5.invoke(() -> createSenderInVm5());
+    vm4.invoke(this::createSenderInVm4);
+    vm5.invoke(this::createSenderInVm5);
 
     vm2.invoke(() -> createReplicatedRegion(className + "_RR", null));
     vm3.invoke(() -> createReplicatedRegion(className + "_RR", null));
@@ -268,8 +268,8 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
     vm6.invoke(() -> createCache(lnPort));
     vm7.invoke(() -> createCache(lnPort));
 
-    vm4.invoke(() -> createSenderInVm4());
-    vm5.invoke(() -> createSenderInVm5());
+    vm4.invoke(this::createSenderInVm4);
+    vm5.invoke(this::createSenderInVm5);
 
     vm2.invoke(() -> createReplicatedRegion(className + "_RR", null));
     vm3.invoke(() -> createReplicatedRegion(className + "_RR", null));
@@ -290,8 +290,8 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
     vm2.invoke(() -> validateRegionSize(className + "_RR", 20));
     vm3.invoke(() -> validateRegionSize(className + "_RR", 20));
 
-    vm2.invoke(() -> stopReceivers());
-    vm3.invoke(() -> stopReceivers());
+    vm2.invoke(this::stopReceivers);
+    vm3.invoke(this::stopReceivers);
 
     vm4.invoke(() -> doPuts(className + "_RR", 20));
 
@@ -329,8 +329,8 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
     vm4.invoke(() -> validateQueueSizeStat("ln", 130));
     vm5.invoke(() -> validateQueueSizeStat("ln", 130));
 
-    vm2.invoke(() -> startReceivers());
-    vm3.invoke(() -> startReceivers());
+    vm2.invoke(this::startReceivers);
+    vm3.invoke(this::startReceivers);
 
     vm4.invoke(() -> validateSenderResumedState("ln"));
     vm5.invoke(() -> validateSenderResumedState("ln"));
@@ -359,8 +359,8 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
     vm6.invoke(() -> createCache(lnPort));
     vm7.invoke(() -> createCache(lnPort));
 
-    vm4.invoke(() -> createSenderInVm4());
-    vm5.invoke(() -> createSenderInVm5());
+    vm4.invoke(this::createSenderInVm4);
+    vm5.invoke(this::createSenderInVm5);
 
     vm2.invoke(() -> createReplicatedRegion(className + "_RR", null));
     vm3.invoke(() -> createReplicatedRegion(className + "_RR", null));
@@ -425,8 +425,8 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
     vm6.invoke(() -> createCache(lnPort));
     vm7.invoke(() -> createCache(lnPort));
 
-    vm4.invoke(() -> createSenderInVm4());
-    vm5.invoke(() -> createSenderInVm5());
+    vm4.invoke(this::createSenderInVm4);
+    vm5.invoke(this::createSenderInVm5);
 
     vm2.invoke(() -> createReplicatedRegion(className + "_RR", null));
     vm3.invoke(() -> createReplicatedRegion(className + "_RR", null));
@@ -484,8 +484,8 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
     vm6.invoke(() -> createCache(lnPort));
     vm7.invoke(() -> createCache(lnPort));
 
-    vm4.invoke(() -> createSenderInVm4());
-    vm5.invoke(() -> createSenderInVm5());
+    vm4.invoke(this::createSenderInVm4);
+    vm5.invoke(this::createSenderInVm5);
 
     vm2.invoke(() -> createReplicatedRegion(className + "_RR", null));
     vm3.invoke(() -> createReplicatedRegion(className + "_RR", null));
@@ -542,8 +542,8 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
     vm6.invoke(() -> createCache(lnPort));
     vm7.invoke(() -> createCache(lnPort));
 
-    vm4.invoke(() -> createSenderInVm4());
-    vm5.invoke(() -> createSenderInVm5());
+    vm4.invoke(this::createSenderInVm4);
+    vm5.invoke(this::createSenderInVm5);
 
     vm2.invoke(() -> createReplicatedRegion(className + "_RR", null));
     vm3.invoke(() -> createReplicatedRegion(className + "_RR", null));
@@ -576,10 +576,10 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
 
     vm2.invoke(() -> createCache(nyPort));
     vm2.invoke(() -> createReplicatedRegion(className + "_RR", null));
-    vm2.invoke(() -> createReceiver());
+    vm2.invoke(this::createReceiver);
 
     vm4.invoke(() -> createCache(lnPort));
-    vm4.invoke(() -> createSenderInVm4());
+    vm4.invoke(this::createSenderInVm4);
     vm4.invoke(() -> createReplicatedRegion(className + "_RR", "ln"));
     vm4.invoke(() -> startSender("ln"));
 
@@ -588,7 +588,7 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
     vm4.invoke(() -> validateSenderStoppedState("ln"));
 
     vm5.invoke(() -> createCache(lnPort));
-    vm5.invoke(() -> createSenderInVm5());
+    vm5.invoke(this::createSenderInVm5);
     vm5.invoke(() -> createReplicatedRegion(className + "_RR", "ln"));
     vm5.invoke(() -> startSender("ln"));
 
@@ -603,7 +603,7 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
     int nyPort = vm1.invoke(() -> createFirstRemoteLocator(2, lnPort));
 
     vm4.invoke(() -> createCache(lnPort));
-    vm4.invoke(() -> createSenderInVm4());
+    vm4.invoke(this::createSenderInVm4);
     vm4.invoke(() -> createReplicatedRegion(className + "_RR", "ln"));
     vm4.invoke(() -> startSender("ln"));
 
@@ -614,7 +614,7 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
     vm4.invoke(() -> validateSenderStoppedState("ln"));
 
     vm5.invoke(() -> createCache(lnPort));
-    vm5.invoke(() -> createSenderInVm5());
+    vm5.invoke(this::createSenderInVm5);
     vm5.invoke(() -> createReplicatedRegion(className + "_RR", "ln"));
     vm5.invoke(() -> startSender("ln"));
 
@@ -631,7 +631,7 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
     vm5.invoke(() -> startSender("ln"));
     vm2.invoke(() -> createCache(nyPort));
     vm2.invoke(() -> createReplicatedRegion(className + "_RR", null));
-    vm2.invoke(() -> createReceiver());
+    vm2.invoke(this::createReceiver);
 
     vm2.invoke(() -> validateRegionSize(className + "_RR", 100));
     vm5.invoke(() -> stopSender("ln"));
@@ -661,8 +661,8 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
     vm6.invoke(() -> createCache(lnPort));
     vm7.invoke(() -> createCache(lnPort));
 
-    vm4.invoke(() -> createSenderInVm4());
-    vm5.invoke(() -> createSenderInVm5());
+    vm4.invoke(this::createSenderInVm4);
+    vm5.invoke(this::createSenderInVm5);
 
     vm2.invoke(() -> createReplicatedRegion(className + "_RR", null));
     vm3.invoke(() -> createReplicatedRegion(className + "_RR", null));
@@ -712,8 +712,8 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
     vm6.invoke(() -> createCache(lnPort));
     vm7.invoke(() -> createCache(lnPort));
 
-    vm4.invoke(() -> createSenderInVm4());
-    vm5.invoke(() -> createSenderInVm5());
+    vm4.invoke(this::createSenderInVm4);
+    vm5.invoke(this::createSenderInVm5);
 
     vm2.invoke(() -> createReplicatedRegion(className + "_RR", null));
     vm3.invoke(() -> createReplicatedRegion(className + "_RR", null));
@@ -761,8 +761,8 @@ public class SerialGatewaySenderOperationsDistributedTest extends CacheTestCase 
     vm6.invoke(() -> createCache(lnPort));
     vm7.invoke(() -> createCache(lnPort));
 
-    vm4.invoke(() -> createSenderInVm4());
-    vm5.invoke(() -> createSenderInVm5());
+    vm4.invoke(this::createSenderInVm4);
+    vm5.invoke(this::createSenderInVm5);
 
     vm2.invoke(() -> createReplicatedRegion(className + "_RR", null));
     vm3.invoke(() -> createReplicatedRegion(className + "_RR", null));

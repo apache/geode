@@ -72,11 +72,8 @@ public class MemoryAllocatorJUnitTest {
       NullOutOfOffHeapMemoryListener listener = new NullOutOfOffHeapMemoryListener();
       NullOffHeapMemoryStats stats = new NullOffHeapMemoryStats();
       try {
-        MemoryAllocatorImpl.createForUnitTest(listener, stats, 10, 950, 100, new SlabFactory() {
-          @Override
-          public Slab create(int size) {
-            throw new OutOfMemoryError("expected");
-          }
+        MemoryAllocatorImpl.createForUnitTest(listener, stats, 10, 950, 100, size -> {
+          throw new OutOfMemoryError("expected");
         });
       } catch (OutOfMemoryError expected) {
       }
@@ -110,12 +107,7 @@ public class MemoryAllocatorJUnitTest {
     {
       NullOutOfOffHeapMemoryListener listener = new NullOutOfOffHeapMemoryListener();
       NullOffHeapMemoryStats stats = new NullOffHeapMemoryStats();
-      SlabFactory factory = new SlabFactory() {
-        @Override
-        public Slab create(int size) {
-          return new SlabImpl(size);
-        }
-      };
+      SlabFactory factory = SlabImpl::new;
       MemoryAllocator ma =
           MemoryAllocatorImpl.createForUnitTest(listener, stats, 10, 950, 100, factory);
       try {
@@ -496,7 +488,7 @@ public class MemoryAllocatorJUnitTest {
       bmc = ma.allocate(BIG_ALLOC_SIZE - perObjectOverhead);
       bmc.release();
       assertEquals(TOTAL_MEM, ma.freeList.getFreeMemory());
-      ArrayList<StoredObject> mcs = new ArrayList<StoredObject>();
+      ArrayList<StoredObject> mcs = new ArrayList<>();
       for (int i = 0; i < BIG_ALLOC_SIZE / (8 + perObjectOverhead); i++) {
         mcs.add(ma.allocate(8));
       }
@@ -595,30 +587,24 @@ public class MemoryAllocatorJUnitTest {
       MemoryAllocatorImpl ma =
           MemoryAllocatorImpl.createForUnitTest(new NullOutOfOffHeapMemoryListener(),
               new NullOffHeapMemoryStats(), new SlabImpl[] {slab});
-      MemoryUsageListener listener = new MemoryUsageListener() {
-        @Override
-        public void updateMemoryUsed(final long bytesUsed) {
-          MemoryAllocatorJUnitTest.this.memoryUsageEventReceived = true;
-          assertEquals(MemoryAllocatorJUnitTest.this.expectedMemoryUsage, bytesUsed);
-        }
+      MemoryUsageListener listener = bytesUsed -> {
+        memoryUsageEventReceived = true;
+        assertEquals(expectedMemoryUsage, bytesUsed);
       };
       ma.addMemoryUsageListener(listener);
 
-      this.expectedMemoryUsage = SMALL_ALLOC_SIZE;
-      this.memoryUsageEventReceived = false;
+      expectedMemoryUsage = SMALL_ALLOC_SIZE;
+      memoryUsageEventReceived = false;
       StoredObject smc = ma.allocate(SMALL_ALLOC_SIZE - perObjectOverhead);
-      assertEquals(true, this.memoryUsageEventReceived);
+      assertEquals(true, memoryUsageEventReceived);
 
-      this.expectedMemoryUsage = SMALL_ALLOC_SIZE * 2;
-      this.memoryUsageEventReceived = false;
+      expectedMemoryUsage = SMALL_ALLOC_SIZE * 2;
+      memoryUsageEventReceived = false;
       smc = ma.allocate(SMALL_ALLOC_SIZE - perObjectOverhead);
-      assertEquals(true, this.memoryUsageEventReceived);
+      assertEquals(true, memoryUsageEventReceived);
 
-      MemoryUsageListener unaddedListener = new MemoryUsageListener() {
-        @Override
-        public void updateMemoryUsed(final long bytesUsed) {
-          throw new IllegalStateException("Should never be called");
-        }
+      MemoryUsageListener unaddedListener = bytesUsed -> {
+        throw new IllegalStateException("Should never be called");
       };
       ma.removeMemoryUsageListener(unaddedListener);
 
@@ -626,10 +612,10 @@ public class MemoryAllocatorJUnitTest {
 
       ma.removeMemoryUsageListener(unaddedListener);
 
-      this.expectedMemoryUsage = SMALL_ALLOC_SIZE * 2;
-      this.memoryUsageEventReceived = false;
+      expectedMemoryUsage = SMALL_ALLOC_SIZE * 2;
+      memoryUsageEventReceived = false;
       smc = ma.allocate(SMALL_ALLOC_SIZE - perObjectOverhead);
-      assertEquals(false, this.memoryUsageEventReceived);
+      assertEquals(false, memoryUsageEventReceived);
 
     } finally {
       MemoryAllocatorImpl.freeOffHeapMemory();
@@ -650,7 +636,7 @@ public class MemoryAllocatorJUnitTest {
     final int TOTAL_MEM = BIG_ALLOC_SIZE;
     final SlabImpl slab = new SlabImpl(TOTAL_MEM);
     final AtomicReference<OutOfOffHeapMemoryException> ooom =
-        new AtomicReference<OutOfOffHeapMemoryException>();
+        new AtomicReference<>();
     final OutOfOffHeapMemoryListener oooml = new OutOfOffHeapMemoryListener() {
       @Override
       public void outOfOffHeapMemory(OutOfOffHeapMemoryException cause) {

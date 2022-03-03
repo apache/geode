@@ -732,12 +732,12 @@ window['_pr_isIE6'] = function() {
               var name = match.match(pr_tagNameRe)[2];
               var depth = 1;
               var j;
-              end_tag_loop: for (j = i + 1; j < n; ++j) {
+              for (j = i + 1; j < n; ++j) {
                 var name2 = matches[j].match(pr_tagNameRe);
                 if (name2 && name2[2] === name) {
                   if (name2[1] === '/') {
                     if (--depth === 0) {
-                      break end_tag_loop;
+                      break;
                     }
                   } else {
                     ++depth;

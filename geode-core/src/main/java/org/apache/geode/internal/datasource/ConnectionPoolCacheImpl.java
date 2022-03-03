@@ -34,7 +34,7 @@ public class ConnectionPoolCacheImpl extends AbstractPoolCache {
 
   private static final long serialVersionUID = -3096029291871746431L;
 
-  private ConnectionPoolDataSource m_cpds;
+  private final ConnectionPoolDataSource m_cpds;
 
   /**
    * Constructor initializes the ConnectionPoolCacheImpl properties.

@@ -93,12 +93,12 @@ public class MultiRegionFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testMultiRegionFunctionExecution() {
-    vm0.invoke(() -> MultiRegionFunctionExecutionDUnitTest.createRegionsOnVm0());
-    vm1.invoke(() -> MultiRegionFunctionExecutionDUnitTest.createRegionsOnVm1());
-    vm2.invoke(() -> MultiRegionFunctionExecutionDUnitTest.createRegionsOnVm2());
-    vm3.invoke(() -> MultiRegionFunctionExecutionDUnitTest.createRegionsOnVm3());
+    vm0.invoke(MultiRegionFunctionExecutionDUnitTest::createRegionsOnVm0);
+    vm1.invoke(MultiRegionFunctionExecutionDUnitTest::createRegionsOnVm1);
+    vm2.invoke(MultiRegionFunctionExecutionDUnitTest::createRegionsOnVm2);
+    vm3.invoke(MultiRegionFunctionExecutionDUnitTest::createRegionsOnVm3);
     createRegionsOnUnitControllerVm();
-    Set<Region> regions = new HashSet<Region>();
+    Set<Region> regions = new HashSet<>();
     regions.add(PR1);
     InternalFunctionService.onRegions(regions).execute(new FunctionAdapter() {
 
@@ -161,12 +161,12 @@ public class MultiRegionFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testMultiRegionFunctionExecution_NotTimedOut() {
-    vm0.invoke(() -> MultiRegionFunctionExecutionDUnitTest.createRegionsOnVm0());
-    vm1.invoke(() -> MultiRegionFunctionExecutionDUnitTest.createRegionsOnVm1());
-    vm2.invoke(() -> MultiRegionFunctionExecutionDUnitTest.createRegionsOnVm2());
-    vm3.invoke(() -> MultiRegionFunctionExecutionDUnitTest.createRegionsOnVm3());
+    vm0.invoke(MultiRegionFunctionExecutionDUnitTest::createRegionsOnVm0);
+    vm1.invoke(MultiRegionFunctionExecutionDUnitTest::createRegionsOnVm1);
+    vm2.invoke(MultiRegionFunctionExecutionDUnitTest::createRegionsOnVm2);
+    vm3.invoke(MultiRegionFunctionExecutionDUnitTest::createRegionsOnVm3);
     createRegionsOnUnitControllerVm();
-    Set<Region> regions = new HashSet<Region>();
+    Set<Region> regions = new HashSet<>();
     regions.add(PR1);
     regions.add(PR2);
     regions.add(RR1);
@@ -200,12 +200,12 @@ public class MultiRegionFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testMultiRegionFunctionExecution_TimedOut() {
-    vm0.invoke(() -> MultiRegionFunctionExecutionDUnitTest.createRegionsOnVm0());
-    vm1.invoke(() -> MultiRegionFunctionExecutionDUnitTest.createRegionsOnVm1());
-    vm2.invoke(() -> MultiRegionFunctionExecutionDUnitTest.createRegionsOnVm2());
-    vm3.invoke(() -> MultiRegionFunctionExecutionDUnitTest.createRegionsOnVm3());
+    vm0.invoke(MultiRegionFunctionExecutionDUnitTest::createRegionsOnVm0);
+    vm1.invoke(MultiRegionFunctionExecutionDUnitTest::createRegionsOnVm1);
+    vm2.invoke(MultiRegionFunctionExecutionDUnitTest::createRegionsOnVm2);
+    vm3.invoke(MultiRegionFunctionExecutionDUnitTest::createRegionsOnVm3);
     createRegionsOnUnitControllerVm();
-    Set<Region> regions = new HashSet<Region>();
+    Set<Region> regions = new HashSet<>();
     regions.add(PR1);
     regions.add(PR2);
     regions.add(RR1);
@@ -394,11 +394,11 @@ public class MultiRegionFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
     LR1 = cache.createRegion("LR1", factory.create());
 
     for (int i = 0; i < 24; i++) {
-      PR1.put(new Integer(i), new Integer(i));
-      PR2.put(new Integer(i), new Integer(i));
-      RR1.put(new Integer(i), new Integer(i));
-      RR2.put(new Integer(i), new Integer(i));
-      LR1.put(new Integer(i), new Integer(i));
+      PR1.put(i, i);
+      PR2.put(i, i);
+      RR1.put(i, i);
+      RR2.put(i, i);
+      LR1.put(i, i);
     }
   }
 

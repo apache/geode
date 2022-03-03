@@ -251,7 +251,7 @@ public class RegionManagementDUnitTest implements Serializable {
   @Test
   public void testRegionAggregate() {
     // Adding notification listener for remote cache memberVMs
-    managerVM.invoke(() -> addSystemNotificationListener());
+    managerVM.invoke(this::addSystemNotificationListener);
 
     for (VM memberVM : memberVMs) {
       memberVM.invoke(() -> {

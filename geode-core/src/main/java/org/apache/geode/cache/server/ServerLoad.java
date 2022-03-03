@@ -49,9 +49,9 @@ public final class ServerLoad implements DataSerializable {
       float loadPerSubscriptionConnection) {
     super();
     this.connectionLoad = connectionLoad;
-    this.subscriberLoad = subscriptionConnectionLoad;
+    subscriberLoad = subscriptionConnectionLoad;
     this.loadPerConnection = loadPerConnection;
-    this.loadPerSubscriber = loadPerSubscriptionConnection;
+    loadPerSubscriber = loadPerSubscriptionConnection;
   }
 
   public ServerLoad() {
@@ -174,10 +174,7 @@ public final class ServerLoad implements DataSerializable {
     if (Float.floatToIntBits(loadPerSubscriber) != Float.floatToIntBits(other.loadPerSubscriber)) {
       return false;
     }
-    if (Float.floatToIntBits(subscriberLoad) != Float.floatToIntBits(other.subscriberLoad)) {
-      return false;
-    }
-    return true;
+    return Float.floatToIntBits(subscriberLoad) == Float.floatToIntBits(other.subscriberLoad);
   }
 
   @Override

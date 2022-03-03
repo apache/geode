@@ -26,7 +26,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
-import java.net.MalformedURLException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
@@ -66,7 +65,7 @@ public class ReadOpFileAccessControllerJUnitTest {
   private GemFireCacheImpl cache = null;
   private DistributedSystem ds = null;
   private String hostname;
-  private int port = 9999;
+  private final int port = 9999;
   private JMXConnectorServer rmiConnector = null;
   private JMXConnector connector = null;
   private Registry registry = null;
@@ -140,7 +139,7 @@ public class ReadOpFileAccessControllerJUnitTest {
   }
 
   @SuppressWarnings({"rawtypes", "unchecked"})
-  private MBeanServerConnection connectToRmiConnector() throws MalformedURLException, IOException {
+  private MBeanServerConnection connectToRmiConnector() throws IOException {
     String serviceUrl = SERVICE_URLPREFIX + "//" + hostname + ":" + port + "/jmxconnector";
     String[] creds = {"user", "user"};
     Map env = new HashMap();
@@ -156,7 +155,7 @@ public class ReadOpFileAccessControllerJUnitTest {
     System.out.println("Server service url " + serviceUrl);
     final JMXServiceURL jmxServiceUrl = new JMXServiceURL(serviceUrl);
 
-    final HashMap<String, Object> env = new HashMap<String, Object>();
+    final HashMap<String, Object> env = new HashMap<>();
     env.put("jmx.remote.x.password.file", pwFile);
 
     ReadOpFileAccessController controller = new ReadOpFileAccessController(accessFileName);

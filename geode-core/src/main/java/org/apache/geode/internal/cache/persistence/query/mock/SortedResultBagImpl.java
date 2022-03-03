@@ -28,9 +28,9 @@ import org.apache.geode.internal.cache.persistence.query.SortKeyExtractor;
  */
 public class SortedResultBagImpl implements ResultBag {
   private final IndexMapImpl map;
-  private AtomicLong counter = new AtomicLong();
-  private SortKeyExtractor extractor;
-  private boolean reverse;
+  private final AtomicLong counter = new AtomicLong();
+  private final SortKeyExtractor extractor;
+  private final boolean reverse;
 
   public SortedResultBagImpl(SortKeyExtractor extractor, boolean reverse) {
     this.extractor = extractor == null ? new IdentityExtractor() : extractor;

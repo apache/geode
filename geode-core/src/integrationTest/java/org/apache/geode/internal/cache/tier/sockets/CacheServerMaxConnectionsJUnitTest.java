@@ -72,8 +72,8 @@ public class CacheServerMaxConnectionsJUnitTest {
    */
   @After
   public void tearDown() throws Exception {
-    this.cache.close();
-    this.system.disconnect();
+    cache.close();
+    system.disconnect();
   }
 
   /**
@@ -111,9 +111,9 @@ public class CacheServerMaxConnectionsJUnitTest {
     // make it a loner
     p.put(MCAST_PORT, "0");
     p.put(LOCATORS, "");
-    this.system = DistributedSystem.connect(p);
-    this.cache = CacheFactory.create(system);
-    server = this.cache.addCacheServer();
+    system = DistributedSystem.connect(p);
+    cache = CacheFactory.create(system);
+    server = cache.addCacheServer();
     int port = getRandomAvailableTCPPort();
     server.setMaxConnections(MAX_CNXS);
     server.setMaxThreads(getMaxThreads());
@@ -136,14 +136,14 @@ public class CacheServerMaxConnectionsJUnitTest {
   public void testMaxCnxLimit() throws Exception {
     PORT = createServer();
     createProxyAndRegionForClient();
-    StatisticsType st = this.system.findType("CacheServerStats");
-    final Statistics s = this.system.findStatisticsByType(st)[0];
+    StatisticsType st = system.findType("CacheServerStats");
+    final Statistics s = system.findStatisticsByType(st)[0];
     assertEquals(0, s.getInt("currentClients"));
     assertEquals(0, s.getInt("currentClientConnections"));
     Connection[] cnxs = new Connection[MAX_CNXS];
     for (int i = 0; i < MAX_CNXS; i++) {
       cnxs[i] = proxy.acquireConnection();
-      this.system.getLogWriter().info("acquired connection[" + i + "]=" + cnxs[i]);
+      system.getLogWriter().info("acquired connection[" + i + "]=" + cnxs[i]);
     }
     WaitCriterion ev = new WaitCriterion() {
       @Override
@@ -159,7 +159,7 @@ public class CacheServerMaxConnectionsJUnitTest {
     GeodeAwaitility.await().untilAsserted(ev);
     assertEquals(MAX_CNXS, s.getInt("currentClientConnections"));
     assertEquals(1, s.getInt("currentClients"));
-    this.system.getLogWriter().info(
+    system.getLogWriter().info(
         "<ExpectedException action=add>" + "exceeded max-connections" + "</ExpectedException>");
     try {
       Connection cnx = proxy.acquireConnection();
@@ -168,16 +168,16 @@ public class CacheServerMaxConnectionsJUnitTest {
             + " times but was able to connect " + s.getInt("currentClientConnections")
             + " times. Last connection=" + cnx);
       }
-      this.system.getLogWriter().info("acquire connection returned null which is ok");
+      system.getLogWriter().info("acquire connection returned null which is ok");
     } catch (NoAvailableServersException expected) {
       // This is expected but due to race conditions in server handshake
       // we may get null back from acquireConnection instead.
-      this.system.getLogWriter().info("received expected " + expected.getMessage());
+      system.getLogWriter().info("received expected " + expected.getMessage());
     } catch (Exception ex) {
       fail("expected acquireConnection to throw NoAvailableServersException but instead it threw "
           + ex);
     } finally {
-      this.system.getLogWriter().info("<ExpectedException action=remove>"
+      system.getLogWriter().info("<ExpectedException action=remove>"
           + "exceeded max-connections" + "</ExpectedException>");
     }
 
@@ -197,7 +197,7 @@ public class CacheServerMaxConnectionsJUnitTest {
       }
     };
     GeodeAwaitility.await().untilAsserted(ev);
-    this.system.getLogWriter().info("currentClients=" + s.getInt("currentClients")
+    system.getLogWriter().info("currentClients=" + s.getInt("currentClients")
         + " currentClientConnections=" + s.getInt("currentClientConnections"));
     assertEquals(0, s.getInt("currentClientConnections"));
     assertEquals(0, s.getInt("currentClients"));

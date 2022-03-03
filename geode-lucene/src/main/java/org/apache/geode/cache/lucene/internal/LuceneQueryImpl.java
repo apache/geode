@@ -50,10 +50,10 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
 
   private int limit = LuceneQueryFactory.DEFAULT_LIMIT;
   private int pageSize = LuceneQueryFactory.DEFAULT_PAGESIZE;
-  private String indexName;
+  private final String indexName;
   /* the lucene Query object to be wrapped here */
-  private LuceneQueryProvider query;
-  private Region<K, V> region;
+  private final LuceneQueryProvider query;
+  private final Region<K, V> region;
   private String defaultField;
 
   public LuceneQueryImpl(String indexName, Region<K, V> region, LuceneQueryProvider provider,
@@ -62,7 +62,7 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
     this.region = region;
     this.limit = limit;
     this.pageSize = pageSize;
-    this.query = provider;
+    query = provider;
   }
 
   @Override
@@ -70,14 +70,14 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
     TopEntries<K> entries = findTopEntries();
     final List<EntryScore<K>> hits = entries.getHits();
 
-    return hits.stream().map(hit -> hit.getKey()).collect(Collectors.toList());
+    return hits.stream().map(EntryScore::getKey).collect(Collectors.toList());
   }
 
   @Override
   public Collection<V> findValues() throws LuceneQueryException {
     final List<LuceneResultStruct<K, V>> page = findResults();
 
-    return page.stream().map(entry -> entry.getValue()).collect(Collectors.toList());
+    return page.stream().map(LuceneResultStruct::getValue).collect(Collectors.toList());
   }
 
   @Override
@@ -102,7 +102,7 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
 
   protected PageableLuceneQueryResults<K, V> newPageableResults(final int pageSize,
       final TopEntries<K> entries) {
-    return new PageableLuceneQueryResultsImpl<K, V>(entries.getHits(), region, pageSize);
+    return new PageableLuceneQueryResultsImpl<>(entries.getHits(), region, pageSize);
   }
 
   private TopEntries<K> findTopEntries() throws LuceneQueryException {
@@ -144,12 +144,12 @@ public class LuceneQueryImpl<K, V> implements LuceneQuery<K, V> {
 
   @Override
   public int getPageSize() {
-    return this.pageSize;
+    return pageSize;
   }
 
   @Override
   public int getLimit() {
-    return this.limit;
+    return limit;
   }
 
 }

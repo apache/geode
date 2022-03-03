@@ -44,7 +44,7 @@ public class ASTType extends GemFireAST {
   }
 
   public ObjectType getJavaType() {
-    return this.javaType;
+    return javaType;
   }
 
 
@@ -55,12 +55,12 @@ public class ASTType extends GemFireAST {
     // OBJECT_TYPE)
     super.compile(compiler);
 
-    Assert.assertTrue(this.javaType != null ^ this.typeName != null);
-    if (this.typeName != null) {
-      this.javaType = compiler.resolveType(this.typeName);
+    Assert.assertTrue(javaType != null ^ typeName != null);
+    if (typeName != null) {
+      javaType = compiler.resolveType(typeName);
     }
 
-    compiler.push(this.javaType);
+    compiler.push(javaType);
   }
 
 

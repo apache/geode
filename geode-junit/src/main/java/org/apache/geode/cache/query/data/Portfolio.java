@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -63,11 +62,11 @@ public class Portfolio implements Serializable, DataSerializable {
   }
 
   public long getCreateTime() {
-    return this.createTime;
+    return createTime;
   }
 
   public void setCreateTime(long time) {
-    this.createTime = time;
+    createTime = time;
   }
 
   public String getPk() {
@@ -114,7 +113,7 @@ public class Portfolio implements Serializable, DataSerializable {
     return status.equals("active");
   }
 
-  public static String secIds[] = {"SUN", "IBM", "YHOO", "GOOG", "MSFT", "AOL", "APPL", "ORCL",
+  public static String[] secIds = {"SUN", "IBM", "YHOO", "GOOG", "MSFT", "AOL", "APPL", "ORCL",
       "SAP", "DELL", "RHAT", "NOVL", "HP"};
 
   /* public no-arg constructor required for Deserializable */
@@ -155,12 +154,12 @@ public class Portfolio implements Serializable, DataSerializable {
 
   public Portfolio(int i, int j) {
     this(i);
-    this.position1.portfolioId = j;
-    this.position3 = new Position[3];
+    position1.portfolioId = j;
+    position3 = new Position[3];
     for (int k = 0; k < position3.length; k++) {
       Position p = new Position(secIds[k], (k + 1) * 1000L);
       p.portfolioId = (k + 1);
-      this.position3[k] = p;
+      position3[k] = p;
     }
   }
 
@@ -173,11 +172,11 @@ public class Portfolio implements Serializable, DataSerializable {
       return false;
     }
     Portfolio p2 = (Portfolio) o;
-    return this.ID == p2.ID;
+    return ID == p2.ID;
   }
 
   public int hashCode() {
-    return this.ID;
+    return ID;
   }
 
 
@@ -186,9 +185,8 @@ public class Portfolio implements Serializable, DataSerializable {
         "Portfolio [ID=" + ID + " status=" + status + " type=" + type + " pkid=" + pkid
             + System.lineSeparator();
     if (positions != null) {
-      Iterator iter = positions.entrySet().iterator();
-      while (iter.hasNext()) {
-        Map.Entry entry = (Map.Entry) iter.next();
+      for (final Object o : positions.entrySet()) {
+        Map.Entry entry = (Map.Entry) o;
         out += entry.getKey() + ":" + entry.getValue() + ", ";
       }
       out += System.lineSeparator() + " P1:" + position1 + ", P2:" + position2;
@@ -202,7 +200,7 @@ public class Portfolio implements Serializable, DataSerializable {
    * @return Value of property type.
    */
   public String getType() {
-    return this.type;
+    return type;
   }
 
   public boolean boolFunction(String strArg) {
@@ -222,15 +220,15 @@ public class Portfolio implements Serializable, DataSerializable {
   }
 
   public float getFloatMinValue() {
-    return this.floatMinValue;
+    return floatMinValue;
   }
 
   public float getLongMinValue() {
-    return this.longMinValue;
+    return longMinValue;
   }
 
   public double getDoubleMinValue() {
-    return this.doubleMinValue;
+    return doubleMinValue;
   }
 
   public void throwExceptionMethod() {
@@ -239,66 +237,66 @@ public class Portfolio implements Serializable, DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.ID = in.readInt();
+    ID = in.readInt();
     boolean isNull = DataSerializer.readPrimitiveBoolean(in);
     if (!isNull) {
-      this.shortID = DataSerializer.readShort(in);
+      shortID = DataSerializer.readShort(in);
     }
-    this.pkid = DataSerializer.readString(in);
+    pkid = DataSerializer.readString(in);
 
-    this.position1 = (Position) DataSerializer.readObject(in);
-    this.position2 = (Position) DataSerializer.readObject(in);
-    this.positions = (HashMap) DataSerializer.readObject(in);
-    this.collectionHolderMap = (HashMap) DataSerializer.readObject(in);
-    this.type = DataSerializer.readString(in);
-    this.status = DataSerializer.readString(in);
-    this.names = DataSerializer.readStringArray(in);
-    this.description = DataSerializer.readString(in);
-    this.createTime = DataSerializer.readPrimitiveLong(in);
-    this.createDate = DataSerializer.readDate(in);
+    position1 = DataSerializer.readObject(in);
+    position2 = DataSerializer.readObject(in);
+    positions = DataSerializer.readObject(in);
+    collectionHolderMap = DataSerializer.readObject(in);
+    type = DataSerializer.readString(in);
+    status = DataSerializer.readString(in);
+    names = DataSerializer.readStringArray(in);
+    description = DataSerializer.readString(in);
+    createTime = DataSerializer.readPrimitiveLong(in);
+    createDate = DataSerializer.readDate(in);
     // Read Position3
     int position3Size = in.readInt();
     if (position3Size != 0) {
-      this.position3 = new Position[position3Size];
+      position3 = new Position[position3Size];
       for (int i = 0; i < position3Size; i++) {
-        this.position3[i] = (Position) DataSerializer.readObject(in);
+        position3[i] = DataSerializer.readObject(in);
 
       }
     }
-    this.indexKey = in.readInt();
+    indexKey = in.readInt();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.ID);
-    if (this.shortID == null) {
+    out.writeInt(ID);
+    if (shortID == null) {
       DataSerializer.writePrimitiveBoolean(true, out);
     } else {
       DataSerializer.writePrimitiveBoolean(false, out);
-      DataSerializer.writeShort(this.shortID, out);
+      DataSerializer.writeShort(shortID, out);
     }
 
-    DataSerializer.writeString(this.pkid, out);
-    DataSerializer.writeObject(this.position1, out);
-    DataSerializer.writeObject(this.position2, out);
-    DataSerializer.writeObject(this.positions, out);
-    DataSerializer.writeObject(this.collectionHolderMap, out);
-    DataSerializer.writeString(this.type, out);
-    DataSerializer.writeString(this.status, out);
-    DataSerializer.writeStringArray(this.names, out);
-    DataSerializer.writeString(this.description, out);
-    DataSerializer.writePrimitiveLong(this.createTime, out);
+    DataSerializer.writeString(pkid, out);
+    DataSerializer.writeObject(position1, out);
+    DataSerializer.writeObject(position2, out);
+    DataSerializer.writeObject(positions, out);
+    DataSerializer.writeObject(collectionHolderMap, out);
+    DataSerializer.writeString(type, out);
+    DataSerializer.writeString(status, out);
+    DataSerializer.writeStringArray(names, out);
+    DataSerializer.writeString(description, out);
+    DataSerializer.writePrimitiveLong(createTime, out);
     DataSerializer.writeDate(createDate, out);
     // Write Position3.
-    if (this.position3 == null) {
+    if (position3 == null) {
       out.writeInt(0);
     } else {
-      out.writeInt(this.position3.length);
-      for (int i = 0; i < position3.length; i++) {
-        DataSerializer.writeObject(this.position3[i], out);
+      out.writeInt(position3.length);
+      for (final Position position : position3) {
+        DataSerializer.writeObject(position, out);
       }
     }
-    out.writeInt(this.indexKey);
+    out.writeInt(indexKey);
   }
 
   public static void resetInstanceCount() {

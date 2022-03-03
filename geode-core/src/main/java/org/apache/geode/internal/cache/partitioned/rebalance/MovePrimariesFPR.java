@@ -73,7 +73,8 @@ public class MovePrimariesFPR extends RebalanceDirectorAdapter {
               // HACK: In case we don't know who is Primary at this time
               // we just set source as target too for stat purposes
 
-              source = (source == null || source == model.INVALID_MEMBER) ? target : source;
+              source = (source == null || source == PartitionedRegionLoadModel.INVALID_MEMBER)
+                  ? target : source;
               if (logger.isDebugEnabled()) {
                 logger.debug(
                     "PRLM#movePrimariesForFPR: For Bucket#{}, moving primary from source {} to target {}",

@@ -57,7 +57,7 @@ public class DestroyJndiBindingCommandTest {
   private CacheConfig cacheConfig;
   private InternalConfigurationPersistenceService ccService;
 
-  private static String COMMAND = "destroy jndi-binding ";
+  private static final String COMMAND = "destroy jndi-binding ";
 
   @Before
   public void setUp() throws Exception {

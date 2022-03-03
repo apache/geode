@@ -46,7 +46,7 @@ public class JSONFormatterJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    this.cache = new CacheFactory().set(MCAST_PORT, "0")
+    cache = new CacheFactory().set(MCAST_PORT, "0")
         .set("log-level", "WARN").setPdxReadSerialized(true).create();
 
     region = cache.createRegionFactory().setDataPolicy(DataPolicy.PARTITION)
@@ -56,7 +56,7 @@ public class JSONFormatterJUnitTest {
 
   @After
   public void tearDown() {
-    this.cache.close();
+    cache.close();
   }
 
   @Test

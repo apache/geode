@@ -25,7 +25,7 @@ public class MemoryInspectorImpl implements MemoryInspector {
   /** The inspection snapshot for MemoryInspector */
   private List<MemoryBlock> memoryBlocks;
 
-  private FreeListManager freeList;
+  private final FreeListManager freeList;
 
   public MemoryInspectorImpl(FreeListManager freeList) {
     this.freeList = freeList;
@@ -33,23 +33,23 @@ public class MemoryInspectorImpl implements MemoryInspector {
 
   @Override
   public synchronized void clearSnapshot() {
-    this.memoryBlocks = null;
+    memoryBlocks = null;
   }
 
   @Override
   public synchronized void createSnapshot() {
-    List<MemoryBlock> value = this.memoryBlocks;
+    List<MemoryBlock> value = memoryBlocks;
     if (value == null) {
       value = getOrderedBlocks();
-      this.memoryBlocks = value;
+      memoryBlocks = value;
     }
   }
 
   @Override
   public synchronized List<MemoryBlock> getSnapshot() {
-    List<MemoryBlock> value = this.memoryBlocks;
+    List<MemoryBlock> value = memoryBlocks;
     if (value == null) {
-      return Collections.<MemoryBlock>emptyList();
+      return Collections.emptyList();
     } else {
       return value;
     }
@@ -73,7 +73,7 @@ public class MemoryInspectorImpl implements MemoryInspector {
 
   @Override
   public List<MemoryBlock> getAllocatedBlocks() {
-    return this.freeList.getAllocatedBlocks();
+    return freeList.getAllocatedBlocks();
   }
 
   @Override
@@ -91,7 +91,7 @@ public class MemoryInspectorImpl implements MemoryInspector {
   }
 
   private List<MemoryBlock> getOrderedBlocks() {
-    return this.freeList.getOrderedBlocks();
+    return freeList.getOrderedBlocks();
   }
 
 }

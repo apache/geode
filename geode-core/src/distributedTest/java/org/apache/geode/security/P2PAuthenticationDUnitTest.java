@@ -414,14 +414,14 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
       peer3.invoke(() -> verifyMembers(3));
 
       // Disconnect the second peer and check again
-      peer2.invoke(() -> disconnectFromDS());
+      peer2.invoke(JUnit4DistributedTestCase::disconnectFromDS);
       pause(2000);
 
       locatorVM.invoke(() -> verifyMembers(2));
       peer3.invoke(() -> verifyMembers(2));
 
       // Same for last peer
-      peer3.invoke(() -> disconnectFromDS());
+      peer3.invoke(JUnit4DistributedTestCase::disconnectFromDS);
       pause(2000);
 
       locatorVM.invoke(() -> verifyMembers(1));
@@ -511,8 +511,8 @@ public class P2PAuthenticationDUnitTest extends JUnit4DistributedTestCase {
 
       // Disconnect the peers
       disconnectFromDS();
-      peer2.invoke(() -> disconnectFromDS());
-      peer3.invoke(() -> disconnectFromDS());
+      peer2.invoke(JUnit4DistributedTestCase::disconnectFromDS);
+      peer3.invoke(JUnit4DistributedTestCase::disconnectFromDS);
 
     } finally {
       locatorVM.invoke(() -> stopLocator(locatorPort, ignoredExceptions));

@@ -45,7 +45,6 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.eviction.EvictionCounters;
@@ -92,7 +91,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
 
     int threshold = 10;
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
     factory.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(threshold));
@@ -111,7 +110,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
     assertNotNull(lruStats);
 
     for (int i = 1; i <= 10; i++) {
-      Object key = new Integer(i);
+      Object key = i;
       Object value = String.valueOf(i);
       region.put(key, value);
       assertEquals(i, lruStats.getCounter());
@@ -119,7 +118,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
     }
 
     for (int i = 11; i <= 20; i++) {
-      Object key = new Integer(i);
+      Object key = i;
       Object value = String.valueOf(i);
       region.put(key, value);
       assertEquals(10, lruStats.getCounter());
@@ -137,7 +136,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
 
     int threshold = 10;
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.LOCAL);
     factory.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(threshold));
@@ -166,7 +165,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
     assertNotNull(lruStats);
 
     for (int i = 1; i <= 10; i++) {
-      Object key = new Integer(i);
+      Object key = i;
       Object value = String.valueOf(i);
       region.put(key, value);
       assertEquals(i, lruStats.getCounter());
@@ -174,7 +173,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
     }
 
     for (int i = 11; i <= 20; i++) {
-      Object key = new Integer(i);
+      Object key = i;
       // Object value = String.valueOf(i);
       // Invoke loader
       region.get(key);
@@ -191,7 +190,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
   public void testSizeOne() throws CacheException {
     int threshold = 1;
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     AttributesFactory factory = new AttributesFactory();
     factory.setOffHeap(isOffHeapEnabled());
     factory.setScope(Scope.LOCAL);
@@ -222,7 +221,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
     assertNotNull(lruStats);
 
     for (int i = 1; i <= 1; i++) {
-      Object key = new Integer(i);
+      Object key = i;
       Object value = String.valueOf(i);
       region.put(key, value);
       assertEquals(1, lruStats.getCounter());
@@ -230,7 +229,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
     }
 
     for (int i = 2; i <= 10; i++) {
-      Object key = new Integer(i);
+      Object key = i;
       Object value = String.valueOf(i);
       region.put(key, value);
       assertEquals(1, lruStats.getCounter());
@@ -238,7 +237,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
     }
 
     for (int i = 11; i <= 20; i++) {
-      Object key = new Integer(i);
+      Object key = i;
       // Object value = String.valueOf(i);
       // Invoke loader
       region.get(key);
@@ -253,7 +252,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testBug31592() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final Object key = "KEY";
     final Object value = "VALUE";
     final Object key2 = "KEY2";
@@ -298,7 +297,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testCCMirrored() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     AttributesFactory factory = new AttributesFactory();
     factory.setOffHeap(isOffHeapEnabled());
     factory.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(10));
@@ -318,9 +317,9 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
    */
   @Test
   public void testReplicationAndTransactions() throws Exception {
-    final String r1 = this.getUniqueName() + "-1";
-    final String r2 = this.getUniqueName() + "-2";
-    final String r3 = this.getUniqueName() + "-3";
+    final String r1 = getUniqueName() + "-1";
+    final String r2 = getUniqueName() + "-2";
+    final String r3 = getUniqueName() + "-3";
 
     VM feeder = Host.getHost(0).getVM(3);
     VM repl = Host.getHost(0).getVM(2);
@@ -398,10 +397,10 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
           txm.commit();
         }
 
-        for (int i = 0; i < r.length; i++) {
-          assertEquals(numEntries, r[i].size());
+        for (final Region region : r) {
+          assertEquals(numEntries, region.size());
           {
-            LocalRegion lr = (LocalRegion) r[i];
+            LocalRegion lr = (LocalRegion) region;
             assertEquals(maxEntries, lr.getEvictionController().getCounters().getLimit());
             assertEquals(maxEntries, lr.getEvictionController().getCounters().getCounter());
           }
@@ -418,11 +417,11 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
         Region reg3 = getRootRegion().getSubregion(r3);
 
         final Region[] r = {reg1, reg2, reg3};
-        for (int i = 0; i < r.length; i++) {
-          assertNotNull(r[i]);
-          assertEquals(numEntries, r[i].size());
+        for (final Region region : r) {
+          assertNotNull(region);
+          assertEquals(numEntries, region.size());
           {
-            LocalRegion lr = (LocalRegion) r[i];
+            LocalRegion lr = (LocalRegion) region;
             assertEquals(maxEntries, lr.getEvictionController().getCounters().getLimit());
             assertEquals(maxEntries, lr.getEvictionController().getCounters().getCounter());
           }
@@ -437,7 +436,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
   }
 
   protected HeapEvictor getEvictor() {
-    return ((GemFireCacheImpl) getCache()).getHeapEvictor();
+    return getCache().getHeapEvictor();
   }
 
   protected ResourceType getResourceType() {

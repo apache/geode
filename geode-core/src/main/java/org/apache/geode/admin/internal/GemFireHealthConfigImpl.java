@@ -30,7 +30,7 @@ public class GemFireHealthConfigImpl extends CacheHealthConfigImpl implements Ge
   private static final long serialVersionUID = -6797673296902808018L;
 
   /** The name of the host to which this configuration applies. */
-  private String hostName;
+  private final String hostName;
 
   /**
    * The number of seconds to wait between evaluating the health of GemFire.
@@ -54,7 +54,7 @@ public class GemFireHealthConfigImpl extends CacheHealthConfigImpl implements Ge
 
   @Override
   public String getHostName() {
-    return this.hostName;
+    return hostName;
   }
 
   @Override
@@ -64,17 +64,17 @@ public class GemFireHealthConfigImpl extends CacheHealthConfigImpl implements Ge
 
   @Override
   public int getHealthEvaluationInterval() {
-    return this.interval;
+    return interval;
   }
 
   @Override
   public String toString() {
-    if (this.hostName == null) {
+    if (hostName == null) {
       return "Default GemFire health configuration";
 
     } else {
       return String.format("GemFire health configuration for host %s",
-          this.hostName);
+          hostName);
     }
   }
 

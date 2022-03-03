@@ -29,7 +29,7 @@ public class SocketCreatorFailHandshake extends SocketCreator {
 
   public SocketCreatorFailHandshake(SSLConfig sslConfig, List<Integer> socketTimeouts) {
     super(sslConfig);
-    this.socketSoTimeouts = socketTimeouts;
+    socketSoTimeouts = socketTimeouts;
     failTLSHandshake = true;
   }
 
@@ -42,7 +42,7 @@ public class SocketCreatorFailHandshake extends SocketCreator {
 
   @Override
   public void handshakeIfSocketIsSSL(Socket socket, int timeout) throws IOException {
-    this.socketSoTimeouts.add(timeout);
+    socketSoTimeouts.add(timeout);
     if (failTLSHandshake) {
       throw new SSLException("This is a test SSLException");
     } else {

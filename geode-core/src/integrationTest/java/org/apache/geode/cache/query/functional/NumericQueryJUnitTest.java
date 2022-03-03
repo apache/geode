@@ -52,15 +52,15 @@ import org.apache.geode.util.internal.GeodeGlossary;
 @Category({OQLQueryTest.class})
 public class NumericQueryJUnitTest {
 
-  private static String testRegionName = "testRegion";
+  private static final String testRegionName = "testRegion";
   private static Region testRegion;
-  private static int numElem = 100;
+  private static final int numElem = 100;
 
-  private static String EQ = "=";
-  private static String LT = "<";
-  private static String GT = ">";
-  private static String GTE = ">=";
-  private static String LTE = "<=";
+  private static final String EQ = "=";
+  private static final String LT = "<";
+  private static final String GT = ">";
+  private static final String GTE = ">=";
+  private static final String LTE = "<=";
 
   @Before
   public void setUp() throws Exception {
@@ -93,15 +93,15 @@ public class NumericQueryJUnitTest {
     Cache cache = CacheUtils.getCache();
     testRegion = createLocalRegion(testRegionName);
 
-    Map<String, Object> map = new HashMap<String, Object>();
+    Map<String, Object> map = new HashMap<>();
     map.put("bigdecimal", BigDecimal.valueOf(1234.5678D));
     map.put("string", "stringValue");
     map.put("integer", 777);
-    map.put("long", Long.valueOf(1000));
+    map.put("long", 1000L);
     map.put("biginteger", BigInteger.valueOf(1000));
-    map.put("double", Double.valueOf(1000.0));
-    map.put("short", Short.valueOf((short) 1000));
-    map.put("float", Float.valueOf(1000.0f));
+    map.put("double", 1000.0);
+    map.put("short", (short) 1000);
+    map.put("float", 1000.0f);
 
     testRegion.put("1", map);
 

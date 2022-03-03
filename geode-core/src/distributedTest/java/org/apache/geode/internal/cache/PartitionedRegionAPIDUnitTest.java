@@ -119,9 +119,9 @@ public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
   @Test
   public void testPartitionedRegionOperationsScopeDistAck() throws Exception {
     vm0.invoke(() -> createPartitionedRegion());
-    vm1.invoke(() -> createAccessor());
+    vm1.invoke(this::createAccessor);
     vm2.invoke(() -> createPartitionedRegion());
-    vm3.invoke(() -> createAccessor());
+    vm3.invoke(this::createAccessor);
 
     validatePutAndCreateAndKeySetIteratorInDatastore(vm0);
     validatePutAndCreateInAccessor(vm1);
@@ -135,9 +135,9 @@ public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
     validateMetaDataAfterRegionDestroyInAll();
 
     vm0.invoke(() -> createPartitionedRegion());
-    vm1.invoke(() -> createAccessor());
+    vm1.invoke(this::createAccessor);
     vm2.invoke(() -> createPartitionedRegion());
-    vm3.invoke(() -> createAccessor());
+    vm3.invoke(this::createAccessor);
 
     validateBasicOpsOnDatastore(vm0);
     validateBasicOpsOnAccessor(vm1);
@@ -148,9 +148,9 @@ public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
   @Test
   public void testPartitionedRegionConcurrentOperations() throws Exception {
     vm0.invoke(() -> createPartitionedRegion());
-    vm1.invoke(() -> createAccessor());
+    vm1.invoke(this::createAccessor);
     vm2.invoke(() -> createPartitionedRegion());
-    vm3.invoke(() -> createAccessor());
+    vm3.invoke(this::createAccessor);
 
     validateConcurrentMapOps(vm0);
 
@@ -174,8 +174,8 @@ public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
 
   @Test
   public void accessorTriggersCacheLoader() throws Exception {
-    vm2.invoke(() -> createPartitionedRegionWithCacheLoader());
-    vm3.invoke(() -> createPartitionedRegionWithCacheLoader());
+    vm2.invoke(this::createPartitionedRegionWithCacheLoader);
+    vm3.invoke(this::createPartitionedRegionWithCacheLoader);
 
     // create a "pure" accessor, no data storage
     Cache cache = getCache();
@@ -585,15 +585,15 @@ public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
       // keySet iterator
       Iterator<String> iterator = keySet.iterator();
       while (iterator.hasNext()) {
-        assertThatThrownBy(() -> iterator.remove()).isInstanceOf(Exception.class);
+        assertThatThrownBy(iterator::remove).isInstanceOf(Exception.class);
         String key = iterator.next();
         assertThat(key.getClass()).isEqualTo(String.class);
       }
 
-      assertThatThrownBy(() -> iterator.remove()).isInstanceOf(Exception.class);
+      assertThatThrownBy(iterator::remove).isInstanceOf(Exception.class);
       assertThat(iterator.hasNext()).isFalse();
 
-      assertThatThrownBy(() -> iterator.next()).isInstanceOf(NoSuchElementException.class);
+      assertThatThrownBy(iterator::next).isInstanceOf(NoSuchElementException.class);
       assertThat(iterator.hasNext()).isFalse();
 
       // destroy

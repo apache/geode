@@ -43,7 +43,7 @@ public class SequenceLoggerImpl implements SequenceLogger {
 
   // TODO - this might be too much synchronization for recording all region
   // operations. Maybe we should use a ConcurrentLinkedQueue instead?
-  private final LinkedBlockingQueue<Transition> edges = new LinkedBlockingQueue<Transition>();
+  private final LinkedBlockingQueue<Transition> edges = new LinkedBlockingQueue<>();
 
   private volatile OutputStreamAppender appender;
 
@@ -85,12 +85,12 @@ public class SequenceLoggerImpl implements SequenceLogger {
 
   private SequenceLoggerImpl() {
     String enabledTypesString = System.getProperty(ENABLED_TYPES_PROPERTY, "");
-    this.enabledTypes = GraphType.parse(enabledTypesString);
+    enabledTypes = GraphType.parse(enabledTypesString);
     if (!enabledTypes.isEmpty()) {
       try {
         String name = "states" + OSProcess.getId() + ".graph";
         appender = new OutputStreamAppender(new File(name));
-      } catch (FileNotFoundException e) {
+      } catch (FileNotFoundException ignored) {
       }
     }
   }

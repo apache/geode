@@ -63,7 +63,7 @@ public class InternalRole implements Role {
 
   @Override
   public String getName() {
-    return this.name;
+    return name;
   }
 
   /**
@@ -83,7 +83,7 @@ public class InternalRole implements Role {
           "InternalRole.compareTo(): comparison between different classes");
     }
     InternalRole other = (InternalRole) o;
-    return this.name.compareTo(other.name);
+    return name.compareTo(other.name);
   }
 
   /**
@@ -105,11 +105,7 @@ public class InternalRole implements Role {
     }
     final InternalRole that = (InternalRole) other;
 
-    if (!StringUtils.equals(this.name, that.name)) {
-      return false;
-    }
-
-    return true;
+    return StringUtils.equals(name, that.name);
   }
 
   /**
@@ -123,7 +119,7 @@ public class InternalRole implements Role {
     int result = 17;
     final int mult = 37;
 
-    result = mult * result + (this.name == null ? 0 : this.name.hashCode());
+    result = mult * result + (name == null ? 0 : name.hashCode());
 
     return result;
   }
@@ -172,7 +168,7 @@ public class InternalRole implements Role {
    */
   @Override
   public String toString() {
-    return this.name;
+    return name;
   }
 
 }

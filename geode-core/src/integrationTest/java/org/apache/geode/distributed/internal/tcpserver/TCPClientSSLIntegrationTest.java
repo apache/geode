@@ -169,7 +169,7 @@ public class TCPClientSSLIntegrationTest {
     startServerAndClient(serverCertificate, clientCertificate, true);
     String response =
         (String) client.requestToServer(new HostAndPort(localhost.getHostName(), port),
-            Boolean.valueOf(false), 5 * 1000);
+            Boolean.FALSE, 5 * 1000);
     assertThat(response).isEqualTo("Running!");
   }
 
@@ -189,7 +189,7 @@ public class TCPClientSSLIntegrationTest {
     startServerAndClient(serverCertificate, clientCertificate, false);
     String response =
         (String) client.requestToServer(new HostAndPort(localhost.getHostName(), port),
-            Boolean.valueOf(false), 5 * 1000);
+            Boolean.FALSE, 5 * 1000);
     assertThat(response).isEqualTo("Running!");
   }
 
@@ -209,7 +209,7 @@ public class TCPClientSSLIntegrationTest {
 
     assertThatExceptionOfType(IllegalStateException.class)
         .isThrownBy(() -> client.requestToServer(new HostAndPort(localhost.getHostName(), port),
-            Boolean.valueOf(false), 5 * 1000))
+            Boolean.FALSE, 5 * 1000))
         .withCauseInstanceOf(SSLHandshakeException.class)
         .withStackTraceContaining("No name matching " + localhost.getHostName() + " found");
   }
@@ -231,14 +231,14 @@ public class TCPClientSSLIntegrationTest {
 
     assertThatExceptionOfType(IllegalStateException.class)
         .isThrownBy(() -> client.requestToServer(new HostAndPort(localhost.getHostName(), port),
-            Boolean.valueOf(false), 5 * 1000))
+            Boolean.FALSE, 5 * 1000))
         .withCauseInstanceOf(SSLHandshakeException.class)
         .withStackTraceContaining("No subject alternative DNS name matching "
             + localhost.getHostName() + " found.");
   }
 
   @Test
-  public void clientFailsToConnectIfRemotePeerShutdowns() throws Exception, SSLHandshakeException {
+  public void clientFailsToConnectIfRemotePeerShutdowns() throws Exception {
 
     startServerWithCertificate();
 
@@ -261,7 +261,7 @@ public class TCPClientSSLIntegrationTest {
 
     assertThatExceptionOfType(IOException.class)
         .isThrownBy(() -> client.requestToServer(new HostAndPort(localhost.getHostName(), port),
-            Boolean.valueOf(false), 5 * 1000))
+            Boolean.FALSE, 5 * 1000))
         .withCauseInstanceOf(SSLHandshakeException.class)
         .withStackTraceContaining("Remote host terminated the handshake");
   }

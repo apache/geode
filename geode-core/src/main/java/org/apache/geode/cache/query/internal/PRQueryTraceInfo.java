@@ -18,7 +18,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Iterator;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.DistributedMember;
@@ -69,9 +68,7 @@ public class PRQueryTraceInfo implements DataSerializableFixedID {
 
   public int calculateNumberOfResults(Collection resultCollector) {
     int traceSize = 0;
-    Iterator<Collection> iterator = resultCollector.iterator();
-    while (iterator.hasNext()) {
-      Collection collection = iterator.next();
+    for (final Collection collection : (Iterable<Collection>) resultCollector) {
       traceSize += collection.size();
     }
     return traceSize;

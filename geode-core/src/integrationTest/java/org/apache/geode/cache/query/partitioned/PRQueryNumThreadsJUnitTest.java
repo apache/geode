@@ -120,7 +120,7 @@ public class PRQueryNumThreadsJUnitTest {
     Region region = PartitionedRegionTestHelper.createPartitionedRegion(regionName, "100", 0);
     String[] values = new String[100];
     for (int j = 0; j < 100; j++) {
-      values[j] = new String("" + j);
+      values[j] = "" + j;
     }
     PRQueryProcessor.TEST_NUM_THREADS = 10;
     try {
@@ -144,7 +144,7 @@ public class PRQueryNumThreadsJUnitTest {
    */
   private void populateData(Region region, Object[] data) {
     for (int j = 0; j < data.length; j++) {
-      region.put(new Integer(j), data[j]);
+      region.put(j, data[j]);
     }
   }
 }

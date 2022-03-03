@@ -35,9 +35,9 @@ import org.apache.juli.logging.LogFactory;
 import org.apache.geode.modules.session.catalina.JvmRouteBinderValve;
 
 class EmbeddedTomcat8 {
-  private Tomcat container;
-  private Context rootContext;
-  private Log logger = LogFactory.getLog(getClass());
+  private final Tomcat container;
+  private final Context rootContext;
+  private final Log logger = LogFactory.getLog(getClass());
 
   EmbeddedTomcat8(int port, String jvmRoute) {
     // create server

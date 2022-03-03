@@ -56,8 +56,8 @@ public class CacheConfigRequest extends AdminRequest {
    */
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    return CacheConfigResponse.create(dm, this.getSender(), this.cacheId, this.attributeCode,
-        this.newValue);
+    return CacheConfigResponse.create(dm, getSender(), cacheId, attributeCode,
+        newValue);
   }
 
   @Override
@@ -69,22 +69,22 @@ public class CacheConfigRequest extends AdminRequest {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeByte(this.attributeCode);
-    out.writeInt(this.newValue);
-    out.writeInt(this.cacheId);
+    out.writeByte(attributeCode);
+    out.writeInt(newValue);
+    out.writeInt(cacheId);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.attributeCode = in.readByte();
-    this.newValue = in.readInt();
-    this.cacheId = in.readInt();
+    attributeCode = in.readByte();
+    newValue = in.readInt();
+    cacheId = in.readInt();
   }
 
   @Override
   public String toString() {
-    return "CacheConfigRequest from " + this.getSender();
+    return "CacheConfigRequest from " + getSender();
   }
 }

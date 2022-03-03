@@ -131,7 +131,7 @@ public class StreamingPartitionOperationManyDUnitTest extends JUnit4CacheTestCas
     @Override
     protected DistributionMessage createRequestMessage(Set recipients, ReplyProcessor21 processor) {
       TestStreamingPartitionMessageManyProviderNoExceptions msg =
-          new TestStreamingPartitionMessageManyProviderNoExceptions(recipients, this.regionId,
+          new TestStreamingPartitionMessageManyProviderNoExceptions(recipients, regionId,
               processor);
       return msg;
     }
@@ -139,29 +139,29 @@ public class StreamingPartitionOperationManyDUnitTest extends JUnit4CacheTestCas
     @Override
     protected synchronized boolean processData(List objects, InternalDistributedMember sender,
         int sequenceNum, boolean lastInSequence) {
-      LogWriter logger = this.sys.getLogWriter();
+      LogWriter logger = sys.getLogWriter();
 
       int numChunks = -1;
 
       ConcurrentMap chunkMap = (ConcurrentMap) senderMap.get(sender);
       if (chunkMap == null) {
         chunkMap = new ConcurrentHashMap();
-        ConcurrentMap chunkMap2 = (ConcurrentMap) this.senderMap.putIfAbsent(sender, chunkMap);
+        ConcurrentMap chunkMap2 = (ConcurrentMap) senderMap.putIfAbsent(sender, chunkMap);
         if (chunkMap2 != null) {
           chunkMap = chunkMap2;
         }
       }
 
       // assert that we haven't gotten this sequence number yet
-      Object prevValue = chunkMap.putIfAbsent(new Integer(sequenceNum), objects);
+      Object prevValue = chunkMap.putIfAbsent(sequenceNum, objects);
       if (prevValue != null) {
         logger.severe("prevValue != null");
       }
 
       if (lastInSequence) {
-        prevValue = senderNumChunksMap.putIfAbsent(sender, new Integer(sequenceNum + 1)); // sequenceNum
-                                                                                          // is
-                                                                                          // 0-based
+        prevValue = senderNumChunksMap.putIfAbsent(sender, sequenceNum + 1); // sequenceNum
+                                                                             // is
+                                                                             // 0-based
         // assert that we haven't gotten a true for lastInSequence yet
         if (prevValue != null) {
           logger.severe("prevValue != null");
@@ -170,20 +170,20 @@ public class StreamingPartitionOperationManyDUnitTest extends JUnit4CacheTestCas
 
       Integer numChunksI = (Integer) senderNumChunksMap.get(sender);
       if (numChunksI != null) {
-        numChunks = numChunksI.intValue();
+        numChunks = numChunksI;
       }
 
       // are we completely done with all senders ?
       if (chunkMap.size() == numChunks && // done with this sender
           senderMap.size() == 4) { // we've heard from all 4 senders
         boolean completelyDone = true; // start with true assumption
-        for (Iterator itr = senderMap.entrySet().iterator(); itr.hasNext();) {
-          Map.Entry entry = (Map.Entry) itr.next();
+        for (final Object o : senderMap.entrySet()) {
+          Map.Entry entry = (Map.Entry) o;
           InternalDistributedMember senderV = (InternalDistributedMember) entry.getKey();
           ConcurrentMap chunkMapV = (ConcurrentMap) entry.getValue();
           Integer numChunksV = (Integer) senderNumChunksMap.get(senderV);
           if (chunkMapV == null || numChunksV == null
-              || chunkMapV.size() != numChunksV.intValue()) {
+              || chunkMapV.size() != numChunksV) {
             completelyDone = false;
           }
         }
@@ -196,11 +196,11 @@ public class StreamingPartitionOperationManyDUnitTest extends JUnit4CacheTestCas
     }
 
     private void validateData() {
-      LogWriter logger = this.sys.getLogWriter();
+      LogWriter logger = sys.getLogWriter();
       logger.info("Validating data...");
       try {
-        for (Iterator senderItr = this.senderMap.entrySet().iterator(); senderItr.hasNext();) {
-          Map.Entry entry = (Map.Entry) senderItr.next();
+        for (final Object value : senderMap.entrySet()) {
+          Map.Entry entry = (Map.Entry) value;
           ConcurrentMap chunkMap = (ConcurrentMap) entry.getValue();
           InternalDistributedMember sender = (InternalDistributedMember) entry.getKey();
           List[] arrayOfLists = new ArrayList[chunkMap.size()];
@@ -208,9 +208,9 @@ public class StreamingPartitionOperationManyDUnitTest extends JUnit4CacheTestCas
           int expectedInt = 0;
 
           // sort the input streams
-          for (Iterator itr = chunkMap.entrySet().iterator(); itr.hasNext();) {
-            Map.Entry entry2 = (Map.Entry) itr.next();
-            int seqNum = ((Integer) entry2.getKey()).intValue();
+          for (final Object o : chunkMap.entrySet()) {
+            Map.Entry entry2 = (Map.Entry) o;
+            int seqNum = (Integer) entry2.getKey();
             objList = (List) entry2.getValue();
             arrayOfLists[seqNum] = objList;
           }
@@ -221,7 +221,7 @@ public class StreamingPartitionOperationManyDUnitTest extends JUnit4CacheTestCas
             Integer nextInteger;
             while (itr.hasNext()) {
               nextInteger = (Integer) itr.next();
-              if (nextInteger.intValue() != expectedInt) {
+              if (nextInteger != expectedInt) {
                 logger.severe("nextInteger.intValue() != expectedInt");
                 return;
               }
@@ -265,7 +265,7 @@ public class StreamingPartitionOperationManyDUnitTest extends JUnit4CacheTestCas
         return Token.END_OF_STREAM;
       }
       nextInt += 10;
-      return new Integer(nextInt);
+      return nextInt;
     }
 
     @Override

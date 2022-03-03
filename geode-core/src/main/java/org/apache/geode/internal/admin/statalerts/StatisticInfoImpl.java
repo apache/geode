@@ -74,17 +74,17 @@ public class StatisticInfoImpl implements StatisticInfo {
 
   @Override
   public StatisticDescriptor getStatisticDescriptor() {
-    return this.descriptor;
+    return descriptor;
   }
 
   @Override
   public Statistics getStatistics() {
-    return this.statistics;
+    return statistics;
   }
 
   @Override
   public String getStatisticsTypeName() {
-    return this.statistics.getType().getName();
+    return statistics.getType().getName();
   }
 
   @Override
@@ -104,12 +104,9 @@ public class StatisticInfoImpl implements StatisticInfo {
 
     StatisticInfoImpl other = (StatisticInfoImpl) object;
 
-    if (StringUtils.equals(getStatisticName(), other.getStatisticName()) && statisticsTextId != null
-        && statisticsTextId.equals(other.getStatisticsTextId())) {
-      return true;
-    }
-
-    return false;
+    return StringUtils.equals(getStatisticName(), other.getStatisticName())
+        && statisticsTextId != null
+        && statisticsTextId.equals(other.getStatisticsTextId());
   }
 
   @Override
@@ -125,7 +122,7 @@ public class StatisticInfoImpl implements StatisticInfo {
 
   @Override
   public String toString() {
-    return this.statistics.getType().getName() + " [" + this.descriptor.getName() + "]";
+    return statistics.getType().getName() + " [" + descriptor.getName() + "]";
   }
 
   public static StatisticInfoImpl create(String toString, StatisticsFactory f) {
@@ -150,9 +147,9 @@ public class StatisticInfoImpl implements StatisticInfo {
     }
 
     StatisticDescriptor[] descs = type.getStatistics();
-    for (int i = 0; i < descs.length; i++) {
-      if (descs[i].getName().equalsIgnoreCase(ids)) {
-        return new StatisticInfoImpl(stats[0], descs[i]);
+    for (final StatisticDescriptor desc : descs) {
+      if (desc.getName().equalsIgnoreCase(ids)) {
+        return new StatisticInfoImpl(stats[0], desc);
       }
     }
 

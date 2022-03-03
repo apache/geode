@@ -74,13 +74,9 @@ public class Dependency<A, B> implements Serializable {
       return false;
     }
     if (dependsOn == null) {
-      if (other.dependsOn != null) {
-        return false;
-      }
-    } else if (!dependsOn.equals(other.dependsOn)) {
-      return false;
-    }
-    return true;
+      return other.dependsOn == null;
+    } else
+      return dependsOn.equals(other.dependsOn);
   }
 
   @Override

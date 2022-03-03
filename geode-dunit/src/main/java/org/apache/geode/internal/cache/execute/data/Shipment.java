@@ -20,8 +20,9 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.cache.execute.PRColocationDUnitTestHelper;
+import org.apache.geode.internal.cache.execute.PRColocationDistributedTestHelper;
 
+@SuppressWarnings("serial")
 public class Shipment implements DataSerializable {
   private String shipmentName;
 
@@ -30,21 +31,21 @@ public class Shipment implements DataSerializable {
   }
 
   public Shipment(String shipmentName) {
-    this.shipmentName = shipmentName + PRColocationDUnitTestHelper.getDefaultAddOnString();
+    this.shipmentName = shipmentName + PRColocationDistributedTestHelper.getDefaultAddOnString();
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.shipmentName = DataSerializer.readString(in);
+    shipmentName = DataSerializer.readString(in);
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.shipmentName, out);
+    DataSerializer.writeString(shipmentName, out);
   }
 
   public String toString() {
-    return this.shipmentName;
+    return shipmentName;
   }
 
   public boolean equals(Object obj) {
@@ -54,9 +55,7 @@ public class Shipment implements DataSerializable {
 
     if (obj instanceof Shipment) {
       Shipment other = (Shipment) obj;
-      if (other.shipmentName != null && other.shipmentName.equals(this.shipmentName)) {
-        return true;
-      }
+      return other.shipmentName != null && other.shipmentName.equals(shipmentName);
     }
     return false;
   }

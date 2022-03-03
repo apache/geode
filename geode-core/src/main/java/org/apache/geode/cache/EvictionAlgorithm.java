@@ -139,7 +139,7 @@ public final class EvictionAlgorithm extends EnumSyntax implements Serializable 
 
   /** returns true if this object uses a least-recently-used algorithm */
   public boolean isLRU() {
-    return this.isLRUEntry() || this.isLRUMemory() || this.isLRUHeap();
+    return isLRUEntry() || isLRUMemory() || isLRUHeap();
   }
 
   public boolean isNone() {

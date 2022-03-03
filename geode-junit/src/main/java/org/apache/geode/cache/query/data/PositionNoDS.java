@@ -20,7 +20,7 @@ import java.util.Set;
 
 
 public class PositionNoDS implements Serializable, Comparable {
-  private long avg20DaysVol = 0;
+  private final long avg20DaysVol = 0;
   private String bondRating;
   private double convRatio;
   private String country;
@@ -49,18 +49,18 @@ public class PositionNoDS implements Serializable, Comparable {
     sharesOutstanding = out;
     secType = "a";
     pid = cnt++;
-    this.mktValue = cnt;
+    mktValue = cnt;
   }
 
   public boolean equals(Object o) {
     if (!(o instanceof PositionNoDS)) {
       return false;
     }
-    return this.secId.equals(((PositionNoDS) o).secId);
+    return secId.equals(((PositionNoDS) o).secId);
   }
 
   public int hashCode() {
-    return this.secId.hashCode();
+    return secId.hashCode();
   }
 
 
@@ -69,7 +69,7 @@ public class PositionNoDS implements Serializable, Comparable {
   }
 
   public double getMktValue() {
-    return this.mktValue;
+    return mktValue;
   }
 
   public String getSecId() {
@@ -85,8 +85,8 @@ public class PositionNoDS implements Serializable, Comparable {
   }
 
   public String toString() {
-    return "Position [secId=" + this.secId + " out=" + this.sharesOutstanding + " type="
-        + this.secType + " id=" + this.pid + " mktValue=" + this.mktValue + "]";
+    return "Position [secId=" + secId + " out=" + sharesOutstanding + " type="
+        + secType + " id=" + pid + " mktValue=" + mktValue + "]";
   }
 
   public Set getSet(int size) {
@@ -116,10 +116,10 @@ public class PositionNoDS implements Serializable, Comparable {
     if (o == this) {
       return 0;
     } else {
-      if (this.pid == ((PositionNoDS) o).pid) {
+      if (pid == ((PositionNoDS) o).pid) {
         return 0;
       } else {
-        return this.pid < ((PositionNoDS) o).pid ? -1 : 1;
+        return pid < ((PositionNoDS) o).pid ? -1 : 1;
       }
     }
 

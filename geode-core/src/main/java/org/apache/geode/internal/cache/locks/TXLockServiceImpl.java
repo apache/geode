@@ -48,7 +48,7 @@ public class TXLockServiceImpl extends TXLockService {
   // -------------------------------------------------------------------------
 
   /** Instance of dlock service to use */
-  private DLockService dlock;
+  private final DLockService dlock;
 
   /**
    * List of active txLockIds
@@ -76,15 +76,15 @@ public class TXLockServiceImpl extends TXLockService {
           "TXLockService cannot be created until connected to distributed system.");
     }
     sys.getCancelCriterion().checkCancelInProgress(null);
-    this.system = sys;
+    system = sys;
 
-    this.recoveryLock = new StoppableReentrantReadWriteLock(sys.getCancelCriterion());
+    recoveryLock = new StoppableReentrantReadWriteLock(sys.getCancelCriterion());
 
-    this.dlock = (DLockService) DLockService.create(name, sys, true, true);
+    dlock = (DLockService) DLockService.create(name, sys, true, true);
 
-    this.dlock.setDLockRecoverGrantorMessageProcessor(new TXRecoverGrantorMessageProcessor());
+    dlock.setDLockRecoverGrantorMessageProcessor(new TXRecoverGrantorMessageProcessor());
 
-    this.dlock.setDLockLessorDepartureHandler(new TXLessorDepartureHandler());
+    dlock.setDLockLessorDepartureHandler(new TXLessorDepartureHandler());
   }
 
   // -------------------------------------------------------------------------
@@ -93,12 +93,12 @@ public class TXLockServiceImpl extends TXLockService {
 
   @Override
   public boolean isLockGrantor() {
-    return this.dlock.isLockGrantor();
+    return dlock.isLockGrantor();
   }
 
   @Override
   public void becomeLockGrantor() {
-    this.dlock.becomeLockGrantor();
+    dlock.becomeLockGrantor();
   }
 
   @Override
@@ -115,9 +115,9 @@ public class TXLockServiceImpl extends TXLockService {
     boolean gotLocks = false;
     TXLockId txLockId = null;
     try {
-      synchronized (this.txLockIdList) {
-        txLockId = new TXLockIdImpl(this.dlock.getDistributionManager().getId());
-        this.txLockIdList.add(txLockId);
+      synchronized (txLockIdList) {
+        txLockId = new TXLockIdImpl(dlock.getDistributionManager().getId());
+        txLockIdList.add(txLockId);
       }
       TXLockBatch batch = new TXLockBatch(txLockId, regionLockReqs, participants);
 
@@ -125,7 +125,7 @@ public class TXLockServiceImpl extends TXLockService {
 
       // TODO: get a readWriteLock to make the following block atomic...
       Object[] keyIfFail = new Object[1];
-      gotLocks = this.dlock.acquireTryLocks(batch, TIMEOUT_MILLIS, LEASE_MILLIS, keyIfFail);
+      gotLocks = dlock.acquireTryLocks(batch, TIMEOUT_MILLIS, LEASE_MILLIS, keyIfFail);
       if (gotLocks) { // ...otherwise race can occur between tryLocks and readLock
         acquireRecoveryReadLock();
       } else if (keyIfFail[0] != null) {
@@ -135,7 +135,7 @@ public class TXLockServiceImpl extends TXLockService {
       } else {
         throw new CommitConflictException(
             String.format("Failed to request try locks from grantor: %s",
-                this.dlock.getLockGrantorId()));
+                dlock.getLockGrantorId()));
       }
 
       logger.debug("[TXLockServiceImpl.txLock] gotLocks is {}, returning txLockId:{}", gotLocks,
@@ -145,8 +145,8 @@ public class TXLockServiceImpl extends TXLockService {
       Thread.currentThread().interrupt();
       logger.debug("[TXLockServiceImpl.txLock] was interrupted", e);
       if (gotLocks) {
-        synchronized (this.txLockIdList) {
-          this.txLockIdList.remove(txLockId);
+        synchronized (txLockIdList) {
+          txLockIdList.remove(txLockId);
         }
       }
       // TODO: change to be TransactionFailedException (after creating TFE)...
@@ -158,8 +158,8 @@ public class TXLockServiceImpl extends TXLockService {
 
   @Override
   public void updateParticipants(TXLockId txLockId, final Set updatedParticipants) {
-    synchronized (this.txLockIdList) {
-      if (!this.txLockIdList.contains(txLockId)) {
+    synchronized (txLockIdList) {
+      if (!txLockIdList.contains(txLockId)) {
         IllegalArgumentException e = new IllegalArgumentException(
             String.format("Invalid txLockId not found: %s",
                 txLockId));
@@ -178,16 +178,16 @@ public class TXLockServiceImpl extends TXLockService {
     if (updatedParticipants.isEmpty()) {
       return;
     }
-    if (!this.recovering) { // not recovering
+    if (!recovering) { // not recovering
       // Serializable grantorId = this.dlock.getLockGrantorId();
-      if (this.dlock.isLockGrantor()) {
+      if (dlock.isLockGrantor()) {
         // Don't need to send a message (or wait for a reply)
         // logger.info("DEBUG: [TXLockServiceImpl.updateParticipants] this VM is the Grantor");
-        TXLockUpdateParticipantsMessage.updateParticipants(this.dlock, txLockId,
+        TXLockUpdateParticipantsMessage.updateParticipants(dlock, txLockId,
             updatedParticipants);
       } else { // not lock grantor
         LockGrantorId lockGrantorId = txLockId.getLockGrantorId();
-        if (lockGrantorId == null || !this.dlock.isLockGrantorId(lockGrantorId)) {
+        if (lockGrantorId == null || !dlock.isLockGrantorId(lockGrantorId)) {
           return; // grantor is gone so we cannot update it
         }
         InternalDistributedMember grantorId = lockGrantorId.getLockGrantorMember();
@@ -195,13 +195,13 @@ public class TXLockServiceImpl extends TXLockService {
         // logger.info("DEBUG: [TXLockServiceImpl.updateParticipants] sending update message to
         // Grantor " + grantorId);
         ReplyProcessor21 processor =
-            new ReplyProcessor21(this.dlock.getDistributionManager(), grantorId);
+            new ReplyProcessor21(dlock.getDistributionManager(), grantorId);
         TXLockUpdateParticipantsMessage dlup = new TXLockUpdateParticipantsMessage(txLockId,
-            this.dlock.getName(), updatedParticipants, processor.getProcessorId());
+            dlock.getName(), updatedParticipants, processor.getProcessorId());
         dlup.setRecipient(grantorId);
-        this.dlock.getDistributionManager().putOutgoing(dlup);
+        dlock.getDistributionManager().putOutgoing(dlup);
         // for() loop removed for bug 36983 - you can't loop on waitForReplies()
-        this.dlock.getDistributionManager().getCancelCriterion().checkCancelInProgress(null);
+        dlock.getDistributionManager().getCancelCriterion().checkCancelInProgress(null);
         try {
           processor.waitForRepliesUninterruptibly();
         } catch (ReplyException e) {
@@ -213,8 +213,8 @@ public class TXLockServiceImpl extends TXLockService {
 
   @Override
   public void release(TXLockId txLockId) {
-    synchronized (this.txLockIdList) {
-      if (!this.txLockIdList.contains(txLockId)) {
+    synchronized (txLockIdList) {
+      if (!txLockIdList.contains(txLockId)) {
         // TXLockService.destroyServices can be invoked in cache.close().
         // Other P2P threads could process message such as TXCommitMessage afterwards,
         // and invoke TXLockService.createDTLS(). It could create a new TXLockService
@@ -225,18 +225,18 @@ public class TXLockServiceImpl extends TXLockService {
                 txLockId));
       }
 
-      this.dlock.releaseTryLocks(txLockId, () -> {
-        return this.recovering;
+      dlock.releaseTryLocks(txLockId, () -> {
+        return recovering;
       });
 
-      this.txLockIdList.remove(txLockId);
+      txLockIdList.remove(txLockId);
       releaseRecoveryReadLock();
     }
   }
 
   @Override
   public boolean isDestroyed() {
-    return this.dlock.isDestroyed() || this.system.getCancelCriterion().isCancelInProgress();
+    return dlock.isDestroyed() || system.getCancelCriterion().isCancelInProgress();
   }
 
   // -------------------------------------------------------------------------
@@ -244,37 +244,37 @@ public class TXLockServiceImpl extends TXLockService {
   // -------------------------------------------------------------------------
 
   boolean isRecovering() {
-    return this.recovering;
+    return recovering;
   }
 
   /** Delays grantor recovery replies until finished with locks */
   void acquireRecoveryWriteLock() throws InterruptedException {
-    this.recovering = true;
-    this.recoveryLock.writeLock().lockInterruptibly();
+    recovering = true;
+    recoveryLock.writeLock().lockInterruptibly();
   }
 
   void releaseRecoveryWriteLock() {
-    this.recoveryLock.writeLock().unlock();
-    this.recovering = false;
+    recoveryLock.writeLock().unlock();
+    recovering = false;
   }
 
   private void acquireRecoveryReadLock() throws InterruptedException {
-    this.recoveryLock.readLock().lockInterruptibly();
+    recoveryLock.readLock().lockInterruptibly();
   }
 
   private void releaseRecoveryReadLock() {
-    this.recoveryLock.readLock().unlock();
+    recoveryLock.readLock().unlock();
   }
 
   /** Exposes the internal dlock service - Public for testing purposes */
   public DLockService getInternalDistributedLockService() {
-    return this.dlock;
+    return dlock;
   }
 
   /** Destroys the underlying lock service in this member */
   @Override
   void basicDestroy() {
-    this.dlock.destroyAndRemove();
+    dlock.destroyAndRemove();
   }
 
 }

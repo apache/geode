@@ -53,7 +53,7 @@ public class JdbcConnectorExceptionTest {
     Exception e = JdbcConnectorException.createException(sqlException);
     assertThat(e.getCause()).isNull();
     assertThat(e.getMessage()).contains("mySqlExceptionMessage")
-        .contains(this.getClass().getCanonicalName() + "." + testName.getMethodName());
+        .contains(getClass().getCanonicalName() + "." + testName.getMethodName());
   }
 
   @Test
@@ -62,7 +62,7 @@ public class JdbcConnectorExceptionTest {
     Exception e = JdbcConnectorException.createException("message", sqlException);
     assertThat(e.getCause()).isNull();
     assertThat(e.getMessage()).startsWith("message")
-        .contains(this.getClass().getCanonicalName() + "." + testName.getMethodName());
+        .contains(getClass().getCanonicalName() + "." + testName.getMethodName());
   }
 
   @Test
@@ -70,7 +70,7 @@ public class JdbcConnectorExceptionTest {
     Exception sqlException = new SQLException();
     Exception e = JdbcConnectorException.createException(new IllegalStateException(sqlException));
     assertThat(e.getMessage())
-        .contains(this.getClass().getCanonicalName() + "." + testName.getMethodName())
+        .contains(getClass().getCanonicalName() + "." + testName.getMethodName())
         .contains("SQLException").contains("IllegalStateException");
   }
 

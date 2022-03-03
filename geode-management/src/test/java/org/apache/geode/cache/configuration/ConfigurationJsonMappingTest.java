@@ -27,7 +27,7 @@ import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class ConfigurationJsonMappingTest {
-  private static ObjectMapper mapper = GeodeJsonMapper.getMapper();
+  private static final ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
   private static MemberInformation member;
   private static Region region;

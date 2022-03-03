@@ -31,11 +31,11 @@ import org.apache.geode.test.junit.categories.SerializationTest;
 @Category({SerializationTest.class})
 public class TypeRegistryTest {
 
-  private InternalCache internalCache = mock(InternalCache.class);
-  private TypeRegistration typeRegistration = mock(TypeRegistration.class);
-  private TypeRegistry typeRegistry = new TypeRegistry(internalCache, typeRegistration);
+  private final InternalCache internalCache = mock(InternalCache.class);
+  private final TypeRegistration typeRegistration = mock(TypeRegistration.class);
+  private final TypeRegistry typeRegistry = new TypeRegistry(internalCache, typeRegistration);
 
-  private PdxType newType = mock(PdxType.class);
+  private final PdxType newType = mock(PdxType.class);
 
   @Before
   public void setUp() {}

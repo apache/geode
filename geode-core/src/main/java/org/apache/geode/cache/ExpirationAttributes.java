@@ -56,8 +56,8 @@ public class ExpirationAttributes implements DataSerializable {
    * place.
    */
   public ExpirationAttributes() {
-    this.timeout = 0;
-    this.action = ExpirationAction.INVALIDATE;
+    timeout = 0;
+    action = ExpirationAction.INVALIDATE;
   }
 
   /**
@@ -68,8 +68,8 @@ public class ExpirationAttributes implements DataSerializable {
    * @throws IllegalArgumentException if expirationTime is nonpositive
    */
   public ExpirationAttributes(int expirationTime) {
-    this.timeout = expirationTime;
-    this.action = ExpirationAction.INVALIDATE;
+    timeout = expirationTime;
+    action = ExpirationAction.INVALIDATE;
   }
 
   /**
@@ -82,14 +82,14 @@ public class ExpirationAttributes implements DataSerializable {
    */
   public ExpirationAttributes(int expirationTime, ExpirationAction expirationAction) {
     if (expirationTime < 0) {
-      this.timeout = 0;
+      timeout = 0;
     } else {
-      this.timeout = expirationTime;
+      timeout = expirationTime;
     }
     if (expirationAction == null) {
-      this.action = ExpirationAction.INVALIDATE;
+      action = ExpirationAction.INVALIDATE;
     } else {
-      this.action = expirationAction;
+      action = expirationAction;
     }
   }
 
@@ -100,7 +100,7 @@ public class ExpirationAttributes implements DataSerializable {
    *         never expire
    */
   public int getTimeout() {
-    return this.timeout;
+    return timeout;
   }
 
   /**
@@ -109,7 +109,7 @@ public class ExpirationAttributes implements DataSerializable {
    * @return the action to take when expiring
    */
   public ExpirationAction getAction() {
-    return this.action;
+    return action;
   }
 
   @Override
@@ -118,12 +118,12 @@ public class ExpirationAttributes implements DataSerializable {
       return false;
     }
     ExpirationAttributes ea = (ExpirationAttributes) obj;
-    return this.timeout == ea.timeout && this.action == ea.action;
+    return timeout == ea.timeout && action == ea.action;
   }
 
   @Override
   public int hashCode() {
-    return this.timeout ^ this.action.hashCode();
+    return timeout ^ action.hashCode();
   }
 
   /**
@@ -134,10 +134,10 @@ public class ExpirationAttributes implements DataSerializable {
    */
   @Override
   public String toString() {
-    if (this.timeout == 0) {
+    if (timeout == 0) {
       return "NO EXPIRATION";
     }
-    return "timeout: " + this.timeout + ";action: " + this.action;
+    return "timeout: " + timeout + ";action: " + action;
   }
 
   public static ExpirationAttributes createFromData(DataInput in)
@@ -150,19 +150,19 @@ public class ExpirationAttributes implements DataSerializable {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.timeout = in.readInt();
-    this.action = DataSerializer.readObject(in);
+    timeout = in.readInt();
+    action = DataSerializer.readObject(in);
 
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.timeout);
-    DataSerializer.writeObject(this.action, out);
+    out.writeInt(timeout);
+    DataSerializer.writeObject(action, out);
   }
 
   public boolean isDefault() {
-    return (this.action == null || this.action == ExpirationAction.INVALIDATE)
-        && (this.timeout == 0);
+    return (action == null || action == ExpirationAction.INVALIDATE)
+        && (timeout == 0);
   }
 }

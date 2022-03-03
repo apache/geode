@@ -39,7 +39,7 @@ public class ConfigurationChangeResult implements DataSerializable {
 
 
   public ConfigurationChangeResult(String errorMessage, Exception exception) {
-    this.isSuccessful = false;
+    isSuccessful = false;
     this.errorMessage = errorMessage;
     this.exception = exception;
   }
@@ -49,7 +49,7 @@ public class ConfigurationChangeResult implements DataSerializable {
   }
 
   public boolean isSuccessful() {
-    return this.isSuccessful;
+    return isSuccessful;
   }
 
   @Override
@@ -88,10 +88,7 @@ public class ConfigurationChangeResult implements DataSerializable {
     } else if (!exception.equals(other.exception)) {
       return false;
     }
-    if (isSuccessful != other.isSuccessful) {
-      return false;
-    }
-    return true;
+    return isSuccessful == other.isSuccessful;
   }
 
   @Override
@@ -102,34 +99,34 @@ public class ConfigurationChangeResult implements DataSerializable {
 
   public void setException(Exception exception) {
     this.exception = exception;
-    this.isSuccessful = false;
+    isSuccessful = false;
   }
 
   public Exception getException() {
-    return this.exception;
+    return exception;
   }
 
   public void setErrorMessage(String errorMessage) {
-    this.isSuccessful = false;
+    isSuccessful = false;
     this.errorMessage = errorMessage;
   }
 
   public String getErrorMessage() {
-    return this.errorMessage;
+    return errorMessage;
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeBoolean(this.isSuccessful, out);
-    DataSerializer.writeString(this.errorMessage, out);
+    DataSerializer.writeBoolean(isSuccessful, out);
+    DataSerializer.writeString(errorMessage, out);
     DataSerializer.writeObject(exception, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.isSuccessful = DataSerializer.readBoolean(in);
-    this.errorMessage = DataSerializer.readString(in);
-    this.exception = DataSerializer.readObject(in);
+    isSuccessful = DataSerializer.readBoolean(in);
+    errorMessage = DataSerializer.readString(in);
+    exception = DataSerializer.readObject(in);
   }
 
 }

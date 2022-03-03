@@ -20,8 +20,9 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.cache.execute.PRColocationDUnitTestHelper;
+import org.apache.geode.internal.cache.execute.PRColocationDistributedTestHelper;
 
+@SuppressWarnings("serial")
 public class Order implements DataSerializable {
   private String orderName;
 
@@ -30,22 +31,22 @@ public class Order implements DataSerializable {
   }
 
   public Order(String orderName) {
-    this.orderName = orderName + PRColocationDUnitTestHelper.getDefaultAddOnString();
+    this.orderName = orderName + PRColocationDistributedTestHelper.getDefaultAddOnString();
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.orderName = DataSerializer.readString(in);
+    orderName = DataSerializer.readString(in);
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.orderName, out);
+    DataSerializer.writeString(orderName, out);
   }
 
   @Override
   public String toString() {
-    return this.orderName;
+    return orderName;
   }
 
   @Override
@@ -56,9 +57,7 @@ public class Order implements DataSerializable {
 
     if (obj instanceof Order) {
       Order other = (Order) obj;
-      if (other.orderName != null && other.orderName.equals(this.orderName)) {
-        return true;
-      }
+      return other.orderName != null && other.orderName.equals(orderName);
     }
     return false;
   }

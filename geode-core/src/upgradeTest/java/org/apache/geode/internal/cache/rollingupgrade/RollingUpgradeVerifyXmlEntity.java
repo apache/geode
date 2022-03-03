@@ -68,9 +68,12 @@ public class RollingUpgradeVerifyXmlEntity extends RollingUpgrade2DUnitTestBase 
           .invoke(invokeAssertVersion(VersionManager.getInstance().getCurrentVersionOrdinal()));
 
       // Get DistributedMembers of the servers
-      DistributedMember oldServerMember = oldServer.invoke(() -> getDistributedMember());
-      DistributedMember currentServer1Member = currentServer1.invoke(() -> getDistributedMember());
-      DistributedMember currentServer2Member = currentServer2.invoke(() -> getDistributedMember());
+      DistributedMember oldServerMember = oldServer.invoke(
+          RollingUpgrade2DUnitTestBase::getDistributedMember);
+      DistributedMember currentServer1Member = currentServer1.invoke(
+          RollingUpgrade2DUnitTestBase::getDistributedMember);
+      DistributedMember currentServer2Member = currentServer2.invoke(
+          RollingUpgrade2DUnitTestBase::getDistributedMember);
 
       // Register function in all servers
       Function function = new GetDataSerializableFunction();

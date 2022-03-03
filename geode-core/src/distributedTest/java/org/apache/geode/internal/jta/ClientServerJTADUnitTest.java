@@ -66,10 +66,10 @@ import org.apache.geode.util.internal.GeodeGlossary;
 
 public class ClientServerJTADUnitTest extends JUnit4CacheTestCase {
   private static final Logger logger = LogService.getLogger();
-  private String key = "key";
-  private String value = "value";
-  private String newKey = "newKey";
-  private String newValue = "newValue";
+  private final String key = "key";
+  private final String value = "value";
+  private final String newKey = "newKey";
+  private final String newValue = "newValue";
   private final String REGION_NAME = "testRegion";
   final Host host = Host.getHost(0);
   final VM server = host.getVM(0);

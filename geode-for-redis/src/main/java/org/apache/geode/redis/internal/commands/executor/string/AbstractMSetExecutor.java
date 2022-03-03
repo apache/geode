@@ -14,14 +14,9 @@
  */
 package org.apache.geode.redis.internal.commands.executor.string;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
-import static org.apache.geode.redis.internal.commands.executor.BaseSetOptions.Exists.NONE;
-import static org.apache.geode.redis.internal.commands.executor.BaseSetOptions.Exists.NX;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.geode.annotations.Immutable;
 import org.apache.geode.redis.internal.commands.Command;
 import org.apache.geode.redis.internal.commands.executor.CommandExecutor;
 import org.apache.geode.redis.internal.commands.executor.RedisResponse;
@@ -47,7 +42,7 @@ public abstract class AbstractMSetExecutor implements CommandExecutor {
       RedisKey key = new RedisKey(commandElems.get(i));
 
       if (previousKey != null && key.getSlot() != previousKey.getSlot()) {
-        return RedisResponse.crossSlot(ERROR_WRONG_SLOT);
+        return RedisResponse.crossSlot();
       }
       keys.add(key);
       values.add(commandElems.get(i + 1));
@@ -65,29 +60,16 @@ public abstract class AbstractMSetExecutor implements CommandExecutor {
   }
 
   protected void mset(ExecutionHandlerContext context, List<RedisKey> keys, List<byte[]> values,
-      boolean nx) {
-    List<RedisKey> keysToLock = new ArrayList<>(keys.size());
+      SetOptions options) {
+    List<RedisKey> keysToLock = new ArrayList<>(keys);
     RegionProvider regionProvider = context.getRegionProvider();
-    for (RedisKey key : keys) {
-      regionProvider.ensureKeyIsLocal(key);
-      keysToLock.add(key);
-    }
 
-    // Pass a key in so that the bucket will be locked. Since all keys are already guaranteed to be
-    // in the same bucket we can use any key for this.
     context.lockedExecuteInTransaction(keysToLock.get(0), keysToLock,
-        () -> mset0(regionProvider, keys, values, nx));
+        () -> mset0(regionProvider, keys, values, options));
   }
 
-  @Immutable
-  private static final SetOptions msetnxOptions = new SetOptions(NX, 0L, false, true);
-
-  @Immutable
-  private static final SetOptions msetOptions = new SetOptions(NONE, 0L, false, true);
-
   private Void mset0(RegionProvider regionProvider, List<RedisKey> keys, List<byte[]> values,
-      boolean nx) {
-    SetOptions options = nx ? msetnxOptions : msetOptions;
+      SetOptions options) {
     for (int i = 0; i < keys.size(); i++) {
       if (!SetExecutor.set(regionProvider, keys.get(i), values.get(i), options)) {
         // rolls back transaction

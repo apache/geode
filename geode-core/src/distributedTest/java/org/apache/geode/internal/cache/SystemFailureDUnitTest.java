@@ -233,15 +233,12 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   protected static final AtomicInteger listenerCount = new AtomicInteger(0);
 
   protected static Integer getListenerCount() {
-    return new Integer(listenerCount.get());
+    return listenerCount.get();
   }
 
-  private static final Runnable listener1 = new Runnable() {
-    @Override
-    public void run() {
-      org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Inside of preListener1");
-      listenerCount.addAndGet(1);
-    }
+  private static final Runnable listener1 = () -> {
+    org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Inside of preListener1");
+    listenerCount.addAndGet(1);
   };
 
   protected static void setListener1() {
@@ -292,8 +289,8 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   private boolean doVerifyConnected() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
-    Object o = vm.invoke(() -> this.verifyConnected());
-    return ((Boolean) o).booleanValue();
+    Object o = vm.invoke(this::verifyConnected);
+    return (Boolean) o;
   }
 
   protected Boolean verifyConnected() {
@@ -325,7 +322,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   private boolean doVerifyDisconnected() {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
-    return ((Boolean) vm.invoke(() -> this.verifyDisconnected())).booleanValue();
+    return vm.invoke(SystemFailureDUnitTest::verifyDisconnected);
   }
 
   protected static Boolean verifyDisconnected() {
@@ -367,7 +364,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
       if (dm == null) {
         return Boolean.TRUE;
       }
-      return new Boolean(dm.getCancelCriterion().isCancelInProgress());
+      return dm.getCancelCriterion().isCancelInProgress();
     } catch (CancelException e) {
       // TODO -- it would be nice to avoid the checkConnected() call above
       return Boolean.TRUE;
@@ -379,14 +376,14 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   private Object doExec(String method) {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
-    return vm.invoke(this.getClass(), method);
+    return vm.invoke(getClass(), method);
   }
 
   private void doMessage(String text) {
-    Object args[] = new Object[] {text};
+    Object[] args = new Object[] {text};
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
-    vm.invoke(this.getClass(), "message", args);
+    vm.invoke(getClass(), "message", args);
   }
 
   protected static void message(String s) {
@@ -410,7 +407,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     factory.setCacheListener(l);
 
     Region sub = region.createSubregion(name, factory.create());
-    sub.create(name, new Integer(0), sub.getCache().getDistributedSystem().getDistributedMember());
+    sub.create(name, 0, sub.getCache().getDistributedSystem().getDistributedMember());
   }
 
   private static final GenericListener listener_stackOverflow = new GenericListener() {
@@ -502,14 +499,11 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
       long thresh = (long) (avail * 0.40);
       long ferSure = (long) (avail * 0.30);
       SystemFailure.setFailureMemoryThreshold(thresh);
-      SystemFailure.setFailureAction(new Runnable() {
-        @Override
-        public void run() {
-          peskyMemory = null;
-          System.gc();
-          synchronized (SystemFailure.class) {
-            SystemFailure.class.notify();
-          }
+      SystemFailure.setFailureAction(() -> {
+        peskyMemory = null;
+        System.gc();
+        synchronized (SystemFailure.class) {
+          SystemFailure.class.notify();
         }
       });
 
@@ -644,7 +638,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
     Host host = Host.getHost(0);
     VM vm = host.getVM(0);
     try {
-      vm.invoke(this.getClass(), "createEntry", args);
+      vm.invoke(getClass(), "createEntry", args);
     } catch (RMIException e) {
       // expected
     }
@@ -669,7 +663,7 @@ public class SystemFailureDUnitTest extends DistributedCacheTestCase {
   private static Region getRegion() throws CacheException {
 
     Region root = getRootRegion();
-    Region region = root.getSubregion(REGION_NAME);;
+    Region region = root.getSubregion(REGION_NAME);
     if (region == null) {
       AttributesFactory factory = new AttributesFactory();
       factory.setScope(SCOPE);

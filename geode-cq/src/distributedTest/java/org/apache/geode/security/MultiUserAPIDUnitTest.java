@@ -108,18 +108,18 @@ public class MultiUserAPIDUnitTest {
         .isInstanceOf(UnsupportedOperationException.class);
     assertThatThrownBy(() -> region.destroy("key"))
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> region.destroyRegion())
+    assertThatThrownBy(region::destroyRegion)
         .isInstanceOf(UnsupportedOperationException.class);
     assertThatThrownBy(() -> region.registerInterest("key"))
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> region.clear()).isInstanceOf(UnsupportedOperationException.class);
+    assertThatThrownBy(region::clear).isInstanceOf(UnsupportedOperationException.class);
 
 
     assertThatThrownBy(() -> regionView.createSubregion("subRegion", null))
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> regionView.forceRolling())
+    assertThatThrownBy(regionView::forceRolling)
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> regionView.getAttributesMutator())
+    assertThatThrownBy(regionView::getAttributesMutator)
         .isInstanceOf(UnsupportedOperationException.class);
     assertThatThrownBy(() -> regionView.loadSnapshot(null))
         .isInstanceOf(UnsupportedOperationException.class);
@@ -152,9 +152,9 @@ public class MultiUserAPIDUnitTest {
     CqQuery cqQuery =
         pool.getQueryService().newCq("SELECT * FROM " + SEPARATOR + "region",
             new CqAttributesFactory().create());
-    assertThatThrownBy(() -> cqQuery.execute())
+    assertThatThrownBy(cqQuery::execute)
         .hasCauseInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> cqQuery.executeWithInitialResults())
+    assertThatThrownBy(cqQuery::executeWithInitialResults)
         .hasCauseInstanceOf(UnsupportedOperationException.class);
 
     assertThatThrownBy(() -> regionService.getQueryService().getIndexes())
@@ -298,7 +298,7 @@ public class MultiUserAPIDUnitTest {
     CqQuery cqQuery =
         regionService.getQueryService()
             .newCq("select * from /region", new CqAttributesFactory().create());
-    assertThatThrownBy(() -> cqQuery.execute())
+    assertThatThrownBy(cqQuery::execute)
         .hasCauseInstanceOf(AuthenticationFailedException.class);
   }
 }

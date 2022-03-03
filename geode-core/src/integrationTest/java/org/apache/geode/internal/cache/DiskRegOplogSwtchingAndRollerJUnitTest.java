@@ -42,11 +42,11 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
 
   private volatile boolean hasBeenNotified = false;
 
-  private DiskRegionProperties diskProps = new DiskRegionProperties();
+  private final DiskRegionProperties diskProps = new DiskRegionProperties();
 
-  private boolean encounteredException = false;
+  private final boolean encounteredException = false;
 
-  private Object forWaitNotify = new Object();
+  private final Object forWaitNotify = new Object();
 
   private boolean gotNotification = false;
 
@@ -83,7 +83,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
     assertEquals(1, diskDirSize1.length);
     assertTrue("diskSizes != 2048 ", diskSizes1[0] == 2048);
 
-    this.diskAccessExpHelpermethod(region);
+    diskAccessExpHelpermethod(region);
 
     // region.close(); // closes disk file which will flush all buffers
     closeDown();
@@ -120,7 +120,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
     assertEquals(1, diskDirSize1.length);
     assertTrue("diskSizes != 2048 ", diskSizes1[0] == 2048);
 
-    this.diskAccessExpHelpermethod(region);
+    diskAccessExpHelpermethod(region);
 
     // region.close(); // closes disk file which will flush all buffers
     closeDown();
@@ -136,7 +136,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
       }
     } catch (DiskAccessException e) {
       logWriter.error("exception not expected", e);
-      fail("FAILED::" + e.toString());
+      fail("FAILED::" + e);
     }
     try {
       region.put("" + 2, value);
@@ -364,9 +364,9 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
               region.put("1", "2");
             } catch (Exception e) {
               logWriter.error("exception not expected", e);
-              failureCause = "FAILED::" + e.toString();
+              failureCause = "FAILED::" + e;
               testFailed = true;
-              fail("FAILED::" + e.toString());
+              fail("FAILED::" + e);
             }
 
             Thread th = new Thread(new DoesFlush(region));
@@ -384,7 +384,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
       region.put("1", "1");
     } catch (Exception e) {
       logWriter.error("exception not expected", e);
-      fail("FAILED::" + e.toString());
+      fail("FAILED::" + e);
     }
 
     region.forceRolling();
@@ -395,7 +395,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
           region.wait();
         } catch (InterruptedException e) {
           logWriter.error("exception not expected", e);
-          fail("Failed:" + e.toString());
+          fail("Failed:" + e);
         }
       }
     }
@@ -407,7 +407,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
       getValOnDsk = ((LocalRegion) region).getValueOnDisk("1");
     } catch (EntryNotFoundException e1) {
       logWriter.error("exception not expected", e1);
-      fail("Failed:" + e1.toString());
+      fail("Failed:" + e1);
     }
 
     assertTrue(getValOnDsk.equals("2"));
@@ -419,7 +419,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
 
   private class DoesFlush implements Runnable {
 
-    private Region region;
+    private final Region region;
 
     public DoesFlush(Region region) {
       this.region = region;
@@ -459,13 +459,13 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
           if (!callOnce) {
             try {
               for (int i = 0; i < 100; i++) {
-                region.put(new Integer(i), "newVal" + i);
+                region.put(i, "newVal" + i);
               }
             } catch (Exception e) {
               logWriter.error("exception not expected", e);
-              failureCause = "FAILED::" + e.toString();
+              failureCause = "FAILED::" + e;
               testFailed = true;
-              fail("FAILED::" + e.toString());
+              fail("FAILED::" + e);
             }
           }
           callOnce = true;
@@ -484,15 +484,15 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
 
     try {
       for (int i = 0; i < 100; i++) {
-        region.put(new Integer(i), new Integer(i));
+        region.put(i, i);
       }
     } catch (Exception e) {
       logWriter.error("exception not expected", e);
-      fail("FAILED::" + e.toString());
+      fail("FAILED::" + e);
     }
 
     for (int i = 0; i < 100; i++) {
-      assertTrue(region.get(new Integer(i)).equals(new Integer(i)));
+      assertTrue(region.get(i).equals(i));
     }
     region.forceRolling();
 
@@ -509,7 +509,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
     }
 
     for (int i = 0; i < 100; i++) {
-      assertEquals("newVal" + i, region.get(new Integer(i)));
+      assertEquals("newVal" + i, region.get(i));
     }
 
     region.close();
@@ -517,8 +517,8 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
     region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
 
     for (int i = 0; i < 100; i++) {
-      assertTrue(region.containsKey(new Integer(i)));
-      assertEquals("newVal" + i, region.get(new Integer(i)));
+      assertTrue(region.containsKey(i));
+      assertEquals("newVal" + i, region.get(i));
     }
     assertFalse(failureCause, testFailed);
     // region.close();
@@ -550,17 +550,17 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
           if (!callOnce) {
             try {
 
-              region.destroy(new Integer(10));
-              region.destroy(new Integer(20));
-              region.destroy(new Integer(30));
-              region.destroy(new Integer(40));
-              region.destroy(new Integer(50));
+              region.destroy(10);
+              region.destroy(20);
+              region.destroy(30);
+              region.destroy(40);
+              region.destroy(50);
 
             } catch (Exception e) {
               logWriter.error("exception not expected", e);
-              failureCause = "FAILED::" + e.toString();
+              failureCause = "FAILED::" + e;
               testFailed = true;
-              fail("FAILED::" + e.toString());
+              fail("FAILED::" + e);
             }
           }
           callOnce = true;
@@ -580,15 +580,15 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
 
     try {
       for (int i = 0; i < 100; i++) {
-        region.put(new Integer(i), new Integer(i));
+        region.put(i, i);
       }
     } catch (Exception e) {
       logWriter.error("exception not expected", e);
-      fail("FAILED::" + e.toString());
+      fail("FAILED::" + e);
     }
 
     for (int i = 0; i < 100; i++) {
-      assertTrue(region.get(new Integer(i)).equals(new Integer(i)));
+      assertTrue(region.get(i).equals(i));
     }
     region.forceRolling();
 
@@ -617,9 +617,9 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
 
     for (int i = 0; i < 100; i++) {
       if (i == 10 || i == 20 || i == 30 || i == 40 || i == 50) {
-        assertTrue(" failed on key " + i, !region.containsKey(new Integer(i)));
+        assertTrue(" failed on key " + i, !region.containsKey(i));
       } else {
-        assertTrue(region.get(new Integer(i)).equals(new Integer(i)));
+        assertTrue(region.get(i).equals(i));
       }
     }
     assertFalse(failureCause, testFailed);
@@ -690,7 +690,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
               region.put("1", "2");
             } catch (Exception e) {
               logWriter.error("exception not expected", e);
-              fail("FAILED::" + e.toString());
+              fail("FAILED::" + e);
               failureCause = "FAILED::" + e.toString();
               testFailed = true;
             }
@@ -722,7 +722,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
       region.put("1", "1");
     } catch (Exception e) {
       logWriter.error("exception not expected", e);
-      fail("FAILED::" + e.toString());
+      fail("FAILED::" + e);
     }
 
     region.forceRolling();
@@ -745,7 +745,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
       assertTrue((((LocalRegion) region).getValueOnDisk("1")).equals("2"));
     } catch (EntryNotFoundException e1) {
       e1.printStackTrace();
-      fail("Failed:" + e1.toString());
+      fail("Failed:" + e1);
     }
     assertFalse(failureCause, testFailed);
     // region.close(); // closes disk file which will flush all buffers
@@ -754,7 +754,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
 
   private class DoesFlush1 implements Runnable {
 
-    private Region region;
+    private final Region region;
 
     public DoesFlush1(Region region) {
       this.region = region;
@@ -815,7 +815,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
       }
     } catch (Exception e) {
       logWriter.error("exception not expected", e);
-      fail("FAILED::" + e.toString());
+      fail("FAILED::" + e);
     }
 
     // Check region stats

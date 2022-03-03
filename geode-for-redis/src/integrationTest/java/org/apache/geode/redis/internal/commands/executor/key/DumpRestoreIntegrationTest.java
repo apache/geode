@@ -15,6 +15,8 @@
 
 package org.apache.geode.redis.internal.commands.executor.key;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_RESTORE_INVALID_PAYLOAD;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.RADISH_DUMP_HEADER;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -42,14 +44,14 @@ public class DumpRestoreIntegrationTest extends AbstractDumpRestoreIntegrationTe
   public void restoreWithIdletime_isNotSupported() {
     assertThatThrownBy(
         () -> jedis.sendCommand("key", Protocol.Command.RESTORE, "key", "0", "", "IDLETIME", "1"))
-            .hasMessageContaining("ERR syntax error");
+            .hasMessage(ERROR_SYNTAX);
   }
 
   @Test
   public void restoreWithFreq_isNotSupported() {
     assertThatThrownBy(
         () -> jedis.sendCommand("key", Protocol.Command.RESTORE, "key", "0", "", "FREQ", "1"))
-            .hasMessageContaining("ERR syntax error");
+            .hasMessage(ERROR_SYNTAX);
   }
 
   @Test
@@ -61,7 +63,7 @@ public class DumpRestoreIntegrationTest extends AbstractDumpRestoreIntegrationTe
 
     assertThatThrownBy(
         () -> jedis.restore("key", 0L, baos.toByteArray()))
-            .hasMessageContaining("ERR DUMP payload version or checksum are wrong");
+            .hasMessage(ERROR_RESTORE_INVALID_PAYLOAD);
   }
 
 }

@@ -166,7 +166,7 @@ public class LocatorDUnitTest implements Serializable {
 
     hostName = NetworkUtils.getServerHostName();
 
-    int ports[] = AvailablePortHelper.getRandomAvailableTCPPorts(4);
+    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(4);
     port1 = ports[0];
     port2 = ports[1];
     port3 = ports[2];
@@ -848,10 +848,10 @@ public class LocatorDUnitTest implements Serializable {
     assertTrue("Distributed system should not have disconnected", isSystemConnected());
 
     assertTrue("Distributed system should not have disconnected",
-        vm2.invoke(() -> isSystemConnected()));
+        vm2.invoke(LocatorDUnitTest::isSystemConnected));
 
     assertTrue("Distributed system should not have disconnected",
-        vm3.invoke(() -> isSystemConnected()));
+        vm3.invoke(LocatorDUnitTest::isSystemConnected));
 
     vm2.invokeAsync(crashSystem);
 
@@ -1150,8 +1150,8 @@ public class LocatorDUnitTest implements Serializable {
 
     getBlackboard().signalGate("startLocators");
     int expectedCount = asyncInvocations.size() - 1;
-    for (int i = 0; i < asyncInvocations.size(); i++) {
-      asyncInvocations.get(i).await();
+    for (AsyncInvocation<Object> asyncInvocation : asyncInvocations) {
+      asyncInvocation.await();
     }
     for (int i = 0; i < asyncInvocations.size(); i++) {
       assertTrue(getVM(i).invoke("assert all in same cluster", () -> CacheFactory

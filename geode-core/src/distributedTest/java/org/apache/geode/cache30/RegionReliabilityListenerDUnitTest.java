@@ -60,7 +60,7 @@ public class RegionReliabilityListenerDUnitTest extends ReliabilityTestCase {
    */
   @Test
   public void testRoleGainAndLoss() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int vm0 = 0;
     final int vm1 = 1;
     final int vm2 = 2;

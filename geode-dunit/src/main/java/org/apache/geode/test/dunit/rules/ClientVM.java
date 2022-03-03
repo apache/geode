@@ -21,7 +21,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.rules.VMProvider;
 
 public class ClientVM extends VMProvider implements Serializable {
-  private VM vm;
+  private final VM vm;
 
   public ClientVM(VM vm) {
     this.vm = vm;

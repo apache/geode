@@ -844,7 +844,6 @@ public class LinuxProcFsStatistics {
     protected void skipTokens(int numberToSkip) {
       int remaining = numberToSkip + 1;
       while (--remaining > 0 && skipToken()) {
-        ;
       }
     }
 

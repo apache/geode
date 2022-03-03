@@ -35,15 +35,15 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 
 public class GatewayReceiverCreateFunctionTest {
 
-  private GatewayReceiverCreateFunction function = mock(GatewayReceiverCreateFunction.class);
+  private final GatewayReceiverCreateFunction function = mock(GatewayReceiverCreateFunction.class);
 
   @SuppressWarnings("unchecked")
-  private FunctionContext<Object[]> context = mock(FunctionContext.class);
-  private Cache cache = mock(Cache.class);
-  private GatewayReceiverConfig args = mock(GatewayReceiverConfig.class);
-  private GatewayReceiver receiver = mock(GatewayReceiver.class);
+  private final FunctionContext<Object[]> context = mock(FunctionContext.class);
+  private final Cache cache = mock(Cache.class);
+  private final GatewayReceiverConfig args = mock(GatewayReceiverConfig.class);
+  private final GatewayReceiver receiver = mock(GatewayReceiver.class);
   @SuppressWarnings("unchecked")
-  private ResultSender<Object> resultSender = mock(ResultSender.class);
+  private final ResultSender<Object> resultSender = mock(ResultSender.class);
 
   @Before
   public void setup() {

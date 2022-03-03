@@ -66,7 +66,7 @@ public class EventStateHelper {
     for (EventStateMemberIdentifier memberId : groupedThreadIds.keySet()) {
       if (!seenIds.containsKey(memberId)) {
         orderedIds.add(memberId);
-        seenIds.put(memberId, Integer.valueOf(seenIds.size()));
+        seenIds.put(memberId, seenIds.size());
       }
     }
 
@@ -79,7 +79,7 @@ public class EventStateHelper {
     for (Map.Entry<EventStateMemberIdentifier, Map<ThreadIdentifier, Object>> memberIdEntry : groupedThreadIds
         .entrySet()) {
       EventStateMemberIdentifier memberId = memberIdEntry.getKey();
-      dop.writeInt(seenIds.get(memberId).intValue());
+      dop.writeInt(seenIds.get(memberId));
       Map<ThreadIdentifier, Object> threadIdMap = memberIdEntry.getValue();
       dop.writeInt(threadIdMap.size());
       for (Object next : threadIdMap.entrySet()) {
@@ -116,7 +116,7 @@ public class EventStateHelper {
     int numIds = dip.readInt();
     Map<Integer, byte[]> numberToMember = new HashMap();
     for (int i = 0; i < numIds; i++) {
-      numberToMember.put(Integer.valueOf(i), DataSerializer.readByteArray(dip));
+      numberToMember.put(i, DataSerializer.readByteArray(dip));
     }
 
     int size = dip.readInt();
@@ -149,7 +149,7 @@ public class EventStateHelper {
   private static Map<EventStateMemberIdentifier, Map<ThreadIdentifier, Object>> groupThreadIds(
       Map eventState) {
     Map<EventStateMemberIdentifier, Map<ThreadIdentifier, Object>> results =
-        new HashMap<EventStateMemberIdentifier, Map<ThreadIdentifier, Object>>();
+        new HashMap<>();
     for (Object next : eventState.entrySet()) {
       Map.Entry entry = (Map.Entry) next;
       ThreadIdentifier key = (ThreadIdentifier) entry.getKey();
@@ -157,7 +157,7 @@ public class EventStateHelper {
       Object value = entry.getValue();
       Map<ThreadIdentifier, Object> subMap = results.get(memberId);
       if (subMap == null) {
-        subMap = new HashMap<ThreadIdentifier, Object>();
+        subMap = new HashMap<>();
         results.put(memberId, subMap);
       }
       subMap.put(key, value);
@@ -193,10 +193,7 @@ public class EventStateHelper {
         return false;
       }
       EventStateMemberIdentifier other = (EventStateMemberIdentifier) obj;
-      if (!Arrays.equals(bytes, other.bytes)) {
-        return false;
-      }
-      return true;
+      return Arrays.equals(bytes, other.bytes);
     }
   }
 }

@@ -215,9 +215,9 @@ public class CacheRealizationFunction implements InternalFunction<List> {
         stagedJars.add(tempJar.toFile());
       }
     } catch (IOException iox) {
-      for (int i = 0; i < jarStreams.size(); i++) {
+      for (RemoteInputStream jarStream : jarStreams) {
         try {
-          jarStreams.get(i).close(true);
+          jarStream.close(true);
         } catch (IOException ex) {
           // Ignored
         }

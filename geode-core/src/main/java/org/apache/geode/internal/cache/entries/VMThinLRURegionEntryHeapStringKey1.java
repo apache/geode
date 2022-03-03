@@ -73,13 +73,13 @@ public class VMThinLRURegionEntryHeapStringKey1 extends VMThinLRURegionEntryHeap
       }
     }
     tempBits1 |= key.length();
-    this.bits1 = tempBits1;
+    bits1 = tempBits1;
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   protected Object getValueField() {
-    return this.value;
+    return value;
   }
 
   @Override
@@ -99,7 +99,7 @@ public class VMThinLRURegionEntryHeapStringKey1 extends VMThinLRURegionEntryHeap
 
   @Override
   public int getEntryHash() {
-    return this.hash;
+    return hash;
   }
 
   @Override
@@ -109,7 +109,7 @@ public class VMThinLRURegionEntryHeapStringKey1 extends VMThinLRURegionEntryHeap
 
   @Override
   public HashEntry<Object, Object> getNextEntry() {
-    return this.nextEntry;
+    return nextEntry;
   }
 
   @Override
@@ -186,7 +186,7 @@ public class VMThinLRURegionEntryHeapStringKey1 extends VMThinLRURegionEntryHeap
 
   @Override
   public EvictionNode next() {
-    return this.nextEvictionNode;
+    return nextEvictionNode;
   }
 
   @Override
@@ -196,12 +196,12 @@ public class VMThinLRURegionEntryHeapStringKey1 extends VMThinLRURegionEntryHeap
 
   @Override
   public EvictionNode previous() {
-    return this.previousEvictionNode;
+    return previousEvictionNode;
   }
 
   @Override
   public int getEntrySize() {
-    return this.size;
+    return size;
   }
 
   protected void setEntrySize(final int size) {
@@ -218,20 +218,20 @@ public class VMThinLRURegionEntryHeapStringKey1 extends VMThinLRURegionEntryHeap
   // ----------------------------------------- key code -------------------------------------------
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   private int getKeyLength() {
-    return (int) (this.bits1 & 0x003fL);
+    return (int) (bits1 & 0x003fL);
   }
 
   private int getEncoding() {
     // 0 means encoded as char
     // 1 means encoded as bytes that are all <= 0x7f;
-    return (int) (this.bits1 >> 6) & 0x03;
+    return (int) (bits1 >> 6) & 0x03;
   }
 
   @Override
   public Object getKey() {
     int keyLength = getKeyLength();
     char[] chars = new char[keyLength];
-    long tempBits1 = this.bits1;
+    long tempBits1 = bits1;
     if (getEncoding() == 1) {
       for (int i = 0; i < keyLength; i++) {
         tempBits1 >>= 8;
@@ -253,7 +253,7 @@ public class VMThinLRURegionEntryHeapStringKey1 extends VMThinLRURegionEntryHeap
       String stringKey = (String) key;
       int keyLength = getKeyLength();
       if (stringKey.length() == keyLength) {
-        long tempBits1 = this.bits1;
+        long tempBits1 = bits1;
         if (getEncoding() == 1) {
           for (int i = 0; i < keyLength; i++) {
             tempBits1 >>= 8;

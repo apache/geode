@@ -15,7 +15,6 @@
 package org.apache.geode.sequence;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
@@ -51,8 +50,8 @@ public class GemfireSequenceDisplay {
   private JLabel selectedGraphsLabel;
   private SelectGraphDialog selectGraphDialog;
 
-  private Map<GraphID, Map<String, Lifeline>> lineMap = new HashMap();
-  private Map<GraphID, List<Arrow>> arrowMap = new HashMap();
+  private final Map<GraphID, Map<String, Lifeline>> lineMap = new HashMap();
+  private final Map<GraphID, List<Arrow>> arrowMap = new HashMap();
   private SequenceDiagram sequenceDiagram;
   private JFrame frame;
   private SequencePanel sequencePanel;
@@ -99,13 +98,7 @@ public class GemfireSequenceDisplay {
     selectGraphs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, ActionEvent.ALT_MASK));
     selectGraphs.getAccessibleContext().setAccessibleDescription("Select what graphs to display");
     selectGraphs.setActionCommand("selectgraphs");
-    selectGraphs.addActionListener(new ActionListener() {
-
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        showGraphSelector();
-      }
-    });
+    selectGraphs.addActionListener(e -> showGraphSelector());
 
     sequenceMenu.add(selectGraphs);
     frame.setJMenuBar(menuBar);
@@ -113,13 +106,7 @@ public class GemfireSequenceDisplay {
 
   private void createSelectGraphDialog(final GraphSet graphs) {
     selectGraphDialog = new SelectGraphDialog(graphs);
-    selectGraphDialog.addSelectionListener(new SelectGraphDialog.SelectionListener() {
-
-      @Override
-      public void selectionChanged(List<GraphID> selectedIds) {
-        updateGraphs(selectedIds);
-      }
-    });
+    selectGraphDialog.addSelectionListener(this::updateGraphs);
     selectGraphDialog.pack();
   }
 
@@ -150,10 +137,10 @@ public class GemfireSequenceDisplay {
 
   // private static SequenceDiagram createSequenceDiagram() {
   // long startTime = System.currentTimeMillis();
-  // List<Lifeline> lines = new ArrayList<Lifeline>();
-  // List<Arrow> arrows = new ArrayList<Arrow>();
+  // List<Lifeline> lines = new ArrayList<>();
+  // List<Arrow> arrows = new ArrayList<>();
   // for(int i =0 ; i < 10; i++) {
-  // List<LifelineState> states = new ArrayList<LifelineState>();
+  // List<LifelineState> states = new ArrayList<>();
   // for(int j =0; j < 5; j++) {
   // LifelineState state = new LifelineState(startTime + 20* j, startTime + 20 * j + 20);
   // states.add(state);
@@ -178,9 +165,9 @@ public class GemfireSequenceDisplay {
       GraphID graphId = entry.getKey();
       Graph graph = entry.getValue();
       Map<String, Lifeline> lines =
-          new LinkedHashMap<String, Lifeline>(graphs.getLocations().size());
-      List<Arrow> arrows = new ArrayList<Arrow>();
-      Map<Vertex, LifelineState> states = new HashMap<Vertex, LifelineState>();
+          new LinkedHashMap<>(graphs.getLocations().size());
+      List<Arrow> arrows = new ArrayList<>();
+      Map<Vertex, LifelineState> states = new HashMap<>();
       for (String location : graphs.getLocations()) {
         lines.put(location, new Lifeline(graphId, location));
       }
@@ -244,10 +231,10 @@ public class GemfireSequenceDisplay {
 
   public static void main(String[] args) throws IOException {
     File[] files;
-    Set<String> keyFilters = new HashSet<String>();
+    Set<String> keyFilters = new HashSet<>();
     boolean areGemfireLogs = false;
     if (args.length > 0) {
-      ArrayList<File> fileList = new ArrayList<File>();
+      ArrayList<File> fileList = new ArrayList<>();
       for (int i = 0; i < args.length; i++) {
         String arg = args[i];
         if (arg.equals("-filterkey")) {
@@ -278,12 +265,7 @@ public class GemfireSequenceDisplay {
     final GemfireSequenceDisplay display = new GemfireSequenceDisplay();
     // Schedule a job for the event-dispatching thread:
     // creating and showing this application's GUI.
-    javax.swing.SwingUtilities.invokeLater(new Runnable() {
-      @Override
-      public void run() {
-        display.createAndShowGUI(graphs, lineMapper);
-      }
-    });
+    javax.swing.SwingUtilities.invokeLater(() -> display.createAndShowGUI(graphs, lineMapper));
   }
 
   private static GraphSet getGraphs(boolean useLogFiles, Set<String> keyFilters, File[] files)
@@ -310,7 +292,7 @@ public class GemfireSequenceDisplay {
   }
 
   private static class KeyFilter implements Filter {
-    Set<Pattern> patterns = new HashSet<Pattern>();
+    Set<Pattern> patterns = new HashSet<>();
 
 
     public KeyFilter(Set<String> keyFilters) {

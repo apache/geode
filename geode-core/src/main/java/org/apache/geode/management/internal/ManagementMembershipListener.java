@@ -38,7 +38,7 @@ public class ManagementMembershipListener implements MembershipListener {
   /**
    * Resource Manager
    */
-  private SystemManagementService service;
+  private final SystemManagementService service;
 
   public ManagementMembershipListener(SystemManagementService service) {
     this.service = service;

@@ -194,7 +194,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
   @Test
   public void testColocation_FPRs_ChildUsingAttributesOfParent() {
     for (VM vm : asList(vm0, vm1, vm2, vm3)) {
-      vm.invoke(() -> createCache());
+      vm.invoke(this::createCache);
     }
 
     vm0.invoke(() -> new RegionBuilder<>()
@@ -280,7 +280,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
   @Test
   public void testColocation_FPR_Persistence_ChildUsingAttributesOfParent() {
     for (VM vm : asList(vm0, vm1, vm2, vm3)) {
-      vm.invoke(() -> createCache());
+      vm.invoke(this::createCache);
     }
 
     vm0.invoke(() -> new RegionBuilder<>()
@@ -373,7 +373,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
   @Test
   public void testColocation_FPRs_ChildUsingAttributesOfParent_HA() {
     for (VM vm : asList(vm0, vm1, vm2)) {
-      vm.invoke(() -> createCache());
+      vm.invoke(this::createCache);
     }
 
     vm0.invoke(() -> new RegionBuilder<>()
@@ -447,7 +447,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
     vm2.invoke(() -> validatePrimaryBucketsForColocation(20, 10));
 
 
-    vm2.invoke(() -> closeCache());
+    vm2.invoke(this::closeCache);
 
     for (VM vm : asList(vm0, vm1)) {
       vm.invoke(() -> validatePrimaryBucketsForColocationAfterCacheClosed(15, 5));
@@ -483,7 +483,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
           .colocatedWith(ORDERS_REGION)
           .create(SHIPMENTS_REGION);
 
-      await().until(() -> observer.isRecoveryFinished());
+      await().until(observer::isRecoveryFinished);
     });
 
     vm0.invoke(() -> validateColocatedData(10));
@@ -520,7 +520,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
           .colocatedWith(ORDERS_REGION)
           .create(SHIPMENTS_REGION);
 
-      await().until(() -> observer.isRecoveryFinished());
+      await().until(observer::isRecoveryFinished);
     });
 
     vm0.invoke(() -> validateColocatedData(10));
@@ -533,7 +533,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
   @Test
   public void testColocation_FPR_Persistence_ChildUsingAttributesOfParent_HA() {
     for (VM vm : asList(vm0, vm1, vm2)) {
-      vm.invoke(() -> createCache());
+      vm.invoke(this::createCache);
     }
 
     vm0.invoke(() -> new RegionBuilder<>()
@@ -611,7 +611,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
     vm1.invoke(() -> validatePrimaryBucketsForColocation(15, 5));
     vm2.invoke(() -> validatePrimaryBucketsForColocation(20, 10));
 
-    vm2.invoke(() -> closeCache());
+    vm2.invoke(this::closeCache);
 
     for (VM vm : asList(vm0, vm1)) {
       vm.invoke(() -> validatePrimaryBucketsForColocationAfterCacheClosed(15, 5));
@@ -647,7 +647,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
           .colocatedWith(ORDERS_REGION)
           .create(SHIPMENTS_REGION);
 
-      await().until(() -> observer.isRecoveryFinished());
+      await().until(observer::isRecoveryFinished);
     });
 
     vm0.invoke(() -> validateColocatedData(10));
@@ -684,7 +684,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
           .colocatedWith(ORDERS_REGION)
           .create(SHIPMENTS_REGION);
 
-      await().until(() -> observer.isRecoveryFinished());
+      await().until(observer::isRecoveryFinished);
     });
 
     vm0.invoke(() -> validateColocatedData(10));
@@ -824,7 +824,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
     }
 
     for (VM vm : asList(vm0, vm1)) {
-      vm.invoke(() -> closeCache());
+      vm.invoke(this::closeCache);
     }
 
     vm1.invoke(() -> {
@@ -842,7 +842,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
           .persistent(true)
           .create(QUARTERS_REGION);
 
-      await().until(() -> observer.isRecoveryFinished());
+      await().until(observer::isRecoveryFinished);
     });
 
     vm1.invoke(() -> {
@@ -868,7 +868,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
           .persistent(true)
           .create(QUARTERS_REGION);
 
-      await().until(() -> observer.isRecoveryFinished());
+      await().until(observer::isRecoveryFinished);
     });
 
     vm0.invoke(() -> validatePrimaryData(27 * 2, Q1, Q2));
@@ -889,7 +889,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
   @Test
   public void testColocation_FPR_Persistence_Colocation_OneMemberAlive() {
     for (VM vm : asList(vm0, vm1)) {
-      vm.invoke(() -> createCache());
+      vm.invoke(this::createCache);
     }
 
     vm0.invoke(() -> new RegionBuilder<>()
@@ -951,7 +951,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
       vm.invoke(() -> validatePrimaryBucketsForColocation(10, 5));
     }
 
-    vm1.invoke(() -> closeCache());
+    vm1.invoke(this::closeCache);
 
     vm0.invoke(() -> {
       putCustomersData(20, integer -> integer % 2 == 1);
@@ -992,7 +992,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
           .colocatedWith(ORDERS_REGION)
           .create(SHIPMENTS_REGION);
 
-      await().until(() -> observer.isRecoveryFinished());
+      await().until(observer::isRecoveryFinished);
     });
 
     for (VM vm : asList(vm0, vm1)) {
@@ -1010,7 +1010,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
   @Test
   public void testColocation_FPR_Persistence_Colocation() {
     for (VM vm : asList(vm0, vm1)) {
-      vm.invoke(() -> createCache());
+      vm.invoke(this::createCache);
     }
 
     vm0.invoke(() -> new RegionBuilder<>()
@@ -1073,7 +1073,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
     }
 
     for (VM vm : asList(vm0, vm1)) {
-      vm.invoke(() -> closeCache());
+      vm.invoke(this::closeCache);
     }
 
     vm1.invoke(() -> {
@@ -1091,7 +1091,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
           .persistent(true)
           .create(CUSTOMERS_REGION);
 
-      await().until(() -> observer.isRecoveryFinished());
+      await().until(observer::isRecoveryFinished);
 
       validateCustomersData();
     });
@@ -1135,7 +1135,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
     }
 
     for (VM vm : asList(vm0, vm1)) {
-      vm.invoke(() -> closeCache());
+      vm.invoke(this::closeCache);
     }
 
     AsyncInvocation<Void> createRegionInVM1 = vm1.invokeAsync(() -> {
@@ -1244,7 +1244,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
     }
 
     for (VM vm : asList(vm0, vm1, vm2, vm3)) {
-      vm.invoke(() -> closeCache());
+      vm.invoke(this::closeCache);
     }
 
     AsyncInvocation<Void> createRegionInVM3 = vm3.invokeAsync(() -> {
@@ -1262,7 +1262,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
           .persistent(true)
           .create(QUARTERS_REGION);
 
-      await().until(() -> observer.isRecoveryFinished());
+      await().until(observer::isRecoveryFinished);
     });
 
     AsyncInvocation<Void> createRegionInVM2 = vm2.invokeAsync(() -> {
@@ -1280,7 +1280,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
           .persistent(true)
           .create(QUARTERS_REGION);
 
-      await().until(() -> observer.isRecoveryFinished());
+      await().until(observer::isRecoveryFinished);
     });
 
     AsyncInvocation<Void> createRegionInVM1 = vm1.invokeAsync(() -> {
@@ -1298,7 +1298,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
           .persistent(true)
           .create(QUARTERS_REGION);
 
-      await().until(() -> observer.isRecoveryFinished());
+      await().until(observer::isRecoveryFinished);
     });
 
     AsyncInvocation<Void> createRegionInVM0 = vm0.invokeAsync(() -> {
@@ -1316,7 +1316,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
           .persistent(true)
           .create(QUARTERS_REGION);
 
-      await().until(() -> observer.isRecoveryFinished());
+      await().until(observer::isRecoveryFinished);
     });
 
     createRegionInVM3.await();
@@ -1368,7 +1368,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest implements S
     vm0.invoke(() -> putQuartersData());
 
     for (VM vm : asList(vm0, vm1)) {
-      vm.invoke(() -> closeCache());
+      vm.invoke(this::closeCache);
     }
 
     vm1.invoke(() -> {

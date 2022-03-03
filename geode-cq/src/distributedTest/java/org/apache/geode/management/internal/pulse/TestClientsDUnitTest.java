@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.pulse;
 
-import static java.lang.Integer.valueOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -53,9 +52,7 @@ public class TestClientsDUnitTest extends ManagementTestBase {
         final ManagementService service = getManagementService();
         final DistributedSystemMXBean bean = service.getDistributedSystemMXBean();
         if (bean != null) {
-          if (bean.getNumClients() > 0) {
-            return true;
-          }
+          return bean.getNumClients() > 0;
         }
         return false;
       }
@@ -69,7 +66,7 @@ public class TestClientsDUnitTest extends ManagementTestBase {
     GeodeAwaitility.await().untilAsserted(waitCriteria);
     final DistributedSystemMXBean bean = getManagementService().getDistributedSystemMXBean();
     assertNotNull(bean);
-    return valueOf(bean.getNumClients());
+    return bean.getNumClients();
   }
 
   protected CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest();
@@ -81,11 +78,11 @@ public class TestClientsDUnitTest extends ManagementTestBase {
     VM client = managedNodeList.get(2);
     int serverPort = AvailablePortHelper.getRandomAvailableTCPPort();
     cqDUnitTest.createServer(server, serverPort);
-    final int port = server.invoke(() -> CqQueryDUnitTest.getCacheServerPort());
+    final int port = server.invoke(CqQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(server.getHost());
     cqDUnitTest.createClient(client, port, host0);
     Integer numOfClients =
-        (Integer) managingNode.invoke(() -> TestClientsDUnitTest.getNumOfClients());
+        managingNode.invoke(TestClientsDUnitTest::getNumOfClients);
     LogWriterUtils.getLogWriter().info("testNumOfClients numOfClients = " + numOfClients);
     cqDUnitTest.closeClient(client);
     cqDUnitTest.closeServer(server);

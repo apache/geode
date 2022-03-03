@@ -33,13 +33,13 @@ public class ManagementCacheListener extends CacheListenerAdapter<String, Object
 
   private static final Logger logger = LogService.getLogger();
 
-  private MBeanProxyFactory proxyHelper;
+  private final MBeanProxyFactory proxyHelper;
 
   private volatile boolean readyForEvents;
 
   public ManagementCacheListener(MBeanProxyFactory proxyHelper) {
     this.proxyHelper = proxyHelper;
-    this.readyForEvents = false;
+    readyForEvents = false;
   }
 
   @Override

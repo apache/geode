@@ -28,7 +28,6 @@ import java.nio.channels.SocketChannel;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.distributed.internal.DMStats;
@@ -106,13 +105,10 @@ public class NioPlainEngineTest {
     SocketChannel mockChannel = mock(SocketChannel.class);
 
     // simulate some socket reads
-    when(mockChannel.read(any(ByteBuffer.class))).thenAnswer(new Answer<Integer>() {
-      @Override
-      public Integer answer(InvocationOnMock invocation) throws Throwable {
-        ByteBuffer buffer = invocation.getArgument(0);
-        buffer.position(buffer.position() + individualRead);
-        return individualRead;
-      }
+    when(mockChannel.read(any(ByteBuffer.class))).thenAnswer((Answer<Integer>) invocation -> {
+      ByteBuffer buffer = invocation.getArgument(0);
+      buffer.position(buffer.position() + individualRead);
+      return individualRead;
     });
 
     nioEngine.lastReadPosition = 10;

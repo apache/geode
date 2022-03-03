@@ -51,7 +51,7 @@ import org.apache.geode.test.version.VersionManager;
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class OperationManagementUpgradeTest {
   private final String oldVersion;
-  private VM vm;
+  private final VM vm;
 
   @Parameterized.Parameters(name = "{0}")
   public static Collection<String> data() {

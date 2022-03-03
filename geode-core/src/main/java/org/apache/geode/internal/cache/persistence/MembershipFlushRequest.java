@@ -74,7 +74,7 @@ public class MembershipFlushRequest extends PooledDistributionMessage implements
       // otherwise we could have a distributed deadlock
 
       Cache cache = dm.getExistingCache();
-      PartitionedRegion region = (PartitionedRegion) cache.getRegion(this.regionPath);
+      PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionPath);
       if (region != null && region.getRegionAdvisor().isInitialized()) {
         ProxyBucketRegion[] proxyBuckets = region.getRegionAdvisor().getProxyBucketArray();
         // buckets are null if initPRInternals is still not complete

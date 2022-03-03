@@ -44,7 +44,7 @@ public class FetchDistLockInfoRequest extends AdminRequest {
    */
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    return FetchDistLockInfoResponse.create(dm, this.getSender());
+    return FetchDistLockInfoResponse.create(dm, getSender());
   }
 
   @Override
@@ -67,6 +67,6 @@ public class FetchDistLockInfoRequest extends AdminRequest {
   @Override
   public String toString() {
     return String.format("FetchDistLockInfoRequest from %s",
-        this.getSender());
+        getSender());
   }
 }

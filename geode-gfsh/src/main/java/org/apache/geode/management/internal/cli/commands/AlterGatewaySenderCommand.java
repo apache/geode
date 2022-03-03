@@ -245,7 +245,7 @@ public class AlterGatewaySenderCommand extends SingleGfshCommand {
 
   private CacheConfig.GatewaySender findGatewaySenderConfiguration(String gwId) {
     CacheConfig.GatewaySender gwsender = null;
-    InternalConfigurationPersistenceService ccService = this.getConfigurationPersistenceService();
+    InternalConfigurationPersistenceService ccService = getConfigurationPersistenceService();
     if (ccService == null) {
       return null;
     }

@@ -152,7 +152,7 @@ public class EventTrackerDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Create Create Region in the client
-    final int port = serverVM.invoke(() -> EventTrackerDUnitTest.getCacheServerPort());
+    final int port = serverVM.invoke(EventTrackerDUnitTest::getCacheServerPort);
     final String hostName = NetworkUtils.getServerHostName(host);
     clientVM.invoke(new CacheSerializableRunnable("Create client") {
       @Override
@@ -233,7 +233,7 @@ public class EventTrackerDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Create Create Region in the client
-    final int port = serverVM.invoke(() -> EventTrackerDUnitTest.getCacheServerPort());
+    final int port = serverVM.invoke(EventTrackerDUnitTest::getCacheServerPort);
     final String hostName = NetworkUtils.getServerHostName(host);
     clientVM.invoke(new CacheSerializableRunnable("Create client") {
       @Override
@@ -317,7 +317,7 @@ public class EventTrackerDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(createRegion);
 
     // Create Create Region in the client
-    final int port = vm0.invoke(() -> EventTrackerDUnitTest.getCacheServerPort());
+    final int port = vm0.invoke(EventTrackerDUnitTest::getCacheServerPort);
     final String hostName = NetworkUtils.getServerHostName(host);
     vm2.invoke(new CacheSerializableRunnable("Create client") {
       @Override
@@ -475,7 +475,7 @@ public class EventTrackerDUnitTest extends JUnit4CacheTestCase {
 
   public void createPRInVMs(VM... vms) {
     for (VM vm : vms) {
-      vm.invoke(() -> createPR());
+      vm.invoke(this::createPR);
     }
   }
 
@@ -489,7 +489,7 @@ public class EventTrackerDUnitTest extends JUnit4CacheTestCase {
 
   public void doPutsInVMs(VM... vms) {
     for (VM vm : vms) {
-      vm.invoke(() -> doPuts());
+      vm.invoke(this::doPuts);
     }
   }
 

@@ -101,14 +101,14 @@ public class NettyRedisServer {
     this.member = member;
     this.securityService = securityService;
 
-    this.writeTimeoutSeconds =
+    writeTimeoutSeconds =
         getIntegerSystemProperty(WRITE_TIMEOUT_SECONDS, DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS, 1);
 
     selectorGroup = createEventLoopGroup("Selector", true, 1);
     workerGroup = createEventLoopGroup("Worker", true, 0);
 
     try {
-      this.bindAddress = getBindAddress(requestedAddress);
+      bindAddress = getBindAddress(requestedAddress);
       serverChannel = createChannel(port);
     } catch (ManagementException e) {
       stop();

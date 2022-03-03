@@ -37,7 +37,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 
 public class RegionVersionVectorIntegrationTest {
 
-  private Properties props = new Properties();
+  private final Properties props = new Properties();
   private InternalCache cache = null;
   private final String REGION_NAME = "region";
   private Region region = null;

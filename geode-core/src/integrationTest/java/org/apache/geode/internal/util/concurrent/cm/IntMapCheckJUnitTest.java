@@ -46,7 +46,7 @@ public class IntMapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
   static int absentSize;
   static int absentMask;
   static Integer[] absent;
-  static final Integer MISSING = new Integer(Integer.MIN_VALUE);
+  static final Integer MISSING = Integer.MIN_VALUE;
   static TestTimer timer = new TestTimer();
 
   static void reallyAssert(boolean b) {
@@ -93,12 +93,12 @@ public class IntMapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
     absentMask = absentSize - 1;
     absent = new Integer[absentSize];
     for (int i = 0; i < absentSize; ++i) {
-      absent[i] = new Integer(2 * (i - 1) + 1);
+      absent[i] = 2 * (i - 1) + 1;
     }
 
     Integer[] key = new Integer[size];
     for (int i = 0; i < size; ++i) {
-      key[i] = new Integer(2 * i);
+      key[i] = 2 * i;
     }
 
     for (int rep = 0; rep < numTests; ++rep) {
@@ -273,8 +273,8 @@ public class IntMapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
   static void ittest1(Map s, int size) {
     int sum = 0;
     timer.start("Iter Key               ", size);
-    for (Iterator it = s.keySet().iterator(); it.hasNext();) {
-      if (it.next() != MISSING) {
+    for (final Object o : s.keySet()) {
+      if (o != MISSING) {
         ++sum;
       }
     }
@@ -285,8 +285,8 @@ public class IntMapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
   static void ittest2(Map s, int size) {
     int sum = 0;
     timer.start("Iter Value             ", size);
-    for (Iterator it = s.values().iterator(); it.hasNext();) {
-      if (it.next() != MISSING) {
+    for (final Object o : s.values()) {
+      if (o != MISSING) {
         ++sum;
       }
     }
@@ -297,8 +297,8 @@ public class IntMapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
   static void ittest3(Map s, int size) {
     int sum = 0;
     timer.start("Iter Entry             ", size);
-    for (Iterator it = s.entrySet().iterator(); it.hasNext();) {
-      if (it.next() != MISSING) {
+    for (final Object o : s.entrySet()) {
+      if (o != MISSING) {
         ++sum;
       }
     }
@@ -442,7 +442,7 @@ public class IntMapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
     timer.start("Put (putAll)           ", size * 2);
     Map s2 = null;
     try {
-      s2 = (Map) (s.getClass().newInstance());
+      s2 = s.getClass().newInstance();
       s2.putAll(s);
     } catch (Exception e) {
       e.printStackTrace();
@@ -468,8 +468,7 @@ public class IntMapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
     timer.start("Iter EntrySet contains ", size * 2);
     Set es2 = s2.entrySet();
     int sum = 0;
-    for (Iterator i1 = s.entrySet().iterator(); i1.hasNext();) {
-      Object entry = i1.next();
+    for (Object entry : s.entrySet()) {
       if (es2.contains(entry)) {
         ++sum;
       }
@@ -519,7 +518,7 @@ public class IntMapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
     System.out.print("Serialize              : ");
 
     for (int i = 0; i < size; i++) {
-      s.put(new Integer(i), new Integer(1));
+      s.put(i, 1);
     }
 
     long startTime = System.nanoTime();
@@ -581,8 +580,8 @@ public class IntMapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
     static final java.util.TreeMap accum = new java.util.TreeMap();
 
     static void printStats() {
-      for (Iterator it = accum.entrySet().iterator(); it.hasNext();) {
-        Map.Entry e = (Map.Entry) (it.next());
+      for (final Object o : accum.entrySet()) {
+        Map.Entry e = (Map.Entry) o;
         Stats stats = ((Stats) (e.getValue()));
         long n = stats.number;
         double t;
@@ -598,7 +597,7 @@ public class IntMapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
 
     void start(String name, long numOps) {
       this.name = name;
-      this.cname = classify();
+      cname = classify();
       this.numOps = numOps;
       startTime = System.nanoTime();
     }

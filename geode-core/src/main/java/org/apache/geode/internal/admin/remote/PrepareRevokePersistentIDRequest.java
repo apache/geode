@@ -23,7 +23,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.persistence.RevokeFailedException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -87,7 +86,7 @@ public class PrepareRevokePersistentIDRequest extends CliLegacyMessage {
       logger.warn(e);
     }
     request.setSender(dm.getId());
-    request.createResponse((ClusterDistributionManager) dm);
+    request.createResponse(dm);
   }
 
   @Override
@@ -95,19 +94,19 @@ public class PrepareRevokePersistentIDRequest extends CliLegacyMessage {
     InternalCache cache = dm.getCache();
     if (cache != null && !cache.isClosed()) {
       PersistentMemberManager mm = cache.getPersistentMemberManager();
-      if (this.cancel) {
-        mm.cancelRevoke(this.pattern);
+      if (cancel) {
+        mm.cancelRevoke(pattern);
       } else {
-        if (!mm.prepareRevoke(this.pattern, dm, getSender())) {
+        if (!mm.prepareRevoke(pattern, dm, getSender())) {
           throw new RevokeFailedException(
               String.format(
                   "Member %s is already running with persistent files matching %s. You cannot revoke the disk store of a running member.",
-                  dm.getId(), this.pattern));
+                  dm.getId(), pattern));
         }
       }
     }
 
-    return new RevokePersistentIDResponse(this.getSender());
+    return new RevokePersistentIDResponse(getSender());
   }
 
   @Override
@@ -119,16 +118,16 @@ public class PrepareRevokePersistentIDRequest extends CliLegacyMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.pattern = new PersistentMemberPattern();
-    InternalDataSerializer.invokeFromData(this.pattern, in);
-    this.cancel = in.readBoolean();
+    pattern = new PersistentMemberPattern();
+    InternalDataSerializer.invokeFromData(pattern, in);
+    cancel = in.readBoolean();
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    InternalDataSerializer.invokeToData(this.pattern, out);
-    out.writeBoolean(this.cancel);
+    InternalDataSerializer.invokeToData(pattern, out);
+    out.writeBoolean(cancel);
   }
 }

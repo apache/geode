@@ -15,11 +15,12 @@
 package org.apache.geode.redis.internal.commands.executor.set;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
+import static org.apache.geode.redis.internal.RedisConstants.WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.junit.After;
@@ -28,7 +29,6 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
 import org.apache.geode.redis.RedisIntegrationTest;
@@ -65,8 +65,7 @@ public abstract class AbstractSetsIntegrationTest implements RedisIntegrationTes
     setValue[0] = "set value that should never get added";
 
     jedis.set(key, stringValue);
-    assertThatThrownBy(() -> jedis.sadd(key, setValue))
-        .hasMessageContaining("Operation against a key holding the wrong kind of value");
+    assertThatThrownBy(() -> jedis.sadd(key, setValue)).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -78,7 +77,7 @@ public abstract class AbstractSetsIntegrationTest implements RedisIntegrationTes
 
     jedis.set(key, stringValue);
 
-    assertThatThrownBy(() -> jedis.sadd(key, setValue)).isInstanceOf(JedisDataException.class);
+    assertThatThrownBy(() -> jedis.sadd(key, setValue)).hasMessage(ERROR_WRONG_TYPE);
 
     String result = jedis.get(key);
 
@@ -86,77 +85,16 @@ public abstract class AbstractSetsIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
-  public void testSAdd_canStoreBinaryData() {
-    byte[] blob = new byte[256];
-    for (int i = 0; i < 256; i++) {
-      blob[i] = (byte) i;
-    }
-
-    jedis.sadd("key".getBytes(), blob, blob);
-    Set<byte[]> result = jedis.smembers("key".getBytes());
-
-    assertThat(result).containsExactly(blob);
-  }
-
-  @Test
-  public void srandmember_withStringFails() {
-    jedis.set("string", "value");
-    assertThatThrownBy(() -> jedis.srandmember("string")).hasMessageContaining("WRONGTYPE");
-  }
-
-  @Test
-  public void srandmember_withNonExistentKeyReturnsNull() {
-    assertThat(jedis.srandmember("non existent")).isNull();
-  }
-
-  @Test
-  public void srandmemberCount_withNonExistentKeyReturnsEmptyArray() {
-    assertThat(jedis.srandmember("non existent", 3)).isEmpty();
-  }
-
-  @Test
-  public void srandmember_returnsOneMember() {
-    jedis.sadd("key", "m1", "m2");
-    String result = jedis.srandmember("key");
-    assertThat(result).isIn("m1", "m2");
-  }
-
-  @Test
-  public void srandmemberCount_returnsTwoUniqueMembers() {
-    jedis.sadd("key", "m1", "m2", "m3");
-    List<String> results = jedis.srandmember("key", 2);
-    assertThat(results).hasSize(2);
-    assertThat(results).containsAnyOf("m1", "m2", "m3");
-    assertThat(results.get(0)).isNotEqualTo(results.get(1));
-  }
-
-  @Test
-  public void srandmemberNegativeCount_returnsThreeMembers() {
-    jedis.sadd("key", "m1", "m2", "m3");
-    List<String> results = jedis.srandmember("key", -3);
-    assertThat(results).hasSize(3);
-    assertThat(results).containsAnyOf("m1", "m2", "m3");
-  }
-
-  @Test
-  public void srandmemberNegativeCount_givenSmallSet_returnsThreeMembers() {
-    jedis.sadd("key", "m1");
-    List<String> results = jedis.srandmember("key", -3);
-    assertThat(results).hasSize(3);
-    assertThat(results).containsAnyOf("m1");
-  }
-
-  @Test
   public void smembers_givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
     assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.SMEMBERS))
-        .hasMessageContaining("ERR wrong number of arguments for 'smembers' command");
+        .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "smembers"));
   }
 
   @Test
   public void smembers_givenMoreThanTwoArguments_returnsWrongNumberOfArgumentsError() {
     assertThatThrownBy(() -> jedis
         .sendCommand("key", Protocol.Command.SMEMBERS, "key", "extraArg"))
-            .hasMessageContaining("ERR wrong number of arguments for 'smembers' command");
+            .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "smembers"));
   }
 
   @Test

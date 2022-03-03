@@ -76,7 +76,7 @@ public class AlterRegionCommandWithRemoteLocator {
     Properties prop2 = new Properties();
     prop2.setProperty("distributed-system-id", "2");
     prop2.setProperty("mcast-port", "0");
-    prop2.setProperty("remote-locators", "localhost[" + String.valueOf(port) + "]");
+    prop2.setProperty("remote-locators", "localhost[" + port + "]");
     locator2 = lsRule.startLocatorVM(1, prop2);
     gfsh.connectAndVerify(locator2);
     gfsh.execute("configure pdx --auto-serializable-classes=Trade --read-serialized=true");

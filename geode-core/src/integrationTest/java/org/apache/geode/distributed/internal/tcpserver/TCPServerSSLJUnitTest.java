@@ -64,7 +64,7 @@ public class TCPServerSSLJUnitTest {
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
   private final String expectedSocketTimeout = "2000";
-  private ArrayList<Integer> recordedSocketTimeouts = new ArrayList<>();
+  private final ArrayList<Integer> recordedSocketTimeouts = new ArrayList<>();
   private SocketCreatorFailHandshake socketCreator;
 
   @Before
@@ -122,7 +122,7 @@ public class TCPServerSSLJUnitTest {
     try {
 
       getTcpClient().requestToServer(new HostAndPort(localhost.getHostAddress(), port),
-          Boolean.valueOf(false), 5 * 1000);
+          Boolean.FALSE, 5 * 1000);
       throw new AssertionError("expected to get an exception but didn't");
 
     } catch (final IllegalStateException | IOException t) {

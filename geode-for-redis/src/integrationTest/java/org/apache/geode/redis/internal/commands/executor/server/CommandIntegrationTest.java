@@ -81,6 +81,10 @@ public class CommandIntegrationTest {
 
     SoftAssertions softly = new SoftAssertions();
     for (String command : commands) {
+      // TODO: remove special case once LPOP implements 6.2+ semantics
+      if (command.equalsIgnoreCase("LPOP")) {
+        continue;
+      }
       softly.assertThatCode(() -> compareCommands(results.get(command), goldenResults.get(command)))
           .as("command: " + command)
           .doesNotThrowAnyException();
@@ -126,6 +130,14 @@ public class CommandIntegrationTest {
     softly.assertThat(actual.lastKey).as(expected.name + ".lastKey").isEqualTo(expected.lastKey);
     softly.assertThat(actual.stepCount).as(expected.name + ".stepCount")
         .isEqualTo(expected.stepCount);
+    if (!actual.categories.get(0).equals("@uncategorized")) {
+      softly.assertThat(actual.categories.get(0)).as(expected.name + ".category")
+          .isIn(expected.categories);
+    } else {
+      softly.assertThat(actual.name)
+          .as("command " + actual.name + " is categorized as UNCATEGORIZED")
+          .isIn("info", "lolwut", "time");
+    }
     softly.assertAll();
   }
 
@@ -143,7 +155,8 @@ public class CommandIntegrationTest {
           (List<String>) entry.get(2),
           (long) entry.get(3),
           (long) entry.get(4),
-          (long) entry.get(5));
+          (long) entry.get(5),
+          (List<String>) entry.get(6));
 
       commands.put(key, cmd);
     }
@@ -158,15 +171,17 @@ public class CommandIntegrationTest {
     final List<String> flags;
     final long lastKey;
     final long stepCount;
+    final List<String> categories;
 
     public CommandStructure(String name, long arity, List<String> flags, long firstKey,
-        long lastKey, long stepCount) {
+        long lastKey, long stepCount, List<String> categories) {
       this.name = name;
       this.arity = arity;
       this.flags = flags;
       this.firstKey = firstKey;
       this.lastKey = lastKey;
       this.stepCount = stepCount;
+      this.categories = categories;
     }
   }
 }

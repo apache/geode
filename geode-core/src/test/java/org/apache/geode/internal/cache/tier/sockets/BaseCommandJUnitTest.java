@@ -28,7 +28,7 @@ import org.apache.geode.internal.cache.tier.sockets.command.ExecuteRegionFunctio
 
 public class BaseCommandJUnitTest {
 
-  private BaseCommand baseCommand = (BaseCommand) ExecuteRegionFunction66.getCommand();
+  private final BaseCommand baseCommand = (BaseCommand) ExecuteRegionFunction66.getCommand();
 
   @Test
   public void whenLastReceivedIsSetThenCheckAndSetLastResultSentIfValidMustReturnTrue() {

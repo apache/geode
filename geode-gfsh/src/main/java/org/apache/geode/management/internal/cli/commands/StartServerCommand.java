@@ -339,7 +339,7 @@ public class StartServerCommand extends OfflineGfshCommand {
     final ProcessStreamReader.ReadingMode readingMode = SystemUtils.isWindows()
         ? ProcessStreamReader.ReadingMode.NON_BLOCKING : ProcessStreamReader.ReadingMode.BLOCKING;
 
-    final StringBuffer message = new StringBuffer(); // need thread-safe StringBuffer
+    final StringBuilder message = new StringBuilder(); // need thread-safe StringBuilder
     ProcessStreamReader.InputListener inputListener = line -> {
       message.append(line);
       if (readingMode == ProcessStreamReader.ReadingMode.BLOCKING) {
@@ -380,7 +380,7 @@ public class StartServerCommand extends OfflineGfshCommand {
           if (serverState.isStartingOrNotResponding()
               && !(StringUtils.isBlank(currentServerStatusMessage)
                   || currentServerStatusMessage.equalsIgnoreCase(previousServerStatusMessage)
-                  || currentServerStatusMessage.trim().toLowerCase().equals("null"))) {
+                  || currentServerStatusMessage.trim().equalsIgnoreCase("null"))) {
             Gfsh.println();
             Gfsh.println(currentServerStatusMessage);
             previousServerStatusMessage = currentServerStatusMessage;
@@ -390,7 +390,7 @@ public class StartServerCommand extends OfflineGfshCommand {
 
           return ResultModel.createError(
               String.format(CliStrings.START_SERVER__PROCESS_TERMINATED_ABNORMALLY_ERROR_MESSAGE,
-                  exitValue, serverLauncher.getWorkingDirectory(), message.toString()));
+                  exitValue, serverLauncher.getWorkingDirectory(), message));
 
         }
       } while (!(registeredServerSignalListener && serverSignalListener.isSignaled())

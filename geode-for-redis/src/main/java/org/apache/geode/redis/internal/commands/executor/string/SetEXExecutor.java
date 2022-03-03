@@ -15,6 +15,8 @@
 package org.apache.geode.redis.internal.commands.executor.string;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_INVALID_EXPIRE_TIME;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.commands.executor.BaseSetOptions.Exists.NONE;
 import static org.apache.geode.redis.internal.commands.executor.string.SetExecutor.set;
 
@@ -28,12 +30,6 @@ import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class SetEXExecutor implements CommandExecutor {
-
-  private static final String ERROR_SECONDS_NOT_A_NUMBER =
-      "The expiration argument provided was not a number";
-
-  private static final String ERROR_SECONDS_NOT_LEGAL =
-      "invalid expire time";
 
   private static final int VALUE_INDEX = 3;
 
@@ -50,12 +46,12 @@ public class SetEXExecutor implements CommandExecutor {
     try {
       expiration = Coder.bytesToLong(expirationArray);
     } catch (NumberFormatException e) {
-      return RedisResponse.error(ERROR_SECONDS_NOT_A_NUMBER);
+      return RedisResponse.error(ERROR_NOT_INTEGER);
     }
 
     if (expiration <= 0) {
-      return RedisResponse.error(
-          ERROR_SECONDS_NOT_LEGAL + " in " + command.getCommandType().toString().toLowerCase());
+      return RedisResponse.error(String.format(ERROR_INVALID_EXPIRE_TIME,
+          command.getCommandType().toString().toLowerCase()));
     }
 
     if (!timeUnitMillis()) {

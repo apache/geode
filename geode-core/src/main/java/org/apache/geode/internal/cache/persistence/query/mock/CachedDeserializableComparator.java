@@ -26,7 +26,7 @@ import org.apache.geode.internal.cache.CachedDeserializable;
  */
 class CachedDeserializableComparator implements Comparator<Object> {
 
-  private Comparator comparator;
+  private final Comparator comparator;
 
   public CachedDeserializableComparator(Comparator<?> comparator) {
     this.comparator = comparator;

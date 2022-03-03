@@ -49,9 +49,9 @@ public class InvalidateOperation extends DistributedCacheOperation {
 
   @Override
   protected CacheOperationMessage createMessage() {
-    if (this.event.hasClientOrigin()) {
+    if (event.hasClientOrigin()) {
       InvalidateWithContextMessage msgwithContxt = new InvalidateWithContextMessage();
-      msgwithContxt.context = ((EntryEventImpl) this.event).getContext();
+      msgwithContxt.context = event.getContext();
       return msgwithContxt;
     } else {
       return new InvalidateMessage();
@@ -62,7 +62,7 @@ public class InvalidateOperation extends DistributedCacheOperation {
   protected void initMessage(CacheOperationMessage msg, DirectReplyProcessor processor) {
     super.initMessage(msg, processor);
     InvalidateMessage imsg = (InvalidateMessage) msg;
-    EntryEventImpl eei = (EntryEventImpl) this.event;
+    EntryEventImpl eei = (EntryEventImpl) event;
     imsg.key = eei.getKey();
     imsg.eventId = eei.getEventId();
   }
@@ -91,7 +91,7 @@ public class InvalidateOperation extends DistributedCacheOperation {
           boolean invokeCallbacks = rgn.isInitialized();
           rgn.basicInvalidate(ev, invokeCallbacks, forceNewEntry);
         }
-        this.appliedOperation = true;
+        appliedOperation = true;
         return true;
       } catch (ConcurrentCacheModificationException e) {
         dispatchElidedEvent(rgn, ev);
@@ -103,15 +103,15 @@ public class InvalidateOperation extends DistributedCacheOperation {
     @Retained
     protected InternalCacheEvent createEvent(DistributedRegion rgn) throws EntryNotFoundException {
       @Retained
-      EntryEventImpl ev = EntryEventImpl.create(rgn, getOperation(), this.key, null,
-          this.callbackArg, true, getSender());
-      ev.setEventId(this.eventId);
+      EntryEventImpl ev = EntryEventImpl.create(rgn, getOperation(), key, null,
+          callbackArg, true, getSender());
+      ev.setEventId(eventId);
       setOldValueInEvent(ev);
-      ev.setVersionTag(this.versionTag);
-      if (this.filterRouting != null) {
-        ev.setLocalFilterInfo(this.filterRouting.getFilterInfo(rgn.getMyId()));
+      ev.setVersionTag(versionTag);
+      if (filterRouting != null) {
+        ev.setLocalFilterInfo(filterRouting.getFilterInfo(rgn.getMyId()));
       }
-      ev.setInhibitAllNotifications(this.inhibitAllNotifications);
+      ev.setInhibitAllNotifications(inhibitAllNotifications);
       return ev;
     }
 
@@ -119,7 +119,7 @@ public class InvalidateOperation extends DistributedCacheOperation {
     protected void appendFields(StringBuilder buff) {
       super.appendFields(buff);
       buff.append("; key=");
-      buff.append(this.key);
+      buff.append(key);
     }
 
     @Override
@@ -131,21 +131,21 @@ public class InvalidateOperation extends DistributedCacheOperation {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.eventId = (EventID) DataSerializer.readObject(in);
-      this.key = DataSerializer.readObject(in);
+      eventId = DataSerializer.readObject(in);
+      key = DataSerializer.readObject(in);
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       super.toData(out, context);
-      DataSerializer.writeObject(this.eventId, out);
-      DataSerializer.writeObject(this.key, out);
+      DataSerializer.writeObject(eventId, out);
+      DataSerializer.writeObject(key, out);
     }
 
     @Override
     public EventID getEventID() {
-      return this.eventId;
+      return eventId;
     }
 
     @Override
@@ -157,7 +157,7 @@ public class InvalidateOperation extends DistributedCacheOperation {
         return null;
       } else {
         // don't conflate invalidates
-        return new ConflationKey(this.key, super.regionPath, false);
+        return new ConflationKey(key, super.regionPath, false);
       }
     }
   }
@@ -169,7 +169,7 @@ public class InvalidateOperation extends DistributedCacheOperation {
     @Retained
     protected InternalCacheEvent createEvent(DistributedRegion rgn) throws EntryNotFoundException {
       EntryEventImpl event = (EntryEventImpl) super.createEvent(rgn);
-      event.setContext(this.context);
+      event.setContext(context);
       return event;
     }
 
@@ -177,7 +177,7 @@ public class InvalidateOperation extends DistributedCacheOperation {
     protected void appendFields(StringBuilder buff) {
       super.appendFields(buff);
       buff.append("; membershipID=");
-      buff.append(this.context == null ? "" : this.context.toString());
+      buff.append(context == null ? "" : context.toString());
     }
 
     @Override

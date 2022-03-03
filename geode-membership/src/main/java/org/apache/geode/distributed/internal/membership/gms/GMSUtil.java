@@ -111,7 +111,7 @@ public class GMSUtil {
         idx = host.lastIndexOf('@');
       }
       if (idx >= 0) {
-        host = host.substring(idx + 1, host.length());
+        host = host.substring(idx + 1);
       }
 
       int startIdx = portSpecificationStart + 1;
@@ -164,7 +164,7 @@ public class GMSUtil {
 
   /** Parses comma-separated-roles/groups into array of groups (strings). */
   public static String[] parseGroups(String csvRoles, String csvGroups) {
-    List<String> groups = new ArrayList<String>();
+    List<String> groups = new ArrayList<>();
     parseCsv(groups, csvRoles);
     parseCsv(groups, csvGroups);
     return groups.toArray(new String[groups.size()]);
@@ -192,7 +192,7 @@ public class GMSUtil {
     int start = 0;
     int index = properties.indexOf(property);
     while (index != -1) {
-      sb.append(properties.substring(start, index));
+      sb.append(properties, start, index);
       sb.append(value);
 
       start = index + property.length();

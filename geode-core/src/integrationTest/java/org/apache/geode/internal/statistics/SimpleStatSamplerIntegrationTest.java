@@ -58,9 +58,9 @@ public class SimpleStatSamplerIntegrationTest extends StatSamplerTestCase {
 
   @Before
   public void setUp() throws Exception {
-    this.testDir = this.temporaryFolder.getRoot();
-    assertTrue(this.testDir.exists());
-    System.setProperty(SimpleStatSampler.ARCHIVE_FILE_NAME_PROPERTY, this.testDir.getAbsolutePath()
+    testDir = temporaryFolder.getRoot();
+    assertTrue(testDir.exists());
+    System.setProperty(SimpleStatSampler.ARCHIVE_FILE_NAME_PROPERTY, testDir.getAbsolutePath()
         + File.separator + SimpleStatSampler.DEFAULT_ARCHIVE_FILE_NAME);
   }
 
@@ -127,9 +127,9 @@ public class SimpleStatSamplerIntegrationTest extends StatSamplerTestCase {
    */
   @Test
   public void testArchiveFileExists() throws Exception {
-    final String dir = this.testDir.getAbsolutePath();
-    final String archiveFileName = dir + File.separator + this.testName + ".gfs";
-    final File archiveFile1 = new File(dir + File.separator + this.testName + ".gfs");
+    final String dir = testDir.getAbsolutePath();
+    final String archiveFileName = dir + File.separator + testName + ".gfs";
+    final File archiveFile1 = new File(dir + File.separator + testName + ".gfs");
     System.setProperty(SimpleStatSampler.ARCHIVE_FILE_NAME_PROPERTY, archiveFileName);
     initStatisticsFactory();
 
@@ -260,20 +260,20 @@ public class SimpleStatSamplerIntegrationTest extends StatSamplerTestCase {
     // set the system property to use KB instead of MB for file size
     System.setProperty(HostStatSampler.TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY, "true");
 
-    final String dir = this.testDir.getAbsolutePath() + File.separator + this.testName;
+    final String dir = testDir.getAbsolutePath() + File.separator + testName;
     new File(dir).mkdir();
 
-    final String archiveFileName = dir + File.separator + this.testName + ".gfs";
+    final String archiveFileName = dir + File.separator + testName + ".gfs";
     System.setProperty(SimpleStatSampler.ARCHIVE_FILE_NAME_PROPERTY, archiveFileName);
     System.setProperty(SimpleStatSampler.FILE_SIZE_LIMIT_PROPERTY, "1");
     System.setProperty(SimpleStatSampler.DISK_SPACE_LIMIT_PROPERTY, "0");
     System.setProperty(SimpleStatSampler.SAMPLE_RATE_PROPERTY, "1000");
     initStatisticsFactory();
 
-    final File archiveFile1 = new File(dir + File.separator + this.testName + "-01-01.gfs");
-    final File archiveFile2 = new File(dir + File.separator + this.testName + "-01-02.gfs");
-    final File archiveFile3 = new File(dir + File.separator + this.testName + "-01-03.gfs");
-    final File archiveFile4 = new File(dir + File.separator + this.testName + "-01-04.gfs");
+    final File archiveFile1 = new File(dir + File.separator + testName + "-01-01.gfs");
+    final File archiveFile2 = new File(dir + File.separator + testName + "-01-02.gfs");
+    final File archiveFile3 = new File(dir + File.separator + testName + "-01-03.gfs");
+    final File archiveFile4 = new File(dir + File.separator + testName + "-01-04.gfs");
 
     assertTrue(getSimpleStatSampler().waitForInitialization(5000));
 
@@ -295,10 +295,10 @@ public class SimpleStatSamplerIntegrationTest extends StatSamplerTestCase {
     // set the system property to use KB instead of MB for file size
     System.setProperty(HostStatSampler.TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY, "true");
 
-    final String dir = this.testDir.getAbsolutePath() + File.separator + this.testName;
+    final String dir = testDir.getAbsolutePath() + File.separator + testName;
     new File(dir).mkdir();
 
-    final String archiveFileName = dir + File.separator + this.testName + ".gfs";
+    final String archiveFileName = dir + File.separator + testName + ".gfs";
     final int sampleRate = 1000;
     System.setProperty(SimpleStatSampler.ARCHIVE_FILE_NAME_PROPERTY, archiveFileName);
     System.setProperty(SimpleStatSampler.FILE_SIZE_LIMIT_PROPERTY, "1");
@@ -306,11 +306,11 @@ public class SimpleStatSamplerIntegrationTest extends StatSamplerTestCase {
     System.setProperty(SimpleStatSampler.SAMPLE_RATE_PROPERTY, String.valueOf(sampleRate));
     initStatisticsFactory();
 
-    final File archiveFile1 = new File(dir + File.separator + this.testName + "-01-01.gfs");
-    final File archiveFile2 = new File(dir + File.separator + this.testName + "-01-02.gfs");
-    final File archiveFile3 = new File(dir + File.separator + this.testName + "-01-03.gfs");
-    final File archiveFile4 = new File(dir + File.separator + this.testName + "-01-04.gfs");
-    final File archiveFile5 = new File(dir + File.separator + this.testName + "-01-05.gfs");
+    final File archiveFile1 = new File(dir + File.separator + testName + "-01-01.gfs");
+    final File archiveFile2 = new File(dir + File.separator + testName + "-01-02.gfs");
+    final File archiveFile3 = new File(dir + File.separator + testName + "-01-03.gfs");
+    final File archiveFile4 = new File(dir + File.separator + testName + "-01-04.gfs");
+    final File archiveFile5 = new File(dir + File.separator + testName + "-01-05.gfs");
 
     assertTrue(getSimpleStatSampler().waitForInitialization(5000));
 
@@ -324,11 +324,11 @@ public class SimpleStatSamplerIntegrationTest extends StatSamplerTestCase {
 
   @Override
   protected StatisticsManager getStatisticsManager() {
-    return this.statisticsFactory;
+    return statisticsFactory;
   }
 
   private SimpleStatSampler getSimpleStatSampler() {
-    return this.statisticsFactory.getStatSampler();
+    return statisticsFactory.getStatSampler();
   }
 
   private void initStatisticsFactory() {
@@ -343,13 +343,13 @@ public class SimpleStatSamplerIntegrationTest extends StatSamplerTestCase {
         return null;
       }
     };
-    this.statisticsFactory = new LocalStatisticsFactory(stopper);
+    statisticsFactory = new LocalStatisticsFactory(stopper);
   }
 
   private void closeStatisticsFactory() {
-    if (this.statisticsFactory != null) {
-      this.statisticsFactory.close();
-      this.statisticsFactory = null;
+    if (statisticsFactory != null) {
+      statisticsFactory.close();
+      statisticsFactory = null;
     }
   }
 }

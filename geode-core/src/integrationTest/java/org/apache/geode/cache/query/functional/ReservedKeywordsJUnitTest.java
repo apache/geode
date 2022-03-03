@@ -45,15 +45,15 @@ public class ReservedKeywordsJUnitTest {
 
   @Test
   public void testReservedKeywords() throws Exception {
-    String keywords[] = {"select", "distinct", "from", "where", "TRUE", "FALSE", "undefined",
+    String[] keywords = {"select", "distinct", "from", "where", "TRUE", "FALSE", "undefined",
         "element", "not", "and", "or", "type"};
     Region region = CacheUtils.createRegion("Keywords", Keywords.class);
     region.put("0", new Keywords());
     Query query;
     Collection result;
-    for (int i = 0; i < keywords.length; i++) {
+    for (final String s : keywords) {
       String qStr =
-          "SELECT DISTINCT * FROM " + SEPARATOR + "Keywords where \"" + keywords[i] + "\"";
+          "SELECT DISTINCT * FROM " + SEPARATOR + "Keywords where \"" + s + "\"";
       CacheUtils.log(qStr);
       query = CacheUtils.getQueryService().newQuery(qStr);
       result = (Collection) query.execute();
@@ -61,9 +61,9 @@ public class ReservedKeywordsJUnitTest {
         fail(query.getQueryString());
       }
     }
-    for (int i = 0; i < keywords.length; i++) {
+    for (final String keyword : keywords) {
       String qStr =
-          "SELECT DISTINCT * FROM " + SEPARATOR + "Keywords where \"" + keywords[i].toUpperCase()
+          "SELECT DISTINCT * FROM " + SEPARATOR + "Keywords where \"" + keyword.toUpperCase()
               + "\"()";
       CacheUtils.log(qStr);
       query = CacheUtils.getQueryService().newQuery(qStr);

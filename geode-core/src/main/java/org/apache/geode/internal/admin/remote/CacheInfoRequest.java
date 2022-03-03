@@ -49,7 +49,7 @@ public class CacheInfoRequest extends AdminRequest {
    */
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    return CacheInfoResponse.create(dm, this.getSender());
+    return CacheInfoResponse.create(dm, getSender());
   }
 
   @Override
@@ -71,6 +71,6 @@ public class CacheInfoRequest extends AdminRequest {
 
   @Override
   public String toString() {
-    return "CacheInfoRequest from " + this.getSender();
+    return "CacheInfoRequest from " + getSender();
   }
 }

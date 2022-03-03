@@ -24,9 +24,7 @@ import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import redis.clients.jedis.Client;
 import redis.clients.jedis.JedisPubSub;
-import redis.clients.jedis.exceptions.JedisConnectionException;
 
 
 public class MockSubscriber extends JedisPubSub {
@@ -45,8 +43,6 @@ public class MockSubscriber extends JedisPubSub {
       Collections.synchronizedList(new ArrayList<>());
   private CountDownLatch messageReceivedLatch = new CountDownLatch(0);
   private CountDownLatch pMessageReceivedLatch = new CountDownLatch(0);
-  private String localSocketAddress;
-  private Client client;
 
   public MockSubscriber() {
     this(new CountDownLatch(1));
@@ -65,13 +61,6 @@ public class MockSubscriber extends JedisPubSub {
     this.pUnsubscriptionLatch = pUnsubscriptionLatch;
   }
 
-  @Override
-  public void proceed(Client client, String... channels) {
-    localSocketAddress = client.getSocket().getLocalSocketAddress().toString();
-    this.client = client;
-    super.proceed(client, channels);
-  }
-
   private void switchThreadName(String suffix) {
     String threadName = Thread.currentThread().getName();
     int suffixIndex = threadName.indexOf(" -- ");
@@ -79,7 +68,7 @@ public class MockSubscriber extends JedisPubSub {
       threadName = threadName.substring(0, suffixIndex);
     }
 
-    threadName += " -- " + suffix + " [" + localSocketAddress + "]";
+    threadName += " -- " + suffix;
     Thread.currentThread().setName(threadName);
   }
 
@@ -131,16 +120,6 @@ public class MockSubscriber extends JedisPubSub {
   public void onPong(String pattern) {
     switchThreadName(String.format("PONG %s", pattern));
     receivedPings.add(pattern);
-  }
-
-  // JedisPubSub ping with message is not currently possible, will submit a PR
-  // (https://github.com/xetorthio/jedis/issues/2049)
-  public void ping(String message) {
-    if (client == null) {
-      throw new JedisConnectionException("JedisPubSub is not subscribed to a Jedis instance.");
-    } else {
-      this.client.ping(message);
-    }
   }
 
   private static final int AWAIT_TIMEOUT_MILLIS = 30000;

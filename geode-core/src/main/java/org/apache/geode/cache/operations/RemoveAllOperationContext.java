@@ -28,7 +28,7 @@ import java.util.Collections;
 public class RemoveAllOperationContext extends OperationContext {
 
   /** The collection of keys for the operation */
-  private Collection<?> keys;
+  private final Collection<?> keys;
 
   /** True if this is a post-operation context */
   private boolean postOperation = false;
@@ -58,21 +58,21 @@ public class RemoveAllOperationContext extends OperationContext {
    */
   @Override
   public boolean isPostOperation() {
-    return this.postOperation;
+    return postOperation;
   }
 
   /**
    * Set the post-operation flag to true.
    */
   protected void setPostOperation() {
-    this.postOperation = true;
+    postOperation = true;
   }
 
   /**
    * Returns the keys for this removeAll in an unmodifiable collection.
    */
   public Collection<?> getKeys() {
-    return Collections.unmodifiableCollection(this.keys);
+    return Collections.unmodifiableCollection(keys);
   }
 
   /**
@@ -81,7 +81,7 @@ public class RemoveAllOperationContext extends OperationContext {
    * @return the callback argument object for this operation.
    */
   public Object getCallbackArg() {
-    return this.callbackArg;
+    return callbackArg;
   }
 
   /**

@@ -62,7 +62,7 @@ public class ProxyCache implements RegionService {
   private final Stopper stopper = new Stopper();
 
   public ProxyCache(Properties properties, InternalCache cache, PoolImpl pool) {
-    this.userAttributes = new UserAttributes(properties, pool);
+    userAttributes = new UserAttributes(properties, pool);
     this.cache = cache;
   }
 
@@ -72,21 +72,21 @@ public class ProxyCache implements RegionService {
   }
 
   public void close(boolean keepAlive) {
-    if (this.isClosed) {
+    if (isClosed) {
       return;
     }
     // It should go to all the servers it has authenticated itself on and ask
     // them to clean-up its entry from their auth-data structures.
     try {
-      if (this.proxyQueryService != null) {
-        this.proxyQueryService.closeCqs(keepAlive);
+      if (proxyQueryService != null) {
+        proxyQueryService.closeCqs(keepAlive);
       }
-      UserAttributes.userAttributes.set(this.userAttributes);
-      for (final ServerLocation serverLocation : this.userAttributes.getServerToId().keySet()) {
-        ProxyCacheCloseOp.executeOn(serverLocation, (ExecutablePool) this.userAttributes.getPool(),
-            this.userAttributes.getCredentials(), keepAlive);
+      UserAttributes.userAttributes.set(userAttributes);
+      for (final ServerLocation serverLocation : userAttributes.getServerToId().keySet()) {
+        ProxyCacheCloseOp.executeOn(serverLocation, (ExecutablePool) userAttributes.getPool(),
+            userAttributes.getCredentials(), keepAlive);
       }
-      List<ProxyCache> proxyCache = ((PoolImpl) this.userAttributes.getPool()).getProxyCacheList();
+      List<ProxyCache> proxyCache = ((PoolImpl) userAttributes.getPool()).getProxyCacheList();
       synchronized (proxyCache) {
         proxyCache.remove(this);
       }
@@ -94,10 +94,10 @@ public class ProxyCache implements RegionService {
       // TODO: I think some NPE will be caused by this code.
       // It would be safer to not null things out.
       // It is really bad that we null out and then set isClosed true.
-      this.isClosed = true;
-      this.proxyQueryService = null;
-      this.userAttributes.setCredentials(null);
-      this.userAttributes = null;
+      isClosed = true;
+      proxyQueryService = null;
+      userAttributes.setCredentials(null);
+      userAttributes = null;
       UserAttributes.userAttributes.set(null);
     }
   }
@@ -105,11 +105,11 @@ public class ProxyCache implements RegionService {
   @Override
   public QueryService getQueryService() {
     preOp();
-    if (this.proxyQueryService == null) {
-      this.proxyQueryService =
-          new ProxyQueryService(this, this.userAttributes.getPool().getQueryService());
+    if (proxyQueryService == null) {
+      proxyQueryService =
+          new ProxyQueryService(this, userAttributes.getPool().getQueryService());
     }
-    return this.proxyQueryService;
+    return proxyQueryService;
   }
 
   @Override
@@ -120,30 +120,30 @@ public class ProxyCache implements RegionService {
   @Override
   public <K, V> Region<K, V> getRegion(String path) {
     preOp();
-    if (this.cache.getRegion(path) == null) {
+    if (cache.getRegion(path) == null) {
       return null;
     } else {
-      if (!this.cache.getRegion(path).getAttributes().getDataPolicy().isEmpty()) {
+      if (!cache.getRegion(path).getAttributes().getDataPolicy().isEmpty()) {
         throw new IllegalStateException(
             "Region's data-policy must be EMPTY when multiuser-authentication is true");
       }
-      return new ProxyRegion(this, this.cache.getRegion(path), cache.getStatisticsClock());
+      return new ProxyRegion(this, cache.getRegion(path), cache.getStatisticsClock());
     }
   }
 
   @Override
   public boolean isClosed() {
-    return this.isClosed;
+    return isClosed;
   }
 
   public void setProperties(Properties properties) {
     preOp();
-    this.userAttributes.setCredentials(properties);
+    userAttributes.setCredentials(properties);
   }
 
   public Properties getProperties() {
     preOp();
-    return this.userAttributes.getCredentials();
+    return userAttributes.getCredentials();
   }
 
   public void setUserAttributes(UserAttributes userAttributes) {
@@ -153,11 +153,11 @@ public class ProxyCache implements RegionService {
 
   public UserAttributes getUserAttributes() {
     preOp();
-    return this.userAttributes;
+    return userAttributes;
   }
 
   private void preOp() {
-    this.stopper.checkCancelInProgress(null);
+    stopper.checkCancelInProgress(null);
   }
 
   protected class Stopper extends CancelCriterion {
@@ -200,14 +200,14 @@ public class ProxyCache implements RegionService {
 
   @Override
   public CancelCriterion getCancelCriterion() {
-    return this.stopper;
+    return stopper;
   }
 
   @Override
   public Set<Region<?, ?>> rootRegions() {
     preOp();
     Set<Region<?, ?>> rootRegions = new HashSet<>();
-    for (Region<?, ?> region : this.cache.rootRegions()) {
+    for (Region<?, ?> region : cache.rootRegions()) {
       if (!region.getAttributes().getDataPolicy().withStorage()) {
         rootRegions.add(new ProxyRegion(this, region, cache.getStatisticsClock()));
       }
@@ -226,7 +226,7 @@ public class ProxyCache implements RegionService {
 
   @Override
   public PdxInstance createPdxEnum(String className, String enumName, int enumOrdinal) {
-    return PdxInstanceFactoryImpl.createPdxEnum(className, enumName, enumOrdinal, this.cache);
+    return PdxInstanceFactoryImpl.createPdxEnum(className, enumName, enumOrdinal, cache);
   }
 
   /** return a CacheClosedException with the given reason */

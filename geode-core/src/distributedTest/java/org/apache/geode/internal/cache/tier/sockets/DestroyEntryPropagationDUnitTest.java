@@ -102,25 +102,23 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
     // client 2 VM
     vm3 = host.getVM(3);
 
-    PORT1 = ((Integer) vm0.invoke(() -> DestroyEntryPropagationDUnitTest.createServerCache()))
-        .intValue();
-    PORT2 = ((Integer) vm1.invoke(() -> DestroyEntryPropagationDUnitTest.createServerCache()))
-        .intValue();
+    PORT1 = vm0.invoke(DestroyEntryPropagationDUnitTest::createServerCache);
+    PORT2 = vm1.invoke(DestroyEntryPropagationDUnitTest::createServerCache);
 
     vm2.invoke(() -> DestroyEntryPropagationDUnitTest.createClientCache(
-        NetworkUtils.getServerHostName(host), new Integer(PORT1), new Integer(PORT2)));
+        NetworkUtils.getServerHostName(host), PORT1, PORT2));
     vm3.invoke(() -> DestroyEntryPropagationDUnitTest.createClientCache(
-        NetworkUtils.getServerHostName(host), new Integer(PORT1), new Integer(PORT2)));
+        NetworkUtils.getServerHostName(host), PORT1, PORT2));
   }
 
   @Override
   public final void preTearDown() throws Exception {
     // close client
-    vm2.invoke(() -> DestroyEntryPropagationDUnitTest.closeCache());
-    vm3.invoke(() -> DestroyEntryPropagationDUnitTest.closeCache());
+    vm2.invoke(DestroyEntryPropagationDUnitTest::closeCache);
+    vm3.invoke(DestroyEntryPropagationDUnitTest::closeCache);
     // close server
-    vm0.invoke(() -> DestroyEntryPropagationDUnitTest.closeCache());
-    vm1.invoke(() -> DestroyEntryPropagationDUnitTest.closeCache());
+    vm0.invoke(DestroyEntryPropagationDUnitTest::closeCache);
+    vm1.invoke(DestroyEntryPropagationDUnitTest::closeCache);
   }
 
   @Override
@@ -140,24 +138,24 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
   @Test
   public void testDestroyPropagation() {
     // First create entries on both servers via the two clients
-    vm2.invoke(() -> DestroyEntryPropagationDUnitTest.createEntriesK1andK2());
-    vm3.invoke(() -> DestroyEntryPropagationDUnitTest.createEntriesK1andK2());
+    vm2.invoke(DestroyEntryPropagationDUnitTest::createEntriesK1andK2);
+    vm3.invoke(DestroyEntryPropagationDUnitTest::createEntriesK1andK2);
 
     // register interest for key-1
-    vm2.invoke(() -> DestroyEntryPropagationDUnitTest.registerKey1());
+    vm2.invoke(DestroyEntryPropagationDUnitTest::registerKey1);
     // register interest for key-1
-    vm3.invoke(() -> DestroyEntryPropagationDUnitTest.registerKey1());
+    vm3.invoke(DestroyEntryPropagationDUnitTest::registerKey1);
 
     // destroy entry key-1 , key-2
-    vm2.invoke(() -> DestroyEntryPropagationDUnitTest.destroyEntriesK1andK2());
+    vm2.invoke(DestroyEntryPropagationDUnitTest::destroyEntriesK1andK2);
     // verify destroy entry on first server
-    vm0.invoke(() -> DestroyEntryPropagationDUnitTest.verifyEntriesAreDestroyed());
+    vm0.invoke(DestroyEntryPropagationDUnitTest::verifyEntriesAreDestroyed);
     // verify destroy entry on second server
-    vm1.invoke(() -> DestroyEntryPropagationDUnitTest.verifyEntriesAreDestroyed());
+    vm1.invoke(DestroyEntryPropagationDUnitTest::verifyEntriesAreDestroyed);
     // verify destroy entry in originator vm
-    vm2.invoke(() -> DestroyEntryPropagationDUnitTest.verifyEntriesAreDestroyed());
+    vm2.invoke(DestroyEntryPropagationDUnitTest::verifyEntriesAreDestroyed);
     // verify only key-1 is destroyed
-    vm3.invoke(() -> DestroyEntryPropagationDUnitTest.verifyOnlyRegisteredEntriesAreDestroyed());
+    vm3.invoke(DestroyEntryPropagationDUnitTest::verifyOnlyRegisteredEntriesAreDestroyed);
   }
 
   /**
@@ -166,22 +164,22 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
   @Test
   public void testDestroyOnServerPropagation() {
     // First create entries on both servers via the two client
-    vm2.invoke(() -> DestroyEntryPropagationDUnitTest.createEntriesK1andK2());
-    vm3.invoke(() -> DestroyEntryPropagationDUnitTest.createEntriesK1andK2());
+    vm2.invoke(DestroyEntryPropagationDUnitTest::createEntriesK1andK2);
+    vm3.invoke(DestroyEntryPropagationDUnitTest::createEntriesK1andK2);
 
-    vm2.invoke(() -> DestroyEntryPropagationDUnitTest.registerKey1());
-    vm3.invoke(() -> DestroyEntryPropagationDUnitTest.registerKey1());
+    vm2.invoke(DestroyEntryPropagationDUnitTest::registerKey1);
+    vm3.invoke(DestroyEntryPropagationDUnitTest::registerKey1);
 
     // destroy entry on server directly
-    vm0.invoke(() -> DestroyEntryPropagationDUnitTest.destroyEntriesK1andK2());
+    vm0.invoke(DestroyEntryPropagationDUnitTest::destroyEntriesK1andK2);
     // verify destroy entry on server 1
-    vm0.invoke(() -> DestroyEntryPropagationDUnitTest.verifyEntriesAreDestroyed());
+    vm0.invoke(DestroyEntryPropagationDUnitTest::verifyEntriesAreDestroyed);
     // verify destroy entry on second server
-    vm1.invoke(() -> DestroyEntryPropagationDUnitTest.verifyEntriesAreDestroyed());
+    vm1.invoke(DestroyEntryPropagationDUnitTest::verifyEntriesAreDestroyed);
     // verify destroy entry only for registered keys in client1
-    vm2.invoke(() -> DestroyEntryPropagationDUnitTest.verifyOnlyRegisteredEntriesAreDestroyed());
+    vm2.invoke(DestroyEntryPropagationDUnitTest::verifyOnlyRegisteredEntriesAreDestroyed);
     // verify destroy entry only for registered keys in client 2
-    vm3.invoke(() -> DestroyEntryPropagationDUnitTest.verifyOnlyRegisteredEntriesAreDestroyed());
+    vm3.invoke(DestroyEntryPropagationDUnitTest::verifyOnlyRegisteredEntriesAreDestroyed);
   }
 
   /**
@@ -190,14 +188,14 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
    */
   @Test
   public void testVerifyDestroyNotReceivedBySender() {
-    final int maxWaitTime = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT).intValue();
+    final int maxWaitTime = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT);
     // First create entries on both servers via the two client
-    vm2.invoke(() -> DestroyEntryPropagationDUnitTest.createEntriesK1andK2());
-    vm3.invoke(() -> DestroyEntryPropagationDUnitTest.createEntriesK1andK2());
-    vm2.invoke(() -> DestroyEntryPropagationDUnitTest.registerKey1());
-    vm3.invoke(() -> DestroyEntryPropagationDUnitTest.registerKey1());
+    vm2.invoke(DestroyEntryPropagationDUnitTest::createEntriesK1andK2);
+    vm3.invoke(DestroyEntryPropagationDUnitTest::createEntriesK1andK2);
+    vm2.invoke(DestroyEntryPropagationDUnitTest::registerKey1);
+    vm3.invoke(DestroyEntryPropagationDUnitTest::registerKey1);
     // Induce fail over of InterestList Endpoint to Server 2 by killing server1
-    vm0.invoke(() -> DestroyEntryPropagationDUnitTest.killServer(new Integer(PORT1)));
+    vm0.invoke(() -> DestroyEntryPropagationDUnitTest.killServer(PORT1));
     // Wait for 10 seconds to allow fail over. This would mean that Interest
     // has failed over to Server2.
     vm2.invoke(new CacheSerializableRunnable("Wait for server on port1 to be dead") {
@@ -207,11 +205,11 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
 
         try {
           r.put("ping", "pong1"); // Used in the case where we don't have a LiveServerMonitorThread
-        } catch (CacheWriterException itsOK) {
+        } catch (CacheWriterException ignored) {
         }
         try {
           r.put("ping", "pong1"); // Used in the case where we don't have a LiveServerMonitorThread
-        } catch (CacheWriterException itsOK) {
+        } catch (CacheWriterException ignored) {
         }
 
         String poolName = r.getAttributes().getPoolName();
@@ -235,7 +233,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
 
     // Start Server1 again so that both clients1 & Client 2 will establish
     // connection to server1 too.
-    vm0.invoke(() -> DestroyEntryPropagationDUnitTest.startServer(new Integer(PORT1)));
+    vm0.invoke(() -> DestroyEntryPropagationDUnitTest.startServer(PORT1));
 
     vm2.invoke(new CacheSerializableRunnable("Wait for server on port1 to spring to life") {
       @Override
@@ -262,13 +260,13 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
 
     // Do a destroy on Server1 via Connection object from client1.
     // Client1 should not receive updated value while client2 should receive
-    vm2.invoke(() -> acquireConnectionsAndDestroyEntriesK1andK2());
+    vm2.invoke(this::acquireConnectionsAndDestroyEntriesK1andK2);
     // pause(10000);
     // Check if both the puts ( on key1 & key2 ) have reached the servers
-    vm0.invoke(() -> DestroyEntryPropagationDUnitTest.verifyEntriesAreDestroyed());
-    vm1.invoke(() -> DestroyEntryPropagationDUnitTest.verifyEntriesAreDestroyed());
+    vm0.invoke(DestroyEntryPropagationDUnitTest::verifyEntriesAreDestroyed);
+    vm1.invoke(DestroyEntryPropagationDUnitTest::verifyEntriesAreDestroyed);
 
-    vm2.invoke(() -> DestroyEntryPropagationDUnitTest.verifyNoDestroyEntryInSender());
+    vm2.invoke(DestroyEntryPropagationDUnitTest::verifyNoDestroyEntryInSender);
   }
 
   private void acquireConnectionsAndDestroyEntriesK1andK2() {
@@ -307,7 +305,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
         CacheServer server = (CacheServer) iter.next();
         LogWriterUtils.getLogWriter().fine("asif : server running on port=" + server.getPort()
             + " asked to kill serevre onport=" + port);
-        if (port.intValue() == server.getPort()) {
+        if (port == server.getPort()) {
           server.stop();
         }
       }
@@ -319,7 +317,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
   private static void startServer(Integer port) {
     try {
       CacheServer server1 = cache.addCacheServer();
-      server1.setPort(port.intValue());
+      server1.setPort(port);
       server1.setNotifyBySubscription(true);
       server1.start();
     } catch (Exception ex) {
@@ -416,8 +414,8 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
 
   private static void createClientCache(String host, Integer port1, Integer port2)
       throws Exception {
-    int PORT1 = port1.intValue();
-    int PORT2 = port2.intValue();
+    int PORT1 = port1;
+    int PORT2 = port2;
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
@@ -458,7 +456,7 @@ public class DestroyEntryPropagationDUnitTest extends JUnit4DistributedTestCase 
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   private static void registerKey1() {

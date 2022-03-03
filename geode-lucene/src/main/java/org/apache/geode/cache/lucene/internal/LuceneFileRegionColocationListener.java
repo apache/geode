@@ -29,7 +29,7 @@ public class LuceneFileRegionColocationListener implements ColocationListener {
 
   @Override
   public void afterColocationCompleted() {
-    this.partitionedRepositoryManager.computeRepository(this.bucketID);
+    partitionedRepositoryManager.computeRepository(bucketID);
   }
 
   // Current implementation will allow only one LuceneFileRegionColocationListener to be
@@ -43,6 +43,6 @@ public class LuceneFileRegionColocationListener implements ColocationListener {
   public boolean equals(Object obj) {
     return (obj != null && obj instanceof LuceneFileRegionColocationListener
         && ((LuceneFileRegionColocationListener) obj).bucketID != null
-        && ((LuceneFileRegionColocationListener) obj).bucketID.equals(this.bucketID));
+        && ((LuceneFileRegionColocationListener) obj).bucketID.equals(bucketID));
   }
 }

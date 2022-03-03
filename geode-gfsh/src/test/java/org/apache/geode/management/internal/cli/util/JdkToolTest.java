@@ -48,7 +48,7 @@ public class JdkToolTest {
   @Test(expected = NullPointerException.class)
   public void testGetJdkToolPathnameWithNullGemFireException() {
     try {
-      JdkTool.getJdkToolPathname(new Stack<String>(), null);
+      JdkTool.getJdkToolPathname(new Stack<>(), null);
     } catch (NullPointerException expected) {
       assertEquals("The GemFireException cannot be null!", expected.getMessage());
       throw expected;

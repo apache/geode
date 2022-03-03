@@ -17,10 +17,12 @@ package org.apache.geode.redis.internal.commands.executor.key;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NO_SUCH_KEY;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.Assert.fail;
+import static redis.clients.jedis.Protocol.Command.RENAME;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,11 +42,9 @@ import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.services.locking.LockingStripedCoordinator;
 import org.apache.geode.redis.internal.services.locking.StripedCoordinator;
@@ -67,7 +67,17 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
 
   @Test
   public void errors_GivenWrongNumberOfArguments() {
-    assertExactNumberOfArgs(jedis, Protocol.Command.RENAME, 2);
+    assertExactNumberOfArgs(jedis, RENAME, 2);
+  }
+
+  @Test
+  public void shouldReturnCrossSlotError_givenKeysInDifferentSlots() {
+    String key1 = "{tag1}key1";
+    String key2 = "{tag2}key2";
+    jedis.set(key1, "value1");
+    jedis.set(key2, "value1");
+    assertThatThrownBy(() -> jedis.sendCommand(key1, RENAME, key1, key2))
+        .hasMessage(ERROR_WRONG_SLOT);
   }
 
   @Test
@@ -87,7 +97,7 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
   @Test
   public void shouldReturnError_givenNonexistantKey() {
     assertThatThrownBy(() -> jedis.rename("{tag1}foo", "{tag1}newfoo"))
-        .hasMessageContaining(RedisConstants.ERROR_NO_SUCH_KEY);
+        .hasMessage(ERROR_NO_SUCH_KEY);
   }
 
   @Test
@@ -127,16 +137,14 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
     String newKey = "{1}newKey";
     jedis.set(oldKey, "value");
     jedis.rename(oldKey, newKey);
-    assertThatThrownBy(() -> jedis.rename(oldKey, newKey))
-        .hasMessageContaining(ERROR_NO_SUCH_KEY);
+    assertThatThrownBy(() -> jedis.rename(oldKey, newKey)).hasMessage(ERROR_NO_SUCH_KEY);
   }
 
   @Test
   public void error_whenNeitherKeyExists() {
     String oldKey = "{1}key";
     String newKey = "{1}newKey";
-    assertThatThrownBy(() -> jedis.renamenx(oldKey, newKey))
-        .hasMessageContaining(ERROR_NO_SUCH_KEY);
+    assertThatThrownBy(() -> jedis.renamenx(oldKey, newKey)).hasMessage(ERROR_NO_SUCH_KEY);
   }
 
   @Test
@@ -260,7 +268,7 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
                 jedis.set("{tag1}oldKey", "foo");
               });
     } catch (RuntimeException e) {
-      assertThat(e).hasMessageContaining(ERROR_NO_SUCH_KEY);
+      assertThat(e).getRootCause().hasMessage(ERROR_NO_SUCH_KEY);
       return;
     }
 

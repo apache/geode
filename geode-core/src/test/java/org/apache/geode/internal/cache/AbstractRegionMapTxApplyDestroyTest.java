@@ -58,25 +58,25 @@ import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntrie
 @SuppressWarnings("unchecked")
 public class AbstractRegionMapTxApplyDestroyTest {
   // parameters
-  private Object key = "key";
+  private final Object key = "key";
   @Mock
   private TXId txId;
   private TXRmtEvent txEvent;
   private boolean inTokenMode;
   private boolean inRI;
-  private Operation operation = Operation.DESTROY;
+  private final Operation operation = Operation.DESTROY;
   @Mock
   private EventID eventId;
-  private Object aCallbackArgument = "aCallbackArgument";
+  private final Object aCallbackArgument = "aCallbackArgument";
   private final List<EntryEventImpl> pendingCallbacks = new ArrayList<>();
-  private FilterRoutingInfo filterRoutingInfo = null; // Provide a meaningful value for this?
+  private final FilterRoutingInfo filterRoutingInfo = null; // Provide a meaningful value for this?
   @Mock
   private ClientProxyMembershipID bridgeContext;
-  private boolean isOriginRemote = false;
+  private final boolean isOriginRemote = false;
   @Mock
   private TXEntryState txEntryState;
   private VersionTag versionTag;
-  private long tailKey = 223L;
+  private final long tailKey = 223L;
 
   @Mock
   private InternalDistributedMember myId;
@@ -133,7 +133,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
     assertThat(pendingCallbacks).hasSize(1);
     EntryEventImpl callbackEvent = pendingCallbacks.get(0);
 
-    // noinspection Duplicates
     assertSoftly(softly -> {
       softly.assertThat(callbackEvent.getRegion()).isSameAs(owner);
       softly.assertThat(callbackEvent.getOperation()).isSameAs(operation);
@@ -168,7 +167,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
     assertThat(pendingCallbacks).hasSize(1);
     EntryEventImpl callbackEvent = pendingCallbacks.get(0);
 
-    // noinspection Duplicates
     assertSoftly(softly -> {
       softly.assertThat(callbackEvent.getRegion()).isSameAs(partitionedRegion);
       softly.assertThat(callbackEvent.getOperation()).isSameAs(operation);
@@ -242,14 +240,14 @@ public class AbstractRegionMapTxApplyDestroyTest {
     givenLocalRegion();
     givenNoConcurrencyChecks();
     givenExistingRegionEntry();
-    this.inTokenMode = true;
-    this.inRI = false;
+    inTokenMode = true;
+    inRI = false;
 
     doTxApplyDestroy();
 
     assertThat(pendingCallbacks).isEmpty();
     verify(owner, times(1)).txApplyDestroyPart2(same(existingRegionEntry), eq(key),
-        eq(this.inTokenMode), eq(false), eq(false));
+        eq(inTokenMode), eq(false), eq(false));
   }
 
   @Test
@@ -258,8 +256,8 @@ public class AbstractRegionMapTxApplyDestroyTest {
     givenLocalRegion();
     givenConcurrencyChecks();
     givenExistingRegionEntry();
-    this.inTokenMode = true;
-    this.inRI = false;
+    inTokenMode = true;
+    inRI = false;
 
     doTxApplyDestroy();
 
@@ -1177,7 +1175,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
     assertThat(pendingCallbacks).hasSize(1);
     EntryEventImpl callbackEvent = pendingCallbacks.get(0);
 
-    // noinspection Duplicates
     assertSoftly(softly -> {
       softly.assertThat(callbackEvent.getRegion()).isSameAs(owner);
       softly.assertThat(callbackEvent.getOperation()).isSameAs(operation);
@@ -1334,7 +1331,6 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
     EntryEventImpl callbackEvent = pendingCallbacks.get(0);
 
-    // noinspection Duplicates
     assertSoftly(softly -> {
       softly.assertThat(callbackEvent.getRegion()).isSameAs(partitionedRegion);
       softly.assertThat(callbackEvent.getOperation()).isSameAs(operation);

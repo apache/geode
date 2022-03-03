@@ -15,11 +15,13 @@
 package org.apache.geode.redis.internal.commands.executor.set;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static redis.clients.jedis.Protocol.Command.SDIFF;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -31,7 +33,6 @@ import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
@@ -54,13 +55,23 @@ public abstract class AbstractSDiffIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void sdiffErrors_givenTooFewArguments() {
-    assertAtLeastNArgs(jedis, Protocol.Command.SDIFF, 1);
+    assertAtLeastNArgs(jedis, SDIFF, 1);
   }
 
   @Test
   public void sdiff_returnsAllValuesInSet() {
     String[] values = createKeyValuesSet();
     assertThat(jedis.sdiff(SET_KEY)).containsExactlyInAnyOrder(values);
+  }
+
+  @Test
+  public void sdif_withSetsFromDifferentSlots_returnsCrossSlotError() {
+    String setKeyDifferentSlot = "{tag2}set2";
+    jedis.sadd(SET_KEY, "member1");
+    jedis.sadd(setKeyDifferentSlot, "member2");
+
+    assertThatThrownBy(() -> jedis.sendCommand(SET_KEY, SDIFF, SET_KEY, setKeyDifferentSlot))
+        .hasMessage(ERROR_WRONG_SLOT);
   }
 
   @Test
@@ -170,7 +181,7 @@ public abstract class AbstractSDiffIntegrationTest implements RedisIntegrationTe
     String secondSetKey = "{tag1}secondKey";
     jedis.sadd(secondSetKey, members);
     assertThatThrownBy(() -> jedis.sdiff(stringKey, SET_KEY, secondSetKey))
-        .hasMessageContaining(ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -182,7 +193,7 @@ public abstract class AbstractSDiffIntegrationTest implements RedisIntegrationTe
     String secondSetKey = "{tag1}secondKey";
     jedis.sadd(secondSetKey, members);
     assertThatThrownBy(() -> jedis.sdiff(SET_KEY, secondSetKey, stringKey))
-        .hasMessageContaining(ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -192,7 +203,7 @@ public abstract class AbstractSDiffIntegrationTest implements RedisIntegrationTe
 
     jedis.sadd(SET_KEY, "member");
     assertThatThrownBy(() -> jedis.sdiff(NON_EXISTENT_SET_KEY, SET_KEY, stringKey))
-        .hasMessageContaining(ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test

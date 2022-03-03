@@ -84,7 +84,7 @@ public class CacheConfig {
 
 
   public void setPdxReadSerialized(boolean pdxReadSerialized) {
-    this.pdxReadSerializedUserSet = true;
+    pdxReadSerializedUserSet = true;
     this.pdxReadSerialized = pdxReadSerialized;
   }
 
@@ -122,7 +122,7 @@ public class CacheConfig {
 
 
   public void setPdxDiskStore(String pdxDiskStore) {
-    this.pdxDiskStoreUserSet = true;
+    pdxDiskStoreUserSet = true;
     this.pdxDiskStore = pdxDiskStore;
   }
 
@@ -135,17 +135,17 @@ public class CacheConfig {
 
 
   public void setPdxPersistent(boolean pdxPersistent) {
-    this.pdxPersistentUserSet = true;
+    pdxPersistentUserSet = true;
     this.pdxPersistent = pdxPersistent;
   }
 
   public boolean getPdxIgnoreUnreadFields() {
-    return this.pdxIgnoreUnreadFields;
+    return pdxIgnoreUnreadFields;
   }
 
   public void setPdxIgnoreUnreadFields(boolean ignore) {
-    this.pdxIgnoreUnreadFields = ignore;
-    this.pdxIgnoreUnreadFieldsUserSet = true;
+    pdxIgnoreUnreadFields = ignore;
+    pdxIgnoreUnreadFieldsUserSet = true;
   }
 
 
@@ -161,12 +161,12 @@ public class CacheConfig {
 
 
   public List<CacheServerCreation> getCacheServerCreation() {
-    return this.cacheServerCreation;
+    return cacheServerCreation;
   }
 
 
   public void setCacheServerCreation(List<CacheServerCreation> servers) {
-    this.cacheServerCreation = servers;
+    cacheServerCreation = servers;
   }
 
   public void validateCacheConfig(GemFireCache cacheInstance) {
@@ -176,31 +176,31 @@ public class CacheConfig {
     // If they have not then we might use a cache.xml that will specify them.
     // Since we don't have the cache.xml info here we need to only complain
     // if we are sure that we will be incompatible with the existing cache.
-    if (this.pdxReadSerializedUserSet
-        && this.pdxReadSerialized != cacheInstance.getPdxReadSerialized()) {
+    if (pdxReadSerializedUserSet
+        && pdxReadSerialized != cacheInstance.getPdxReadSerialized()) {
       throw new IllegalStateException(
           String.format("Existing cache has different cache configuration, it has:%s",
               "pdxReadSerialized: " + cacheInstance.getPdxReadSerialized()));
     }
-    if (this.pdxDiskStoreUserSet && !equals(this.pdxDiskStore, cacheInstance.getPdxDiskStore())) {
+    if (pdxDiskStoreUserSet && !equals(pdxDiskStore, cacheInstance.getPdxDiskStore())) {
       throw new IllegalStateException(
           String.format("Existing cache has different cache configuration, it has:%s",
               "pdxDiskStore: " + cacheInstance.getPdxDiskStore()));
     }
-    if (this.pdxPersistentUserSet && this.pdxPersistent != cacheInstance.getPdxPersistent()) {
+    if (pdxPersistentUserSet && pdxPersistent != cacheInstance.getPdxPersistent()) {
       throw new IllegalStateException(
           String.format("Existing cache has different cache configuration, it has:%s",
               "pdxPersistent: " + cacheInstance.getPdxPersistent()));
     }
-    if (this.pdxIgnoreUnreadFieldsUserSet
-        && this.pdxIgnoreUnreadFields != cacheInstance.getPdxIgnoreUnreadFields()) {
+    if (pdxIgnoreUnreadFieldsUserSet
+        && pdxIgnoreUnreadFields != cacheInstance.getPdxIgnoreUnreadFields()) {
       throw new IllegalStateException(
           String.format("Existing cache has different cache configuration, it has:%s",
 
               "pdxIgnoreUnreadFields: " + cacheInstance.getPdxIgnoreUnreadFields()));
     }
-    if (this.pdxSerializerUserSet
-        && !samePdxSerializer(this.pdxSerializer, cacheInstance.getPdxSerializer())) {
+    if (pdxSerializerUserSet
+        && !samePdxSerializer(pdxSerializer, cacheInstance.getPdxSerializer())) {
       throw new IllegalStateException(
           String.format("Existing cache has different cache configuration, it has:%s",
               "pdxSerializer: " + cacheInstance.getPdxSerializer()));
@@ -232,25 +232,25 @@ public class CacheConfig {
 
 
   public void setDeclarativeConfig(CacheConfig cacheConfig) {
-    if (!this.pdxDiskStoreUserSet) {
-      this.pdxDiskStore = cacheConfig.getPdxDiskStore();
-      this.pdxDiskStoreUserSet = cacheConfig.pdxDiskStoreUserSet;
+    if (!pdxDiskStoreUserSet) {
+      pdxDiskStore = cacheConfig.getPdxDiskStore();
+      pdxDiskStoreUserSet = cacheConfig.pdxDiskStoreUserSet;
     }
-    if (!this.pdxPersistentUserSet) {
-      this.pdxPersistent = cacheConfig.isPdxPersistent();
-      this.pdxPersistentUserSet = cacheConfig.pdxPersistentUserSet;
+    if (!pdxPersistentUserSet) {
+      pdxPersistent = cacheConfig.isPdxPersistent();
+      pdxPersistentUserSet = cacheConfig.pdxPersistentUserSet;
     }
-    if (!this.pdxReadSerializedUserSet) {
-      this.pdxReadSerialized = cacheConfig.isPdxReadSerialized();
-      this.pdxReadSerializedUserSet = cacheConfig.pdxReadSerializedUserSet;
+    if (!pdxReadSerializedUserSet) {
+      pdxReadSerialized = cacheConfig.isPdxReadSerialized();
+      pdxReadSerializedUserSet = cacheConfig.pdxReadSerializedUserSet;
     }
-    if (!this.pdxSerializerUserSet) {
-      this.pdxSerializer = cacheConfig.getPdxSerializer();
-      this.pdxSerializerUserSet = cacheConfig.pdxSerializerUserSet;
+    if (!pdxSerializerUserSet) {
+      pdxSerializer = cacheConfig.getPdxSerializer();
+      pdxSerializerUserSet = cacheConfig.pdxSerializerUserSet;
     }
-    if (!this.pdxIgnoreUnreadFieldsUserSet) {
-      this.pdxIgnoreUnreadFields = cacheConfig.getPdxIgnoreUnreadFields();
-      this.pdxIgnoreUnreadFieldsUserSet = cacheConfig.pdxIgnoreUnreadFieldsUserSet;
+    if (!pdxIgnoreUnreadFieldsUserSet) {
+      pdxIgnoreUnreadFields = cacheConfig.getPdxIgnoreUnreadFields();
+      pdxIgnoreUnreadFieldsUserSet = cacheConfig.pdxIgnoreUnreadFieldsUserSet;
     }
   }
 

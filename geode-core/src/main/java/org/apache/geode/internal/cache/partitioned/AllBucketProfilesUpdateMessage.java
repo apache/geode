@@ -65,20 +65,20 @@ public class AllBucketProfilesUpdateMessage extends DistributionMessage
       Map<Integer, BucketAdvisor.BucketProfile> profiles) {
     setRecipients(recipients);
     this.processorId = processorId;
-    this.prId = partitionedRegionId;
+    prId = partitionedRegionId;
     this.profiles = profiles;
   }
 
   @Override
   public int getProcessorId() {
-    return this.processorId;
+    return processorId;
   }
 
   @Override
   protected void process(ClusterDistributionManager dm) {
     try {
-      PartitionedRegion pr = PartitionedRegion.getPRFromId(this.prId);
-      for (Map.Entry<Integer, BucketAdvisor.BucketProfile> profile : this.profiles.entrySet()) {
+      PartitionedRegion pr = PartitionedRegion.getPRFromId(prId);
+      for (Map.Entry<Integer, BucketAdvisor.BucketProfile> profile : profiles.entrySet()) {
         pr.getRegionAdvisor().putBucketProfile(profile.getKey(), profile.getValue());
       }
     } catch (PRLocallyDestroyedException fre) {
@@ -106,8 +106,8 @@ public class AllBucketProfilesUpdateMessage extends DistributionMessage
       // is still usable:
       SystemFailure.checkFailure();
     } finally {
-      if (this.processorId != 0) {
-        ReplyMessage.send(getSender(), this.processorId, null, dm);
+      if (processorId != 0) {
+        ReplyMessage.send(getSender(), processorId, null, dm);
       }
     }
   }
@@ -146,18 +146,18 @@ public class AllBucketProfilesUpdateMessage extends DistributionMessage
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.prId = in.readInt();
-    this.processorId = in.readInt();
-    this.profiles = DataSerializer.readObject(in);
+    prId = in.readInt();
+    processorId = in.readInt();
+    profiles = DataSerializer.readObject(in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.prId);
-    out.writeInt(this.processorId);
-    DataSerializer.writeObject(this.profiles, out);
+    out.writeInt(prId);
+    out.writeInt(processorId);
+    DataSerializer.writeObject(profiles, out);
   }
 
 }

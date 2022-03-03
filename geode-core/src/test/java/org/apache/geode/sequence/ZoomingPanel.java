@@ -75,15 +75,15 @@ public class ZoomingPanel extends JPanel {
 
       @Override
       public void mouseMoved(MouseEvent e) {
-        int popupX = ZoomingPanel.this.getLocationOnScreen().x + e.getX();
-        int popupY = ZoomingPanel.this.getLocationOnScreen().y + e.getY();
+        int popupX = getLocationOnScreen().x + e.getX();
+        int popupY = getLocationOnScreen().y + e.getY();
         child.showPopupText(e.getX(), e.getY(), popupX, popupY);
       }
     });
     BorderLayout layout = new BorderLayout();
     layout.setHgap(0);
     layout.setVgap(0);
-    this.setLayout(layout);
+    setLayout(layout);
   }
 
   private void unzoom() {
@@ -103,7 +103,7 @@ public class ZoomingPanel extends JPanel {
     // this.setPreferredSize(new Dimension(width, height));
     child.resizeMe(width, height);
     // TODO not sure this one is needed
-    this.revalidate();
+    revalidate();
 
     // scroll to the new rectangle
     // int scrollX = (int) (zoomBoxX * scaleX);
@@ -121,8 +121,8 @@ public class ZoomingPanel extends JPanel {
   }
 
   public void setSequenceDiagram(SequenceDiagram diag) {
-    this.child = diag;
-    this.add(child, BorderLayout.CENTER);
+    child = diag;
+    add(child, BorderLayout.CENTER);
   }
 
   private void showBox(int x, int y) {
@@ -130,15 +130,15 @@ public class ZoomingPanel extends JPanel {
       repaint(getBoxX(), getBoxY(), getBoxWidth(), getBoxHeight());
     }
 
-    this.zoomBoxWidth = x - zoomBoxStartX;
-    this.zoomBoxHeight = y - zoomBoxStartY;
+    zoomBoxWidth = x - zoomBoxStartX;
+    zoomBoxHeight = y - zoomBoxStartY;
 
     repaint(getBoxX(), getBoxY(), getBoxWidth(), getBoxHeight());
   }
 
   private void startBox(int x, int y) {
-    this.zoomBoxStartX = x;
-    this.zoomBoxStartY = y;
+    zoomBoxStartX = x;
+    zoomBoxStartY = y;
   }
 
   private void endBox(int x, int y) {
@@ -146,10 +146,10 @@ public class ZoomingPanel extends JPanel {
         && zoomBoxWidth != 0 && zoomBoxHeight != 0) {
       resizeMe(getBoxX(), getBoxY(), getBoxWidth(), getBoxHeight());
       repaint(getBoxX(), getBoxY(), getBoxWidth(), getBoxHeight());
-      this.zoomBoxStartX = -1;
-      this.zoomBoxStartY = -1;
-      this.zoomBoxWidth = -1;
-      this.zoomBoxHeight = -1;
+      zoomBoxStartX = -1;
+      zoomBoxStartY = -1;
+      zoomBoxWidth = -1;
+      zoomBoxHeight = -1;
     }
   }
 

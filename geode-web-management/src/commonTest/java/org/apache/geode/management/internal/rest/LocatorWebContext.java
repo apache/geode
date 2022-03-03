@@ -33,9 +33,9 @@ import org.springframework.web.context.WebApplicationContext;
  */
 public class LocatorWebContext {
   static RequestPostProcessor POST_PROCESSOR = new StandardRequestPostProcessor();
-  private WebApplicationContext webApplicationContext;
-  private MockMvc mockMvc;
-  private MockMvcClientHttpRequestFactory requestFactory;
+  private final WebApplicationContext webApplicationContext;
+  private final MockMvc mockMvc;
+  private final MockMvcClientHttpRequestFactory requestFactory;
 
 
   /**

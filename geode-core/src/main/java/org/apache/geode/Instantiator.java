@@ -126,10 +126,10 @@ public abstract class Instantiator {
    * The class associated with this instantiator. Used mainly for debugging purposes and error
    * messages.
    */
-  private Class<? extends DataSerializable> clazz;
+  private final Class<? extends DataSerializable> clazz;
 
   /** The id of this {@code Instantiator} */
-  private int id;
+  private final int id;
 
   /** The eventId of this {@code Instantiator} */
   private EventID eventId;
@@ -204,8 +204,8 @@ public abstract class Instantiator {
           String.format("Class id %s must not be 0.", classId));
     }
 
-    this.clazz = c;
-    this.id = classId;
+    clazz = c;
+    id = classId;
   }
 
   /**
@@ -220,14 +220,14 @@ public abstract class Instantiator {
    * Returns the {@code DataSerializable} class that is instantiated by this {@code Instantiator}.
    */
   public Class<? extends DataSerializable> getInstantiatedClass() {
-    return this.clazz;
+    return clazz;
   }
 
   /**
    * Returns the unique {@code id} of this {@code Instantiator}.
    */
   public int getId() {
-    return this.id;
+    return id;
   }
 
   /**
@@ -241,7 +241,7 @@ public abstract class Instantiator {
    * Returns the unique {@code eventId} of this {@code Instantiator}. For internal use only.
    */
   public Object/* EventID */ getEventId() {
-    return this.eventId;
+    return eventId;
   }
 
   /**
@@ -255,7 +255,7 @@ public abstract class Instantiator {
    * Returns the context of this {@code Instantiator}. For internal use only.
    */
   public Object/* ClientProxyMembershipID */ getContext() {
-    return this.context;
+    return context;
   }
 
 }

@@ -19,7 +19,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.junit.After;
@@ -58,8 +57,8 @@ public class MapIndexStoreJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    entries = new ArrayList<IndexStoreEntry>();
-    this.indexDataStructure = getIndexStorage();
+    entries = new ArrayList<>();
+    indexDataStructure = getIndexStorage();
   }
 
   @After
@@ -103,9 +102,8 @@ public class MapIndexStoreJUnitTest {
    * checks the list for an matching IndexEntry
    */
   private boolean entriesContains(IndexStoreEntry ie) {
-    Iterator<IndexStoreEntry> iterator = entries.iterator();
-    while (iterator.hasNext()) {
-      if (iterator.next().equals(ie)) {
+    for (final IndexStoreEntry entry : entries) {
+      if (entry.equals(ie)) {
         return true;
       }
     }
@@ -159,7 +157,7 @@ public class MapIndexStoreJUnitTest {
       int reverseEnd) {
     for (int i = reverseStart; i > reverseEnd; i--) {
       IndexStoreEntry ise = (IndexStore.IndexStoreEntry) iterator.next();
-      if (Integer.valueOf((String) ise.getDeserializedKey()) != i) {
+      if (Integer.parseInt((String) ise.getDeserializedKey()) != i) {
         fail("descendingIterator did not return the expected reverse order");
       }
     }
@@ -291,7 +289,7 @@ public class MapIndexStoreJUnitTest {
     RegionEntry regionEntry;
 
     IndexRegionTestEntry(RegionEntry re) {
-      this.regionEntry = re;
+      regionEntry = re;
     }
 
     public boolean equals(Object object) {

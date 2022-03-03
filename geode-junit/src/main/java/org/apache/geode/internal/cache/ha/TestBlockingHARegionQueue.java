@@ -38,7 +38,7 @@ public class TestBlockingHARegionQueue extends TestOnlyHARegionQueue {
   /**
    * Object on which to synchronize/wait
    */
-  private Object forWaiting = new Object();
+  private final Object forWaiting = new Object();
 
   boolean takeFirst = false;
 
@@ -62,8 +62,8 @@ public class TestBlockingHARegionQueue extends TestOnlyHARegionQueue {
     boolean putDone = super.put(object);
 
     if (takeFirst) {
-      this.take();
-      this.takeFirst = false;
+      take();
+      takeFirst = false;
     }
 
     synchronized (forWaiting) {
@@ -85,11 +85,11 @@ public class TestBlockingHARegionQueue extends TestOnlyHARegionQueue {
 
       if (takeWhenPeekInProgress) {
         try {
-          this.take();
+          take();
         } catch (CacheException ce) {
           throw new RuntimeException(ce) {};
         }
-        this.takeWhenPeekInProgress = false;
+        takeWhenPeekInProgress = false;
       }
       object = super.peek();
       if (object == null) {

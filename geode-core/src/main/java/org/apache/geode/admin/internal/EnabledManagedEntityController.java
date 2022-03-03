@@ -21,7 +21,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_R
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import java.io.File;
-import java.util.Iterator;
 import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
@@ -87,8 +86,8 @@ class EnabledManagedEntityController implements ManagedEntityController {
       return false;
     }
     boolean error = false;
-    for (int i = 0; i < ERROR_OUTPUTS.length; i++) {
-      error = output.indexOf(ERROR_OUTPUTS[i]) > -1;
+    for (final String errorOutput : ERROR_OUTPUTS) {
+      error = output.indexOf(errorOutput) > -1;
       if (error) {
         return error;
       }
@@ -129,7 +128,7 @@ class EnabledManagedEntityController implements ManagedEntityController {
     final ProcessOutputReader pos = new ProcessOutputReader(p);
     int retCode = pos.getExitCode();
     final String output = pos.getOutput();
-    logger.info("Result of executing {} is {}", command, Integer.valueOf(retCode));
+    logger.info("Result of executing {} is {}", command, retCode);
     logger.info("Output of {} is {}", command, output);
 
     if (retCode != 0 || outputIsError(output)) {
@@ -263,9 +262,9 @@ class EnabledManagedEntityController implements ManagedEntityController {
       return null;
     }
 
-    StringBuffer sb = new StringBuffer();
-    for (Iterator iter = sslProps.keySet().iterator(); iter.hasNext();) {
-      String key = (String) iter.next();
+    StringBuilder sb = new StringBuilder();
+    for (final Object o : sslProps.keySet()) {
+      String key = (String) o;
       String value = sslProps.getProperty(key);
       sb.append(" -J-D" + key + "=" + value);
     }

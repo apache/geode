@@ -171,7 +171,7 @@ public class FunctionExecutionWithExceptionDistributedTest implements Serializab
 
     ResultCollector resultCollector =
         dataSet.withFilter(stringKeys).setArguments(TRUE).execute(function);
-    assertThatThrownBy(() -> resultCollector.getResult()).isInstanceOf(Exception.class);
+    assertThatThrownBy(resultCollector::getResult).isInstanceOf(Exception.class);
   }
 
   @Test
@@ -233,7 +233,7 @@ public class FunctionExecutionWithExceptionDistributedTest implements Serializab
 
     ResultCollector resultCollector =
         dataSet.withFilter(stringKeys).setArguments(TRUE).execute(function);
-    assertThatThrownBy(() -> resultCollector.getResult()).isInstanceOf(Exception.class);
+    assertThatThrownBy(resultCollector::getResult).isInstanceOf(Exception.class);
   }
 
   @Test
@@ -329,7 +329,7 @@ public class FunctionExecutionWithExceptionDistributedTest implements Serializab
 
     ResultCollector resultCollector =
         dataSet.withFilter(intKeys).setArguments(intKeys).execute(function.getId());
-    assertThatThrownBy(() -> resultCollector.getResult()).isInstanceOf(Exception.class);
+    assertThatThrownBy(resultCollector::getResult).isInstanceOf(Exception.class);
   }
 
   @Test
@@ -353,6 +353,6 @@ public class FunctionExecutionWithExceptionDistributedTest implements Serializab
 
     ResultCollector resultCollector =
         dataSet.withFilter(intKeys).setArguments(intKeys).execute(function.getId());
-    assertThatThrownBy(() -> resultCollector.getResult()).isInstanceOf(Exception.class);
+    assertThatThrownBy(resultCollector::getResult).isInstanceOf(Exception.class);
   }
 }

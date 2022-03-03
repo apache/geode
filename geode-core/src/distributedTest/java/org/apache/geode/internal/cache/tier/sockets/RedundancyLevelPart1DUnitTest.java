@@ -85,7 +85,7 @@ public class RedundancyLevelPart1DUnitTest implements Serializable {
   private static String server2;
   private static String server3;
   private static PoolImpl pool = null;
-  private static AtomicBoolean failOverDetectionByCCU = new AtomicBoolean(false);
+  private static final AtomicBoolean failOverDetectionByCCU = new AtomicBoolean(false);
   private static ClientServerObserver clientServerObserver = null;
   private static InternalCache cache;
   private static String hostname;

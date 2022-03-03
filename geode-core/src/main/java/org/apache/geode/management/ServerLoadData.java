@@ -23,10 +23,10 @@ import java.beans.ConstructorProperties;
  */
 public class ServerLoadData {
 
-  private float connectionLoad;
-  private float subscriberLoad;
-  private float loadPerConnection;
-  private float loadPerSubscriber;
+  private final float connectionLoad;
+  private final float subscriberLoad;
+  private final float loadPerConnection;
+  private final float loadPerSubscriber;
 
   /**
    * This constructor is to be used by internal JMX framework only. User should not try to create an

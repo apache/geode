@@ -25,7 +25,7 @@ import me.champeau.gradle.japicmp.report.stdrules.AbstractRecordingSeenMembers
 class GeodeApiRegressionRule extends AbstractRecordingSeenMembers {
   private final Map<String, String> acceptedRegressions
 
-  public GeodeApiRegressionRule() {
+  GeodeApiRegressionRule() {
     def jsonSlurper = new JsonSlurper()
     acceptedRegressions = jsonSlurper.parse(getClass().getResource('/japicmp_exceptions.json').openStream()) as Map
   }

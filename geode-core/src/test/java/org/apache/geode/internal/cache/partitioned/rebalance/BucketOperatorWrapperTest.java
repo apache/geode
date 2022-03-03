@@ -36,7 +36,6 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -55,7 +54,7 @@ public class BucketOperatorWrapperTest {
   private BucketOperatorImpl delegate;
 
   private Map<String, Long> colocatedRegionBytes;
-  private int bucketId = 1;
+  private final int bucketId = 1;
   private InternalDistributedMember sourceMember, targetMember;
 
   private static final String PR_LEADER_REGION_NAME = "leadregion1";
@@ -63,7 +62,7 @@ public class BucketOperatorWrapperTest {
 
   @Before
   public void setUp() throws UnknownHostException {
-    colocatedRegionBytes = new HashMap<String, Long>();
+    colocatedRegionBytes = new HashMap<>();
     colocatedRegionBytes.put(PR_LEADER_REGION_NAME, 100L);
     colocatedRegionBytes.put(PR_COLOCATED_REGION_NAME, 50L);
 
@@ -79,7 +78,7 @@ public class BucketOperatorWrapperTest {
     colocatedRegion = mock(PartitionedRegion.class);
     doReturn(PR_COLOCATED_REGION_NAME).when(colocatedRegion).getFullPath();
 
-    rebalanceDetails = new HashSet<PartitionRebalanceDetailsImpl>();
+    rebalanceDetails = new HashSet<>();
     PartitionRebalanceDetailsImpl details = spy(new PartitionRebalanceDetailsImpl(leaderRegion));
     rebalanceDetails.add(details);
 
@@ -104,13 +103,10 @@ public class BucketOperatorWrapperTest {
 
   @Test
   public void bucketWrapperShouldRecordNumberOfBucketsCreatedIfCreateBucketSucceeds() {
-    doAnswer(new Answer<Object>() {
-      @Override
-      public Object answer(InvocationOnMock invocation) {
-        // 3rd argument is Completion object sent to BucketOperatorImpl.createRedundantBucket
-        ((Completion) invocation.getArguments()[3]).onSuccess();
-        return null;
-      }
+    doAnswer((Answer<Object>) invocation -> {
+      // 3rd argument is Completion object sent to BucketOperatorImpl.createRedundantBucket
+      ((Completion) invocation.getArguments()[3]).onSuccess();
+      return null;
     }).when(delegate).createRedundantBucket(eq(targetMember), eq(bucketId),
         eq(colocatedRegionBytes), any(Completion.class));
 
@@ -132,13 +128,10 @@ public class BucketOperatorWrapperTest {
 
   @Test
   public void bucketWrapperShouldNotRecordNumberOfBucketsCreatedIfCreateBucketFails() {
-    doAnswer(new Answer<Object>() {
-      @Override
-      public Object answer(InvocationOnMock invocation) {
-        // 3rd argument is Completion object sent to BucketOperatorImpl.createRedundantBucket
-        ((Completion) invocation.getArguments()[3]).onFailure();
-        return null;
-      }
+    doAnswer((Answer<Object>) invocation -> {
+      // 3rd argument is Completion object sent to BucketOperatorImpl.createRedundantBucket
+      ((Completion) invocation.getArguments()[3]).onFailure();
+      return null;
     }).when(delegate).createRedundantBucket(eq(targetMember), eq(bucketId),
         eq(colocatedRegionBytes), any(Completion.class));
 
@@ -154,13 +147,10 @@ public class BucketOperatorWrapperTest {
 
   @Test
   public void bucketWrapperShouldInvokeOnFailureWhenCreateBucketFails() {
-    doAnswer(new Answer<Object>() {
-      @Override
-      public Object answer(InvocationOnMock invocation) {
-        // 3rd argument is Completion object sent to BucketOperatorImpl.createRedundantBucket
-        ((Completion) invocation.getArguments()[3]).onFailure();
-        return null;
-      }
+    doAnswer((Answer<Object>) invocation -> {
+      // 3rd argument is Completion object sent to BucketOperatorImpl.createRedundantBucket
+      ((Completion) invocation.getArguments()[3]).onFailure();
+      return null;
     }).when(delegate).createRedundantBucket(eq(targetMember), eq(bucketId),
         eq(colocatedRegionBytes), any(Completion.class));
 
@@ -174,13 +164,10 @@ public class BucketOperatorWrapperTest {
 
   @Test
   public void bucketWrapperShouldInvokeOnSuccessWhenCreateBucketSucceeds() {
-    doAnswer(new Answer<Object>() {
-      @Override
-      public Object answer(InvocationOnMock invocation) {
-        // 3rd argument is Completion object sent to BucketOperatorImpl.createRedundantBucket
-        ((Completion) invocation.getArguments()[3]).onSuccess();
-        return null;
-      }
+    doAnswer((Answer<Object>) invocation -> {
+      // 3rd argument is Completion object sent to BucketOperatorImpl.createRedundantBucket
+      ((Completion) invocation.getArguments()[3]).onSuccess();
+      return null;
     }).when(delegate).createRedundantBucket(eq(targetMember), eq(bucketId),
         eq(colocatedRegionBytes), any(Completion.class));
 

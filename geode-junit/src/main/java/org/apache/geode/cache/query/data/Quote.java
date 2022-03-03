@@ -52,7 +52,7 @@ public class Quote implements Serializable {
     String[] arr1 = {"moving", "binding", "non binding", "not to exceed", "storage",
         "auto transport", "mortgage"};
     quoteType = arr1[i % 7];
-    uniqueQuoteType = "quoteType" + Integer.toString(i);
+    uniqueQuoteType = "quoteType" + i;
     String[] arr2 = {"dealer1", "dealer2", "dealer3", "dealer4", "dealer5", "dealer6", "dealer7"};
     dealerPortfolio = arr2[i % 7];
     String[] arr3 =

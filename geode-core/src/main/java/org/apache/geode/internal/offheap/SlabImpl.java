@@ -36,32 +36,30 @@ public class SlabImpl implements Slab {
   }
 
   public SlabImpl(long addr, int size) {
-    this.address = addr;
+    address = addr;
     this.size = size;
   }
 
   @Override
   public int getSize() {
-    return this.size;
+    return size;
   }
 
   @Override
   public long getMemoryAddress() {
-    return this.address;
+    return address;
   }
 
   @Override
   public void free() {
-    AddressableMemoryManager.free(this.address);
+    AddressableMemoryManager.free(address);
   }
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-    sb.append("{");
-    sb.append("MemoryAddress=").append(getMemoryAddress());
-    sb.append(", Size=").append(getSize());
-    sb.append("}");
-    return sb.toString();
+    return getClass().getSimpleName() + "{"
+        + "MemoryAddress=" + getMemoryAddress()
+        + ", Size=" + getSize()
+        + "}";
   }
 }

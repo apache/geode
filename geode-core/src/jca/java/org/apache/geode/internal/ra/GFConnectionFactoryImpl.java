@@ -30,7 +30,7 @@ public class GFConnectionFactoryImpl implements GFConnectionFactory {
   private Reference ref;
 
   public GFConnectionFactoryImpl(ManagedConnectionFactory mcf) {
-    this.cm = null;
+    cm = null;
     this.mcf = mcf;
   }
 
@@ -52,7 +52,7 @@ public class GFConnectionFactoryImpl implements GFConnectionFactory {
 
   @Override
   public Reference getReference() throws NamingException {
-    return this.ref;
+    return ref;
   }
 
 }

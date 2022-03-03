@@ -131,11 +131,8 @@ public class DecrementCommand extends AbstractCommand {
     }
 
     if (expiration > 0) {
-      StorageCommand.getExpiryExecutor().schedule(new Runnable() {
-        @Override
-        public void run() {
-          r.destroy(key);
-        }
+      StorageCommand.getExpiryExecutor().schedule(() -> {
+        r.destroy(key);
       }, expiration, TimeUnit.SECONDS);
     }
 

@@ -35,7 +35,7 @@ public class IndexInfo {
   final int[] mapping;
 
   IndexInfo(CompiledValue key, CompiledValue path, IndexProtocol index, int matchLevel,
-      int mapping[], int op) {
+      int[] mapping, int op) {
     _key = key;
     _path = path;
     _operator = op;
@@ -49,23 +49,23 @@ public class IndexInfo {
     if (((AbstractIndex) _index).isMapType()) {
       // assert _path.getType() == OQLLexerTokenTypes.METHOD_INV;
       // Get the map key & value. both need to be passed as index key.
-      CompiledValue mapKey = ((MapIndexable) this._path).getMapLookupKey();
-      return new Object[] {this._key.evaluate(context), mapKey.evaluate(context)};
+      CompiledValue mapKey = ((MapIndexable) _path).getMapLookupKey();
+      return new Object[] {_key.evaluate(context), mapKey.evaluate(context)};
     } else {
       return _key.evaluate(context);
     }
   }
 
   public CompiledValue _key() {
-    return this._key;
+    return _key;
   }
 
   public CompiledValue _path() {
-    return this._path;
+    return _path;
   }
 
   public int _operator() {
-    return this._operator;
+    return _operator;
   }
 
   public IndexProtocol _getIndex() {

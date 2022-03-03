@@ -84,17 +84,17 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
 
 
   LocatorMembershipListenerImpl() {
-    this.tcpClient = new TcpClient(SocketCreatorFactory
+    tcpClient = new TcpClient(SocketCreatorFactory
         .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
         InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
         InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
         TcpSocketFactory.DEFAULT);
-    this.notifyLocatorJoinPool = null;
+    notifyLocatorJoinPool = null;
   }
 
   LocatorMembershipListenerImpl(TcpClient tcpClient) {
     this.tcpClient = tcpClient;
-    this.notifyLocatorJoinPool = null;
+    notifyLocatorJoinPool = null;
   }
 
   @Override
@@ -215,7 +215,7 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
     DistributionLocatorId locator = request.getLocator();
 
     LocatorHelper.addLocator(distributedSystemId, locator, this, null);
-    return new RemoteLocatorJoinResponse(this.getAllLocatorsInfo());
+    return new RemoteLocatorJoinResponse(getAllLocatorsInfo());
   }
 
   private ExecutorService createThreadPool() {
@@ -264,23 +264,23 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
 
   private Object getRemoteLocators(RemoteLocatorRequest request) {
     int dsId = request.getDsId();
-    Set<String> locators = this.getRemoteLocatorInfo(dsId);
+    Set<String> locators = getRemoteLocatorInfo(dsId);
     return new RemoteLocatorResponse(locators);
   }
 
   @Override
   public Set<String> getRemoteLocatorInfo(int dsId) {
-    return this.allServerLocatorsInfo.get(dsId);
+    return allServerLocatorsInfo.get(dsId);
   }
 
   @Override
   public ConcurrentMap<Integer, Set<DistributionLocatorId>> getAllLocatorsInfo() {
-    return this.allLocatorsInfo;
+    return allLocatorsInfo;
   }
 
   @Override
   public ConcurrentMap<Integer, Set<String>> getAllServerLocatorsInfo() {
-    return this.allServerLocatorsInfo;
+    return allServerLocatorsInfo;
   }
 
   @Override

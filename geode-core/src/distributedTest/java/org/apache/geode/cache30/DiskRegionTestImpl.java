@@ -49,7 +49,7 @@ public class DiskRegionTestImpl implements Serializable {
     return new CacheSerializableRunnable("Create region") {
       @Override
       public void run2() throws CacheException {
-        DiskRegionTestImpl.this.rtc.createRegion(name);
+        rtc.createRegion(name);
       }
     };
   }
@@ -63,7 +63,7 @@ public class DiskRegionTestImpl implements Serializable {
    * Tests that you can create a disk region
    */
   public void testCreateDiskRegion() throws CacheException {
-    final String name = this.rtc.getUniqueName();
+    final String name = rtc.getUniqueName();
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
 
@@ -82,10 +82,10 @@ public class DiskRegionTestImpl implements Serializable {
    * should not be faulted into the VM.
    */
   public void testBackupFillValues() throws CacheException {
-    RegionAttributes attrs = this.rtc.getRegionAttributes();
+    RegionAttributes attrs = rtc.getRegionAttributes();
     assertTrue("This test not appropriate for non-backup regions", attrs.getPersistBackup());
 
-    final String name = this.rtc.getUniqueName();
+    final String name = rtc.getUniqueName();
     final String key1 = "KEY1";
     final String key2 = "KEY2";
     final String value1 = "VALUE1";
@@ -99,13 +99,13 @@ public class DiskRegionTestImpl implements Serializable {
     vm0.invoke(new CacheSerializableRunnable("Create backup Region in VM0") {
       @Override
       public void run2() throws CacheException {
-        Region rgn = DiskRegionTestImpl.this.rtc.createRegion(name);
+        Region rgn = rtc.createRegion(name);
         rgn.create(key1, value1);
         rgn.create(key2, value2);
 
         // create entries that will be overwritten by getInitialImage below
-        rgn.create(new Integer(0), "TEMP-0");
-        rgn.create(new Integer(1), "TEMP-1");
+        rgn.create(0, "TEMP-0");
+        rgn.create(1, "TEMP-1");
 
         // no longer to close cache in 6.5, otherwise the 2 vms will splitbrain
         // CacheTestCase.closeCache();
@@ -117,18 +117,18 @@ public class DiskRegionTestImpl implements Serializable {
       public void run2() throws CacheException {
         AttributesFactory factory = new AttributesFactory();
         // set scope to be same as test region
-        Scope scope = DiskRegionTestImpl.this.rtc.getRegionAttributes().getScope();
+        Scope scope = rtc.getRegionAttributes().getScope();
         factory.setScope(scope);
-        DataPolicy dataPolicy = DiskRegionTestImpl.this.rtc.getRegionAttributes().getDataPolicy();
+        DataPolicy dataPolicy = rtc.getRegionAttributes().getDataPolicy();
         factory.setDataPolicy(dataPolicy);
         RegionAttributes attrs2 = factory.create();
-        Region rgn = DiskRegionTestImpl.this.rtc.createRegion(name, attrs2);
+        Region rgn = rtc.createRegion(name, attrs2);
 
         // Fill the region with some keys.
         for (int i = 0; i < NUM_ENTRIES; i++) {
           byte[] value = new byte[VALUE_SIZE];
           Arrays.fill(value, (byte) 0xAB);
-          rgn.put(new Integer(i), value);
+          rgn.put(i, value);
         }
         // just for sanity:
         assertEquals(NUM_ENTRIES + 2, rgn.keySet().size());
@@ -148,10 +148,10 @@ public class DiskRegionTestImpl implements Serializable {
       @Override
       public void run2() throws CacheException {
         AttributesFactory factory =
-            new AttributesFactory(DiskRegionTestImpl.this.rtc.getRegionAttributes());
+            new AttributesFactory(rtc.getRegionAttributes());
         factory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
         RegionAttributes attrs2 = factory.create();
-        Region rgn = DiskRegionTestImpl.this.rtc.createRegion(name, attrs2);
+        Region rgn = rtc.createRegion(name, attrs2);
 
         // verify
         assertEquals(NUM_ENTRIES + 2, rgn.keySet().size());
@@ -170,7 +170,7 @@ public class DiskRegionTestImpl implements Serializable {
 
         // The following also verifies TEMP values were overwritten
         for (int i = 0; i < NUM_ENTRIES; i++) {
-          Region.Entry entry = rgn.getEntry(new Integer(i));
+          Region.Entry entry = rgn.getEntry(i);
           assertNotNull("No entry for key " + i, entry);
           byte[] v = (byte[]) entry.getValue();
           assertNotNull("Null value for key " + i, v);
@@ -181,7 +181,7 @@ public class DiskRegionTestImpl implements Serializable {
 
         rgn.close();
 
-        rgn = DiskRegionTestImpl.this.rtc.createRegion(name, attrs2);
+        rgn = rtc.createRegion(name, attrs2);
 
         // verify
         assertEquals(NUM_ENTRIES + 2, rgn.keySet().size());
@@ -198,7 +198,7 @@ public class DiskRegionTestImpl implements Serializable {
 
         // The following also verifies TEMP values were overwritten
         for (int i = 0; i < NUM_ENTRIES; i++) {
-          Region.Entry entry = rgn.getEntry(new Integer(i));
+          Region.Entry entry = rgn.getEntry(i);
           assertNotNull("No entry for key " + i, entry);
           byte[] v = (byte[]) entry.getValue();
           assertNotNull("Null value for key " + i, v);

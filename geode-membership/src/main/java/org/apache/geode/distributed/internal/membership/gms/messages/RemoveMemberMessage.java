@@ -41,7 +41,7 @@ public class RemoveMemberMessage<ID extends MemberIdentifier> extends AbstractGM
       String reason) {
     super();
     setRecipient(recipient);
-    this.memberID = id;
+    memberID = id;
     this.reason = reason;
   }
 
@@ -49,7 +49,7 @@ public class RemoveMemberMessage<ID extends MemberIdentifier> extends AbstractGM
       ID id, String reason) {
     super();
     setRecipients(recipients);
-    this.memberID = id;
+    memberID = id;
     this.reason = reason;
   }
 

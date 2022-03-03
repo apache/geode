@@ -18,7 +18,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.contrib.java.lang.system.TextFromStandardInputStream.emptyStandardInputStream;
 
 import java.lang.reflect.Method;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -89,16 +88,13 @@ public class MainLauncherJUnitTest {
 
   @Test
   public void testInvokeMainWithMainLauncherWithNoArgs() throws Exception {
-    Future<Boolean> future = executorServiceRule.submit(new Callable<Boolean>() {
-      @Override
-      public Boolean call() throws Exception {
-        Class<?> clazz = MainLauncher.class;
-        Method mainMethod = clazz.getMethod("main", String[].class);
-        String[] args = new String[] {launchedClass};
-        // this will block until "\n" is fed to System.in
-        mainMethod.invoke(null, new Object[] {args});
-        return true;
-      }
+    Future<Boolean> future = executorServiceRule.submit(() -> {
+      Class<?> clazz = MainLauncher.class;
+      Method mainMethod = clazz.getMethod("main", String[].class);
+      String[] args = new String[] {launchedClass};
+      // this will block until "\n" is fed to System.in
+      mainMethod.invoke(null, new Object[] {args});
+      return true;
     });
     systemInMock.provideText("\n");
     assertTrue(future.get(TIMEOUT_SECONDS, TimeUnit.SECONDS));
@@ -107,15 +103,12 @@ public class MainLauncherJUnitTest {
 
   @Test
   public void testInvokeMainWithMainLauncherWithOneArg() throws Exception {
-    Future<Boolean> future = executorServiceRule.submit(new Callable<Boolean>() {
-      @Override
-      public Boolean call() throws Exception {
-        Class<?> clazz = MainLauncher.class;
-        Method mainMethod = clazz.getMethod("main", String[].class);
-        String[] args = new String[] {launchedClass, "arg0"};
-        mainMethod.invoke(null, new Object[] {args});
-        return true;
-      }
+    Future<Boolean> future = executorServiceRule.submit(() -> {
+      Class<?> clazz = MainLauncher.class;
+      Method mainMethod = clazz.getMethod("main", String[].class);
+      String[] args = new String[] {launchedClass, "arg0"};
+      mainMethod.invoke(null, new Object[] {args});
+      return true;
     });
     systemInMock.provideText("\n");
     assertTrue(future.get(TIMEOUT_SECONDS, TimeUnit.SECONDS));
@@ -124,15 +117,12 @@ public class MainLauncherJUnitTest {
 
   @Test
   public void testInvokeMainWithMainLauncherWithTwoArgs() throws Exception {
-    Future<Boolean> future = executorServiceRule.submit(new Callable<Boolean>() {
-      @Override
-      public Boolean call() throws Exception {
-        Class<?> clazz = MainLauncher.class;
-        Method mainMethod = clazz.getMethod("main", String[].class);
-        String[] args = new String[] {launchedClass, "arg0", "arg1"};
-        mainMethod.invoke(null, new Object[] {args});
-        return true;
-      }
+    Future<Boolean> future = executorServiceRule.submit(() -> {
+      Class<?> clazz = MainLauncher.class;
+      Method mainMethod = clazz.getMethod("main", String[].class);
+      String[] args = new String[] {launchedClass, "arg0", "arg1"};
+      mainMethod.invoke(null, new Object[] {args});
+      return true;
     });
     systemInMock.provideText("\n");
     assertTrue(future.get(TIMEOUT_SECONDS, TimeUnit.SECONDS));

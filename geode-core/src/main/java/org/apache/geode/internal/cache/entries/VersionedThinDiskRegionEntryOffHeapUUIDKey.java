@@ -107,8 +107,8 @@ public class VersionedThinDiskRegionEntryOffHeapUUIDKey
     super(context, (value instanceof RecoveredEntry ? null : value));
     // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
     initialize(context, value);
-    this.keyMostSigBits = key.getMostSignificantBits();
-    this.keyLeastSigBits = key.getLeastSignificantBits();
+    keyMostSigBits = key.getMostSignificantBits();
+    keyLeastSigBits = key.getLeastSignificantBits();
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
@@ -168,7 +168,7 @@ public class VersionedThinDiskRegionEntryOffHeapUUIDKey
 
   @Override
   public int getEntryHash() {
-    return this.hash;
+    return hash;
   }
 
   @Override
@@ -178,7 +178,7 @@ public class VersionedThinDiskRegionEntryOffHeapUUIDKey
 
   @Override
   public HashEntry<Object, Object> getNextEntry() {
-    return this.nextEntry;
+    return nextEntry;
   }
 
   @Override
@@ -200,12 +200,12 @@ public class VersionedThinDiskRegionEntryOffHeapUUIDKey
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   public DiskId getDiskId() {
-    return this.id;
+    return id;
   }
 
   @Override
   public void setDiskId(final RegionEntry oldEntry) {
-    this.id = ((DiskEntry) oldEntry).getDiskId();
+    id = ((DiskEntry) oldEntry).getDiskId();
   }
 
   private void diskInitialize(final RegionEntryContext context, final Object value) {
@@ -213,7 +213,7 @@ public class VersionedThinDiskRegionEntryOffHeapUUIDKey
     DiskStoreImpl diskStore = diskRecoveryStore.getDiskStore();
     long maxOplogSize = diskStore.getMaxOplogSize();
     // get appropriate instance of DiskId implementation based on maxOplogSize
-    this.id = DiskId.createDiskId(maxOplogSize, true, diskStore.needsLinkedList());
+    id = DiskId.createDiskId(maxOplogSize, true, diskStore.needsLinkedList());
     Helper.initialize(this, diskRecoveryStore, value);
   }
 
@@ -241,25 +241,25 @@ public class VersionedThinDiskRegionEntryOffHeapUUIDKey
 
   @Override
   public VersionSource getMemberID() {
-    return this.memberId;
+    return memberId;
   }
 
   @Override
   public int getDistributedSystemId() {
-    return this.distributedSystemId;
+    return distributedSystemId;
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   public void setVersions(final VersionTag versionTag) {
-    this.memberId = versionTag.getMemberID();
+    memberId = versionTag.getMemberID();
     int eVersion = versionTag.getEntryVersion();
-    this.entryVersionLowBytes = (short) (eVersion & 0xffff);
-    this.entryVersionHighByte = (byte) ((eVersion & 0xff0000) >> 16);
-    this.regionVersionHighBytes = versionTag.getRegionVersionHighBytes();
-    this.regionVersionLowBytes = versionTag.getRegionVersionLowBytes();
+    entryVersionLowBytes = (short) (eVersion & 0xffff);
+    entryVersionHighByte = (byte) ((eVersion & 0xff0000) >> 16);
+    regionVersionHighBytes = versionTag.getRegionVersionHighBytes();
+    regionVersionLowBytes = versionTag.getRegionVersionLowBytes();
     if (!versionTag.isGatewayTag()
-        && this.distributedSystemId == versionTag.getDistributedSystemId()) {
+        && distributedSystemId == versionTag.getDistributedSystemId()) {
       if (getVersionTimeStamp() <= versionTag.getVersionTimeStamp()) {
         setVersionTimeStamp(versionTag.getVersionTimeStamp());
       } else {
@@ -268,7 +268,7 @@ public class VersionedThinDiskRegionEntryOffHeapUUIDKey
     } else {
       setVersionTimeStamp(versionTag.getVersionTimeStamp());
     }
-    this.distributedSystemId = (byte) (versionTag.getDistributedSystemId() & 0xff);
+    distributedSystemId = (byte) (versionTag.getDistributedSystemId() & 0xff);
   }
 
   @Override
@@ -286,9 +286,9 @@ public class VersionedThinDiskRegionEntryOffHeapUUIDKey
   public VersionTag asVersionTag() {
     VersionTag tag = VersionTag.create(memberId);
     tag.setEntryVersion(getEntryVersion());
-    tag.setRegionVersion(this.regionVersionHighBytes, this.regionVersionLowBytes);
+    tag.setRegionVersion(regionVersionHighBytes, regionVersionLowBytes);
     tag.setVersionTimeStamp(getVersionTimeStamp());
-    tag.setDistributedSystemId(this.distributedSystemId);
+    tag.setDistributedSystemId(distributedSystemId);
     return tag;
   }
 
@@ -309,28 +309,28 @@ public class VersionedThinDiskRegionEntryOffHeapUUIDKey
   /** get rvv internal high byte. Used by region entries for transferring to storage */
   @Override
   public short getRegionVersionHighBytes() {
-    return this.regionVersionHighBytes;
+    return regionVersionHighBytes;
   }
 
   /** get rvv internal low bytes. Used by region entries for transferring to storage */
   @Override
   public int getRegionVersionLowBytes() {
-    return this.regionVersionLowBytes;
+    return regionVersionLowBytes;
   }
 
   // ----------------------------------------- key code -------------------------------------------
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   public Object getKey() {
-    return new UUID(this.keyMostSigBits, this.keyLeastSigBits);
+    return new UUID(keyMostSigBits, keyLeastSigBits);
   }
 
   @Override
   public boolean isKeyEqual(final Object key) {
     if (key instanceof UUID) {
       UUID uuid = (UUID) key;
-      return uuid.getLeastSignificantBits() == this.keyLeastSigBits
-          && uuid.getMostSignificantBits() == this.keyMostSigBits;
+      return uuid.getLeastSignificantBits() == keyLeastSigBits
+          && uuid.getMostSignificantBits() == keyMostSigBits;
     }
     return false;
   }

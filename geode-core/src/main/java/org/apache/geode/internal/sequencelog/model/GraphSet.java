@@ -16,7 +16,6 @@ package org.apache.geode.internal.sequencelog.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,12 +26,12 @@ import java.util.regex.Pattern;
 import org.apache.geode.internal.sequencelog.GraphType;
 
 public class GraphSet implements GraphReaderCallback {
-  private Map<GraphID, Graph> graphs = new HashMap<GraphID, Graph>();
+  private final Map<GraphID, Graph> graphs = new HashMap<>();
   private long maxTime = Long.MIN_VALUE;
   private long minTime = Long.MAX_VALUE;
-  private final Map<String, Long> locations = new HashMap<String, Long>();
+  private final Map<String, Long> locations = new HashMap<>();
 
-  private Set<EdgePattern> edgePatterns = new TreeSet<EdgePattern>();
+  private final Set<EdgePattern> edgePatterns = new TreeSet<>();
 
   @Override
   public void addEdge(long timestamp, GraphType graphType, String graphName, String edgeName,
@@ -73,7 +72,7 @@ public class GraphSet implements GraphReaderCallback {
 
   private void updateLocations(String location, long timestamp) {
     Long time = locations.get(location);
-    if (time == null || time.longValue() > timestamp) {
+    if (time == null || time > timestamp) {
       locations.put(location, timestamp);
     }
 
@@ -115,14 +114,11 @@ public class GraphSet implements GraphReaderCallback {
   }
 
   public List<String> getLocations() {
-    List<String> result = new ArrayList<String>(locations.keySet());
-    Collections.<String>sort(result, new Comparator<String>() {
-      @Override
-      public int compare(String o1, String o2) {
-        Long time1 = locations.get(o1);
-        Long time2 = locations.get(o2);
-        return time1.compareTo(time2);
-      }
+    List<String> result = new ArrayList<>(locations.keySet());
+    Collections.sort(result, (o1, o2) -> {
+      Long time1 = locations.get(o1);
+      Long time2 = locations.get(o2);
+      return time1.compareTo(time2);
     });
     return result;
   }

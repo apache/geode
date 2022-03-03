@@ -30,38 +30,38 @@ import org.apache.geode.internal.tcp.ByteBufferInputStream;
  */
 public class ByteArrayData {
 
-  private ByteArrayOutputStream baos;
+  private final ByteArrayOutputStream baos;
 
   public ByteArrayData() {
-    this.baos = new ByteArrayOutputStream();
+    baos = new ByteArrayOutputStream();
   }
 
   public int size() {
-    return this.baos.size();
+    return baos.size();
   }
 
   public boolean isEmpty() {
-    return this.baos.size() == 0;
+    return baos.size() == 0;
   }
 
   /**
    * Returns a <code>DataOutput</code> to write to
    */
   public DataOutputStream getDataOutput() {
-    return new DataOutputStream(this.baos);
+    return new DataOutputStream(baos);
   }
 
   /**
    * Returns a <code>DataInput</code> to read from
    */
   public DataInput getDataInput() {
-    ByteBuffer bb = ByteBuffer.wrap(this.baos.toByteArray());
+    ByteBuffer bb = ByteBuffer.wrap(baos.toByteArray());
     ByteBufferInputStream bbis = new ByteBufferInputStream(bb);
     return bbis;
   }
 
   public DataInputStream getDataInputStream() {
-    ByteBuffer bb = ByteBuffer.wrap(this.baos.toByteArray());
+    ByteBuffer bb = ByteBuffer.wrap(baos.toByteArray());
     ByteBufferInputStream bbis = new ByteBufferInputStream(bb);
     return new DataInputStream(bbis);
   }

@@ -159,9 +159,9 @@ public class NonTXEntry implements Region.Entry {
 
   @Override
   public String toString() {
-    return new StringBuilder("NonTXEntry@")
-        .append(Integer.toHexString(System.identityHashCode(this))).append(' ')
-        .append(getRegionEntry()).toString();
+    return "NonTXEntry@"
+        + Integer.toHexString(System.identityHashCode(this)) + ' '
+        + getRegionEntry();
   }
 
   /**

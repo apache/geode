@@ -16,7 +16,6 @@ package org.apache.geode.sequence;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -29,7 +28,7 @@ import java.util.regex.Pattern;
 public class HydraLineMapper implements LineMapper {
   private static final Pattern VM_NAME_PATTERN = Pattern.compile("(vm_\\d+).*_(\\d+)(_end)?\\.log");
   private static final Pattern DISK_DIR_PATTERN = Pattern.compile("vm_(\\d+).*_disk_1");
-  private final Map<String, String> processIdToVMName = new HashMap<String, String>();
+  private final Map<String, String> processIdToVMName = new HashMap<>();
   private final DefaultLineMapper defaultMapper = new DefaultLineMapper();
 
   public HydraLineMapper(File[] graphFiles) {
@@ -77,7 +76,7 @@ public class HydraLineMapper implements LineMapper {
   }
 
   private String getDiskStoreIdFromInitFile(File dir, String fileName)
-      throws FileNotFoundException, IOException {
+      throws IOException {
     FileInputStream fis = new FileInputStream(new File(dir, fileName));
     try {
       byte[] bytes = new byte[1 + 8 + 8];

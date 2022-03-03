@@ -18,7 +18,6 @@ package org.apache.geode.redis.internal.commands.executor.key;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_CURSOR;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
 import static org.apache.geode.redis.internal.netty.Coder.equalsIgnoreCaseBytes;
 import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
@@ -70,7 +69,7 @@ public abstract class AbstractScanExecutor implements CommandExecutor {
       }
 
       if (value.getType() != getDataType()) {
-        throw new RedisDataTypeMismatchException(ERROR_WRONG_TYPE);
+        throw new RedisDataTypeMismatchException();
       }
 
       command.getCommandType().checkDeferredParameters(command, context);

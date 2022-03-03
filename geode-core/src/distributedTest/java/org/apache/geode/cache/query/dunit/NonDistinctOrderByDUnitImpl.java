@@ -45,10 +45,10 @@ public abstract class NonDistinctOrderByDUnitImpl extends JUnit4CacheTestCase {
     final VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
-    Cache cache = this.getCache();
+    Cache cache = getCache();
     NonDistinctOrderByTestImplementation test = createTestInstance();
     test.testOrderByWithIndexResultDefaultProjection();
-    this.closeCache(vm0, vm1, vm2, vm3);
+    closeCache(vm0, vm1, vm2, vm3);
   }
 
   @Test
@@ -58,10 +58,10 @@ public abstract class NonDistinctOrderByDUnitImpl extends JUnit4CacheTestCase {
     final VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
-    Cache cache = this.getCache();
+    Cache cache = getCache();
     NonDistinctOrderByTestImplementation test = createTestInstance();
     test.testOrderByWithIndexResultWithProjection();
-    this.closeCache(vm0, vm1, vm2, vm3);
+    closeCache(vm0, vm1, vm2, vm3);
   }
 
   @Test
@@ -71,10 +71,10 @@ public abstract class NonDistinctOrderByDUnitImpl extends JUnit4CacheTestCase {
     final VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
-    Cache cache = this.getCache();
+    Cache cache = getCache();
     NonDistinctOrderByTestImplementation test = createTestInstance();
     test.testMultiColOrderByWithIndexResultDefaultProjection();
-    this.closeCache(vm0, vm1, vm2, vm3);
+    closeCache(vm0, vm1, vm2, vm3);
   }
 
   @Test
@@ -84,10 +84,10 @@ public abstract class NonDistinctOrderByDUnitImpl extends JUnit4CacheTestCase {
     final VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
-    Cache cache = this.getCache();
+    Cache cache = getCache();
     NonDistinctOrderByTestImplementation test = createTestInstance();
     test.testMultiColOrderByWithIndexResultWithProjection();
-    this.closeCache(vm0, vm1, vm2, vm3);
+    closeCache(vm0, vm1, vm2, vm3);
   }
 
   @Test
@@ -97,10 +97,10 @@ public abstract class NonDistinctOrderByDUnitImpl extends JUnit4CacheTestCase {
     final VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
-    Cache cache = this.getCache();
+    Cache cache = getCache();
     NonDistinctOrderByTestImplementation test = createTestInstance();
     test.testMultiColOrderByWithMultiIndexResultDefaultProjection();
-    this.closeCache(vm0, vm1, vm2, vm3);
+    closeCache(vm0, vm1, vm2, vm3);
   }
 
   @Test
@@ -110,10 +110,10 @@ public abstract class NonDistinctOrderByDUnitImpl extends JUnit4CacheTestCase {
     final VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
-    Cache cache = this.getCache();
+    Cache cache = getCache();
     NonDistinctOrderByTestImplementation test = createTestInstance();
     test.testMultiColOrderByWithMultiIndexResultProjection();
-    this.closeCache(vm0, vm1, vm2, vm3);
+    closeCache(vm0, vm1, vm2, vm3);
   }
 
   @Test
@@ -123,10 +123,10 @@ public abstract class NonDistinctOrderByDUnitImpl extends JUnit4CacheTestCase {
     final VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
-    Cache cache = this.getCache();
+    Cache cache = getCache();
     NonDistinctOrderByTestImplementation test = createTestInstance();
     test.testLimitNotAppliedIfOrderByNotUsingIndex();
-    this.closeCache(vm0, vm1, vm2, vm3);
+    closeCache(vm0, vm1, vm2, vm3);
   }
 
   @Test
@@ -136,10 +136,10 @@ public abstract class NonDistinctOrderByDUnitImpl extends JUnit4CacheTestCase {
     final VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
-    Cache cache = this.getCache();
+    Cache cache = getCache();
     NonDistinctOrderByTestImplementation test = createTestInstance();
     test.testOrderByWithNullValues();
-    this.closeCache(vm0, vm1, vm2, vm3);
+    closeCache(vm0, vm1, vm2, vm3);
   }
 
   @Test
@@ -149,10 +149,10 @@ public abstract class NonDistinctOrderByDUnitImpl extends JUnit4CacheTestCase {
     final VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
-    Cache cache = this.getCache();
+    Cache cache = getCache();
     NonDistinctOrderByTestImplementation test = createTestInstance();
     test.testOrderByWithNullValuesUseIndex();
-    this.closeCache(vm0, vm1, vm2, vm3);
+    closeCache(vm0, vm1, vm2, vm3);
   }
 
   @Test
@@ -162,10 +162,10 @@ public abstract class NonDistinctOrderByDUnitImpl extends JUnit4CacheTestCase {
     final VM vm1 = host.getVM(1);
     final VM vm2 = host.getVM(2);
     final VM vm3 = host.getVM(3);
-    Cache cache = this.getCache();
+    Cache cache = getCache();
     NonDistinctOrderByTestImplementation test = createTestInstance();
     test.testOrderByForUndefined();
-    this.closeCache(vm0, vm1, vm2, vm3);
+    closeCache(vm0, vm1, vm2, vm3);
   }
 
   protected void createIndex(VM vm, final String indexName, final String indexedExpression,

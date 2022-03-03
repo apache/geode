@@ -37,7 +37,7 @@ public class GetPDXIdForTypeOp {
    */
   public static int execute(ExecutablePool pool, PdxType type) {
     AbstractOp op = new GetPDXIdForTypeOpImpl(type);
-    return ((Integer) pool.execute(op)).intValue();
+    return (Integer) pool.execute(op);
   }
 
   private GetPDXIdForTypeOp() {
@@ -58,7 +58,7 @@ public class GetPDXIdForTypeOp {
       Part part = msg.getPart(0);
       final int msgType = msg.getMessageType();
       if (msgType == MessageType.RESPONSE) {
-        return Integer.valueOf(part.getInt());
+        return part.getInt();
       } else {
         if (msgType == MessageType.EXCEPTION) {
           String s = "While performing a remote " + "getPdxIdForType";

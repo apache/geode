@@ -52,7 +52,7 @@ public class RemoteApplicationVM extends RemoteGemFireVM implements ApplicationV
       return false;
     } else {
       RemoteApplicationVM vm = (RemoteApplicationVM) obj;
-      return (this.agent == vm.agent) && this.id.equals(vm.id);
+      return (agent == vm.agent) && id.equals(vm.id);
     }
   }
 

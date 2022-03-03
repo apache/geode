@@ -23,7 +23,7 @@ import org.junit.runners.model.InitializationError;
  */
 public class SuiteBlockRunner extends BlockJUnit4ClassRunner {
 
-  private Class<?> suiteClass;
+  private final Class<?> suiteClass;
 
   /**
    * Creates a BlockJUnit4ClassRunner to run {@code testClass}
@@ -34,7 +34,7 @@ public class SuiteBlockRunner extends BlockJUnit4ClassRunner {
   public SuiteBlockRunner(final Class parentClass, final Class<?> testClass)
       throws InitializationError {
     super(testClass);
-    this.suiteClass = parentClass;
+    suiteClass = parentClass;
   }
 
   @Override

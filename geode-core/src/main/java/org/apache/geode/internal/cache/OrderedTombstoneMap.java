@@ -43,7 +43,7 @@ public class OrderedTombstoneMap<T> {
    * A map of member id-> sort map of version tag-> region entry
    *
    */
-  private Map<VersionSource, TreeMap<VersionTag, T>> tombstoneMap = new HashMap();
+  private final Map<VersionSource, TreeMap<VersionTag, T>> tombstoneMap = new HashMap();
 
   /**
    * Add a new version tag to map
@@ -53,7 +53,7 @@ public class OrderedTombstoneMap<T> {
     VersionSource member = tag.getMemberID();
     TreeMap<VersionTag, T> memberMap = tombstoneMap.get(member);
     if (memberMap == null) {
-      memberMap = new TreeMap<VersionTag, T>(new VersionTagComparator());
+      memberMap = new TreeMap<>(new VersionTagComparator());
       tombstoneMap.put(member, memberMap);
     }
     T oldValue = memberMap.put(tag, entry);

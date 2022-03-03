@@ -646,84 +646,84 @@ public class Operation implements java.io.Serializable {
    * Returns true if this operation created a new entry.
    */
   public boolean isCreate() {
-    return this.opType == OP_TYPE_CREATE && isEntry();
+    return opType == OP_TYPE_CREATE && isEntry();
   }
 
   /**
    * Returns true if this operation updated an existing entry.
    */
   public boolean isUpdate() {
-    return this.opType == OP_TYPE_UPDATE && isEntry();
+    return opType == OP_TYPE_UPDATE && isEntry();
   }
 
   /**
    * Returns true if this operation gets the value for given key.
    */
   public boolean isGet() {
-    return this.opType == OP_TYPE_GET;
+    return opType == OP_TYPE_GET;
   }
 
   /**
    * Returns true if this operation checks whether given key is present in region.
    */
   public boolean isContainsKey() {
-    return this.opType == OP_TYPE_CONTAINS_KEY;
+    return opType == OP_TYPE_CONTAINS_KEY;
   }
 
   /**
    * Returns true if this operation checks whether given value is present in region.
    */
   public boolean isContainsValue() {
-    return this.opType == OP_TYPE_CONTAINS_VALUE;
+    return opType == OP_TYPE_CONTAINS_VALUE;
   }
 
   /**
    * Returns true if this operation checks whether value is present for the given key.
    */
   public boolean isContainsValueForKey() {
-    return this.opType == OP_TYPE_CONTAINS_VALUE_FOR_KEY;
+    return opType == OP_TYPE_CONTAINS_VALUE_FOR_KEY;
   }
 
   /**
    * Returns true if this operation is function execution operation.
    */
   public boolean isFunctionExecution() {
-    return this.opType == OP_TYPE_FUNCTION_EXECUTION;
+    return opType == OP_TYPE_FUNCTION_EXECUTION;
   }
 
   /**
    * Returns true if this operation gets the entry for given key.
    */
   public boolean isGetEntry() {
-    return this.opType == OP_TYPE_GET_ENTRY;
+    return opType == OP_TYPE_GET_ENTRY;
   }
 
   /**
    * Returns true if this operation is a get for register interest.
    */
   public boolean isGetForRegisterInterest() {
-    return this.opType == OP_TYPE_GET_FOR_REGISTER_INTEREST;
+    return opType == OP_TYPE_GET_FOR_REGISTER_INTEREST;
   }
 
   /**
    * Returns true if the operation invalidated an entry.
    */
   public boolean isInvalidate() {
-    return this.opType == OP_TYPE_INVALIDATE && isEntry();
+    return opType == OP_TYPE_INVALIDATE && isEntry();
   }
 
   /**
    * Returns true if the operation destroyed an entry.
    */
   public boolean isDestroy() {
-    return this.opType == OP_TYPE_DESTROY && isEntry();
+    return opType == OP_TYPE_DESTROY && isEntry();
   }
 
   /**
    * Returns true if the operation cleared the region.
    */
   public boolean isClear() {
-    return this.opType == OP_TYPE_CLEAR;
+    return opType == OP_TYPE_CLEAR;
   }
 
   /**
@@ -738,7 +738,7 @@ public class Operation implements java.io.Serializable {
    * Returns true if this operation was initiated by a putAll.
    */
   public boolean isPutAll() {
-    return (this.opDetails & OP_DETAILS_PUTALL) != 0;
+    return (opDetails & OP_DETAILS_PUTALL) != 0;
   }
 
   /**
@@ -748,35 +748,35 @@ public class Operation implements java.io.Serializable {
    * @since GemFire 8.1
    */
   public boolean isRemoveAll() {
-    return (this.opDetails & OP_DETAILS_REMOVEALL) != 0;
+    return (opDetails & OP_DETAILS_REMOVEALL) != 0;
   }
 
   /**
    * Returns true if the operation invalidated a region.
    */
   public boolean isRegionInvalidate() {
-    return this.opType == OP_TYPE_INVALIDATE && isRegion();
+    return opType == OP_TYPE_INVALIDATE && isRegion();
   }
 
   /**
    * Returns true if the operation destroyed a region.
    */
   public boolean isRegionDestroy() {
-    return this.opType == OP_TYPE_DESTROY && isRegion();
+    return opType == OP_TYPE_DESTROY && isRegion();
   }
 
   /**
    * Returns true if the operation applies to the entire region.
    */
   public boolean isRegion() {
-    return this.isRegion;
+    return isRegion;
   }
 
   /**
    * Returns true if the operation is limited to the local cache.
    */
   public boolean isLocal() {
-    return this.isLocal;
+    return isLocal;
   }
 
   /**
@@ -800,7 +800,7 @@ public class Operation implements java.io.Serializable {
    *
    */
   public boolean isExpiration() {
-    return (this.opDetails & OP_DETAILS_EXPIRE) != 0;
+    return (opDetails & OP_DETAILS_EXPIRE) != 0;
   }
 
   /**
@@ -809,7 +809,7 @@ public class Operation implements java.io.Serializable {
    * @return true if this operatino resulted from eviction
    */
   public boolean isEviction() {
-    return (this.opDetails & OP_DETAILS_EVICT) != 0;
+    return (opDetails & OP_DETAILS_EVICT) != 0;
   }
 
   /**
@@ -824,7 +824,7 @@ public class Operation implements java.io.Serializable {
    * @return true if this operation included a local loader execution
    */
   public boolean isLocalLoad() {
-    return (this.opDetails & OP_DETAILS_LOCAL_LOAD) != 0;
+    return (opDetails & OP_DETAILS_LOCAL_LOAD) != 0;
   }
 
   /**
@@ -835,7 +835,7 @@ public class Operation implements java.io.Serializable {
    * @return true if this operation included a netLoad
    */
   public boolean isNetLoad() {
-    return (this.opDetails & OP_DETAILS_NET_LOAD) != 0;
+    return (opDetails & OP_DETAILS_NET_LOAD) != 0;
   }
 
   /**
@@ -844,7 +844,7 @@ public class Operation implements java.io.Serializable {
    * @return true if isLocalLoad or isNetLoad
    */
   public boolean isLoad() {
-    return (this.opDetails & (OP_DETAILS_LOCAL_LOAD | OP_DETAILS_NET_LOAD)) != 0;
+    return (opDetails & (OP_DETAILS_LOCAL_LOAD | OP_DETAILS_NET_LOAD)) != 0;
   }
 
   /**
@@ -855,7 +855,7 @@ public class Operation implements java.io.Serializable {
    * @return true if this operation included a netSearch
    */
   public boolean isNetSearch() {
-    return (this.opDetails & OP_DETAILS_SEARCH) != 0;
+    return (opDetails & OP_DETAILS_SEARCH) != 0;
   }
 
   /**
@@ -864,7 +864,7 @@ public class Operation implements java.io.Serializable {
    * @return true if this operation include a netSearch or any type of load.
    */
   public boolean isSearchOrLoad() {
-    return (this.opDetails
+    return (opDetails
         & (OP_DETAILS_SEARCH | OP_DETAILS_LOCAL_LOAD | OP_DETAILS_NET_LOAD)) != 0;
   }
 
@@ -876,7 +876,7 @@ public class Operation implements java.io.Serializable {
    * @since GemFire 6.5
    */
   public boolean guaranteesOldValue() {
-    return (this.opDetails & OP_DETAILS_GUARANTEES_OLD_VALUE) != 0;
+    return (opDetails & OP_DETAILS_GUARANTEES_OLD_VALUE) != 0;
   }
 
   /**
@@ -885,7 +885,7 @@ public class Operation implements java.io.Serializable {
    */
   public Operation getCorrespondingUpdateOp() {
     if (isCreate()) {
-      switch (this.opDetails) {
+      switch (opDetails) {
         case OP_DETAILS_SEARCH:
           return Operation.SEARCH_UPDATE;
         case OP_DETAILS_LOCAL_LOAD:
@@ -908,7 +908,7 @@ public class Operation implements java.io.Serializable {
    */
   public Operation getCorrespondingCreateOp() {
     if (isUpdate()) {
-      switch (this.opDetails) {
+      switch (opDetails) {
         case OP_DETAILS_SEARCH:
           return Operation.SEARCH_CREATE;
         case OP_DETAILS_LOCAL_LOAD:
@@ -932,6 +932,6 @@ public class Operation implements java.io.Serializable {
    */
   @Override
   public String toString() {
-    return this.name;
+    return name;
   }
 }

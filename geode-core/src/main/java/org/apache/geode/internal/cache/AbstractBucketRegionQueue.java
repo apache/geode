@@ -71,8 +71,8 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
       InternalCache cache, InternalRegionArguments internalRegionArgs,
       StatisticsClock statisticsClock) {
     super(regionName, attrs, parentRegion, cache, internalRegionArgs, statisticsClock);
-    this.gatewaySenderStats =
-        this.getPartitionedRegion().getParallelGatewaySender().getStatistics();
+    gatewaySenderStats =
+        getPartitionedRegion().getParallelGatewaySender().getStatistics();
   }
 
   // Prevent this region from using concurrency checks
@@ -93,8 +93,8 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     // the given throttle time until there is space in the queue
     if (getEvictionCounter() > maximumSize) {
       try {
-        synchronized (this.waitForEntriesToBeRemoved) {
-          this.waitForEntriesToBeRemoved.wait(throttleTime);
+        synchronized (waitForEntriesToBeRemoved) {
+          waitForEntriesToBeRemoved.wait(throttleTime);
         }
       } catch (InterruptedException e) {
         // If the thread is interrupted, just continue on
@@ -105,8 +105,8 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
 
   protected void notifyEntriesRemoved() {
     if (maximumSize > 0) {
-      synchronized (this.waitForEntriesToBeRemoved) {
-        this.waitForEntriesToBeRemoved.notifyAll();
+      synchronized (waitForEntriesToBeRemoved) {
+        waitForEntriesToBeRemoved.notifyAll();
       }
     }
   }
@@ -183,38 +183,38 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
   public abstract void destroyKey(Object key) throws ForceReattemptException;
 
   public void decQueueSize(int size) {
-    this.gatewaySenderStats.decQueueSize(size);
+    gatewaySenderStats.decQueueSize(size);
   }
 
   public void decSecondaryQueueSize(int size) {
-    this.gatewaySenderStats.decSecondaryQueueSize(size);
+    gatewaySenderStats.decSecondaryQueueSize(size);
   }
 
   public void decQueueSize() {
-    this.gatewaySenderStats.decQueueSize();
+    gatewaySenderStats.decQueueSize();
   }
 
   public void incQueueSize(int size) {
-    this.gatewaySenderStats.incQueueSize(size);
+    gatewaySenderStats.incQueueSize(size);
   }
 
   public void incSecondaryQueueSize(int size) {
-    this.gatewaySenderStats.incSecondaryQueueSize(size);
+    gatewaySenderStats.incSecondaryQueueSize(size);
   }
 
   public void incEventsProcessedByPQRM(int size) {
-    this.gatewaySenderStats.incEventsProcessedByPQRM(size);
+    gatewaySenderStats.incEventsProcessedByPQRM(size);
   }
 
   public void incQueueSize() {
-    this.gatewaySenderStats.incQueueSize();
+    gatewaySenderStats.incQueueSize();
   }
 
   protected void loadEventsFromTempQueue() {
     if (logger.isDebugEnabled()) {
       logger.debug("For bucket {} about to load events from the temp queue...", getId());
     }
-    Set queues = this.getPartitionedRegion().getParallelGatewaySender().getQueues();
+    Set queues = getPartitionedRegion().getParallelGatewaySender().getQueues();
     if (queues != null) {
       ConcurrentParallelGatewaySenderQueue prq =
           (ConcurrentParallelGatewaySenderQueue) queues.toArray()[0];
@@ -234,7 +234,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
             while ((event = tempQueue.poll()) != null) {
               try {
                 event.setPossibleDuplicate(true);
-                if (this.addToQueue(event.getShadowKey(), event)) {
+                if (addToQueue(event.getShadowKey(), event)) {
                   event = null;
                 }
               } catch (ForceReattemptException e) {
@@ -295,7 +295,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
    * Return all of the user PR buckets for this bucket region queue.
    */
   public Collection<BucketRegion> getCorrespondingUserPRBuckets() {
-    List<BucketRegion> userPRBuckets = new ArrayList<BucketRegion>(4);
+    List<BucketRegion> userPRBuckets = new ArrayList<>(4);
     Map<String, PartitionedRegion> colocatedPRs =
         ColocationHelper.getAllColocationRegions(getPartitionedRegion());
     for (PartitionedRegion colocatedPR : colocatedPRs.values()) {
@@ -380,25 +380,16 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
 
   @Override
   public void closeEntries() {
-    OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
-      @Override
-      public void run() {
-        AbstractBucketRegionQueue.super.closeEntries();
-      }
-    });
+    OffHeapClearRequired.doWithOffHeapClear(AbstractBucketRegionQueue.super::closeEntries);
     clearQueues();
 
   }
 
   @Override
   public Set<VersionSource> clearEntries(final RegionVersionVector rvv) {
-    final AtomicReference<Set<VersionSource>> result = new AtomicReference<Set<VersionSource>>();
-    OffHeapClearRequired.doWithOffHeapClear(new Runnable() {
-      @Override
-      public void run() {
-        result.set(AbstractBucketRegionQueue.super.clearEntries(rvv));
-      }
-    });
+    final AtomicReference<Set<VersionSource>> result = new AtomicReference<>();
+    OffHeapClearRequired.doWithOffHeapClear(
+        () -> result.set(AbstractBucketRegionQueue.super.clearEntries(rvv)));
     clearQueues();
     return result.get();
   }
@@ -423,14 +414,14 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
         if (logger.isDebugEnabled()) {
           logger.debug("notifyEventProcessor : {} event processor {} queue {}", sender, ep, queue);
         }
-        queue.notifyEventProcessorIfRequired(this.getId());
+        queue.notifyEventProcessorIfRequired(getId());
       }
     }
   }
 
   @Override
   public boolean isInitialized() {
-    return this.initialized;
+    return initialized;
   }
 
   public void addToFailedBatchRemovalMessageKeys(Object key) {
@@ -450,7 +441,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
 
 
   public Set<Object> getFailedBatchRemovalMessageKeys() {
-    return this.failedBatchRemovalMessageKeys;
+    return failedBatchRemovalMessageKeys;
   }
 
 }

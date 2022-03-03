@@ -30,8 +30,8 @@ public class ConnectionAccounting {
   private final AtomicInteger count = new AtomicInteger();
 
   public ConnectionAccounting(int min, int max) {
-    this.minimum = min;
-    this.maximum = max;
+    minimum = min;
+    maximum = max;
   }
 
   public int getMinimum() {

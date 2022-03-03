@@ -19,8 +19,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import java.util.Iterator;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -49,7 +47,7 @@ import org.apache.geode.test.junit.categories.OQLQueryTest;
 @Category({OQLQueryTest.class})
 public class RegionJUnitTest {
 
-  static String queries[] = {"status = 'active'", "status <> 'active'", "ID > 2", "ID < 1",
+  static String[] queries = {"status = 'active'", "status <> 'active'", "ID > 2", "ID < 1",
       "ID >= 2", "ID <= 1", "status = 'active' AND ID = 0", "status = 'active' AND ID = 1",
       "status = 'active' OR ID = 1", "isActive", "isActive()", "testMethod(true)", "NOT isActive",
       "P1.secId = 'SUN'", "status = 'active' AND ( ID = 1 OR P1.secId = 'SUN')",};
@@ -88,15 +86,15 @@ public class RegionJUnitTest {
 
   @Test
   public void testShortcutMethods() throws Exception {
-    for (int i = 0; i < queries.length; i++) {
-      Object r = region.query(queries[i]);
+    for (final String query : queries) {
+      Object r = region.query(query);
     }
   }
 
   @Test
   public void testQueryServiceInterface() throws Exception {
-    for (int i = 0; i < queries.length; i++) {
-      Query q = qs.newQuery("select distinct * from " + SEPARATOR + "pos where " + queries[i]);
+    for (final String query : queries) {
+      Query q = qs.newQuery("select distinct * from " + SEPARATOR + "pos where " + query);
       Object r = q.execute();
     }
   }
@@ -105,11 +103,11 @@ public class RegionJUnitTest {
   @Test
   public void testParameterBinding() throws Exception {
     Query q = qs.newQuery("select distinct * from " + SEPARATOR + "pos where ID = $1");
-    Object[] params = new Object[] {new Integer(0)};// {"active"};
+    Object[] params = new Object[] {0};// {"active"};
     Object r = q.execute(params);
 
     q = qs.newQuery("select distinct * from $1 where status = $2 and ID = $3");
-    params = new Object[] {this.region, "active", new Integer(0)};
+    params = new Object[] {region, "active", 0};
     r = q.execute(params);
   }
 
@@ -117,13 +115,13 @@ public class RegionJUnitTest {
 
   @Test
   public void testQRegionInterface() throws Exception {
-    String queries[] = {"select distinct * from " + SEPARATOR + "pos.keys where toString = '1'",
+    String[] queries = {"select distinct * from " + SEPARATOR + "pos.keys where toString = '1'",
         "select distinct * from " + SEPARATOR + "pos.values where status = 'active'",
         "select distinct * from " + SEPARATOR + "pos.entries where key = '1'",
         "select distinct * from " + SEPARATOR + "pos.entries where value.status = 'active'"};
 
-    for (int i = 0; i < queries.length; i++) {
-      Query q = qs.newQuery(queries[i]);
+    for (final String query : queries) {
+      Query q = qs.newQuery(query);
       Object r = q.execute();
     }
   }
@@ -140,9 +138,8 @@ public class RegionJUnitTest {
 
   @Test
   public void testRegionEntryAccess() throws Exception {
-    Iterator entriesIter = region.entrySet(false).iterator();
-    while (entriesIter.hasNext()) {
-      Region.Entry entry = (Region.Entry) entriesIter.next();
+    for (final Object o : region.entrySet(false)) {
+      Region.Entry entry = (Region.Entry) o;
       RegionEntry regionEntry = null;
       if (entry instanceof NonTXEntry) {
         regionEntry = ((NonTXEntry) entry).getRegionEntry();
@@ -154,9 +151,7 @@ public class RegionJUnitTest {
 
 
     LocalRegion lRegion = (LocalRegion) region;
-    Iterator keysIterator = lRegion.keys().iterator();
-    while (keysIterator.hasNext()) {
-      Object key = keysIterator.next();
+    for (final Object key : lRegion.keys()) {
       Region.Entry rEntry = lRegion.getEntry(key);
       RegionEntry regionEntry = null;
       if (rEntry instanceof NonTXEntry) {
@@ -170,7 +165,7 @@ public class RegionJUnitTest {
 
   @Test
   public void testRegionNames() {
-    String queryStrs[] =
+    String[] queryStrs =
         new String[] {"SELECT * FROM " + SEPARATOR + "pos",
             "SELECT * FROM " + SEPARATOR + "pos where status='active'"};
 
@@ -183,13 +178,13 @@ public class RegionJUnitTest {
     cache.createRegion("p_os", regionAttributes);
     cache.createRegion("p-os", regionAttributes);
 
-    for (int i = 0; i < queryStrs.length; ++i) {
-      Query q = CacheUtils.getQueryService().newQuery(queryStrs[i]);
+    for (final String queryStr : queryStrs) {
+      Query q = CacheUtils.getQueryService().newQuery(queryStr);
       try {
         q.execute();
       } catch (Exception ex) {
         // Failed - Any other exception.
-        fail("Failed to execute the query. '" + queryStrs[i] + "' Error: " + ex.getMessage());
+        fail("Failed to execute the query. '" + queryStr + "' Error: " + ex.getMessage());
       }
     }
   }

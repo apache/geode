@@ -42,7 +42,7 @@ public class DescribeJndiBindingCommandTest {
   JndiBindingsType.JndiBinding binding;
   List<JndiBindingsType.JndiBinding> bindings;
 
-  private static String COMMAND = "describe jndi-binding ";
+  private static final String COMMAND = "describe jndi-binding ";
 
   @Before
   public void setUp() throws Exception {

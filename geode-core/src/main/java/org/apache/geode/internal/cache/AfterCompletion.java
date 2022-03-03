@@ -30,7 +30,7 @@ public class AfterCompletion {
 
   private enum Action {
     COMMIT, ROLLBACK, CANCEL
-  };
+  }
 
   private Action action;
 

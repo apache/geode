@@ -183,56 +183,56 @@ public class ClientInterestNotifyDUnitTest extends JUnit4DistributedTestCase {
     Host host = Host.getHost(0);
     // Create a feeder.
     vm0.invoke(() -> ClientInterestNotifyDUnitTest
-        .createClientCacheFeeder(NetworkUtils.getServerHostName(host), new Integer(PORT)));
+        .createClientCacheFeeder(NetworkUtils.getServerHostName(host), PORT));
 
     // Client 1 overrides NBS to true.
     // Client 2 "overrides" NSB to false.
     // Client 3 uses the default NBS which is false on the server.
 
     vm1.invoke(() -> ClientInterestNotifyDUnitTest
-        .createClientCache(NetworkUtils.getServerHostName(host), new Integer(PORT), "ClientOn"));
+        .createClientCache(NetworkUtils.getServerHostName(host), PORT, "ClientOn"));
 
     // Feeder doFeed does one put on one key for each of the 3 regions so
     // that the following client RI with ALL_KEYS and KEYS_VALUE result works.
 
-    vm0.invoke(() -> ClientInterestNotifyDUnitTest.doFeed());
+    vm0.invoke(ClientInterestNotifyDUnitTest::doFeed);
 
     // RI on ALL_KEYS with InterestResultPolicy KEYS_VALUES.
 
-    vm1.invoke(() -> ClientInterestNotifyDUnitTest.registerInterest());
+    vm1.invoke(ClientInterestNotifyDUnitTest::registerInterest);
 
     // Get key for region 3 for all clients to check no unwanted notifications
     // arrive on client 1 region 3 since we do not register interest on any
     // client but notifications should arrive for client 2 and client 3.
 
-    vm1.invoke(() -> ClientInterestNotifyDUnitTest.getEntries());
+    vm1.invoke(ClientInterestNotifyDUnitTest::getEntries);
 
     // Feeder doEntryOps does 2 puts, 1 invalidate and 1 destroy on a
     // single key for each of the 3 regions.
 
-    vm0.invoke(() -> ClientInterestNotifyDUnitTest.doEntryOps());
+    vm0.invoke(ClientInterestNotifyDUnitTest::doEntryOps);
 
     waitForQueuesToDrain();
 
     // Unregister interest to check it works and no extra notifications received.
 
-    vm1.invoke(() -> ClientInterestNotifyDUnitTest.unregisterInterest());
+    vm1.invoke(ClientInterestNotifyDUnitTest::unregisterInterest);
 
     // Feeder doEntryOps again does 2 puts, 1 invalidate and 1 destroy on a
     // single key for each of the 3 regions while no interest on the clients.
 
-    vm0.invoke(() -> ClientInterestNotifyDUnitTest.doEntryOps());
+    vm0.invoke(ClientInterestNotifyDUnitTest::doEntryOps);
 
     assertAllQueuesEmpty(); // since no client has registered interest
 
     // Re-register interest on all clients except for region 3 again.
 
-    vm1.invoke(() -> ClientInterestNotifyDUnitTest.registerInterest());
+    vm1.invoke(ClientInterestNotifyDUnitTest::registerInterest);
 
     // Feeder doEntryOps again does 2 puts, 1 invalidate and 1 destroy on a
     // single key for each of the 3 regions after clients re-register interest.
 
-    vm0.invoke(() -> ClientInterestNotifyDUnitTest.doEntryOps());
+    vm0.invoke(ClientInterestNotifyDUnitTest::doEntryOps);
 
     waitForQueuesToDrain();
 
@@ -282,7 +282,7 @@ public class ClientInterestNotifyDUnitTest extends JUnit4DistributedTestCase {
 
   private static void createPool2(String host, AttributesFactory factory, Integer port) {
     PoolFactory pf = PoolManager.createFactory();
-    pf.addServer(host, port.intValue()).setSubscriptionEnabled(true)
+    pf.addServer(host, port).setSubscriptionEnabled(true)
         .setReadTimeout(10000).setSocketBufferSize(32768).setPingInterval(1000).setMinConnections(3)
         .setSubscriptionRedundancy(-1);
     Pool pool = pf.create("superpoolish" + (poolNameCounter++));
@@ -434,7 +434,7 @@ public class ClientInterestNotifyDUnitTest extends JUnit4DistributedTestCase {
     server.setNotifyBySubscription(true);
     server.setSocketBufferSize(32768);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   /**
@@ -568,8 +568,8 @@ public class ClientInterestNotifyDUnitTest extends JUnit4DistributedTestCase {
    */
   @Override
   public final void preTearDown() throws Exception {
-    vm0.invoke(() -> ClientInterestNotifyDUnitTest.closeCache());
-    vm1.invoke(() -> ClientInterestNotifyDUnitTest.closeCache());
+    vm0.invoke(ClientInterestNotifyDUnitTest::closeCache);
+    vm1.invoke(ClientInterestNotifyDUnitTest::closeCache);
     closeCacheServer();
   }
 }

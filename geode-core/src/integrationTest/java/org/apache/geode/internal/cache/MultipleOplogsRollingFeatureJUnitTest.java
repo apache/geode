@@ -34,11 +34,11 @@ public class MultipleOplogsRollingFeatureJUnitTest extends DiskRegionTestingBase
 
   private volatile boolean FLAG = false;
 
-  private Object mutex = new Object();
+  private final Object mutex = new Object();
 
   private boolean CALLBACK_SET = false;
 
-  private DiskRegionProperties diskProps = new DiskRegionProperties();
+  private final DiskRegionProperties diskProps = new DiskRegionProperties();
 
   @Override
   protected final void preTearDown() throws Exception {
@@ -160,29 +160,29 @@ public class MultipleOplogsRollingFeatureJUnitTest extends DiskRegionTestingBase
     if (opLogNum == 1) {
       for (int i = 1; i < 4; i++) {
         // create 3 entries
-        region.create(new Integer(i), val);
+        region.create(i, val);
 
       }
       // destroy Entry 1 and 2
-      region.destroy(new Integer(1));
-      region.destroy(new Integer(2));
+      region.destroy(1);
+      region.destroy(2);
     }
 
     else if (opLogNum == 2) {
       // update Entry 3
-      region.put(new Integer(3), val);
+      region.put(3, val);
 
     }
 
     else if (opLogNum == 3) {
       // update Entry 3
-      region.put(new Integer(3), val);
+      region.put(3, val);
 
     }
 
     else if (opLogNum == 4) {
       // update Entry 3
-      region.put(new Integer(3), val);
+      region.put(3, val);
     }
   }
 

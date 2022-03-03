@@ -56,7 +56,7 @@ import org.apache.geode.test.version.VersionManager;
 public class AuthExpirationTransactionUpgradeTest {
   // only test versions greater than or equal to 1.14.0
   private static final String test_start_version = "1.14.0";
-  private static String feature_start_version = "1.15.0";
+  private static final String feature_start_version = "1.15.0";
 
   @Parameterized.Parameter
   public String clientVersion;

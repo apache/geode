@@ -19,22 +19,44 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assume.assumeFalse;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
+import org.apache.geode.test.version.TestVersion;
+import org.apache.geode.test.version.VersionManager;
 
 @Category(GfshTest.class)
+@RunWith(Parameterized.class)
 public class ConnectCommandUpgradeTest {
 
+  private String oldVersion;
+
+  public ConnectCommandUpgradeTest(String oldVersion) {
+    this.oldVersion = oldVersion;
+  }
+
+  @Parameterized.Parameters(name = "Locator Version: {0}")
+  public static Collection<String> data() {
+    List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
+    return result;
+  }
+
   @Rule
-  public GfshRule gfsh130 = new GfshRule("1.3.0");
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
   @Rule
   public GfshRule gfshDefault = new GfshRule();
@@ -45,22 +67,35 @@ public class ConnectCommandUpgradeTest {
         "this test can only be run with pre-9 jdk since it needs to run older version of gfsh",
         SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9));
 
-    GfshScript
-        .of("start locator")
-        .execute(gfsh130);
+    MemberVM oldVersionLocator = clusterStartupRule.startLocatorVM(0, oldVersion);
 
-    GfshExecution connect = GfshScript
-        .of("connect")
-        .expectFailure()
-        .execute(gfshDefault);
+    if (TestVersion.compare(oldVersion, "1.10.0") < 0) { // New version gfsh could not connect to
+                                                         // locators with version below 1.10.0
+      GfshExecution connect = GfshScript
+          .of("connect --locator=localhost[" + oldVersionLocator.getPort() + "]")
+          .expectFailure()
+          .execute(gfshDefault);
 
-    assertThat(connect.getOutputText())
-        .contains("Cannot use a")
-        .contains("gfsh client to connect to this cluster.");
+      assertThat(connect.getOutputText())
+          .contains("Cannot use a")
+          .contains("gfsh client to connect to")
+          .contains("cluster.");
+
+    } else { // From 1.10.0 new version gfsh are able to connect to old version locators
+      GfshExecution connect = GfshScript
+          .of("connect --locator=localhost[" + oldVersionLocator.getPort() + "]")
+          .expectExitCode(0)
+          .execute(gfshDefault);
+
+      assertThat(connect.getOutputText())
+          .contains("Successfully connected to:");
+    }
   }
 
   @Test
   public void invalidHostname() {
+    MemberVM oldVersionLocator = clusterStartupRule.startLocatorVM(0, oldVersion);
+
     GfshExecution connect = GfshScript
         .of("connect --locator=\"invalid host name[52326]\"")
         .expectFailure()

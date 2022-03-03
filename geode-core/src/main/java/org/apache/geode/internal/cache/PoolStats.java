@@ -191,13 +191,13 @@ public class PoolStats {
   /////////////////////// Constructors ///////////////////////
 
   public PoolStats(StatisticsFactory f, String name) {
-    this._stats = f.createAtomicStatistics(_type, name);
+    _stats = f.createAtomicStatistics(_type, name);
   }
 
   ///////////////////// Instance Methods /////////////////////
 
   public void close() {
-    this._stats.close();
+    _stats.close();
   }
 
   public long startTime() {
@@ -205,67 +205,67 @@ public class PoolStats {
   }
 
   public void setInitialContacts(int ic) {
-    this._stats.setInt(_INITIAL_CONTACTS, ic);
+    _stats.setInt(_INITIAL_CONTACTS, ic);
   }
 
   public void setServerCount(int sc) {
-    this._stats.setInt(_ENDPOINTS_KNOWN, sc);
+    _stats.setInt(_ENDPOINTS_KNOWN, sc);
   }
 
   public void setSubscriptionCount(int qc) {
-    this._stats.setInt(_SUBSCRIPTION_SERVERS, qc);
+    _stats.setInt(_SUBSCRIPTION_SERVERS, qc);
   }
 
   public void setLocatorCount(int lc) {
-    this._stats.setInt(_KNOWN_LOCATORS, lc);
+    _stats.setInt(_KNOWN_LOCATORS, lc);
   }
 
   public long getLocatorRequests() {
-    return this._stats.getLong(_REQUESTS_TO_LOCATOR);
+    return _stats.getLong(_REQUESTS_TO_LOCATOR);
   }
 
   public void incLocatorRequests() {
-    this._stats.incLong(_REQUESTS_TO_LOCATOR, 1);
+    _stats.incLong(_REQUESTS_TO_LOCATOR, 1);
   }
 
   public void incLocatorResponses() {
-    this._stats.incLong(_RESPONSES_FROM_LOCATOR, 1);
+    _stats.incLong(_RESPONSES_FROM_LOCATOR, 1);
   }
 
   public void setLocatorRequests(long rl) {
-    this._stats.setLong(_REQUESTS_TO_LOCATOR, rl);
+    _stats.setLong(_REQUESTS_TO_LOCATOR, rl);
   }
 
   public void setLocatorResponses(long rl) {
-    this._stats.setLong(_RESPONSES_FROM_LOCATOR, rl);
+    _stats.setLong(_RESPONSES_FROM_LOCATOR, rl);
   }
 
   // public void incConCount(int delta) {
   // this._stats.incInt(conCountId, delta);
   // }
   public void incConnections(int delta) {
-    this._stats.incInt(connectionsId, delta);
+    _stats.incInt(connectionsId, delta);
     if (delta > 0) {
-      this._stats.incInt(connectsId, delta);
+      _stats.incInt(connectsId, delta);
     } else if (delta < 0) {
-      this._stats.incInt(disconnectsId, -delta);
+      _stats.incInt(disconnectsId, -delta);
     }
   }
 
   public void incPoolConnections(int delta) {
-    this._stats.incInt(poolConnectionsId, delta);
+    _stats.incInt(poolConnectionsId, delta);
   }
 
   public int getPoolConnections() {
-    return this._stats.getInt(poolConnectionsId);
+    return _stats.getInt(poolConnectionsId);
   }
 
   public int getConnects() {
-    return this._stats.getInt(connectsId);
+    return _stats.getInt(connectsId);
   }
 
   public int getDisConnects() {
-    return this._stats.getInt(disconnectsId);
+    return _stats.getInt(disconnectsId);
   }
 
   private static long getStatTime() {
@@ -273,92 +273,92 @@ public class PoolStats {
   }
 
   public void incPrefillConnect() {
-    this._stats.incInt(_PREFILL_CONNECT, 1);
+    _stats.incInt(_PREFILL_CONNECT, 1);
   }
 
   public int getLoadConditioningCheck() {
-    return this._stats.getInt(_LOAD_CONDITIONING_CHECK);
+    return _stats.getInt(_LOAD_CONDITIONING_CHECK);
   }
 
   public void incLoadConditioningCheck() {
-    this._stats.incInt(_LOAD_CONDITIONING_CHECK, 1);
+    _stats.incInt(_LOAD_CONDITIONING_CHECK, 1);
   }
 
   public int getLoadConditioningExtensions() {
-    return this._stats.getInt(_LOAD_CONDITIONING_EXTENSIONS);
+    return _stats.getInt(_LOAD_CONDITIONING_EXTENSIONS);
   }
 
   public void incLoadConditioningExtensions() {
-    this._stats.incInt(_LOAD_CONDITIONING_EXTENSIONS, 1);
+    _stats.incInt(_LOAD_CONDITIONING_EXTENSIONS, 1);
   }
 
   public void incIdleCheck() {
-    this._stats.incInt(_IDLE_CHECK, 1);
+    _stats.incInt(_IDLE_CHECK, 1);
   }
 
   public int getLoadConditioningConnect() {
-    return this._stats.getInt(_LOAD_CONDITIONING_CONNECT);
+    return _stats.getInt(_LOAD_CONDITIONING_CONNECT);
   }
 
   public void incLoadConditioningConnect() {
-    this._stats.incInt(_LOAD_CONDITIONING_CONNECT, 1);
+    _stats.incInt(_LOAD_CONDITIONING_CONNECT, 1);
   }
 
   public int getLoadConditioningReplaceTimeouts() {
-    return this._stats.getInt(_LOAD_CONDITIONING_REPLACE_TIMEOUT);
+    return _stats.getInt(_LOAD_CONDITIONING_REPLACE_TIMEOUT);
   }
 
   public void incLoadConditioningReplaceTimeouts() {
-    this._stats.incInt(_LOAD_CONDITIONING_REPLACE_TIMEOUT, 1);
+    _stats.incInt(_LOAD_CONDITIONING_REPLACE_TIMEOUT, 1);
   }
 
   public int getLoadConditioningDisconnect() {
-    return this._stats.getInt(_LOAD_CONDITIONING_DISCONNECT);
+    return _stats.getInt(_LOAD_CONDITIONING_DISCONNECT);
   }
 
   public void incLoadConditioningDisconnect() {
-    this._stats.incInt(_LOAD_CONDITIONING_DISCONNECT, 1);
+    _stats.incInt(_LOAD_CONDITIONING_DISCONNECT, 1);
   }
 
   public int getIdleExpire() {
-    return this._stats.getInt(_IDLE_EXPIRE);
+    return _stats.getInt(_IDLE_EXPIRE);
   }
 
   public void incIdleExpire(int delta) {
-    this._stats.incInt(_IDLE_EXPIRE, delta);
+    _stats.incInt(_IDLE_EXPIRE, delta);
   }
 
   public long beginConnectionWait() {
-    this._stats.incInt(_CONNECTION_WAIT_IN_PROGRESS, 1);
+    _stats.incInt(_CONNECTION_WAIT_IN_PROGRESS, 1);
     return getStatTime();
   }
 
   public void endConnectionWait(long start) {
     long duration = getStatTime() - start;
-    this._stats.incInt(_CONNECTION_WAIT_IN_PROGRESS, -1);
-    this._stats.incInt(_CONNECTION_WAITS, 1);
-    this._stats.incLong(_CONNECTION_WAIT_TIME, duration);
+    _stats.incInt(_CONNECTION_WAIT_IN_PROGRESS, -1);
+    _stats.incInt(_CONNECTION_WAITS, 1);
+    _stats.incLong(_CONNECTION_WAIT_TIME, duration);
   }
 
   public void startClientOp() {
-    this._stats.incInt(clientOpInProgressId, 1);
-    this._stats.incInt(clientOpSendInProgressId, 1);
+    _stats.incInt(clientOpInProgressId, 1);
+    _stats.incInt(clientOpSendInProgressId, 1);
   }
 
   public void endClientOpSend(long duration, boolean failed) {
-    this._stats.incInt(clientOpSendInProgressId, -1);
+    _stats.incInt(clientOpSendInProgressId, -1);
     int endClientOpSendId;
     if (failed) {
       endClientOpSendId = clientOpSendFailedId;
     } else {
       endClientOpSendId = clientOpSendId;
     }
-    this._stats.incInt(endClientOpSendId, 1);
-    this._stats.incLong(clientOpSendDurationId, duration);
+    _stats.incInt(endClientOpSendId, 1);
+    _stats.incLong(clientOpSendDurationId, duration);
   }
 
   public void endClientOp(long duration, boolean timedOut, boolean failed) {
-    this._stats.incInt(clientOpInProgressId, -1);
+    _stats.incInt(clientOpInProgressId, -1);
     int endClientOpId;
     if (timedOut) {
       endClientOpId = clientOpTimedOutId;
@@ -367,7 +367,7 @@ public class PoolStats {
     } else {
       endClientOpId = clientOpId;
     }
-    this._stats.incInt(endClientOpId, 1);
-    this._stats.incLong(clientOpDurationId, duration);
+    _stats.incInt(endClientOpId, 1);
+    _stats.incLong(clientOpDurationId, duration);
   }
 }

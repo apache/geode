@@ -38,7 +38,7 @@ public class Tomcat9DeltaSessionManager extends DeltaSessionManager<Tomcat9Commi
     if (getLogger().isDebugEnabled()) {
       getLogger().debug(this + ": Starting");
     }
-    if (this.started.get()) {
+    if (started.get()) {
       return;
     }
 
@@ -63,12 +63,12 @@ public class Tomcat9DeltaSessionManager extends DeltaSessionManager<Tomcat9Commi
     // Create the timer and schedule tasks
     scheduleTimerTasks();
 
-    this.started.set(true);
+    started.set(true);
     setLifecycleState(LifecycleState.STARTING);
   }
 
   void setLifecycleState(LifecycleState newState) throws LifecycleException {
-    this.setState(newState);
+    setState(newState);
   }
 
   void startInternalBase() throws LifecycleException {
@@ -94,7 +94,7 @@ public class Tomcat9DeltaSessionManager extends DeltaSessionManager<Tomcat9Commi
       getLogger().error("Unable to unload sessions", e);
     }
 
-    this.started.set(false);
+    started.set(false);
     fireLifecycleEvent(STOP_EVENT, null);
 
     // StandardManager expires all Sessions here.

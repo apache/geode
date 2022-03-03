@@ -100,7 +100,7 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
   }
 
   @Override
-  protected void appendFields(StringBuffer buff) {
+  protected void appendFields(StringBuilder buff) {
     super.appendFields(buff);
   }
 
@@ -161,7 +161,7 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
       final long startTime = getTimestamp();
       if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
         logger.trace(LogMarker.DM_VERBOSE,
-            "{}: process invoking reply processor with processorId: {}", this.processorId);
+            "{}: process invoking reply processor with processorId: {}", processorId);
       }
 
       if (processor == null) {
@@ -194,16 +194,14 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
-      this.size = in.readInt();
+      size = in.readInt();
     }
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
-      sb.append(this.getClass().getName()).append(" processorid=").append(this.processorId)
-          .append(" reply to sender ").append(this.getSender()).append(" returning size=")
-          .append(getSize());
-      return sb.toString();
+      return getClass().getName() + " processorid=" + processorId
+          + " reply to sender " + getSender() + " returning size="
+          + getSize();
     }
 
     public int getSize() {
@@ -234,7 +232,7 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
       try {
         if (msg instanceof SizeReplyMessage) {
           SizeReplyMessage reply = (SizeReplyMessage) msg;
-          this.returnValue = reply.getSize();
+          returnValue = reply.getSize();
         }
       } finally {
         super.process(msg);
@@ -250,12 +248,11 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
       } catch (ReplyException e) {
         Throwable cause = e.getCause();
         if (cause instanceof RegionDestroyedException) {
-          RegionDestroyedException rde = (RegionDestroyedException) cause;
-          throw rde;
+          throw (RegionDestroyedException) cause;
         }
         throw e;
       }
-      return this.returnValue;
+      return returnValue;
     }
   }
 

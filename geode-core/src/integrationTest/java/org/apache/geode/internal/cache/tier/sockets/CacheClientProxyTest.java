@@ -26,8 +26,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -52,7 +55,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 public class CacheClientProxyTest {
 
   @Rule
-  public ServerStarterRule serverRule = new ServerStarterRule().withAutoStart();
+  public ServerStarterRule serverRule = new ServerStarterRule().withLogFile().withAutoStart();
 
   @Rule
   public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
@@ -84,9 +87,9 @@ public class CacheClientProxyTest {
         Handshake.CONFLATION_DEFAULT, KnownVersion.CURRENT, 1L, true,
         null, null, mock(StatisticsClock.class));
 
-    CompletableFuture<Void> result1 = executorServiceRule.runAsync(() -> proxy.close());
-    CompletableFuture<Void> result2 = executorServiceRule.runAsync(() -> proxy.close());
-    CompletableFuture<Void> result3 = executorServiceRule.runAsync(() -> proxy.close());
+    CompletableFuture<Void> result1 = executorServiceRule.runAsync(proxy::close);
+    CompletableFuture<Void> result2 = executorServiceRule.runAsync(proxy::close);
+    CompletableFuture<Void> result3 = executorServiceRule.runAsync(proxy::close);
     CompletableFuture.allOf(result1, result2, result3).join();
     assertThatCode(() -> result1.get(60, SECONDS)).doesNotThrowAnyException();
     assertThatCode(() -> result2.get(60, SECONDS)).doesNotThrowAnyException();
@@ -96,10 +99,19 @@ public class CacheClientProxyTest {
   }
 
   @Test
-  public void closeSocket1000Times() {
+  public void closeSocket1000Times() throws FileNotFoundException {
     // run it for 1000 times to introduce conflicts between threads
     for (int i = 0; i < 1000; i++) {
       closeSocketShouldBeAtomic();
+    }
+
+    // make sure there is no NPE warning in the log file
+    File logFile = new File(serverRule.getWorkingDir(), "server.log");
+    Scanner scanner = new Scanner(logFile);
+    while (scanner.hasNextLine()) {
+      String line = scanner.nextLine();
+      assertThat(line).describedAs("File: %s, Line: %s", logFile.getAbsolutePath(), line)
+          .doesNotContain("NullPointerException");
     }
   }
 

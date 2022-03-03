@@ -44,7 +44,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
 
   private final boolean allServers;
 
-  private String[] groups;
+  private final String[] groups;
 
 
   ServerFunctionExecutor(Pool pool, boolean allServers, String... groups) {
@@ -165,10 +165,10 @@ public class ServerFunctionExecutor extends AbstractExecution {
               false, false, timeoutMs);
 
       final Supplier<ExecuteFunctionOpImpl> reExecuteFunctionOpSupplier =
-          () -> new ExecuteFunctionOpImpl(function, this.getArguments(),
-              this.getMemberMappedArgument(), rc,
+          () -> new ExecuteFunctionOpImpl(function, getArguments(),
+              getMemberMappedArgument(), rc,
               isFnSerializationReqd, (byte) 1, groups, allServers,
-              this.isIgnoreDepartedMembers(), timeoutMs);
+              isIgnoreDepartedMembers(), timeoutMs);
 
       ExecuteFunctionOp.execute(pool, allServers,
           rc, function.isHA(), UserAttributes.userAttributes.get(), groups,
@@ -200,7 +200,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
       final ExecuteFunctionOpImpl executeFunctionOp =
           new ExecuteFunctionOpImpl(functionId, args, memberMappedArg, hasResult,
               rc, isFnSerializationReqd, isHA, optimizeForWrite, (byte) 0, groups, allServers,
-              this.isIgnoreDepartedMembers(), timeoutMs);
+              isIgnoreDepartedMembers(), timeoutMs);
 
       final Supplier<ExecuteFunctionOpImpl> executeFunctionOpSupplier =
           () -> new ExecuteFunctionOpImpl(functionId, args, memberMappedArg,
@@ -210,9 +210,9 @@ public class ServerFunctionExecutor extends AbstractExecution {
 
       final Supplier<ExecuteFunctionOpImpl> reExecuteFunctionOpSupplier =
           () -> new ExecuteFunctionOpImpl(functionId, args,
-              this.getMemberMappedArgument(),
+              getMemberMappedArgument(),
               hasResult, rc, isFnSerializationReqd, isHA, optimizeForWrite, (byte) 1,
-              groups, allServers, this.isIgnoreDepartedMembers(), timeoutMs);
+              groups, allServers, isIgnoreDepartedMembers(), timeoutMs);
 
       ExecuteFunctionOp.execute(pool, allServers,
           rc, isHA,

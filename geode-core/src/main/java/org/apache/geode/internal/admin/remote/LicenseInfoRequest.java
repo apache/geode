@@ -47,7 +47,7 @@ public class LicenseInfoRequest extends AdminRequest {
    */
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    return LicenseInfoResponse.create(dm, this.getSender());
+    return LicenseInfoResponse.create(dm, getSender());
   }
 
   @Override
@@ -69,6 +69,6 @@ public class LicenseInfoRequest extends AdminRequest {
 
   @Override
   public String toString() {
-    return "LicenseInfoRequest from " + this.getSender();
+    return "LicenseInfoRequest from " + getSender();
   }
 }

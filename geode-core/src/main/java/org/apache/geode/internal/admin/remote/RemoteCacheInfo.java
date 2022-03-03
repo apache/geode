@@ -56,17 +56,17 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
   private boolean isServer;
 
   public RemoteCacheInfo(InternalCache internalCache) {
-    this.name = internalCache.getName();
-    this.id = System.identityHashCode(internalCache);
-    this.closed = internalCache.isClosed();
-    this.lockTimeout = internalCache.getLockTimeout();
-    this.lockLease = internalCache.getLockLease();
-    this.searchTimeout = internalCache.getSearchTimeout();
-    this.upTime = (int) internalCache.getUpTime();
-    if (this.closed) {
-      this.rootRegionNames = null;
-      this.perfStats = null;
-      this.bridgeServerIds = new int[0];
+    name = internalCache.getName();
+    id = System.identityHashCode(internalCache);
+    closed = internalCache.isClosed();
+    lockTimeout = internalCache.getLockTimeout();
+    lockLease = internalCache.getLockLease();
+    searchTimeout = internalCache.getSearchTimeout();
+    upTime = (int) internalCache.getUpTime();
+    if (closed) {
+      rootRegionNames = null;
+      perfStats = null;
+      bridgeServerIds = new int[0];
 
     } else {
       try {
@@ -84,23 +84,23 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
           rootNames[idx] = r.getName();
           idx++;
         }
-        this.rootRegionNames = rootNames;
+        rootRegionNames = rootNames;
       } catch (CacheRuntimeException ignore) {
-        this.rootRegionNames = null;
+        rootRegionNames = null;
       }
-      this.perfStats = new RemoteStatResource(internalCache.getCachePerfStats().getStats());
+      perfStats = new RemoteStatResource(internalCache.getCachePerfStats().getStats());
 
       // Note that since this is only a snapshot, so no synchronization
       // on allBridgeServersLock is needed.
       Collection<CacheServer> bridges = internalCache.getCacheServers();
-      this.bridgeServerIds = new int[bridges.size()];
+      bridgeServerIds = new int[bridges.size()];
       Iterator<CacheServer> iter = bridges.iterator();
       for (int i = 0; iter.hasNext(); i++) {
         CacheServer bridge = iter.next();
-        this.bridgeServerIds[i] = System.identityHashCode(bridge);
+        bridgeServerIds[i] = System.identityHashCode(bridge);
       }
 
-      this.isServer = internalCache.isServer();
+      isServer = internalCache.isServer();
     }
   }
 
@@ -113,111 +113,111 @@ public class RemoteCacheInfo implements CacheInfo, DataSerializable {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.name, out);
-    out.writeInt(this.id);
-    out.writeBoolean(this.closed);
-    out.writeInt(this.lockTimeout);
-    out.writeInt(this.lockLease);
-    out.writeInt(this.searchTimeout);
-    out.writeInt(this.upTime);
-    DataSerializer.writeStringArray(this.rootRegionNames, out);
-    DataSerializer.writeObject(this.perfStats, out);
-    DataSerializer.writeIntArray(this.bridgeServerIds, out);
-    out.writeBoolean(this.isServer);
+    DataSerializer.writeString(name, out);
+    out.writeInt(id);
+    out.writeBoolean(closed);
+    out.writeInt(lockTimeout);
+    out.writeInt(lockLease);
+    out.writeInt(searchTimeout);
+    out.writeInt(upTime);
+    DataSerializer.writeStringArray(rootRegionNames, out);
+    DataSerializer.writeObject(perfStats, out);
+    DataSerializer.writeIntArray(bridgeServerIds, out);
+    out.writeBoolean(isServer);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.name = DataSerializer.readString(in);
-    this.id = in.readInt();
-    this.closed = in.readBoolean();
-    this.lockTimeout = in.readInt();
-    this.lockLease = in.readInt();
-    this.searchTimeout = in.readInt();
-    this.upTime = in.readInt();
-    this.rootRegionNames = DataSerializer.readStringArray(in);
-    this.perfStats = (RemoteStatResource) DataSerializer.readObject(in);
-    this.bridgeServerIds = DataSerializer.readIntArray(in);
-    this.isServer = in.readBoolean();
+    name = DataSerializer.readString(in);
+    id = in.readInt();
+    closed = in.readBoolean();
+    lockTimeout = in.readInt();
+    lockLease = in.readInt();
+    searchTimeout = in.readInt();
+    upTime = in.readInt();
+    rootRegionNames = DataSerializer.readStringArray(in);
+    perfStats = DataSerializer.readObject(in);
+    bridgeServerIds = DataSerializer.readIntArray(in);
+    isServer = in.readBoolean();
   }
 
   // CacheInfo interface methods
   @Override
   public String getName() {
-    return this.name;
+    return name;
   }
 
   @Override
   public int getId() {
-    return this.id;
+    return id;
   }
 
   @Override
   public boolean isClosed() {
-    return this.closed;
+    return closed;
   }
 
   @Override
   public int getLockTimeout() {
-    return this.lockTimeout;
+    return lockTimeout;
   }
 
   @Override
   public int getLockLease() {
-    return this.lockLease;
+    return lockLease;
   }
 
   @Override
   public int getSearchTimeout() {
-    return this.searchTimeout;
+    return searchTimeout;
   }
 
   @Override
   public int getUpTime() {
-    return this.upTime;
+    return upTime;
   }
 
   @Override
   public synchronized Set getRootRegionNames() {
-    if (this.rootRegionNames == null) {
+    if (rootRegionNames == null) {
       return null;
     } else {
-      return new TreeSet(Arrays.asList(this.rootRegionNames));
+      return new TreeSet(Arrays.asList(rootRegionNames));
     }
   }
 
   @Override
   public StatResource getPerfStats() {
-    return this.perfStats;
+    return perfStats;
   }
 
   @Override
   public synchronized void setClosed() {
-    this.closed = true;
-    this.rootRegionNames = null;
+    closed = true;
+    rootRegionNames = null;
   }
 
   @Override
   public int[] getBridgeServerIds() {
-    return this.bridgeServerIds;
+    return bridgeServerIds;
   }
 
   @Override
   public boolean isServer() {
-    return this.isServer;
+    return isServer;
   }
 
   // other instance methods
 
   void setGemFireVM(RemoteGemFireVM vm) {
-    if (this.perfStats != null) {
-      this.perfStats.setGemFireVM(vm);
+    if (perfStats != null) {
+      perfStats.setGemFireVM(vm);
     }
   }
 
   @Override
   public String toString() {
     return String.format("Information about the cache %s with %s cache servers",
-        this.name, this.bridgeServerIds.length);
+        name, bridgeServerIds.length);
   }
 }

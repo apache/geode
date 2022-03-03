@@ -38,13 +38,13 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
 
   @Test
   public void testReplicatedSerialPropagationLoopBack() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     vm2.invoke(() -> WANTestBase.createCache(lnPort));
     vm3.invoke(() -> WANTestBase.createCache(nyPort));
-    vm2.invoke(() -> WANTestBase.createReceiver());
-    vm3.invoke(() -> WANTestBase.createReceiver());
+    vm2.invoke(WANTestBase::createReceiver);
+    vm3.invoke(WANTestBase::createReceiver);
 
     vm4.invoke(() -> WANTestBase.createCache(lnPort));
     vm5.invoke(() -> WANTestBase.createCache(lnPort));
@@ -99,8 +99,8 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.verifyQueueSize("ln", 0));
     vm6.invoke(() -> WANTestBase.verifyQueueSize("ny", 0));
 
-    Map queueMap1 = (HashMap) vm4.invoke(() -> WANTestBase.checkQueue());
-    Map queueMap2 = (HashMap) vm6.invoke(() -> WANTestBase.checkQueue());
+    Map queueMap1 = vm4.invoke(WANTestBase::checkQueue);
+    Map queueMap2 = vm6.invoke(WANTestBase::checkQueue);
 
     List createList1 = (List) queueMap1.get("Create");
     List updateList1 = (List) queueMap1.get("Update");
@@ -116,9 +116,9 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
 
   @Test
   public void testReplicatedSerialPropagationLoopBack3SitesLoop() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
-    Integer tkPort = (Integer) vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(3, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer tkPort = vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(3, lnPort));
 
     createCacheInVMs(lnPort, vm3, vm6);
     createCacheInVMs(nyPort, vm4, vm7);
@@ -136,9 +136,9 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
     vm7.invoke(
         () -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR", "ny", isOffHeap()));
 
-    vm3.invoke(() -> WANTestBase.createReceiver());
-    vm4.invoke(() -> WANTestBase.createReceiver());
-    vm5.invoke(() -> WANTestBase.createReceiver());
+    vm3.invoke(WANTestBase::createReceiver);
+    vm4.invoke(WANTestBase::createReceiver);
+    vm5.invoke(WANTestBase::createReceiver);
 
     vm6.invoke(() -> WANTestBase.createSender("ln", 2, false, 100, 10, false, false, null, true));
     vm7.invoke(() -> WANTestBase.createSender("ny", 3, false, 100, 10, false, false, null, true));
@@ -188,9 +188,9 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
 
 
 
-    Map queueMap1 = (HashMap) vm6.invoke(() -> WANTestBase.checkQueue());
-    Map queueMap2 = (HashMap) vm7.invoke(() -> WANTestBase.checkQueue());
-    Map queueMap3 = (HashMap) vm5.invoke(() -> WANTestBase.checkQueue());
+    Map queueMap1 = vm6.invoke(WANTestBase::checkQueue);
+    Map queueMap2 = vm7.invoke(WANTestBase::checkQueue);
+    Map queueMap3 = vm5.invoke(WANTestBase::checkQueue);
 
     List createList1 = (List) queueMap1.get("Create");
     List updateList1 = (List) queueMap1.get("Update");
@@ -211,17 +211,17 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
 
   @Test
   public void testReplicatedSerialPropagationLoopBack3SitesNtoNPutInAllDS() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
-    Integer tkPort = (Integer) vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(3, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer tkPort = vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(3, lnPort));
 
     createCacheInVMs(lnPort, vm3, vm6);
     createCacheInVMs(nyPort, vm4, vm7);
     createCacheInVMs(tkPort, vm5);
 
-    vm3.invoke(() -> WANTestBase.createReceiver());
-    vm4.invoke(() -> WANTestBase.createReceiver());
-    vm5.invoke(() -> WANTestBase.createReceiver());
+    vm3.invoke(WANTestBase::createReceiver);
+    vm4.invoke(WANTestBase::createReceiver);
+    vm5.invoke(WANTestBase::createReceiver);
 
     // using vm5 for sender in ds 3. cache is already created.
 
@@ -296,12 +296,12 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase.verifyQueueSize("tk2", 0));
 
 
-    Map queueMap1 = (HashMap) vm6.invoke(() -> WANTestBase.checkQueue());
-    Map queueMap2 = (HashMap) vm7.invoke(() -> WANTestBase.checkQueue());
-    Map queueMap3 = (HashMap) vm5.invoke(() -> WANTestBase.checkQueue());
-    Map queueMap4 = (HashMap) vm6.invoke(() -> WANTestBase.checkQueue2());
-    Map queueMap5 = (HashMap) vm7.invoke(() -> WANTestBase.checkQueue2());
-    Map queueMap6 = (HashMap) vm5.invoke(() -> WANTestBase.checkQueue2());
+    Map queueMap1 = vm6.invoke(WANTestBase::checkQueue);
+    Map queueMap2 = vm7.invoke(WANTestBase::checkQueue);
+    Map queueMap3 = vm5.invoke(WANTestBase::checkQueue);
+    Map queueMap4 = vm6.invoke(WANTestBase::checkQueue2);
+    Map queueMap5 = vm7.invoke(WANTestBase::checkQueue2);
+    Map queueMap6 = vm5.invoke(WANTestBase::checkQueue2);
 
     List createList1 = (List) queueMap1.get("Create");
     List updateList1 = (List) queueMap1.get("Update");
@@ -338,16 +338,16 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
 
   @Test
   public void testReplicatedSerialPropagationLoopBack3SitesNtoNPutFromOneDS() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
-    Integer tkPort = (Integer) vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(3, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer tkPort = vm2.invoke(() -> WANTestBase.createFirstRemoteLocator(3, lnPort));
 
     vm3.invoke(() -> WANTestBase.createCache(lnPort));
     vm4.invoke(() -> WANTestBase.createCache(nyPort));
     vm5.invoke(() -> WANTestBase.createCache(tkPort));
-    vm3.invoke(() -> WANTestBase.createReceiver());
-    vm4.invoke(() -> WANTestBase.createReceiver());
-    vm5.invoke(() -> WANTestBase.createReceiver());
+    vm3.invoke(WANTestBase::createReceiver);
+    vm4.invoke(WANTestBase::createReceiver);
+    vm5.invoke(WANTestBase::createReceiver);
 
 
     vm3.invoke(() -> WANTestBase.createSender("ln1", 2, false, 100, 10, false, false, null, true));
@@ -403,12 +403,12 @@ public class SerialWANPropagationLoopBackDUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase.verifyQueueSize("tk2", 0));
 
 
-    Map queueMap1 = (HashMap) vm3.invoke(() -> WANTestBase.checkQueue());
-    Map queueMap2 = (HashMap) vm4.invoke(() -> WANTestBase.checkQueue());
-    Map queueMap3 = (HashMap) vm5.invoke(() -> WANTestBase.checkQueue());
-    Map queueMap4 = (HashMap) vm3.invoke(() -> WANTestBase.checkQueue2());
-    Map queueMap5 = (HashMap) vm4.invoke(() -> WANTestBase.checkQueue2());
-    Map queueMap6 = (HashMap) vm5.invoke(() -> WANTestBase.checkQueue2());
+    Map queueMap1 = vm3.invoke(WANTestBase::checkQueue);
+    Map queueMap2 = vm4.invoke(WANTestBase::checkQueue);
+    Map queueMap3 = vm5.invoke(WANTestBase::checkQueue);
+    Map queueMap4 = vm3.invoke(WANTestBase::checkQueue2);
+    Map queueMap5 = vm4.invoke(WANTestBase::checkQueue2);
+    Map queueMap6 = vm5.invoke(WANTestBase::checkQueue2);
 
     List createList1 = (List) queueMap1.get("Create");
     List updateList1 = (List) queueMap1.get("Update");

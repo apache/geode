@@ -39,39 +39,39 @@ public class ResourceInstance {
     this.id = id;
     this.statistics = statistics;
     this.type = type;
-    this.statValuesNotified = false;
+    statValuesNotified = false;
   }
 
   public int getId() {
-    return this.id;
+    return id;
   }
 
   public Statistics getStatistics() {
-    return this.statistics;
+    return statistics;
   }
 
   public ResourceType getResourceType() {
-    return this.type;
+    return type;
   }
 
   public boolean getStatValuesNotified() {
-    return this.statValuesNotified;
+    return statValuesNotified;
   }
 
   public void setStatValuesNotified(boolean notified) {
-    this.statValuesNotified = notified;
+    statValuesNotified = notified;
   }
 
   public Number getStatValue(StatisticDescriptor sd) {
-    return this.statistics.get(sd);
+    return statistics.get(sd);
   }
 
   public long getRawStatValue(StatisticDescriptor sd) {
-    return this.statistics.getRawBits(sd);
+    return statistics.getRawBits(sd);
   }
 
   public long[] getLatestStatValues() {
-    return this.latestStatValues;
+    return latestStatValues;
   }
 
   public void setLatestStatValues(long[] latestStatValues) {
@@ -79,7 +79,7 @@ public class ResourceInstance {
   }
 
   public long[] getPreviousStatValues() {
-    return this.previousStatValues;
+    return previousStatValues;
   }
 
   public void setPreviousStatValues(long[] previousStatValues) {
@@ -87,7 +87,7 @@ public class ResourceInstance {
   }
 
   public int[] getUpdatedStats() {
-    return this.updatedStats;
+    return updatedStats;
   }
 
   public void setUpdatedStats(int[] updatedStats) {
@@ -98,24 +98,24 @@ public class ResourceInstance {
   public String toString() {
     final StringBuilder sb = new StringBuilder(getClass().getName());
     sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append("id=").append(this.id);
-    if (this.updatedStats == null) {
+    sb.append("id=").append(id);
+    if (updatedStats == null) {
       sb.append(", updatedStats=null");
     } else {
-      sb.append(", updatedStats.length=").append(this.updatedStats.length);
+      sb.append(", updatedStats.length=").append(updatedStats.length);
     }
-    if (this.previousStatValues == null) {
+    if (previousStatValues == null) {
       sb.append(", previousStatValues=null");
     } else {
-      sb.append(", previousStatValues.length=").append(this.previousStatValues.length);
+      sb.append(", previousStatValues.length=").append(previousStatValues.length);
     }
-    if (this.latestStatValues == null) {
+    if (latestStatValues == null) {
       sb.append(", latestStatValues=null");
     } else {
-      sb.append(", latestStatValues.length=").append(this.latestStatValues.length);
+      sb.append(", latestStatValues.length=").append(latestStatValues.length);
     }
-    sb.append(", statistics=").append(this.statistics);
-    sb.append(", resourceType=").append(this.type);
+    sb.append(", statistics=").append(statistics);
+    sb.append(", resourceType=").append(type);
     sb.append("}");
     return sb.toString();
   }

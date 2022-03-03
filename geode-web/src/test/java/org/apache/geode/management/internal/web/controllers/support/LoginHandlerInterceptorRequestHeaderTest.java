@@ -66,7 +66,7 @@ public class LoginHandlerInterceptorRequestHeaderTest {
     assertThat(props.getValue().getProperty("security-username")).isEqualTo("John");
     assertThat(props.getValue().getProperty("security-password")).isEqualTo("Password");
 
-    Map<String, String> env = interceptor.getEnvironment();
+    Map<String, String> env = LoginHandlerInterceptor.getEnvironment();
     // make sure security-* are not put in the environment variable
     assertThat(env).hasSize(0);
   }

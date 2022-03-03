@@ -37,6 +37,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.MemberStarterRule;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @Category({GfshTest.class})
@@ -63,7 +64,7 @@ public class ClusterConfigurationDUnitTest {
   // TODO mark GEODE-1606 resolved after
   @Test
   public void testStartServerAndExecuteCommands() throws Exception {
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     } else {

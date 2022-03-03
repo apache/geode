@@ -141,18 +141,18 @@ public class StatAlertsManager {
     }
     synchronized (alertDefinitionsMap) {
       if (actionCode == UpdateAlertDefinitionMessage.REMOVE_ALERT_DEFINITION) {
-        for (int i = 0; i < defns.length; i++) {
-          alertDefinitionsMap.remove(Integer.valueOf(defns[i].getId()));
+        for (final StatAlertDefinition defn : defns) {
+          alertDefinitionsMap.remove(defn.getId());
           if (logger.isDebugEnabled()) {
-            logger.debug("Removed StatAlertDefinition: {}", defns[i].getName());
+            logger.debug("Removed StatAlertDefinition: {}", defn.getName());
           }
         }
       } else {
-        StatAlertDefinition[] alertDefns = this.createMemberStatAlertDefinition(dm, defns);
+        StatAlertDefinition[] alertDefns = createMemberStatAlertDefinition(dm, defns);
         StatAlertDefinition defn;
         for (int i = 0; i < alertDefns.length; i++) {
           defn = alertDefns[i];
-          alertDefinitionsMap.put(Integer.valueOf(defns[i].getId()), defn);
+          alertDefinitionsMap.put(defns[i].getId(), defn);
         }
       }
     } // synchronized
@@ -269,9 +269,9 @@ public class StatAlertsManager {
     boolean skipDefinition = false;
     List result = new ArrayList();
 
-    for (int i = 0; i < defns.length; i++) {
+    for (final StatAlertDefinition statAlertDefinition : defns) {
       skipDefinition = false;
-      StatAlertDefinition defn = defns[i];
+      StatAlertDefinition defn = statAlertDefinition;
       StatisticInfo[] statInfos = defn.getStatisticInfo();
       for (int ii = 0; ii < statInfos.length && !skipDefinition; ii++) {
         textId = statInfos[ii].getStatisticsTextId();
@@ -302,7 +302,7 @@ public class StatAlertsManager {
         result.add(defn);
         if (logger.isDebugEnabled()) {
           logger.debug("StatAlertsManager.createMemberStatAlertDefinition :: {}",
-              defns[i].getStringRepresentation());
+              statAlertDefinition.getStringRepresentation());
         }
       } else {
         if (logger.isDebugEnabled()) {
@@ -372,10 +372,9 @@ public class StatAlertsManager {
           AlertsNotificationMessage request = new AlertsNotificationMessage();
           request.setAlerts(alerts);
           if (isDebugEnabled) {
-            Iterator iterator = adminMemberSet.iterator();
-            while (iterator.hasNext()) {
+            for (final Object o : adminMemberSet) {
               logger.debug("EvaluateAlertDefnsTask: sending {} alerts to {}", alerts.length,
-                  iterator.next());
+                  o);
             }
           }
           request.setRecipients(adminMemberSet);

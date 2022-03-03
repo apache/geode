@@ -48,11 +48,11 @@ public class SimpleStatSampler extends HostStatSampler {
   private final File archiveFileName =
       new File(System.getProperty(ARCHIVE_FILE_NAME_PROPERTY, DEFAULT_ARCHIVE_FILE_NAME));
   private final long archiveFileSizeLimit =
-      Long.getLong(FILE_SIZE_LIMIT_PROPERTY, DEFAULT_FILE_SIZE_LIMIT).longValue() * (1024 * 1024);
+      Long.getLong(FILE_SIZE_LIMIT_PROPERTY, DEFAULT_FILE_SIZE_LIMIT) * (1024 * 1024);
   private final long archiveDiskSpaceLimit =
-      Long.getLong(DISK_SPACE_LIMIT_PROPERTY, DEFAULT_DISK_SPACE_LIMIT).longValue() * (1024 * 1024);
+      Long.getLong(DISK_SPACE_LIMIT_PROPERTY, DEFAULT_DISK_SPACE_LIMIT) * (1024 * 1024);
   private final int sampleRate =
-      Integer.getInteger(SAMPLE_RATE_PROPERTY, DEFAULT_SAMPLE_RATE).intValue();
+      Integer.getInteger(SAMPLE_RATE_PROPERTY, DEFAULT_SAMPLE_RATE);
 
   private final StatisticsManager sm;
 
@@ -73,24 +73,24 @@ public class SimpleStatSampler extends HostStatSampler {
 
   @Override
   public File getArchiveFileName() {
-    return this.archiveFileName;
+    return archiveFileName;
   }
 
   @Override
   public long getArchiveFileSizeLimit() {
     if (fileSizeLimitInKB()) {
-      return this.archiveFileSizeLimit / 1024;
+      return archiveFileSizeLimit / 1024;
     } else {
-      return this.archiveFileSizeLimit;
+      return archiveFileSizeLimit;
     }
   }
 
   @Override
   public long getArchiveDiskSpaceLimit() {
     if (fileSizeLimitInKB()) {
-      return this.archiveDiskSpaceLimit / 1024;
+      return archiveDiskSpaceLimit / 1024;
     } else {
-      return this.archiveDiskSpaceLimit;
+      return archiveDiskSpaceLimit;
     }
   }
 
@@ -106,12 +106,12 @@ public class SimpleStatSampler extends HostStatSampler {
 
   @Override
   protected StatisticsManager getStatisticsManager() {
-    return this.sm;
+    return sm;
   }
 
   @Override
   protected int getSampleRate() {
-    return this.sampleRate;
+    return sampleRate;
   }
 
   @Override

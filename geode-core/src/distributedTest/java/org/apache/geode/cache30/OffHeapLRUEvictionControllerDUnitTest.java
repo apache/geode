@@ -20,7 +20,6 @@ import java.util.Properties;
 
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.OffHeapTestUtil;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.eviction.HeapEvictor;
@@ -71,7 +70,7 @@ public class OffHeapLRUEvictionControllerDUnitTest extends LRUEvictionController
 
   @Override
   protected HeapEvictor getEvictor() {
-    return ((GemFireCacheImpl) getCache()).getOffHeapEvictor();
+    return getCache().getOffHeapEvictor();
   }
 
   @Override

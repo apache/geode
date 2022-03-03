@@ -67,7 +67,7 @@ public class MemberHealthEvaluatorJUnitTest extends HealthEvaluatorTestCase {
       config.setMaxVMProcessSize(threshold);
 
       MemberHealthEvaluator eval =
-          new MemberHealthEvaluator(config, this.system.getDistributionManager());
+          new MemberHealthEvaluator(config, system.getDistributionManager());
       eval.evaluate(status);
       assertTrue(status.isEmpty());
 
@@ -80,7 +80,7 @@ public class MemberHealthEvaluatorJUnitTest extends HealthEvaluatorTestCase {
       config = new GemFireHealthConfigImpl(null);
       config.setMaxVMProcessSize(threshold);
 
-      eval = new MemberHealthEvaluator(config, this.system.getDistributionManager());
+      eval = new MemberHealthEvaluator(config, system.getDistributionManager());
       eval.evaluate(status);
       assertEquals(1, status.size());
 

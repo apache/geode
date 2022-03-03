@@ -42,6 +42,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert;
 import org.apache.geode.test.junit.rules.IgnoreOnWindowsRule;
+import org.apache.geode.test.junit.rules.MemberStarterRule;
 
 public class DeploymentSemanticVersionJarDUnitTest {
   // Classloaders hold onto the deployed jars. On Windows, this prevents Geode and tests from
@@ -81,7 +82,7 @@ public class DeploymentSemanticVersionJarDUnitTest {
 
   @Before
   public void before() throws Exception {
-    locator0 = cluster.startLocatorVM(0, l -> l.withHttpService());
+    locator0 = cluster.startLocatorVM(0, MemberStarterRule::withHttpService);
     int locator0Port = locator0.getPort();
     locator1 =
         cluster.startLocatorVM(1, l -> l.withHttpService().withConnectionToLocator(locator0Port));

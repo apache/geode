@@ -127,8 +127,8 @@ public class VMThinDiskRegionEntryOffHeapStringKey2 extends VMThinDiskRegionEntr
       }
     }
     tempBits1 |= key.length();
-    this.bits1 = tempBits1;
-    this.bits2 = tempBits2;
+    bits1 = tempBits1;
+    bits2 = tempBits2;
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
@@ -188,7 +188,7 @@ public class VMThinDiskRegionEntryOffHeapStringKey2 extends VMThinDiskRegionEntr
 
   @Override
   public int getEntryHash() {
-    return this.hash;
+    return hash;
   }
 
   @Override
@@ -198,7 +198,7 @@ public class VMThinDiskRegionEntryOffHeapStringKey2 extends VMThinDiskRegionEntr
 
   @Override
   public HashEntry<Object, Object> getNextEntry() {
-    return this.nextEntry;
+    return nextEntry;
   }
 
   @Override
@@ -220,12 +220,12 @@ public class VMThinDiskRegionEntryOffHeapStringKey2 extends VMThinDiskRegionEntr
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   public DiskId getDiskId() {
-    return this.id;
+    return id;
   }
 
   @Override
   public void setDiskId(final RegionEntry oldEntry) {
-    this.id = ((DiskEntry) oldEntry).getDiskId();
+    id = ((DiskEntry) oldEntry).getDiskId();
   }
 
   private void diskInitialize(final RegionEntryContext context, final Object value) {
@@ -233,28 +233,28 @@ public class VMThinDiskRegionEntryOffHeapStringKey2 extends VMThinDiskRegionEntr
     DiskStoreImpl diskStore = diskRecoveryStore.getDiskStore();
     long maxOplogSize = diskStore.getMaxOplogSize();
     // get appropriate instance of DiskId implementation based on maxOplogSize
-    this.id = DiskId.createDiskId(maxOplogSize, true, diskStore.needsLinkedList());
+    id = DiskId.createDiskId(maxOplogSize, true, diskStore.needsLinkedList());
     Helper.initialize(this, diskRecoveryStore, value);
   }
 
   // ----------------------------------------- key code -------------------------------------------
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   private int getKeyLength() {
-    return (int) (this.bits1 & 0x003fL);
+    return (int) (bits1 & 0x003fL);
   }
 
   private int getEncoding() {
     // 0 means encoded as char
     // 1 means encoded as bytes that are all <= 0x7f;
-    return (int) (this.bits1 >> 6) & 0x03;
+    return (int) (bits1 >> 6) & 0x03;
   }
 
   @Override
   public Object getKey() {
     int keyLength = getKeyLength();
     char[] chars = new char[keyLength];
-    long tempBits1 = this.bits1;
-    long tempBits2 = this.bits2;
+    long tempBits1 = bits1;
+    long tempBits2 = bits2;
     if (getEncoding() == 1) {
       for (int i = 0; i < keyLength; i++) {
         if (i < 7) {
@@ -286,8 +286,8 @@ public class VMThinDiskRegionEntryOffHeapStringKey2 extends VMThinDiskRegionEntr
       String stringKey = (String) key;
       int keyLength = getKeyLength();
       if (stringKey.length() == keyLength) {
-        long tempBits1 = this.bits1;
-        long tempBits2 = this.bits2;
+        long tempBits1 = bits1;
+        long tempBits2 = bits2;
         if (getEncoding() == 1) {
           for (int i = 0; i < keyLength; i++) {
             char character;

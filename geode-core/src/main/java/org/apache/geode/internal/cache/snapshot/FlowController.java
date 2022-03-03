@@ -113,7 +113,7 @@ public class FlowController {
    * @see #sendAck(DistributionManager, DistributedMember, int, String)
    */
   public <K, V> Window create(Region<K, V> region, DistributedMember sink, int windowSize) {
-    WindowImpl<K, V> w = new WindowImpl<K, V>(region, sink, windowSize);
+    WindowImpl<K, V> w = new WindowImpl<>(region, sink, windowSize);
     int id = processors.put(w);
 
     w.setWindowId(id);

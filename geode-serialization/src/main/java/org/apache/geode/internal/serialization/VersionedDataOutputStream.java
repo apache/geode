@@ -26,7 +26,7 @@ import java.io.OutputStream;
  */
 public class VersionedDataOutputStream extends DataOutputStream implements VersionedDataStream {
 
-  private KnownVersion version;
+  private final KnownVersion version;
 
   /**
    * Creates a VersionedDataOutputStream that wraps the specified underlying OutputStream.
@@ -44,6 +44,6 @@ public class VersionedDataOutputStream extends DataOutputStream implements Versi
    */
   @Override
   public KnownVersion getVersion() {
-    return this.version;
+    return version;
   }
 }

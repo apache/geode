@@ -96,9 +96,7 @@ public class ShutdownCommand extends GfshCommand {
       }
 
       // remove current locator as that would get shutdown last
-      if (locators.contains(manager)) {
-        locators.remove(manager);
-      }
+      locators.remove(manager);
 
       for (DistributedMember locator : locators) {
         Set<DistributedMember> lsSet = new HashSet<>();

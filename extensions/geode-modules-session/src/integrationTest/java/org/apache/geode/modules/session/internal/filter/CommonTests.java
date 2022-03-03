@@ -38,6 +38,7 @@ import javax.servlet.http.HttpSession;
 
 import com.mockrunner.mock.web.MockHttpServletRequest;
 import com.mockrunner.mock.web.MockHttpServletResponse;
+import com.mockrunner.mock.web.MockServletContext;
 import org.junit.Test;
 
 import org.apache.geode.modules.session.filter.SessionCachingFilter;
@@ -444,8 +445,8 @@ public abstract class CommonTests extends SessionCookieConfigServletTestCaseAdap
   public void testCookieSecure() {
 
     boolean secure = true;
-    ((MyMockServletContext) getWebMockObjectFactory().getMockServletContext())
-        .getSessionCookieConfig().setSecure(secure);
+    asMyMockServlet(getWebMockObjectFactory().getMockServletContext()).getSessionCookieConfig()
+        .setSecure(secure);
 
     doFilter();
     ((HttpServletRequest) getFilteredRequest()).getSession();
@@ -460,8 +461,8 @@ public abstract class CommonTests extends SessionCookieConfigServletTestCaseAdap
   public void testCookieHttpOnly() {
 
     boolean httpOnly = true;
-    ((MyMockServletContext) getWebMockObjectFactory().getMockServletContext())
-        .getSessionCookieConfig().setHttpOnly(httpOnly);
+    asMyMockServlet(getWebMockObjectFactory().getMockServletContext()).getSessionCookieConfig()
+        .setHttpOnly(httpOnly);
 
     doFilter();
     ((HttpServletRequest) getFilteredRequest()).getSession();
@@ -565,4 +566,9 @@ public abstract class CommonTests extends SessionCookieConfigServletTestCaseAdap
     @Override
     public void destroy() {}
   }
+
+  private MyMockServletContext asMyMockServlet(final MockServletContext mockServletContext) {
+    return (MyMockServletContext) mockServletContext;
+  }
+
 }

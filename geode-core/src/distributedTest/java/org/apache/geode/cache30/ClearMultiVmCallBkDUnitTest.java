@@ -60,8 +60,8 @@ public class ClearMultiVmCallBkDUnitTest extends JUnit4DistributedTestCase { // 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(() -> ClearMultiVmCallBkDUnitTest.createCache());
-    vm1.invoke(() -> ClearMultiVmCallBkDUnitTest.createCache());
+    vm0.invoke(ClearMultiVmCallBkDUnitTest::createCache);
+    vm1.invoke(ClearMultiVmCallBkDUnitTest::createCache);
     LogWriterUtils.getLogWriter().fine("Cache created in successfully");
   }
 
@@ -70,8 +70,8 @@ public class ClearMultiVmCallBkDUnitTest extends JUnit4DistributedTestCase { // 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(() -> ClearMultiVmCallBkDUnitTest.closeCache());
-    vm1.invoke(() -> ClearMultiVmCallBkDUnitTest.closeCache());
+    vm0.invoke(ClearMultiVmCallBkDUnitTest::closeCache);
+    vm1.invoke(ClearMultiVmCallBkDUnitTest::closeCache);
   }
 
   public static void createCache() {
@@ -114,13 +114,13 @@ public class ClearMultiVmCallBkDUnitTest extends JUnit4DistributedTestCase { // 
     }
     LogWriterUtils.getLogWriter().fine("Did all puts successfully");
 
-    vm0.invoke(() -> ClearMultiVmCallBkDUnitTest.clearMethod());
+    vm0.invoke(ClearMultiVmCallBkDUnitTest::clearMethod);
     LogWriterUtils.getLogWriter().fine("Did clear successfully");
 
     while (afterClear) {
     }
 
-    int Regsize = vm0.invoke(() -> ClearMultiVmCallBkDUnitTest.sizeMethod());
+    int Regsize = vm0.invoke(ClearMultiVmCallBkDUnitTest::sizeMethod);
     assertEquals(1, Regsize);
 
 
@@ -141,13 +141,13 @@ public class ClearMultiVmCallBkDUnitTest extends JUnit4DistributedTestCase { // 
     }
     LogWriterUtils.getLogWriter().fine("Did all puts successfully");
     // vm0.invoke(() -> ClearMultiVmCallBkDUnitTest.putMethod());
-    vm1.invoke(() -> ClearMultiVmCallBkDUnitTest.clearMethod());
+    vm1.invoke(ClearMultiVmCallBkDUnitTest::clearMethod);
     LogWriterUtils.getLogWriter().fine("Did clear successfully");
 
     while (afterClear) {
     }
 
-    int Regsize = vm0.invoke(() -> ClearMultiVmCallBkDUnitTest.sizeMethod());
+    int Regsize = vm0.invoke(ClearMultiVmCallBkDUnitTest::sizeMethod);
     assertEquals(1, Regsize);
 
 

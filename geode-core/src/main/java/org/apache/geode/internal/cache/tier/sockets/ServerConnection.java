@@ -45,6 +45,7 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadState;
+import org.jetbrains.annotations.TestOnly;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
@@ -261,6 +262,7 @@ public class ServerConnection implements Runnable {
 
 
   private ClientUserAuths clientUserAuths;
+  private final Object clientUserAuthsLock = new Object();
 
   // this is constant(server and client) for first user request, after that it is random
   // this also need to send in handshake
@@ -534,18 +536,13 @@ public class ServerConnection implements Runnable {
   }
 
   private long setUserAuthorizeAndPostAuthorizeRequest(AuthorizeRequest authzRequest,
-      AuthorizeRequestPP postAuthzRequest) throws IOException {
+      AuthorizeRequestPP postAuthzRequest) {
     UserAuthAttributes userAuthAttr = new UserAuthAttributes(authzRequest, postAuthzRequest);
-    if (clientUserAuths == null) {
-      initializeClientUserAuths();
-    }
-    try {
-      return clientUserAuths.putUserAuth(userAuthAttr);
-    } catch (NullPointerException exception) {
-      if (isTerminated()) {
-        throw new IOException("Server connection is terminated.");
+    synchronized (clientUserAuthsLock) {
+      if (clientUserAuths == null) {
+        initializeClientUserAuths();
       }
-      throw exception;
+      return clientUserAuths.putUserAuth(userAuthAttr);
     }
   }
 
@@ -798,7 +795,9 @@ public class ServerConnection implements Runnable {
     if (verifyClientConnection()) {
       initializeCommands();
       if (!getCommunicationMode().isWAN()) {
-        initializeClientUserAuths();
+        synchronized (clientUserAuthsLock) {
+          initializeClientUserAuths();
+        }
       }
     }
     if (TEST_VERSION_AFTER_HANDSHAKE_FLAG) {
@@ -959,9 +958,13 @@ public class ServerConnection implements Runnable {
     }
   }
 
+  // this needs to be synchronized to avoid NPE between null check and cleanup
   private void cleanClientAuths() {
-    if (clientUserAuths != null) {
-      clientUserAuths.cleanup(false);
+    synchronized (clientUserAuthsLock) {
+      if (clientUserAuths != null) {
+        clientUserAuths.cleanup(false);
+        clientUserAuths = null;
+      }
     }
   }
 
@@ -1042,18 +1045,19 @@ public class ServerConnection implements Runnable {
         chmRegistered = false;
       }
     }
-    if (unregisterClient) {
-      // last server connection call all close on auth objects
-      secureLogger.debug("ServerConnection.handleTermination clean client auths");
-      cleanClientAuths();
-    }
-    clientUserAuths = null;
+
     if (needsUnregister) {
       acceptor.getClientHealthMonitor().removeConnection(proxyId, this);
       if (unregisterClient) {
         acceptor.getClientHealthMonitor().unregisterClient(proxyId, getAcceptor(),
             clientDisconnectedCleanly, clientDisconnectedException);
       }
+    }
+
+    if (unregisterClient) {
+      // last server connection call all close on auth objects
+      secureLogger.debug("ServerConnection.handleTermination clean client auths");
+      cleanClientAuths();
     }
 
     if (cleanupStats) {
@@ -1120,13 +1124,13 @@ public class ServerConnection implements Runnable {
         throw new AuthenticationFailedException("Authentication failed");
       }
 
-      try {
-        // first try integrated security
-        clientUserAuths.removeSubject(aIds.getUniqueId());
-        // then, try the old way
-        clientUserAuths.removeUserId(aIds.getUniqueId(), keepAlive);
-      } catch (NullPointerException exception) {
-        logger.debug("Exception", exception);
+      synchronized (clientUserAuthsLock) {
+        if (clientUserAuths != null) {
+          // first try integrated security
+          clientUserAuths.removeSubject(aIds.getUniqueId());
+          // then, try the old way
+          clientUserAuths.removeUserId(aIds.getUniqueId(), keepAlive);
+        }
       }
     } catch (Exception exception) {
       throw new AuthenticationFailedException("Authentication failed", exception);
@@ -1231,9 +1235,16 @@ public class ServerConnection implements Runnable {
     return uniqueId;
   }
 
-  @VisibleForTesting
+  @TestOnly
   protected ClientUserAuths getClientUserAuths() {
     return clientUserAuths;
+  }
+
+  @TestOnly
+  protected void setClientUserAuths(ClientUserAuths clientUserAuths) {
+    synchronized (clientUserAuthsLock) {
+      this.clientUserAuths = clientUserAuths;
+    }
   }
 
   private void setSecurityPart() {
@@ -1553,7 +1564,7 @@ public class ServerConnection implements Runnable {
           communicationMode.isWAN() ? "WANSocketCloser" : "CacheServerSocketCloser";
       acceptor.getSocketCloser().asyncClose(theSocket, closerName, () -> {
       },
-          () -> cleanupAfterSocketClose());
+          this::cleanupAfterSocketClose);
       return true;
     }
     cleanupAfterSocketClose();
@@ -1834,13 +1845,10 @@ public class ServerConnection implements Runnable {
     long uniqueId = getUniqueId();
 
     UserAuthAttributes uaa = null;
-    try {
-      uaa = clientUserAuths.getUserAuthAttributes(uniqueId);
-    } catch (NullPointerException npe) {
-      if (isTerminated()) {
-        throw new IOException("Server connection is terminated.");
+    synchronized (clientUserAuthsLock) {
+      if (clientUserAuths != null) {
+        uaa = clientUserAuths.getUserAuthAttributes(uniqueId);
       }
-      logger.debug("Unexpected exception {}", npe.toString());
     }
     if (uaa == null) {
       throw new AuthenticationRequiredException(USER_NOT_FOUND);
@@ -1878,14 +1886,12 @@ public class ServerConnection implements Runnable {
     long uniqueId = getUniqueId();
 
     UserAuthAttributes uaa = null;
-    try {
-      uaa = clientUserAuths.getUserAuthAttributes(uniqueId);
-    } catch (NullPointerException npe) {
-      if (isTerminated()) {
-        throw new IOException("Server connection is terminated.");
+    synchronized (clientUserAuthsLock) {
+      if (clientUserAuths != null) {
+        uaa = clientUserAuths.getUserAuthAttributes(uniqueId);
       }
-      logger.debug("Unexpected exception", npe);
     }
+
     if (uaa == null) {
       throw new AuthenticationRequiredException(USER_NOT_FOUND);
     }
@@ -1930,7 +1936,7 @@ public class ServerConnection implements Runnable {
   }
 
   /**
-   * For legacy auth?
+   * For legacy auth
    */
   private long getUniqueId(Principal principal)
       throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException,

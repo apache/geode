@@ -45,7 +45,7 @@ public class FetchHostRequest extends AdminRequest {
    */
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    return FetchHostResponse.create(dm, this.getSender());
+    return FetchHostResponse.create(dm, getSender());
   }
 
   @Override
@@ -68,6 +68,6 @@ public class FetchHostRequest extends AdminRequest {
   @Override
   public String toString() {
     return String.format("FetchHostRequest for %s",
-        this.getRecipient());
+        getRecipient());
   }
 }

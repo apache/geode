@@ -639,7 +639,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
       Object newValue, boolean wasRecovered, boolean acceptedVersionTag)
       throws RegionClearedException {
     // note that the caller has already write synced this RegionEntry
-    return initialImageInit(region, lastModified, newValue, this.isTombstone(), wasRecovered,
+    return initialImageInit(region, lastModified, newValue, isTombstone(), wasRecovered,
         acceptedVersionTag);
   }
 
@@ -714,13 +714,13 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
               // currententry whose key may have escaped the clearance , will be
               // cleansed by the destroy token.
               newValueToWrite = Token.DESTROYED; // TODO: never used
-              imageState.addDestroyedEntry(this.getKey());
+              imageState.addDestroyedEntry(getKey());
               throw new RegionClearedException(
                   "During the GII put of entry, the region got cleared so aborting the operation");
             }
           }
         }
-        setValue(region, this.prepareValueForCache(region, newValueToWrite, false));
+        setValue(region, prepareValueForCache(region, newValueToWrite, false));
         result = true;
 
         if (newValueToWrite != Token.TOMBSTONE) {
@@ -854,7 +854,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
           // localDestroy and eviction and ops received with no version tag
           // should create a tombstone using the existing version stamp, as should
           // (bug #45245) responses from servers that do not have valid version information
-          VersionStamp stamp = this.getVersionStamp();
+          VersionStamp stamp = getVersionStamp();
           if (stamp != null) { // proxy has no stamps
             v = stamp.asVersionTag();
             event.setVersionTag(v);
@@ -913,10 +913,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
     if (curValue == null) {
       return false;
     }
-    if (Token.isRemoved(curValue)) {
-      return false;
-    }
-    return true;
+    return !Token.isRemoved(curValue);
   }
 
   public static boolean checkExpectedOldValue(@Unretained Object expectedOldValue,
@@ -978,11 +975,8 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
       return false; // The disk layer has special logic that ends up storing the nested value in the
     }
     // RecoveredEntry off heap
-    if (!(e instanceof OffHeapRegionEntry)) {
-      return false;
-    }
+    return e instanceof OffHeapRegionEntry;
     // TODO should we check for deltas here or is that a user error?
-    return true;
   }
 
   /**
@@ -1312,7 +1306,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder(this.getClass().getSimpleName()).append('@')
+    final StringBuilder sb = new StringBuilder(getClass().getSimpleName()).append('@')
         .append(Integer.toHexString(System.identityHashCode(this))).append(" (");
     return appendFieldsToString(sb).append(')').toString();
   }
@@ -1336,7 +1330,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
   @Override
   public VersionTag generateVersionTag(VersionSource member, boolean withDelta,
       InternalRegion region, EntryEventImpl event) {
-    VersionStamp stamp = this.getVersionStamp();
+    VersionStamp stamp = getVersionStamp();
     if (stamp != null && region.getServerProxy() == null) {
       // clients do not generate versions
       int v = stamp.getEntryVersion() + 1;
@@ -1744,7 +1738,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
     // local entry and see if it is old enough to have expired. If this is the case
     // we accept the change and allow the tag to be recorded
     long stampTime = stamp.getVersionTimeStamp();
-    if (isExpiredTombstone(region, stampTime, this.isTombstone())) {
+    if (isExpiredTombstone(region, stampTime, isTombstone())) {
       // no local change since the tombstone would have timed out - accept the change
       if (verbose != null) {
         verbose.append(" - accepting because local timestamp is old");
@@ -1807,7 +1801,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
-    if (this.isRemoved() && !this.isTombstone()) {
+    if (isRemoved() && !isTombstone()) {
       return true; // no conflict on a new entry
     }
     EntryEventImpl event = (EntryEventImpl) cacheEvent;

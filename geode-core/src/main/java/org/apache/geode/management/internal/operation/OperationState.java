@@ -38,7 +38,7 @@ public class OperationState<A extends ClusterManagementOperation<V>, V extends O
   private String locator;
 
   public String getLocator() {
-    return this.locator;
+    return locator;
   }
 
   public void setLocator(
@@ -93,7 +93,7 @@ public class OperationState<A extends ClusterManagementOperation<V>, V extends O
   public void setOperationEnd(Date operationEnd, V result, Throwable exception) {
     synchronized (this) {
       this.result = result;
-      this.throwable = exception;
+      throwable = exception;
       this.operationEnd = operationEnd;
     }
   }
@@ -106,26 +106,26 @@ public class OperationState<A extends ClusterManagementOperation<V>, V extends O
    */
   OperationState<A, V> createCopy() {
     OperationState<A, V> result =
-        new OperationState(this.opId, this.operation, this.operationStart);
+        new OperationState(opId, operation, operationStart);
     synchronized (this) {
-      result.operationEnd = this.operationEnd;
+      result.operationEnd = operationEnd;
       result.result = this.result;
-      result.throwable = this.throwable;
-      result.locator = this.locator;
+      result.throwable = throwable;
+      result.locator = locator;
     }
     return result;
   }
 
   public Date getOperationEnd() {
-    return this.operationEnd;
+    return operationEnd;
   }
 
   public V getResult() {
-    return this.result;
+    return result;
   }
 
   public Throwable getThrowable() {
-    return this.throwable;
+    return throwable;
   }
 
   @Override

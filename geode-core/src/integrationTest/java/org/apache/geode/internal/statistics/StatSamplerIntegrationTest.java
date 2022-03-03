@@ -67,14 +67,14 @@ public class StatSamplerIntegrationTest {
 
   @Before
   public void setUp() {
-    this.statisticTypes = new HashMap<>();
-    this.allStatistics = new HashMap<>();
+    statisticTypes = new HashMap<>();
+    allStatistics = new HashMap<>();
   }
 
   @After
   public void tearDown() {
-    this.statisticTypes = null;
-    this.allStatistics = null;
+    statisticTypes = null;
+    allStatistics = null;
     StatisticsTypeFactoryImpl.clear();
     StatArchiveWriter.clearTraceFilter();
   }
@@ -293,11 +293,11 @@ public class StatSamplerIntegrationTest {
         continue;
       }
 
-      String expectedStatsType = this.statisticTypes.get(resourceName);
+      String expectedStatsType = statisticTypes.get(resourceName);
       assertNotNull(expectedStatsType);
       assertEquals(expectedStatsType, ri.getType().getName());
 
-      Map<String, Number> expectedStatValues = this.allStatistics.get(resourceName);
+      Map<String, Number> expectedStatValues = allStatistics.get(resourceName);
       assertNotNull(expectedStatValues);
 
       StatValue[] statValues = ri.getStatValues();
@@ -337,8 +337,8 @@ public class StatSamplerIntegrationTest {
     Map<String, Number> statValues = getOrCreateExpectedValueMap(statistics);
     statistics.incDouble(stat, value);
     statValues.put(stat, statistics.getDouble(stat));
-    if (this.statisticTypes.get(statistics.getTextId()) == null) {
-      this.statisticTypes.put(statistics.getTextId(), statistics.getType().getName());
+    if (statisticTypes.get(statistics.getTextId()) == null) {
+      statisticTypes.put(statistics.getTextId(), statistics.getType().getName());
     }
   }
 
@@ -347,13 +347,13 @@ public class StatSamplerIntegrationTest {
     Map<String, Number> statValues = getOrCreateExpectedValueMap(statistics);
     statistics.incInt(stat, value);
     statValues.put(stat, statistics.getInt(stat));
-    if (this.statisticTypes.get(statistics.getTextId()) == null) {
-      this.statisticTypes.put(statistics.getTextId(), statistics.getType().getName());
+    if (statisticTypes.get(statistics.getTextId()) == null) {
+      statisticTypes.put(statistics.getTextId(), statistics.getType().getName());
     }
   }
 
   private Map<String, Number> getOrCreateExpectedValueMap(final Statistics statistics) {
-    return this.allStatistics.computeIfAbsent(statistics.getTextId(), k -> new HashMap<>());
+    return allStatistics.computeIfAbsent(statistics.getTextId(), k -> new HashMap<>());
   }
 
   private void incLong(Statistics statistics, String stat, long value) {
@@ -361,8 +361,8 @@ public class StatSamplerIntegrationTest {
     Map<String, Number> statValues = getOrCreateExpectedValueMap(statistics);
     statistics.incLong(stat, value);
     statValues.put(stat, statistics.getLong(stat));
-    if (this.statisticTypes.get(statistics.getTextId()) == null) {
-      this.statisticTypes.put(statistics.getTextId(), statistics.getType().getName());
+    if (statisticTypes.get(statistics.getTextId()) == null) {
+      statisticTypes.put(statistics.getTextId(), statistics.getType().getName());
     }
   }
 }

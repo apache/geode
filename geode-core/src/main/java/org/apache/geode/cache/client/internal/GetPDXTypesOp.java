@@ -52,7 +52,7 @@ public class GetPDXTypesOp {
       Part part = msg.getPart(0);
       int msgType = msg.getMessageType();
       if (msgType == MessageType.RESPONSE) {
-        return (Map<Integer, PdxType>) part.getObject();
+        return part.getObject();
 
       } else {
         if (msgType == MessageType.EXCEPTION) {

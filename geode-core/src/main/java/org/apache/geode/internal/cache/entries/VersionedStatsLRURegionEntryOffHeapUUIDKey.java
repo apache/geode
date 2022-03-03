@@ -111,8 +111,8 @@ public class VersionedStatsLRURegionEntryOffHeapUUIDKey
       final UUID key, @Retained final Object value) {
     super(context, value);
     // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-    this.keyMostSigBits = key.getMostSignificantBits();
-    this.keyLeastSigBits = key.getLeastSignificantBits();
+    keyMostSigBits = key.getMostSignificantBits();
+    keyLeastSigBits = key.getLeastSignificantBits();
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
@@ -172,7 +172,7 @@ public class VersionedStatsLRURegionEntryOffHeapUUIDKey
 
   @Override
   public int getEntryHash() {
-    return this.hash;
+    return hash;
   }
 
   @Override
@@ -182,7 +182,7 @@ public class VersionedStatsLRURegionEntryOffHeapUUIDKey
 
   @Override
   public HashEntry<Object, Object> getNextEntry() {
-    return this.nextEntry;
+    return nextEntry;
   }
 
   @Override
@@ -259,7 +259,7 @@ public class VersionedStatsLRURegionEntryOffHeapUUIDKey
 
   @Override
   public EvictionNode next() {
-    return this.nextEvictionNode;
+    return nextEvictionNode;
   }
 
   @Override
@@ -269,12 +269,12 @@ public class VersionedStatsLRURegionEntryOffHeapUUIDKey
 
   @Override
   public EvictionNode previous() {
-    return this.previousEvictionNode;
+    return previousEvictionNode;
   }
 
   @Override
   public int getEntrySize() {
-    return this.size;
+    return size;
   }
 
   protected void setEntrySize(final int size) {
@@ -310,7 +310,7 @@ public class VersionedStatsLRURegionEntryOffHeapUUIDKey
 
   @Override
   public long getLastAccessed() throws InternalStatisticsDisabledException {
-    return this.lastAccessed;
+    return lastAccessed;
   }
 
   @Override
@@ -320,12 +320,12 @@ public class VersionedStatsLRURegionEntryOffHeapUUIDKey
 
   @Override
   public long getHitCount() throws InternalStatisticsDisabledException {
-    return this.hitCount & 0xFFFFFFFFL;
+    return hitCount & 0xFFFFFFFFL;
   }
 
   @Override
   public long getMissCount() throws InternalStatisticsDisabledException {
-    return this.missCount & 0xFFFFFFFFL;
+    return missCount & 0xFFFFFFFFL;
   }
 
   private void incrementHitCount() {
@@ -347,8 +347,8 @@ public class VersionedStatsLRURegionEntryOffHeapUUIDKey
   public void txDidDestroy(long timeStamp) {
     setLastModified(timeStamp);
     setLastAccessed(timeStamp);
-    this.hitCount = 0;
-    this.missCount = 0;
+    hitCount = 0;
+    missCount = 0;
   }
 
   @Override
@@ -380,25 +380,25 @@ public class VersionedStatsLRURegionEntryOffHeapUUIDKey
 
   @Override
   public VersionSource getMemberID() {
-    return this.memberId;
+    return memberId;
   }
 
   @Override
   public int getDistributedSystemId() {
-    return this.distributedSystemId;
+    return distributedSystemId;
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   public void setVersions(final VersionTag versionTag) {
-    this.memberId = versionTag.getMemberID();
+    memberId = versionTag.getMemberID();
     int eVersion = versionTag.getEntryVersion();
-    this.entryVersionLowBytes = (short) (eVersion & 0xffff);
-    this.entryVersionHighByte = (byte) ((eVersion & 0xff0000) >> 16);
-    this.regionVersionHighBytes = versionTag.getRegionVersionHighBytes();
-    this.regionVersionLowBytes = versionTag.getRegionVersionLowBytes();
+    entryVersionLowBytes = (short) (eVersion & 0xffff);
+    entryVersionHighByte = (byte) ((eVersion & 0xff0000) >> 16);
+    regionVersionHighBytes = versionTag.getRegionVersionHighBytes();
+    regionVersionLowBytes = versionTag.getRegionVersionLowBytes();
     if (!versionTag.isGatewayTag()
-        && this.distributedSystemId == versionTag.getDistributedSystemId()) {
+        && distributedSystemId == versionTag.getDistributedSystemId()) {
       if (getVersionTimeStamp() <= versionTag.getVersionTimeStamp()) {
         setVersionTimeStamp(versionTag.getVersionTimeStamp());
       } else {
@@ -407,7 +407,7 @@ public class VersionedStatsLRURegionEntryOffHeapUUIDKey
     } else {
       setVersionTimeStamp(versionTag.getVersionTimeStamp());
     }
-    this.distributedSystemId = (byte) (versionTag.getDistributedSystemId() & 0xff);
+    distributedSystemId = (byte) (versionTag.getDistributedSystemId() & 0xff);
   }
 
   @Override
@@ -425,9 +425,9 @@ public class VersionedStatsLRURegionEntryOffHeapUUIDKey
   public VersionTag asVersionTag() {
     VersionTag tag = VersionTag.create(memberId);
     tag.setEntryVersion(getEntryVersion());
-    tag.setRegionVersion(this.regionVersionHighBytes, this.regionVersionLowBytes);
+    tag.setRegionVersion(regionVersionHighBytes, regionVersionLowBytes);
     tag.setVersionTimeStamp(getVersionTimeStamp());
-    tag.setDistributedSystemId(this.distributedSystemId);
+    tag.setDistributedSystemId(distributedSystemId);
     return tag;
   }
 
@@ -448,28 +448,28 @@ public class VersionedStatsLRURegionEntryOffHeapUUIDKey
   /** get rvv internal high byte. Used by region entries for transferring to storage */
   @Override
   public short getRegionVersionHighBytes() {
-    return this.regionVersionHighBytes;
+    return regionVersionHighBytes;
   }
 
   /** get rvv internal low bytes. Used by region entries for transferring to storage */
   @Override
   public int getRegionVersionLowBytes() {
-    return this.regionVersionLowBytes;
+    return regionVersionLowBytes;
   }
 
   // ----------------------------------------- key code -------------------------------------------
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   public Object getKey() {
-    return new UUID(this.keyMostSigBits, this.keyLeastSigBits);
+    return new UUID(keyMostSigBits, keyLeastSigBits);
   }
 
   @Override
   public boolean isKeyEqual(final Object key) {
     if (key instanceof UUID) {
       UUID uuid = (UUID) key;
-      return uuid.getLeastSignificantBits() == this.keyLeastSigBits
-          && uuid.getMostSignificantBits() == this.keyMostSigBits;
+      return uuid.getLeastSignificantBits() == keyLeastSigBits
+          && uuid.getMostSignificantBits() == keyMostSigBits;
     }
     return false;
   }

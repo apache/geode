@@ -39,7 +39,7 @@ public class OutputLine {
     return source;
   }
 
-  public static enum OutputSource {
-    STD_ERR, STD_OUT;
+  public enum OutputSource {
+    STD_ERR, STD_OUT
   }
 }

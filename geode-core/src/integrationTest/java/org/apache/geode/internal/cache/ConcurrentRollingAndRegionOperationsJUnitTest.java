@@ -48,7 +48,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
 
   @Override
   protected final void preSetUp() throws Exception {
-    this.hasBeenNotified = false;
+    hasBeenNotified = false;
   }
 
   void putBeforeRoll(final Region region) {
@@ -173,7 +173,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
   }
 
   void clearBeforeRoll(final Region region) {
-    this.hasBeenNotified = false;
+    hasBeenNotified = false;
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
 
       @Override
@@ -724,7 +724,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
         throw new AssertionError("exception not expected here", e);
       }
     }
-    if (this.totalTime < 2000) {
+    if (totalTime < 2000) {
       fail(" It should have taken more than 2000 millisecs but it took " + totalTime);
     }
     assertFalse(failureCause, testFailed);
@@ -759,24 +759,20 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
       public void beforeGoingToCompact() {
         for (int k = 0; k < TOTAL_KEYS; ++k) {
           final int num = k;
-          Thread th = new Thread(new Runnable() {
-            @Override
-            public void run() {
+          Thread th = new Thread(() -> {
 
-              byte[] val_on_disk = null;
-              try {
-                val_on_disk = (byte[]) ((LocalRegion) region).getValueOnDisk("key" + (num + 1));
-                assertTrue(
-                    "byte  array was not of right size  as its size was " + val_on_disk.length,
-                    val_on_disk.length == 100);
+            byte[] val_on_disk = null;
+            try {
+              val_on_disk = (byte[]) ((LocalRegion) region).getValueOnDisk("key" + (num + 1));
+              assertTrue(
+                  "byte  array was not of right size  as its size was " + val_on_disk.length,
+                  val_on_disk.length == 100);
 
-              } catch (Exception e) {
-                encounteredFailure = true;
-                logWriter.error("Test encountered exception ", e);
-                throw new AssertionError(
-                    " Test failed as could not obtain value from disk.Exception = ", e);
-              }
-
+            } catch (Exception e) {
+              encounteredFailure = true;
+              logWriter.error("Test encountered exception ", e);
+              throw new AssertionError(
+                  " Test failed as could not obtain value from disk.Exception = ", e);
             }
 
           });
@@ -805,8 +801,8 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
     }
 
     LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = false;
-    for (int i = 0; i < threads.size(); ++i) {
-      Thread th = (Thread) threads.get(i);
+    for (Object thread : threads) {
+      Thread th = (Thread) thread;
       if (th != null) {
         ThreadUtils.join(th, 30 * 1000);
       }
@@ -822,7 +818,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
   private volatile long totalTime = 0;
 
   protected void setTotalTime(long time) {
-    this.totalTime = time;
+    totalTime = time;
   }
 
   void closeAfterRoll(final Region region) {
@@ -856,8 +852,8 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
     }
     try {
       th.join(5000);
-    } catch (InterruptedException ignore) {
-      throw new AssertionError("exception not expected here", ignore);
+    } catch (InterruptedException e) {
+      throw new AssertionError("exception not expected here", e);
     }
     assertFalse(th.isAlive());
     assertFalse(failureCause, testFailed);
@@ -894,8 +890,8 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
     }
     try {
       th.join(5000);
-    } catch (InterruptedException ignore) {
-      throw new AssertionError("exception not expected here", ignore);
+    } catch (InterruptedException e) {
+      throw new AssertionError("exception not expected here", e);
     }
     assertFalse(th.isAlive());
     assertFalse(failureCause, testFailed);
@@ -903,7 +899,7 @@ public class ConcurrentRollingAndRegionOperationsJUnitTest extends DiskRegionTes
 
   class Close extends Thread {
 
-    private Region region;
+    private final Region region;
 
     Close(Region region) {
       this.region = region;

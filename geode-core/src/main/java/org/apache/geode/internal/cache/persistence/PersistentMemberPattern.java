@@ -150,10 +150,7 @@ public class PersistentMemberPattern implements PersistentID, Comparable<Persist
     } else if (!host.equals(other.host)) {
       return false;
     }
-    if (revokedTime != other.revokedTime) {
-      return false;
-    }
-    return true;
+    return revokedTime == other.revokedTime;
   }
 
   @Override

@@ -124,9 +124,9 @@ public final class PartitionRegionHelper {
   public static boolean isPartitionedRegion(final Region<?, ?> r) {
     if (r == null) {
       throw new IllegalArgumentException(
-          "Argument 'Region' is null".toString());
+          "Argument 'Region' is null");
     }
-    return r instanceof PartitionedRegion ? true : false;
+    return r instanceof PartitionedRegion;
   }
 
   /**
@@ -228,7 +228,7 @@ public final class PartitionRegionHelper {
   private static int getNumberOfBuckets(PartitionedRegion pr) {
     if (pr.isFixedPartitionedRegion()) {
       int numBuckets = 0;
-      Set<FixedPartitionAttributesImpl> fpaSet = new HashSet<FixedPartitionAttributesImpl>(
+      Set<FixedPartitionAttributesImpl> fpaSet = new HashSet<>(
           pr.getRegionAdvisor().adviseAllFixedPartitionAttributes());
       if (pr.getFixedPartitionAttributesImpl() != null) {
         fpaSet.addAll(pr.getFixedPartitionAttributesImpl());

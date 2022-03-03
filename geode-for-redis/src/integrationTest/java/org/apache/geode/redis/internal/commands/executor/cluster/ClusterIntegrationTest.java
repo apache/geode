@@ -36,7 +36,7 @@ public class ClusterIntegrationTest extends AbstractClusterIntegrationTest {
 
   @Test
   public void errorMessageContainsListOfSupportedSubcommands() {
-    final Jedis connection = jedis.getConnectionFromSlot(0);
+    final Jedis connection = new Jedis(jedis.getConnectionFromSlot(0));
 
     String invalidSubcommand = "subcommand";
     assertThatThrownBy(() -> connection.sendCommand(Protocol.Command.CLUSTER, invalidSubcommand))

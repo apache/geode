@@ -57,11 +57,11 @@ public class Person implements PdxSerializable {
 
   public Person(Long id, String fn, String mn, String ln, Date bDate, Gender g) {
     this.id = id;
-    this.firstName = fn;
-    this.middleName = mn;
-    this.lastName = ln;
-    this.birthDate = bDate;
-    this.gender = g;
+    firstName = fn;
+    middleName = mn;
+    lastName = ln;
+    birthDate = bDate;
+    gender = g;
   }
 
   public Long getId() {
@@ -124,10 +124,10 @@ public class Person implements PdxSerializable {
 
     final Person that = (Person) obj;
 
-    return (ObjectUtils.equals(this.getId(), that.getId())
-        || (ObjectUtils.equals(this.getBirthDate(), that.getBirthDate())
-            && ObjectUtils.equals(this.getLastName(), that.getLastName())
-            && ObjectUtils.equals(this.getFirstName(), that.getFirstName())));
+    return (ObjectUtils.equals(getId(), that.getId())
+        || (ObjectUtils.equals(getBirthDate(), that.getBirthDate())
+            && ObjectUtils.equals(getLastName(), that.getLastName())
+            && ObjectUtils.equals(getFirstName(), that.getFirstName())));
   }
 
   @Override
@@ -142,17 +142,15 @@ public class Person implements PdxSerializable {
 
   @Override
   public String toString() {
-    final StringBuilder buffer = new StringBuilder("{ type = ");
-    buffer.append(getClass().getName());
-    buffer.append(", id = ").append(getId());
-    buffer.append(", firstName = ").append(getFirstName());
-    buffer.append(", middleName = ").append(getMiddleName());
-    buffer.append(", lastName = ").append(getLastName());
-    buffer.append(", birthDate = ")
-        .append(DateTimeUtils.format(getBirthDate(), DOB_FORMAT_PATTERN));
-    buffer.append(", gender = ").append(getGender());
-    buffer.append(" }");
-    return buffer.toString();
+    return "{ type = " + getClass().getName()
+        + ", id = " + getId()
+        + ", firstName = " + getFirstName()
+        + ", middleName = " + getMiddleName()
+        + ", lastName = " + getLastName()
+        + ", birthDate = "
+        + DateTimeUtils.format(getBirthDate(), DOB_FORMAT_PATTERN)
+        + ", gender = " + getGender()
+        + " }";
   }
 
   @Override

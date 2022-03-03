@@ -98,8 +98,8 @@ public class FunctionServiceType {
    */
   public List<DeclarableType> getFunctions() {
     if (functions == null) {
-      functions = new ArrayList<DeclarableType>();
+      functions = new ArrayList<>();
     }
-    return this.functions;
+    return functions;
   }
 }

@@ -35,7 +35,7 @@ public class ClusterMemberIdNameConverter extends BaseStringConverter {
 
   @Override
   public Set<String> getCompletionValues() {
-    final Set<String> memberIdsAndNames = new TreeSet<String>();
+    final Set<String> memberIdsAndNames = new TreeSet<>();
 
     final Gfsh gfsh = Gfsh.getCurrentInstance();
 

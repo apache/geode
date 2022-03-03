@@ -93,7 +93,7 @@ public interface InternalLogWriter extends LogWriter, LogWriterI18n {
   int NONE_LEVEL = Integer.MAX_VALUE;
 
   @Immutable
-  public List<String> levelNames = Collections
+  List<String> levelNames = Collections
       .unmodifiableList(Arrays.asList("all", "finest", "finer", "fine", "config", "info", "warning",
           "error", "severe", "none"));
 

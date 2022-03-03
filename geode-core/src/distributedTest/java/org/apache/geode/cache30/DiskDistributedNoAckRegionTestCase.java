@@ -24,16 +24,16 @@ public abstract class DiskDistributedNoAckRegionTestCase extends DistributedNoAc
 
   @Override
   public final void postSetUp() throws Exception {
-    this.regionTestImpl = new DiskRegionTestImpl(this);
+    regionTestImpl = new DiskRegionTestImpl(this);
   }
 
   @Test
   public void testCreateDiskRegion() throws CacheException {
-    this.regionTestImpl.testCreateDiskRegion();
+    regionTestImpl.testCreateDiskRegion();
   }
 
   @Test
   public void testBackupFillInValues() throws CacheException {
-    this.regionTestImpl.testBackupFillValues();
+    regionTestImpl.testBackupFillValues();
   }
 }

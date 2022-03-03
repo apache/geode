@@ -217,7 +217,7 @@ public class PRColocatedEquiJoinDUnitTest extends CacheTestCase {
 
         String[] queries = new String[] {"r1.ID = r2.id",};
 
-        Object r[][] = new Object[queries.length][2];
+        Object[][] r = new Object[queries.length][2];
         Region region = null;
         region = cache.getRegion(name);
         assertNotNull(region);
@@ -751,7 +751,7 @@ public class PRColocatedEquiJoinDUnitTest extends CacheTestCase {
 
       String[] queries = new String[] {"r1.ID = r2.id",};
 
-      Object r[][] = new Object[queries.length][2];
+      Object[][] r = new Object[queries.length][2];
       assertNotNull(cache.getRegion(name));
       assertNotNull(cache.getRegion(coloName));
       assertNotNull(cache.getRegion(localName));
@@ -969,7 +969,7 @@ public class PRColocatedEquiJoinDUnitTest extends CacheTestCase {
 
       String[] queries = new String[] {"r1.ID = r2.id",};
 
-      Object r[][] = new Object[queries.length][2];
+      Object[][] r = new Object[queries.length][2];
       Region region = null;
       region = cache.getRegion(name);
       assertNotNull(region);
@@ -1041,7 +1041,7 @@ public class PRColocatedEquiJoinDUnitTest extends CacheTestCase {
       try {
         Query query = queryService.newQuery(qstr);
         context.getResultSender().sendResult(
-            (ArrayList) ((SelectResults) query.execute((RegionFunctionContext) context)).asList());
+            ((SelectResults) query.execute((RegionFunctionContext) context)).asList());
         context.getResultSender().lastResult(null);
       } catch (Exception e) {
         throw new FunctionException(e);
@@ -1050,7 +1050,7 @@ public class PRColocatedEquiJoinDUnitTest extends CacheTestCase {
 
     @Override
     public String getId() {
-      return this.id;
+      return id;
     }
 
     @Override

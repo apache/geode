@@ -29,7 +29,7 @@ public class DistTxKeyInfo extends KeyInfo {
 
   public DistTxKeyInfo(DistTxKeyInfo other) {
     super(other);
-    this.checkPrimary = other.checkPrimary;
+    checkPrimary = other.checkPrimary;
   }
 
   public DistTxKeyInfo(KeyInfo other) {

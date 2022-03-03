@@ -100,7 +100,7 @@ public class PutAllWithIndexPerfDUnitTest extends JUnit4CacheTestCase {
     });
 
     // Create client region
-    final int port = vm0.invoke(() -> PutAllWithIndexPerfDUnitTest.getCacheServerPort());
+    final int port = vm0.invoke(PutAllWithIndexPerfDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
     vm1.invoke(new CacheSerializableRunnable("Create region") {
       @Override

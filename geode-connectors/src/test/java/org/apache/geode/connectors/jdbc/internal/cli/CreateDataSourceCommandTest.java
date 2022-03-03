@@ -59,7 +59,7 @@ public class CreateDataSourceCommandTest {
   JndiBindingsType.JndiBinding binding;
   List<JndiBindingsType.JndiBinding> bindings;
 
-  private static String COMMAND = "create data-source ";
+  private static final String COMMAND = "create data-source ";
 
   @Before
   public void setUp() {

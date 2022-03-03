@@ -14,6 +14,9 @@
  */
 package org.apache.geode.redis.internal.commands.executor.string;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
+import static org.apache.geode.redis.internal.RedisConstants.WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND;
+import static org.apache.geode.redis.internal.RedisConstants.WRONG_NUMBER_OF_ARGUMENTS_FOR_MSET;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,29 +52,28 @@ public abstract class AbstractMSetIntegrationTest implements RedisIntegrationTes
   @Test
   public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
     assertThatThrownBy(() -> jedis.sendCommand("any", Protocol.Command.MSET))
-        .hasMessageContaining("ERR wrong number of arguments for 'mset' command");
+        .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "mset"));
   }
 
   @Test
   public void givenValueNotProvided_returnsWrongNumberOfArgumentsError() {
     assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.MSET, "key"))
-        .hasMessageContaining("ERR wrong number of arguments for 'mset' command");
+        .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "mset"));
   }
 
   @Test
   public void givenEvenNumberOfArgumentsProvided_returnsWrongNumberOfArgumentsError() {
-    // Redis returns this message in this scenario: "ERR wrong number of arguments for MSET"
     assertThatThrownBy(
         () -> jedis.sendCommand(HASHTAG, Protocol.Command.MSET, "key1" + HASHTAG, "value1",
             "key2" + HASHTAG, "value2", "key3" + HASHTAG))
-                .hasMessageContaining("ERR wrong number of arguments");
+                .hasMessage(WRONG_NUMBER_OF_ARGUMENTS_FOR_MSET);
   }
 
   @Test
   public void givenDifferentSlots_returnsError() {
     assertThatThrownBy(
         () -> jedis.sendCommand("key1", Protocol.Command.MSET, "key1", "value1", "key2", "value2"))
-            .hasMessageContaining("CROSSSLOT Keys in request don't hash to the same slot");
+            .hasMessage(ERROR_WRONG_SLOT);
   }
 
   @Test

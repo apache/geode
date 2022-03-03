@@ -72,7 +72,7 @@ public class EntryExpiryTask extends ExpiryTask {
   }
 
   protected RegionEntry getRegionEntry() {
-    return this.re;
+    return re;
   }
 
   /**
@@ -83,7 +83,7 @@ public class EntryExpiryTask extends ExpiryTask {
    *         it has is removed.
    */
   protected RegionEntry getCheckedRegionEntry() throws EntryNotFoundException {
-    RegionEntry result = this.re;
+    RegionEntry result = re;
     if (re == null || re.isDestroyedOrRemoved()) {
       throw new EntryNotFoundException("expiration task no longer has access to region entry");
     }
@@ -226,7 +226,7 @@ public class EntryExpiryTask extends ExpiryTask {
     // so the next call to addExpiryTaskIfAbsent will
     // add a new task instead of doing nothing, which would
     // erroneously cancel expiration for this key.
-    getLocalRegion().cancelExpiryTask(this.re, this);
+    getLocalRegion().cancelExpiryTask(re, this);
     getLocalRegion().performExpiryTimeout(this);
   }
 
@@ -243,10 +243,7 @@ public class EntryExpiryTask extends ExpiryTask {
     if (action == null) {
       return false;
     }
-    if ((action.isInvalidate() || action.isLocalInvalidate()) && re.isInvalid()) {
-      return false;
-    }
-    return true;
+    return (!action.isInvalidate() && !action.isLocalInvalidate()) || !re.isInvalid();
   }
 
   @Override
@@ -352,7 +349,7 @@ public class EntryExpiryTask extends ExpiryTask {
 
   @Override
   public Object getKey() {
-    RegionEntry entry = this.re;
+    RegionEntry entry = re;
     if (entry == null) {
       throw new EntryDestroyedException();
     }
@@ -363,7 +360,7 @@ public class EntryExpiryTask extends ExpiryTask {
   public boolean cancel() {
     boolean superCancel = super.cancel();
     if (superCancel) {
-      this.re = null;
+      re = null;
       if (expiryTaskListener != null) {
         expiryTaskListener.afterCancel(this);
       }

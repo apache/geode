@@ -33,6 +33,6 @@ public class LuceneDestroyIndexInfo extends LuceneFunctionSerializable {
   }
 
   public boolean isDefinedDestroyOnly() {
-    return this.definedDestroyOnly;
+    return definedDestroyOnly;
   }
 }

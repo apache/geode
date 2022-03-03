@@ -221,7 +221,7 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
     getBlackboard().initBlackboard();
 
     vm1.invoke(() -> cacheRule.createCache());
-    vm0.invoke(() -> createSyncDiskRegion()); // Sync region to get the data written to disk.
+    vm0.invoke(this::createSyncDiskRegion); // Sync region to get the data written to disk.
 
     vm0.invoke(() -> {
       Region<String, String> region = cacheRule.getCache().getRegion(regionName);
@@ -279,7 +279,7 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
     getBlackboard().initBlackboard();
 
     vm1.invoke(() -> cacheRule.createCache());
-    vm0.invoke(() -> createSyncDiskRegion());
+    vm0.invoke(this::createSyncDiskRegion);
 
     vm0.invoke(() -> {
       Region<String, String> region = cacheRule.getCache().getRegion(regionName);
@@ -293,7 +293,7 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
               getBlackboard()));
     });
 
-    AsyncInvocation asyncVM1 = vm1.invokeAsync(() -> createSyncDiskRegion());
+    AsyncInvocation asyncVM1 = vm1.invokeAsync(this::createSyncDiskRegion);
 
     logger.info("##### After async create region in vm1");
 
@@ -309,11 +309,11 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
 
     logger.info("##### After asyncvm1 join");
 
-    asyncVM1 = vm1.invokeAsync(() -> createSyncDiskRegion());
+    asyncVM1 = vm1.invokeAsync(this::createSyncDiskRegion);
 
     logger.info("##### After create region in vm1");
 
-    vm0.invoke(() -> createSyncDiskRegion());
+    vm0.invoke(this::createSyncDiskRegion);
 
     asyncVM1.join();
 
@@ -419,7 +419,7 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
 
     vm0.bounceForcibly();
 
-    vm1.invoke(() -> flushAsyncDiskRegion());
+    vm1.invoke(this::flushAsyncDiskRegion);
 
     vm1.invoke(() -> {
       DistributionMessageObserver.setInstance(
@@ -470,7 +470,7 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
   @Test
   public void verifyPersistentRecoveryIncrementsNumOverflowBytesOnDisk() {
     // Create cache and persistent region
-    vm0.invoke(() -> createSyncDiskRegion());
+    vm0.invoke(this::createSyncDiskRegion);
 
     // Add entries
     int numEntries = 10;

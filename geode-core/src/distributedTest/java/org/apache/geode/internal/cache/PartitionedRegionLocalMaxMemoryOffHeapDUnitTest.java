@@ -39,7 +39,7 @@ public class PartitionedRegionLocalMaxMemoryOffHeapDUnitTest
   @Override
   public final void preTearDownAssertions() throws Exception {
     checkOrphans();
-    invokeInEveryVM(() -> checkOrphans());
+    invokeInEveryVM(this::checkOrphans);
   }
 
   private void checkOrphans() {

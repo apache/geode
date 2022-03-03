@@ -15,6 +15,8 @@
 
 package org.apache.geode.redis.internal.commands.executor.server;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -30,16 +32,21 @@ import java.util.stream.Stream;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.RedisTestHelper;
+import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractInfoIntegrationTest implements RedisIntegrationTest {
 
+  private static final String KEY = "key";
   private static final String KEYSPACE_START = "db0";
+  protected JedisCluster jedisCluster;
   protected Jedis jedis;
   private static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
@@ -114,18 +121,20 @@ public abstract class AbstractInfoIntegrationTest implements RedisIntegrationTes
 
   @Before
   public void setUp() {
-    jedis = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
+    jedisCluster = new JedisCluster(new HostAndPort(BIND_ADDRESS, getPort()), REDIS_CLIENT_TIMEOUT);
+    jedis = new Jedis(jedisCluster.getConnectionFromSlot(new RedisKey(KEY.getBytes()).getSlot()));
   }
 
   @After
   public void tearDown() {
     jedis.flushAll();
     jedis.close();
+    jedisCluster.close();
   }
 
   @Test
   public void shouldReturnRedisMode() {
-    String expectedResult = "redis_mode:standalone";
+    String expectedResult = "redis_mode:cluster";
 
     String actualResult = jedis.info();
 
@@ -143,7 +152,7 @@ public abstract class AbstractInfoIntegrationTest implements RedisIntegrationTes
 
   @Test
   public void shouldReturnClusterEnabledProperty() {
-    String expectedResult = "cluster_enabled:0";
+    String expectedResult = "cluster_enabled:1";
 
     String actualResult = jedis.info();
 
@@ -281,6 +290,6 @@ public abstract class AbstractInfoIntegrationTest implements RedisIntegrationTes
   public void shouldThrowException_ifGivenMoreThanOneParameter() {
     assertThatThrownBy(
         () -> jedis.sendCommand(
-            Protocol.Command.INFO, "Server", "Cluster")).hasMessageContaining("ERR syntax error");
+            Protocol.Command.INFO, "Server", "Cluster")).hasMessage(ERROR_SYNTAX);
   }
 }

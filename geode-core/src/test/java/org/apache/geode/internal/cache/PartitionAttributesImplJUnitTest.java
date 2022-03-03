@@ -74,23 +74,23 @@ public class PartitionAttributesImplJUnitTest {
 
   @Before
   public void before() {
-    this.colocatedRegionFullPath = "colocatedRegionFullPath";
+    colocatedRegionFullPath = "colocatedRegionFullPath";
 
-    this.globalProps = new Properties();
-    this.globalProps_key1 = "globalProps_key1";
-    this.globalProps_value1 = "globalProps_value1";
-    this.globalProps.setProperty(globalProps_key1, this.globalProps_value1);
+    globalProps = new Properties();
+    globalProps_key1 = "globalProps_key1";
+    globalProps_value1 = "globalProps_value1";
+    globalProps.setProperty(globalProps_key1, globalProps_value1);
 
-    this.localProps = new Properties();
-    this.localProps_key1 = "localProps_key1";
-    this.localProps_value1 = "localProps_value1";
-    this.localProps.setProperty(localProps_key1, this.localProps_value1);
+    localProps = new Properties();
+    localProps_key1 = "localProps_key1";
+    localProps_value1 = "localProps_value1";
+    localProps.setProperty(localProps_key1, localProps_value1);
 
-    this.localMaxMemory = 123;
-    this.offHeap = false;
-    this.cache = Fakes.cache();
+    localMaxMemory = 123;
+    offHeap = false;
+    cache = Fakes.cache();
 
-    this.partitionResolver = new PartitionResolver<Object, Object>() {
+    partitionResolver = new PartitionResolver<Object, Object>() {
       @Override
       public void close() {}
 
@@ -105,16 +105,16 @@ public class PartitionAttributesImplJUnitTest {
       }
     };
 
-    this.recoveryDelay = 234;
-    this.redundancy = 345;
-    this.startupRecoveryDelay = 456;
-    this.totalMaxMemory = 567;
-    this.maxNumberOfBuckets = 678;
+    recoveryDelay = 234;
+    redundancy = 345;
+    startupRecoveryDelay = 456;
+    totalMaxMemory = 567;
+    maxNumberOfBuckets = 678;
 
-    this.newTestAvailableOffHeapMemory = 789;
-    this.greaterLocalMaxMemory = 890;
+    newTestAvailableOffHeapMemory = 789;
+    greaterLocalMaxMemory = 890;
 
-    this.partitionListener = new PartitionListener() {
+    partitionListener = new PartitionListener() {
       @Override
       public void afterPrimary(int bucketId) {}
 
@@ -132,87 +132,87 @@ public class PartitionAttributesImplJUnitTest {
   @Test
   public void testSetters() {
     PartitionAttributesImpl instance = createPartitionAttributesImpl();
-    instance.setLocalMaxMemory(this.localMaxMemory);
+    instance.setLocalMaxMemory(localMaxMemory);
 
-    assertEquals(this.colocatedRegionFullPath, instance.getColocatedWith());
-    assertEquals(this.globalProps, instance.getGlobalProperties());
-    assertEquals(this.localMaxMemory, instance.getLocalMaxMemory());
-    assertEquals(this.localProps, instance.getLocalProperties());
-    assertEquals(this.offHeap, instance.getOffHeap());
-    assertEquals(this.partitionResolver, instance.getPartitionResolver());
-    assertEquals(this.recoveryDelay, instance.getRecoveryDelay());
-    assertEquals(this.redundancy, instance.getRedundancy());
-    assertEquals(this.startupRecoveryDelay, instance.getStartupRecoveryDelay());
-    assertEquals(this.totalMaxMemory, instance.getTotalMaxMemory());
-    assertEquals(this.maxNumberOfBuckets, instance.getTotalNumBuckets());
+    assertEquals(colocatedRegionFullPath, instance.getColocatedWith());
+    assertEquals(globalProps, instance.getGlobalProperties());
+    assertEquals(localMaxMemory, instance.getLocalMaxMemory());
+    assertEquals(localProps, instance.getLocalProperties());
+    assertEquals(offHeap, instance.getOffHeap());
+    assertEquals(partitionResolver, instance.getPartitionResolver());
+    assertEquals(recoveryDelay, instance.getRecoveryDelay());
+    assertEquals(redundancy, instance.getRedundancy());
+    assertEquals(startupRecoveryDelay, instance.getStartupRecoveryDelay());
+    assertEquals(totalMaxMemory, instance.getTotalMaxMemory());
+    assertEquals(maxNumberOfBuckets, instance.getTotalNumBuckets());
   }
 
   @Test
   public void testMergeWithoutOffHeap() {
     PartitionAttributesImpl instance = createPartitionAttributesImpl();
-    instance.setLocalMaxMemory(this.localMaxMemory);
+    instance.setLocalMaxMemory(localMaxMemory);
 
     PartitionAttributesImpl destination = new PartitionAttributesImpl();
     destination.merge(instance);
 
-    assertEquals(this.colocatedRegionFullPath, destination.getColocatedWith());
+    assertEquals(colocatedRegionFullPath, destination.getColocatedWith());
     // assertIndexDetailsEquals(this.globalProps, destination.getGlobalProperties());
     // assertIndexDetailsEquals(this.localProps, destination.getLocalProperties());
-    assertEquals(this.partitionResolver, destination.getPartitionResolver());
-    assertEquals(this.recoveryDelay, destination.getRecoveryDelay());
-    assertEquals(this.redundancy, destination.getRedundancy());
-    assertEquals(this.startupRecoveryDelay, destination.getStartupRecoveryDelay());
-    assertEquals(this.totalMaxMemory, destination.getTotalMaxMemory());
-    assertEquals(this.maxNumberOfBuckets, destination.getTotalNumBuckets());
+    assertEquals(partitionResolver, destination.getPartitionResolver());
+    assertEquals(recoveryDelay, destination.getRecoveryDelay());
+    assertEquals(redundancy, destination.getRedundancy());
+    assertEquals(startupRecoveryDelay, destination.getStartupRecoveryDelay());
+    assertEquals(totalMaxMemory, destination.getTotalMaxMemory());
+    assertEquals(maxNumberOfBuckets, destination.getTotalNumBuckets());
   }
 
   @Test
   public void testCloneWithoutOffHeap() {
     PartitionAttributesImpl instance = createPartitionAttributesImpl();
-    instance.setLocalMaxMemory(this.localMaxMemory);
+    instance.setLocalMaxMemory(localMaxMemory);
 
     PartitionAttributesImpl clone = (PartitionAttributesImpl) instance.clone();
     assertGetValues(clone);
-    assertEquals(this.localMaxMemory, instance.getLocalMaxMemory());
-    assertEquals(this.offHeap, instance.getOffHeap());
+    assertEquals(localMaxMemory, instance.getLocalMaxMemory());
+    assertEquals(offHeap, instance.getOffHeap());
   }
 
   @Test
   public void testCloneWithOffHeapAndDefaultLocalMaxMemory() {
-    PartitionAttributesImpl.setTestAvailableOffHeapMemory(this.newTestAvailableOffHeapMemory + "m");
-    this.offHeap = true;
+    PartitionAttributesImpl.setTestAvailableOffHeapMemory(newTestAvailableOffHeapMemory + "m");
+    offHeap = true;
     PartitionAttributesImpl instance = createPartitionAttributesImpl();
 
     PartitionAttributesImpl clone = (PartitionAttributesImpl) instance.clone();
     assertGetValues(clone);
-    assertEquals(this.newTestAvailableOffHeapMemory, instance.getLocalMaxMemory());
-    assertEquals(this.offHeap, instance.getOffHeap());
+    assertEquals(newTestAvailableOffHeapMemory, instance.getLocalMaxMemory());
+    assertEquals(offHeap, instance.getOffHeap());
   }
 
   @Test
   public void testCloneWithOffHeapAndLesserLocalMaxMemory() {
-    PartitionAttributesImpl.setTestAvailableOffHeapMemory(this.newTestAvailableOffHeapMemory + "m");
-    this.offHeap = true;
+    PartitionAttributesImpl.setTestAvailableOffHeapMemory(newTestAvailableOffHeapMemory + "m");
+    offHeap = true;
     PartitionAttributesImpl instance = createPartitionAttributesImpl();
-    instance.setLocalMaxMemory(this.localMaxMemory);
+    instance.setLocalMaxMemory(localMaxMemory);
 
     PartitionAttributesImpl clone = (PartitionAttributesImpl) instance.clone();
     assertGetValues(clone);
-    assertEquals(this.localMaxMemory, instance.getLocalMaxMemory());
-    assertEquals(this.offHeap, instance.getOffHeap());
+    assertEquals(localMaxMemory, instance.getLocalMaxMemory());
+    assertEquals(offHeap, instance.getOffHeap());
   }
 
   @Test
   public void testCloneWithOffHeapAndGreaterLocalMaxMemory() {
-    PartitionAttributesImpl.setTestAvailableOffHeapMemory(this.newTestAvailableOffHeapMemory + "m");
-    this.offHeap = true;
+    PartitionAttributesImpl.setTestAvailableOffHeapMemory(newTestAvailableOffHeapMemory + "m");
+    offHeap = true;
     PartitionAttributesImpl instance = createPartitionAttributesImpl();
-    instance.setLocalMaxMemory(this.greaterLocalMaxMemory);
+    instance.setLocalMaxMemory(greaterLocalMaxMemory);
 
     PartitionAttributesImpl clone = (PartitionAttributesImpl) instance.clone();
     assertGetValues(clone);
-    assertEquals(this.greaterLocalMaxMemory, instance.getLocalMaxMemory());
-    assertEquals(this.offHeap, instance.getOffHeap());
+    assertEquals(greaterLocalMaxMemory, instance.getLocalMaxMemory());
+    assertEquals(offHeap, instance.getOffHeap());
   }
 
   @Test
@@ -288,25 +288,25 @@ public class PartitionAttributesImplJUnitTest {
   @Test
   public void testSetAllWithOffHeapAndDefaultLocalMaxMemory() {
     PartitionAttributesImpl source = new PartitionAttributesImpl();
-    source.setColocatedWith(this.colocatedRegionFullPath);
+    source.setColocatedWith(colocatedRegionFullPath);
 
-    this.fixedPartitionAttributes = new FixedPartitionAttributesImpl();
-    this.fixedPartitionAttributes.setPartitionName("setPartitionName");
-    source.addFixedPartitionAttributes(this.fixedPartitionAttributes);
+    fixedPartitionAttributes = new FixedPartitionAttributesImpl();
+    fixedPartitionAttributes.setPartitionName("setPartitionName");
+    source.addFixedPartitionAttributes(fixedPartitionAttributes);
 
     // with Default LocalMaxMemory
     // source.setLocalMaxMemory(this.localMaxMemory);
 
     // with OffHeap
-    this.offHeap = true;
-    source.setOffHeap(this.offHeap);
+    offHeap = true;
+    source.setOffHeap(offHeap);
 
-    source.setPartitionResolver(this.partitionResolver);
-    source.setRecoveryDelay(this.recoveryDelay);
-    source.setRedundantCopies(this.redundancy);
-    source.setStartupRecoveryDelay(this.startupRecoveryDelay);
-    source.setTotalMaxMemory(this.totalMaxMemory);
-    source.setTotalNumBuckets(this.maxNumberOfBuckets);
+    source.setPartitionResolver(partitionResolver);
+    source.setRecoveryDelay(recoveryDelay);
+    source.setRedundantCopies(redundancy);
+    source.setStartupRecoveryDelay(startupRecoveryDelay);
+    source.setTotalMaxMemory(totalMaxMemory);
+    source.setTotalNumBuckets(maxNumberOfBuckets);
 
     PartitionAttributesImpl instance = new PartitionAttributesImpl();
     instance.setAll(source);
@@ -319,11 +319,11 @@ public class PartitionAttributesImplJUnitTest {
   @Test
   public void testSetAllWithoutOffHeapAndDefaultLocalMaxMemory() {
     PartitionAttributesImpl source = new PartitionAttributesImpl();
-    source.setColocatedWith(this.colocatedRegionFullPath);
+    source.setColocatedWith(colocatedRegionFullPath);
 
-    this.fixedPartitionAttributes = new FixedPartitionAttributesImpl();
-    this.fixedPartitionAttributes.setPartitionName("setPartitionName");
-    source.addFixedPartitionAttributes(this.fixedPartitionAttributes);
+    fixedPartitionAttributes = new FixedPartitionAttributesImpl();
+    fixedPartitionAttributes.setPartitionName("setPartitionName");
+    source.addFixedPartitionAttributes(fixedPartitionAttributes);
 
     // with Default LocalMaxMemory
     // source.setLocalMaxMemory(this.localMaxMemory);
@@ -332,12 +332,12 @@ public class PartitionAttributesImplJUnitTest {
     // this.offHeap = true;
     // source.setOffHeap(this.offHeap);
 
-    source.setPartitionResolver(this.partitionResolver);
-    source.setRecoveryDelay(this.recoveryDelay);
-    source.setRedundantCopies(this.redundancy);
-    source.setStartupRecoveryDelay(this.startupRecoveryDelay);
-    source.setTotalMaxMemory(this.totalMaxMemory);
-    source.setTotalNumBuckets(this.maxNumberOfBuckets);
+    source.setPartitionResolver(partitionResolver);
+    source.setRecoveryDelay(recoveryDelay);
+    source.setRedundantCopies(redundancy);
+    source.setStartupRecoveryDelay(startupRecoveryDelay);
+    source.setTotalMaxMemory(totalMaxMemory);
+    source.setTotalNumBuckets(maxNumberOfBuckets);
 
     PartitionAttributesImpl instance = new PartitionAttributesImpl();
     instance.setAll(source);
@@ -349,25 +349,25 @@ public class PartitionAttributesImplJUnitTest {
   @Test
   public void testSetAllWithoutOffHeapAndNonDefaultLocalMaxMemory() {
     PartitionAttributesImpl source = new PartitionAttributesImpl();
-    source.setColocatedWith(this.colocatedRegionFullPath);
+    source.setColocatedWith(colocatedRegionFullPath);
 
-    this.fixedPartitionAttributes = new FixedPartitionAttributesImpl();
-    this.fixedPartitionAttributes.setPartitionName("setPartitionName");
-    source.addFixedPartitionAttributes(this.fixedPartitionAttributes);
+    fixedPartitionAttributes = new FixedPartitionAttributesImpl();
+    fixedPartitionAttributes.setPartitionName("setPartitionName");
+    source.addFixedPartitionAttributes(fixedPartitionAttributes);
 
     // with NonDefault LocalMaxMemory
-    source.setLocalMaxMemory(this.localMaxMemory);
+    source.setLocalMaxMemory(localMaxMemory);
 
     // without OffHeap
     // this.offHeap = true;
     // source.setOffHeap(this.offHeap);
 
-    source.setPartitionResolver(this.partitionResolver);
-    source.setRecoveryDelay(this.recoveryDelay);
-    source.setRedundantCopies(this.redundancy);
-    source.setStartupRecoveryDelay(this.startupRecoveryDelay);
-    source.setTotalMaxMemory(this.totalMaxMemory);
-    source.setTotalNumBuckets(this.maxNumberOfBuckets);
+    source.setPartitionResolver(partitionResolver);
+    source.setRecoveryDelay(recoveryDelay);
+    source.setRedundantCopies(redundancy);
+    source.setStartupRecoveryDelay(startupRecoveryDelay);
+    source.setTotalMaxMemory(totalMaxMemory);
+    source.setTotalNumBuckets(maxNumberOfBuckets);
 
     PartitionAttributesImpl instance = new PartitionAttributesImpl();
     instance.setAll(source);
@@ -379,25 +379,25 @@ public class PartitionAttributesImplJUnitTest {
   @Test
   public void testSetAllWithOffHeapAndNonDefaultLocalMaxMemory() {
     PartitionAttributesImpl source = new PartitionAttributesImpl();
-    source.setColocatedWith(this.colocatedRegionFullPath);
+    source.setColocatedWith(colocatedRegionFullPath);
 
-    this.fixedPartitionAttributes = new FixedPartitionAttributesImpl();
-    this.fixedPartitionAttributes.setPartitionName("setPartitionName");
-    source.addFixedPartitionAttributes(this.fixedPartitionAttributes);
+    fixedPartitionAttributes = new FixedPartitionAttributesImpl();
+    fixedPartitionAttributes.setPartitionName("setPartitionName");
+    source.addFixedPartitionAttributes(fixedPartitionAttributes);
 
     // with NonDefault LocalMaxMemory
-    source.setLocalMaxMemory(this.localMaxMemory);
+    source.setLocalMaxMemory(localMaxMemory);
 
     // with OffHeap
-    this.offHeap = true;
-    source.setOffHeap(this.offHeap);
+    offHeap = true;
+    source.setOffHeap(offHeap);
 
-    source.setPartitionResolver(this.partitionResolver);
-    source.setRecoveryDelay(this.recoveryDelay);
-    source.setRedundantCopies(this.redundancy);
-    source.setStartupRecoveryDelay(this.startupRecoveryDelay);
-    source.setTotalMaxMemory(this.totalMaxMemory);
-    source.setTotalNumBuckets(this.maxNumberOfBuckets);
+    source.setPartitionResolver(partitionResolver);
+    source.setRecoveryDelay(recoveryDelay);
+    source.setRedundantCopies(redundancy);
+    source.setStartupRecoveryDelay(startupRecoveryDelay);
+    source.setTotalMaxMemory(totalMaxMemory);
+    source.setTotalNumBuckets(maxNumberOfBuckets);
 
     PartitionAttributesImpl instance = new PartitionAttributesImpl();
     instance.setAll(source);
@@ -450,16 +450,16 @@ public class PartitionAttributesImplJUnitTest {
 
   @Test
   public void testEqualsAndHashCodeForEqualInstances() {
-    this.fixedPartitionAttributes = new FixedPartitionAttributesImpl();
-    this.fixedPartitionAttributes.setPartitionName("setPartitionName");
+    fixedPartitionAttributes = new FixedPartitionAttributesImpl();
+    fixedPartitionAttributes.setPartitionName("setPartitionName");
 
     PartitionAttributesImpl instance = new PartitionAttributesImpl();
     fillInForEqualityTest(instance);
-    instance.addFixedPartitionAttributes(this.fixedPartitionAttributes);
+    instance.addFixedPartitionAttributes(fixedPartitionAttributes);
 
     PartitionAttributesImpl other = new PartitionAttributesImpl();
     fillInForEqualityTest(other);
-    other.addFixedPartitionAttributes(this.fixedPartitionAttributes);
+    other.addFixedPartitionAttributes(fixedPartitionAttributes);
 
     assertEquals(instance.hashCode(), other.hashCode());
     assertEquals(instance, other);
@@ -521,66 +521,66 @@ public class PartitionAttributesImplJUnitTest {
   }
 
   private void fillInForEqualityTest(PartitionAttributesImpl instance) {
-    instance.setRedundantCopies(this.redundancy);
-    instance.setLocalMaxMemory(this.localMaxMemory);
-    instance.setTotalMaxMemory(this.totalMaxMemory);
-    instance.setTotalNumBuckets(this.maxNumberOfBuckets);
-    instance.setStartupRecoveryDelay(this.startupRecoveryDelay);
-    instance.setRecoveryDelay(this.recoveryDelay);
-    instance.setPartitionResolver(this.partitionResolver);
-    instance.setColocatedWith(this.colocatedRegionFullPath);
-    instance.addFixedPartitionAttributes(this.fixedPartitionAttributes);
-    instance.addPartitionListener(this.partitionListener);
+    instance.setRedundantCopies(redundancy);
+    instance.setLocalMaxMemory(localMaxMemory);
+    instance.setTotalMaxMemory(totalMaxMemory);
+    instance.setTotalNumBuckets(maxNumberOfBuckets);
+    instance.setStartupRecoveryDelay(startupRecoveryDelay);
+    instance.setRecoveryDelay(recoveryDelay);
+    instance.setPartitionResolver(partitionResolver);
+    instance.setColocatedWith(colocatedRegionFullPath);
+    instance.addFixedPartitionAttributes(fixedPartitionAttributes);
+    instance.addPartitionListener(partitionListener);
   }
 
   private void assertGetValues(final PartitionAttributesImpl instance) {
-    assertEquals(this.colocatedRegionFullPath, instance.getColocatedWith());
-    assertEquals(this.globalProps, instance.getGlobalProperties());
-    assertEquals(this.localProps, instance.getLocalProperties());
-    assertEquals(this.partitionResolver, instance.getPartitionResolver());
-    assertEquals(this.recoveryDelay, instance.getRecoveryDelay());
-    assertEquals(this.redundancy, instance.getRedundancy());
-    assertEquals(this.startupRecoveryDelay, instance.getStartupRecoveryDelay());
-    assertEquals(this.totalMaxMemory, instance.getTotalMaxMemory());
-    assertEquals(this.maxNumberOfBuckets, instance.getTotalNumBuckets());
+    assertEquals(colocatedRegionFullPath, instance.getColocatedWith());
+    assertEquals(globalProps, instance.getGlobalProperties());
+    assertEquals(localProps, instance.getLocalProperties());
+    assertEquals(partitionResolver, instance.getPartitionResolver());
+    assertEquals(recoveryDelay, instance.getRecoveryDelay());
+    assertEquals(redundancy, instance.getRedundancy());
+    assertEquals(startupRecoveryDelay, instance.getStartupRecoveryDelay());
+    assertEquals(totalMaxMemory, instance.getTotalMaxMemory());
+    assertEquals(maxNumberOfBuckets, instance.getTotalNumBuckets());
   }
 
   private PartitionAttributesImpl createPartitionAttributesImpl() {
     PartitionAttributesImpl instance = new PartitionAttributesImpl();
-    instance.setColocatedWith(this.colocatedRegionFullPath);
-    instance.setGlobalProperties(this.globalProps);
-    instance.setLocalProperties(this.localProps);
-    instance.setOffHeap(this.offHeap);
-    instance.setPartitionResolver(this.partitionResolver);
-    instance.setRecoveryDelay(this.recoveryDelay);
-    instance.setRedundantCopies(this.redundancy);
-    instance.setStartupRecoveryDelay(this.startupRecoveryDelay);
-    instance.setTotalMaxMemory(this.totalMaxMemory);
-    instance.setTotalNumBuckets(this.maxNumberOfBuckets);
+    instance.setColocatedWith(colocatedRegionFullPath);
+    instance.setGlobalProperties(globalProps);
+    instance.setLocalProperties(localProps);
+    instance.setOffHeap(offHeap);
+    instance.setPartitionResolver(partitionResolver);
+    instance.setRecoveryDelay(recoveryDelay);
+    instance.setRedundantCopies(redundancy);
+    instance.setStartupRecoveryDelay(startupRecoveryDelay);
+    instance.setTotalMaxMemory(totalMaxMemory);
+    instance.setTotalNumBuckets(maxNumberOfBuckets);
     return instance;
   }
 
   private void fillInForSetAllWithPropertiesTest(PartitionAttributesImpl instance) {
-    instance.setColocatedWith(this.colocatedRegionFullPath);
+    instance.setColocatedWith(colocatedRegionFullPath);
 
-    instance.setLocalProperties(this.localProps);
-    instance.setGlobalProperties(this.globalProps);
+    instance.setLocalProperties(localProps);
+    instance.setGlobalProperties(globalProps);
 
-    this.fixedPartitionAttributes = new FixedPartitionAttributesImpl();
-    this.fixedPartitionAttributes.setPartitionName("setPartitionName");
-    instance.addFixedPartitionAttributes(this.fixedPartitionAttributes);
+    fixedPartitionAttributes = new FixedPartitionAttributesImpl();
+    fixedPartitionAttributes.setPartitionName("setPartitionName");
+    instance.addFixedPartitionAttributes(fixedPartitionAttributes);
 
-    instance.setLocalMaxMemory(this.localMaxMemory);
+    instance.setLocalMaxMemory(localMaxMemory);
 
-    this.offHeap = true;
-    instance.setOffHeap(this.offHeap);
+    offHeap = true;
+    instance.setOffHeap(offHeap);
 
     // instance.addPartitionListener(this.partitionListener);
-    instance.setPartitionResolver(this.partitionResolver);
-    instance.setRecoveryDelay(this.recoveryDelay);
-    instance.setRedundantCopies(this.redundancy);
-    instance.setStartupRecoveryDelay(this.startupRecoveryDelay);
-    instance.setTotalMaxMemory(this.totalMaxMemory);
-    instance.setTotalNumBuckets(this.maxNumberOfBuckets);
+    instance.setPartitionResolver(partitionResolver);
+    instance.setRecoveryDelay(recoveryDelay);
+    instance.setRedundantCopies(redundancy);
+    instance.setStartupRecoveryDelay(startupRecoveryDelay);
+    instance.setTotalMaxMemory(totalMaxMemory);
+    instance.setTotalNumBuckets(maxNumberOfBuckets);
   }
 }

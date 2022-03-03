@@ -34,8 +34,8 @@ public class DistTXAdjunctCommitMessage extends TXCommitMessage {
 
   @Override
   public void basicProcessOps() {
-    Collections.sort(this.farSideEntryOps);
-    Iterator it = this.farSideEntryOps.iterator();
+    Collections.sort(farSideEntryOps);
+    Iterator it = farSideEntryOps.iterator();
     while (it.hasNext()) {
       try {
         RegionCommit.FarSideEntryOp entryOp = (RegionCommit.FarSideEntryOp) it.next();

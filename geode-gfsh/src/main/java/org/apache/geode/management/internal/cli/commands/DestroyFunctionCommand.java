@@ -111,7 +111,7 @@ public class DestroyFunctionCommand extends GfshCommand {
         members.append(",");
       }
       return ResultModel.createInfo("Destroyed " + functionId + " Successfully on "
-          + members.toString().substring(0, members.toString().length() - 1));
+          + members.substring(0, members.toString().length() - 1));
     } else {
       return ResultModel.createInfo("Failed in unregistering");
     }

@@ -14,55 +14,30 @@
  */
 package org.apache.geode.redis.internal.commands.executor.set;
 
-import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
-import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
 
-import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
-import org.apache.geode.redis.internal.commands.Command;
-import org.apache.geode.redis.internal.commands.executor.CommandExecutor;
-import org.apache.geode.redis.internal.commands.executor.RedisResponse;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.data.RedisSet;
+import org.apache.geode.redis.internal.services.RegionProvider;
 
-public class SRandMemberExecutor implements CommandExecutor {
+public class SRandMemberExecutor extends SetRandomExecutor {
+  @Override
+  protected List<byte[]> performCommand(int count, RegionProvider regionProvider, RedisKey key) {
+    RedisSet set =
+        regionProvider.getTypedRedisData(REDIS_SET, key, true);
+    if (count == 0 || set.isNull()) {
+      return Collections.emptyList();
+    }
 
-  private static final String ERROR_NOT_NUMERIC = "The count provided must be numeric";
+    return set.srandmember(count);
+  }
 
   @Override
-  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    List<byte[]> commandElems = command.getProcessedCommand();
-
-    RedisKey key = command.getKey();
-
-    boolean countSpecified = false;
-    int count;
-
-    if (commandElems.size() > 2) {
-      try {
-        count = narrowLongToInt(bytesToLong(commandElems.get(2)));
-        countSpecified = true;
-      } catch (NumberFormatException e) {
-        return RedisResponse.error(ERROR_NOT_NUMERIC);
-      }
-    } else {
-      count = 1;
-    }
-
-    if (count == 0) {
-      return RedisResponse.emptyArray();
-    }
-
-    Collection<byte[]> results = context.setLockedExecute(key, true,
-        set -> set.srandmember(count));
-
-    if (countSpecified) {
-      return RedisResponse.array(results, true);
-    } else if (results.isEmpty()) {
-      return RedisResponse.nil();
-    } else {
-      return RedisResponse.bulkString(results.iterator().next());
-    }
+  protected String getError() {
+    return ERROR_NOT_INTEGER;
   }
 }

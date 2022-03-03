@@ -53,14 +53,14 @@ public class IndexData {
   }
 
   public IndexProtocol getIndex() {
-    return this._index;
+    return _index;
   }
 
   public int getMatchLevel() {
-    return this._matchLevel;
+    return _matchLevel;
   }
 
   public int[] getMapping() {
-    return this.mapping;
+    return mapping;
   }
 }

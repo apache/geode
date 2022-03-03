@@ -26,6 +26,7 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.GatewayConfigurationException;
+import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerRefusedConnectionException;
 import org.apache.geode.cache.client.internal.ServerDenyList.FailureTracker;
 import org.apache.geode.cache.wan.GatewaySender;
@@ -53,8 +54,8 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   // on all of the handshake operations happening in a single thread. I don't think we
   // want that, need to refactor.
   private final ServerDenyList denyList;
-  private ConnectionSource source;
-  private PoolImpl pool;
+  private final ConnectionSource source;
+  private final PoolImpl pool;
   private final CancelCriterion cancelCriterion;
   private final ConnectionConnector connectionConnector;
 
@@ -129,8 +130,9 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
       testFailedConnectionToServer = true;
       throw src;
     } catch (Exception e) {
-      if (e.getMessage() != null && (e.getMessage().equals("Connection refused")
-          || e.getMessage().equals("Connection reset"))) {
+      String message = e.getMessage();
+      if (message != null && (message.contains("Connection refused")
+          || message.contains("Connection reset"))) {
         // this is the most common case, so don't print an exception
         if (logger.isDebugEnabled()) {
           logger.debug("Unable to connect to {}: connection refused", location);
@@ -164,6 +166,11 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
         return;
       }
       Long uniqueID = AuthenticateUserOp.executeOn(conn, pool);
+      // if connection failed, this would return null, instead of throwing a NPE, we should throw
+      // this
+      if (uniqueID == null) {
+        throw new ServerConnectivityException("Connection refused");
+      }
       server.setUserId(uniqueID);
     }
 

@@ -38,13 +38,13 @@ public class ExportedRegistry {
   private final Map<Integer, EnumInfo> enums;
 
   public ExportedRegistry() {
-    types = new HashMap<Integer, PdxType>();
-    enums = new HashMap<Integer, EnumInfo>();
+    types = new HashMap<>();
+    enums = new HashMap<>();
   }
 
   public ExportedRegistry(TypeRegistry tr) {
-    types = new HashMap<Integer, PdxType>(tr.typeMap());
-    enums = new HashMap<Integer, EnumInfo>(tr.enumMap());
+    types = new HashMap<>(tr.typeMap());
+    enums = new HashMap<>(tr.enumMap());
   }
 
   public Map<Integer, PdxType> types() {

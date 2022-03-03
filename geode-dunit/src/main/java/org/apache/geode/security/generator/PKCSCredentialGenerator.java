@@ -32,8 +32,8 @@ public class PKCSCredentialGenerator extends CredentialGenerator {
   // Checks if the current JVM uses only IBM JSSE providers.
   private static boolean usesIBMProviders() {
     final Provider[] providers = Security.getProviders();
-    for (int index = 0; index < providers.length; ++index) {
-      if (!providers[index].getName().toLowerCase().startsWith("ibm")) {
+    for (final Provider provider : providers) {
+      if (!provider.getName().toLowerCase().startsWith("ibm")) {
         return false;
       }
     }

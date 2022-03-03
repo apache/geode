@@ -62,13 +62,9 @@ class ExpiryRegionEntry implements Region.Entry {
       return false;
     }
     if (region == null) {
-      if (other.region != null) {
-        return false;
-      }
-    } else if (!region.equals(other.region)) {
-      return false;
-    }
-    return true;
+      return other.region == null;
+    } else
+      return region.equals(other.region);
   }
 
   @Override

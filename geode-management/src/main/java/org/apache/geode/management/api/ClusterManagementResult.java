@@ -86,9 +86,9 @@ public class ClusterManagementResult {
    * for internal use only
    */
   public ClusterManagementResult(ClusterManagementResult copyFrom) {
-    this.statusCode = copyFrom.statusCode;
-    this.statusMessage = copyFrom.statusMessage;
-    this.links = copyFrom.links;
+    statusCode = copyFrom.statusCode;
+    statusMessage = copyFrom.statusMessage;
+    links = copyFrom.links;
   }
 
   /**
@@ -96,7 +96,7 @@ public class ClusterManagementResult {
    */
   public void setStatus(StatusCode statusCode, String message) {
     this.statusCode = statusCode;
-    this.statusMessage = formatErrorMessage(message);
+    statusMessage = formatErrorMessage(message);
   }
 
   /**

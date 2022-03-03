@@ -90,7 +90,7 @@ public class DistributionLocator {
     logger.info("Locator stopped");
   }
 
-  public static void main(String args[]) {
+  public static void main(String[] args) {
     if (args.length == 0 || args.length > 6) {
       System.err.println(
           "Usage: port [bind-address] [peerLocator] [serverLocator] [hostname-for-clients]");

@@ -55,37 +55,37 @@ public class DeltaSessionStatistics {
   private final Statistics stats;
 
   public DeltaSessionStatistics(StatisticsFactory factory, String applicationName) {
-    this.stats = factory.createAtomicStatistics(type, typeName + "_" + applicationName);
+    stats = factory.createAtomicStatistics(type, typeName + "_" + applicationName);
   }
 
   public void close() {
-    this.stats.close();
+    stats.close();
   }
 
   @SuppressWarnings("unused")
   public long getSessionsCreated() {
-    return this.stats.getLong(sessionsCreatedId);
+    return stats.getLong(sessionsCreatedId);
   }
 
   public void incSessionsCreated() {
-    this.stats.incLong(sessionsCreatedId, 1);
+    stats.incLong(sessionsCreatedId, 1);
   }
 
   @SuppressWarnings("unused")
   public long getSessionsInvalidated() {
-    return this.stats.getLong(sessionsInvalidatedId);
+    return stats.getLong(sessionsInvalidatedId);
   }
 
   public void incSessionsInvalidated() {
-    this.stats.incLong(sessionsInvalidatedId, 1);
+    stats.incLong(sessionsInvalidatedId, 1);
   }
 
   @SuppressWarnings("unused")
   public long getSessionsExpired() {
-    return this.stats.getLong(sessionsExpiredId);
+    return stats.getLong(sessionsExpiredId);
   }
 
   public void incSessionsExpired() {
-    this.stats.incLong(sessionsExpiredId, 1);
+    stats.incLong(sessionsExpiredId, 1);
   }
 }

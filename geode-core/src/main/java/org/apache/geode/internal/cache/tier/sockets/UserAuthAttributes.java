@@ -20,32 +20,32 @@ import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 
 public class UserAuthAttributes {
-  private AtomicInteger numberOfDurableCQ;
+  private final AtomicInteger numberOfDurableCQ;
 
   /**
    * Authorize client requests using this object. This is set when each operation on this connection
    * is authorized in pre-operation phase.
    */
-  private AuthorizeRequest authzRequest;
+  private final AuthorizeRequest authzRequest;
 
   /**
    * Authorize client requests using this object. This is set when each operation on this connection
    * is authorized in post-operation phase.
    */
-  private AuthorizeRequestPP postAuthzRequest;
+  private final AuthorizeRequestPP postAuthzRequest;
 
   public UserAuthAttributes(AuthorizeRequest authzRequest, AuthorizeRequestPP postAuthzRequest) {
     this.authzRequest = authzRequest;
     this.postAuthzRequest = postAuthzRequest;
-    this.numberOfDurableCQ = new AtomicInteger();
+    numberOfDurableCQ = new AtomicInteger();
   }
 
   public AuthorizeRequest getAuthzRequest() {
-    return this.authzRequest;
+    return authzRequest;
   }
 
   public AuthorizeRequestPP getPostAuthzRequest() {
-    return this.postAuthzRequest;
+    return postAuthzRequest;
   }
 
   /*
@@ -53,16 +53,16 @@ public class UserAuthAttributes {
    * this.numberOfDurableCQ.incrementAndGet(); } }
    */
   public void setDurable() {
-    this.numberOfDurableCQ.incrementAndGet();
+    numberOfDurableCQ.incrementAndGet();
   }
 
   public void unsetDurable() {
-    this.numberOfDurableCQ.decrementAndGet();
+    numberOfDurableCQ.decrementAndGet();
   }
 
 
   public boolean isDurable() {
-    return this.numberOfDurableCQ.intValue() != 0;
+    return numberOfDurableCQ.intValue() != 0;
   }
   /*
    * protected void setAuthorizeRequest(AuthorizeRequest authzRequest) { this.authzRequest =

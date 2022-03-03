@@ -23,7 +23,6 @@ import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
-import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
@@ -110,7 +109,7 @@ public class HeapLRUController extends SizeLRUController {
     if (region instanceof BucketRegion) {
       return shouldEvict && ((BucketRegion) region).getSizeForEviction() > 0;
     }
-    return shouldEvict && ((LocalRegion) region).getRegionMap().sizeInVM() > 0;
+    return shouldEvict && region.getRegionMap().sizeInVM() > 0;
   }
 
   @Override

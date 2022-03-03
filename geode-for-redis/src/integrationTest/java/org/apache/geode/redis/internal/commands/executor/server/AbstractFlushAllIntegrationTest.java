@@ -48,7 +48,7 @@ public abstract class AbstractFlushAllIntegrationTest implements RedisIntegratio
   @Test
   public void givenMoreThanTwoArguments_returnsSyntaxError() {
     assertThatThrownBy(() -> jedis.sendCommand(Protocol.Command.FLUSHALL, "ASYNC", "extraArg"))
-        .hasMessageContaining(ERROR_SYNTAX);
+        .hasMessage(ERROR_SYNTAX);
   }
 
   @Test

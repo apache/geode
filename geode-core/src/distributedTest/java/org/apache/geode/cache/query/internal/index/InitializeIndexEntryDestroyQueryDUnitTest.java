@@ -67,9 +67,9 @@ public class InitializeIndexEntryDestroyQueryDUnitTest extends JUnit4CacheTestCa
 
   final Portfolio portfolio = new Portfolio(1, 1);
 
-  private int cnt = 0;
+  private final int cnt = 0;
 
-  private int cntDest = 100;
+  private final int cntDest = 100;
 
   public InitializeIndexEntryDestroyQueryDUnitTest() {
     super();

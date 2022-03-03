@@ -39,7 +39,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category({SecurityTest.class})
 public class GatewaySenderMBeanSecurityTest {
-  private static GatewaySenderMBean mock = mock(GatewaySenderMBean.class);
+  private static final GatewaySenderMBean mock = mock(GatewaySenderMBean.class);
   private static ObjectName mockBeanName = null;
   private static ManagementService service = null;
 

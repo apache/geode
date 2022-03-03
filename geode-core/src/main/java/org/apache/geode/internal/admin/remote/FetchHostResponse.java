@@ -116,27 +116,27 @@ public class FetchHostResponse extends AdminResponse {
 
   // instance methods
   public InetAddress getHost() {
-    return this.host;
+    return host;
   }
 
   public File getGeodeHomeDir() {
-    return this.geodeHomeDir;
+    return geodeHomeDir;
   }
 
   public File getWorkingDirectory() {
-    return this.workingDir;
+    return workingDir;
   }
 
   public long getBirthDate() {
-    return this.birthDate;
+    return birthDate;
   }
 
   public String getName() {
-    return this.name;
+    return name;
   }
 
   public boolean isDedicatedCacheServer() {
-    return this.isDedicatedCacheServer;
+    return isDedicatedCacheServer;
   }
 
   @Override
@@ -148,29 +148,29 @@ public class FetchHostResponse extends AdminResponse {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeString(this.name, out);
-    DataSerializer.writeObject(this.host, out);
-    DataSerializer.writeObject(this.geodeHomeDir, out);
-    DataSerializer.writeObject(this.workingDir, out);
-    out.writeLong(this.birthDate);
-    out.writeBoolean(this.isDedicatedCacheServer);
+    DataSerializer.writeString(name, out);
+    DataSerializer.writeObject(host, out);
+    DataSerializer.writeObject(geodeHomeDir, out);
+    DataSerializer.writeObject(workingDir, out);
+    out.writeLong(birthDate);
+    out.writeBoolean(isDedicatedCacheServer);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.name = DataSerializer.readString(in);
-    this.host = (InetAddress) DataSerializer.readObject(in);
-    this.geodeHomeDir = (File) DataSerializer.readObject(in);
-    this.workingDir = (File) DataSerializer.readObject(in);
-    this.birthDate = in.readLong();
-    this.isDedicatedCacheServer = in.readBoolean();
+    name = DataSerializer.readString(in);
+    host = DataSerializer.readObject(in);
+    geodeHomeDir = DataSerializer.readObject(in);
+    workingDir = DataSerializer.readObject(in);
+    birthDate = in.readLong();
+    isDedicatedCacheServer = in.readBoolean();
   }
 
   @Override
   public String toString() {
     return String.format("FetchHostResponse for %s host=%s",
-        new Object[] {this.getRecipient(), this.host});
+        getRecipient(), host);
   }
 }

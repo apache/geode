@@ -101,7 +101,7 @@ public class NotAuthorizedExceptionTest {
   public void serializes() {
     NotAuthorizedException instance = new NotAuthorizedException(message);
 
-    NotAuthorizedException cloned = (NotAuthorizedException) SerializationUtils.clone(instance);
+    NotAuthorizedException cloned = SerializationUtils.clone(instance);
 
     assertThat(cloned).hasMessage(message);
   }
@@ -111,7 +111,7 @@ public class NotAuthorizedExceptionTest {
     Throwable cause = new Exception(causeMessage);
     NotAuthorizedException instance = new NotAuthorizedException(message, cause);
 
-    NotAuthorizedException cloned = (NotAuthorizedException) SerializationUtils.clone(instance);
+    NotAuthorizedException cloned = SerializationUtils.clone(instance);
 
     assertThat(cloned).hasMessage(message);
     assertThat(cloned).hasCause(cause);
@@ -123,7 +123,7 @@ public class NotAuthorizedExceptionTest {
         new NotAuthorizedException(message, nonSerializablePrincipal);
     assertThat(instance.getPrincipal()).isNotNull();
 
-    NotAuthorizedException cloned = (NotAuthorizedException) SerializationUtils.clone(instance);
+    NotAuthorizedException cloned = SerializationUtils.clone(instance);
 
     assertThat(cloned).hasMessage(message);
     assertThat(cloned.getPrincipal()).isNull();
@@ -134,7 +134,7 @@ public class NotAuthorizedExceptionTest {
     NotAuthorizedException instance =
         new NotAuthorizedException(message, serializablePrincipal);
 
-    NotAuthorizedException cloned = (NotAuthorizedException) SerializationUtils.clone(instance);
+    NotAuthorizedException cloned = SerializationUtils.clone(instance);
 
     assertThat(cloned).hasMessage(message);
     assertThat(cloned.getPrincipal()).isNotNull().isEqualTo(serializablePrincipal);

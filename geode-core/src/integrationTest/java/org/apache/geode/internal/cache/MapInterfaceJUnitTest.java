@@ -62,11 +62,11 @@ public class MapInterfaceJUnitTest {
       throw new AssertionError(" failed due to ", e);
     }
     for (int i = 0; i < 100; i++) {
-      region.put(new Integer(i), new Integer(i));
+      region.put(i, i);
     }
-    assertEquals(new Integer(50), region.get(new Integer(50)));
+    assertEquals(50, region.get(50));
     region.localClear();
-    assertEquals(null, region.get(new Integer(50)));
+    assertEquals(null, region.get(50));
     region.close();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -116,11 +116,11 @@ public class MapInterfaceJUnitTest {
     assertEquals("aValue", region.get("aKey"));
     assertEquals("bValue", region.get("bKey"));
     for (int i = 0; i < 100; i++) {
-      region.put(new Integer(i), new Integer(i));
+      region.put(i, i);
     }
-    assertEquals(new Integer(50), region.get(new Integer(50)));
+    assertEquals(50, region.get(50));
     region.localClear();
-    assertEquals(null, region.get(new Integer(50)));
+    assertEquals(null, region.get(50));
     region.close();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -161,8 +161,8 @@ public class MapInterfaceJUnitTest {
         @Override
         public void beforeRegionClear(RegionEvent event) throws CacheWriterException {
           synchronized (this) {
-            this.notify();
-            MapInterfaceJUnitTest.this.hasBeenNotified = true;
+            notify();
+            hasBeenNotified = true;
           }
         }
       });
@@ -170,22 +170,22 @@ public class MapInterfaceJUnitTest {
       DoesClear doesClear = new DoesClear(region);
       new Thread(doesClear).start();
       synchronized (this) {
-        if (!this.hasBeenNotified) {
-          this.wait(3000);
+        if (!hasBeenNotified) {
+          wait(3000);
         }
       }
-      if (!this.hasBeenNotified) {
+      if (!hasBeenNotified) {
         fail(" beforeRegionClear call back did not come");
       }
     } catch (Exception e) {
       throw new AssertionError(" failed due to ", e);
     }
     for (int i = 0; i < 100; i++) {
-      region.put(new Integer(i), new Integer(i));
+      region.put(i, i);
     }
-    assertEquals(new Integer(50), region.get(new Integer(50)));
+    assertEquals(50, region.get(50));
     region.localClear();
-    assertEquals(null, region.get(new Integer(50)));
+    assertEquals(null, region.get(50));
     region.close();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -226,24 +226,24 @@ public class MapInterfaceJUnitTest {
         @Override
         public void beforeUpdate(EntryEvent event) throws CacheWriterException {
           synchronized (this) {
-            this.notify();
+            notify();
             counter++;
-            MapInterfaceJUnitTest.this.hasBeenNotified = true;
+            hasBeenNotified = true;
           }
         }
 
       });
       region2 = cache.createRegion("testingRegion", factory.create());
-      region2.put(new Integer(2), new Integer(2));
-      this.hasBeenNotified = false;
+      region2.put(2, 2);
+      hasBeenNotified = false;
       DoesPut doesPut = new DoesPut();
       new Thread(doesPut).start();
       synchronized (this) {
-        if (!this.hasBeenNotified) {
-          this.wait(3000);
+        if (!hasBeenNotified) {
+          wait(3000);
         }
       }
-      if (!this.hasBeenNotified) {
+      if (!hasBeenNotified) {
         fail(" beforeCreate call back did not come");
       }
 
@@ -255,15 +255,15 @@ public class MapInterfaceJUnitTest {
 
   class DoesClear implements Runnable {
 
-    private Region region;
+    private final Region region;
 
     DoesClear(Region reg) {
-      this.region = reg;
+      region = reg;
     }
 
     @Override
     public void run() {
-      this.region.clear();
+      region.clear();
     }
   }
 
@@ -273,8 +273,8 @@ public class MapInterfaceJUnitTest {
 
     @Override
     public void run() {
-      ((Map.Entry) (MapInterfaceJUnitTest.this.region2.entrySet().iterator().next()))
-          .setValue(new Integer(8));
+      ((Map.Entry) (region2.entrySet().iterator().next()))
+          .setValue(8);
     }
   }
 }

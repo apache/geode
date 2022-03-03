@@ -44,7 +44,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 public class DeployJarWithSSLDUnitTest {
 
-  private static File jks =
+  private static final File jks =
       new File(createTempFileFromResource(DeployJarWithSSLDUnitTest.class, "/ssl/trusted.keystore")
           .getAbsolutePath());
 
@@ -61,7 +61,7 @@ public class DeployJarWithSSLDUnitTest {
 
   private File sslConfigFile = null;
 
-  private static Properties sslProperties = new Properties() {
+  private static final Properties sslProperties = new Properties() {
     {
       setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannels.ALL);
       setProperty(SSL_KEYSTORE, jks.getAbsolutePath());

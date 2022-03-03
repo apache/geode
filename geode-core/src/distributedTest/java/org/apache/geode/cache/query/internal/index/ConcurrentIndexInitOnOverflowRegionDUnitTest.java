@@ -66,9 +66,9 @@ public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends JUnit4CacheTes
 
   final int redundancy = 0;
 
-  private int cnt = 0;
+  private final int cnt = 0;
 
-  private int cntDest = 1;
+  private final int cntDest = 1;
 
   public static volatile boolean hooked = false;
 
@@ -255,7 +255,7 @@ public class ConcurrentIndexInitOnOverflowRegionDUnitTest extends JUnit4CacheTes
 
 
     final int port =
-        vm0.invoke(() -> ConcurrentIndexInitOnOverflowRegionDUnitTest.getCacheServerPort());
+        vm0.invoke(ConcurrentIndexInitOnOverflowRegionDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName(vm0.getHost());
 
     // Start changing the value in Region which should turn into a deadlock if

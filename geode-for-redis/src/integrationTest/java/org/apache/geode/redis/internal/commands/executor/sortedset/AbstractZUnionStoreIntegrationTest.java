@@ -15,15 +15,16 @@
 package org.apache.geode.redis.internal.commands.executor.sortedset;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -33,8 +34,8 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.Tuple;
-import redis.clients.jedis.ZParams;
+import redis.clients.jedis.params.ZParams;
+import redis.clients.jedis.resps.Tuple;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
@@ -66,8 +67,7 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     jedis.set(stringKey, "value");
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "2", stringKey,
-            KEY1))
-                .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+            KEY1)).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -78,7 +78,7 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     jedis.set(stringKey, "value");
 
     assertThatThrownBy(() -> jedis.zunionstore(NEW_SET, stringKey, KEY1, KEY2))
-        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -89,7 +89,7 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     jedis.set(stringKey, "value");
 
     assertThatThrownBy(() -> jedis.zunionstore(NEW_SET, KEY1, KEY2, stringKey))
-        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -99,7 +99,7 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     jedis.set(stringKey, "value");
 
     assertThatThrownBy(() -> jedis.zunionstore(NEW_SET, "{tag1}nonExistentKey", KEY1, stringKey))
-        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -107,8 +107,7 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     final String crossSlotKey = "{tag2}another";
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "2", crossSlotKey,
-            KEY1))
-                .hasMessage("CROSSSLOT " + RedisConstants.ERROR_WRONG_SLOT);
+            KEY1)).hasMessage(RedisConstants.ERROR_WRONG_SLOT);
   }
 
   @Test
@@ -120,84 +119,77 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
   public void shouldError_givenNumkeysTooLarge() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "2", KEY1))
-            .hasMessage("ERR " + RedisConstants.ERROR_SYNTAX);
+            .hasMessage(RedisConstants.ERROR_SYNTAX);
   }
 
   @Test
   public void shouldError_givenNumkeysTooSmall() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "1", KEY1, KEY2))
-            .hasMessage("ERR " + RedisConstants.ERROR_SYNTAX);
+            .hasMessage(RedisConstants.ERROR_SYNTAX);
   }
 
   @Test
   public void shouldError_givenNumKeysOfZero() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "0", KEY1, KEY2))
-            .hasMessage("ERR " + RedisConstants.ERROR_KEY_REQUIRED_ZUNIONSTORE);
+            .hasMessage(RedisConstants.ERROR_KEY_REQUIRED_ZUNIONSTORE);
   }
 
   @Test
   public void shouldError_givenNegativeNumKeys() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "-2", KEY1, KEY2))
-            .hasMessage("ERR " + RedisConstants.ERROR_KEY_REQUIRED_ZUNIONSTORE);
+            .hasMessage(RedisConstants.ERROR_KEY_REQUIRED_ZUNIONSTORE);
   }
 
   @Test
   public void shouldError_givenTooManyWeights() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "1", KEY1,
-            "WEIGHTS", "2", "3"))
-                .hasMessage("ERR " + RedisConstants.ERROR_SYNTAX);
+            "WEIGHTS", "2", "3")).hasMessage(RedisConstants.ERROR_SYNTAX);
   }
 
   @Test
   public void shouldError_givenTooFewWeights() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "2",
-            KEY1, KEY2, "WEIGHTS", "1"))
-                .hasMessage("ERR " + RedisConstants.ERROR_SYNTAX);
+            KEY1, KEY2, "WEIGHTS", "1")).hasMessage(RedisConstants.ERROR_SYNTAX);
   }
 
   @Test
   public void shouldError_givenWeightNotANumber() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "1",
-            KEY1, "WEIGHTS", "not-a-number"))
-                .hasMessage("ERR " + RedisConstants.ERROR_WEIGHT_NOT_A_FLOAT);
+            KEY1, "WEIGHTS", "not-a-number")).hasMessage(RedisConstants.ERROR_WEIGHT_NOT_A_FLOAT);
   }
 
   @Test
   public void shouldError_givenWeightsWithoutAnyValues() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "1",
-            KEY1, "WEIGHTS"))
-                .hasMessage("ERR " + RedisConstants.ERROR_SYNTAX);
+            KEY1, "WEIGHTS")).hasMessage(RedisConstants.ERROR_SYNTAX);
   }
 
   @Test
   public void shouldError_givenMultipleWeightKeywords() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "1",
-            KEY1, "WEIGHT", "1.0", "WEIGHT", "2.0"))
-                .hasMessage("ERR " + RedisConstants.ERROR_SYNTAX);
+            KEY1, "WEIGHT", "1.0", "WEIGHT", "2.0")).hasMessage(RedisConstants.ERROR_SYNTAX);
   }
 
   @Test
   public void shouldError_givenUnknownAggregate() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "1",
-            KEY1, "AGGREGATE", "UNKNOWN", "WEIGHTS", "1"))
-                .hasMessage("ERR " + RedisConstants.ERROR_SYNTAX);
+            KEY1, "AGGREGATE", "UNKNOWN", "WEIGHTS", "1")).hasMessage(RedisConstants.ERROR_SYNTAX);
   }
 
   @Test
   public void shouldError_givenAggregateKeywordWithoutValue() {
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "1",
-            KEY1, "AGGREGATE"))
-                .hasMessage("ERR " + RedisConstants.ERROR_SYNTAX);
+            KEY1, "AGGREGATE")).hasMessage(RedisConstants.ERROR_SYNTAX);
   }
 
   @Test
@@ -205,7 +197,7 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     assertThatThrownBy(
         () -> jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "1",
             KEY1, "WEIGHTS", "1", "AGGREGATE", "SUM", "MIN"))
-                .hasMessage("ERR " + RedisConstants.ERROR_SYNTAX);
+                .hasMessage(RedisConstants.ERROR_SYNTAX);
   }
 
   @Test
@@ -229,12 +221,12 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     scores.put("player2", 0D);
     scores.put("player3", 1D);
     scores.put("player4", Double.POSITIVE_INFINITY);
-    Set<Tuple> expectedResults = convertToTuples(scores, (i, x) -> x);
+    List<Tuple> expectedResults = convertToTuples(scores, (i, x) -> x);
     jedis.zadd(KEY1, scores);
 
     jedis.zunionstore(NEW_SET, new ZParams().weights(1), KEY1);
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
+    List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, scores.size());
     assertThat(results).containsExactlyElementsOf(expectedResults);
 
     jedis.zunionstore(NEW_SET, new ZParams().weights(0), KEY1);
@@ -251,7 +243,7 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
 
     jedis.zunionstore(NEW_SET, new ZParams().weights(Double.NEGATIVE_INFINITY), KEY1);
 
-    expectedResults = new LinkedHashSet<>();
+    expectedResults = new ArrayList<>();
     expectedResults.add(new Tuple("player3", Double.NEGATIVE_INFINITY));
     expectedResults.add(new Tuple("player4", Double.NEGATIVE_INFINITY));
     expectedResults.add(new Tuple("player2", 0D));
@@ -263,12 +255,12 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
   @Test
   public void shouldUnionize_givenASingleSet() {
     Map<String, Double> scores = makeScoreMap(10, x -> (double) x);
-    Set<Tuple> expectedResults = convertToTuples(scores, (i, x) -> x);
+    final List<Tuple> expectedResults = convertToTuples(scores, (i, x) -> x);
     jedis.zadd(KEY1, scores);
 
     assertThat(jedis.zunionstore(NEW_SET, KEY1)).isEqualTo(10);
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
 
     assertThat(results).containsExactlyElementsOf(expectedResults);
   }
@@ -276,12 +268,12 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
   @Test
   public void shouldUnionize_givenOneSetDoesNotExist() {
     Map<String, Double> scores = makeScoreMap(10, x -> (double) x);
-    Set<Tuple> expectedResults = convertToTuples(scores, (i, x) -> x);
+    final List<Tuple> expectedResults = convertToTuples(scores, (i, x) -> x);
     jedis.zadd(KEY1, scores);
 
     jedis.zunionstore(NEW_SET, KEY1, KEY2);
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
 
     assertThat(results).containsExactlyElementsOf(expectedResults);
   }
@@ -289,12 +281,12 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
   @Test
   public void shouldUnionize_givenWeight() {
     Map<String, Double> scores = makeScoreMap(10, x -> (double) x);
-    Set<Tuple> expectedResults = convertToTuples(scores, (i, x) -> x * 1.5);
+    final List<Tuple> expectedResults = convertToTuples(scores, (i, x) -> x * 1.5);
     jedis.zadd(KEY1, scores);
 
     jedis.zunionstore(KEY1, new ZParams().weights(1.5), KEY1);
 
-    Set<Tuple> results = jedis.zrangeWithScores(KEY1, 0, 10);
+    final List<Tuple> results = jedis.zrangeWithScores(KEY1, 0, 10);
 
     assertThat(results).containsExactlyElementsOf(expectedResults);
   }
@@ -307,11 +299,12 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     Map<String, Double> scores2 = makeScoreMap(10, x -> (double) (9 - x));
     jedis.zadd(KEY2, scores2);
 
-    Set<Tuple> expectedResults = convertToTuples(scores1, (i, x) -> (x * 2.0) + ((9 - x) * 1.5));
+    final List<Tuple> expectedResults =
+        convertToTuples(scores1, (i, x) -> (x * 2.0) + ((9 - x) * 1.5));
 
     jedis.zunionstore(NEW_SET, new ZParams().weights(2.0, 1.5), KEY1, KEY2);
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
 
     assertThat(results).containsExactlyElementsOf(expectedResults);
   }
@@ -324,12 +317,12 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     Map<String, Double> scores2 = makeScoreMap(10, x -> 0D);
     jedis.zadd(KEY2, scores2);
 
-    Set<Tuple> expectedResults = convertToTuples(scores2, (i, x) -> x);
+    final List<Tuple> expectedResults = convertToTuples(scores2, (i, x) -> x);
 
     jedis.zunionstore(NEW_SET, new ZParams().aggregate(ZParams.Aggregate.MIN),
         KEY1, KEY2);
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
 
     assertThat(results).containsExactlyElementsOf(expectedResults);
   }
@@ -342,12 +335,12 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     Map<String, Double> scores2 = makeScoreMap(10, x -> (double) ((x % 2 == 0) ? x : 0));
     jedis.zadd(KEY2, scores2);
 
-    Set<Tuple> expectedResults = convertToTuples(scores1, (i, x) -> (double) i);
+    final List<Tuple> expectedResults = convertToTuples(scores1, (i, x) -> (double) i);
 
     jedis.zunionstore(NEW_SET, new ZParams().aggregate(ZParams.Aggregate.MAX),
         KEY1, KEY2);
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
 
     assertThat(results).containsExactlyElementsOf(expectedResults);
   }
@@ -360,12 +353,12 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     Map<String, Double> scores2 = makeScoreMap(10, x -> (double) 1);
     jedis.zadd(KEY2, scores2);
 
-    Set<Tuple> expectedResults = convertToTuples(scores2, (i, x) -> x);
+    final List<Tuple> expectedResults = convertToTuples(scores2, (i, x) -> x);
 
     jedis.sendCommand(NEW_SET, Protocol.Command.ZUNIONSTORE, NEW_SET, "2",
         KEY1, KEY2, "AGGREGATE", "MIN", "AGGREGATE", "MAX");
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
 
     assertThat(results).containsExactlyElementsOf(expectedResults);
   }
@@ -378,12 +371,12 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     Map<String, Double> scores2 = makeScoreMap(10, x -> (double) ((x % 2 == 0) ? x : 0));
     jedis.zadd(KEY2, scores2);
 
-    Set<Tuple> expectedResults = convertToTuples(scores1, (i, x) -> (double) (i * 2));
+    final List<Tuple> expectedResults = convertToTuples(scores1, (i, x) -> (double) (i * 2));
 
     jedis.zunionstore(NEW_SET, new ZParams().aggregate(ZParams.Aggregate.MAX).weights(2, 2),
         KEY1, KEY2);
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
 
     assertThat(results).containsExactlyElementsOf(expectedResults);
   }
@@ -399,12 +392,12 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     Map<String, Double> scores3 = makeScoreMap(10, x -> (double) (x * 3));
     jedis.zadd(SORTED_SET_KEY3, scores3);
 
-    Set<Tuple> expectedResults = convertToTuples(scores1, (i, x) -> x * 6);
+    final List<Tuple> expectedResults = convertToTuples(scores1, (i, x) -> x * 6);
 
     jedis.zunionstore(NEW_SET, new ZParams().aggregate(ZParams.Aggregate.SUM),
         KEY1, KEY2, SORTED_SET_KEY3);
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 10);
 
     assertThat(results).containsExactlyElementsOf(expectedResults);
   }
@@ -417,12 +410,12 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     Map<String, Double> scores2 = makeScoreMap(1, 2, 10, x -> (double) x);
     jedis.zadd(KEY2, scores2);
 
-    Set<Tuple> expectedResults =
+    final List<Tuple> expectedResults =
         convertToTuples(makeScoreMap(0, 1, 20, x -> (double) x), (i, x) -> x);
 
     jedis.zunionstore(NEW_SET, KEY1, KEY2);
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 20);
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 20);
 
     assertThat(results).containsExactlyElementsOf(expectedResults);
   }
@@ -435,12 +428,12 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     Map<String, Double> scores2 = makeScoreMap(5, 1, 10, x -> (double) (x < 10 ? x : x * 2));
     jedis.zadd(KEY2, scores2);
 
-    Set<Tuple> expectedResults = convertToTuples(makeScoreMap(0, 1, 15, x -> (double) x),
+    final List<Tuple> expectedResults = convertToTuples(makeScoreMap(0, 1, 15, x -> (double) x),
         (i, x) -> (double) (i < 5 ? i : i * 2));
 
     jedis.zunionstore(NEW_SET, KEY1, KEY2);
 
-    Set<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 20);
+    final List<Tuple> results = jedis.zrangeWithScores(NEW_SET, 0, 20);
 
     assertThat(results).containsExactlyElementsOf(expectedResults);
   }
@@ -453,12 +446,12 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     Map<String, Double> scores2 = makeScoreMap(10, x -> (double) x);
     jedis.zadd(KEY2, scores2);
 
-    Set<Tuple> expectedResults = convertToTuples(scores1, (i, x) -> (double) (i * 10));
+    final List<Tuple> expectedResults = convertToTuples(scores1, (i, x) -> (double) (i * 10));
 
     jedis.zunionstore(KEY1,
         new ZParams().weights(1, 10).aggregate(ZParams.Aggregate.MAX), KEY1, KEY2);
 
-    Set<Tuple> results = jedis.zrangeWithScores(KEY1, 0, 20);
+    final List<Tuple> results = jedis.zrangeWithScores(KEY1, 0, 20);
 
     assertThat(results).containsExactlyElementsOf(expectedResults);
   }
@@ -468,12 +461,12 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     Map<String, Double> scores1 = makeScoreMap(10, x -> (double) x);
     jedis.zadd(KEY1, scores1);
 
-    Set<Tuple> expectedResults = convertToTuples(scores1, (i, x) -> x * 2);
+    final List<Tuple> expectedResults = convertToTuples(scores1, (i, x) -> x * 2);
 
     // Default aggregation is SUM
     jedis.zunionstore(KEY1, KEY1, KEY1);
 
-    Set<Tuple> results = jedis.zrangeWithScores(KEY1, 0, 10);
+    final List<Tuple> results = jedis.zrangeWithScores(KEY1, 0, 10);
 
     assertThat(results).containsExactlyElementsOf(expectedResults);
   }
@@ -483,11 +476,11 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     Map<String, Double> scores1 = makeScoreMap(10, x -> (double) x);
     jedis.zadd(KEY1, scores1);
 
-    Set<Tuple> expectedResults = convertToTuples(scores1, (i, x) -> x);
+    final List<Tuple> expectedResults = convertToTuples(scores1, (i, x) -> x);
 
     jedis.zunionstore(KEY1, KEY1);
 
-    Set<Tuple> results = jedis.zrangeWithScores(KEY1, 0, 10);
+    final List<Tuple> results = jedis.zrangeWithScores(KEY1, 0, 10);
 
     assertThat(results).containsExactlyElementsOf(expectedResults);
   }
@@ -530,9 +523,9 @@ public abstract class AbstractZUnionStoreIntegrationTest implements RedisIntegra
     return map;
   }
 
-  private Set<Tuple> convertToTuples(Map<String, Double> map,
+  private List<Tuple> convertToTuples(Map<String, Double> map,
       BiFunction<Integer, Double, Double> function) {
-    Set<Tuple> tuples = new LinkedHashSet<>();
+    List<Tuple> tuples = new ArrayList<>();
     int x = 0;
     for (Map.Entry<String, Double> e : map.entrySet()) {
       tuples.add(new Tuple(e.getKey().getBytes(), function.apply(x++, e.getValue())));

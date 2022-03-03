@@ -46,7 +46,7 @@ public class ClusterManagementServiceBuilder
   private int port = Integer.getInteger("geode.config.cms.connection.port", 7070);
 
   public ClusterManagementServiceBuilder setHost(String hostname) {
-    this.host = hostname;
+    host = hostname;
     return this;
   }
 

@@ -43,16 +43,16 @@ public class MBeanStatsMonitor implements StatisticsListener {
    */
   protected Map<String, Number> statsMap;
 
-  private String monitorName;
+  private final String monitorName;
 
   public MBeanStatsMonitor(final String name) {
     this(name, new ValueMonitor());
   }
 
   MBeanStatsMonitor(final String name, final ValueMonitor monitor) {
-    this.monitorName = name;
+    monitorName = name;
     this.monitor = monitor;
-    this.statsMap = new HashMap<>();
+    statsMap = new HashMap<>();
   }
 
   public void addStatisticsToMonitor(final Statistics stats) {

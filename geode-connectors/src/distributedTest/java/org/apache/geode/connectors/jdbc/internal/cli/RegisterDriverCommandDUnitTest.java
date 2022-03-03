@@ -61,7 +61,7 @@ public class RegisterDriverCommandDUnitTest {
   public void testRegisterDriverDoesNotThrowException() {
 
     // aquire the jar to be used
-    final String jdbcJarName = "mysql-connector-java-8.0.26.jar";
+    final String jdbcJarName = "mysql-connector-java-8.0.28.jar";
     File mySqlDriverFile = loadTestResource("/" + jdbcJarName);
     assertThat(mySqlDriverFile).exists();
     String jarFile = mySqlDriverFile.getAbsolutePath();
@@ -79,7 +79,7 @@ public class RegisterDriverCommandDUnitTest {
   }
 
   private File loadTestResource(String fileName) {
-    String filePath = ResourceUtils.getResource(this.getClass(), fileName).getPath();
+    String filePath = ResourceUtils.getResource(getClass(), fileName).getPath();
     Assertions.assertThat(filePath).isNotNull();
 
     return new File(filePath);

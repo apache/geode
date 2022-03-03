@@ -42,20 +42,20 @@ public class RemoteEntrySnapshot implements EntrySnapshot, DataSerializable {
     }
     Object val = entry.getValue();
     if (val != null) {
-      this.value = val.getClass().getName() + "\"" + val.toString() + "\"";
+      value = val.getClass().getName() + "\"" + val + "\"";
     } else {
-      this.value = null;
+      value = null;
     }
     Object attr = entry.getUserAttribute();
     if (attr != null) {
-      this.userAttribute = attr.getClass().getName() + "\"" + attr.toString() + "\"";
+      userAttribute = attr.getClass().getName() + "\"" + attr + "\"";
     } else {
-      this.userAttribute = null;
+      userAttribute = null;
     }
     if (statsEnabled) {
-      this.stats = new RemoteCacheStatistics(entry.getStatistics());
+      stats = new RemoteCacheStatistics(entry.getStatistics());
     } else {
-      this.stats = new RemoteCacheStatistics();
+      stats = new RemoteCacheStatistics();
     }
   }
 
@@ -66,7 +66,7 @@ public class RemoteEntrySnapshot implements EntrySnapshot, DataSerializable {
 
   @Override
   public Object getName() {
-    return this.name;
+    return name;
   }
 
   @Override
@@ -111,14 +111,14 @@ public class RemoteEntrySnapshot implements EntrySnapshot, DataSerializable {
     }
     if (other instanceof RemoteEntrySnapshot) {
       RemoteEntrySnapshot snap = (RemoteEntrySnapshot) other;
-      return this.name.equals(snap.name);
+      return name.equals(snap.name);
     }
     return false;
   }
 
   @Override
   public int hashCode() {
-    return this.name.hashCode();
+    return name.hashCode();
   }
 
   @Override
@@ -128,17 +128,17 @@ public class RemoteEntrySnapshot implements EntrySnapshot, DataSerializable {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeObject(this.name, out);
-    DataSerializer.writeObject(this.value, out);
-    DataSerializer.writeObject(this.stats, out);
-    DataSerializer.writeObject(this.userAttribute, out);
+    DataSerializer.writeObject(name, out);
+    DataSerializer.writeObject(value, out);
+    DataSerializer.writeObject(stats, out);
+    DataSerializer.writeObject(userAttribute, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.name = DataSerializer.readObject(in);
-    this.value = DataSerializer.readObject(in);
-    this.stats = (RemoteCacheStatistics) DataSerializer.readObject(in);
-    this.userAttribute = DataSerializer.readObject(in);
+    name = DataSerializer.readObject(in);
+    value = DataSerializer.readObject(in);
+    stats = DataSerializer.readObject(in);
+    userAttribute = DataSerializer.readObject(in);
   }
 }

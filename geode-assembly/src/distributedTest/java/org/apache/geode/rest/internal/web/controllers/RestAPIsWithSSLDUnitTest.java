@@ -89,7 +89,7 @@ public class RestAPIsWithSSLDUnitTest {
   private static final String PEOPLE_REGION_NAME = "People";
   private static final String INVALID_CLIENT_ALIAS = "INVALID_CLIENT_ALIAS";
 
-  private String urlContext = "/geode";
+  private final String urlContext = "/geode";
 
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();

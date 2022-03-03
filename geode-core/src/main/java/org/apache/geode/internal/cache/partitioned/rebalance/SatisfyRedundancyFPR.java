@@ -56,7 +56,7 @@ public class SatisfyRedundancyFPR extends RebalanceDirectorAdapter {
   }
 
   public void createFPRBucketsForThisNode() {
-    final Map<BucketRollup, Move> moves = new HashMap<BucketRollup, Move>();
+    final Map<BucketRollup, Move> moves = new HashMap<>();
 
     for (BucketRollup bucket : model.getLowRedundancyBuckets()) {
       Move move = model.findBestTargetForFPR(bucket, true);

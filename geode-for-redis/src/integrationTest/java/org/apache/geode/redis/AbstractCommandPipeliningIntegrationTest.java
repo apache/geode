@@ -92,12 +92,16 @@ public abstract class AbstractCommandPipeliningIntegrationTest implements RedisI
     int numberOfPipeLineRequests = 1000;
 
     do {
-      Pipeline p = jedis.pipelined();
+      // use a unique key for each pipeline for incrementing
+      final String key = "P" + numberOfPipeLineRequests;
+      jedis.set(key, "-1");
+
+      final Pipeline p = jedis.pipelined();
       for (int i = 0; i < NUMBER_OF_COMMANDS_IN_PIPELINE; i++) {
-        p.echo(String.valueOf(i));
+        p.incr(key);
       }
 
-      List<Object> results = p.syncAndReturnAll();
+      final List<Object> results = p.syncAndReturnAll();
 
       verifyResultOrder(NUMBER_OF_COMMANDS_IN_PIPELINE, results);
       numberOfPipeLineRequests--;
@@ -109,8 +113,8 @@ public abstract class AbstractCommandPipeliningIntegrationTest implements RedisI
 
   private void verifyResultOrder(final int numberOfCommandInPipeline, List<Object> results) {
     for (int i = 0; i < numberOfCommandInPipeline; i++) {
-      String expected = String.valueOf(i);
-      String currentVal = (String) results.get(i);
+      final long expected = (long) i;
+      final long currentVal = (long) results.get(i);
 
       assertThat(currentVal).isEqualTo(expected);
     }

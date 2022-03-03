@@ -59,7 +59,7 @@ public class FunctionContextImpl implements FunctionContext {
     this.functionId = functionId;
     this.args = args;
     this.resultSender = resultSender;
-    this.isPossDup = isPossibleDuplicate;
+    isPossDup = isPossibleDuplicate;
 
     Object tmpPrincipal = null;
     if (cache != null) {
@@ -67,7 +67,7 @@ public class FunctionContextImpl implements FunctionContext {
         tmpPrincipal = ((InternalCache) cache).getSecurityService().getPrincipal();
       }
     }
-    this.principal = tmpPrincipal;
+    principal = tmpPrincipal;
   }
 
   /**
@@ -78,7 +78,7 @@ public class FunctionContextImpl implements FunctionContext {
    */
   @Override
   public Object getArguments() {
-    return this.args;
+    return args;
   }
 
   /**
@@ -89,31 +89,29 @@ public class FunctionContextImpl implements FunctionContext {
    */
   @Override
   public String getFunctionId() {
-    return this.functionId;
+    return functionId;
   }
 
   @Override
   public String toString() {
-    final StringBuilder buf = new StringBuilder();
-    buf.append("[FunctionContextImpl:");
-    buf.append("functionId=");
-    buf.append(this.functionId);
-    buf.append(";args=");
-    buf.append(this.args);
-    buf.append(";principal=");
-    buf.append(getPrincipal());
-    buf.append(']');
-    return buf.toString();
+    return "[FunctionContextImpl:"
+        + "functionId="
+        + functionId
+        + ";args="
+        + args
+        + ";principal="
+        + getPrincipal()
+        + ']';
   }
 
   @Override
   public ResultSender getResultSender() {
-    return this.resultSender;
+    return resultSender;
   }
 
   @Override
   public boolean isPossibleDuplicate() {
-    return this.isPossDup;
+    return isPossDup;
   }
 
   @Override

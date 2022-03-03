@@ -47,7 +47,7 @@ public class LdapUserCredentialGenerator extends CredentialGenerator {
     // This is done instead of running all the tests with both
     // server auth enabled/disabled to reduce test run time.
     enableServerAuthentication = !enableServerAuthentication;
-    this.serverAuthEnabled = enableServerAuthentication;
+    serverAuthEnabled = enableServerAuthentication;
   }
 
   @Override

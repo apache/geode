@@ -18,13 +18,11 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonGenerator.Feature;
 
@@ -45,7 +43,7 @@ public class PdxToJSON {
   @MutableForTesting
   public static boolean PDXTOJJSON_UNQUOTEFIELDNAMES =
       Boolean.getBoolean("pdxToJson.unQuoteFieldNames");
-  private PdxInstance m_pdxInstance;
+  private final PdxInstance m_pdxInstance;
 
   public PdxToJSON(PdxInstance pdx) {
     m_pdxInstance = pdx;
@@ -97,7 +95,7 @@ public class PdxToJSON {
 
   @VisibleForTesting
   protected void writeValue(JsonGenerator jg, Object value, String pf)
-      throws JsonGenerationException, IOException {
+      throws IOException {
 
     if (value == null) {
       jg.writeNull();
@@ -151,13 +149,12 @@ public class PdxToJSON {
   }
 
   private void getJSONStringFromMap(JsonGenerator jg, Map map, String pf)
-      throws JsonGenerationException, IOException {
+      throws IOException {
 
     jg.writeStartObject();
 
-    Iterator iter = map.entrySet().iterator();
-    while (iter.hasNext()) {
-      Map.Entry entry = (Map.Entry) iter.next();
+    for (final Object o : map.entrySet()) {
+      Map.Entry entry = (Map.Entry) o;
 
       // Iterate over Map and write key-value
       jg.writeFieldName(entry.getKey().toString()); // write Key in a Map
@@ -167,7 +164,7 @@ public class PdxToJSON {
   }
 
   private String getJSONString(JsonGenerator jg, PdxInstance pdxInstance)
-      throws JsonGenerationException, IOException {
+      throws IOException {
     jg.writeStartObject();
 
     List<String> pdxFields = pdxInstance.getFieldNames();
@@ -183,7 +180,7 @@ public class PdxToJSON {
 
   @VisibleForTesting
   protected void getJSONStringFromArray(JsonGenerator jg, Object value, String pf)
-      throws JsonGenerationException, IOException {
+      throws IOException {
 
     if (!value.getClass().isArray()) {
       throw new IllegalStateException(
@@ -239,7 +236,7 @@ public class PdxToJSON {
   }
 
   private void getJSONStringFromCollection(JsonGenerator jg, Collection<?> coll, String pf)
-      throws JsonGenerationException, IOException {
+      throws IOException {
     jg.writeStartArray();
 
     for (Object obj : coll) {

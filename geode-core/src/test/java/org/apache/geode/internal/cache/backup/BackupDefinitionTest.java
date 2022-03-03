@@ -28,7 +28,7 @@ import org.apache.geode.cache.DiskStore;
 
 public class BackupDefinitionTest {
 
-  private BackupDefinition backupDefinition = new BackupDefinition();
+  private final BackupDefinition backupDefinition = new BackupDefinition();
 
   @Test
   public void hasNoFilesWhenInitialized() {

@@ -43,12 +43,12 @@ public class DependencyGraph implements Serializable {
    * The vertices of the graph. The key is the vertex, the value is the set of outgoing dependencies
    * (ie the dependencies where this vertex is the depender).
    */
-  private Map<Object, Set<Dependency>> vertices = new LinkedHashMap();
+  private final Map<Object, Set<Dependency>> vertices = new LinkedHashMap();
 
   /**
    * The edges of the graph. This holds all of the dependencies in the graph.
    */
-  private Set<Dependency> edges = new LinkedHashSet<Dependency>();
+  private final Set<Dependency> edges = new LinkedHashSet<>();
 
   /** add a collection of edges to this graph */
   public void addEdges(Collection<Dependency> edges) {
@@ -86,8 +86,8 @@ public class DependencyGraph implements Serializable {
    */
   public LinkedList<Dependency> findCycle() {
 
-    Set<Object> unvisited = new HashSet<Object>(vertices.keySet());
-    Set<Object> finished = new HashSet<Object>(vertices.size());
+    Set<Object> unvisited = new HashSet<>(vertices.keySet());
+    Set<Object> finished = new HashSet<>(vertices.size());
 
     while (unvisited.size() > 0) {
       Object start = unvisited.iterator().next();
@@ -231,8 +231,8 @@ public class DependencyGraph implements Serializable {
 
   /** return the depth of the subgraph for the given object */
   private int getDepth(Object depender) {
-    Set<Object> unvisited = new HashSet<Object>(vertices.keySet());
-    Set<Object> finished = new HashSet<Object>(vertices.size());
+    Set<Object> unvisited = new HashSet<>(vertices.keySet());
+    Set<Object> finished = new HashSet<>(vertices.size());
 
     Object start = depender;
     CycleHolder cycle = new CycleHolder();
@@ -263,7 +263,7 @@ public class DependencyGraph implements Serializable {
 
 
   private void populateSubGraph(Object start, DependencyGraph result) {
-    if (result.vertices.keySet().contains(start)) {
+    if (result.vertices.containsKey(start)) {
       return;
     }
     if (vertices.get(start) == null) {
@@ -293,7 +293,7 @@ public class DependencyGraph implements Serializable {
   }
 
   private static class CycleHolder {
-    private LinkedList<Dependency> cycle = new LinkedList<Dependency>();
+    private final LinkedList<Dependency> cycle = new LinkedList<>();
     private boolean cycleDone;
     private int maxDepth = 0;
 

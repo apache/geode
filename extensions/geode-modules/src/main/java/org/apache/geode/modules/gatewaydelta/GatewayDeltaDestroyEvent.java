@@ -36,12 +36,12 @@ public class GatewayDeltaDestroyEvent extends AbstractGatewayDeltaEvent {
     Region<String, DeltaSessionInterface> region = getRegion(cache);
 
     try {
-      region.destroy(this.key);
+      region.destroy(key);
       if (cache.getLogger().fineEnabled()) {
         cache.getLogger().fine("Applied " + this);
       }
     } catch (EntryNotFoundException e) {
-      cache.getLogger().warning(this + ": Session " + this.key + " was not found");
+      cache.getLogger().warning(this + ": Session " + key + " was not found");
     }
   }
 
@@ -57,6 +57,6 @@ public class GatewayDeltaDestroyEvent extends AbstractGatewayDeltaEvent {
 
   public String toString() {
     return "GatewayDeltaDestroyEvent[" + "regionName="
-        + this.regionName + "; key=" + this.key + "]";
+        + regionName + "; key=" + key + "]";
   }
 }

@@ -36,7 +36,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public abstract class AbstractGetRangeIntegrationTest implements RedisIntegrationTest {
 
-  private Random random = new Random();
+  private final Random random = new Random();
   private JedisCluster jedis;
   private final String key = "key";
   private final String value = "value";
@@ -63,38 +63,36 @@ public abstract class AbstractGetRangeIntegrationTest implements RedisIntegratio
   public void givenStartIndexIsNotAnInteger_returnsNotIntegerError() {
     assertThatThrownBy(
         () -> jedis.sendCommand(key, Protocol.Command.GETRANGE, key, "NaN", "5"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+            .hasMessage(ERROR_NOT_INTEGER);
   }
 
   @Test
   public void givenEndIndexIsNotAnInteger_returnsNotIntegerError() {
     assertThatThrownBy(
         () -> jedis.sendCommand(key, Protocol.Command.GETRANGE, key, "0", "NaN"))
-            .hasMessageContaining(ERROR_NOT_INTEGER);
+            .hasMessage(ERROR_NOT_INTEGER);
   }
 
   @Test
   public void givenRangeIsBiggerThanMinOrMax_returnsNotIntegerError() {
     assertThatThrownBy(
         () -> jedis.sendCommand(key, Protocol.Command.GETRANGE, key, "0",
-            "9223372036854775808"))
-                .hasMessage("ERR " + ERROR_NOT_INTEGER);
+            "9223372036854775808")).hasMessage(ERROR_NOT_INTEGER);
 
     assertThatThrownBy(
         () -> jedis.sendCommand(key, Protocol.Command.GETRANGE, key, "0",
-            "-9223372036854775809"))
-                .hasMessage("ERR " + ERROR_NOT_INTEGER);
+            "-9223372036854775809")).hasMessage(ERROR_NOT_INTEGER);
   }
 
   @Test
   public void givenWrongType_returnsWrongTypeError() {
     jedis.sadd("set", value);
     assertThatThrownBy(() -> jedis.sendCommand("set", Protocol.Command.GETRANGE, "set", "0", "1"))
-        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
 
     jedis.hset("hash", "field", value);
     assertThatThrownBy(() -> jedis.sendCommand("hash", Protocol.Command.GETRANGE, "hash", "0", "1"))
-        .hasMessage("WRONGTYPE " + ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test

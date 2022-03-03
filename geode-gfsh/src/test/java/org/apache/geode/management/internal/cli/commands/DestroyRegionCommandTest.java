@@ -55,11 +55,11 @@ public class DestroyRegionCommandTest {
   private CliFunctionResult result1, result2;
   private InternalConfigurationPersistenceService ccService;
   XmlEntity xmlEntity;
-  private CacheConfig cacheConfig = mock(CacheConfig.class);
-  private RegionConfig regionConfig = mock(RegionConfig.class);
-  private CacheElement cacheElement = mock(CacheElement.class);
-  private List<RegionConfig> regionConfigList = Collections.singletonList(regionConfig);
-  private List<CacheElement> cacheElementList = Collections.singletonList(cacheElement);
+  private final CacheConfig cacheConfig = mock(CacheConfig.class);
+  private final RegionConfig regionConfig = mock(RegionConfig.class);
+  private final CacheElement cacheElement = mock(CacheElement.class);
+  private final List<RegionConfig> regionConfigList = Collections.singletonList(regionConfig);
+  private final List<CacheElement> cacheElementList = Collections.singletonList(cacheElement);
 
   @Before
   @SuppressWarnings("unchecked")

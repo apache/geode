@@ -87,7 +87,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
 
   @Test()
   public void shouldNotTokenizeWordsWithKeywordAnalyzer() throws Exception {
-    Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
+    Map<String, Analyzer> fields = new HashMap<>();
     fields.put("field1", new StandardAnalyzer());
     fields.put("field2", new KeywordAnalyzer());
     region = createRegionAndIndex(fields);
@@ -161,7 +161,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
 
   @Test()
   public void shouldQueryUsingSoundexAnalyzer() throws Exception {
-    Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
+    Map<String, Analyzer> fields = new HashMap<>();
     fields.put("field1", new StandardAnalyzer());
     fields.put("field2", new DoubleMetaphoneAnalyzer());
     region = createRegionAndIndex(fields);
@@ -239,9 +239,9 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     allEntries.addAll(page4);
 
     assertEquals(region.keySet(),
-        allEntries.stream().map(entry -> entry.getKey()).collect(Collectors.toSet()));
+        allEntries.stream().map(LuceneResultStruct::getKey).collect(Collectors.toSet()));
     assertEquals(region.values(),
-        allEntries.stream().map(entry -> entry.getValue()).collect(Collectors.toSet()));
+        allEntries.stream().map(LuceneResultStruct::getValue).collect(Collectors.toSet()));
   }
 
   @Test
@@ -274,7 +274,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
 
   @Test()
   public void shouldTokenizeUsingMyCharacterAnalyser() throws Exception {
-    Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
+    Map<String, Analyzer> fields = new HashMap<>();
     // not to specify field1's analyzer, it should use standard analyzer
     // Note: fields has to contain "field1", otherwise, field1 will not be tokenized
     fields.put("field1", null);
@@ -299,7 +299,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
 
   @Test()
   public void shouldAllowNullInFieldValue() throws Exception {
-    Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
+    Map<String, Analyzer> fields = new HashMap<>();
     fields.put("field1", null);
     fields.put("field2", null);
     region = createRegionAndIndex(fields);
@@ -314,7 +314,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
 
   @Test()
   public void queryJsonObject() throws Exception {
-    Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
+    Map<String, Analyzer> fields = new HashMap<>();
     fields.put("name", null);
     fields.put("lastName", null);
     fields.put("address", null);
@@ -393,9 +393,9 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     final List<LuceneResultStruct<Object, Object>> page = pages.next();
     assertFalse(pages.hasNext());
     assertEquals(region.keySet(),
-        page.stream().map(entry -> entry.getKey()).collect(Collectors.toSet()));
+        page.stream().map(LuceneResultStruct::getKey).collect(Collectors.toSet()));
     assertEquals(region.values(),
-        page.stream().map(entry -> entry.getValue()).collect(Collectors.toSet()));
+        page.stream().map(LuceneResultStruct::getValue).collect(Collectors.toSet()));
   }
 
   @Test
@@ -419,9 +419,9 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     allEntries.addAll(page2);
     allEntries.addAll(page3);
     assertEquals(region.keySet(),
-        allEntries.stream().map(entry -> entry.getKey()).collect(Collectors.toSet()));
+        allEntries.stream().map(LuceneResultStruct::getKey).collect(Collectors.toSet()));
     assertEquals(region.values(),
-        allEntries.stream().map(entry -> entry.getValue()).collect(Collectors.toSet()));
+        allEntries.stream().map(LuceneResultStruct::getValue).collect(Collectors.toSet()));
   }
 
   @Test
@@ -457,9 +457,9 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     allEntries.addAll(page2);
     allEntries.addAll(page3);
     assertEquals(region.keySet(),
-        allEntries.stream().map(entry -> entry.getKey()).collect(Collectors.toSet()));
+        allEntries.stream().map(LuceneResultStruct::getKey).collect(Collectors.toSet()));
     assertEquals(region.values(),
-        allEntries.stream().map(entry -> entry.getValue()).collect(Collectors.toSet()));
+        allEntries.stream().map(LuceneResultStruct::getValue).collect(Collectors.toSet()));
   }
 
   @Test
@@ -477,12 +477,13 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     allEntries.addAll(pages.next());
 
     // Destroying an entry from allEntries and the region after it is fetched through pages.next().
-    Object removeKey = ((LuceneResultStruct) allEntries.remove(0)).getKey();
+    Object removeKey = allEntries.remove(0).getKey();
     region.destroy(removeKey);
     allEntries.addAll(pages.next());
 
     // Destroying a region entry which has't been fetched through pages.next() yet.
-    Set resultKeySet = allEntries.stream().map(entry -> entry.getKey()).collect(Collectors.toSet());
+    Set resultKeySet =
+        allEntries.stream().map(LuceneResultStruct::getKey).collect(Collectors.toSet());
 
     for (Object key : region.keySet()) {
       if (!resultKeySet.contains(key)) {
@@ -495,9 +496,9 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
     assertFalse(pages.hasNext());
 
     assertEquals(region.keySet(),
-        allEntries.stream().map(entry -> entry.getKey()).collect(Collectors.toSet()));
+        allEntries.stream().map(LuceneResultStruct::getKey).collect(Collectors.toSet()));
     assertEquals(region.values(),
-        allEntries.stream().map(entry -> entry.getValue()).collect(Collectors.toSet()));
+        allEntries.stream().map(LuceneResultStruct::getValue).collect(Collectors.toSet()));
   }
 
   @Test
@@ -523,7 +524,7 @@ public class LuceneQueriesIntegrationTest extends LuceneIntegrationTest {
 
   @Test()
   public void soundexQueryReturnExpectedTruePositiveAndFalsePositive() throws Exception {
-    Map<String, Analyzer> fields = new HashMap<String, Analyzer>();
+    Map<String, Analyzer> fields = new HashMap<>();
     fields.put("field1", new DoubleMetaphoneAnalyzer());
     fields.put("field2", null);
     region = createRegionAndIndex(fields);

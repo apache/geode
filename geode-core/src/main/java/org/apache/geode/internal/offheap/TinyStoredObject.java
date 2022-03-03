@@ -37,12 +37,12 @@ public class TinyStoredObject extends AbstractStoredObject {
   private final long address;
 
   public TinyStoredObject(long addr) {
-    this.address = addr;
+    address = addr;
   }
 
   @Override
   public long getAddress() {
-    return this.address;
+    return address;
   }
 
   @Override
@@ -96,7 +96,7 @@ public class TinyStoredObject extends AbstractStoredObject {
 
   @Override
   public Object getDeserializedValue(Region r, RegionEntry re) {
-    return OffHeapRegionEntryHelper.decodeAddressToObject(this.address);
+    return OffHeapRegionEntryHelper.decodeAddressToObject(address);
   }
 
   @Override
@@ -118,12 +118,12 @@ public class TinyStoredObject extends AbstractStoredObject {
 
   @Override
   public boolean isSerialized() {
-    return OffHeapRegionEntryHelper.isSerialized(this.address);
+    return OffHeapRegionEntryHelper.isSerialized(address);
   }
 
   @Override
   public boolean isCompressed() {
-    return OffHeapRegionEntryHelper.isCompressed(this.address);
+    return OffHeapRegionEntryHelper.isCompressed(address);
   }
 
   @Override
@@ -148,7 +148,7 @@ public class TinyStoredObject extends AbstractStoredObject {
 
   @Override
   public int getDataSize() {
-    return OffHeapRegionEntryHelper.decodeAddressToDataSize(this.address);
+    return OffHeapRegionEntryHelper.decodeAddressToDataSize(address);
   }
 
   @Override

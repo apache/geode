@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -153,7 +152,7 @@ public class AutoBalancer implements Declarable {
 
   @Override
   public void initialize(Cache cache, Properties props) {
-    this.cacheFacade.setCache(cache);
+    cacheFacade.setCache(cache);
     internalInitialize(props);
   }
 
@@ -166,7 +165,7 @@ public class AutoBalancer implements Declarable {
   }
 
   private void internalInitialize(Properties props) {
-    if (this.initialized) {
+    if (initialized) {
       // For backwards compatibility we need to keep the external
       // init method. But the product will call both initialize and
       // init. So if we are already initialized subsequent calls
@@ -174,10 +173,10 @@ public class AutoBalancer implements Declarable {
       // boolean check can also be removed.
       return;
     }
-    this.initialized = true;
+    initialized = true;
 
     if (logger.isDebugEnabled()) {
-      logger.debug("Initializing " + this.getClass().getSimpleName() + " with " + props);
+      logger.debug("Initializing " + getClass().getSimpleName() + " with " + props);
     }
 
     auditor.init(props);
@@ -201,20 +200,17 @@ public class AutoBalancer implements Declarable {
     CronExpression generator;
 
     CronScheduler() {
-      trigger = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
-        @Override
-        public Thread newThread(Runnable r) {
-          Thread thread = new Thread(r, "AutoBalancer");
-          thread.setDaemon(true);
-          return thread;
-        }
+      trigger = Executors.newSingleThreadScheduledExecutor(r -> {
+        Thread thread = new Thread(r, "AutoBalancer");
+        thread.setDaemon(true);
+        return thread;
       });
     }
 
     @Override
     public void init(String schedule) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Initializing " + this.getClass().getSimpleName() + " with " + schedule);
+        logger.debug("Initializing " + getClass().getSimpleName() + " with " + schedule);
       }
 
       if (schedule == null || schedule.isEmpty()) {
@@ -244,20 +240,17 @@ public class AutoBalancer implements Declarable {
             delay);
       }
 
-      trigger.schedule(new Runnable() {
-        @Override
-        public void run() {
-          try {
-            auditor.execute();
-          } catch (CacheClosedException e) {
-            logger.warn("Cache closed while attempting to rebalance the cluster. Abort future jobs",
-                e);
-            return;
-          } catch (Exception e) {
-            logger.warn("Error while executing out-of-balance audit.", e);
-          }
-          submitNext();
+      trigger.schedule(() -> {
+        try {
+          auditor.execute();
+        } catch (CacheClosedException e) {
+          logger.warn("Cache closed while attempting to rebalance the cluster. Abort future jobs",
+              e);
+          return;
+        } catch (Exception e) {
+          logger.warn("Error while executing out-of-balance audit.", e);
         }
+        submitNext();
       }, delay, TimeUnit.MILLISECONDS);
     }
 
@@ -288,19 +281,19 @@ public class AutoBalancer implements Declarable {
     @Override
     public void init(Properties props) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Initializing " + this.getClass().getSimpleName());
+        logger.debug("Initializing " + getClass().getSimpleName());
       }
 
       if (props != null) {
         if (props.getProperty(SIZE_THRESHOLD_PERCENT) != null) {
-          sizeThreshold = Integer.valueOf(props.getProperty(SIZE_THRESHOLD_PERCENT));
+          sizeThreshold = Integer.parseInt(props.getProperty(SIZE_THRESHOLD_PERCENT));
           if (sizeThreshold <= 0 || sizeThreshold >= 100) {
             throw new GemFireConfigException(
                 SIZE_THRESHOLD_PERCENT + " should be integer, 1 to 99");
           }
         }
         if (props.getProperty(MINIMUM_SIZE) != null) {
-          sizeMinimum = Integer.valueOf(props.getProperty(MINIMUM_SIZE));
+          sizeMinimum = Integer.parseInt(props.getProperty(MINIMUM_SIZE));
           if (sizeMinimum <= 0) {
             throw new GemFireConfigException(MINIMUM_SIZE + " should be greater than 0");
           }
@@ -351,9 +344,7 @@ public class AutoBalancer implements Declarable {
 
       if (totalSize > 0) {
         int transferPercent = (int) ((100.0 * transferSize) / totalSize);
-        if (transferPercent >= sizeThreshold) {
-          return true;
-        }
+        return transferPercent >= sizeThreshold;
       }
 
       // TODO test member level skew
@@ -579,7 +570,7 @@ public class AutoBalancer implements Declarable {
   }
 
   public CacheOperationFacade getCacheOperationFacade() {
-    return this.cacheFacade;
+    return cacheFacade;
   }
 
   public void destroy() {

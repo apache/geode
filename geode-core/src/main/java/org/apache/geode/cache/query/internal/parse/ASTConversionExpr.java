@@ -34,7 +34,7 @@ public class ASTConversionExpr extends GemFireAST {
   @Override
   public void compile(QCompiler compiler) {
     super.compile(compiler);
-    int numOfChildren = this.getNumberOfChildren();
+    int numOfChildren = getNumberOfChildren();
     compiler.function(getType(), numOfChildren);
   }
 

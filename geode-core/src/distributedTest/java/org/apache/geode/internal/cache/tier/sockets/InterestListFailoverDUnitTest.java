@@ -81,16 +81,14 @@ public class InterestListFailoverDUnitTest extends JUnit4DistributedTestCase {
   public void createServersAndClients(int redundancyLevel) {
     final Host host = Host.getHost(0);
     // start servers first
-    PORT1 = ((Integer) vm0
-        .invoke(() -> CacheServerTestUtil.createCacheServer(REGION_NAME, new Boolean(true))))
-            .intValue();
+    PORT1 = vm0
+        .invoke(() -> CacheServerTestUtil.createCacheServer(REGION_NAME, Boolean.TRUE));
 
-    PORT2 = ((Integer) vm3
-        .invoke(() -> CacheServerTestUtil.createCacheServer(REGION_NAME, new Boolean(true))))
-            .intValue();
+    PORT2 = vm3
+        .invoke(() -> CacheServerTestUtil.createCacheServer(REGION_NAME, Boolean.TRUE));
 
-    vm1.invoke(() -> CacheServerTestUtil.disableShufflingOfEndpoints());
-    vm2.invoke(() -> CacheServerTestUtil.disableShufflingOfEndpoints());
+    vm1.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
+    vm2.invoke(CacheServerTestUtil::disableShufflingOfEndpoints);
     vm1.invoke(() -> CacheServerTestUtil.createCacheClient(
         getClientPool(NetworkUtils.getServerHostName(host), redundancyLevel), REGION_NAME));
     vm2.invoke(() -> CacheServerTestUtil
@@ -119,25 +117,25 @@ public class InterestListFailoverDUnitTest extends JUnit4DistributedTestCase {
 
   public void doTestInterestListRecovery(int redundancyLevel) {
     createServersAndClients(redundancyLevel);
-    vm1.invoke(() -> InterestListFailoverDUnitTest.createEntries());
-    vm2.invoke(() -> InterestListFailoverDUnitTest.createEntries());
-    vm0.invoke(() -> InterestListFailoverDUnitTest.createEntries());
+    vm1.invoke(InterestListFailoverDUnitTest::createEntries);
+    vm2.invoke(InterestListFailoverDUnitTest::createEntries);
+    vm0.invoke(InterestListFailoverDUnitTest::createEntries);
     Integer primaryPort =
-        (Integer) vm1.invoke(() -> InterestListFailoverDUnitTest.registerInterestList());
+        vm1.invoke(InterestListFailoverDUnitTest::registerInterestList);
     VM primaryVM;
-    if (primaryPort.intValue() == PORT1) {
+    if (primaryPort == PORT1) {
       primaryVM = vm0;
     } else {
       primaryVM = vm3;
     }
-    vm2.invoke(() -> InterestListFailoverDUnitTest.putA());
+    vm2.invoke(InterestListFailoverDUnitTest::putA);
     // pause(10000);
-    vm1.invoke(() -> InterestListFailoverDUnitTest.validateEntriesA());
-    primaryVM.invoke(() -> InterestListFailoverDUnitTest.stopServer());
+    vm1.invoke(InterestListFailoverDUnitTest::validateEntriesA);
+    primaryVM.invoke(InterestListFailoverDUnitTest::stopServer);
     // pause(10000);
-    vm2.invoke(() -> InterestListFailoverDUnitTest.putB());
+    vm2.invoke(InterestListFailoverDUnitTest::putB);
     // (10000);
-    vm1.invoke(() -> InterestListFailoverDUnitTest.validateEntriesB());
+    vm1.invoke(InterestListFailoverDUnitTest::validateEntriesB);
   }
 
   public static void createEntries() {
@@ -185,7 +183,7 @@ public class InterestListFailoverDUnitTest extends JUnit4DistributedTestCase {
       r.registerInterest("key-5");
       // now return the port of the primary.
       PoolImpl p = (PoolImpl) PoolManager.find(r.getAttributes().getPoolName());
-      return new Integer(p.getPrimaryPort());
+      return p.getPrimaryPort();
     } catch (Exception ex) {
       Assert.fail("failed while registering keys k1 to k5", ex);
       return null;
@@ -261,10 +259,7 @@ public class InterestListFailoverDUnitTest extends JUnit4DistributedTestCase {
           if (val == null) {
             return false;
           }
-          if (!val.equals("vm2-key-1" + v)) {
-            return false;
-          }
-          return true;
+          return val.equals("vm2-key-1" + v);
         }
 
         @Override

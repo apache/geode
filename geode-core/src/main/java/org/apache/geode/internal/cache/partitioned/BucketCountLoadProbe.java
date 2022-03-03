@@ -41,7 +41,7 @@ public class BucketCountLoadProbe implements LoadProbe, DataSerializableFixedID 
 
     // key: bid, value: size
     for (Integer bidInt : ds.getAllLocalBucketIds()) {
-      int bid = bidInt.intValue();
+      int bid = bidInt;
 
       BucketAdvisor bucketAdvisor = pr.getRegionAdvisor().getBucket(bid).getBucketAdvisor();
       // Wait for a primary to exist for this bucket, because

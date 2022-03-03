@@ -269,7 +269,7 @@ public class BufferPool {
       case TRACKED_RECEIVER:
         return acquireDirectReceiveBuffer(capacity);
     }
-    throw new IllegalArgumentException("Unexpected buffer type " + type.toString());
+    throw new IllegalArgumentException("Unexpected buffer type " + type);
   }
 
   ByteBuffer acquireNonDirectBuffer(BufferPool.BufferType type, int capacity) {
@@ -281,7 +281,7 @@ public class BufferPool {
       case TRACKED_RECEIVER:
         return acquireNonDirectReceiveBuffer(capacity);
     }
-    throw new IllegalArgumentException("Unexpected buffer type " + type.toString());
+    throw new IllegalArgumentException("Unexpected buffer type " + type);
   }
 
   void releaseBuffer(BufferPool.BufferType type, @NotNull ByteBuffer buffer) {
@@ -295,7 +295,7 @@ public class BufferPool {
         releaseReceiveBuffer(buffer);
         return;
     }
-    throw new IllegalArgumentException("Unexpected buffer type " + type.toString());
+    throw new IllegalArgumentException("Unexpected buffer type " + type);
   }
 
 

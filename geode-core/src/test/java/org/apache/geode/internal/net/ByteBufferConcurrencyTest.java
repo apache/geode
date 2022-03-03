@@ -67,9 +67,7 @@ public class ByteBufferConcurrencyTest {
     for (int i = 0; i < PARALLEL_TASK_COUNT; ++i) {
       executor.inParallel(useBuffer);
     }
-    executor.inParallel(() -> {
-      vendor.destruct();
-    });
+    executor.inParallel(vendor::destruct);
     for (int i = 0; i < PARALLEL_TASK_COUNT; ++i) {
       executor.inParallel(useBuffer);
     }
@@ -119,9 +117,7 @@ public class ByteBufferConcurrencyTest {
     for (int i = 0; i < PARALLEL_TASK_COUNT; ++i) {
       executor.inParallel(accessBufferAndVerify);
     }
-    executor.inParallel(() -> {
-      vendor.destruct();
-    });
+    executor.inParallel(vendor::destruct);
     for (int i = 0; i < PARALLEL_TASK_COUNT; ++i) {
       executor.inParallel(accessBufferAndVerify);
     }

@@ -15,7 +15,6 @@
 package org.apache.geode.test.assertj.internal;
 
 import static java.lang.System.lineSeparator;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.internal.CommonValidations.checkIsNotNull;
 import static org.assertj.core.internal.CommonValidations.failIfEmptySinceActualIsNotEmpty;
@@ -31,6 +30,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.AssertionInfo;
 import org.assertj.core.internal.Files;
@@ -206,6 +206,6 @@ public abstract class AbstractLogFileAssert<SELF extends AbstractLogFileAssert<S
   }
 
   private static List<String> nonBlankStrings(List<String> values) {
-    return values.stream().filter(s -> isNotBlank(s)).collect(Collectors.toList());
+    return values.stream().filter(StringUtils::isNotBlank).collect(Collectors.toList());
   }
 }

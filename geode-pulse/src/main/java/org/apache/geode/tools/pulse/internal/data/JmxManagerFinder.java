@@ -146,7 +146,7 @@ public class JmxManagerFinder {
     } finally {
       try {
         sock.close();
-      } catch (Exception e) {
+      } catch (Exception ignored) {
       }
     }
   }

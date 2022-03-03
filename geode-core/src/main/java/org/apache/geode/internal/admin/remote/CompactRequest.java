@@ -92,7 +92,7 @@ public class CompactRequest extends CliLegacyMessage {
       }
     }
 
-    return new CompactResponse(this.getSender(), compactedStores);
+    return new CompactResponse(getSender(), compactedStores);
   }
 
   @Override
@@ -114,8 +114,8 @@ public class CompactRequest extends CliLegacyMessage {
 
   @Override
   public String toString() {
-    return "Compact request sent to " + this.getRecipientsDescription() + " from "
-        + this.getSender();
+    return "Compact request sent to " + getRecipientsDescription() + " from "
+        + getSender();
   }
 
   private static class CompactReplyProcessor extends AdminMultipleReplyProcessor {
@@ -141,7 +141,7 @@ public class CompactRequest extends CliLegacyMessage {
       if (message instanceof CompactResponse) {
         final Set<PersistentID> persistentIds = ((CompactResponse) message).getPersistentIds();
         if (persistentIds != null && !persistentIds.isEmpty()) {
-          this.results.put(message.getSender(), persistentIds);
+          results.put(message.getSender(), persistentIds);
         }
       }
       super.process(message, warn);

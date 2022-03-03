@@ -88,10 +88,10 @@ public class IumMultConditionJUnitTest {
     }
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] = {
+    String[] queries = {
         "SELECT DISTINCT * FROM " + SEPARATOR
             + "pos pf,  positions.values pos where pf.status='active' and pos.secId= 'IBM' and ID = 0"};
-    SelectResults sr[][] = new SelectResults[queries.length][2];
+    SelectResults[][] sr = new SelectResults[queries.length][2];
 
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -114,9 +114,8 @@ public class IumMultConditionJUnitTest {
         // CacheUtils.log(strg1[0]);
         // CacheUtils.log(strg1[1]);
         set1 = ((sr[i][0]).asSet());
-        Iterator iter = set1.iterator();
-        while (iter.hasNext()) {
-          Struct stc1 = (Struct) iter.next();
+        for (final Object o : set1) {
+          Struct stc1 = (Struct) o;
           valPf1 = stc1.get(strg1[0]);
           valPos1 = stc1.get(strg1[1]);
           isActive1 = ((Portfolio) stc1.get(strg1[0])).isActive();
@@ -137,7 +136,7 @@ public class IumMultConditionJUnitTest {
     // IndexType.FUNCTIONAL,"pos.secId","/pos pf, pf.positions.values pos");
     qs.createIndex("IDIndex", IndexType.FUNCTIONAL, "pf.ID",
         SEPARATOR + "pos pf, pf.positions.values pos");
-    String queries2[] = {
+    String[] queries2 = {
         "SELECT DISTINCT * FROM " + SEPARATOR
             + "pos pf,  positions.values pos where pf.status='active' and pos.secId= 'IBM' and ID = 0"};
     for (int i = 0; i < queries.length; i++) {
@@ -161,9 +160,8 @@ public class IumMultConditionJUnitTest {
         // CacheUtils.log(strg2[0]);
         // CacheUtils.log(strg2[1]);
         set2 = ((sr[i][1]).asSet());
-        Iterator iter = set2.iterator();
-        while (iter.hasNext()) {
-          Struct stc2 = (Struct) iter.next();
+        for (final Object o : set2) {
+          Struct stc2 = (Struct) o;
           valPf2 = stc2.get(strg2[0]);
           valPos2 = stc2.get(strg2[1]);
           isActive2 = ((Portfolio) stc2.get(strg2[0])).isActive();

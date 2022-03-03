@@ -107,7 +107,7 @@ public class CacheXml80DUnitTest extends CacheXml70DUnitTest {
     c.getQueryService().createIndex("rIndex", "r.R_ID",
         SEPARATOR + "replicated r, r.positions.values rv");
 
-    File dir = new File(this.temporaryFolder.getRoot(), "XML_" + this.getGemFireVersion());
+    File dir = new File(temporaryFolder.getRoot(), "XML_" + getGemFireVersion());
     dir.mkdirs();
     File file = new File(dir, "actual-" + getUniqueName() + ".xml");
 

@@ -65,8 +65,8 @@ public class RemoveAllDAckDUnitTest extends JUnit4DistributedTestCase { // TODO:
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(() -> RemoveAllDAckDUnitTest.createCacheForVM0());
-    vm1.invoke(() -> RemoveAllDAckDUnitTest.createCacheForVM1());
+    vm0.invoke(RemoveAllDAckDUnitTest::createCacheForVM0);
+    vm1.invoke(RemoveAllDAckDUnitTest::createCacheForVM1);
     LogWriterUtils.getLogWriter().fine("Cache created successfully");
   }
 
@@ -75,8 +75,8 @@ public class RemoveAllDAckDUnitTest extends JUnit4DistributedTestCase { // TODO:
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(() -> RemoveAllDAckDUnitTest.closeCache());
-    vm1.invoke(() -> RemoveAllDAckDUnitTest.closeCache());
+    vm0.invoke(RemoveAllDAckDUnitTest::closeCache);
+    vm1.invoke(RemoveAllDAckDUnitTest::closeCache);
   }
 
   public static void createCacheForVM0() throws Exception {
@@ -120,8 +120,8 @@ public class RemoveAllDAckDUnitTest extends JUnit4DistributedTestCase { // TODO:
       objArr[0] = "" + i;
       vm0.invoke(RemoveAllDAckDUnitTest.class, "putMethod", objArr);
     }
-    vm0.invoke(() -> RemoveAllDAckDUnitTest.removeAllMethod());
-    flag = vm1.invoke(() -> RemoveAllDAckDUnitTest.getFlagVM1());
+    vm0.invoke(RemoveAllDAckDUnitTest::removeAllMethod);
+    flag = vm1.invoke(RemoveAllDAckDUnitTest::getFlagVM1);
     assertEquals(true, flag);
 
     vm1.invoke(new CacheSerializableRunnable("temp1") {

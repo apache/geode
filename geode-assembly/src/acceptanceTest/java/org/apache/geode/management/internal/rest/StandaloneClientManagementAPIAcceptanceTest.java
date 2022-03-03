@@ -95,7 +95,7 @@ public class StandaloneClientManagementAPIAcceptanceTest {
   public void clientCreatesRegionUsingClusterManagementService() throws Exception {
     JarBuilder jarBuilder = new JarBuilder();
     String filePath =
-        createTempFileFromResource(this.getClass(), "/ManagementClientCreateRegion.java")
+        createTempFileFromResource(getClass(), "/ManagementClientCreateRegion.java")
             .getAbsolutePath();
     assertThat(filePath).as("java file resource not found").isNotBlank();
 

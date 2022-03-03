@@ -57,15 +57,15 @@ public class RestAgent {
   }
 
   public synchronized boolean isRunning() {
-    return this.running;
+    return running;
   }
 
 
   public synchronized void start(InternalCache cache) {
-    if (!this.running && this.config.getHttpServicePort() != 0) {
+    if (!running && config.getHttpServicePort() != 0) {
       try {
         startHttpService(cache);
-        this.running = true;
+        running = true;
         cache.setRESTServiceRunning(true);
 
         // create region to hold query information (queryId, queryString). Added
@@ -78,7 +78,7 @@ public class RestAgent {
   }
 
   private final String GEMFIRE_VERSION = GemFireVersion.getGemFireVersion();
-  private AgentUtil agentUtil = new AgentUtil(GEMFIRE_VERSION);
+  private final AgentUtil agentUtil = new AgentUtil(GEMFIRE_VERSION);
 
   private boolean isRunningInTomcat() {
     return (System.getProperty("catalina.base") != null

@@ -27,9 +27,9 @@ import org.apache.geode.internal.cache.DistributedRegionFunctionStreamingMessage
 
 public class DistributedRegionFunctionResultWaiter extends StreamingFunctionOperation {
 
-  private Set filter;
+  private final Set filter;
 
-  private String regionPath;
+  private final String regionPath;
 
   public DistributedRegionFunctionResultWaiter(InternalDistributedSystem sys, String regionPath,
       ResultCollector rc, final Function function, final Set filter, Set recipients,
@@ -44,8 +44,8 @@ public class DistributedRegionFunctionResultWaiter extends StreamingFunctionOper
       FunctionStreamingResultCollector processor, boolean isReExecute,
       boolean isFnSerializationReqd) {
     DistributedRegionFunctionStreamingMessage msg = new DistributedRegionFunctionStreamingMessage(
-        this.regionPath, this.functionObject, processor.getProcessorId(), this.filter,
-        this.memberArgs.get(recipients.toArray()[0]), isReExecute, isFnSerializationReqd);
+        regionPath, functionObject, processor.getProcessorId(), filter,
+        memberArgs.get(recipients.toArray()[0]), isReExecute, isFnSerializationReqd);
     msg.setRecipients(recipients);
     return msg;
   }

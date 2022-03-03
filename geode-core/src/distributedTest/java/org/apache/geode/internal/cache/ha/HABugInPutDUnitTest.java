@@ -80,23 +80,23 @@ public class HABugInPutDUnitTest extends JUnit4DistributedTestCase {
 
     // System.setProperty())
     int PORT1 =
-        ((Integer) server1.invoke(() -> HABugInPutDUnitTest.createServerCache())).intValue();
+        server1.invoke(HABugInPutDUnitTest::createServerCache);
     int PORT2 =
-        ((Integer) server2.invoke(() -> HABugInPutDUnitTest.createServerCache())).intValue();
+        server2.invoke(HABugInPutDUnitTest::createServerCache);
 
     client1.invoke(() -> HABugInPutDUnitTest.createClientCache(NetworkUtils.getServerHostName(host),
-        new Integer(PORT1), new Integer(PORT2)));
+        PORT1, PORT2));
     client2.invoke(() -> HABugInPutDUnitTest.createClientCache(NetworkUtils.getServerHostName(host),
-        new Integer(PORT1), new Integer(PORT2)));
+        PORT1, PORT2));
   }
 
   @Override
   public final void preTearDown() throws Exception {
-    client1.invoke(() -> HABugInPutDUnitTest.closeCache());
-    client2.invoke(() -> HABugInPutDUnitTest.closeCache());
+    client1.invoke(HABugInPutDUnitTest::closeCache);
+    client2.invoke(HABugInPutDUnitTest::closeCache);
     // close server
-    server1.invoke(() -> HABugInPutDUnitTest.closeCache());
-    server2.invoke(() -> HABugInPutDUnitTest.closeCache());
+    server1.invoke(HABugInPutDUnitTest::closeCache);
+    server2.invoke(HABugInPutDUnitTest::closeCache);
   }
 
   public static void closeCache() {
@@ -128,13 +128,13 @@ public class HABugInPutDUnitTest extends JUnit4DistributedTestCase {
     server.setPort(port);
     server.setNotifyBySubscription(false);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   public static void createClientCache(String hostName, Integer port1, Integer port2)
       throws Exception {
-    int PORT1 = port1.intValue();
-    int PORT2 = port2.intValue();
+    int PORT1 = port1;
+    int PORT2 = port2;
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");

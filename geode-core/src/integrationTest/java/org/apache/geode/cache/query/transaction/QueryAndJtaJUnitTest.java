@@ -281,7 +281,7 @@ public class QueryAndJtaJUnitTest {
     qs.createIndex("foo", IndexType.FUNCTIONAL, "age", SEPARATOR + "sample");
     Context ctx = cache.getJNDIContext();
     UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
-    Integer x = new Integer(0);
+    Integer x = 0;
     utx.begin();
     region.create(x, new Person("xyz", 45));
     utx.commit();
@@ -292,7 +292,7 @@ public class QueryAndJtaJUnitTest {
     utx.begin();
     region.put(x, dsample);
     utx.commit();
-    CacheUtils.log(((Person) region.get(x)));
+    CacheUtils.log(region.get(x));
     assertEquals(0, ((SelectResults) q.execute()).size());
   }
 
@@ -304,7 +304,7 @@ public class QueryAndJtaJUnitTest {
     qs.createIndex("foo", IndexType.FUNCTIONAL, "age", SEPARATOR + "sample");
     Context ctx = cache.getJNDIContext();
     UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
-    Integer x = new Integer(0);
+    Integer x = 0;
     utx.begin();
     region.create(x, new Person("xyz", 45));
     utx.commit();
@@ -315,7 +315,7 @@ public class QueryAndJtaJUnitTest {
     utx.begin();
     region.invalidate(x);
     utx.commit();
-    CacheUtils.log(((Person) region.get(x)));
+    CacheUtils.log(region.get(x));
     assertEquals(0, ((SelectResults) q.execute()).size());
   }
 
@@ -390,7 +390,7 @@ public class QueryAndJtaJUnitTest {
     qs.createIndex("foo", IndexType.FUNCTIONAL, "age", SEPARATOR + "sample");
     Context ctx = cache.getJNDIContext();
     UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
-    Integer x = new Integer(0);
+    Integer x = 0;
     utx.begin();
     region.create(x, new Person("xyz", 45));
     utx.commit();
@@ -401,7 +401,7 @@ public class QueryAndJtaJUnitTest {
     utx.begin();
     region.destroy(x);
     utx.commit();
-    CacheUtils.log(((Person) region.get(x)));
+    CacheUtils.log(region.get(x));
     assertEquals(0, ((SelectResults) q.execute()).size());
   }
 
@@ -418,7 +418,7 @@ public class QueryAndJtaJUnitTest {
     qs.createIndex("foo", IndexType.FUNCTIONAL, "index", SEPARATOR + "sample");
     Context ctx = cache.getJNDIContext();
     UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
-    Integer x = new Integer(0);
+    Integer x = 0;
     utx.begin();
     region.create(x, new Person("xyz", 45));
     try {

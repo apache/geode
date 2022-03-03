@@ -101,7 +101,7 @@ public class ExportLogsFunction implements InternalFunction<ExportLogsFunction.A
         return;
       }
 
-      logger.info("Streaming zipped file: " + exportedZipFile.toString());
+      logger.info("Streaming zipped file: " + exportedZipFile);
       try (FileInputStream inputStream = new FileInputStream(exportedZipFile.toFile())) {
         byte[] buffer = new byte[BUFFER_SIZE];
 
@@ -159,12 +159,12 @@ public class ExportLogsFunction implements InternalFunction<ExportLogsFunction.A
   }
 
   public static class Args implements Serializable {
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
-    private Level logLevel;
-    private boolean thisLogLevelOnly;
-    private boolean includeLogs;
-    private boolean includeStats;
+    private final LocalDateTime startTime;
+    private final LocalDateTime endTime;
+    private final Level logLevel;
+    private final boolean thisLogLevelOnly;
+    private final boolean includeLogs;
+    private final boolean includeStats;
 
     public Args(String startTime, String endTime, String logLevel, boolean logLevelOnly,
         boolean logsOnly, boolean statsOnly) {
@@ -176,10 +176,10 @@ public class ExportLogsFunction implements InternalFunction<ExportLogsFunction.A
       } else {
         this.logLevel = LogLevel.getLevel(logLevel);
       }
-      this.thisLogLevelOnly = logLevelOnly;
+      thisLogLevelOnly = logLevelOnly;
 
-      this.includeLogs = !statsOnly;
-      this.includeStats = !logsOnly;
+      includeLogs = !statsOnly;
+      includeStats = !logsOnly;
     }
 
     public LocalDateTime getStartTime() {

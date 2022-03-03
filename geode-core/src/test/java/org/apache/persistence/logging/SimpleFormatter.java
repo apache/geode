@@ -25,7 +25,7 @@ public class SimpleFormatter extends Formatter {
 
   @Override
   public String format(LogRecord record) {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append('[');
     sb.append(org.apache.persistence.admin.Logger.formatDate(new Date(record.getMillis())));
     sb.append(' ');
@@ -46,8 +46,8 @@ public class SimpleFormatter extends Formatter {
 
     Object[] params = record.getParameters();
     if (params != null) {
-      for (int i = 0; i < params.length; i++) {
-        sb.append(params[i]);
+      for (final Object param : params) {
+        sb.append(param);
         sb.append('\n');
       }
     }
@@ -56,7 +56,7 @@ public class SimpleFormatter extends Formatter {
       Throwable thr = record.getThrown();
       StringWriter sw = new StringWriter();
       thr.printStackTrace(new PrintWriter(sw, true));
-      sb.append(sw.toString());
+      sb.append(sw);
       sb.append('\n');
     }
 
@@ -64,7 +64,7 @@ public class SimpleFormatter extends Formatter {
       Exception thr = new Exception("Stack Trace");
       StringWriter sw = new StringWriter();
       thr.printStackTrace(new PrintWriter(sw, true));
-      sb.append(sw.toString());
+      sb.append(sw);
       sb.append('\n');
     }
 

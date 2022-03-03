@@ -73,22 +73,22 @@ public class DistributedUseJacksonForJsonPathRule extends UseJacksonForJsonPathR
     DUnitLauncher.launchIfNeeded(vmCount);
     VM.addVMEventListener(vmEventListener);
 
-    invoker.invokeInEveryVMAndController(() -> doBefore());
+    invoker.invokeInEveryVMAndController(this::doBefore);
   }
 
   @Override
   public void after() {
     VM.removeVMEventListener(vmEventListener);
 
-    invoker.invokeInEveryVMAndController(() -> doAfter());
+    invoker.invokeInEveryVMAndController(this::doAfter);
   }
 
   private void afterCreateVM(VM vm) {
-    vm.invoke(() -> doBefore());
+    vm.invoke(this::doBefore);
   }
 
   private void afterBounceVM(VM vm) {
-    vm.invoke(() -> doBefore());
+    vm.invoke(this::doBefore);
   }
 
   private void doBefore() {

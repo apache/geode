@@ -80,10 +80,10 @@ public class CacheSnapshotJUnitTest extends SnapshotTestCase {
     }
 
     SnapshotFilter<Object, Object> even =
-        (SnapshotFilter<Object, Object>) entry -> ((Integer) entry.getKey()) % 2 == 0;
+        entry -> ((Integer) entry.getKey()) % 2 == 0;
 
     SnapshotFilter<Object, Object> odd =
-        (SnapshotFilter<Object, Object>) entry -> ((Integer) entry.getKey()) % 2 == 1;
+        entry -> ((Integer) entry.getKey()) % 2 == 1;
 
     // save even entries
     CacheSnapshotService css = cache.getSnapshotService();

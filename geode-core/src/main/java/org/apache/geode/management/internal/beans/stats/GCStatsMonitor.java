@@ -47,10 +47,10 @@ public class GCStatsMonitor extends MBeanStatsMonitor {
   // this class uses these volatile variables to make sure reads are reading the latest values
   // it is not using the parent's siteMap
   // this stores each stat's uniqueId and its collection count
-  private volatile Map<Long, Number> collections;
+  private final Map<Long, Number> collections;
 
   // this stors eaech stat's uniqueId and its collectionTime
-  private volatile Map<Long, Number> collectionTime;
+  private final Map<Long, Number> collectionTime;
 
   public GCStatsMonitor(String name) {
     this(name, new ValueMonitor());

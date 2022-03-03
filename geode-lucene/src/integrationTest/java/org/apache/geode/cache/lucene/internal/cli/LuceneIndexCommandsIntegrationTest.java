@@ -221,7 +221,7 @@ public class LuceneIndexCommandsIntegrationTest {
   public void createIndexShouldNotAcceptBadIndexOrRegionNames() {
     CommandStringBuilder csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
-    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, "\'__\'");
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, "'__'");
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput(
@@ -229,14 +229,14 @@ public class LuceneIndexCommandsIntegrationTest {
 
     csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
     csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, INDEX_NAME);
-    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, "\' @@@*%\'");
+    csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, "' @@@*%'");
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput(
         "Region names may only be alphanumeric, must not begin with double-underscores, but can contain hyphens, underscores, or forward slashes:");
 
     csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
-    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, "\'__\'");
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, "'__'");
     csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
 
@@ -244,7 +244,7 @@ public class LuceneIndexCommandsIntegrationTest {
         "Index names may only be alphanumeric, must not begin with double-underscores, but can contain hyphens or underscores:");
 
     csb = new CommandStringBuilder(LuceneCliStrings.LUCENE_CREATE_INDEX);
-    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, "\' @@@*%\'");
+    csb.addOption(LuceneCliStrings.LUCENE__INDEX_NAME, "' @@@*%'");
     csb.addOption(LuceneCliStrings.LUCENE__REGION_PATH, REGION_NAME);
     csb.addOption(LuceneCliStrings.LUCENE_CREATE_INDEX__FIELD, "field1,field2,field3");
 
@@ -614,7 +614,7 @@ public class LuceneIndexCommandsIntegrationTest {
 
     String expectedStatus = CliStrings.format(
         LuceneCliStrings.LUCENE_DESTROY_INDEX__MSG__SUCCESSFULLY_DESTROYED_INDEX_0_FROM_REGION_1,
-        new Object[] {"index", SEPARATOR + "region"});
+        "index", SEPARATOR + "region");
     gfsh.executeAndAssertThat("destroy lucene index --name=index --region=region").statusIsSuccess()
         .containsOutput(expectedStatus);
   }
@@ -638,7 +638,7 @@ public class LuceneIndexCommandsIntegrationTest {
 
     // Verify destroy all indexes again reports no indexes exist
     expectedOutput = String.format("No Lucene indexes were found in region %s",
-        new Object[] {SEPARATOR + "region"});
+        SEPARATOR + "region");
 
     gfsh.executeAndAssertThat("destroy lucene index --region=region").statusIsSuccess()
         .containsOutput(expectedOutput);
@@ -648,7 +648,7 @@ public class LuceneIndexCommandsIntegrationTest {
   public void testDestroyNonExistentSingleIndex() throws Exception {
     createRegion();
     String expectedStatus = String.format("Lucene index %s was not found in region %s",
-        new Object[] {INDEX_NAME, SEPARATOR + REGION_NAME});
+        INDEX_NAME, SEPARATOR + REGION_NAME);
 
     gfsh.executeAndAssertThat("destroy lucene index --name=index --region=region").statusIsSuccess()
         .containsOutput(expectedStatus);
@@ -659,7 +659,7 @@ public class LuceneIndexCommandsIntegrationTest {
     createRegion();
 
     String expectedOutput = String.format("No Lucene indexes were found in region %s",
-        new Object[] {SEPARATOR + "region"});
+        SEPARATOR + "region");
     gfsh.executeAndAssertThat("destroy lucene index --region=region").statusIsSuccess()
         .containsOutput(expectedOutput);
   }
@@ -718,14 +718,14 @@ public class LuceneIndexCommandsIntegrationTest {
   }
 
   protected static class TestObject implements Serializable {
-    private String field1;
-    private String field2;
-    private String field3;
+    private final String field1;
+    private final String field2;
+    private final String field3;
 
     protected TestObject(String value1, String value2, String value3) {
-      this.field1 = value1;
-      this.field2 = value2;
-      this.field3 = value3;
+      field1 = value1;
+      field2 = value2;
+      field3 = value3;
     }
 
     public String toString() {

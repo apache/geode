@@ -65,8 +65,8 @@ public class DeprecatedAgentLauncherIntegrationTest {
   public void setUp() throws Exception {
     assumeFalse(SystemUtils.isWindows());
 
-    this.classpath = System.getProperty("java.class.path");
-    assertThat(this.classpath).isNotEmpty();
+    classpath = System.getProperty("java.class.path");
+    assertThat(classpath).isNotEmpty();
   }
 
   @Test
@@ -213,7 +213,7 @@ public class DeprecatedAgentLauncherIntegrationTest {
     assertThat(agentStatusFile).doesNotExist();
 
     runAgent("Starting JMX Agent with pid: \\d+", "start", "mcast-port=0", "http-enabled=false",
-        "rmi-enabled=false", "snmp-enabled=false", "-classpath=" + this.classpath,
+        "rmi-enabled=false", "snmp-enabled=false", "-classpath=" + classpath,
         "-dir=" + agentWorkingDirectory.getAbsolutePath());
 
     assertThat(agentStatusFile).exists();

@@ -926,8 +926,8 @@ public class JGroupsMessengerJUnitTest {
     assertEquals(1, state.size());
     Long stateLong = (Long) state.values().iterator().next();
     assertTrue(
-        "expected multicast state to be at least " + seqno + " but it was " + stateLong.longValue(),
-        stateLong.longValue() >= seqno);
+        "expected multicast state to be at least " + seqno + " but it was " + stateLong,
+        stateLong >= seqno);
   }
 
   @Test
@@ -946,7 +946,7 @@ public class JGroupsMessengerJUnitTest {
     messenger.scheduledMcastSeqnos.put(mbr, tracker);
     when(tracker.get()).thenReturn(0l, 2l, 49l, 50l, 80l);
     Map state = new HashMap();
-    state.put("JGroups.mcastState", Long.valueOf(50));
+    state.put("JGroups.mcastState", 50L);
     messenger.waitForMessageState(mbr, state);
     verify(tracker, times(4)).get();
 
@@ -967,7 +967,7 @@ public class JGroupsMessengerJUnitTest {
     try {
       // message 50 will never arrive
       Map state = new HashMap();
-      state.put("JGroups.mcastState", Long.valueOf(50));
+      state.put("JGroups.mcastState", 50L);
       MemberIdentifier mbr = createAddress(1234);
       messenger.scheduledMcastSeqnos.put(mbr, new JGroupsMessenger.MessageTracker(30));
       messenger.waitForMessageState(mbr, state);
@@ -1001,7 +1001,7 @@ public class JGroupsMessengerJUnitTest {
     messenger.initClusterKey();
 
     FindCoordinatorRequest gfmsg = new FindCoordinatorRequest(messenger.getMemberID(),
-        new ArrayList<MemberIdentifier>(2), 1,
+        new ArrayList<>(2), 1,
         messenger.getPublicKey(messenger.getMemberID()), 1, "");
     List<MemberIdentifier> recipients = new ArrayList<>();
     recipients.add(otherMbr);

@@ -16,7 +16,6 @@ package org.apache.geode.admin.internal;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -68,7 +67,7 @@ public class ManagedEntityConfigXmlGenerator extends ManagedEntityConfigXml impl
   /**
    * The <code>AdminDistributedSystem</code> for which we are generating XML
    */
-  private AdminDistributedSystem system;
+  private final AdminDistributedSystem system;
 
   /** The content handler to which SAX events are generated */
   private ContentHandler handler;
@@ -116,8 +115,7 @@ public class ManagedEntityConfigXmlGenerator extends ManagedEntityConfigXml impl
 
     } catch (Exception ex) {
       RuntimeException ex2 = new RuntimeException(
-          "Exception thrown while generating XML.");
-      ex2.initCause(ex);
+          "Exception thrown while generating XML.", ex);
       throw ex2;
     }
   }
@@ -128,13 +126,13 @@ public class ManagedEntityConfigXmlGenerator extends ManagedEntityConfigXml impl
    */
   @Override
   public void parse(InputSource input) throws SAXException {
-    Assert.assertTrue(this.handler != null);
+    Assert.assertTrue(handler != null);
 
     handler.startDocument();
 
     AttributesImpl atts = new AttributesImpl();
 
-    atts.addAttribute("", "", ID, "", String.valueOf(this.system.getConfig().getSystemId()));
+    atts.addAttribute("", "", ID, "", String.valueOf(system.getConfig().getSystemId()));
 
     handler.startElement("", DISTRIBUTED_SYSTEM, DISTRIBUTED_SYSTEM, atts);
 
@@ -159,7 +157,7 @@ public class ManagedEntityConfigXmlGenerator extends ManagedEntityConfigXml impl
    * Generates XML for the remote command
    */
   private void generateRemoteCommand() throws SAXException {
-    String remoteCommand = this.system.getRemoteCommand();
+    String remoteCommand = system.getRemoteCommand();
 
     handler.startElement("", REMOTE_COMMAND, REMOTE_COMMAND, EMPTY);
 
@@ -183,9 +181,9 @@ public class ManagedEntityConfigXmlGenerator extends ManagedEntityConfigXml impl
    * Generates XML for the distributed system's locators
    */
   private void generateLocators() throws SAXException {
-    DistributionLocator[] locators = this.system.getDistributionLocators();
-    for (int i = 0; i < locators.length; i++) {
-      generateLocator(locators[i].getConfig());
+    DistributionLocator[] locators = system.getDistributionLocators();
+    for (final DistributionLocator locator : locators) {
+      generateLocator(locator.getConfig());
     }
   }
 
@@ -242,7 +240,7 @@ public class ManagedEntityConfigXmlGenerator extends ManagedEntityConfigXml impl
    * Generates XML for the SSL configuration of the distributed system.
    */
   private void generateSSL() throws SAXException {
-    DistributedSystemConfig config = this.system.getConfig();
+    DistributedSystemConfig config = system.getConfig();
 
     boolean sslEnabled = config.isSSLEnabled();
     if (!sslEnabled) {
@@ -270,8 +268,8 @@ public class ManagedEntityConfigXmlGenerator extends ManagedEntityConfigXml impl
     }
 
     Properties sslProps = config.getSSLProperties();
-    for (Iterator iter = sslProps.entrySet().iterator(); iter.hasNext();) {
-      Map.Entry entry = (Map.Entry) iter.next();
+    for (final Map.Entry<Object, Object> objectObjectEntry : sslProps.entrySet()) {
+      Map.Entry entry = (Map.Entry) objectObjectEntry;
       String key = (String) entry.getKey();
       String value = (String) entry.getValue();
 
@@ -296,9 +294,9 @@ public class ManagedEntityConfigXmlGenerator extends ManagedEntityConfigXml impl
    */
   private void generateCacheServers() throws SAXException, AdminException {
 
-    CacheServer[] servers = this.system.getCacheServers();
-    for (int i = 0; i < servers.length; i++) {
-      generateCacheServer(servers[i].getConfig());
+    CacheServer[] servers = system.getCacheServers();
+    for (final CacheServer server : servers) {
+      generateCacheServer(server.getConfig());
     }
   }
 
@@ -331,7 +329,7 @@ public class ManagedEntityConfigXmlGenerator extends ManagedEntityConfigXml impl
 
   @Override
   public ContentHandler getContentHandler() {
-    return this.handler;
+    return handler;
   }
 
   @Override

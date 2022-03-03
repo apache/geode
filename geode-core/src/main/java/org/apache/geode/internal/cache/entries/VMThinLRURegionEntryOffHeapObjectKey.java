@@ -141,7 +141,7 @@ public class VMThinLRURegionEntryOffHeapObjectKey extends VMThinLRURegionEntryOf
 
   @Override
   public int getEntryHash() {
-    return this.hash;
+    return hash;
   }
 
   @Override
@@ -151,7 +151,7 @@ public class VMThinLRURegionEntryOffHeapObjectKey extends VMThinLRURegionEntryOf
 
   @Override
   public HashEntry<Object, Object> getNextEntry() {
-    return this.nextEntry;
+    return nextEntry;
   }
 
   @Override
@@ -228,7 +228,7 @@ public class VMThinLRURegionEntryOffHeapObjectKey extends VMThinLRURegionEntryOf
 
   @Override
   public EvictionNode next() {
-    return this.nextEvictionNode;
+    return nextEvictionNode;
   }
 
   @Override
@@ -238,12 +238,12 @@ public class VMThinLRURegionEntryOffHeapObjectKey extends VMThinLRURegionEntryOf
 
   @Override
   public EvictionNode previous() {
-    return this.previousEvictionNode;
+    return previousEvictionNode;
   }
 
   @Override
   public int getEntrySize() {
-    return this.size;
+    return size;
   }
 
   protected void setEntrySize(final int size) {
@@ -261,7 +261,7 @@ public class VMThinLRURegionEntryOffHeapObjectKey extends VMThinLRURegionEntryOf
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   public Object getKey() {
-    return this.key;
+    return key;
   }
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 }

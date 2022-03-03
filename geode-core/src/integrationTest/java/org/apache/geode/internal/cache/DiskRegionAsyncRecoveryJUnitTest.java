@@ -194,8 +194,8 @@ public class DiskRegionAsyncRecoveryJUnitTest extends DiskRegionTestingBase {
     Set<String> krfs;
     long end = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
     do {
-      crfs = new HashSet<String>();
-      krfs = new HashSet<String>();
+      crfs = new HashSet<>();
+      krfs = new HashSet<>();
       getCrfsAndKrfs(crfs, krfs);
       // Remove the current child because it does not have a krf
       crfs.remove(currentChild.split("\\.")[0]);
@@ -206,8 +206,8 @@ public class DiskRegionAsyncRecoveryJUnitTest extends DiskRegionTestingBase {
 
     cache.close();
 
-    crfs = new HashSet<String>();
-    krfs = new HashSet<String>();
+    crfs = new HashSet<>();
+    krfs = new HashSet<>();
     getCrfsAndKrfs(crfs, krfs);
     assertEquals("last krf was not created on cache close", crfs, krfs);
   }

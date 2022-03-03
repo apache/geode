@@ -26,8 +26,8 @@ import java.util.function.Consumer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.BitOP;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.args.BitOP;
 
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.RedisTestHelper;
@@ -40,6 +40,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   private static final String STRING_KEY = HASHTAG + "string";
   private static final String STRING_INT_KEY = HASHTAG + "int";
   private static final String SET_KEY = HASHTAG + "set";
+  private static final String LIST_KEY = HASHTAG + "list";
   private static final String HASH_KEY = HASHTAG + "hash";
   private static final String SORTED_SET_KEY = HASHTAG + "sortedSet";
 
@@ -52,6 +53,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
     jedis.set(STRING_KEY, "yarn");
     jedis.set(STRING_INT_KEY, "5");
     jedis.sadd(SET_KEY, "cotton");
+    jedis.lpush(LIST_KEY, "premier");
     jedis.hset(HASH_KEY, "green", "eggs");
     jedis.zadd(SORTED_SET_KEY, -2.0, "almonds");
   }
@@ -395,6 +397,12 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   }
 
   @Test
+  public void testSinterstore() {
+    runMultiKeyCommandAndAssertNoStatUpdates(SET_KEY,
+        (k1, k2) -> jedis.sinterstore(HASHTAG + "dest", k1, k2));
+  }
+
+  @Test
   public void testSismember() {
     runCommandAndAssertHitsAndMisses(SET_KEY, k -> jedis.sismember(k, "member"));
   }
@@ -409,14 +417,37 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
     runMultiKeyCommandAndAssertNoStatUpdates(SET_KEY, (k1, k2) -> jedis.smove(k1, k2, "member"));
   }
 
+  // FYI - In Redis 5.x SPOP produces inconsistent results depending on whether a count was given
+  // or not. In Redis 6.x SPOP does not update any stats.
+  @Test
+  public void testSpop() {
+    runCommandAndAssertNoStatUpdates(SET_KEY, k -> jedis.spop(k));
+  }
+
+  @Test
+  public void testSrandmember() {
+    runCommandAndAssertHitsAndMisses(SET_KEY, k -> jedis.srandmember(k));
+  }
+
   @Test
   public void testSrem() {
     runCommandAndAssertNoStatUpdates(SET_KEY, k -> jedis.srem(k, "member"));
   }
 
   @Test
+  public void testSscan() {
+    runCommandAndAssertHitsAndMisses(SET_KEY, k -> jedis.sscan(k, "0"));
+  }
+
+  @Test
   public void testSunion() {
     runMultiKeyCommandAndAssertHitsAndMisses(SET_KEY, (k1, k2) -> jedis.sunion(k1, k2));
+  }
+
+  @Test
+  public void testSunionstore() {
+    runMultiKeyCommandAndAssertNoStatUpdates(SET_KEY,
+        (k1, k2) -> jedis.sunionstore(HASHTAG + "dest", k1, k2));
   }
 
   /************* Hash related commands *************/
@@ -538,37 +569,33 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   @Test
   public void testSetbit() {
-    runCommandAndAssertNoStatUpdates(STRING_INT_KEY, k -> jedis.setbit(k, 0L, "1"));
+    runCommandAndAssertNoStatUpdates(STRING_INT_KEY, k -> jedis.setbit(k, 0L, true));
   }
 
-  /************* Set related commands *************/
-  // FYI - In Redis 5.x SPOP produces inconsistent results depending on whether a count was given
-  // or not. In Redis 6.x SPOP does not update any stats.
+  /************* List related commands *************/
   @Test
-  public void testSpop() {
-    runCommandAndAssertNoStatUpdates(SET_KEY, k -> jedis.spop(k));
-  }
-
-  @Test
-  public void testSrandmember() {
-    runCommandAndAssertHitsAndMisses(SET_KEY, k -> jedis.srandmember(k));
+  public void testLindex() {
+    runCommandAndAssertHitsAndMisses(LIST_KEY, k -> jedis.lindex(k, 1));
   }
 
   @Test
-  public void testSscan() {
-    runCommandAndAssertHitsAndMisses(SET_KEY, k -> jedis.sscan(k, "0"));
+  public void testLpush() {
+    runCommandAndAssertNoStatUpdates(LIST_KEY, k -> jedis.lpush(k, "element"));
   }
 
   @Test
-  public void testSinterstore() {
-    runMultiKeyCommandAndAssertNoStatUpdates(SET_KEY,
-        (k1, k2) -> jedis.sinterstore(HASHTAG + "dest", k1, k2));
+  public void testLpushx() {
+    runCommandAndAssertNoStatUpdates(LIST_KEY, k -> jedis.lpushx(k, "element"));
   }
 
   @Test
-  public void testSunionstore() {
-    runMultiKeyCommandAndAssertNoStatUpdates(SET_KEY,
-        (k1, k2) -> jedis.sunionstore(HASHTAG + "dest", k1, k2));
+  public void testLpop() {
+    runCommandAndAssertNoStatUpdates(LIST_KEY, k -> jedis.lpop(k));
+  }
+
+  @Test
+  public void testLlen() {
+    runCommandAndAssertHitsAndMisses(LIST_KEY, k -> jedis.llen(k));
   }
 
   /************* Helper Methods *************/

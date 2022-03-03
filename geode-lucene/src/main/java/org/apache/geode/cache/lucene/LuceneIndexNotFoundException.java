@@ -32,10 +32,10 @@ public class LuceneIndexNotFoundException extends GemFireException {
   }
 
   public String getIndexName() {
-    return this.indexName;
+    return indexName;
   }
 
   public String getRegionPath() {
-    return this.regionPath;
+    return regionPath;
   }
 }

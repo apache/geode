@@ -493,7 +493,7 @@ public class BucketRegionTest {
     bucketRegion.notifyClientsOfTombstoneGC(regionGCVersions, keysRemoved, eventID, routing);
 
     doReturn(Collections.emptyList()).when(cache).getCacheServers();
-    doReturn(Long.valueOf(111)).when(proxy).getAcceptorId();
+    doReturn(111L).when(proxy).getAcceptorId();
 
     ccn.shutdown(111);
   }

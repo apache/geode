@@ -177,23 +177,11 @@ public class IndexCreationInternalsJUnitTest {
           "Error as the iterator name was  expected as index_iter1 , but is actually " + name,
           name.equals("index_iter1"));
 
-      Thread th1 = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          IndexCreationInternalsJUnitTest.this.childThreadName1 =
-              imgr.putCanonicalizedIteratorNameIfAbsent("index_iter1.coll1");
-        }
+      Thread th1 = new Thread(() -> childThreadName1 =
+          imgr.putCanonicalizedIteratorNameIfAbsent("index_iter1.coll1"));
 
-      });
-
-      Thread th2 = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          IndexCreationInternalsJUnitTest.this.childThreadName2 =
-              imgr.putCanonicalizedIteratorNameIfAbsent("index_iter1.coll1");
-        }
-
-      });
+      Thread th2 = new Thread(() -> childThreadName2 =
+          imgr.putCanonicalizedIteratorNameIfAbsent("index_iter1.coll1"));
 
 
       th1.start();
@@ -201,10 +189,10 @@ public class IndexCreationInternalsJUnitTest {
       name = imgr.putCanonicalizedIteratorNameIfAbsent("index_iter1.coll1");
       ThreadUtils.join(th1, 30 * 1000);
       ThreadUtils.join(th2, 30 * 1000);
-      if (!(name.equals(this.childThreadName1) && name.equals(this.childThreadName2))) {
+      if (!(name.equals(childThreadName1) && name.equals(childThreadName2))) {
         fail("Canonicalization name generation test failed in concurrent scenario as first name is "
-            + this.childThreadName1 + "and second is " + name + " and third is "
-            + this.childThreadName2);
+            + childThreadName1 + "and second is " + name + " and third is "
+            + childThreadName2);
       }
       System.out.print(" Canonicalized name = " + name);
 

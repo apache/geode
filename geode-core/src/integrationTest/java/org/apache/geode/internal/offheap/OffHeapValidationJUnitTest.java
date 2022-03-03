@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -74,12 +73,12 @@ public class OffHeapValidationJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    this.cache = createCache();
+    cache = createCache();
   }
 
   @After
   public void tearDown() throws Exception {
-    closeCache(this.cache);
+    closeCache(cache);
   }
 
   protected GemFireCacheImpl createCache() {
@@ -110,7 +109,7 @@ public class OffHeapValidationJUnitTest {
   @Test
   public void testMemoryInspection() throws IOException {
     // validate initial state
-    MemoryAllocator allocator = this.cache.getOffHeapStore();
+    MemoryAllocator allocator = cache.getOffHeapStore();
     assertNotNull(allocator);
     MemoryInspector inspector = allocator.getMemoryInspector();
     assertNotNull(inspector);
@@ -133,14 +132,14 @@ public class OffHeapValidationJUnitTest {
     }
 
     // create off-heap region
-    Region<Object, Object> region = this.cache.createRegionFactory(getRegionShortcut())
+    Region<Object, Object> region = cache.createRegionFactory(getRegionShortcut())
         .setOffHeap(true).create(getRegionName());
-    Region<Object, Object> compressedRegion = this.cache.createRegionFactory(getRegionShortcut())
+    Region<Object, Object> compressedRegion = cache.createRegionFactory(getRegionShortcut())
         .setOffHeap(true).setCompressor(SnappyCompressor.getDefaultInstance())
         .create(getRegionName() + "Compressed");
 
     // perform some ops
-    List<ExpectedValues> expected = new ArrayList<ExpectedValues>();
+    List<ExpectedValues> expected = new ArrayList<>();
 
     // Chunk.OFF_HEAP_HEADER_SIZE + 4 ?
 
@@ -189,12 +188,8 @@ public class OffHeapValidationJUnitTest {
       // System.out.println(((MemoryAllocatorImpl)inspector).getSnapshot());
 
       // sort the ExpectedValues into the same order as the MemberBlocks from inspector
-      Collections.sort(expected, new Comparator<ExpectedValues>() {
-        @Override
-        public int compare(ExpectedValues o1, ExpectedValues o2) {
-          return Long.valueOf(o1.memoryAddress).compareTo(o2.memoryAddress);
-        }
-      });
+      Collections.sort(expected,
+          (o1, o2) -> Long.valueOf(o1.memoryAddress).compareTo(o2.memoryAddress));
 
       int i = 0;
       MemoryBlock block = firstBlock.getNextBlock();
@@ -213,7 +208,7 @@ public class OffHeapValidationJUnitTest {
           Object obj = block.getDataValue();
           assertNotNull(block.toString(), obj);
           assertTrue(obj instanceof String);
-          assertEquals("this is a string", (String) obj);
+          assertEquals("this is a string", obj);
         }
         if ((values.dataType.contains("byte [")
             && values.dataType.lastIndexOf('[') == values.dataType.indexOf('['))
@@ -262,7 +257,7 @@ public class OffHeapValidationJUnitTest {
     } else if (c2.size() < c1.size()) {
       return 1;
     }
-    Collection<Object> c3 = new ArrayList<Object>();
+    Collection<Object> c3 = new ArrayList<>();
     c3.addAll(c1);
     c3.removeAll(c2);
     if (c3.size() > 0) {
@@ -288,7 +283,7 @@ public class OffHeapValidationJUnitTest {
     } else if (m2.size() < m1.size()) {
       return 1;
     }
-    Collection<Object> c3 = new ArrayList<Object>();
+    Collection<Object> c3 = new ArrayList<>();
     c3.addAll(m1.keySet());
     c3.removeAll(m2.keySet());
     if (c3.size() > 0) {
@@ -393,7 +388,7 @@ public class OffHeapValidationJUnitTest {
 
   private void putArrayList(Region<Object, Object> region, List<ExpectedValues> expected) {
     String key = "keyArrayList";
-    ArrayList<Object> value = new ArrayList<Object>();
+    ArrayList<Object> value = new ArrayList<>();
     value.add("string 1");
     value.add("string 2");
     region.put(key, value);
@@ -403,7 +398,7 @@ public class OffHeapValidationJUnitTest {
 
   private void putLinkedList(Region<Object, Object> region, List<ExpectedValues> expected) {
     String key = "keyLinkedList";
-    LinkedList<Object> value = new LinkedList<Object>();
+    LinkedList<Object> value = new LinkedList<>();
     value.add("string 1");
     value.add("string 2");
     region.put(key, value);
@@ -413,7 +408,7 @@ public class OffHeapValidationJUnitTest {
 
   private void putHashSet(Region<Object, Object> region, List<ExpectedValues> expected) {
     String key = "keyHashSet";
-    HashSet<Object> value = new HashSet<Object>();
+    HashSet<Object> value = new HashSet<>();
     value.add("string 1");
     value.add("string 2");
     region.put(key, value);
@@ -423,7 +418,7 @@ public class OffHeapValidationJUnitTest {
 
   private void putLinkedHashSet(Region<Object, Object> region, List<ExpectedValues> expected) {
     String key = "keyLinkedHashSet";
-    LinkedHashSet<Object> value = new LinkedHashSet<Object>();
+    LinkedHashSet<Object> value = new LinkedHashSet<>();
     value.add("string 1");
     value.add("string 2");
     region.put(key, value);
@@ -433,7 +428,7 @@ public class OffHeapValidationJUnitTest {
 
   private void putHashMap(Region<Object, Object> region, List<ExpectedValues> expected) {
     String key = "keyHashMap";
-    HashMap<Object, Object> value = new HashMap<Object, Object>();
+    HashMap<Object, Object> value = new HashMap<>();
     value.put("1", "string 1");
     value.put("2", "string 2");
     region.put(key, value);
@@ -443,7 +438,7 @@ public class OffHeapValidationJUnitTest {
 
   private void putIdentityHashMap(Region<Object, Object> region, List<ExpectedValues> expected) {
     String key = "keyIdentityHashMap";
-    IdentityHashMap<Object, Object> value = new IdentityHashMap<Object, Object>();
+    IdentityHashMap<Object, Object> value = new IdentityHashMap<>();
     value.put("1", "string 1");
     value.put("2", "string 2");
     region.put(key, value);
@@ -453,7 +448,7 @@ public class OffHeapValidationJUnitTest {
 
   private void putHashtable(Region<Object, Object> region, List<ExpectedValues> expected) {
     String key = "keyHashtable";
-    Hashtable<Object, Object> value = new Hashtable<Object, Object>();
+    Hashtable<Object, Object> value = new Hashtable<>();
     value.put("1", "string 1");
     value.put("2", "string 2");
     region.put(key, value);
@@ -473,7 +468,7 @@ public class OffHeapValidationJUnitTest {
 
   private void putVector(Region<Object, Object> region, List<ExpectedValues> expected) {
     String key = "keyVector";
-    Vector<String> value = new Vector<String>();
+    Vector<String> value = new Vector<>();
     value.add("string 1");
     value.add("string 2");
     region.put(key, value);
@@ -483,7 +478,7 @@ public class OffHeapValidationJUnitTest {
 
   private void putStack(Region<Object, Object> region, List<ExpectedValues> expected) {
     String key = "keyStack";
-    Stack<String> value = new Stack<String>();
+    Stack<String> value = new Stack<>();
     value.add("string 1");
     value.add("string 2");
     region.put(key, value);
@@ -493,7 +488,7 @@ public class OffHeapValidationJUnitTest {
 
   private void putTreeMap(Region<Object, Object> region, List<ExpectedValues> expected) {
     String key = "keyTreeMap";
-    TreeMap<String, String> value = new TreeMap<String, String>();
+    TreeMap<String, String> value = new TreeMap<>();
     value.put("1", "string 1");
     value.put("2", "string 2");
     region.put(key, value);
@@ -503,7 +498,7 @@ public class OffHeapValidationJUnitTest {
 
   private void putTreeSet(Region<Object, Object> region, List<ExpectedValues> expected) {
     String key = "keyTreeSet";
-    TreeSet<String> value = new TreeSet<String>();
+    TreeSet<String> value = new TreeSet<>();
     value.add("string 1");
     value.add("string 2");
     region.put(key, value);

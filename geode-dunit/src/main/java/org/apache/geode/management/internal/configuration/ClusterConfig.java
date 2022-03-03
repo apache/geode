@@ -50,19 +50,19 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
 public class ClusterConfig implements Serializable {
-  private List<ConfigGroup> groups;
+  private final List<ConfigGroup> groups;
 
   public ClusterConfig(ConfigGroup... configGroups) {
-    this.groups = new ArrayList<>();
+    groups = new ArrayList<>();
 
-    Collections.addAll(this.groups, configGroups);
+    Collections.addAll(groups, configGroups);
   }
 
   public Set<String> getMaxLogFileSizes() {
-    if (this.groups.size() == 0) {
+    if (groups.size() == 0) {
       return Collections.emptySet();
     }
-    return this.groups.stream().map(ConfigGroup::getMaxLogFileSize).filter(Objects::nonNull)
+    return groups.stream().map(ConfigGroup::getMaxLogFileSize).filter(Objects::nonNull)
         .collect(toSet());
   }
 
@@ -90,7 +90,7 @@ public class ClusterConfig implements Serializable {
 
   public void verifyLocator(MemberVM locatorVM) {
     Set<String> expectedGroupConfigs =
-        this.getGroups().stream().map(ConfigGroup::getName).collect(toSet());
+        getGroups().stream().map(ConfigGroup::getName).collect(toSet());
 
     // verify info exists in memory
     locatorVM.invoke(() -> {
@@ -102,7 +102,7 @@ public class ClusterConfig implements Serializable {
       Set<String> actualGroupConfigs = sc.getConfigurationRegion().keySet();
       assertThat(actualGroupConfigs).isEqualTo(expectedGroupConfigs);
 
-      for (ConfigGroup configGroup : this.getGroups()) {
+      for (ConfigGroup configGroup : getGroups()) {
         // verify jars are as expected
         Configuration config = sc.getConfiguration(configGroup.name);
         assertThat(config.getJarNames()).isEqualTo(configGroup.getJars());
@@ -126,7 +126,7 @@ public class ClusterConfig implements Serializable {
 
     File clusterConfigDir = new File(locatorVM.getWorkingDir(), "/cluster_config");
 
-    for (ConfigGroup configGroup : this.getGroups()) {
+    for (ConfigGroup configGroup : getGroups()) {
       Set<String> actualFiles =
           toSetIgnoringHiddenFiles(new File(clusterConfigDir, configGroup.name).list());
 
@@ -137,7 +137,7 @@ public class ClusterConfig implements Serializable {
 
   public void verifyServer(MemberVM serverVM) {
     // verify files exist in filesystem
-    Set<String> expectedJarNames = this.getJarNames().stream().collect(toSet());
+    Set<String> expectedJarNames = getJarNames().stream().collect(toSet());
 
     String[] actualJarFiles =
         serverVM.getWorkingDir().list((dir, filename) -> filename.contains(".jar"));
@@ -152,16 +152,16 @@ public class ClusterConfig implements Serializable {
       Cache cache = GemFireCacheImpl.getInstance();
 
       // TODO: set compare to fail if there are extra regions
-      for (String region : this.getRegions()) {
+      for (String region : getRegions()) {
         assertThat(cache.getRegion(region)).isNotNull();
       }
 
-      if (this.getMaxLogFileSizes().size() > 0) {
+      if (getMaxLogFileSizes().size() > 0) {
         Properties props = cache.getDistributedSystem().getProperties();
-        assertThat(this.getMaxLogFileSizes()).contains(props.getProperty(LOG_FILE_SIZE_LIMIT));
+        assertThat(getMaxLogFileSizes()).contains(props.getProperty(LOG_FILE_SIZE_LIMIT));
       }
 
-      for (String fileName : this.getJarNames()) {
+      for (String fileName : getJarNames()) {
         ServiceResult<Deployment> serviceResult =
             ClassPathLoader.getLatest().getJarDeploymentService().getDeployed(fileName);
         assertThat(serviceResult.isSuccessful()).isTrue();

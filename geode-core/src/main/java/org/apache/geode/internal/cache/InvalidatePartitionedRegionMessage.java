@@ -71,7 +71,7 @@ public class InvalidatePartitionedRegionMessage extends PartitionMessage {
       long startTime)
       throws CacheException, QueryException, ForceReattemptException, InterruptedException {
 
-    RegionEventImpl event = new RegionEventImpl(pr, Operation.REGION_INVALIDATE, this.callbackArg,
+    RegionEventImpl event = new RegionEventImpl(pr, Operation.REGION_INVALIDATE, callbackArg,
         !dm.getId().equals(getSender()), getSender(), getEventID());
     pr.basicInvalidateRegion(event);
     return true;
@@ -90,7 +90,7 @@ public class InvalidatePartitionedRegionMessage extends PartitionMessage {
   public void fromDataPre_GEODE_1_9_0_0(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.callbackArg = context.getDeserializer().readObject(in);
+    callbackArg = context.getDeserializer().readObject(in);
   }
 
   /*
@@ -102,13 +102,13 @@ public class InvalidatePartitionedRegionMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     fromDataPre_GEODE_1_9_0_0(in, context);
-    this.eventID = (EventID) context.getDeserializer().readObject(in);
+    eventID = context.getDeserializer().readObject(in);
   }
 
   public void toDataPre_GEODE_1_9_0_0(DataOutput out, SerializationContext context)
       throws IOException {
     super.toData(out, context);
-    context.getSerializer().writeObject(this.callbackArg, out);
+    context.getSerializer().writeObject(callbackArg, out);
   }
 
   /*
@@ -120,7 +120,7 @@ public class InvalidatePartitionedRegionMessage extends PartitionMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     toDataPre_GEODE_1_9_0_0(out, context);
-    context.getSerializer().writeObject(this.eventID, out);
+    context.getSerializer().writeObject(eventID, out);
   }
 
   @Override

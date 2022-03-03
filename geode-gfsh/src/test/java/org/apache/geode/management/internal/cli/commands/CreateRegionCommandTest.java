@@ -52,7 +52,7 @@ public class CreateRegionCommandTest {
   private DistributedRegionMXBean regionMXBean;
   ManagementService service;
 
-  private static String COMMAND = "create region --name=region --type=REPLICATE ";
+  private static final String COMMAND = "create region --name=region --type=REPLICATE ";
 
   @Before
   public void before() {

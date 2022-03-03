@@ -54,11 +54,11 @@ public class IndexOperatorJUnitTest {
   public void testWithString() throws Exception {
     String str = "xyz";
     Character c = (Character) runQuery(str, 0);
-    if (c.charValue() != 'x') {
+    if (c != 'x') {
       fail();
     }
     Character d = (Character) runQuery(str, 2);
-    if (d.charValue() != 'z') {
+    if (d != 'z') {
       fail();
     }
   }
@@ -67,19 +67,19 @@ public class IndexOperatorJUnitTest {
   public void testWithArray() throws Exception {
     Object result = null;
     int index = 1;
-    String stringArray[] = {"a", "b"};
+    String[] stringArray = {"a", "b"};
     result = runQuery(stringArray, index);
     if (result == null || !stringArray[index].equals(result)) {
       fail("failed for String array");
     }
 
-    int intArray[] = {1, 2};
+    int[] intArray = {1, 2};
     result = runQuery(intArray, index);
-    if (result == null || intArray[index] != ((Integer) result).intValue()) {
+    if (result == null || intArray[index] != (Integer) result) {
       fail("failed for int array");
     }
 
-    Object objectArray[] = {"a", "b"};
+    Object[] objectArray = {"a", "b"};
     result = runQuery(objectArray, index);
     if (result == null || !objectArray[index].equals(result)) {
       fail("failed for String array");
@@ -104,8 +104,8 @@ public class IndexOperatorJUnitTest {
   public void testWithMap() throws Exception {
 
     HashMap map = new HashMap();
-    map.put("0", new Integer(11));
-    map.put("1", new Integer(12));
+    map.put("0", 11);
+    map.put("1", 12);
     Object result = null;
     Object index = "1";
     result = runQuery(map, index);
@@ -131,11 +131,11 @@ public class IndexOperatorJUnitTest {
 
   @Test
   public void testIndexOfIndex() throws Exception {
-    String array[] = {"abc", "def"};
+    String[] array = {"abc", "def"};
     Query q = CacheUtils.getQueryService().newQuery("$1[0][0]");
-    Object params[] = {array, new Integer(0)};
+    Object[] params = {array, 0};
     Character result = (Character) q.execute(params);
-    if (result == null || result.charValue() != 'a') {
+    if (result == null || result != 'a') {
       fail();
     }
   }
@@ -144,15 +144,15 @@ public class IndexOperatorJUnitTest {
   public void testWithNULL() throws Exception {
     runQuery(null, 0);
     runQuery(null, null);
-    Object objectArray[] = {"a", "b"};
+    Object[] objectArray = {"a", "b"};
     try {
       runQuery(objectArray, null);
       fail();
-    } catch (TypeMismatchException e) {
+    } catch (TypeMismatchException ignored) {
     }
     HashMap map = new HashMap();
-    map.put("0", new Integer(11));
-    map.put("1", new Integer(12));
+    map.put("0", 11);
+    map.put("1", 12);
     Object result = runQuery(map, null);
     if (result != null) {
       fail();
@@ -171,15 +171,15 @@ public class IndexOperatorJUnitTest {
     } catch (TypeMismatchException e) {
       fail();
     }
-    Object objectArray[] = {"a", "b"};
+    Object[] objectArray = {"a", "b"};
     try {
       runQuery(objectArray, QueryService.UNDEFINED);
       fail();
-    } catch (TypeMismatchException e) {
+    } catch (TypeMismatchException ignored) {
     }
     HashMap map = new HashMap();
-    map.put("0", new Integer(11));
-    map.put("1", new Integer(12));
+    map.put("0", 11);
+    map.put("1", 12);
     Object result = runQuery(map, QueryService.UNDEFINED);
     if (result != null) {
       fail();
@@ -191,33 +191,33 @@ public class IndexOperatorJUnitTest {
     try {
       runQuery("a", "a");
       fail();
-    } catch (TypeMismatchException e) {
+    } catch (TypeMismatchException ignored) {
     }
 
     try {
       runQuery(new Object(), 0);
       fail();
-    } catch (TypeMismatchException e) {
+    } catch (TypeMismatchException ignored) {
     }
 
     try {
-      Object objectArray[] = {"a", "b"};
+      Object[] objectArray = {"a", "b"};
       runQuery(objectArray, new Object());
       fail();
-    } catch (TypeMismatchException e) {
+    } catch (TypeMismatchException ignored) {
     }
   }
 
   public Object runQuery(Object array, Object index) throws Exception {
     Query q = CacheUtils.getQueryService().newQuery("$1[$2]");
-    Object params[] = {array, index};
+    Object[] params = {array, index};
     Object result = q.execute(params);
     return result;
   }
 
   public Object runQuery(Object array, int index) throws Exception {
     Query q = CacheUtils.getQueryService().newQuery("$1[$2]");
-    Object params[] = {array, new Integer(index)};
+    Object[] params = {array, index};
     Object result = q.execute(params);
     return result;
   }

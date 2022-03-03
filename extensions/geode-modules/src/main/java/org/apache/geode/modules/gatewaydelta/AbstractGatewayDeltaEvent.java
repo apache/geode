@@ -38,26 +38,26 @@ public abstract class AbstractGatewayDeltaEvent implements GatewayDeltaEvent, Da
   }
 
   public String getRegionName() {
-    return this.regionName;
+    return regionName;
   }
 
   public String getKey() {
-    return this.key;
+    return key;
   }
 
   public Region getRegion(Cache cache) {
-    return cache.getRegion(this.regionName);
+    return cache.getRegion(regionName);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.regionName = DataSerializer.readString(in);
-    this.key = DataSerializer.readString(in);
+    regionName = DataSerializer.readString(in);
+    key = DataSerializer.readString(in);
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.regionName, out);
-    DataSerializer.writeString(this.key, out);
+    DataSerializer.writeString(regionName, out);
+    DataSerializer.writeString(key, out);
   }
 }

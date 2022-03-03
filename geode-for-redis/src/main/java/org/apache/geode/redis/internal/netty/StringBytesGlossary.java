@@ -82,30 +82,6 @@ public class StringBytesGlossary {
   @Immutable
   public static final byte[] ONE_INT = stringToBytes(":1\r\n");
 
-  @MakeImmutable
-  public static final byte[] ERR = stringToBytes("ERR ");
-
-  @MakeImmutable
-  public static final byte[] OOM = stringToBytes("OOM ");
-
-  @MakeImmutable
-  public static final byte[] WRONGTYPE = stringToBytes("WRONGTYPE ");
-
-  @MakeImmutable
-  public static final byte[] MOVED = stringToBytes("MOVED ");
-
-  @MakeImmutable
-  public static final byte[] BUSYKEY = stringToBytes("BUSYKEY ");
-
-  @MakeImmutable
-  public static final byte[] CROSSSLOT = stringToBytes("CROSSSLOT ");
-
-  @MakeImmutable
-  public static final byte[] WRONGPASS = stringToBytes("WRONGPASS ");
-
-  @MakeImmutable
-  public static final byte[] NOAUTH = stringToBytes("NOAUTH ");
-
   // ********** Redis Command constants **********
 
   // ClientExecutor

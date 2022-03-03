@@ -57,7 +57,7 @@ public class ListMappingCommandDUnitTest implements Serializable {
   private MemberVM server3;
   private MemberVM server4;
 
-  private String regionName = "testRegion";
+  private final String regionName = "testRegion";
   private static final String GROUP1_REGION = "group1Region";
   private static final String GROUP2_REGION = "group2Region";
   private static final String GROUP1_GROUP2_REGION = "group1Group2Region";

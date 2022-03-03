@@ -51,30 +51,30 @@ public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
   private static final byte QUERY_ROLE = 3;
   private static final byte ADMIN_ROLE = 4;
 
-  private static Set readerOpsSet;
-  private static Set writerOpsSet;
-  private static Set queryOpsSet;
-  private static Set queryRegionSet;
+  private static final Set readerOpsSet;
+  private static final Set writerOpsSet;
+  private static final Set queryOpsSet;
+  private static final Set queryRegionSet;
 
   static {
     readerOpsSet = new HashSet();
-    for (int index = 0; index < READER_OPS.length; index++) {
-      readerOpsSet.add(READER_OPS[index]);
+    for (final OperationCode readerOp : READER_OPS) {
+      readerOpsSet.add(readerOp);
     }
 
     writerOpsSet = new HashSet();
-    for (int index = 0; index < WRITER_OPS.length; index++) {
-      writerOpsSet.add(WRITER_OPS[index]);
+    for (final OperationCode writerOp : WRITER_OPS) {
+      writerOpsSet.add(writerOp);
     }
 
     queryOpsSet = new HashSet();
-    for (int index = 0; index < QUERY_OPS.length; index++) {
-      queryOpsSet.add(QUERY_OPS[index]);
+    for (final OperationCode queryOp : QUERY_OPS) {
+      queryOpsSet.add(queryOp);
     }
 
     queryRegionSet = new HashSet();
-    for (int index = 0; index < QUERY_REGIONS.length; index++) {
-      queryRegionSet.add(QUERY_REGIONS[index]);
+    for (final String queryRegion : QUERY_REGIONS) {
+      queryRegionSet.add(queryRegion);
     }
   }
 
@@ -83,13 +83,13 @@ public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
     final Properties sysProps = new Properties();
     final String dirName = "/org/apache/geode/security/generator/";
 
-    if (this.generator.classCode().isDummy()) {
+    if (generator.classCode().isDummy()) {
       final String xmlFilename =
           createTempFileFromResource(XmlAuthzCredentialGenerator.class, dirName + dummyXml)
               .getAbsolutePath();
       sysProps.setProperty(XmlAuthorization.DOC_URI_PROP_NAME, xmlFilename);
 
-    } else if (this.generator.classCode().isLDAP()) {
+    } else if (generator.classCode().isLDAP()) {
       final String xmlFilename =
           createTempFileFromResource(XmlAuthzCredentialGenerator.class, dirName + ldapXml)
               .getAbsolutePath();
@@ -104,7 +104,7 @@ public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
 
     } else {
       throw new IllegalArgumentException("No XML defined for XmlAuthorization module to work with "
-          + this.generator.getAuthenticator());
+          + generator.getAuthenticator());
     }
     return sysProps;
   }
@@ -139,11 +139,11 @@ public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
   @Override
   protected Principal getAllowedPrincipal(final OperationCode[] opCodes, final String[] regionNames,
       final int index) {
-    if (this.generator.classCode().isDummy()) {
+    if (generator.classCode().isDummy()) {
       final byte roleType = getRequiredRole(opCodes, regionNames);
       return getDummyPrincipal(roleType, index);
 
-    } else if (this.generator.classCode().isLDAP()) {
+    } else if (generator.classCode().isLDAP()) {
       final byte roleType = getRequiredRole(opCodes, regionNames);
       return getLdapPrincipal(roleType, index);
     }
@@ -172,10 +172,10 @@ public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
         break;
     }
 
-    if (this.generator.classCode().isDummy()) {
+    if (generator.classCode().isDummy()) {
       return getDummyPrincipal(disallowedRoleType, index);
 
-    } else if (this.generator.classCode().isLDAP()) {
+    } else if (generator.classCode().isLDAP()) {
       return getLdapPrincipal(disallowedRoleType, index);
     }
 
@@ -216,8 +216,7 @@ public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
     boolean requiresWriter = true;
     boolean requiresQuery = true;
 
-    for (int opNum = 0; opNum < opCodes.length; opNum++) {
-      final OperationCode opCode = opCodes[opNum];
+    for (final OperationCode opCode : opCodes) {
       if (requiresReader && !readerOpsSet.contains(opCode)) {
         requiresReader = false;
       }
@@ -237,8 +236,8 @@ public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
 
     } else if (requiresQuery) {
       if (regionNames != null && regionNames.length > 0) {
-        for (int index = 0; index < regionNames.length; index++) {
-          final String regionName = XmlAuthorization.normalizeRegionName(regionNames[index]);
+        for (final String name : regionNames) {
+          final String regionName = XmlAuthorization.normalizeRegionName(name);
           if (requiresQuery && !queryRegionSet.contains(regionName)) {
             requiresQuery = false;
             break;

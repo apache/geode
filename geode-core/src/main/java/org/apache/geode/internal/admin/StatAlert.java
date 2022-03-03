@@ -35,7 +35,7 @@ public class StatAlert implements Serializable {
 
   @Override
   public String toString() {
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     sb.append("StatAlert[");
     sb.append("def=" + definitionId);
     sb.append("; values (" + values.length + ") = [");

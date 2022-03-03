@@ -180,7 +180,7 @@ public class FlatFormatSerializerJUnitTest {
         "contacts.homepage.content", LuceneService.REGION_VALUE_FIELD};
 
     FlatFormatSerializer serializer = new FlatFormatSerializer();
-    String str = new String("Hello world");
+    String str = "Hello world";
     Document doc1 = SerializerTestHelper.invokeSerializer(serializer, str, fields);
     assertEquals(1, doc1.getFields().size());
     assertEquals("Hello world", doc1.getField(LuceneService.REGION_VALUE_FIELD).stringValue());
@@ -224,7 +224,7 @@ public class FlatFormatSerializerJUnitTest {
     Collection<Object> results = new LinkedHashSet();
     for (IndexableField field : fieldsInDoc) {
       if (isNumeric) {
-        results.add((Object) field.numericValue());
+        results.add(field.numericValue());
       } else {
         results.add(field.stringValue());
       }

@@ -56,8 +56,8 @@ import org.apache.geode.test.junit.categories.OQLQueryTest;
 public class PersistentRegionCompactRangeIndexDUnitTest implements Serializable {
   @Parameterized.Parameters(name = "{index}: {0}")
   public static Collection<String> cacheXmlFiles() {
-    return Arrays.asList(new String[] {"PartitionedPersistentRegionWithIndex.xml",
-        "ReplicatePersistentRegionWithIndex.xml"});
+    return Arrays.asList("PartitionedPersistentRegionWithIndex.xml",
+        "ReplicatePersistentRegionWithIndex.xml");
   }
 
   @Rule
@@ -65,7 +65,7 @@ public class PersistentRegionCompactRangeIndexDUnitTest implements Serializable 
 
   private MemberVM locator;
 
-  private String cacheXml;
+  private final String cacheXml;
 
   private Properties props;
 
@@ -381,15 +381,9 @@ public class PersistentRegionCompactRangeIndexDUnitTest implements Serializable 
 
     // invoke the query enough times to hopefully randomize bucket to server targeting enough to
     // target both secondary/primary servers
-    server3.invoke(() -> {
-      verifyIndexKeysAreEmpty();
-    });
-    server2.invoke(() -> {
-      verifyIndexKeysAreEmpty();
-    });
-    server1.invoke(() -> {
-      verifyIndexKeysAreEmpty();
-    });
+    server3.invoke(this::verifyIndexKeysAreEmpty);
+    server2.invoke(this::verifyIndexKeysAreEmpty);
+    server1.invoke(this::verifyIndexKeysAreEmpty);
   }
 
   @Test
@@ -461,15 +455,9 @@ public class PersistentRegionCompactRangeIndexDUnitTest implements Serializable 
 
     // invoke the query enough times to hopefully randomize bucket to server targeting enough to
     // target both secondary/primary servers
-    server3.invoke(() -> {
-      verifyIndexKeysAreEmpty();
-    });
-    server2.invoke(() -> {
-      verifyIndexKeysAreEmpty();
-    });
-    server1.invoke(() -> {
-      verifyIndexKeysAreEmpty();
-    });
+    server3.invoke(this::verifyIndexKeysAreEmpty);
+    server2.invoke(this::verifyIndexKeysAreEmpty);
+    server1.invoke(this::verifyIndexKeysAreEmpty);
   }
 
   private void verifyAllEntries(String query, Supplier<IntStream> idsSupplier, int numTimes,
@@ -516,6 +504,6 @@ public class PersistentRegionCompactRangeIndexDUnitTest implements Serializable 
 
   private void destroyFromRegion(String regionName, Collection keys) {
     Region r = ClusterStartupRule.getCache().getRegion(SEPARATOR + regionName);
-    keys.forEach(i -> r.remove(i));
+    keys.forEach(r::remove);
   }
 }

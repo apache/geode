@@ -23,7 +23,7 @@ import org.apache.geode.distributed.DistributedMember;
 
 public class RestServersResultCollector<String, Object> implements ResultCollector<String, Object> {
 
-  private ArrayList<String> resultList = new ArrayList<>();
+  private final ArrayList<String> resultList = new ArrayList<>();
 
   @Override
   public void addResult(DistributedMember memberID, String result) {

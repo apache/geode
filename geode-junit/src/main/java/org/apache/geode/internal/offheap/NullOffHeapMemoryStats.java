@@ -123,7 +123,7 @@ public class NullOffHeapMemoryStats implements OffHeapMemoryStats {
 
   @Override
   public void close() {
-    this.isClosed = true;
+    isClosed = true;
   }
 
   @Override
@@ -132,6 +132,6 @@ public class NullOffHeapMemoryStats implements OffHeapMemoryStats {
   }
 
   public boolean isClosed() {
-    return this.isClosed;
+    return isClosed;
   }
 }

@@ -72,33 +72,33 @@ public class PersistentMemberID implements DataSerializable {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     long diskStoreIdHigh = in.readLong();
     long diskStoreIdLow = in.readLong();
-    this.diskStoreId = new DiskStoreID(diskStoreIdHigh, diskStoreIdLow);
-    this.host = DataSerializer.readInetAddress(in);
-    this.directory = DataSerializer.readString(in);
-    this.timeStamp = in.readLong();
-    this.version = in.readShort();
-    this.name = DataSerializer.readString(in);
+    diskStoreId = new DiskStoreID(diskStoreIdHigh, diskStoreIdLow);
+    host = DataSerializer.readInetAddress(in);
+    directory = DataSerializer.readString(in);
+    timeStamp = in.readLong();
+    version = in.readShort();
+    name = DataSerializer.readString(in);
   }
 
   public void _fromData662(DataInput in) throws IOException, ClassNotFoundException {
     long diskStoreIdHigh = in.readLong();
     long diskStoreIdLow = in.readLong();
-    this.diskStoreId = new DiskStoreID(diskStoreIdHigh, diskStoreIdLow);
-    this.host = DataSerializer.readInetAddress(in);
-    this.directory = DataSerializer.readString(in);
-    this.timeStamp = in.readLong();
-    this.version = in.readShort();
+    diskStoreId = new DiskStoreID(diskStoreIdHigh, diskStoreIdLow);
+    host = DataSerializer.readInetAddress(in);
+    directory = DataSerializer.readString(in);
+    timeStamp = in.readLong();
+    version = in.readShort();
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeLong(this.diskStoreId.getMostSignificantBits());
-    out.writeLong(this.diskStoreId.getLeastSignificantBits());
+    out.writeLong(diskStoreId.getMostSignificantBits());
+    out.writeLong(diskStoreId.getLeastSignificantBits());
     DataSerializer.writeInetAddress(host, out);
     DataSerializer.writeString(directory, out);
     out.writeLong(timeStamp);
     out.writeShort(version);
-    DataSerializer.writeString(this.name, out);
+    DataSerializer.writeString(name, out);
   }
 
   @Override
@@ -154,14 +154,9 @@ public class PersistentMemberID implements DataSerializable {
       return false;
     }
     if (name == null) {
-      if (other.name != null) {
-        return false;
-      }
-    } else if (!name.equals(other.name)) {
-      return false;
-    }
-
-    return true;
+      return other.name == null;
+    } else
+      return name.equals(other.name);
   }
 
   @Override
@@ -175,7 +170,7 @@ public class PersistentMemberID implements DataSerializable {
   }
 
   public VersionSource getVersionMember() {
-    return this.diskStoreId;
+    return diskStoreId;
   }
 
   public InetAddress getHost() {

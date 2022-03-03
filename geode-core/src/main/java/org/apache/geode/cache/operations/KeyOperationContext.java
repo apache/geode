@@ -28,7 +28,7 @@ package org.apache.geode.cache.operations;
 public abstract class KeyOperationContext extends OperationContext {
 
   /** The key object of the operation */
-  private Object key;
+  private final Object key;
 
   /** Callback object for the operation (if any) */
   private Object callbackArg;
@@ -43,8 +43,8 @@ public abstract class KeyOperationContext extends OperationContext {
    */
   public KeyOperationContext(Object key) {
     this.key = key;
-    this.callbackArg = null;
-    this.postOperation = false;
+    callbackArg = null;
+    postOperation = false;
   }
 
   /**
@@ -55,7 +55,7 @@ public abstract class KeyOperationContext extends OperationContext {
    */
   public KeyOperationContext(Object key, boolean postOperation) {
     this.key = key;
-    this.callbackArg = null;
+    callbackArg = null;
     this.postOperation = postOperation;
   }
 
@@ -78,14 +78,14 @@ public abstract class KeyOperationContext extends OperationContext {
    */
   @Override
   public boolean isPostOperation() {
-    return this.postOperation;
+    return postOperation;
   }
 
   /**
    * Set the post-operation flag to true.
    */
   protected void setPostOperation() {
-    this.postOperation = true;
+    postOperation = true;
   }
 
   /**
@@ -94,7 +94,7 @@ public abstract class KeyOperationContext extends OperationContext {
    * @return the key object for this operation.
    */
   public Object getKey() {
-    return this.key;
+    return key;
   }
 
   /**
@@ -103,7 +103,7 @@ public abstract class KeyOperationContext extends OperationContext {
    * @return the callback argument object for this operation.
    */
   public Object getCallbackArg() {
-    return this.callbackArg;
+    return callbackArg;
   }
 
   /**

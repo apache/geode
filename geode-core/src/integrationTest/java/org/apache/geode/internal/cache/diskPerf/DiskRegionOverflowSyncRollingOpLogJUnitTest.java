@@ -40,14 +40,14 @@ public class DiskRegionOverflowSyncRollingOpLogJUnitTest extends DiskRegionTesti
 
   LogWriter log = null;
 
-  private static int ENTRY_SIZE = 1024;
+  private static final int ENTRY_SIZE = 1024;
 
   DiskRegionProperties diskProps = new DiskRegionProperties();
 
   @Override
   protected final void postSetUp() throws Exception {
     diskProps.setDiskDirs(dirs);
-    this.log = ds.getLogWriter();
+    log = ds.getLogWriter();
     diskProps.setRolling(true);
     diskProps.setMaxOplogSize(10485760l);
     diskProps.setCompactionThreshold(100);

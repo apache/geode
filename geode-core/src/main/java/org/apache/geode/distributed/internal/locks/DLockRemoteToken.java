@@ -126,7 +126,7 @@ public class DLockRemoteToken implements DataSerializableFixedID {
    * @return the identifying name of this lock
    */
   public Object getName() {
-    return this.name;
+    return name;
   }
 
   /**
@@ -136,7 +136,7 @@ public class DLockRemoteToken implements DataSerializableFixedID {
    * @return identity of the thread holding the current lease or null if none
    */
   public RemoteThread getLesseeThread() {
-    return this.lesseeThread;
+    return lesseeThread;
   }
 
   /**
@@ -145,10 +145,10 @@ public class DLockRemoteToken implements DataSerializableFixedID {
    * @return member currently leasing this lock or null
    */
   public DistributedMember getLessee() {
-    if (this.lesseeThread == null) {
+    if (lesseeThread == null) {
       return null;
     } else {
-      return this.lesseeThread.getDistributedMember();
+      return lesseeThread.getDistributedMember();
     }
   }
 
@@ -159,7 +159,7 @@ public class DLockRemoteToken implements DataSerializableFixedID {
    * @return the id of the current lease on this lock or -1 if none
    */
   public int getLeaseId() {
-    return this.leaseId;
+    return leaseId;
   }
 
   /**
@@ -168,7 +168,7 @@ public class DLockRemoteToken implements DataSerializableFixedID {
    * @return the absolute time at which the current lease will expire or -1
    */
   public long getLeaseExpireTime() {
-    return this.leaseExpireTime;
+    return leaseExpireTime;
   }
 
   /**
@@ -176,13 +176,11 @@ public class DLockRemoteToken implements DataSerializableFixedID {
    */
   @Override
   public String toString() {
-    StringBuffer sb = new StringBuffer("DLockRemoteToken@");
-    sb.append(Integer.toHexString(hashCode()));
-    sb.append(", name: ").append(this.name);
-    sb.append(", lesseeThread: ").append(this.lesseeThread);
-    sb.append(", leaseId: ").append(this.leaseId);
-    sb.append(", leaseExpireTime: ").append(this.leaseExpireTime);
-    return sb.toString();
+    return "DLockRemoteToken@" + Integer.toHexString(hashCode())
+        + ", name: " + name
+        + ", lesseeThread: " + lesseeThread
+        + ", leaseId: " + leaseId
+        + ", leaseExpireTime: " + leaseExpireTime;
   }
 
   /**
@@ -199,11 +197,11 @@ public class DLockRemoteToken implements DataSerializableFixedID {
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    context.getSerializer().writeObject(this.name, out);
-    context.getSerializer().writeObject(this.lesseeThread.getDistributedMember(), out);
-    out.writeInt(this.lesseeThread.getThreadId());
-    out.writeInt(this.leaseId);
-    out.writeLong(this.leaseExpireTime);
+    context.getSerializer().writeObject(name, out);
+    context.getSerializer().writeObject(lesseeThread.getDistributedMember(), out);
+    out.writeInt(lesseeThread.getThreadId());
+    out.writeInt(leaseId);
+    out.writeLong(leaseExpireTime);
   }
 
   /**

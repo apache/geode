@@ -101,11 +101,11 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testPeriodicAckSendByClient() throws Exception {
     createEntries();
-    server1.invoke(() -> ReliableMessagingDUnitTest.putOnServer());
+    server1.invoke(ReliableMessagingDUnitTest::putOnServer);
     waitForServerUpdate();
     setCreationTimeTidAndSeq();
     waitForClientAck();
-    server1.invoke(() -> ReliableMessagingDUnitTest.checkTidAndSeq());
+    server1.invoke(ReliableMessagingDUnitTest::checkTidAndSeq);
   }
 
   /**
@@ -117,14 +117,14 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
     IgnoredException.addIgnoredException("java.net.ConnectException");
     createEntries();
     setClientServerObserverForBeforeSendingClientAck();
-    server1.invoke(() -> ReliableMessagingDUnitTest.putOnServer());
+    server1.invoke(ReliableMessagingDUnitTest::putOnServer);
     LogWriterUtils.getLogWriter().info("Entering waitForServerUpdate");
     waitForServerUpdate();
     LogWriterUtils.getLogWriter().info("Entering waitForCallback");
     waitForCallback();
     LogWriterUtils.getLogWriter().info("Entering waitForClientAck");
     waitForClientAck();
-    server2.invoke(() -> ReliableMessagingDUnitTest.checkTidAndSeq());
+    server2.invoke(ReliableMessagingDUnitTest::checkTidAndSeq);
   }
 
   /**
@@ -181,11 +181,11 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
     SequenceIdAndExpirationObject seo = (SequenceIdAndExpirationObject) entry.getValue();
     assertFalse(seo.getAckSend());
     creationTime = seo.getCreationTime();
-    getLogWriter().info("seo is " + seo.toString());
+    getLogWriter().info("seo is " + seo);
     assertTrue("Creation time not set", creationTime != 0);
 
-    Object args[] = new Object[] {((ThreadIdentifier) entry.getKey()).getMembershipID(),
-        new Long(((ThreadIdentifier) entry.getKey()).getThreadID()), new Long(seo.getSequenceId())};
+    Object[] args = new Object[] {((ThreadIdentifier) entry.getKey()).getMembershipID(),
+        ((ThreadIdentifier) entry.getKey()).getThreadID(), seo.getSequenceId()};
     server1.invoke(ReliableMessagingDUnitTest.class, "setTidAndSeq", args);
     server2.invoke(ReliableMessagingDUnitTest.class, "setTidAndSeq", args);
   }
@@ -207,7 +207,7 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void setTidAndSeq(byte[] membershipId, Long threadId, Long sequenceId) {
-    tid = new ThreadIdentifier(membershipId, threadId.longValue());
+    tid = new ThreadIdentifier(membershipId, threadId);
     seqid = sequenceId;
   }
 
@@ -287,9 +287,9 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
       public void beforeSendingClientAck() {
         LogWriterUtils.getLogWriter().info("beforeSendingClientAck invoked");
         setCreationTimeTidAndSeq();
-        server1.invoke(() -> ReliableMessagingDUnitTest.stopServer());
+        server1.invoke(ReliableMessagingDUnitTest::stopServer);
         checkServerCount(1, 1);
-        server2.invoke(() -> ReliableMessagingDUnitTest.checkEmptyDispatchedMsgs());
+        server2.invoke(ReliableMessagingDUnitTest::checkEmptyDispatchedMsgs);
         PoolImpl.BEFORE_SENDING_CLIENT_ACK_CALLBACK_FLAG = false;
         LogWriterUtils.getLogWriter().info("end of beforeSendingClientAck");
       }
@@ -319,9 +319,9 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
     server2 = host.getVM(1);
 
     PORT1 =
-        ((Integer) server1.invoke(() -> ReliableMessagingDUnitTest.createServerCache())).intValue();
+        server1.invoke(ReliableMessagingDUnitTest::createServerCache);
     PORT2 =
-        ((Integer) server2.invoke(() -> ReliableMessagingDUnitTest.createServerCache())).intValue();
+        server2.invoke(ReliableMessagingDUnitTest::createServerCache);
 
     CacheServerTestUtil.disableShufflingOfEndpoints();
     createClientCache(PORT1, PORT2);
@@ -359,7 +359,7 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
     server.start();
     LogWriterUtils.getLogWriter().info("Server started at PORT = " + port);
 
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   public static void createClientCache(int port1, int port2) throws Exception {
@@ -391,8 +391,8 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
   public final void preTearDown() throws Exception {
     creationTime = 0;
     closeCache();
-    server1.invoke(() -> ReliableMessagingDUnitTest.closeCache());
-    server2.invoke(() -> ReliableMessagingDUnitTest.closeCache());
+    server1.invoke(ReliableMessagingDUnitTest::closeCache);
+    server2.invoke(ReliableMessagingDUnitTest::closeCache);
     CacheServerTestUtil.resetDisableShufflingOfEndpointsFlag();
   }
 

@@ -120,22 +120,21 @@ public class ColocatedRegionDetails implements DataSerializable {
     StringBuilder result = new StringBuilder();
     result.append("[");
     if (host != null) {
-      result.append("host:" + host.toString());
+      result.append("host:" + host);
     } else {
-      result.append("");
     }
     if (member != null) {
-      result.append(", member:" + member.toString());
+      result.append(", member:" + member);
     } else {
       result.append(",");
     }
     if (parent != null) {
-      result.append(", parent:" + parent.toString());
+      result.append(", parent:" + parent);
     } else {
       result.append(",");
     }
     if (child != null) {
-      result.append(", child:" + child.toString());
+      result.append(", child:" + child);
     } else {
       result.append(",");
     }
@@ -189,13 +188,9 @@ public class ColocatedRegionDetails implements DataSerializable {
       return false;
     }
     if (child == null) {
-      if (other.child != null) {
-        return false;
-      }
-    } else if (!child.equals(other.child)) {
-      return false;
-    }
-    return true;
+      return other.child == null;
+    } else
+      return child.equals(other.child);
   }
 
 }

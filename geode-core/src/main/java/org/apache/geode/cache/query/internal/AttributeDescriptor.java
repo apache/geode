@@ -254,7 +254,7 @@ public class AttributeDescriptor {
       }
       // if the field is not present in any of the versions try to
       // invoke implicit method call
-      if (!this.isMethodAlreadySearchedAndNotFound(className, _name)) {
+      if (!isMethodAlreadySearchedAndNotFound(className, _name)) {
         try {
           return readFieldFromDeserializedObject(pdxInstance, executionContext);
         } catch (NameNotFoundException ex) {

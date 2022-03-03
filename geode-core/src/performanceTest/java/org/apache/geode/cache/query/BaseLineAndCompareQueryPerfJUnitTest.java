@@ -85,7 +85,7 @@ public class BaseLineAndCompareQueryPerfJUnitTest {
 
   ///////////// queries ///////////
 
-  String queries[] = {
+  String[] queries = {
       // Query 1
       "SELECT DISTINCT * FROM " + SEPARATOR + "Countries c, c.states s, s.districts d,"
           + " d.villages v, d.cities ct WHERE v.name = 'MAHARASHTRA_VILLAGE1'",
@@ -218,7 +218,7 @@ public class BaseLineAndCompareQueryPerfJUnitTest {
 
       totalTime = 0;
 
-      queriesMap.put(new Integer(x), q);
+      queriesMap.put(x, q);
 
       for (int i = 0; i < QUERY_EXECUTED; i++) {
         startTime = System.currentTimeMillis();
@@ -229,9 +229,9 @@ public class BaseLineAndCompareQueryPerfJUnitTest {
 
       long withoutIndexTime = totalTime / QUERY_EXECUTED;
 
-      withoutIndexTimeRegion.put(new Integer(x), new Long(withoutIndexTime));
+      withoutIndexTimeRegion.put(x, withoutIndexTime);
 
-      withoutIndexResultSetSize.put(new Integer(x), new Integer(rs.size()));
+      withoutIndexResultSetSize.put(x, rs.size());
     }
 
     ////////// create index
@@ -244,7 +244,7 @@ public class BaseLineAndCompareQueryPerfJUnitTest {
       QueryService qs2 = CacheUtils.getQueryService();// ????
       q = qs2.newQuery(sqlStr);
 
-      queriesMap.put(new Integer(x), q);
+      queriesMap.put(x, q);
 
       QueryObserverImpl observer = new QueryObserverImpl();
       QueryObserverHolder.setInstance(observer);
@@ -259,19 +259,18 @@ public class BaseLineAndCompareQueryPerfJUnitTest {
 
         if (i == 0) {
           ArrayList al = new ArrayList();
-          Iterator itr = observer.indexesUsed.iterator();
-          while (itr.hasNext()) {
-            al.add(itr.next());
+          for (final Object o : observer.indexesUsed) {
+            al.add(o);
           }
-          indexNameRegion.put(new Integer(x), al);
+          indexNameRegion.put(x, al);
         }
       } // end of for loop
 
       long withIndexTime = totalTime / QUERY_EXECUTED;
 
-      withIndexTimeRegion.put(new Integer(x), new Long(withIndexTime));
+      withIndexTimeRegion.put(x, withIndexTime);
 
-      withIndexResultSetSize.put(new Integer(x), new Integer(rs.size()));
+      withIndexResultSetSize.put(x, rs.size());
     }
 
     printSummary();
@@ -292,12 +291,12 @@ public class BaseLineAndCompareQueryPerfJUnitTest {
        */
       region = CacheUtils.createRegion("Portfolio", Portfolio.class);
       for (int i = 0; i < 25000; ++i) {
-        region.create(new Integer(i + 1), new Portfolio(i));
+        region.create(i + 1, new Portfolio(i));
       }
       String queryStr = "select  * from " + SEPARATOR
           + "Portfolio pf where pf.getID  > 10000 and pf.getID < 12000";
 
-      SelectResults r[][] = new SelectResults[1][2];
+      SelectResults[][] r = new SelectResults[1][2];
       QueryService qs = CacheUtils.getQueryService();
       Query qry = qs.newQuery(queryStr);
       for (int i = 0; i < 5; ++i) {
@@ -344,7 +343,7 @@ public class BaseLineAndCompareQueryPerfJUnitTest {
 
     } catch (Exception e) {
       e.printStackTrace();
-      fail("Test failed due to exception=" + e.toString());
+      fail("Test failed due to exception=" + e);
     }
 
   }
@@ -386,10 +385,10 @@ public class BaseLineAndCompareQueryPerfJUnitTest {
 
     /* Add the countries */
     for (int i = 0; i < MAX_OBJECTS; i++) {
-      region.put(new Integer(i), new Country(i, 2, 3, 4, 4));
-      region1.put(new Integer(i), new Country(i, 2, 3, 4, 4));
-      region2.put(new Integer(i), new Country(i, 2, 3, 4, 4));
-      region3.put(new Integer(i), new Country(i, 2, 3, 4, 4));
+      region.put(i, new Country(i, 2, 3, 4, 4));
+      region1.put(i, new Country(i, 2, 3, 4, 4));
+      region2.put(i, new Country(i, 2, 3, 4, 4));
+      region3.put(i, new Country(i, 2, 3, 4, 4));
     }
     CacheUtils.log("Regions are populated");
 
@@ -540,9 +539,8 @@ public class BaseLineAndCompareQueryPerfJUnitTest {
         wr.newLine();
         wr.newLine();
       } else {
-        Iterator itr4 = al.iterator();
-        while (itr4.hasNext()) {
-          wr.write(itr4.next().toString());
+        for (final Object o : al) {
+          wr.write(o.toString());
           wr.newLine();
         }
       }

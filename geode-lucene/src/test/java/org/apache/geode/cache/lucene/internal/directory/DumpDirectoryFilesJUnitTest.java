@@ -47,9 +47,9 @@ import org.apache.geode.test.junit.categories.LuceneTest;
 public class DumpDirectoryFilesJUnitTest {
 
   private RegionFunctionContext context;
-  private String indexName = "index";
-  private String directoryName = "directory";
-  private String bucketName = "bucket";
+  private final String indexName = "index";
+  private final String directoryName = "directory";
+  private final String bucketName = "bucket";
   private FileSystem fileSystem;
 
   @Rule

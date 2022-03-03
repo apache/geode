@@ -20,7 +20,6 @@ import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -113,16 +112,16 @@ public class DirectChannel {
       MessageListener<InternalDistributedMember> listener,
       ClusterDistributionManager dm)
       throws ConnectionException {
-    this.receiver = listener;
+    receiver = listener;
     this.dm = dm;
-    this.stats = dm.getStats();
-    this.bufferPool = new BufferPool(stats);
+    stats = dm.getStats();
+    bufferPool = new BufferPool(stats);
 
     DistributionConfig dc = dm.getConfig();
-    this.address = initAddress(dc);
+    address = initAddress(dc);
     boolean isBindAddress = dc.getBindAddress() != null;
     try {
-      int port = Integer.getInteger("tcpServerPort", 0).intValue();
+      int port = Integer.getInteger("tcpServerPort", 0);
       if (port == 0) {
         port = dc.getTcpPort();
       }
@@ -142,7 +141,7 @@ public class DirectChannel {
       props.setProperty("membership_port_range_start", "" + range[0]);
       props.setProperty("membership_port_range_end", "" + range[1]);
 
-      this.conduit = new TCPConduit(mgr, port, address, isBindAddress, this, bufferPool, props);
+      conduit = new TCPConduit(mgr, port, address, isBindAddress, this, bufferPool, props);
       disconnected = false;
       disconnectCompleted = false;
       logger.info("GemFire P2P Listener started on {}",
@@ -150,7 +149,7 @@ public class DirectChannel {
 
     } catch (ConnectionException ce) {
       logger.fatal(String.format("Unable to initialize direct channel because: %s",
-          new Object[] {ce.getMessage()}),
+          ce.getMessage()),
           ce);
       throw ce; // fix for bug 31973
     }
@@ -244,10 +243,8 @@ public class DirectChannel {
       }
     }
 
-    boolean directReply = false;
-    if (directMsg != null && directMsg.supportsDirectAck() && threadOwnsResources()) {
-      directReply = true;
-    }
+    boolean directReply =
+        directMsg != null && directMsg.supportsDirectAck() && threadOwnsResources();
 
     // If this is a direct reply message, but we are sending it
     // over the shared socket, tell the message it needs to
@@ -370,15 +367,15 @@ public class DirectChannel {
           ce = null;
         }
         if (retryInfo != null) {
-          this.conduit.getCancelCriterion().checkCancelInProgress(null);
+          conduit.getCancelCriterion().checkCancelInProgress(null);
         }
       } while (retryInfo != null);
     } finally {
       if (interrupted) {
         Thread.currentThread().interrupt();
       }
-      for (Iterator it = totalSentCons.iterator(); it.hasNext();) {
-        Connection con = (Connection) it.next();
+      for (final Object totalSentCon : totalSentCons) {
+        Connection con = (Connection) totalSentCon;
         con.setInUse(false, 0, 0, 0, null);
       }
     }
@@ -393,8 +390,8 @@ public class DirectChannel {
 
     ConnectExceptions ce = cumulativeExceptions;
 
-    for (Iterator it = sentCons.iterator(); it.hasNext();) {
-      Connection con = (Connection) it.next();
+    for (final Object sentCon : sentCons) {
+      Connection con = (Connection) sentCon;
       // We don't expect replies on shared connections.
       if (con.isSharedResource()) {
         continue;
@@ -434,8 +431,7 @@ public class DirectChannel {
       InternalDistributedMember[] destinations, boolean preserveOrder, boolean retry,
       long ackTimeout, long ackSDTimeout, List cons) {
     ConnectExceptions ce = null;
-    for (int i = 0; i < destinations.length; i++) {
-      InternalDistributedMember destination = destinations[i];
+    for (InternalDistributedMember destination : destinations) {
       if (destination == null) {
         continue;
       }
@@ -573,7 +569,7 @@ public class DirectChannel {
     {
       String msg =
           "%s seconds have elapsed while waiting for reply from %s on %s whose current membership list is: [%s]";
-      final Object[] msgArgs = new Object[] {Long.valueOf(ackTimeout / 1000), c.getRemoteAddress(),
+      final Object[] msgArgs = new Object[] {ackTimeout / 1000, c.getRemoteAddress(),
           dm.getId(), activeMembers};
       logger.warn(String.format(msg, msgArgs));
       msgArgs[3] = "(omitted)";
@@ -594,7 +590,7 @@ public class DirectChannel {
           c.readAck(processor);
           return;
         } catch (SocketTimeoutException e) {
-          Object[] args = new Object[] {Long.valueOf((ackSATimeout + ackTimeout) / 1000),
+          Object[] args = new Object[] {(ackSATimeout + ackTimeout) / 1000,
               c.getRemoteAddress(), dm.getId(), activeMembers};
           logger.fatal(
               "{} seconds have elapsed while waiting for reply from {} on {} whose currentFull membership list is: [{}]",
@@ -640,7 +636,7 @@ public class DirectChannel {
    * @see SystemFailure#emergencyClose()
    */
   public void emergencyClose() {
-    this.conduit.emergencyClose();
+    conduit.emergencyClose();
   }
 
   /**
@@ -649,10 +645,10 @@ public class DirectChannel {
    * new local address to be generated.
    */
   public synchronized void disconnect(Exception cause) {
-    this.disconnected = true;
-    this.disconnectCompleted = false;
-    this.conduit.stop(cause);
-    this.disconnectCompleted = true;
+    disconnected = true;
+    disconnectCompleted = false;
+    conduit.stop(cause);
+    disconnectCompleted = true;
   }
 
   public boolean isOpen() {
@@ -668,7 +664,7 @@ public class DirectChannel {
    * Returns the port on which this direct channel sends messages
    */
   public int getPort() {
-    return this.conduit.getPort();
+    return conduit.getPort();
   }
 
   /**
@@ -677,7 +673,7 @@ public class DirectChannel {
    * @since GemFire 2.1
    */
   public TCPConduit getConduit() {
-    return this.conduit;
+    return conduit;
   }
 
   private InetAddress initAddress(DistributionConfig dc) {
@@ -706,7 +702,7 @@ public class DirectChannel {
    */
   public void closeEndpoint(InternalDistributedMember member, String reason,
       boolean notifyDisconnect) {
-    TCPConduit tc = this.conduit;
+    TCPConduit tc = conduit;
     if (tc != null) {
       tc.removeEndpoint(member, reason, notifyDisconnect);
     }
@@ -722,7 +718,7 @@ public class DirectChannel {
    * @since GemFire 5.1
    */
   public void getChannelStates(DistributedMember member, Map result) {
-    TCPConduit tc = this.conduit;
+    TCPConduit tc = conduit;
     if (tc != null) {
       tc.getThreadOwnedOrderedConnectionState(member, result);
     }
@@ -737,7 +733,7 @@ public class DirectChannel {
     if (Thread.interrupted()) {
       throw new InterruptedException();
     }
-    TCPConduit tc = this.conduit;
+    TCPConduit tc = conduit;
     if (tc != null) {
       tc.waitForThreadOwnedOrderedConnectionState(member, channelState);
     }
@@ -747,6 +743,6 @@ public class DirectChannel {
    * returns true if there are still receiver threads for the given member
    */
   public boolean hasReceiversFor(DistributedMember mbr) {
-    return this.conduit.hasReceiversFor(mbr);
+    return conduit.hasReceiversFor(mbr);
   }
 }

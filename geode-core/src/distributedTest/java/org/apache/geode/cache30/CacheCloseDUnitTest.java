@@ -18,7 +18,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Test;
@@ -93,9 +92,8 @@ public class CacheCloseDUnitTest extends JUnit4CacheTestCase {
       closeCache();
 
       // make sure all callbacks called
-      Iterator it = callbacks.iterator();
-      while (it.hasNext()) {
-        TestCacheCallback listener = (TestCacheCallback) it.next();
+      for (final Object callback : callbacks) {
+        TestCacheCallback listener = (TestCacheCallback) callback;
         assertTrue("listener not invoked: " + listener, listener.isClosed());
       }
     }

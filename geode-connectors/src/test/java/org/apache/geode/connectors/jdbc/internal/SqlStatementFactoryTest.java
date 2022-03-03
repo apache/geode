@@ -36,7 +36,7 @@ public class SqlStatementFactoryTest {
   private final List<ColumnData> valueColumnData = new ArrayList<>();
 
   private EntryColumnData entryColumnData;
-  private SqlStatementFactory factory = new SqlStatementFactory(QUOTE);
+  private final SqlStatementFactory factory = new SqlStatementFactory(QUOTE);
 
   private String quoted(String id) {
     return QUOTE + id + QUOTE;

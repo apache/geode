@@ -68,14 +68,14 @@ public class VMStatsLRURegionEntryHeapUUIDKey extends VMStatsLRURegionEntryHeap 
       final Object value) {
     super(context, value);
     // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-    this.keyMostSigBits = key.getMostSignificantBits();
-    this.keyLeastSigBits = key.getLeastSignificantBits();
+    keyMostSigBits = key.getMostSignificantBits();
+    keyLeastSigBits = key.getLeastSignificantBits();
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   protected Object getValueField() {
-    return this.value;
+    return value;
   }
 
   @Override
@@ -95,7 +95,7 @@ public class VMStatsLRURegionEntryHeapUUIDKey extends VMStatsLRURegionEntryHeap 
 
   @Override
   public int getEntryHash() {
-    return this.hash;
+    return hash;
   }
 
   @Override
@@ -105,7 +105,7 @@ public class VMStatsLRURegionEntryHeapUUIDKey extends VMStatsLRURegionEntryHeap 
 
   @Override
   public HashEntry<Object, Object> getNextEntry() {
-    return this.nextEntry;
+    return nextEntry;
   }
 
   @Override
@@ -182,7 +182,7 @@ public class VMStatsLRURegionEntryHeapUUIDKey extends VMStatsLRURegionEntryHeap 
 
   @Override
   public EvictionNode next() {
-    return this.nextEvictionNode;
+    return nextEvictionNode;
   }
 
   @Override
@@ -192,12 +192,12 @@ public class VMStatsLRURegionEntryHeapUUIDKey extends VMStatsLRURegionEntryHeap 
 
   @Override
   public EvictionNode previous() {
-    return this.previousEvictionNode;
+    return previousEvictionNode;
   }
 
   @Override
   public int getEntrySize() {
-    return this.size;
+    return size;
   }
 
   protected void setEntrySize(final int size) {
@@ -233,7 +233,7 @@ public class VMStatsLRURegionEntryHeapUUIDKey extends VMStatsLRURegionEntryHeap 
 
   @Override
   public long getLastAccessed() throws InternalStatisticsDisabledException {
-    return this.lastAccessed;
+    return lastAccessed;
   }
 
   @Override
@@ -243,12 +243,12 @@ public class VMStatsLRURegionEntryHeapUUIDKey extends VMStatsLRURegionEntryHeap 
 
   @Override
   public long getHitCount() throws InternalStatisticsDisabledException {
-    return this.hitCount & 0xFFFFFFFFL;
+    return hitCount & 0xFFFFFFFFL;
   }
 
   @Override
   public long getMissCount() throws InternalStatisticsDisabledException {
-    return this.missCount & 0xFFFFFFFFL;
+    return missCount & 0xFFFFFFFFL;
   }
 
   private void incrementHitCount() {
@@ -270,8 +270,8 @@ public class VMStatsLRURegionEntryHeapUUIDKey extends VMStatsLRURegionEntryHeap 
   public void txDidDestroy(long timeStamp) {
     setLastModified(timeStamp);
     setLastAccessed(timeStamp);
-    this.hitCount = 0;
-    this.missCount = 0;
+    hitCount = 0;
+    missCount = 0;
   }
 
   @Override
@@ -283,15 +283,15 @@ public class VMStatsLRURegionEntryHeapUUIDKey extends VMStatsLRURegionEntryHeap 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   public Object getKey() {
-    return new UUID(this.keyMostSigBits, this.keyLeastSigBits);
+    return new UUID(keyMostSigBits, keyLeastSigBits);
   }
 
   @Override
   public boolean isKeyEqual(final Object key) {
     if (key instanceof UUID) {
       UUID uuid = (UUID) key;
-      return uuid.getLeastSignificantBits() == this.keyLeastSigBits
-          && uuid.getMostSignificantBits() == this.keyMostSigBits;
+      return uuid.getLeastSignificantBits() == keyLeastSigBits
+          && uuid.getMostSignificantBits() == keyMostSigBits;
     }
     return false;
   }

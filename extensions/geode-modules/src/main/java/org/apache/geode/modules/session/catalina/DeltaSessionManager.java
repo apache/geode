@@ -511,7 +511,7 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
 
   protected void scheduleTimerTasks() {
     // Create the timer
-    timer = new Timer("Timer for " + toString(), true);
+    timer = new Timer("Timer for " + this, true);
 
     // Schedule the task to handle sessions to be touched
     scheduleTouchSessionsTask();

@@ -23,7 +23,7 @@ import org.apache.geode.management.internal.cli.util.ConnectionEndpoint;
  */
 public class ConnectToLocatorResult {
   private ConnectionEndpoint memberEndpoint = null;
-  private String resultMessage;
+  private final String resultMessage;
   private final boolean isJmxManagerSslEnabled;
 
   public ConnectToLocatorResult(ConnectionEndpoint memberEndpoint, String resultMessage,
@@ -34,11 +34,11 @@ public class ConnectToLocatorResult {
   }
 
   public ConnectionEndpoint getMemberEndpoint() {
-    return this.memberEndpoint;
+    return memberEndpoint;
   }
 
   public String getResultMessage() {
-    return this.resultMessage;
+    return resultMessage;
   }
 
   public boolean isJmxManagerSslEnabled() {
@@ -46,9 +46,7 @@ public class ConnectToLocatorResult {
   }
 
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("Member Endpoint :" + memberEndpoint.toString());
-    sb.append("\nResult Message : " + resultMessage);
-    return sb.toString();
+    return "Member Endpoint :" + memberEndpoint.toString()
+        + "\nResult Message : " + resultMessage;
   }
 }

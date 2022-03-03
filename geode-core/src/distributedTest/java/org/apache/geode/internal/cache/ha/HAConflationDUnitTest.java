@@ -105,20 +105,20 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
     // Client 1 VM
     client1 = host.getVM(2);
 
-    int PORT1 = ((Integer) server1
-        .invoke(() -> HAConflationDUnitTest.createServerCache(new Boolean(false)))).intValue();
+    int PORT1 = server1
+        .invoke(() -> HAConflationDUnitTest.createServerCache(Boolean.FALSE));
     server1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart());
-    server1.invoke(() -> HAConflationDUnitTest.makeDispatcherSlow());
+    server1.invoke(HAConflationDUnitTest::makeDispatcherSlow);
     client1
         .invoke(() -> HAConflationDUnitTest.createClientCache(NetworkUtils.getServerHostName(host),
-            new Integer(PORT1), new Boolean(true)));
+            PORT1, Boolean.TRUE));
   }
 
   @Override
   public final void postTearDownCacheTestCase() throws Exception {
-    client1.invoke(() -> HAConflationDUnitTest.closeCacheAndDisconnect());
+    client1.invoke(HAConflationDUnitTest::closeCacheAndDisconnect);
     // close server
-    server1.invoke(() -> HAConflationDUnitTest.closeCacheAndDisconnect());
+    server1.invoke(HAConflationDUnitTest::closeCacheAndDisconnect);
   }
 
   public static void closeCacheAndDisconnect() {
@@ -295,7 +295,7 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
 
   public static void createClientCache(String host, Integer port1, Boolean isListenerPresent)
       throws Exception {
-    int PORT1 = port1.intValue();
+    int PORT1 = port1;
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
@@ -305,7 +305,7 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
         null);
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setEnableConflation(true);
-    if (isListenerPresent.booleanValue() == true) {
+    if (isListenerPresent == true) {
       CacheListener clientListener = new HAClientCountEventListener();
       factory.setCacheListener(clientListener);
     }
@@ -329,7 +329,7 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setEnableConflation(true);
     factory.setDataPolicy(DataPolicy.REPLICATE);
-    if (isListenerPresent.booleanValue() == true) {
+    if (isListenerPresent == true) {
       CacheListener serverListener = new HAClientCountEventListener();
       factory.setCacheListener(serverListener);
     }
@@ -341,7 +341,7 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   private static class HAClientCountEventListener implements CacheListener, Declarable {

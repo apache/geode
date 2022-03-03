@@ -49,9 +49,9 @@ public class JoinRequestMessage<ID extends MemberIdentifier> extends AbstractGMS
     if (coord != null) {
       setRecipient(coord);
     }
-    this.memberID = id;
+    memberID = id;
     this.credentials = credentials;
-    this.failureDetectionPort = fdPort;
+    failureDetectionPort = fdPort;
     this.requestId = requestId;
   }
 
@@ -159,9 +159,6 @@ public class JoinRequestMessage<ID extends MemberIdentifier> extends AbstractGMS
     } else if (!memberID.equals(other.memberID)) {
       return false;
     }
-    if (requestId != other.requestId) {
-      return false;
-    }
-    return true;
+    return requestId == other.requestId;
   }
 }

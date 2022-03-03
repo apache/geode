@@ -67,7 +67,7 @@ public class DistributedErrorCollector extends AbstractDistributedRule {
 
   @Override
   protected void before() {
-    invoker().invokeInEveryVMAndController(() -> invokeBefore());
+    invoker().invokeInEveryVMAndController(this::invokeBefore);
   }
 
   @Override
@@ -88,7 +88,7 @@ public class DistributedErrorCollector extends AbstractDistributedRule {
 
   @Override
   protected void afterCreateVM(VM vm) {
-    vm.invoke(() -> invokeBefore());
+    vm.invoke(this::invokeBefore);
   }
 
   @Override

@@ -190,8 +190,8 @@ public class Log4jLoggingProvider implements LoggingProvider {
 
   @Override
   public String toString() {
-    return new StringBuilder().append(super.toString()).append(": {configuredSecurityAppenders=")
-        .append(configuredSecurityAppenders).append("}").toString();
+    return super.toString() + ": {configuredSecurityAppenders="
+        + configuredSecurityAppenders + "}";
   }
 
   private void updateLogLevel(final LogConfig logConfig,
@@ -261,13 +261,9 @@ public class Log4jLoggingProvider implements LoggingProvider {
 
   private void configureFastLoggerDelegating() {
     Configuration configuration = getConfiguration();
-    if (hasContextWideFilter(configuration) || hasAppenderFilter(configuration)
+    FastLogger.setDelegating(hasContextWideFilter(configuration) || hasAppenderFilter(configuration)
         || hasDebugOrLower(configuration) || hasLoggerFilter(configuration)
-        || hasAppenderRefFilter(configuration)) {
-      FastLogger.setDelegating(true);
-    } else {
-      FastLogger.setDelegating(false);
-    }
+        || hasAppenderRefFilter(configuration));
   }
 
   private boolean hasContextWideFilter(final Configuration config) {

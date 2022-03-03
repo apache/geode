@@ -17,12 +17,14 @@
 package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.DataSerializer.readEnum;
+import static org.apache.geode.internal.cache.TXManagerImpl.NOTX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_KEY_EXISTS;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAYS;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAY_DOUBLE_PAIRS;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAY_PAIRS;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.APPEND_BYTE_ARRAY;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REMOVE_BYTE_ARRAYS;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.REMOVE_ELEMENTS_BY_INDEX;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_ARRAYS;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_ARRAY_AT_OFFSET;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_ARRAY_DOUBLE_PAIRS;
@@ -36,6 +38,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 
 import org.apache.geode.DataSerializer;
@@ -44,6 +47,9 @@ import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.LocalDataSet;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.TXId;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
@@ -54,6 +60,7 @@ import org.apache.geode.redis.internal.data.delta.AppendByteArray;
 import org.apache.geode.redis.internal.data.delta.DeltaInfo;
 import org.apache.geode.redis.internal.data.delta.DeltaType;
 import org.apache.geode.redis.internal.data.delta.RemoveByteArrays;
+import org.apache.geode.redis.internal.data.delta.RemoveElementsByIndex;
 import org.apache.geode.redis.internal.data.delta.ReplaceByteArrayAtOffset;
 import org.apache.geode.redis.internal.data.delta.ReplaceByteArrayDoublePairs;
 import org.apache.geode.redis.internal.data.delta.ReplaceByteArrays;
@@ -257,6 +264,9 @@ public abstract class AbstractRedisData implements RedisData {
       case REPLACE_BYTE_AT_OFFSET:
         ReplaceByteAtOffset.deserializeFrom(in, this);
         break;
+      case REMOVE_ELEMENTS_BY_INDEX:
+        RemoveElementsByIndex.deserializeFrom(in, this);
+        break;
     }
   }
 
@@ -309,6 +319,10 @@ public abstract class AbstractRedisData implements RedisData {
     throw new IllegalStateException("unexpected " + REPLACE_BYTE_AT_OFFSET);
   }
 
+  public void applyRemoveElementsByIndex(List<Integer> indexes) {
+    throw new IllegalStateException("unexpected " + REMOVE_ELEMENTS_BY_INDEX);
+  }
+
   @Override
   public byte[] dump() throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -335,7 +349,9 @@ public abstract class AbstractRedisData implements RedisData {
       if (removeFromRegion()) {
         region.remove(key);
       } else {
-        setDelta(deltaInfo);
+        if (!txActive(region)) {
+          setDelta(deltaInfo);
+        }
         try {
           region.put(key, this);
         } finally {
@@ -343,6 +359,16 @@ public abstract class AbstractRedisData implements RedisData {
         }
       }
     }
+  }
+
+  private boolean txActive(Region<RedisKey, RedisData> region) {
+    TXId txId;
+    if (region instanceof LocalDataSet) {
+      txId = ((LocalDataSet) region).getProxy().getTXId();
+    } else {
+      txId = ((PartitionedRegion) region).getTXId();
+    }
+    return txId != null && txId.getUniqId() != NOTX;
   }
 
   protected abstract boolean removeFromRegion();

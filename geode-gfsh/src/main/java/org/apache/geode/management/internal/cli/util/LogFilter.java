@@ -47,14 +47,14 @@ public class LogFilter {
   public LogFilter(Level logLevel, boolean thisLevelOnly, LocalDateTime startDate,
       LocalDateTime endDate) {
     assert logLevel != null;
-    this.thisLogLevel = logLevel;
+    thisLogLevel = logLevel;
     this.thisLevelOnly = thisLevelOnly;
     this.startDate = startDate;
     this.endDate = endDate;
   }
 
   public void startNewFile() {
-    this.resultOfPreviousLine = LineFilterResult.LINE_ACCEPTED;
+    resultOfPreviousLine = LineFilterResult.LINE_ACCEPTED;
   }
 
   public LineFilterResult acceptsLine(String logLine) {

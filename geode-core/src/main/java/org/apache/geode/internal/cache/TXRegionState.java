@@ -50,8 +50,8 @@ public class TXRegionState {
   // A map of Objects (entry keys) -> TXEntryUserAttrState
   private HashMap uaMods;
   private Set<InternalDistributedMember> otherMembers = null;
-  private TXState txState;
-  private InternalRegion region;
+  private final TXState txState;
+  private final InternalRegion region;
   private final boolean needsRefCounts;
   private boolean cleanedUp;
   /*
@@ -70,11 +70,11 @@ public class TXRegionState {
       throw new UnsupportedOperationException(
           "Operations on global regions are not allowed because this thread has an active transaction");
     }
-    this.entryMods = new HashMap<Object, TXEntryState>();
-    this.uaMods = null;
-    this.region = r;
+    entryMods = new HashMap<>();
+    uaMods = null;
+    region = r;
     this.txState = txState;
-    this.needsRefCounts = r.isEntryEvictionPossible() || r.isEntryExpiryPossible();
+    needsRefCounts = r.isEntryEvictionPossible() || r.isEntryExpiryPossible();
     r.setInUseByTransaction(true);
   }
 
@@ -83,17 +83,17 @@ public class TXRegionState {
   }
 
   public boolean needsRefCounts() {
-    return this.needsRefCounts;
+    return needsRefCounts;
   }
 
 
 
   public Set getEntryKeys() {
-    return Collections.unmodifiableSet(this.entryMods.keySet());
+    return Collections.unmodifiableSet(entryMods.keySet());
   }
 
   public TXEntryState readEntry(Object entryKey) {
-    return this.entryMods.get(entryKey);
+    return entryMods.get(entryKey);
   }
 
   public TXEntryState createReadEntry(LocalRegion r, Object entryKey, RegionEntry re, Object vId,
@@ -108,7 +108,7 @@ public class TXRegionState {
     }
     TXEntryState result = cache.getTXEntryStateFactory().createEntry(re, vId, pendingValue,
         entryKey, this, isDistributed);
-    this.entryMods.put(entryKey, result);
+    entryMods.put(entryKey, result);
     return result;
   }
 
@@ -125,29 +125,29 @@ public class TXRegionState {
 
   public TXEntryUserAttrState readEntryUserAttr(Object entryKey) {
     TXEntryUserAttrState result = null;
-    if (this.uaMods != null) {
-      result = (TXEntryUserAttrState) this.uaMods.get(entryKey);
+    if (uaMods != null) {
+      result = (TXEntryUserAttrState) uaMods.get(entryKey);
     }
     return result;
   }
 
   public TXEntryUserAttrState writeEntryUserAttr(Object entryKey, LocalRegion r) {
-    if (this.uaMods == null) {
-      this.uaMods = new HashMap();
+    if (uaMods == null) {
+      uaMods = new HashMap();
     }
-    TXEntryUserAttrState result = (TXEntryUserAttrState) this.uaMods.get(entryKey);
+    TXEntryUserAttrState result = (TXEntryUserAttrState) uaMods.get(entryKey);
     if (result == null) {
       result = new TXEntryUserAttrState(r.basicGetEntryUserAttribute(entryKey));
-      this.uaMods.put(entryKey, result);
+      uaMods.put(entryKey, result);
     }
     return result;
   }
 
   public void rmEntryUserAttr(Object entryKey) {
-    if (this.uaMods != null) {
-      if (this.uaMods.remove(entryKey) != null) {
-        if (this.uaMods.size() == 0) {
-          this.uaMods = null;
+    if (uaMods != null) {
+      if (uaMods.remove(entryKey) != null) {
+        if (uaMods.size() == 0) {
+          uaMods = null;
         }
       }
     }
@@ -159,16 +159,14 @@ public class TXRegionState {
    */
   int entryCountMod() {
     int result = 0;
-    Iterator it = this.entryMods.values().iterator();
-    while (it.hasNext()) {
-      TXEntryState es = (TXEntryState) it.next();
+    for (final TXEntryState es : entryMods.values()) {
       result += es.entryCountMod();
     }
     return result;
   }
 
   TXEntryState getTXEntryState(Object key) {
-    return this.entryMods.get(key);
+    return entryMods.get(key);
   }
 
   /**
@@ -177,9 +175,7 @@ public class TXRegionState {
    * @param ret the HashSet to fill in with key objects
    */
   void fillInCreatedEntryKeys(HashSet ret) {
-    Iterator<Entry<Object, TXEntryState>> it = this.entryMods.entrySet().iterator();
-    while (it.hasNext()) {
-      Entry<Object, TXEntryState> me = it.next();
+    for (final Entry<Object, TXEntryState> me : entryMods.entrySet()) {
       TXEntryState txes = me.getValue();
       if (txes.wasCreatedByTX()) {
         ret.add(me.getKey());
@@ -191,60 +187,56 @@ public class TXRegionState {
    * Create a lock request on this region state and adds it to req
    */
   void createLockRequest(InternalRegion r, TXLockRequest req) {
-    if (this.uaMods == null && this.entryMods.isEmpty()) {
+    if (uaMods == null && entryMods.isEmpty()) {
       return;
     }
-    if (this.txState.logger.isDebugEnabled()) {
-      this.txState.logger.debug("TXRegionState.createLockRequest 1 " + r.getClass().getSimpleName()
+    if (TXState.logger.isDebugEnabled()) {
+      TXState.logger.debug("TXRegionState.createLockRequest 1 " + r.getClass().getSimpleName()
           + " region-state=" + this);
     }
     if (r.getScope().isDistributed()) {
       // [DISTTX] Do not take lock for RR on replicates
-      if (this.isCreatedDuringCommit()) {
+      if (isCreatedDuringCommit()) {
         return;
       }
       DistributedRegion dr = (DistributedRegion) r;
       Set<InternalDistributedMember> advice = dr.getCacheDistributionAdvisor().adviseTX();
       if (!advice.isEmpty()) {
-        this.otherMembers = advice; // remember for when it is time to distribute
+        otherMembers = advice; // remember for when it is time to distribute
       }
     }
-    if (this.txState.logger.isDebugEnabled()) {
-      this.txState.logger.debug("TXRegionState.createLockRequest 2");
+    if (TXState.logger.isDebugEnabled()) {
+      TXState.logger.debug("TXRegionState.createLockRequest 2");
     }
     // Bypass D-lock for Pr TX
-    boolean byPassDLock = false;
-    if (r instanceof BucketRegion) {
-      // BucketRegion br = (BucketRegion)r;
-      // if (br.getRedundancyLevel() < 2) {
-      byPassDLock = true;
-      // }
-    }
+    boolean byPassDLock = r instanceof BucketRegion;
+    // BucketRegion br = (BucketRegion)r;
+    // if (br.getRedundancyLevel() < 2) {
+    // }
     final boolean distributedTX = !byPassDLock && r.getScope().isDistributedAck();
-    if (this.uaMods != null || (!distributedTX && this.entryMods.size() > 0)) {
+    if (uaMods != null || (!distributedTX && entryMods.size() > 0)) {
       // need some local locks
       TXRegionLockRequestImpl rlr = new TXRegionLockRequestImpl(r.getCache(), r);
-      if (this.uaMods != null) {
-        Iterator<Object> it = this.uaMods.keySet().iterator();
-        while (it.hasNext()) {
+      if (uaMods != null) {
+        for (final Object o : uaMods.keySet()) {
           // add key with isEvent set to TRUE, for keep BC
-          rlr.addEntryKey(it.next(), Boolean.TRUE);
+          rlr.addEntryKey(o, Boolean.TRUE);
         }
 
       }
-      if (!distributedTX && this.entryMods.size() > 0) {
+      if (!distributedTX && entryMods.size() > 0) {
         rlr.addEntryKeys(getLockRequestEntryKeys());
       }
       if (!rlr.isEmpty()) {
         req.addLocalRequest(rlr);
       }
     }
-    if (distributedTX && this.entryMods.size() > 0) {
+    if (distributedTX && entryMods.size() > 0) {
       // need some distributed locks
       TXRegionLockRequestImpl rlr = new TXRegionLockRequestImpl(r.getCache(), r);
       rlr.addEntryKeys(getLockRequestEntryKeys());
       if (!rlr.isEmpty()) {
-        req.setOtherMembers(this.otherMembers);
+        req.setOtherMembers(otherMembers);
         req.addDistributedRequest(rlr);
       }
     }
@@ -257,38 +249,33 @@ public class TXRegionState {
    */
   private Map getLockRequestEntryKeys() {
     HashMap<Object, Boolean> result = null;
-    Iterator it = this.entryMods.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry me = (Map.Entry) it.next();
-      TXEntryState txes = (TXEntryState) me.getValue();
+    for (final Entry<Object, TXEntryState> objectTXEntryStateEntry : entryMods.entrySet()) {
+      TXEntryState txes = (TXEntryState) ((Entry) objectTXEntryStateEntry).getValue();
       if (txes.isDirty() && !txes.isOpSearch()) {
         if (result == null) {
           result = new HashMap();
         }
-        result.put(me.getKey(), txes.isOpAnyEvent(this.region));
+        result.put(((Entry) objectTXEntryStateEntry).getKey(), txes.isOpAnyEvent(region));
       }
     }
     return result;
   }
 
   void checkForConflicts(InternalRegion r) throws CommitConflictException {
-    if (this.isCreatedDuringCommit()) {
+    if (isCreatedDuringCommit()) {
       return;
     }
     {
-      Iterator it = this.entryMods.entrySet().iterator();
-      while (it.hasNext()) {
-        Map.Entry me = (Map.Entry) it.next();
-        Object eKey = me.getKey();
-        TXEntryState txes = (TXEntryState) me.getValue();
+      for (final Entry<Object, TXEntryState> objectTXEntryStateEntry : entryMods.entrySet()) {
+        Object eKey = ((Entry) objectTXEntryStateEntry).getKey();
+        TXEntryState txes = (TXEntryState) ((Entry) objectTXEntryStateEntry).getValue();
         txes.checkForConflict(r, eKey);
       }
     }
-    if (this.uaMods != null) {
+    if (uaMods != null) {
       r.checkReadiness();
-      Iterator it = this.uaMods.entrySet().iterator();
-      while (it.hasNext()) {
-        Map.Entry me = (Map.Entry) it.next();
+      for (final Object o : uaMods.entrySet()) {
+        Entry me = (Entry) o;
         Object eKey = me.getKey();
         TXEntryUserAttrState txes = (TXEntryUserAttrState) me.getValue();
         txes.checkForConflict(r, eKey);
@@ -302,8 +289,8 @@ public class TXRegionState {
    * it and se we don't try to clean it up again later).
    */
   void cleanupNonDirtyEntries(InternalRegion r) {
-    if (!this.entryMods.isEmpty()) {
-      Iterator it = this.entryMods.entrySet().iterator();
+    if (!entryMods.isEmpty()) {
+      Iterator it = entryMods.entrySet().iterator();
       while (it.hasNext()) {
         Map.Entry me = (Map.Entry) it.next();
         // Object eKey = me.getKey();
@@ -317,11 +304,11 @@ public class TXRegionState {
 
   void buildMessage(InternalRegion r, TXCommitMessage msg) {
     try {
-      if (!r.getScope().isLocal() && !this.entryMods.isEmpty()) {
+      if (!r.getScope().isLocal() && !entryMods.isEmpty()) {
 
         msg.startRegion(r, entryMods.size());
-        Iterator it = this.entryMods.entrySet().iterator();
-        Set<InternalDistributedMember> newMemberSet = new HashSet<InternalDistributedMember>();
+        Iterator it = entryMods.entrySet().iterator();
+        Set<InternalDistributedMember> newMemberSet = new HashSet<>();
 
         if (r.getScope().isDistributed()) {
           DistributedRegion dr = (DistributedRegion) r;
@@ -345,14 +332,14 @@ public class TXRegionState {
 
 
 
-        if (!newMemberSet.equals(this.otherMembers)) {
+        if (!newMemberSet.equals(otherMembers)) {
           // r.getCache().getLogger().info("DEBUG: participants list has changed! bug 32999.");
           // Flag the message that the lock manager needs to be updated with the new member set
           msg.setUpdateLockMembers();
-          this.otherMembers = newMemberSet;
+          otherMembers = newMemberSet;
         }
 
-        msg.finishRegion(this.otherMembers);
+        msg.finishRegion(otherMembers);
       }
     } catch (RegionDestroyedException ex) {
       // region was destroyed out from under us; after conflict checking
@@ -367,11 +354,11 @@ public class TXRegionState {
 
   void buildMessageForAdjunctReceivers(InternalRegion r, TXCommitMessage msg) {
     try {
-      if (!r.getScope().isLocal() && !this.entryMods.isEmpty()) {
+      if (!r.getScope().isLocal() && !entryMods.isEmpty()) {
 
         msg.startRegion(r, entryMods.size());
-        Iterator it = this.entryMods.entrySet().iterator();
-        Set<InternalDistributedMember> newMemberSet = new HashSet<InternalDistributedMember>();
+        Iterator it = entryMods.entrySet().iterator();
+        Set<InternalDistributedMember> newMemberSet = new HashSet<>();
 
         while (it.hasNext()) {
           Map.Entry me = (Map.Entry) it.next();
@@ -389,14 +376,14 @@ public class TXRegionState {
         }
 
 
-        if (!newMemberSet.equals(this.otherMembers)) {
+        if (!newMemberSet.equals(otherMembers)) {
           // r.getCache().getLogger().info("DEBUG: participants list has changed! bug 32999.");
           // Flag the message that the lock manager needs to be updated with the new member set
           msg.setUpdateLockMembers();
-          this.otherMembers = newMemberSet;
+          otherMembers = newMemberSet;
         }
 
-        msg.finishRegion(this.otherMembers);
+        msg.finishRegion(otherMembers);
       }
     } catch (RegionDestroyedException ex) {
       // region was destroyed out from under us; after conflict checking
@@ -412,13 +399,11 @@ public class TXRegionState {
 
   void buildCompleteMessage(InternalRegion r, TXCommitMessage msg) {
     try {
-      if (!this.entryMods.isEmpty()) {
+      if (!entryMods.isEmpty()) {
         msg.startRegion(r, entryMods.size());
-        Iterator it = this.entryMods.entrySet().iterator();
-        while (it.hasNext()) {
-          Map.Entry me = (Map.Entry) it.next();
-          Object eKey = me.getKey();
-          TXEntryState txes = (TXEntryState) me.getValue();
+        for (final Entry<Object, TXEntryState> objectTXEntryStateEntry : entryMods.entrySet()) {
+          Object eKey = ((Entry) objectTXEntryStateEntry).getKey();
+          TXEntryState txes = (TXEntryState) ((Entry) objectTXEntryStateEntry).getValue();
           txes.buildCompleteMessage(r, eKey, msg);
         }
         msg.finishRegionComplete();
@@ -453,10 +438,9 @@ public class TXRegionState {
   void applyChangesEnd(InternalRegion r, TXStateInterface txState) {
     try {
       try {
-        if (this.uaMods != null) {
-          Iterator it = this.uaMods.entrySet().iterator();
-          while (it.hasNext()) {
-            Map.Entry me = (Map.Entry) it.next();
+        if (uaMods != null) {
+          for (final Object o : uaMods.entrySet()) {
+            Entry me = (Entry) o;
             Object eKey = me.getKey();
             TXEntryUserAttrState txes = (TXEntryUserAttrState) me.getValue();
             txes.applyChanges(r, eKey);
@@ -478,11 +462,9 @@ public class TXRegionState {
 
   void getEvents(InternalRegion r, ArrayList events, TXState txs) {
     {
-      Iterator it = this.entryMods.entrySet().iterator();
-      while (it.hasNext()) {
-        Map.Entry me = (Map.Entry) it.next();
-        Object eKey = me.getKey();
-        TXEntryState txes = (TXEntryState) me.getValue();
+      for (final Entry<Object, TXEntryState> objectTXEntryStateEntry : entryMods.entrySet()) {
+        Object eKey = ((Entry) objectTXEntryStateEntry).getKey();
+        TXEntryState txes = (TXEntryState) ((Entry) objectTXEntryStateEntry).getValue();
         if (txes.isDirty() && txes.isOpAnyEvent(r)) {
           // OFFHEAP: these events are released when TXEvent.release is called
           events.add(txes.getEvent(r, eKey, txs));
@@ -496,40 +478,34 @@ public class TXRegionState {
    * TXEntryStateWithRegionAndKey.
    */
   void getEntries(ArrayList/* <TXEntryStateWithRegionAndKey> */ entries, InternalRegion r) {
-    Iterator it = this.entryMods.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry me = (Map.Entry) it.next();
-      Object eKey = me.getKey();
-      TXEntryState txes = (TXEntryState) me.getValue();
+    for (final Entry<Object, TXEntryState> objectTXEntryStateEntry : entryMods.entrySet()) {
+      Object eKey = ((Entry) objectTXEntryStateEntry).getKey();
+      TXEntryState txes = (TXEntryState) ((Entry) objectTXEntryStateEntry).getValue();
       entries.add(new TXState.TXEntryStateWithRegionAndKey(txes, r, eKey));
     }
   }
 
   void cleanup(InternalRegion r) {
-    if (this.cleanedUp) {
+    if (cleanedUp) {
       return;
     }
-    this.cleanedUp = true;
-    Iterator it = this.entryMods.values().iterator();
-    while (it.hasNext()) {
-      TXEntryState es = (TXEntryState) it.next();
+    cleanedUp = true;
+    for (final TXEntryState es : entryMods.values()) {
       es.cleanup(r);
     }
-    this.region.setInUseByTransaction(false);
+    region.setInUseByTransaction(false);
   }
 
   int getChanges() {
     int changes = 0;
-    Iterator it = this.entryMods.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry me = (Map.Entry) it.next();
-      TXEntryState txes = (TXEntryState) me.getValue();
+    for (final Entry<Object, TXEntryState> objectTXEntryStateEntry : entryMods.entrySet()) {
+      TXEntryState txes = (TXEntryState) ((Entry) objectTXEntryStateEntry).getValue();
       if (txes.isDirty()) {
         changes++;
       }
     }
-    if (this.uaMods != null) {
-      changes += this.uaMods.size();
+    if (uaMods != null) {
+      changes += uaMods.size();
     }
     return changes;
   }
@@ -539,19 +515,17 @@ public class TXRegionState {
   }
 
   public void close() {
-    for (TXEntryState e : this.entryMods.values()) {
+    for (TXEntryState e : entryMods.values()) {
       e.close();
     }
   }
 
   @Override
   public String toString() {
-    StringBuilder str = new StringBuilder();
-    str.append("{").append(super.toString()).append(" ");
-    str.append(" ,entryMods=").append(this.entryMods);
-    str.append(" ,isCreatedDuringCommit=").append(this.isCreatedDuringCommit());
-    str.append("}");
-    return str.toString();
+    return "{" + super.toString() + " "
+        + " ,entryMods=" + entryMods
+        + " ,isCreatedDuringCommit=" + isCreatedDuringCommit()
+        + "}";
   }
 
   /**
@@ -569,11 +543,11 @@ public class TXRegionState {
   }
 
   public boolean populateDistTxEntryStateList(ArrayList<DistTxThinEntryState> entryStateList) {
-    String regionFullPath = this.getRegion().getFullPath();
+    String regionFullPath = getRegion().getFullPath();
     try {
-      if (!this.entryMods.isEmpty()) {
+      if (!entryMods.isEmpty()) {
         // [DISTTX] TODO Sort this first
-        for (Entry<Object, TXEntryState> em : this.entryMods.entrySet()) {
+        for (Entry<Object, TXEntryState> em : entryMods.entrySet()) {
           Object mKey = em.getKey();
           TXEntryState txes = em.getValue();
           DistTxThinEntryState thinEntryState = txes.getDistTxEntryStates();
@@ -602,8 +576,8 @@ public class TXRegionState {
   }
 
   public void setDistTxEntryStates(ArrayList<DistTxThinEntryState> entryEventList) {
-    String regionFullPath = this.getRegion().getFullPath();
-    int entryModsSize = this.entryMods.size();
+    String regionFullPath = getRegion().getFullPath();
+    int entryModsSize = entryMods.size();
     int entryEventListSize = entryEventList.size();
     if (entryModsSize != entryEventListSize) {
       throw new UnsupportedOperationInTransactionException(
@@ -614,7 +588,7 @@ public class TXRegionState {
 
     int index = 0;
     // [DISTTX] TODO Sort this first
-    for (Entry<Object, TXEntryState> em : this.entryMods.entrySet()) {
+    for (Entry<Object, TXEntryState> em : entryMods.entrySet()) {
       Object mKey = em.getKey();
       TXEntryState txes = em.getValue();
       DistTxThinEntryState thinEntryState = entryEventList.get(index++);

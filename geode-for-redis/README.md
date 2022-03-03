@@ -182,6 +182,7 @@ Geode for Redis implements a subset of the full Redis command set.
 - INCRBYFLOAT  
 - INFO <sup>2</sup>  
 - KEYS  
+- LINDEX
 - MGET
 - MSET
 - MSETNX
@@ -203,6 +204,7 @@ Geode for Redis implements a subset of the full Redis command set.
 - SDIFF
 - SDIFFSTORE
 - SINTER
+- SINTERSTORE
 - SISMEMBER
 - SET  
 - SETEX
@@ -211,10 +213,13 @@ Geode for Redis implements a subset of the full Redis command set.
 - SLOWLOG <sup>3</sup>  
 - SMEMBERS  
 - SMOVE
+- SPOP
+- SRANDMEMBER
 - SREM  
 - STRLEN  
 - SUBSCRIBE  
 - SUNION
+- SUNIONSTORE
 - TTL  
 - TYPE  
 - UNSUBSCRIBE  

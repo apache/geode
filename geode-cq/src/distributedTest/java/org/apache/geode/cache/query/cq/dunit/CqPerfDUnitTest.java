@@ -55,12 +55,11 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
  * This class tests the ContinuousQuery mechanism in GemFire. This includes the test with different
  * data activities.
  */
-@SuppressWarnings("SpellCheckingInspection")
 @Category({ClientSubscriptionTest.class})
 public class CqPerfDUnitTest extends JUnit4CacheTestCase {
   private final Logger logger = LogService.getLogger();
   @SuppressWarnings("CanBeFinal")
-  private CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest();
+  private final CqQueryDUnitTest cqDUnitTest = new CqQueryDUnitTest();
 
   public CqPerfDUnitTest() {
     super();
@@ -433,7 +432,7 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
     VM client2 = VM.getVM(2);
     VM client3 = VM.getVM(3);
 
-    VM clients[] = new VM[] {client1, client2, client3};
+    VM[] clients = new VM[] {client1, client2, client3};
 
     cqDUnitTest.createServer(server);
     final int port = server.invoke(CqQueryDUnitTest::getCacheServerPort);
@@ -584,7 +583,7 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
 
     cqDUnitTest.createServer(server1);
 
-    VM clients[] = new VM[] {client1, client2};
+    VM[] clients = new VM[] {client1, client2};
 
     final int port1 = server1.invoke(CqQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
@@ -677,7 +676,7 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
     cqDUnitTest.createServer(server1);
     logger.info("Ready to create server 1");
 
-    VM clients[] = new VM[] {client1, client2};
+    VM[] clients = new VM[] {client1, client2};
 
     final int port1 = server1.invoke(CqQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
@@ -736,7 +735,7 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
     cqDUnitTest.createPartitionRegion(server1, cqDUnitTest.regions);
     cqDUnitTest.createPartitionRegion(server2, cqDUnitTest.regions);
 
-    VM clients[] = new VM[] {client1, client2};
+    VM[] clients = new VM[] {client1, client2};
 
     final int port1 = server1.invoke(CqQueryDUnitTest::getCacheServerPort);
     final String host0 = NetworkUtils.getServerHostName();
@@ -803,14 +802,14 @@ public class CqPerfDUnitTest extends JUnit4CacheTestCase {
     cqDUnitTest.createClient(client2, new int[] {port2}, host0, "-1");
 
     // Client1 registers matching CQs on server1.
-    String[] matchingCqs = this.generateCqQueries(false);
+    String[] matchingCqs = generateCqQueries(false);
     for (int i = 0; i < matchingCqs.length; i++) {
       cqDUnitTest.createCQ(client1, "testPerformanceForMatchingCQs_" + i, matchingCqs[i]);
       cqDUnitTest.executeCQ(client1, "testPerformanceForMatchingCQs_" + i, false, null);
     }
 
     // Client2 registers non-matching CQs on server2.
-    matchingCqs = this.generateCqQueries(true);
+    matchingCqs = generateCqQueries(true);
     for (int i = 0; i < matchingCqs.length; i++) {
       cqDUnitTest.createCQ(client2, "testPerformanceForMatchingCQs_" + i, matchingCqs[i]);
       cqDUnitTest.executeCQ(client2, "testPerformanceForMatchingCQs_" + i, false, null);

@@ -46,7 +46,7 @@ public class ModuleFunctionsSecurityTest {
   public GfshCommandRule gfsh =
       new GfshCommandRule(server::getJmxPort, GfshCommandRule.PortType.jmxManager);
 
-  private static Map<Function, String> functionStringMap = new HashMap<>();
+  private static final Map<Function, String> functionStringMap = new HashMap<>();
 
   @BeforeClass
   public static void setupClass() {

@@ -55,23 +55,23 @@ public class LdapUserAuthenticator implements Authenticator {
       final LogWriter securityLogWriter) throws AuthenticationFailedException {
     logger.info("Initializing LdapUserAuthenticator with {}", securityProps);
 
-    this.ldapServer = securityProps.getProperty(LDAP_SERVER_NAME);
-    if (this.ldapServer == null || this.ldapServer.length() == 0) {
+    ldapServer = securityProps.getProperty(LDAP_SERVER_NAME);
+    if (ldapServer == null || ldapServer.length() == 0) {
       throw new AuthenticationFailedException(
           "LdapUserAuthenticator: LDAP server property [" + LDAP_SERVER_NAME + "] not specified");
     }
 
-    this.baseDomainName = securityProps.getProperty(LDAP_BASEDN_NAME);
-    if (this.baseDomainName == null || this.baseDomainName.length() == 0) {
+    baseDomainName = securityProps.getProperty(LDAP_BASEDN_NAME);
+    if (baseDomainName == null || baseDomainName.length() == 0) {
       throw new AuthenticationFailedException(
           "LdapUserAuthenticator: LDAP base DN property [" + LDAP_BASEDN_NAME + "] not specified");
     }
 
     final String sslName = securityProps.getProperty(LDAP_SSL_NAME);
-    if (sslName != null && sslName.toLowerCase().equals("true")) {
-      this.ldapUrlScheme = "ldaps://";
+    if (sslName != null && sslName.equalsIgnoreCase("true")) {
+      ldapUrlScheme = "ldaps://";
     } else {
-      this.ldapUrlScheme = "ldap://";
+      ldapUrlScheme = "ldap://";
     }
   }
 
@@ -90,8 +90,8 @@ public class LdapUserAuthenticator implements Authenticator {
 
     final Properties env = new Properties();
     env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-    env.put(Context.PROVIDER_URL, this.ldapUrlScheme + this.ldapServer + '/' + this.baseDomainName);
-    env.put(Context.SECURITY_PRINCIPAL, "uid=" + userName + "," + this.baseDomainName);
+    env.put(Context.PROVIDER_URL, ldapUrlScheme + ldapServer + '/' + baseDomainName);
+    env.put(Context.SECURITY_PRINCIPAL, "uid=" + userName + "," + baseDomainName);
     env.put(Context.SECURITY_CREDENTIALS, password);
 
     try {

@@ -56,9 +56,9 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
    */
   @Test
   public void testCacheListenerAfterCreate() throws CacheException {
-    String name = this.getUniqueName();
-    final Object key = this.getUniqueName();
-    final Object value = new Integer(42);
+    String name = getUniqueName();
+    final Object key = getUniqueName();
+    final Object value = 42;
     Object arg = "ARG";
 
     TestCacheListener listener = new TestCacheListener() {
@@ -107,10 +107,10 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
    */
   @Test
   public void testCacheListenerAfterUpdate() throws CacheException {
-    String name = this.getUniqueName();
-    final Object key = this.getUniqueName();
-    final Object oldValue = new Integer(42);
-    final Object newValue = new Integer(43);
+    String name = getUniqueName();
+    final Object key = getUniqueName();
+    final Object oldValue = 42;
+    final Object newValue = 43;
     Object arg = "ARG";
 
     TestCacheListener listener = new TestCacheListener() {
@@ -172,9 +172,9 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
    */
   @Test
   public void testCacheListenerAfterDestroy() throws CacheException {
-    String name = this.getUniqueName();
-    final Object key = this.getUniqueName();
-    final Object value = new Integer(42);
+    String name = getUniqueName();
+    final Object key = getUniqueName();
+    final Object value = 42;
     Object arg = "ARG";
     // final boolean localScope = getRegionAttributes().getScope().isLocal();
 
@@ -214,9 +214,9 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
    */
   @Test
   public void testCacheListenerAfterInvalidate() throws CacheException {
-    String name = this.getUniqueName();
-    final Object key = this.getUniqueName();
-    final Object value = new Integer(42);
+    String name = getUniqueName();
+    final Object key = getUniqueName();
+    final Object value = 42;
     // Object arg = "ARG";
 
     TestCacheListener listener = new TestCacheListener() {
@@ -242,7 +242,7 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
     try {
       region.invalidate(key);
       fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException expected) {
+    } catch (EntryNotFoundException ignored) {
     }
     assertFalse(listener.wasInvoked());
 
@@ -260,9 +260,9 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
   public void testCacheListenerAfterInvalidateWithForce() throws CacheException {
     AbstractRegionMap.FORCE_INVALIDATE_EVENT = true;
     try {
-      String name = this.getUniqueName();
-      final Object key = this.getUniqueName();
-      final Object value = new Integer(42);
+      String name = getUniqueName();
+      final Object key = getUniqueName();
+      final Object value = 42;
 
       TestCacheListener listener = new TestCacheListener() {
         int invalidateCount = 0;
@@ -294,7 +294,7 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
       try {
         region.invalidate(key);
         fail("expected EntryNotFoundException");
-      } catch (EntryNotFoundException expected) {
+      } catch (EntryNotFoundException ignored) {
       }
       assertTrue(listener.wasInvoked());
 
@@ -319,7 +319,7 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
   @Test
   public void testCacheListenerAfterRegionDestroy() throws CacheException, InterruptedException {
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     Object arg = "ARG";
     // final String exception = "EXCEPTION";
     // final boolean localScope = getRegionAttributes().getScope().isLocal();
@@ -337,7 +337,7 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
 
       @Override
       public void close2() {
-        this.closed = true;
+        closed = true;
       }
 
       @Override
@@ -348,7 +348,7 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
         assertFalse(event.getOperation().isExpiration());
         assertFalse(event.isOriginRemote());
 
-        this.destroyed = true;
+        destroyed = true;
       }
     };
 
@@ -379,7 +379,7 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
   @Test
   public void testCacheListenerAfterRegionInvalidate() throws CacheException, InterruptedException {
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
 
     TestCacheListener listener = new TestCacheListener() {
       private boolean closed = false;
@@ -394,7 +394,7 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
 
       @Override
       public void close2() {
-        this.closed = true;
+        closed = true;
       }
 
       @Override
@@ -403,7 +403,7 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
         assertFalse(event.getOperation().isExpiration());
         assertFalse(event.isOriginRemote());
 
-        this.invalidated = true;
+        invalidated = true;
       }
     };
 

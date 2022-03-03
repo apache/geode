@@ -54,7 +54,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
 @SuppressWarnings("serial")
 public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
 
-  private String xmlProperty = GeodeGlossary.GEMFIRE_PREFIX + "autoReconnect-useCacheXMLFile";
+  private final String xmlProperty = GeodeGlossary.GEMFIRE_PREFIX + "autoReconnect-useCacheXMLFile";
   private String oldPropertySetting;
 
   @Rule
@@ -117,7 +117,7 @@ public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
       }
     });
     MembershipManagerHelper.crashDistributedSystem(cache.getDistributedSystem());
-    await().until(() -> membershipFailed.get());
+    await().until(membershipFailed::get);
     await()
         .until(() -> cache.getReconnectedCache() != null);
 

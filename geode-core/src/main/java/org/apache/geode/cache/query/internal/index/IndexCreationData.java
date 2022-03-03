@@ -57,11 +57,11 @@ public class IndexCreationData implements DataSerializableFixedID {
   }
 
   public IndexType getIndexType() {
-    return this.indexType;
+    return indexType;
   }
 
   public void setIndexData(IndexType type, String fromClause, String expression, String importStr) {
-    this.indexType = type;
+    indexType = type;
     this.fromClause = fromClause;
     this.expression = expression;
     this.importStr = importStr;
@@ -69,7 +69,7 @@ public class IndexCreationData implements DataSerializableFixedID {
 
   public void setIndexData(IndexType type, String fromClause, String expression, String importStr,
       boolean loadEntries) {
-    this.indexType = type;
+    indexType = type;
     this.fromClause = fromClause;
     this.expression = expression;
     this.importStr = importStr;
@@ -77,31 +77,31 @@ public class IndexCreationData implements DataSerializableFixedID {
   }
 
   public void setPartitionedIndex(PartitionedIndex index) {
-    this.partitionedIndex = index;
+    partitionedIndex = index;
   }
 
   public PartitionedIndex getPartitionedIndex() {
-    return this.partitionedIndex;
+    return partitionedIndex;
   }
 
   public String getIndexFromClause() {
-    return this.fromClause;
+    return fromClause;
   }
 
   public String getIndexExpression() {
-    return this.expression;
+    return expression;
   }
 
   public String getIndexImportString() {
-    return this.importStr;
+    return importStr;
   }
 
   public String getIndexName() {
-    return this.name;
+    return name;
   }
 
   public boolean loadEntries() {
-    return this.loadEntries;
+    return loadEntries;
   }
 
   @Override
@@ -117,10 +117,10 @@ public class IndexCreationData implements DataSerializableFixedID {
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    out.writeUTF(this.name);
-    out.writeUTF(this.expression);
-    out.writeUTF(this.fromClause);
-    out.writeBoolean(this.loadEntries);
+    out.writeUTF(name);
+    out.writeUTF(expression);
+    out.writeUTF(fromClause);
+    out.writeBoolean(loadEntries);
 
     if (IndexType.PRIMARY_KEY == indexType) {
       out.writeByte(0);
@@ -131,9 +131,9 @@ public class IndexCreationData implements DataSerializableFixedID {
     }
 
 
-    if (this.importStr != null) {
+    if (importStr != null) {
       out.writeBoolean(true);
-      out.writeUTF(this.importStr);
+      out.writeUTF(importStr);
     } else {
       out.writeBoolean(false);
     }
@@ -142,23 +142,23 @@ public class IndexCreationData implements DataSerializableFixedID {
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.name = in.readUTF();
-    this.expression = in.readUTF();
-    this.fromClause = in.readUTF();
-    this.loadEntries = in.readBoolean();
+    name = in.readUTF();
+    expression = in.readUTF();
+    fromClause = in.readUTF();
+    loadEntries = in.readBoolean();
 
     byte byteIndexType = in.readByte();
     if (0 == byteIndexType) {
-      this.indexType = IndexType.PRIMARY_KEY;
+      indexType = IndexType.PRIMARY_KEY;
     } else if (1 == byteIndexType) {
-      this.indexType = IndexType.HASH;
+      indexType = IndexType.HASH;
     } else {
-      this.indexType = IndexType.FUNCTIONAL;
+      indexType = IndexType.FUNCTIONAL;
     }
 
     boolean isImportStr = in.readBoolean();
     if (isImportStr) {
-      this.importStr = in.readUTF();
+      importStr = in.readUTF();
     }
   }
 

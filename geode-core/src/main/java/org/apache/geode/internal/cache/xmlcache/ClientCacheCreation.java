@@ -171,7 +171,7 @@ public class ClientCacheCreation extends CacheCreation implements ClientCache {
   @Override
   void create(InternalCache cache)
       throws TimeoutException, CacheWriterException, GatewayException, RegionExistsException {
-    cache.setDeclarativeCacheConfig(this.getCacheConfig());
+    cache.setDeclarativeCacheConfig(getCacheConfig());
     if (!cache.isClient()) {
       throw new IllegalStateException(
           "You must use ClientCacheFactory when the cache.xml uses client-cache.");
@@ -223,23 +223,23 @@ public class ClientCacheCreation extends CacheCreation implements ClientCache {
       cache.setCopyOnRead(getCopyOnRead());
     }
 
-    if (this.getCacheTransactionManagerCreation() != null
-        && this.getCacheTransactionManagerCreation().getListeners().length > 0
+    if (getCacheTransactionManagerCreation() != null
+        && getCacheTransactionManagerCreation().getListeners().length > 0
         && cache.getCacheTransactionManager() != null) {
       cache.getCacheTransactionManager()
-          .initListeners(this.getCacheTransactionManagerCreation().getListeners());
+          .initListeners(getCacheTransactionManagerCreation().getListeners());
     }
 
-    if (this.getCacheTransactionManagerCreation() != null
+    if (getCacheTransactionManagerCreation() != null
         && cache.getCacheTransactionManager() != null
-        && this.getCacheTransactionManagerCreation().getWriter() != null) {
+        && getCacheTransactionManagerCreation().getWriter() != null) {
       throw new IllegalStateException(
           "A TransactionWriter cannot be registered on a client");
     }
 
     cache.initializePdxRegistry();
 
-    for (String id : this.getRegionAttributesNames()) {
+    for (String id : getRegionAttributesNames()) {
       RegionAttributesCreation creation = (RegionAttributesCreation) getRegionAttributes(id);
       creation.inheritAttributes(cache, false);
 
@@ -250,7 +250,7 @@ public class ClientCacheCreation extends CacheCreation implements ClientCache {
       cache.setRegionAttributes(id, attrs);
     }
 
-    for (final Region<?, ?> region : this.roots.values()) {
+    for (final Region<?, ?> region : roots.values()) {
       RegionCreation regionCreation = (RegionCreation) region;
       regionCreation.createRoot(cache);
     }

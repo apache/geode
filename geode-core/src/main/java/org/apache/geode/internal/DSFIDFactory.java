@@ -994,7 +994,7 @@ public class DSFIDFactory implements DataSerializableFixedID {
   public Object create(int dsfid, DataInput in) throws IOException, ClassNotFoundException {
     switch (dsfid) {
       case REGION:
-        return (DataSerializableFixedID) DataSerializer.readRegion(in);
+        return DataSerializer.readRegion(in);
       case END_OF_STREAM_TOKEN:
         return Token.END_OF_STREAM;
       case DLOCK_REMOTE_TOKEN:

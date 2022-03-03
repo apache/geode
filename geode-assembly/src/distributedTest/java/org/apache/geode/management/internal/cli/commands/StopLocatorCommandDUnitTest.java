@@ -236,7 +236,7 @@ public class StopLocatorCommandDUnitTest {
       final QueryExp query = Query.eq(Query.attr("Name"), Query.value(memberName));
       final JMXServiceURL url =
           new JMXServiceURL("service:jmx:rmi:///jndi/rmi://localhost:" + port + "/jmxrmi");
-      System.out.println(url.toString());
+      System.out.println(url);
 
       assertThat(url).isNotNull();
       conn = JMXConnectorFactory.connect(url);

@@ -90,7 +90,7 @@ public class RedisSortedSet extends AbstractRedisData {
   }
 
   public RedisSortedSet(int size) {
-    this.members = new MemberMap(size);
+    members = new MemberMap(size);
   }
 
   protected int getSortedSetSize() {
@@ -844,7 +844,7 @@ public class RedisSortedSet extends AbstractRedisData {
     public ScoreDummyOrderedSetEntry(double score, boolean isExclusive, boolean isMinimum) {
       // If we are using an exclusive minimum comparison, or an inclusive maximum comparison then
       // this entry should act as if it is greater than the entry it's being compared to
-      this.member = isExclusive ^ isMinimum ? LEAST_MEMBER_NAME : GREATEST_MEMBER_NAME;
+      member = isExclusive ^ isMinimum ? LEAST_MEMBER_NAME : GREATEST_MEMBER_NAME;
       this.score = score;
     }
 

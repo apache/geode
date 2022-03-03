@@ -40,15 +40,15 @@ public class ProcessOutputReader {
 
   public void start() {
     synchronized (this) {
-      this.stdout.start();
-      this.stderr.start();
-      this.started = true;
+      stdout.start();
+      stderr.start();
+      started = true;
     }
   }
 
   public boolean waitFor(final long timeout, final TimeUnit unit) throws InterruptedException {
     synchronized (this) {
-      if (!this.started) {
+      if (!started) {
         throw new IllegalStateException("Must be started before waitFor");
       }
     }
@@ -56,11 +56,11 @@ public class ProcessOutputReader {
     final long startTime = System.nanoTime();
 
     long millisToJoin = unit.toMillis(timeout);
-    this.stderr.join(millisToJoin);
+    stderr.join(millisToJoin);
 
     long nanosRemaining = unit.toNanos(timeout) - (System.nanoTime() - startTime);
     millisToJoin = unit.toMillis(nanosRemaining);
-    this.stdout.join(millisToJoin);
+    stdout.join(millisToJoin);
 
     nanosRemaining = unit.toNanos(timeout) - (System.nanoTime() - startTime);
     return waitForProcess(nanosRemaining, unit);
@@ -73,7 +73,7 @@ public class ProcessOutputReader {
 
     while (nanosRemaining > 0) {
       try {
-        this.process.exitValue();
+        process.exitValue();
         return true;
       } catch (IllegalThreadStateException ex) {
         if (nanosRemaining > 0) {

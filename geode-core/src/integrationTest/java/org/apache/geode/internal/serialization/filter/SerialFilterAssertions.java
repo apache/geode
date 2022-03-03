@@ -30,35 +30,29 @@ public class SerialFilterAssertions {
 
   public static void assertThatSerialFilterIsNull()
       throws InvocationTargetException, IllegalAccessException {
-    boolean exists = API.getSerialFilter() != null;
-    assertThat(exists)
-        .as("ObjectInputFilter$Config.getSerialFilter() is null")
-        .isFalse();
+    assertThat(API.getSerialFilter())
+        .as("ObjectInputFilter$Config.getSerialFilter()")
+        .isNull();
   }
 
   public static void assertThatSerialFilterIsNotNull()
       throws InvocationTargetException, IllegalAccessException {
-    boolean exists = API.getSerialFilter() != null;
-    assertThat(exists)
-        .as("ObjectInputFilter$Config.getSerialFilter() is not null")
-        .isTrue();
+    assertThat(API.getSerialFilter())
+        .as("ObjectInputFilter$Config.getSerialFilter()")
+        .isNotNull();
   }
 
   public static void assertThatSerialFilterIsSameAs(Object objectInputFilter)
       throws InvocationTargetException, IllegalAccessException {
-    Object currentFilter = API.getSerialFilter();
-    boolean sameIdentity = currentFilter == objectInputFilter;
-    assertThat(sameIdentity)
-        .as("ObjectInputFilter$Config.getSerialFilter() is same as parameter")
-        .isTrue();
+    assertThat(API.getSerialFilter())
+        .as("ObjectInputFilter$Config.getSerialFilter()")
+        .isSameAs(objectInputFilter);
   }
 
   public static void assertThatSerialFilterIsNotSameAs(Object objectInputFilter)
       throws InvocationTargetException, IllegalAccessException {
-    Object currentFilter = API.getSerialFilter();
-    boolean sameIdentity = currentFilter == objectInputFilter;
-    assertThat(sameIdentity)
-        .as("ObjectInputFilter$Config.getSerialFilter() is same as parameter")
-        .isFalse();
+    assertThat(API.getSerialFilter())
+        .as("ObjectInputFilter$Config.getSerialFilter()")
+        .isNotSameAs(objectInputFilter);
   }
 }

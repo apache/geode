@@ -273,82 +273,82 @@ public class DiskStoreStats {
   }
 
   public void close() {
-    this.stats.close();
+    stats.close();
   }
 
   /**
    * Returns the total number of region entries that have been written to disk.
    */
   public long getWrites() {
-    return this.stats.getLong(writesId);
+    return stats.getLong(writesId);
   }
 
   /**
    * Returns the total number of nanoseconds spent writing to disk
    */
   public long getWriteTime() {
-    return this.stats.getLong(writeTimeId);
+    return stats.getLong(writeTimeId);
   }
 
   /**
    * Returns the total number of bytes that have been written to disk
    */
   public long getBytesWritten() {
-    return this.stats.getLong(bytesWrittenId);
+    return stats.getLong(bytesWrittenId);
   }
 
   /**
    * Returns the total number of region entries that have been read from disk.
    */
   public long getReads() {
-    return this.stats.getLong(readsId);
+    return stats.getLong(readsId);
   }
 
   /**
    * Returns the total number of nanoseconds spent reading from disk
    */
   public long getReadTime() {
-    return this.stats.getLong(readTimeId);
+    return stats.getLong(readTimeId);
   }
 
   /**
    * Returns the total number of bytes that have been read from disk
    */
   public long getBytesRead() {
-    return this.stats.getLong(bytesReadId);
+    return stats.getLong(bytesReadId);
   }
 
   /**
    * Returns the total number of region entries that have been removed from disk.
    */
   public long getRemoves() {
-    return this.stats.getLong(removesId);
+    return stats.getLong(removesId);
   }
 
   /**
    * Returns the total number of nanoseconds spent removing from disk
    */
   public long getRemoveTime() {
-    return this.stats.getLong(removeTimeId);
+    return stats.getLong(removeTimeId);
   }
 
   /**
    * Return the current number of entries in the async queue
    */
   public long getQueueSize() {
-    return this.stats.getInt(queueSizeId);
+    return stats.getInt(queueSizeId);
   }
 
   public void setQueueSize(int value) {
-    this.stats.setInt(queueSizeId, value);
+    stats.setInt(queueSizeId, value);
   }
 
   public void incQueueSize(int delta) {
-    this.stats.incInt(queueSizeId, delta);
+    stats.incInt(queueSizeId, delta);
   }
 
   public void incUncreatedRecoveredRegions(int delta) {
-    this.stats.incInt(uncreatedRecoveredRegionsId, delta);
+    stats.incInt(uncreatedRecoveredRegionsId, delta);
   }
 
   /**
@@ -359,17 +359,17 @@ public class DiskStoreStats {
    * @see DiskRegion#put
    */
   public long startWrite() {
-    this.stats.incInt(writesInProgressId, 1);
+    stats.incInt(writesInProgressId, 1);
     return getTime();
   }
 
   public long startFlush() {
-    this.stats.incInt(flushesInProgressId, 1);
+    stats.incInt(flushesInProgressId, 1);
     return getTime();
   }
 
   public void incWrittenBytes(long bytesWritten, boolean async) {
-    this.stats.incLong(async ? bytesFlushedId : bytesWrittenId, bytesWritten);
+    stats.incLong(async ? bytesFlushedId : bytesWrittenId, bytesWritten);
   }
 
   /**
@@ -378,22 +378,22 @@ public class DiskStoreStats {
    * @param start The time at which the write operation started
    */
   public long endWrite(long start) {
-    this.stats.incInt(writesInProgressId, -1);
+    stats.incInt(writesInProgressId, -1);
     long end = getTime();
-    this.stats.incLong(writesId, 1);
-    this.stats.incLong(writeTimeId, end - start);
+    stats.incLong(writesId, 1);
+    stats.incLong(writeTimeId, end - start);
     return end;
   }
 
   public void endFlush(long start) {
-    this.stats.incInt(flushesInProgressId, -1);
+    stats.incInt(flushesInProgressId, -1);
     long end = getTime();
-    this.stats.incLong(flushesId, 1);
-    this.stats.incLong(flushTimeId, end - start);
+    stats.incLong(flushesId, 1);
+    stats.incLong(flushTimeId, end - start);
   }
 
   public long getFlushes() {
-    return this.stats.getLong(flushesId);
+    return stats.getLong(flushesId);
   }
 
   /**
@@ -415,9 +415,9 @@ public class DiskStoreStats {
    */
   public long endRead(long start, long bytesRead) {
     long end = getTime();
-    this.stats.incLong(readsId, 1);
-    this.stats.incLong(readTimeId, end - start);
-    this.stats.incLong(bytesReadId, bytesRead);
+    stats.incLong(readsId, 1);
+    stats.incLong(readTimeId, end - start);
+    stats.incLong(bytesReadId, bytesRead);
     return end;
   }
 
@@ -428,12 +428,12 @@ public class DiskStoreStats {
    *
    */
   public long startRecovery() {
-    this.stats.incInt(recoveriesInProgressId, 1);
+    stats.incInt(recoveriesInProgressId, 1);
     return getTime();
   }
 
   public long startCompaction() {
-    this.stats.incInt(compactsInProgressId, 1);
+    stats.incInt(compactsInProgressId, 1);
     return getTime();
   }
 
@@ -448,44 +448,44 @@ public class DiskStoreStats {
    * @param bytesRead The number of bytes that were recovered
    */
   public void endRecovery(long start, long bytesRead) {
-    this.stats.incInt(recoveriesInProgressId, -1);
+    stats.incInt(recoveriesInProgressId, -1);
     long end = getTime();
-    this.stats.incLong(recoveryTimeId, end - start);
-    this.stats.incLong(recoveredBytesId, bytesRead);
+    stats.incLong(recoveryTimeId, end - start);
+    stats.incLong(recoveredBytesId, bytesRead);
   }
 
   public void endCompaction(long start) {
-    this.stats.incInt(compactsInProgressId, -1);
+    stats.incInt(compactsInProgressId, -1);
     long end = getTime();
-    this.stats.incInt(compactsId, 1);
-    this.stats.incLong(compactTimeId, end - start);
+    stats.incInt(compactsId, 1);
+    stats.incLong(compactTimeId, end - start);
   }
 
   public void endOplogRead(long start, long bytesRead) {
     long end = getTime();
-    this.stats.incInt(oplogRecoveriesId, 1);
-    this.stats.incLong(oplogRecoveryTimeId, end - start);
-    this.stats.incLong(oplogRecoveredBytesId, bytesRead);
+    stats.incInt(oplogRecoveriesId, 1);
+    stats.incLong(oplogRecoveryTimeId, end - start);
+    stats.incLong(oplogRecoveredBytesId, bytesRead);
   }
 
   public void incRecoveredEntryCreates() {
-    this.stats.incLong(recoveredEntryCreatesId, 1);
+    stats.incLong(recoveredEntryCreatesId, 1);
   }
 
   public void incRecoveredEntryUpdates() {
-    this.stats.incLong(recoveredEntryUpdatesId, 1);
+    stats.incLong(recoveredEntryUpdatesId, 1);
   }
 
   public void incRecoveredEntryDestroys() {
-    this.stats.incLong(recoveredEntryDestroysId, 1);
+    stats.incLong(recoveredEntryDestroysId, 1);
   }
 
   public void incRecoveryRecordsSkipped() {
-    this.stats.incLong(recoveryRecordsSkippedId, 1);
+    stats.incLong(recoveryRecordsSkippedId, 1);
   }
 
   public void incRecoveredValuesSkippedDueToLRU() {
-    this.stats.incLong(recoveredValuesSkippedDueToLRUId, 1);
+    stats.incLong(recoveredValuesSkippedDueToLRUId, 1);
   }
 
   /**
@@ -506,40 +506,40 @@ public class DiskStoreStats {
    */
   public long endRemove(long start) {
     long end = getTime();
-    this.stats.incLong(removesId, 1);
-    this.stats.incLong(removeTimeId, end - start);
+    stats.incLong(removesId, 1);
+    stats.incLong(removeTimeId, end - start);
     return end;
   }
 
   public void incOplogReads() {
-    this.stats.incLong(oplogReadsId, 1);
+    stats.incLong(oplogReadsId, 1);
   }
 
   public void incOplogSeeks() {
-    this.stats.incLong(oplogSeeksId, 1);
+    stats.incLong(oplogSeeksId, 1);
   }
 
   public void incInactiveOplogs(int delta) {
-    this.stats.incInt(inactiveOplogsId, delta);
+    stats.incInt(inactiveOplogsId, delta);
   }
 
   public void incCompactableOplogs(int delta) {
-    this.stats.incInt(compactableOplogsId, delta);
+    stats.incInt(compactableOplogsId, delta);
   }
 
   public void endCompactionDeletes(int count, long delta) {
-    this.stats.incLong(compactDeletesId, count);
-    this.stats.incLong(compactDeleteTimeId, delta);
+    stats.incLong(compactDeletesId, count);
+    stats.incLong(compactDeleteTimeId, delta);
   }
 
   public void endCompactionInsert(long start) {
-    this.stats.incLong(compactInsertsId, 1);
-    this.stats.incLong(compactInsertTimeId, getStatTime() - start);
+    stats.incLong(compactInsertsId, 1);
+    stats.incLong(compactInsertTimeId, getStatTime() - start);
   }
 
   public void endCompactionUpdate(long start) {
-    this.stats.incLong(compactUpdatesId, 1);
-    this.stats.incLong(compactUpdateTimeId, getStatTime() - start);
+    stats.incLong(compactUpdatesId, 1);
+    stats.incLong(compactUpdateTimeId, getStatTime() - start);
   }
 
   public long getStatTime() {
@@ -547,20 +547,20 @@ public class DiskStoreStats {
   }
 
   public void incOpenOplogs() {
-    this.stats.incInt(openOplogsId, 1);
+    stats.incInt(openOplogsId, 1);
   }
 
   public void decOpenOplogs() {
-    this.stats.incInt(openOplogsId, -1);
+    stats.incInt(openOplogsId, -1);
   }
 
   public void startBackup() {
-    this.stats.incInt(backupsInProgress, 1);
+    stats.incInt(backupsInProgress, 1);
   }
 
   public void endBackup() {
-    this.stats.incInt(backupsInProgress, -1);
-    this.stats.incInt(backupsCompleted, 1);
+    stats.incInt(backupsInProgress, -1);
+    stats.incInt(backupsCompleted, 1);
   }
 
   public Statistics getStats() {

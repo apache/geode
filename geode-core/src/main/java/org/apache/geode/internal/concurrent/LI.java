@@ -84,10 +84,7 @@ public class LI implements Serializable {
     } else if (!className.equals(other.className)) {
       return false;
     }
-    if (identityHashCode != other.identityHashCode) {
-      return false;
-    }
-    return true;
+    return identityHashCode == other.identityHashCode;
   }
 
   @Override

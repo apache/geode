@@ -18,17 +18,22 @@
 set -e
 
 usage() {
-    echo "Usage: print_rc_email.sh -v version_number -m maven_repo_id"
+    echo "Usage: commit_rc.sh -j ticket -v version_number -m maven_repo_id"
+    echo "  -j   The GEODE-nnnnn Jira identifier for this release"
     echo "  -v   The #.#.#.RC# version number"
     echo "  -m   The 4 digit id of the nexus maven repo"
     exit 1
 }
 
+JIRA=""
 FULL_VERSION=""
 MAVEN=""
 
-while getopts ":v:m:" opt; do
+while getopts ":j:v:m:" opt; do
   case ${opt} in
+    j )
+      JIRA=$OPTARG
+      ;;
     v )
       FULL_VERSION=$OPTARG
       ;;
@@ -41,7 +46,7 @@ while getopts ":v:m:" opt; do
   esac
 done
 
-if [[ ${FULL_VERSION} == "" ]] || [[ ${MAVEN} == "" ]]; then
+if [[ ${JIRA} == "" ]] || [[ ${FULL_VERSION} == "" ]] || [[ ${MAVEN} == "" ]]; then
     usage
 fi
 
@@ -74,7 +79,7 @@ fi
 function failMsg {
   errln=$1
   echo "ERROR: script did NOT complete successfully"
-  echo "Comment out any steps that already succeeded (approximately lines 80-$(( errln - 1 ))) and try again"
+  echo "Comment out any steps that already succeeded (approximately lines 87-$(( errln - 1 ))) and try again"
 }
 trap 'failMsg $LINENO' ERR
 
@@ -85,7 +90,11 @@ echo "Publishing artifacts to apache release location..."
 echo "============================================================"
 set -x
 cd ${SVN_DIR}
-svn commit -m "Releasing Apache Geode ${FULL_VERSION} distribution"
+svn commit -m "$JIRA: Release Apache Geode ${FULL_VERSION}
+
+Publish the source, binary, and checksum artifacts to ASF svn server,
+from which they will be picked up and published within 15 minutes to
+the URLs on https://geode.apache.org/releases/"
 set +x
 
 
@@ -102,7 +111,11 @@ rm gradle.properties.bak
 set -x
 git add gradle.properties
 git diff --staged --color | cat
-git commit -m "temporarily point to staging repo for CI purposes"
+git commit -m "$JIRA: Set temporary staging repo
+
+This serves two purposes: it gives the RC pipeline a way to get the
+nexus staging repo id needed for various tests, and it gives the
+Jenkins server a valid configuration during the voting period."
 git push
 set +x
 
@@ -113,7 +126,7 @@ echo "Keeping -build.0 suffix"
 echo "============================================================"
 cd ${GEODE}/../..
 set -x
-${0%/*}/set_versions.sh -v ${VERSION} -s -n -w "${WORKSPACE}"
+${0%/*}/set_versions.sh -j $JIRA -v ${VERSION} -s -n -w "${WORKSPACE}"
 set +x
 
 

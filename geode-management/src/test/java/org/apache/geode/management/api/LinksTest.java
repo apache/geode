@@ -26,7 +26,7 @@ import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class LinksTest {
 
-  private static ObjectMapper mapper = GeodeJsonMapper.getMapper();
+  private static final ObjectMapper mapper = GeodeJsonMapper.getMapper();
   private Links links;
 
   @Before

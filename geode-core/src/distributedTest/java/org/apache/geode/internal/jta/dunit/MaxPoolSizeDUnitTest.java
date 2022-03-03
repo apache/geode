@@ -58,7 +58,7 @@ public class MaxPoolSizeDUnitTest extends JUnit4DistributedTestCase {
   private static String readFile(String filename) throws IOException {
     BufferedReader br = new BufferedReader(new FileReader(filename));
     String nextLine = "";
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     while ((nextLine = br.readLine()) != null) {
       sb.append(nextLine);
       //
@@ -109,7 +109,7 @@ public class MaxPoolSizeDUnitTest extends JUnit4DistributedTestCase {
     int n1 = str.indexOf(search);
     LogWriterUtils.getLogWriter().fine("Start Index = " + n1);
     int n2 = str.indexOf(last_search, n1);
-    StringBuffer sbuff = new StringBuffer(str);
+    StringBuilder sbuff = new StringBuilder(str);
     LogWriterUtils.getLogWriter().fine("END Index = " + n2);
     String modified_str = sbuff.replace(n1, n2, new_str).toString();
     return modified_str;
@@ -227,7 +227,7 @@ public class MaxPoolSizeDUnitTest extends JUnit4DistributedTestCase {
     disconnectAllFromDS();
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    Object o[] = new Object[1];
+    Object[] o = new Object[1];
     o[0] = "MaxPoolSizeDUnitTest";
     vm0.invoke(MaxPoolSizeDUnitTest.class, "init", o);
   }
@@ -237,7 +237,7 @@ public class MaxPoolSizeDUnitTest extends JUnit4DistributedTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     try {
-      vm0.invoke(() -> MaxPoolSizeDUnitTest.destroyTable());
+      vm0.invoke(MaxPoolSizeDUnitTest::destroyTable);
     } finally {
       disconnectAllFromDS();
     }
@@ -247,7 +247,7 @@ public class MaxPoolSizeDUnitTest extends JUnit4DistributedTestCase {
   public void testMaxPoolSize() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    AsyncInvocation asyncObj = vm0.invokeAsync(() -> MaxPoolSizeDUnitTest.runTest1());
+    AsyncInvocation asyncObj = vm0.invokeAsync(MaxPoolSizeDUnitTest::runTest1);
     ThreadUtils.join(asyncObj, 30 * 1000);
     if (asyncObj.exceptionOccurred()) {
       Assert.fail("asyncObj failed", asyncObj.getException());

@@ -58,8 +58,8 @@ public class RemoveDAckDUnitTest extends JUnit4DistributedTestCase { // TODO: re
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(() -> RemoveDAckDUnitTest.createCacheVM0());
-    vm1.invoke(() -> RemoveDAckDUnitTest.createCacheVM1());
+    vm0.invoke(RemoveDAckDUnitTest::createCacheVM0);
+    vm1.invoke(RemoveDAckDUnitTest::createCacheVM1);
     LogWriterUtils.getLogWriter().fine("Cache created in successfully");
   }
 
@@ -68,8 +68,8 @@ public class RemoveDAckDUnitTest extends JUnit4DistributedTestCase { // TODO: re
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(() -> RemoveDAckDUnitTest.closeCache());
-    vm1.invoke(() -> RemoveDAckDUnitTest.closeCache());
+    vm0.invoke(RemoveDAckDUnitTest::closeCache);
+    vm1.invoke(RemoveDAckDUnitTest::closeCache);
   }
 
   public static void createCacheVM0() {
@@ -120,7 +120,7 @@ public class RemoveDAckDUnitTest extends JUnit4DistributedTestCase { // TODO: re
     // Object obj1;
     Object[] objArr = new Object[1];
     for (int i = 1; i < 5; i++) {
-      objArr[0] = new Integer(i);
+      objArr[0] = i;
       vm0.invoke(RemoveDAckDUnitTest.class, "putMethod", objArr);
     }
 
@@ -128,17 +128,17 @@ public class RemoveDAckDUnitTest extends JUnit4DistributedTestCase { // TODO: re
       @Override
       public void run2() throws CacheException {
         for (int i = 1; i < 5; i++) {
-          region.get(new Integer(i));
+          region.get(i);
         }
       }
     });
 
 
     int i = 2;
-    objArr[0] = new Integer(i);
+    objArr[0] = i;
     vm0.invoke(RemoveDAckDUnitTest.class, "removeMethod", objArr);
 
-    int Regsize = vm1.invoke(() -> RemoveDAckDUnitTest.sizeMethod());
+    int Regsize = vm1.invoke(RemoveDAckDUnitTest::sizeMethod);
     assertEquals(3, Regsize);
 
   }// end of test case

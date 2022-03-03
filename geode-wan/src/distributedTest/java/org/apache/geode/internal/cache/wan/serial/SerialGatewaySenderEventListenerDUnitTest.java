@@ -89,8 +89,8 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
 
     vm5.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", keyValues.size()));
 
-    vm4.invoke(() -> WANTestBase.printEventListenerMap());
-    vm5.invoke(() -> WANTestBase.printEventListenerMap());
+    vm4.invoke(WANTestBase::printEventListenerMap);
+    vm5.invoke(WANTestBase::printEventListenerMap);
 
     fail("tried to invoke missing method");
     // vm4.invoke(() ->
@@ -103,8 +103,8 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
    */
   @Test
   public void testGatewaySenderEventListenerInvocation() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
 
     createCacheInVMs(nyPort, vm2, vm3);
@@ -157,8 +157,8 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
    */
   @Test
   public void testGatewaySender2EventListenerInvocation() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
 
@@ -205,8 +205,8 @@ public class SerialGatewaySenderEventListenerDUnitTest extends WANTestBase {
    */
   @Test
   public void testGatewaySenderEventListenerPoolImpl() {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);

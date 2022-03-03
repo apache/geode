@@ -48,7 +48,7 @@ public class PdxToJSONTest {
             .hasMessage("Expected an array for pdx field myDate, but got an object of type "
                 + value.getClass());
 
-    Date values[] = new Date[2];
+    Date[] values = new Date[2];
     assertThatThrownBy(
         () -> p2j.getJSONStringFromArray(mock(JsonGenerator.class), values, "myDates"))
             .isInstanceOf(IllegalStateException.class)

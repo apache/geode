@@ -39,7 +39,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.cache.Region;
@@ -56,17 +55,17 @@ public class PageableLuceneQueryResultsImplJUnitTest {
   public ExpectedException thrown = ExpectedException.none();
 
   private List<EntryScore<String>> hits;
-  private List<LuceneResultStruct> expected = new ArrayList<LuceneResultStruct>();
+  private final List<LuceneResultStruct> expected = new ArrayList<>();
   private Region<String, String> userRegion;
   private Execution execution;
 
   @Before
   public void setUp() {
-    hits = new ArrayList<EntryScore<String>>();
+    hits = new ArrayList<>();
 
     for (int i = 0; i < 23; i++) {
       hits.add(new EntryScore("key_" + i, i));
-      expected.add(new LuceneResultStructImpl<String, String>("key_" + i, "value_" + i, i));
+      expected.add(new LuceneResultStructImpl<>("key_" + i, "value_" + i, i));
     }
 
     userRegion = mock(Region.class);
@@ -77,29 +76,25 @@ public class PageableLuceneQueryResultsImplJUnitTest {
     when(execution.withCollector(any())).thenReturn(execution);
     when(execution.execute(anyString())).thenReturn(collector);
 
-    when(collector.getResult()).then(new Answer() {
-
-      @Override
-      public Map answer(InvocationOnMock invocation) throws Throwable {
-        ArgumentCaptor<Set> captor = ArgumentCaptor.forClass(Set.class);
-        verify(execution, atLeast(1)).withFilter(captor.capture());
-        Collection<String> keys = captor.getValue();
-        Map<String, String> results = new HashMap<String, String>();
-        for (String key : keys) {
-          results.put(key, key.replace("key_", "value_"));
-        }
-
-        return results;
+    when(collector.getResult()).then((Answer) invocation -> {
+      ArgumentCaptor<Set> captor = ArgumentCaptor.forClass(Set.class);
+      verify(execution, atLeast(1)).withFilter(captor.capture());
+      Collection<String> keys = captor.getValue();
+      Map<String, String> results = new HashMap<>();
+      for (String key : keys) {
+        results.put(key, key.replace("key_", "value_"));
       }
+
+      return results;
     });
   }
 
   @Test
   public void testMaxStore() {
-    hits.set(5, new EntryScore<String>("key_5", 502));
+    hits.set(5, new EntryScore<>("key_5", 502));
 
     PageableLuceneQueryResultsImpl<String, String> results =
-        new PageableLuceneQueryResultsImpl<String, String>(hits, null, 5);
+        new PageableLuceneQueryResultsImpl<>(hits, null, 5);
 
     assertEquals(502, results.getMaxScore(), 0.1f);
   }

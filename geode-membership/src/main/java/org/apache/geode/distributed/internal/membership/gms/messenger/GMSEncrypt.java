@@ -61,7 +61,7 @@ public final class GMSEncrypt<ID extends MemberIdentifier> {
 
   private final String dhSKAlgo;
 
-  private Services<ID> services;
+  private final Services<ID> services;
 
   private GMSMembershipView<ID> view;
 
@@ -86,21 +86,21 @@ public final class GMSEncrypt<ID extends MemberIdentifier> {
   }
 
   protected byte[] getClusterSecretKey() {
-    if (this.clusterEncryptor != null) {
-      return this.clusterEncryptor.getSecretBytes();
+    if (clusterEncryptor != null) {
+      return clusterEncryptor.getSecretBytes();
     } else {
       return null;
     }
   }
 
   protected synchronized void initClusterSecretKey() throws Exception {
-    if (this.clusterEncryptor == null) {
-      this.clusterEncryptor = new GMSEncryptionCipherPool<>(this, generateSecret(dhPublicKey));
+    if (clusterEncryptor == null) {
+      clusterEncryptor = new GMSEncryptionCipherPool<>(this, generateSecret(dhPublicKey));
     }
   }
 
   protected synchronized void setClusterKey(byte[] secretBytes) {
-    this.clusterEncryptor = new GMSEncryptionCipherPool<>(this, secretBytes);
+    clusterEncryptor = new GMSEncryptionCipherPool<>(this, secretBytes);
   }
 
   private byte[] getPublicKeyIfIAmLocator(ID mbr) {
@@ -179,7 +179,7 @@ public final class GMSEncrypt<ID extends MemberIdentifier> {
     ID localMbr = services.getMessenger().getMemberID();
     try {
       if (localMbr != null && localMbr.compareTo(member, false, false) == 0) {
-        return this.dhPublicKey.getEncoded();// local one
+        return dhPublicKey.getEncoded();// local one
       }
       return lookupKeyByMember(member);
     } catch (Exception e) {

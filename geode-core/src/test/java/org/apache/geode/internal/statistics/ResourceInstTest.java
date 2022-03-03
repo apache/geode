@@ -56,10 +56,10 @@ public class ResourceInstTest {
   @Test
   public void sameFirstTSidxEquals() throws Exception {
     ResourceInst resourceInst1 =
-        new ResourceInst(this.archive1, 0, "name", 0, this.resourceType, false);
+        new ResourceInst(archive1, 0, "name", 0, resourceType, false);
     setFirstTSidx(resourceInst1, 1);
     ResourceInst resourceInst2 =
-        new ResourceInst(this.archive1, 0, "name", 0, this.resourceType, false);
+        new ResourceInst(archive1, 0, "name", 0, resourceType, false);
     setFirstTSidx(resourceInst2, 1);
 
     assertThat(resourceInst1).isEqualTo(resourceInst2);
@@ -68,10 +68,10 @@ public class ResourceInstTest {
   @Test
   public void differentFirstTSidxIsNotEqual() throws Exception {
     ResourceInst resourceInst1 =
-        new ResourceInst(this.archive1, 0, "name", 0, this.resourceType, false);
+        new ResourceInst(archive1, 0, "name", 0, resourceType, false);
     setFirstTSidx(resourceInst1, 1);
     ResourceInst resourceInst2 =
-        new ResourceInst(this.archive1, 0, "name", 0, this.resourceType, false);
+        new ResourceInst(archive1, 0, "name", 0, resourceType, false);
     setFirstTSidx(resourceInst2, 2);
 
     assertThat(resourceInst1).isNotEqualTo(resourceInst2);

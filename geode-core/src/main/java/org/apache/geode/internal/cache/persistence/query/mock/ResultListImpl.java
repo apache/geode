@@ -22,7 +22,7 @@ import org.apache.geode.internal.cache.persistence.query.ResultList;
 
 public class ResultListImpl implements ResultList {
   private final SortedResultMapImpl map;
-  private AtomicLong counter = new AtomicLong();
+  private final AtomicLong counter = new AtomicLong();
 
   public ResultListImpl() {
     map = new SortedResultMapImpl(false);

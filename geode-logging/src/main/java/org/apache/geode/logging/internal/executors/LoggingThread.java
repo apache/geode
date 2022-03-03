@@ -18,7 +18,7 @@ package org.apache.geode.logging.internal.executors;
  * LoggingThread instances always handle uncaught exceptions by logging them.
  */
 public class LoggingThread extends Thread {
-  private boolean treatExceptionAsFatal;
+  private final boolean treatExceptionAsFatal;
 
   /**
    * Creates a daemon thread with the given name

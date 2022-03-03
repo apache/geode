@@ -64,10 +64,10 @@ class MemberHealthEvaluator extends AbstractHealthEvaluator {
     GemFireStatSampler sampler = system.getStatSampler();
     if (sampler != null) {
       // Sampling is enabled
-      this.processStats = sampler.getProcessStats();
+      processStats = sampler.getProcessStats();
     }
 
-    this.dmStats = dm.getStats();
+    dmStats = dm.getStats();
 
     StringBuilder sb = new StringBuilder();
     sb.append("Application VM member ");
@@ -77,12 +77,12 @@ class MemberHealthEvaluator extends AbstractHealthEvaluator {
       sb.append(" with pid ");
       sb.append(pid);
     }
-    this.description = sb.toString();
+    description = sb.toString();
   }
 
   @Override
   protected String getDescription() {
-    return this.description;
+    return description;
   }
 
   /**
@@ -92,12 +92,12 @@ class MemberHealthEvaluator extends AbstractHealthEvaluator {
    */
   void checkVMProcessSize(List<HealthStatus> status) {
     // There is no need to check isFirstEvaluation()
-    if (this.processStats == null) {
+    if (processStats == null) {
       return;
     }
 
-    long vmSize = this.processStats.getProcessSize();
-    long threshold = this.config.getMaxVMProcessSize();
+    long vmSize = processStats.getProcessSize();
+    long threshold = config.getMaxVMProcessSize();
     if (vmSize > threshold) {
       String s =
           String.format("The size of this VM (%s megabytes) exceeds the threshold (%s megabytes)",
@@ -113,8 +113,8 @@ class MemberHealthEvaluator extends AbstractHealthEvaluator {
    * health.
    */
   private void checkMessageQueueSize(List<HealthStatus> status) {
-    long threshold = this.config.getMaxMessageQueueSize();
-    long overflowSize = this.dmStats.getOverflowQueueSize();
+    long threshold = config.getMaxMessageQueueSize();
+    long overflowSize = dmStats.getOverflowQueueSize();
     if (overflowSize > threshold) {
       String s =
           String.format("The size of the overflow queue (%s) exceeds the threshold (%s).",
@@ -133,8 +133,8 @@ class MemberHealthEvaluator extends AbstractHealthEvaluator {
       return;
     }
 
-    long threshold = this.config.getMaxReplyTimeouts();
-    long deltaReplyTimeouts = this.dmStats.getReplyTimeouts() - prevReplyTimeouts;
+    long threshold = config.getMaxReplyTimeouts();
+    long deltaReplyTimeouts = dmStats.getReplyTimeouts() - prevReplyTimeouts;
     if (deltaReplyTimeouts > threshold) {
       String s =
           String.format("The number of message reply timeouts (%s) exceeds the threshold (%s)",
@@ -184,7 +184,7 @@ class MemberHealthEvaluator extends AbstractHealthEvaluator {
    * Updates the previous values of statistics
    */
   private void updatePrevious() {
-    this.prevReplyTimeouts = this.dmStats.getReplyTimeouts();
+    prevReplyTimeouts = dmStats.getReplyTimeouts();
   }
 
   @Override

@@ -45,13 +45,13 @@ public class JvmSizeUtils {
   }
 
   static {
-    int sunbits = Integer.getInteger("sun.arch.data.model", 0).intValue(); // also used by JRockit
+    int sunbits = Integer.getInteger("sun.arch.data.model", 0); // also used by JRockit
     if (sunbits == 64) {
       is64Bit = true;
     } else if (sunbits == 32) {
       is64Bit = false;
     } else {
-      int ibmbits = Integer.getInteger("com.ibm.vm.bitmode", 0).intValue();
+      int ibmbits = Integer.getInteger("com.ibm.vm.bitmode", 0);
       if (ibmbits == 64) {
         is64Bit = true;
       } else if (ibmbits == 32) {

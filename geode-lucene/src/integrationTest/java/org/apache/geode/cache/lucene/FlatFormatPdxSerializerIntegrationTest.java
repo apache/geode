@@ -160,7 +160,7 @@ public class FlatFormatPdxSerializerIntegrationTest {
     Collection<Object> results = new LinkedHashSet();
     for (IndexableField field : fieldsInDoc) {
       if (isNumeric) {
-        results.add((Object) field.numericValue());
+        results.add(field.numericValue());
       } else {
         results.add(field.stringValue());
       }

@@ -70,8 +70,8 @@ public class PRAccessorWithOverflowRegressionTest extends CacheTestCase {
     datastoreDiskDir = diskDirsRule.getDiskDirFor(datastore);
     accessorDiskDir = diskDirsRule.getDiskDirFor(accessor);
 
-    datastore.invoke(() -> createDataStore());
-    accessor.invoke(() -> createAccessor());
+    datastore.invoke(this::createDataStore);
+    accessor.invoke(this::createAccessor);
   }
 
   @After

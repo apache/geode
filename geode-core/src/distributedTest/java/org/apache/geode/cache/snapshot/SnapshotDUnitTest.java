@@ -257,7 +257,7 @@ public class SnapshotDUnitTest extends JUnit4CacheTestCase {
     public boolean accept(Entry<K, V> entry) {
       throw new RuntimeException();
     }
-  };
+  }
 
   @Test
   public void testCacheExportFilterException() throws Exception {
@@ -281,11 +281,8 @@ public class SnapshotDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testCacheImportFilterException() throws Exception {
-    SnapshotFilter<Object, Object> oops = new SnapshotFilter<Object, Object>() {
-      @Override
-      public boolean accept(Entry<Object, Object> entry) {
-        throw new RuntimeException();
-      }
+    SnapshotFilter<Object, Object> oops = entry -> {
+      throw new RuntimeException();
     };
 
     File dir = new File(getDiskDirs()[0], "import");
@@ -323,7 +320,7 @@ public class SnapshotDUnitTest extends JUnit4CacheTestCase {
 
   public static Map<Integer, MyObject> createExpected(SerializationType type,
       RegionGenerator rgen) {
-    Map<Integer, MyObject> expected = new HashMap<Integer, MyObject>();
+    Map<Integer, MyObject> expected = new HashMap<>();
     for (int i = 0; i < NUM_ENTRIES; i++) {
       expected.put(i, rgen.createData(type, i, "The number is " + i));
     }

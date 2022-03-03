@@ -29,7 +29,7 @@ public class RuntimeRegionInfo extends RuntimeInfo implements JsonSerializable {
   }
 
   public void setEntryCount(long entrySize) {
-    this.entryCount = entrySize;
+    entryCount = entrySize;
   }
 
   @Override

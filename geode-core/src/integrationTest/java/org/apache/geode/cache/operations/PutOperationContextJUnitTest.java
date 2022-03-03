@@ -227,13 +227,9 @@ public class PutOperationContextJUnitTest {
       }
       PdxValue other = (PdxValue) obj;
       if (v == null) {
-        if (other.v != null) {
-          return false;
-        }
-      } else if (!v.equals(other.v)) {
-        return false;
-      }
-      return true;
+        return other.v == null;
+      } else
+        return v.equals(other.v);
     }
 
     private String v;
@@ -246,12 +242,12 @@ public class PutOperationContextJUnitTest {
 
     @Override
     public void toData(PdxWriter writer) {
-      writer.writeString("v", this.v);
+      writer.writeString("v", v);
     }
 
     @Override
     public void fromData(PdxReader reader) {
-      this.v = reader.readString("v");
+      v = reader.readString("v");
     }
 
   }

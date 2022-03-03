@@ -57,6 +57,6 @@ public abstract class RemoteOperationMessageWithDirectReply extends RemoteOperat
 
   @Override
   public void registerProcessor() {
-    this.processorId = processor.register();
+    processorId = processor.register();
   }
 }

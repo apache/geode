@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class TransactionalOperation {
-  public static enum ServerRegionOperation {
+  public enum ServerRegionOperation {
     CONTAINS_KEY,
     CONTAINS_VALUE,
     CONTAINS_VALUE_FOR_KEY,
@@ -40,12 +40,9 @@ public class TransactionalOperation {
      *         otherwise
      */
     public static boolean lockKeyForTx(ServerRegionOperation op) {
-      if (op == PUT || op == PUT_ALL || op == REMOVE_ALL || op == DESTROY || op == INVALIDATE) {
-        return true;
-      }
-      return false;
+      return op == PUT || op == PUT_ALL || op == REMOVE_ALL || op == DESTROY || op == INVALIDATE;
     }
-  };
+  }
 
   // private ClientTXStateStub clienttx;
   protected ServerRegionOperation operation;
@@ -54,10 +51,10 @@ public class TransactionalOperation {
   protected Object[] arguments;
 
   protected TransactionalOperation(ClientTXStateStub clienttx, String regionName,
-      ServerRegionOperation op, Object key, Object arguments[]) {
+      ServerRegionOperation op, Object key, Object[] arguments) {
     // this.clienttx = clienttx;
     this.regionName = regionName;
-    this.operation = op;
+    operation = op;
     this.key = key;
     this.arguments = arguments;
   }
@@ -66,26 +63,26 @@ public class TransactionalOperation {
    * @return the name of the affected region
    */
   public String getRegionName() {
-    return this.regionName;
+    return regionName;
   }
 
   public ServerRegionOperation getOperation() {
-    return this.operation;
+    return operation;
   }
 
   public Object getKey() {
-    return this.key;
+    return key;
   }
 
   /**
    * @return set of keys if the operation was PUTALL or REMOVEALL; null otherwise
    */
   public Set<Object> getKeys() {
-    if (this.operation == ServerRegionOperation.PUT_ALL) {
-      Map m = (Map) this.arguments[0];
+    if (operation == ServerRegionOperation.PUT_ALL) {
+      Map m = (Map) arguments[0];
       return m.keySet();
-    } else if (this.operation == ServerRegionOperation.REMOVE_ALL) {
-      Collection<Object> keys = (Collection<Object>) this.arguments[0];
+    } else if (operation == ServerRegionOperation.REMOVE_ALL) {
+      Collection<Object> keys = (Collection<Object>) arguments[0];
       return new HashSet(keys);
     }
     return null;
@@ -93,13 +90,13 @@ public class TransactionalOperation {
 
   /** this returns internal arguments for reinvoking methods on the ServerRegionProxy */
   public Object[] getArguments() {
-    return this.arguments;
+    return arguments;
   }
 
   @Override
   public String toString() {
-    return "TransactionalOperation(region=" + this.regionName + "; op=" + this.operation + "; key="
-        + this.key + ")";
+    return "TransactionalOperation(region=" + regionName + "; op=" + operation + "; key="
+        + key + ")";
   }
 
 }

@@ -64,7 +64,7 @@ public class CqSecurityAllowedUsersDistributedTest extends AbstractQuerySecurity
 
   // Variables that need to be shared across invoke calls.
   private static TestCqListener cqListener = null;
-  private String regexForExpectedExceptions = ".*Unauthorized access.*";
+  private final String regexForExpectedExceptions = ".*Unauthorized access.*";
 
   @Before
   public void setUp() throws Exception {

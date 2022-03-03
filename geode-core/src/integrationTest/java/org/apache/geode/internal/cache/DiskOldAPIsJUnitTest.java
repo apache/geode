@@ -245,7 +245,7 @@ public class DiskOldAPIsJUnitTest {
       Set<BucketRegion> s = prds.getAllLocalBucketRegions();
       assertTrue(s.size() > 0);
       for (BucketRegion br : s) {
-        LocalRegion lr = (LocalRegion) br;
+        LocalRegion lr = br;
         DiskStoreImpl ds = lr.getDiskStore();
         assertEquals(1, ds.getMaxOplogSize());
         assertEquals(333, ds.getTimeInterval());
@@ -293,7 +293,7 @@ public class DiskOldAPIsJUnitTest {
       Set<BucketRegion> s = prds.getAllLocalBucketRegions();
       assertTrue(s.size() > 0);
       for (BucketRegion br : s) {
-        LocalRegion lr = (LocalRegion) br;
+        LocalRegion lr = br;
         DiskStoreImpl ds = lr.getDiskStore();
         assertEquals(2, ds.getMaxOplogSize());
         assertEquals(1, ds.getTimeInterval());
@@ -345,7 +345,7 @@ public class DiskOldAPIsJUnitTest {
         Set<BucketRegion> s = prds.getAllLocalBucketRegions();
         assertTrue(s.size() > 0);
         for (BucketRegion br : s) {
-          LocalRegion lr = (LocalRegion) br;
+          LocalRegion lr = br;
           DiskStoreImpl ds = lr.getDiskStore();
           File[] dirs = ds.getDiskDirs();
           assertEquals(2, dirs.length);
@@ -411,7 +411,7 @@ public class DiskOldAPIsJUnitTest {
         Set<BucketRegion> s = prds.getAllLocalBucketRegions();
         assertTrue(s.size() > 0);
         for (BucketRegion br : s) {
-          LocalRegion lr = (LocalRegion) br;
+          LocalRegion lr = br;
           DiskStoreImpl ds = lr.getDiskStore();
           File[] dirs = ds.getDiskDirs();
           assertEquals(2, dirs.length);
@@ -433,8 +433,8 @@ public class DiskOldAPIsJUnitTest {
 
   private static void removeDir(File dir) {
     File[] files = dir.listFiles();
-    for (int i = 0; i < files.length; i++) {
-      files[i].delete();
+    for (final File file : files) {
+      file.delete();
     }
     dir.delete();
   }

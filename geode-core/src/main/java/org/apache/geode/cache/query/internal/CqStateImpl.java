@@ -43,7 +43,7 @@ public class CqStateImpl implements CqState {
    */
   @Override
   public boolean isRunning() {
-    return (this.state == RUNNING);
+    return (state == RUNNING);
   }
 
   /**
@@ -51,7 +51,7 @@ public class CqStateImpl implements CqState {
    */
   @Override
   public boolean isStopped() {
-    return (this.state == STOPPED || this.state == INIT);
+    return (state == STOPPED || state == INIT);
   }
 
   /**
@@ -59,7 +59,7 @@ public class CqStateImpl implements CqState {
    */
   @Override
   public boolean isClosed() {
-    return (this.state == CLOSED);
+    return (state == CLOSED);
   }
 
   /**
@@ -67,7 +67,7 @@ public class CqStateImpl implements CqState {
    */
   @Override
   public boolean isClosing() {
-    return (this.state == CLOSING);
+    return (state == CLOSING);
   }
 
   /**
@@ -82,7 +82,7 @@ public class CqStateImpl implements CqState {
    * Returns the integer state of CQ.
    */
   public int getState() {
-    return this.state;
+    return state;
   }
 
   /**
@@ -90,7 +90,7 @@ public class CqStateImpl implements CqState {
    */
   @Override
   public String toString() {
-    switch (this.state) {
+    switch (state) {
       case STOPPED:
         return "STOPPED";
       case RUNNING:

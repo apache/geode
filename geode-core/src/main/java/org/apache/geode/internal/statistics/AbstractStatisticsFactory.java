@@ -17,7 +17,6 @@ package org.apache.geode.internal.statistics;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -48,16 +47,16 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
     this.name = name;
     this.startTime = startTime;
 
-    this.statsList = new CopyOnWriteArrayList<Statistics>();
-    this.statsListUniqueIdLock = new Object();
-    this.tf = StatisticsTypeFactoryImpl.singleton();
+    statsList = new CopyOnWriteArrayList<>();
+    statsListUniqueIdLock = new Object();
+    tf = StatisticsTypeFactoryImpl.singleton();
   }
 
   public void close() {}
 
   @Override
   public String getName() {
-    return this.name;
+    return name;
   }
 
   @Override
@@ -67,17 +66,17 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
 
   @Override
   public long getStartTime() {
-    return this.startTime;
+    return startTime;
   }
 
   @Override
   public int getStatListModCount() {
-    return this.statsListModCount;
+    return statsListModCount;
   }
 
   @Override
   public List<Statistics> getStatsList() {
-    return this.statsList;
+    return statsList;
   }
 
   @Override
@@ -104,7 +103,7 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
   @Override
   public Statistics[] getStatistics() {
     List<Statistics> statsList = this.statsList;
-    return (Statistics[]) statsList.toArray(new Statistics[statsList.size()]);
+    return statsList.toArray(new Statistics[statsList.size()]);
   }
 
   // StatisticsFactory methods
@@ -142,51 +141,43 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
 
   @Override
   public Statistics[] findStatisticsByType(StatisticsType type) {
-    List<Statistics> hits = new ArrayList<Statistics>();
-    Iterator<Statistics> it = statsList.iterator();
-    while (it.hasNext()) {
-      Statistics s = (Statistics) it.next();
+    List<Statistics> hits = new ArrayList<>();
+    for (final Statistics s : statsList) {
       if (type == s.getType()) {
         hits.add(s);
       }
     }
     Statistics[] result = new Statistics[hits.size()];
-    return (Statistics[]) hits.toArray(result);
+    return hits.toArray(result);
   }
 
   @Override
   public Statistics[] findStatisticsByTextId(String textId) {
-    List<Statistics> hits = new ArrayList<Statistics>();
-    Iterator<Statistics> it = statsList.iterator();
-    while (it.hasNext()) {
-      Statistics s = (Statistics) it.next();
+    List<Statistics> hits = new ArrayList<>();
+    for (final Statistics s : statsList) {
       if (s.getTextId().equals(textId)) {
         hits.add(s);
       }
     }
     Statistics[] result = new Statistics[hits.size()];
-    return (Statistics[]) hits.toArray(result);
+    return hits.toArray(result);
   }
 
   @Override
   public Statistics[] findStatisticsByNumericId(long numericId) {
-    List<Statistics> hits = new ArrayList<Statistics>();
-    Iterator<Statistics> it = statsList.iterator();
-    while (it.hasNext()) {
-      Statistics s = (Statistics) it.next();
+    List<Statistics> hits = new ArrayList<>();
+    for (final Statistics s : statsList) {
       if (numericId == s.getNumericId()) {
         hits.add(s);
       }
     }
     Statistics[] result = new Statistics[hits.size()];
-    return (Statistics[]) hits.toArray(result);
+    return hits.toArray(result);
   }
 
   @Override
   public Statistics findStatisticsByUniqueId(long uniqueId) {
-    Iterator<Statistics> it = statsList.iterator();
-    while (it.hasNext()) {
-      Statistics s = (Statistics) it.next();
+    for (final Statistics s : statsList) {
       if (uniqueId == s.getUniqueId()) {
         return s;
       }

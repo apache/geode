@@ -32,7 +32,7 @@ import org.apache.geode.internal.size.Sizeable;
 public class TestObjectWithIdentifier implements DataSerializable, Sizeable {
 
   private String name;
-  private byte bytes[] = new byte[1024 * 4];
+  private byte[] bytes = new byte[1024 * 4];
   private int identifier;
 
   public TestObjectWithIdentifier() {
@@ -52,7 +52,7 @@ public class TestObjectWithIdentifier implements DataSerializable, Sizeable {
 
   @Override
   public boolean equals(Object obj) {
-    if (TestObjectWithIdentifier.class.isInstance(obj)) {
+    if (obj instanceof TestObjectWithIdentifier) {
       TestObjectWithIdentifier other = (TestObjectWithIdentifier) obj;
       return name.equals(other.name) && Arrays.equals(bytes, other.bytes);
     } else {

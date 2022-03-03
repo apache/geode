@@ -57,10 +57,10 @@ public class GeodeMemcachedService implements CacheService {
         logger.info("Starting GemFireMemcachedServer on bind address {} on port {} for {} protocol",
             new Object[] {bindAddress, port, protocol});
       }
-      this.memcachedServer =
+      memcachedServer =
           new GemFireMemcachedServer(bindAddress, port,
               GemFireMemcachedServer.Protocol.valueOf(protocol.toUpperCase()));
-      this.memcachedServer.start();
+      memcachedServer.start();
     }
   }
 
@@ -71,9 +71,9 @@ public class GeodeMemcachedService implements CacheService {
   }
 
   private void stopMemcachedServer() {
-    if (this.memcachedServer != null) {
+    if (memcachedServer != null) {
       logger.info("GemFireMemcachedServer is shutting down");
-      this.memcachedServer.shutdown();
+      memcachedServer.shutdown();
     }
   }
 

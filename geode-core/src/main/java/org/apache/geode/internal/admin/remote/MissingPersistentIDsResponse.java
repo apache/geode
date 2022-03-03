@@ -44,7 +44,7 @@ public class MissingPersistentIDsResponse extends AdminResponse {
       InternalDistributedMember recipient) {
     this.missingIds = missingIds;
     this.localIds = localIds;
-    this.setRecipient(recipient);
+    setRecipient(recipient);
   }
 
   @Override
@@ -62,14 +62,14 @@ public class MissingPersistentIDsResponse extends AdminResponse {
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     int size = in.readInt();
-    missingIds = new HashSet<PersistentID>(size);
+    missingIds = new HashSet<>(size);
     for (int i = 0; i < size; i++) {
       PersistentMemberPattern pattern = new PersistentMemberPattern();
       InternalDataSerializer.invokeFromData(pattern, in);
       missingIds.add(pattern);
     }
     size = in.readInt();
-    localIds = new HashSet<PersistentID>(size);
+    localIds = new HashSet<>(size);
     for (int i = 0; i < size; i++) {
       PersistentMemberPattern pattern = new PersistentMemberPattern();
       InternalDataSerializer.invokeFromData(pattern, in);

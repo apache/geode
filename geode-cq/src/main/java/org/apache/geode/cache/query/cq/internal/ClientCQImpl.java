@@ -45,7 +45,7 @@ import org.apache.geode.security.GemFireSecurityException;
 public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
   private static final Logger logger = LogService.getLogger();
 
-  private CqAttributes cqAttributes;
+  private final CqAttributes cqAttributes;
 
   private volatile ServerCQProxyImpl cqProxy;
 
@@ -64,16 +64,16 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
       CqAttributes cqAttributes, ServerCQProxyImpl serverProxy, boolean isDurable) {
     super(cqService, cqName, queryString, isDurable);
     this.cqAttributes = cqAttributes;
-    this.cqProxy = serverProxy;
+    cqProxy = serverProxy;
   }
 
   @Override
   public String getServerCqName() {
-    return this.cqName;
+    return cqName;
   }
 
   ServerCQProxyImpl getCQProxy() {
-    return this.cqProxy;
+    return cqProxy;
   }
 
   /**
@@ -96,7 +96,7 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
       if (logger.isTraceEnabled()) {
         logger.trace("Found server region proxy on region. RegionName: {}", regionName);
       }
-      this.cqProxy = new ServerCQProxyImpl(srp);
+      cqProxy = new ServerCQProxyImpl(srp);
       if (!srp.getPool().getSubscriptionEnabled()) {
         throw new CqException("The 'queueEnabled' flag on Pool installed on Region " + regionName
             + " is set to false.");
@@ -109,7 +109,7 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
 
   @Override
   public void close() throws CqClosedException, CqException {
-    this.close(true);
+    close(true);
   }
 
   @Override
@@ -120,31 +120,31 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
           sendRequestToServer);
     }
     // Synchronize with stop and execute CQ commands
-    synchronized (this.cqState) {
+    synchronized (cqState) {
       // Check if the cq is already closed.
-      if (this.isClosed()) {
+      if (isClosed()) {
         // throw new CqClosedException("CQ is already closed, CqName : " + this.cqName);
         if (isDebugEnabled) {
-          logger.debug("CQ is already closed, CqName: {}", this.cqName);
+          logger.debug("CQ is already closed, CqName: {}", cqName);
         }
         return;
       }
 
-      int stateBeforeClosing = this.cqState.getState();
-      this.cqState.setState(CqStateImpl.CLOSING);
+      int stateBeforeClosing = cqState.getState();
+      cqState.setState(CqStateImpl.CLOSING);
       boolean isClosed = false;
 
       // Client Close. Proxy is null in case of server.
       // Check if this has been sent to server, if so send
       // Close request to server.
       Exception exception = null;
-      if (this.cqProxy != null && sendRequestToServer) {
+      if (cqProxy != null && sendRequestToServer) {
         try {
-          if (this.proxyCache != null) {
-            if (this.proxyCache.isClosed()) {
+          if (proxyCache != null) {
+            if (proxyCache.isClosed()) {
               throw proxyCache.getCacheClosedException("Cache is closed for this user.");
             }
-            UserAttributes.userAttributes.set(this.proxyCache.getUserAttributes());
+            UserAttributes.userAttributes.set(proxyCache.getUserAttributes());
           }
           cqProxy.close(this);
           isClosed = true;
@@ -161,7 +161,7 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
       }
 
       // Cleanup the resource used by cq.
-      this.removeFromCqMap();
+      removeFromCqMap();
 
       if (cqProxy == null || !sendRequestToServer || isClosed) {
         // Stat update.
@@ -172,11 +172,11 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
         }
 
         // Set the state to close, and update stats
-        this.cqState.setState(CqStateImpl.CLOSED);
+        cqState.setState(CqStateImpl.CLOSED);
         cqService.stats().incCqsClosed();
         cqService.stats().decCqsOnClient();
-        if (this.stats != null) {
-          this.stats.close();
+        if (stats != null) {
+          stats.close();
         }
       } else {
         if (shutdownInProgress()) {
@@ -186,20 +186,20 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
         if (exception != null) {
           throw new CqException(
               String.format("Failed to close the cq. CqName: %s. Error from last endpoint: %s",
-                  this.cqName, exception.getLocalizedMessage()),
+                  cqName, exception.getLocalizedMessage()),
               exception.getCause());
         } else {
           throw new CqException(
               String.format(
                   "Failed to close the cq. CqName: %s. The server endpoints on which this cq was registered were not found.",
-                  this.cqName));
+                  cqName));
         }
       }
     }
 
     // Invoke close on Listeners if any.
-    if (this.cqAttributes != null) {
-      CqListener[] cqListeners = this.getCqAttributes().getCqListeners();
+    if (cqAttributes != null) {
+      CqListener[] cqListeners = getCqAttributes().getCqListeners();
 
       if (cqListeners != null) {
         if (isDebugEnabled) {
@@ -249,7 +249,7 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
    */
   @Override
   protected void cleanup() throws CqException {
-    this.cqService.removeFromBaseRegionToCqNameMap(this.regionName, this.getServerCqName());
+    cqService.removeFromBaseRegionToCqNameMap(regionName, getServerCqName());
   }
 
   @Override
@@ -291,7 +291,7 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
         }
       }
       // At this point we know queuedEvents is null and no one is adding to queuedEvents yet.
-      this.queuedEvents = new ConcurrentLinkedQueue<>();
+      queuedEvents = new ConcurrentLinkedQueue<>();
     }
 
     if (CqQueryImpl.testHook != null) {
@@ -314,7 +314,7 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
       // Check if any CQ Events are received during query execution.
       // Invoke the CQ Listeners with the received CQ Events.
       try {
-        if (!this.queuedEvents.isEmpty()) {
+        if (!queuedEvents.isEmpty()) {
           try {
             Thread thread = new LoggingThread("CQEventHandler For " + cqName, () -> {
               Object[] eventArray;
@@ -328,7 +328,7 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
 
                   // Process through the events
                   for (Object cqEvent : eventArray) {
-                    cqService.invokeListeners(cqName, ClientCQImpl.this, (CqEventImpl) cqEvent);
+                    cqService.invokeListeners(cqName, this, (CqEventImpl) cqEvent);
                     stats.decQueuedCqListenerEvents();
                   }
                 } finally {
@@ -368,21 +368,21 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
 
     Object initialResults = null;
 
-    synchronized (this.cqState) {
-      if (this.isClosed()) {
+    synchronized (cqState) {
+      if (isClosed()) {
         throw new CqClosedException(
-            String.format("CQ is closed, CqName : %s", this.cqName));
+            String.format("CQ is closed, CqName : %s", cqName));
       }
-      if (this.isRunning()) {
+      if (isRunning()) {
         throw new IllegalStateException(String.format("CQ is in running state, CqName : %s",
-            this.cqName));
+            cqName));
       }
 
       if (logger.isDebugEnabled()) {
         logger.debug("Performing Execute {} request for CQ. CqName: {}",
-            ((executeWithInitialResults) ? "WithInitialResult" : ""), this.cqName);
+            ((executeWithInitialResults) ? "WithInitialResult" : ""), cqName);
       }
-      this.cqBaseRegion = (LocalRegion) cqService.getCache().getRegion(this.regionName);
+      cqBaseRegion = (LocalRegion) cqService.getCache().getRegion(regionName);
 
       // If not server send the request to server.
       if (!cqService.isServer()) {
@@ -390,23 +390,23 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
 
         // If CqService is initialized using the pool, the connection proxy is set using the
         // pool that initializes the CQ. Else its set using the Region proxy.
-        if (this.cqProxy == null) {
+        if (cqProxy == null) {
           initConnectionProxy();
         }
 
         boolean success = false;
         try {
-          if (this.proxyCache != null) {
-            if (this.proxyCache.isClosed()) {
+          if (proxyCache != null) {
+            if (proxyCache.isClosed()) {
               throw proxyCache.getCacheClosedException("Cache is closed for this user.");
             }
-            UserAttributes.userAttributes.set(this.proxyCache.getUserAttributes());
+            UserAttributes.userAttributes.set(proxyCache.getUserAttributes());
           }
           if (executeWithInitialResults) {
             initialResults = cqProxy.createWithIR(this);
             if (initialResults == null) {
-              String errMsg = "Failed to execute the CQ.  CqName: " + this.cqName
-                  + ", Query String is: " + this.queryString;
+              String errMsg = "Failed to execute the CQ.  CqName: " + cqName
+                  + ", Query String is: " + queryString;
               throw new CqException(errMsg);
             }
           } else {
@@ -415,7 +415,7 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
           success = true;
         } catch (Exception ex) {
           // Check for system shutdown.
-          if (this.shutdownInProgress()) {
+          if (shutdownInProgress()) {
             throw new CqException("System shutdown in progress.");
           }
           if (ex.getCause() instanceof GemFireSecurityException) {
@@ -430,14 +430,14 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
             String errMsg =
                 String.format(
                     "Failed to execute the CQ. CqName: %s, Query String is: %s, Error from last server: %s",
-                    this.cqName, this.queryString, ex.getLocalizedMessage());
+                    cqName, queryString, ex.getLocalizedMessage());
             if (logger.isDebugEnabled()) {
               logger.debug(errMsg, ex);
             }
             throw new CqException(errMsg, ex);
           }
         } finally {
-          if (!success && !this.shutdownInProgress()) {
+          if (!success && !shutdownInProgress()) {
             try {
               cqProxy.close(this);
             } catch (Exception e) {
@@ -450,7 +450,7 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
           UserAttributes.userAttributes.set(null);
         }
       }
-      this.cqState.setState(CqStateImpl.RUNNING);
+      cqState.setState(CqStateImpl.RUNNING);
     }
     // If client side, alert listeners that a cqs have been connected
     if (!cqService.isServer()) {
@@ -466,8 +466,8 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
       }
     }
     // Update CQ-base region for book keeping.
-    this.cqService.stats().incCqsActive();
-    this.cqService.stats().decCqsStopped();
+    cqService.stats().incCqsActive();
+    cqService.stats().decCqsStopped();
     return initialResults;
   }
 
@@ -492,25 +492,25 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
   @Override
   public void stop() throws CqClosedException, CqException {
     boolean isStopped = false;
-    synchronized (this.cqState) {
-      if (this.isClosed()) {
+    synchronized (cqState) {
+      if (isClosed()) {
         throw new CqClosedException(
-            String.format("CQ is closed, CqName : %s", this.cqName));
+            String.format("CQ is closed, CqName : %s", cqName));
       }
 
-      if (!(this.isRunning())) {
+      if (!(isRunning())) {
         throw new IllegalStateException(
             String.format("CQ is not in running state, stop CQ does not apply, CqName : %s",
-                this.cqName));
+                cqName));
       }
 
       Exception exception = null;
       try {
-        if (this.proxyCache != null) {
-          if (this.proxyCache.isClosed()) {
+        if (proxyCache != null) {
+          if (proxyCache.isClosed()) {
             throw proxyCache.getCacheClosedException("Cache is closed for this user.");
           }
-          UserAttributes.userAttributes.set(this.proxyCache.getUserAttributes());
+          UserAttributes.userAttributes.set(proxyCache.getUserAttributes());
         }
         cqProxy.stop(this);
         isStopped = true;
@@ -521,9 +521,9 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
       }
       if (cqProxy == null || isStopped) {
         // Change state and stats on the client side
-        this.cqState.setState(CqStateImpl.STOPPED);
-        this.cqService.stats().incCqsStopped();
-        this.cqService.stats().decCqsActive();
+        cqState.setState(CqStateImpl.STOPPED);
+        cqService.stats().incCqsStopped();
+        cqService.stats().decCqsActive();
         if (logger.isDebugEnabled()) {
           logger.debug("Successfully stopped the CQ. {}", cqName);
         }
@@ -532,13 +532,13 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
         if (exception != null) {
           throw new CqException(
               String.format("Failed to stop the cq. CqName :%s Error from last server: %s",
-                  this.cqName, exception.getLocalizedMessage()),
+                  cqName, exception.getLocalizedMessage()),
               exception.getCause());
         } else {
           throw new CqException(
               String.format(
                   "Failed to stop the cq. CqName: %s. The server endpoints on which this cq was registered were not found.",
-                  this.cqName));
+                  cqName));
         }
       }
     }
@@ -546,11 +546,11 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
 
   @Override
   public CqAttributesMutator getCqAttributesMutator() {
-    return (CqAttributesMutator) this.cqAttributes;
+    return (CqAttributesMutator) cqAttributes;
   }
 
   ConcurrentLinkedQueue<CqEventImpl> getQueuedEvents() {
-    return this.queuedEvents;
+    return queuedEvents;
   }
 
   @Override
@@ -571,7 +571,7 @@ public class ClientCQImpl extends CqQueryImpl implements ClientCQ {
     final DataPolicy regionDataPolicy = getCqBaseRegion() == null ? DataPolicy.EMPTY
         : getCqBaseRegion().getAttributes().getDataPolicy();
 
-    int state = this.cqState.getState();
-    this.cqProxy.createOn(getName(), conn, getQueryString(), state, isDurable, regionDataPolicy);
+    int state = cqState.getState();
+    cqProxy.createOn(getName(), conn, getQueryString(), state, isDurable, regionDataPolicy);
   }
 }

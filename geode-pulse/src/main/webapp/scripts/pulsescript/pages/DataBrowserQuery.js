@@ -169,7 +169,7 @@ function executeDBQuery(){
 
   }).error(resErrHandler);
   
-  return;
+
 }
 
 // This function displays error if occurred 
@@ -181,7 +181,7 @@ function resErrHandler(data){
   }else{
     console.log(data);
   }
-};
+}
 
 // This function creates complete result panel html
 function createHtmlForQueryResults(){
@@ -458,8 +458,8 @@ function createResultGrid(member, memberResultObject){
   }*/
   
   // Determine table columns
-  var columnName = new Array();
-  var columnModel = new Array();
+  var columnName = [];
+  var columnModel = [];
   for(var cnt=0; cnt<objectResults.length; cnt++){
     for(key in objectResults[cnt]){
       if(-1 == columnName.indexOf(key)){
@@ -808,7 +808,7 @@ function convertRawResponseToExpectedFormat(rawResponeData){
   }
   
   var finalResponseData = {};
-  var finalResponseResults = new Array();
+  var finalResponseResults = [];
   
   if(rawResponeData.result != null || rawResponeData.result != undefined){
     var rawResponeDataResult = rawResponeData.result;
@@ -843,7 +843,7 @@ function convertRawResponseToExpectedFormat(rawResponeData){
 // Function for converting raw response into expected object wise results format
 function convertToExpectedObjectsFormat(rawResponseResult, prefixForId){
   
-  var expResponseResult = new Array();
+  var expResponseResult = [];
   
   if(rawResponseResult != null && rawResponseResult != undefined ){
     
@@ -878,7 +878,7 @@ function convertToExpectedObjectsFormat(rawResponseResult, prefixForId){
           
           if(!flagObjectFound){  // required object not found in expResponseResult 
             
-            var objectResults = new Array();
+            var objectResults = [];
             var type = rawResponseResult[i][0];
             var entry = rawResponseResult[i][1];
 
@@ -903,7 +903,7 @@ function convertToExpectedObjectsFormat(rawResponseResult, prefixForId){
           
         }else{  // expResponseResult is empty
           
-          var objectResults = new Array();
+          var objectResults = [];
           var type = rawResponseResult[i][0];
           var entry = rawResponseResult[i][1];
 

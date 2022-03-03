@@ -16,7 +16,6 @@
 package org.apache.geode.internal.cache;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.geode.annotations.internal.MakeNotStatic;
@@ -41,31 +40,29 @@ public class TXLockRequest {
   private Set otherMembers;
 
   public TXLockRequest() {
-    this.localLockHeld = false;
-    this.distLockId = null;
-    this.localLocks = null;
-    this.distLocks = null;
-    this.otherMembers = null;
+    localLockHeld = false;
+    distLockId = null;
+    localLocks = null;
+    distLocks = null;
+    otherMembers = null;
   }
 
   void setOtherMembers(Set s) {
-    this.otherMembers = s;
+    otherMembers = s;
   }
 
   public void addLocalRequest(TXRegionLockRequest req) {
-    if (this.localLocks == null) {
-      this.localLocks = new IdentityArrayList();
+    if (localLocks == null) {
+      localLocks = new IdentityArrayList();
     }
-    this.localLocks.add(req);
+    localLocks.add(req);
   }
 
   public TXRegionLockRequest getRegionLockRequest(String regionFullPath) {
-    if (this.localLocks == null || regionFullPath == null) {
+    if (localLocks == null || regionFullPath == null) {
       return null;
     }
-    Iterator<TXRegionLockRequestImpl> it = this.localLocks.iterator();
-    while (it.hasNext()) {
-      TXRegionLockRequestImpl rlr = it.next();
+    for (final TXRegionLockRequestImpl rlr : (Iterable<TXRegionLockRequestImpl>) localLocks) {
       if (rlr.getRegionFullPath().equals(regionFullPath)) {
         return rlr;
       }
@@ -74,19 +71,19 @@ public class TXLockRequest {
   }
 
   void addDistributedRequest(TXRegionLockRequest req) {
-    if (this.distLocks == null) {
-      this.distLocks = new ArrayList<TXRegionLockRequest>();
+    if (distLocks == null) {
+      distLocks = new ArrayList<>();
     }
-    this.distLocks.add(req);
+    distLocks.add(req);
   }
 
   public void obtain(InternalDistributedSystem system) throws CommitConflictException {
-    if (this.localLocks != null && !this.localLocks.isEmpty()) {
-      txLocalLock(this.localLocks);
-      this.localLockHeld = true;
+    if (localLocks != null && !localLocks.isEmpty()) {
+      txLocalLock(localLocks);
+      localLockHeld = true;
     }
-    if (this.distLocks != null && !this.distLocks.isEmpty()) {
-      this.distLockId = TXLockService.createDTLS(system).txLock(this.distLocks, this.otherMembers);
+    if (distLocks != null && !distLocks.isEmpty()) {
+      distLockId = TXLockService.createDTLS(system).txLock(distLocks, otherMembers);
     }
   }
 
@@ -94,9 +91,9 @@ public class TXLockRequest {
    * Release any local locks obtained by this request
    */
   public void releaseLocal() {
-    if (this.localLockHeld) {
-      txLocalRelease(this.localLocks);
-      this.localLockHeld = false;
+    if (localLockHeld) {
+      txLocalRelease(localLocks);
+      localLockHeld = false;
     }
   }
 
@@ -104,22 +101,22 @@ public class TXLockRequest {
    * Release any distributed locks obtained by this request
    */
   public void releaseDistributed(InternalDistributedSystem system) {
-    if (this.distLockId != null) {
+    if (distLockId != null) {
       try {
         TXLockService txls = TXLockService.createDTLS(system);
-        txls.release(this.distLockId);
+        txls.release(distLockId);
       } catch (IllegalStateException ignore) {
         // IllegalStateException: TXLockService cannot be created
         // until connected to distributed system
         // could be thrown if a jvm is disconnected from the ds,
         // and tries to createDTLS() during clean up
       }
-      this.distLockId = null;
+      distLockId = null;
     }
   }
 
   public TXLockId getDistributedLockId() {
-    return this.distLockId;
+    return distLockId;
   }
 
   @Override
@@ -127,10 +124,9 @@ public class TXLockRequest {
     StringBuilder sb = new StringBuilder();
     sb.append(getClass().getCanonicalName()).append("@").append(System.identityHashCode(this));
     sb.append(" RegionLockRequests:");
-    if (this.localLocks != null) {
-      Iterator it = this.localLocks.iterator();
-      while (it.hasNext()) {
-        TXRegionLockRequest rlr = (TXRegionLockRequest) it.next();
+    if (localLocks != null) {
+      for (final Object localLock : localLocks) {
+        TXRegionLockRequest rlr = (TXRegionLockRequest) localLock;
         sb.append(" TXRegionLockRequest:");
         sb.append(rlr.getRegionFullPath()).append(" keys:").append(rlr.getKeys());
       }

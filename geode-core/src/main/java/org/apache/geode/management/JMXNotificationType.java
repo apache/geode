@@ -162,7 +162,7 @@ public interface JMXNotificationType {
    * Notification type which indicates that a gateway sender is removed <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.gateway.sender.removed</CODE>.
    */
-  public static final String GATEWAY_SENDER_REMOVED =
+  String GATEWAY_SENDER_REMOVED =
       GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.gateway.sender.removed";
 
   /**
@@ -222,7 +222,7 @@ public interface JMXNotificationType {
    * The value of this type string is
    * <CODE>gemfire.distributedsystem.gateway.receiver.destroyed</CODE>.
    */
-  public static final String GATEWAY_RECEIVER_DESTROYED =
+  String GATEWAY_RECEIVER_DESTROYED =
       GeodeGlossary.GEMFIRE_PREFIX + "distributedsystem.gateway.receiver.destroyed";
 
 

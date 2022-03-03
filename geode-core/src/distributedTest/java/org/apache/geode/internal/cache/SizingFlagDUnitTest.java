@@ -723,12 +723,12 @@ public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
         if (hostMember == null) {
           throw new IllegalStateException("bucket for key " + key + " is not hosted!");
         }
-        boolean res = Boolean.valueOf(myId.equals(hostMember));
+        boolean res = myId.equals(hostMember);
         // cache.getLogger().info("DEBUG prHostsBucketForKey=" + res);
         return res;
       }
     });
-    return result.booleanValue();
+    return result;
   }
 
   private void put(VM vm0, final Object key, final Object value) {
@@ -787,7 +787,7 @@ public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run() {
         Cache cache = getCache();
-        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<Integer, TestDelta>();
+        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<>();
         attr.setDiskSynchronous(true);
         attr.setDataPolicy(DataPolicy.REPLICATE);
         attr.setScope(Scope.DISTRIBUTED_ACK);
@@ -844,10 +844,10 @@ public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run() {
         Cache cache = getCache();
-        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<Integer, TestDelta>();
+        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<>();
         attr.setDiskSynchronous(true);
         PartitionAttributesFactory<Integer, TestDelta> paf =
-            new PartitionAttributesFactory<Integer, TestDelta>();
+            new PartitionAttributesFactory<>();
         paf.setRedundantCopies(1);
         if (enableLRU) {
           paf.setLocalMaxMemory(1); // memlru limit is 1 megabyte
@@ -873,7 +873,7 @@ public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
         ResourceManager manager = cache.getResourceManager();
         manager.setCriticalHeapPercentage(95);
         manager.setEvictionHeapPercentage(90);
-        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<Integer, TestDelta>();
+        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<>();
         attr.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes(new TestObjectSizer(),
             EvictionAction.OVERFLOW_TO_DISK));
         attr.setDiskDirs(getMyDiskDirs());
@@ -895,9 +895,9 @@ public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
         manager.setCriticalHeapPercentage(95);
         manager.setEvictionHeapPercentage(90);
 
-        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<Integer, TestDelta>();
+        AttributesFactory<Integer, TestDelta> attr = new AttributesFactory<>();
         PartitionAttributesFactory<Integer, TestDelta> paf =
-            new PartitionAttributesFactory<Integer, TestDelta>();
+            new PartitionAttributesFactory<>();
         paf.setRedundantCopies(1);
         attr.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes(new TestObjectSizer(),
             EvictionAction.LOCAL_DESTROY));
@@ -912,7 +912,7 @@ public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
   }
 
   private static class TestObjectSizer implements ObjectSizer {
-    private AtomicInteger invocations = new AtomicInteger();
+    private final AtomicInteger invocations = new AtomicInteger();
 
     @Override
     public int sizeof(Object o) {
@@ -988,13 +988,9 @@ public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
       }
       TestKey other = (TestKey) obj;
       if (value == null) {
-        if (other.value != null) {
-          return false;
-        }
-      } else if (!value.equals(other.value)) {
-        return false;
-      }
-      return true;
+        return other.value == null;
+      } else
+        return value.equals(other.value);
     }
 
   }
@@ -1054,10 +1050,7 @@ public class SizingFlagDUnitTest extends JUnit4CacheTestCase {
       if (sizeForSerialization != other.sizeForSerialization) {
         return false;
       }
-      if (sizeForSizer != other.sizeForSizer) {
-        return false;
-      }
-      return true;
+      return sizeForSizer == other.sizeForSizer;
     }
 
     @Override

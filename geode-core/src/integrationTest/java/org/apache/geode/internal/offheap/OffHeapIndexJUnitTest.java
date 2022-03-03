@@ -53,12 +53,12 @@ public class OffHeapIndexJUnitTest {
     props.setProperty(LOCATORS, "");
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(ConfigurationProperties.OFF_HEAP_MEMORY_SIZE, "100m");
-    this.gfc = (GemFireCacheImpl) new CacheFactory(props).create();
+    gfc = (GemFireCacheImpl) new CacheFactory(props).create();
   }
 
   @After
   public void tearDown() {
-    this.gfc.close();
+    gfc.close();
     MemoryAllocatorImpl.freeOffHeapMemory();
     // TODO cleanup default disk store files
   }
@@ -66,11 +66,11 @@ public class OffHeapIndexJUnitTest {
   @Test
   public void testUnsupportedAsyncIndexes() throws RegionNotFoundException, IndexInvalidException,
       IndexNameConflictException, IndexExistsException {
-    RegionFactory<Object, Object> rf = this.gfc.createRegionFactory();
+    RegionFactory<Object, Object> rf = gfc.createRegionFactory();
     rf.setOffHeap(true);
     rf.setIndexMaintenanceSynchronous(false);
     rf.create("r");
-    QueryService qs = this.gfc.getQueryService();
+    QueryService qs = gfc.getQueryService();
     try {
       qs.createIndex("idx", "age", SEPARATOR + "r");
       fail("expected UnsupportedOperationException");
@@ -85,11 +85,11 @@ public class OffHeapIndexJUnitTest {
   @Test
   public void testUnsupportedMultiIteratorIndexes() throws RegionNotFoundException,
       IndexInvalidException, IndexNameConflictException, IndexExistsException {
-    RegionFactory<Object, Object> rf = this.gfc.createRegionFactory();
+    RegionFactory<Object, Object> rf = gfc.createRegionFactory();
     rf.setOffHeap(true);
     rf.setIndexMaintenanceSynchronous(true);
     rf.create("r");
-    QueryService qs = this.gfc.getQueryService();
+    QueryService qs = gfc.getQueryService();
     try {
       qs.createIndex("idx", "addr", SEPARATOR + "r r, r.addresses addr");
       fail("expected UnsupportedOperationException");

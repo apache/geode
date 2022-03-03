@@ -176,7 +176,7 @@ public class SystemAdmin {
     }
 
     // read ssl properties
-    Map<String, String> env = new HashMap<String, String>();
+    Map<String, String> env = new HashMap<>();
     SocketCreator.readSSLProperties(env);
 
     List cmdVec = JavaCommandBuilder.buildCommand(getDistributionLocatorPath(), null,
@@ -283,9 +283,8 @@ public class SystemAdmin {
     }
 
     if (propertyOption != null) {
-      Iterator iter = propertyOption.keySet().iterator();
-      while (iter.hasNext()) {
-        String key = (String) iter.next();
+      for (final Object o : propertyOption.keySet()) {
+        String key = (String) o;
         System.setProperty(key, propertyOption.getProperty(key));
       }
     }
@@ -365,10 +364,10 @@ public class SystemAdmin {
       if (statusCode == ManagerInfo.KILLED_STATUS_CODE) {
         return String.format("Locator in %s was killed while it was %s. Locator process id was %s.",
             directory, ManagerInfo.statusToString(mi.getManagerStatus()),
-            Integer.valueOf(mi.getManagerProcessId()));
+            mi.getManagerProcessId());
       } else {
         return String.format("Locator in %s is %s. Locator process id is %s.",
-            directory, statusString, Integer.valueOf(mi.getManagerProcessId()));
+            directory, statusString, mi.getManagerProcessId());
       }
     } catch (UnstartedSystemException ex) {
       return String.format("Locator in %s is stopped.", directory);
@@ -835,7 +834,7 @@ public class SystemAdmin {
    * @throws IOException if the file can not be opened or read
    */
   public String tailFile(File file, boolean problemsOnly) throws IOException {
-    byte buffer[] = new byte[128000];
+    byte[] buffer = new byte[128000];
     int readSize = buffer.length;
     RandomAccessFile f = new RandomAccessFile(file, "r");
     long length = f.length();
@@ -944,12 +943,13 @@ public class SystemAdmin {
     }
   }
 
-  private static final char breakChars[] = new char[] {' ', '\t', '\n', '\r'};
+  @Immutable
+  private static final char[] breakChars = new char[] {' ', '\t', '\n', '\r'};
 
   private static boolean isBreakChar(String str, int idx) {
     char c = str.charAt(idx);
-    for (int i = 0; i < breakChars.length; i++) {
-      if (c == breakChars[i]) {
+    for (final char breakChar : breakChars) {
+      if (c == breakChar) {
         return true;
       }
     }
@@ -958,8 +958,8 @@ public class SystemAdmin {
 
   private static int findWordBreak(String str, int fromIdx) {
     int result = str.length();
-    for (int i = 0; i < breakChars.length; i++) {
-      int tmp = str.indexOf(breakChars[i], fromIdx + 1);
+    for (final char breakChar : breakChars) {
+      int tmp = str.indexOf(breakChar, fromIdx + 1);
       if (tmp > fromIdx && tmp < result) {
         result = tmp;
       }
@@ -983,12 +983,12 @@ public class SystemAdmin {
         cmdLineSpec = cmdLineSpec.substring(1);
         if (cmdLineSpec.charAt(0) == '+') {
           cmdLineSpec = cmdLineSpec.substring(1);
-          this.combineType = GLOBAL;
+          combineType = GLOBAL;
         } else {
-          this.combineType = FILE;
+          combineType = FILE;
         }
       } else {
-        this.combineType = NONE;
+        combineType = NONE;
       }
       int dotIdx = cmdLineSpec.lastIndexOf('.');
       String typeId = null;
@@ -1008,36 +1008,36 @@ public class SystemAdmin {
 
       if (statId == null || statId.length() == 0) {
         this.statId = "";
-        this.sp = null;
+        sp = null;
       } else {
         this.statId = statId;
-        this.sp = Pattern.compile(statId, Pattern.CASE_INSENSITIVE);
+        sp = Pattern.compile(statId, Pattern.CASE_INSENSITIVE);
       }
       if (typeId == null || typeId.length() == 0) {
         this.typeId = "";
-        this.tp = null;
+        tp = null;
       } else {
         this.typeId = typeId;
-        this.tp = Pattern.compile(".*" + typeId, Pattern.CASE_INSENSITIVE);
+        tp = Pattern.compile(".*" + typeId, Pattern.CASE_INSENSITIVE);
       }
       if (instanceId == null || instanceId.length() == 0) {
         this.instanceId = "";
-        this.ip = null;
+        ip = null;
       } else {
         this.instanceId = instanceId;
-        this.ip = Pattern.compile(instanceId, Pattern.CASE_INSENSITIVE);
+        ip = Pattern.compile(instanceId, Pattern.CASE_INSENSITIVE);
       }
     }
 
     @Override
     public String toString() {
-      return "StatSpec instanceId=" + this.instanceId + " typeId=" + this.typeId + " statId="
-          + this.statId;
+      return "StatSpec instanceId=" + instanceId + " typeId=" + typeId + " statId="
+          + statId;
     }
 
     @Override
     public int getCombineType() {
-      return this.combineType;
+      return combineType;
     }
 
     @Override
@@ -1047,34 +1047,34 @@ public class SystemAdmin {
 
     @Override
     public boolean statMatches(String statName) {
-      if (this.sp == null) {
+      if (sp == null) {
         return true;
       } else {
-        Matcher m = this.sp.matcher(statName);
+        Matcher m = sp.matcher(statName);
         return m.matches();
       }
     }
 
     @Override
     public boolean typeMatches(String typeName) {
-      if (this.tp == null) {
+      if (tp == null) {
         return true;
       } else {
-        Matcher m = this.tp.matcher(typeName);
+        Matcher m = tp.matcher(typeName);
         return m.matches();
       }
     }
 
     @Override
     public boolean instanceMatches(String textId, long numericId) {
-      if (this.ip == null) {
+      if (ip == null) {
         return true;
       } else {
-        Matcher m = this.ip.matcher(textId);
+        Matcher m = ip.matcher(textId);
         if (m.matches()) {
           return true;
         }
-        m = this.ip.matcher(String.valueOf(numericId));
+        m = ip.matcher(String.valueOf(numericId));
         return m.matches();
       }
     }
@@ -1110,9 +1110,9 @@ public class SystemAdmin {
     if (details) {
       System.out.print("  values=");
       double[] snapshots = v.getSnapshots();
-      for (int i = 0; i < snapshots.length; i++) {
+      for (final double snapshot : snapshots) {
         System.out.print(' ');
-        System.out.print(snapshots[i]);
+        System.out.print(snapshot);
       }
       System.out.println();
       String desc = v.getDescriptor().getDescription();
@@ -1171,58 +1171,57 @@ public class SystemAdmin {
       if (specs.length == 0) {
         if (details) {
           StatArchiveReader.StatArchiveFile[] archives = reader.getArchives();
-          for (int i = 0; i < archives.length; i++) {
-            System.out.println(archives[i].getArchiveInfo().toString());
+          for (final StatArchiveReader.StatArchiveFile archive : archives) {
+            System.out.println(archive.getArchiveInfo().toString());
           }
         }
       }
       do {
         if (specs.length == 0) {
-          Iterator it = reader.getResourceInstList().iterator();
-          while (it.hasNext()) {
-            ResourceInst inst = (ResourceInst) it.next();
-            StatValue values[] = inst.getStatValues();
+          for (final Object o : reader.getResourceInstList()) {
+            ResourceInst inst = (ResourceInst) o;
+            StatValue[] values = inst.getStatValues();
             boolean firstTime = true;
-            for (int i = 0; i < values.length; i++) {
-              if (values[i] != null && values[i].hasValueChanged()) {
+            for (final StatValue value : values) {
+              if (value != null && value.hasValueChanged()) {
                 if (firstTime) {
                   firstTime = false;
-                  System.out.println(inst.toString());
+                  System.out.println(inst);
                 }
-                printStatValue(values[i], startTime, endTime, nofilter, persec, persample,
+                printStatValue(value, startTime, endTime, nofilter, persec, persample,
                     prunezeros, details);
               }
             }
           }
         } else {
           Map<CombinedResources, List<StatValue>> allSpecsMap =
-              new HashMap<CombinedResources, List<StatValue>>();
-          for (int i = 0; i < specs.length; i++) {
-            StatValue[] values = reader.matchSpec(specs[i]);
+              new HashMap<>();
+          for (final StatSpec spec : specs) {
+            StatValue[] values = reader.matchSpec(spec);
             if (values.length == 0) {
               if (!quiet) {
                 System.err.println(String.format("[warning] No stats matched %s.",
-                    specs[i].cmdLineSpec));
+                    spec.cmdLineSpec));
               }
             } else {
               Map<CombinedResources, List<StatValue>> specMap =
-                  new HashMap<CombinedResources, List<StatValue>>();
+                  new HashMap<>();
               for (StatValue v : values) {
                 CombinedResources key = new CombinedResources(v);
-                List<StatArchiveReader.StatValue> list = specMap.get(key);
+                List<StatValue> list = specMap.get(key);
                 if (list != null) {
                   list.add(v);
                 } else {
-                  specMap.put(key, new ArrayList<StatValue>(Collections.singletonList(v)));
+                  specMap.put(key, new ArrayList<>(Collections.singletonList(v)));
                 }
               }
               if (!quiet) {
                 System.out.println(
                     String.format("[info] Found %s instances matching %s:",
-                        new Object[] {Integer.valueOf(specMap.size()), specs[i].cmdLineSpec}));
+                        specMap.size(), spec.cmdLineSpec));
               }
               for (Map.Entry<CombinedResources, List<StatValue>> me : specMap.entrySet()) {
-                List<StatArchiveReader.StatValue> list = allSpecsMap.get(me.getKey());
+                List<StatValue> list = allSpecsMap.get(me.getKey());
                 if (list != null) {
                   list.addAll(me.getValue());
                 } else {
@@ -1278,7 +1277,7 @@ public class SystemAdmin {
 
     @Override
     public String toString() {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       boolean first = true;
       for (ResourceInst inst : this) {
         if (first) {
@@ -1299,10 +1298,10 @@ public class SystemAdmin {
 
   protected void printHelpTopic(String topic, PrintWriter pw) {
     if (topic.equalsIgnoreCase("all")) {
-      for (int i = 0; i < helpTopics.length; i++) {
-        if (!helpTopics[i].equals("all")) {
-          pw.println("-------- " + helpTopics[i] + " --------");
-          printHelpTopic(helpTopics[i], pw);
+      for (final String helpTopic : helpTopics) {
+        if (!helpTopic.equals("all")) {
+          pw.println("-------- " + helpTopic + " --------");
+          printHelpTopic(helpTopic, pw);
         }
       }
     } else if (topic.equalsIgnoreCase("overview")) {
@@ -1310,36 +1309,36 @@ public class SystemAdmin {
           String.format(
               "This program allows GemFire to be managed from the command line. It expects a command to execute.See the help topic %s. For a summary of supported options see the help topic %s.For a concise description of command line syntax see the help topic %s.For a description of system configuration see the help topic %s.For help on a specific command use the %s option with the command name.",
 
-              new Object[] {"commands", "options", "usage", "configuration", "-h"}));
+              "commands", "options", "usage", "configuration", "-h"));
     } else if (topic.equalsIgnoreCase("commands")) {
       pw.println(usageMap.get("gemfire") + " <command> ...");
       format(pw, (String) helpMap.get("gemfire"), "  ", 0);
-      for (int i = 0; i < validCommands.length; i++) {
-        pw.println((String) usageMap.get(validCommands[i]));
-        if (helpMap.get(validCommands[i]) == null) {
-          pw.println("  (help message missing for " + validCommands[i] + ")");
+      for (final String validCommand : validCommands) {
+        pw.println((String) usageMap.get(validCommand));
+        if (helpMap.get(validCommand) == null) {
+          pw.println("  (help message missing for " + validCommand + ")");
         } else {
-          format(pw, (String) helpMap.get(validCommands[i]), "  ", 0);
+          format(pw, (String) helpMap.get(validCommand), "  ", 0);
         }
       }
     } else if (topic.equalsIgnoreCase("options")) {
       pw.println(
           "All command line options start with a - and are not required.Each option has a default that will be used when its not specified.Options that take an argument always use a single = character, with no spaces, to delimit where the option name ends and the argument begins.Options that precede the command word can be used with any command and are also permitted to follow the command word.");
-      for (int i = 0; i < validOptions.length; i++) {
-        pw.print(validOptions[i] + ":");
+      for (final String validOption : validOptions) {
+        pw.print(validOption + ":");
         try {
-          format(pw, (String) helpMap.get(validOptions[i]), "  ", validOptions[i].length() + 1);
+          format(pw, (String) helpMap.get(validOption), "  ", validOption.length() + 1);
         } catch (RuntimeException ex) {
           System.err.println(
-              String.format("no help for option %s]", validOptions[i]));
+              String.format("no help for option %s]", validOption));
           throw ex;
         }
       }
     } else if (topic.equalsIgnoreCase("usage")) {
       pw.println(
           "The following synax is used in the usage strings:[] designate an optional item() are used to group items<> designate non-literal text. Used to designate logical items* suffix means zero or more of the previous item| means the item to the left or right is required");
-      for (int i = 0; i < validCommands.length; i++) {
-        pw.println(getUsageString(validCommands[i]));
+      for (final String validCommand : validCommands) {
+        pw.println(getUsageString(validCommand));
       }
     }
   }
@@ -1367,7 +1366,7 @@ public class SystemAdmin {
   }
 
   protected String getUsageString(String cmd) {
-    StringBuffer result = new StringBuffer(80);
+    StringBuilder result = new StringBuilder(80);
     result.append(usageMap.get("gemfire")).append(' ');
     if (cmd == null || cmd.equalsIgnoreCase("gemfire")) {
       result.append(join(Arrays.asList(validCommands), "|")).append(" ...");
@@ -1458,16 +1457,15 @@ public class SystemAdmin {
   }
 
   public static String join(List l, String joinString) {
-    StringBuffer result = new StringBuffer(80);
+    StringBuilder result = new StringBuilder(80);
     boolean firstTime = true;
-    Iterator it = l.iterator();
-    while (it.hasNext()) {
+    for (final Object o : l) {
       if (firstTime) {
         firstTime = false;
       } else {
         result.append(joinString);
       }
-      result.append(it.next());
+      result.append(o);
     }
     return result.toString();
   }
@@ -1817,104 +1815,104 @@ public class SystemAdmin {
     } catch (ParseException ex) {
       throw new IllegalArgumentException(
           String.format("Time was not in this format %s. %s",
-              new Object[] {DateFormatter.FORMAT_STRING, ex}));
+              DateFormatter.FORMAT_STRING, ex));
     }
   }
 
   protected boolean matchCmdArg(String cmd, String arg) {
-    String[] validArgs = (String[]) cmdOptionsMap.get(cmd.toLowerCase());
-    for (int i = 0; i < validArgs.length; i++) {
-      if (validArgs[i].endsWith("=") || validArgs[i].equals("-D") || validArgs[i].equals("-X")) {
-        if (arg.toLowerCase().startsWith(validArgs[i]) || arg.startsWith(validArgs[i])) {
-          String argValue = arg.substring(validArgs[i].length());
-          if (validArgs[i].equals("-dir=")) {
+    String[] validArgs = cmdOptionsMap.get(cmd.toLowerCase());
+    for (final String validArg : validArgs) {
+      if (validArg.endsWith("=") || validArg.equals("-D") || validArg.equals("-X")) {
+        if (arg.toLowerCase().startsWith(validArg) || arg.startsWith(validArg)) {
+          String argValue = arg.substring(validArg.length());
+          if (validArg.equals("-dir=")) {
             sysDirName = argValue;
-          } else if (validArgs[i].equals("-archive=")) {
+          } else if (validArg.equals("-archive=")) {
             archiveOption.add(new File(argValue));
-          } else if (validArgs[i].equals("-port=")) {
+          } else if (validArg.equals("-port=")) {
             portOption = argValue;
-          } else if (validArgs[i].equals("-address=")) {
+          } else if (validArg.equals("-address=")) {
             addressOption = argValue;
-          } else if (validArgs[i].equals("-region=")) {
+          } else if (validArg.equals("-region=")) {
             regionOption = argValue;
-          } else if (validArgs[i].equals("-maxOplogSize=")) {
+          } else if (validArg.equals("-maxOplogSize=")) {
             maxOplogSize = parseLong(argValue);
-          } else if (validArgs[i].equals("-lru=")) {
+          } else if (validArg.equals("-lru=")) {
             lruOption = argValue;
-          } else if (validArgs[i].equals("-lruAction=")) {
+          } else if (validArg.equals("-lruAction=")) {
             lruActionOption = argValue;
-          } else if (validArgs[i].equals("-lruLimit=")) {
+          } else if (validArg.equals("-lruLimit=")) {
             lruLimitOption = argValue;
-          } else if (validArgs[i].equals("-concurrencyLevel=")) {
+          } else if (validArg.equals("-concurrencyLevel=")) {
             concurrencyLevelOption = argValue;
-          } else if (validArgs[i].equals("-initialCapacity=")) {
+          } else if (validArg.equals("-initialCapacity=")) {
             initialCapacityOption = argValue;
-          } else if (validArgs[i].equals("-loadFactor=")) {
+          } else if (validArg.equals("-loadFactor=")) {
             loadFactorOption = argValue;
-          } else if (validArgs[i].equals("-compressor=")) {
+          } else if (validArg.equals("-compressor=")) {
             compressorClassNameOption = argValue;
-          } else if (validArgs[i].equals("-statisticsEnabled=")) {
+          } else if (validArg.equals("-statisticsEnabled=")) {
             statisticsEnabledOption = argValue;
-          } else if (validArgs[i].equals("-properties=")) {
+          } else if (validArg.equals("-properties=")) {
             gemfirePropertiesFileOption = argValue;
-          } else if (validArgs[i].equals("-out=")) {
+          } else if (validArg.equals("-out=")) {
             outOption = argValue;
-          } else if (validArgs[i].equals("-starttime=")) {
+          } else if (validArg.equals("-starttime=")) {
             startTime = parseTime(argValue);
-          } else if (validArgs[i].equals("-endtime=")) {
+          } else if (validArg.equals("-endtime=")) {
             endTime = parseTime(argValue);
-          } else if (validArgs[i].equals("-peer=")) {
+          } else if (validArg.equals("-peer=")) {
             peerOption = "true".equalsIgnoreCase(argValue);
-          } else if (validArgs[i].equals("-server=")) {
+          } else if (validArg.equals("-server=")) {
             serverOption = "true".equalsIgnoreCase(argValue);
-          } else if (validArgs[i].equals("-hostname-for-clients=")) {
+          } else if (validArg.equals("-hostname-for-clients=")) {
             hostnameForClientsOption = argValue;
-          } else if (validArgs[i].equals("-D")) {
+          } else if (validArg.equals("-D")) {
             int idx = argValue.indexOf('=');
             String key = argValue.substring(0, idx);
             String value = argValue.substring(idx + 1);
             propertyOption.setProperty(key, value);
-          } else if (validArgs[i].equals("-X")) {
+          } else if (validArg.equals("-X")) {
             xoptions.add(arg);
-          } else if (validArgs[i].equals("-baseline=")) {
+          } else if (validArg.equals("-baseline=")) {
             baselineDir = argValue;
-          } else if (validArgs[i].equals("-outputDir=")) {
+          } else if (validArg.equals("-outputDir=")) {
             outputDir = argValue;
           } else {
             throw new InternalGemFireException(
                 String.format("unexpected valid option %s",
-                    validArgs[i]));
+                    validArg));
           }
           return true;
         }
-      } else if (validArgs[i].equalsIgnoreCase(arg)) {
-        if (validArgs[i].equals("-h") || validArgs[i].toLowerCase().matches("-{0,2}help")) {
+      } else if (validArg.equalsIgnoreCase(arg)) {
+        if (validArg.equals("-h") || validArg.toLowerCase().matches("-{0,2}help")) {
           help = true;
-        } else if (validArgs[i].equals("-debug")) {
+        } else if (validArg.equals("-debug")) {
           debug = true;
-        } else if (validArgs[i].equals("-remove")) {
+        } else if (validArg.equals("-remove")) {
           remove = true;
-        } else if (validArgs[i].equals("-q")) {
+        } else if (validArg.equals("-q")) {
           quiet = true;
-        } else if (validArgs[i].equals("-details")) {
+        } else if (validArg.equals("-details")) {
           details = true;
-        } else if (validArgs[i].equals("-nofilter")) {
+        } else if (validArg.equals("-nofilter")) {
           nofilter = true;
-        } else if (validArgs[i].equals("-persec")) {
+        } else if (validArg.equals("-persec")) {
           persec = true;
-        } else if (validArgs[i].equals("-persample")) {
+        } else if (validArg.equals("-persample")) {
           persample = true;
-        } else if (validArgs[i].equals("-prunezeros")) {
+        } else if (validArg.equals("-prunezeros")) {
           prunezeros = true;
-        } else if (validArgs[i].equals("-monitor")) {
+        } else if (validArg.equals("-monitor")) {
           monitor = true;
-        } else if (validArgs[i].equalsIgnoreCase("-buckets")) {
+        } else if (validArg.equalsIgnoreCase("-buckets")) {
           showBuckets = true;
-        } else if (validArgs[i].equals("-all-threads")) {
+        } else if (validArg.equals("-all-threads")) {
           printStacksOption = arg;
         } else {
           throw new InternalGemFireException(String.format("unexpected valid option %s",
-              validArgs[i]));
+              validArg));
         }
         return true;
       }
@@ -1931,7 +1929,7 @@ public class SystemAdmin {
   }
 
   public static List<String> format(String string, int width) {
-    List<String> results = new ArrayList<String>();
+    List<String> results = new ArrayList<>();
     String[] realLines = string.split("\n");
     for (String line : realLines) {
       results.addAll(lineWrapOut(line, width));
@@ -1946,7 +1944,7 @@ public class SystemAdmin {
         Pattern.compile("(.{0," + (width - 1) + "}\\S|\\S{" + (width) + ",})(\n|\\s+|$)");
 
     Matcher matcher = pattern.matcher(string);
-    List<String> lines = new ArrayList<String>();
+    List<String> lines = new ArrayList<>();
     while (matcher.find()) {
       lines.add(matcher.group(1));
     }
@@ -2265,14 +2263,14 @@ public class SystemAdmin {
       }
     } catch (InterruptedException ex) {
       System.err.println(String.format("ERROR: Operation %s failed because: %s.",
-          new Object[] {cmd, getExceptionMessage(ex)}));
+          cmd, getExceptionMessage(ex)));
       if (debug) {
         ex.printStackTrace(System.err);
       }
       ExitCode.FATAL.doSystemExit(); // fix for bug 28351
     } catch (IllegalArgumentException ex) {
       System.err.println(String.format("ERROR: Operation %s failed because: %s.",
-          new Object[] {cmd, getExceptionMessage(ex)}));
+          cmd, getExceptionMessage(ex)));
 
       if (debug) {
         ex.printStackTrace(System.err);
@@ -2280,7 +2278,7 @@ public class SystemAdmin {
       ExitCode.FATAL.doSystemExit(); // fix for bug 28351
     } catch (Exception ex) {
       System.err.println(String.format("ERROR: Operation %s failed because: %s.",
-          new Object[] {cmd, getExceptionMessage(ex)}));
+          cmd, getExceptionMessage(ex)));
       if (debug) {
         ex.printStackTrace(System.err);
       }

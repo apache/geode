@@ -91,14 +91,10 @@ public class MappingCommandUtils {
   }
 
   public static boolean isAccessor(RegionAttributesType attributesType) {
-    if (attributesType.getDataPolicy() == RegionAttributesDataPolicy.EMPTY
+    return attributesType.getDataPolicy() == RegionAttributesDataPolicy.EMPTY
         || (attributesType.getPartitionAttributes() != null
             && attributesType.getPartitionAttributes().getLocalMaxMemory() != null
-            && attributesType.getPartitionAttributes().getLocalMaxMemory().equals("0"))) {
-      return true;
-    } else {
-      return false;
-    }
+            && attributesType.getPartitionAttributes().getLocalMaxMemory().equals("0"));
   }
 
   public static boolean isPartition(RegionAttributesType attributesType) {

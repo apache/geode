@@ -50,7 +50,7 @@ public class PdxIntegrationTest {
   // needs to be used together with any BaseLocatorContextLoader
   private LocatorWebContext context;
 
-  private ObjectMapper mapper = GeodeJsonMapper.getMapper();
+  private final ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
   @Before
   public void before() {

@@ -361,8 +361,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
           // bug #45704: see if a one-hop must be done for this operation
           RegionEntry re = getRegionEntry(event.getKey());
           if (re == null /* || re.isTombstone() */ || !generateVersionTag
-              || this.getDataPolicy() == DataPolicy.NORMAL
-              || this.getDataPolicy() == DataPolicy.PRELOADED) {
+              || getDataPolicy() == DataPolicy.NORMAL
+              || getDataPolicy() == DataPolicy.PRELOADED) {
             // Let NORMAL and PRELOAD to behave the same as EMPTY
             if (!event.isBulkOpInProgress() || getDataPolicy().withStorage()) {
               // putAll will send a single one-hop for empty regions. for other missing entries
@@ -505,11 +505,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       boolean ifOld, Object expectedOldValue, boolean requireOldValue) {
     // an update from a netSearch is not distributed
     if (!event.isOriginRemote() && !event.isNetSearch() && !event.isBulkOpInProgress()) {
-      boolean distribute = true;
-      if (event.getInhibitDistribution()) {
-        // this has already been distributed by a one-hop operation
-        distribute = false;
-      }
+      boolean distribute = !event.getInhibitDistribution();
+      // this has already been distributed by a one-hop operation
       if (distribute) {
         // before distribute: DR's put, it has notified gateway sender earlier
         UpdateOperation op = new UpdateOperation(event, lastModified);
@@ -1689,10 +1686,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   public void basicDestroy(EntryEventImpl event, boolean cacheWrite, Object expectedOldValue)
       throws EntryNotFoundException, CacheWriterException, TimeoutException {
     // disallow local destruction for mirrored keysvalues regions
-    boolean hasSeen = false;
-    if (hasSeenEvent(event)) {
-      hasSeen = true;
-    }
+    boolean hasSeen = hasSeenEvent(event);
     checkIfReplicatedAndLocalDestroy(event);
 
     try {
@@ -1877,10 +1871,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
    */
   @Override
   public void basicInvalidate(EntryEventImpl event) throws EntryNotFoundException {
-    boolean hasSeen = false;
-    if (hasSeenEvent(event)) {
-      hasSeen = true;
-    }
+    boolean hasSeen = hasSeenEvent(event);
 
     try {
       // disallow local invalidation for replicated regions
@@ -2791,16 +2782,16 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   SenderIdMonitor createSenderIdMonitor() {
-    return SenderIdMonitor.createSenderIdMonitor(this, this.distAdvisor);
+    return SenderIdMonitor.createSenderIdMonitor(this, distAdvisor);
   }
 
   void updateSenderIdMonitor() {
-    this.senderIdMonitor.update();
+    senderIdMonitor.update();
   }
 
   @Override
   void checkSameSenderIdsAvailableOnAllNodes() {
-    this.senderIdMonitor.checkSenderIds();
+    senderIdMonitor.checkSenderIds();
   }
 
   /**

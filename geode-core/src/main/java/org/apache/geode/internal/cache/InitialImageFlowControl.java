@@ -56,7 +56,7 @@ public class InitialImageFlowControl implements MembershipListener {
   @MakeNotStatic
   private static final ProcessorKeeper21 keeper = new ProcessorKeeper21(false);
   private int id;
-  private int maxPermits = InitialImageOperation.CHUNK_PERMITS;
+  private final int maxPermits = InitialImageOperation.CHUNK_PERMITS;
   private final Semaphore permits = new Semaphore(maxPermits);
   private final DistributionManager dm;
   private final InternalDistributedMember target;
@@ -204,7 +204,7 @@ public class InitialImageFlowControl implements MembershipListener {
     private int keeperId;
 
     private FlowControlPermitMessage(int keeperId2) {
-      this.keeperId = keeperId2;
+      keeperId = keeperId2;
     }
 
     public FlowControlPermitMessage() {}

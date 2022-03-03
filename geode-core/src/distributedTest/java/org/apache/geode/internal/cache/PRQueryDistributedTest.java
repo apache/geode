@@ -92,8 +92,8 @@ public class PRQueryDistributedTest implements Serializable {
 
   @Test
   public void testReevaluationDueToUpdateInProgress() throws Exception {
-    vm0.invoke(() -> createPartitionedRegion());
-    vm1.invoke(() -> createPartitionedRegion());
+    vm0.invoke(this::createPartitionedRegion);
+    vm1.invoke(this::createPartitionedRegion);
 
     vm0.invoke(() -> createIndex("compactRangeIndex", "entry.value",
         SEPARATOR + regionName + ".entrySet entry"));
@@ -126,10 +126,10 @@ public class PRQueryDistributedTest implements Serializable {
    */
   @Test
   public void testPartitionRegionDebugMessageQueryTraceOnBothServers() throws Exception {
-    vm0.invoke(() -> createAccessor());
-    vm1.invoke(() -> createPartitionedRegion());
-    vm2.invoke(() -> createPartitionedRegion());
-    vm1.invoke(() -> createBuckets());
+    vm0.invoke(this::createAccessor);
+    vm1.invoke(this::createPartitionedRegion);
+    vm2.invoke(this::createPartitionedRegion);
+    vm1.invoke(this::createBuckets);
 
     vm1.invoke(() -> {
       DefaultQuery.testHook = new PRQueryTraceTestHook();
@@ -175,10 +175,10 @@ public class PRQueryDistributedTest implements Serializable {
    */
   @Test
   public void testPartitionRegionDebugMessageQueryTraceOnLocalServerOnly() throws Exception {
-    vm0.invoke(() -> createAccessor());
-    vm1.invoke(() -> createPartitionedRegion());
-    vm2.invoke(() -> createPartitionedRegion());
-    vm1.invoke(() -> createBuckets());
+    vm0.invoke(this::createAccessor);
+    vm1.invoke(this::createPartitionedRegion);
+    vm2.invoke(this::createPartitionedRegion);
+    vm1.invoke(this::createBuckets);
 
     vm1.invoke(() -> {
       DefaultQuery.testHook = new PRQueryTraceTestHook();
@@ -224,10 +224,10 @@ public class PRQueryDistributedTest implements Serializable {
    */
   @Test
   public void testPartitionRegionDebugMessageQueryTraceOffLocalServerVerboseOn() throws Exception {
-    vm0.invoke(() -> createAccessor());
-    vm1.invoke(() -> createPartitionedRegion());
-    vm2.invoke(() -> createPartitionedRegion());
-    vm1.invoke(() -> createBuckets());
+    vm0.invoke(this::createAccessor);
+    vm1.invoke(this::createPartitionedRegion);
+    vm2.invoke(this::createPartitionedRegion);
+    vm1.invoke(this::createBuckets);
 
     vm1.invoke(() -> {
       DefaultQuery.testHook = new PRQueryTraceTestHook();
@@ -274,10 +274,10 @@ public class PRQueryDistributedTest implements Serializable {
    */
   @Test
   public void testPartitionRegionDebugMessageQueryTraceOffRemoteServerOnly() throws Exception {
-    vm0.invoke(() -> createAccessor());
-    vm1.invoke(() -> createPartitionedRegion());
-    vm2.invoke(() -> createPartitionedRegion());
-    vm1.invoke(() -> createBuckets());
+    vm0.invoke(this::createAccessor);
+    vm1.invoke(this::createPartitionedRegion);
+    vm2.invoke(this::createPartitionedRegion);
+    vm1.invoke(this::createBuckets);
 
     vm1.invoke(() -> {
       DefaultQuery.testHook = new PRQueryTraceTestHook();
@@ -322,10 +322,10 @@ public class PRQueryDistributedTest implements Serializable {
    */
   @Test
   public void testPartitionRegionDebugMessageQueryTraceOnRemoteServerOnly() throws Exception {
-    vm0.invoke(() -> createAccessor());
-    vm1.invoke(() -> createPartitionedRegion());
-    vm2.invoke(() -> createPartitionedRegion());
-    vm1.invoke(() -> createBuckets());
+    vm0.invoke(this::createAccessor);
+    vm1.invoke(this::createPartitionedRegion);
+    vm2.invoke(this::createPartitionedRegion);
+    vm1.invoke(this::createBuckets);
 
     vm1.invoke(() -> {
       DefaultQuery.testHook = new PRQueryTraceTestHook();
@@ -371,10 +371,10 @@ public class PRQueryDistributedTest implements Serializable {
    */
   @Test
   public void testPartitionRegionDebugMessageQueryTraceOffRemoteServerOn() throws Exception {
-    vm0.invoke(() -> createAccessor());
-    vm1.invoke(() -> createPartitionedRegion());
-    vm2.invoke(() -> createPartitionedRegion());
-    vm1.invoke(() -> createBuckets());
+    vm0.invoke(this::createAccessor);
+    vm1.invoke(this::createPartitionedRegion);
+    vm2.invoke(this::createPartitionedRegion);
+    vm1.invoke(this::createBuckets);
 
     vm1.invoke(() -> {
       DefaultQuery.testHook = new PRQueryTraceTestHook();
@@ -419,10 +419,10 @@ public class PRQueryDistributedTest implements Serializable {
    */
   @Test
   public void testPartitionRegionDebugMessageQueryTraceOffQueryVerboseOff() throws Exception {
-    vm0.invoke(() -> createAccessor());
-    vm1.invoke(() -> createPartitionedRegion());
-    vm2.invoke(() -> createPartitionedRegion());
-    vm1.invoke(() -> createBuckets());
+    vm0.invoke(this::createAccessor);
+    vm1.invoke(this::createPartitionedRegion);
+    vm2.invoke(this::createPartitionedRegion);
+    vm1.invoke(this::createBuckets);
 
     vm1.invoke(() -> {
       DefaultQuery.testHook = new PRQueryTraceTestHook();
@@ -467,10 +467,10 @@ public class PRQueryDistributedTest implements Serializable {
    */
   @Test
   public void testPartitionRegionDebugMessageQueryTraceOnQueryVerboseOff() throws Exception {
-    vm0.invoke(() -> createAccessor());
-    vm1.invoke(() -> createPartitionedRegion());
-    vm2.invoke(() -> createPartitionedRegion());
-    vm1.invoke(() -> createBuckets());
+    vm0.invoke(this::createAccessor);
+    vm1.invoke(this::createPartitionedRegion);
+    vm2.invoke(this::createPartitionedRegion);
+    vm1.invoke(this::createBuckets);
 
     vm1.invoke(() -> {
       DefaultQuery.testHook = new PRQueryTraceTestHook();

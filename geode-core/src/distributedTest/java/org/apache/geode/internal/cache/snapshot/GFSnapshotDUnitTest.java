@@ -86,8 +86,8 @@ public class GFSnapshotDUnitTest extends JUnit4DistributedTestCase {
       createAndStartClient(locatorPort, serverHostName);
       return null;
     });
-    client.invoke("Populate data", () -> populateDataOnClient());
-    String snapshotFilePath = server.invoke("Export data snapshot", () -> createSnapshot());
+    client.invoke("Populate data", this::populateDataOnClient);
+    String snapshotFilePath = server.invoke("Export data snapshot", this::createSnapshot);
     client.invoke("Iterate over snapshot", () -> {
       ClientCache clientCache = ClientCacheFactory.getAnyInstance();
       clientCache.close();

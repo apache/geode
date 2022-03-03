@@ -43,6 +43,7 @@ dependencies {
   testImplementation('com.github.stephenc.findbugs:findbugs-annotations')
   testImplementation('org.springframework:spring-test')
   testImplementation(project(':geode-junit'))
+  testImplementation('pl.pragmatists:JUnitParams')
 
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation('pl.pragmatists:JUnitParams')
@@ -86,4 +87,17 @@ dependencies {
     exclude module: 'spring-context-support'
     exclude module: 'spring-core'
   }
+
+
+  acceptanceTestImplementation(project(':geode-junit'))
+  acceptanceTestRuntimeOnly(project(':geode-log4j'))
+
+}
+
+configure([
+  acceptanceTest,
+  repeatAcceptanceTest
+]) {
+  environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode"
+  dependsOn(':geode-assembly:installDist')
 }

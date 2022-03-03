@@ -69,7 +69,7 @@ public enum CacheXmlVersion {
   private final String publicId;
   private final String systemId;
 
-  private CacheXmlVersion(String version, String publicId, String systemId, String schemaLocation,
+  CacheXmlVersion(String version, String publicId, String systemId, String schemaLocation,
       String namespace) {
     this.version = version;
     this.publicId = publicId;

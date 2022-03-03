@@ -50,7 +50,7 @@ public class GemFireTransactionDataSource extends AbstractDataSource
   private static final long serialVersionUID = -3095123666092414103L;
   private transient TransactionManager transManager;
   ConnectionProvider provider;
-  private Map xaResourcesMap = Collections.synchronizedMap(new HashMap());
+  private final Map xaResourcesMap = Collections.synchronizedMap(new HashMap());
 
   /**
    * Place holder for abstract method isWrapperFor(java.lang.Class) in java.sql.Wrapper required by
@@ -120,8 +120,7 @@ public class GemFireTransactionDataSource extends AbstractDataSource
       registerTranxConnection(xaConn);
       return conn;
     } catch (Exception ex) {
-      SQLException se = new SQLException(ex.getMessage());
-      se.initCause(ex);
+      SQLException se = new SQLException(ex.getMessage(), ex);
       throw se;
     }
   }
@@ -203,15 +202,15 @@ public class GemFireTransactionDataSource extends AbstractDataSource
         XAResource xar = xaConn.getXAResource();
         txn.enlistResource(xar);
         // Add in the Map after successful registration of XAResource
-        this.xaResourcesMap.put(xaConn, xar);
+        xaResourcesMap.put(xaConn, xar);
       }
     } catch (Exception ex) {
       provider.returnAndExpireConnection(xaConn);
       Exception e = new Exception(
           String.format(
               "GemFireTransactionDataSource-registerTranxConnection(). Exception in registering the XAResource with the Transaction.Exception occurred= %s",
-              ex));
-      e.initCause(ex);
+              ex),
+          ex);
       throw e;
     }
   }

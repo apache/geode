@@ -48,14 +48,14 @@ public class GfshConfig {
 
   private static final String DEFAULT_PROMPT = "{0}gfsh{1}>";
 
-  private String historyFileName;
-  private String initFileName;
-  private String defaultPrompt;
-  private int historySize;
-  private String logDir;
-  private Level logLevel;
-  private int logFileSizeLimit;
-  private int logFileDiskLimit;
+  private final String historyFileName;
+  private final String initFileName;
+  private final String defaultPrompt;
+  private final int historySize;
+  private final String logDir;
+  private final Level logLevel;
+  private final int logFileSizeLimit;
+  private final int logFileDiskLimit;
 
   public GfshConfig() {
     this(HISTORY_FILE.getAbsolutePath(), DEFAULT_PROMPT, MAX_HISTORY_SIZE, null, null, null, null,
@@ -82,7 +82,7 @@ public class GfshConfig {
     this.historySize = historySize;
 
     if (initFileName == null) {
-      this.initFileName = this.searchForInitFileName();
+      this.initFileName = searchForInitFileName();
     } else {
       this.initFileName = initFileName;
     }
@@ -100,17 +100,17 @@ public class GfshConfig {
       this.logLevel = logLevel;
     }
     if (logLimit == null) {
-      this.logFileSizeLimit = getParsedOrDefault(System.getProperty(LOG_FILE_SIZE_LIMIT_PROPERTY),
+      logFileSizeLimit = getParsedOrDefault(System.getProperty(LOG_FILE_SIZE_LIMIT_PROPERTY),
           LOG_FILE_SIZE_LIMIT_PROPERTY, DEFAULT_LOGFILE_SIZE_LIMIT);
     } else {
-      this.logFileSizeLimit = logLimit;
+      logFileSizeLimit = logLimit;
     }
     if (logCount == null) {
       // validation & correction to default is done in getLogFileCount()
-      this.logFileDiskLimit = getParsedOrDefault(System.getProperty(LOG_DISK_SPACE_LIMIT_PROPERTY),
+      logFileDiskLimit = getParsedOrDefault(System.getProperty(LOG_DISK_SPACE_LIMIT_PROPERTY),
           LOG_DISK_SPACE_LIMIT_PROPERTY, DEFAULT_LOGFILE_DISK_USAGE);
     } else {
-      this.logFileDiskLimit = logCount;
+      logFileDiskLimit = logCount;
     }
   }
 
@@ -163,16 +163,14 @@ public class GfshConfig {
   }
 
   private String getLoggerConfig() {
-    StringBuilder builder = new StringBuilder();
-    builder.append("init-file=" + (getInitFileName() == null ? "" : getInitFileName()))
-        .append(Gfsh.LINE_SEPARATOR);
-    builder.append("log-file=" + getLogFilePath()).append(Gfsh.LINE_SEPARATOR);
-    builder.append("log-level=" + getLogLevel().getName()).append(Gfsh.LINE_SEPARATOR);
-    builder.append("log-file-size-limit=" + getLogFileSizeLimit()).append(Gfsh.LINE_SEPARATOR);
-    builder.append("log-disk-space-limit=" + getLogFileDiskLimit()).append(Gfsh.LINE_SEPARATOR);
-    builder.append("log-count=" + getLogFileCount()).append(Gfsh.LINE_SEPARATOR);
 
-    return builder.toString();
+    return "init-file=" + (getInitFileName() == null ? "" : getInitFileName())
+        + Gfsh.LINE_SEPARATOR
+        + "log-file=" + getLogFilePath() + Gfsh.LINE_SEPARATOR
+        + "log-level=" + getLogLevel().getName() + Gfsh.LINE_SEPARATOR
+        + "log-file-size-limit=" + getLogFileSizeLimit() + Gfsh.LINE_SEPARATOR
+        + "log-disk-space-limit=" + getLogFileDiskLimit() + Gfsh.LINE_SEPARATOR
+        + "log-count=" + getLogFileCount() + Gfsh.LINE_SEPARATOR;
   }
 
   public boolean isTestConfig() {
@@ -222,7 +220,7 @@ public class GfshConfig {
       return defaultValue;
     }
     try {
-      return Integer.valueOf(numberString);
+      return Integer.parseInt(numberString);
     } catch (NumberFormatException e) {
       System.err.println("Invalid value \"" + numberString + "\" specified for: \"" + parseValueFor
           + "\". Using default value: \"" + defaultValue + "\".");
@@ -232,20 +230,18 @@ public class GfshConfig {
 
   @Override
   public String toString() {
-    StringBuilder builder = new StringBuilder();
-    builder.append(getClass().getSimpleName());
-    builder.append(" [initFileName=");
-    builder.append(getInitFileName() == null ? "" : getInitFileName());
-    builder.append(", historyFileName=");
-    builder.append(getHistoryFileName());
-    builder.append(", historySize=");
-    builder.append(getHistorySize());
-    builder.append(", loggerConfig={");
-    builder.append(getLoggerConfig()).append("}");
-    builder.append(", isANSISupported=");
-    builder.append(isANSISupported());
-    builder.append("]");
-    return builder.toString();
+    return getClass().getSimpleName()
+        + " [initFileName="
+        + (getInitFileName() == null ? "" : getInitFileName())
+        + ", historyFileName="
+        + getHistoryFileName()
+        + ", historySize="
+        + getHistorySize()
+        + ", loggerConfig={"
+        + getLoggerConfig() + "}"
+        + ", isANSISupported="
+        + isANSISupported()
+        + "]";
   }
 
   /*

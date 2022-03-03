@@ -25,7 +25,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -92,7 +91,7 @@ public class ParameterBindingJUnitTest {
   public void testBindCollectionInFromClause() throws Exception {
     int numEntries = 4;
     Region region = createAndPopulateRegion(regionName, numEntries);
-    Object params[] = new Object[] {region.values()};
+    Object[] params = new Object[] {region.values()};
     validateQueryWithBindParameter("SELECT DISTINCT * FROM $1 ", params, numEntries);
   }
 
@@ -100,7 +99,7 @@ public class ParameterBindingJUnitTest {
   public void testBindArrayInFromClause() throws Exception {
     int numEntries = 4;
     Region region = createAndPopulateRegion(regionName, numEntries);
-    Object params[] = new Object[] {region.values().toArray()};
+    Object[] params = new Object[] {region.values().toArray()};
     validateQueryWithBindParameter("SELECT DISTINCT * FROM $1 ", params, numEntries);
   }
 
@@ -109,12 +108,11 @@ public class ParameterBindingJUnitTest {
     int numEntries = 4;
     Region region = createAndPopulateRegion(regionName, numEntries);
     Map map = new HashMap();
-    Iterator iter = region.entrySet().iterator();
-    while (iter.hasNext()) {
-      Region.Entry entry = (Region.Entry) iter.next();
+    for (final Object o : region.entrySet()) {
+      Region.Entry entry = (Region.Entry) o;
       map.put(entry.getKey(), entry.getValue());
     }
-    Object params[] = new Object[] {map};
+    Object[] params = new Object[] {map};
     validateQueryWithBindParameter("SELECT DISTINCT * FROM $1 ", params, numEntries);
   }
 
@@ -122,7 +120,7 @@ public class ParameterBindingJUnitTest {
   public void testBindRegionInFromClause() throws Exception {
     int numEntries = 4;
     Region region = createAndPopulateRegion(regionName, numEntries);
-    Object params[] = new Object[] {region};
+    Object[] params = new Object[] {region};
     validateQueryWithBindParameter("SELECT DISTINCT * FROM $1 ", params, numEntries);
   }
 
@@ -132,7 +130,7 @@ public class ParameterBindingJUnitTest {
     Region region = createAndPopulateRegion(regionName, numEntries);
     Query query = CacheUtils.getQueryService()
         .newQuery("SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where status.equals($1)");
-    Object params[] = new Object[] {"active"};
+    Object[] params = new Object[] {"active"};
     validateQueryWithBindParameter(
         "SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where status.equals($1)",
         params, 2);
@@ -144,7 +142,7 @@ public class ParameterBindingJUnitTest {
     Region region = createAndPopulateRegion(regionName, numEntries);
     Query query = CacheUtils.getQueryService()
         .newQuery("SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where status = $1");
-    Object params[] = new Object[] {"active"};
+    Object[] params = new Object[] {"active"};
     validateQueryWithBindParameter(
         "SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where status = $1", params,
         2);
@@ -154,7 +152,7 @@ public class ParameterBindingJUnitTest {
   public void testBindInt() throws Exception {
     int numEntries = 4;
     Region region = createAndPopulateRegion(regionName, numEntries);
-    Object params[] = new Object[] {new Integer(1)};
+    Object[] params = new Object[] {1};
     validateQueryWithBindParameter(
         "SELECT DISTINCT * FROM " + SEPARATOR + "Portfolios where ID = $1", params, 1);
   }

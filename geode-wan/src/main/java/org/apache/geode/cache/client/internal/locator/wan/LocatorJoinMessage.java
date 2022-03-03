@@ -48,9 +48,9 @@ public class LocatorJoinMessage extends ServerLocationRequest {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.locator = context.getDeserializer().readObject(in);
-    this.distributedSystemId = in.readInt();
-    this.sourceLocator = context.getDeserializer().readObject(in);
+    locator = context.getDeserializer().readObject(in);
+    distributedSystemId = in.readInt();
+    sourceLocator = context.getDeserializer().readObject(in);
   }
 
   @Override
@@ -58,12 +58,12 @@ public class LocatorJoinMessage extends ServerLocationRequest {
       SerializationContext context) throws IOException {
     super.toData(out, context);
     context.getSerializer().writeObject(locator, out);
-    out.writeInt(this.distributedSystemId);
+    out.writeInt(distributedSystemId);
     context.getSerializer().writeObject(sourceLocator, out);
   }
 
   public DistributionLocatorId getLocator() {
-    return this.locator;
+    return locator;
   }
 
   public int getDistributedSystemId() {
@@ -94,20 +94,17 @@ public class LocatorJoinMessage extends ServerLocationRequest {
       return false;
     }
     LocatorJoinMessage myObject = (LocatorJoinMessage) obj;
-    if ((this.distributedSystemId == myObject.getDistributedSystemId())
-        && this.locator.equals(myObject.getLocator())) {
-      return true;
-    }
-    return false;
+    return (distributedSystemId == myObject.getDistributedSystemId())
+        && locator.equals(myObject.getLocator());
   }
 
   @Override
   public int hashCode() {
     // it is sufficient for all messages having the same locator to hash to the same bucket
-    if (this.locator == null) {
+    if (locator == null) {
       return 0;
     } else {
-      return this.locator.hashCode();
+      return locator.hashCode();
     }
   }
 

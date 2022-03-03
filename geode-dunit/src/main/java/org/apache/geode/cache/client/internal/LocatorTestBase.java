@@ -294,8 +294,8 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
     pf.create(POOL_NAME);
 
     RegionAttributes attrs = factory.create();
-    for (int i = 0; i < regions.length; i++) {
-      cache.createRegion(regions[i], attrs);
+    for (final String region : regions) {
+      cache.createRegion(region, attrs);
     }
 
     remoteObjects.put(CACHE_KEY, cache);
@@ -317,7 +317,7 @@ public abstract class LocatorTestBase extends JUnit4DistributedTestCase {
   }
 
   public String getLocatorString(String hostName, int... locatorPorts) {
-    StringBuffer str = new StringBuffer();
+    StringBuilder str = new StringBuilder();
     for (int i = 0; i < locatorPorts.length; i++) {
       str.append(hostName).append("[").append(locatorPorts[i]).append("]");
       if (i < locatorPorts.length - 1) {

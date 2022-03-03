@@ -79,11 +79,11 @@ public class DummyQRegion extends QRegion {
   }
 
   public void setEntry(RegionEntry e) {
-    this.entry = e;
+    entry = e;
   }
 
   public RegionEntry getEntry() {
-    return this.entry;
+    return entry;
   }
 
   @Override
@@ -123,18 +123,18 @@ public class DummyQRegion extends QRegion {
       valueInList = new ArrayList(1);
     }
     valueInList.clear();
-    Object val = this.entry.getValueOffHeapOrDiskWithoutFaultIn((LocalRegion) getRegion());
+    Object val = entry.getValueOffHeapOrDiskWithoutFaultIn((LocalRegion) getRegion());
     if (val instanceof StoredObject) {
       @Retained
       @Released
       StoredObject ohval = (StoredObject) val;
       try {
-        val = ohval.getDeserializedValue(getRegion(), this.entry);
+        val = ohval.getDeserializedValue(getRegion(), entry);
       } finally {
         ohval.release();
       }
     } else if (val instanceof CachedDeserializable) {
-      val = ((CachedDeserializable) val).getDeserializedValue(getRegion(), this.entry);
+      val = ((CachedDeserializable) val).getDeserializedValue(getRegion(), entry);
     }
     valueInList.add(val);
     return valueInList;
@@ -145,18 +145,18 @@ public class DummyQRegion extends QRegion {
     if (valueInArray == null) {
       valueInArray = new Object[1];
     }
-    Object val = this.entry.getValueOffHeapOrDiskWithoutFaultIn((LocalRegion) getRegion());
+    Object val = entry.getValueOffHeapOrDiskWithoutFaultIn((LocalRegion) getRegion());
     if (val instanceof StoredObject) {
       @Retained
       @Released
       StoredObject ohval = (StoredObject) val;
       try {
-        val = ohval.getDeserializedValue(getRegion(), this.entry);
+        val = ohval.getDeserializedValue(getRegion(), entry);
       } finally {
         ohval.release();
       }
     } else if (val instanceof CachedDeserializable) {
-      val = ((CachedDeserializable) val).getDeserializedValue(getRegion(), this.entry);
+      val = ((CachedDeserializable) val).getDeserializedValue(getRegion(), entry);
     }
     valueInArray[0] = val;
     return valueInArray;
@@ -169,18 +169,18 @@ public class DummyQRegion extends QRegion {
       values.setElementType(valueType);
     }
     values.clear();
-    Object val = this.entry.getValueOffHeapOrDiskWithoutFaultIn((LocalRegion) getRegion());
+    Object val = entry.getValueOffHeapOrDiskWithoutFaultIn((LocalRegion) getRegion());
     if (val instanceof StoredObject) {
       @Retained
       @Released
       StoredObject ohval = (StoredObject) val;
       try {
-        val = ohval.getDeserializedValue(getRegion(), this.entry);
+        val = ohval.getDeserializedValue(getRegion(), entry);
       } finally {
         ohval.release();
       }
     } else if (val instanceof CachedDeserializable) {
-      val = ((CachedDeserializable) val).getDeserializedValue(getRegion(), this.entry);
+      val = ((CachedDeserializable) val).getDeserializedValue(getRegion(), entry);
     }
     values.add(val);
     return values;
@@ -217,7 +217,7 @@ public class DummyQRegion extends QRegion {
   public Region.Entry getEntry(Object key) {
     NonTXEntry e = (NonTXEntry) super.getEntry(key);
     Region.Entry retVal = null;
-    if (e != null && this.entry == e.getRegionEntry()) {
+    if (e != null && entry == e.getRegionEntry()) {
       retVal = e;
     }
     return retVal;

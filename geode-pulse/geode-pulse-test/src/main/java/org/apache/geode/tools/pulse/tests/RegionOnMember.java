@@ -38,12 +38,12 @@ public class RegionOnMember extends JMXBaseBean implements RegionOnMemberMBean {
 
   @Override
   public String getFullPath() {
-    return this.fullPath;
+    return fullPath;
   }
 
   @Override
   public String getMember() {
-    return this.member;
+    return member;
   }
 
   @Override

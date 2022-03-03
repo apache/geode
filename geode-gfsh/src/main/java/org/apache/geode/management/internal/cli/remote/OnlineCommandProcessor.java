@@ -64,7 +64,7 @@ public class OnlineCommandProcessor implements CommandProcessor {
       SecurityService securityService,
       CommandExecutor commandExecutor) {
     this.gfshParser = gfshParser;
-    this.executor = commandExecutor;
+    executor = commandExecutor;
     this.securityService = securityService;
   }
 
@@ -96,7 +96,7 @@ public class OnlineCommandProcessor implements CommandProcessor {
       List<String> stagedFilePaths) {
     CommentSkipHelper commentSkipper = new CommentSkipHelper();
     String commentLessLine = commentSkipper.skipComments(command);
-    if (commentLessLine == null || commentLessLine.toString().isEmpty()) {
+    if (commentLessLine == null || commentLessLine.isEmpty()) {
       return null;
     }
 
@@ -119,7 +119,7 @@ public class OnlineCommandProcessor implements CommandProcessor {
     // do general authorization check here
     ResourceOperation resourceOperation = method.getAnnotation(ResourceOperation.class);
     if (resourceOperation != null) {
-      this.securityService.authorize(resourceOperation.resource(), resourceOperation.operation(),
+      securityService.authorize(resourceOperation.resource(), resourceOperation.operation(),
           resourceOperation.target(), ResourcePermission.ALL);
     }
 
@@ -143,12 +143,12 @@ public class OnlineCommandProcessor implements CommandProcessor {
   @Override
   public boolean init(Cache cache) {
     Properties cacheProperties = cache.getDistributedSystem().getProperties();
-    this.securityService = ((InternalCache) cache).getSecurityService();
-    this.gfshParser = new GfshParser(new CommandManager(cacheProperties, (InternalCache) cache));
+    securityService = ((InternalCache) cache).getSecurityService();
+    gfshParser = new GfshParser(new CommandManager(cacheProperties, (InternalCache) cache));
     DistributedLockService cmsDlockService = DLockService.getOrCreateService(
         CMS_DLOCK_SERVICE_NAME,
         ((InternalCache) cache).getInternalDistributedSystem());
-    this.executor = new CommandExecutor(cmsDlockService);
+    executor = new CommandExecutor(cmsDlockService);
 
     return true;
   }

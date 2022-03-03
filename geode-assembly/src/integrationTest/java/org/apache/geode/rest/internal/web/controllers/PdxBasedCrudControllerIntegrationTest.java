@@ -203,29 +203,27 @@ public class PdxBasedCrudControllerIntegrationTest {
   }
 
   private String formatJson(String english, String spanish) {
-    StringBuilder builder = new StringBuilder();
-    builder.append('{');
-    builder.append('\n');
-    builder.append("    ");
-    builder.append('"');
-    builder.append("English");
-    builder.append('"');
-    builder.append(':');
-    builder.append('"');
-    builder.append(english);
-    builder.append('"');
-    builder.append(',');
-    builder.append('\n');
-    builder.append("    ");
-    builder.append('"');
-    builder.append("Spanish");
-    builder.append('"');
-    builder.append(':');
-    builder.append('"');
-    builder.append(spanish);
-    builder.append('"');
-    builder.append('\n');
-    builder.append('}');
-    return builder.toString();
+    return "{"
+        + '\n'
+        + "    "
+        + '"'
+        + "English"
+        + '"'
+        + ':'
+        + '"'
+        + english
+        + '"'
+        + ','
+        + '\n'
+        + "    "
+        + '"'
+        + "Spanish"
+        + '"'
+        + ':'
+        + '"'
+        + spanish
+        + '"'
+        + '\n'
+        + '}';
   }
 }

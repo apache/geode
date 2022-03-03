@@ -30,12 +30,12 @@ public class QueryAPITestPartitionResolver implements PartitionResolver {
 
   @Override
   public Serializable getRoutingObject(EntryOperation opDetails) {
-    return (((Integer) opDetails.getKey()).intValue()
+    return ((Integer) opDetails.getKey()
         % QueryUsingFunctionContextDUnitTest.numOfBuckets);
   }
 
   @Override
   public String getName() {
-    return this.getClass().getName();
+    return getClass().getName();
   }
 }

@@ -32,7 +32,7 @@ class DUnitHost extends Host {
   DUnitHost(String hostName, ProcessManager processManager, VMEventNotifier vmEventNotifier)
       throws RemoteException {
     super(hostName, vmEventNotifier);
-    this.debuggingVM = new VM(this, VersionManager.CURRENT_VERSION, -1, new RemoteDUnitVM(0), null,
+    debuggingVM = new VM(this, VersionManager.CURRENT_VERSION, -1, new RemoteDUnitVM(0), null,
         null);
     this.processManager = processManager;
     this.vmEventNotifier = vmEventNotifier;

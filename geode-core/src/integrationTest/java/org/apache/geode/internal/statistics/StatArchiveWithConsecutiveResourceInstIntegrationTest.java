@@ -21,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.net.URL;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
@@ -65,22 +64,22 @@ public class StatArchiveWithConsecutiveResourceInstIntegrationTest {
   @Before
   public void setUp() throws Exception {
     URL url = getClass().getResource(ARCHIVE_FILE_NAME);
-    this.archiveFile = this.temporaryFolder.newFile(ARCHIVE_FILE_NAME);
+    archiveFile = temporaryFolder.newFile(ARCHIVE_FILE_NAME);
     FileUtils.copyURLToFile(url, archiveFile);
 
-    this.statSpec = new StatSpec(STATS_SPEC_STRING);
+    statSpec = new StatSpec(STATS_SPEC_STRING);
 
     // precondition
-    assertThat(this.archiveFile).exists();
+    assertThat(archiveFile).exists();
   }
 
   @Test
   public void readingFourActiveCacheClientUpdaterStatsWithReaderMatchSpec() throws Exception {
     StatArchiveReader reader =
-        new StatArchiveReader(new File[] {this.archiveFile}, new StatSpec[] {this.statSpec}, true);
+        new StatArchiveReader(new File[] {archiveFile}, new StatSpec[] {statSpec}, true);
 
     Set<ResourceInst> resourceInstList = new HashSet<>();
-    for (StatValue statValue : reader.matchSpec(this.statSpec)) {
+    for (StatValue statValue : reader.matchSpec(statSpec)) {
       for (int i = 0; i < statValue.getResources().length; i++) {
         resourceInstList.add(statValue.getResources()[i]);
       }
@@ -92,11 +91,11 @@ public class StatArchiveWithConsecutiveResourceInstIntegrationTest {
   @Test
   public void readingFourActiveCacheClientUpdaterStatsWithReader() throws Exception {
     StatArchiveReader reader =
-        new StatArchiveReader(new File[] {this.archiveFile}, new StatSpec[] {this.statSpec}, true);
+        new StatArchiveReader(new File[] {archiveFile}, new StatSpec[] {statSpec}, true);
 
     Set<ResourceInst> resourceInstList = new HashSet<>();
-    for (Iterator<ResourceInst> it = reader.getResourceInstList().iterator(); it.hasNext();) {
-      resourceInstList.add(it.next());
+    for (final ResourceInst o : (Iterable<ResourceInst>) reader.getResourceInstList()) {
+      resourceInstList.add(o);
     }
 
     assertThat(resourceInstList.size()).isEqualTo(2);
@@ -104,7 +103,7 @@ public class StatArchiveWithConsecutiveResourceInstIntegrationTest {
 
   private void printResourceInsts(Set<ResourceInst> resourceInstList) {
     for (ResourceInst resourceInst : resourceInstList) {
-      logger.info(this.testName.getMethodName() + ":ResourceInst: {}", resourceInst);
+      logger.info(testName.getMethodName() + ":ResourceInst: {}", resourceInst);
     }
   }
 

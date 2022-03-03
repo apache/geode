@@ -15,15 +15,16 @@
 package org.apache.geode.redis.internal.commands.executor.string;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.BitPosParams;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.params.BitPosParams;
 
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -53,8 +54,8 @@ public abstract class AbstractBitPosIntegrationTest implements RedisIntegrationT
   @Test
   public void bitpos_givenSetFails() {
     jedis.sadd("key", "m1");
-    assertThatThrownBy(() -> jedis.bitpos("key", false)).hasMessageContaining("WRONGTYPE");
-    assertThatThrownBy(() -> jedis.bitpos("key", true)).hasMessageContaining("WRONGTYPE");
+    assertThatThrownBy(() -> jedis.bitpos("key", false)).hasMessage(ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.bitpos("key", true)).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test

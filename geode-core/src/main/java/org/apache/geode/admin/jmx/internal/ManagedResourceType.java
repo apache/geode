@@ -126,44 +126,44 @@ public class ManagedResourceType implements java.io.Serializable {
 
   /** Returns the display-friendly name of this managed resource type */
   public String getName() {
-    return this.name;
+    return name;
   }
 
   /** Returns the interface/class used to externally represent this type */
   public Class getClassType() {
-    return this.clazz;
+    return clazz;
   }
 
   /**
    * Returns the fully qualified name of the interface/class used to externally represent this type
    */
   public String getClassTypeName() {
-    return this.clazz.getName();
+    return clazz.getName();
   }
 
   /** Returns true if this is <code>AGENT</code>. */
   public boolean isAgent() {
-    return this.equals(AGENT);
+    return equals(AGENT);
   }
 
   /** Returns true if this is <code>DISTRIBUTED_SYSTEM</code>. */
   public boolean isDistributedSystem() {
-    return this.equals(DISTRIBUTED_SYSTEM);
+    return equals(DISTRIBUTED_SYSTEM);
   }
 
   /** Returns true if this is <code>SYSTEM_MEMBER</code>. */
   public boolean isSystemMember() {
-    return this.equals(SYSTEM_MEMBER);
+    return equals(SYSTEM_MEMBER);
   }
 
   /** Returns whether this is <code>STATISTIC_RESOURCE</code>. */
   public boolean isStatisticResource() {
-    return this.equals(STATISTIC_RESOURCE);
+    return equals(STATISTIC_RESOURCE);
   }
 
   /** Return whether this is <code>GEMFIRE_HEALTH</code>. */
   public boolean isGemFireHealth() {
-    return this.equals(GEMFIRE_HEALTH);
+    return equals(GEMFIRE_HEALTH);
   }
 
   /**
@@ -171,7 +171,7 @@ public class ManagedResourceType implements java.io.Serializable {
    */
   @Override
   public String toString() {
-    return this.name;
+    return name;
   }
 
   /**
@@ -193,14 +193,10 @@ public class ManagedResourceType implements java.io.Serializable {
     }
     final ManagedResourceType that = (ManagedResourceType) other;
 
-    if (!StringUtils.equals(this.name, that.name)) {
+    if (!StringUtils.equals(name, that.name)) {
       return false;
     }
-    if (this.clazz != that.clazz && !(this.clazz != null && this.clazz.equals(that.clazz))) {
-      return false;
-    }
-
-    return true;
+    return clazz == that.clazz || clazz != null && clazz.equals(that.clazz);
   }
 
   /**
@@ -214,8 +210,8 @@ public class ManagedResourceType implements java.io.Serializable {
     int result = 17;
     final int mult = 37;
 
-    result = mult * result + (this.name == null ? 0 : this.name.hashCode());
-    result = mult * result + (this.clazz == null ? 0 : this.clazz.hashCode());
+    result = mult * result + (name == null ? 0 : name.hashCode());
+    result = mult * result + (clazz == null ? 0 : clazz.hashCode());
 
     return result;
   }

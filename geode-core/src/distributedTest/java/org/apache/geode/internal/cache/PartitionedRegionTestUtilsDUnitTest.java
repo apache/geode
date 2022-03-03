@@ -124,7 +124,7 @@ public class PartitionedRegionTestUtilsDUnitTest extends CacheTestCase {
   public void testGetNodes() throws Exception {
     VM validatorVM = vm2;
 
-    validatorVM.invoke(() -> createPRAndTestGetAllNodes());
+    validatorVM.invoke(this::createPRAndTestGetAllNodes);
 
     validatorVM.invoke(() -> {
       PartitionedRegion partitionedRegion = (PartitionedRegion) getCache().getRegion(regionName);
@@ -132,7 +132,7 @@ public class PartitionedRegionTestUtilsDUnitTest extends CacheTestCase {
       assertThat(allNodes).isNotNull().hasSize(1);
     });
 
-    vm0.invoke(() -> createPRAndTestGetAllNodes());
+    vm0.invoke(this::createPRAndTestGetAllNodes);
 
     validatorVM.invoke(() -> {
       PartitionedRegion partitionedRegion = (PartitionedRegion) getCache().getRegion(regionName);
@@ -140,7 +140,7 @@ public class PartitionedRegionTestUtilsDUnitTest extends CacheTestCase {
       assertThat(allNodes).isNotNull().hasSize(2);
     });
 
-    vm1.invoke(() -> createPRAndTestGetAllNodes());
+    vm1.invoke(this::createPRAndTestGetAllNodes);
 
     validatorVM.invoke(() -> {
       PartitionedRegion partitionedRegion = (PartitionedRegion) getCache().getRegion(regionName);

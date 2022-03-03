@@ -90,7 +90,7 @@ public class PeerTypeRegistration implements TypeRegistration {
    */
   private Region<Object/* Integer or EnumCode */, Object/* PdxType or enum info */> idToType;
 
-  private PeerTypeRegistrationReverseMap reverseMap = new PeerTypeRegistrationReverseMap();
+  private final PeerTypeRegistrationReverseMap reverseMap = new PeerTypeRegistrationReverseMap();
 
   private final Map<String, CopyOnWriteHashSet<PdxType>> classToType = new CopyOnWriteHashMap<>();
 

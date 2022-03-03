@@ -136,7 +136,7 @@ public class QueryServiceJUnitTest {
       if (index != null) {
         fail("QueryService.createIndex allows duplicate index names");
       }
-    } catch (IndexNameConflictException e) {
+    } catch (IndexNameConflictException ignored) {
     }
 
     try {
@@ -145,7 +145,7 @@ public class QueryServiceJUnitTest {
       if (index != null) {
         fail("QueryService.createIndex allows duplicate indexes");
       }
-    } catch (IndexExistsException e) {
+    } catch (IndexExistsException ignored) {
     }
   }
 
@@ -178,7 +178,7 @@ public class QueryServiceJUnitTest {
     runCreateIndexTests(testDataIndexExpr);
   }
 
-  private void runCreateIndexTests(Object testData[][]) {
+  private void runCreateIndexTests(Object[][] testData) {
     QueryService qs = CacheUtils.getQueryService();
     qs.removeIndexes();
     for (int i = 0; i < testData.length; i++) {

@@ -16,7 +16,6 @@
 package org.apache.geode.redis.internal.commands.executor.key;
 
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NO_SUCH_KEY;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
 
 import java.util.Arrays;
 import java.util.List;
@@ -41,10 +40,6 @@ public abstract class AbstractRenameExecutor implements CommandExecutor {
       return getTargetSameAsSourceResponse();
     }
 
-    if (key.getSlot() != newKey.getSlot()) {
-      return RedisResponse.crossSlot(ERROR_WRONG_SLOT);
-    }
-
     try {
       if (!executeRenameCommand(key, newKey, context)) {
         return getNoSuchKeyResponse();
@@ -58,9 +53,9 @@ public abstract class AbstractRenameExecutor implements CommandExecutor {
 
   protected static boolean rename(ExecutionHandlerContext context, RedisKey oldKey, RedisKey newKey,
       boolean ifTargetNotExists) {
-    List<RedisKey> lockOrdering = Arrays.asList(oldKey, newKey);
+    final List<RedisKey> keysToLock = Arrays.asList(oldKey, newKey);
 
-    return context.lockedExecute(oldKey, lockOrdering,
+    return context.lockedExecuteInTransaction(oldKey, keysToLock,
         () -> context.getRedisData(oldKey)
             .rename(context.getRegion(), oldKey, newKey, ifTargetNotExists));
   }

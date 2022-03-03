@@ -31,13 +31,13 @@ public class IndexElemArray implements Iterable, Collection {
   private volatile byte size;
 
   /* lock for making size and data changes atomically. */
-  private Object lock = new Object();
+  private final Object lock = new Object();
 
   public IndexElemArray(int initialCapacity) {
     if (initialCapacity < 0) {
       throw new IllegalArgumentException("Illegal Capacity: " + initialCapacity);
     }
-    this.elementData = new Object[initialCapacity];
+    elementData = new Object[initialCapacity];
   }
 
   /**
@@ -65,7 +65,7 @@ public class IndexElemArray implements Iterable, Collection {
       }
       // minCapacity is usually close to size, so this is a win:
       Object[] newElementData = new Object[newCapacity];
-      System.arraycopy(this.elementData, 0, newElementData, 0, this.elementData.length);
+      System.arraycopy(elementData, 0, newElementData, 0, elementData.length);
       elementData = newElementData;
     }
   }
@@ -156,7 +156,7 @@ public class IndexElemArray implements Iterable, Collection {
     synchronized (lock) {
       rangeCheck(index);
 
-      Object oldValue = (Object) elementData[index];
+      Object oldValue = elementData[index];
       elementData[index] = element;
       return oldValue;
     }
@@ -240,7 +240,7 @@ public class IndexElemArray implements Iterable, Collection {
   @Override
   public void clear() {
     synchronized (lock) {
-      Arrays.fill(this.elementData, null);
+      Arrays.fill(elementData, null);
       size = 0;
     }
   }
@@ -285,8 +285,8 @@ public class IndexElemArray implements Iterable, Collection {
   private class IndexArrayListIterator implements Iterator {
     private byte current;
     private Object currentEntry;
-    private Object[] elements;
-    private int len;
+    private final Object[] elements;
+    private final int len;
 
     IndexArrayListIterator() {
       synchronized (lock) {

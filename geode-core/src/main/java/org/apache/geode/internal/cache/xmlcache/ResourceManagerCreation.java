@@ -88,7 +88,7 @@ public class ResourceManagerCreation implements ResourceManager {
    */
   @Override
   public float getCriticalHeapPercentage() {
-    return this.criticalHeapPercentage;
+    return criticalHeapPercentage;
   }
 
   /*
@@ -98,12 +98,12 @@ public class ResourceManagerCreation implements ResourceManager {
    */
   @Override
   public void setCriticalHeapPercentage(float heapPercentage) {
-    this.criticalHeapSet = true;
-    this.criticalHeapPercentage = heapPercentage;
+    criticalHeapSet = true;
+    criticalHeapPercentage = heapPercentage;
   }
 
   public void setCriticalHeapPercentageToDefault() {
-    this.criticalHeapPercentage = MemoryThresholds.DEFAULT_CRITICAL_PERCENTAGE;
+    criticalHeapPercentage = MemoryThresholds.DEFAULT_CRITICAL_PERCENTAGE;
   }
 
   /**
@@ -112,7 +112,7 @@ public class ResourceManagerCreation implements ResourceManager {
    * @return true if it was configured
    */
   public boolean hasCriticalHeap() {
-    return this.criticalHeapSet;
+    return criticalHeapSet;
   }
 
   /*
@@ -122,7 +122,7 @@ public class ResourceManagerCreation implements ResourceManager {
    */
   @Override
   public float getCriticalOffHeapPercentage() {
-    return this.criticalOffHeapPercentage;
+    return criticalOffHeapPercentage;
   }
 
   /*
@@ -132,12 +132,12 @@ public class ResourceManagerCreation implements ResourceManager {
    */
   @Override
   public void setCriticalOffHeapPercentage(final float offHeapPercentage) {
-    this.criticalOffHeapSet = true;
-    this.criticalOffHeapPercentage = offHeapPercentage;
+    criticalOffHeapSet = true;
+    criticalOffHeapPercentage = offHeapPercentage;
   }
 
   public void setCriticalOffHeapPercentageToDefault() {
-    this.criticalOffHeapPercentage = MemoryThresholds.DEFAULT_CRITICAL_PERCENTAGE;
+    criticalOffHeapPercentage = MemoryThresholds.DEFAULT_CRITICAL_PERCENTAGE;
   }
 
   /**
@@ -146,21 +146,21 @@ public class ResourceManagerCreation implements ResourceManager {
    * @return true if it was configured
    */
   public boolean hasCriticalOffHeap() {
-    return this.criticalOffHeapSet;
+    return criticalOffHeapSet;
   }
 
   public void configure(ResourceManager r) {
     if (hasCriticalHeap()) {
-      r.setCriticalHeapPercentage(this.criticalHeapPercentage);
+      r.setCriticalHeapPercentage(criticalHeapPercentage);
     }
     if (hasCriticalOffHeap()) {
-      r.setCriticalOffHeapPercentage(this.criticalOffHeapPercentage);
+      r.setCriticalOffHeapPercentage(criticalOffHeapPercentage);
     }
     if (hasEvictionHeap()) {
-      r.setEvictionHeapPercentage(this.evictionHeapPercentage);
+      r.setEvictionHeapPercentage(evictionHeapPercentage);
     }
     if (hasEvictionOffHeap()) {
-      r.setEvictionOffHeapPercentage(this.evictionOffHeapPercentage);
+      r.setEvictionOffHeapPercentage(evictionOffHeapPercentage);
     }
   }
 
@@ -201,7 +201,7 @@ public class ResourceManagerCreation implements ResourceManager {
    */
   @Override
   public float getEvictionHeapPercentage() {
-    return this.evictionHeapPercentage;
+    return evictionHeapPercentage;
   }
 
   /*
@@ -211,12 +211,12 @@ public class ResourceManagerCreation implements ResourceManager {
    */
   @Override
   public void setEvictionHeapPercentage(float heapPercentage) {
-    this.evictionHeapSet = true;
-    this.evictionHeapPercentage = heapPercentage;
+    evictionHeapSet = true;
+    evictionHeapPercentage = heapPercentage;
   }
 
   public void setEvictionHeapPercentageToDefault() {
-    this.evictionHeapPercentage = MemoryThresholds.DEFAULT_EVICTION_PERCENTAGE;
+    evictionHeapPercentage = MemoryThresholds.DEFAULT_EVICTION_PERCENTAGE;
   }
 
   /**
@@ -225,7 +225,7 @@ public class ResourceManagerCreation implements ResourceManager {
    * @return true if the eviction heap was configured
    */
   public boolean hasEvictionHeap() {
-    return this.evictionHeapSet;
+    return evictionHeapSet;
   }
 
   /*
@@ -235,7 +235,7 @@ public class ResourceManagerCreation implements ResourceManager {
    */
   @Override
   public float getEvictionOffHeapPercentage() {
-    return this.evictionOffHeapPercentage;
+    return evictionOffHeapPercentage;
   }
 
   /*
@@ -245,12 +245,12 @@ public class ResourceManagerCreation implements ResourceManager {
    */
   @Override
   public void setEvictionOffHeapPercentage(final float offHeapPercentage) {
-    this.evictionOffHeapSet = true;
-    this.evictionOffHeapPercentage = offHeapPercentage;
+    evictionOffHeapSet = true;
+    evictionOffHeapPercentage = offHeapPercentage;
   }
 
   public void setEvictionOffHeapPercentageToDefault() {
-    this.evictionOffHeapPercentage = MemoryThresholds.DEFAULT_EVICTION_PERCENTAGE;
+    evictionOffHeapPercentage = MemoryThresholds.DEFAULT_EVICTION_PERCENTAGE;
   }
 
   /**
@@ -259,6 +259,6 @@ public class ResourceManagerCreation implements ResourceManager {
    * @return true if the eviction off-heap was configured
    */
   public boolean hasEvictionOffHeap() {
-    return this.evictionOffHeapSet;
+    return evictionOffHeapSet;
   }
 }

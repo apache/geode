@@ -74,7 +74,7 @@ public class UnregisterInterestDUnitTest extends JUnit4DistributedTestCase {
     client2 = host.getVM(2);
 
     int port =
-        (Integer) server0.invoke(() -> UnregisterInterestDUnitTest.createCacheAndStartServer());
+        server0.invoke(UnregisterInterestDUnitTest::createCacheAndStartServer);
     client1.invoke(() -> UnregisterInterestDUnitTest.createClientCache(client1.getHost(), port));
     client2.invoke(() -> UnregisterInterestDUnitTest.createClientCache(client2.getHost(), port));
   }
@@ -82,9 +82,9 @@ public class UnregisterInterestDUnitTest extends JUnit4DistributedTestCase {
   @Override
   public final void preTearDown() throws Exception {
     closeCache();
-    server0.invoke(() -> UnregisterInterestDUnitTest.closeCache());
-    client1.invoke(() -> UnregisterInterestDUnitTest.closeCache());
-    client2.invoke(() -> UnregisterInterestDUnitTest.closeCache());
+    server0.invoke(UnregisterInterestDUnitTest::closeCache);
+    client1.invoke(UnregisterInterestDUnitTest::closeCache);
+    client2.invoke(UnregisterInterestDUnitTest::closeCache);
   }
 
   public static void closeCache() {
@@ -110,8 +110,8 @@ public class UnregisterInterestDUnitTest extends JUnit4DistributedTestCase {
     client2.invoke(
         () -> UnregisterInterestDUnitTest.registerInterest(all_keys, !receiveValuesConstant, null));
     server0.invoke(() -> UnregisterInterestDUnitTest.checkRIArtifacts(all_keys, 1, 1));
-    client1.invoke(() -> UnregisterInterestDUnitTest.closeCache());
-    client2.invoke(() -> UnregisterInterestDUnitTest.closeCache());
+    client1.invoke(UnregisterInterestDUnitTest::closeCache);
+    client2.invoke(UnregisterInterestDUnitTest::closeCache);
     server0.invoke(() -> UnregisterInterestDUnitTest.checkRIArtifacts(all_keys, 0, 0));
   }
 
@@ -131,8 +131,8 @@ public class UnregisterInterestDUnitTest extends JUnit4DistributedTestCase {
     client2.invoke(UnregisterInterestDUnitTest.class, "registerInterest", new Object[] {list,
         !receiveValuesConstant, new String[] {"key_1", "key_2", "key_3", "key_4", "key_5"}});
     server0.invoke(() -> UnregisterInterestDUnitTest.checkRIArtifacts(list, 1, 1));
-    client1.invoke(() -> UnregisterInterestDUnitTest.closeCache());
-    client2.invoke(() -> UnregisterInterestDUnitTest.closeCache());
+    client1.invoke(UnregisterInterestDUnitTest::closeCache);
+    client2.invoke(UnregisterInterestDUnitTest::closeCache);
     server0.invoke(() -> UnregisterInterestDUnitTest.checkRIArtifacts(list, 0, 0));
   }
 
@@ -152,8 +152,8 @@ public class UnregisterInterestDUnitTest extends JUnit4DistributedTestCase {
     client2.invoke(UnregisterInterestDUnitTest.class, "registerInterest",
         new Object[] {regex, !receiveValuesConstant, new String[] {"[a-z]*[0-9]"}});
     server0.invoke(() -> UnregisterInterestDUnitTest.checkRIArtifacts(regex, 1, 1));
-    client1.invoke(() -> UnregisterInterestDUnitTest.closeCache());
-    client2.invoke(() -> UnregisterInterestDUnitTest.closeCache());
+    client1.invoke(UnregisterInterestDUnitTest::closeCache);
+    client2.invoke(UnregisterInterestDUnitTest::closeCache);
     server0.invoke(() -> UnregisterInterestDUnitTest.checkRIArtifacts(regex, 0, 0));
   }
 
@@ -261,14 +261,14 @@ public class UnregisterInterestDUnitTest extends JUnit4DistributedTestCase {
         region.registerInterest("ALL_KEYS", false, receiveValues);
         break;
       case list:
-        ArrayList<String> keys = new ArrayList<String>();
+        ArrayList<String> keys = new ArrayList<>();
         for (Object key : values) {
           keys.add((String) key);
         }
         region.registerInterest(keys, false, receiveValues);
         break;
       case regex:
-        region.registerInterestRegex((String) values[0], false, receiveValues);
+        region.registerInterestRegex(values[0], false, receiveValues);
         break;
       case filter:
         break;

@@ -24,9 +24,9 @@ import org.apache.geode.StatisticsTypeFactory;
 
 public class StatisticsTypeImplTest {
 
-  private StatisticsTypeFactory statsFactory = StatisticsTypeFactoryImpl.singleton();
+  private final StatisticsTypeFactory statsFactory = StatisticsTypeFactoryImpl.singleton();
 
-  private StatisticDescriptor[] stats = new StatisticDescriptor[] {
+  private final StatisticDescriptor[] stats = new StatisticDescriptor[] {
       statsFactory.createDoubleGauge("doubleCount", "double counter", "doubles"),
       statsFactory.createLongCounter("longCount", "long counter", "longs"),
       statsFactory.createIntCounter("intCount", "int counter", "ints"),

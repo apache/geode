@@ -51,12 +51,14 @@ import org.apache.geode.redis.internal.commands.RedisCommandType;
 import org.apache.geode.redis.internal.commands.executor.RedisResponse;
 import org.apache.geode.redis.internal.commands.executor.UnknownExecutor;
 import org.apache.geode.redis.internal.commands.parameters.RedisParametersMismatchException;
+import org.apache.geode.redis.internal.data.RedisCrossSlotException;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisDataMovedException;
 import org.apache.geode.redis.internal.data.RedisDataType;
 import org.apache.geode.redis.internal.data.RedisDataTypeMismatchException;
 import org.apache.geode.redis.internal.data.RedisHash;
 import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.data.RedisList;
 import org.apache.geode.redis.internal.data.RedisSet;
 import org.apache.geode.redis.internal.data.RedisSortedSet;
 import org.apache.geode.redis.internal.data.RedisString;
@@ -102,7 +104,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final DistributedMember member;
   private final RedisSecurityService securityService;
   private BigInteger scanCursor;
-  private BigInteger sscanCursor;
   private final AtomicBoolean channelInactive = new AtomicBoolean();
   private final ChannelId channelId;
 
@@ -126,14 +127,13 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.pubsub = pubsub;
     this.allowUnsupportedSupplier = allowUnsupportedSupplier;
     this.redisStats = redisStats;
-    this.redisUsername = username;
-    this.client = new Client(channel, pubsub);
+    redisUsername = username;
+    client = new Client(channel, pubsub);
     this.serverPort = serverPort;
     this.member = member;
     this.securityService = securityService;
-    this.scanCursor = new BigInteger("0");
-    this.sscanCursor = new BigInteger("0");
-    this.channelId = channel.id();
+    scanCursor = new BigInteger("0");
+    channelId = channel.id();
     redisStats.addClient();
 
     channel.closeFuture().addListener(future -> logout());
@@ -181,7 +181,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     if (rootCause instanceof RedisDataMovedException) {
       return RedisResponse.moved(rootCause.getMessage());
     } else if (rootCause instanceof RedisDataTypeMismatchException) {
-      return RedisResponse.wrongType(rootCause.getMessage());
+      return RedisResponse.wrongType();
+    } else if (rootCause instanceof RedisCrossSlotException) {
+      return RedisResponse.crossSlot();
     } else if (rootCause instanceof IllegalStateException
         || rootCause instanceof RedisParametersMismatchException
         || rootCause instanceof RedisException
@@ -189,7 +191,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
         || rootCause instanceof ArithmeticException) {
       return RedisResponse.error(rootCause.getMessage());
     } else if (rootCause instanceof LowMemoryException) {
-      return RedisResponse.oom(RedisConstants.ERROR_OOM_COMMAND_NOT_ALLOWED);
+      return RedisResponse.oom();
     } else if (rootCause instanceof RedisCommandParserException) {
       return RedisResponse
           .error(RedisConstants.PARSING_EXCEPTION_MESSAGE + ": " + rootCause.getMessage());
@@ -294,7 +296,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     if (command.isOfType(RedisCommandType.AUTH)) {
       response = command.execute(this);
     } else {
-      response = RedisResponse.noAuth(RedisConstants.ERROR_NOT_AUTHENTICATED);
+      response = RedisResponse.noAuth();
     }
     return response;
   }
@@ -380,14 +382,6 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   public void setScanCursor(BigInteger scanCursor) {
     this.scanCursor = scanCursor;
-  }
-
-  public BigInteger getSscanCursor() {
-    return sscanCursor;
-  }
-
-  public void setSscanCursor(BigInteger sscanCursor) {
-    this.sscanCursor = sscanCursor;
   }
 
   public String getMemberName() {
@@ -483,17 +477,25 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     return getRegionProvider().getTypedRedisData(RedisDataType.REDIS_SORTED_SET, key, updateStats);
   }
 
-
   public <R> R setLockedExecute(RedisKey key, boolean updateStats,
       FailableFunction<RedisSet, R> function) {
     return getRegionProvider().lockedExecute(key,
         () -> function.apply(getRedisSet(key, updateStats)));
   }
 
+  public <R> R listLockedExecute(RedisKey key, boolean updateStats,
+      FailableFunction<RedisList, R> function) {
+    return getRegionProvider().lockedExecute(key,
+        () -> function.apply(getRedisList(key, updateStats)));
+  }
+
   public RedisSet getRedisSet(RedisKey key, boolean updateStats) {
     return getRegionProvider().getTypedRedisData(RedisDataType.REDIS_SET, key, updateStats);
   }
 
+  private RedisList getRedisList(RedisKey key, boolean updateStats) {
+    return getRegionProvider().getTypedRedisData(RedisDataType.REDIS_LIST, key, updateStats);
+  }
 
   public <R> R dataLockedExecute(RedisKey key, boolean updateStats,
       FailableFunction<RedisData, R> function) {

@@ -56,7 +56,7 @@ public class StringsKillMultipleServersDUnitTest {
 
     int redisServerPort1 = cluster.getRedisPort(1);
     jedisCluster =
-        new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1), 10_000);
+        new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1), 10_000, 20);
 
     // This sequence ensures that servers 1, 2 and 3 are hosting all the buckets and server 4
     // has no buckets.
@@ -99,7 +99,12 @@ public class StringsKillMultipleServersDUnitTest {
   private Void doSetOps(AtomicBoolean running, AtomicInteger counter) {
     while (running.get()) {
       int i = counter.getAndIncrement();
-      jedisCluster.set("key-" + i, "value-" + i);
+      try {
+        jedisCluster.set("key-" + i, "value-" + i);
+      } catch (final Throwable t) {
+        t.printStackTrace();
+        throw t;
+      }
     }
     return null;
   }

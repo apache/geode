@@ -65,8 +65,8 @@ public class LuceneFunctionSecurityTest {
       new GfshCommandRule(server::getJmxPort,
           GfshCommandRule.PortType.jmxManager);
 
-  private static HashSet<Function> functions = new HashSet<>();
-  private static HashSet<Function> functionsWithDataRead = new HashSet<>();
+  private static final HashSet<Function> functions = new HashSet<>();
+  private static final HashSet<Function> functionsWithDataRead = new HashSet<>();
 
   @BeforeClass
   public static void setupFunctions() {

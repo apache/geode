@@ -183,9 +183,9 @@ public class IndexMapImpl implements IndexMap {
 
   private static class IndexEntryImpl implements IndexEntry {
 
-    private CachedDeserializable indexKey;
-    private CachedDeserializable regionKey;
-    private CachedDeserializable value;
+    private final CachedDeserializable indexKey;
+    private final CachedDeserializable regionKey;
+    private final CachedDeserializable value;
 
 
     public IndexEntryImpl(CachedDeserializable indexKey, CachedDeserializable regionKey,
@@ -215,7 +215,7 @@ public class IndexMapImpl implements IndexMap {
 
   private static class Itr implements CloseableIterator<IndexEntry> {
 
-    private Iterator<java.util.Map.Entry<Pair<CachedDeserializable, CachedDeserializable>, CachedDeserializable>> iterator;
+    private final Iterator<java.util.Map.Entry<Pair<CachedDeserializable, CachedDeserializable>, CachedDeserializable>> iterator;
 
     public Itr(
         Iterator<java.util.Map.Entry<Pair<CachedDeserializable, CachedDeserializable>, CachedDeserializable>> iterator) {
@@ -250,7 +250,7 @@ public class IndexMapImpl implements IndexMap {
 
   private static class KeyItr implements CloseableIterator<CachedDeserializable> {
 
-    private Iterator<java.util.Map.Entry<Pair<CachedDeserializable, CachedDeserializable>, CachedDeserializable>> iterator;
+    private final Iterator<java.util.Map.Entry<Pair<CachedDeserializable, CachedDeserializable>, CachedDeserializable>> iterator;
 
     public KeyItr(
         Iterator<java.util.Map.Entry<Pair<CachedDeserializable, CachedDeserializable>, CachedDeserializable>> iterator) {

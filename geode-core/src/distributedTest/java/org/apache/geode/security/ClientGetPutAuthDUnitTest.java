@@ -44,7 +44,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 @Category({SecurityTest.class})
 public class ClientGetPutAuthDUnitTest extends JUnit4DistributedTestCase {
 
-  private static String REGION_NAME = "AuthRegion";
+  private static final String REGION_NAME = "AuthRegion";
 
   final Host host = Host.getHost(0);
   final VM client1 = host.getVM(1);
@@ -69,7 +69,7 @@ public class ClientGetPutAuthDUnitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void testGetPutAuthorization() throws InterruptedException {
-    Map<String, String> allValues = new HashMap<String, String>();
+    Map<String, String> allValues = new HashMap<>();
     allValues.put("key1", "value1");
     allValues.put("key2", "value2");
 
@@ -92,7 +92,7 @@ public class ClientGetPutAuthDUnitTest extends JUnit4DistributedTestCase {
       Map keyValues = region.getAll(keys);
       assertEquals(0, keyValues.size());
 
-      assertNotAuthorized(() -> region.keySetOnServer(), "DATA:READ:AuthRegion");
+      assertNotAuthorized(region::keySetOnServer, "DATA:READ:AuthRegion");
     });
 
 
@@ -131,7 +131,7 @@ public class ClientGetPutAuthDUnitTest extends JUnit4DistributedTestCase {
       assertEquals(1, keyValues.size());
 
       // keyset
-      assertNotAuthorized(() -> region.keySetOnServer(), "DATA:READ:AuthRegion");
+      assertNotAuthorized(region::keySetOnServer, "DATA:READ:AuthRegion");
     });
 
     ai1.join();

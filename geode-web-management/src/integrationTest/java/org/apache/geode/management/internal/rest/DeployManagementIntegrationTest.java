@@ -63,7 +63,7 @@ public class DeployManagementIntegrationTest {
   private ClusterManagementService client;
 
   private Deployment deployment;
-  private static ObjectMapper mapper = GeodeJsonMapper.getMapper();
+  private static final ObjectMapper mapper = GeodeJsonMapper.getMapper();
   private File jar1, jar2;
 
   @Rule

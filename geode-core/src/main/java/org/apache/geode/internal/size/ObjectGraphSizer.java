@@ -35,13 +35,7 @@ public class ObjectGraphSizer {
   @Immutable
   static final SingleObjectSizer SIZE_OF_UTIL;
   @Immutable
-  private static final ObjectFilter NULL_FILTER = new ObjectFilter() {
-    @Override
-    public boolean accept(Object parent, Object object) {
-      return true;
-    }
-
-  };
+  private static final ObjectFilter NULL_FILTER = (parent, object) -> true;
 
   static {
     Class sizeOfClass;
@@ -119,8 +113,8 @@ public class ObjectGraphSizer {
   }
 
   private static class HistogramVistor implements ObjectTraverser.Visitor {
-    private final Map<Class, Integer> countHisto = new HashMap<Class, Integer>();
-    private final Map<Class, Long> sizeHisto = new HashMap<Class, Long>();
+    private final Map<Class, Integer> countHisto = new HashMap<>();
+    private final Map<Class, Long> sizeHisto = new HashMap<>();
     private final ObjectFilter filter;
 
     public HistogramVistor(ObjectFilter filter) {
@@ -134,9 +128,9 @@ public class ObjectGraphSizer {
       }
       Integer count = countHisto.get(object.getClass());
       if (count == null) {
-        count = Integer.valueOf(1);
+        count = 1;
       } else {
-        count = Integer.valueOf(count.intValue() + 1);
+        count = count + 1;
       }
 
       countHisto.put(object.getClass(), count);
@@ -149,9 +143,9 @@ public class ObjectGraphSizer {
       }
       Long size = sizeHisto.get(object.getClass());
       if (size == null) {
-        size = Long.valueOf(objectSize);
+        size = objectSize;
       } else {
-        size = Long.valueOf(size.longValue() + objectSize);
+        size = size + objectSize;
       }
 
       sizeHisto.put(object.getClass(), size);
@@ -173,7 +167,7 @@ public class ObjectGraphSizer {
     }
 
     public Set<HistogramEntry> getOrderedSet() {
-      TreeSet<HistogramEntry> result = new TreeSet<HistogramEntry>();
+      TreeSet<HistogramEntry> result = new TreeSet<>();
       for (Map.Entry<Class, Long> entry : sizeHisto.entrySet()) {
         Class clazz = entry.getKey();
         Long size = entry.getValue();

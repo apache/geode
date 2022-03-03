@@ -24,7 +24,7 @@ import org.apache.geode.pdx.PdxInstanceFactory;
 
 public class PortfolioPdxVersion {
 
-  private int ID;
+  private final int ID;
   public String pkid;
   public PositionPdxVersion position1;
   public PositionPdxVersion position2;
@@ -38,7 +38,7 @@ public class PortfolioPdxVersion {
   public String[] names = {"aaa", "bbb", "ccc", "ddd"};
   public String unicodeṤtring;
 
-  public static String secIds[] = {"SUN", "IBM", "YHOO", "GOOG", "MSFT", "AOL", "APPL", "ORCL",
+  public static String[] secIds = {"SUN", "IBM", "YHOO", "GOOG", "MSFT", "AOL", "APPL", "ORCL",
       "SAP", "DELL", "RHAT", "NOVL", "HP"};
 
   public PortfolioPdxVersion(int i) {
@@ -74,28 +74,28 @@ public class PortfolioPdxVersion {
 
   public PortfolioPdxVersion(int i, int j) {
     this(i);
-    this.position1.portfolioId = j;
-    this.position3 = new Object[3];
+    position1.portfolioId = j;
+    position3 = new Object[3];
     for (int k = 0; k < position3.length; k++) {
       PositionPdxVersion p = new PositionPdxVersion(secIds[k], (k + 1) * 1000L);
       p.portfolioId = (k + 1);
-      this.position3[k] = p;
+      position3[k] = p;
     }
   }
 
   public PdxInstance createPdxInstance(PdxInstanceFactory pdxFactory) {
-    pdxFactory.writeInt("ID", this.ID);
-    pdxFactory.writeString("pkid", this.pkid);
-    pdxFactory.writeObject("position1", this.position1);
-    pdxFactory.writeObject("position2", this.position2);
-    pdxFactory.writeObject("positions", this.positions);
-    pdxFactory.writeObject("collectionHolderMap", this.collectionHolderMap);
-    pdxFactory.writeString("type", this.type);
-    pdxFactory.writeString("status", this.status);
-    pdxFactory.writeStringArray("names", this.names);
-    pdxFactory.writeString("description", this.description);
-    pdxFactory.writeLong("createTime", this.createTime);
-    pdxFactory.writeObjectArray("position3", this.position3);
+    pdxFactory.writeInt("ID", ID);
+    pdxFactory.writeString("pkid", pkid);
+    pdxFactory.writeObject("position1", position1);
+    pdxFactory.writeObject("position2", position2);
+    pdxFactory.writeObject("positions", positions);
+    pdxFactory.writeObject("collectionHolderMap", collectionHolderMap);
+    pdxFactory.writeString("type", type);
+    pdxFactory.writeString("status", status);
+    pdxFactory.writeStringArray("names", names);
+    pdxFactory.writeString("description", description);
+    pdxFactory.writeLong("createTime", createTime);
+    pdxFactory.writeObjectArray("position3", position3);
 
     return pdxFactory.create();
 

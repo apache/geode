@@ -34,7 +34,7 @@ public class OfflineMembersDetailsJUnitTest {
   public void testSerialization() throws Exception {
     Set<PersistentMemberID>[] offlineMembers = new Set[5];
     for (int i = 0; i < offlineMembers.length; i++) {
-      offlineMembers[i] = new HashSet<PersistentMemberID>();
+      offlineMembers[i] = new HashSet<>();
       offlineMembers[i].add(new PersistentMemberID(DiskStoreID.random(), InetAddress.getLocalHost(),
           "a", System.currentTimeMillis(), (short) 0));
     }

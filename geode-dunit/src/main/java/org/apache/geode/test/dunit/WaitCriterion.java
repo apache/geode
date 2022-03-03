@@ -38,9 +38,9 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
  */
 public interface WaitCriterion extends ThrowingRunnable {
 
-  public boolean done();
+  boolean done();
 
-  public String description();
+  String description();
 
   @Override
   default void run() {

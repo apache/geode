@@ -46,7 +46,7 @@ public abstract class AbstractXmlParser implements XmlParser {
 
   @Override
   public void setDocumentLocator(Locator locator) {
-    this.documentLocator = locator;
+    documentLocator = locator;
   }
 
   @Override

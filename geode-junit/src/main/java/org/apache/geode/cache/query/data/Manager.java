@@ -24,10 +24,10 @@ public class Manager extends Employee {
   public Manager(String name, int age, int empId, String title, int salary, Set addresses,
       int mgrId) {
     super(name, age, empId, title, salary, addresses);
-    this.manager_id = mgrId;
+    manager_id = mgrId;
   }
 
   public int getManager_id() {
-    return this.manager_id;
+    return manager_id;
   }
 }

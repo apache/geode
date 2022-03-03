@@ -27,15 +27,15 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
  */
 class PersistentStateQueryResults {
   private final Map<InternalDistributedMember, PersistentMemberState> stateOnPeers =
-      new HashMap<InternalDistributedMember, PersistentMemberState>();
+      new HashMap<>();
   private final Map<InternalDistributedMember, PersistentMemberID> initializingIds =
-      new HashMap<InternalDistributedMember, PersistentMemberID>();
+      new HashMap<>();
   private final Map<InternalDistributedMember, PersistentMemberID> persistentIds =
-      new HashMap<InternalDistributedMember, PersistentMemberID>();
+      new HashMap<>();
   private final Map<InternalDistributedMember, Set<PersistentMemberID>> onlineMemberMap =
-      new HashMap<InternalDistributedMember, Set<PersistentMemberID>>();
+      new HashMap<>();
   private final Map<InternalDistributedMember, DiskStoreID> diskStoreIds =
-      new HashMap<InternalDistributedMember, DiskStoreID>();
+      new HashMap<>();
 
   public synchronized void addResult(PersistentMemberState persistedStateOfPeer,
       InternalDistributedMember sender, PersistentMemberID myId,

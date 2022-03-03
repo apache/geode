@@ -98,7 +98,7 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
   protected abstract Scope getRegionScope();
 
   protected InternalDistributedSystem createConnection(String[] roles) {
-    StringBuffer rolesValue = new StringBuffer();
+    StringBuilder rolesValue = new StringBuilder();
     if (roles != null) {
       for (int i = 0; i < roles.length; i++) {
         if (i > 0) {
@@ -444,15 +444,15 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
    */
   @Test
   public void testNoAccess() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
 
     final String roleA = name + "-A";
 
     // assign names to 4 vms...
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
-    for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(InternalRole.getRole(requiredRoles[i]));
+    for (final String requiredRole : requiredRoles) {
+      requiredRolesSet.add(InternalRole.getRole(requiredRole));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 
@@ -530,15 +530,15 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
    */
   @Test
   public void testNoAccessWithLocalEntryExpiration() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
 
     final String roleA = name + "-A";
 
     // assign names to 4 vms...
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
-    for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(InternalRole.getRole(requiredRoles[i]));
+    for (final String requiredRole : requiredRoles) {
+      requiredRolesSet.add(InternalRole.getRole(requiredRole));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 
@@ -614,15 +614,15 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
    */
   @Test
   public void testNoAccessWithLocalRegionExpiration() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
 
     final String roleA = name + "-A";
 
     // assign names to 4 vms...
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
-    for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(InternalRole.getRole(requiredRoles[i]));
+    for (final String requiredRole : requiredRoles) {
+      requiredRolesSet.add(InternalRole.getRole(requiredRole));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 
@@ -673,15 +673,15 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
    */
   @Test
   public void testLimitedAccess() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
 
     final String roleA = name + "-A";
 
     // assign names to 4 vms...
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
-    for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(InternalRole.getRole(requiredRoles[i]));
+    for (final String requiredRole : requiredRoles) {
+      requiredRolesSet.add(InternalRole.getRole(requiredRole));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 
@@ -761,15 +761,15 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
    */
   @Test
   public void testLimitedAccessWithLocalEntryExpiration() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
 
     final String roleA = name + "-A";
 
     // assign names to 4 vms...
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
-    for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(getRole(requiredRoles[i]));
+    for (final String requiredRole : requiredRoles) {
+      requiredRolesSet.add(getRole(requiredRole));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 
@@ -857,15 +857,15 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
    */
   @Test
   public void testLimitedAccessWithLocalRegionExpiration() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
 
     final String roleA = name + "-A";
 
     // assign names to 4 vms...
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
-    for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(InternalRole.getRole(requiredRoles[i]));
+    for (final String requiredRole : requiredRoles) {
+      requiredRolesSet.add(InternalRole.getRole(requiredRole));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 
@@ -900,15 +900,15 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
    */
   @Test
   public void testFullAccess() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
 
     final String roleA = name + "-A";
 
     // assign names to 4 vms...
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
-    for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(InternalRole.getRole(requiredRoles[i]));
+    for (final String requiredRole : requiredRoles) {
+      requiredRolesSet.add(InternalRole.getRole(requiredRole));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 
@@ -968,15 +968,15 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
    */
   @Test
   public void testFullAccessWithLocalEntryExpiration() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
 
     final String roleA = name + "-A";
 
     // assign names to 4 vms...
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
-    for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(InternalRole.getRole(requiredRoles[i]));
+    for (final String requiredRole : requiredRoles) {
+      requiredRolesSet.add(InternalRole.getRole(requiredRole));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 
@@ -1048,14 +1048,14 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
    */
   @Test
   public void testFullAccessWithLocalRegionExpiration() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
 
     final String roleA = name + "-A";
 
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
-    for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(InternalRole.getRole(requiredRoles[i]));
+    for (final String requiredRole : requiredRoles) {
+      requiredRolesSet.add(InternalRole.getRole(requiredRole));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 
@@ -1096,12 +1096,12 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
       return; // skip test under DistributedNoAck
     }
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final String roleA = name + "-A";
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
-    for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(InternalRole.getRole(requiredRoles[i]));
+    for (final String requiredRole : requiredRoles) {
+      requiredRolesSet.add(InternalRole.getRole(requiredRole));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 
@@ -1145,24 +1145,21 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     });
 
     // define the afterReleaseLocalLocks callback
-    SerializableRunnableIF removeRequiredRole = new SerializableRunnableIF() {
-      @Override
-      public void run() {
-        Host.getHost(0).getVM(1).invoke(new SerializableRunnable("Close Region") {
-          @Override
-          public void run() {
-            getRootRegion(name).close();
-          }
-        });
-        try {
-          synchronized (detectedDeparture_testCommitDistributionException) {
-            while (detectedDeparture_testCommitDistributionException[0] == Boolean.FALSE) {
-              detectedDeparture_testCommitDistributionException.wait();
-            }
-          }
-        } catch (InterruptedException e) {
-          fail("interrupted");
+    SerializableRunnableIF removeRequiredRole = () -> {
+      Host.getHost(0).getVM(1).invoke(new SerializableRunnable("Close Region") {
+        @Override
+        public void run() {
+          getRootRegion(name).close();
         }
+      });
+      try {
+        synchronized (detectedDeparture_testCommitDistributionException) {
+          while (detectedDeparture_testCommitDistributionException[0] == Boolean.FALSE) {
+            detectedDeparture_testCommitDistributionException.wait();
+          }
+        }
+      } catch (InterruptedException e) {
+        fail("interrupted");
       }
     };
 
@@ -1225,12 +1222,12 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
       return; // skip test under DistributedNoAck
     }
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final String roleA = name + "-A";
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
-    for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(InternalRole.getRole(requiredRoles[i]));
+    for (final String requiredRole : requiredRoles) {
+      requiredRolesSet.add(InternalRole.getRole(requiredRole));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 
@@ -1309,13 +1306,10 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
       }
     });
 
-    Runnable reset = new Runnable() {
-      @Override
-      public void run() {
-        // synchronized (detectedDeparture_testRegionDistributionException) {
-        // detectedDeparture_testRegionDistributionException[0] = Boolean.FALSE;
-        // }
-      }
+    Runnable reset = () -> {
+      // synchronized (detectedDeparture_testRegionDistributionException) {
+      // detectedDeparture_testRegionDistributionException[0] = Boolean.FALSE;
+      // }
     };
 
     // PUT
@@ -1391,12 +1385,12 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
   @Test
   public void testReinitialization() throws Exception {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final String roleA = name + "-A";
     final String[] requiredRoles = {roleA};
     Set requiredRolesSet = new HashSet();
-    for (int i = 0; i < requiredRoles.length; i++) {
-      requiredRolesSet.add(InternalRole.getRole(requiredRoles[i]));
+    for (final String requiredRole : requiredRoles) {
+      requiredRolesSet.add(InternalRole.getRole(requiredRole));
     }
     assertEquals(requiredRoles.length, requiredRolesSet.size());
 
@@ -1437,15 +1431,12 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
     });
 
     final Region finalRegion = region;
-    Thread thread = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          RequiredRoles.waitForRequiredRoles(finalRegion, -1);
-        } catch (InterruptedException e) {
-          fail("interrupted");
-        } catch (RegionReinitializedException e) {
-        }
+    Thread thread = new Thread(() -> {
+      try {
+        RequiredRoles.waitForRequiredRoles(finalRegion, -1);
+      } catch (InterruptedException e) {
+        fail("interrupted");
+      } catch (RegionReinitializedException ignored) {
       }
     });
     thread.start();

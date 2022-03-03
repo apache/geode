@@ -102,11 +102,11 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
 
   @Override
   public final void preTearDown() throws Exception {
-    client1.invoke(() -> HADuplicateDUnitTest.closeCache());
+    client1.invoke(HADuplicateDUnitTest::closeCache);
     // close server
-    server1.invoke(() -> HADuplicateDUnitTest.reSetQRMslow());
-    server1.invoke(() -> HADuplicateDUnitTest.closeCache());
-    server2.invoke(() -> HADuplicateDUnitTest.closeCache());
+    server1.invoke(HADuplicateDUnitTest::reSetQRMslow);
+    server1.invoke(HADuplicateDUnitTest::closeCache);
+    server2.invoke(HADuplicateDUnitTest::closeCache);
   }
 
   @Ignore("TODO")
@@ -148,7 +148,7 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
       }
     });
 
-    server1.invoke(() -> HADuplicateDUnitTest.reSetQRMslow());
+    server1.invoke(HADuplicateDUnitTest::reSetQRMslow);
   }
 
   @Test
@@ -204,13 +204,13 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
   // function to create 2servers and 1 clients
   private void createClientServerConfiguration() {
     int PORT1 =
-        ((Integer) server1.invoke(() -> HADuplicateDUnitTest.createServerCache())).intValue();
-    server1.invoke(() -> HADuplicateDUnitTest.setQRMslow());
+        server1.invoke(HADuplicateDUnitTest::createServerCache);
+    server1.invoke(HADuplicateDUnitTest::setQRMslow);
     int PORT2 =
-        ((Integer) server2.invoke(() -> HADuplicateDUnitTest.createServerCache())).intValue();
+        server2.invoke(HADuplicateDUnitTest::createServerCache);
     String hostname = NetworkUtils.getServerHostName(Host.getHost(0));
-    client1.invoke(() -> HADuplicateDUnitTest.createClientCache(hostname, new Integer(PORT1),
-        new Integer(PORT2)));
+    client1.invoke(() -> HADuplicateDUnitTest.createClientCache(hostname, PORT1,
+        PORT2));
 
   }
 
@@ -236,7 +236,7 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   private void createCache(Properties props) throws Exception {
@@ -250,8 +250,8 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
 
   public static void createClientCache(String hostName, Integer port1, Integer port2)
       throws Exception {
-    int PORT1 = port1.intValue();
-    int PORT2 = port2.intValue();
+    int PORT1 = port1;
+    int PORT2 = port2;
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");

@@ -40,13 +40,13 @@ public class ProcessStreamReader extends Thread {
   public ProcessStreamReader(final String command, final InputStream stream,
       final Consumer<String> consumer) {
     this.command = command;
-    this.reader = new BufferedReader(new InputStreamReader(stream));
+    reader = new BufferedReader(new InputStreamReader(stream));
     this.consumer = consumer;
   }
 
   @Override
   public void start() {
-    this.startStack = new RuntimeException(this.command);
+    startStack = new RuntimeException(command);
     super.start();
   }
 
@@ -54,20 +54,20 @@ public class ProcessStreamReader extends Thread {
   public void run() {
     try {
       String line;
-      while ((line = this.reader.readLine()) != null) {
-        this.lineCount++;
+      while ((line = reader.readLine()) != null) {
+        lineCount++;
         consumer.accept(line);
       }
 
       // EOF
-      this.reader.close();
+      reader.close();
     } catch (IOException streamClosed) {
-      this.streamClosedStack = streamClosed;
+      streamClosedStack = streamClosed;
     }
   }
 
   // a test can use this to check if stream was closed cleanly or by tear-down
   public IOException getStreamClosedStack() {
-    return this.streamClosedStack;
+    return streamClosedStack;
   }
 }

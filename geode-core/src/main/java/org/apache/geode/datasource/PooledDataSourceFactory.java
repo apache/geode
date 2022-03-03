@@ -52,6 +52,6 @@ public interface PooledDataSourceFactory {
    *        <p>
    * @return the created data source
    */
-  public DataSource createDataSource(Properties poolProperties, Properties dataSourceProperties);
+  DataSource createDataSource(Properties poolProperties, Properties dataSourceProperties);
 
 }

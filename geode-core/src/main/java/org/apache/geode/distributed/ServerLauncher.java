@@ -96,6 +96,7 @@ import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.UnableToControlProcessException;
 import org.apache.geode.internal.serialization.filter.SystemPropertyGlobalSerialFilterConfigurationFactory;
+import org.apache.geode.internal.serialization.filter.UnableToSetSerialFilterException;
 import org.apache.geode.lang.AttachAPINotFoundException;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -129,7 +130,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
         "A Geode launcher used to start, stop and determine a Server's status.");
     help.put(Command.START.getName(), String.format(
         "Starts a Server running in the current working directory listening on the default port (%s) bound to all IP addresses available to the localhost.  The Server must be given a member name in the Geode cluster.  The default server-bind-address and server-port may be overridden using the corresponding command-line options.",
-        String.valueOf(getDefaultServerPort())));
+        getDefaultServerPort()));
     help.put(Command.STATUS.getName(),
         "Displays the status of a Server given any combination of the member name/ID, PID, or the directory in which the Server is running.");
     help.put(Command.STOP.getName(),
@@ -161,7 +162,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
         "An option to specify the hostname or IP address to send to clients so they can connect to this Server. The default is to use the IP address to which the Server is bound.");
     help.put("server-port", String.format(
         "Specifies the port on which the Server is listening for client requests. Defaults to %s.",
-        String.valueOf(getDefaultServerPort())));
+        getDefaultServerPort()));
     helpMap = Collections.unmodifiableMap(help);
   }
 
@@ -789,10 +790,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     if (isStartable()) {
       INSTANCE.compareAndSet(null, this);
 
-      boolean serializationFilterConfigured =
-          new SystemPropertyGlobalSerialFilterConfigurationFactory()
-              .create(new DistributedSerializableObjectConfig(getDistributedSystemProperties()))
-              .configure();
+      boolean serializationFilterConfigured = configureGlobalSerialFilterIfEnabled();
 
       try {
         process = getControllableProcess();
@@ -889,6 +887,16 @@ public class ServerLauncher extends AbstractLauncher<String> {
     throw new IllegalStateException(
         String.format("A %s is already running in %s on %s.",
             getServiceName(), getWorkingDirectory(), getId()));
+  }
+
+  private boolean configureGlobalSerialFilterIfEnabled() {
+    try {
+      return new SystemPropertyGlobalSerialFilterConfigurationFactory()
+          .create(new DistributedSerializableObjectConfig(getDistributedSystemProperties()))
+          .configure();
+    } catch (UnableToSetSerialFilterException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   Cache createCache(Properties gemfireProperties) {

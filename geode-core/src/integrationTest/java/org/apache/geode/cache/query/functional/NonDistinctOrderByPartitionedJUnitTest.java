@@ -73,7 +73,7 @@ public class NonDistinctOrderByPartitionedJUnitTest extends NonDistinctOrderByTe
 
   @Test
   public void testOrderedResultsPartitionedRegion_Bug43514_1() throws Exception {
-    String queries[] = {
+    String[] queries = {
         // Test case No. IUMR021
         "select  * from " + SEPARATOR + "portfolio1 p order by status, ID desc",
         "select  * from " + SEPARATOR
@@ -124,7 +124,7 @@ public class NonDistinctOrderByPartitionedJUnitTest extends NonDistinctOrderByTe
             + "portfolio1 p, p.positions.values pos order by p.ID desc, pos.secId",
 
     };
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Position.resetCounter();
@@ -179,7 +179,7 @@ public class NonDistinctOrderByPartitionedJUnitTest extends NonDistinctOrderByTe
 
   @Test
   public void testOrderedResultsPartitionedRegion_Bug43514_2() throws Exception {
-    String queries[] = {
+    String[] queries = {
         // Test case No. IUMR021
         "select  status as st from " + SEPARATOR + "portfolio1 where ID > 0 order by status",
         "select  p.status as st from " + SEPARATOR
@@ -216,7 +216,7 @@ public class NonDistinctOrderByPartitionedJUnitTest extends NonDistinctOrderByTe
             + "portfolio1 p where p.ID > 0 and p.position1.secId != 'IBM' order by p.position1.secId"
 
     };
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Position.resetCounter();

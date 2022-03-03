@@ -62,7 +62,7 @@ public class VMThinLRURegionEntryHeapObjectKey extends VMThinLRURegionEntryHeap 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   protected Object getValueField() {
-    return this.value;
+    return value;
   }
 
   @Override
@@ -82,7 +82,7 @@ public class VMThinLRURegionEntryHeapObjectKey extends VMThinLRURegionEntryHeap 
 
   @Override
   public int getEntryHash() {
-    return this.hash;
+    return hash;
   }
 
   @Override
@@ -92,7 +92,7 @@ public class VMThinLRURegionEntryHeapObjectKey extends VMThinLRURegionEntryHeap 
 
   @Override
   public HashEntry<Object, Object> getNextEntry() {
-    return this.nextEntry;
+    return nextEntry;
   }
 
   @Override
@@ -169,7 +169,7 @@ public class VMThinLRURegionEntryHeapObjectKey extends VMThinLRURegionEntryHeap 
 
   @Override
   public EvictionNode next() {
-    return this.nextEvictionNode;
+    return nextEvictionNode;
   }
 
   @Override
@@ -179,12 +179,12 @@ public class VMThinLRURegionEntryHeapObjectKey extends VMThinLRURegionEntryHeap 
 
   @Override
   public EvictionNode previous() {
-    return this.previousEvictionNode;
+    return previousEvictionNode;
   }
 
   @Override
   public int getEntrySize() {
-    return this.size;
+    return size;
   }
 
   protected void setEntrySize(final int size) {
@@ -202,7 +202,7 @@ public class VMThinLRURegionEntryHeapObjectKey extends VMThinLRURegionEntryHeap 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   public Object getKey() {
-    return this.key;
+    return key;
   }
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
 }

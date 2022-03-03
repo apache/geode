@@ -44,12 +44,12 @@ public abstract class BaseManagementService extends ManagementService {
    */
   @MakeNotStatic
   protected static final Map<Object, BaseManagementService> instances =
-      new HashMap<Object, BaseManagementService>();
+      new HashMap<>();
 
   /** List of connected <code>DistributedSystem</code>s */
   @MakeNotStatic
   private static final List<InternalDistributedSystem> systems =
-      new ArrayList<InternalDistributedSystem>(1);
+      new ArrayList<>(1);
 
   /** Protected constructor. */
   protected BaseManagementService() {}
@@ -116,12 +116,7 @@ public abstract class BaseManagementService extends ManagementService {
       // Initialize our own list of distributed systems via a connect listener
       @SuppressWarnings("unchecked")
       List<InternalDistributedSystem> existingSystems = InternalDistributedSystem
-          .addConnectListener(new InternalDistributedSystem.ConnectListener() {
-            @Override
-            public void onConnect(InternalDistributedSystem sys) {
-              addInternalDistributedSystem(sys);
-            }
-          });
+          .addConnectListener(BaseManagementService::addInternalDistributedSystem);
 
       // While still holding the lock on systems, add all currently known
       // systems to our own list
@@ -168,7 +163,7 @@ public abstract class BaseManagementService extends ManagementService {
       systems.remove(sys);
       if (systems.isEmpty()) {
         for (Object key : instances.keySet()) {
-          BaseManagementService service = (BaseManagementService) instances.get(key);
+          BaseManagementService service = instances.get(key);
           try {
             if (!service.isClosed()) {
               // Service close method should take care of the cleaning up

@@ -38,7 +38,7 @@ public class BackupServiceTest {
 
   private DistributionManager distributionManager;
 
-  private InternalDistributedMember sender = new InternalDistributedMember("localhost", 5555);
+  private final InternalDistributedMember sender = new InternalDistributedMember("localhost", 5555);
 
   private InternalCache cache;
 

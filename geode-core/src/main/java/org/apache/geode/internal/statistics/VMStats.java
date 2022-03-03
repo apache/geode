@@ -56,22 +56,22 @@ public class VMStats implements VMStatsContract {
 
 
   public VMStats(StatisticsFactory f, long id) {
-    this.vmStats = f.createStatistics(vmType, "vmStats", id);
+    vmStats = f.createStatistics(vmType, "vmStats", id);
   }
 
   @Override
   public void refresh() {
     Runtime rt = Runtime.getRuntime();
-    this.vmStats.setInt(cpusId, rt.availableProcessors());
-    this.vmStats.setLong(freeMemoryId, rt.freeMemory());
-    this.vmStats.setLong(totalMemoryId, rt.totalMemory());
-    this.vmStats.setLong(maxMemoryId, rt.maxMemory());
+    vmStats.setInt(cpusId, rt.availableProcessors());
+    vmStats.setLong(freeMemoryId, rt.freeMemory());
+    vmStats.setLong(totalMemoryId, rt.totalMemory());
+    vmStats.setLong(maxMemoryId, rt.maxMemory());
 
   }
 
   @Override
   public void close() {
-    this.vmStats.close();
+    vmStats.close();
   }
 
   /*

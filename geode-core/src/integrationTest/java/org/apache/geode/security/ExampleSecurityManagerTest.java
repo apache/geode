@@ -50,51 +50,51 @@ public class ExampleSecurityManagerTest {
   @Before
   public void setUp() throws Exception {
     // resource file
-    this.jsonResource = "org/apache/geode/security/templates/security.json";
-    InputStream inputStream = ClassLoader.getSystemResourceAsStream(this.jsonResource);
+    jsonResource = "org/apache/geode/security/templates/security.json";
+    InputStream inputStream = ClassLoader.getSystemResourceAsStream(jsonResource);
 
     assertThat(inputStream).isNotNull();
 
     // non-resource file
-    this.jsonFile = new File(temporaryFolder.getRoot(), "security.json");
-    IOUtils.copy(inputStream, new FileOutputStream(this.jsonFile));
+    jsonFile = new File(temporaryFolder.getRoot(), "security.json");
+    IOUtils.copy(inputStream, new FileOutputStream(jsonFile));
 
     // string
-    this.json = FileUtils.readFileToString(this.jsonFile, "UTF-8");
-    this.exampleSecurityManager = new ExampleSecurityManager();
+    json = FileUtils.readFileToString(jsonFile, "UTF-8");
+    exampleSecurityManager = new ExampleSecurityManager();
   }
 
   @Test
   public void shouldDefaultToSecurityJsonInClasspathIfNullProperties() throws Exception {
-    this.exampleSecurityManager.init(null);
+    exampleSecurityManager.init(null);
     verifySecurityManagerState();
   }
 
   @Test
   public void shouldDefaultToSecurityJsonInClasspathIfEmptyProperties() throws Exception {
-    this.exampleSecurityManager.init(new Properties());
+    exampleSecurityManager.init(new Properties());
     verifySecurityManagerState();
   }
 
   @Test
   public void shouldInitializeFromJsonResource() throws Exception {
-    this.exampleSecurityManager.initializeFromJsonResource(this.jsonResource);
+    exampleSecurityManager.initializeFromJsonResource(jsonResource);
     verifySecurityManagerState();
   }
 
   @Test
   public void initShouldUsePropertyAsJsonResource() throws Exception {
     Properties securityProperties = new Properties();
-    securityProperties.setProperty(TestSecurityManager.SECURITY_JSON, this.jsonResource);
-    this.exampleSecurityManager.init(securityProperties);
+    securityProperties.setProperty(TestSecurityManager.SECURITY_JSON, jsonResource);
+    exampleSecurityManager.init(securityProperties);
     verifySecurityManagerState();
   }
 
   @Test
   public void userThatDoesNotExistInJson() throws Exception {
     Properties securityProperties = new Properties();
-    securityProperties.setProperty(TestSecurityManager.SECURITY_JSON, this.jsonResource);
-    this.exampleSecurityManager.init(securityProperties);
+    securityProperties.setProperty(TestSecurityManager.SECURITY_JSON, jsonResource);
+    exampleSecurityManager.init(securityProperties);
     ResourcePermission permission =
         new ResourcePermission(Resource.CLUSTER, Operation.MANAGE, Target.DISK);
     assertThat(exampleSecurityManager.authorize("diskWriter", permission)).isFalse();
@@ -103,21 +103,21 @@ public class ExampleSecurityManagerTest {
   @Test
   public void roleThatDoesNotExistInJson() throws Exception {
     Properties securityProperties = new Properties();
-    securityProperties.setProperty(TestSecurityManager.SECURITY_JSON, this.jsonResource);
-    this.exampleSecurityManager.init(securityProperties);
+    securityProperties.setProperty(TestSecurityManager.SECURITY_JSON, jsonResource);
+    exampleSecurityManager.init(securityProperties);
     ResourcePermission permission =
         new ResourcePermission(Resource.CLUSTER, Operation.MANAGE, Target.DISK);
     assertThat(exampleSecurityManager.authorize("phantom", permission)).isFalse();
   }
 
   private void verifySecurityManagerState() {
-    User adminUser = this.exampleSecurityManager.getUser("admin");
+    User adminUser = exampleSecurityManager.getUser("admin");
     assertThat(adminUser).isNotNull();
     assertThat(adminUser.getName()).isEqualTo("admin");
     assertThat(adminUser.getPassword()).isEqualTo("secret");
     assertThat(adminUser.getRoles()).hasSize(1);
 
-    User guestUser = this.exampleSecurityManager.getUser("guest");
+    User guestUser = exampleSecurityManager.getUser("guest");
     assertThat(guestUser).isNotNull();
     assertThat(guestUser.getName()).isEqualTo("guest");
     assertThat(guestUser.getPassword()).isEqualTo("guest");

@@ -70,7 +70,7 @@ public class MemberLevelDiskMonitorTest {
     SampleCollector sampleCollector = new SampleCollector(sampler);
     sampleCollector.initialize(mockStatArchiveHandlerConfig, NanoTimer.getTime(),
         new MainWithChildrenRollingFileHandler());
-    memberLevelDiskMonitor = spy(new MemberLevelDiskMonitor(this.testName.getMethodName()));
+    memberLevelDiskMonitor = spy(new MemberLevelDiskMonitor(testName.getMethodName()));
 
     assertThat(memberLevelDiskMonitor).isNotNull();
     assertThat(memberLevelDiskMonitor.getMonitors()).isEmpty();
@@ -235,7 +235,8 @@ public class MemberLevelDiskMonitorTest {
   public void decreaseDiskStoreStatsShouldNotThrowNPE() {
     Statistics statistics = mock(Statistics.class);
     memberLevelDiskMonitor.addStatisticsToMonitor(statistics);
-    memberLevelDiskMonitor.getListeners().values().forEach((l) -> l.decreaseDiskStoreStats());
+    memberLevelDiskMonitor.getListeners().values().forEach(
+        MemberLevelDiskMonitor.MemberLevelDiskStatisticsListener::decreaseDiskStoreStats);
 
   }
 }

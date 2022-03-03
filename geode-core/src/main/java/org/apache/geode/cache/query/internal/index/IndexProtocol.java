@@ -18,7 +18,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.NameResolutionException;
@@ -166,5 +165,5 @@ public interface IndexProtocol extends Index {
 
   boolean isMatchingWithIndexExpression(CompiledValue condnExpr, String condnExprStr,
       ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException;
+      throws TypeMismatchException, NameResolutionException;
 }

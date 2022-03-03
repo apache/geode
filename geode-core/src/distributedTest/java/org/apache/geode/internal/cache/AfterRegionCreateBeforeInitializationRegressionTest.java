@@ -41,7 +41,7 @@ import org.apache.geode.test.dunit.VM;
 
 public class AfterRegionCreateBeforeInitializationRegressionTest extends DistributedTestCase {
 
-  private static boolean[] flags = new boolean[2];
+  private static final boolean[] flags = new boolean[2];
   private static Cache cache = null;
   private static DistributedSystem ds = null;
   private static boolean isOK = false;
@@ -56,9 +56,9 @@ public class AfterRegionCreateBeforeInitializationRegressionTest extends Distrib
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(() -> createCacheAndPopulateRegion1());
-    vm1.invoke(() -> createCacheAndRegion2());
-    boolean pass = vm1.invoke(() -> testFlag());
+    vm0.invoke(this::createCacheAndPopulateRegion1);
+    vm1.invoke(this::createCacheAndRegion2);
+    boolean pass = vm1.invoke(this::testFlag);
     assertTrue("The test failed", pass);
 
   }

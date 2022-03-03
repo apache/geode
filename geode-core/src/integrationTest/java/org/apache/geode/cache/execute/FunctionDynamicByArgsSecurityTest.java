@@ -46,7 +46,7 @@ public class FunctionDynamicByArgsSecurityTest {
   public GfshCommandRule gfsh =
       new GfshCommandRule(server::getJmxPort, GfshCommandRule.PortType.jmxManager);
 
-  private static DynamicSecurityFunction function = new DynamicSecurityFunction();
+  private static final DynamicSecurityFunction function = new DynamicSecurityFunction();
 
   @BeforeClass
   public static void setupClass() {

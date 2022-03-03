@@ -79,7 +79,7 @@ public class DurableResponseMatrixDUnitTest extends JUnit4DistributedTestCase {
     final Host host = Host.getHost(0);
     server1 = host.getVM(0);
     // start servers first
-    PORT1 = ((Integer) server1.invoke(() -> DurableResponseMatrixDUnitTest.createServerCache()));
+    PORT1 = server1.invoke(DurableResponseMatrixDUnitTest::createServerCache);
     createCacheClient(NetworkUtils.getServerHostName(server1.getHost()));
     // Disconnecting the client can cause this
     IgnoredException.addIgnoredException("Connection reset||Unexpected IOException");
@@ -187,14 +187,10 @@ public class DurableResponseMatrixDUnitTest extends JUnit4DistributedTestCase {
       public boolean done() {
         Entry entry = r.getEntry(KEY);
         if (expected == null) {
-          if (!r.containsValueForKey(key)) {
-            return true; // success!
-          }
+          return !r.containsValueForKey(key); // success!
         } else {
           if (entry != null) {
-            if (expected.equals(entry.getValue())) {
-              return true;
-            }
+            return expected.equals(entry.getValue());
           }
         }
         return false;
@@ -427,7 +423,7 @@ public class DurableResponseMatrixDUnitTest extends JUnit4DistributedTestCase {
           getClientDistributedSystemProperties(durableClientId, durableClientTimeout);
       new DurableResponseMatrixDUnitTest().createCache(props);
       Pool p =
-          PoolManager.createFactory().addServer(host, PORT1.intValue()).setSubscriptionEnabled(true)
+          PoolManager.createFactory().addServer(host, PORT1).setSubscriptionEnabled(true)
               .setSubscriptionRedundancy(1).setReadTimeout(10000).setMinConnections(2)
               // .setRetryInterval(2000)
               .create("DurableResponseMatrixDUnitTestPool");
@@ -462,7 +458,7 @@ public class DurableResponseMatrixDUnitTest extends JUnit4DistributedTestCase {
     server1.setPort(port);
     server1.setNotifyBySubscription(true);
     server1.start();
-    return new Integer(server1.getPort());
+    return server1.getPort();
   }
 
   private Properties getClientDistributedSystemProperties(String durableClientId,
@@ -480,7 +476,7 @@ public class DurableResponseMatrixDUnitTest extends JUnit4DistributedTestCase {
     // close the clients first
     closeCache();
     // then close the servers
-    server1.invoke(() -> DurableResponseMatrixDUnitTest.closeCache());
+    server1.invoke(DurableResponseMatrixDUnitTest::closeCache);
   }
 
   public static void closeCache() {

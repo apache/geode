@@ -62,7 +62,7 @@ public class WaitUntilFlushedFunction implements InternalFunction<Object> {
     if (queue != null) {
       try {
         result = queue.waitUntilFlushed(timeout, unit);
-      } catch (InterruptedException e) {
+      } catch (InterruptedException ignored) {
       }
 
     } else {

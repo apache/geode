@@ -28,18 +28,18 @@ public class AsyncEventQueueMBeanBridge {
 
   private AsyncEventQueueImpl queueImpl;
 
-  private MBeanStatsMonitor monitor;
+  private final MBeanStatsMonitor monitor;
 
   private GatewaySenderOverflowMonitor overflowMonitor;
 
   private StatsRate lruEvictionsRate;
 
   public AsyncEventQueueMBeanBridge(AsyncEventQueue queue) {
-    this.queueImpl = (AsyncEventQueueImpl) queue;
-    this.monitor =
+    queueImpl = (AsyncEventQueueImpl) queue;
+    monitor =
         new MBeanStatsMonitor("AsyncEventQueueMXBeanMonitor");
 
-    this.overflowMonitor = new GatewaySenderOverflowMonitor("GatewaySenderMXBeanOverflowMonitor");
+    overflowMonitor = new GatewaySenderOverflowMonitor("GatewaySenderMXBeanOverflowMonitor");
 
     addAsyncEventQueueStats(queueImpl.getStatistics());
 
@@ -47,7 +47,7 @@ public class AsyncEventQueueMBeanBridge {
   }
 
   public AsyncEventQueueMBeanBridge() {
-    this.monitor =
+    monitor =
         new MBeanStatsMonitor("AsyncEventQueueMXBeanMonitor");
   }
 

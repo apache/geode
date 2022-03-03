@@ -44,7 +44,7 @@ public class JoinResponseMessage<ID extends MemberIdentifier> extends AbstractGM
   private byte[] secretPk;
 
   public JoinResponseMessage(ID memberID, GMSMembershipView<ID> view, int requestId) {
-    this.currentView = view;
+    currentView = view;
     this.memberID = memberID;
     this.requestId = requestId;
     setRecipient(memberID);
@@ -53,7 +53,7 @@ public class JoinResponseMessage<ID extends MemberIdentifier> extends AbstractGM
   public JoinResponseMessage(ID memberID, byte[] sPk, int requestId) {
     this.memberID = memberID;
     this.requestId = requestId;
-    this.secretPk = sPk;
+    secretPk = sPk;
     setRecipient(memberID);
   }
 
@@ -87,11 +87,11 @@ public class JoinResponseMessage<ID extends MemberIdentifier> extends AbstractGM
   }
 
   public byte[] getMessengerData() {
-    return this.messengerData;
+    return messengerData;
   }
 
   public void setMessengerData(byte[] data) {
-    this.messengerData = data;
+    messengerData = data;
   }
 
   @Override
@@ -176,10 +176,7 @@ public class JoinResponseMessage<ID extends MemberIdentifier> extends AbstractGM
     /*
      * if (requestId != other.requestId) return false;
      */
-    if (!Arrays.equals(secretPk, other.secretPk)) {
-      return false;
-    }
-    return true;
+    return Arrays.equals(secretPk, other.secretPk);
   }
 
 }

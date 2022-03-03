@@ -57,41 +57,38 @@ public class TransformUtils {
    */
   @Immutable
   public static final Transformer<PersistentMemberID, String> persistentMemberIdToLogEntryTransformer =
-      new Transformer<PersistentMemberID, String>() {
-        @Override
-        public String transform(PersistentMemberID memberId) {
-          StringBuilder builder = new StringBuilder();
+      memberId -> {
+        StringBuilder builder = new StringBuilder();
 
-          if (null != memberId) {
-            if (null != memberId.getDiskStoreId()) {
-              builder.append("\n  DiskStore ID: ");
-              builder.append(memberId.getDiskStoreId().toUUID().toString());
-            }
-
-            if (null != memberId.getName()) {
-              builder.append("\n  Name: ");
-              builder.append(memberId.getName());
-            }
-
-            if ((null != memberId.getHost()) && (null != memberId.getDirectory())) {
-              builder.append("\n  Location: ");
-            }
-
-            if (null != memberId.getHost()) {
-              builder.append("/");
-              builder.append(memberId.getHost().getHostAddress());
-              builder.append(":");
-            }
-
-            if (null != memberId.getDirectory()) {
-              builder.append(memberId.getDirectory());
-            }
-
-            builder.append("\n");
+        if (null != memberId) {
+          if (null != memberId.getDiskStoreId()) {
+            builder.append("\n  DiskStore ID: ");
+            builder.append(memberId.getDiskStoreId().toUUID().toString());
           }
 
-          return builder.toString();
+          if (null != memberId.getName()) {
+            builder.append("\n  Name: ");
+            builder.append(memberId.getName());
+          }
+
+          if ((null != memberId.getHost()) && (null != memberId.getDirectory())) {
+            builder.append("\n  Location: ");
+          }
+
+          if (null != memberId.getHost()) {
+            builder.append("/");
+            builder.append(memberId.getHost().getHostAddress());
+            builder.append(":");
+          }
+
+          if (null != memberId.getDirectory()) {
+            builder.append(memberId.getDirectory());
+          }
+
+          builder.append("\n");
         }
+
+        return builder.toString();
       };
 
   /**
@@ -132,7 +129,7 @@ public class TransformUtils {
    */
   public static <T1, T2> Map<T2, T1> transformAndMap(Collection<T1> from,
       Transformer<T1, T2> transformer) {
-    Map<T2, T1> map = new HashMap<T2, T1>();
+    Map<T2, T1> map = new HashMap<>();
     for (T1 instance : from) {
       map.put(transformer.transform(instance), instance);
     }

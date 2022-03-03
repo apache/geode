@@ -26,7 +26,7 @@ package org.apache.geode.cache;
  */
 public class RegionExistsException extends CacheException {
   private static final long serialVersionUID = -5643670216230359426L;
-  private transient Region region;
+  private final transient Region region;
 
   /**
    * Constructs an instance of <code>RegionExistsException</code> with the specified Region.
@@ -35,7 +35,7 @@ public class RegionExistsException extends CacheException {
    */
   public RegionExistsException(Region rgn) {
     super(rgn.getFullPath());
-    this.region = rgn;
+    region = rgn;
   }
 
   /**
@@ -47,7 +47,7 @@ public class RegionExistsException extends CacheException {
    */
   public RegionExistsException(Region rgn, Throwable cause) {
     super(rgn.getFullPath(), cause);
-    this.region = rgn;
+    region = rgn;
   }
 
   /**
@@ -57,6 +57,6 @@ public class RegionExistsException extends CacheException {
    *         {@link Throwable#getMessage } will return the pathFromRoot for the region that exists.
    */
   public Region getRegion() {
-    return this.region;
+    return region;
   }
 }

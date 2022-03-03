@@ -52,7 +52,7 @@ class ControlFileWatchdog implements Runnable {
     notNull(requestHandler, "Invalid requestHandler '" + requestHandler + "' specified");
 
     this.directory = directory;
-    this.file = new File(directory, fileName);
+    file = new File(directory, fileName);
     this.requestHandler = requestHandler;
     this.stopAfterRequest = stopAfterRequest;
   }
@@ -158,13 +158,12 @@ class ControlFileWatchdog implements Runnable {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-    sb.append('@').append(System.identityHashCode(this)).append('{');
-    sb.append("directory=").append(directory);
-    sb.append(", file=").append(file);
-    sb.append(", alive=").append(alive); // not synchronized
-    sb.append(", stopAfterRequest=").append(stopAfterRequest);
-    return sb.append('}').toString();
+    return getClass().getSimpleName() + '@' + System.identityHashCode(this) + '{'
+        + "directory=" + directory
+        + ", file=" + file
+        + ", alive=" + alive // not synchronized
+        + ", stopAfterRequest=" + stopAfterRequest
+        + '}';
   }
 
   private String createThreadName() {

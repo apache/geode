@@ -50,18 +50,18 @@ public class ConnectionPoolFactoryJUnitTest {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     props.setProperty(LOG_LEVEL, "info"); // to keep diskPerf logs smaller
-    this.ds = DistributedSystem.connect(props);
-    this.cache = CacheFactory.create(this.ds);
+    ds = DistributedSystem.connect(props);
+    cache = CacheFactory.create(ds);
   }
 
   @After
   public void tearDown() {
     try {
-      this.cache.close();
+      cache.close();
     } catch (Exception e) {
       // do nothing
     }
-    this.ds.disconnect();
+    ds.disconnect();
   }
 
   @Test
@@ -70,22 +70,22 @@ public class ConnectionPoolFactoryJUnitTest {
     try {
       cpf.addServer("localhost", 0);
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
     try {
       cpf.addServer("localhost", 65536);
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
     try {
       cpf.addLocator("localhost", 0);
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
     try {
       cpf.addLocator("localhost", 65536);
       fail("expected IllegalArgumentException");
-    } catch (IllegalArgumentException expected) {
+    } catch (IllegalArgumentException ignored) {
     }
     // Fix for #45348
     // try {
@@ -100,14 +100,14 @@ public class ConnectionPoolFactoryJUnitTest {
     try {
       cpf.addServer("localhost", 12345);
       fail("expected IllegalStateException");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
     cpf.reset();
     cpf.addServer("localhost", 12345);
     try {
       cpf.addLocator("localhost", 12345);
       fail("expected IllegalStateException");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
   }
 
@@ -119,7 +119,7 @@ public class ConnectionPoolFactoryJUnitTest {
     try {
       cpf.create("illegal");
       fail("expected IllegalStateException");
-    } catch (IllegalStateException expected) {
+    } catch (IllegalStateException ignored) {
     }
 
     cpf.addServer("localhost", 40907);

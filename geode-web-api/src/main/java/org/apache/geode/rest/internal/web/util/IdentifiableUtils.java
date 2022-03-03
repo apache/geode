@@ -16,6 +16,7 @@
 package org.apache.geode.rest.internal.web.util;
 
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.springframework.util.ClassUtils;
@@ -40,9 +41,9 @@ public abstract class IdentifiableUtils {
   }
 
   public static synchronized Long createId(final Long baseId) {
-    final long delta = ((baseId != null ? baseId.longValue() : 0l) - ID_SEQUENCE.get());
+    final long delta = ((baseId != null ? baseId : 0l) - ID_SEQUENCE.get());
     long newId = (delta > 0 ? ID_SEQUENCE.addAndGet(delta) : createId());
-    return Long.valueOf(newId);
+    return newId;
   }
 
   @SuppressWarnings("unchecked")
@@ -55,8 +56,8 @@ public abstract class IdentifiableUtils {
 
       try {
         return (T) method.invoke();
-      } catch (Exception ignore) {
-        ignore.printStackTrace();
+      } catch (Exception e) {
+        LOGGER.log(Level.SEVERE, "Invocation failure.", e);
       }
     }
 
@@ -68,7 +69,6 @@ public abstract class IdentifiableUtils {
         && ClassUtils.hasMethod(identifiableObject.getClass(), "getId"));
   }
 
-  @SuppressWarnings("unchecked")
   public static <T> void setId(final Object identifiableObject, final T id) {
 
     if (isSetIdMethodAvailable(identifiableObject, id)) {
@@ -76,7 +76,7 @@ public abstract class IdentifiableUtils {
 
       method.setTargetObject(identifiableObject);
       method.setTargetMethod("setId");
-      method.setArguments(new Object[] {id});
+      method.setArguments(id);
 
       try {
         method.prepare();

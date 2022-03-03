@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -85,9 +84,8 @@ public class QueryUtilsJUnitTest {
     RuntimeIterator expand = null;
     boolean set = false;
 
-    Iterator iter = list.iterator();
-    while (iter.hasNext()) {
-      CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
+    for (final Object o : list) {
+      CompiledIteratorDef iterDef = (CompiledIteratorDef) o;
       context.addDependencies(new CompiledID("dummy"), iterDef.computeDependencies(context));
       RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
       if (!set) {
@@ -103,8 +101,8 @@ public class QueryUtilsJUnitTest {
     finalList.add(indexToItrMappping[0]);
     finalList.add(expand);
     ResultsSet indexResult = new ResultsSet(new ObjectTypeImpl(Portfolio.class));
-    for (int i = 0; i < po.length; ++i) {
-      indexResult.add(po[i]);
+    for (final Portfolio portfolio : po) {
+      indexResult.add(portfolio);
     }
     List expandList = new LinkedList();
     expandList.add(expand);
@@ -145,13 +143,12 @@ public class QueryUtilsJUnitTest {
     ExecutionContext context = new ExecutionContext(null, CacheUtils.getCache());
     context.newScope(context.associateScopeID());
     RuntimeIterator[] indexToItrMappping = new RuntimeIterator[1];
-    RuntimeIterator expand[] = new RuntimeIterator[2];
+    RuntimeIterator[] expand = new RuntimeIterator[2];
     boolean set = false;
     int j = 0;
 
-    Iterator iter = list.iterator();
-    while (iter.hasNext()) {
-      CompiledIteratorDef iterDef = (CompiledIteratorDef) iter.next();
+    for (final Object o : list) {
+      CompiledIteratorDef iterDef = (CompiledIteratorDef) o;
       context.addDependencies(new CompiledID("dummy"), iterDef.computeDependencies(context));
       RuntimeIterator rIter = iterDef.getRuntimeIterator(context);
       if (!set) {
@@ -167,8 +164,8 @@ public class QueryUtilsJUnitTest {
     finalList.add(indexToItrMappping[0]);
 
     ResultsSet indexResult = new ResultsSet(new ObjectTypeImpl(Portfolio.class));
-    for (int i = 0; i < po.length; ++i) {
-      indexResult.add(po[i]);
+    for (final Portfolio portfolio : po) {
+      indexResult.add(portfolio);
     }
     List expandList = new LinkedList();
     expandList.add(expand[0]);

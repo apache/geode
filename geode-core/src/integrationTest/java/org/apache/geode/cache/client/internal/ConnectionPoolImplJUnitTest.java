@@ -122,7 +122,7 @@ public class ConnectionPoolImplJUnitTest {
     assertEquals(1, pool.getServers().size());
     assertEquals(0, pool.getLocators().size());
     {
-      InetSocketAddress addr = (InetSocketAddress) pool.getServers().get(0);
+      InetSocketAddress addr = pool.getServers().get(0);
       assertEquals(port, addr.getPort());
       assertEquals("localhost", addr.getHostName());
     }
@@ -148,7 +148,7 @@ public class ConnectionPoolImplJUnitTest {
     assertEquals(1, pool.getServers().size());
     assertEquals(0, pool.getLocators().size());
     {
-      InetSocketAddress addr = (InetSocketAddress) pool.getServers().get(0);
+      InetSocketAddress addr = pool.getServers().get(0);
       assertEquals(port, addr.getPort());
       assertEquals("localhost", addr.getHostName());
     }
@@ -212,11 +212,8 @@ public class ConnectionPoolImplJUnitTest {
     assertTrue("expected " + location1 + " or " + location2 + ", got " + usedServer,
         location1.equals(usedServer) || location2.equals(usedServer));
 
-    testOp = new Op() {
-      @Override
-      public Object attempt(Connection cnx) throws Exception {
-        throw new SocketTimeoutException();
-      }
+    testOp = cnx -> {
+      throw new SocketTimeoutException();
     };
 
     try {
@@ -243,12 +240,7 @@ public class ConnectionPoolImplJUnitTest {
 
     ServerLocation location1 = new ServerLocation("localhost", port1);
 
-    Op testOp = new Op() {
-      @Override
-      public Object attempt(Connection cnx) throws Exception {
-        return cnx.getServer();
-      }
-    };
+    Op testOp = Connection::getServer;
 
     assertEquals(location1, pool.executeOnPrimary(testOp));
     assertEquals(location1, pool.executeOnQueuesAndReturnPrimaryResult(testOp));

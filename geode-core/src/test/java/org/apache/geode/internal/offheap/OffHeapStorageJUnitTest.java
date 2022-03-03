@@ -27,7 +27,6 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 
 import org.apache.geode.OutOfOffHeapMemoryException;
 import org.apache.geode.StatisticsFactory;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -147,7 +146,7 @@ public class OffHeapStorageJUnitTest {
     StatisticsFactory statsFactory = mock(StatisticsFactory.class);
     try {
       OffHeapStorage.createOffHeapStorage(statsFactory, OffHeapStorage.MIN_SLAB_SIZE,
-          (DistributedSystem) null);
+          null);
     } catch (IllegalArgumentException expected) {
       expected.getMessage().equals("InternalDistributedSystem is null");
     }
@@ -291,7 +290,7 @@ public class OffHeapStorageJUnitTest {
     assertEquals(Integer.MAX_VALUE,
         OffHeapStorage.calcSlabCount(MSS, (MSS * Integer.MAX_VALUE) + MSS - 1));
     try {
-      OffHeapStorage.calcSlabCount(MSS, (((long) MSS) * Integer.MAX_VALUE) + MSS);
+      OffHeapStorage.calcSlabCount(MSS, (MSS * Integer.MAX_VALUE) + MSS);
       fail("Expected IllegalArgumentException");
     } catch (IllegalArgumentException expected) {
     }

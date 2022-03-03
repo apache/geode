@@ -37,7 +37,7 @@ public class GetPDXIdForEnumOp {
    */
   public static int execute(ExecutablePool pool, EnumInfo ei) {
     AbstractOp op = new GetPDXIdForEnumOpImpl(ei);
-    return ((Integer) pool.execute(op)).intValue();
+    return (Integer) pool.execute(op);
   }
 
   private GetPDXIdForEnumOp() {
@@ -58,7 +58,7 @@ public class GetPDXIdForEnumOp {
       Part part = msg.getPart(0);
       final int msgType = msg.getMessageType();
       if (msgType == MessageType.RESPONSE) {
-        return Integer.valueOf(part.getInt());
+        return part.getInt();
       } else {
         if (msgType == MessageType.EXCEPTION) {
           String s = "While performing a remote " + "getPdxIdForEnum";

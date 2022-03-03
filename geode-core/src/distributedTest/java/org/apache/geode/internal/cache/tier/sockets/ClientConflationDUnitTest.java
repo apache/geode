@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static java.lang.Thread.yield;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.CONFLATE_EVENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.DELTA_PROPAGATION;
@@ -27,7 +26,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.Iterator;
 import java.util.Properties;
 
 import org.junit.Test;
@@ -89,8 +87,8 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
     vm0 = host.getVM(0);
     vm1 = host.getVM(1);
     setIsSlowStart();
-    vm0.invoke(() -> ClientConflationDUnitTest.setIsSlowStart());
-    PORT = ((Integer) vm0.invoke(() -> ClientConflationDUnitTest.createServerCache())).intValue();
+    vm0.invoke(ClientConflationDUnitTest::setIsSlowStart);
+    PORT = vm0.invoke(ClientConflationDUnitTest::createServerCache);
   }
 
   private Cache createCache(Properties props) throws Exception {
@@ -139,20 +137,20 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private void performSteps(String conflation) throws Exception {
-    createClientCacheFeeder(NetworkUtils.getServerHostName(Host.getHost(0)), new Integer(PORT));
+    createClientCacheFeeder(NetworkUtils.getServerHostName(Host.getHost(0)), PORT);
     vm1.invoke(() -> ClientConflationDUnitTest.createClientCache(
-        NetworkUtils.getServerHostName(vm1.getHost()), new Integer(PORT), conflation));
-    vm1.invoke(() -> ClientConflationDUnitTest.setClientServerObserverForBeforeInterestRecovery());
-    vm1.invoke(() -> ClientConflationDUnitTest.setAllCountersZero());
-    vm1.invoke(() -> ClientConflationDUnitTest.assertAllCountersZero());
-    vm1.invoke(() -> ClientConflationDUnitTest.registerInterest());
+        NetworkUtils.getServerHostName(vm1.getHost()), PORT, conflation));
+    vm1.invoke(ClientConflationDUnitTest::setClientServerObserverForBeforeInterestRecovery);
+    vm1.invoke(ClientConflationDUnitTest::setAllCountersZero);
+    vm1.invoke(ClientConflationDUnitTest::assertAllCountersZero);
+    vm1.invoke(ClientConflationDUnitTest::registerInterest);
     putEntries();
-    vm0.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
+    vm0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
     Thread.sleep(20000);
-    vm0.invoke(() -> ClientConflationDUnitTest.assertAllQueuesEmpty());
+    vm0.invoke(ClientConflationDUnitTest::assertAllQueuesEmpty);
 
     vm1.invoke(() -> ClientConflationDUnitTest.assertCounterSizes(conflation));
-    vm1.invoke(() -> ClientConflationDUnitTest.assertValue());
+    vm1.invoke(ClientConflationDUnitTest::assertValue);
   }
 
   /**
@@ -170,7 +168,7 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
 
   private static void createPool2(String host, AttributesFactory factory, Integer port) {
     PoolFactory pf = PoolManager.createFactory();
-    pf.addServer(host, port.intValue()).setSubscriptionEnabled(true).setReadTimeout(10000)
+    pf.addServer(host, port).setSubscriptionEnabled(true).setReadTimeout(10000)
         .setSocketBufferSize(32768).setPingInterval(1000).setMinConnections(3)
         .setSubscriptionRedundancy(-1);
     Pool pool = pf.create("superpoolish" + (poolNameCounter++));
@@ -291,12 +289,11 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
    * Assert all queues are empty to aid later assertion for listener event counts.
    */
   public static void assertAllQueuesEmpty() {
-    Iterator servers = cacheServer.getCacheServers().iterator();
-    while (servers.hasNext()) {
-      Iterator proxies = ((CacheServerImpl) servers.next()).getAcceptor().getCacheClientNotifier()
-          .getClientProxies().iterator();
-      while (proxies.hasNext()) {
-        int qsize = ((CacheClientProxy) proxies.next()).getQueueSize();
+    for (final CacheServer server : cacheServer.getCacheServers()) {
+      for (final CacheClientProxy cacheClientProxy : ((CacheServerImpl) server).getAcceptor()
+          .getCacheClientNotifier()
+          .getClientProxies()) {
+        int qsize = cacheClientProxy.getQueueSize();
         assertTrue("Queue size expected to be zero but is " + qsize, qsize == 0);
       }
     }
@@ -327,7 +324,7 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
     WaitCriterion ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        yield(); // TODO is this necessary?
+        Thread.yield(); // TODO is this necessary?
         return counterCreate1 == create1;
       }
 
@@ -342,7 +339,7 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
     ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        yield(); // TODO is this necessary?
+        Thread.yield(); // TODO is this necessary?
         return counterUpdate1 == u1;
       }
 
@@ -356,7 +353,7 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
     ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        yield(); // TODO is this necessary?
+        Thread.yield(); // TODO is this necessary?
         return counterCreate2 == create2;
       }
 
@@ -371,7 +368,7 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
     ev = new WaitCriterion() {
       @Override
       public boolean done() {
-        yield(); // TODO is this necessary?
+        Thread.yield(); // TODO is this necessary?
         return counterUpdate2 == u2;
       }
 
@@ -423,7 +420,7 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
     server.setNotifyBySubscription(true);
     server.setSocketBufferSize(32768);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   /**
@@ -525,8 +522,8 @@ public class ClientConflationDUnitTest extends JUnit4DistributedTestCase {
   public final void preTearDown() throws Exception {
     // close client
     closeCacheFeeder();
-    vm1.invoke(() -> ClientConflationDUnitTest.closeCacheClient());
+    vm1.invoke(ClientConflationDUnitTest::closeCacheClient);
     // close server
-    vm0.invoke(() -> ClientConflationDUnitTest.closeCacheServer());
+    vm0.invoke(ClientConflationDUnitTest::closeCacheServer);
   }
 }

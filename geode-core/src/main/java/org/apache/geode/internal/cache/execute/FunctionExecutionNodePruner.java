@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.execute;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -78,7 +77,7 @@ public class FunctionExecutionNodePruner {
           }
         }
       }
-    } catch (NoSuchElementException e) {
+    } catch (NoSuchElementException ignored) {
     }
     if (isDebugEnabled) {
       logger.debug("FunctionExecutionNodePruner: The node to buckets map is: {}", nodeToBucketsMap);
@@ -181,26 +180,25 @@ public class FunctionExecutionNodePruner {
       final boolean primaryMembersNeeded, final boolean hasRoutingObjects,
       final boolean isBucketSetAsFilter) {
     HashMap bucketToKeysMap = new HashMap();
-    Iterator i = routingKeys.iterator();
 
-    while (i.hasNext()) {
+    for (final Object routingKey : routingKeys) {
       final Integer bucketId;
-      Object key = i.next();
+      Object key = routingKey;
       if (isBucketSetAsFilter) {
         bucketId = ((Integer) key);
       } else {
         if (hasRoutingObjects) {
-          bucketId = Integer.valueOf(PartitionedRegionHelper.getHashKey(pr, key));
+          bucketId = PartitionedRegionHelper.getHashKey(pr, key);
         } else {
-          bucketId = Integer.valueOf(PartitionedRegionHelper.getHashKey(pr,
-              Operation.FUNCTION_EXECUTION, key, null, null));
+          bucketId = PartitionedRegionHelper.getHashKey(pr,
+              Operation.FUNCTION_EXECUTION, key, null, null);
         }
       }
       InternalDistributedMember mem = null;
       if (primaryMembersNeeded) {
-        mem = pr.getOrCreateNodeForBucketWrite(bucketId.intValue(), null);
+        mem = pr.getOrCreateNodeForBucketWrite(bucketId, null);
       } else {
-        mem = pr.getOrCreateNodeForBucketRead(bucketId.intValue());
+        mem = pr.getOrCreateNodeForBucketRead(bucketId);
       }
       if (mem == null) {
         throw new FunctionException(
@@ -227,10 +225,10 @@ public class FunctionExecutionNodePruner {
         bucketId = (Integer) key;
       } else {
         if (hasRoutingObjects) {
-          bucketId = Integer.valueOf(PartitionedRegionHelper.getHashKey(pr, key));
+          bucketId = PartitionedRegionHelper.getHashKey(pr, key);
         } else {
-          bucketId = Integer.valueOf(PartitionedRegionHelper.getHashKey(pr,
-              Operation.FUNCTION_EXECUTION, key, null, null));
+          bucketId = PartitionedRegionHelper.getHashKey(pr,
+              Operation.FUNCTION_EXECUTION, key, null, null);
         }
       }
       if (bucketArray == null) {
@@ -258,7 +256,7 @@ public class FunctionExecutionNodePruner {
           BucketSetHelper.add(bucketArray, bucketId);
 
         }
-      } catch (NoSuchElementException done) {
+      } catch (NoSuchElementException ignored) {
       }
       return memberToBucketsMap;
     } else {

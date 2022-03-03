@@ -65,11 +65,11 @@ public class TestNewFunctionSSorRSIntegrationTest {
       // CacheUtils.log(new Portfolio(i));
     }
 
-    Object r[][] = new Object[2][2];
+    Object[][] r = new Object[2][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
 
-    String queries[] =
+    String[] queries =
         {"SELECT DISTINCT * from " + SEPARATOR
             + "portfolios pf , pf.positions.values pos where status = 'inactive'",
             "select distinct * from " + SEPARATOR + "portfolios where ID > 1 ",

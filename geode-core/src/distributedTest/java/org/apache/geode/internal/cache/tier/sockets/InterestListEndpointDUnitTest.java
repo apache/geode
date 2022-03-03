@@ -110,8 +110,8 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
 
     // then create client
     Wait.pause(5000); // [bruce] avoid ConnectException
-    client1.invoke(() -> impl.createClientCache(NetworkUtils.getServerHostName(server1.getHost()),
-        new Integer(PORT1), new Integer(PORT2)));
+    client1.invoke(() -> createClientCache(NetworkUtils.getServerHostName(server1.getHost()),
+        PORT1, PORT2));
   }
 
   /** subclass support */
@@ -132,14 +132,14 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testDirectPutOnServer() {
-    client1.invoke(() -> impl.createEntriesK1andK2());
-    server1.invoke(() -> impl.createEntriesK1andK2());
-    server2.invoke(() -> impl.createEntriesK1andK2());
+    client1.invoke(InterestListEndpointDUnitTest::createEntriesK1andK2);
+    server1.invoke(InterestListEndpointDUnitTest::createEntriesK1andK2);
+    server2.invoke(InterestListEndpointDUnitTest::createEntriesK1andK2);
 
-    client1.invoke(() -> impl.registerKey1());
+    client1.invoke(InterestListEndpointDUnitTest::registerKey1);
     // directly put on server
-    server1.invoke(() -> impl.put());
-    client1.invoke(() -> impl.verifyPut());
+    server1.invoke(InterestListEndpointDUnitTest::put);
+    client1.invoke(InterestListEndpointDUnitTest::verifyPut);
   }
 
   /**
@@ -148,30 +148,30 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testInterestListEndpoint() {
-    client1.invoke(() -> createEntriesK1andK2());
-    server2.invoke(() -> createEntriesK1andK2()); // server
-    server1.invoke(() -> createEntriesK1andK2()); // server
+    client1.invoke(InterestListEndpointDUnitTest::createEntriesK1andK2);
+    server2.invoke(InterestListEndpointDUnitTest::createEntriesK1andK2); // server
+    server1.invoke(InterestListEndpointDUnitTest::createEntriesK1andK2); // server
 
-    client1.invoke(() -> registerKey1());
+    client1.invoke(InterestListEndpointDUnitTest::registerKey1);
 
-    server1.invoke(() -> verifyIfNotInterestListEndpointAndThenPut());
-    server2.invoke(() -> verifyIfNotInterestListEndpointAndThenPut());
-    client1.invoke(() -> verifyPut());
+    server1.invoke(InterestListEndpointDUnitTest::verifyIfNotInterestListEndpointAndThenPut);
+    server2.invoke(InterestListEndpointDUnitTest::verifyIfNotInterestListEndpointAndThenPut);
+    client1.invoke(InterestListEndpointDUnitTest::verifyPut);
   }
 
   @Test
   public void testInterestListEndpointAfterFailover() throws Exception {
     final long maxWaitTime = 20000;
-    client1.invoke(() -> createEntriesK1andK2());
-    server2.invoke(() -> createEntriesK1andK2());
-    server1.invoke(() -> createEntriesK1andK2());
+    client1.invoke(InterestListEndpointDUnitTest::createEntriesK1andK2);
+    server2.invoke(InterestListEndpointDUnitTest::createEntriesK1andK2);
+    server1.invoke(InterestListEndpointDUnitTest::createEntriesK1andK2);
 
-    client1.invoke(() -> registerKey1());
+    client1.invoke(InterestListEndpointDUnitTest::registerKey1);
 
     boolean firstIsPrimary = isVm0Primary();
     VM primary = firstIsPrimary ? server1 : server2;
 
-    primary.invoke(() -> stopILEndpointServer());
+    primary.invoke(InterestListEndpointDUnitTest::stopILEndpointServer);
     Wait.pause(5000);
 
     // Since the loadbalancing policy is roundrobin & there are two servers so
@@ -190,13 +190,13 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
         try {
           r.put("ping", "pong1"); // Used in the case where we don't have a LiveServerMonitorThread
 
-        } catch (CacheWriterException itsOK) {
+        } catch (CacheWriterException ignored) {
         }
 
         try {
           r.put("ping", "pong2"); // Used in the case where we don't have a LiveServerMonitorThread
 
-        } catch (CacheWriterException itsOK) {
+        } catch (CacheWriterException ignored) {
         }
 
         WaitCriterion ev = new WaitCriterion() {
@@ -215,13 +215,13 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
     });
 
     // put on stopped server
-    primary.invoke(() -> put());
-    client1.invoke(() -> verifyPut());
+    primary.invoke(InterestListEndpointDUnitTest::put);
+    client1.invoke(InterestListEndpointDUnitTest::verifyPut);
   }
 
 
   public boolean isVm0Primary() throws Exception {
-    int port = ((Integer) client1.invoke(() -> impl.getPrimaryPort())).intValue();
+    int port = client1.invoke(InterestListEndpointDUnitTest::getPrimaryPort);
     return port == PORT1;
   }
 
@@ -238,9 +238,9 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void testUpdaterThreadIsAliveForFailedEndPoint() {
-    client1.invoke(() -> acquirePoolConnection());
-    client1.invoke(() -> processException());
-    client1.invoke(() -> verifyUpdaterThreadIsAlive());
+    client1.invoke(InterestListEndpointDUnitTest::acquirePoolConnection);
+    client1.invoke(InterestListEndpointDUnitTest::processException);
+    client1.invoke(InterestListEndpointDUnitTest::verifyUpdaterThreadIsAlive);
   }
 
   public static void acquirePoolConnection() {
@@ -326,8 +326,8 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
     new InterestListEndpointDUnitTest().createCache(props);
     Pool p;
     try {
-      p = PoolManager.createFactory().addServer(host, port1.intValue())
-          .addServer(host, port2.intValue()).setSubscriptionEnabled(true)
+      p = PoolManager.createFactory().addServer(host, port1)
+          .addServer(host, port2).setSubscriptionEnabled(true)
           .setSubscriptionRedundancy(-1).setMinConnections(6).setSocketBufferSize(32768)
           .setReadTimeout(2000)
           // .setRetryInterval(1000)
@@ -350,9 +350,8 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private int initServerCache(VM server) {
-    Object[] args = new Object[] {new Integer(getMaxThreads())};
-    return ((Integer) server.invoke(InterestListEndpointDUnitTest.class, "createServerCache", args))
-        .intValue();
+    Object[] args = new Object[] {getMaxThreads()};
+    return (Integer) server.invoke(InterestListEndpointDUnitTest.class, "createServerCache", args);
   }
 
   public static Integer createServerCache(Integer maxThreads) throws Exception {
@@ -362,10 +361,10 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
     CacheServer server1 = cache.addCacheServer();
     int port = getRandomAvailableTCPPort();
     server1.setPort(port);
-    server1.setMaxThreads(maxThreads.intValue());
+    server1.setMaxThreads(maxThreads);
     server1.setNotifyBySubscription(true);
     server1.start();
-    return new Integer(server1.getPort());
+    return server1.getPort();
   }
 
   protected RegionAttributes createServerCacheAttributes() {
@@ -440,11 +439,8 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
             return false;
           }
           Object v2 = e2.getValue();
-          if (!client_k2.equals(v2)) {
-            return false;
-          }
+          return client_k2.equals(v2);
           // our state is ready for the assertions
-          return true;
         }
 
         @Override
@@ -489,9 +485,9 @@ public class InterestListEndpointDUnitTest extends JUnit4DistributedTestCase {
   @Override
   public final void preTearDown() throws Exception {
     // Close client cache first, then server caches
-    client1.invoke(() -> impl.closeCache());
-    server2.invoke(() -> impl.closeCache());
-    server1.invoke(() -> impl.closeCache());
+    client1.invoke(InterestListEndpointDUnitTest::closeCache);
+    server2.invoke(InterestListEndpointDUnitTest::closeCache);
+    server1.invoke(InterestListEndpointDUnitTest::closeCache);
     CacheServerTestUtil.resetDisableShufflingOfEndpointsFlag();
     cache = null;
     Invoke.invokeInEveryVM(new SerializableRunnable() {

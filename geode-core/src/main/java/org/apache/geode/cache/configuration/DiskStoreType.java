@@ -129,7 +129,7 @@ public class DiskStoreType extends CacheElement {
    *
    */
   public void setName(String value) {
-    this.name = value;
+    name = value;
   }
 
   /**
@@ -151,7 +151,7 @@ public class DiskStoreType extends CacheElement {
    *
    */
   public void setAutoCompact(Boolean value) {
-    this.autoCompact = value;
+    autoCompact = value;
   }
 
   /**
@@ -173,7 +173,7 @@ public class DiskStoreType extends CacheElement {
    *
    */
   public void setCompactionThreshold(String value) {
-    this.compactionThreshold = value;
+    compactionThreshold = value;
   }
 
   /**
@@ -195,7 +195,7 @@ public class DiskStoreType extends CacheElement {
    *
    */
   public void setAllowForceCompaction(Boolean value) {
-    this.allowForceCompaction = value;
+    allowForceCompaction = value;
   }
 
   /**
@@ -217,7 +217,7 @@ public class DiskStoreType extends CacheElement {
    *
    */
   public void setMaxOplogSize(String value) {
-    this.maxOplogSize = value;
+    maxOplogSize = value;
   }
 
   /**
@@ -239,7 +239,7 @@ public class DiskStoreType extends CacheElement {
    *
    */
   public void setTimeInterval(String value) {
-    this.timeInterval = value;
+    timeInterval = value;
   }
 
   /**
@@ -261,7 +261,7 @@ public class DiskStoreType extends CacheElement {
    *
    */
   public void setWriteBufferSize(String value) {
-    this.writeBufferSize = value;
+    writeBufferSize = value;
   }
 
   /**
@@ -283,7 +283,7 @@ public class DiskStoreType extends CacheElement {
    *
    */
   public void setQueueSize(String value) {
-    this.queueSize = value;
+    queueSize = value;
   }
 
   /**
@@ -305,7 +305,7 @@ public class DiskStoreType extends CacheElement {
    *
    */
   public void setDiskUsageWarningPercentage(String value) {
-    this.diskUsageWarningPercentage = value;
+    diskUsageWarningPercentage = value;
   }
 
   /**
@@ -327,7 +327,7 @@ public class DiskStoreType extends CacheElement {
    *
    */
   public void setDiskUsageCriticalPercentage(String value) {
-    this.diskUsageCriticalPercentage = value;
+    diskUsageCriticalPercentage = value;
   }
 
 }

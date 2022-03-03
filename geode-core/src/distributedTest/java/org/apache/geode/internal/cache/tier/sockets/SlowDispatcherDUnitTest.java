@@ -29,14 +29,17 @@ import org.junit.Test;
 
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.InterestResultPolicy;
+import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionEvent;
+import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.internal.Endpoint;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.security.UpdatableUserAuthInitialize;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.rules.ClientVM;
@@ -63,14 +66,21 @@ public class SlowDispatcherDUnitTest {
     locator = cluster.startLocatorVM(0);
     int locatorPort = locator.getPort();
     SerializableFunction<ServerStarterRule> serverStartRule =
-        s -> s.withRegion(RegionShortcut.PARTITION, PARTITION_REGION)
-            .withSystemProperty("slowStartTimeForTesting", "10000")
+        s -> s.withSystemProperty("slowStartTimeForTesting", "10000")
             .withConnectionToLocator(locatorPort);
     server1 = cluster.startServerVM(1, serverStartRule);
     server2 = cluster.startServerVM(2, serverStartRule);
 
     MemberVM.invokeInEveryMember(() -> {
       CacheClientProxy.isSlowStartForTesting = true;
+      InternalCache cache = ClusterStartupRule.getCache();
+      RegionFactory<Object, Object> regionFactory =
+          cache.createRegionFactory(RegionShortcut.PARTITION);
+
+      PartitionAttributesFactory pfact = new PartitionAttributesFactory();
+      pfact.setRedundantCopies(1);
+      regionFactory.setPartitionAttributes(pfact.create());
+      regionFactory.create(PARTITION_REGION);
     }, server1, server2);
   }
 
@@ -85,7 +95,7 @@ public class SlowDispatcherDUnitTest {
     ClientVM clientVM = cluster.startClientVM(3,
         c -> c.withProperty(DURABLE_CLIENT_ID, "123456")
             .withCacheSetup(
-                a -> a.setPoolSubscriptionRedundancy(2).setPoolSubscriptionEnabled(true)
+                a -> a.setPoolSubscriptionRedundancy(1).setPoolSubscriptionEnabled(true)
                     .setPoolMinConnections(2))
             .withServerConnection(server1Port, server2Port));
 

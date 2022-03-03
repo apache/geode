@@ -39,8 +39,8 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 public class ManagementAdapterTest {
 
   private InternalCache cache;
-  private DiskStoreImpl diskStore = mock(DiskStoreImpl.class);
-  private AtomicBoolean raceConditionFound = new AtomicBoolean(false);
+  private final DiskStoreImpl diskStore = mock(DiskStoreImpl.class);
+  private final AtomicBoolean raceConditionFound = new AtomicBoolean(false);
 
   @Rule
   public ServerStarterRule serverRule =

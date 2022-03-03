@@ -81,6 +81,6 @@ public class DistributedPingMessage extends HighPriorityDistributionMessage {
 
   @VisibleForTesting
   protected ClientProxyMembershipID getProxyID() {
-    return this.proxyID;
+    return proxyID;
   }
 }

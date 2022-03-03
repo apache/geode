@@ -33,7 +33,6 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.pdx.internal.EnumInfo;
 import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.TypeRegistry;
@@ -55,7 +54,7 @@ public class PdxTypeExportDUnitTest extends JUnit4CacheTestCase {
     Region r = getCache().getRegion("pdxtest");
     r.get(1);
 
-    TypeRegistry tr = ((GemFireCacheImpl) getCache()).getPdxRegistry();
+    TypeRegistry tr = getCache().getPdxRegistry();
     Collection<PdxType> types = tr.typeMap().values();
     assertEquals(MyObjectPdx.class.getName(), types.iterator().next().getClassName());
 

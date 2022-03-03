@@ -34,10 +34,10 @@ public class LocalThread implements Serializable, ThreadReference {
   private final String threadStack;
 
   public LocalThread(Serializable locatility, ThreadInfo info) {
-    this.locality = locatility;
-    this.threadName = info.getThreadName();
-    this.threadStack = generateThreadStack(info);
-    this.threadId = info.getThreadId();
+    locality = locatility;
+    threadName = info.getThreadName();
+    threadStack = generateThreadStack(info);
+    threadId = info.getThreadId();
   }
 
   private String generateThreadStack(ThreadInfo info) {
@@ -92,7 +92,7 @@ public class LocalThread implements Serializable, ThreadReference {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + (int) (threadId ^ (threadId >>> 32));;
+    result = prime * result + (int) (threadId ^ (threadId >>> 32));
     result = prime * result + ((locality == null) ? 0 : locality.hashCode());
     return result;
   }
@@ -113,13 +113,9 @@ public class LocalThread implements Serializable, ThreadReference {
       return false;
     }
     if (locality == null) {
-      if (other.locality != null) {
-        return false;
-      }
-    } else if (!locality.equals(other.locality)) {
-      return false;
-    }
-    return true;
+      return other.locality == null;
+    } else
+      return locality.equals(other.locality);
   }
 
   @Override

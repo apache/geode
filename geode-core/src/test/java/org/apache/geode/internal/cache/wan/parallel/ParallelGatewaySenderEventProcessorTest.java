@@ -32,8 +32,8 @@ import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 public class ParallelGatewaySenderEventProcessorTest {
 
-  private AbstractGatewaySender sender = mock(AbstractGatewaySender.class);
-  private ParallelGatewaySenderQueue queue = mock(ParallelGatewaySenderQueue.class);
+  private final AbstractGatewaySender sender = mock(AbstractGatewaySender.class);
+  private final ParallelGatewaySenderQueue queue = mock(ParallelGatewaySenderQueue.class);
 
   @Before
   public void setup() {

@@ -82,7 +82,7 @@ public class AdminConfig {
     return (Entry[]) entryList.toArray(new Entry[0]);
   }
 
-  public static void storeConfig(File file, AdminConfig.Entry entries[]) throws IOException {
+  public static void storeConfig(File file, AdminConfig.Entry[] entries) throws IOException {
     FileOutputStream fos = null;
     PrintStream ps = null;
     try {
@@ -99,8 +99,8 @@ public class AdminConfig {
       ps.println("# Name, Type, Host, Port");
       ps.println("#");
       int len = entries.length;
-      for (int i = 0; i < len; i++) {
-        ps.println(entries[i].toString());
+      for (final Entry entry : entries) {
+        ps.println(entry.toString());
       }
       ps.flush();
     } finally {
@@ -122,7 +122,7 @@ public class AdminConfig {
 
     public Entry(String line) {
       // Split
-      String split[] = line.split(",");
+      String[] split = line.split(",");
 
       // Convert line to parameters
       name = split[0].trim();

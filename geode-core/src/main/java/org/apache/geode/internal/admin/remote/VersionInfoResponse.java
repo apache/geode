@@ -49,7 +49,7 @@ public class VersionInfoResponse extends AdminResponse {
   }
 
   public String getVersionInfo() {
-    return this.verInfo;
+    return verInfo;
   }
 
   @Override
@@ -61,18 +61,18 @@ public class VersionInfoResponse extends AdminResponse {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeString(this.verInfo, out);
+    DataSerializer.writeString(verInfo, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.verInfo = DataSerializer.readString(in);
+    verInfo = DataSerializer.readString(in);
   }
 
   @Override
   public String toString() {
-    return "VersionInfoResponse from " + this.getSender();
+    return "VersionInfoResponse from " + getSender();
   }
 }

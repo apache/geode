@@ -37,21 +37,21 @@ import org.apache.geode.test.dunit.WaitCriterion;
  */
 public class DiskRegionOverflowAsyncRollingOpLogJUnitTest extends DiskRegionTestingBase {
 
-  private static int counter = 0;
+  private static final int counter = 0;
 
-  private static int ENTRY_SIZE = 1024;
+  private static final int ENTRY_SIZE = 1024;
 
   private volatile boolean afterHavingCompacted = false;
 
   private LogWriter log = null;
 
-  private DiskRegionProperties diskProps = new DiskRegionProperties();
+  private final DiskRegionProperties diskProps = new DiskRegionProperties();
 
   @Override
   protected final void postSetUp() throws Exception {
     diskProps.setRegionName("OverflowAsyncRollingOpLogRegion");
     diskProps.setDiskDirs(dirs);
-    this.log = ds.getLogWriter();
+    log = ds.getLogWriter();
     diskProps.setTimeInterval(1000l);
     diskProps.setBytesThreshold(10000l);
     diskProps.setRolling(true);

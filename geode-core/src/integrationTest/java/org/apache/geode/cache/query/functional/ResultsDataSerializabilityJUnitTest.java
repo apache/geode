@@ -87,8 +87,7 @@ public class ResultsDataSerializabilityJUnitTest {
         CollectionTypeImpl.class, MapTypeImpl.class, ObjectTypeImpl.class, StructTypeImpl.class,};
 
     List list = new ArrayList();
-    for (int i = 0; i < classes.length; i++) {
-      Class nextClass = classes[i];
+    for (Class nextClass : classes) {
       if (!DataSerializable.class.isAssignableFrom(nextClass)) {
         if (!DataSerializableFixedID.class.isAssignableFrom(nextClass)) {
           list.add(nextClass.getName());
@@ -124,7 +123,7 @@ public class ResultsDataSerializabilityJUnitTest {
     out.close();
 
     DataInputStream in = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
-    SelectResults res2 = (SelectResults) DataSerializer.readObject(in);
+    SelectResults res2 = DataSerializer.readObject(in);
     in.close();
 
     assertEquals(res2.size(), res1.size());

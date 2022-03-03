@@ -29,7 +29,7 @@ public class TestData {
   }
 
   public static Set<Integer> createAndPopulateSet(int nBuckets) {
-    return new HashSet<Integer>(IntStream.range(0, nBuckets).boxed().collect(Collectors.toSet()));
+    return new HashSet<>(IntStream.range(0, nBuckets).boxed().collect(Collectors.toSet()));
   }
 
   public static class MyValue implements Serializable, Comparable<MyValue> {
@@ -41,9 +41,9 @@ public class TestData {
 
     @Override
     public int compareTo(MyValue o) {
-      if (this.value > o.value) {
+      if (value > o.value) {
         return 1;
-      } else if (this.value < o.value) {
+      } else if (value < o.value) {
         return -1;
       } else {
         return 0;

@@ -74,7 +74,7 @@ class FileProcessController implements ProcessController {
 
     this.pid = pid;
     this.parameters = parameters;
-    this.statusTimeoutMillis = units.toMillis(timeout);
+    statusTimeoutMillis = units.toMillis(timeout);
   }
 
   @Override

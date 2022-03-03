@@ -27,8 +27,8 @@ import org.apache.geode.internal.cache.partitioned.rebalance.model.PartitionedRe
  */
 public class FPRDirector extends RebalanceDirectorAdapter {
 
-  private boolean initialSatisfyRedundancy;
-  private boolean initialMovePrimaries;
+  private final boolean initialSatisfyRedundancy;
+  private final boolean initialMovePrimaries;
 
   private boolean satisfyRedundancy;
   private boolean movePrimaries;
@@ -46,10 +46,10 @@ public class FPRDirector extends RebalanceDirectorAdapter {
   @Override
   public void initialize(PartitionedRegionLoadModel model) {
     this.model = model;
-    this.satisfyRedundancy = initialSatisfyRedundancy;
-    this.movePrimaries = initialMovePrimaries;
-    this.satisfyRedundancyDirector.initialize(model);
-    this.movePrimariesDirector.initialize(model);
+    satisfyRedundancy = initialSatisfyRedundancy;
+    movePrimaries = initialMovePrimaries;
+    satisfyRedundancyDirector.initialize(model);
+    movePrimariesDirector.initialize(model);
   }
 
   @Override
@@ -60,11 +60,11 @@ public class FPRDirector extends RebalanceDirectorAdapter {
   @Override
   public boolean nextStep() {
 
-    if (this.satisfyRedundancy) {
+    if (satisfyRedundancy) {
       satisfyRedundancyDirector.nextStep();
     }
 
-    if (this.movePrimaries) {
+    if (movePrimaries) {
       movePrimariesDirector.nextStep();
     }
 

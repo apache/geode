@@ -19,7 +19,7 @@
 
 // DataBrowser.js
 
-var clusterRegionsList = new Array();
+var clusterRegionsList = [];
 var eventsAdded = false;
 
 var labelType, useGradients, nativeTextSupport, animate;
@@ -220,8 +220,8 @@ function showColocatedRegions(){
   $("#membersList").html("");
   
   var selectedRegionFullPath = $("#selectedRegion").val();
-  var regionsmembers = new Array();
-  var colocatedRegions = new Array();
+  var regionsmembers = [];
+  var colocatedRegions = [];
   
   // Determine selected region's members
   for(var i=0; i<clusterRegionsList.length; i++){
@@ -288,7 +288,7 @@ function applyFilterOnRegions() {
   var filterText = "";
   filterText = $('#filterTextRegion').val().toLowerCase();
   
-  var filteredRegionsListNew = new Array();
+  var filteredRegionsListNew = [];
 
   if (!isEmpty(filterText)) {
     // Determine filtered regions
@@ -345,7 +345,7 @@ function zTreeOnCheck(event, treeId, treeNode) {
   
   var treeObj = $.fn.zTree.getZTreeObj(regionsTreeElementName);
   var selectedNodes = treeObj.getCheckedNodes(true);
-  var selectedRegions = new Array();
+  var selectedRegions = [];
   
   // If only one region is selected then activate colocated regions link else 
   // deactivate link
@@ -372,7 +372,7 @@ function zTreeOnCheck(event, treeId, treeNode) {
   console.log(selectedRegions);
   
   // make intersection of selected regions members
-  var commonMembers = new Array();
+  var commonMembers = [];
   if(selectedRegions.length == 1){
     for(var i=0; i<clusterRegionsList.length; i++){
       if(clusterRegionsList[i].fullPath == selectedRegions[0]){
@@ -410,7 +410,7 @@ function zTreeOnCheck(event, treeId, treeNode) {
   
   $('.ScrollPaneBlock').jScrollPane();
   
-};
+}
 
 // Function to get full path of treeNode
 function getRegionFullPathFromTreeNode(treeNode, path){
@@ -425,7 +425,7 @@ function getRegionFullPathFromTreeNode(treeNode, path){
 
 // function which returns common elements of two arrays
 function arrayIntersection(A, B) {
-  var result = new Array();
+  var result = [];
   for ( var i = 0; i < A.length; i++) {
     for ( var j = 0; j < B.length; j++) {
       if (A[i].id == B[j].id && $.inArray(A[i], result) == -1) {
@@ -495,10 +495,10 @@ $(function()
 function formRegionTreeData(clusterRegions){
   
   if(clusterRegions.length == 0){
-    return new Array();
+    return [];
   }
   
-  var zTreeNodes = new Array();
+  var zTreeNodes = [];
   
   //console.log("clusterRegions B4 Sorting"); console.log(clusterRegions);
   // Sort regions based on full path
@@ -512,7 +512,7 @@ function formRegionTreeData(clusterRegions){
     obj["open"] = false;
     obj["isParent"] = true;
     //obj["click"] = "displayMembersByRegionsSelected('"+clusterRegions[i].name.substring(clusterRegions[i].name.indexOf("/") + 1)+"');",
-    obj["children"] = new Array(); 
+    obj["children"] = [];
     
     //console.log("object formed:");
     //console.log(obj);

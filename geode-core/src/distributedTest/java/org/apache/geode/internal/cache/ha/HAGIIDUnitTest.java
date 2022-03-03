@@ -98,15 +98,15 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
     client0 = host.getVM(2);
 
     // start server1
-    int PORT1 = ((Integer) server0.invoke(() -> HAGIIDUnitTest.createServer1Cache())).intValue();
+    int PORT1 = server0.invoke(HAGIIDUnitTest::createServer1Cache);
     server0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart());
-    server0.invoke(() -> HAGIIDUnitTest.setSystemProperty());
+    server0.invoke(HAGIIDUnitTest::setSystemProperty);
 
 
     PORT2 = getRandomAvailableTCPPort();
     // Start the client
     client0.invoke(() -> HAGIIDUnitTest.createClientCache(NetworkUtils.getServerHostName(host),
-        new Integer(PORT1), new Integer(PORT2)));
+        PORT1, PORT2));
     client0.invoke(() -> checker.resetUpdateCounter());
   }
 
@@ -114,18 +114,18 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
   public void testGIIRegionQueue() {
     try (IgnoredException ignoredException =
         IgnoredException.addIgnoredException(ConnectException.class)) {
-      client0.invoke(() -> HAGIIDUnitTest.createEntries());
-      client0.invoke(() -> HAGIIDUnitTest.registerInterestList());
-      server0.invoke(() -> HAGIIDUnitTest.put());
+      client0.invoke(HAGIIDUnitTest::createEntries);
+      client0.invoke(HAGIIDUnitTest::registerInterestList);
+      server0.invoke(HAGIIDUnitTest::put);
 
-      server0.invoke(() -> HAGIIDUnitTest.tombstonegc());
+      server0.invoke(HAGIIDUnitTest::tombstonegc);
 
-      client0.invoke(() -> HAGIIDUnitTest.verifyEntries());
-      server1.invoke(HAGIIDUnitTest.class, "createServer2Cache", new Object[] {new Integer(PORT2)});
+      client0.invoke(HAGIIDUnitTest::verifyEntries);
+      server1.invoke(HAGIIDUnitTest.class, "createServer2Cache", new Object[] {PORT2});
       Wait.pause(6000);
-      server0.invoke(() -> HAGIIDUnitTest.stopServer());
+      server0.invoke(HAGIIDUnitTest::stopServer);
       // pause(10000);
-      client0.invoke(() -> HAGIIDUnitTest.verifyEntriesAfterGiiViaListener());
+      client0.invoke(HAGIIDUnitTest::verifyEntriesAfterGiiViaListener);
     }
   }
 
@@ -139,8 +139,8 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void createClientCache(String host, Integer port1, Integer port2) throws Exception {
-    int PORT1 = port1.intValue();
-    int PORT2 = port2.intValue();
+    int PORT1 = port1;
+    int PORT2 = port2;
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
@@ -166,7 +166,7 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
     server1.setPort(port);
     server1.setNotifyBySubscription(true);
     server1.start();
-    return new Integer(server1.getPort());
+    return server1.getPort();
   }
 
   public static void createServer2Cache(Integer port) throws Exception {
@@ -177,7 +177,7 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
     CacheServer server1 = cache.addCacheServer();
-    server1.setPort(port.intValue());
+    server1.setPort(port);
     server1.setNotifyBySubscription(true);
     server1.start();
   }
@@ -427,10 +427,10 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
     ConflationDUnitTestHelper.unsetIsSlowStart();
     Invoke.invokeInEveryVM(ConflationDUnitTestHelper.class, "unsetIsSlowStart");
     // close the clients first
-    client0.invoke(() -> HAGIIDUnitTest.closeCache());
+    client0.invoke(HAGIIDUnitTest::closeCache);
     // then close the servers
-    server0.invoke(() -> HAGIIDUnitTest.closeCache());
-    server1.invoke(() -> HAGIIDUnitTest.closeCache());
+    server0.invoke(HAGIIDUnitTest::closeCache);
+    server1.invoke(HAGIIDUnitTest::closeCache);
   }
 
   public static void closeCache() {
@@ -450,26 +450,26 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
     @Override
     public void afterUpdate(EntryEvent event) {
 
-      this.updates++;
+      updates++;
 
       String key = (String) event.getKey();
       String value = (String) event.getNewValue();
 
       if (key.equals("key-1") && value.equals("value-1")) {
-        this.gotFirst = true;
+        gotFirst = true;
       }
 
       if (key.equals("key-2") && value.equals("value-2")) {
-        this.gotSecond = true;
+        gotSecond = true;
       }
 
       if (key.equals("key-3") && value.equals("value-3")) {
-        this.gotThird = true;
+        gotThird = true;
       }
     }
 
     public int getUpdates() {
-      return this.updates;
+      return updates;
     }
 
     public void resetUpdateCounter() {
@@ -477,15 +477,15 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
     }
 
     public boolean gotFirst() {
-      return this.gotFirst;
+      return gotFirst;
     }
 
     public boolean gotSecond() {
-      return this.gotSecond;
+      return gotSecond;
     }
 
     public boolean gotThird() {
-      return this.gotThird;
+      return gotThird;
     }
   }
 }

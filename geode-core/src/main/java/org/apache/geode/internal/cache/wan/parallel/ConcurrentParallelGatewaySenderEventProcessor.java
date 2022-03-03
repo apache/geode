@@ -167,7 +167,7 @@ public class ConcurrentParallelGatewaySenderEventProcessor
     ParallelGatewaySenderQueue pgsq = (ParallelGatewaySenderQueue) cpgsq.getQueueByBucket(bucketId);
     boolean isPrimary = prQ.getRegionAdvisor().getBucketAdvisor(bucketId).isPrimary();
     if (isPrimary) {
-      pgsq.sendQueueRemovalMesssageForDroppedEvent(prQ, bucketId, shadowKey);
+      pgsq.sendQueueRemovalMessageForDroppedEvent(prQ, bucketId, shadowKey);
       sender.getStatistics().incEventsDroppedDueToPrimarySenderNotRunning();
       if (logger.isDebugEnabled()) {
         logger.debug("register dropped event for primary queue. BucketId is " + bucketId

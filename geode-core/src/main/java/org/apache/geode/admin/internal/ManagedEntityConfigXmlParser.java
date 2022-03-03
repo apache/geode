@@ -46,7 +46,7 @@ public class ManagedEntityConfigXmlParser extends ManagedEntityConfigXml impleme
   private DistributedSystemConfig config;
 
   /** The stack of intermediate values used while parsing */
-  private Stack stack = new Stack();
+  private final Stack stack = new Stack();
 
   ////////////////////// Static Methods //////////////////////
 
@@ -232,15 +232,15 @@ public class ManagedEntityConfigXmlParser extends ManagedEntityConfigXml impleme
 
     String id = atts.getValue(ID);
     if (id != null) {
-      this.config.setSystemId(id);
+      config.setSystemId(id);
     }
 
     String disable_tcp = atts.getValue(DISABLE_TCP);
     if (disable_tcp != null) {
-      this.config.setDisableTcp(DISABLE_TCP.equalsIgnoreCase("true"));
+      config.setDisableTcp(DISABLE_TCP.equalsIgnoreCase("true"));
     }
 
-    stack.push(this.config);
+    stack.push(config);
   }
 
   /**
@@ -365,7 +365,7 @@ public class ManagedEntityConfigXmlParser extends ManagedEntityConfigXml impleme
     config.setSSLEnabled(true);
 
     String authenticationRequired = atts.getValue(AUTHENTICATION_REQUIRED);
-    config.setSSLAuthenticationRequired(Boolean.valueOf(authenticationRequired).booleanValue());
+    config.setSSLAuthenticationRequired(Boolean.parseBoolean(authenticationRequired));
   }
 
   private void endSSL() {
@@ -447,8 +447,8 @@ public class ManagedEntityConfigXmlParser extends ManagedEntityConfigXml impleme
   private String popString() {
     Object o = stack.pop();
 
-    if (o instanceof StringBuffer) {
-      StringBuffer sb = (StringBuffer) o;
+    if (o instanceof StringBuilder) {
+      StringBuilder sb = (StringBuilder) o;
       return sb.toString();
 
     } else {
@@ -458,19 +458,19 @@ public class ManagedEntityConfigXmlParser extends ManagedEntityConfigXml impleme
 
   /**
    * Long strings in XML files may generate multiple <code>characters</code> callbacks. Coalesce
-   * multiple callbacks into one big string by using a <code>StringBuffer</code>. See bug 32122.
+   * multiple callbacks into one big string by using a <code>StringBuilder</code>. See bug 32122.
    */
   @Override
   public void characters(char[] ch, int start, int length) throws SAXException {
 
     Object top = stack.peek();
 
-    StringBuffer sb;
-    if (top instanceof StringBuffer) {
-      sb = (StringBuffer) top;
+    StringBuilder sb;
+    if (top instanceof StringBuilder) {
+      sb = (StringBuilder) top;
 
     } else {
-      sb = new StringBuffer();
+      sb = new StringBuilder();
       stack.push(sb);
     }
 
@@ -514,7 +514,7 @@ public class ManagedEntityConfigXmlParser extends ManagedEntityConfigXml impleme
     /**
      * The <code>ManagedEntityConfigXmlParser</code> that does the real work
      */
-    private ManagedEntityConfigXmlParser handler;
+    private final ManagedEntityConfigXmlParser handler;
 
     /**
      * Creates a new <code>DefaultHandlerDelegate</code> that delegates to the given

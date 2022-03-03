@@ -119,7 +119,7 @@ public class BasicDistributedTest extends DistributedTestCase {
 
   @Test
   public void testRemoteInvocationWithException() {
-    Throwable thrown = catchThrowable(() -> vm0.invoke(() -> remoteThrowException()));
+    Throwable thrown = catchThrowable(() -> vm0.invoke(BasicDistributedTest::remoteThrowException));
 
     assertThat(thrown, instanceOf(RMIException.class));
     assertThat(thrown.getCause(), notNullValue());
@@ -163,12 +163,12 @@ public class BasicDistributedTest extends DistributedTestCase {
 
   @Test
   public void testRemoteInvokeAsyncWithException() throws Exception {
-    AsyncInvocation<?> async = vm0.invokeAsync(() -> remoteThrowException()).join();
+    AsyncInvocation<?> async = vm0.invokeAsync(BasicDistributedTest::remoteThrowException).join();
 
     assertThat(async.exceptionOccurred(), is(true));
     assertThat(async.getException(), instanceOf(BasicTestException.class));
 
-    Throwable thrown = catchThrowable(() -> async.checkException());
+    Throwable thrown = catchThrowable(async::checkException);
 
     assertThat(thrown, instanceOf(AssertionError.class));
     assertThat(thrown.getCause(), notNullValue());
@@ -179,8 +179,9 @@ public class BasicDistributedTest extends DistributedTestCase {
   @Test
   public void testInvokeNamedRunnableLambdaAsync() throws Exception {
     Throwable thrown =
-        catchThrowable(() -> vm0.invokeAsync("throwSomething", () -> throwException()).join()
-            .checkException());
+        catchThrowable(
+            () -> vm0.invokeAsync("throwSomething", BasicDistributedTest::throwException).join()
+                .checkException());
 
     assertThat(thrown, notNullValue());
     assertThat(thrown.getCause(), notNullValue());
@@ -189,7 +190,8 @@ public class BasicDistributedTest extends DistributedTestCase {
 
   @Test
   public void testInvokeNamedRunnableLambda() {
-    Throwable thrown = catchThrowable(() -> vm0.invoke("throwSomething", () -> throwException()));
+    Throwable thrown = catchThrowable(() -> vm0.invoke("throwSomething",
+        BasicDistributedTest::throwException));
 
     assertThat(thrown, notNullValue());
     assertThat(thrown.getCause(), notNullValue());

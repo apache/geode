@@ -129,7 +129,7 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisInte
 
   @Test
   public void tcpPort_returnsExposedTCPPort() {
-    assertThat(Integer.valueOf(getInfo(jedis).get(TCP_PORT))).isEqualTo(this.getExposedPort());
+    assertThat(Integer.valueOf(getInfo(jedis).get(TCP_PORT))).isEqualTo(getExposedPort());
   }
 
   @Test

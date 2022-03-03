@@ -35,7 +35,7 @@ import javax.net.ssl.X509ExtendedKeyManager;
 
 public abstract class CustomKeyManagerFactory extends KeyManagerFactorySpi {
 
-  private final Logger logger = Logger.getLogger(this.getClass().getName());
+  private final Logger logger = Logger.getLogger(getClass().getName());
 
   private final String algorithm;
   private final String keyStorePath;
@@ -72,8 +72,8 @@ public abstract class CustomKeyManagerFactory extends KeyManagerFactorySpi {
     try (FileInputStream fileInputStream = new FileInputStream(keyStorePath)) {
       KeyStore keyStore = KeyStore.getInstance(SSL_KEYSTORE_TYPE);
       keyStore.load(fileInputStream, SSL_KEYSTORE_PASSWORD.toCharArray());
-      this.customKeyManagerFactory = KeyManagerFactory.getInstance(this.algorithm, "SunJSSE");
-      this.customKeyManagerFactory.init(keyStore, SSL_KEYSTORE_PASSWORD.toCharArray());
+      customKeyManagerFactory = KeyManagerFactory.getInstance(algorithm, "SunJSSE");
+      customKeyManagerFactory.init(keyStore, SSL_KEYSTORE_PASSWORD.toCharArray());
     } catch (NoSuchAlgorithmException | IOException | CertificateException
         | UnrecoverableKeyException | KeyStoreException | NoSuchProviderException e) {
       throw new UndeclaredThrowableException(e);
@@ -81,16 +81,16 @@ public abstract class CustomKeyManagerFactory extends KeyManagerFactorySpi {
   }
 
   private X509ExtendedKeyManager getCustomKeyManager() {
-    if (this.customKeyManager == null) {
-      for (KeyManager candidate : this.customKeyManagerFactory.getKeyManagers()) {
+    if (customKeyManager == null) {
+      for (KeyManager candidate : customKeyManagerFactory.getKeyManagers()) {
         if (candidate instanceof X509ExtendedKeyManager) {
-          this.logger.info("Adding System Key Manager");
-          this.customKeyManager = (X509ExtendedKeyManager) candidate;
+          logger.info("Adding System Key Manager");
+          customKeyManager = (X509ExtendedKeyManager) candidate;
           break;
         }
       }
     }
-    return this.customKeyManager;
+    return customKeyManager;
   }
 
   public static final class PKIXFactory extends CustomKeyManagerFactory {

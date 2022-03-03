@@ -342,10 +342,10 @@ public class OrderStatisticsTree<E extends Comparable<? super E>>
 
     Set<?> otherSet = (Set<?>) o;
 
-    if (this.size != otherSet.size()) {
+    if (size != otherSet.size()) {
       return false;
     }
-    return this.containsAll(otherSet);
+    return containsAll(otherSet);
   }
 
   @Override

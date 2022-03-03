@@ -20,7 +20,7 @@ import java.net.URI;
 import javax.tools.SimpleJavaFileObject;
 
 public class SimpleSourceFile extends SimpleJavaFileObject {
-  private String content;
+  private final String content;
 
   public SimpleSourceFile(String qualifiedClassName, String testSource) {
     super(URI.create(String.format("file://%s%s", qualifiedClassName.replaceAll("\\.", "/"),

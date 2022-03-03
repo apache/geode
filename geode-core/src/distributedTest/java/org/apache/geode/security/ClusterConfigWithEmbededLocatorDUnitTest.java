@@ -33,7 +33,7 @@ public class ClusterConfigWithEmbededLocatorDUnitTest extends JUnit4DistributedT
   @Before
   public void before() throws Exception {
     final Host host = Host.getHost(0);
-    this.locator = host.getVM(0);
+    locator = host.getVM(0);
   }
 
   @Test
@@ -42,7 +42,7 @@ public class ClusterConfigWithEmbededLocatorDUnitTest extends JUnit4DistributedT
 
     // locator started this way won't have cluster configuration running
     locator.invoke(() -> {
-      new CacheFactory().set("name", this.getName() + ".server1").set("mcast-port", "0")
+      new CacheFactory().set("name", getName() + ".server1").set("mcast-port", "0")
           .set("log-level", "config").set("start-locator", "localhost[" + locatorPort + "]")
           .create();
     });
@@ -52,7 +52,7 @@ public class ClusterConfigWithEmbededLocatorDUnitTest extends JUnit4DistributedT
     // since DM.getAllHostedLocatorsWithSharedConfiguration() will return an empty list. This would
     // execute without error
 
-    new CacheFactory().set("name", this.getName() + ".server2").set("mcast-port", "0")
+    new CacheFactory().set("name", getName() + ".server2").set("mcast-port", "0")
         .set("log-level", "config").set("locators", "localhost[" + locatorPort + "]").create();
   }
 }

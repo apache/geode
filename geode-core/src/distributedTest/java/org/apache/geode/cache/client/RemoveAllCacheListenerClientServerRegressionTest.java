@@ -247,7 +247,7 @@ public class RemoveAllCacheListenerClientServerRegressionTest extends Distribute
   private void setupGemFireCacheServer(RegionShortcut shortcut, boolean concChecks) {
     serverVM = Host.getHost(0).getVM(0);
     serverPort.set(AvailablePortHelper.getRandomAvailableTCPPort());
-    String serverName = this.getClass().getSimpleName() + "_server";
+    String serverName = getClass().getSimpleName() + "_server";
     serverVM.invoke(new SerializableRunnable() {
       @Override
       public void run() {
@@ -267,8 +267,8 @@ public class RemoveAllCacheListenerClientServerRegressionTest extends Distribute
           cacheServer.setMaxConnections(10);
           cacheServer.start();
           assertTrue("Cache Server is not running!", cacheServer.isRunning());
-        } catch (UnknownHostException ignore) {
-          throw new RuntimeException(ignore);
+        } catch (UnknownHostException e) {
+          throw new RuntimeException(e);
         } catch (IOException e) {
           throw new RuntimeException("Failed to start cache server " + serverName + " on port "
               + serverPort.get() + ": " + e.getStackTrace());
@@ -333,7 +333,7 @@ public class RemoveAllCacheListenerClientServerRegressionTest extends Distribute
       aRegion.put("key2", "value2");
       aRegion.put("key3", "value3");
 
-      Set<String> removeAllSet = new HashSet<String>();
+      Set<String> removeAllSet = new HashSet<>();
       removeAllSet.add("key1");
       removeAllSet.add("key2");
       removeAllSet.add(NON_EXISTENT_KEY);

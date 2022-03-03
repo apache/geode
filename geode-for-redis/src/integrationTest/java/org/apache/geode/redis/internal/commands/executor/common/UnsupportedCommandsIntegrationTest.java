@@ -15,7 +15,6 @@
 
 package org.apache.geode.redis.internal.commands.executor.common;
 
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_UNKNOWN_COMMAND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -73,14 +72,11 @@ public class UnsupportedCommandsIntegrationTest {
     assertThat(RedisCommandType.UNLINK.isUnsupported()).isTrue();
     server.setEnableUnsupportedCommands(false);
 
-    final String KEY = "key";
-    final String NEW_VALUE = "changed value";
-    final String EXPECTED_ERROR_MSG =
-        String.format(ERROR_UNKNOWN_COMMAND, "UNLINK", "`" + KEY + "`", NEW_VALUE);
-    jedis.set(KEY, "value");
+    final String key = "key";
+    // The trailing comma and space at the end of the message is necessary to match Redis' message
+    final String expectedErrorMsg =
+        "ERR unknown command `UNLINK`, with args beginning with: `" + key + "`, ";
 
-    assertThatThrownBy(
-        () -> jedis.unlink(KEY))
-            .hasMessageContaining(EXPECTED_ERROR_MSG);
+    assertThatThrownBy(() -> jedis.unlink(key)).hasMessage(expectedErrorMsg);
   }
 }

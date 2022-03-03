@@ -41,7 +41,7 @@ public class SecurityTestUtils {
   public static ExpirableSecurityManager collectSecurityManagers(MemberVM... vms) {
     List<ExpirableSecurityManager> results = new ArrayList<>();
     for (MemberVM vm : vms) {
-      results.add(vm.invoke(() -> getSecurityManager()));
+      results.add(vm.invoke(SecurityTestUtils::getSecurityManager));
     }
 
     ExpirableSecurityManager consolidated = new ExpirableSecurityManager();
@@ -70,7 +70,7 @@ public class SecurityTestUtils {
   }
 
   public static class EventsCqListner implements CqListener {
-    private List<String> keys = new ArrayList<>();
+    private final List<String> keys = new ArrayList<>();
 
     @Override
     public void onEvent(CqEvent aCqEvent) {

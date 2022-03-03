@@ -31,7 +31,7 @@ public class MyGatewaySenderEventListener implements AsyncEventListener, Seriali
   private final Map eventsMap;
 
   public MyGatewaySenderEventListener() {
-    this.eventsMap = new HashMap();
+    eventsMap = new HashMap();
   }
 
   /**
@@ -41,7 +41,7 @@ public class MyGatewaySenderEventListener implements AsyncEventListener, Seriali
   public boolean processEvents(List<AsyncEvent> events) {
     synchronized (eventsMap) {
       for (AsyncEvent event : events) {
-        this.eventsMap.put(event.getKey(), event.getDeserializedValue());
+        eventsMap.put(event.getKey(), event.getDeserializedValue());
       }
     }
     return true;
@@ -51,11 +51,11 @@ public class MyGatewaySenderEventListener implements AsyncEventListener, Seriali
   public void close() {}
 
   public Map getEventsMap() {
-    return this.eventsMap;
+    return eventsMap;
   }
 
   public void printMap() {
-    System.out.println("Printing Map " + this.eventsMap);
+    System.out.println("Printing Map " + eventsMap);
   }
 
   @Override
@@ -67,7 +67,7 @@ public class MyGatewaySenderEventListener implements AsyncEventListener, Seriali
       return false;
     }
     MyGatewaySenderEventListener listener = (MyGatewaySenderEventListener) obj;
-    return this.id.equals(listener.id);
+    return id.equals(listener.id);
   }
 
   @Override

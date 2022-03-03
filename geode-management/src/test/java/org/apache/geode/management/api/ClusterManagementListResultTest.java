@@ -32,7 +32,7 @@ import org.apache.geode.util.internal.GeodeJsonMapper;
 public class ClusterManagementListResultTest {
 
   private ClusterManagementListResult<Region, RuntimeRegionInfo> list;
-  private ObjectMapper mapper = GeodeJsonMapper.getMapper();
+  private final ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
   @Before
   public void before() {

@@ -85,9 +85,7 @@ public abstract class SerializableCallable<T> implements SerializableCallableIF<
 
   @Override
   public String toString() {
-    return new StringBuilder()
-        .append(getClass().getSimpleName()).append("@").append(toHexString(hashCode()))
-        .append('(').append(id).append(", \"").append(name).append("\")")
-        .toString();
+    return getClass().getSimpleName() + "@" + toHexString(hashCode())
+        + '(' + id + ", \"" + name + "\")";
   }
 }

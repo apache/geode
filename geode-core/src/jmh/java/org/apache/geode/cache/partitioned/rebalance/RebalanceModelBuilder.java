@@ -39,8 +39,8 @@ class RebalanceModelBuilder {
   private static final int DEFAULT_MEAN_BUCKET_SIZE = 100;
 
   private final Random random = new Random();
-  private int members;
-  private int buckets;
+  private final int members;
+  private final int buckets;
   private int newMembers;
   private int bucketSizeDeviation;
 
@@ -55,7 +55,7 @@ class RebalanceModelBuilder {
   }
 
   RebalanceModelBuilder withBucketSizeStandardDeviation(int deviation) {
-    this.bucketSizeDeviation = deviation;
+    bucketSizeDeviation = deviation;
     return this;
   }
 
@@ -69,8 +69,8 @@ class RebalanceModelBuilder {
 
     for (int memberId = 0; memberId < this.members; memberId++) {
       int bucketsOnMember = getBucketsOnMember(bucketsPerMember, memberId);
-      long[] loads = new long[this.buckets];
-      long[] primaryLoads = new long[this.buckets];
+      long[] loads = new long[buckets];
+      long[] primaryLoads = new long[buckets];
       for (int bucketId = bucketOffset; bucketId < bucketOffset + bucketsOnMember; bucketId++) {
         loads[bucketId] = getBucketSize(memberId);
         primaryLoads[bucketId] = 1;
@@ -91,7 +91,7 @@ class RebalanceModelBuilder {
   }
 
   private int getBucketsOnMember(double bucketsPerMember, double memberId) {
-    if (memberId / this.members < (bucketsPerMember - (int) bucketsPerMember)) {
+    if (memberId / members < (bucketsPerMember - (int) bucketsPerMember)) {
       return (int) Math.ceil(bucketsPerMember);
     } else {
       return (int) Math.floor(bucketsPerMember);
@@ -170,7 +170,7 @@ class RebalanceModelBuilder {
 
     @Override
     public Set<PersistentMemberID> getOfflineMembers(int bucketId) {
-      return this.offlineMembers;
+      return offlineMembers;
     }
 
     @Override

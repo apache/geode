@@ -20,7 +20,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Properties;
 
 import org.junit.Ignore;
@@ -87,7 +86,7 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
 
   static final int NO_OF_PUTS = 100;
 
-  static final int NO_OF_PUTS_BEFORE_GII = 10000;;
+  static final int NO_OF_PUTS_BEFORE_GII = 10000;
 
   static int TOTAL_NO_OF_PUTS = 0;
 
@@ -95,7 +94,7 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
 
   static volatile boolean isStop = false;
 
-  static Object total_no_puts[] = new Object[4];
+  static Object[] total_no_puts = new Object[4];
 
   ArrayList keys_set_before_gii = new ArrayList();
 
@@ -116,15 +115,15 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
 
     vm3 = host.getVM(3);
 
-    vm0.invoke(() -> HAGIIBugDUnitTest.createRegionQueue());
+    vm0.invoke(HAGIIBugDUnitTest::createRegionQueue);
   }
 
   @Override
   public final void preTearDown() throws Exception {
-    vm0.invoke(() -> HAGIIBugDUnitTest.closeCache());
-    vm1.invoke(() -> HAGIIBugDUnitTest.closeCache());
-    vm2.invoke(() -> HAGIIBugDUnitTest.closeCache());
-    vm3.invoke(() -> HAGIIBugDUnitTest.closeCache());
+    vm0.invoke(HAGIIBugDUnitTest::closeCache);
+    vm1.invoke(HAGIIBugDUnitTest::closeCache);
+    vm2.invoke(HAGIIBugDUnitTest::closeCache);
+    vm3.invoke(HAGIIBugDUnitTest::closeCache);
     cache = null;
     Invoke.invokeInEveryVM(new SerializableRunnable() {
       @Override
@@ -197,7 +196,7 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
       }
     }
 
-    total_no_puts[0] = vm0.invoke(() -> HAGIIBugDUnitTest.getTotalNoPuts());
+    total_no_puts[0] = vm0.invoke(HAGIIBugDUnitTest::getTotalNoPuts);
     populate_keys_after_gii();
 
     boolean validationFlag = false;
@@ -220,7 +219,7 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
   private void populate_keys_after_gii() {
     // int k = 0;
     for (int i = 0; i < 1; i++) {
-      long totalPuts = ((Long) total_no_puts[i]).longValue() - 3 * NO_OF_PUTS;
+      long totalPuts = (Long) total_no_puts[i] - 3 * NO_OF_PUTS;
       LogWriterUtils.getLogWriter().info("Total no of puts expectesd " + totalPuts);
       for (int j = 0; j < totalPuts; j++) {
         keys_set_after_gii.add("vm" + i + "_2" + j);
@@ -241,9 +240,8 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
     HARegion regionForQueue = (HARegion) cache.getRegion(
         SEPARATOR + HARegionQueue.createRegionName(HAExpiryDUnitTest.regionQueueName));
     LogWriterUtils.getLogWriter().info("Region Queue size : " + regionForQueue.keys().size());
-    Iterator itr = regionForQueue.entrySet(false).iterator();
-    while (itr.hasNext()) {
-      Entry entry = (Entry) itr.next();
+    for (final Object o : regionForQueue.entrySet(false)) {
+      Entry entry = (Entry) o;
       if (entry.getKey() instanceof Long) {
         String strValue = (String) ((ConflatableObject) entry.getValue()).getKey();
         if (isSecond) {
@@ -269,7 +267,7 @@ public class HAGIIBugDUnitTest extends JUnit4DistributedTestCase {
 
   public static Object getTotalNoPuts() {
 
-    return new Long(TOTAL_NO_OF_PUTS);
+    return (long) TOTAL_NO_OF_PUTS;
 
   }
 

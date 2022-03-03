@@ -270,7 +270,7 @@ public class PersistentPartitionedRegionJUnitTest {
     region = (PartitionedRegion) createRegion(-1, heapLru, entryLru);
 
     for (int i = 0; i < size; i++) {
-      region.put(new Integer(i), new Integer(i));
+      region.put(i, i);
     }
 
     if (isRegionClose) {
@@ -306,7 +306,7 @@ public class PersistentPartitionedRegionJUnitTest {
 
     // Load values into memory using get.
     for (int i = 0; i < size; i++) {
-      region.get(new Integer(i));
+      region.get(i);
     }
     assertEquals(size, bucket.getDiskRegion().getStats().getNumEntriesInVM());
   }
@@ -315,7 +315,7 @@ public class PersistentPartitionedRegionJUnitTest {
     int valuesInVm = 0;
     for (int i = 0; i < size; i++) {
       try {
-        Object value = ((LocalRegion) region).getValueInVM(new Integer(i));
+        Object value = ((LocalRegion) region).getValueInVM(i);
         if (value != null) {
           valuesInVm++;
         }

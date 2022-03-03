@@ -42,7 +42,7 @@ public class QueueConnectionResponse extends ServerLocationResponse {
     this.durableQueueFound = durableQueueFound;
     this.servers = servers;
     if (servers != null && !servers.isEmpty()) {
-      this.serversFound = true;
+      serversFound = true;
     }
   }
 
@@ -51,8 +51,8 @@ public class QueueConnectionResponse extends ServerLocationResponse {
       DeserializationContext context) throws IOException, ClassNotFoundException {
     durableQueueFound = DataSerializer.readPrimitiveBoolean(in);
     servers = SerializationHelper.readServerLocationList(in);
-    if (this.servers != null && !this.servers.isEmpty()) {
-      this.serversFound = true;
+    if (servers != null && !servers.isEmpty()) {
+      serversFound = true;
     }
   }
 
@@ -84,7 +84,7 @@ public class QueueConnectionResponse extends ServerLocationResponse {
 
   @Override
   public boolean hasResult() {
-    return this.serversFound;
+    return serversFound;
   }
 
 }

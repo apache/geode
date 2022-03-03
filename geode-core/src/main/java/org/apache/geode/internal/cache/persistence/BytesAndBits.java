@@ -32,18 +32,18 @@ public class BytesAndBits {
   }
 
   public byte[] getBytes() {
-    return this.data;
+    return data;
   }
 
   public byte getBits() {
-    return this.userBits;
+    return userBits;
   }
 
   public void setVersion(KnownVersion v) {
-    this.version = v;
+    version = v;
   }
 
   public KnownVersion getVersion() {
-    return this.version;
+    return version;
   }
 }

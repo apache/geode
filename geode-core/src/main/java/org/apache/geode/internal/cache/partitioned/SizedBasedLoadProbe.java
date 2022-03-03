@@ -36,7 +36,7 @@ public class SizedBasedLoadProbe implements LoadProbe, DataSerializableFixedID {
   private static final long serialVersionUID = 7040814060882774875L;
   // TODO rebalancing come up with a better threshold for minumum bucket size?
   public static final int MIN_BUCKET_SIZE =
-      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "MIN_BUCKET_SIZE", 1).intValue();
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "MIN_BUCKET_SIZE", 1);
 
   @Override
   public PRLoad getLoad(PartitionedRegion pr) {
@@ -46,7 +46,7 @@ public class SizedBasedLoadProbe implements LoadProbe, DataSerializableFixedID {
 
     // key: bid, value: size
     for (Integer bidInt : ds.getAllLocalBucketIds()) {
-      int bid = bidInt.intValue();
+      int bid = bidInt;
       long bucketSize = ds.getBucketSize(bid);
       if (bucketSize < MIN_BUCKET_SIZE) {
         bucketSize = MIN_BUCKET_SIZE;

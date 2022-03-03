@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -519,7 +518,7 @@ public class PRQueryDUnitHelper implements Serializable {
         Cache cache = getCache();
         Region region = cache.getRegion(regionName);
         for (int j = from; j < to; j++) {
-          region.put(new Integer(j), portfolio[j]);
+          region.put(j, portfolio[j]);
         }
       }
     };
@@ -549,23 +548,23 @@ public class PRQueryDUnitHelper implements Serializable {
               switch (op) {
                 case 0:
                   // Put operation
-                  region.put(new Integer(j), new Portfolio(j));
+                  region.put(j, new Portfolio(j));
                   break;
                 case 1:
                   // invalidate
-                  if (region.containsKey(new Integer(j))) {
-                    region.invalidate(new Integer(j));
+                  if (region.containsKey(j)) {
+                    region.invalidate(j);
                   }
                   break;
                 case 2:
-                  if (region.containsKey(new Integer(j))) {
-                    region.destroy(new Integer(j));
+                  if (region.containsKey(j)) {
+                    region.destroy(j);
                   }
                   break;
                 case 3:
 
-                  if (!region.containsKey(new Integer(j))) {
-                    region.create(new Integer(j), null);
+                  if (!region.containsKey(j)) {
+                    region.create(j, null);
                   }
 
                   break;
@@ -601,7 +600,7 @@ public class PRQueryDUnitHelper implements Serializable {
         Cache cache = getCache();
         Region region = cache.getRegion(regionName);
         for (int j = from, i = to; j < to; j++, i++) {
-          region.put(new Integer(i), portfolio[j]);
+          region.put(i, portfolio[j]);
         }
       }
     };
@@ -681,7 +680,7 @@ public class PRQueryDUnitHelper implements Serializable {
               "ID <= 5"};
         }
 
-        Object r[][] = new Object[queries.length][2];
+        Object[][] r = new Object[queries.length][2];
         Region local = cache.getRegion(localRegion);
         Region region = cache.getRegion(regionName);
         assertNotNull(region);
@@ -691,9 +690,9 @@ public class PRQueryDUnitHelper implements Serializable {
                 CacheClosedException.class.getName(), ForceReattemptException.class.getName(),
                 QueryInvocationTargetException.class.getName()};
 
-        for (int i = 0; i < expectedExceptions.length; i++) {
+        for (final String exception : expectedExceptions) {
           getCache().getLogger().info(
-              "<ExpectedException action=add>" + expectedExceptions[i] + "</ExpectedException>");
+              "<ExpectedException action=add>" + exception + "</ExpectedException>");
         }
 
         QueryService qs = getCache().getQueryService();
@@ -702,13 +701,13 @@ public class PRQueryDUnitHelper implements Serializable {
             synchronized (region) {
               Object[] params;
               if (fullQueryOnPortfolioPositions) {
-                params = new Object[] {local, new Double((j % 25) * 1.0 + 1)};
+                params = new Object[] {local, (j % 25) * 1.0 + 1};
                 r[j][0] = qs.newQuery(queries[j]).execute(params);
               } else {
                 r[j][0] = local.query(queries[j]);
               }
               if (fullQueryOnPortfolioPositions) {
-                params = new Object[] {region, new Double((j % 25) * 1.0 + 1)};
+                params = new Object[] {region, (j % 25) * 1.0 + 1};
                 r[j][1] = qs.newQuery(queries[j]).execute(params);
               } else {
                 r[j][1] = region.query(queries[j]);
@@ -826,7 +825,7 @@ public class PRQueryDUnitHelper implements Serializable {
                 "p, pos from " + SEPARATOR
                     + "REGION_NAME p, p.positions.values pos order by p.ID, pos.secId",};
 
-        Object r[][] = new Object[queries.length][2];
+        Object[][] r = new Object[queries.length][2];
         Region region = cache.getRegion(regionName);
         assertNotNull(region);
 
@@ -1086,7 +1085,7 @@ public class PRQueryDUnitHelper implements Serializable {
 
             };
 
-        Object r[][] = new Object[queries.length][2];
+        Object[][] r = new Object[queries.length][2];
         Region local = cache.getRegion(localRegion);
         Region region = cache.getRegion(regionName);
         assertNotNull(region);
@@ -1235,7 +1234,7 @@ public class PRQueryDUnitHelper implements Serializable {
             // p.ID > 0 OR p.status = 'active' OR pos.secId = 'IBM' ORDER BY p.ID",
         };
 
-        Object r[][] = new Object[queries.length][2];
+        Object[][] r = new Object[queries.length][2];
         Region region = cache.getRegion(regionName);
         assertNotNull(region);
 
@@ -1328,9 +1327,8 @@ public class PRQueryDUnitHelper implements Serializable {
         LogWriter logger = cache.getLogger();
 
         Collection indexes = qs.getIndexes();
-        Iterator it = indexes.iterator();
-        while (it.hasNext()) {
-          PartitionedIndex ind = (PartitionedIndex) it.next();
+        for (final Object index : indexes) {
+          PartitionedIndex ind = (PartitionedIndex) index;
           /*
            * List bucketIndex = ind.getBucketIndexes(); int k = 0;
            * logger.info("Total number of bucket index : "+bucketIndex.size()); while ( k <
@@ -1390,7 +1388,7 @@ public class PRQueryDUnitHelper implements Serializable {
         // Querying the localRegion and the PR region
 
         String[] query = {"TRUE", "FALSE", "UNDEFINED", "NULL"};
-        Object r[][] = new Object[query.length][2];
+        Object[][] r = new Object[query.length][2];
         Region local = cache.getRegion(localRegion);
         Region region = cache.getRegion(regionName);
         try {
@@ -1677,7 +1675,7 @@ public class PRQueryDUnitHelper implements Serializable {
           indexes = qs.createDefinedIndexes();
         } catch (Exception ex) {
           if (ex instanceof MultiIndexCreationException) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (Exception e : ((MultiIndexCreationException) ex).getExceptionsMap().values()) {
               sb.append(e.getMessage()).append("\n");
             }
@@ -1748,9 +1746,8 @@ public class PRQueryDUnitHelper implements Serializable {
           PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
           Map indexMap = region.getIndex();
           Set indexSet = indexMap.entrySet();
-          Iterator it = indexSet.iterator();
-          while (it.hasNext()) {
-            Map.Entry entry = (Map.Entry) it.next();
+          for (final Object o : indexSet) {
+            Map.Entry entry = (Map.Entry) o;
             Index index = (Index) entry.getValue();
             logger.info("The partitioned index created on this region " + " " + index);
             logger.info("Current number of buckets indexed : " + ""
@@ -1782,9 +1779,8 @@ public class PRQueryDUnitHelper implements Serializable {
         PartitionedRegion region = (PartitionedRegion) cache1.getRegion(name);
         Map indexMap = region.getIndex();
         Set indexSet = indexMap.entrySet();
-        Iterator it = indexSet.iterator();
-        while (it.hasNext()) {
-          Map.Entry entry = (Map.Entry) it.next();
+        for (final Object o : indexSet) {
+          Map.Entry entry = (Map.Entry) o;
           Index index = (Index) entry.getValue();
           logger.info("the partitioned index created on this region " + " " + index);
           logger.info("Current number of buckets indexed : " + ""
@@ -1858,9 +1854,8 @@ public class PRQueryDUnitHelper implements Serializable {
         if (!random) {
           Collection indexes = qs.getIndexes();
           assertEquals(3, indexes.size());
-          Iterator it = indexes.iterator();
-          while (it.hasNext()) {
-            logger.info("Following indexes found : " + it.next());
+          for (final Object index : indexes) {
+            logger.info("Following indexes found : " + index);
           }
           qs.removeIndexes(parRegion);
           logger.info("Removed all the index on this paritioned regions : " + parRegion);
@@ -1876,9 +1871,8 @@ public class PRQueryDUnitHelper implements Serializable {
           assertEquals(3, indexes.size());
           assertEquals(3, ((LocalRegion) parRegion).getIndexManager().getIndexes().size());
           synchronized (indexes) {
-            Iterator it = indexes.iterator();
-            while (it.hasNext()) {
-              Index in = (Index) it.next();
+            for (final Object index : indexes) {
+              Index in = (Index) index;
               qs.removeIndex(in);
             }
           }
@@ -1915,7 +1909,7 @@ public class PRQueryDUnitHelper implements Serializable {
             "r1.ID = r2.id AND (r1.positions.size > r2.positions.size OR r2.positions.size > 0)",
             "r1.ID = r2.id AND (r1.positions.size < r2.positions.size OR r1.positions.size > 0)",};
 
-        Object r[][] = new Object[queries.length][2];
+        Object[][] r = new Object[queries.length][2];
         Region region = cache.getRegion(name);
         assertNotNull(region);
         region = cache.getRegion(coloName);
@@ -2031,7 +2025,7 @@ public class PRQueryDUnitHelper implements Serializable {
             "r1.ID = r2.id AND (r1.positions.size > r2.positions.size OR r2.positions.size > 0)",
             "r1.ID = r2.id AND (r1.positions.size < r2.positions.size OR r1.positions.size > 0)",};
 
-        Object r[][] = new Object[queries.length][2];
+        Object[][] r = new Object[queries.length][2];
         Region region = cache.getRegion(name);
         assertNotNull(region);
         region = cache.getRegion(coloName);
@@ -2148,7 +2142,7 @@ public class PRQueryDUnitHelper implements Serializable {
             "r1.ID = pos2.id AND (r1.positions.size > r2.positions.size OR r2.positions.size > 0)",
             "r1.ID = pos2.id AND (r1.positions.size < r2.positions.size OR r1.positions.size > 0)",};
 
-        Object r[][] = new Object[queries.length][2];
+        Object[][] r = new Object[queries.length][2];
         Region region = cache.getRegion(name);
         assertNotNull(region);
         region = cache.getRegion(coloName);
@@ -2267,7 +2261,7 @@ public class PRQueryDUnitHelper implements Serializable {
             "r1.ID = r2.id AND (r1.positions.size > r2.positions.size OR r2.positions.size > 0)",
             "r1.ID = r2.id AND (r1.positions.size < r2.positions.size OR r1.positions.size > 0)",};
 
-        Object r[][] = new Object[queries.length][2];
+        Object[][] r = new Object[queries.length][2];
         Region region = cache.getRegion(name);
         assertNotNull(region);
         region = cache.getRegion(coloName);

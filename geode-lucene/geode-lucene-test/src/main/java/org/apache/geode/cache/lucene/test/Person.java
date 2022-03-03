@@ -17,20 +17,20 @@ package org.apache.geode.cache.lucene.test;
 import java.io.Serializable;
 
 public class Person implements Serializable {
-  private String name;
-  private String email;
-  private int revenue;
-  private String address;
-  private String[] phoneNumbers;
-  private Page homepage;
+  private final String name;
+  private final String email;
+  private final int revenue;
+  private final String address;
+  private final String[] phoneNumbers;
+  private final Page homepage;
 
   public Person(String name, String[] phoneNumbers, int pageId) {
     this.name = name;
-    this.email = name.replace(' ', '.') + "@pivotal.io";
-    this.revenue = pageId * 100;
-    this.address = "" + pageId + " NW Greenbrier PKWY, Portland OR 97006";
+    email = name.replace(' ', '.') + "@pivotal.io";
+    revenue = pageId * 100;
+    address = "" + pageId + " NW Greenbrier PKWY, Portland OR 97006";
     this.phoneNumbers = phoneNumbers;
-    this.homepage = new Page(pageId);
+    homepage = new Page(pageId);
   }
 
   @Override

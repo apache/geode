@@ -39,24 +39,24 @@ class ConfigAttributeInfo extends org.apache.commons.modeler.AttributeInfo {
   }
 
   public ConfigurationParameterJmxImpl getConfig() {
-    return this.config;
+    return config;
   }
 
   @Override
   public ModelMBeanAttributeInfo createAttributeInfo() {
-    Descriptor desc = new DescriptorSupport(new String[] {"name=" + this.displayName,
+    Descriptor desc = new DescriptorSupport("name=" + displayName,
         "descriptorType=attribute", "currencyTimeLimit=-1", // always stale
-        "displayName=" + this.displayName, "getMethod=getJmxValue", "setMethod=setJmxValue"});
+        "displayName=" + displayName, "getMethod=getJmxValue", "setMethod=setJmxValue");
 
-    Assert.assertTrue(this.config != null, "Config target object is null!");
-    desc.setField("targetObject", this.config);
+    Assert.assertTrue(config != null, "Config target object is null!");
+    desc.setField("targetObject", config);
 
-    ModelMBeanAttributeInfo info = new ModelMBeanAttributeInfo(this.displayName, // name
-        this.type, // type
-        this.description, // description
-        this.readable, // isReadable
-        this.writeable, // isWritable
-        this.is, // isIs
+    ModelMBeanAttributeInfo info = new ModelMBeanAttributeInfo(displayName, // name
+        type, // type
+        description, // description
+        readable, // isReadable
+        writeable, // isWritable
+        is, // isIs
         desc);
 
     return info;

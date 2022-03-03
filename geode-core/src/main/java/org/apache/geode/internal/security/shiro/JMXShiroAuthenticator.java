@@ -62,7 +62,7 @@ public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationList
       throw new AuthenticationFailedException(MISSING_CREDENTIALS_MESSAGE);
     }
 
-    org.apache.shiro.subject.Subject shiroSubject = this.securityService.login(credProps);
+    org.apache.shiro.subject.Subject shiroSubject = securityService.login(credProps);
     Principal principal;
 
     if (shiroSubject == null) {

@@ -53,7 +53,7 @@ public class PositionPdxVersion implements Serializable, PdxSerializable, Compar
     sharesOutstanding = out;
     secType = "a";
     pid = cnt++;
-    this.mktValue = cnt;
+    mktValue = cnt;
   }
 
   @Override
@@ -61,12 +61,12 @@ public class PositionPdxVersion implements Serializable, PdxSerializable, Compar
     if (!(o instanceof PositionPdxVersion)) {
       return false;
     }
-    return this.secId.equals(((PositionPdxVersion) o).secId);
+    return secId.equals(((PositionPdxVersion) o).secId);
   }
 
   @Override
   public int hashCode() {
-    return this.secId.hashCode();
+    return secId.hashCode();
   }
 
 
@@ -75,7 +75,7 @@ public class PositionPdxVersion implements Serializable, PdxSerializable, Compar
   }
 
   public double getMktValue() {
-    return this.mktValue;
+    return mktValue;
   }
 
   public String getSecId() {
@@ -91,8 +91,8 @@ public class PositionPdxVersion implements Serializable, PdxSerializable, Compar
   }
 
   public String toString() {
-    return this.getClass().getName() + "[secId=" + this.secId + " out=" + this.sharesOutstanding
-        + " type=" + this.secType + " id=" + this.pid + " mktValue=" + this.mktValue + "]";
+    return getClass().getName() + "[secId=" + secId + " out=" + sharesOutstanding
+        + " type=" + secType + " id=" + pid + " mktValue=" + mktValue + "]";
   }
 
   public Set getSet(int size) {
@@ -113,42 +113,42 @@ public class PositionPdxVersion implements Serializable, PdxSerializable, Compar
 
   @Override
   public void fromData(PdxReader in) {
-    this.avg20DaysVol = in.readLong("avg20DaysVol");
-    this.bondRating = in.readString("bondRating");
-    this.convRatio = in.readDouble("convRatio");
-    this.country = in.readString("country");
-    this.delta = in.readDouble("delta");
-    this.industry = in.readLong("industry");
-    this.issuer = in.readLong("issuer");
-    this.mktValue = in.readDouble("mktValue");
-    this.qty = in.readDouble("qty");
-    this.secId = in.readString("secId");
-    this.secLinks = in.readString("secLinks");
-    this.sharesOutstanding = in.readDouble("sharesOutstanding");
-    this.underlyer = in.readString("underlyer");
-    this.volatility = in.readLong("volatility");
-    this.pid = in.readInt("pid");
-    this.portfolioId = in.readInt("portfolioId");
+    avg20DaysVol = in.readLong("avg20DaysVol");
+    bondRating = in.readString("bondRating");
+    convRatio = in.readDouble("convRatio");
+    country = in.readString("country");
+    delta = in.readDouble("delta");
+    industry = in.readLong("industry");
+    issuer = in.readLong("issuer");
+    mktValue = in.readDouble("mktValue");
+    qty = in.readDouble("qty");
+    secId = in.readString("secId");
+    secLinks = in.readString("secLinks");
+    sharesOutstanding = in.readDouble("sharesOutstanding");
+    underlyer = in.readString("underlyer");
+    volatility = in.readLong("volatility");
+    pid = in.readInt("pid");
+    portfolioId = in.readInt("portfolioId");
   }
 
   @Override
   public void toData(PdxWriter out) {
-    out.writeLong("avg20DaysVol", this.avg20DaysVol);
-    out.writeString("bondRating", this.bondRating);
-    out.writeDouble("convRatio", this.convRatio);
-    out.writeString("country", this.country);
-    out.writeDouble("delta", this.delta);
-    out.writeLong("industry", this.industry);
-    out.writeLong("issuer", this.issuer);
-    out.writeDouble("mktValue", this.mktValue);
-    out.writeDouble("qty", this.qty);
-    out.writeString("secId", this.secId);
-    out.writeString("secLinks", this.secLinks);
-    out.writeDouble("outStanding", this.sharesOutstanding);
-    out.writeString("underLyer", this.underlyer);
-    out.writeLong("volatility", this.volatility);
-    out.writeInt("pid", this.pid);
-    out.writeInt("portfolioId", this.portfolioId);
+    out.writeLong("avg20DaysVol", avg20DaysVol);
+    out.writeString("bondRating", bondRating);
+    out.writeDouble("convRatio", convRatio);
+    out.writeString("country", country);
+    out.writeDouble("delta", delta);
+    out.writeLong("industry", industry);
+    out.writeLong("issuer", issuer);
+    out.writeDouble("mktValue", mktValue);
+    out.writeDouble("qty", qty);
+    out.writeString("secId", secId);
+    out.writeString("secLinks", secLinks);
+    out.writeDouble("outStanding", sharesOutstanding);
+    out.writeString("underLyer", underlyer);
+    out.writeLong("volatility", volatility);
+    out.writeInt("pid", pid);
+    out.writeInt("portfolioId", portfolioId);
   }
 
 
@@ -157,7 +157,7 @@ public class PositionPdxVersion implements Serializable, PdxSerializable, Compar
     if (o == this) {
       return 0;
     } else {
-      return this.pid < ((PositionPdxVersion) o).pid ? -1 : 1;
+      return pid < ((PositionPdxVersion) o).pid ? -1 : 1;
     }
 
   }

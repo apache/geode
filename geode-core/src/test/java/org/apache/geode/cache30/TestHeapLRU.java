@@ -73,7 +73,7 @@ public class TestHeapLRU {
         // list.add(new Integer(i));
       }
 
-      Integer key = new Integer(i % 10000);
+      Integer key = i % 10000;
       long[] value = new long[2000];
       // System.out.println("Put " + key + " -> " + value);
       region.put(key, value);

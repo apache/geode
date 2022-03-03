@@ -58,27 +58,27 @@ public class GetClientPartitionAttributesCommand66Test {
 
   @Before
   public void setUp() throws Exception {
-    this.getClientPartitionAttributesCommand66 = new GetClientPartitionAttributesCommand66();
+    getClientPartitionAttributesCommand66 = new GetClientPartitionAttributesCommand66();
     MockitoAnnotations.initMocks(this);
 
-    when(this.cache.getRegion(isA(String.class))).thenReturn(mock(LocalRegion.class));
+    when(cache.getRegion(isA(String.class))).thenReturn(mock(LocalRegion.class));
 
-    when(this.message.getPart(eq(0))).thenReturn(this.regionNamePart);
+    when(message.getPart(eq(0))).thenReturn(regionNamePart);
 
-    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
+    when(regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
-    when(this.serverConnection.getCache()).thenReturn(this.cache);
-    when(this.serverConnection.getResponseMessage()).thenReturn(this.responseMessage);
+    when(serverConnection.getCache()).thenReturn(cache);
+    when(serverConnection.getResponseMessage()).thenReturn(responseMessage);
   }
 
   @Test
   public void noSecuirtyShouldSucceed() throws Exception {
-    when(this.securityService.isClientSecurityRequired()).thenReturn(false);
+    when(securityService.isClientSecurityRequired()).thenReturn(false);
 
-    this.getClientPartitionAttributesCommand66.cmdExecute(this.message, this.serverConnection,
-        this.securityService, 0);
+    getClientPartitionAttributesCommand66.cmdExecute(message, serverConnection,
+        securityService, 0);
 
-    verify(this.responseMessage).send();
+    verify(responseMessage).send();
   }
 
 }

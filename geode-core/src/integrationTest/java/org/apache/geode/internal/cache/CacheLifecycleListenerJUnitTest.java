@@ -286,21 +286,21 @@ public class CacheLifecycleListenerJUnitTest {
 
   private static class CacheLifecycleCallback {
 
-    private InternalCache cache;
+    private final InternalCache cache;
 
     CacheLifecycleCallback(InternalCache cache) {
       this.cache = cache;
     }
 
     InternalCache getCache() {
-      return this.cache;
+      return cache;
     }
   }
 
   private static class TestCacheLifecycleListener implements CacheLifecycleListener {
 
-    private List<CacheLifecycleCallback> cacheCreatedCallbacks;
-    private List<CacheLifecycleCallback> cacheClosedCallbacks;
+    private final List<CacheLifecycleCallback> cacheCreatedCallbacks;
+    private final List<CacheLifecycleCallback> cacheClosedCallbacks;
 
     TestCacheLifecycleListener(List<CacheLifecycleCallback> cacheCreatedCallbacks,
         List<CacheLifecycleCallback> cacheClosedCallbacks) {
@@ -310,12 +310,12 @@ public class CacheLifecycleListenerJUnitTest {
 
     @Override
     public void cacheCreated(InternalCache cache) {
-      this.cacheCreatedCallbacks.add(new CacheLifecycleCallback(cache));
+      cacheCreatedCallbacks.add(new CacheLifecycleCallback(cache));
     }
 
     @Override
     public void cacheClosed(InternalCache cache) {
-      this.cacheClosedCallbacks.add(new CacheLifecycleCallback(cache));
+      cacheClosedCallbacks.add(new CacheLifecycleCallback(cache));
     }
   }
 }

@@ -34,7 +34,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.DiskStoreImpl;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.pdx.PdxInstance;
@@ -166,7 +165,7 @@ public class PdxDeleteFieldJUnitTest {
         } finally {
           cache.setPdxReadSerializedOverride(false);
         }
-        TypeRegistry tr = ((GemFireCacheImpl) cache).getPdxRegistry();
+        TypeRegistry tr = cache.getPdxRegistry();
         // Clear the local registry so we will regenerate a type for the same class
         tr.testClearLocalTypeRegistry();
         {
@@ -196,23 +195,23 @@ public class PdxDeleteFieldJUnitTest {
     public PdxValue() {} // for deserialization
 
     public PdxValue(int v, long lv) {
-      this.value = v;
-      this.fieldToDelete = lv;
+      value = v;
+      fieldToDelete = lv;
     }
 
     @Override
     public void toData(PdxWriter writer) {
-      writer.writeInt("value", this.value);
-      writer.writeLong("fieldToDelete", this.fieldToDelete);
+      writer.writeInt("value", value);
+      writer.writeLong("fieldToDelete", fieldToDelete);
     }
 
     @Override
     public void fromData(PdxReader reader) {
-      this.value = reader.readInt("value");
+      value = reader.readInt("value");
       if (reader.hasField("fieldToDelete")) {
-        this.fieldToDelete = reader.readLong("fieldToDelete");
+        fieldToDelete = reader.readLong("fieldToDelete");
       } else {
-        this.fieldToDelete = 0L;
+        fieldToDelete = 0L;
         PdxUnreadData unread = (PdxUnreadData) reader.readUnreadFields();
         assertEquals(true, unread.isEmpty());
       }

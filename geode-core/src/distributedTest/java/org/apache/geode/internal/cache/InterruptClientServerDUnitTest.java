@@ -52,7 +52,7 @@ public class InterruptClientServerDUnitTest extends JUnit4CacheTestCase {
 
   private static volatile Thread puttingThread;
   private static final long MAX_WAIT = 60 * 1000;
-  private static AtomicBoolean doInterrupt = new AtomicBoolean(false);
+  private static final AtomicBoolean doInterrupt = new AtomicBoolean(false);
 
   public InterruptClientServerDUnitTest() {
     super();

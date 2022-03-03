@@ -29,11 +29,11 @@ class ScriptExecutionDetails {
 
   ScriptExecutionDetails(String filePath) {
     this.filePath = filePath;
-    this.commandAndStatusList = new ArrayList<>();
+    commandAndStatusList = new ArrayList<>();
   }
 
   void addCommandAndStatus(String command, String status) {
-    this.commandAndStatusList.add(new CommandAndStatus(command, status));
+    commandAndStatusList.add(new CommandAndStatus(command, status));
   }
 
   ResultModel getResult() {
@@ -42,16 +42,16 @@ class ScriptExecutionDetails {
         "************************* Execution Summary ***********************\nScript file: "
             + filePath);
 
-    for (int i = 0; i < this.commandAndStatusList.size(); i++) {
+    for (int i = 0; i < commandAndStatusList.size(); i++) {
       int commandSrNo = i + 1;
       DataResultModel commandDetail = result.addData("command" + commandSrNo);
       CommandAndStatus commandAndStatus = commandAndStatusList.get(i);
-      commandDetail.addData("Command-" + String.valueOf(commandSrNo), commandAndStatus.command);
+      commandDetail.addData("Command-" + commandSrNo, commandAndStatus.command);
       commandDetail.addData("Status", commandAndStatus.status);
       if (commandAndStatus.status.equals("FAILED")) {
         result.setStatus(Result.Status.ERROR);
       }
-      if (i != this.commandAndStatusList.size()) {
+      if (i != commandAndStatusList.size()) {
         result.setFooter(Gfsh.LINE_SEPARATOR);
       }
     }

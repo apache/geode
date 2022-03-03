@@ -59,7 +59,7 @@ public class CompactConcurrentHashSetJUnitTest {
   @Test
   public void testIterator() {
     Set<Integer> s1;
-    s1 = new CompactConcurrentHashSet2<Integer>();
+    s1 = new CompactConcurrentHashSet2<>();
     for (int i = 0; i < 10000; i++) {
       int nexti = random.nextInt(RANGE);
       s1.add(nexti);
@@ -78,8 +78,8 @@ public class CompactConcurrentHashSetJUnitTest {
   @Test
   public void testSize() {
     Set<Integer> s1, s2;
-    s1 = new CompactConcurrentHashSet2<Integer>();
-    s2 = new HashSet<Integer>();
+    s1 = new CompactConcurrentHashSet2<>();
+    s2 = new HashSet<>();
     for (int i = 0; i < 10000; i++) {
       int nexti = random.nextInt(RANGE);
       s1.add(nexti);
@@ -87,7 +87,7 @@ public class CompactConcurrentHashSetJUnitTest {
     }
     int size = s2.size(); // trust HashSet.size()
     assertTrue(s1.size() == size);
-    s2 = new CompactConcurrentHashSet2<Integer>(s1);
+    s2 = new CompactConcurrentHashSet2<>(s1);
     assertTrue(s2.size() == size);
     int i = size - 1;
     for (Iterator<Integer> it = s2.iterator(); it.hasNext(); i--) {

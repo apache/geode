@@ -37,23 +37,25 @@ import org.apache.geode.test.junit.categories.OQLQueryTest;
 @Category({OQLQueryTest.class})
 public class CopyOnReadQueryJUnitTest {
 
-  private static int numObjects = 10;
-  private static int objectsAndResultsMultiplier = 100;
-  private static String regionName = "portfolios";
+  private static final int numObjects = 10;
+  private static final int objectsAndResultsMultiplier = 100;
+  private static final String regionName = "portfolios";
   private static final String indexName = "testIndex";
 
   private QueryTestUtils utils;
-  private String[] queries = {"select * from " + SEPARATOR + regionName + " p where p.indexKey = 1",
-      "select distinct * from " + SEPARATOR + regionName
-          + " p where p.indexKey = 1 order by p.indexKey",
-      "select * from " + SEPARATOR + regionName + " p, p.positions.values pv where pv.secId = '1'",
-      "select * from " + SEPARATOR + regionName + " p where p in (select * from " + SEPARATOR
-          + regionName
-          + " pi where pi.indexKey = 1)"};
+  private final String[] queries =
+      {"select * from " + SEPARATOR + regionName + " p where p.indexKey = 1",
+          "select distinct * from " + SEPARATOR + regionName
+              + " p where p.indexKey = 1 order by p.indexKey",
+          "select * from " + SEPARATOR + regionName
+              + " p, p.positions.values pv where pv.secId = '1'",
+          "select * from " + SEPARATOR + regionName + " p where p in (select * from " + SEPARATOR
+              + regionName
+              + " pi where pi.indexKey = 1)"};
 
-  private int[] expectedResults = {1, 1, 1, 1};
+  private final int[] expectedResults = {1, 1, 1, 1};
 
-  private boolean[] containsInnerQuery = {false, false, false, true};
+  private final boolean[] containsInnerQuery = {false, false, false, true};
 
   @Before
   public void setUp() throws java.lang.Exception {

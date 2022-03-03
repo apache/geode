@@ -39,6 +39,6 @@ public abstract class AbstractResultModelAssert<S extends AbstractResultModelAss
   }
 
   public T getActual() {
-    return this.actual;
+    return actual;
   }
 }

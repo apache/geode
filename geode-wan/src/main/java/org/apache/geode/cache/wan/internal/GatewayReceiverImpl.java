@@ -280,14 +280,14 @@ public class GatewayReceiverImpl implements GatewayReceiver {
 
   @Override
   public String toString() {
-    return new StringBuilder().append("Gateway Receiver").append("@")
-        .append(Integer.toHexString(hashCode())).append("'; port=").append(getPort())
-        .append("; bindAddress=").append(getBindAddress()).append("'; hostnameForSenders=")
-        .append(getHostnameForSenders()).append("; maximumTimeBetweenPings=")
-        .append(getMaximumTimeBetweenPings()).append("; socketBufferSize=")
-        .append(getSocketBufferSize()).append("; isManualStart=").append(isManualStart())
-        .append("; group=").append(Arrays.toString(new String[] {GatewayReceiver.RECEIVER_GROUP}))
-        .append("]").toString();
+    return "Gateway Receiver" + "@"
+        + Integer.toHexString(hashCode()) + "'; port=" + getPort()
+        + "; bindAddress=" + getBindAddress() + "'; hostnameForSenders="
+        + getHostnameForSenders() + "; maximumTimeBetweenPings="
+        + getMaximumTimeBetweenPings() + "; socketBufferSize="
+        + getSocketBufferSize() + "; isManualStart=" + isManualStart()
+        + "; group=" + Arrays.toString(new String[] {GatewayReceiver.RECEIVER_GROUP})
+        + "]";
   }
 
   private static class PortRange {

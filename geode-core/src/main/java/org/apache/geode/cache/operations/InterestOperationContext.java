@@ -28,7 +28,7 @@ public abstract class InterestOperationContext extends OperationContext {
   private Object key;
 
   /** The {@link InterestType} of the operation. */
-  private InterestType interestType;
+  private final InterestType interestType;
 
   /**
    * Constructor for the register interest operation.
@@ -55,7 +55,7 @@ public abstract class InterestOperationContext extends OperationContext {
    * @return the key to be registered/unregistered.
    */
   public Object getKey() {
-    return this.key;
+    return key;
   }
 
   /**
@@ -73,7 +73,7 @@ public abstract class InterestOperationContext extends OperationContext {
    * @return the <code>InterestType</code> of this request.
    */
   public InterestType getInterestType() {
-    return this.interestType;
+    return interestType;
   }
 
 }

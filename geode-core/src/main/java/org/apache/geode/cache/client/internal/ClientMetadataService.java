@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -62,9 +61,9 @@ public class ClientMetadataService {
 
   private final Cache cache;
 
-  private final Set<String> nonPRs = new HashSet<String>();
+  private final Set<String> nonPRs = new HashSet<>();
 
-  private boolean HONOUR_SERVER_GROUP_IN_PR_SINGLE_HOP = Boolean
+  private final boolean HONOUR_SERVER_GROUP_IN_PR_SINGLE_HOP = Boolean
       .getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "PoolImpl.honourServerGroupsInPRSingleHop");
 
   public static final int SIZE_BYTES_ARRAY_RECEIVED = 2;
@@ -86,7 +85,7 @@ public class ClientMetadataService {
   /** for testing - the total number of scheduled metadata refreshes */
   private long totalRefreshTaskCount = 0;
 
-  private Set<String> regionsBeingRefreshed = new HashSet<>();
+  private final Set<String> regionsBeingRefreshed = new HashSet<>();
 
   private final Object fetchTaskCountLock = new Object();
 
@@ -95,14 +94,14 @@ public class ClientMetadataService {
   }
 
   private final Map<String, ClientPartitionAdvisor> clientPRAdvisors =
-      new ConcurrentHashMap<String, ClientPartitionAdvisor>();
+      new ConcurrentHashMap<>();
   private final Map<String, Set<ClientPartitionAdvisor>> colocatedPRAdvisors =
-      new ConcurrentHashMap<String, Set<ClientPartitionAdvisor>>();
+      new ConcurrentHashMap<>();
 
   private PartitionResolver getResolver(Region r, Object key, Object callbackArgument) {
     // First choice is one associated with the region
     final String regionFullPath = r.getFullPath();
-    ClientPartitionAdvisor advisor = this.getClientPartitionAdvisor(regionFullPath);
+    ClientPartitionAdvisor advisor = getClientPartitionAdvisor(regionFullPath);
     PartitionResolver result = null;
     if (advisor != null) {
       result = advisor.getPartitionResolver();
@@ -127,7 +126,7 @@ public class ClientMetadataService {
 
   public ServerLocation getBucketServerLocation(Region region, Operation operation, Object key,
       Object value, Object callbackArg) {
-    ClientPartitionAdvisor prAdvisor = this.getClientPartitionAdvisor(region.getFullPath());
+    ClientPartitionAdvisor prAdvisor = getClientPartitionAdvisor(region.getFullPath());
     if (prAdvisor == null) {
       return null;
     }
@@ -182,7 +181,7 @@ public class ClientMetadataService {
 
   private ServerLocation getServerLocation(Region region, Operation operation, int bucketId) {
     final String regionFullPath = region.getFullPath();
-    ClientPartitionAdvisor prAdvisor = this.getClientPartitionAdvisor(regionFullPath);
+    ClientPartitionAdvisor prAdvisor = getClientPartitionAdvisor(regionFullPath);
     if (prAdvisor == null) {
       if (logger.isDebugEnabled()) {
         logger.debug(
@@ -207,7 +206,7 @@ public class ClientMetadataService {
   public Map<ServerLocation, Set> getServerToFilterMap(final Collection routingKeys,
       final Region region, boolean primaryMembersNeeded, boolean bucketsAsFilter) {
     final String regionFullPath = region.getFullPath();
-    ClientPartitionAdvisor prAdvisor = this.getClientPartitionAdvisor(regionFullPath);
+    ClientPartitionAdvisor prAdvisor = getClientPartitionAdvisor(regionFullPath);
     if (prAdvisor == null || prAdvisor.adviseRandomServerLocation() == null) {
       scheduleGetPRMetaData((InternalRegion) region, false);
       return null;
@@ -252,13 +251,13 @@ public class ClientMetadataService {
   public Map<ServerLocation, Set<Integer>> groupByServerToAllBuckets(Region region,
       boolean primaryOnly) {
     final String regionFullPath = region.getFullPath();
-    ClientPartitionAdvisor prAdvisor = this.getClientPartitionAdvisor(regionFullPath);
+    ClientPartitionAdvisor prAdvisor = getClientPartitionAdvisor(regionFullPath);
     if (prAdvisor == null || prAdvisor.adviseRandomServerLocation() == null) {
       scheduleGetPRMetaData((InternalRegion) region, false);
       return null;
     }
     int totalNumberOfBuckets = prAdvisor.getTotalNumBuckets();
-    Set<Integer> allBucketIds = new HashSet<Integer>();
+    Set<Integer> allBucketIds = new HashSet<>();
     for (int i = 0; i < totalNumberOfBuckets; i++) {
       allBucketIds.add(i);
     }
@@ -430,10 +429,8 @@ public class ClientMetadataService {
 
     Map<Integer, Set> bucketToKeysMap = new HashMap<>();
     int totalNumberOfBuckets = prAdvisor.getTotalNumBuckets();
-    Iterator i = routingKeys.iterator();
-    while (i.hasNext()) {
-      Object key = i.next();
-      int bucketId = bucketsAsFilter ? ((Integer) key).intValue()
+    for (final Object key : routingKeys) {
+      int bucketId = bucketsAsFilter ? (Integer) key
           : extractBucketID(region, prAdvisor, totalNumberOfBuckets, key);
       Set bucketKeys = bucketToKeysMap.get(bucketId);
       if (bucketKeys == null) {
@@ -499,10 +496,10 @@ public class ClientMetadataService {
   }
 
   public void scheduleGetPRMetaData(final InternalRegion region, final boolean isRecursive) {
-    if (this.nonPRs.contains(region.getFullPath())) {
+    if (nonPRs.contains(region.getFullPath())) {
       return;
     }
-    this.setMetadataStable(false);
+    setMetadataStable(false);
     if (isRecursive) {
       try {
         getClientPRMetadata(region);
@@ -520,24 +517,20 @@ public class ClientMetadataService {
         refreshTaskCount++;
         totalRefreshTaskCount++;
       }
-      Runnable fetchTask = new Runnable() {
-        @Override
-        @SuppressWarnings("synthetic-access")
-        public void run() {
-          try {
-            getClientPRMetadata(region);
-          } catch (VirtualMachineError e) {
-            SystemFailure.initiateFailure(e);
-            throw e;
-          } catch (Throwable e) {
-            SystemFailure.checkFailure();
-            if (logger.isDebugEnabled()) {
-              logger.debug("An exception occurred while fetching metadata", e);
-            }
-          } finally {
-            synchronized (fetchTaskCountLock) {
-              refreshTaskCount--;
-            }
+      Runnable fetchTask = () -> {
+        try {
+          getClientPRMetadata(region);
+        } catch (VirtualMachineError e) {
+          SystemFailure.initiateFailure(e);
+          throw e;
+        } catch (Throwable e) {
+          SystemFailure.checkFailure();
+          if (logger.isDebugEnabled()) {
+            logger.debug("An exception occurred while fetching metadata", e);
+          }
+        } finally {
+          synchronized (fetchTaskCountLock) {
+            refreshTaskCount--;
           }
         }
       };
@@ -553,11 +546,11 @@ public class ClientMetadataService {
     // progress, so just return
     if (region.getClientMetaDataLock().tryLock()) {
       try {
-        advisor = this.getClientPartitionAdvisor(regionFullPath);
+        advisor = getClientPartitionAdvisor(regionFullPath);
         if (advisor == null) {
           advisor = GetClientPartitionAttributesOp.execute(pool, regionFullPath);
           if (advisor == null) {
-            this.nonPRs.add(regionFullPath);
+            nonPRs.add(regionFullPath);
             return;
           }
           addClientPartitionAdvisor(regionFullPath, advisor);
@@ -574,7 +567,7 @@ public class ClientMetadataService {
           GetClientPRMetaDataOp.execute(pool, regionFullPath, this);
           region.getCachePerfStats().incMetaDataRefreshCount();
         } else {
-          ClientPartitionAdvisor colocatedAdvisor = this.getClientPartitionAdvisor(colocatedWith);
+          ClientPartitionAdvisor colocatedAdvisor = getClientPartitionAdvisor(colocatedWith);
           InternalRegion leaderRegion = (InternalRegion) region.getCache().getRegion(colocatedWith);
           if (colocatedAdvisor == null) {
             scheduleGetPRMetaData(leaderRegion, true);
@@ -593,10 +586,10 @@ public class ClientMetadataService {
 
   public void scheduleGetPRMetaData(final InternalRegion region, final boolean isRecursive,
       byte nwHopType) {
-    if (this.nonPRs.contains(region.getFullPath())) {
+    if (nonPRs.contains(region.getFullPath())) {
       return;
     }
-    ClientPartitionAdvisor advisor = this.getClientPartitionAdvisor(region.getFullPath());
+    ClientPartitionAdvisor advisor = getClientPartitionAdvisor(region.getFullPath());
     if (advisor != null && advisor.getServerGroup().length() != 0
         && HONOUR_SERVER_GROUP_IN_PR_SINGLE_HOP) {
       if (logger.isDebugEnabled()) {
@@ -632,25 +625,21 @@ public class ClientMetadataService {
         refreshTaskCount++;
         totalRefreshTaskCount++;
       }
-      Runnable fetchTask = new Runnable() {
-        @Override
-        @SuppressWarnings("synthetic-access")
-        public void run() {
-          try {
-            getClientPRMetadata(region);
-          } catch (VirtualMachineError e) {
-            SystemFailure.initiateFailure(e);
-            throw e;
-          } catch (Throwable e) {
-            SystemFailure.checkFailure();
-            if (logger.isDebugEnabled()) {
-              logger.debug("An exception occurred while fetching metadata", e);
-            }
-          } finally {
-            synchronized (fetchTaskCountLock) {
-              regionsBeingRefreshed.remove(region.getFullPath());
-              refreshTaskCount--;
-            }
+      Runnable fetchTask = () -> {
+        try {
+          getClientPRMetadata(region);
+        } catch (VirtualMachineError e) {
+          SystemFailure.initiateFailure(e);
+          throw e;
+        } catch (Throwable e) {
+          SystemFailure.checkFailure();
+          if (logger.isDebugEnabled()) {
+            logger.debug("An exception occurred while fetching metadata", e);
+          }
+        } finally {
+          synchronized (fetchTaskCountLock) {
+            regionsBeingRefreshed.remove(region.getFullPath());
+            refreshTaskCount--;
           }
         }
       };
@@ -666,7 +655,7 @@ public class ClientMetadataService {
     }
     if (keys != null) {
       for (String regionPath : keys) {
-        ClientPartitionAdvisor prAdvisor = this.getClientPartitionAdvisor(regionPath);
+        ClientPartitionAdvisor prAdvisor = getClientPartitionAdvisor(regionPath);
         if (isDebugEnabled) {
           logger.debug("ClientMetadataService removing from {}{}", regionPath, prAdvisor);
         }
@@ -679,7 +668,7 @@ public class ClientMetadataService {
 
   public byte getMetaDataVersion(Region region, Operation operation, Object key, Object value,
       Object callbackArg) {
-    ClientPartitionAdvisor prAdvisor = this.getClientPartitionAdvisor(region.getFullPath());
+    ClientPartitionAdvisor prAdvisor = getClientPartitionAdvisor(region.getFullPath());
     if (prAdvisor == null) {
       return 0;
     }
@@ -731,7 +720,7 @@ public class ClientMetadataService {
 
   private ServerLocation getPrimaryServerLocation(Region region, int bucketId) {
     final String regionFullPath = region.getFullPath();
-    ClientPartitionAdvisor prAdvisor = this.getClientPartitionAdvisor(regionFullPath);
+    ClientPartitionAdvisor prAdvisor = getClientPartitionAdvisor(regionFullPath);
     if (prAdvisor == null) {
       if (logger.isDebugEnabled()) {
         logger.debug(
@@ -742,7 +731,7 @@ public class ClientMetadataService {
     }
 
     if (prAdvisor.getColocatedWith() != null) {
-      prAdvisor = this.getClientPartitionAdvisor(prAdvisor.getColocatedWith());
+      prAdvisor = getClientPartitionAdvisor(prAdvisor.getColocatedWith());
       if (prAdvisor == null) {
         if (logger.isDebugEnabled()) {
           logger.debug(
@@ -756,18 +745,18 @@ public class ClientMetadataService {
   }
 
   private void addClientPartitionAdvisor(String regionFullPath, ClientPartitionAdvisor advisor) {
-    if (this.cache.isClosed()) {
+    if (cache.isClosed()) {
       return;
     }
     try {
-      this.clientPRAdvisors.put(regionFullPath, advisor);
+      clientPRAdvisors.put(regionFullPath, advisor);
       if (advisor.getColocatedWith() != null) {
         String parentRegionPath = advisor.getColocatedWith();
         Set<ClientPartitionAdvisor> colocatedAdvisors =
-            this.colocatedPRAdvisors.get(parentRegionPath);
+            colocatedPRAdvisors.get(parentRegionPath);
         if (colocatedAdvisors == null) {
-          colocatedAdvisors = new CopyOnWriteArraySet<ClientPartitionAdvisor>();
-          this.colocatedPRAdvisors.put(parentRegionPath, colocatedAdvisors);
+          colocatedAdvisors = new CopyOnWriteArraySet<>();
+          colocatedPRAdvisors.put(parentRegionPath, colocatedAdvisors);
         }
         colocatedAdvisors.add(advisor);
       }
@@ -778,12 +767,12 @@ public class ClientMetadataService {
   }
 
   public ClientPartitionAdvisor getClientPartitionAdvisor(String regionFullPath) {
-    if (this.cache.isClosed()) {
+    if (cache.isClosed()) {
       return null;
     }
     ClientPartitionAdvisor prAdvisor = null;
     try {
-      prAdvisor = this.clientPRAdvisors.get(regionFullPath);
+      prAdvisor = clientPRAdvisors.get(regionFullPath);
     } catch (Exception npe) {
       return null;
     }
@@ -791,19 +780,19 @@ public class ClientMetadataService {
   }
 
   public Set<ClientPartitionAdvisor> getColocatedClientPartitionAdvisor(String regionFullPath) {
-    if (this.cache.isClosed()) {
+    if (cache.isClosed()) {
       return null;
     }
-    return this.colocatedPRAdvisors.get(regionFullPath);
+    return colocatedPRAdvisors.get(regionFullPath);
   }
 
   private Set<String> getAllRegionFullPaths() {
-    if (this.cache.isClosed()) {
+    if (cache.isClosed()) {
       return null;
     }
     Set<String> keys = null;
     try {
-      keys = this.clientPRAdvisors.keySet();
+      keys = clientPRAdvisors.keySet();
     } catch (Exception npe) {
       return null;
     }
@@ -811,8 +800,8 @@ public class ClientMetadataService {
   }
 
   public void close() {
-    this.clientPRAdvisors.clear();
-    this.colocatedPRAdvisors.clear();
+    clientPRAdvisors.clear();
+    colocatedPRAdvisors.clear();
   }
 
   @VisibleForTesting

@@ -128,7 +128,7 @@ public class ResultModel {
   }
 
   public void setContent(Map<String, AbstractResultModel> content) {
-    this.sections = content;
+    sections = content;
   }
 
   public List<FileResultModel> getFiles() {
@@ -207,7 +207,7 @@ public class ResultModel {
       throw new IllegalStateException(
           "Section already exists. Can't overwrite it with this new content.");
     }
-    TabularResultModel section = this.addTable(namedSection);
+    TabularResultModel section = addTable(namedSection);
     boolean atLeastOneSuccess = false;
     boolean atLeastOneFailure = false;
     section.setColumnHeader("Member", "Status", "Message");

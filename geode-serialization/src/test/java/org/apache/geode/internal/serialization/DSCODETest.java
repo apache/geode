@@ -34,7 +34,7 @@ public class DSCODETest {
   public void testNoDuplicateByteValues() throws Exception {
     Set<Integer> previouslySeen = new HashSet<>();
     for (DSCODE value : DSCODE.values()) {
-      final int integerValue = (int) value.toByte();
+      final int integerValue = value.toByte();
       assertFalse("Each byte value should only occur with a single header byte enumerate",
           previouslySeen.contains(integerValue));
       previouslySeen.add(integerValue);

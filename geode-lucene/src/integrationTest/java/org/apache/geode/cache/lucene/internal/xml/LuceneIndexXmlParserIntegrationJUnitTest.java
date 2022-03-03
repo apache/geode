@@ -73,7 +73,7 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
   @Test
   public void parseIndex() throws FileNotFoundException {
     RegionCreation region = createRegionCreation("region");
-    Map<String, String[]> expectedIndexes = new HashMap<String, String[]>();
+    Map<String, String[]> expectedIndexes = new HashMap<>();
     expectedIndexes.put("index1", new String[] {"a", "b", "c", "d"});
     expectedIndexes.put("index2", new String[] {"f", "g"});
     validateExpectedIndexes(region, expectedIndexes);
@@ -108,7 +108,7 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
     RegionCreation region = createRegionCreation("region");
 
     // Validate expected indexes
-    Map<String, String[]> expectedIndexes = new HashMap<String, String[]>();
+    Map<String, String[]> expectedIndexes = new HashMap<>();
     expectedIndexes.put("index", new String[] {"a", "b", "c"});
     validateExpectedIndexes(region, expectedIndexes);
 
@@ -127,7 +127,7 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
     RegionCreation region = createRegionCreation("region");
 
     // Validate expected indexes
-    Map<String, String[]> expectedIndexes = new HashMap<String, String[]>();
+    Map<String, String[]> expectedIndexes = new HashMap<>();
     expectedIndexes.put("index", new String[] {"a"});
     validateExpectedIndexes(region, expectedIndexes);
 
@@ -142,7 +142,7 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
     RegionCreation region = createRegionCreation("region");
 
     // Validate expected indexes
-    Map<String, String[]> expectedIndexes = new HashMap<String, String[]>();
+    Map<String, String[]> expectedIndexes = new HashMap<>();
     expectedIndexes.put("index", new String[] {"a"});
     validateExpectedIndexes(region, expectedIndexes);
 
@@ -159,7 +159,7 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
     RegionCreation region = createRegionCreation("region");
 
     // Validate expected indexes
-    Map<String, String[]> expectedIndexes = new HashMap<String, String[]>();
+    Map<String, String[]> expectedIndexes = new HashMap<>();
     expectedIndexes.put("index", new String[] {"a"});
     validateExpectedIndexes(region, expectedIndexes);
 

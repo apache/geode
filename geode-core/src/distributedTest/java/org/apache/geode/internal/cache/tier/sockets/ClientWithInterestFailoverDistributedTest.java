@@ -124,17 +124,17 @@ public class ClientWithInterestFailoverDistributedTest implements Serializable {
     // arrange
     VM primaryServerVM = getPrimaryServerVM();
     VM secondaryServerVM = getSecondaryServerVM();
-    primaryServerVM.invoke(() -> awaitServerMetaDataToContainClient());
-    primaryServerVM.invoke(() -> validateServerMetaDataKnowsThatClientRegisteredInterest());
-    primaryServerVM.invoke(() -> validateServerMetaDataKnowsWhichClientRegionIsEmpty());
+    primaryServerVM.invoke(this::awaitServerMetaDataToContainClient);
+    primaryServerVM.invoke(this::validateServerMetaDataKnowsThatClientRegisteredInterest);
+    primaryServerVM.invoke(this::validateServerMetaDataKnowsWhichClientRegionIsEmpty);
 
     // act
-    primaryServerVM.invoke(() -> stopCacheServer());
+    primaryServerVM.invoke(this::stopCacheServer);
 
     // assert
-    secondaryServerVM.invoke(() -> awaitServerMetaDataToContainClient());
-    secondaryServerVM.invoke(() -> validateServerMetaDataKnowsThatClientRegisteredInterest());
-    secondaryServerVM.invoke(() -> validateServerMetaDataKnowsWhichClientRegionIsEmpty());
+    secondaryServerVM.invoke(this::awaitServerMetaDataToContainClient);
+    secondaryServerVM.invoke(this::validateServerMetaDataKnowsThatClientRegisteredInterest);
+    secondaryServerVM.invoke(this::validateServerMetaDataKnowsWhichClientRegionIsEmpty);
   }
 
   private int createServerCache() throws IOException {
@@ -189,8 +189,8 @@ public class ClientWithInterestFailoverDistributedTest implements Serializable {
   }
 
   private int givenTwoCacheServers() {
-    serverPort1 = server.invoke(() -> createServerCache());
-    serverPort2 = server2.invoke(() -> createServerCache());
+    serverPort1 = server.invoke(this::createServerCache);
+    serverPort2 = server2.invoke(this::createServerCache);
 
     return client.invoke(() -> createClientCacheWithTwoRegions(getServerHostName(), serverPort1,
         getServerHostName(), serverPort2));

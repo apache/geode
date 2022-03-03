@@ -132,9 +132,9 @@ public class ExecutionContext {
   public ExecutionContext(Object[] bindArguments, InternalCache cache) {
     this.cache = cache;
     this.bindArguments = bindArguments;
-    this.cancellationTask = Optional.empty();
-    this.queryConfigurationService = cache.getService(QueryConfigurationService.class);
-    this.methodInvocationAuthorizer = queryConfigurationService.getMethodAuthorizer();
+    cancellationTask = Optional.empty();
+    queryConfigurationService = cache.getService(QueryConfigurationService.class);
+    methodInvocationAuthorizer = queryConfigurationService.getMethodAuthorizer();
   }
 
   Optional<ScheduledFuture> getCancellationTask() {
@@ -665,7 +665,7 @@ public class ExecutionContext {
   }
 
   void setCurrentProjectionField(Object field) {
-    this.currentProjectionField = field;
+    currentProjectionField = field;
   }
 
   Object getCurrentProjectionField() {
@@ -693,7 +693,7 @@ public class ExecutionContext {
   }
 
   public void setQueryCanceledException(final CacheRuntimeException queryCanceledException) {
-    this.canceledException = queryCanceledException;
+    canceledException = queryCanceledException;
   }
 
   /**

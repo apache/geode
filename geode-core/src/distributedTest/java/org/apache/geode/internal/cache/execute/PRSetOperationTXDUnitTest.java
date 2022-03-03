@@ -90,7 +90,7 @@ public class PRSetOperationTXDUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void preTearDownCacheTestCase() throws Exception {
-    Invoke.invokeInEveryVM(() -> verifyNoTxState());
+    Invoke.invokeInEveryVM(this::verifyNoTxState);
   }
 
   @Test
@@ -116,7 +116,7 @@ public class PRSetOperationTXDUnitTest extends JUnit4CacheTestCase {
 
   private void setupAndLoadRegion(boolean disableSetOpToStartTx) {
     createRegion(disableSetOpToStartTx);
-    dataStore1.invoke(() -> loadRegion());
+    dataStore1.invoke(this::loadRegion);
   }
 
   private void createRegion(boolean disableSetOpToStartTx) {
@@ -133,7 +133,7 @@ public class PRSetOperationTXDUnitTest extends JUnit4CacheTestCase {
 
   private void loadRegion() {
     Region<Long, String> region = basicGetCache().getRegion(SEPARATOR + REGION_NAME);
-    testData.forEach((k, v) -> region.put(k, v));
+    testData.forEach(region::put);
   }
 
   private void verifyRegionKeysetWithTx(boolean disableSetOpToStartTx) {
@@ -163,7 +163,7 @@ public class PRSetOperationTXDUnitTest extends JUnit4CacheTestCase {
     try {
       txMgr.begin();
       Collection<Long> set = region.keySet();
-      set.forEach((key) -> assertTrue(testData.keySet().contains(key)));
+      set.forEach((key) -> assertTrue(testData.containsKey(key)));
     } finally {
       validateTXManager(disableSetOpToStartTx, isAccessor);
       txMgr.rollback();
@@ -176,7 +176,7 @@ public class PRSetOperationTXDUnitTest extends JUnit4CacheTestCase {
     try {
       txMgr.begin();
       Collection<String> set = region.values();
-      set.forEach((value) -> assertTrue(testData.values().contains(value)));
+      set.forEach((value) -> assertTrue(testData.containsValue(value)));
     } finally {
       validateTXManager(disableSetOpToStartTx, isAccessor);
       txMgr.rollback();
@@ -190,8 +190,8 @@ public class PRSetOperationTXDUnitTest extends JUnit4CacheTestCase {
       txMgr.begin();
       Collection<Map.Entry<Long, String>> set = region.entrySet();
       set.forEach((entry) -> {
-        assertTrue(testData.values().contains(entry.getValue()));
-        assertTrue(testData.keySet().contains(entry.getKey()));
+        assertTrue(testData.containsValue(entry.getValue()));
+        assertTrue(testData.containsKey(entry.getKey()));
       });
     } finally {
       validateTXManager(disableSetOpToStartTx, isAccessor);
@@ -228,7 +228,7 @@ public class PRSetOperationTXDUnitTest extends JUnit4CacheTestCase {
 
   private void createPR(boolean isAccessor) {
     basicGetCache().createRegionFactory(RegionShortcut.PARTITION)
-        .setPartitionAttributes(new PartitionAttributesFactory<Long, String>().setTotalNumBuckets(3)
+        .setPartitionAttributes(new PartitionAttributesFactory<>().setTotalNumBuckets(3)
             .setLocalMaxMemory(isAccessor ? 0 : 1).create())
         .create(REGION_NAME);
   }

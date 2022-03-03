@@ -66,20 +66,20 @@ public class TXLockUpdateParticipantsMessage extends PooledDistributionMessage
   }
 
   public TXLockUpdateParticipantsMessage() {
-    this.txLockId = null;
-    this.serviceName = null;
-    this.updatedParticipants = null;
+    txLockId = null;
+    serviceName = null;
+    updatedParticipants = null;
   }
 
   @Override
   public void process(ClusterDistributionManager dm) {
     // dm.getLogger().info("DEBUG Processing " + this);
-    DLockService svc = DLockService.getInternalServiceNamed(this.serviceName);
+    DLockService svc = DLockService.getInternalServiceNamed(serviceName);
     if (svc != null) {
-      updateParticipants(svc, this.txLockId, this.updatedParticipants);
+      updateParticipants(svc, txLockId, updatedParticipants);
     }
     TXLockUpdateParticipantsReplyMessage reply = new TXLockUpdateParticipantsReplyMessage();
-    reply.setProcessorId(this.processorId);
+    reply.setProcessorId(processorId);
     reply.setRecipient(getSender());
     dm.putOutgoing(reply);
   }
@@ -113,17 +113,17 @@ public class TXLockUpdateParticipantsMessage extends PooledDistributionMessage
 
   @Override
   public int getProcessorId() {
-    return this.processorId;
+    return processorId;
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.processorId);
-    InternalDataSerializer.invokeToData(this.txLockId, out);
-    DataSerializer.writeString(this.serviceName, out);
-    InternalDataSerializer.writeSet(this.updatedParticipants, out);
+    out.writeInt(processorId);
+    InternalDataSerializer.invokeToData(txLockId, out);
+    DataSerializer.writeString(serviceName, out);
+    InternalDataSerializer.writeSet(updatedParticipants, out);
   }
 
   @Override
@@ -135,16 +135,16 @@ public class TXLockUpdateParticipantsMessage extends PooledDistributionMessage
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.processorId = in.readInt();
-    this.txLockId = TXLockIdImpl.createFromData(in);
-    this.serviceName = DataSerializer.readString(in);
-    this.updatedParticipants = InternalDataSerializer.readSet(in);
+    processorId = in.readInt();
+    txLockId = TXLockIdImpl.createFromData(in);
+    serviceName = DataSerializer.readString(in);
+    updatedParticipants = InternalDataSerializer.readSet(in);
   }
 
   @Override
   public String toString() {
-    return "TXLockUpdateParticipantsMessage for " + "service=" + this.serviceName
-        + "; updatedParticipants=" + this.updatedParticipants + "; txLockId=" + this.txLockId;
+    return "TXLockUpdateParticipantsMessage for " + "service=" + serviceName
+        + "; updatedParticipants=" + updatedParticipants + "; txLockId=" + txLockId;
   }
 
   /**
@@ -172,7 +172,7 @@ public class TXLockUpdateParticipantsMessage extends PooledDistributionMessage
     @Override
     public String toString() {
       return "TXLockUpdateParticipantsReplyMessage processorId=" + super.processorId + "; sender="
-          + this.getSender();
+          + getSender();
     }
   }
 

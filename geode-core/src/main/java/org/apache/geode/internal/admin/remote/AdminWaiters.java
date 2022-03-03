@@ -71,7 +71,7 @@ public class AdminWaiters {
           }
           throw new OperationCancelledException(
               String.format("Request sent to %s failed since member departed.%s",
-                  new Object[] {msg.getRecipient(), ""}));
+                  msg.getRecipient(), ""));
         }
         // sent it
 
@@ -80,21 +80,20 @@ public class AdminWaiters {
         if (!gotResponse) {
           if (dm.isCurrentMember(msg.getRecipient())) { // still here?
             // no one ever replied
-            StringBuffer sb = new StringBuffer("Administration request ");
-            sb.append(msg);
-            sb.append(" sent to ");
-            sb.append(msg.getRecipient());
-            sb.append(" timed out after ");
-            sb.append((timeout / 1000));
-            sb.append(" seconds.");
+            final String sb = "Administration request " + msg
+                + " sent to "
+                + msg.getRecipient()
+                + " timed out after "
+                + (timeout / 1000)
+                + " seconds.";
 
-            throw new RuntimeAdminException(sb.toString());
+            throw new RuntimeAdminException(sb);
           } // still here?
           // recipient vanished
           String s = " (" + msg + ")";
           throw new OperationCancelledException(
               String.format("Request sent to %s failed since member departed.%s",
-                  new Object[] {msg.getRecipient(), s}));
+                  msg.getRecipient(), s));
         } // !gotResponse
 
         result = msg.getResponse();
@@ -126,7 +125,7 @@ public class AdminWaiters {
    */
   public static void sendResponse(AdminResponse msg) {
     int id = msg.getMsgId();
-    ReplyProcessor21 processor = (ReplyProcessor21) ReplyProcessor21.getProcessor(id);
+    ReplyProcessor21 processor = ReplyProcessor21.getProcessor(id);
 
     if (processor == null) {
       return; // must've been cancelled

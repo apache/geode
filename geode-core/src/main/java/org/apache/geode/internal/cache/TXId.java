@@ -59,12 +59,12 @@ public class TXId extends ExternalizableDSFID implements TransactionId {
 
   @Override
   public InternalDistributedMember getMemberId() {
-    return this.memberId;
+    return memberId;
   }
 
   @Override
   public String toString() {
-    return ("TXId: " + this.memberId + ':' + this.uniqId);
+    return ("TXId: " + memberId + ':' + uniqId);
   }
 
   @Override
@@ -78,16 +78,16 @@ public class TXId extends ExternalizableDSFID implements TransactionId {
     }
 
     TXId otx = (TXId) o;
-    return (otx.uniqId == this.uniqId && ((otx.memberId == null && this.memberId == null)
-        || (otx.memberId != null && this.memberId != null && otx.memberId.equals(this.memberId))));
+    return (otx.uniqId == uniqId && ((otx.memberId == null && memberId == null)
+        || (otx.memberId != null && memberId != null && otx.memberId.equals(memberId))));
 
   }
 
   @Override
   public int hashCode() {
-    int retval = this.uniqId;
-    if (this.memberId != null) {
-      retval = retval * 37 + this.memberId.hashCode();
+    int retval = uniqId;
+    if (memberId != null) {
+      retval = retval * 37 + memberId.hashCode();
     }
     return retval;
   }
@@ -100,15 +100,15 @@ public class TXId extends ExternalizableDSFID implements TransactionId {
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    out.writeInt(this.uniqId);
-    InternalDataSerializer.invokeToData(this.memberId, out);
+    out.writeInt(uniqId);
+    InternalDataSerializer.invokeToData(memberId, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.uniqId = in.readInt();
-    this.memberId = DSFIDFactory.readInternalDistributedMember(in);
+    uniqId = in.readInt();
+    memberId = DSFIDFactory.readInternalDistributedMember(in);
   }
 
   public static TXId createFromData(DataInput in) throws IOException, ClassNotFoundException {
@@ -118,7 +118,7 @@ public class TXId extends ExternalizableDSFID implements TransactionId {
   }
 
   public int getUniqId() {
-    return this.uniqId;
+    return uniqId;
   }
 
   @Override

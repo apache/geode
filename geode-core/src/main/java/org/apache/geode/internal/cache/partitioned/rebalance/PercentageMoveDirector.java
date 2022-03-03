@@ -89,7 +89,7 @@ public class PercentageMoveDirector extends RebalanceDirectorAdapter {
 
 
     // Build the set of of buckets
-    orderedBuckets = new TreeSet<Bucket>(new LoadComparator());
+    orderedBuckets = new TreeSet<>(new LoadComparator());
     for (Bucket bucket : sourceMember.getBuckets()) {
       float bucketLoad = bucket.getLoad();
       if (bucketLoad <= loadToMove) {

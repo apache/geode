@@ -62,7 +62,6 @@ import org.apache.geode.util.internal.GeodeGlossary;
  */
 @Category({SessionTest.class})
 @RunWith(PerTestClassLoaderRunner.class)
-@SuppressWarnings("unchecked")
 public class SessionReplicationIntegrationJUnitTest {
 
   private MyServletTester tester;
@@ -357,7 +356,7 @@ public class SessionReplicationIntegrationJUnitTest {
         userCookie = new Cookie("myCookie", "0");
       } else {
         userCookie =
-            new Cookie("myCookie", Integer.toString(Integer.valueOf(userCookie.getValue()) + 1));
+            new Cookie("myCookie", Integer.toString(Integer.parseInt(userCookie.getValue()) + 1));
       }
 
       response.addCookie(userCookie);
@@ -1118,7 +1117,7 @@ public class SessionReplicationIntegrationJUnitTest {
 
   private Region getRegion() {
     // Yuck...
-    return ((GemfireSessionManager) ((SessionCachingFilter) filterHolder.getFilter())
-        .getSessionManager()).getCache().getCache().getRegion("gemfire_modules_sessions");
+    return ((GemfireSessionManager) SessionCachingFilter.getSessionManager()).getCache().getCache()
+        .getRegion("gemfire_modules_sessions");
   }
 }

@@ -28,10 +28,10 @@ public class NullOutOfOffHeapMemoryListener implements OutOfOffHeapMemoryListene
 
   @Override
   public void close() {
-    this.isClosed = true;
+    isClosed = true;
   }
 
   public boolean isClosed() {
-    return this.isClosed;
+    return isClosed;
   }
 }

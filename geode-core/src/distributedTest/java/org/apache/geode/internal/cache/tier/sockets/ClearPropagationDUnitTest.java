@@ -110,14 +110,14 @@ public class ClearPropagationDUnitTest extends JUnit4DistributedTestCase {
     client2 = host.getVM(3);
 
     int PORT1 =
-        ((Integer) server1.invoke(() -> ClearPropagationDUnitTest.createServerCache())).intValue();
+        server1.invoke(ClearPropagationDUnitTest::createServerCache);
     int PORT2 =
-        ((Integer) server2.invoke(() -> ClearPropagationDUnitTest.createServerCache())).intValue();
+        server2.invoke(ClearPropagationDUnitTest::createServerCache);
 
     client1.invoke(() -> ClearPropagationDUnitTest.createClientCache(
-        NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1), new Integer(PORT2)));
+        NetworkUtils.getServerHostName(server1.getHost()), PORT1, PORT2));
     client2.invoke(() -> ClearPropagationDUnitTest.createClientCache(
-        NetworkUtils.getServerHostName(server1.getHost()), new Integer(PORT1), new Integer(PORT2)));
+        NetworkUtils.getServerHostName(server1.getHost()), PORT1, PORT2));
 
     CacheObserverHolder.setInstance(new CacheObserverAdapter());
   }
@@ -151,10 +151,10 @@ public class ClearPropagationDUnitTest extends JUnit4DistributedTestCase {
 
 
     // First create entries on both servers via the two client
-    client1.invoke(() -> ClearPropagationDUnitTest.createEntriesK1andK2());
-    client2.invoke(() -> ClearPropagationDUnitTest.createEntriesK1andK2());
-    client1.invoke(() -> ClearPropagationDUnitTest.registerKeysK1andK2());
-    client2.invoke(() -> ClearPropagationDUnitTest.registerKeysK1andK2());
+    client1.invoke(ClearPropagationDUnitTest::createEntriesK1andK2);
+    client2.invoke(ClearPropagationDUnitTest::createEntriesK1andK2);
+    client1.invoke(ClearPropagationDUnitTest::registerKeysK1andK2);
+    client2.invoke(ClearPropagationDUnitTest::registerKeysK1andK2);
 
     server1.invoke(checkSizeRegion(2, false/* Do not Block */));
     server2.invoke(checkSizeRegion(2, false/* Do not Block */));
@@ -169,7 +169,7 @@ public class ClearPropagationDUnitTest extends JUnit4DistributedTestCase {
     server1.invoke(checkSizeRegion(0, false/* Do not Block */));
     server2.invoke(checkSizeRegion(0, false/* Do not Block */));
 
-    client1.invoke(() -> ClearPropagationDUnitTest.verifyNoUpdates());
+    client1.invoke(ClearPropagationDUnitTest::verifyNoUpdates);
 
   }
 
@@ -194,10 +194,10 @@ public class ClearPropagationDUnitTest extends JUnit4DistributedTestCase {
     client1.invoke(resetFlags);
     client2.invoke(resetFlags);
 
-    client1.invoke(() -> ClearPropagationDUnitTest.createEntriesK1andK2());
-    client2.invoke(() -> ClearPropagationDUnitTest.createEntriesK1andK2());
-    client1.invoke(() -> ClearPropagationDUnitTest.registerKeysK1andK2());
-    client2.invoke(() -> ClearPropagationDUnitTest.registerKeysK1andK2());
+    client1.invoke(ClearPropagationDUnitTest::createEntriesK1andK2);
+    client2.invoke(ClearPropagationDUnitTest::createEntriesK1andK2);
+    client1.invoke(ClearPropagationDUnitTest::registerKeysK1andK2);
+    client2.invoke(ClearPropagationDUnitTest::registerKeysK1andK2);
 
     server1.invoke(checkSizeRegion(2, false/* Do not Block */));
     server2.invoke(checkSizeRegion(2, false/* Do not Block */));
@@ -212,7 +212,7 @@ public class ClearPropagationDUnitTest extends JUnit4DistributedTestCase {
     server1.invoke(checkDestroyRegion(false/* Do not Block */));
     server2.invoke(checkDestroyRegion(false/* Do not Block */));
 
-    client1.invoke(() -> ClearPropagationDUnitTest.verifyNoUpdates());
+    client1.invoke(ClearPropagationDUnitTest::verifyNoUpdates);
 
   }
 
@@ -334,8 +334,8 @@ public class ClearPropagationDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void createClientCache(String host, Integer port1, Integer port2) throws Exception {
-    PORT1 = port1.intValue();
-    PORT2 = port2.intValue();
+    PORT1 = port1;
+    PORT2 = port2;
     Properties props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
@@ -390,7 +390,7 @@ public class ClearPropagationDUnitTest extends JUnit4DistributedTestCase {
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   public static void registerKeysK1andK2() {
@@ -443,10 +443,10 @@ public class ClearPropagationDUnitTest extends JUnit4DistributedTestCase {
   @Override
   public final void preTearDown() throws Exception {
     // close client
-    client1.invoke(() -> ClearPropagationDUnitTest.closeCache());
-    client2.invoke(() -> ClearPropagationDUnitTest.closeCache());
+    client1.invoke(ClearPropagationDUnitTest::closeCache);
+    client2.invoke(ClearPropagationDUnitTest::closeCache);
     // close server
-    server1.invoke(() -> ClearPropagationDUnitTest.closeCache());
-    server2.invoke(() -> ClearPropagationDUnitTest.closeCache());
+    server1.invoke(ClearPropagationDUnitTest::closeCache);
+    server2.invoke(ClearPropagationDUnitTest::closeCache);
   }
 }

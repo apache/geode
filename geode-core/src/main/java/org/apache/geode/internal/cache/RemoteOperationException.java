@@ -27,9 +27,9 @@ public class RemoteOperationException extends DataLocationException {
   private static final long serialVersionUID = -595988965679204903L;
 
   @SuppressWarnings("unused")
-  private boolean hasHash = false; // kept for serialization backwards compatibility
+  private final boolean hasHash = false; // kept for serialization backwards compatibility
   @SuppressWarnings("unused")
-  private int keyHash = 0; // kept for serialization backwards compatibility
+  private final int keyHash = 0; // kept for serialization backwards compatibility
 
   public RemoteOperationException(String message, Throwable cause) {
     super(message, cause);

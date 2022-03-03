@@ -153,7 +153,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   /**
    * Will the generated XML file reference an XML schema instead of the DTD?
    */
-  private boolean useSchema;
+  private final boolean useSchema;
   private boolean includeKeysValues = true;
   private final boolean generateDefaults;
 

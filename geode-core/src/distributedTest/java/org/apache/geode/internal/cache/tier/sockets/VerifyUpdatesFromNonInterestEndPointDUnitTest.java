@@ -83,15 +83,13 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends JUnit4Distrib
     vm1 = host.getVM(1);
     vm2 = host.getVM(2);
 
-    PORT1 = ((Integer) vm0
-        .invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createServerCache()))
-            .intValue();
-    PORT2 = ((Integer) vm1
-        .invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createServerCache()))
-            .intValue();
+    PORT1 = vm0
+        .invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::createServerCache);
+    PORT2 = vm1
+        .invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::createServerCache);
 
     vm2.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createClientCache(
-        NetworkUtils.getServerHostName(vm0.getHost()), new Integer(PORT1), new Integer(PORT2)));
+        NetworkUtils.getServerHostName(vm0.getHost()), PORT1, PORT2));
   }
 
   private Cache createCache(Properties props) throws Exception {
@@ -106,16 +104,16 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends JUnit4Distrib
 
   @Test
   public void testVerifyUpdatesFromNonInterestEndPoint() {
-    vm2.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createEntries());
-    vm1.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createEntries());
-    vm0.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.createEntries());
+    vm2.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::createEntries);
+    vm1.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::createEntries);
+    vm0.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::createEntries);
 
-    vm2.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.registerKey());
+    vm2.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::registerKey);
 
     vm2.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest
-        .acquireConnectionsAndPut(new Integer(PORT2)));
+        .acquireConnectionsAndPut(PORT2));
     Wait.pause(30000);
-    vm2.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.verifyPut());
+    vm2.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::verifyPut);
   }
 
   public static void acquireConnectionsAndPut(Integer port) {
@@ -129,12 +127,12 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends JUnit4Distrib
       Connection conn2 = pool.acquireConnection();
       ServerRegionProxy srp = new ServerRegionProxy(SEPARATOR + REGION_NAME, pool);
       // put on a connection which is is not interest list ep
-      if (conn1.getServer().getPort() == port.intValue()) {
+      if (conn1.getServer().getPort() == port) {
         srp.putOnForTestsOnly(conn1, "key-1", "server-value1", new EventID(new byte[] {1}, 1, 1),
             null);
         srp.putOnForTestsOnly(conn1, "key-2", "server-value2", new EventID(new byte[] {1}, 1, 2),
             null);
-      } else if (conn2.getServer().getPort() == port.intValue()) {
+      } else if (conn2.getServer().getPort() == port) {
         srp.putOnForTestsOnly(conn2, "key-1", "server-value1", new EventID(new byte[] {1}, 1, 1),
             null);
         srp.putOnForTestsOnly(conn2, "key-2", "server-value2", new EventID(new byte[] {1}, 1, 2),
@@ -170,8 +168,8 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends JUnit4Distrib
     cache = test.createCache(props);
     Pool p;
     try {
-      p = PoolManager.createFactory().addServer(host, port1.intValue())
-          .addServer(host, port2.intValue()).setSubscriptionEnabled(true)
+      p = PoolManager.createFactory().addServer(host, port1)
+          .addServer(host, port2).setSubscriptionEnabled(true)
           .setSubscriptionRedundancy(-1).setMinConnections(6).setSocketBufferSize(32768)
           .setReadTimeout(2000)
           // .setRetryInterval(250)
@@ -201,7 +199,7 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends JUnit4Distrib
     server1.setPort(port);
     server1.setNotifyBySubscription(true);
     server1.start();
-    return new Integer(server1.getPort());
+    return server1.getPort();
   }
 
   public static void registerKey() {
@@ -237,9 +235,9 @@ public class VerifyUpdatesFromNonInterestEndPointDUnitTest extends JUnit4Distrib
   @Override
   public final void preTearDown() throws Exception {
     // close client
-    vm2.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.closeCache());
+    vm2.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::closeCache);
     // close server
-    vm0.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.closeCache());
-    vm1.invoke(() -> VerifyUpdatesFromNonInterestEndPointDUnitTest.closeCache());
+    vm0.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::closeCache);
+    vm1.invoke(VerifyUpdatesFromNonInterestEndPointDUnitTest::closeCache);
   }
 }

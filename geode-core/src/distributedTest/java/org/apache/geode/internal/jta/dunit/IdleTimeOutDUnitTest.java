@@ -60,7 +60,7 @@ public class IdleTimeOutDUnitTest extends JUnit4DistributedTestCase {
     // String lineSep = System.getProperty("\n");
     BufferedReader br = new BufferedReader(new FileReader(filename));
     String nextLine = "";
-    StringBuffer sb = new StringBuffer();
+    StringBuilder sb = new StringBuilder();
     while ((nextLine = br.readLine()) != null) {
       sb.append(nextLine);
       //
@@ -116,7 +116,7 @@ public class IdleTimeOutDUnitTest extends JUnit4DistributedTestCase {
     int n1 = str.indexOf(search);
     LogWriterUtils.getLogWriter().info("Start Index = " + n1);
     int n2 = str.indexOf(last_search, n1);
-    StringBuffer sbuff = new StringBuffer(str);
+    StringBuilder sbuff = new StringBuilder(str);
     LogWriterUtils.getLogWriter().info("END Index = " + n2);
     String modified_str = sbuff.replace(n1, n2, new_str).toString();
     return modified_str;
@@ -241,7 +241,7 @@ public class IdleTimeOutDUnitTest extends JUnit4DistributedTestCase {
   public final void postSetUp() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    Object o[] = new Object[1];
+    Object[] o = new Object[1];
     o[0] = "IdleTimeOutDUnitTest";
     vm0.invoke(IdleTimeOutDUnitTest.class, "init", o);
   }
@@ -249,15 +249,15 @@ public class IdleTimeOutDUnitTest extends JUnit4DistributedTestCase {
   @Override
   public final void preTearDown() throws Exception {
     VM vm0 = Host.getHost(0).getVM(0);
-    vm0.invoke(() -> IdleTimeOutDUnitTest.closeCache());
+    vm0.invoke(IdleTimeOutDUnitTest::closeCache);
   }
 
   @Test
   public void testIdleTimeOut() throws Throwable {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    vm0.invoke(() -> IdleTimeOutDUnitTest.runTest1());
-    AsyncInvocation asyncObj = vm0.invokeAsync(() -> IdleTimeOutDUnitTest.runTest2());
+    vm0.invoke(IdleTimeOutDUnitTest::runTest1);
+    AsyncInvocation asyncObj = vm0.invokeAsync(IdleTimeOutDUnitTest::runTest2);
     ThreadUtils.join(asyncObj, 30 * 1000);
     if (asyncObj.exceptionOccurred()) {
       Assert.fail("asyncObj failed", asyncObj.getException());

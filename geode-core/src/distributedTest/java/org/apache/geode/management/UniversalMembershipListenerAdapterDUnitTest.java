@@ -269,7 +269,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     int[] ports = new int[1];
 
     // create CacheServer in controller vm...
@@ -527,7 +527,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     int[] ports = new int[1];
 
     // create CacheServer in controller vm...
@@ -1047,11 +1047,11 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
   }
 
   private void assertArrayTrue(String msg, boolean[] array) {
-    for (int i = 0; i < array.length; i++) {
+    for (final boolean b : array) {
       if (msg == null) {
-        assertThat(array[i]).isTrue();
+        assertThat(b).isTrue();
       } else {
-        assertThat(array[i]).as(msg).isTrue();
+        assertThat(b).as(msg).isTrue();
       }
     }
   }
@@ -1149,7 +1149,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     int[] ports = getRandomAvailableTCPPorts(1);
     assertThat(ports[0] != 0).isTrue();
 
@@ -1646,12 +1646,12 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
     }
 
     void awaitNotification(final long timeout, final TimeUnit unit) {
-      await().until(() -> notified.get());
+      await().until(notified::get);
     }
 
     void awaitWithoutNotification(final long timeout, final TimeUnit unit) {
       try {
-        await().atMost(timeout, unit).until(() -> notified.get());
+        await().atMost(timeout, unit).until(notified::get);
       } catch (ConditionTimeoutException expected) {
         // do nothing
       }
@@ -1673,7 +1673,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
 
   private static class FakeDistributedMember implements DistributedMember {
 
-    private String host;
+    private final String host;
 
     FakeDistributedMember(String host) {
       this.host = host;
@@ -1686,7 +1686,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
 
     @Override
     public String getHost() {
-      return this.host;
+      return host;
     }
 
     @Override
@@ -1701,7 +1701,7 @@ public class UniversalMembershipListenerAdapterDUnitTest extends ClientServerTes
 
     @Override
     public String getId() {
-      return this.host;
+      return host;
     }
 
     @Override

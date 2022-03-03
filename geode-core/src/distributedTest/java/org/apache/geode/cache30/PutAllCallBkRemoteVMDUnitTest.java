@@ -77,8 +77,8 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(() -> PutAllCallBkRemoteVMDUnitTest.createCacheForVM0());
-    vm1.invoke(() -> PutAllCallBkRemoteVMDUnitTest.createCacheForVM1());
+    vm0.invoke(PutAllCallBkRemoteVMDUnitTest::createCacheForVM0);
+    vm1.invoke(PutAllCallBkRemoteVMDUnitTest::createCacheForVM1);
     LogWriterUtils.getLogWriter().info("Cache created successfully");
   }
 
@@ -87,8 +87,8 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(() -> PutAllCallBkRemoteVMDUnitTest.closeCache());
-    vm1.invoke(() -> PutAllCallBkRemoteVMDUnitTest.closeCache());
+    vm0.invoke(PutAllCallBkRemoteVMDUnitTest::closeCache);
+    vm1.invoke(PutAllCallBkRemoteVMDUnitTest::closeCache);
   }
 
   public static synchronized void createCacheForVM0() {
@@ -161,7 +161,7 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
         paperRegion.put("callbackCame", "false");
         try {
           for (int i = 1; i < 21; i++) {
-            m.put(new Integer(i), java.lang.Integer.toString(i));
+            m.put(i, java.lang.Integer.toString(i));
           }
           region.putAll(m);
 
@@ -176,13 +176,10 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
           @Override
           public boolean done() {
             int size = region.size();
-            if (size != ((Integer) paperRegion.get("afterCreate")).intValue() - 1) {
+            if (size != (Integer) paperRegion.get("afterCreate") - 1) {
               return false;
             }
-            if (size != ((Integer) paperRegion.get("beforeCreate")).intValue() - 1) {
-              return false;
-            }
-            return true;
+            return size == (Integer) paperRegion.get("beforeCreate") - 1;
           }
 
           @Override
@@ -201,9 +198,9 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
         if (!notified) {
           try {
             synchronized (PutAllCallBkRemoteVMDUnitTest.class) {
-              this.wait();
+              wait();
             }
-          } catch (Exception e) {
+          } catch (Exception ignored) {
 
           }
         }
@@ -231,12 +228,12 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
         paperRegion.put("callbackCame", "false");
         // to invoke afterUpdate we should make sure that entries are already present
         for (int i = 0; i < 5; i++) {
-          region.put(new Integer(i), new String("region" + i));
+          region.put(i, "region" + i);
         }
 
         Map m = new HashMap();
         for (int i = 0; i < 5; i++) {
-          m.put(new Integer(i), new String("map" + i));
+          m.put(i, "map" + i);
         }
 
         region.putAll(m);
@@ -247,8 +244,8 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
         // //
         // }
 
-        assertEquals(region.size(), ((Integer) paperRegion.get("beforeUpdate")).intValue() - 1);
-        assertEquals(region.size(), ((Integer) paperRegion.get("afterUpdate")).intValue() - 1);
+        assertEquals(region.size(), (Integer) paperRegion.get("beforeUpdate") - 1);
+        assertEquals(region.size(), (Integer) paperRegion.get("afterUpdate") - 1);
       }
     });
 
@@ -259,9 +256,9 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
         if (!notified) {
           try {
             synchronized (PutAllCallBkRemoteVMDUnitTest.class) {
-              this.wait();
+              wait();
             }
-          } catch (Exception e) {
+          } catch (Exception ignored) {
 
           }
         }
@@ -295,7 +292,7 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
     int i = 5, cntr = 0;
     try {
       while (cntr < 20) {
-        m.put(new Integer(i), new String("map" + i));
+        m.put(i, "map" + i);
         i++;
         cntr++;
       }
@@ -344,9 +341,9 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
       paperRegion.put("callbackCame", "true");
       Integer counter = (Integer) paperRegion.get("afterCreate");
       if (counter == null) {
-        counter = new Integer(1);
+        counter = 1;
       }
-      paperRegion.put("afterCreate", new Integer(counter.intValue() + 1));
+      paperRegion.put("afterCreate", counter + 1);
 
       LogWriterUtils.getLogWriter().info("In afterCreate" + putAllcounter);
       if (putAllcounter == forCreate) {
@@ -355,9 +352,9 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
       }
       try {
         synchronized (PutAllCallBkRemoteVMDUnitTest.class) {
-          this.notify();
+          notify();
         }
-      } catch (Exception e) {
+      } catch (Exception ignored) {
 
       }
       notified = true;
@@ -370,9 +367,9 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
       paperRegion.put("callbackCame", "true");
       Integer counter = (Integer) paperRegion.get("afterUpdate");
       if (counter == null) {
-        counter = new Integer(1);
+        counter = 1;
       }
-      paperRegion.put("afterUpdate", new Integer(counter.intValue() + 1));
+      paperRegion.put("afterUpdate", counter + 1);
       LogWriterUtils.getLogWriter().info("In afterUpdate" + afterUpdateputAllcounter);
       if (afterUpdateputAllcounter == forUpdate) {
         LogWriterUtils.getLogWriter().info("performingtrue afterUpdate");
@@ -380,9 +377,9 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
       }
       try {
         synchronized (PutAllCallBkRemoteVMDUnitTest.class) {
-          this.notify();
+          notify();
         }
-      } catch (Exception e) {
+      } catch (Exception ignored) {
 
       }
 
@@ -399,9 +396,9 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
     public void beforeCreate(EntryEvent event) {
       Integer counter = (Integer) paperRegion.get("beforeCreate");
       if (counter == null) {
-        counter = new Integer(1);
+        counter = 1;
       }
-      paperRegion.put("beforeCreate", new Integer(counter.intValue() + 1));
+      paperRegion.put("beforeCreate", counter + 1);
       LogWriterUtils.getLogWriter().info("*******BeforeCreate***** event=" + event);
     }
 
@@ -409,9 +406,9 @@ public class PutAllCallBkRemoteVMDUnitTest extends JUnit4DistributedTestCase {
     public void beforeUpdate(EntryEvent event) {
       Integer counter = (Integer) paperRegion.get("beforeUpdate");
       if (counter == null) {
-        counter = new Integer(1);
+        counter = 1;
       }
-      paperRegion.put("beforeUpdate", new Integer(counter.intValue() + 1));
+      paperRegion.put("beforeUpdate", counter + 1);
       LogWriterUtils.getLogWriter().info("In beforeUpdate" + beforeUpdateputAllcounter);
       LogWriterUtils.getLogWriter().info("*******BeforeUpdate***** event=" + event);
     }

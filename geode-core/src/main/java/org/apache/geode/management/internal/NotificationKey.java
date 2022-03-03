@@ -14,23 +14,24 @@
  */
 package org.apache.geode.management.internal;
 
+import java.io.Serializable;
+
 import javax.management.ObjectName;
 
 /**
  * This class is used as a key for Notification region Only using ObjectName as key will overwrite
  * entries if put rate for notification is high.
- *
- *
  */
-public class NotificationKey implements java.io.Serializable {
+public class NotificationKey implements Serializable {
+  private static final long serialVersionUID = 2207984824068608930L;
 
-  private ObjectName objectName;
+  private final ObjectName objectName;
 
-  private long currentTime;
+  private final long currentTime;
 
   public NotificationKey(ObjectName objectName) {
     this.objectName = objectName;
-    this.currentTime = System.nanoTime();
+    currentTime = System.nanoTime();
   }
 
   public ObjectName getObjectName() {
@@ -48,10 +49,8 @@ public class NotificationKey implements java.io.Serializable {
     }
     if (anObject instanceof NotificationKey) {
       NotificationKey anotherFedComp = (NotificationKey) anObject;
-      if (anotherFedComp.objectName.equals(this.objectName)
-          && anotherFedComp.currentTime == this.currentTime) {
-        return true;
-      }
+      return anotherFedComp.objectName.equals(objectName)
+          && anotherFedComp.currentTime == currentTime;
     }
 
     return false;

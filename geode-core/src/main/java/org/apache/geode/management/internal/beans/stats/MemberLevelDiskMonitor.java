@@ -311,7 +311,7 @@ public class MemberLevelDiskMonitor extends MBeanStatsMonitor {
     void decreaseDiskStoreStats() {
       synchronized (statsMap) {
         queueSize -= statsMap.getOrDefault(StatsKey.DISK_QUEUE_SIZE, 0).intValue();
-        backupsInProgress -= statsMap.getOrDefault(StatsKey.BACKUPS_IN_PROGRESS, 0).intValue();;
+        backupsInProgress -= statsMap.getOrDefault(StatsKey.BACKUPS_IN_PROGRESS, 0).intValue();
         removed = true;
       }
     }

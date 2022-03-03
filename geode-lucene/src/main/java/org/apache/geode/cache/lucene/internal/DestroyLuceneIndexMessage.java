@@ -65,24 +65,24 @@ public class DestroyLuceneIndexMessage extends PooledDistributionMessage
     ReplyException replyException = null;
     try {
       if (logger.isDebugEnabled()) {
-        logger.debug("DestroyLuceneIndexMessage: Destroying regionPath=" + this.regionPath
-            + "; indexName=" + this.indexName);
+        logger.debug("DestroyLuceneIndexMessage: Destroying regionPath=" + regionPath
+            + "; indexName=" + indexName);
       }
       try {
         InternalCache cache = dm.getCache();
         LuceneServiceImpl impl = (LuceneServiceImpl) LuceneServiceProvider.get(cache);
         try {
-          impl.destroyIndex(this.indexName, this.regionPath, false);
+          impl.destroyIndex(indexName, regionPath, false);
           if (logger.isDebugEnabled()) {
-            logger.debug("DestroyLuceneIndexMessage: Destroyed regionPath=" + this.regionPath
-                + "; indexName=" + this.indexName);
+            logger.debug("DestroyLuceneIndexMessage: Destroyed regionPath=" + regionPath
+                + "; indexName=" + indexName);
           }
         } catch (IllegalArgumentException e) {
           // If the IllegalArgumentException is index not found, then its ok; otherwise rethrow it.
           String fullRegionPath =
               regionPath.startsWith(SEPARATOR) ? regionPath : SEPARATOR + regionPath;
           String indexNotFoundMessage = String.format("Lucene index %s was not found in region %s",
-              this.indexName, fullRegionPath);
+              indexName, fullRegionPath);
           if (!e.getLocalizedMessage().equals(indexNotFoundMessage)) {
             throw e;
           }
@@ -92,14 +92,14 @@ public class DestroyLuceneIndexMessage extends PooledDistributionMessage
         if (logger.isDebugEnabled()) {
           logger.debug(
               "DestroyLuceneIndexMessage: Caught the following exception attempting to destroy indexName="
-                  + this.indexName + "; regionPath=" + this.regionPath + ":",
+                  + indexName + "; regionPath=" + regionPath + ":",
               e);
         }
       }
     } finally {
       ReplyMessage replyMsg = new ReplyMessage();
       replyMsg.setRecipient(getSender());
-      replyMsg.setProcessorId(this.processorId);
+      replyMsg.setProcessorId(processorId);
       if (replyException != null) {
         replyMsg.setException(replyException);
       }
@@ -116,17 +116,17 @@ public class DestroyLuceneIndexMessage extends PooledDistributionMessage
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeInt(this.processorId);
-    DataSerializer.writeString(this.regionPath, out);
-    DataSerializer.writeString(this.indexName, out);
+    out.writeInt(processorId);
+    DataSerializer.writeString(regionPath, out);
+    DataSerializer.writeString(indexName, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.processorId = in.readInt();
-    this.regionPath = DataSerializer.readString(in);
-    this.indexName = DataSerializer.readString(in);
+    processorId = in.readInt();
+    regionPath = DataSerializer.readString(in);
+    indexName = DataSerializer.readString(in);
   }
 }

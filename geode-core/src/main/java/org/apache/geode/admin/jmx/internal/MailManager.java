@@ -98,8 +98,8 @@ public class MailManager {
     String mailToList = getMailToAddressesAsString();
 
     try {
-      for (int i = 0; i < mailToAddresses.length; i++) {
-        mimeMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(mailToAddresses[i]));
+      for (final String mailToAddress : mailToAddresses) {
+        mimeMessage.addRecipient(Message.RecipientType.TO, new InternetAddress(mailToAddress));
       }
 
       if (subject == null) {
@@ -127,22 +127,20 @@ public class MailManager {
       // error condition, so you also need to check to see if the JVM
       // is still usable:
       SystemFailure.checkFailure();
-      StringBuilder buf = new StringBuilder();
-      buf.append("An exception occurred while sending email.");
-      buf.append(
-          "Unable to send email. Please check your mail settings and the log file.");
-      buf.append("\n\n").append(
-          String.format("Exception message: %s", ex.getMessage()));
-      buf.append("\n\n").append(
-          "Following email was not delivered:");
-      buf.append("\n\t")
-          .append(String.format("Mail Host: %s", mailHost));
-      buf.append("\n\t").append(String.format("From: %s", mailFrom));
-      buf.append("\n\t").append(String.format("To: %s", mailToList));
-      buf.append("\n\t").append(String.format("Subject: %s", subject));
-      buf.append("\n\t").append(String.format("Content: %s", message));
+      final String buf = "An exception occurred while sending email."
+          + "Unable to send email. Please check your mail settings and the log file."
+          + "\n\n"
+          + String.format("Exception message: %s", ex.getMessage())
+          + "\n\n"
+          + "Following email was not delivered:"
+          + "\n\t"
+          + String.format("Mail Host: %s", mailHost)
+          + "\n\t" + String.format("From: %s", mailFrom)
+          + "\n\t" + String.format("To: %s", mailToList)
+          + "\n\t" + String.format("Subject: %s", subject)
+          + "\n\t" + String.format("Content: %s", message);
 
-      logger.error(buf.toString(), ex);
+      logger.error(buf, ex);
     }
     if (logger.isTraceEnabled()) {
       logger.trace("Exited MailManager:processEmail");
@@ -158,9 +156,9 @@ public class MailManager {
    * @return All the registered email id as string
    */
   private String getMailToAddressesAsString() {
-    StringBuffer mailToList = new StringBuffer();
-    for (int i = 0; i < mailToAddresses.length; i++) {
-      mailToList.append(mailToAddresses[i]);
+    StringBuilder mailToList = new StringBuilder();
+    for (final String mailToAddress : mailToAddresses) {
+      mailToList.append(mailToAddress);
       mailToList.append(", ");
     }
     return mailToList.toString();
@@ -188,7 +186,7 @@ public class MailManager {
    * @param host mail host server name
    */
   public void setMailHost(String host) {
-    this.mailHost = host;
+    mailHost = host;
   }
 
   /**
@@ -196,7 +194,7 @@ public class MailManager {
    * @return mail host server name
    */
   public String getMailHost() {
-    return this.mailHost;
+    return mailHost;
   }
 
   /**
@@ -253,16 +251,16 @@ public class MailManager {
     mailHost = mailProperties.getProperty(PROPERTY_MAIL_HOST);
     mailFrom = mailProperties.getProperty(PROPERTY_MAIL_FROM);
     String mailList = mailProperties.getProperty(PROPERTY_MAIL_TO_LIST, "");
-    String split[] = mailList.split(",");
+    String[] split = mailList.split(",");
     removeAllMailToAddresses();
-    for (int i = 0; i < split.length; i++) {
-      addMailToAddress(split[i].trim());
+    for (final String s : split) {
+      addMailToAddress(s.trim());
     }
   }
 
   @Override
   public String toString() {
-    StringBuffer buffer = new StringBuffer(200);
+    StringBuilder buffer = new StringBuilder(200);
     buffer.append("[Mail Host: ");
     buffer.append(getMailHost());
     buffer.append("]");
@@ -272,8 +270,8 @@ public class MailManager {
     buffer.append(" [Mail To: ");
     if (mailToAddresses.length > 0) {
 
-      for (int i = 0; i < mailToAddresses.length; i++) {
-        buffer.append(mailToAddresses[i]);
+      for (final String mailToAddress : mailToAddresses) {
+        buffer.append(mailToAddress);
         buffer.append(", ");
       }
       buffer.replace(buffer.length() - 2, buffer.length(), "");
@@ -284,9 +282,9 @@ public class MailManager {
     return buffer.toString();
   }
 
-  private HashSet mailToSet = new HashSet();
+  private final HashSet mailToSet = new HashSet();
 
-  private String mailToAddresses[] = new String[0];
+  private String[] mailToAddresses = new String[0];
 
   protected String mailHost;
 
@@ -314,7 +312,7 @@ public class MailManager {
     }
   }
 
-  public static void main(String args[]) {
+  public static void main(String[] args) {
     MailManager mailManager = new MailManager("mailsrv1.gemstone.com", "hkhanna@gemstone.com");
     mailManager.sendEmail("Alert!", "Test");
   }

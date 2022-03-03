@@ -68,7 +68,7 @@ public class StatListenerMessage extends PooledDistributionMessage implements Ad
   public void process(ClusterDistributionManager dm) {
     RemoteGfManagerAgent agent = dm.getAgent();
     if (agent != null) {
-      RemoteGemFireVM mgr = agent.getMemberById(this.getSender());
+      RemoteGemFireVM mgr = agent.getMemberById(getSender());
       if (mgr != null) {
         mgr.callStatListeners(timestamp, listenerIds, values);
       }
@@ -89,11 +89,11 @@ public class StatListenerMessage extends PooledDistributionMessage implements Ad
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    out.writeLong(this.timestamp);
-    out.writeInt(this.changeCount);
-    for (int i = 0; i < this.changeCount; i++) {
-      out.writeInt(this.listenerIds[i]);
-      out.writeDouble(this.values[i]);
+    out.writeLong(timestamp);
+    out.writeInt(changeCount);
+    for (int i = 0; i < changeCount; i++) {
+      out.writeInt(listenerIds[i]);
+      out.writeDouble(values[i]);
     }
   }
 
@@ -101,13 +101,13 @@ public class StatListenerMessage extends PooledDistributionMessage implements Ad
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.timestamp = in.readLong();
-    this.changeCount = in.readInt();
-    this.listenerIds = new int[this.changeCount];
-    this.values = new double[this.changeCount];
-    for (int i = 0; i < this.changeCount; i++) {
-      this.listenerIds[i] = in.readInt();
-      this.values[i] = in.readDouble();
+    timestamp = in.readLong();
+    changeCount = in.readInt();
+    listenerIds = new int[changeCount];
+    values = new double[changeCount];
+    for (int i = 0; i < changeCount; i++) {
+      listenerIds[i] = in.readInt();
+      values[i] = in.readDouble();
     }
   }
 

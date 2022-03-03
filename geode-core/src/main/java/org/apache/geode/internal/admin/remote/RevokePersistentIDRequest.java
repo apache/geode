@@ -22,7 +22,6 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -71,7 +70,7 @@ public class RevokePersistentIDRequest extends CliLegacyMessage {
     } catch (InterruptedException e) {
       logger.warn(e);
     }
-    request.createResponse((ClusterDistributionManager) dm);
+    request.createResponse(dm);
   }
 
   @Override
@@ -79,10 +78,10 @@ public class RevokePersistentIDRequest extends CliLegacyMessage {
     InternalCache cache = dm.getCache();
     if (cache != null && !cache.isClosed()) {
       PersistentMemberManager mm = cache.getPersistentMemberManager();
-      mm.revokeMember(this.pattern);
+      mm.revokeMember(pattern);
     }
 
-    return new RevokePersistentIDResponse(this.getSender());
+    return new RevokePersistentIDResponse(getSender());
   }
 
   @Override
@@ -94,14 +93,14 @@ public class RevokePersistentIDRequest extends CliLegacyMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.pattern = new PersistentMemberPattern();
-    InternalDataSerializer.invokeFromData(this.pattern, in);
+    pattern = new PersistentMemberPattern();
+    InternalDataSerializer.invokeFromData(pattern, in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    InternalDataSerializer.invokeToData(this.pattern, out);
+    InternalDataSerializer.invokeToData(pattern, out);
   }
 }

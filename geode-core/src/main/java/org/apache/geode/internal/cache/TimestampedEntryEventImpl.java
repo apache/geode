@@ -23,10 +23,10 @@ import org.apache.geode.internal.offheap.annotations.Retained;
  */
 public class TimestampedEntryEventImpl extends EntryEventImpl implements TimestampedEntryEvent {
 
-  private int newDSID;
-  private int oldDSID;
-  private long newTimestamp;
-  private long oldTimestamp;
+  private final int newDSID;
+  private final int oldDSID;
+  private final long newTimestamp;
+  private final long oldTimestamp;
 
   @Retained
   public TimestampedEntryEventImpl(EntryEventImpl event, int newDSID, int oldDSID,
@@ -45,7 +45,7 @@ public class TimestampedEntryEventImpl extends EntryEventImpl implements Timesta
    */
   @Override
   public int getNewDistributedSystemID() {
-    return this.newDSID;
+    return newDSID;
   }
 
   /*
@@ -55,7 +55,7 @@ public class TimestampedEntryEventImpl extends EntryEventImpl implements Timesta
    */
   @Override
   public int getOldDistributedSystemID() {
-    return this.oldDSID;
+    return oldDSID;
   }
 
   /*
@@ -65,7 +65,7 @@ public class TimestampedEntryEventImpl extends EntryEventImpl implements Timesta
    */
   @Override
   public long getNewTimestamp() {
-    return this.newTimestamp;
+    return newTimestamp;
   }
 
   /*
@@ -75,7 +75,7 @@ public class TimestampedEntryEventImpl extends EntryEventImpl implements Timesta
    */
   @Override
   public long getOldTimestamp() {
-    return this.oldTimestamp;
+    return oldTimestamp;
   }
 
 }

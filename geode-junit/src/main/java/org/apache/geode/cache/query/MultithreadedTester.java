@@ -56,7 +56,7 @@ public class MultithreadedTester {
   }
 
   private static Collection<Object> convertFutureToResult(final Collection<Future> futures) {
-    List<Object> results = new LinkedList<Object>();
+    List<Object> results = new LinkedList<>();
     futures.forEach(future -> {
       try {
         results.add(future.get());

@@ -1996,7 +1996,7 @@ public class Oplog implements CompactableOplog, Flushable {
       }
     }
     if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       for (int i = 0; i < OPLOG_TYPE.getLen(); i++) {
         sb.append(" ").append(seq[i]);
       }
@@ -6322,7 +6322,7 @@ public class Oplog implements CompactableOplog, Flushable {
      * stale, we'll filter out these entries later.
      */
     private final long offsetInOplog;
-    private VersionHolder versionTag;
+    private final VersionHolder versionTag;
 
     public KRFEntry(DiskRegionView drv, DiskEntry de, VersionHolder tag) {
       this.de = de;

@@ -64,7 +64,7 @@ public class ExportDataIntegrationTest {
 
   public static class StringWrapper implements DataSerializable {
 
-    private String value;
+    private final String value;
 
     public StringWrapper(String string) {
       value = string;

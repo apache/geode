@@ -133,11 +133,11 @@ public class MapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
     // force enough memory
     Long[] junk = new Long[n];
     for (int i = 0; i < junk.length; ++i) {
-      junk[i] = new Long(i);
+      junk[i] = (long) i;
     }
     int sum = 0;
     for (int i = 0; i < junk.length; ++i) {
-      sum += (int) (junk[i].longValue() + i);
+      sum += (int) (junk[i] + i);
     }
     if (sum == 0) {
       System.out.println("Useless number = " + sum);
@@ -285,8 +285,8 @@ public class MapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
   static void ittest1(Map s, int size) {
     int sum = 0;
     timer.start("Iter Key               ", size);
-    for (Iterator it = s.keySet().iterator(); it.hasNext();) {
-      if (it.next() != MISSING) {
+    for (final Object o : s.keySet()) {
+      if (o != MISSING) {
         ++sum;
       }
     }
@@ -297,8 +297,8 @@ public class MapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
   static void ittest2(Map s, int size) {
     int sum = 0;
     timer.start("Iter Value             ", size);
-    for (Iterator it = s.values().iterator(); it.hasNext();) {
-      if (it.next() != MISSING) {
+    for (final Object o : s.values()) {
+      if (o != MISSING) {
         ++sum;
       }
     }
@@ -310,8 +310,8 @@ public class MapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
     int sum = 0;
     int hsum = 0;
     timer.start("Iter Entry             ", size);
-    for (Iterator it = s.entrySet().iterator(); it.hasNext();) {
-      Map.Entry e = (Map.Entry) it.next();
+    for (final Object o : s.entrySet()) {
+      Map.Entry e = (Map.Entry) o;
       if (e != MISSING) {
         hsum += System.identityHashCode(e.getKey());
         hsum += System.identityHashCode(e.getValue());
@@ -460,7 +460,7 @@ public class MapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
     timer.start("Put (putAll)           ", size * 2);
     Map s2 = null;
     try {
-      s2 = (Map) (s.getClass().newInstance());
+      s2 = s.getClass().newInstance();
       s2.putAll(s);
     } catch (Exception e) {
       e.printStackTrace();
@@ -486,8 +486,7 @@ public class MapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
     timer.start("Iter EntrySet contains ", size * 2);
     Set es2 = s2.entrySet();
     int sum = 0;
-    for (Iterator i1 = s.entrySet().iterator(); i1.hasNext();) {
-      Object entry = i1.next();
+    for (Object entry : s.entrySet()) {
       if (es2.contains(entry)) {
         ++sum;
       }
@@ -534,7 +533,7 @@ public class MapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
     System.out.print("Serialize              : ");
 
     for (int i = 0; i < size; i++) {
-      s.put(new Integer(i), Boolean.TRUE);
+      s.put(i, Boolean.TRUE);
     }
 
     long startTime = System.currentTimeMillis();
@@ -596,8 +595,8 @@ public class MapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
     static final java.util.TreeMap accum = new java.util.TreeMap();
 
     static void printStats() {
-      for (Iterator it = accum.entrySet().iterator(); it.hasNext();) {
-        Map.Entry e = (Map.Entry) (it.next());
+      for (final Object o : accum.entrySet()) {
+        Map.Entry e = (Map.Entry) o;
         Stats stats = ((Stats) (e.getValue()));
         int n = stats.number;
         double t;
@@ -613,7 +612,7 @@ public class MapCheckJUnitTest extends JSR166TestCase { // TODO: reformat
 
     void start(String name, long numOps) {
       this.name = name;
-      this.cname = classify();
+      cname = classify();
       this.numOps = numOps;
       startTime = System.currentTimeMillis();
     }

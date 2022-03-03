@@ -20,8 +20,9 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.cache.execute.PRColocationDUnitTestHelper;
+import org.apache.geode.internal.cache.execute.PRColocationDistributedTestHelper;
 
+@SuppressWarnings("serial")
 public class Customer implements DataSerializable {
   String name;
 
@@ -33,25 +34,25 @@ public class Customer implements DataSerializable {
 
   public Customer(String name, String address) {
     this.name = name;
-    this.address = address + PRColocationDUnitTestHelper.getDefaultAddOnString();
+    this.address = address + PRColocationDistributedTestHelper.getDefaultAddOnString();
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.name = DataSerializer.readString(in);
-    this.address = DataSerializer.readString(in);
+    name = DataSerializer.readString(in);
+    address = DataSerializer.readString(in);
 
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.name, out);
-    DataSerializer.writeString(this.address, out);
+    DataSerializer.writeString(name, out);
+    DataSerializer.writeString(address, out);
   }
 
   @Override
   public String toString() {
-    return "Customer { name=" + this.name + " address=" + this.address + "}";
+    return "Customer { name=" + name + " address=" + address + "}";
   }
 
   @Override
@@ -70,7 +71,7 @@ public class Customer implements DataSerializable {
 
   @Override
   public int hashCode() {
-    return this.name.hashCode() + this.address.hashCode();
+    return name.hashCode() + address.hashCode();
   }
 
 }

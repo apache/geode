@@ -20,7 +20,6 @@ import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BE
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -59,11 +58,12 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
 
   private static final Logger logger = LogService.getLogger();
 
-  private HashMap regionToDispatchedKeysMap;
+  private Map<String, Map<Integer, List<Object>>> regionToDispatchedKeysMap;
 
   public ParallelQueueRemovalMessage() {}
 
-  public ParallelQueueRemovalMessage(HashMap rgnToDispatchedKeysMap) {
+  public ParallelQueueRemovalMessage(
+      Map<String, Map<Integer, List<Object>>> rgnToDispatchedKeysMap) {
     this.regionToDispatchedKeysMap = rgnToDispatchedKeysMap;
   }
 
@@ -75,10 +75,8 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
   @Override
   public String toString() {
     String cname = getShortClassName();
-    final StringBuilder sb = new StringBuilder(cname);
-    sb.append("regionToDispatchedKeysMap=" + regionToDispatchedKeysMap);
-    sb.append(" sender=").append(getSender());
-    return sb.toString();
+    return cname + "regionToDispatchedKeysMap=" + regionToDispatchedKeysMap
+        + " sender=" + getSender();
   }
 
   @Override
@@ -99,7 +97,7 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
             // Find the map: bucketId to dispatchedKeys
             // Find the bucket
             // Destroy the keys
-            Map bucketIdToDispatchedKeys = (Map) this.regionToDispatchedKeysMap.get(regionName);
+            Map bucketIdToDispatchedKeys = (Map) regionToDispatchedKeysMap.get(regionName);
             for (Object bId : bucketIdToDispatchedKeys.keySet()) {
               final String bucketFullPath =
                   SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME + SEPARATOR
@@ -112,7 +110,7 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
                     bucketFullPath, brq);
               }
 
-              List dispatchedKeys = (List) bucketIdToDispatchedKeys.get((Integer) bId);
+              List dispatchedKeys = (List) bucketIdToDispatchedKeys.get(bId);
               if (dispatchedKeys != null) {
                 for (Object key : dispatchedKeys) {
                   // First, clear the Event from tempQueueEvents at AbstractGatewaySender level, if
@@ -186,7 +184,7 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
       } catch (Exception e) {
         logger.fatal(String.format(
             "Exception occurred while handling call to %s.afterAcknowledgement for event %s:",
-            new Object[] {filter.toString(), eventForFilter}),
+            filter.toString(), eventForFilter),
             e);
       }
     }
@@ -229,7 +227,7 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
     } catch (CacheException e) {
       logger.error(String.format(
           "ParallelQueueRemovalMessage::process:Exception in processing the last disptached key for a ParallelGatewaySenderQueue's shadowPR. The problem is with key,%s for shadowPR with name=%s",
-          new Object[] {key, prQ.getName()}),
+          key, prQ.getName()),
           e);
     }
   }
@@ -269,7 +267,7 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
       } catch (Exception e) {
         logger.fatal(String.format(
             "Exception occurred while handling call to %s.afterAcknowledgement for event %s:",
-            new Object[] {filter.toString(), eventForFilter}),
+            filter.toString(), eventForFilter),
             e);
       }
     }
@@ -279,13 +277,13 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeHashMap(this.regionToDispatchedKeysMap, out);
+    DataSerializer.writeHashMap(regionToDispatchedKeysMap, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.regionToDispatchedKeysMap = DataSerializer.readHashMap(in);
+    regionToDispatchedKeysMap = DataSerializer.readHashMap(in);
   }
 }

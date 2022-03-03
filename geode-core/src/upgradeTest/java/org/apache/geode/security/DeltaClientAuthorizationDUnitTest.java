@@ -45,7 +45,7 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 @Category({SecurityTest.class})
 public class DeltaClientAuthorizationDUnitTest extends ClientAuthorizationTestCase {
 
-  private DeltaTestImpl[] deltas = new DeltaTestImpl[8];
+  private final DeltaTestImpl[] deltas = new DeltaTestImpl[8];
 
   @Override
   protected final void preSetUpClientAuthorizationTestBase() throws Exception {
@@ -59,7 +59,7 @@ public class DeltaClientAuthorizationDUnitTest extends ClientAuthorizationTestCa
 
   @Test
   public void testAllowPutsGets() throws Exception {
-    AuthzCredentialGenerator gen = this.getXmlAuthzGenerator();
+    AuthzCredentialGenerator gen = getXmlAuthzGenerator();
     CredentialGenerator cGen = gen.getCredentialGenerator();
 
     Properties extraAuthProps = cGen.getSystemProperties();
@@ -103,7 +103,7 @@ public class DeltaClientAuthorizationDUnitTest extends ClientAuthorizationTestCa
     client1.invoke(() -> doPuts(2, NO_EXCEPTION));
 
     Thread.sleep(5000);
-    assertTrue("Delta feature NOT used", client1.invoke(() -> DeltaTestImpl.toDeltaFeatureUsed()));
+    assertTrue("Delta feature NOT used", client1.invoke(DeltaTestImpl::toDeltaFeatureUsed));
 
     // Verify that the gets succeed
     client2.invoke(() -> doGets(2, NO_EXCEPTION));
@@ -163,7 +163,7 @@ public class DeltaClientAuthorizationDUnitTest extends ClientAuthorizationTestCa
 
   private void setUpDeltas() {
     for (int i = 0; i < 8; i++) {
-      deltas[i] = new DeltaTestImpl(0, "0", new Double(0), new byte[0],
+      deltas[i] = new DeltaTestImpl(0, "0", (double) 0, new byte[0],
           new TestObjectWithIdentifier("0", 0));
     }
     deltas[1].setIntVar(5);
@@ -181,11 +181,11 @@ public class DeltaClientAuthorizationDUnitTest extends ClientAuthorizationTestCa
     deltas[5].setByteArr(new byte[] {1, 2, 3, 4, 5});
 
     deltas[3].resetDeltaStatus();
-    deltas[3].setDoubleVar(new Double(5));
-    deltas[4].setDoubleVar(new Double(5));
-    deltas[5].setDoubleVar(new Double(5));
-    deltas[6].setDoubleVar(new Double(5));
-    deltas[7].setDoubleVar(new Double(5));
+    deltas[3].setDoubleVar(5.0);
+    deltas[4].setDoubleVar(5.0);
+    deltas[5].setDoubleVar(5.0);
+    deltas[6].setDoubleVar(5.0);
+    deltas[7].setDoubleVar(5.0);
 
     deltas[4].resetDeltaStatus();
     deltas[4].setStr("str changed");

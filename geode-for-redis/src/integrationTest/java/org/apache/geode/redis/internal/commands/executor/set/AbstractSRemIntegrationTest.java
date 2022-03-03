@@ -15,6 +15,8 @@
 package org.apache.geode.redis.internal.commands.executor.set;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
+import static org.apache.geode.redis.internal.RedisConstants.WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -81,7 +83,8 @@ public abstract class AbstractSRemIntegrationTest implements RedisIntegrationTes
 
   @Test
   public void testSRem_should_ThrowError_givenOnlyKey() {
-    assertThatThrownBy(() -> jedis.srem("key")).hasMessageContaining("wrong number of arguments");
+    assertThatThrownBy(() -> jedis.srem("key"))
+        .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "srem"));
   }
 
   @Test
@@ -116,8 +119,7 @@ public abstract class AbstractSRemIntegrationTest implements RedisIntegrationTes
     String value = "value";
     jedis.set(key, value);
 
-    assertThatThrownBy(() -> jedis.srem(key, value))
-        .hasMessageContaining("WRONGTYPE Operation against a key holding the wrong kind of value");
+    assertThatThrownBy(() -> jedis.srem(key, value)).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test

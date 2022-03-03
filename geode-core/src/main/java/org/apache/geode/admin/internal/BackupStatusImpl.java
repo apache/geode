@@ -29,7 +29,7 @@ import org.apache.geode.distributed.DistributedMember;
 public class BackupStatusImpl implements BackupStatus {
   private static final long serialVersionUID = 3704162840296921841L;
 
-  private org.apache.geode.management.BackupStatus status;
+  private final org.apache.geode.management.BackupStatus status;
 
   public BackupStatusImpl(Map<DistributedMember, Set<PersistentID>> backedUpDiskStores,
       Set<PersistentID> offlineDiskStores) {

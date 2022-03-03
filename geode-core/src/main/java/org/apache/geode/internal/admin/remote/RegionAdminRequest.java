@@ -38,11 +38,11 @@ public abstract class RegionAdminRequest extends AdminRequest {
   private String regionName;
 
   public void setRegionName(String name) {
-    this.regionName = name;
+    regionName = name;
   }
 
   public String getRegionName() {
-    return this.regionName;
+    return regionName;
   }
 
   /**
@@ -54,7 +54,7 @@ public abstract class RegionAdminRequest extends AdminRequest {
     if (r == null) {
       throw new RegionNotFoundException(
           String.format("Region %s not found in remote cache %s.",
-              new Object[] {regionName, cache.getName()}));
+              regionName, cache.getName()));
     }
     return r;
   }
@@ -63,13 +63,13 @@ public abstract class RegionAdminRequest extends AdminRequest {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeString(this.regionName, out);
+    DataSerializer.writeString(regionName, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.regionName = DataSerializer.readString(in);
+    regionName = DataSerializer.readString(in);
   }
 }

@@ -56,7 +56,7 @@ public class ListFunctionCommand extends GfshCommand {
       return ResultModel.createInfo(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
-    List<CliFunctionResult> results = executeAndGetFunctionResult(this.listFunctionFunction,
+    List<CliFunctionResult> results = executeAndGetFunctionResult(listFunctionFunction,
         new Object[] {matches}, targetMembers);
 
     ResultModel result = new ResultModel();

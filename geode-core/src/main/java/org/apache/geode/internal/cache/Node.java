@@ -62,13 +62,13 @@ public class Node extends ExternalizableDSFID {
   private int serialNumber;
 
   public Node(InternalDistributedMember id, int serialNumber) {
-    this.memberId = id;
+    memberId = id;
     this.serialNumber = serialNumber;
   }
 
   public Node(Node node) {
-    this.memberId = node.getMemberId();
-    this.serialNumber = node.serialNumber;
+    memberId = node.getMemberId();
+    serialNumber = node.serialNumber;
   }
 
   public Node(DataInput in) throws IOException, ClassNotFoundException {
@@ -79,11 +79,11 @@ public class Node extends ExternalizableDSFID {
   public Node() {}
 
   public InternalDistributedMember getMemberId() {
-    return this.memberId;
+    return memberId;
   }
 
   public boolean isPersistent() {
-    return this.isPersistent;
+    return isPersistent;
   }
 
   public void setPersistence(boolean isPersistent) {
@@ -92,13 +92,13 @@ public class Node extends ExternalizableDSFID {
 
   @Override
   public String toString() {
-    return ("Node=[memberId=" + this.memberId + "; prType=" + prType + "; isPersistent="
+    return ("Node=[memberId=" + memberId + "; prType=" + prType + "; isPersistent="
         + isPersistent + "]");
   }
 
   @Override
   public int hashCode() {
-    return this.memberId.hashCode() + 31 * serialNumber;
+    return memberId.hashCode() + 31 * serialNumber;
   }
 
   public int getPRType() {
@@ -106,29 +106,21 @@ public class Node extends ExternalizableDSFID {
   }
 
   public void setPRType(int type) {
-    this.prType = type;
+    prType = type;
   }
 
   void setLoaderAndWriter(CacheLoader loader, CacheWriter writer) {
     byte loaderByte = (byte) (loader != null ? 0x01 : 0x00);
     byte writerByte = (byte) (writer != null ? 0x02 : 0x00);
-    this.cacheLoaderWriterByte = (byte) (loaderByte + writerByte);
+    cacheLoaderWriterByte = (byte) (loaderByte + writerByte);
   }
 
   public boolean isCacheLoaderAttached() {
-    if (this.cacheLoaderWriterByte == 0x01 || this.cacheLoaderWriterByte == 0x03) {
-      return true;
-    } else {
-      return false;
-    }
+    return cacheLoaderWriterByte == 0x01 || cacheLoaderWriterByte == 0x03;
   }
 
   public boolean isCacheWriterAttached() {
-    if (this.cacheLoaderWriterByte == 0x02 || this.cacheLoaderWriterByte == 0x03) {
-      return true;
-    } else {
-      return false;
-    }
+    return cacheLoaderWriterByte == 0x02 || cacheLoaderWriterByte == 0x03;
   }
 
   @Override
@@ -138,9 +130,7 @@ public class Node extends ExternalizableDSFID {
     }
     if (obj instanceof Node) {
       Node n = (Node) obj;
-      if (this.memberId.equals(n.memberId) && this.serialNumber == n.serialNumber) {
-        return true;
-      }
+      return memberId.equals(n.memberId) && serialNumber == n.serialNumber;
     }
     return false;
   }
@@ -153,22 +143,22 @@ public class Node extends ExternalizableDSFID {
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    InternalDataSerializer.invokeToData(this.memberId, out);
-    out.writeInt(this.prType);
-    out.writeBoolean(this.isPersistent);
-    out.writeByte(this.cacheLoaderWriterByte);
+    InternalDataSerializer.invokeToData(memberId, out);
+    out.writeInt(prType);
+    out.writeBoolean(isPersistent);
+    out.writeByte(cacheLoaderWriterByte);
     out.writeInt(serialNumber);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.memberId = new InternalDistributedMember();
-    InternalDataSerializer.invokeFromData(this.memberId, in);
-    this.prType = in.readInt();
-    this.isPersistent = in.readBoolean();
-    this.cacheLoaderWriterByte = in.readByte();
-    this.serialNumber = in.readInt();
+    memberId = new InternalDistributedMember();
+    InternalDataSerializer.invokeFromData(memberId, in);
+    prType = in.readInt();
+    isPersistent = in.readBoolean();
+    cacheLoaderWriterByte = in.readByte();
+    serialNumber = in.readInt();
   }
 
   @Override

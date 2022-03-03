@@ -43,7 +43,7 @@ public abstract class NumberUtils {
 
   public static Long longValue(final Object value) {
     if (value instanceof Number) {
-      return Long.valueOf(((Number) value).longValue());
+      return ((Number) value).longValue();
     }
     return parseLong(String.valueOf(value));
   }

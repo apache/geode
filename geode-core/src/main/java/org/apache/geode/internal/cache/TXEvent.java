@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.geode.cache.Cache;
@@ -37,21 +36,21 @@ public class TXEvent implements TransactionEvent, Releasable {
   TXEvent(TXStateInterface localTxState, Cache cache) {
     this.localTxState = localTxState;
     this.cache = cache;
-    this.events = null;
+    events = null;
   }
 
   @Override
   public TransactionId getTransactionId() {
-    return this.localTxState.getTransactionId();
+    return localTxState.getTransactionId();
   }
 
 
   @Override
   public synchronized List getEvents() {
-    if (this.events == null) {
-      this.events = this.localTxState.getEvents();
+    if (events == null) {
+      events = localTxState.getEvents();
     }
-    return this.events;
+    return events;
   }
 
   /**
@@ -74,15 +73,13 @@ public class TXEvent implements TransactionEvent, Releasable {
 
   @Override
   public Cache getCache() {
-    return this.cache;
+    return cache;
   }
 
   @Override
   public synchronized void release() {
-    if (this.events != null) {
-      Iterator it = getEvents().iterator();
-      while (it.hasNext()) {
-        Object o = it.next();
+    if (events != null) {
+      for (final Object o : getEvents()) {
         if (o instanceof EntryEventImpl) {
           ((EntryEventImpl) o).release();
         }

@@ -42,7 +42,6 @@ public class ZScanIntegrationTest extends AbstractZScanIntegrationTest {
     jedis.zadd(KEY, SCORE_ONE, MEMBER_ONE);
 
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.ZSCAN, KEY,
-        GREATER_THAN_LONG_MAX))
-            .hasMessageContaining(ERROR_CURSOR);
+        GREATER_THAN_LONG_MAX)).hasMessage(ERROR_CURSOR);
   }
 }

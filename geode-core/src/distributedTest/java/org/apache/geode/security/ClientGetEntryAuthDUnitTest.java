@@ -38,7 +38,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 @Category({SecurityTest.class})
 public class ClientGetEntryAuthDUnitTest extends JUnit4DistributedTestCase {
 
-  private static String REGION_NAME = "AuthRegion";
+  private static final String REGION_NAME = "AuthRegion";
 
   final Host host = Host.getHost(0);
   final VM client1 = host.getVM(1);

@@ -701,10 +701,8 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     lockSharedConfiguration();
     try {
       File[] groupNames = configDir.listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
-      boolean needToCopyJars = true;
-      if (configDir.getAbsolutePath().equals(configDirPath.toAbsolutePath().toString())) {
-        needToCopyJars = false;
-      }
+      boolean needToCopyJars =
+          !configDir.getAbsolutePath().equals(configDirPath.toAbsolutePath().toString());
 
       logger.info("loading the cluster configuration: ");
       Map<String, Configuration> sharedConfiguration = new HashMap<>();

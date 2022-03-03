@@ -30,7 +30,7 @@ import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.configuration.GatewayReceiver;
 
 public class GatewayReceiverConverterTest {
-  private GatewayReceiverConverter converter = new GatewayReceiverConverter();
+  private final GatewayReceiverConverter converter = new GatewayReceiverConverter();
 
   @Test
   public void fromConfig() {
@@ -117,7 +117,7 @@ public class GatewayReceiverConverterTest {
     assertThat(config.getMaximumTimeBetweenPings()).isEqualTo(1000);
     assertThat(config.getSocketBufferSize()).isEqualTo(1024);
     assertThat(config.getStartPort()).isEqualTo(1);
-    assertThat(config.getGatewayTransportFilters()).isNull();;
+    assertThat(config.getGatewayTransportFilters()).isNull();
   }
 
   @Test

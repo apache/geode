@@ -22,7 +22,6 @@ import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Iterator;
 
 import org.junit.Test;
@@ -77,7 +76,7 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
 
   @Test
   public void testLimitAndOrderByApplicationOnPrimaryKeyIndexQuery() throws Exception {
-    String queries[] = {
+    String[] queries = {
         // The PK index should be used but limit should not be applied as order
         // by cannot be applied while data is fetched
         // from index
@@ -88,13 +87,13 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
 
     };
 
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Position.resetCounter();
     // Create Regions
 
-    Region r1 = this.createRegion("portfolio1", Portfolio.class);
+    Region r1 = createRegion("portfolio1", Portfolio.class);
 
     for (int i = 0; i < 50; i++) {
       r1.put(i + "", new Portfolio(i));
@@ -106,7 +105,7 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
       try {
         q = CacheUtils.getQueryService().newQuery(queries[i]);
         CacheUtils.getLogger().info("Executing query: " + queries[i]);
-        r[i][0] = q.execute(new Object[] {new Integer(10)});
+        r[i][0] = q.execute(10);
       } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());
@@ -123,7 +122,7 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
         CacheUtils.getLogger().info("Executing query: " + queries[i]);
         QueryObserverImpl observer = new QueryObserverImpl();
         QueryObserverHolder.setInstance(observer);
-        r[i][1] = q.execute(new Object[] {"10"});
+        r[i][1] = q.execute("10");
         int indexLimit = queries[i].indexOf("limit");
         int limit = -1;
         boolean limitQuery = indexLimit != -1;
@@ -148,9 +147,8 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
           assertFalse(observer.limitAppliedAtIndex);
         }
 
-        Iterator itr = observer.indexesUsed.iterator();
-        while (itr.hasNext()) {
-          String indexUsed = itr.next().toString();
+        for (final Object o : observer.indexesUsed) {
+          String indexUsed = o.toString();
           if (!(indexUsed).equals("PKIDIndexPf1")) {
             fail("<PKIDIndexPf1> was expected but found " + indexUsed);
           }
@@ -175,20 +173,20 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
   @Test
   public void testLimitApplicationOnPrimaryKeyIndex() throws Exception {
 
-    String queries[] = {
+    String[] queries = {
         // The PK index should be used but limit should not be applied as order by
         // cannot be applied while data is fetched
         // from index
         "SELECT   ID, description, createTime FROM " + SEPARATOR
             + "portfolio1 pf1 where pf1.ID != $1 limit 10",};
 
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Position.resetCounter();
     // Create Regions
 
-    Region r1 = this.createRegion("portfolio1", Portfolio.class);
+    Region r1 = createRegion("portfolio1", Portfolio.class);
 
     for (int i = 0; i < 200; i++) {
       r1.put(i + "", new Portfolio(i));
@@ -200,7 +198,7 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
       try {
         q = CacheUtils.getQueryService().newQuery(queries[i]);
         CacheUtils.getLogger().info("Executing query: " + queries[i]);
-        r[i][0] = q.execute(new Object[] {new Integer(10)});
+        r[i][0] = q.execute(10);
       } catch (Exception e) {
         e.printStackTrace();
         fail(q.getQueryString());
@@ -217,7 +215,7 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
         CacheUtils.getLogger().info("Executing query: " + queries[i]);
         QueryObserverImpl observer = new QueryObserverImpl();
         QueryObserverHolder.setInstance(observer);
-        r[i][1] = q.execute(new Object[] {"10"});
+        r[i][1] = q.execute("10");
         int indexLimit = queries[i].indexOf("limit");
         int limit = -1;
         boolean limitQuery = indexLimit != -1;
@@ -245,9 +243,8 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
           assertFalse(observer.limitAppliedAtIndex);
         }
 
-        Iterator itr = observer.indexesUsed.iterator();
-        while (itr.hasNext()) {
-          String indexUsed = itr.next().toString();
+        for (final Object o : observer.indexesUsed) {
+          String indexUsed = o.toString();
           if (!(indexUsed).equals("PKIDIndexPf1")) {
             fail("<PKIDIndexPf1> was expected but found " + indexUsed);
           }
@@ -299,8 +296,8 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
       Object[] values1 = ((Struct) itert1.next()).getFieldValues();
       Object[] values2 = ((Struct) itert2.next()).getFieldValues();
       assertEquals(values1.length, values2.length);
-      assertTrue((((Integer) values1[0]).intValue() != 10));
-      assertTrue((((Integer) values2[0]).intValue() != 10));
+      assertTrue(((Integer) values1[0] != 10));
+      assertTrue(((Integer) values2[0] != 10));
     }
 
   }
@@ -309,7 +306,7 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
   public void testNonDistinctOrderbyResultSetForReplicatedRegion() throws Exception {
     final int numElements = 200;
     CacheUtils.getCache();
-    Region region = this.createRegion("portfolios", Portfolio.class);
+    Region region = createRegion("portfolios", Portfolio.class);
     Short[] expectedArray = new Short[numElements - 1];
     for (int i = 1; i < numElements; ++i) {
       Portfolio pf = new Portfolio(i);
@@ -317,12 +314,7 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
       region.put("" + i, pf);
       expectedArray[i - 1] = pf.shortID;
     }
-    Arrays.sort(expectedArray, new Comparator<Short>() {
-      @Override
-      public int compare(Short o1, Short o2) {
-        return o1.shortValue() - o2.shortValue();
-      }
-    });
+    Arrays.sort(expectedArray, (o1, o2) -> o1 - o2);
 
     String query = "select pf.shortID from " + SEPARATOR + "portfolios pf order by pf.shortID";
     QueryService qs = CacheUtils.getQueryService();
@@ -335,7 +327,7 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
 
   @Test
   public void testOrderedResultsReplicatedRegion() throws Exception {
-    String queries[] = {
+    String[] queries = {
 
         "select  status as st from " + SEPARATOR + "portfolio1 where ID > 0 order by status",
 
@@ -349,13 +341,13 @@ public class NonDistinctOrderByReplicatedJUnitTest extends NonDistinctOrderByTes
             + "portfolio1 key where key.status = 'inactive' order by key.status desc, key.ID"
 
     };
-    Object r[][] = new Object[queries.length][2];
+    Object[][] r = new Object[queries.length][2];
     QueryService qs;
     qs = CacheUtils.getQueryService();
     Position.resetCounter();
     // Create Regions
 
-    Region r1 = this.createRegion("portfolio1", Portfolio.class);
+    Region r1 = createRegion("portfolio1", Portfolio.class);
 
     for (int i = 0; i < 200; i++) {
       r1.put(i + "", new Portfolio(i));

@@ -65,29 +65,29 @@ public class QueuedOperation {
   }
 
   public void process(LocalRegion lr, DistributedMember src, long lastMod) {
-    if (this.op.isRegion()) {
+    if (op.isRegion()) {
       // it is a region operation
-      RegionEventImpl re = new RegionEventImpl(lr, this.op, this.cbArg, true, src);
+      RegionEventImpl re = new RegionEventImpl(lr, op, cbArg, true, src);
       // re.setQueued(true);
-      if (this.op.isRegionInvalidate()) {
+      if (op.isRegionInvalidate()) {
         lr.basicInvalidateRegion(re);
-      } else if (this.op == Operation.REGION_CLEAR) {
+      } else if (op == Operation.REGION_CLEAR) {
         lr.cmnClearRegion(re, false/* cacheWrite */, false/* useRVV */);
       } else {
         throw new IllegalStateException(
             String.format("The %s should not have been queued.",
-                this.op));
+                op));
       }
     } else {
       // it is an entry operation
       // TODO :EventID should be passed from the sender & should be reused here
       @Released
-      EntryEventImpl ee = EntryEventImpl.create(lr, this.op, this.key, null, this.cbArg, true, src);
+      EntryEventImpl ee = EntryEventImpl.create(lr, op, key, null, cbArg, true, src);
       try {
         // ee.setQueued(true);
-        if (this.op.isCreate() || this.op.isUpdate()) {
-          UpdateOperation.UpdateMessage.setNewValueInEvent(this.value, this.valueObj, ee,
-              this.deserializationPolicy);
+        if (op.isCreate() || op.isUpdate()) {
+          UpdateOperation.UpdateMessage.setNewValueInEvent(value, valueObj, ee,
+              deserializationPolicy);
           try {
             long time = lastMod;
             if (ee.getVersionTag() != null) {
@@ -99,7 +99,7 @@ public class QueuedOperation {
           } catch (ConcurrentCacheModificationException e) {
             // operation was rejected by the cache's concurrency control mechanism as being old
           }
-        } else if (this.op.isDestroy()) {
+        } else if (op.isDestroy()) {
           ee.setOldValueFromRegion();
           try {
             lr.basicDestroy(ee, false, null); // expectedOldValue
@@ -114,7 +114,7 @@ public class QueuedOperation {
           } catch (TimeoutException e) {
             throw new Error("DistributedLock should not be acquired", e);
           }
-        } else if (this.op.isInvalidate()) {
+        } else if (op.isInvalidate()) {
           ee.setOldValueFromRegion();
           boolean forceNewEntry = lr.getDataPolicy().withReplication() && !lr.isInitialized();
           boolean invokeCallbacks = lr.isInitialized();
@@ -127,7 +127,7 @@ public class QueuedOperation {
         } else {
           throw new IllegalStateException(
               String.format("The %s should not have been queued.",
-                  this.op));
+                  op));
         }
       } finally {
         ee.release();
@@ -155,13 +155,13 @@ public class QueuedOperation {
 
 
   public void toData(DataOutput out) throws IOException {
-    out.writeByte(this.op.ordinal);
-    DataSerializer.writeObject(this.cbArg, out);
-    if (this.op.isEntry()) {
-      DataSerializer.writeObject(this.key, out);
-      if (this.op.isUpdate() || this.op.isCreate()) {
-        out.writeByte(this.deserializationPolicy);
-        DataSerializer.writeByteArray(this.value, out);
+    out.writeByte(op.ordinal);
+    DataSerializer.writeObject(cbArg, out);
+    if (op.isEntry()) {
+      DataSerializer.writeObject(key, out);
+      if (op.isUpdate() || op.isCreate()) {
+        out.writeByte(deserializationPolicy);
+        DataSerializer.writeByteArray(value, out);
       }
     }
   }

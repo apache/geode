@@ -106,7 +106,7 @@ public class RemoveAllOp {
       logger.debug("RemoveAllOp#execute : Number of removeAll tasks is :{}", callableTasks.size());
     }
     HashMap<ServerLocation, RuntimeException> failedServers =
-        new HashMap<ServerLocation, RuntimeException>();
+        new HashMap<>();
     PutAllPartialResult result = new PutAllPartialResult(keys.size());
     try {
       Map<ServerLocation, Object> results = SingleHopClientExecutor
@@ -265,10 +265,10 @@ public class RemoveAllOp {
         flags |= FLAG_CONCURRENCY_CHECKS;
       }
       getMessage().addIntPart(flags);
-      getMessage().addObjPart(this.callbackArg);
+      getMessage().addObjPart(callbackArg);
       getMessage().addIntPart(size);
 
-      for (Object key : this.keys) {
+      for (Object key : keys) {
         getMessage().addStringOrObjPart(key);
       }
     }
@@ -290,47 +290,44 @@ public class RemoveAllOp {
       final Exception[] exceptionRef = new Exception[1];
       final boolean isDebugEnabled = logger.isDebugEnabled();
       try {
-        processChunkedResponse((ChunkedMessage) msg, "removeAll", new ChunkHandler() {
-          @Override
-          public void handle(ChunkedMessage cm) throws Exception {
-            int numParts = msg.getNumberOfParts();
-            if (isDebugEnabled) {
-              logger.debug("RemoveAllOp.processChunkedResponse processing message with {} parts",
-                  numParts);
-            }
-            for (int partNo = 0; partNo < numParts; partNo++) {
-              Part part = cm.getPart(partNo);
-              try {
-                Object o = part.getObject();
-                if (isDebugEnabled) {
-                  logger.debug("part({}) contained {}", partNo, o);
-                }
-                if (o == null) {
-                  // no response is an okay response
-                } else if (o instanceof byte[]) {
-                  if (prSingleHopEnabled) {
-                    byte[] bytesReceived = part.getSerializedForm();
-                    if (bytesReceived[0] != ClientMetadataService.INITIAL_VERSION) {
-                      if (region != null) {
-                        try {
-                          ClientMetadataService cms = region.getCache().getClientMetadataService();
-                          cms.scheduleGetPRMetaData(region, false, bytesReceived[1]);
-                        } catch (CacheClosedException e) {
-                        }
+        processChunkedResponse((ChunkedMessage) msg, "removeAll", cm -> {
+          int numParts = msg.getNumberOfParts();
+          if (isDebugEnabled) {
+            logger.debug("RemoveAllOp.processChunkedResponse processing message with {} parts",
+                numParts);
+          }
+          for (int partNo = 0; partNo < numParts; partNo++) {
+            Part part = cm.getPart(partNo);
+            try {
+              Object o = part.getObject();
+              if (isDebugEnabled) {
+                logger.debug("part({}) contained {}", partNo, o);
+              }
+              if (o == null) {
+                // no response is an okay response
+              } else if (o instanceof byte[]) {
+                if (prSingleHopEnabled) {
+                  byte[] bytesReceived = part.getSerializedForm();
+                  if (bytesReceived[0] != ClientMetadataService.INITIAL_VERSION) {
+                    if (region != null) {
+                      try {
+                        ClientMetadataService cms = region.getCache().getClientMetadataService();
+                        cms.scheduleGetPRMetaData(region, false, bytesReceived[1]);
+                      } catch (CacheClosedException ignored) {
                       }
                     }
                   }
-                } else if (o instanceof Throwable) {
-                  String s = "While performing a remote removeAll";
-                  exceptionRef[0] = new ServerOperationException(s, (Throwable) o);
-                } else {
-                  VersionedObjectList chunk = (VersionedObjectList) o;
-                  chunk.replaceNullIDs(con.getEndpoint().getMemberId());
-                  result.addAll(chunk);
                 }
-              } catch (Exception e) {
-                exceptionRef[0] = new ServerOperationException("Unable to deserialize value", e);
+              } else if (o instanceof Throwable) {
+                String s = "While performing a remote removeAll";
+                exceptionRef[0] = new ServerOperationException(s, (Throwable) o);
+              } else {
+                VersionedObjectList chunk = (VersionedObjectList) o;
+                chunk.replaceNullIDs(con.getEndpoint().getMemberId());
+                result.addAll(chunk);
               }
+            } catch (Exception e) {
+              exceptionRef[0] = new ServerOperationException("Unable to deserialize value", e);
             }
           }
         });
@@ -349,13 +346,13 @@ public class RemoveAllOp {
         // v7.0.1: fill in the keys
         if (result.hasVersions() && result.getKeys().isEmpty()) {
           if (logger.isTraceEnabled()) {
-            logger.trace("setting keys of response to {}", this.keys);
+            logger.trace("setting keys of response to {}", keys);
           }
           ArrayList<Object> tmpKeys;
-          if (this.keys instanceof ArrayList) {
-            tmpKeys = (ArrayList<Object>) this.keys;
+          if (keys instanceof ArrayList) {
+            tmpKeys = (ArrayList<Object>) keys;
           } else {
-            tmpKeys = new ArrayList<Object>(this.keys);
+            tmpKeys = new ArrayList<>(keys);
           }
           result.setKeys(tmpKeys);
         }

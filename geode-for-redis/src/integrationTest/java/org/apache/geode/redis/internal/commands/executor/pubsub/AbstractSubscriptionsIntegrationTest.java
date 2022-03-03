@@ -74,12 +74,8 @@ public abstract class AbstractSubscriptionsIntegrationTest implements RedisInteg
     executor.submit(() -> client.subscribe(mockSubscriber, "same"));
     mockSubscriber.awaitSubscribe("same");
     mockSubscriber.ping("potato");
-    // JedisPubSub PING with message is not currently possible, will submit a PR
-    // (https://github.com/xetorthio/jedis/issues/2049)
-    // until then, we have to call this second ping to flush the client
-    mockSubscriber.ping();
     GeodeAwaitility.await()
-        .untilAsserted(() -> assertThat(mockSubscriber.getReceivedPings().size()).isEqualTo(2));
+        .untilAsserted(() -> assertThat(mockSubscriber.getReceivedPings().size()).isOne());
     assertThat(mockSubscriber.getReceivedPings().get(0)).isEqualTo("potato");
     mockSubscriber.unsubscribe();
   }
@@ -88,8 +84,8 @@ public abstract class AbstractSubscriptionsIntegrationTest implements RedisInteg
   public void unallowedCommandsWhileSubscribed() {
     client.sendCommand(Protocol.Command.SUBSCRIBE, "hello");
 
-    assertThatThrownBy(() -> client.set("not", "supported")).hasMessageContaining(
-        String.format(ERROR_PUBSUB_WRONG_COMMAND, "set"));
+    assertThatThrownBy(() -> client.set("not", "supported"))
+        .hasMessage(String.format(ERROR_PUBSUB_WRONG_COMMAND, "set"));
     client.sendCommand(Protocol.Command.UNSUBSCRIBE);
   }
 

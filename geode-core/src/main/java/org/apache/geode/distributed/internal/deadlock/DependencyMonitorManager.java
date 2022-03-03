@@ -37,7 +37,7 @@ public class DependencyMonitorManager {
 
   @MakeNotStatic
   private static final Set<DependencyMonitor> monitors =
-      new CopyOnWriteHashSet<DependencyMonitor>();
+      new CopyOnWriteHashSet<>();
 
   static {
     // The DLockDependencyMonitor won't get loaded unless we add it here.
@@ -64,7 +64,7 @@ public class DependencyMonitorManager {
    */
   public static Set<Dependency<Thread, Serializable>> getBlockedThreads() {
     Set<Dependency<Thread, Serializable>> blockedThreads =
-        new HashSet<Dependency<Thread, Serializable>>();
+        new HashSet<>();
     Thread[] allThreads = getAllThreads();
     for (DependencyMonitor monitor : monitors) {
       blockedThreads.addAll(monitor.getBlockedThreads(allThreads));
@@ -80,7 +80,7 @@ public class DependencyMonitorManager {
   public static Set<Dependency<Serializable, Thread>> getHeldResources() {
     Thread[] allThreads = getAllThreads();
     Set<Dependency<Serializable, Thread>> heldResources =
-        new HashSet<Dependency<Serializable, Thread>>();
+        new HashSet<>();
     for (DependencyMonitor monitor : monitors) {
       heldResources.addAll(monitor.getHeldResources(allThreads));
     }

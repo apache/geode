@@ -28,7 +28,6 @@ import org.apache.geode.internal.cache.DistributedPutAllOperation.PutAllEntryDat
 import org.apache.geode.internal.cache.DistributedRemoveAllOperation;
 import org.apache.geode.internal.cache.DistributedRemoveAllOperation.RemoveAllEntryData;
 import org.apache.geode.internal.cache.EntryEventImpl;
-import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
@@ -57,7 +56,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
   public DistTxEntryEvent() {}
 
   public String getRegionName() {
-    return this.regionName;
+    return regionName;
   }
 
   @Override
@@ -74,28 +73,28 @@ public class DistTxEntryEvent extends EntryEventImpl {
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    DataSerializer.writeObject(this.eventID, out);
-    DataSerializer.writeObject(this.getRegion().getFullPath(), out);
-    out.writeByte(this.op.ordinal);
-    DataSerializer.writeObject(this.getKey(), out);
-    DataSerializer.writeInteger(this.keyInfo.getBucketId(), out);
-    DataSerializer.writeObject(this.basicGetNewValue(), out);
+    DataSerializer.writeObject(eventID, out);
+    DataSerializer.writeObject(getRegion().getFullPath(), out);
+    out.writeByte(op.ordinal);
+    DataSerializer.writeObject(getKey(), out);
+    DataSerializer.writeInteger(keyInfo.getBucketId(), out);
+    DataSerializer.writeObject(basicGetNewValue(), out);
 
     byte flags = 0;
-    if (this.putAllOp != null) {
+    if (putAllOp != null) {
       flags |= HAS_PUTALL_OP;
     }
-    if (this.removeAllOp != null) {
+    if (removeAllOp != null) {
       flags |= HAS_REMOVEALL_OP;
     }
     DataSerializer.writeByte(flags, out);
 
     // handle putAll
-    if (this.putAllOp != null) {
+    if (putAllOp != null) {
       putAllToData(out, context);
     }
     // handle removeAll
-    if (this.removeAllOp != null) {
+    if (removeAllOp != null) {
       removeAllToData(out, context);
     }
   }
@@ -103,16 +102,16 @@ public class DistTxEntryEvent extends EntryEventImpl {
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.eventID = (EventID) DataSerializer.readObject(in);
-    this.regionName = DataSerializer.readString(in);
-    this.op = Operation.fromOrdinal(in.readByte());
+    eventID = DataSerializer.readObject(in);
+    regionName = DataSerializer.readString(in);
+    op = Operation.fromOrdinal(in.readByte());
     Object key = DataSerializer.readObject(in);
     Integer bucketId = DataSerializer.readInteger(in);
-    this.keyInfo = new DistTxKeyInfo(key, null/*
-                                               * value [DISTTX} TODO see if required
-                                               */, null/*
-                                                       * callbackarg [DISTTX] TODO
-                                                       */, bucketId);
+    keyInfo = new DistTxKeyInfo(key, null/*
+                                          * value [DISTTX} TODO see if required
+                                          */, null/*
+                                                  * callbackarg [DISTTX] TODO
+                                                  */, bucketId);
     basicSetNewValue(DataSerializer.readObject(in), true);
 
     byte flags = DataSerializer.readByte(in);
@@ -128,11 +127,11 @@ public class DistTxEntryEvent extends EntryEventImpl {
 
   private void putAllToData(DataOutput out,
       SerializationContext context) throws IOException {
-    DataSerializer.writeInteger(this.putAllOp.putAllDataSize, out);
-    EntryVersionsList versionTags = new EntryVersionsList(this.putAllOp.putAllDataSize);
+    DataSerializer.writeInteger(putAllOp.putAllDataSize, out);
+    EntryVersionsList versionTags = new EntryVersionsList(putAllOp.putAllDataSize);
     boolean hasTags = false;
-    final PutAllEntryData[] putAllData = this.putAllOp.getPutAllEntryData();
-    for (int i = 0; i < this.putAllOp.putAllDataSize; i++) {
+    final PutAllEntryData[] putAllData = putAllOp.getPutAllEntryData();
+    for (int i = 0; i < putAllOp.putAllDataSize; i++) {
       if (!hasTags && putAllData[i].versionTag != null) {
         hasTags = true;
       }
@@ -156,7 +155,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
       final KnownVersion version = StaticSerialization.getVersionForDataStreamOrNull(in);
       final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
       for (int i = 0; i < putAllSize; i++) {
-        putAllEntries[i] = new PutAllEntryData(in, context, this.eventID, i);
+        putAllEntries[i] = new PutAllEntryData(in, context, eventID, i);
       }
 
       boolean hasTags = in.readBoolean();
@@ -167,23 +166,23 @@ public class DistTxEntryEvent extends EntryEventImpl {
         }
       }
     }
-    this.op = Operation.PUTALL_CREATE;
-    this.setOriginRemote(true);
-    this.setGenerateCallbacks(true);
+    op = Operation.PUTALL_CREATE;
+    setOriginRemote(true);
+    setGenerateCallbacks(true);
 
-    this.putAllOp = new DistributedPutAllOperation(this, putAllSize, false /* [DISTTX] TODO */);
-    this.putAllOp.setPutAllEntryData(putAllEntries);
+    putAllOp = new DistributedPutAllOperation(this, putAllSize, false /* [DISTTX] TODO */);
+    putAllOp.setPutAllEntryData(putAllEntries);
   }
 
   private void removeAllToData(DataOutput out,
       SerializationContext context) throws IOException {
-    DataSerializer.writeInteger(this.removeAllOp.removeAllDataSize, out);
+    DataSerializer.writeInteger(removeAllOp.removeAllDataSize, out);
 
-    EntryVersionsList versionTags = new EntryVersionsList(this.removeAllOp.removeAllDataSize);
+    EntryVersionsList versionTags = new EntryVersionsList(removeAllOp.removeAllDataSize);
 
     boolean hasTags = false;
-    final RemoveAllEntryData[] removeAllData = this.removeAllOp.getRemoveAllEntryData();
-    for (int i = 0; i < this.removeAllOp.removeAllDataSize; i++) {
+    final RemoveAllEntryData[] removeAllData = removeAllOp.getRemoveAllEntryData();
+    for (int i = 0; i < removeAllOp.removeAllDataSize; i++) {
       if (!hasTags && removeAllData[i].versionTag != null) {
         hasTags = true;
       }
@@ -206,7 +205,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
     final KnownVersion version = StaticSerialization.getVersionForDataStreamOrNull(in);
     final ByteArrayDataInput bytesIn = new ByteArrayDataInput();
     for (int i = 0; i < removeAllSize; i++) {
-      removeAllData[i] = new RemoveAllEntryData(in, this.eventID, i, context);
+      removeAllData[i] = new RemoveAllEntryData(in, eventID, i, context);
     }
 
     boolean hasTags = in.readBoolean();
@@ -216,17 +215,17 @@ public class DistTxEntryEvent extends EntryEventImpl {
         removeAllData[i].versionTag = versionTags.get(i);
       }
     }
-    this.op = Operation.REMOVEALL_DESTROY;
-    this.setOriginRemote(true);
-    this.setGenerateCallbacks(true);
+    op = Operation.REMOVEALL_DESTROY;
+    setOriginRemote(true);
+    setGenerateCallbacks(true);
 
-    this.removeAllOp =
+    removeAllOp =
         new DistributedRemoveAllOperation(this, removeAllSize, false /* [DISTTX] TODO */);
-    this.removeAllOp.setRemoveAllEntryData(removeAllData);
+    removeAllOp.setRemoveAllEntryData(removeAllData);
   }
 
   public void setDistributedMember(DistributedMember sender) {
-    this.distributedMember = sender;
+    distributedMember = sender;
   }
 
   @Override
@@ -235,22 +234,22 @@ public class DistTxEntryEvent extends EntryEventImpl {
     buf.append(getShortClassName());
     buf.append("[");
     buf.append("eventID=");
-    buf.append(this.eventID);
-    if (this.getRegion() != null) {
-      buf.append(";r=").append(this.getRegion().getName());
+    buf.append(eventID);
+    if (getRegion() != null) {
+      buf.append(";r=").append(getRegion().getName());
     }
     buf.append(";op=");
     buf.append(getOperation());
     buf.append(";key=");
-    buf.append(this.getKey());
+    buf.append(getKey());
     buf.append(";bucket=");
-    buf.append(this.getKeyInfo().getBucketId());
+    buf.append(getKeyInfo().getBucketId());
     buf.append(";oldValue=");
-    if (this.putAllOp != null) {
-      buf.append(";putAllDataSize :" + this.putAllOp.putAllDataSize);
+    if (putAllOp != null) {
+      buf.append(";putAllDataSize :" + putAllOp.putAllDataSize);
     }
-    if (this.removeAllOp != null) {
-      buf.append(";removeAllDataSize :" + this.removeAllOp.removeAllDataSize);
+    if (removeAllOp != null) {
+      buf.append(";removeAllDataSize :" + removeAllOp.removeAllDataSize);
     }
     buf.append("]");
     return buf.toString();

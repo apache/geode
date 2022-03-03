@@ -49,7 +49,7 @@ public class VersionInfoRequest extends AdminRequest {
    */
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    return VersionInfoResponse.create(dm, this.getSender());
+    return VersionInfoResponse.create(dm, getSender());
   }
 
   @Override
@@ -71,6 +71,6 @@ public class VersionInfoRequest extends AdminRequest {
 
   @Override
   public String toString() {
-    return "VersionInfoRequest from " + this.getSender();
+    return "VersionInfoRequest from " + getSender();
   }
 }

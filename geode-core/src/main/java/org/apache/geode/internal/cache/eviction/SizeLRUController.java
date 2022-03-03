@@ -39,7 +39,7 @@ abstract class SizeLRUController extends AbstractEvictionController {
 
   @Override
   public void setPerEntryOverhead(int entryOverhead) {
-    this.perEntryOverhead = entryOverhead;
+    perEntryOverhead = entryOverhead;
   }
 
   /**
@@ -62,8 +62,8 @@ abstract class SizeLRUController extends AbstractEvictionController {
       size = ObjectSizer.DEFAULT.sizeof(object);
     } else if (object instanceof Sizeable) {
       size = ((Sizeable) object).getSizeInBytes();
-    } else if (this.sizer != null) {
-      size = this.sizer.sizeof(object);
+    } else if (sizer != null) {
+      size = sizer.sizeof(object);
     } else {
       size = ObjectSizer.DEFAULT.sizeof(object);
     }

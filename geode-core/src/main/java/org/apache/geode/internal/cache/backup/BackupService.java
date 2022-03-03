@@ -59,7 +59,7 @@ public class BackupService {
     if (!currentTask.compareAndSet(null, backupTask)) {
       throw new IOException("Another backup is already in progress");
     }
-    taskFuture = executor.submit(() -> backupTask.backup());
+    taskFuture = executor.submit(backupTask::backup);
     return backupTask.getPreparedDiskStores();
   }
 

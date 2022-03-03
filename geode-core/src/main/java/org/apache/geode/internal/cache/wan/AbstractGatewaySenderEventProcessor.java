@@ -1249,7 +1249,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
    **/
   public void logBatchFine(String message, List<GatewaySenderEventImpl> events) {
     if (events != null) {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append(message);
       buffer.append(events.size()).append(" events");
       buffer.append(" (batch #").append(getBatchId());

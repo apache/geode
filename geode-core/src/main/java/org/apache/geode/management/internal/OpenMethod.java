@@ -175,7 +175,7 @@ public class OpenMethod {
   }
 
   private OpenMethod(Method m) throws OpenDataException {
-    this.method = m;
+    method = m;
     returnTypeConverter = OpenTypeConverter.toConverter(m.getGenericReturnType());
     Type[] params = m.getGenericParameterTypes();
     paramTypeConverters = new OpenTypeConverter[params.length];

@@ -14,7 +14,6 @@
  */
 package org.apache.geode.redis.internal;
 
-import java.net.UnknownHostException;
 
 import org.apache.logging.log4j.Logger;
 
@@ -24,7 +23,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsClockFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -34,7 +32,7 @@ import org.apache.geode.redis.internal.netty.NettyRedisServer;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.pubsub.PubSubImpl;
 import org.apache.geode.redis.internal.pubsub.Subscriptions;
-import org.apache.geode.redis.internal.services.PassiveExpirationManager;
+import org.apache.geode.redis.internal.services.ActiveExpirationManager;
 import org.apache.geode.redis.internal.services.RegionProvider;
 import org.apache.geode.redis.internal.services.cluster.RedisMemberInfo;
 import org.apache.geode.redis.internal.services.cluster.RedisMemberInfoRetrievalFunction;
@@ -59,7 +57,7 @@ public class GeodeRedisServer {
   public static final String ENABLE_UNSUPPORTED_COMMANDS_PARAM = "enable-unsupported-commands";
   private static boolean unsupportedCommandsEnabled;
   private static final Logger logger = LogService.getLogger();
-  private final PassiveExpirationManager passiveExpirationManager;
+  private final ActiveExpirationManager activeExpirationManager;
   private final NettyRedisServer nettyRedisServer;
   private final RegionProvider regionProvider;
   private final PubSub pubSub;
@@ -79,14 +77,14 @@ public class GeodeRedisServer {
 
     unsupportedCommandsEnabled = Boolean.getBoolean(ENABLE_UNSUPPORTED_COMMANDS_PARAM);
 
-    redisStats = createStats(cache, bindAddress, port);
+    redisStats = createStats(cache);
     StripedCoordinator stripedCoordinator = new LockingStripedCoordinator();
     RedisMemberInfoRetrievalFunction infoFunction = RedisMemberInfoRetrievalFunction.register();
 
     regionProvider = new RegionProvider(cache, stripedCoordinator, redisStats);
     pubSub = new PubSubImpl(new Subscriptions(redisStats), regionProvider, redisStats);
 
-    passiveExpirationManager = new PassiveExpirationManager(regionProvider);
+    activeExpirationManager = new ActiveExpirationManager(regionProvider);
 
     DistributedMember member = cache.getDistributedSystem().getDistributedMember();
     RedisSecurityService securityService = new RedisSecurityService(cache.getSecurityService());
@@ -104,29 +102,13 @@ public class GeodeRedisServer {
     return ((PubSubImpl) pubSub).getSubscriptionCount();
   }
 
-  private static RedisStats createStats(InternalCache cache, String bindAddress, int port) {
+  private static RedisStats createStats(InternalCache cache) {
     InternalDistributedSystem system = cache.getInternalDistributedSystem();
     StatisticsClock statisticsClock =
         StatisticsClockFactory.clock(true);
 
     return new RedisStats(statisticsClock,
-        new GeodeRedisStats(system.getStatisticsManager(), getServerName(bindAddress, port),
-            statisticsClock));
-  }
-
-  private static String getServerName(String bindAddress, int port) {
-    String name = "geodeForRedis:";
-    if (bindAddress != null && !bindAddress.isEmpty()) {
-      name += bindAddress;
-    } else {
-      try {
-        name += LocalHostUtil.getCanonicalLocalHostName();
-      } catch (UnknownHostException e) {
-        name += "*.*.*.*";
-      }
-    }
-    name += ':' + port;
-    return name;
+        new GeodeRedisStats(system.getStatisticsManager(), statisticsClock));
   }
 
   @VisibleForTesting
@@ -159,7 +141,7 @@ public class GeodeRedisServer {
     if (!shutdown) {
       logger.info("GeodeRedisServer shutting down");
       pubSub.close();
-      passiveExpirationManager.stop();
+      activeExpirationManager.stop();
       nettyRedisServer.stop();
       redisStats.close();
       shutdown = true;
@@ -168,7 +150,7 @@ public class GeodeRedisServer {
 
   @VisibleForTesting
   public Long getDataStoreBytesInUseForDataRegion() {
-    PartitionedRegion dataRegion = (PartitionedRegion) this.getRegionProvider().getDataRegion();
+    PartitionedRegion dataRegion = (PartitionedRegion) getRegionProvider().getDataRegion();
     return dataRegion.getPrStats().getDataStoreBytesInUse();
   }
 

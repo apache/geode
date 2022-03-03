@@ -28,7 +28,7 @@ import org.apache.geode.cache.InterestResultPolicy;
 public class RegisterInterestOperationContext extends InterestOperationContext {
 
   /** The <code>InterestResultPolicy</code> for this list of keys. */
-  private InterestResultPolicy policy;
+  private final InterestResultPolicy policy;
 
   /**
    * Constructor for the register interest operation.
@@ -59,7 +59,7 @@ public class RegisterInterestOperationContext extends InterestOperationContext {
    * @return the <code>InterestResultPolicy</code> of this request.
    */
   public InterestResultPolicy getInterestResultPolicy() {
-    return this.policy;
+    return policy;
   }
 
 }

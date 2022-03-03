@@ -143,7 +143,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         getLogWriter().info("Querying remotely from client");
         QueryService remoteQS = null;
         try {
-          remoteQS = ((ClientCache) getCache()).getQueryService();
+          remoteQS = getCache().getQueryService();
           SelectResults sr = (SelectResults) remoteQS
               .newQuery("select distinct oP.ID, oP.status, oP.getType from " + SEPARATOR + regName
                   + " oP where element(select distinct p.ID, p.status, p.getType from " + SEPARATOR
@@ -214,7 +214,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         getLogWriter().info("Querying remotely from client");
         QueryService remoteQS = null;
         try {
-          remoteQS = ((ClientCache) getCache()).getQueryService();
+          remoteQS = getCache().getQueryService();
           SelectResults sr = (SelectResults) remoteQS
               .newQuery("select distinct oP.ID, oP.status, oP.getType from " + SEPARATOR + regName
                   + " oP where element(select distinct p.ID, p.status, p.getType from " + SEPARATOR
@@ -296,7 +296,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         QueryService remoteQS = null;
         try {
           localQS = ((ClientCache) getCache()).getLocalQueryService();
-          remoteQS = ((ClientCache) getCache()).getQueryService();
+          remoteQS = getCache().getQueryService();
         } catch (Exception e) {
           fail("Exception getting query service ", e);
         }
@@ -460,7 +460,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         QueryService remoteQS = null;
         try {
           localQS = ((ClientCache) getCache()).getLocalQueryService();
-          remoteQS = ((ClientCache) getCache()).getQueryService();
+          remoteQS = getCache().getQueryService();
         } catch (Exception e) {
           fail("Exception getting query service ", e);
         }
@@ -640,7 +640,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         QueryService remoteQS = null;
         try {
           localQS = ((ClientCache) getCache()).getLocalQueryService();
-          remoteQS = ((ClientCache) getCache()).getQueryService();
+          remoteQS = getCache().getQueryService();
         } catch (Exception e) {
           fail("Exception getting query service ", e);
         }
@@ -810,7 +810,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         QueryService remoteQS = null;
         try {
           localQS = ((ClientCache) getCache()).getLocalQueryService();
-          remoteQS = ((ClientCache) getCache()).getQueryService();
+          remoteQS = getCache().getQueryService();
         } catch (Exception e) {
           fail("Exception getting query service ", e);
         }
@@ -980,7 +980,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         QueryService remoteQS = null;
         try {
           localQS = ((ClientCache) getCache()).getLocalQueryService();
-          remoteQS = ((ClientCache) getCache()).getQueryService();
+          remoteQS = getCache().getQueryService();
         } catch (Exception e) {
           fail("Exception getting query service ", e);
         }
@@ -1050,7 +1050,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         QueryService remoteQS = null;
         try {
           localQS = ((ClientCache) getCache()).getLocalQueryService();
-          remoteQS = ((ClientCache) getCache()).getQueryService();
+          remoteQS = getCache().getQueryService();
         } catch (Exception e) {
           fail("Exception getting query service ", e);
         }
@@ -1148,7 +1148,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         QueryService remoteQS = null;
         try {
           localQS = ((ClientCache) getCache()).getLocalQueryService();
-          remoteQS = ((ClientCache) getCache()).getQueryService();
+          remoteQS = getCache().getQueryService();
         } catch (Exception e) {
           fail("Exception getting query service ", e);
         }
@@ -1357,7 +1357,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         QueryService remoteQS = null;
         try {
           localQS = ((ClientCache) getCache()).getLocalQueryService();
-          remoteQS = ((ClientCache) getCache()).getQueryService();
+          remoteQS = getCache().getQueryService();
         } catch (Exception e) {
           fail("Exception getting query service ", e);
         }
@@ -1528,7 +1528,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
     final int port = (Integer) server1.invoke(new SerializableCallable("Create Server1") {
       @Override
       public Object call() throws Exception {
-        ((GemFireCacheImpl) getCache()).setReadSerializedForTest(true);
+        getCache().setReadSerializedForTest(true);
         Region r1 = getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regName);
         CacheServer server = getCache().addCacheServer();
         int port = AvailablePortHelper.getRandomAvailableTCPPort();
@@ -1563,7 +1563,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
         QueryService remoteQS = null;
         try {
           localQS = ((ClientCache) getCache()).getLocalQueryService();
-          remoteQS = ((ClientCache) getCache()).getQueryService();
+          remoteQS = getCache().getQueryService();
         } catch (Exception e) {
           fail("Exception getting query service ", e);
         }

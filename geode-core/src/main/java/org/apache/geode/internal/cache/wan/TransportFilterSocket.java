@@ -31,24 +31,24 @@ public class TransportFilterSocket extends Socket {
   /* OutputStream used by socket */
   private OutputStream out;
 
-  private List<GatewayTransportFilter> gatewayTransportFilters;
+  private final List<GatewayTransportFilter> gatewayTransportFilters;
 
   public TransportFilterSocket(List<GatewayTransportFilter> transportFilters) {
     super();
-    this.gatewayTransportFilters = transportFilters;
+    gatewayTransportFilters = transportFilters;
   }
 
   public TransportFilterSocket(List<GatewayTransportFilter> transportFilters, InetAddress host,
       int port) throws IOException {
     super(host, port);
-    this.gatewayTransportFilters = transportFilters;
+    gatewayTransportFilters = transportFilters;
   }
 
   @Override
   public InputStream getInputStream() throws IOException {
     if (in == null) {
       in = super.getInputStream();
-      for (GatewayTransportFilter filter : this.gatewayTransportFilters) {
+      for (GatewayTransportFilter filter : gatewayTransportFilters) {
         in = filter.getInputStream(in);
       }
     }
@@ -59,7 +59,7 @@ public class TransportFilterSocket extends Socket {
   public OutputStream getOutputStream() throws IOException {
     if (out == null) {
       out = super.getOutputStream();
-      for (GatewayTransportFilter filter : this.gatewayTransportFilters) {
+      for (GatewayTransportFilter filter : gatewayTransportFilters) {
         out = filter.getOutputStream(out);
       }
     }

@@ -32,7 +32,7 @@ public class ContainerManager {
   private static final Logger logger = LogService.getLogger();
   private String testName;
 
-  private ArrayList<ServerContainer> containers;
+  private final ArrayList<ServerContainer> containers;
 
   public ContainerManager() {
     containers = new ArrayList<>();

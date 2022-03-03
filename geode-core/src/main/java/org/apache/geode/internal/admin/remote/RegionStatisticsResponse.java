@@ -49,7 +49,7 @@ public class RegionStatisticsResponse extends AdminResponse {
 
   // instance methods
   public CacheStatistics getRegionStatistics() {
-    return this.regionStatistics;
+    return regionStatistics;
   }
 
   @Override
@@ -61,18 +61,18 @@ public class RegionStatisticsResponse extends AdminResponse {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     super.toData(out, context);
-    DataSerializer.writeObject(this.regionStatistics, out);
+    DataSerializer.writeObject(regionStatistics, out);
   }
 
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.regionStatistics = (RemoteCacheStatistics) DataSerializer.readObject(in);
+    regionStatistics = DataSerializer.readObject(in);
   }
 
   @Override
   public String toString() {
-    return "RegionStatisticsResponse from " + this.getRecipient();
+    return "RegionStatisticsResponse from " + getRecipient();
   }
 }

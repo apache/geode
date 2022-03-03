@@ -35,23 +35,23 @@ public class NullDataOutputStream extends OutputStream implements ObjToByteArray
   private int size;
 
   public NullDataOutputStream() {
-    this.size = 0;
+    size = 0;
   }
 
   /** write the low-order 8 bits of the given int */
   @Override
   public void write(int b) {
-    this.size++;
+    size++;
   }
 
   /** override OutputStream's write() */
   @Override
   public void write(byte[] source, int offset, int len) {
-    this.size += len;
+    size += len;
   }
 
   public int size() {
-    return this.size;
+    return size;
   }
 
   @Override
@@ -112,7 +112,7 @@ public class NullDataOutputStream extends OutputStream implements ObjToByteArray
    */
   @Override
   public void writeShort(int v) throws IOException {
-    this.size += 2;
+    size += 2;
   }
 
   /**
@@ -136,7 +136,7 @@ public class NullDataOutputStream extends OutputStream implements ObjToByteArray
    */
   @Override
   public void writeChar(int v) throws IOException {
-    this.size += 2;
+    size += 2;
   }
 
   /**
@@ -161,7 +161,7 @@ public class NullDataOutputStream extends OutputStream implements ObjToByteArray
    */
   @Override
   public void writeInt(int v) throws IOException {
-    this.size += 4;
+    size += 4;
   }
 
   /**
@@ -190,7 +190,7 @@ public class NullDataOutputStream extends OutputStream implements ObjToByteArray
    */
   @Override
   public void writeLong(long v) throws IOException {
-    this.size += 8;
+    size += 8;
   }
 
   /**
@@ -206,7 +206,7 @@ public class NullDataOutputStream extends OutputStream implements ObjToByteArray
    */
   @Override
   public void writeFloat(float v) throws IOException {
-    this.size += 4;
+    size += 4;
   }
 
   /**
@@ -222,7 +222,7 @@ public class NullDataOutputStream extends OutputStream implements ObjToByteArray
    */
   @Override
   public void writeDouble(double v) throws IOException {
-    this.size += 8;
+    size += 8;
   }
 
   /**
@@ -243,7 +243,7 @@ public class NullDataOutputStream extends OutputStream implements ObjToByteArray
   public void writeBytes(String str) throws IOException {
     int strlen = str.length();
     if (strlen > 0) {
-      this.size += strlen;
+      size += strlen;
     }
   }
 
@@ -262,7 +262,7 @@ public class NullDataOutputStream extends OutputStream implements ObjToByteArray
   public void writeChars(String s) throws IOException {
     int len = s.length();
     if (len > 0) {
-      this.size += len * 2;
+      size += len * 2;
     }
   }
 
@@ -337,7 +337,7 @@ public class NullDataOutputStream extends OutputStream implements ObjToByteArray
     if (utfSize > 65535) {
       throw new UTFDataFormatException();
     }
-    this.size += utfSize + 2; // +2 for the short that the length is encoded in
+    size += utfSize + 2; // +2 for the short that the length is encoded in
   }
 
   /**
@@ -347,10 +347,10 @@ public class NullDataOutputStream extends OutputStream implements ObjToByteArray
   @Override
   public void writeAsSerializedByteArray(Object v) throws IOException {
     if (v instanceof HeapDataOutputStream) {
-      this.size += 4; // length is encoded as an int (or less)
-      this.size += ((HeapDataOutputStream) v).size();
+      size += 4; // length is encoded as an int (or less)
+      size += ((HeapDataOutputStream) v).size();
     } else {
-      this.size += 5; // length is encoded as a byte + an int
+      size += 5; // length is encoded as a byte + an int
       DataSerializer.writeObject(v, this);
     }
   }

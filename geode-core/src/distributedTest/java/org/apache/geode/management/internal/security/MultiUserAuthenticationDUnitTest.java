@@ -54,8 +54,8 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @Category({SecurityTest.class})
 public class MultiUserAuthenticationDUnitTest {
 
-  private static int SESSION_COUNT = 2;
-  private static int KEY_COUNT = 2;
+  private static final int SESSION_COUNT = 2;
+  private static final int KEY_COUNT = 2;
 
   @ClassRule
   public static ClusterStartupRule lsRule = new ClusterStartupRule();
@@ -158,7 +158,7 @@ public class MultiUserAuthenticationDUnitTest {
   }
 
   private static class EventsCqListner implements CqListener {
-    private List<String> keys = new ArrayList<>();
+    private final List<String> keys = new ArrayList<>();
 
     @Override
     public void onEvent(CqEvent aCqEvent) {

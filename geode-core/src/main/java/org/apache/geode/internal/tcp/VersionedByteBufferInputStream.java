@@ -58,7 +58,7 @@ public class VersionedByteBufferInputStream extends ByteBufferInputStream
    */
   @Override
   public KnownVersion getVersion() {
-    return this.version;
+    return version;
   }
 
   /**
@@ -66,6 +66,6 @@ public class VersionedByteBufferInputStream extends ByteBufferInputStream
    */
   @Override
   public String toString() {
-    return super.toString() + " (" + this.version + ')';
+    return super.toString() + " (" + version + ')';
   }
 }

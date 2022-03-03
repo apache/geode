@@ -60,28 +60,28 @@ public class TXWriterTestCase {
     Properties p = new Properties();
     p.setProperty(MCAST_PORT, "0"); // loner
 
-    this.cache = (GemFireCacheImpl) CacheFactory.create(DistributedSystem.connect(p));
+    cache = (GemFireCacheImpl) CacheFactory.create(DistributedSystem.connect(p));
 
     AttributesFactory<String, String> af = new AttributesFactory<>();
     af.setScope(Scope.DISTRIBUTED_NO_ACK);
     af.setIndexMaintenanceSynchronous(true);
 
-    this.region = this.cache.createRegion("TXTest", af.create());
-    this.txMgr = this.cache.getCacheTransactionManager();
+    region = cache.createRegion("TXTest", af.create());
+    txMgr = cache.getCacheTransactionManager();
   }
 
   private void closeCache() {
-    if (this.cache != null) {
-      if (this.txMgr != null) {
+    if (cache != null) {
+      if (txMgr != null) {
         try {
-          this.txMgr.rollback();
+          txMgr.rollback();
         } catch (IllegalStateException ignore) {
         }
       }
-      this.region = null;
-      this.txMgr = null;
-      Cache c = this.cache;
-      this.cache = null;
+      region = null;
+      txMgr = null;
+      Cache c = cache;
+      cache = null;
       c.close();
     }
   }
@@ -94,9 +94,9 @@ public class TXWriterTestCase {
   @After
   public void tearDown() {
     try {
-      if (this.txMgr != null) {
-        ((CacheTransactionManager) this.txMgr).setWriter(null);
-        ((CacheTransactionManager) this.txMgr).setListener(null);
+      if (txMgr != null) {
+        txMgr.setWriter(null);
+        txMgr.setListener(null);
       }
     } finally {
       closeCache();
@@ -112,7 +112,7 @@ public class TXWriterTestCase {
   }
 
   void installCacheListenerAndWriter() {
-    AttributesMutator<String, String> mutator = this.region.getAttributesMutator();
+    AttributesMutator<String, String> mutator = region.getAttributesMutator();
     mutator.addCacheListener(new CacheListenerAdapter<String, String>() {
       @Override
       public void close() {
@@ -184,7 +184,7 @@ public class TXWriterTestCase {
   }
 
   void installTransactionListener() {
-    this.txMgr.setListener(new TransactionListener() {
+    txMgr.setListener(new TransactionListener() {
       @Override
       public void afterFailedCommit(TransactionEvent event) {
         failedCommits++;

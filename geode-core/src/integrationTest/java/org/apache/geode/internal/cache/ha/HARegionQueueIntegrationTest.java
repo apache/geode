@@ -421,9 +421,7 @@ public class HARegionQueueIntegrationTest {
 
     // In another thread, simulate that the region is being destroyed, for instance
     // when a SocketTimeoutException is thrown and we are cleaning up
-    futures.add(executorServiceRule.submit(() -> {
-      haRegionQueue.destroy();
-    }));
+    futures.add(executorServiceRule.submit(haRegionQueue::destroy));
 
     for (Future<Void> future : futures) {
       future.get();
@@ -468,9 +466,7 @@ public class HARegionQueueIntegrationTest {
 
     // In another thread, simulate that the region is being destroyed, for instance
     // when a SocketTimeoutException is thrown and we are cleaning up
-    futures.add(executorServiceRule.submit(() -> {
-      haRegionQueue.destroy();
-    }));
+    futures.add(executorServiceRule.submit(haRegionQueue::destroy));
 
     for (Future<Void> future : futures) {
       future.get();
@@ -626,7 +622,7 @@ public class HARegionQueueIntegrationTest {
         HARegion haRegion = mock(HARegion.class);
 
         HARegionQueue giiHaRegionQueue =
-            createHARegionQueue(haContainerWrapper, i, haRegion, false);;
+            createHARegionQueue(haContainerWrapper, i, haRegion, false);
         giiHaRegionQueue.startGiiQueueing();
         targetQueue = giiHaRegionQueue;
 

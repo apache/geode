@@ -94,7 +94,7 @@ public class RedisKey implements DataSerializableFixedID {
   }
 
   public byte[] toBytes() {
-    return this.value;
+    return value;
   }
 
   /**

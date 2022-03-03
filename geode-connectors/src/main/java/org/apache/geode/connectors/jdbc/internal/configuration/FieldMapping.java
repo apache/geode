@@ -128,13 +128,9 @@ public class FieldMapping implements Serializable {
       return false;
     }
     if (pdxType == null) {
-      if (other.pdxType != null) {
-        return false;
-      }
-    } else if (!pdxType.equals(other.pdxType)) {
-      return false;
-    }
-    return true;
+      return other.pdxType == null;
+    } else
+      return pdxType.equals(other.pdxType);
   }
 
   @Override

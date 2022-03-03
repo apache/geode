@@ -76,7 +76,7 @@ public class QueryCommandIntegrationTestBase {
 
       simpleRegion.put(key, "value" + i);
       complexRegion.put(key, new Customer("name" + i, "Main Street " + i, "Hometown"));
-      intRegion.put(new Integer(i), new Integer(i));
+      intRegion.put(i, i);
     }
   }
 
@@ -278,7 +278,7 @@ public class QueryCommandIntegrationTestBase {
 
     public Customer(String name, String street, String city) {
       this.name = name;
-      this.address = new Address(street, city);
+      address = new Address(street, city);
     }
 
     public String toString() {

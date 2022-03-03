@@ -46,7 +46,7 @@ public class OverflowOplogFlushTest extends DiskRegionTestingBase {
   private OverflowOplog ol = null;
   private ByteBuffer bb1 = null;
   private ByteBuffer bb2 = null;
-  private ByteBuffer[] bbArray = new ByteBuffer[2];
+  private final ByteBuffer[] bbArray = new ByteBuffer[2];
   private FileChannel ch;
   private FileChannel spyCh;
 

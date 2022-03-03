@@ -23,7 +23,6 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -193,15 +192,15 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
     LogWriter logger = GemFireCacheImpl.getInstance().getLogger();
     logger.fine(message);
     int row = 0;
-    for (Iterator iter = results.iterator(); iter.hasNext();) {
-      r = iter.next();
+    for (final Object result : results) {
+      r = result;
       row++;
       if (r instanceof Struct) {
         s = (Struct) r;
         String[] fieldNames = ((Struct) r).getStructType().getFieldNames();
-        for (int i = 0; i < fieldNames.length; i++) {
-          logger.fine("### Row " + row + "\n" + "Field: " + fieldNames[i] + " > "
-              + s.get(fieldNames[i]).toString());
+        for (final String fieldName : fieldNames) {
+          logger.fine("### Row " + row + "\n" + "Field: " + fieldName + " > "
+              + s.get(fieldName).toString());
         }
       } else {
         logger.fine("#### Row " + row + "\n" + r);
@@ -239,8 +238,8 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
       factory.setCompressor(compressor);
     }
 
-    createRegion(this.regionName, this.rootRegionName, factory.create());
-    createRegion(this.regionName2, this.rootRegionName, factory.create());
+    createRegion(regionName, rootRegionName, factory.create());
+    createRegion(regionName2, rootRegionName, factory.create());
 
     try {
       startBridgeServer(0, false);
@@ -291,7 +290,7 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
    * Stops the cache server that serves up the given cache.
    */
   protected void stopBridgeServer(Cache cache) {
-    CacheServer bridge = (CacheServer) cache.getCacheServers().iterator().next();
+    CacheServer bridge = cache.getCacheServers().iterator().next();
     bridge.stop();
     assertFalse(bridge.isRunning());
   }
@@ -323,22 +322,22 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
     }
 
     public TestObject2(int id) {
-      this._id = id;
+      _id = id;
       numInstance++;
     }
 
     public int getId() {
-      return this._id;
+      return _id;
     }
 
     @Override
     public void toData(PdxWriter out) {
-      out.writeInt("id", this._id);
+      out.writeInt("id", _id);
     }
 
     @Override
     public void fromData(PdxReader in) {
-      this._id = in.readInt("id");
+      _id = in.readInt("id");
     }
 
     @Override
@@ -359,8 +358,8 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
     @Override
     public int hashCode() {
       GemFireCacheImpl.getInstance().getLogger()
-          .fine("In TestObject2.hashCode() : " + this._id);
-      return this._id;
+          .fine("In TestObject2.hashCode() : " + _id);
+      return _id;
     }
   }
 
@@ -390,15 +389,15 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
         log.info("TestObject ctor stack trace", new Exception());
       }
       this.id = id;
-      this._ticker = ticker;
-      this._price = id;
-      this.important = id;
-      this.selection = id;
-      this.select = id;
+      _ticker = ticker;
+      _price = id;
+      important = id;
+      selection = id;
+      select = id;
       // GemFireCacheImpl.getInstance().getLogger().fine(new Exception("DEBUG"));
       numInstance++;
       idTickers.put(id + "", ticker);
-      this.test = new TestObject2(id);
+      test = new TestObject2(id);
     }
 
     public TestObject(int id, String ticker, int numPositions) {
@@ -409,19 +408,19 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
     }
 
     public int getIdValue() {
-      return this.id;
+      return id;
     }
 
     public String getTicker() {
-      return this._ticker;
+      return _ticker;
     }
 
     public int getPriceValue() {
-      return this._price;
+      return _price;
     }
 
     public HashMap getPositions(String id) {
-      return this.positions;
+      return positions;
     }
 
     public String getStatus() {
@@ -431,30 +430,28 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
     @Override
     public void toData(PdxWriter out) {
       // System.out.println("Is serializing in WAN: " + GatewayEventImpl.isSerializingValue());
-      out.writeInt("id", this.id);
-      out.writeString("ticker", this._ticker);
-      out.writeInt("price", this._price);
-      out.writeObject("idTickers", this.idTickers);
-      out.writeObject("positions", this.positions);
-      out.writeObject("test", this.test);
+      out.writeInt("id", id);
+      out.writeString("ticker", _ticker);
+      out.writeInt("price", _price);
+      out.writeObject("idTickers", idTickers);
+      out.writeObject("positions", positions);
+      out.writeObject("test", test);
     }
 
     @Override
     public void fromData(PdxReader in) {
       // System.out.println("Is deserializing in WAN: " + GatewayEventImpl.isDeserializingValue());
-      this.id = in.readInt("id");
-      this._ticker = in.readString("ticker");
-      this._price = in.readInt("price");
-      this.idTickers = (Map) in.readObject("idTickers");
-      this.positions = (HashMap) in.readObject("positions");
-      this.test = (TestObject2) in.readObject("test");
+      id = in.readInt("id");
+      _ticker = in.readString("ticker");
+      _price = in.readInt("price");
+      idTickers = (Map) in.readObject("idTickers");
+      positions = (HashMap) in.readObject("positions");
+      test = (TestObject2) in.readObject("test");
     }
 
     public String toString() {
-      StringBuffer buffer = new StringBuffer();
-      buffer.append("TestObject [").append("id=").append(this.id).append("; ticker=")
-          .append(this._ticker).append("; price=").append(this._price).append("]");
-      return buffer.toString();
+      return "TestObject [" + "id=" + id + "; ticker="
+          + _ticker + "; price=" + _price + "]";
     }
 
     @Override
@@ -463,18 +460,14 @@ public abstract class PdxQueryCQTestBase extends JUnit4CacheTestCase {
       // GemFireCacheImpl.getInstance().getLogger().fine("In TestObject.equals() this: " + this
       // + " other :" + o);
       TestObject other = (TestObject) o;
-      if ((id == other.id) && (_ticker.equals(other._ticker))) {
-        return true;
-      } else {
-        // getLogWriter().info("NOT EQUALS");
-        return false;
-      }
+      // getLogWriter().info("NOT EQUALS");
+      return (id == other.id) && (_ticker.equals(other._ticker));
     }
 
     @Override
     public int hashCode() {
-      GemFireCacheImpl.getInstance().getLogger().fine("In TestObject.hashCode() : " + this.id);
-      return this.id;
+      GemFireCacheImpl.getInstance().getLogger().fine("In TestObject.hashCode() : " + id);
+      return id;
     }
 
   }

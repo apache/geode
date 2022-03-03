@@ -15,19 +15,19 @@
 package org.apache.geode.redis.internal.commands.executor.string;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_BITOP_NOT_MUST_USE_SINGLE_KEY;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
-import static org.apache.geode.redis.internal.commands.executor.string.BitOpExecutor.ERROR_BITOP_NOT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.BitOP;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.args.BitOP;
 
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -64,20 +64,16 @@ public abstract class AbstractBitOpIntegrationTest implements RedisIntegrationTe
   public void bitop_givenInvalidOperationType_returnsSyntaxError() {
     assertThatThrownBy(
         () -> jedis.sendCommand(hashTag, Protocol.Command.BITOP, "invalidOp", destKey,
-            srcKey)).hasMessageContaining(ERROR_SYNTAX);
+            srcKey)).hasMessage(ERROR_SYNTAX);
   }
 
   @Test
   public void bitop_givenSetFails() {
     jedis.sadd(srcKey, "m1");
-    assertThatThrownBy(() -> jedis.bitop(BitOP.AND, destKey, srcKey))
-        .hasMessageContaining(ERROR_WRONG_TYPE);
-    assertThatThrownBy(() -> jedis.bitop(BitOP.OR, destKey, srcKey))
-        .hasMessageContaining(ERROR_WRONG_TYPE);
-    assertThatThrownBy(() -> jedis.bitop(BitOP.XOR, destKey, srcKey))
-        .hasMessageContaining(ERROR_WRONG_TYPE);
-    assertThatThrownBy(() -> jedis.bitop(BitOP.NOT, destKey, srcKey))
-        .hasMessageContaining(ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.bitop(BitOP.AND, destKey, srcKey)).hasMessage(ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.bitop(BitOP.OR, destKey, srcKey)).hasMessage(ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.bitop(BitOP.XOR, destKey, srcKey)).hasMessage(ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.bitop(BitOP.NOT, destKey, srcKey)).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -85,7 +81,7 @@ public abstract class AbstractBitOpIntegrationTest implements RedisIntegrationTe
     assertThatThrownBy(
         () -> jedis.sendCommand(
             hashTag, Protocol.Command.BITOP, "NOT", destKey, srcKey, "srcKey2" + hashTag))
-                .hasMessageContaining(ERROR_BITOP_NOT);
+                .hasMessage(ERROR_BITOP_NOT_MUST_USE_SINGLE_KEY);
   }
 
   @Test

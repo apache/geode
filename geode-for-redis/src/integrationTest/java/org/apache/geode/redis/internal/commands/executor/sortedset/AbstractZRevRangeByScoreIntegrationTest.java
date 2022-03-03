@@ -40,7 +40,7 @@ import org.junit.runner.RunWith;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.Tuple;
+import redis.clients.jedis.resps.Tuple;
 
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
@@ -72,7 +72,7 @@ public abstract class AbstractZRevRangeByScoreIntegrationTest implements RedisIn
   @TestCaseName("{method}: max:{0}, min:{1}")
   public void shouldError_givenInvalidMinOrMax(String max, String min) {
     assertThatThrownBy(() -> jedis.zrevrangeByScore("fakeKey", max, min))
-        .hasMessageContaining(ERROR_MIN_MAX_NOT_A_FLOAT);
+        .hasMessage(ERROR_MIN_MAX_NOT_A_FLOAT);
   }
 
   @Test
@@ -80,7 +80,7 @@ public abstract class AbstractZRevRangeByScoreIntegrationTest implements RedisIn
     jedis.zadd(KEY, 1.0, MEMBER_BASE_NAME);
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYSCORE, KEY, "1", "2", "WITSCOREZ"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage(ERROR_SYNTAX);
   }
 
   @Test
@@ -216,11 +216,11 @@ public abstract class AbstractZRevRangeByScoreIntegrationTest implements RedisIn
   public void shouldReturnRange_boundedByLimit() {
     createZSetRangeTestMap();
 
-    assertThat(jedis.zrevrangeByScore(KEY, "10", "0", 0, 2))
+    assertThat(jedis.zrevrangeByScore(KEY, 10d, 0d, 0, 2))
         .containsExactly("f", "e");
-    assertThat(jedis.zrevrangeByScore(KEY, "10", "0", 2, 3))
+    assertThat(jedis.zrevrangeByScore(KEY, 10d, 0d, 2, 3))
         .containsExactly("d", "c", "b");
-    assertThat(jedis.zrevrangeByScore(KEY, "10", "0", 2, 10))
+    assertThat(jedis.zrevrangeByScore(KEY, 10d, 0d, 2, 10))
         .containsExactly("d", "c", "b");
   }
 
@@ -279,39 +279,32 @@ public abstract class AbstractZRevRangeByScoreIntegrationTest implements RedisIn
 
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYSCORE, KEY, "10", "0", "LIMIT"))
-            .hasMessageContaining(ERROR_SYNTAX);
+            .hasMessage(ERROR_SYNTAX);
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYSCORE, KEY, "10", "0", "LIMIT",
-            "0"))
-                .hasMessageContaining(ERROR_SYNTAX);
+            "0")).hasMessage(ERROR_SYNTAX);
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYSCORE, KEY, "10", "0", "LOMIT",
-            "0", "1"))
-                .hasMessageContaining(ERROR_SYNTAX);
+            "0", "1")).hasMessage(ERROR_SYNTAX);
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYSCORE, KEY, "10", "0",
-            "LIMIT", "0", "invalid"))
-                .hasMessageContaining(ERROR_NOT_INTEGER);
+            "LIMIT", "0", "invalid")).hasMessage(ERROR_NOT_INTEGER);
   }
 
   @Test
   public void shouldReturnProperError_givenMultipleLimitsIncludingWrongFormat() {
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYSCORE, KEY, "10", "0", "LIMIT",
-            "0", "1", "LIMIT"))
-                .hasMessageContaining(ERROR_SYNTAX);
+            "0", "1", "LIMIT")).hasMessage(ERROR_SYNTAX);
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYSCORE, KEY, "10", "0", "LIMIT",
-            "0", "1", "WITHSCORES", "LIMIT"))
-                .hasMessageContaining(ERROR_SYNTAX);
+            "0", "1", "WITHSCORES", "LIMIT")).hasMessage(ERROR_SYNTAX);
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYSCORE, KEY, "10", "0", "LIMIT",
-            "0", "invalid", "LIMIT", "0", "5"))
-                .hasMessageContaining(ERROR_NOT_INTEGER);
+            "0", "invalid", "LIMIT", "0", "5")).hasMessage(ERROR_NOT_INTEGER);
     assertThatThrownBy(
         () -> jedis.sendCommand(KEY, Protocol.Command.ZREVRANGEBYSCORE, KEY, "10", "0", "LIMIT",
-            "0", "invalid", "WITHSCORES", "LIMIT", "0", "5"))
-                .hasMessageContaining(ERROR_NOT_INTEGER);
+            "0", "invalid", "WITHSCORES", "LIMIT", "0", "5")).hasMessage(ERROR_NOT_INTEGER);
   }
 
   @Test

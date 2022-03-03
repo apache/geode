@@ -59,8 +59,8 @@ public class PdxField implements DataSerializable, Comparable<PdxField> {
 
   public PdxField(String fieldName, int index, int varId, FieldType type, boolean identityField) {
     this.fieldName = fieldName;
-    this.fieldIndex = index;
-    this.varLenFieldSeqId = varId;
+    fieldIndex = index;
+    varLenFieldSeqId = varId;
     this.type = type;
     this.identityField = identityField;
   }
@@ -70,36 +70,36 @@ public class PdxField implements DataSerializable, Comparable<PdxField> {
    * always the default.
    */
   protected PdxField(PdxField other) {
-    this.fieldName = other.fieldName;
-    this.fieldIndex = other.fieldIndex;
-    this.varLenFieldSeqId = other.varLenFieldSeqId;
-    this.type = other.type;
-    this.identityField = other.identityField;
-    this.deleted = other.deleted;
+    fieldName = other.fieldName;
+    fieldIndex = other.fieldIndex;
+    varLenFieldSeqId = other.varLenFieldSeqId;
+    type = other.type;
+    identityField = other.identityField;
+    deleted = other.deleted;
   }
 
   public String getFieldName() {
-    return this.fieldName;
+    return fieldName;
   }
 
   public int getFieldIndex() {
-    return this.fieldIndex;
+    return fieldIndex;
   }
 
   public int getVarLenFieldSeqId() {
-    return this.varLenFieldSeqId;
+    return varLenFieldSeqId;
   }
 
   public boolean isVariableLengthType() {
-    return !this.type.isFixedWidth();
+    return !type.isFixedWidth();
   }
 
   public FieldType getFieldType() {
-    return this.type;
+    return type;
   }
 
   public int getRelativeOffset() {
-    return this.relativeOffset;
+    return relativeOffset;
   }
 
   public void setRelativeOffset(int relativeOffset) {
@@ -107,7 +107,7 @@ public class PdxField implements DataSerializable, Comparable<PdxField> {
   }
 
   public int getVlfOffsetIndex() {
-    return this.vlfOffsetIndex;
+    return vlfOffsetIndex;
   }
 
   public void setVlfOffsetIndex(int vlfOffsetIndex) {
@@ -119,15 +119,15 @@ public class PdxField implements DataSerializable, Comparable<PdxField> {
   }
 
   public boolean isIdentityField() {
-    return this.identityField;
+    return identityField;
   }
 
   public void setDeleted(boolean v) {
-    this.deleted = v;
+    deleted = v;
   }
 
   public boolean isDeleted() {
-    return this.deleted;
+    return deleted;
   }
 
   private static final byte IDENTITY_BIT = 1;
@@ -135,34 +135,34 @@ public class PdxField implements DataSerializable, Comparable<PdxField> {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.fieldName = DataSerializer.readString(in);
-    this.fieldIndex = in.readInt();
-    this.varLenFieldSeqId = in.readInt();
-    this.type = DataSerializer.readEnum(FieldType.class, in);
-    this.relativeOffset = in.readInt();
-    this.vlfOffsetIndex = in.readInt();
+    fieldName = DataSerializer.readString(in);
+    fieldIndex = in.readInt();
+    varLenFieldSeqId = in.readInt();
+    type = DataSerializer.readEnum(FieldType.class, in);
+    relativeOffset = in.readInt();
+    vlfOffsetIndex = in.readInt();
     {
       byte bits = in.readByte();
-      this.identityField = (bits & IDENTITY_BIT) != 0;
-      this.deleted = (bits & DELETED_BIT) != 0;
+      identityField = (bits & IDENTITY_BIT) != 0;
+      deleted = (bits & DELETED_BIT) != 0;
     }
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeString(this.fieldName, out);
-    out.writeInt(this.fieldIndex);
-    out.writeInt(this.varLenFieldSeqId);
-    DataSerializer.writeEnum(this.type, out);
-    out.writeInt(this.relativeOffset);
-    out.writeInt(this.vlfOffsetIndex);
+    DataSerializer.writeString(fieldName, out);
+    out.writeInt(fieldIndex);
+    out.writeInt(varLenFieldSeqId);
+    DataSerializer.writeEnum(type, out);
+    out.writeInt(relativeOffset);
+    out.writeInt(vlfOffsetIndex);
     {
       // pre 8.1 we wrote a single boolean
       // 8.1 and after we write a byte whose bits are:
       // 1: identityField
       // 2: deleted
       byte bits = 0;
-      if (this.identityField) {
+      if (identityField) {
         bits |= IDENTITY_BIT;
       }
       // Note that this code attempts to only set the DELETED_BIT
@@ -174,7 +174,7 @@ public class PdxField implements DataSerializable, Comparable<PdxField> {
       // all member have been upgraded to 8.1 or later.
       KnownVersion sourceVersion = StaticSerialization.getVersionForDataStream(out);
       if (sourceVersion.isNotOlderThan(KnownVersion.GFE_81)) {
-        if (this.deleted) {
+        if (deleted) {
           bits |= DELETED_BIT;
         }
       }
@@ -212,20 +212,17 @@ public class PdxField implements DataSerializable, Comparable<PdxField> {
       return false;
     }
 
-    if (otherVFT.fieldName.equals(this.fieldName) && this.isDeleted() == otherVFT.isDeleted()
-        && this.type.equals(otherVFT.type)) {
-      return true;
-    }
-    return false;
+    return otherVFT.fieldName.equals(fieldName) && isDeleted() == otherVFT.isDeleted()
+        && type.equals(otherVFT.type);
   }
 
   @Override
   public String toString() {
-    return this.fieldName + ":" + this.type + (isDeleted() ? ":DELETED" : "")
-        + (isIdentityField() ? ":identity" : "") + ":" + this.fieldIndex
-        + ((this.varLenFieldSeqId > 0) ? (":" + this.varLenFieldSeqId) : "")
-        + ":idx0(relativeOffset)=" + this.relativeOffset + ":idx1(vlfOffsetIndex)="
-        + this.vlfOffsetIndex;
+    return fieldName + ":" + type + (isDeleted() ? ":DELETED" : "")
+        + (isIdentityField() ? ":identity" : "") + ":" + fieldIndex
+        + ((varLenFieldSeqId > 0) ? (":" + varLenFieldSeqId) : "")
+        + ":idx0(relativeOffset)=" + relativeOffset + ":idx1(vlfOffsetIndex)="
+        + vlfOffsetIndex;
   }
 
   public String getTypeIdString() {
@@ -241,7 +238,7 @@ public class PdxField implements DataSerializable, Comparable<PdxField> {
     printStream.print("    ");
     printStream.print(getFieldType());
     printStream.print(' ');
-    printStream.print(this.getFieldName());
+    printStream.print(getFieldName());
     printStream.print(';');
     if (isIdentityField()) {
       printStream.print(" // identity");

@@ -18,17 +18,22 @@
 set -e
 
 usage() {
-    echo "Usage: create_support_branches.sh -v version_number -g your_github_username"
+    echo "Usage: create_support_branches.sh -j ticket -v version_number -g your_github_username"
+    echo "  -j   The GEODE-nnnnn Jira identifier for this release"
     echo "  -v   The #.# version number of the support branch to create"
     echo "  -g   Your github username"
     exit 1
 }
 
+JIRA=""
 VERSION_MM=""
 GITHUB_USER=""
 
-while getopts ":v:g:" opt; do
+while getopts ":j:v:g:" opt; do
   case ${opt} in
+    j )
+      JIRA=$OPTARG
+      ;;
     v )
       VERSION_MM=$OPTARG
       ;;
@@ -41,7 +46,7 @@ while getopts ":v:g:" opt; do
   esac
 done
 
-if [[ ${VERSION_MM} == "" ]] || [[ ${GITHUB_USER} == "" ]] ; then
+if [[ ${JIRA} == "" ]] || [[ ${VERSION_MM} == "" ]] || [[ ${GITHUB_USER} == "" ]] ; then
     usage
 fi
 
@@ -87,7 +92,6 @@ echo "============================================================"
 set -x
 rm -rf $WORKSPACE
 mkdir -p $WORKSPACE
-cd $WORKSPACE
 set +x
 
 
@@ -96,6 +100,7 @@ echo "============================================================"
 echo "Cloning repositories..."
 echo "============================================================"
 set -x
+cd ${WORKSPACE}
 git clone --single-branch --branch develop git@github.com:apache/geode.git
 #(cd geode; git reset --hard $desired_sha) #uncomment if latest commit is not the desired branchpoint
 git clone --single-branch --branch develop git@github.com:apache/geode.git geode-develop
@@ -109,31 +114,15 @@ set +x
 function failMsg2 {
   errln=$1
   echo "ERROR: script did NOT complete successfully"
-  echo "Comment out any steps that already succeeded (approximately lines 83-$(( errln - 1 ))) and try again"
+  echo "Comment out any steps that already succeeded (approximately lines 88-$(( errln - 1 ))) and try again"
 }
 trap 'failMsg2 $LINENO' ERR
 
 
 cd ${GEODE}/../..
 set -x
-${0%/*}/set_copyright.sh ${GEODE} ${GEODE_DEVELOP} ${GEODE_EXAMPLES} ${GEODE_EXAMPLES_DEVELOP} ${GEODE_NATIVE} ${GEODE_BENCHMARKS}
+${0%/*}/set_copyright.sh -j $JIRA ${GEODE} ${GEODE_DEVELOP} ${GEODE_EXAMPLES} ${GEODE_EXAMPLES_DEVELOP} ${GEODE_NATIVE} ${GEODE_BENCHMARKS}
 set +x
-
-
-echo ""
-echo "============================================================"
-echo "Pushing copyright updates (if any) to develop before branching"
-echo "============================================================"
-#get these 2 done before the branch so we don't have to do develop and support separately.
-#the other 2 will be pushed to develop and support versions when version bumps are pushed.
-for DIR in ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
-    set -x
-    cd ${DIR}
-    if ! git push --dry-run 2>&1 | grep -q 'Everything up-to-date' ; then
-      git push -u origin
-    fi
-    set +x
-done
 
 
 echo ""
@@ -145,6 +134,7 @@ for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
     cd ${DIR}
     git checkout -b support/${VERSION_MM}
     git push -u origin support/${VERSION_MM}
+    git remote set-branches --add origin support/${VERSION_MM}
     set +x
 done
 
@@ -231,7 +221,10 @@ rm gradle.properties.bak
 set -x
 git add gradle.properties
 git diff --staged --color | cat
-git commit -m "pair develop examples with ${NEWVERSION} now that support/${VERSION_MM} has been created"
+git commit -m "$JIRA: Update examples version
+
+Now that support/${VERSION_MM} has been created,
+pair develop examples with ${NEWVERSION}"
 git push -u origin
 set +x
 
@@ -251,7 +244,16 @@ git add README.md
 cd ${GEODE}
 [ ! -r CODEOWNERS ] || git rm CODEOWNERS
 [ ! -r CODEWATCHERS ] || git rm CODEWATCHERS
-git commit -m "remove outdated copies of release scripts to ensure they are not run by accident + remove CODEOWNERS to avoid confusion"
+git commit -m "$JIRA: Remove unneeded scripts
+
+Remove likely-to-become-outdated copies of release scripts to ensure
+they are not run by accident from a branch (they should always be run
+from develop).
+
+Also remove CODEOWNERS to avoid the confusion of GitHub showing owner
+names like on develop, but codeowner reviews not actually being
+required (due to lack of branch protection or minimum review count on
+support branches)"
 git push -u origin
 set +x
 
@@ -262,7 +264,7 @@ echo "Setting version on support/${VERSION_MM}"
 echo "============================================================"
 cd ${GEODE}/../..
 set -x
-${0%/*}/set_versions.sh -v ${VERSION_MM}.0 -s -w "${WORKSPACE}"
+${0%/*}/set_versions.sh -j $JIRA -v ${VERSION_MM}.0 -s -w "${WORKSPACE}"
 set +x
 
 
@@ -282,7 +284,7 @@ echo "============================================================"
 cd ${GEODE}/../..
 echo "Next steps:"
 echo "1. Go to https://github.com/${GITHUB_USER}/geode/pull/new/roll-develop-to-${NEWVERSION} and create the pull request"
-echo "2. Plus the BumpMinor job at https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-develop-main?group=Semver%20Management"
+echo "2. Plus the BumpMinor job at https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-develop-main?group=semver-management"
 echo "3. Add ${NEWVERSION} to Jira at https://issues.apache.org/jira/projects/GEODE?selectedItem=com.atlassian.jira.jira-projects-plugin:release-page"
-echo "4. (cd ${GEODE}/ci/pipelines/meta && ./deploy_meta.sh) #takes about 2 hours. keep re-running until successful."
-echo "5. That's it for now.  Once all needed fixes have been proposed and cherry-picked to support/${VERSION_MM} and https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM/./-}-main is green, come back and run ${0%/*}/prepare_rc.sh -v ${VERSION}.RC1"
+echo "4. (cd ${GEODE}/ci/pipelines/meta && ./deploy_meta.sh) #takes 1-2 hours. keep re-running until successful."
+echo "5. That's it for now.  Once all needed fixes have been proposed and cherry-picked to support/${VERSION_MM} and https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM/./-}-main is green, come back and run ${0%/*}/prepare_rc.sh -v ${VERSION_MM}.0.RC1"

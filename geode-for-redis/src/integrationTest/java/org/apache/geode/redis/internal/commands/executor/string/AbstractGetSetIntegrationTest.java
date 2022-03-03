@@ -16,6 +16,7 @@ package org.apache.geode.redis.internal.commands.executor.string;
 
 import static java.lang.Integer.parseInt;
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -28,11 +29,9 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.redis.internal.RedisConstants;
 
 public abstract class AbstractGetSetIntegrationTest implements RedisIntegrationTest {
 
@@ -109,8 +108,7 @@ public abstract class AbstractGetSetIntegrationTest implements RedisIntegrationT
     jedis.hset(key, "field", "some hash value");
 
     assertThatThrownBy(() -> jedis.getSet(key, "this value doesn't matter"))
-        .isInstanceOf(JedisDataException.class)
-        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test

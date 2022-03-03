@@ -18,7 +18,6 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
@@ -62,11 +61,11 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
   /**
    * A mapping of Thread - Transaction Objects
    */
-  private Map transactionMap = new ConcurrentHashMap();
+  private final Map transactionMap = new ConcurrentHashMap();
   /**
    * A mapping of Transaction - Global Transaction
    */
-  private Map globalTransactionMap = Collections.synchronizedMap(new HashMap());
+  private final Map globalTransactionMap = Collections.synchronizedMap(new HashMap());
   /**
    * Ordered set of active global transactions - Used for timeOut
    */
@@ -75,7 +74,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
   /**
    * Transaction TimeOut Class
    */
-  private transient TransactionTimeOutThread cleaner;
+  private final transient TransactionTimeOutThread cleaner;
   /**
    * Singleton transactionManager
    */
@@ -89,7 +88,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
    * Default Transaction Time Out
    */
   static final int DEFAULT_TRANSACTION_TIMEOUT =
-      Integer.getInteger("jta.defaultTimeout", 600).intValue();
+      Integer.getInteger("jta.defaultTimeout", 600);
   /**
    * Asif: The integers identifying the cause of Rollback
    */
@@ -185,10 +184,10 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
       globalTransaction.setStatus(Status.STATUS_ACTIVE);
     } catch (Exception e) {
       String exception = String.format("SystemException due to %s",
-          new Object[] {e});
+          e);
       if (log.severeEnabled()) {
         log.severe(String.format("SystemException due to %s",
-            new Object[] {e}));
+            e));
       }
       throw new SystemException(exception);
     }
@@ -258,7 +257,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
         } else {
           String exception =
               String.format("transaction not active, cannot be committed. Transaction Status= %s",
-                  Integer.valueOf(status));
+                  status);
           LogWriter writer = TransactionUtils.getLogWriter();
           if (VERBOSE) {
             writer.fine(exception);
@@ -349,7 +348,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
     }
     Thread thread = Thread.currentThread();
     transactionMap.remove(thread);
-    this.gtxSet.remove(gtx);
+    gtxSet.remove(gtx);
     if (status != Status.STATUS_COMMITTED) {
       switch (cozOfException) {
         case EXCEPTION_IN_NOTIFY_BEFORE_COMPLETION: {
@@ -436,7 +435,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
     if (!(status == Status.STATUS_ACTIVE || status == Status.STATUS_MARKED_ROLLBACK)) {
       String exception =
           String.format("Transaction status does not allow Rollback .Transactional status, %s",
-              Integer.valueOf(status));
+              status);
       if (VERBOSE) {
         writer.fine(exception);
       }
@@ -451,7 +450,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
       } else if (gtx.getStatus() == Status.STATUS_ROLLING_BACK) {
         String exception =
             String.format("Transaction already in a Rolling Back state.Transactional status, %s",
-                Integer.valueOf(status));
+                status);
         if (VERBOSE) {
           writer.fine(exception);
         }
@@ -495,7 +494,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
     }
     Thread thread = Thread.currentThread();
     transactionMap.remove(thread);
-    this.gtxSet.remove(gtx);
+    gtxSet.remove(gtx);
     if (se != null) {
       if (VERBOSE) {
         writer.fine(se);
@@ -535,11 +534,11 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
       } else if (status == Status.STATUS_COMMITTING) {
         gtx.setStatus(Status.STATUS_ROLLING_BACK);
       } else if (status == Status.STATUS_ROLLING_BACK) {
-        ; // Dont do anything
+        // Dont do anything
       } else {
         String exception =
             String.format("Transaction cannot be marked for rollback. Transcation status, %s",
-                Integer.valueOf(status));
+                status);
         LogWriter writer = TransactionUtils.getLogWriter();
         if (VERBOSE) {
           writer.fine(exception);
@@ -778,9 +777,8 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
   // Previously thsi task was being done in GlobalTranxn
   void cleanGlobalTransactionMap(List tranxns) {
     synchronized (tranxns) {
-      Iterator iterator = tranxns.iterator();
-      while (iterator.hasNext()) {
-        globalTransactionMap.remove(iterator.next());
+      for (final Object tranxn : tranxns) {
+        globalTransactionMap.remove(tranxn);
       }
     }
   }
@@ -791,8 +789,8 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
     Object tx = null;
     boolean removed = false;
     Object temp = null;
-    for (int i = 0; i < len; ++i) {
-      tx = transactionMap.get((temp = threads[i]));
+    for (final Object thread : threads) {
+      tx = transactionMap.get((temp = thread));
       removed = tranxns.remove(tx);
       if (removed) {
         transactionMap.remove(temp);

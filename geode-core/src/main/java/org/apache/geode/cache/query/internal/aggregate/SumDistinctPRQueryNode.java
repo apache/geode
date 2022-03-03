@@ -29,14 +29,14 @@ public class SumDistinctPRQueryNode extends DistinctAggregator {
   @Override
   public void accumulate(Object value) {
     if (value != null && value != QueryService.UNDEFINED) {
-      this.distinct.addAll((Set) value);
+      distinct.addAll((Set) value);
     }
   }
 
   @Override
   public Object terminate() {
     double sum = 0;
-    for (Object o : this.distinct) {
+    for (Object o : distinct) {
       sum += ((Number) o).doubleValue();
     }
     return downCast(sum);

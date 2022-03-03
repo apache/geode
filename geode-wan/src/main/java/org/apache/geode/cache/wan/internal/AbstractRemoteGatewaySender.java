@@ -12,12 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache.wan.internal;
 
+package org.apache.geode.cache.wan.internal;
 
 import java.io.IOException;
 import java.net.ConnectException;
-import java.util.Iterator;
 import java.util.StringTokenizer;
 
 import org.apache.logging.log4j.Logger;
@@ -45,7 +44,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender {
   private static final Logger logger = LogService.getLogger();
 
-  /** used to reduce warning logs in case remote locator is down (#47634) */
+  /** used to reduce warning logs in case remote locator is down */
   protected int proxyFailureTries = 0;
 
   public AbstractRemoteGatewaySender(InternalCache cache, StatisticsClock statisticsClock,
@@ -56,25 +55,26 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
   @Override
   public synchronized void initProxy() {
     // return if it is being used for WBCL or proxy is already created
-    if (this.remoteDSId == DEFAULT_DISTRIBUTED_SYSTEM_ID
-        || this.proxy != null && !this.proxy.isDestroyed()) {
+    if (remoteDSId == DEFAULT_DISTRIBUTED_SYSTEM_ID
+        || proxy != null && !proxy.isDestroyed()) {
       return;
     }
 
     int locatorCount = 0;
     PoolFactoryImpl pf = (PoolFactoryImpl) PoolManager.createFactory();
     pf.setPRSingleHopEnabled(false);
-    if (this.locatorDiscoveryCallback != null) {
+    if (locatorDiscoveryCallback != null) {
       pf.setLocatorDiscoveryCallback(locatorDiscoveryCallback);
     }
-    pf.setReadTimeout(this.socketReadTimeout);
+    pf.setReadTimeout(socketReadTimeout);
     pf.setIdleTimeout(connectionIdleTimeOut);
     pf.setSocketBufferSize(socketBufferSize);
     pf.setServerGroup(GatewayReceiver.RECEIVER_GROUP);
     RemoteLocatorRequest request =
-        new RemoteLocatorRequest(this.remoteDSId, pf.getPoolAttributes().getServerGroup());
-    String locators = this.cache.getInternalDistributedSystem().getConfig().getLocators();
-    if (logger.isDebugEnabled()) {
+        new RemoteLocatorRequest(remoteDSId, pf.getPoolAttributes().getServerGroup());
+    String locators = cache.getInternalDistributedSystem().getConfig().getLocators();
+    final boolean debugEnabled = logger.isDebugEnabled();
+    if (debugEnabled) {
       logger
           .debug("Gateway Sender is attempting to configure pool with remote locator information");
     }
@@ -83,7 +83,7 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
       String localLocator = locatorsOnThisVM.nextToken();
       DistributionLocatorId locatorID = new DistributionLocatorId(localLocator);
       try {
-        RemoteLocatorResponse response =
+        final RemoteLocatorResponse response =
             (RemoteLocatorResponse) new TcpClient(SocketCreatorFactory
                 .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
                 InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
@@ -97,27 +97,24 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
             if (logProxyFailure()) {
               logger.warn(
                   "Remote locator host port information for remote site {} is not available in local locator {}.",
-                  new Object[] {remoteDSId, localLocator});
+                  remoteDSId, localLocator);
             }
             continue;
           }
-          if (logger.isDebugEnabled()) {
-            logger.debug("Received the remote site {} location information:", this.remoteDSId,
+          if (debugEnabled) {
+            logger.debug("Received the remote site {} location information: {}", remoteDSId,
                 response.getLocators());
           }
-          Iterator<String> itr = response.getLocators().iterator();
-          while (itr.hasNext()) {
-            String remoteLocator = itr.next();
+          for (final String remoteLocator : response.getLocators()) {
             try {
               DistributionLocatorId locatorId = new DistributionLocatorId(remoteLocator);
               pf.addLocator(locatorId.getHost().getHostName(), locatorId.getPort());
               locatorCount++;
             } catch (Exception e) {
               if (logProxyFailure()) {
-                logger.warn(String.format(
-                    "Caught the following exception attempting to add remote locator %s. The locator will be ignored.",
-                    new Object[] {remoteLocator}),
-                    e);
+                logger.warn(
+                    "Caught the following exception attempting to add remote locator {}. The locator will be ignored.",
+                    remoteLocator, e);
               }
             }
           }
@@ -125,62 +122,58 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
         }
       } catch (IOException ioe) {
         if (logProxyFailure()) {
-          // don't print stack trace for connection failures
-          String ioeStr = "";
-          if (!logger.isDebugEnabled() && ioe instanceof ConnectException) {
-            ioeStr = ": " + ioe.toString();
-            ioe = null;
+          if (ioe instanceof ConnectException && !debugEnabled) {
+            // don't print stack trace for connection failures
+            logger.warn("GatewaySender {} is not able to connect to local locator {} : {}", id,
+                localLocator, ioe);
+          } else {
+            logger.warn("GatewaySender {} is not able to connect to local locator {}", id,
+                localLocator, ioe);
           }
-          logger.warn(String.format("GatewaySender %s is not able to connect to local locator %s",
-              new Object[] {this.id, localLocator + ioeStr}),
-              ioe);
         }
-        continue;
       } catch (ClassNotFoundException e) {
         if (logProxyFailure()) {
-          logger.warn(String.format("GatewaySender %s is not able to connect to local locator %s",
-              new Object[] {this.id, localLocator}),
-              e);
+          logger.warn("GatewaySender {} is not able to connect to local locator {}", id,
+              localLocator, e);
         }
-        continue;
       }
     }
 
     if (locatorCount == 0) {
       if (logProxyFailure()) {
         logger.fatal(
-            "GatewaySender {} could not get remote locator information for remote site {}.",
-            new Object[] {this.id, this.remoteDSId});
+            "GatewaySender {} could not get remote locator information for remote site {}.", id,
+            remoteDSId);
       }
-      this.proxyFailureTries++;
+      proxyFailureTries++;
       throw new GatewaySenderConfigurationException(
           String.format(
               "GatewaySender %s could not get remote locator information for remote site %s.",
-              new Object[] {this.id, this.remoteDSId}));
+              id, remoteDSId));
     }
     pf.init(this);
-    this.proxy = ((PoolImpl) pf.create(this.getId()));
-    if (this.proxyFailureTries > 0) {
+    proxy = ((PoolImpl) pf.create(getId()));
+    if (proxyFailureTries > 0) {
       logger.info(
           "GatewaySender {} got remote locator information for remote site {} after {} failures in connecting to remote site.",
-          new Object[] {this.id, this.remoteDSId, this.proxyFailureTries});
-      this.proxyFailureTries = 0;
+          id, remoteDSId, proxyFailureTries);
+      proxyFailureTries = 0;
     }
   }
 
   protected boolean logProxyFailure() {
     assert Thread.holdsLock(this);
     // always log the first failure
-    if (logger.isDebugEnabled() || this.proxyFailureTries == 0) {
+    if (logger.isDebugEnabled() || proxyFailureTries == 0) {
       return true;
     } else {
       // subsequent failures will be logged on 30th, 300th, 3000th try
       // each try is at 100millis from higher layer so this accounts for logging
       // after 3s, 30s and then every 5mins
-      if (this.proxyFailureTries >= 3000) {
-        return (this.proxyFailureTries % 3000) == 0;
+      if (proxyFailureTries >= 3000) {
+        return (proxyFailureTries % 3000) == 0;
       } else {
-        return (this.proxyFailureTries == 30 || this.proxyFailureTries == 300);
+        return (proxyFailureTries == 30 || proxyFailureTries == 300);
       }
     }
   }

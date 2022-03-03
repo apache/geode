@@ -86,7 +86,7 @@ public class ElidedPutAllDUnitTest extends JUnit4CacheTestCase {
           tag.setEntryVersion(tag.getEntryVersion() - 1);
           tag.setRegionVersion(1);
 
-          Map<String, String> map = new HashMap<String, String>();
+          Map<String, String> map = new HashMap<>();
           map.put(key, "value-3");
           DistributedPutAllOperation dpao = region.newPutAllOperation(map, null);
           EntryEventImpl event = EntryEventImpl.create(region, Operation.PUTALL_CREATE, null, null,
@@ -94,7 +94,7 @@ public class ElidedPutAllDUnitTest extends JUnit4CacheTestCase {
           event.setOldValue("value-1");
           event.setVersionTag(tag);
           event.setEventId(new EventID(cache.getDistributedSystem()));
-          event.setKeyInfo(((PartitionedRegion) region).getKeyInfo(key));
+          event.setKeyInfo(region.getKeyInfo(key));
           dpao.addEntry(event, event.getKeyInfo().getBucketId());
           // getLogWriter().info("dpao data = " + dpao.getPutAllEntryData()[0]);
           VersionedObjectList successfulPuts = new VersionedObjectList(1, true, true);

@@ -36,16 +36,16 @@ public abstract class CliLegacyMessage extends AdminRequest {
     try {
       response = createResponse(dm);
     } catch (Exception ex) {
-      logger.error("Error processing request " + this.getClass(),
+      logger.error("Error processing request " + getClass(),
           ex);
-      response = AdminFailureResponse.create(this.getSender(), ex);
+      response = AdminFailureResponse.create(getSender(), ex);
 
     }
     if (response != null) { // cancellations result in null response
-      response.setMsgId(this.getMsgId());
+      response.setMsgId(getMsgId());
       dm.putOutgoing(response);
     } else {
-      logger.info("Response to  {}  was cancelled.", this.getClass().getName());
+      logger.info("Response to  {}  was cancelled.", getClass().getName());
     }
   }
 }

@@ -49,7 +49,7 @@ public interface Result {
 
     private final int code;
 
-    private Status(int code) {
+    Status(int code) {
       this.code = code;
     }
 
@@ -57,7 +57,7 @@ public interface Result {
      * Returns the code associated with this state.
      */
     public int getCode() {
-      return this.code;
+      return code;
     }
   }
 
@@ -133,10 +133,10 @@ public interface Result {
    */
   default String asString() {
     StringBuilder builder = new StringBuilder();
-    while (this.hasNextLine()) {
-      builder.append(this.nextLine());
+    while (hasNextLine()) {
+      builder.append(nextLine());
     }
-    this.resetToFirstLine();
+    resetToFirstLine();
     return builder.toString();
   }
 }

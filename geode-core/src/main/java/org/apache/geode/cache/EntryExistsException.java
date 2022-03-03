@@ -44,7 +44,7 @@ public class EntryExistsException extends CacheException {
    * Returns the old existing value that caused this exception.
    */
   public Object getOldValue() {
-    return this.oldValue;
+    return oldValue;
   }
 
   /**

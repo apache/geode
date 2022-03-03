@@ -42,7 +42,7 @@ public abstract class BaseDecoratorImpl implements StatAlertDefinition {
 
   public BaseDecoratorImpl(StatAlertDefinition definition) {
     super();
-    this._def = definition;
+    _def = definition;
   }
 
   @Override
@@ -92,12 +92,10 @@ public abstract class BaseDecoratorImpl implements StatAlertDefinition {
 
   @Override
   public String getStringRepresentation() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("StatAlertDefinition [\n");
-    buffer.append(toString());
-    buffer.append("]");
 
-    return buffer.toString();
+    return "StatAlertDefinition [\n"
+        + this
+        + "]";
   }
 
   @Override
@@ -189,7 +187,7 @@ public abstract class BaseDecoratorImpl implements StatAlertDefinition {
       } else if (threshold instanceof Float) {
         eval = Float.compare(param.floatValue(), threshold.floatValue());
       } else if (threshold instanceof Long) {
-        eval = (Long.valueOf(param.longValue())).compareTo(Long.valueOf(threshold.longValue()));
+        eval = (Long.valueOf(param.longValue())).compareTo(threshold.longValue());
       } else if (threshold instanceof Integer) {
         eval = param.intValue() > threshold.intValue() ? 1 : -1;
       }
@@ -213,11 +211,11 @@ public abstract class BaseDecoratorImpl implements StatAlertDefinition {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeObject(this._def, out);
+    DataSerializer.writeObject(_def, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this._def = (StatAlertDefinition) DataSerializer.readObject(in);
+    _def = DataSerializer.readObject(in);
   }
 }

@@ -38,7 +38,7 @@ import org.apache.geode.test.junit.categories.PerformanceTest;
 @Ignore("Tests have no assertions")
 public class DiskRegionPerfJUnitPerformanceTest extends DiskRegionTestingBase {
 
-  private static int counter = 0;
+  private static final int counter = 0;
 
   private LogWriter log = null;
 
@@ -46,7 +46,7 @@ public class DiskRegionPerfJUnitPerformanceTest extends DiskRegionTestingBase {
 
   private String stats_ForSameKeyputs = null;
 
-  private DiskRegionProperties diskProps = new DiskRegionProperties();
+  private final DiskRegionProperties diskProps = new DiskRegionProperties();
 
   @Override
   protected final void postSetUp() throws Exception {
@@ -498,8 +498,8 @@ public class DiskRegionPerfJUnitPerformanceTest extends DiskRegionTestingBase {
   protected void deleteFiles() {
     for (int i = 0; i < 4; i++) {
       File[] files = dirs[i].listFiles();
-      for (int j = 0; j < files.length; j++) {
-        files[j].delete();
+      for (final File file : files) {
+        file.delete();
       }
     }
   }

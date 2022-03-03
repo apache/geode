@@ -50,41 +50,41 @@ public class GatewaySenderFunctionArgs implements Serializable {
   private final Boolean enforceThreadsConnectSameReceiver;
 
   public GatewaySenderFunctionArgs(CacheConfig.GatewaySender sender) {
-    this.id = sender.getId();
-    this.remoteDSId = string2int(sender.getRemoteDistributedSystemId());
-    this.parallel = sender.isParallel();
-    this.groupTransactionEvents = sender.mustGroupTransactionEvents();
-    this.manualStart = sender.isManualStart();
-    this.socketBufferSize = string2int(sender.getSocketBufferSize());
-    this.socketReadTimeout = string2int(sender.getSocketReadTimeout());
-    this.enableBatchConflation = sender.isEnableBatchConflation();
-    this.batchSize = string2int(sender.getBatchSize());
-    this.batchTimeInterval = string2int(sender.getBatchTimeInterval());
-    this.enablePersistence = sender.isEnablePersistence();
-    this.diskStoreName = sender.getDiskStoreName();
-    this.diskSynchronous = sender.isDiskSynchronous();
-    this.maxQueueMemory = string2int(sender.getMaximumQueueMemory());
-    this.alertThreshold = string2int(sender.getAlertThreshold());
-    this.dispatcherThreads = string2int(sender.getDispatcherThreads());
-    this.orderPolicy = sender.getOrderPolicy();
+    id = sender.getId();
+    remoteDSId = string2int(sender.getRemoteDistributedSystemId());
+    parallel = sender.isParallel();
+    groupTransactionEvents = sender.mustGroupTransactionEvents();
+    manualStart = sender.isManualStart();
+    socketBufferSize = string2int(sender.getSocketBufferSize());
+    socketReadTimeout = string2int(sender.getSocketReadTimeout());
+    enableBatchConflation = sender.isEnableBatchConflation();
+    batchSize = string2int(sender.getBatchSize());
+    batchTimeInterval = string2int(sender.getBatchTimeInterval());
+    enablePersistence = sender.isEnablePersistence();
+    diskStoreName = sender.getDiskStoreName();
+    diskSynchronous = sender.isDiskSynchronous();
+    maxQueueMemory = string2int(sender.getMaximumQueueMemory());
+    alertThreshold = string2int(sender.getAlertThreshold());
+    dispatcherThreads = string2int(sender.getDispatcherThreads());
+    orderPolicy = sender.getOrderPolicy();
     if (sender.areGatewayEventFiltersUpdated()) {
-      this.gatewayEventFilters =
+      gatewayEventFilters =
           Optional.of(sender.getGatewayEventFilters())
               .map(filters -> filters
                   .stream().map(DeclarableType::getClassName)
                   .collect(Collectors.toList()))
               .orElse(Collections.emptyList());
     } else {
-      this.gatewayEventFilters = null;
+      gatewayEventFilters = null;
     }
 
-    this.gatewayTransportFilters =
+    gatewayTransportFilters =
         Optional.of(sender.getGatewayTransportFilters())
             .map(filters -> filters
                 .stream().map(DeclarableType::getClassName)
                 .collect(Collectors.toList()))
             .orElse(null);
-    this.enforceThreadsConnectSameReceiver = sender.getEnforceThreadsConnectSameReceiver();
+    enforceThreadsConnectSameReceiver = sender.getEnforceThreadsConnectSameReceiver();
   }
 
   private Integer string2int(String x) {
@@ -92,82 +92,82 @@ public class GatewaySenderFunctionArgs implements Serializable {
   }
 
   public String getId() {
-    return this.id;
+    return id;
   }
 
   public Integer getRemoteDistributedSystemId() {
-    return this.remoteDSId;
+    return remoteDSId;
   }
 
   public Boolean isParallel() {
-    return this.parallel;
+    return parallel;
   }
 
   public Boolean mustGroupTransactionEvents() {
-    return this.groupTransactionEvents;
+    return groupTransactionEvents;
   }
 
   public Boolean isManualStart() {
-    return this.manualStart;
+    return manualStart;
   }
 
   public Integer getSocketBufferSize() {
-    return this.socketBufferSize;
+    return socketBufferSize;
   }
 
   public Integer getSocketReadTimeout() {
-    return this.socketReadTimeout;
+    return socketReadTimeout;
   }
 
   public Boolean isBatchConflationEnabled() {
-    return this.enableBatchConflation;
+    return enableBatchConflation;
   }
 
   public Integer getBatchSize() {
-    return this.batchSize;
+    return batchSize;
   }
 
   public Integer getBatchTimeInterval() {
-    return this.batchTimeInterval;
+    return batchTimeInterval;
   }
 
   public Boolean isPersistenceEnabled() {
-    return this.enablePersistence;
+    return enablePersistence;
   }
 
   public String getDiskStoreName() {
-    return this.diskStoreName;
+    return diskStoreName;
   }
 
   public Boolean isDiskSynchronous() {
-    return this.diskSynchronous;
+    return diskSynchronous;
   }
 
   public Integer getMaxQueueMemory() {
-    return this.maxQueueMemory;
+    return maxQueueMemory;
   }
 
   public Integer getAlertThreshold() {
-    return this.alertThreshold;
+    return alertThreshold;
   }
 
   public Integer getDispatcherThreads() {
-    return this.dispatcherThreads;
+    return dispatcherThreads;
   }
 
   public String getOrderPolicy() {
-    return this.orderPolicy;
+    return orderPolicy;
   }
 
   public List<String> getGatewayEventFilter() {
-    return this.gatewayEventFilters;
+    return gatewayEventFilters;
   }
 
   public List<String> getGatewayTransportFilter() {
-    return this.gatewayTransportFilters;
+    return gatewayTransportFilters;
   }
 
   public Boolean getEnforceThreadsConnectSameReceiver() {
-    return this.enforceThreadsConnectSameReceiver;
+    return enforceThreadsConnectSameReceiver;
   }
 }

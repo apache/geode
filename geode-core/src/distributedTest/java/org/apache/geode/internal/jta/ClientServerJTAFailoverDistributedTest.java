@@ -108,7 +108,7 @@ public class ClientServerJTAFailoverDistributedTest implements Serializable {
 
     client1.invoke(() -> createClientRegion(port1, port2));
 
-    Object[] beforeCompletionResults = client1.invoke(() -> doBeforeCompletion());
+    Object[] beforeCompletionResults = client1.invoke(this::doBeforeCompletion);
 
     int port = (Integer) beforeCompletionResults[1];
 
@@ -237,7 +237,7 @@ public class ClientServerJTAFailoverDistributedTest implements Serializable {
     port1 = server1.invoke(() -> createServerRegion(1, true));
 
     client1.invoke(() -> createClientRegion(port1, port2));
-    Object[] beforeCompletionResults = client1.invoke(() -> doBeforeCompletion());
+    Object[] beforeCompletionResults = client1.invoke(this::doBeforeCompletion);
 
     server1.invoke(() -> cacheRule.getCache().close());
 
@@ -253,7 +253,7 @@ public class ClientServerJTAFailoverDistributedTest implements Serializable {
 
     client1.invoke(() -> createClientRegion(port1, port2));
 
-    Object[] beforeCompletionResults = client1.invoke(() -> doBeforeCompletion());
+    Object[] beforeCompletionResults = client1.invoke(this::doBeforeCompletion);
 
     int port = (Integer) beforeCompletionResults[1];
 
@@ -283,7 +283,7 @@ public class ClientServerJTAFailoverDistributedTest implements Serializable {
       txManager = (TXManagerImpl) cache.getCacheTransactionManager();
 
       await()
-          .until(() -> txManager.isHostedTXStatesEmpty());
+          .until(txManager::isHostedTXStatesEmpty);
     }
     txManager.begin();
     region.put(key, newValue);
@@ -297,7 +297,7 @@ public class ClientServerJTAFailoverDistributedTest implements Serializable {
     server1.invoke(() -> doPut(key, value));
     server2.invoke(() -> createServerRegion(1, true));
 
-    server2.invoke(() -> doBeforeCompletionOnPeer());
+    server2.invoke(this::doBeforeCompletionOnPeer);
     server2.invoke(() -> cacheRule.getCache().close());
 
     server1.invoke(() -> doPutTransaction(false));
@@ -323,7 +323,7 @@ public class ClientServerJTAFailoverDistributedTest implements Serializable {
     port1 = server1.invoke(() -> createServerRegion(1, true));
 
     client1.invoke(() -> createClientRegion(port1, port2));
-    Object[] beforeCompletionResults = client1.invoke(() -> doBeforeCompletion());
+    Object[] beforeCompletionResults = client1.invoke(this::doBeforeCompletion);
 
     server1.invoke(() -> cacheRule.getCache().close());
 

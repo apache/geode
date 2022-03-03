@@ -144,11 +144,9 @@ public abstract class ProcessStreamReader implements Runnable {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-    sb.append(" Thread").append(" #").append(System.identityHashCode(this));
-    sb.append(" alive=").append(isRunning());
-    sb.append(" listener=").append(inputListener);
-    return sb.toString();
+    return getClass().getSimpleName() + " Thread" + " #" + System.identityHashCode(this)
+        + " alive=" + isRunning()
+        + " listener=" + inputListener;
   }
 
   private String createThreadName() {
@@ -186,7 +184,7 @@ public abstract class ProcessStreamReader implements Runnable {
 
   private static String waitAndCaptureProcessStream(final Process process,
       final InputStream processInputStream, final long waitTimeMilliseconds) {
-    StringBuffer buffer = new StringBuffer();
+    StringBuilder buffer = new StringBuilder();
 
     InputListener inputListener = line -> {
       buffer.append(line);

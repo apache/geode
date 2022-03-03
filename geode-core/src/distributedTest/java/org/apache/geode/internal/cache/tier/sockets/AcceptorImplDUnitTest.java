@@ -92,7 +92,7 @@ public class AcceptorImplDUnitTest extends JUnit4DistributedTestCase {
 
     public void stopWaiting() {
       synchronized (lock) {
-        this.stopWaiting = true;
+        stopWaiting = true;
         lock.notify();
       }
     }
@@ -190,7 +190,7 @@ public class AcceptorImplDUnitTest extends JUnit4DistributedTestCase {
       sleepyCacheWriter.stopWaiting();
 
       await("Acceptor shuts down properly")
-          .until(() -> acceptorImpl.isShutdownProperly());
+          .until(acceptorImpl::isShutdownProperly);
 
       ThreadUtils.dumpMyThreads(); // for debugging.
 

@@ -21,7 +21,6 @@ import static org.apache.geode.internal.cache.xmlcache.CacheXml.NAME;
 import static org.apache.geode.internal.cache.xmlcache.CacheXml.PARAMETER;
 import static org.apache.geode.internal.cache.xmlcache.CacheXml.STRING;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -156,8 +155,8 @@ public class XmlGeneratorUtils {
       return;
     }
 
-    for (Iterator iter = props.entrySet().iterator(); iter.hasNext();) {
-      Map.Entry entry = (Map.Entry) iter.next();
+    for (final Map.Entry<Object, Object> objectObjectEntry : props.entrySet()) {
+      Map.Entry entry = (Map.Entry) objectObjectEntry;
       String name = (String) entry.getKey();
       Object value = entry.getValue();
 

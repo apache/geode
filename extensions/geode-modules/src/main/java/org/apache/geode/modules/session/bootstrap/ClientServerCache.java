@@ -44,20 +44,20 @@ public class ClientServerCache extends AbstractCache {
     }
     // Get the existing cache if any
     try {
-      this.cache = ClientCacheFactory.getAnyInstance();
+      cache = ClientCacheFactory.getAnyInstance();
     } catch (CacheClosedException ignored) {
     }
 
     // If no cache exists, create one
     String message;
-    if (this.cache == null || this.cache.isClosed()) {
+    if (cache == null || cache.isClosed()) {
       // enable pool subscription so that default cache can be used by hibernate module
-      this.cache = new ClientCacheFactory(createDistributedSystemProperties()).create();
+      cache = new ClientCacheFactory(createDistributedSystemProperties()).create();
       message = "Created ";
     } else {
       message = "Retrieved ";
     }
-    getLogger().info(message + this.cache);
+    getLogger().info(message + cache);
   }
 
   @Override

@@ -52,8 +52,8 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
   @VisibleForTesting
   ThreadsMonitoringImpl(InternalDistributedSystem iDistributedSystem, int timeIntervalMillis,
       int timeLimitMillis, boolean startThread) {
-    this.monitorMap = new ConcurrentHashMap<>();
-    this.isClosed = false;
+    monitorMap = new ConcurrentHashMap<>();
+    isClosed = false;
     if (startThread) {
       timer = new Timer("ThreadsMonitor", true);
       tmProcess = new ThreadsMonitoringProcess(this, iDistributedSystem, timeLimitMillis);
@@ -69,7 +69,7 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
   }
 
   public boolean isClosed() {
-    return this.isClosed;
+    return isClosed;
   }
 
   @Override
@@ -80,14 +80,14 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
 
     isClosed = true;
     if (timer != null) {
-      this.timer.cancel();
-      this.tmProcess = null;
+      timer.cancel();
+      tmProcess = null;
     }
-    this.monitorMap.clear();
+    monitorMap.clear();
   }
 
   public ThreadsMonitoringProcess getThreadsMonitoringProcess() {
-    return this.tmProcess;
+    return tmProcess;
   }
 
   @Override
@@ -164,7 +164,7 @@ public class ThreadsMonitoringImpl implements ThreadsMonitoring {
 
   @VisibleForTesting
   Timer getTimer() {
-    return this.timer;
+    return timer;
   }
 
 }

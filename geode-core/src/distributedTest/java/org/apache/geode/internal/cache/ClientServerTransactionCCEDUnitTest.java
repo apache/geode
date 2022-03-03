@@ -75,7 +75,7 @@ public class ClientServerTransactionCCEDUnitTest extends ClientServerTransaction
     return (Map<Object, VersionTag>) vm.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        Map<Object, VersionTag> map = new HashMap<Object, VersionTag>();
+        Map<Object, VersionTag> map = new HashMap<>();
         LocalRegion r = (LocalRegion) getCache().getRegion(regionName);
         Iterator<Object> it = null;
         if (r instanceof PartitionedRegion) {

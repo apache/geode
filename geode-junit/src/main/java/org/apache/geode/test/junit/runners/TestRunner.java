@@ -106,7 +106,7 @@ public class TestRunner {
   public static List<Failure> runTestWithExpectedFailureTypes(Class<?> test,
       List<Class<? extends Throwable>> expectedThrowables) {
     List<FailureTypeInfo> expectedFailures = Streams.stream(expectedThrowables)
-        .map(t -> new FailureTypeInfo(t))
+        .map(FailureTypeInfo::new)
         .collect(Collectors.toList());
 
     JUnitCore junitCore = new JUnitCore();

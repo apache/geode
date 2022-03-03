@@ -51,13 +51,13 @@ public abstract class AbstractProcessStreamReaderIntegrationTest {
   protected ProcessStreamReader stderr;
   protected ProcessStreamReader stdout;
 
-  private StringBuffer stdoutBuffer;
-  private StringBuffer stderrBuffer;
+  private StringBuilder stdoutBuffer;
+  private StringBuilder stderrBuffer;
 
   @Before
   public void setUpAbstractProcessStreamReaderIntegrationTest() {
-    stdoutBuffer = new StringBuffer();
-    stderrBuffer = new StringBuffer();
+    stdoutBuffer = new StringBuilder();
+    stderrBuffer = new StringBuilder();
   }
 
   @After
@@ -173,7 +173,7 @@ public abstract class AbstractProcessStreamReaderIntegrationTest {
   }
 
   private ProcessStreamReader buildProcessStreamReader(final InputStream stream,
-      final ReadingMode mode, final StringBuffer buffer) {
+      final ReadingMode mode, final StringBuilder buffer) {
     ProcessStreamReader.Builder builder =
         new ProcessStreamReader.Builder(process).inputStream(stream).readingMode(mode);
     if (buffer != null) {
@@ -239,7 +239,7 @@ public abstract class AbstractProcessStreamReaderIntegrationTest {
             "ProcessPrintsToStdout is exiting" + lineSeparator()};
 
     protected static final String STDOUT =
-        new StringBuilder().append(LINES[0]).append(LINES[1]).append(LINES[2]).toString();
+        LINES[0] + LINES[1] + LINES[2];
 
     protected static final String STDERR = "";
 
@@ -263,7 +263,7 @@ public abstract class AbstractProcessStreamReaderIntegrationTest {
     protected static final String STDOUT = "";
 
     protected static final String STDERR =
-        new StringBuilder().append(LINES[0]).append(LINES[1]).append(LINES[2]).toString();
+        LINES[0] + LINES[1] + LINES[2];
 
     public static void main(final String... args) throws InterruptedException {
       System.err.print(LINES[0]);
@@ -287,11 +287,11 @@ public abstract class AbstractProcessStreamReaderIntegrationTest {
             "ProcessPrintsToBoth(err) is sleeping" + lineSeparator(),
             "ProcessPrintsToBoth(err) is exiting" + lineSeparator()};
 
-    protected static final String STDOUT = new StringBuilder().append(OUT_LINES[0])
-        .append(OUT_LINES[1]).append(OUT_LINES[2]).toString();
+    protected static final String STDOUT = OUT_LINES[0]
+        + OUT_LINES[1] + OUT_LINES[2];
 
-    protected static final String STDERR = new StringBuilder().append(ERR_LINES[0])
-        .append(ERR_LINES[1]).append(ERR_LINES[2]).toString();
+    protected static final String STDERR = ERR_LINES[0]
+        + ERR_LINES[1] + ERR_LINES[2];
 
     public static void main(final String... args) throws InterruptedException {
       System.out.print(OUT_LINES[0]);

@@ -65,7 +65,7 @@ public class LocatorLoadSnapshot {
    * a less loaded server until imbalance reaches this threshold. Then we aggressively move clients
    * until balance is achieved.
    */
-  private float loadImbalanceThreshold;
+  private final float loadImbalanceThreshold;
 
   /**
    * when the loadImbalanceThreshold is hit this variable will be true and it will remain true until

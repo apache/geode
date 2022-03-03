@@ -46,7 +46,7 @@ public class TopEntriesCollector implements IndexResultCollector, DataSerializab
 
   public TopEntriesCollector(String name, int limit) {
     this.name = name;
-    this.entries = new TopEntries(limit);
+    entries = new TopEntries(limit);
   }
 
   @Override

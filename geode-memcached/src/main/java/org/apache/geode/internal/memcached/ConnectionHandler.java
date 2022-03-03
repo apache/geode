@@ -56,7 +56,7 @@ public class ConnectionHandler implements Runnable {
 
   @Override
   public void run() {
-    RequestReader request = new RequestReader(this.socket, this.protocol);
+    RequestReader request = new RequestReader(socket, protocol);
     while (!Thread.currentThread().isInterrupted()) {
       try {
         Command command = request.readCommand();
@@ -64,7 +64,7 @@ public class ConnectionHandler implements Runnable {
           logger.fine("processing command:" + command);
         }
         ByteBuffer reply =
-            command.getCommandProcessor().processCommand(request, this.protocol, cache);
+            command.getCommandProcessor().processCommand(request, protocol, cache);
         if (reply != null) {
           request.sendReply(reply);
         }

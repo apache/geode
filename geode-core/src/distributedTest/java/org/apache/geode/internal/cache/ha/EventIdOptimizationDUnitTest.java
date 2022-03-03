@@ -24,7 +24,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -116,8 +115,8 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
   /** Boolean to propagate the failure in listener to the client */
   private static volatile boolean validationFailed = false;
 
-  /** StringBuffer to hold the failure messages in client listener */
-  static StringBuffer failureMsg = new StringBuffer();
+  /** StringBuilder to hold the failure messages in client listener */
+  static StringBuilder failureMsg = new StringBuilder();
 
   /** The last key for operations, to notify for proceeding to validation */
   private static final String LAST_KEY = "LAST_KEY";
@@ -162,15 +161,13 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
     client1 = host.getVM(2);
     client2 = host.getVM(3);
 
-    int PORT1 = ((Integer) server1.invoke(() -> EventIdOptimizationDUnitTest.createServerCache()))
-        .intValue();
-    int PORT2 = ((Integer) server2.invoke(() -> EventIdOptimizationDUnitTest.createServerCache()))
-        .intValue();
+    int PORT1 = server1.invoke(EventIdOptimizationDUnitTest::createServerCache);
+    int PORT2 = server2.invoke(EventIdOptimizationDUnitTest::createServerCache);
 
     client1.invoke(() -> EventIdOptimizationDUnitTest
-        .createClientCache1(NetworkUtils.getServerHostName(host), new Integer(PORT1)));
+        .createClientCache1(NetworkUtils.getServerHostName(host), PORT1));
     client2.invoke(() -> EventIdOptimizationDUnitTest
-        .createClientCache2(NetworkUtils.getServerHostName(host), new Integer(PORT2)));
+        .createClientCache2(NetworkUtils.getServerHostName(host), PORT2));
   }
 
   /**
@@ -205,7 +202,7 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
     server.setPort(port);
     server.setNotifyBySubscription(true);
     server.start();
-    return new Integer(server.getPort());
+    return server.getPort();
   }
 
   /**
@@ -221,10 +218,10 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
     new EventIdOptimizationDUnitTest().createCache(props);
 
     AttributesFactory factory = new AttributesFactory();
-    ClientServerTestCase.configureConnectionPool(factory, hostName, port.intValue(), -1, true, -1,
+    ClientServerTestCase.configureConnectionPool(factory, hostName, port, -1, true, -1,
         2, null);
     final CacheServer bs1 = cache.addCacheServer();
-    bs1.setPort(port.intValue());
+    bs1.setPort(port);
 
     pool = (PoolImpl) PoolManager.find("testPool");
   }
@@ -241,7 +238,7 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
     props.setProperty(LOCATORS, "");
     new EventIdOptimizationDUnitTest().createCache(props);
     AttributesFactory factory = new AttributesFactory();
-    ClientServerTestCase.configureConnectionPool(factory, hostName, port.intValue(), -1, true, -1,
+    ClientServerTestCase.configureConnectionPool(factory, hostName, port, -1, true, -1,
         2, null);
 
     factory.setScope(Scope.DISTRIBUTED_ACK);
@@ -353,8 +350,8 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
     String regionName = SEPARATOR + REGION_NAME;
     ServerRegionProxy srp = new ServerRegionProxy(regionName, pool);
 
-    for (int i = 0; i < eventIds.length; i++) {
-      srp.clearOnForTestsOnly(connection, eventIds[i], null);
+    for (final EventID eventId : eventIds) {
+      srp.clearOnForTestsOnly(connection, eventId, null);
     }
     srp.clearOnForTestsOnly(connection, eventIdForLastKey, null);
   }
@@ -367,8 +364,8 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testEventIdOptimizationByPutOperation() throws Exception {
-    client1.invoke(() -> EventIdOptimizationDUnitTest.generateEventsByPutOperation());
-    client2.invoke(() -> EventIdOptimizationDUnitTest.verifyEventIdsOnClient2());
+    client1.invoke(EventIdOptimizationDUnitTest::generateEventsByPutOperation);
+    client2.invoke(EventIdOptimizationDUnitTest::verifyEventIdsOnClient2);
 
   }
 
@@ -381,8 +378,8 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testEventIdOptimizationByDestroyEntryOperation() throws Exception {
-    client1.invoke(() -> EventIdOptimizationDUnitTest.generateEventsByDestroyEntryOperation());
-    client2.invoke(() -> EventIdOptimizationDUnitTest.verifyEventIdsOnClient2());
+    client1.invoke(EventIdOptimizationDUnitTest::generateEventsByDestroyEntryOperation);
+    client2.invoke(EventIdOptimizationDUnitTest::verifyEventIdsOnClient2);
   }
 
   /**
@@ -394,8 +391,8 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testEventIdOptimizationByDestroyRegionOperation() throws Exception {
-    client1.invoke(() -> EventIdOptimizationDUnitTest.generateEventsByDestroyRegionOperation());
-    client2.invoke(() -> EventIdOptimizationDUnitTest.verifyEventIdsOnClient2());
+    client1.invoke(EventIdOptimizationDUnitTest::generateEventsByDestroyRegionOperation);
+    client2.invoke(EventIdOptimizationDUnitTest::verifyEventIdsOnClient2);
   }
 
   /**
@@ -406,8 +403,8 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testEventIdOptimizationByClearRegionOperation() throws Exception {
-    client1.invoke(() -> EventIdOptimizationDUnitTest.generateEventsByClearRegionOperation());
-    client2.invoke(() -> EventIdOptimizationDUnitTest.verifyEventIdsOnClient2());
+    client1.invoke(EventIdOptimizationDUnitTest::generateEventsByClearRegionOperation);
+    client2.invoke(EventIdOptimizationDUnitTest::verifyEventIdsOnClient2);
   }
 
   /**
@@ -466,11 +463,11 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
   @Override
   public final void preTearDown() throws Exception {
     // close client
-    client1.invoke(() -> EventIdOptimizationDUnitTest.closeCache());
-    client2.invoke(() -> EventIdOptimizationDUnitTest.closeCache());
+    client1.invoke(EventIdOptimizationDUnitTest::closeCache);
+    client2.invoke(EventIdOptimizationDUnitTest::closeCache);
     // close server
-    server1.invoke(() -> EventIdOptimizationDUnitTest.closeCache());
-    server2.invoke(() -> EventIdOptimizationDUnitTest.closeCache());
+    server1.invoke(EventIdOptimizationDUnitTest::closeCache);
+    server2.invoke(EventIdOptimizationDUnitTest::closeCache);
   }
 
   /**
@@ -490,9 +487,8 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
 
     // Set the entry to the last entry
     Map.Entry entry = null;
-    for (Iterator threadIdToSequenceIdMapIterator =
-        map.entrySet().iterator(); threadIdToSequenceIdMapIterator.hasNext();) {
-      entry = (Map.Entry) threadIdToSequenceIdMapIterator.next();
+    for (final Object o : map.entrySet()) {
+      entry = (Map.Entry) o;
     }
 
     ThreadIdentifier tid = (ThreadIdentifier) entry.getKey();
@@ -521,9 +517,9 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
       proceedForValidation = true;
     } else {
       boolean containsEventId = false;
-      for (int i = 0; i < eventIds.length; i++) {
-        if ((eventIdAtClient2.getThreadID() == eventIds[i].getThreadID())
-            && (eventIdAtClient2.getSequenceID() == eventIds[i].getSequenceID())) {
+      for (final EventID eventId : eventIds) {
+        if ((eventIdAtClient2.getThreadID() == eventId.getThreadID())
+            && (eventIdAtClient2.getSequenceID() == eventId.getSequenceID())) {
           containsEventId = true;
           break;
         }

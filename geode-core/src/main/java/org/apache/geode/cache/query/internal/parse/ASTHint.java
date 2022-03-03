@@ -41,6 +41,6 @@ public class ASTHint extends GemFireAST {
   @Override
   public void compile(QCompiler compiler) {
     super.compile(compiler);
-    compiler.setHint(this.getNumberOfChildren());
+    compiler.setHint(getNumberOfChildren());
   }
 }

@@ -31,7 +31,6 @@ import org.apache.geode.management.internal.web.shell.HttpOperationInvoker;
 @SuppressWarnings("unused")
 public class HttpMBeanProxyFactory {
 
-  @SuppressWarnings("unchecked")
   public static <T> T createMBeanProxy(final HttpOperationInvoker connection,
       final ObjectName objectName, final Class<T> mbeanInterface) {
     return mbeanInterface

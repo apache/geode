@@ -25,7 +25,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -56,7 +55,7 @@ public class GemcachedDevelopmentJUnitTest {
   public void setUp() throws Exception {
     System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + MCAST_PORT, "0");
     PORT = getRandomAvailableTCPPort();
-    this.server = new GemFireMemcachedServer("", PORT, getProtocol());
+    server = new GemFireMemcachedServer("", PORT, getProtocol());
     server.start();
     logger.addHandler(new StreamHandler());
   }
@@ -64,7 +63,7 @@ public class GemcachedDevelopmentJUnitTest {
   @After
   public void tearDown() throws Exception {
     System.getProperties().remove(GeodeGlossary.GEMFIRE_PREFIX + MCAST_PORT);
-    this.server.shutdown();
+    server.shutdown();
   }
 
   protected Protocol getProtocol() {
@@ -245,7 +244,7 @@ public class GemcachedDevelopmentJUnitTest {
   }
 
   private MemcachedClient bootstrapClient()
-      throws IOException, UnknownHostException, InterruptedException, ExecutionException {
+      throws IOException, InterruptedException, ExecutionException {
     MemcachedClient client = createMemcachedClient();
     Future<Boolean> f = client.add("key", 10, "myStringValue");
     f.get();
@@ -254,7 +253,7 @@ public class GemcachedDevelopmentJUnitTest {
     return client;
   }
 
-  protected MemcachedClient createMemcachedClient() throws IOException, UnknownHostException {
+  protected MemcachedClient createMemcachedClient() throws IOException {
     MemcachedClient client = new MemcachedClient(new ConnectionWithOneMinuteTimeoutFactory(),
         Collections.singletonList(new InetSocketAddress(InetAddress.getLocalHost(), PORT)));
     return client;

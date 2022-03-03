@@ -36,7 +36,6 @@ import org.apache.geode.internal.cache.EvictionAttributesImpl;
  * @see org.apache.geode.cache.AttributesMutator
  * @since GemFire 5.0
  */
-@SuppressWarnings("serial")
 public abstract class EvictionAttributes {
   /**
    * The default maximum for {@linkplain EvictionAlgorithm#LRU_ENTRY entry LRU}. Currently
@@ -459,28 +458,25 @@ public abstract class EvictionAttributes {
     if (!getAction().equals(other.getAction())) {
       return false;
     }
-    if (getMaximum() != other.getMaximum()) {
-      return false;
-    }
-    return true;
+    return getMaximum() == other.getMaximum();
   }
 
   @Override
   public int hashCode() {
-    return this.getAlgorithm().hashCode() ^ this.getMaximum();
+    return getAlgorithm().hashCode() ^ getMaximum();
   }
 
   @Override
   public String toString() {
     final StringBuilder buffer = new StringBuilder(128);
-    buffer.append(" algorithm=").append(this.getAlgorithm());
-    if (!this.getAlgorithm().isNone()) {
-      buffer.append("; action=").append(this.getAction());
+    buffer.append(" algorithm=").append(getAlgorithm());
+    if (!getAlgorithm().isNone()) {
+      buffer.append("; action=").append(getAction());
       if (!getAlgorithm().isLRUHeap()) {
-        buffer.append("; maximum=").append(this.getMaximum());
+        buffer.append("; maximum=").append(getMaximum());
       }
-      if (this.getObjectSizer() != null) {
-        buffer.append("; sizer=").append(this.getObjectSizer());
+      if (getObjectSizer() != null) {
+        buffer.append("; sizer=").append(getObjectSizer());
       }
     }
     return buffer.toString();
@@ -511,7 +507,7 @@ public abstract class EvictionAttributes {
   public RegionAttributesType.EvictionAttributes convertToConfigEvictionAttributes() {
     RegionAttributesType.EvictionAttributes configAttributes =
         new RegionAttributesType.EvictionAttributes();
-    EnumActionDestroyOverflow action = EnumActionDestroyOverflow.fromValue(this.getAction()
+    EnumActionDestroyOverflow action = EnumActionDestroyOverflow.fromValue(getAction()
         .toString());
     EvictionAlgorithm algorithm = getAlgorithm();
     Optional<String> objectSizerClass = Optional.ofNullable(getObjectSizer())
@@ -522,13 +518,13 @@ public abstract class EvictionAttributes {
       RegionAttributesType.EvictionAttributes.LruHeapPercentage heapPercentage =
           new RegionAttributesType.EvictionAttributes.LruHeapPercentage();
       heapPercentage.setAction(action);
-      objectSizerClass.ifPresent(o -> heapPercentage.setClassName(o));
+      objectSizerClass.ifPresent(heapPercentage::setClassName);
       configAttributes.setLruHeapPercentage(heapPercentage);
     } else if (algorithm.isLRUMemory()) {
       RegionAttributesType.EvictionAttributes.LruMemorySize memorySize =
           new RegionAttributesType.EvictionAttributes.LruMemorySize();
       memorySize.setAction(action);
-      objectSizerClass.ifPresent(o -> memorySize.setClassName(o));
+      objectSizerClass.ifPresent(memorySize::setClassName);
       memorySize.setMaximum(maximum);
       configAttributes.setLruMemorySize(memorySize);
     } else {

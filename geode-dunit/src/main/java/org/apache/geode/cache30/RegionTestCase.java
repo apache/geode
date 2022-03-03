@@ -151,7 +151,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
    */
   @Test
   public void testContainsKey() throws CacheException {
-    String key = this.getUniqueName();
+    String key = getUniqueName();
     Region<Object, Object> region = createRegion(key);
     Object value = 42;
 
@@ -183,7 +183,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
    */
   @Test
   public void testBadRegionAccess() throws CacheException {
-    String key = this.getUniqueName();
+    String key = getUniqueName();
     Region<Object, Object> region = createRegion(key);
 
     assertNull(region.get(key));
@@ -213,7 +213,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
    */
   @Test
   public void testPutNonExistentEntry() throws CacheException {
-    String key = this.getUniqueName();
+    String key = getUniqueName();
     Region<Object, Object> region = createRegion(key);
 
     assertNull(region.getEntry(key));
@@ -262,7 +262,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     if (!supportsSubregions()) {
       return;
     }
-    String key = this.getUniqueName();
+    String key = getUniqueName();
     Region<Object, Object> region = createRegion(key);
 
     try {
@@ -366,7 +366,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     if (!supportsSubregions()) {
       return;
     }
-    String name = this.getUniqueName();
+    String name = getUniqueName();
 
     RegionAttributes<Object, Object> attrs = getRegionAttributes();
     RegionFactory<Object, Object> regionFactory = getCache().createRegionFactory(attrs);
@@ -412,7 +412,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
    */
   @Test
   public void testDestroyEntry() throws CacheException {
-    String key = this.getUniqueName();
+    String key = getUniqueName();
     Object value = 42;
 
     Region<Object, Object> region = createRegion(key);
@@ -503,7 +503,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     if (!supportsSubregions()) {
       return;
     }
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     Object key = "KEY";
     Object value = "VALUE";
 
@@ -552,7 +552,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     }
 
     try {
-      region.createSubregion("SUB", this.getRegionAttributes());
+      region.createSubregion("SUB", getRegionAttributes());
       fail("Should have thrown a RegionDestroyedException");
 
     } catch (RegionDestroyedException ex) {
@@ -800,7 +800,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
    */
   @Test
   public void testEntries() throws CacheException {
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     Region<Object, Object> region = createRegion(name);
     assertEquals(0, region.entrySet(true).size());
     assertEquals(0, region.entrySet(false).size());
@@ -855,7 +855,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     if (!supportsSubregions()) {
       return;
     }
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     Region<String, String> region = createRegion(name);
 
     region.put("A", "a");
@@ -913,9 +913,9 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
    */
   @Test
   public void testGetCache() throws CacheException {
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     Region<Object, Object> region = createRegion(name);
-    assertSame(this.getCache(), region.getCache());
+    assertSame(getCache(), region.getCache());
   }
 
   /**
@@ -923,7 +923,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
    */
   @Test
   public void testGetName() throws CacheException {
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     Region<Object, Object> region = createRegion(name);
     assertEquals(name, region.getName());
 
@@ -938,7 +938,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     if (!supportsSubregions()) {
       return;
     }
-    String name = this.getUniqueName();
+    String name = getUniqueName();
 
     Region<Object, Object> region = createRegion(name);
     String fullPath = SEPARATOR + "root" + SEPARATOR + name;
@@ -957,7 +957,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     if (!supportsSubregions()) {
       return;
     }
-    String name = this.getUniqueName();
+    String name = getUniqueName();
 
     Region<Object, Object> region = createRegion(name);
     assertEquals(getRootRegion(), region.getParentRegion());
@@ -976,7 +976,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
    */
   @Test
   public void testRegionUserAttribute() throws CacheException {
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     Object value = "USER_ATTRIBUTE";
 
     Region<Object, Object> region = createRegion(name);
@@ -991,7 +991,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
    */
   @Test
   public void testEntryUserAttribute() throws CacheException {
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     String key = "KEY";
 
     String attr = "USER_ATTRIBUTE";
@@ -1012,7 +1012,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
    */
   @Test
   public void testInvalidateEntry() throws CacheException {
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     Object key = "KEY";
     Object value = "VALUE";
 
@@ -1037,7 +1037,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
    */
   @Test
   public void testInvalidateRegion() throws CacheException {
-    String name = this.getUniqueName();
+    String name = getUniqueName();
 
     Region<Object, Object> region = createRegion(name);
     region.put("A", "a");
@@ -1076,7 +1076,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
    */
   @Test
   public void testKeys() throws CacheException {
-    String name = this.getUniqueName();
+    String name = getUniqueName();
 
     Region<Object, Object> region = createRegion(name);
     assertEquals(0, region.keySet().size());
@@ -1104,7 +1104,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     if (!supportsLocalDestroyAndLocalInvalidate()) {
       return;
     }
-    String key = this.getUniqueName();
+    String key = getUniqueName();
     Object value = 42;
 
     Region<Object, Object> region = createRegion(key);
@@ -1195,7 +1195,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
    */
   @Test
   public void testLocalDestroyRegion() throws CacheException {
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     Object key = "KEY";
     Object value = "VALUE";
 
@@ -1244,7 +1244,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     }
 
     try {
-      region.createSubregion("SUB", this.getRegionAttributes());
+      region.createSubregion("SUB", getRegionAttributes());
       fail("Should have thrown a RegionDestroyedException");
 
     } catch (RegionDestroyedException ex) {
@@ -1494,7 +1494,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   public void testCloseRegion() throws CacheException {
     // @todo added a remote region to make sure close just does a localDestroy
 
-    String name = this.getUniqueName();
+    String name = getUniqueName();
 
     RegionFactory<Object, Object> regionFactory =
         getCache().createRegionFactory(getRegionAttributes());
@@ -1585,7 +1585,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     if (!supportsLocalDestroyAndLocalInvalidate()) {
       return;
     }
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     Object key = "KEY";
     Object value = "VALUE";
 
@@ -1615,7 +1615,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
    */
   @Test
   public void testLocalInvalidateRegion() throws CacheException {
-    String name = this.getUniqueName();
+    String name = getUniqueName();
 
     Region<Object, Object> region = createRegion(name);
     region.put("A", "a");
@@ -1659,7 +1659,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     if (!supportsSubregions()) {
       return;
     }
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     Region<Object, Object> region = createRegion(name);
 
     assertEquals(0, region.subregions(false).size());
@@ -1692,7 +1692,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
       return;
     }
 
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     Region<Object, Object> region = createRegion(name);
     RegionFactory<Object, Object> regionFactory =
         getCache().createRegionFactory(region.getAttributes());
@@ -1724,7 +1724,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
    */
   @Test
   public void testValues() throws CacheException {
-    String name = this.getUniqueName();
+    String name = getUniqueName();
     LogService.getLogger().info("testValues region name is " + name);
     Region<Object, Object> region = createRegion(name);
     assertEquals(0, region.values().size());
@@ -1992,7 +1992,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   @Test
   public void testEntryTtlInvalidate() throws CacheException {
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int timeout = 20; // ms!
     final String key = "KEY";
     final String value = "VALUE";
@@ -2034,7 +2034,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   @Test
   public void testCustomEntryTtl1() {
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int timeout = 20; // ms!
     final String key1 = "KEY1";
     final String key2 = "KEY2";
@@ -2086,7 +2086,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   @Test
   public void testCustomEntryTtl2() {
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int timeout = 20; // ms
     final String key1 = "KEY1";
     final String key2 = "KEY2";
@@ -2159,7 +2159,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   @Test
   public void testCustomEntryTtl3() {
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int timeout1 = 20; // ms
     final int timeout2 = 40;
     final String key1 = "KEY1";
@@ -2258,7 +2258,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
    */
   @Test
   public void testEntryTtl3() {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     // test no longer waits for this expiration to happen
     final int timeout1 = 500 * 1000; // ms
     final int timeout2 = 2000 * 1000; // ms
@@ -2327,7 +2327,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   @Test
   public void testEntryFromLoadTtlInvalidate() throws CacheException {
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int timeout = 20; // ms!
     final String key = "KEY";
     final String value = "VALUE";
@@ -2371,7 +2371,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   @Test
   public void testEntryTtlDestroy() throws CacheException {
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int timeout = 20; // ms
     final String key = "KEY";
     final String value = "VALUE";
@@ -2417,7 +2417,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     }
 
     VM vm0 = VM.getVM(0);
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
 
     vm0.invoke("testRegionTtlInvalidate", new CacheSerializableRunnable() {
       @Override
@@ -2469,7 +2469,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
       return;
     }
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int timeout = 22; // ms
     final Object key = "KEY";
     final Object value = "VALUE";
@@ -2508,7 +2508,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   @Test
   public void testEntryIdleInvalidate() throws CacheException {
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int timeout = 20; // ms
     final String key = "KEY";
     final String value = "VALUE";
@@ -2561,8 +2561,8 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     final ExpirationAttributes specialAtt;
 
     TestExpiry(String flagged, ExpirationAttributes att) {
-      this.special = flagged;
-      this.specialAtt = att;
+      special = flagged;
+      specialAtt = att;
     }
 
     /*
@@ -2619,7 +2619,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   @Test
   public void testCustomEntryIdleTimeout1() {
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int timeout = 20; // ms
     final String key1 = "KEY1";
     final String key2 = "KEY2";
@@ -2686,7 +2686,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   @Test
   public void testCustomEntryIdleTimeout2() {
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int timeout = 20; // ms
     final String key1 = "KEY1";
     final String key2 = "KEY2";
@@ -2756,7 +2756,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
    */
   @Test
   public void testCustomEntryIdleTimeout3() {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     // test no longer waits for this expiration to happen
     final int timeout1 = 500 * 1000; // ms
     final int timeout2 = 2000 * 1000; // ms
@@ -2826,7 +2826,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
    */
   @Test
   public void testEntryIdleTimeout3() {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     // test no longer waits for this expiration to happen
     final int timeout1 = 500 * 1000; // ms
     final int timeout2 = 2000 * 1000; // ms
@@ -2898,8 +2898,8 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     final ExpirationAttributes specialAtt;
 
     CountExpiry(String flagged, ExpirationAttributes att) {
-      this.special = flagged;
-      this.specialAtt = att;
+      special = flagged;
+      specialAtt = att;
     }
 
     /*
@@ -2947,7 +2947,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   @Test
   public void testCustomIdleOnce() {
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int timeout = 20; // ms!
     final String key1 = "KEY1";
     final String key2 = "KEY2";
@@ -3019,7 +3019,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   @Test
   public void testCustomEntryIdleReset() {
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int timeout = 200 * 1000; // ms
     final String key1 = "KEY1";
     final String value = "VALUE";
@@ -3134,7 +3134,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   public void testEntryIdleDestroy() {
 
     EntryExpiryTask.expiryTaskListener = new ExpiryCallbacks();
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int timeout = 20; // ms
     final String key = "KEY";
     final String value = "VALUE";
@@ -3196,7 +3196,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   @Test
   public void testEntryIdleReset() {
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     // Test no longer waits for this timeout to expire
     final int timeout = 90; // seconds
     final String key = "KEY";
@@ -3255,7 +3255,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   @Test
   public void testEntryExpirationAfterMutate() throws CacheException {
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int timeout = 20; // ms
     final int hugeTimeout = Integer.MAX_VALUE;
     final ExpirationAttributes expire =
@@ -3309,7 +3309,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   @Test
   public void testEntryIdleTtl() {
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     // test no longer waits for this timeout to expire
     final int timeout = 2000; // seconds
     final String key = "IDLE_TTL_KEY";
@@ -3354,7 +3354,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
       return;
     }
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final Object key = "KEY";
     final Object value = "VALUE";
 
@@ -3414,8 +3414,8 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
       return;
     }
 
-    final String name = this.getUniqueName();
-    final String subname = this.getUniqueName() + "-SUB";
+    final String name = getUniqueName();
+    final String subname = getUniqueName() + "-SUB";
     final int timeout = 22; // ms
     final Object key = "KEY";
     final Object value = "VALUE";
@@ -3438,15 +3438,15 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
           @Override
           public void afterUpdate2(EntryEvent e) {
-            this.wasInvoked(); // Clear the flag
+            wasInvoked(); // Clear the flag
           }
 
           @Override
           public void afterCreate2(EntryEvent e) {
-            this.createCount++;
+            createCount++;
             // we only expect one create; all the rest should be updates
-            assertEquals(1, this.createCount);
-            this.wasInvoked(); // Clear the flag
+            assertEquals(1, createCount);
+            wasInvoked(); // Clear the flag
           }
         };
         RegionFactory<Object, Object> factory =
@@ -3547,7 +3547,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
       return;
     }
 
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
     final int timeout = 22; // ms
     final Object key = "KEY";
     final Object value = "VALUE";
@@ -3585,7 +3585,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
   @Test
   public void testSnapshot() throws IOException, CacheException, ClassNotFoundException {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
 
     // create region in controller
     preSnapshotRegion = createRegion(name);
@@ -3638,7 +3638,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
         invokeInEveryVM("postSnapshot", new CacheSerializableRunnable() {
           @Override
           public void run2() throws CacheException {
-            RegionTestCase.this.remoteTestPostSnapshot(name, false, false);
+            remoteTestPostSnapshot(name, false, false);
           }
         });
       }
@@ -3649,7 +3649,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
   @Test
   public void testRootSnapshot() throws IOException, CacheException, ClassNotFoundException {
-    final String name = this.getUniqueName();
+    final String name = getUniqueName();
 
     // create region in controller
     preSnapshotRegion = createRootRegion(name, getRegionAttributes());
@@ -3704,7 +3704,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
         invokeInEveryVM("postSnapshot", new CacheSerializableRunnable() {
           @Override
           public void run2() throws CacheException {
-            RegionTestCase.this.remoteTestPostSnapshot(name, false, true);
+            remoteTestPostSnapshot(name, false, true);
           }
         });
       }

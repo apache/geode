@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.commands.executor.string;
 
+import static org.apache.geode.redis.internal.RedisConstants.WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -50,20 +51,20 @@ public abstract class AbstractSetNXIntegrationTest implements RedisIntegrationTe
   @Test
   public void givenKeyNotProvided_returnsWrongNumberOfArgumentsError() {
     assertThatThrownBy(() -> jedis.sendCommand("any", Protocol.Command.SETNX))
-        .hasMessageContaining("ERR wrong number of arguments for 'setnx' command");
+        .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "setnx"));
   }
 
   @Test
   public void givenValueNotProvided_returnsWrongNumberOfArgumentsError() {
     assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.SETNX, "key"))
-        .hasMessageContaining("ERR wrong number of arguments for 'setnx' command");
+        .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "setnx"));
   }
 
   @Test
   public void givenMoreThanThreeArgumentsProvided_returnsWrongNumberOfArgumentsError() {
     assertThatThrownBy(
         () -> jedis.sendCommand("key", Protocol.Command.SETNX, "key", "value", "extraArg"))
-            .hasMessageContaining("ERR wrong number of arguments for 'setnx' command");
+            .hasMessage(String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "setnx"));
   }
 
   @Test

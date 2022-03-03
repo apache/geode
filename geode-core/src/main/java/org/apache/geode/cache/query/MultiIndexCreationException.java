@@ -46,7 +46,7 @@ public class MultiIndexCreationException extends Exception {
    */
   public MultiIndexCreationException(HashMap<String, Exception> exceptionMap) {
     super();
-    this.exceptionsMap = exceptionMap;
+    exceptionsMap = exceptionMap;
   }
 
   /**
@@ -69,8 +69,8 @@ public class MultiIndexCreationException extends Exception {
 
   @Override
   public String toString() {
-    StringBuffer sb = new StringBuffer();
-    for (Map.Entry<String, Exception> entry : this.exceptionsMap.entrySet()) {
+    StringBuilder sb = new StringBuilder();
+    for (Map.Entry<String, Exception> entry : exceptionsMap.entrySet()) {
       sb.append("Creation of index: ").append(entry.getKey()).append(" failed due to: ")
           .append(entry.getValue()).append(", ");
     }

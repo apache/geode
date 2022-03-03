@@ -120,8 +120,8 @@ public class MemoryIndexStoreJUnitTest {
 
   @Test
   public void testCanAddManyObjectsWithUndefinedKey() throws Exception {
-    for (int i = 0; i < mockEntries.length; i++) {
-      store.addMapping(QueryService.UNDEFINED, mockEntries[i]);
+    for (final RegionEntry mockEntry : mockEntries) {
+      store.addMapping(QueryService.UNDEFINED, mockEntry);
     }
     assertEquals(mockEntries.length, numObjectsIterated(store.get(QueryService.UNDEFINED)));
     // Undefined will not return without an explicit get for UNDEFINED);

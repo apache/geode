@@ -52,6 +52,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.MemberStarterRule;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @Category(GfshTest.class)
@@ -131,7 +132,7 @@ public class AlterRuntimeCommandDistributedTest {
     Properties props = new Properties();
     props.setProperty(LOG_LEVEL, "error");
 
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
@@ -175,7 +176,7 @@ public class AlterRuntimeCommandDistributedTest {
     Properties props = new Properties();
     props.setProperty(LOG_LEVEL, "error");
 
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
@@ -234,7 +235,7 @@ public class AlterRuntimeCommandDistributedTest {
     Properties props = new Properties();
     props.setProperty(LOG_LEVEL, "error");
 
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
@@ -280,7 +281,7 @@ public class AlterRuntimeCommandDistributedTest {
     Properties props = new Properties();
     props.setProperty(LOG_LEVEL, "error");
 
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
 
     props.setProperty(GROUPS, "G1");
@@ -333,7 +334,7 @@ public class AlterRuntimeCommandDistributedTest {
   public void alterLogFileSizeLimit_changesConfigOnAllServers(boolean connectOverHttp)
       throws Exception {
 
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     MemberVM server1 = startupRule.startServerVM(1, locator.getPort());
     MemberVM server2 = startupRule.startServerVM(2, locator.getPort());
 
@@ -375,7 +376,7 @@ public class AlterRuntimeCommandDistributedTest {
   public void alterLogFileSizeLimitNegative_errorCanNotSet(boolean connectOverHttp)
       throws Exception {
 
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     MemberVM server1 = startupRule.startServerVM(1, locator.getPort());
     MemberVM server2 = startupRule.startServerVM(2, locator.getPort());
 
@@ -401,7 +402,7 @@ public class AlterRuntimeCommandDistributedTest {
   public void alterLogFileSizeLimitTooBig_errorCanNotSet(boolean connectOverHttp)
       throws Exception {
 
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     MemberVM server1 = startupRule.startServerVM(1, locator.getPort());
 
     Properties props = new Properties();
@@ -445,7 +446,7 @@ public class AlterRuntimeCommandDistributedTest {
     Properties props = new Properties();
     props.setProperty(LOG_LEVEL, "error");
 
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
@@ -491,7 +492,7 @@ public class AlterRuntimeCommandDistributedTest {
     Properties props = new Properties();
     props.setProperty(LOG_LEVEL, "error");
 
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
@@ -540,7 +541,7 @@ public class AlterRuntimeCommandDistributedTest {
     Properties props = new Properties();
     props.setProperty(LOG_LEVEL, "error");
 
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
 
     props.setProperty(GROUPS, "G1");
@@ -591,7 +592,7 @@ public class AlterRuntimeCommandDistributedTest {
     Properties props = new Properties();
     props.setProperty(LOG_LEVEL, "error");
 
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
@@ -635,7 +636,7 @@ public class AlterRuntimeCommandDistributedTest {
     Properties props = new Properties();
     props.setProperty(LOG_LEVEL, "error");
 
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
@@ -684,7 +685,7 @@ public class AlterRuntimeCommandDistributedTest {
     Properties props = new Properties();
     props.setProperty(LOG_LEVEL, "error");
 
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
 
     props.setProperty(GROUPS, "G1");
@@ -732,7 +733,7 @@ public class AlterRuntimeCommandDistributedTest {
   @Parameters({"true", "false"})
   public void alterStatisticSampleRateRangeIsEnforced(boolean connectOverHttp) throws Exception {
 
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     MemberVM server1 = startupRule.startServerVM(1, locator.getPort());
     MemberVM server2 = startupRule.startServerVM(2, locator.getPort());
 
@@ -768,7 +769,7 @@ public class AlterRuntimeCommandDistributedTest {
     Properties props = new Properties();
     props.setProperty(LOG_LEVEL, "error");
 
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
@@ -815,7 +816,7 @@ public class AlterRuntimeCommandDistributedTest {
     Properties props = new Properties();
     props.setProperty(LOG_LEVEL, "error");
 
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
@@ -866,7 +867,7 @@ public class AlterRuntimeCommandDistributedTest {
     Properties props = new Properties();
     props.setProperty(LOG_LEVEL, "error");
 
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
 
     props.setProperty(GROUPS, "G1");
@@ -916,7 +917,7 @@ public class AlterRuntimeCommandDistributedTest {
   @Parameters({"true", "false"})
   public void alterArchiveDiskSpaceLimitRangeIsEnforced(boolean connectOverHttp) throws Exception {
 
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     MemberVM server1 = startupRule.startServerVM(1, locator.getPort());
     MemberVM server2 = startupRule.startServerVM(2, locator.getPort());
 
@@ -971,7 +972,7 @@ public class AlterRuntimeCommandDistributedTest {
     Properties props = new Properties();
     props.setProperty(LOG_LEVEL, "error");
 
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
@@ -1019,7 +1020,7 @@ public class AlterRuntimeCommandDistributedTest {
     Properties props = new Properties();
     props.setProperty(LOG_LEVEL, "error");
 
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
@@ -1070,7 +1071,7 @@ public class AlterRuntimeCommandDistributedTest {
     Properties props = new Properties();
     props.setProperty(LOG_LEVEL, "error");
 
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
 
     props.setProperty(GROUPS, "G1");
@@ -1120,7 +1121,7 @@ public class AlterRuntimeCommandDistributedTest {
   @Parameters({"true", "false"})
   public void alterArchiveFileSizeLimitRangeIsEnforced(boolean connectOverHttp) throws Exception {
 
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     MemberVM server1 = startupRule.startServerVM(1, locator.getPort());
     MemberVM server2 = startupRule.startServerVM(2, locator.getPort());
 
@@ -1154,7 +1155,7 @@ public class AlterRuntimeCommandDistributedTest {
     Properties props = new Properties();
     props.setProperty(LOG_LEVEL, "error");
 
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
     MemberVM server2 = startupRule.startServerVM(2, props, locator.getPort());
 
@@ -1202,7 +1203,7 @@ public class AlterRuntimeCommandDistributedTest {
     Properties props = new Properties();
     props.setProperty(LOG_LEVEL, "error");
 
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
 
     props.setProperty(GROUPS, "G1");
@@ -1259,7 +1260,7 @@ public class AlterRuntimeCommandDistributedTest {
     Properties props = new Properties();
     props.setProperty(LOG_LEVEL, "error");
 
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
     MemberVM server1 = startupRule.startServerVM(1, props, locator.getPort());
 
     if (connectOverHttp) {
@@ -1297,7 +1298,7 @@ public class AlterRuntimeCommandDistributedTest {
   @Test
   @Parameters({"true", "false"})
   public void testAlterUpdatesSharedConfig(boolean connectOverHttp) throws Exception {
-    MemberVM locator = startupRule.startLocatorVM(0, l -> l.withHttpService());
+    MemberVM locator = startupRule.startLocatorVM(0, MemberStarterRule::withHttpService);
 
     if (connectOverHttp) {
       gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);

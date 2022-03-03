@@ -17,6 +17,8 @@ package org.apache.geode.redis.internal.proxy;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.Unpooled;
@@ -48,11 +50,12 @@ public class RedisProxyInboundHandler extends ChannelInboundHandlerAdapter {
   private final int remotePort;
   private final Map<HostPort, HostPort> mappings;
   private Channel outboundChannel;
-  private Channel inboundChannel;
+  private final Channel inboundChannel;
   private RedisProxyOutboundHandler outboundHandler;
   private final ClusterSlotsResponseProcessor slotsResponseProcessor;
   private final ClusterNodesResponseProcessor nodesResponseProcessor;
   private MovedResponseHandler movedResponseHandler;
+  private Queue<RedisResponseProcessor> processors;
 
   public RedisProxyInboundHandler(Channel inboundChannel, String remoteHost, int remotePort,
       Map<HostPort, HostPort> mappings) {
@@ -60,15 +63,16 @@ public class RedisProxyInboundHandler extends ChannelInboundHandlerAdapter {
     this.remoteHost = remoteHost;
     this.remotePort = remotePort;
     this.mappings = mappings;
-    this.slotsResponseProcessor = new ClusterSlotsResponseProcessor(mappings);
-    this.nodesResponseProcessor = new ClusterNodesResponseProcessor(mappings);
+    slotsResponseProcessor = new ClusterSlotsResponseProcessor(mappings);
+    nodesResponseProcessor = new ClusterNodesResponseProcessor(mappings);
   }
 
   @Override
   public void channelActive(ChannelHandlerContext ctx) {
     Channel inboundChannel = ctx.channel();
-    outboundHandler = new RedisProxyOutboundHandler(inboundChannel);
-    movedResponseHandler = new MovedResponseHandler(inboundChannel, mappings);
+    processors = new LinkedBlockingQueue<>();
+    outboundHandler = new RedisProxyOutboundHandler(inboundChannel, processors);
+    movedResponseHandler = new MovedResponseHandler(inboundChannel, mappings, processors);
 
     // Start the connection attempt.
     Bootstrap b = new Bootstrap();
@@ -128,9 +132,9 @@ public class RedisProxyInboundHandler extends ChannelInboundHandlerAdapter {
         case "cluster":
           String sub = getArg(rMessage, 1);
           if ("slots".equals(sub)) {
-            outboundHandler.addResponseProcessor(slotsResponseProcessor);
+            processors.add(slotsResponseProcessor);
           } else if ("nodes".equals(sub)) {
-            outboundHandler.addResponseProcessor(nodesResponseProcessor);
+            processors.add(nodesResponseProcessor);
           }
           break;
         case "hello":
@@ -141,7 +145,7 @@ public class RedisProxyInboundHandler extends ChannelInboundHandlerAdapter {
           inboundChannel.writeAndFlush(error);
           return;
         default:
-          outboundHandler.addResponseProcessor(NoopRedisResponseProcessor.INSTANCE);
+          processors.add(NoopRedisResponseProcessor.INSTANCE);
       }
 
       outboundChannel.writeAndFlush(msg)

@@ -51,7 +51,7 @@ public class PRInvalidQueryJUnitTest {
     logger.info("PRInvalidQueryJUnitTest#populateData: Populating Data to the region");
 
     for (int j = 0; j < data.length; j++) {
-      region.put(new Integer(j), data[j]);
+      region.put(j, data[j]);
     }
   }
 }

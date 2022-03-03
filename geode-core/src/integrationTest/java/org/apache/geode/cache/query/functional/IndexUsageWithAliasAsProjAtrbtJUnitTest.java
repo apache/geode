@@ -64,7 +64,7 @@ public class IndexUsageWithAliasAsProjAtrbtJUnitTest {
     }
     QueryService qs;
     qs = CacheUtils.getQueryService();
-    String queries[] = {
+    String[] queries = {
         // IUM 7
         "Select distinct security from " + SEPARATOR
             + "portfolios, secIds security where length > 1",
@@ -76,7 +76,7 @@ public class IndexUsageWithAliasAsProjAtrbtJUnitTest {
             + "portfolios  pos , secIds security where length > 2 and pos.ID > 0"
 
     };
-    SelectResults r[][] = new SelectResults[queries.length][2];
+    SelectResults[][] r = new SelectResults[queries.length][2];
 
     for (int i = 0; i < queries.length; i++) {
       Query q = null;
@@ -119,13 +119,13 @@ public class IndexUsageWithAliasAsProjAtrbtJUnitTest {
       region.put("" + i, new Portfolio(i));
     }
     CacheUtils.getQueryService();
-    String queries[] = {
+    String[] queries = {
         // "select distinct * from /pos, positions where value != null",
         // "select distinct intern from /pos,names where length >= 3",
         "select distinct nm from " + SEPARATOR + "pos prt,names nm where ID>0",
         "select distinct prt from " + SEPARATOR + "pos prt, names where names[3]='ddd'"};
-    for (int i = 0; i < queries.length; i++) {
-      Query q = CacheUtils.getQueryService().newQuery(queries[i]);
+    for (final String query : queries) {
+      Query q = CacheUtils.getQueryService().newQuery(query);
       q.execute();
     }
   }

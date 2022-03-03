@@ -57,12 +57,12 @@ public class InlineKeyJUnitTest {
       Region r = gfc.createRegionFactory(RegionShortcut.LOCAL).setConcurrencyChecksEnabled(false)
           .create("inlineKeyRegion");
       LocalRegion lr = (LocalRegion) r;
-      Object key = Integer.valueOf(1);
+      Object key = 1;
       r.create(key, null);
       assertEquals(true, r.containsKey(key));
       assertTrue("expected int entry but was " + lr.getRegionEntry(key).getClass(),
           lr.getRegionEntry(key) instanceof VMThinRegionEntryHeapIntKey);
-      key = Long.valueOf(2);
+      key = 2L;
       r.create(key, null);
       assertEquals(true, r.containsKey(key));
       assertTrue("expected long entry but was " + lr.getRegionEntry(key).getClass(),

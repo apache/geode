@@ -64,7 +64,7 @@ public class QueueRemovalMessage extends PooledDistributionMessage {
    * Set the message list
    */
   void setMessagesList(List messages) {
-    this.messagesList = uncheckedCast(messages);
+    messagesList = uncheckedCast(messages);
   }
 
   /**
@@ -172,7 +172,7 @@ public class QueueRemovalMessage extends PooledDistributionMessage {
      */
     super.toData(out, context);
     // write the size of the data list
-    DataSerializer.writeInteger(this.messagesList.size(), out);
+    DataSerializer.writeInteger(messagesList.size(), out);
     Iterator iterator = messagesList.iterator();
     String regionName = null;
     Integer numberOfIds = null;

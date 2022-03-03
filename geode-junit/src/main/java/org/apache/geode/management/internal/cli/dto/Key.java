@@ -25,14 +25,14 @@ public class Key implements Serializable {
   }
 
   public void setKey(int id) {
-    this.key = id;
+    key = id;
   }
 
   public boolean equals(Object other) {
     if (!(other instanceof Key)) {
       return false;
     }
-    return ((Key) other).key == this.key;
+    return ((Key) other).key == key;
   }
 
   public int hashCode() {

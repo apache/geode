@@ -27,10 +27,10 @@ public class ClassAndVariables implements Comparable {
   public CompiledClass dclass;
   public boolean hasSerialVersionUID = false;
   public long serialVersionUID;
-  public Map<String, CompiledField> variables = new HashMap<String, CompiledField>();
+  public Map<String, CompiledField> variables = new HashMap<>();
 
   public ClassAndVariables(CompiledClass parsedClass) {
-    this.dclass = parsedClass;
+    dclass = parsedClass;
 
     String name = dclass.fullyQualifiedName().replace('/', '.');
     try {

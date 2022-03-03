@@ -121,9 +121,9 @@ public class MiscJUnitTest {
   @Ignore("TODO: test is disabled")
   @Test
   public void testMiscQueries() throws Exception {
-    String testData[] = {"NULL", "UNDEFINED"};
-    for (int i = 0; i < testData.length; i++) {
-      Query query = CacheUtils.getQueryService().newQuery("SELECT DISTINCT * FROM " + testData[i]);
+    String[] testData = {"NULL", "UNDEFINED"};
+    for (final String testDatum : testData) {
+      Query query = CacheUtils.getQueryService().newQuery("SELECT DISTINCT * FROM " + testDatum);
       Object result = query.execute();
       if (!result.equals(QueryService.UNDEFINED)) {
         fail(query.getQueryString());
@@ -146,13 +146,13 @@ public class MiscJUnitTest {
     Query q = qs.newQuery(qStr);
     SelectResults result = (SelectResults) q.execute();
     StructType type = (StructType) result.getCollectionType().getElementType();
-    String names[] = type.getFieldNames();
+    String[] names = type.getFieldNames();
     List list = result.asList();
     if (list.size() < 1) {
       fail("Test failed as the resultset's size is zero");
     }
-    for (int i = 0; i < list.size(); ++i) {
-      Struct stc = (Struct) list.get(i);
+    for (Object o : list) {
+      Struct stc = (Struct) o;
       if (!stc.get(names[2]).equals("YHOO")) {
         fail("Test failed as the SecID value is not YHOO");
       }
@@ -386,75 +386,69 @@ public class MiscJUnitTest {
     final boolean[] expectionOccurred = new boolean[] {false};
     final boolean[] keepGoing = new boolean[] {true};
 
-    Thread indexCreatorDestroyer = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        boolean continueRunning = true;
-        do {
+    Thread indexCreatorDestroyer = new Thread(() -> {
+      boolean continueRunning = true;
+      do {
+        synchronized (lock) {
+          continueRunning = keepGoing[0];
+        }
+        try {
+          Index indx1 = qs.createIndex("MarketValues", IndexType.FUNCTIONAL, "itr2.mktValue",
+              SEPARATOR + "new_pos itr1, itr1.positions.values itr2");
+          Index indx2 =
+              qs.createIndex("Name", IndexType.FUNCTIONAL, "itr1.name",
+                  SEPARATOR + "new_pos itr1");
+          Index indx3 =
+              qs.createIndex("nameIndex", IndexType.PRIMARY_KEY, "name", SEPARATOR + "new_pos");
+          Index indx4 =
+              qs.createIndex("idIndex", IndexType.FUNCTIONAL, "id", SEPARATOR + "new_pos");
+          Index indx5 = qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status",
+              SEPARATOR + "new_pos");
+          Index indx6 = qs.createIndex("undefinedFieldIndex", IndexType.FUNCTIONAL,
+              "undefinedTestField.toString", SEPARATOR + "new_pos");
+          Thread.sleep(800);
+          qs.removeIndex(indx1);
+          qs.removeIndex(indx2);
+          qs.removeIndex(indx3);
+          qs.removeIndex(indx4);
+          qs.removeIndex(indx5);
+          qs.removeIndex(indx6);
+        } catch (Throwable e) {
+          region.getCache().getLogger().error(e);
+          e.printStackTrace();
           synchronized (lock) {
-            continueRunning = keepGoing[0];
+            expectionOccurred[0] = true;
+            keepGoing[0] = false;
+            continueRunning = false;
           }
-          try {
-            Index indx1 = qs.createIndex("MarketValues", IndexType.FUNCTIONAL, "itr2.mktValue",
-                SEPARATOR + "new_pos itr1, itr1.positions.values itr2");
-            Index indx2 =
-                qs.createIndex("Name", IndexType.FUNCTIONAL, "itr1.name",
-                    SEPARATOR + "new_pos itr1");
-            Index indx3 =
-                qs.createIndex("nameIndex", IndexType.PRIMARY_KEY, "name", SEPARATOR + "new_pos");
-            Index indx4 =
-                qs.createIndex("idIndex", IndexType.FUNCTIONAL, "id", SEPARATOR + "new_pos");
-            Index indx5 = qs.createIndex("statusIndex", IndexType.FUNCTIONAL, "status",
-                SEPARATOR + "new_pos");
-            Index indx6 = qs.createIndex("undefinedFieldIndex", IndexType.FUNCTIONAL,
-                "undefinedTestField.toString", SEPARATOR + "new_pos");
-            Thread.sleep(800);
-            qs.removeIndex(indx1);
-            qs.removeIndex(indx2);
-            qs.removeIndex(indx3);
-            qs.removeIndex(indx4);
-            qs.removeIndex(indx5);
-            qs.removeIndex(indx6);
-          } catch (Throwable e) {
-            region.getCache().getLogger().error(e);
-            e.printStackTrace();
-            synchronized (lock) {
-              expectionOccurred[0] = true;
-              keepGoing[0] = false;
-              continueRunning = false;
-            }
 
-          }
-        } while (continueRunning);
-      }
+        }
+      } while (continueRunning);
     });
 
     indexCreatorDestroyer.start();
     final Query q = qs.newQuery(queryStr);
     final int THREAD_COUNT = 10;
-    Thread queryThreads[] = new Thread[THREAD_COUNT];
+    Thread[] queryThreads = new Thread[THREAD_COUNT];
     final int numTimesToRun = 75;
     for (int i = 0; i < THREAD_COUNT; ++i) {
-      queryThreads[i] = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          boolean continueRunning = true;
-          for (int i = 0; i < numTimesToRun && continueRunning; ++i) {
+      queryThreads[i] = new Thread(() -> {
+        boolean continueRunning = true;
+        for (int i1 = 0; i1 < numTimesToRun && continueRunning; ++i1) {
+          synchronized (lock) {
+            continueRunning = keepGoing[0];
+          }
+          try {
+            SelectResults sr = (SelectResults) q.execute();
+          } catch (Throwable e) {
+            e.printStackTrace();
+            region.getCache().getLogger().error(e);
             synchronized (lock) {
-              continueRunning = keepGoing[0];
+              expectionOccurred[0] = true;
+              keepGoing[0] = false;
+              continueRunning = false;
             }
-            try {
-              SelectResults sr = (SelectResults) q.execute();
-            } catch (Throwable e) {
-              e.printStackTrace();
-              region.getCache().getLogger().error(e);
-              synchronized (lock) {
-                expectionOccurred[0] = true;
-                keepGoing[0] = false;
-                continueRunning = false;
-              }
-              break;
-            }
+            break;
           }
         }
       });

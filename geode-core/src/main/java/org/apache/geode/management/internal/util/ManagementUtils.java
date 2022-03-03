@@ -68,14 +68,13 @@ public class ManagementUtils {
   /**
    * Returns a set of all the members of the distributed system excluding locators.
    */
-  @SuppressWarnings("unchecked")
   public static Set<DistributedMember> getAllNormalMembers(InternalCache cache) {
-    return new HashSet<DistributedMember>(
+    return new HashSet<>(
         cache.getDistributionManager().getNormalDistributionManagerIds());
   }
 
   public static Set<DistributedMember> getAllLocators(InternalCache cache) {
-    return new HashSet<DistributedMember>(
+    return new HashSet<>(
         cache.getDistributionManager().getLocatorDistributionManagerIds());
   }
 
@@ -83,7 +82,6 @@ public class ManagementUtils {
    * Returns a set of all the members of the distributed system of a specific version excluding
    * locators.
    */
-  @SuppressWarnings("unchecked")
   public static Set<DistributedMember> getNormalMembersWithSameOrNewerVersion(InternalCache cache,
       KnownVersion version) {
     return getAllNormalMembers(cache).stream().filter(
@@ -95,14 +93,12 @@ public class ManagementUtils {
   /**
    * Returns a set of all the members of the distributed system including locators.
    */
-  @SuppressWarnings("unchecked")
   public static Set<DistributedMember> getAllMembers(InternalCache cache) {
     return getAllMembers(cache.getInternalDistributedSystem());
   }
 
-  @SuppressWarnings("unchecked")
   public static Set<DistributedMember> getAllMembers(InternalDistributedSystem internalDS) {
-    return new HashSet<DistributedMember>(
+    return new HashSet<>(
         internalDS.getDistributionManager().getDistributionManagerIds());
   }
 
@@ -346,7 +342,7 @@ public class ManagementUtils {
    */
   public static Set<DistributedMember> findMembers(String[] groups, String[] members,
       DistributionManager distributionManager) {
-    Set<DistributedMember> allNormalMembers = new HashSet<DistributedMember>(
+    Set<DistributedMember> allNormalMembers = new HashSet<>(
         distributionManager.getNormalDistributionManagerIds());
 
     return findMembers(allNormalMembers, groups, members);
@@ -398,7 +394,7 @@ public class ManagementUtils {
   }
 
   static class CustomFileFilter implements FileFilter {
-    private String extensionWithDot;
+    private final String extensionWithDot;
 
     public CustomFileFilter(String extensionWithDot) {
       this.extensionWithDot = extensionWithDot;

@@ -40,7 +40,7 @@ public abstract class DistributedSystemTestCase {
    */
   @Before
   public void setUp() throws Exception {
-    this.system = DistributedSystem.connect(defineProperties());
+    system = DistributedSystem.connect(defineProperties());
   }
 
   /**
@@ -48,10 +48,10 @@ public abstract class DistributedSystemTestCase {
    */
   @After
   public void tearDown() throws Exception {
-    if (this.system != null) {
-      this.system.disconnect();
+    if (system != null) {
+      system.disconnect();
     }
-    this.system = null;
+    system = null;
   }
 
   /**

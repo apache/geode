@@ -54,7 +54,7 @@ public class ListDriversCommandDUnitTest {
   public void testListDriversWithoutMemberNameDoesNotThrowException() {
 
     // acquire the jar to be used
-    final String jdbcJarName = "mysql-connector-java-8.0.26.jar";
+    final String jdbcJarName = "mysql-connector-java-8.0.28.jar";
     final String jdbcDriverClassName = "com.mysql.cj.jdbc.Driver";
     File mySqlDriverFile = loadTestResource("/" + jdbcJarName);
     assertThat(mySqlDriverFile).exists();
@@ -73,7 +73,7 @@ public class ListDriversCommandDUnitTest {
   @Test
   public void testLIstDriversWithMemberNameDoesNotThrowException() {
     // acquire the jar to be used
-    final String jdbcJarName = "mysql-connector-java-8.0.26.jar";
+    final String jdbcJarName = "mysql-connector-java-8.0.28.jar";
     final String jdbcDriverClassName = "com.mysql.cj.jdbc.Driver";
     File mySqlDriverFile = loadTestResource("/" + jdbcJarName);
     assertThat(mySqlDriverFile).exists();
@@ -89,7 +89,7 @@ public class ListDriversCommandDUnitTest {
   }
 
   private File loadTestResource(String fileName) {
-    String filePath = ResourceUtils.getResource(this.getClass(), fileName).getPath();
+    String filePath = ResourceUtils.getResource(getClass(), fileName).getPath();
     Assertions.assertThat(filePath).isNotNull();
 
     return new File(filePath);

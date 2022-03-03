@@ -31,7 +31,7 @@ public class ASTDummy extends GemFireAST {
   @Override
   public void compile(QCompiler compiler) {
     super.compile(compiler);
-    compiler.push(this.getText());
+    compiler.push(getText());
   }
 
 }

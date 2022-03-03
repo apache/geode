@@ -15,16 +15,14 @@
 package org.apache.geode.redis.internal.commands.executor.set;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_DIFFERENT_SLOTS;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static redis.clients.jedis.Protocol.Command.SUNION;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -33,7 +31,6 @@ import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
@@ -58,7 +55,7 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
 
   @Test
   public void sunionErrors_givenTooFewArguments() {
-    assertAtLeastNArgs(jedis, Protocol.Command.SUNION, 1);
+    assertAtLeastNArgs(jedis, SUNION, 1);
   }
 
   @Test
@@ -129,8 +126,8 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
     jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
     jedis.sadd(setKeyDifferentSlot, secondSetMembers);
 
-    assertThatThrownBy(() -> jedis.sunion(SET_KEY_1, setKeyDifferentSlot))
-        .hasMessageContaining(ERROR_DIFFERENT_SLOTS);
+    assertThatThrownBy(() -> jedis.sendCommand(SET_KEY_1, SUNION, SET_KEY_1, setKeyDifferentSlot))
+        .hasMessage(ERROR_WRONG_SLOT);
   }
 
 
@@ -143,7 +140,7 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
     String diffKey = "{tag1}diffKey";
     jedis.set(diffKey, "dong");
     assertThatThrownBy(() -> jedis.sunion(diffKey, SET_KEY_1, SET_KEY_2))
-        .hasMessageContaining(ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -155,7 +152,7 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
     String diffKey = "{tag1}diffKey";
     jedis.set(diffKey, "dong");
     assertThatThrownBy(() -> jedis.sunion(SET_KEY_1, SET_KEY_2, diffKey))
-        .hasMessageContaining(ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -165,7 +162,7 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
 
     jedis.sadd(SET_KEY_1, SET_MEMBERS_1);
     assertThatThrownBy(() -> jedis.sunion(NON_EXISTENT_SET, SET_KEY_1, stringKey))
-        .hasMessageContaining(ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
@@ -189,142 +186,4 @@ public abstract class AbstractSUnionIntegrationTest implements RedisIntegrationT
               jedis.sadd(SET_KEY_2, unionMembers);
             });
   }
-
-  @Test
-  public void testSUnionStore() {
-    String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
-    String[] secondSet = new String[] {"apple", "microsoft", "linux", "peach"};
-    String[] thirdSet = new String[] {"luigi", "bowser", "peach", "mario"};
-    jedis.sadd("{tag1}set1", firstSet);
-    jedis.sadd("{tag1}set2", secondSet);
-    jedis.sadd("{tag1}set3", thirdSet);
-
-    Long resultSize = jedis.sunionstore("{tag1}result", "{tag1}set1", "{tag1}set2");
-    assertThat(resultSize).isEqualTo(7);
-
-    Set<String> resultSet = jedis.smembers("{tag1}result");
-    String[] expected =
-        new String[] {"pear", "apple", "plum", "orange", "peach", "microsoft", "linux"};
-    assertThat(resultSet).containsExactlyInAnyOrder(expected);
-
-    Long notEmptyResultSize =
-        jedis.sunionstore("{tag1}notempty", "{tag1}nonexistent", "{tag1}set1");
-    Set<String> notEmptyResultSet = jedis.smembers("{tag1}notempty");
-    assertThat(notEmptyResultSize).isEqualTo(firstSet.length);
-    assertThat(notEmptyResultSet).containsExactlyInAnyOrder(firstSet);
-
-    jedis.sadd("{tag1}newEmpty", "born2die");
-    jedis.srem("{tag1}newEmpty", "born2die");
-    Long newNotEmptySize =
-        jedis.sunionstore("{tag1}newNotEmpty", "{tag1}set2", "{tag1}newEmpty");
-    Set<String> newNotEmptySet = jedis.smembers("{tag1}newNotEmpty");
-    assertThat(newNotEmptySize).isEqualTo(secondSet.length);
-    assertThat(newNotEmptySet).containsExactlyInAnyOrder(secondSet);
-  }
-
-  @Test
-  public void testSUnionStore_withNonExistentKeys() {
-    String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
-    jedis.sadd("{tag1}set1", firstSet);
-
-    Long resultSize =
-        jedis.sunionstore("{tag1}set1", "{tag1}nonExistent1", "{tag1}nonExistent2");
-    assertThat(resultSize).isEqualTo(0);
-    assertThat(jedis.exists("{tag1}set1")).isFalse();
-  }
-
-  @Test
-  public void testSUnionStore_withNonExistentKeys_andNonSetTarget() {
-    jedis.set("{tag1}string1", "stringValue");
-
-    Long resultSize =
-        jedis.sunionstore("{tag1}string1", "{tag1}nonExistent1", "{tag1}nonExistent2");
-    assertThat(resultSize).isEqualTo(0);
-    assertThat(jedis.exists("{tag1}set1")).isFalse();
-  }
-
-  @Test
-  public void testSUnionStore_withNonSetKey() {
-    String[] firstSet = new String[] {"pear", "apple", "plum", "orange", "peach"};
-    jedis.sadd("{tag1}set1", firstSet);
-    jedis.set("{tag1}string1", "value1");
-
-    assertThatThrownBy(() -> jedis.sunionstore("{tag1}set1", "{tag1}string1"))
-        .hasMessage("WRONGTYPE Operation against a key holding the wrong kind of value");
-    assertThat(jedis.exists("{tag1}set1")).isTrue();
-  }
-
-  @Test
-  public void testConcurrentSUnionStore() throws InterruptedException {
-    int ENTRIES = 100;
-    int SUBSET_SIZE = 100;
-
-    Set<String> masterSet = new HashSet<>();
-    for (int i = 0; i < ENTRIES; i++) {
-      masterSet.add("master-" + i);
-    }
-
-    List<Set<String>> otherSets = new ArrayList<>();
-    for (int i = 0; i < ENTRIES; i++) {
-      Set<String> oneSet = new HashSet<>();
-      for (int j = 0; j < SUBSET_SIZE; j++) {
-        oneSet.add("set-" + i + "-" + j);
-      }
-      otherSets.add(oneSet);
-    }
-
-    jedis.sadd("{tag1}master", masterSet.toArray(new String[] {}));
-
-    for (int i = 0; i < ENTRIES; i++) {
-      jedis.sadd("{tag1}set-" + i, otherSets.get(i).toArray(new String[] {}));
-    }
-
-    Runnable runnable1 = () -> {
-      for (int i = 0; i < ENTRIES; i++) {
-        jedis.sunionstore("{tag1}master", "{tag1}master", "{tag1}set-" + i);
-        Thread.yield();
-      }
-    };
-
-    Runnable runnable2 = () -> {
-      for (int i = 0; i < ENTRIES; i++) {
-        jedis.sunionstore("{tag1}master", "{tag1}master", "{tag1}set-" + i);
-        Thread.yield();
-      }
-    };
-
-    Thread thread1 = new Thread(runnable1);
-    Thread thread2 = new Thread(runnable2);
-
-    thread1.start();
-    thread2.start();
-    thread1.join();
-    thread2.join();
-
-    otherSets.forEach(masterSet::addAll);
-
-    assertThat(jedis.smembers("{tag1}master").toArray())
-        .containsExactlyInAnyOrder(masterSet.toArray());
-  }
-
-  @Test
-  public void doesNotThrowExceptions_whenConcurrentSaddAndSunionExecute() {
-    final int ENTRIES = 1000;
-    Set<String> set1 = new HashSet<>();
-    Set<String> set2 = new HashSet<>();
-    for (int i = 0; i < ENTRIES; i++) {
-      set1.add("value-1-" + i);
-      set2.add("value-2-" + i);
-    }
-
-    jedis.sadd("{player1}key1", set1.toArray(new String[] {}));
-    jedis.sadd("{player1}key2", set2.toArray(new String[] {}));
-
-    new ConcurrentLoopingThreads(ENTRIES,
-        i -> jedis.sunion("{player1}key1", "{player1}key2"),
-        i -> jedis.sadd("{player1}key1", "newValue-1-" + i),
-        i -> jedis.sadd("{player1}key2", "newValue-2-" + i))
-            .runInLockstep();
-  }
-
 }

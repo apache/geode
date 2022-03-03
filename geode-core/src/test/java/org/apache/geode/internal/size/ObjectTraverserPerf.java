@@ -69,7 +69,7 @@ public class ObjectTraverserPerf {
     public int field1;
     public int field2;
 
-    public final String field3 = new String("hello");
+    public final String field3 = "hello";
     public final DataSerializable field4;
 
     public TestObject(DataSerializable field4) {

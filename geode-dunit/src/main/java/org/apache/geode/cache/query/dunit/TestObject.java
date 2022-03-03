@@ -34,45 +34,43 @@ public class TestObject implements DataSerializable {
 
   public TestObject(int id, String ticker) {
     this.id = id;
-    this._ticker = ticker;
-    this._price = id;
-    this.important = id;
-    this.selection = id;
-    this.select = id;
+    _ticker = ticker;
+    _price = id;
+    important = id;
+    selection = id;
+    select = id;
   }
 
   public int getId() {
-    return this.id;
+    return id;
   }
 
   public String getTicker() {
-    return this._ticker;
+    return _ticker;
   }
 
   public int getPrice() {
-    return this._price;
+    return _price;
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    out.writeInt(this.id);
-    DataSerializer.writeString(this._ticker, out);
-    out.writeInt(this._price);
+    out.writeInt(id);
+    DataSerializer.writeString(_ticker, out);
+    out.writeInt(_price);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.id = in.readInt();
-    this._ticker = DataSerializer.readString(in);
-    this._price = in.readInt();
+    id = in.readInt();
+    _ticker = DataSerializer.readString(in);
+    _price = in.readInt();
   }
 
   @Override
   public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("TestObject [").append("id=").append(this.id).append("; ticker=")
-        .append(this._ticker).append("; price=").append(this._price).append("]");
-    return buffer.toString();
+    return "TestObject [" + "id=" + id + "; ticker="
+        + _ticker + "; price=" + _price + "]";
   }
 
   @Override
@@ -81,16 +79,12 @@ public class TestObject implements DataSerializable {
       return false;
     }
     TestObject other = (TestObject) o;
-    if ((id == other.id) && (_ticker.equals(other._ticker))) {
-      return true;
-    } else {
-      return false;
-    }
+    return (id == other.id) && (_ticker.equals(other._ticker));
   }
 
   @Override
   public int hashCode() {
-    return this.id;
+    return id;
   }
 
 }

@@ -26,7 +26,7 @@ import org.apache.geode.util.internal.GeodeJsonMapper;
 public class RealizationResultTest {
 
   private RealizationResult result;
-  private ObjectMapper mapper = GeodeJsonMapper.getMapper();
+  private final ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
   @Before
   public void before() {

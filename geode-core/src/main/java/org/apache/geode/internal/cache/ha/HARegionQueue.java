@@ -362,7 +362,7 @@ public class HARegionQueue implements RegionQueue {
     af.setStatisticsEnabled(true);
     RegionAttributes ra = af.create();
 
-    this.region = HARegion.getInstance(processedRegionName, cache, this, ra, statisticsClock);
+    region = HARegion.getInstance(processedRegionName, cache, this, ra, statisticsClock);
 
     if (this.isPrimary) {// fix for 41878
       // since it's primary queue, we will disable the EntryExpiryTask
@@ -371,24 +371,24 @@ public class HARegionQueue implements RegionQueue {
     }
 
     this.regionName = processedRegionName;
-    this.threadIdToSeqId = new MapWrapper();
-    this.idsAvailable = new LinkedHashSet<>();
+    threadIdToSeqId = new MapWrapper();
+    idsAvailable = new LinkedHashSet<>();
     setClientConflation(clientConflation);
     this.isPrimary = isPrimary;
     // Initialize the statistics
-    this.stats = new HARegionQueueStats(factory, processedRegionName);
+    stats = new HARegionQueueStats(factory, processedRegionName);
     this.haContainer = haContainer;
-    this.giiLock = new StoppableReentrantReadWriteLock(cache.getCancelCriterion());
-    this.clientProxyID = clientProxyId;
+    giiLock = new StoppableReentrantReadWriteLock(cache.getCancelCriterion());
+    clientProxyID = clientProxyId;
 
-    this.stopper = this.region.getCancelCriterion();
-    this.rwLock = new StoppableReentrantReadWriteLock(region.getCancelCriterion());
-    this.readLock = this.rwLock.readLock();
-    this.writeLock = this.rwLock.writeLock();
+    stopper = region.getCancelCriterion();
+    rwLock = new StoppableReentrantReadWriteLock(region.getCancelCriterion());
+    readLock = rwLock.readLock();
+    writeLock = rwLock.writeLock();
 
     putGIIDataInRegion();
 
-    if (this.getClass() == HARegionQueue.class) {
+    if (getClass() == HARegionQueue.class) {
       synchronized (initialized) {
         initialized.set(true);
         initialized.notifyAll();
@@ -405,27 +405,27 @@ public class HARegionQueue implements RegionQueue {
       boolean puttingGIIDataInQueue, StatisticsClock statisticsClock)
       throws CacheException, InterruptedException {
     this.regionName = regionName;
-    this.region = haRegion;
-    this.threadIdToSeqId = new MapWrapper();
-    this.idsAvailable = new LinkedHashSet<>();
+    region = haRegion;
+    threadIdToSeqId = new MapWrapper();
+    idsAvailable = new LinkedHashSet<>();
     setClientConflation(clientConflation);
     this.isPrimary = isPrimary;
     // Initialize the statistics
     this.stats = stats;
     this.haContainer = haContainer;
     this.giiLock = giiLock;
-    this.clientProxyID = clientProxyId;
+    clientProxyID = clientProxyId;
 
-    this.stopper = cancelCriterion;
+    stopper = cancelCriterion;
     this.rwLock = rwLock;
-    this.readLock = this.rwLock.readLock();
-    this.writeLock = this.rwLock.writeLock();
+    readLock = this.rwLock.readLock();
+    writeLock = this.rwLock.writeLock();
 
     // false specifically set in tests only
     if (puttingGIIDataInQueue) {
       putGIIDataInRegion();
     }
-    if (this.getClass() == HARegionQueue.class) {
+    if (getClass() == HARegionQueue.class) {
       synchronized (initialized) {
         initialized.set(true);
         initialized.notifyAll();
@@ -461,7 +461,7 @@ public class HARegionQueue implements RegionQueue {
     final boolean isDebugEnabled_BS = logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE);
     if (isDebugEnabled_BS) {
       sb = new StringBuilder(500);
-      sb.append("Recording initial event state for ").append(this.regionName).append(" from ")
+      sb.append("Recording initial event state for ").append(regionName).append(" from ")
           .append(sender);
     }
     for (Object value : eventState.entrySet()) {
@@ -481,7 +481,7 @@ public class HARegionQueue implements RegionQueue {
               .append("; sequenceID=").append(giiDace.lastSequenceIDPut);
         }
         // use putIfAbsent to avoid overwriting newer dispatch information
-        Object o = this.eventsMap.putIfAbsent(entry.getKey(), giiDace);
+        Object o = eventsMap.putIfAbsent(entry.getKey(), giiDace);
         if (o != null && isDebugEnabled_BS) {
           sb.append(" -- could not store.  found ").append(o);
         }
@@ -500,7 +500,7 @@ public class HARegionQueue implements RegionQueue {
    * ReentrantLock will be null.
    */
   void putGIIDataInRegion() throws CacheException, InterruptedException {
-    Set<Region.Entry> entrySet = this.region.entrySet(false);
+    Set<Region.Entry> entrySet = region.entrySet(false);
     // check if the region is not empty. if there is
     // data, then the relevant data structures have to
     // be populated
@@ -516,7 +516,7 @@ public class HARegionQueue implements RegionQueue {
           entry = iterator.next();
           key = entry.getKey();
           if (isDebugEnabled) {
-            logger.debug("{} processing queue key {} and value {}", this.regionName, key,
+            logger.debug("{} processing queue key {} and value {}", regionName, key,
                 entry.getValue());
           }
           if (key instanceof Long) {
@@ -524,7 +524,7 @@ public class HARegionQueue implements RegionQueue {
               orderedMap.put(key, entry.getValue());
             }
           }
-          this.region.localDestroy(key);
+          region.localDestroy(key);
         }
         long max = 0;
         long counterInRegion;
@@ -540,15 +540,15 @@ public class HARegionQueue implements RegionQueue {
               // TODO: remove this assertion
               Assert.assertTrue(counterInRegion > max);
               max = counterInRegion;
-              this.put(val);
+              put(val);
             } else if (isDebugEnabled) {
               logger.debug(
                   "{} bug 44959 encountered: HARegion.putGIIDataInRegion found null eventId in {}",
-                  this.regionName, val);
+                  regionName, val);
             }
           }
         }
-        this.tailKey.set(max);
+        tailKey.set(max);
       } finally {
         puttingGIIDataInQueue.set(false);
         positionAfterGII = tailKey.get();
@@ -563,7 +563,7 @@ public class HARegionQueue implements RegionQueue {
       }
     }
     // TODO:Asif: Avoid invocation of this method
-    startHAServices(this.region.getCache());
+    startHAServices(region.getCache());
   }
 
   /**
@@ -577,10 +577,10 @@ public class HARegionQueue implements RegionQueue {
       if (logger.isDebugEnabled()) {
         logger.debug(
             "{} HARegionQueue.putGIIDataInRegion(): key={} was removed at sender side, so not putting it into the ha queue.",
-            this.regionName, ((Conflatable) val).getKeyToConflate());
+            regionName, ((Conflatable) val).getKeyToConflate());
       }
     } else {
-      this.put(val);
+      put(val);
     }
   }
 
@@ -595,12 +595,12 @@ public class HARegionQueue implements RegionQueue {
     if (event instanceof ClientMarkerMessageImpl) {
       return retVal;
     }
-    switch (this.clientConflation) {
+    switch (clientConflation) {
       case Handshake.CONFLATION_OFF:
         return false; // always disable
       case Handshake.CONFLATION_ON:
         if (event instanceof HAEventWrapper) {
-          ClientUpdateMessage cum = (ClientUpdateMessage) this.haContainer.get(event);
+          ClientUpdateMessage cum = (ClientUpdateMessage) haContainer.get(event);
           if (cum != null) {
             retVal = cum.isUpdate();
           }
@@ -640,12 +640,12 @@ public class HARegionQueue implements RegionQueue {
    */
   @Override
   public boolean put(Object object) throws CacheException, InterruptedException {
-    this.giiLock.readLock().lock(); // fix for bug #41681 - durable client misses event
+    giiLock.readLock().lock(); // fix for bug #41681 - durable client misses event
 
     try {
-      if (this.giiCount.get() > 0) {
+      if (giiCount.get() > 0) {
         if (logger.isDebugEnabled()) {
-          logger.debug("{}: adding message to GII queue of size {}: {}", this.regionName,
+          logger.debug("{}: adding message to GII queue of size {}: {}", regionName,
               giiQueue.size(), object);
         }
 
@@ -654,15 +654,15 @@ public class HARegionQueue implements RegionQueue {
           wrapper.incrementPutInProgressCounter("GII queue");
         }
 
-        this.giiQueue.add(object);
+        giiQueue.add(object);
       } else {
         if (logger.isTraceEnabled()) {
-          logger.trace("{}: adding message to HA queue: {}", this.regionName, object);
+          logger.trace("{}: adding message to HA queue: {}", regionName, object);
         }
         basicPut(object);
       }
     } finally {
-      this.giiLock.readLock().unlock();
+      giiLock.readLock().unlock();
     }
 
     // basicPut() invokes dace.putObject() to put onto HARegionQueue
@@ -681,10 +681,10 @@ public class HARegionQueue implements RegionQueue {
     // optmistically decrease the put count
     Conflatable event = (Conflatable) object;
     try {
-      this.waitForPermission();
+      waitForPermission();
     } catch (InterruptedException ie) {
       Thread.currentThread().interrupt();
-      this.region.getCache().getCancelCriterion().checkCancelInProgress(ie);
+      region.getCache().getCancelCriterion().checkCancelInProgress(ie);
     }
 
     // Get the EventID object & from it obtain the ThreadIdentifier
@@ -692,7 +692,7 @@ public class HARegionQueue implements RegionQueue {
     ThreadIdentifier ti = getThreadIdentifier(eventId);
     long sequenceID = eventId.getSequenceID();
     // Check from Events Map if the put operation should proceed or not
-    DispatchedAndCurrentEvents dace = (DispatchedAndCurrentEvents) this.eventsMap.get(ti);
+    DispatchedAndCurrentEvents dace = (DispatchedAndCurrentEvents) eventsMap.get(ti);
     if (dace != null && dace.isGIIDace && puttingGIIDataInQueue.get()) {
       // we only need to retain DACE for which there are no entries in the queue.
       // for other thread identifiers we build up a new DACE
@@ -708,7 +708,7 @@ public class HARegionQueue implements RegionQueue {
         if (!dace.putObject(event, sequenceID)) {
           // dace encountered a DESTROYED token - stop adding GII data
           if (!puttingGIIDataInQueue.get()) {
-            this.put(object);
+            put(object);
           }
         } else {
           if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
@@ -721,24 +721,24 @@ public class HARegionQueue implements RegionQueue {
         if (logger.isDebugEnabled()) {
           logger.debug(
               "{}: This queue has already seen this event.  The highest sequence number in the queue for {} is {}, but this event's sequence number is {}",
-              this.regionName, ti, dace.lastDispatchedSequenceId, sequenceID);
+              regionName, ti, dace.lastDispatchedSequenceId, sequenceID);
         }
         incrementTakeSidePutPermits();
       }
     } else {
       dace = new DispatchedAndCurrentEvents(this);
       DispatchedAndCurrentEvents oldDace =
-          (DispatchedAndCurrentEvents) this.eventsMap.putIfAbsent(ti, dace);
+          (DispatchedAndCurrentEvents) eventsMap.putIfAbsent(ti, dace);
       if (oldDace != null) {
         dace = oldDace;
       } else {
         // Add the recently added ThreadIdentifier to the RegionQueue for expiry
-        this.region.put(ti, dace.lastDispatchedSequenceId);
+        region.put(ti, dace.lastDispatchedSequenceId);
         // update the stats
-        this.stats.incThreadIdentifiers();
+        stats.incThreadIdentifiers();
       }
       if (!dace.putObject(event, sequenceID)) {
-        this.put(object);
+        put(object);
       } else {
         if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE)) {
           logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE, "{}: Adding message to queue: {}", this,
@@ -754,12 +754,12 @@ public class HARegionQueue implements RegionQueue {
    * event. Bug #41681
    */
   public void startGiiQueueing() {
-    this.giiLock.writeLock().lock();
-    this.giiCount.incrementAndGet();
+    giiLock.writeLock().lock();
+    giiCount.incrementAndGet();
     if (logger.isDebugEnabled()) {
-      logger.debug("{}: startGiiQueueing count is now {}", this.regionName, this.giiCount.get());
+      logger.debug("{}: startGiiQueueing count is now {}", regionName, giiCount.get());
     }
-    this.giiLock.writeLock().unlock();
+    giiLock.writeLock().unlock();
   }
 
   /**
@@ -768,44 +768,44 @@ public class HARegionQueue implements RegionQueue {
    * prevent newer events from being queued before the list is drained.
    */
   public void endGiiQueueing() {
-    this.giiLock.writeLock().lock();
+    giiLock.writeLock().lock();
     final boolean isDebugEnabled = logger.isDebugEnabled();
     try {
-      this.giiCount.decrementAndGet();
+      giiCount.decrementAndGet();
       if (isDebugEnabled) {
-        logger.debug("{}: endGiiQueueing count is now {}", this.regionName, this.giiCount);
+        logger.debug("{}: endGiiQueueing count is now {}", regionName, giiCount);
       }
-      if (this.giiCount.get() < 0) {
+      if (giiCount.get() < 0) {
         if (isDebugEnabled) {
-          logger.debug("{} found giiCount to be {}", this.regionName, this.giiCount);
+          logger.debug("{} found giiCount to be {}", regionName, giiCount);
         }
-        this.giiCount.set(0);
+        giiCount.set(0);
       }
-      if (this.giiCount.get() == 0) {
+      if (giiCount.get() == 0) {
         if (isDebugEnabled) {
-          logger.debug("{} all GII requests completed - draining {} messages", this.regionName,
-              this.giiQueue.size());
+          logger.debug("{} all GII requests completed - draining {} messages", regionName,
+              giiQueue.size());
         }
         boolean interrupted = false;
         int actualCount = 0;
         while (true) {
           Object value;
           try {
-            value = this.giiQueue.remove();
+            value = giiQueue.remove();
           } catch (NoSuchElementException ignore) {
             break;
           }
           actualCount++;
           try {
             if (isDebugEnabled) {
-              logger.debug("{} draining #{}: {}", this.regionName, (actualCount + 1), value);
+              logger.debug("{} draining #{}: {}", regionName, (actualCount + 1), value);
             }
             if (value instanceof HAEventWrapper) {
               if (((HAEventWrapper) value).getClientUpdateMessage() == null) {
                 if (isDebugEnabled) {
                   logger.debug(
                       "{} ATTENTION: found gii queued event with null event message.  Please see bug #44852: {}",
-                      this.regionName, value);
+                      regionName, value);
                 }
                 continue;
               }
@@ -827,7 +827,7 @@ public class HARegionQueue implements RegionQueue {
           }
         }
         if (interrupted) {
-          this.region.getCache().getCancelCriterion()
+          region.getCache().getCancelCriterion()
               .checkCancelInProgress(new InterruptedException());
           Thread.currentThread().interrupt();
         }
@@ -840,9 +840,9 @@ public class HARegionQueue implements RegionQueue {
       throw t;
     } finally {
       if (logger.isTraceEnabled()) {
-        logger.trace("{} endGiiQueueing completed", this.regionName);
+        logger.trace("{} endGiiQueueing completed", regionName);
       }
-      this.giiLock.writeLock().unlock();
+      giiLock.writeLock().unlock();
     }
   }
 
@@ -859,7 +859,7 @@ public class HARegionQueue implements RegionQueue {
     do {
       HashMap result = new HashMap();
       try {
-        for (Map.Entry<ThreadIdentifier, DispatchedAndCurrentEvents> entry : ((Map<ThreadIdentifier, DispatchedAndCurrentEvents>) this.eventsMap)
+        for (Map.Entry<ThreadIdentifier, DispatchedAndCurrentEvents> entry : ((Map<ThreadIdentifier, DispatchedAndCurrentEvents>) eventsMap)
             .entrySet()) {
           if (entry.getValue().isCountersEmpty()) {
             result.put(entry.getKey(), entry.getValue());
@@ -946,14 +946,14 @@ public class HARegionQueue implements RegionQueue {
    */
   protected Long addToConflationMap(Conflatable event, Long newPosition) {
     String r = event.getRegionToConflate();
-    ConcurrentMap latestIndexesForRegion = (ConcurrentMap) this.indexes.get(r);
+    ConcurrentMap latestIndexesForRegion = (ConcurrentMap) indexes.get(r);
     if (latestIndexesForRegion == null) {
-      synchronized (HARegionQueue.this) {
-        if ((latestIndexesForRegion = (ConcurrentMap) this.indexes.get(r)) == null) {
+      synchronized (this) {
+        if ((latestIndexesForRegion = (ConcurrentMap) indexes.get(r)) == null) {
           latestIndexesForRegion = createConcurrentMap();
-          Map newMap = new HashMap(this.indexes);
+          Map newMap = new HashMap(indexes);
           newMap.put(r, latestIndexesForRegion);
-          this.indexes = Collections.unmodifiableMap(newMap);
+          indexes = Collections.unmodifiableMap(newMap);
         }
       }
     }
@@ -987,7 +987,7 @@ public class HARegionQueue implements RegionQueue {
           // check if the queue is primary here. It'll allow ThreadIdentifiers
           // to expire.
           // if (!HARegionQueue.this.isPrimary()) {
-          HARegionQueue.this.expireTheEventOrThreadIdentifier(event);
+          expireTheEventOrThreadIdentifier(event);
           // }
         } catch (CancelException ignore) {
           // ignore, we're done
@@ -1014,7 +1014,7 @@ public class HARegionQueue implements RegionQueue {
     if (isDebugEnabled) {
       logger.debug(
           "HARegionQueue::afterInvalidate. Entry Event being invalidated:{}, isPrimaryQueue:{}",
-          event, HARegionQueue.this.isPrimary());
+          event, isPrimary());
     }
     Object key = event.getKey();
     if (key instanceof ThreadIdentifier) {
@@ -1023,14 +1023,14 @@ public class HARegionQueue implements RegionQueue {
       // counters is 0. If yes the Dace should be removed Get DACE
 
       DispatchedAndCurrentEvents dace =
-          (DispatchedAndCurrentEvents) HARegionQueue.this.eventsMap.get(key);
+          (DispatchedAndCurrentEvents) eventsMap.get(key);
       Assert.assertTrue(dace != null);
       Long expirySequenceID = (Long) event.getOldValue();
       boolean expired = dace.expireOrUpdate(expirySequenceID, (ThreadIdentifier) key);
       if (isDebugEnabled) {
         logger.debug(
             "HARegionQueue::afterInvalidate:Size of the region after expiring or updating the ThreadIdentifier={}",
-            HARegionQueue.this.region.keys().size());
+            region.keys().size());
         logger.debug("HARegionQueue::afterInvalidate:ThreadIdentifier expired={}", expired);
       }
     } else if (key instanceof Long) {
@@ -1067,7 +1067,7 @@ public class HARegionQueue implements RegionQueue {
         logger.debug("Adding position " + position + " to available IDs. Region: " + regionName);
       }
 
-      this.idsAvailable.add(position);
+      idsAvailable.add(position);
       // Notify the waiting peek threads or take threads of blocking queue
       // A void operation for the non blocking queue operations
       notifyPeekAndTakeThreads();
@@ -1095,12 +1095,12 @@ public class HARegionQueue implements RegionQueue {
     boolean removedOK;
     acquireWriteLock();
     try {
-      removedOK = this.idsAvailable.remove(position);
+      removedOK = idsAvailable.remove(position);
       if (!removedOK) {
-        removedOK = this.removeFromOtherLists(position);
+        removedOK = removeFromOtherLists(position);
       }
       if (removedOK) {
-        this.incrementTakeSidePutPermits();
+        incrementTakeSidePutPermits();
       }
     } finally {
       releaseWriteLock();
@@ -1121,17 +1121,17 @@ public class HARegionQueue implements RegionQueue {
   protected boolean destroyFromAvailableIDsAndRegion(Long position) throws InterruptedException {
     if (logger.isDebugEnabled()) {
       logger.debug("Removing position " + position + " from available IDs and region. Region: "
-          + this.regionName);
+          + regionName);
     }
 
-    boolean removedOK = this.destroyFromAvailableIDs(position);
+    boolean removedOK = destroyFromAvailableIDs(position);
 
     if (removedOK) {
       try {
-        this.destroyFromQueue(position);
+        destroyFromQueue(position);
       } catch (EntryNotFoundException ignore) {
-        if (!HARegionQueue.this.destroyInProgress) {
-          if (!this.region.isDestroyed()) {
+        if (!destroyInProgress) {
+          if (!region.isDestroyed()) {
             Assert.assertTrue(false, "HARegionQueue::remove: The position " + position
                 + "existed in availableIDs set but not in Region object is not expected");
           }
@@ -1148,8 +1148,8 @@ public class HARegionQueue implements RegionQueue {
    *
    */
   private void destroyFromQueue(Object key) {
-    Object event = this.region.get(key);
-    this.region.localDestroy(key);
+    Object event = region.get(key);
+    region.localDestroy(key);
 
     maintainCqStats(event, -1);
   }
@@ -1157,7 +1157,7 @@ public class HARegionQueue implements RegionQueue {
   /** Returns the {@code toString} for this RegionQueue object */
   @Override
   public String toString() {
-    return "RegionQueue on " + this.regionName + "(" + (this.isPrimary ? "primary" : "backup")
+    return "RegionQueue on " + regionName + "(" + (isPrimary ? "primary" : "backup")
         + ")";
   }
 
@@ -1166,7 +1166,7 @@ public class HARegionQueue implements RegionQueue {
    */
   @Override
   public HARegion getRegion() {
-    return this.region;
+    return region;
   }
 
 
@@ -1179,18 +1179,18 @@ public class HARegionQueue implements RegionQueue {
     Long next = null;
     acquireWriteLock();
     try {
-      if (this.idsAvailable.isEmpty()) {
+      if (idsAvailable.isEmpty()) {
         if (waitForData()) {
-          Iterator itr = this.idsAvailable.iterator();
+          Iterator itr = idsAvailable.iterator();
           next = (Long) itr.next();
           itr.remove();
-          this.incrementTakeSidePutPermits();
+          incrementTakeSidePutPermits();
         }
       } else {
-        Iterator itr = this.idsAvailable.iterator();
+        Iterator itr = idsAvailable.iterator();
         next = (Long) itr.next();
         itr.remove();
-        this.incrementTakeSidePutPermits();
+        incrementTakeSidePutPermits();
       }
     } finally {
       releaseWriteLock();
@@ -1209,13 +1209,13 @@ public class HARegionQueue implements RegionQueue {
     Long next = null;
     acquireReadLock();
     try {
-      if (this.idsAvailable.isEmpty()) {
+      if (idsAvailable.isEmpty()) {
         // Asif:Wait in case it is a blocking thread
         if (waitForData()) {
-          next = (Long) this.idsAvailable.iterator().next();
+          next = (Long) idsAvailable.iterator().next();
         }
       } else {
-        next = (Long) this.idsAvailable.iterator().next();
+        next = (Long) idsAvailable.iterator().next();
       }
     } finally {
       releaseReadLock();
@@ -1234,16 +1234,16 @@ public class HARegionQueue implements RegionQueue {
   public Object take() throws CacheException, InterruptedException {
     Conflatable object = null;
     Long next;
-    if ((next = this.getAndRemoveNextAvailableID()) != null) {
-      object = (Conflatable) this.region.get(next);
+    if ((next = getAndRemoveNextAvailableID()) != null) {
+      object = (Conflatable) region.get(next);
       Assert.assertTrue(object != null);
 
-      object = this.getAndRemoveFromHAContainer(object);
+      object = getAndRemoveFromHAContainer(object);
       Assert.assertTrue(object != null);
       EventID eventid = object.getEventId();
       long sequenceId = eventid.getSequenceID();
       ThreadIdentifier threadid = getThreadIdentifier(eventid);
-      DispatchedAndCurrentEvents dace = (DispatchedAndCurrentEvents) this.eventsMap.get(threadid);
+      DispatchedAndCurrentEvents dace = (DispatchedAndCurrentEvents) eventsMap.get(threadid);
       Assert.assertTrue(dace != null);
       Object keyToConflate = null;
       if (shouldBeConflated(object)) {
@@ -1258,7 +1258,7 @@ public class HARegionQueue implements RegionQueue {
 
       // update the stats
       // if (logger.isDebugEnabled()) {
-      this.stats.incEventsTaken();
+      stats.incEventsTaken();
       // }
     }
     // since size is zero, return null
@@ -1313,7 +1313,7 @@ public class HARegionQueue implements RegionQueue {
       return;
     }
 
-    if (!this.checkPrevAcks()) {
+    if (!checkPrevAcks()) {
       return;
     }
 
@@ -1322,7 +1322,7 @@ public class HARegionQueue implements RegionQueue {
     for (Object peekedId : peekedIds) {
       Long counter = (Long) peekedId;
 
-      Conflatable event = (Conflatable) this.region.get(counter);
+      Conflatable event = (Conflatable) region.get(counter);
       if (event != null) {
         EventID eventid = event.getEventId();
         long sequenceId = eventid.getSequenceID();
@@ -1351,7 +1351,7 @@ public class HARegionQueue implements RegionQueue {
           groupedThreadIDs.put(threadid, countersList);
         }
       } else {
-        HARegionQueue.this.stats.incNumVoidRemovals();
+        stats.incNumVoidRemovals();
       }
     }
 
@@ -1360,7 +1360,7 @@ public class HARegionQueue implements RegionQueue {
       ThreadIdentifier tid = element.getKey();
       List removedEvents = element.getValue();
       long lastDispatchedId = (Long) removedEvents.remove(0);
-      DispatchedAndCurrentEvents dace = (DispatchedAndCurrentEvents) this.eventsMap.get(tid);
+      DispatchedAndCurrentEvents dace = (DispatchedAndCurrentEvents) eventsMap.get(tid);
       if (dace != null && dace.lastDispatchedSequenceId < lastDispatchedId) {
         try {
           dace.setLastDispatchedIDAndRemoveEvents(removedEvents, lastDispatchedId);
@@ -1381,7 +1381,7 @@ public class HARegionQueue implements RegionQueue {
   }
 
   protected Object getNextAvailableIDFromList() throws InterruptedException {
-    return this.getNextAvailableID();
+    return getNextAvailableID();
   }
 
   protected void storePeekedID(Long id) {
@@ -1398,7 +1398,7 @@ public class HARegionQueue implements RegionQueue {
 
     while (true) {
       try {
-        next = (Long) this.getNextAvailableIDFromList();
+        next = (Long) getNextAvailableIDFromList();
         if (next == null) {
           break;
         }
@@ -1406,14 +1406,14 @@ public class HARegionQueue implements RegionQueue {
         throw new InterruptedException();
       }
 
-      object = (Conflatable) this.region.get(next);
+      object = (Conflatable) region.get(next);
 
       // It is possible for the object to be null if a queue removal
       // occurred between getting the next available ID and getting the object
       // from the region. If this happens, on the next iteration of this loop we will
       // get a different available ID to process
       if (object != null) {
-        object = (object instanceof HAEventWrapper) ? (Conflatable) this.haContainer.get(object)
+        object = (object instanceof HAEventWrapper) ? (Conflatable) haContainer.get(object)
             : object;
 
         if (object != null) {
@@ -1425,7 +1425,7 @@ public class HARegionQueue implements RegionQueue {
             peekedEvents.add(next);
             HARegionQueue.peekedEventsContext.set(peekedEvents);
           }
-          this.storePeekedID(next);
+          storePeekedID(next);
           break;
         }
       }
@@ -1451,7 +1451,7 @@ public class HARegionQueue implements RegionQueue {
   private List doReturn(int minSize, int maxSize) {
     acquireReadLock();
     try {
-      int numToReturn = this.idsAvailable.size();
+      int numToReturn = idsAvailable.size();
       if (numToReturn < minSize) {
         return null;
       }
@@ -1528,7 +1528,7 @@ public class HARegionQueue implements RegionQueue {
         Thread.sleep(50); // TODO this seems kinda busy IMNSHO -- jason
       } catch (InterruptedException ignore) {
         interrupted = true;
-        this.region.getCancelCriterion().checkCancelInProgress(null);
+        region.getCancelCriterion().checkCancelInProgress(null);
       } finally {
         if (interrupted) {
           Thread.currentThread().interrupt();
@@ -1546,8 +1546,8 @@ public class HARegionQueue implements RegionQueue {
    * @return - list of events peeked
    */
   private List getBatchAndUpdateThreadContext(int batchSize) {
-    Iterator<Long> itr = this.idsAvailable.iterator();
-    int currSize = this.idsAvailable.size();
+    Iterator<Long> itr = idsAvailable.iterator();
+    int currSize = idsAvailable.size();
     int limit = Math.min(currSize, batchSize);
     List batch = new ArrayList<>(limit);
 
@@ -1558,7 +1558,7 @@ public class HARegionQueue implements RegionQueue {
     }
     for (int i = 0; i < limit; i++) {
       Long counter = itr.next();
-      Object eventOrWrapper = this.region.get(counter);
+      Object eventOrWrapper = region.get(counter);
       Object event;
       if (eventOrWrapper instanceof HAEventWrapper) {
         event = haContainer.get(eventOrWrapper);
@@ -1601,9 +1601,9 @@ public class HARegionQueue implements RegionQueue {
     Long oldvalue;
     Map internalMap;
     while (true) {
-      internalMap = this.threadIdToSeqId.map;
+      internalMap = threadIdToSeqId.map;
       synchronized (internalMap) {
-        if (internalMap != this.threadIdToSeqId.map) {
+        if (internalMap != threadIdToSeqId.map) {
         } else {
           wasEmpty = internalMap.isEmpty();
           oldvalue = (Long) internalMap.put(tid, lastSequenceNumber);
@@ -1633,8 +1633,8 @@ public class HARegionQueue implements RegionQueue {
       // QRM thread may empty it & replace it with a new Map
       Map<String, MapWrapper> tempDispatchedMessagesMap = dispatchedMessagesMap;
       if (tempDispatchedMessagesMap != null) {
-        MapWrapper old = tempDispatchedMessagesMap.putIfAbsent(this.regionName,
-            this.threadIdToSeqId);
+        MapWrapper old = tempDispatchedMessagesMap.putIfAbsent(regionName,
+            threadIdToSeqId);
         if (isUsedByTest) {
           testMarkerMessageReceived = true;
           if (logger.isDebugEnabled()) {
@@ -1669,11 +1669,11 @@ public class HARegionQueue implements RegionQueue {
    * @return Map object
    */
   Map getConflationMapForTesting() {
-    return Collections.unmodifiableMap(this.indexes);
+    return Collections.unmodifiableMap(indexes);
   }
 
   public HARegionQueueStats getStatistics() {
-    return this.stats;
+    return stats;
   }
 
   /**
@@ -1682,7 +1682,7 @@ public class HARegionQueue implements RegionQueue {
    * @return Map object containing DispatchedAndCurrentEvents object for a ThreadIdentifier
    */
   Map getEventsMapForTesting() {
-    return Collections.unmodifiableMap(this.eventsMap);
+    return Collections.unmodifiableMap(eventsMap);
   }
 
 
@@ -1695,7 +1695,7 @@ public class HARegionQueue implements RegionQueue {
   Set getCurrentCounterSet(EventID id) {
     Set counters = null;
     ThreadIdentifier tid = getThreadIdentifier(id);
-    DispatchedAndCurrentEvents wrapper = (DispatchedAndCurrentEvents) this.eventsMap.get(tid);
+    DispatchedAndCurrentEvents wrapper = (DispatchedAndCurrentEvents) eventsMap.get(tid);
     if (wrapper != null) {
       synchronized (wrapper) {
         if (wrapper.isCountersEmpty()) {
@@ -1717,7 +1717,7 @@ public class HARegionQueue implements RegionQueue {
    */
   long getLastDispatchedSequenceId(EventID id) {
     ThreadIdentifier tid = getThreadIdentifier(id);
-    DispatchedAndCurrentEvents wrapper = (DispatchedAndCurrentEvents) this.eventsMap.get(tid);
+    DispatchedAndCurrentEvents wrapper = (DispatchedAndCurrentEvents) eventsMap.get(tid);
     return wrapper.lastDispatchedSequenceId;
   }
 
@@ -1727,7 +1727,7 @@ public class HARegionQueue implements RegionQueue {
   Set getAvailableIds() {
     acquireReadLock();
     try {
-      return Collections.unmodifiableSet(this.idsAvailable);
+      return Collections.unmodifiableSet(idsAvailable);
     } finally {
       releaseReadLock();
     }
@@ -1749,14 +1749,14 @@ public class HARegionQueue implements RegionQueue {
     ThreadIdentifier ti = getThreadIdentifier(lastDispatched);
     long sequenceID = lastDispatched.getSequenceID();
     // get the DispatchedAndCurrentEvents object for this threadID
-    DispatchedAndCurrentEvents dace = (DispatchedAndCurrentEvents) this.eventsMap.get(ti);
+    DispatchedAndCurrentEvents dace = (DispatchedAndCurrentEvents) eventsMap.get(ti);
     if (dace != null && dace.lastDispatchedSequenceId < sequenceID) {
       dace.setLastDispatchedIDAndRemoveEvents(sequenceID);
     } else if (dace == null) {
       dace = new DispatchedAndCurrentEvents(this);
       dace.lastDispatchedSequenceId = sequenceID;
       DispatchedAndCurrentEvents oldDace =
-          (DispatchedAndCurrentEvents) this.eventsMap.putIfAbsent(ti, dace);
+          (DispatchedAndCurrentEvents) eventsMap.putIfAbsent(ti, dace);
       if (oldDace != null) {
         dace = oldDace;
         if (dace.lastDispatchedSequenceId < sequenceID) {
@@ -1765,9 +1765,9 @@ public class HARegionQueue implements RegionQueue {
       } else {
         // Add the recently added ThreadIdentifier to the RegionQueue for
         // expiry
-        this.region.put(ti, dace.lastDispatchedSequenceId);
+        region.put(ti, dace.lastDispatchedSequenceId);
         // update the stats
-        this.stats.incThreadIdentifiers();
+        stats.incThreadIdentifiers();
       }
     }
   }
@@ -1781,7 +1781,7 @@ public class HARegionQueue implements RegionQueue {
   public int size() {
     acquireReadLock();
     try {
-      return this.idsAvailable.size();
+      return idsAvailable.size();
     } finally {
       releaseReadLock();
     }
@@ -1807,7 +1807,7 @@ public class HARegionQueue implements RegionQueue {
           if (hw.getClientUpdateMessage() != null) {
             event = hw.getClientUpdateMessage();
           } else {
-            event = this.haContainer.get(event);
+            event = haContainer.get(event);
           }
 
           if (event instanceof ClientUpdateMessage) {
@@ -1843,7 +1843,7 @@ public class HARegionQueue implements RegionQueue {
    * @return true if the queue contains objects
    */
   boolean internalIsEmpty() {
-    return this.idsAvailable.isEmpty();
+    return idsAvailable.isEmpty();
   }
 
   /**
@@ -1874,7 +1874,7 @@ public class HARegionQueue implements RegionQueue {
    * author Asif
    */
   void acquireWriteLock() {
-    this.writeLock.lock();
+    writeLock.lock();
   }
 
   /**
@@ -1891,21 +1891,21 @@ public class HARegionQueue implements RegionQueue {
    */
   void acquireReadLock() {
     // TODO should this be interruptible?
-    this.readLock.lock();
+    readLock.lock();
   }
 
   /**
    * Releases the Read lock. Overridden in the BlockingHARegionQueue class.
    */
   void releaseReadLock() {
-    this.readLock.unlock();
+    readLock.unlock();
   }
 
   /**
    * Releases the write lock. Overridden in the BlockingHARegionQueue class.
    */
   void releaseWriteLock() {
-    this.writeLock.unlock();
+    writeLock.unlock();
   }
 
   /**
@@ -2062,8 +2062,8 @@ public class HARegionQueue implements RegionQueue {
   }
 
   public boolean isEmptyAckList() {
-    synchronized (this.threadIdToSeqId.list) {
-      return this.threadIdToSeqId.list.isEmpty();
+    synchronized (threadIdToSeqId.list) {
+      return threadIdToSeqId.list.isEmpty();
     }
   }
 
@@ -2071,23 +2071,23 @@ public class HARegionQueue implements RegionQueue {
     acquireReadLock();
     try {
       // Get all available Ids for the HA Region Queue
-      Object[] availableIds = this.availableIDsArray();
+      Object[] availableIds = availableIDsArray();
       int currSize = availableIds.length;
 
       Object event;
       for (Object availableId : availableIds) {
         Long counter = (Long) availableId;
-        event = this.region.get(counter);
+        event = region.get(counter);
         HAEventWrapper wrapper = null;
         if (event instanceof HAEventWrapper) {
           wrapper = (HAEventWrapper) event;
-          event = this.haContainer.get(event);
+          event = haContainer.get(event);
         }
 
         // Since this method is invoked in a readlock , the entry in HARegion
         // cannot be null
         if (event == null) {
-          Assert.assertTrue(this.destroyInProgress,
+          Assert.assertTrue(destroyInProgress,
               "Got event null when queue was not being destroyed");
         }
 
@@ -2098,7 +2098,7 @@ public class HARegionQueue implements RegionQueue {
           if (!updateEvent.hasCqs(clientId) && !updateEvent.isClientInterested(clientId)) {
             if (wrapper != null) {
               try {
-                if (this.destroyFromAvailableIDsAndRegion(counter)) {
+                if (destroyFromAvailableIDsAndRegion(counter)) {
                   stats.incEventsRemoved();
                 }
               } catch (InterruptedException ignore) {
@@ -2232,12 +2232,12 @@ public class HARegionQueue implements RegionQueue {
         throws IOException, ClassNotFoundException, CacheException, InterruptedException {
       super(regionName, cache, haContainer, clientProxyId, clientConflation, isPrimary,
           statisticsClock);
-      this.putPermits.set(hrqa.getBlockingQueueCapacity());
-      this.lock = new StoppableReentrantLock(this.region.getCancelCriterion());
-      this.blockCond = lock.newCondition();
+      putPermits.set(hrqa.getBlockingQueueCapacity());
+      lock = new StoppableReentrantLock(region.getCancelCriterion());
+      blockCond = lock.newCondition();
 
       super.putGIIDataInRegion();
-      if (this.getClass() == BlockingHARegionQueue.class) {
+      if (getClass() == BlockingHARegionQueue.class) {
         synchronized (initialized) {
           initialized.set(true);
           initialized.notifyAll();
@@ -2250,8 +2250,8 @@ public class HARegionQueue implements RegionQueue {
       try {
         super.destroy();
       } finally {
-        synchronized (this.permitMon) {
-          this.permitMon.notifyAll(); // fix for bug 37581
+        synchronized (permitMon) {
+          permitMon.notifyAll(); // fix for bug 37581
         }
       }
     }
@@ -2272,7 +2272,7 @@ public class HARegionQueue implements RegionQueue {
      */
     @Override
     void waitForPermission() throws InterruptedException {
-      if (!(this.haContainer instanceof HAContainerMap && isPrimary())) {
+      if (!(haContainer instanceof HAContainerMap && isPrimary())) {
         return;
       }
 
@@ -2285,7 +2285,7 @@ public class HARegionQueue implements RegionQueue {
       }
 
       long startTime = System.currentTimeMillis();
-      synchronized (this.permitMon) {
+      synchronized (permitMon) {
 
         long duration = (System.currentTimeMillis() - startTime);
 
@@ -2303,30 +2303,30 @@ public class HARegionQueue implements RegionQueue {
               logFrequency = ccn.getLogFrequency();
             }
 
-            if ((this.maxQueueSizeHitCount % logFrequency) == 0) {
+            if ((maxQueueSizeHitCount % logFrequency) == 0) {
               logger.warn("Client queue for {} client is full.", region.getName());
-              this.maxQueueSizeHitCount = 0;
+              maxQueueSizeHitCount = 0;
             }
 
-            ++this.maxQueueSizeHitCount;
-            this.region.checkReadiness();
+            ++maxQueueSizeHitCount;
+            region.checkReadiness();
             long millisToWait = CacheClientNotifier.eventEnqueueWaitTime - duration;
             if (millisToWait < 0) {
               millisToWait = 0;
             }
 
-            this.permitMon.wait(millisToWait);
+            permitMon.wait(millisToWait);
 
-            this.region.checkReadiness();
+            region.checkReadiness();
 
             reconcilePutPermits();
-            if (((this.maxQueueSizeHitCount % logFrequency) == 1) || (duration > 100)) {
+            if (((maxQueueSizeHitCount % logFrequency) == 1) || (duration > 100)) {
               logger.info("Resuming with processing puts ... millisToWait = " + millisToWait);
             }
 
           } catch (InterruptedException ex) {
             // TODO: The line below is meaningless. Comment it out later
-            this.permitMon.notifyAll();
+            permitMon.notifyAll();
             throw ex;
           }
         }
@@ -2353,8 +2353,8 @@ public class HARegionQueue implements RegionQueue {
      */
     @Override
     void incrementTakeSidePutPermitsWithoutNotify() {
-      synchronized (this.permitMon) {
-        this.takeSidePutPermits.incrementAndGet();
+      synchronized (permitMon) {
+        takeSidePutPermits.incrementAndGet();
       }
     }
 
@@ -2365,10 +2365,10 @@ public class HARegionQueue implements RegionQueue {
      */
     @Override
     void incrementTakeSidePutPermits() {
-      if (this.haContainer instanceof HAContainerMap && isPrimary()) { // Fix for bug 39413
-        synchronized (this.permitMon) {
-          this.takeSidePutPermits.incrementAndGet();
-          this.permitMon.notifyAll();
+      if (haContainer instanceof HAContainerMap && isPrimary()) { // Fix for bug 39413
+        synchronized (permitMon) {
+          takeSidePutPermits.incrementAndGet();
+          permitMon.notifyAll();
         }
       }
     }
@@ -2378,7 +2378,7 @@ public class HARegionQueue implements RegionQueue {
      */
     @Override
     void acquireWriteLock() {
-      this.lock.lock();
+      lock.lock();
     }
 
     /**
@@ -2386,7 +2386,7 @@ public class HARegionQueue implements RegionQueue {
      */
     @Override
     void acquireReadLock() {
-      this.lock.lock();
+      lock.lock();
     }
 
     /**
@@ -2410,7 +2410,7 @@ public class HARegionQueue implements RegionQueue {
      */
     @Override
     boolean waitForData() {
-      while (this.internalIsEmpty()) {
+      while (internalIsEmpty()) {
         region.getCache().getCancelCriterion().checkCancelInProgress(null);
         boolean interrupted = Thread.currentThread().isInterrupted();
         try {
@@ -2446,7 +2446,7 @@ public class HARegionQueue implements RegionQueue {
 
     @Override
     void releaseReadLock() {
-      this.lock.unlock();
+      lock.unlock();
     }
 
     /**
@@ -2458,7 +2458,7 @@ public class HARegionQueue implements RegionQueue {
 
     @Override
     void releaseWriteLock() {
-      this.lock.unlock();
+      lock.unlock();
     }
 
   }
@@ -2502,12 +2502,12 @@ public class HARegionQueue implements RegionQueue {
           Thread.currentThread().interrupt();
         }
       }
-      return !this.internalIsEmpty();
+      return !internalIsEmpty();
     }
 
     @Override
     protected Object getNextAvailableIDFromList() throws InterruptedException {
-      return this.getAndRemoveNextAvailableID();
+      return getAndRemoveNextAvailableID();
     }
 
     /**
@@ -2519,14 +2519,14 @@ public class HARegionQueue implements RegionQueue {
       Long next = null;
       acquireWriteLock();
       try {
-        if (this.idsAvailable.isEmpty()) {
+        if (idsAvailable.isEmpty()) {
           if (waitForData()) {
-            Iterator itr = this.idsAvailable.iterator();
+            Iterator itr = idsAvailable.iterator();
             next = (Long) itr.next();
             itr.remove();
           }
         } else {
-          Iterator itr = this.idsAvailable.iterator();
+          Iterator itr = idsAvailable.iterator();
           next = (Long) itr.next();
           itr.remove();
         }
@@ -2540,7 +2540,7 @@ public class HARegionQueue implements RegionQueue {
     protected void storePeekedID(Long id) {
       acquireWriteLock();
       try {
-        this.durableIDsList.add(id);
+        durableIDsList.add(id);
       } finally {
         releaseWriteLock();
       }
@@ -2548,39 +2548,39 @@ public class HARegionQueue implements RegionQueue {
 
     @Override
     protected boolean checkPrevAcks() {
-      this.unremovedElements = new LinkedList<>();
-      this.currDurableMap = new HashMap<>();
-      synchronized (this.threadIdToSeqId.list) {
+      unremovedElements = new LinkedList<>();
+      currDurableMap = new HashMap<>();
+      synchronized (threadIdToSeqId.list) {
         // ARB: Construct map of threadIdToSeqId from the list of maps made by
         // QRM.
         // This list of maps is combined into one map for efficiency.
-        while (!this.threadIdToSeqId.list.isEmpty()) {
-          this.currDurableMap.putAll((Map) this.threadIdToSeqId.list.remove(0));
+        while (!threadIdToSeqId.list.isEmpty()) {
+          currDurableMap.putAll((Map) threadIdToSeqId.list.remove(0));
         }
       }
-      return !this.currDurableMap.isEmpty();
+      return !currDurableMap.isEmpty();
     }
 
     @Override
     protected boolean checkEventForRemoval(Long counter, ThreadIdentifier threadid,
         long sequenceId) {
-      if (this.currDurableMap.isEmpty()) {
+      if (currDurableMap.isEmpty()) {
         // ARB: If no acked events are found, do not remove peeked counter from
         // HARegion.
-        this.unremovedElements.add(counter);
+        unremovedElements.add(counter);
         return false;
       }
 
-      Long seqId = (Long) this.currDurableMap.get(threadid);
+      Long seqId = (Long) currDurableMap.get(threadid);
       if (seqId != null) {
         if ((Long.valueOf(sequenceId)).compareTo(seqId) > 0) {
           // ARB: The acked event is older than the current peeked event.
-          this.unremovedElements.add(counter);
+          unremovedElements.add(counter);
           return false;
         }
       } else {
         // ARB: No events from current threadID were acked.
-        this.unremovedElements.add(counter);
+        unremovedElements.add(counter);
         return false;
       }
 
@@ -2591,8 +2591,8 @@ public class HARegionQueue implements RegionQueue {
     protected void setPeekedEvents() {
       // ARB: Set peeked events list to the events that were not acked by client.
       HARegionQueue.peekedEventsContext.set(unremovedElements.isEmpty() ? null : unremovedElements);
-      this.unremovedElements = null;
-      this.currDurableMap = null;
+      unremovedElements = null;
+      currDurableMap = null;
     }
 
     /**
@@ -2600,7 +2600,7 @@ public class HARegionQueue implements RegionQueue {
      */
     @Override
     protected boolean removeFromOtherLists(Long position) {
-      return this.durableIDsList.remove(position);
+      return durableIDsList.remove(position);
     }
 
     @Override
@@ -2612,8 +2612,8 @@ public class HARegionQueue implements RegionQueue {
       // threadIdToSeqId.list: list of threadIdToSeqId maps. These maps are constructed from the
       // acks that are sent by client - each map corresponds to an ack message.
 
-      if (!this.durableIDsList.isEmpty()) {
-        this.acquireWriteLock();
+      if (!durableIDsList.isEmpty()) {
+        acquireWriteLock();
         try {
 
           // ARB: The following addAll() op is expensive. @todo
@@ -2623,16 +2623,16 @@ public class HARegionQueue implements RegionQueue {
           // either durableIDsList or idsAvailable.
 
           long start = System.currentTimeMillis();
-          this.durableIDsList.addAll(this.idsAvailable);
-          this.idsAvailable = this.durableIDsList;
-          this.durableIDsList = new LinkedHashSet<>();
+          durableIDsList.addAll(idsAvailable);
+          idsAvailable = durableIDsList;
+          durableIDsList = new LinkedHashSet<>();
           long end = System.currentTimeMillis();
           if ((end - start) > 3000) {
             logger.warn("Durable client queue initialization took {} ms.",
                 Long.toString(end - start));
           }
         } finally {
-          this.releaseWriteLock();
+          releaseWriteLock();
         }
       }
       /*
@@ -2642,7 +2642,7 @@ public class HARegionQueue implements RegionQueue {
        * local.
        */
       peekedEventsContext.set(null);
-      this.threadIdToSeqId.list.clear();
+      threadIdToSeqId.list.clear();
     }
 
     /**
@@ -2652,7 +2652,7 @@ public class HARegionQueue implements RegionQueue {
      */
     @Override
     protected int availableIDsSize() {
-      return this.idsAvailable.size() + this.durableIDsList.size();
+      return idsAvailable.size() + durableIDsList.size();
     }
 
     /**
@@ -2662,7 +2662,7 @@ public class HARegionQueue implements RegionQueue {
     protected Object[] availableIDsArray() {
       // ARB: potentially expensive operation.
       LinkedList retVal = new LinkedList<>();
-      retVal.addAll(this.durableIDsList);
+      retVal.addAll(durableIDsList);
       retVal.addAll(idsAvailable);
       return retVal.toArray();
     }
@@ -2671,7 +2671,7 @@ public class HARegionQueue implements RegionQueue {
     public int size() {
       acquireReadLock();
       try {
-        return this.idsAvailable.size() + this.durableIDsList.size();
+        return idsAvailable.size() + durableIDsList.size();
       } finally {
         releaseReadLock();
       }
@@ -2718,7 +2718,7 @@ public class HARegionQueue implements RegionQueue {
      * Constructor : Creates and initializes the thread
      */
     public QueueRemovalThread(InternalCache cache) {
-      this.setDaemon(true);
+      setDaemon(true);
       this.cache = cache;
     }
 
@@ -2750,7 +2750,7 @@ public class HARegionQueue implements RegionQueue {
             boolean interrupted = Thread.interrupted();
             try {
               synchronized (this) {
-                this.wait(1000 * (long) messageSyncInterval);
+                wait(1000 * (long) messageSyncInterval);
               }
             } catch (InterruptedException e) {
               interrupted = true;
@@ -2771,12 +2771,12 @@ public class HARegionQueue implements RegionQueue {
             if (logger.isTraceEnabled()) {
               logger.trace("QueueRemovalThread about to query the message list");
             }
-            List queueRemovalMessageList = this.createMessageList();
+            List queueRemovalMessageList = createMessageList();
             if (queueRemovalMessageList != null && !queueRemovalMessageList.isEmpty()) { // messages
               // exist
               QueueRemovalMessage qrm = new QueueRemovalMessage();
               qrm.resetRecipients();
-              List<CacheServer> servers = this.cache.getCacheServers();
+              List<CacheServer> servers = cache.getCacheServers();
               List<DistributedMember> recipients = new LinkedList();
               for (CacheServer server : servers) {
                 recipients.addAll(((CacheServerImpl) server).getCacheServerAdvisor()
@@ -2883,14 +2883,14 @@ public class HARegionQueue implements RegionQueue {
      * shutdown this thread and the caller thread will join this thread
      */
     public void shutdown() {
-      this.shutdown = true;
-      this.interrupt();
+      shutdown = true;
+      interrupt();
 
       // Asif:Do not exit till QRM thread is dead , else the QRM thread
       // may operate on Null dispatchedMessagesMap //Bug 37046
       boolean interrupted = Thread.interrupted();
       try {
-        this.join(15 * 1000);
+        join(15 * 1000);
       } catch (InterruptedException ignore) {
         interrupted = true;
       } finally {
@@ -2898,7 +2898,7 @@ public class HARegionQueue implements RegionQueue {
           Thread.currentThread().interrupt();
         }
       }
-      if (this.isAlive()) {
+      if (isAlive()) {
         logger.warn("QueueRemovalThread ignored cancellation");
       }
     }
@@ -2935,7 +2935,7 @@ public class HARegionQueue implements RegionQueue {
     transient boolean isGIIDace;
 
     public DispatchedAndCurrentEvents(HARegionQueue owner) {
-      this.owningQueue = owner;
+      owningQueue = owner;
     }
 
     /**
@@ -2966,7 +2966,7 @@ public class HARegionQueue implements RegionQueue {
         throws CacheException, InterruptedException {
       Long oldPosition = null;
       final boolean isDebugEnabled_BS = logger.isTraceEnabled(LogMarker.BRIDGE_SERVER_VERBOSE);
-      if (isDebugEnabled_BS && this.lastSequenceIDPut >= sequenceID
+      if (isDebugEnabled_BS && lastSequenceIDPut >= sequenceID
           && !owningQueue.puttingGIIDataInQueue.get()) {
         logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE,
             "HARegionQueue::DACE:putObject: Given sequence ID is already present ({}).\nThis may be a recovered operation via P2P or a GetInitialImage.\nlastSequenceIDPut = {} ; event = {};\n",
@@ -2977,16 +2977,16 @@ public class HARegionQueue implements RegionQueue {
       Conflatable eventInHARegion = null;
 
       synchronized (this) {
-        if (sequenceID > this.lastSequenceIDPut) {
+        if (sequenceID > lastSequenceIDPut) {
           if (logger.isTraceEnabled()) {
             logger.trace("HARegionQueue.putObject: adding {}", event);
           }
-          this.lastSequenceIDPut = sequenceID;
+          lastSequenceIDPut = sequenceID;
         } else if (!owningQueue.puttingGIIDataInQueue.get()) {
           if (isDebugEnabled_BS) {
             logger.trace(LogMarker.BRIDGE_SERVER_VERBOSE,
                 "{} eliding event with ID {}, because it is not greater than the last sequence ID ({}). The rejected event has key <{}> and value <{}>",
-                this, event.getEventId(), this.lastSequenceIDPut, event.getKeyToConflate(),
+                this, event.getEventId(), lastSequenceIDPut, event.getKeyToConflate(),
                 event.getValueToConflate());
           }
           owningQueue.stats.incNumSequenceViolated();
@@ -3011,10 +3011,10 @@ public class HARegionQueue implements RegionQueue {
           eventInHARegion = owningQueue.putEventInHARegion(event, position);
 
           // Add the position counter to the LinkedHashSet
-          if (this.counters == null) {
-            this.counters = new LinkedHashMap<>();
+          if (counters == null) {
+            counters = new LinkedHashMap<>();
           }
-          this.counters.put(position, null);
+          counters.put(position, null);
 
           // Check if the event is conflatable
           if (owningQueue.shouldBeConflated(eventInHARegion)) {
@@ -3073,8 +3073,8 @@ public class HARegionQueue implements RegionQueue {
       synchronized (this) {
         Conflatable conflatable = (Conflatable) owningQueue.region.get(oldPosition);
         if (owningQueue.destroyFromAvailableIDsAndRegion(oldPosition)) {
-          if (this.counters != null) {
-            this.counters.remove(oldPosition);
+          if (counters != null) {
+            counters.remove(oldPosition);
           }
           // <HA overflow>
           if (conflatable instanceof HAEventWrapper) {
@@ -3106,7 +3106,7 @@ public class HARegionQueue implements RegionQueue {
      * @param rName String region name against which the conflation map is stored
      */
     protected void destroy(Long position, Object key, String rName) {
-      this.destroy(position);
+      destroy(position);
       // Remove from conflation Map if the position in the conflation map is the
       // position
       // that is passed
@@ -3119,13 +3119,13 @@ public class HARegionQueue implements RegionQueue {
      * Removes the Entry from the Counters Set contained in DACE
      */
     protected synchronized void destroy(Long position) {
-      if (this.counters != null) {
-        this.counters.remove(position);
+      if (counters != null) {
+        counters.remove(position);
       }
     }
 
     private synchronized boolean isCountersEmpty() {
-      return this.counters == null || this.counters.isEmpty();
+      return counters == null || counters.isEmpty();
     }
 
     /**
@@ -3144,15 +3144,15 @@ public class HARegionQueue implements RegionQueue {
       // Check if the object is a candidate for expiry
       boolean expired = false;
       synchronized (this) {
-        if (expVal == this.lastDispatchedSequenceId && isCountersEmpty()) {
+        if (expVal == lastDispatchedSequenceId && isCountersEmpty()) {
           try {
             // Remove the ThreadIdentifier from the Region which was added for
             // expiry
             owningQueue.destroyFromQueue(ti);
-            this.lastDispatchedSequenceId = TOKEN_DESTROYED;
+            lastDispatchedSequenceId = TOKEN_DESTROYED;
             owningQueue.eventsMap.remove(ti);
             expired = true;
-            this.owningQueue.getStatistics().decThreadIdentifiers();
+            owningQueue.getStatistics().decThreadIdentifiers();
           } catch (RegionDestroyedException e) {
             if (!owningQueue.destroyInProgress && logger.isDebugEnabled()) {
               logger.debug(
@@ -3171,7 +3171,7 @@ public class HARegionQueue implements RegionQueue {
       if (!expired) {
         try {
           // Update the entry with latest sequence ID
-          owningQueue.region.put(ti, this.lastDispatchedSequenceId);
+          owningQueue.region.put(ti, lastDispatchedSequenceId);
         } catch (CancelException e) {
           throw e;
         } catch (Exception e) {
@@ -3198,17 +3198,17 @@ public class HARegionQueue implements RegionQueue {
     protected void setLastDispatchedIDAndRemoveEvents(long lastDispatchedSeqId)
         throws CacheException, InterruptedException {
       Long[] countersCopy = null;
-      synchronized (this.QRM_LOCK) {
+      synchronized (QRM_LOCK) {
         synchronized (this) {
-          if (this.lastDispatchedSequenceId > lastDispatchedSeqId) {
+          if (lastDispatchedSequenceId > lastDispatchedSeqId) {
             // If the current last dispatched ID is greater than the new id ,
             // then do not set it
             return;
           }
-          this.lastDispatchedSequenceId = lastDispatchedSeqId;
-          if (this.counters != null) {
-            countersCopy = new Long[this.counters.size()];
-            countersCopy = this.counters.keySet().toArray(countersCopy);
+          lastDispatchedSequenceId = lastDispatchedSeqId;
+          if (counters != null) {
+            countersCopy = new Long[counters.size()];
+            countersCopy = counters.keySet().toArray(countersCopy);
           }
         } // synchronized this
 
@@ -3221,7 +3221,7 @@ public class HARegionQueue implements RegionQueue {
             }
 
             long seqId = event.getEventId().getSequenceID();
-            if (seqId > this.lastDispatchedSequenceId) {
+            if (seqId > lastDispatchedSequenceId) {
               break; // we're done
             }
 
@@ -3244,14 +3244,14 @@ public class HARegionQueue implements RegionQueue {
 
             if (!owningQueue.shouldBeConflated(event)) {
               // Just update the counters set
-              this.destroy(counter);
+              destroy(counter);
               continue; // we're done
             }
 
             Object key = event.getKeyToConflate();
             String r = event.getRegionToConflate();
             // Update the counters set and the conflation map.
-            this.destroy(counter, key, r);
+            destroy(counter, key, r);
           } // for
         }
       } // synchronized
@@ -3272,12 +3272,12 @@ public class HARegionQueue implements RegionQueue {
         long lastDispatchedSeqId) throws CacheException, InterruptedException {
 
       synchronized (this) {
-        if (this.lastDispatchedSequenceId > lastDispatchedSeqId) {
+        if (lastDispatchedSequenceId > lastDispatchedSeqId) {
           // If the current last dispatched ID is greater than the new id ,
           // then do not set it
           return;
         }
-        this.lastDispatchedSequenceId = lastDispatchedSeqId;
+        lastDispatchedSequenceId = lastDispatchedSeqId;
 
       }
       for (Object o : removedEventInfoList) {
@@ -3288,9 +3288,9 @@ public class HARegionQueue implements RegionQueue {
         Conflatable wrapper = (Conflatable) owningQueue.region.get(counter);
         if (owningQueue.destroyFromAvailableIDsAndRegion(counter)) {
           if (key != null) {
-            this.destroy(counter, key, r);
+            destroy(counter, key, r);
           } else {
-            this.destroy(counter);
+            destroy(counter);
           }
           // <HA overflow>
           if (wrapper instanceof HAEventWrapper) {
@@ -3314,8 +3314,8 @@ public class HARegionQueue implements RegionQueue {
      */
     protected void removeEventAndSetSequenceID(RemovedEventInfo info, long sequenceID) {
       synchronized (this) {
-        if (this.lastDispatchedSequenceId < sequenceID) {
-          this.lastDispatchedSequenceId = sequenceID;
+        if (lastDispatchedSequenceId < sequenceID) {
+          lastDispatchedSequenceId = sequenceID;
         }
       }
 
@@ -3332,9 +3332,9 @@ public class HARegionQueue implements RegionQueue {
         }
       }
       if (key == null) {
-        this.destroy(counter);
+        destroy(counter);
       } else {
-        this.destroy(counter, key, r);
+        destroy(counter, key, r);
       }
 
     }
@@ -3349,8 +3349,8 @@ public class HARegionQueue implements RegionQueue {
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException {
       synchronized (this) {
-        this.lastDispatchedSequenceId = in.readLong();
-        this.lastSequenceIDPut = in.readLong();
+        lastDispatchedSequenceId = in.readLong();
+        lastSequenceIDPut = in.readLong();
       }
     }
 
@@ -3374,14 +3374,14 @@ public class HARegionQueue implements RegionQueue {
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
       synchronized (this) { // fix for bug #41621
-        out.writeLong(this.lastDispatchedSequenceId);
-        out.writeLong(this.lastSequenceIDPut);
+        out.writeLong(lastDispatchedSequenceId);
+        out.writeLong(lastSequenceIDPut);
       }
     }
 
     @Override
     public String toString() {
-      return "DACE(put=" + this.lastSequenceIDPut + "sent=" + this.lastDispatchedSequenceId + ")";
+      return "DACE(put=" + lastSequenceIDPut + "sent=" + lastDispatchedSequenceId + ")";
     }
 
     @Override
@@ -3403,10 +3403,10 @@ public class HARegionQueue implements RegionQueue {
    * destroys the underlying HARegion and removes its reference from the dispatched messages map
    */
   public void destroy() throws CacheWriterException {
-    this.destroyInProgress = true;
+    destroyInProgress = true;
     Map tempDispatchedMessagesMap = dispatchedMessagesMap;
     if (tempDispatchedMessagesMap != null) {
-      tempDispatchedMessagesMap.remove(this.regionName);
+      tempDispatchedMessagesMap.remove(regionName);
     }
     try {
       try {
@@ -3421,13 +3421,13 @@ public class HARegionQueue implements RegionQueue {
       }
 
       try {
-        this.region.destroyRegion();
+        region.destroyRegion();
       } catch (RegionDestroyedException | CancelException ignore) {
         // keep going
       }
       ((HAContainerWrapper) haContainer).removeProxy(regionName);
     } finally {
-      this.stats.close();
+      stats.close();
     }
   }
 
@@ -3442,7 +3442,7 @@ public class HARegionQueue implements RegionQueue {
       HAEventWrapper inputHaEventWrapper = (HAEventWrapper) event;
       HAEventWrapper haContainerKey;
 
-      if (this.isQueueInitialized()) {
+      if (isQueueInitialized()) {
         haContainerKey = putEntryConditionallyIntoHAContainer(inputHaEventWrapper);
       } else {
         haContainerKey = inputHaEventWrapper;
@@ -3450,18 +3450,18 @@ public class HARegionQueue implements RegionQueue {
 
       if (logger.isDebugEnabled()) {
         logger.debug("adding haContainerKey to HARegion at " + position + ":"
-            + haContainerKey + " for " + this.regionName);
+            + haContainerKey + " for " + regionName);
       }
-      this.region.put(position, haContainerKey);
+      region.put(position, haContainerKey);
 
       return haContainerKey;
     } else { // (event instanceof ClientMarkerMessageImpl OR ConflatableObject OR
       // ClientInstantiatorMessage)
       if (logger.isDebugEnabled()) {
         logger.debug("adding ClientUpdateMessage to HARegion at " + position + ":" + event + " for "
-            + this.regionName);
+            + regionName);
       }
-      this.region.put(position, event);
+      region.put(position, event);
 
       return event;
     }
@@ -3507,11 +3507,11 @@ public class HARegionQueue implements RegionQueue {
 
     while (haContainerKey == null) {
       ClientUpdateMessageImpl haContainerEntry =
-          (ClientUpdateMessageImpl) this.haContainer
+          (ClientUpdateMessageImpl) haContainer
               .putIfAbsent(inputHaEventWrapper, inputHaEventWrapper.getClientUpdateMessage());
 
       if (haContainerEntry != null) {
-        haContainerKey = (HAEventWrapper) ((HAContainerWrapper) this.haContainer)
+        haContainerKey = (HAEventWrapper) ((HAContainerWrapper) haContainer)
             .getKey(inputHaEventWrapper);
 
         // Key was already removed from the container, so continue
@@ -3521,11 +3521,11 @@ public class HARegionQueue implements RegionQueue {
 
         synchronized (haContainerKey) {
           // assert the entry is still present and we still have the same reference
-          if (haContainerKey == ((HAContainerWrapper) this.haContainer).getKey(haContainerKey)) {
+          if (haContainerKey == ((HAContainerWrapper) haContainer).getKey(haContainerKey)) {
             haContainerKey.incAndGetReferenceCount();
 
             addClientCQsAndInterestList(haContainerEntry, inputHaEventWrapper,
-                this.haContainer, this.regionName);
+                haContainer, regionName);
 
             if (logger.isDebugEnabled()) {
               logger.debug("Putting updated event in haContainer with Event ID hash code: "
@@ -3540,7 +3540,7 @@ public class HARegionQueue implements RegionQueue {
       } else {
         synchronized (inputHaEventWrapper) {
           inputHaEventWrapper.incAndGetReferenceCount();
-          inputHaEventWrapper.setHAContainer(this.haContainer);
+          inputHaEventWrapper.setHAContainer(haContainer);
 
           if (!inputHaEventWrapper.getPutInProgress()) {
             // This means that this is a GII'ed event. Hence we must
@@ -3569,7 +3569,7 @@ public class HARegionQueue implements RegionQueue {
    * @return size of idsAvailable
    */
   protected int availableIDsSize() {
-    return this.idsAvailable.size();
+    return idsAvailable.size();
   }
 
   /**
@@ -3578,24 +3578,24 @@ public class HARegionQueue implements RegionQueue {
    * @return the idsAvailable Set as an array
    */
   protected Object[] availableIDsArray() {
-    return this.idsAvailable.toArray();
+    return idsAvailable.toArray();
   }
 
   /**
    * whether the primary queue for the client has registered interest
    */
   public boolean noPrimaryOrHasRegisteredInterest() {
-    return this.region.noPrimaryOrHasRegisteredInterest();
+    return region.noPrimaryOrHasRegisteredInterest();
   }
 
   /**
    * set whether this queue has had interest registered for it
    */
   public void setHasRegisteredInterest(boolean flag) {
-    boolean old = this.hasRegisteredInterest;
-    this.hasRegisteredInterest = flag;
+    boolean old = hasRegisteredInterest;
+    hasRegisteredInterest = flag;
     if (old != flag) {
-      this.region.sendProfileUpdate();
+      region.sendProfileUpdate();
     }
   }
 
@@ -3603,7 +3603,7 @@ public class HARegionQueue implements RegionQueue {
    * hs this queue had interest registered for it?
    */
   public boolean getHasRegisteredInterest() {
-    return this.hasRegisteredInterest;
+    return hasRegisteredInterest;
   }
 
   /**
@@ -3617,8 +3617,8 @@ public class HARegionQueue implements RegionQueue {
       Object[] availableIdsArray = null;
       acquireReadLock();
       try {
-        if (this.availableIDsSize() != 0) {
-          availableIdsArray = this.availableIDsArray();
+        if (availableIDsSize() != 0) {
+          availableIdsArray = availableIDsArray();
         }
       } finally {
         releaseReadLock();
@@ -3628,7 +3628,7 @@ public class HARegionQueue implements RegionQueue {
 
         for (Object o : availableIdsArray) {
           if (destroyFromAvailableIDs((long) o)) {
-            wrapperSet.add(this.region.get(o));
+            wrapperSet.add(region.get(o));
           }
         }
 
@@ -3662,7 +3662,7 @@ public class HARegionQueue implements RegionQueue {
       // get a warning in the logs?
 
       // Odds are we're shutting down...
-      this.getRegion().getCache().getCancelCriterion().checkCancelInProgress(e);
+      getRegion().getCache().getCancelCriterion().checkCancelInProgress(e);
 
       // If we get back, this is Really Weird. Treat it like the
       // Exception case below.
@@ -3687,7 +3687,7 @@ public class HARegionQueue implements RegionQueue {
     Conflatable msg;
     if (conflatable instanceof HAEventWrapper) {
       HAEventWrapper wrapper = (HAEventWrapper) conflatable;
-      msg = (Conflatable) HARegionQueue.this.haContainer.get(wrapper);
+      msg = (Conflatable) haContainer.get(wrapper);
       if (msg != null) {
         decAndRemoveFromHAContainer(wrapper, "GetAndRemoveFromHAContainer");
       }
@@ -3726,7 +3726,7 @@ public class HARegionQueue implements RegionQueue {
                 + "; Wrapper details: " + haContainerKey + "; for queue: " + regionName);
           }
           if (haContainerKey.decAndGetReferenceCount() == 0L) {
-            HARegionQueue.this.haContainer.remove(haContainerKey);
+            haContainer.remove(haContainerKey);
             if (logger.isDebugEnabled()) {
               logger.debug(
                   caller + " removed Event ID hash code: " + haContainerKey.hashCode()
@@ -3754,7 +3754,7 @@ public class HARegionQueue implements RegionQueue {
    * returns true if the queue has been fully initialized
    */
   public boolean isQueueInitialized() {
-    return this.initialized.get();
+    return initialized.get();
   }
 
   /**
@@ -3764,14 +3764,14 @@ public class HARegionQueue implements RegionQueue {
    * @param flag the value to set isPrimary to
    */
   public void setPrimary(boolean flag) {
-    boolean old = this.isPrimary;
-    this.isPrimary = flag;
+    boolean old = isPrimary;
+    isPrimary = flag;
     if (flag) {// fix for #41878
       // since it's primary queue now, we will disable the EntryExpiryTask
       disableEntryExpiryTasks();
     }
     if (old != isPrimary) {
-      this.region.sendProfileUpdate();
+      region.sendProfileUpdate();
     }
   }
 
@@ -3779,12 +3779,12 @@ public class HARegionQueue implements RegionQueue {
    * Disables EntryExpiryTask for the HARegion ({@code this.region}).
    */
   private void disableEntryExpiryTasks() {
-    int oldTimeToLive = this.region.getEntryTimeToLive().getTimeout();
+    int oldTimeToLive = region.getEntryTimeToLive().getTimeout();
     if (oldTimeToLive > 0) {
       ExpirationAttributes ea = new ExpirationAttributes(0, // disables expiration
           ExpirationAction.LOCAL_INVALIDATE);
-      this.region.setEntryTimeToLive(ea);
-      this.region.setCustomEntryTimeToLive(new ThreadIdentifierCustomExpiry());
+      region.setEntryTimeToLive(ea);
+      region.setCustomEntryTimeToLive(new ThreadIdentifierCustomExpiry());
       logger.info(
           "Entry expiry tasks disabled because the queue became primary. Old messageTimeToLive was: {}",
           oldTimeToLive);
@@ -3801,7 +3801,7 @@ public class HARegionQueue implements RegionQueue {
         && value != Handshake.CONFLATION_DEFAULT) {
       throw new IllegalArgumentException("illegal conflation value");
     }
-    this.clientConflation = value;
+    clientConflation = value;
   }
 
   public void initializeTransients() {}
@@ -3861,8 +3861,8 @@ public class HARegionQueue implements RegionQueue {
     }
 
     void put(Object key, Object o) {
-      synchronized (this.map) {
-        this.map.put(key, o);
+      synchronized (map) {
+        map.put(key, o);
       }
     }
   }
@@ -3943,7 +3943,7 @@ public class HARegionQueue implements RegionQueue {
   }
 
   public Queue getGiiQueue() {
-    return this.giiQueue;
+    return giiQueue;
   }
 
   List<EventID> getDispatchedEvents(List<EventID> eventIds) {

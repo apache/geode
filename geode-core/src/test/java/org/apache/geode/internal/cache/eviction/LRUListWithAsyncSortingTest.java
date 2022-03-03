@@ -46,7 +46,7 @@ public class LRUListWithAsyncSortingTest {
   private BucketRegion bucketRegion;
   private EvictionCounters stats;
   private EvictionController controller;
-  private ExecutorService executor = mock(ExecutorService.class);
+  private final ExecutorService executor = mock(ExecutorService.class);
 
   @Before
   public void setup() {

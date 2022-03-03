@@ -52,11 +52,10 @@ public class SecurityWithoutClusterConfigDUnitTest {
   public void before() throws Exception {
     IgnoredException
         .addIgnoredException(
-            "A server cannot specify its own security-manager or security-post-processor when using cluster configuration"
-                .toString());
+            "A server cannot specify its own security-manager or security-post-processor when using cluster configuration");
     IgnoredException
         .addIgnoredException(
-            "A server must use cluster configuration when joining a secured cluster.".toString());
+            "A server must use cluster configuration when joining a secured cluster.");
     Properties props = new Properties();
     props.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
     props.setProperty(SECURITY_POST_PROCESSOR, PDXPostProcessor.class.getName());

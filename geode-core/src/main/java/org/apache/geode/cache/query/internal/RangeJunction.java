@@ -24,14 +24,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
@@ -68,12 +66,12 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
    * void addIterOperands(CompiledValue iterOps) { this.iterOperands = iterOps; }
    */
   private RangeJunction(AbstractGroupOrRangeJunction oldGJ, boolean completeExpansion,
-      RuntimeIterator indpnds[], CompiledValue iterOp) {
+      RuntimeIterator[] indpnds, CompiledValue iterOp) {
     super(oldGJ, completeExpansion, indpnds, iterOp);
   }
 
   @Override
-  AbstractGroupOrRangeJunction recreateFromOld(boolean completeExpansion, RuntimeIterator indpnds[],
+  AbstractGroupOrRangeJunction recreateFromOld(boolean completeExpansion, RuntimeIterator[] indpnds,
       CompiledValue iterOp) {
     return new RangeJunction(this, completeExpansion, indpnds, iterOp);
   }
@@ -94,13 +92,13 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
      * possibility o first iterator being either an iter operand or a constant. As those types of
      * Operands would be part of Group Junction
      */
-    return this._operands[0].getPlanInfo(context);
+    return _operands[0].getPlanInfo(context);
   }
 
   @Override
   public boolean isConditioningNeededForIndex(RuntimeIterator independentIter,
       ExecutionContext context, boolean completeExpnsNeeded)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     return true;
   }
 
@@ -181,7 +179,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
    * CompiledLiteral (false) ( indicating empty resultset).
    */
   private OrganizedOperands organizeOperandsForAndJunction(ExecutionContext context)
-      throws AmbiguousNameException, FunctionDomainException, TypeMismatchException,
+      throws FunctionDomainException, TypeMismatchException,
       NameResolutionException, QueryInvocationTargetException {
     List evalOperands = new ArrayList(_operands.length);
     int evalCount = 0;
@@ -197,8 +195,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
     Set notEqualTypeKeys = null;
     boolean possibleRangeFilter = false;
     IndexInfo indxInfo = null;
-    for (int i = 0; i < _operands.length; i++) {
-      CompiledValue operand = _operands[i];
+    for (CompiledValue operand : _operands) {
       if (operand.getPlanInfo(context).evalAsFilter) {
         Indexable cc = (Indexable) operand;
         if (indxInfo == null) {
@@ -211,7 +208,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
         // of RangeJunction
         if (!cc.isRangeEvaluatable()) {
           evalCount++;
-          evalOperands.add(0, _operands[i]);
+          evalOperands.add(0, operand);
           continue;
         }
         CompiledValue ccKey = ((CompiledComparison) cc).getKey(context);
@@ -219,7 +216,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
         int operator = ((CompiledComparison) cc).reflectOnOperator(ccKey);
         if (evaluatedCCKey == null) {
           evalCount++;
-          evalOperands.add(0, _operands[i]);
+          evalOperands.add(0, operand);
           continue;
         }
         if (equalCondnOperand != null) {
@@ -281,13 +278,13 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
             break;
         }
 
-      } else if (!_operands[i].isDependentOnCurrentScope(context)) {
+      } else if (!operand.isDependentOnCurrentScope(context)) {
         // TODO: Asif :Remove this Assert & else if condition after successful
         // testing of the build
         Support.assertionFailed(
             "An independentoperand should not ever be present as operand inside a GroupJunction as it should always be present only in CompiledJunction");
       } else {
-        evalOperands.add(_operands[i]);
+        evalOperands.add(operand);
       }
     }
     if (!emptyResults) {
@@ -297,16 +294,16 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
         // checked against the equality operand , are not able to satisfy the
         // equality.
         if (lessCondnOperand != null
-            && !this.isConditionSatisfied(equalCondKey, lessCondnKey, lessCondnOp)) {
+            && !isConditionSatisfied(equalCondKey, lessCondnKey, lessCondnOp)) {
           emptyResults = true;
         } else if (greaterCondnOperand != null
-            && !this.isConditionSatisfied(equalCondKey, greaterCondnKey, greaterCondnOp)) {
+            && !isConditionSatisfied(equalCondKey, greaterCondnKey, greaterCondnOp)) {
           emptyResults = true;
         } else if (notEqualTypeKeys != null) {
           Iterator itr = notEqualTypeKeys.iterator();
           while (itr.hasNext() && !emptyResults) {
             emptyResults =
-                !this.isConditionSatisfied(equalCondKey, itr.next(), OQLLexerTokenTypes.TOK_NE);
+                !isConditionSatisfied(equalCondKey, itr.next(), OQLLexerTokenTypes.TOK_NE);
           }
         }
         if (!emptyResults) {
@@ -389,7 +386,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
    */
   private boolean isConditionSatisfied(Object key1, Object key2, int operator)
       throws TypeMismatchException {
-    return ((Boolean) TypeUtils.compare(key1, key2, operator)).booleanValue();
+    return (Boolean) TypeUtils.compare(key1, key2, operator);
   }
 
   /**
@@ -419,8 +416,8 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
         Object neKey = null;
         while (itr.hasNext()) {
           neKey = itr.next();
-          if (!this.isConditionSatisfied(neKey, greaterCondnKey, greaterCondnOp)
-              || !this.isConditionSatisfied(neKey, lessCondnKey, lessOperator)) {
+          if (!isConditionSatisfied(neKey, greaterCondnKey, greaterCondnOp)
+              || !isConditionSatisfied(neKey, lessCondnKey, lessOperator)) {
             itr.remove();
           }
         }
@@ -453,7 +450,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       Iterator itr = notEqualKeys.iterator();
       while (itr.hasNext()) {
         Object neKey = itr.next();
-        if (!((Boolean) TypeUtils.compare(neKey, condnKey, operator)).booleanValue()) {
+        if (!(Boolean) TypeUtils.compare(neKey, condnKey, operator)) {
           itr.remove();
         }
       }
@@ -474,7 +471,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
 
     // if it's false and the op in this case will always be AND so return
     // false immediately
-    if (r instanceof Boolean && !((Boolean) r).booleanValue()) {
+    if (r instanceof Boolean && !(Boolean) r) {
       return r;
     }
     if (r == null || r == QueryService.UNDEFINED) {
@@ -489,7 +486,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
     for (int i = 1; i < _operands.length; i++) {
       Object ri = _operands[i].evaluate(context); // UNDEFINED, null, or
       // Boolean
-      if (ri instanceof Boolean && !((Boolean) ri).booleanValue()) {
+      if (ri instanceof Boolean && !(Boolean) ri) {
         return ri;
       }
       if (ri == null || ri == QueryService.UNDEFINED || r == QueryService.UNDEFINED) {
@@ -503,7 +500,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
       }
       // now do the actual and
 
-      r = new Boolean(((Boolean) r).booleanValue() && ((Boolean) ri).booleanValue());
+      r = (Boolean) r && (Boolean) ri;
 
     }
     return r;
@@ -713,13 +710,13 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
         boolean isIntersection, boolean conditioningNeeded, boolean evalProj)
         throws FunctionDomainException, TypeMismatchException, NameResolutionException,
         QueryInvocationTargetException {
-      ObjectType resultType = this.indxInfo._index.getResultSetType();
+      ObjectType resultType = indxInfo._index.getResultSetType();
       int indexFieldsSize = -1;
       SelectResults set = null;
       Boolean orderByClause = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_ORDER_BY_AT_INDEX);
       boolean useLinkedDataStructure = false;
       boolean nullValuesAtStart = true;
-      if (orderByClause != null && orderByClause.booleanValue()) {
+      if (orderByClause != null && orderByClause) {
         List orderByAttrs = (List) context.cacheGet(CompiledValue.ORDERBY_ATTRIB);
         useLinkedDataStructure = orderByAttrs.size() == 1;
         nullValuesAtStart = !((CompiledSortCriterion) orderByAttrs.get(0)).getCriterion();
@@ -732,7 +729,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
         }
         if (useLinkedDataStructure) {
           set = context.isDistinct() ? new LinkedStructSet((StructTypeImpl) resultType)
-              : new SortedResultsBag<Struct>((StructTypeImpl) resultType, nullValuesAtStart);
+              : new SortedResultsBag<>(resultType, nullValuesAtStart);
         } else {
           set = QueryUtils.createStructCollection(context, (StructTypeImpl) resultType);
         }
@@ -761,14 +758,14 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
        *
        */
       try {
-        observer.beforeIndexLookup(this.indxInfo._index, OQLLexerTokenTypes.TOK_NE,
-            this.notEqualTypeKeys);
-        context.cachePut(CompiledValue.INDEX_INFO, this.indxInfo);
-        this.indxInfo._index.query(set, notEqualTypeKeys, context);
+        observer.beforeIndexLookup(indxInfo._index, OQLLexerTokenTypes.TOK_NE,
+            notEqualTypeKeys);
+        context.cachePut(CompiledValue.INDEX_INFO, indxInfo);
+        indxInfo._index.query(set, notEqualTypeKeys, context);
       } finally {
         observer.afterIndexLookup(set);
       }
-      return QueryUtils.getConditionedIndexResults(set, this.indxInfo, context, indexFieldsSize,
+      return QueryUtils.getConditionedIndexResults(set, indxInfo, context, indexFieldsSize,
           completeExpansionNeeded, iterOperands, indpndntItrs);
     }
 
@@ -782,26 +779,24 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
     @Override
     public Object evaluate(ExecutionContext context) throws FunctionDomainException,
         TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
-      Object evaluatedPath = this.indxInfo._path.evaluate(context);
+      Object evaluatedPath = indxInfo._path.evaluate(context);
       return evaluate(context, evaluatedPath);
     }
 
     @Override
     public boolean isConditioningNeededForIndex(RuntimeIterator independentIter,
         ExecutionContext context, boolean completeExpnsNeeded)
-        throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+        throws TypeMismatchException, NameResolutionException {
       return true;
     }
 
     public Object evaluate(ExecutionContext context, Object evaluatedPath)
         throws FunctionDomainException, TypeMismatchException, NameResolutionException,
         QueryInvocationTargetException {
-      Iterator itr = this.notEqualTypeKeys.iterator();
-      while (itr.hasNext()) {
-        Object val = itr.next();
+      for (final Object val : notEqualTypeKeys) {
         Object result = TypeUtils.compare(evaluatedPath, val, TOK_NE);
         if (result instanceof Boolean) {
-          if (!((Boolean) result).booleanValue()) {
+          if (!(Boolean) result) {
             return Boolean.FALSE;
           }
         } else {
@@ -898,8 +893,8 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
      */
     SingleCondnEvaluator(int operator, Object key, Set notEqualKeys, IndexInfo indxInfo) {
       super(notEqualKeys, indxInfo);
-      this.condnOp = operator;
-      this.condnKey = key;
+      condnOp = operator;
+      condnKey = key;
     }
 
     @Override
@@ -908,13 +903,13 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
         boolean isIntersection, boolean conditioningNeeded, boolean evalProj)
         throws FunctionDomainException, TypeMismatchException, NameResolutionException,
         QueryInvocationTargetException {
-      ObjectType resultType = this.indxInfo._index.getResultSetType();
+      ObjectType resultType = indxInfo._index.getResultSetType();
       int indexFieldsSize = -1;
       SelectResults set = null;
       Boolean orderByClause = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_ORDER_BY_AT_INDEX);
       boolean useLinkedDataStructure = false;
       boolean nullValuesAtStart = true;
-      if (orderByClause != null && orderByClause.booleanValue()) {
+      if (orderByClause != null && orderByClause) {
         List orderByAttrs = (List) context.cacheGet(CompiledValue.ORDERBY_ATTRIB);
         useLinkedDataStructure = orderByAttrs.size() == 1;
         nullValuesAtStart = !((CompiledSortCriterion) orderByAttrs.get(0)).getCriterion();
@@ -926,7 +921,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
         }
         if (useLinkedDataStructure) {
           set = context.isDistinct() ? new LinkedStructSet((StructTypeImpl) resultType)
-              : new SortedResultsBag<Struct>((StructTypeImpl) resultType, nullValuesAtStart);
+              : new SortedResultsBag<>(resultType, nullValuesAtStart);
         } else {
           set = QueryUtils.createStructCollection(context, (StructTypeImpl) resultType);
         }
@@ -955,13 +950,13 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
        *
        */
       try {
-        observer.beforeIndexLookup(this.indxInfo._index, this.condnOp, this.condnKey);
-        context.cachePut(CompiledValue.INDEX_INFO, this.indxInfo);
-        this.indxInfo._index.query(this.condnKey, this.condnOp, set, notEqualTypeKeys, context);
+        observer.beforeIndexLookup(indxInfo._index, condnOp, condnKey);
+        context.cachePut(CompiledValue.INDEX_INFO, indxInfo);
+        indxInfo._index.query(condnKey, condnOp, set, notEqualTypeKeys, context);
       } finally {
         observer.afterIndexLookup(set);
       }
-      return QueryUtils.getConditionedIndexResults(set, this.indxInfo, context, indexFieldsSize,
+      return QueryUtils.getConditionedIndexResults(set, indxInfo, context, indexFieldsSize,
           completeExpansionNeeded, iterOperands, indpndntItrs);
 
     }
@@ -969,10 +964,10 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
     @Override
     public Object evaluate(ExecutionContext context) throws TypeMismatchException,
         FunctionDomainException, NameResolutionException, QueryInvocationTargetException {
-      Object evaluatedPath = this.indxInfo._path.evaluate(context);
+      Object evaluatedPath = indxInfo._path.evaluate(context);
       Boolean result = (Boolean) super.evaluate(context, evaluatedPath);
-      if (result.booleanValue()) {
-        result = (Boolean) TypeUtils.compare(evaluatedPath, this.condnKey, this.condnOp);
+      if (result) {
+        result = (Boolean) TypeUtils.compare(evaluatedPath, condnKey, condnOp);
       }
       return result;
     }
@@ -1045,13 +1040,13 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
         boolean isIntersection, boolean conditioningNeeded, boolean evalProj)
         throws FunctionDomainException, TypeMismatchException, NameResolutionException,
         QueryInvocationTargetException {
-      ObjectType resultType = this.indxInfo._index.getResultSetType();
+      ObjectType resultType = indxInfo._index.getResultSetType();
       int indexFieldsSize = -1;
       SelectResults set = null;
       Boolean orderByClause = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_ORDER_BY_AT_INDEX);
       boolean useLinkedDataStructure = false;
       boolean nullValuesAtStart = true;
-      if (orderByClause != null && orderByClause.booleanValue()) {
+      if (orderByClause != null && orderByClause) {
         List orderByAttrs = (List) context.cacheGet(CompiledValue.ORDERBY_ATTRIB);
         useLinkedDataStructure = orderByAttrs.size() == 1;
         nullValuesAtStart = !((CompiledSortCriterion) orderByAttrs.get(0)).getCriterion();
@@ -1064,7 +1059,7 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
         }
         if (useLinkedDataStructure) {
           set = context.isDistinct() ? new LinkedStructSet((StructTypeImpl) resultType)
-              : new SortedResultsBag<Struct>((StructTypeImpl) resultType, nullValuesAtStart);
+              : new SortedResultsBag<>(resultType, nullValuesAtStart);
         } else {
           set = QueryUtils.createStructCollection(context, (StructTypeImpl) resultType);
         }
@@ -1096,15 +1091,15 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
        *
        */
       try {
-        observer.beforeIndexLookup(this.indxInfo._index, this.greaterCondnOp, this.greaterCondnKey,
-            this.lessCondnOp, this.lessCondnKey, this.notEqualTypeKeys);
-        context.cachePut(CompiledValue.INDEX_INFO, this.indxInfo);
-        this.indxInfo._index.query(this.greaterCondnKey, this.greaterCondnOp, this.lessCondnKey,
-            this.lessCondnOp, set, notEqualTypeKeys, context);
+        observer.beforeIndexLookup(indxInfo._index, greaterCondnOp, greaterCondnKey,
+            lessCondnOp, lessCondnKey, notEqualTypeKeys);
+        context.cachePut(CompiledValue.INDEX_INFO, indxInfo);
+        indxInfo._index.query(greaterCondnKey, greaterCondnOp, lessCondnKey,
+            lessCondnOp, set, notEqualTypeKeys, context);
       } finally {
         observer.afterIndexLookup(set);
       }
-      return QueryUtils.getConditionedIndexResults(set, this.indxInfo, context, indexFieldsSize,
+      return QueryUtils.getConditionedIndexResults(set, indxInfo, context, indexFieldsSize,
           completeExpansionNeeded, iterOperands, indpndntItrs);
 
     }
@@ -1119,12 +1114,12 @@ public class RangeJunction extends AbstractGroupOrRangeJunction {
     @Override
     public Object evaluate(ExecutionContext context) throws FunctionDomainException,
         TypeMismatchException, NameResolutionException, QueryInvocationTargetException {
-      Object evaluatedPath = this.indxInfo._path.evaluate(context);
+      Object evaluatedPath = indxInfo._path.evaluate(context);
       Boolean result = (Boolean) super.evaluate(context, evaluatedPath);
-      if (result.booleanValue()) {
-        result = (Boolean) TypeUtils.compare(evaluatedPath, this.lessCondnKey, this.lessCondnOp);
-        result = result.booleanValue()
-            ? (Boolean) TypeUtils.compare(evaluatedPath, this.greaterCondnKey, this.greaterCondnOp)
+      if (result) {
+        result = (Boolean) TypeUtils.compare(evaluatedPath, lessCondnKey, lessCondnOp);
+        result = result
+            ? (Boolean) TypeUtils.compare(evaluatedPath, greaterCondnKey, greaterCondnOp)
             : Boolean.FALSE;
       }
       return result;

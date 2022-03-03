@@ -32,5 +32,5 @@ public class MyCacheListener extends CacheListenerAdapter<String, String> {
   @Override
   public void initialize(Cache cache, Properties properties) {
     this.properties = properties;
-  };
+  }
 }

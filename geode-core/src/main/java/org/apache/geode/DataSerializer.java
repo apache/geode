@@ -1311,7 +1311,7 @@ public abstract class DataSerializer {
 
     InternalDataSerializer.checkIn(in);
 
-    String array[] = StaticSerialization.readStringArray(in);
+    String[] array = StaticSerialization.readStringArray(in);
 
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read String array of length {}",
@@ -3016,7 +3016,7 @@ public abstract class DataSerializer {
    * @since GemFire 6.5
    */
   public Object/* EventID */ getEventId() {
-    return this.eventId;
+    return eventId;
   }
 
   /**
@@ -3034,7 +3034,7 @@ public abstract class DataSerializer {
    * @since GemFire 6.5
    */
   public Object/* ClientProxyMembershipID */ getContext() {
-    return this.context;
+    return context;
   }
 
   /**

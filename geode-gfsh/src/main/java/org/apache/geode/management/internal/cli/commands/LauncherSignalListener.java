@@ -27,6 +27,6 @@ public class LauncherSignalListener implements SignalListener {
 
   @Override
   public void handle(final SignalEvent event) {
-    this.signaled = true;
+    signaled = true;
   }
 }

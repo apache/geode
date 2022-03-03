@@ -32,37 +32,37 @@ public class TXEntryUserAttrState {
 
   public TXEntryUserAttrState(Object originalValue) {
     this.originalValue = originalValue;
-    this.pendingValue = originalValue;
+    pendingValue = originalValue;
   }
 
   public Object getOriginalValue() {
-    return this.originalValue;
+    return originalValue;
   }
 
   public Object getPendingValue() {
-    return this.pendingValue;
+    return pendingValue;
   }
 
   public Object setPendingValue(Object pv) {
-    Object result = this.pendingValue;
-    this.pendingValue = pv;
+    Object result = pendingValue;
+    pendingValue = pv;
     return result;
   }
 
   void checkForConflict(InternalRegion r, Object key) throws CommitConflictException {
     Object curCmtValue = r.basicGetEntryUserAttribute(key);
-    if (this.originalValue != curCmtValue) {
+    if (originalValue != curCmtValue) {
       throw new CommitConflictException(
           String.format(
               "Entry user attribute for key %s on region %s had already been changed to %s",
-              new Object[] {key, r.getFullPath(), curCmtValue}));
+              key, r.getFullPath(), curCmtValue));
     }
   }
 
   void applyChanges(InternalRegion r, Object key) {
     try {
       Region.Entry re = r.getEntry(key);
-      re.setUserAttribute(this.pendingValue);
+      re.setUserAttribute(pendingValue);
     } catch (CacheRuntimeException ignore) {
       // ignore any exceptions since we have already locked and
       // found no conflicts.

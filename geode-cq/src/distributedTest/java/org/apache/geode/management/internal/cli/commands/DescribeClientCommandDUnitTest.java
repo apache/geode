@@ -52,7 +52,6 @@ import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category({GfshTest.class})
-@SuppressWarnings("serial")
 public class DescribeClientCommandDUnitTest {
 
   private MemberVM locatorVm0;

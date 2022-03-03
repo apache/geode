@@ -83,28 +83,28 @@ public class DiskDirectoryStats {
    * Creates a new <code>DiskRegionStatistics</code> for the given region.
    */
   public DiskDirectoryStats(StatisticsFactory f, String name) {
-    this.stats = f.createStatistics(type, name);
+    stats = f.createStatistics(type, name);
   }
 
   ///////////////////// Instance Methods /////////////////////
 
   public void close() {
-    this.stats.close();
+    stats.close();
   }
 
   /**
    * Returns the current value of the "diskSpace" stat.
    */
   public long getDiskSpace() {
-    return this.stats.getLong(diskSpaceId);
+    return stats.getLong(diskSpaceId);
   }
 
   public void incDiskSpace(long delta) {
-    this.stats.incLong(diskSpaceId, delta);
+    stats.incLong(diskSpaceId, delta);
   }
 
   public void setMaxSpace(long v) {
-    this.stats.setLong(maxSpaceId, v);
+    stats.setLong(maxSpaceId, v);
   }
 
   public void addVolumeCheck(long total, long free, long time) {

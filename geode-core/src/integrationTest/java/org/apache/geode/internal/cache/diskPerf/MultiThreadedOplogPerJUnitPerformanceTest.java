@@ -90,8 +90,8 @@ public class MultiThreadedOplogPerJUnitPerformanceTest {
     for (int i = 0; i < 4; i++) {
       File[] files = dirs[i].listFiles();
       if (files != null) {
-        for (int j = 0; j < files.length; j++) {
-          files[j].delete();
+        for (final File file : files) {
+          file.delete();
         }
       }
     }
@@ -164,13 +164,13 @@ public class MultiThreadedOplogPerJUnitPerformanceTest {
   class Writer implements Runnable {
     private int num = 0;
 
-    private byte[] bytes;
+    private final byte[] bytes;
 
     Writer(int num1) {
       bytes = new byte[1024];
       bytes[0] = 1;
       bytes[1000] = 2;
-      this.num = num1 * 10000;
+      num = num1 * 10000;
 
     }
 
@@ -182,7 +182,7 @@ public class MultiThreadedOplogPerJUnitPerformanceTest {
       startPoint = startPoint * numberOfKeysPerThread;
       for (int j = 0; j < numberOfIterations; j++) {
         for (int i = 0; i < numberOfKeysPerThread; i++) {
-          region.put(new Integer((i + 1) + num), bytes);
+          region.put((i + 1) + num, bytes);
           /*
            * DiskRegion dr =((LocalRegion)region).getDiskRegion();
            *

@@ -66,8 +66,8 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(() -> ClearMultiVmDUnitTest.createCache());
-    vm1.invoke(() -> ClearMultiVmDUnitTest.createCache());
+    vm0.invoke(ClearMultiVmDUnitTest::createCache);
+    vm1.invoke(ClearMultiVmDUnitTest::createCache);
   }
 
   @Override
@@ -75,8 +75,8 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
-    vm0.invoke(() -> ClearMultiVmDUnitTest.closeCache());
-    vm1.invoke(() -> ClearMultiVmDUnitTest.closeCache());
+    vm0.invoke(ClearMultiVmDUnitTest::closeCache);
+    vm1.invoke(ClearMultiVmDUnitTest::closeCache);
     cache = null;
     Invoke.invokeInEveryVM(new SerializableRunnable() {
       @Override
@@ -129,9 +129,9 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     vm0.invoke(new CacheSerializableRunnable("temp1") {
       @Override
       public void run2() throws CacheException {
-        region.put(new Integer(1), new String("first"));
-        region.put(new Integer(2), new String("second"));
-        region.put(new Integer(3), new String("third"));
+        region.put(1, "first");
+        region.put(2, "second");
+        region.put(3, "third");
         region.clear();
         assertEquals(0, region.size());
       }
@@ -149,22 +149,22 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
       @Override
       public void run2() throws CacheException {
         try {
-          region.put(new Integer(1), new String("first"));
-          region.put(new Integer(2), new String("second"));
-          region.put(new Integer(3), new String("third"));
+          region.put(1, "first");
+          region.put(2, "second");
+          region.put(3, "third");
           cacheTxnMgr = cache.getCacheTransactionManager();
           cacheTxnMgr.begin();
-          region.put(new Integer(4), new String("forth"));
+          region.put(4, "forth");
           try {
             region.clear();
             fail("expected exception not thrown");
           } catch (UnsupportedOperationInTransactionException e) {
             // expected
           }
-          region.put(new Integer(5), new String("fifth"));
+          region.put(5, "fifth");
           cacheTxnMgr.commit();
           assertEquals(5, region.size());
-          assertEquals("fifth", region.get(new Integer(5)).toString());
+          assertEquals("fifth", region.get(5).toString());
         } catch (CacheException ce) {
           ce.printStackTrace();
         } finally {
@@ -184,14 +184,14 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     vm0.invoke(new CacheSerializableRunnable("temp3") {
       @Override
       public void run2() throws CacheException {
-        region.put(new Integer(1), new String("first"));
-        region.put(new Integer(2), new String("second"));
+        region.put(1, "first");
+        region.put(2, "second");
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.DISTRIBUTED_ACK);
         RegionAttributes attr = factory.create();
         Region subRegion = region.createSubregion("subr", attr);
-        subRegion.put(new Integer(3), new String("third"));
-        subRegion.put(new Integer(4), new String("forth"));
+        subRegion.put(3, "third");
+        subRegion.put(4, "forth");
         region.clear();
         assertEquals(0, region.size());
         assertEquals(2, subRegion.size());
@@ -216,8 +216,8 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
       vm1.invoke(ClearMultiVmDUnitTest.class, "getMethod", objArr);
     }
 
-    AsyncInvocation as1 = vm0.invokeAsync(() -> ClearMultiVmDUnitTest.firstVM());
-    AsyncInvocation as2 = vm1.invokeAsync(() -> ClearMultiVmDUnitTest.secondVM());
+    AsyncInvocation as1 = vm0.invokeAsync(ClearMultiVmDUnitTest::firstVM);
+    AsyncInvocation as2 = vm1.invokeAsync(ClearMultiVmDUnitTest::secondVM);
     ThreadUtils.join(as1, 30 * 1000);
     ThreadUtils.join(as2, 30 * 1000);
 
@@ -229,10 +229,10 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
       Assert.fail("as2 failed", as2.getException());
     }
 
-    int j = vm0.invoke(() -> ClearMultiVmDUnitTest.sizeMethod());
+    int j = vm0.invoke(ClearMultiVmDUnitTest::sizeMethod);
     assertEquals(0, j);
 
-    j = vm1.invoke(() -> ClearMultiVmDUnitTest.sizeMethod());
+    j = vm1.invoke(ClearMultiVmDUnitTest::sizeMethod);
     assertEquals(1, j);
 
 
@@ -252,7 +252,7 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
 
-    vm1.invoke(() -> ClearMultiVmDUnitTest.localDestroyRegionMethod());
+    vm1.invoke(ClearMultiVmDUnitTest::localDestroyRegionMethod);
     vm0.invoke(new CacheSerializableRunnable("exception in vm0") {
       @Override
       public void run2() throws CacheException {
@@ -307,7 +307,7 @@ public class ClearMultiVmDUnitTest extends JUnit4DistributedTestCase { // TODO: 
         @Override
         public void run2() throws CacheException {
           for (int i = 0; i < 1000; i++) {
-            mirroredRegion.put(new Integer(i), (new Integer(i)).toString());
+            mirroredRegion.put(i, (new Integer(i)).toString());
           }
         }
       });

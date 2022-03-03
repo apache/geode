@@ -1231,40 +1231,31 @@ public class HashIndexQueryIntegrationTest {
       HashIndexSet.TEST_ALWAYS_REHASH = true;
       Index index = qs.createHashIndex("idHash", "p", SEPARATOR + "portfolios p");
 
-      Thread puts = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          for (int j = 0; j < 20; j++) {
-            for (int i = 0; i < 2; i++) {
-              region.put("" + i, "SOME STRING OBJECT" + i);
-            }
+      Thread puts = new Thread(() -> {
+        for (int j = 0; j < 20; j++) {
+          for (int i = 0; i < 2; i++) {
+            region.put("" + i, "SOME STRING OBJECT" + i);
           }
-          threadCompleted[0] = true;
         }
+        threadCompleted[0] = true;
       });
 
-      Thread morePuts = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          for (int j = 0; j < 20; j++) {
-            for (int i = 0; i < 1; i++) {
-              region.put("" + (i + 100), "SOME OTHER STRING OBJECT" + (i + 100));
-            }
+      Thread morePuts = new Thread(() -> {
+        for (int j = 0; j < 20; j++) {
+          for (int i = 0; i < 1; i++) {
+            region.put("" + (i + 100), "SOME OTHER STRING OBJECT" + (i + 100));
           }
-          threadCompleted[1] = true;
         }
+        threadCompleted[1] = true;
       });
 
-      Thread evenMorePuts = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          for (int j = 0; j < 20; j++) {
-            for (int i = 0; i < 1; i++) {
-              region.put("" + (i + 200), "ANOTHER STRING OBJECT" + (i + 200));
-            }
+      Thread evenMorePuts = new Thread(() -> {
+        for (int j = 0; j < 20; j++) {
+          for (int i = 0; i < 1; i++) {
+            region.put("" + (i + 200), "ANOTHER STRING OBJECT" + (i + 200));
           }
-          threadCompleted[2] = true;
         }
+        threadCompleted[2] = true;
       });
 
       evenMorePuts.start();
@@ -1369,8 +1360,8 @@ public class HashIndexQueryIntegrationTest {
     public Identifier rightKey;
 
     public RelationshipKey(int leftKeyId, int rightKeyId) {
-      this.leftKey = new Identifier("Customer" + leftKeyId);
-      this.rightKey = new Identifier("Customer" + rightKeyId);
+      leftKey = new Identifier("Customer" + leftKeyId);
+      rightKey = new Identifier("Customer" + rightKeyId);
     }
 
     public Identifier getLeftKey() {
@@ -1455,12 +1446,12 @@ public class HashIndexQueryIntegrationTest {
 
     @Override
     public int hashCode() {
-      if (this.hashCode == 0) {
-        this.hashCode = id.hashCode();
-        this.hashCode += 7 * "something".hashCode();
+      if (hashCode == 0) {
+        hashCode = id.hashCode();
+        hashCode += 7 * "something".hashCode();
       }
 
-      return this.hashCode;
+      return hashCode;
     }
   }
 

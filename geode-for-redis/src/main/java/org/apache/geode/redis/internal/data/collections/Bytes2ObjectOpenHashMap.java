@@ -665,8 +665,8 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
       // of elements,
       // the split will take care of returning null (if needed), and we won't return it anymore.
       SplitType split = makeForSplit(retPos, myNewPos);
-      this.pos = myNewPos;
-      this.hasSplit = true;
+      pos = myNewPos;
+      hasSplit = true;
       return split;
     }
 
@@ -719,8 +719,8 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
   }
   private static class MyBasicEntry<V> extends BasicEntry<byte[], V> {
     public void setKeyAndValue(byte[] k, V v) {
-      this.key = k;
-      this.value = v;
+      key = k;
+      value = v;
     }
   }
   private final class MapEntrySet extends AbstractObjectSet<Entry<byte[], V>>
@@ -949,7 +949,6 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
     }
   }
 
-  @SuppressWarnings("NullableProblems")
   @Override
   public ObjectSet<byte[]> keySet() {
     return new KeySet();
@@ -1011,7 +1010,6 @@ public class Bytes2ObjectOpenHashMap<V> extends AbstractObject2ObjectMap<byte[],
     }
   }
 
-  @SuppressWarnings("NullableProblems")
   @Override
   public ObjectCollection<V> values() {
     return new AbstractObjectCollection<V>() {

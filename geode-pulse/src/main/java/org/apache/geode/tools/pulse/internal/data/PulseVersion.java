@@ -92,7 +92,7 @@ public class PulseVersion {
   public String getPulseVersionLogMessage() {
     ResourceBundle resourceBundle = repository.getResourceBundle();
     return resourceBundle.getString("LOG_MSG_PULSE_VERSION") + " "
-        + this.getPulseVersion() + " " + this.getPulseBuildId();
+        + getPulseVersion() + " " + getPulseBuildId();
   }
 
 }

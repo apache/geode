@@ -221,10 +221,7 @@ public class PRBucketSynchronizationDUnitTest extends CacheTestCase {
         if (re == null) {
           return false;
         }
-        if (!re.isTombstone()) {
-          return false;
-        }
-        return true;
+        return re.isTombstone();
       });
     });
   }

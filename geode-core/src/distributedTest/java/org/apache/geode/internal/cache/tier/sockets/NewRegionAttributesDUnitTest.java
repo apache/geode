@@ -73,13 +73,13 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
     vm1 = host.getVM(1);
     Object[] objArr = new Object[4];
     // enable WAN
-    objArr[0] = new Boolean(true);
+    objArr[0] = Boolean.TRUE;
     // enable Publisher
-    objArr[1] = new Boolean(true);
+    objArr[1] = Boolean.TRUE;
     // enableConflation
-    objArr[2] = new Boolean(true);
+    objArr[2] = Boolean.TRUE;
     // enableAsyncConflation
-    objArr[3] = new Boolean(true);
+    objArr[3] = Boolean.TRUE;
 
     // create cache on test VMs
     vm0.invoke(NewRegionAttributesDUnitTest.class, "createServerCache", objArr);
@@ -93,8 +93,8 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
    */
   @Override
   public final void preTearDown() throws Exception {
-    vm0.invoke(() -> NewRegionAttributesDUnitTest.closeCache());
-    vm1.invoke(() -> NewRegionAttributesDUnitTest.closeCache());
+    vm0.invoke(NewRegionAttributesDUnitTest::closeCache);
+    vm1.invoke(NewRegionAttributesDUnitTest::closeCache);
   }
 
   /**
@@ -118,8 +118,8 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
     // factory.setPublisher(setPublisher.booleanValue());
-    factory.setEnableConflation(enableConflation.booleanValue());
-    factory.setEnableAsyncConflation(enableAsyncConflation.booleanValue());
+    factory.setEnableConflation(enableConflation);
+    factory.setEnableAsyncConflation(enableAsyncConflation);
     RegionAttributes attrs = factory.create();
     cache.createRegion(REGION_NAME, attrs);
   }
@@ -165,16 +165,16 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testEntryOperationsWithNewAttributesEnabled() {
-    vm0.invoke(() -> NewRegionAttributesDUnitTest.checkAttributes());
-    vm1.invoke(() -> NewRegionAttributesDUnitTest.checkAttributes());
-    vm0.invoke(() -> NewRegionAttributesDUnitTest.doPuts());
-    Integer cnt1 = (Integer) vm1.invoke(() -> NewRegionAttributesDUnitTest.getEntryCount());
+    vm0.invoke(NewRegionAttributesDUnitTest::checkAttributes);
+    vm1.invoke(NewRegionAttributesDUnitTest::checkAttributes);
+    vm0.invoke(NewRegionAttributesDUnitTest::doPuts);
+    Integer cnt1 = (Integer) vm1.invoke(NewRegionAttributesDUnitTest::getEntryCount);
     assertEquals(TOTAL_PUTS, cnt1.intValue());
-    vm0.invoke(() -> NewRegionAttributesDUnitTest.doPuts());
-    vm0.invoke(() -> NewRegionAttributesDUnitTest.doInvalidates());
-    vm0.invoke(() -> NewRegionAttributesDUnitTest.doDestroy());
+    vm0.invoke(NewRegionAttributesDUnitTest::doPuts);
+    vm0.invoke(NewRegionAttributesDUnitTest::doInvalidates);
+    vm0.invoke(NewRegionAttributesDUnitTest::doDestroy);
 
-    Integer cnt2 = (Integer) vm1.invoke(() -> NewRegionAttributesDUnitTest.getEntryCount());
+    Integer cnt2 = (Integer) vm1.invoke(NewRegionAttributesDUnitTest::getEntryCount);
     assertEquals(0, cnt2.intValue());
   }
 
@@ -185,9 +185,9 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testRegisterInterestUseCases() {
-    vm1.invoke(() -> NewRegionAttributesDUnitTest.registerInterest());
-    vm1.invoke(() -> NewRegionAttributesDUnitTest.unregisterInterest());
-    vm1.invoke(() -> NewRegionAttributesDUnitTest.getInterestForRegion());
+    vm1.invoke(NewRegionAttributesDUnitTest::registerInterest);
+    vm1.invoke(NewRegionAttributesDUnitTest::unregisterInterest);
+    vm1.invoke(NewRegionAttributesDUnitTest::getInterestForRegion);
   }
 
   /**
@@ -253,7 +253,7 @@ public class NewRegionAttributesDUnitTest extends JUnit4DistributedTestCase {
   public static Object getEntryCount() {
     Region region1 = cache.getRegion(SEPARATOR + REGION_NAME);
     int keysSize = region1.entrySet(false).size();
-    return new Integer(keysSize);
+    return keysSize;
   }
 
   /**

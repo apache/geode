@@ -36,21 +36,21 @@ public class StructSetJUnitTest {
 
   @Test
   public void testIntersectionAndRetainAll() {
-    String names[] = {"p", "pos"};
-    ObjectType types[] = {TypeUtils.OBJECT_TYPE, TypeUtils.OBJECT_TYPE};
+    String[] names = {"p", "pos"};
+    ObjectType[] types = {TypeUtils.OBJECT_TYPE, TypeUtils.OBJECT_TYPE};
     StructTypeImpl sType = new StructTypeImpl(names, types);
     StructSet set1 = new StructSet(sType);
     Portfolio ptf = new Portfolio(0);
     Iterator pIter = ptf.positions.values().iterator();
     while (pIter.hasNext()) {
-      Object arr[] = {ptf, pIter.next()};
+      Object[] arr = {ptf, pIter.next()};
       set1.addFieldValues(arr);
     }
 
     StructSet set2 = new StructSet(sType);
     pIter = ptf.positions.values().iterator();
     while (pIter.hasNext()) {
-      Object arr[] = {ptf, pIter.next()};
+      Object[] arr = {ptf, pIter.next()};
       set2.addFieldValues(arr);
     }
 

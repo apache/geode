@@ -36,7 +36,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 
 
 public class CompiledID extends AbstractCompiledValue {
-  private String _id;
+  private final String _id;
 
 
   public CompiledID(String id) {
@@ -50,7 +50,7 @@ public class CompiledID extends AbstractCompiledValue {
     if (val == itr) {
       return new ArrayList(); // empty path
     }
-    if (val.getType() == PATH && ((CompiledPath) val).getReceiver() == itr) {
+    if (val.getType() == PATH && val.getReceiver() == itr) {
       List list = new ArrayList();
       list.add(_id);
       return list;
@@ -74,7 +74,7 @@ public class CompiledID extends AbstractCompiledValue {
 
   @Override
   public Set computeDependencies(ExecutionContext context)
-      throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     CompiledValue v = context.resolve(getId());
     return context.addDependencies(this, v.computeDependencies(context));
   }
@@ -96,7 +96,7 @@ public class CompiledID extends AbstractCompiledValue {
 
   @Override
   public void generateCanonicalizedExpression(StringBuilder clauseBuffer, ExecutionContext context)
-      throws AmbiguousNameException, TypeMismatchException, NameResolutionException {
+      throws TypeMismatchException, NameResolutionException {
     // The compiled ID can be an iterator variable or it can be a path variable.
     // So first resolve the type of variable using ExecutionContext
     // A compiledID will get resolved either to a RunTimeIterator or a CompiledPath

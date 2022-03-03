@@ -89,7 +89,7 @@ public class CacheServerBridge extends ServerBridge {
 
   private ClientMembershipListener membershipListener;
 
-  public static final ThreadLocal<KnownVersion> clientVersion = new ThreadLocal<KnownVersion>();
+  public static final ThreadLocal<KnownVersion> clientVersion = new ThreadLocal<>();
 
   protected static int identifyPid() {
     try {
@@ -106,7 +106,7 @@ public class CacheServerBridge extends ServerBridge {
     super(cacheServer);
     this.cacheServer = cacheServer;
     this.cache = cache;
-    this.qs = cache.getQueryService();
+    qs = cache.getQueryService();
 
     initializeCacheServerStats();
   }
@@ -117,7 +117,7 @@ public class CacheServerBridge extends ServerBridge {
     super(acceptor, monitor);
     this.cacheServer = cacheServer;
     this.cache = cache;
-    this.qs = cache.getQueryService();
+    qs = cache.getQueryService();
 
     initializeCacheServerStats();
   }
@@ -197,10 +197,8 @@ public class CacheServerBridge extends ServerBridge {
   public ServerLoadData fetchLoadProbe() {
     ServerLoadProbe probe = cacheServer.getLoadProbe();
     ServerLoad load = probe.getLoad(new ServerMetricsImpl(cacheServer.getMaxConnections()));
-    ServerLoadData data =
-        new ServerLoadData(load.getConnectionLoad(), load.getSubscriptionConnectionLoad(),
-            load.getLoadPerConnection(), load.getLoadPerSubscriptionConnection());
-    return data;
+    return new ServerLoadData(load.getConnectionLoad(), load.getSubscriptionConnectionLoad(),
+        load.getLoadPerConnection(), load.getLoadPerSubscriptionConnection());
   }
 
   /**
@@ -340,7 +338,7 @@ public class CacheServerBridge extends ServerBridge {
         acceptor.getCacheClientNotifier().getClientProxies();
 
     if (clientProxies.size() > 0) {
-      uniqueIds = new HashMap<String, ClientConnInfo>();
+      uniqueIds = new HashMap<>();
 
       for (CacheClientProxy p : clientProxies) {
         ClientConnInfo clientConInfo =
@@ -351,7 +349,7 @@ public class CacheServerBridge extends ServerBridge {
 
     if (serverConnections != null && serverConnections.length > 0) {
       if (uniqueIds == null) {
-        uniqueIds = new HashMap<String, ClientConnInfo>();
+        uniqueIds = new HashMap<>();
       }
       for (ServerConnection conn : serverConnections) {
         ClientProxyMembershipID clientId = conn.getProxyID();
@@ -373,11 +371,11 @@ public class CacheServerBridge extends ServerBridge {
 
   private static class ClientConnInfo {
 
-    private ClientProxyMembershipID clientId;
+    private final ClientProxyMembershipID clientId;
 
-    private String hostName;
+    private final String hostName;
 
-    private int port;
+    private final int port;
 
     boolean isPrimary;
 
@@ -398,10 +396,8 @@ public class CacheServerBridge extends ServerBridge {
     }
 
     public String toString() {
-      StringBuffer buffer = new StringBuffer();
-      buffer.append("[").append(clientId).append("; port=").append(port).append("; primary=")
-          .append(isPrimary).append("]");
-      return buffer.toString();
+      return "[" + clientId + "; port=" + port + "; primary="
+          + isPrimary + "]";
     }
   }
 
@@ -423,10 +419,7 @@ public class CacheServerBridge extends ServerBridge {
 
     ServerConnection[] serverConnections = acceptor.getAllServerConnectionList();
 
-    boolean flag = false;
-    if (connInfo.toString().contains("primary=true")) {
-      flag = true;
-    }
+    boolean flag = connInfo.toString().contains("primary=true");
 
     for (ServerConnection conn : serverConnections) {
       ClientProxyMembershipID cliIdFrmProxy = conn.getProxyID();
@@ -451,8 +444,7 @@ public class CacheServerBridge extends ServerBridge {
     try {
       Map<String, ClientConnInfo> uniqueClientIds = getUniqueClientIds();
       ClientConnInfo clientConnInfo = uniqueClientIds.get(clientId);
-      ClientHealthStatus status = getClientHealthStatus(clientConnInfo);
-      return status;
+      return getClientHealthStatus(clientConnInfo);
     } finally {
       CacheServerBridge.clientVersion.set(null);
     }
@@ -463,7 +455,7 @@ public class CacheServerBridge extends ServerBridge {
       List<ClientHealthStatus> clientHealthStatusList = null;
       Map<String, ClientConnInfo> uniqueClientIds = getUniqueClientIds();
       if (!uniqueClientIds.isEmpty()) {
-        clientHealthStatusList = new ArrayList<ClientHealthStatus>();
+        clientHealthStatusList = new ArrayList<>();
 
         for (Map.Entry<String, ClientConnInfo> p : uniqueClientIds.entrySet()) {
           ClientHealthStatus status = getClientHealthStatus(p.getValue());
@@ -499,7 +491,7 @@ public class CacheServerBridge extends ServerBridge {
 
     ClientHealthStatus status = new ClientHealthStatus();
 
-    Region clientHealthMonitoringRegion = ClientHealthMonitoringRegion.getInstance(this.cache);
+    Region clientHealthMonitoringRegion = ClientHealthMonitoringRegion.getInstance(cache);
     String clientName = proxyId.getDSMembership();
     DistributedMember clientMemberId = proxyId.getDistributedMember();
     status.setClientId(connInfo.toString());
@@ -614,9 +606,7 @@ public class CacheServerBridge extends ServerBridge {
     try {
       Collection<Index> idxs = qs.getIndexes();
       if (!idxs.isEmpty()) {
-        Iterator<Index> idx = idxs.iterator();
-        while (idx.hasNext()) {
-          Index index = idx.next();
+        for (final Index index : idxs) {
           if (index.getName().equals(indexName)) {
             qs.removeIndex(index);
           }
@@ -670,7 +660,7 @@ public class CacheServerBridge extends ServerBridge {
   }
 
   public ClientMembershipListener getClientMembershipListener() {
-    return this.membershipListener;
+    return membershipListener;
   }
 
   /**
@@ -684,7 +674,7 @@ public class CacheServerBridge extends ServerBridge {
             acceptor.getCacheClientNotifier().getClientProxies();
 
         if (clientProxies.size() > 0) {
-          clientQueueDetailList = new ArrayList<ClientQueueDetail>();
+          clientQueueDetailList = new ArrayList<>();
         } else {
           return new ClientQueueDetail[0];
         }
@@ -740,8 +730,7 @@ public class CacheServerBridge extends ServerBridge {
         for (CacheClientProxy p : clientProxies) {
           String buffer = getClientIdFromCacheClientProxy(p);
           if (buffer.equals(clientId)) {
-            ClientQueueDetail queueDetail = getClientQueueDetail(p);
-            return queueDetail;
+            return getClientQueueDetail(p);
           }
         }
       }
@@ -756,10 +745,8 @@ public class CacheServerBridge extends ServerBridge {
     if (p == null) {
       return null;
     }
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("[").append(p.getProxyID()).append(":port=").append(p.getRemotePort())
-        .append(":primary=").append(p.isPrimary()).append("]");
-    return buffer.toString();
+    return "[" + p.getProxyID() + ":port=" + p.getRemotePort()
+        + ":primary=" + p.isPrimary() + "]";
   }
 
 }

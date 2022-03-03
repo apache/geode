@@ -28,7 +28,7 @@ import org.apache.geode.internal.cache.MemberFunctionStreamingMessage;
 
 public class MultiRegionFunctionResultWaiter extends StreamingFunctionOperation {
 
-  private Map<InternalDistributedMember, Set<String>> memberToRegions = null;;
+  private Map<InternalDistributedMember, Set<String>> memberToRegions = null;
 
   public MultiRegionFunctionResultWaiter(InternalDistributedSystem sys, ResultCollector rc,
       final Function function, Set recipients,
@@ -43,9 +43,9 @@ public class MultiRegionFunctionResultWaiter extends StreamingFunctionOperation 
       FunctionStreamingResultCollector processor, boolean isReExecute,
       boolean isFnSerializationReqd) {
     InternalDistributedMember target = (InternalDistributedMember) recipients.toArray()[0];
-    MemberFunctionStreamingMessage msg = new MemberFunctionStreamingMessage(this.functionObject,
+    MemberFunctionStreamingMessage msg = new MemberFunctionStreamingMessage(functionObject,
         processor.getProcessorId(), memberArgs.get(target), isFnSerializationReqd,
-        this.memberToRegions.get(target), isReExecute);
+        memberToRegions.get(target), isReExecute);
     msg.setRecipients(recipients);
     return msg;
   }

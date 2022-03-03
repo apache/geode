@@ -109,7 +109,7 @@ public class QueryWithBucketParameterIntegrationTest {
   public void testQueryExecuteWithEmptyBucketListExpectNoResults() throws Exception {
     final ExecutionContext executionContext = new ExecutionContext(null, CacheUtils.getCache());
     SelectResults r = (SelectResults) lds.executeQuery(queryExecutor, executionContext, null,
-        new HashSet<Integer>());
+        new HashSet<>());
     assertTrue("Received: A non-empty result collection, expected : Empty result collection",
         r.isEmpty());
   }

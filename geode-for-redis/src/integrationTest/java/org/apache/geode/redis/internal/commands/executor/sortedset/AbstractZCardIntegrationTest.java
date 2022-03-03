@@ -74,7 +74,7 @@ public abstract class AbstractZCardIntegrationTest implements RedisIntegrationTe
     jedis.set(key, "value");
     assertThatThrownBy(
         () -> jedis.sendCommand(key, Protocol.Command.ZCARD, key))
-            .hasMessage("WRONGTYPE " + RedisConstants.ERROR_WRONG_TYPE);
+            .hasMessage(RedisConstants.ERROR_WRONG_TYPE);
   }
 
   private Map<String, Double> makeMemberScoreMap(String baseString) {

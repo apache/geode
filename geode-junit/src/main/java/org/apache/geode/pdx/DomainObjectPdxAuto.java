@@ -212,12 +212,8 @@ public class DomainObjectPdxAuto extends DomainObject {
       return false;
     }
     if (string_immediate == null) {
-      if (other.string_immediate != null) {
-        return false;
-      }
-    } else if (!string_immediate.equals(other.string_immediate)) {
-      return false;
-    }
-    return true;
+      return other.string_immediate == null;
+    } else
+      return string_immediate.equals(other.string_immediate);
   }
 }

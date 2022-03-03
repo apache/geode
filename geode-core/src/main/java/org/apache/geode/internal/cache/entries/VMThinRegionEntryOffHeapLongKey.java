@@ -137,7 +137,7 @@ public class VMThinRegionEntryOffHeapLongKey extends VMThinRegionEntryOffHeap {
 
   @Override
   public int getEntryHash() {
-    return this.hash;
+    return hash;
   }
 
   @Override
@@ -147,7 +147,7 @@ public class VMThinRegionEntryOffHeapLongKey extends VMThinRegionEntryOffHeap {
 
   @Override
   public HashEntry<Object, Object> getNextEntry() {
-    return this.nextEntry;
+    return nextEntry;
   }
 
   @Override
@@ -159,13 +159,13 @@ public class VMThinRegionEntryOffHeapLongKey extends VMThinRegionEntryOffHeap {
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
   public Object getKey() {
-    return this.key;
+    return key;
   }
 
   @Override
   public boolean isKeyEqual(final Object key) {
     if (key instanceof Long) {
-      return ((Long) key).longValue() == this.key;
+      return (Long) key == this.key;
     }
     return false;
   }

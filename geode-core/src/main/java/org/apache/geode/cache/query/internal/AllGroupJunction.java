@@ -62,8 +62,8 @@ public class AllGroupJunction extends AbstractCompiledValue implements Filter, O
   @Override
   public List getChildren() {
     List children = new ArrayList();
-    children.addAll(this.abstractGroupOrRangeJunctions);
-    children.addAll(this.iterOperands);
+    children.addAll(abstractGroupOrRangeJunctions);
+    children.addAll(iterOperands);
     return children;
   }
 
@@ -82,7 +82,7 @@ public class AllGroupJunction extends AbstractCompiledValue implements Filter, O
   public SelectResults filterEvaluate(ExecutionContext context, SelectResults intermediateResults)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
-    if (this.operator == LITERAL_and) {
+    if (operator == LITERAL_and) {
       return evaluateAndJunction(context);
     } else {
       return evaluateOrJunction(context);
@@ -104,7 +104,7 @@ public class AllGroupJunction extends AbstractCompiledValue implements Filter, O
   private SelectResults evaluateAndJunction(ExecutionContext context)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException {
-    int len = this.abstractGroupOrRangeJunctions.size();
+    int len = abstractGroupOrRangeJunctions.size();
     // Asif : Create an array of SelectResults for each of the GroupJunction
     // For each Group Junction there will be a corresponding array of
     // RuntimeIterators which will map to the fields of the ResultSet obtained
@@ -114,7 +114,7 @@ public class AllGroupJunction extends AbstractCompiledValue implements Filter, O
     List expansionList = new LinkedList(finalList);
     RuntimeIterator[][] itrsForResultFields = new RuntimeIterator[len][];
     CompiledValue gj = null;
-    Iterator junctionItr = this.abstractGroupOrRangeJunctions.iterator();
+    Iterator junctionItr = abstractGroupOrRangeJunctions.iterator();
     List grpItrs = null;
     int j = 0;
     RuntimeIterator tempItr = null;
@@ -159,14 +159,14 @@ public class AllGroupJunction extends AbstractCompiledValue implements Filter, O
       // TODO ASIF : Avoid creation of CompiledJunction by providing
       // functionality in AllGroupJunction for evaluating condition
       int size = iterOperands.size();
-      CompiledValue cv[] = new CompiledValue[size];
+      CompiledValue[] cv = new CompiledValue[size];
       for (int k = 0; k < size; ++k) {
-        cv[k] = (CompiledValue) this.iterOperands.get(k);
+        cv[k] = (CompiledValue) iterOperands.get(k);
       }
       if (cv.length == 1) {
         iterOperandsToSend = cv[0];
       } else {
-        iterOperandsToSend = new CompiledJunction(cv, this.operator);
+        iterOperandsToSend = new CompiledJunction(cv, operator);
       }
     }
     QueryObserver observer = QueryObserverHolder.getInstance();
@@ -199,7 +199,7 @@ public class AllGroupJunction extends AbstractCompiledValue implements Filter, O
     List finalList = context.getCurrentIterators();
     RuntimeIterator[][] itrsForResultFields = new RuntimeIterator[1][];
     CompiledValue gj = null;
-    Iterator junctionItr = this.abstractGroupOrRangeJunctions.iterator();
+    Iterator junctionItr = abstractGroupOrRangeJunctions.iterator();
     List grpItrs = null;
     RuntimeIterator tempItr = null;
     SelectResults intermediateResults = null;
@@ -233,12 +233,12 @@ public class AllGroupJunction extends AbstractCompiledValue implements Filter, O
 
   List getGroupOperands() {
     // return unmodifiable copy
-    return Collections.unmodifiableList(this.abstractGroupOrRangeJunctions);
+    return Collections.unmodifiableList(abstractGroupOrRangeJunctions);
   }
 
   List getIterOperands() {
     // return unmodifiable copy
-    return Collections.unmodifiableList(this.iterOperands);
+    return Collections.unmodifiableList(iterOperands);
   }
 
   @Override

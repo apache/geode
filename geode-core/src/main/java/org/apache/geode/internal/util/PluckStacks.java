@@ -55,8 +55,8 @@ public class PluckStacks {
    */
   public static void main(String[] args) throws Exception {
     PluckStacks ps = new PluckStacks();
-    for (int i = 0; i < args.length; i++) {
-      ps.examineLog(new File(args[i]));
+    for (final String arg : args) {
+      ps.examineLog(new File(arg));
     }
   }
 
@@ -80,7 +80,7 @@ public class PluckStacks {
     try {
       TreeMap<String, List<ThreadStack>> dumps = getThreadDumps(reader, log.getName());
 
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       for (Map.Entry<String, List<ThreadStack>> dump : dumps.entrySet()) {
         if (dump.getValue().size() > 0) {
           buffer.append(dump.getKey());
@@ -116,11 +116,10 @@ public class PluckStacks {
           int lineNumber = reader.getLineNumber();
           List<ThreadStack> stacks = getStacks(reader);
           if (stacks.size() > 0) {
-            StringBuffer buffer = new StringBuffer();
-            buffer.append("[Stack #").append(stackNumber++)
-                .append(" from " + logFileName + " line " + lineNumber + "]\n").append(line)
-                .append("\n");
-            result.put(buffer.toString(), stacks);
+            final String buffer = "[Stack #" + stackNumber++
+                + " from " + logFileName + " line " + lineNumber + "]\n" + line
+                + "\n";
+            result.put(buffer, stacks);
           }
           if (ONE_STACK) {
             break;
@@ -135,7 +134,7 @@ public class PluckStacks {
 
   /** parses each stack trace and returns any that are unexpected */
   public List<ThreadStack> getStacks(BufferedReader reader) throws IOException {
-    List<ThreadStack> result = new LinkedList<ThreadStack>();
+    List<ThreadStack> result = new LinkedList<>();
     ThreadStack lastStack = null;
     ArrayList breadcrumbs = new ArrayList(4);
     do {
@@ -477,7 +476,7 @@ public class PluckStacks {
 
   /** ThreadStack holds the stack for a single Java Thread */
   public static class ThreadStack implements Comparable {
-    List<String> lines = new ArrayList<String>(20);
+    List<String> lines = new ArrayList<>(20);
     boolean runnable;
     List<String> breadcrumbs;
 
@@ -505,7 +504,7 @@ public class PluckStacks {
     }
 
     void addBreadcrumbs(List crumbs) {
-      this.breadcrumbs = new ArrayList<String>(crumbs);
+      breadcrumbs = new ArrayList<>(crumbs);
     }
 
     void add(String line) {
@@ -543,7 +542,7 @@ public class PluckStacks {
       if (quote > 1) {
         return firstLine.substring(1, quote);
       }
-      return firstLine.substring(1, firstLine.length());
+      return firstLine.substring(1);
     }
 
     int size() {
@@ -556,7 +555,7 @@ public class PluckStacks {
       boolean first = true;
       for (String line : lines) {
         sw.append(line).append("\n");
-        if (first && this.breadcrumbs != null) {
+        if (first && breadcrumbs != null) {
           for (String bline : breadcrumbs) {
             sw.append(bline).append("\n");
           }
@@ -568,7 +567,7 @@ public class PluckStacks {
 
     public void writeTo(Writer w) throws IOException {
       if (DEBUG) {
-        w.append("stack.name='" + getThreadName() + "' runnable=" + this.runnable + " lines="
+        w.append("stack.name='" + getThreadName() + "' runnable=" + runnable + " lines="
             + lines.size());
         w.append("\n");
       }
@@ -587,9 +586,9 @@ public class PluckStacks {
       }
     }
 
-    public void appendToBuffer(StringBuffer buffer) {
+    public void appendToBuffer(StringBuilder buffer) {
       if (DEBUG) {
-        buffer.append("stack.name='" + getThreadName() + "' runnable=" + this.runnable + " lines="
+        buffer.append("stack.name='" + getThreadName() + "' runnable=" + runnable + " lines="
             + lines.size()).append("\n");
       }
       boolean first = true;

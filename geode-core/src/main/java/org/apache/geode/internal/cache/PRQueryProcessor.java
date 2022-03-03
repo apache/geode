@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache;
 
 import static java.lang.Integer.getInteger;
-import static java.lang.Integer.valueOf;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -84,7 +83,7 @@ public class PRQueryProcessor {
   private final DefaultQuery query;
   private final Object[] parameters;
   private final List<Integer> _bucketsToQuery;
-  private volatile int numBucketsProcessed = 0;
+  private final int numBucketsProcessed = 0;
   private volatile ObjectType resultType = null;
 
   private boolean isIndexUsedForLocalQuery = false;
@@ -92,8 +91,8 @@ public class PRQueryProcessor {
   public PRQueryProcessor(PartitionedRegionDataStore prDS, DefaultQuery query, Object[] parameters,
       List<Integer> buckets) {
     Assert.assertTrue(!buckets.isEmpty(), "bucket list can not be empty. ");
-    this._prds = prDS;
-    this._bucketsToQuery = buckets;
+    _prds = prDS;
+    _bucketsToQuery = buckets;
     prDS.partitionedRegion.getCache().getLocalQueryService();
     this.query = query;
     this.parameters = parameters;
@@ -104,7 +103,7 @@ public class PRQueryProcessor {
       List buckets) {
     Assert.assertTrue(!buckets.isEmpty(), "bucket list can not be empty. ");
     this.pr = pr;
-    this._bucketsToQuery = buckets;
+    _bucketsToQuery = buckets;
     this.query = query;
     this.parameters = parameters;
     PRQueryExecutor.initializeExecutorService();
@@ -121,9 +120,9 @@ public class PRQueryProcessor {
     if (NUM_THREADS > 1 || TEST_NUM_THREADS > 1) {
       executeWithThreadPool(resultCollector);
     } else {
-      executeSequentially(resultCollector, this._bucketsToQuery);
+      executeSequentially(resultCollector, _bucketsToQuery);
     }
-    return this.resultType.isStructType();
+    return resultType.isStructType();
   }
 
   private void executeWithThreadPool(Collection<Collection> resultCollector)
@@ -172,11 +171,11 @@ public class PRQueryProcessor {
           }
         }
 
-        CompiledSelect cs = this.query.getSimpleSelect();
+        CompiledSelect cs = query.getSimpleSelect();
 
         if (cs != null && (cs.isOrderBy() || cs.isGroupBy())) {
-          ExecutionContext context = new QueryExecutionContext(this.parameters, pr.getCache());
-          int limit = this.query.getLimit(parameters);
+          ExecutionContext context = new QueryExecutionContext(parameters, pr.getCache());
+          int limit = query.getLimit(parameters);
           Collection mergedResults = coalesceOrderedResults(resultCollector, context, cs, limit);
           resultCollector.clear();
           resultCollector.add(mergedResults);
@@ -185,7 +184,7 @@ public class PRQueryProcessor {
     }
 
     if (execService == null || execService.isShutdown() || execService.isTerminated()) {
-      this._prds.partitionedRegion.checkReadiness();
+      _prds.partitionedRegion.checkReadiness();
     }
 
     if (reattemptNeeded) {
@@ -196,12 +195,12 @@ public class PRQueryProcessor {
   private void executeSequentially(Collection<Collection> resultCollector, List buckets)
       throws QueryException, InterruptedException, ForceReattemptException {
     ExecutionContext context =
-        new QueryExecutionContext(this.parameters, this.pr.getCache(), this.query);
+        new QueryExecutionContext(parameters, pr.getCache(), query);
 
-    CompiledSelect cs = this.query.getSimpleSelect();
-    int limit = this.query.getLimit(parameters);
+    CompiledSelect cs = query.getSimpleSelect();
+    int limit = query.getLimit(parameters);
     if (cs != null && cs.isOrderBy()) {
-      for (Integer bucketID : this._bucketsToQuery) {
+      for (Integer bucketID : _bucketsToQuery) {
         List<Integer> singleBucket = Collections.singletonList(bucketID);
         context.setBucketList(singleBucket);
         executeQueryOnBuckets(resultCollector, context);
@@ -218,7 +217,7 @@ public class PRQueryProcessor {
 
   private Collection coalesceOrderedResults(Collection<Collection> results,
       ExecutionContext context, CompiledSelect cs, int limit) {
-    List<Collection> sortedResults = new ArrayList<Collection>(results.size());
+    List<Collection> sortedResults = new ArrayList<>(results.size());
     // TODO :Asif : Deal with UNDEFINED
     for (Object o : results) {
       if (o instanceof Collection) {
@@ -233,7 +232,7 @@ public class PRQueryProcessor {
 
   private void executeQueryOnBuckets(Collection<Collection> resultCollector,
       ExecutionContext context)
-      throws ForceReattemptException, QueryInvocationTargetException, QueryException {
+      throws ForceReattemptException, QueryException {
     // Check if QueryMonitor is enabled, if so add query to be monitored.
     QueryMonitor queryMonitor = null;
     if (GemFireCacheImpl.getInstance() != null) {
@@ -249,7 +248,7 @@ public class PRQueryProcessor {
       Object results = query.executeUsingContext(context);
 
       synchronized (resultCollector) {
-        this.resultType = ((SelectResults) results).getCollectionType().getElementType();
+        resultType = ((SelectResults) results).getCollectionType().getElementType();
         resultCollector.add((Collection) results);
       }
       isIndexUsedForLocalQuery = ((QueryExecutionContext) context).isIndexUsed();
@@ -280,7 +279,7 @@ public class PRQueryProcessor {
   private List<QueryTask> buildCallableTaskList(Collection<Collection> resultsColl) {
     List<QueryTask> callableTasks = new ArrayList<>();
     for (Integer bId : _bucketsToQuery) {
-      callableTasks.add(new QueryTask(this.query, this.parameters, _prds, bId, resultsColl));
+      callableTasks.add(new QueryTask(query, parameters, _prds, bId, resultsColl));
     }
     return callableTasks;
   }
@@ -356,12 +355,12 @@ public class PRQueryProcessor {
     }
 
     public int getBucketId() {
-      return this.bucketId;
+      return bucketId;
     }
 
     @Override
     public String toString() {
-      return "EndOfBucket(" + this.bucketId + ")";
+      return "EndOfBucket(" + bucketId + ")";
     }
 
     @Override
@@ -372,13 +371,13 @@ public class PRQueryProcessor {
     @Override
     public void fromData(DataInput in,
         DeserializationContext context) throws IOException, ClassNotFoundException {
-      this.bucketId = in.readInt();
+      bucketId = in.readInt();
     }
 
     @Override
     public void toData(DataOutput out,
         SerializationContext context) throws IOException {
-      out.writeInt(this.bucketId);
+      out.writeInt(bucketId);
     }
 
     @Override
@@ -403,21 +402,21 @@ public class PRQueryProcessor {
     public QueryTask(DefaultQuery query, Object[] parameters, PartitionedRegionDataStore prDS,
         Integer bucketId, final Collection<Collection> rColl) {
       this.query = query;
-      this._prDs = prDS;
-      this._bucketId = bucketId;
-      this.resultColl = rColl;
+      _prDs = prDS;
+      _bucketId = bucketId;
+      resultColl = rColl;
       this.parameters = parameters;
     }
 
     @Override
     public Object call() throws Exception {
-      BucketQueryResult bukResult = new BucketQueryResult(this._bucketId);
+      BucketQueryResult bukResult = new BucketQueryResult(_bucketId);
       try {
-        List<Integer> bucketList = Collections.singletonList(this._bucketId);
+        List<Integer> bucketList = Collections.singletonList(_bucketId);
         ExecutionContext context =
-            new QueryExecutionContext(this.parameters, pr.getCache(), this.query);
+            new QueryExecutionContext(parameters, pr.getCache(), query);
         context.setBucketList(bucketList);
-        executeQueryOnBuckets(this.resultColl, context);
+        executeQueryOnBuckets(resultColl, context);
       } catch (ForceReattemptException | QueryException | CacheRuntimeException fre) {
         bukResult.setException(fre);
       }
@@ -431,12 +430,12 @@ public class PRQueryProcessor {
      */
     private class BucketQueryResult {
 
-      private int _buk;
+      private final int _buk;
       private Exception _ex = null;
       public boolean retry = false;
 
       public BucketQueryResult(int bukId) {
-        this._buk = bukId;
+        _buk = bukId;
       }
 
       public Exception getException() {
@@ -448,15 +447,15 @@ public class PRQueryProcessor {
       }
 
       public void setException(Exception e) {
-        this._ex = e;
+        _ex = e;
       }
 
       public Integer getBucketId() {
-        return valueOf(this._buk);
+        return _buk;
       }
 
       public boolean isReattemptNeeded() {
-        return this._ex instanceof ForceReattemptException;
+        return _ex instanceof ForceReattemptException;
       }
 
       public void handleAndThrowException() throws QueryException {

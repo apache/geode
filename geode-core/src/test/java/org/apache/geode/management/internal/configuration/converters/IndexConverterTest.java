@@ -27,7 +27,7 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.configuration.Index;
 
 public class IndexConverterTest {
-  private IndexConverter indexConverter = new IndexConverter();
+  private final IndexConverter indexConverter = new IndexConverter();
 
   @Test
   public void fromNonNullConfigObject_copiesSimpleProperties() {

@@ -217,7 +217,7 @@ public class DeltaPropagationDUnitTest implements Serializable {
     });
 
     for (VM vm : toArray(serverVM, clientVM)) {
-      vm.invoke(() -> prepareDeltas());
+      vm.invoke(this::prepareDeltas);
     }
 
     serverVM.invoke(() -> {
@@ -229,10 +229,10 @@ public class DeltaPropagationDUnitTest implements Serializable {
       region.put(LAST_KEY, "");
     });
 
-    clientVM.invoke(() -> await().until(() -> LAST_KEY_RECEIVED.get()));
+    clientVM.invoke(() -> await().until(LAST_KEY_RECEIVED::get));
 
-    long toDeltas = serverVM.invoke(() -> DeltaTestImpl.getToDeltaInvokations());
-    long fromDeltas = clientVM.invoke(() -> DeltaTestImpl.getFromDeltaInvokations());
+    long toDeltas = serverVM.invoke(DeltaTestImpl::getToDeltaInvokations);
+    long fromDeltas = clientVM.invoke(DeltaTestImpl::getFromDeltaInvokations);
 
     assertThat(toDeltas).isEqualTo(EVENTS_SIZE - 1);
     assertThat(fromDeltas).isEqualTo(EVENTS_SIZE - 1);
@@ -264,7 +264,7 @@ public class DeltaPropagationDUnitTest implements Serializable {
     });
 
     for (VM vm : toArray(serverVM, clientVM)) {
-      vm.invoke(() -> prepareDeltas());
+      vm.invoke(this::prepareDeltas);
     }
 
     serverVM.invoke(() -> {
@@ -276,10 +276,10 @@ public class DeltaPropagationDUnitTest implements Serializable {
       region.put(LAST_KEY, "");
     });
 
-    clientVM.invoke(() -> await().until(() -> LAST_KEY_RECEIVED.get()));
+    clientVM.invoke(() -> await().until(LAST_KEY_RECEIVED::get));
 
-    long toDeltas = serverVM.invoke(() -> DeltaTestImpl.getToDeltaInvokations());
-    long fromDeltas = clientVM.invoke(() -> DeltaTestImpl.getFromDeltaInvokations());
+    long toDeltas = serverVM.invoke(DeltaTestImpl::getToDeltaInvokations);
+    long fromDeltas = clientVM.invoke(DeltaTestImpl::getFromDeltaInvokations);
 
     assertThat(toDeltas).isEqualTo(EVENTS_SIZE - 1);
     assertThat(fromDeltas).isEqualTo(EVENTS_SIZE - 1);
@@ -311,7 +311,7 @@ public class DeltaPropagationDUnitTest implements Serializable {
     });
 
     for (VM vm : toArray(serverVM, clientVM)) {
-      vm.invoke(() -> prepareErroneousDeltasForToDelta());
+      vm.invoke(this::prepareErroneousDeltasForToDelta);
     }
 
     serverVM.invoke(() -> {
@@ -329,11 +329,11 @@ public class DeltaPropagationDUnitTest implements Serializable {
       region.put(LAST_KEY, "");
     });
 
-    clientVM.invoke(() -> await().until(() -> LAST_KEY_RECEIVED.get()));
+    clientVM.invoke(() -> await().until(LAST_KEY_RECEIVED::get));
 
-    long toDeltas = serverVM.invoke(() -> DeltaTestImpl.getToDeltaInvokations());
-    long fromDeltas = clientVM.invoke(() -> DeltaTestImpl.getFromDeltaInvokations());
-    long toDeltaFailures = serverVM.invoke(() -> DeltaTestImpl.getToDeltaFailures());
+    long toDeltas = serverVM.invoke(DeltaTestImpl::getToDeltaInvokations);
+    long fromDeltas = clientVM.invoke(DeltaTestImpl::getFromDeltaInvokations);
+    long toDeltaFailures = serverVM.invoke(DeltaTestImpl::getToDeltaFailures);
 
     assertThat(toDeltas).isEqualTo(EVENTS_SIZE - 1);
     // -1 below is because the one failed in toDelta will be sent as full
@@ -369,7 +369,7 @@ public class DeltaPropagationDUnitTest implements Serializable {
     });
 
     for (VM vm : toArray(serverVM, clientVM)) {
-      vm.invoke(() -> prepareErroneousDeltasForFromDelta());
+      vm.invoke(this::prepareErroneousDeltasForFromDelta);
     }
 
     serverVM.invoke(() -> {
@@ -381,11 +381,11 @@ public class DeltaPropagationDUnitTest implements Serializable {
       region.put(LAST_KEY, "");
     });
 
-    clientVM.invoke(() -> await().until(() -> LAST_KEY_RECEIVED.get()));
+    clientVM.invoke(() -> await().until(LAST_KEY_RECEIVED::get));
 
-    long toDeltas = serverVM.invoke(() -> DeltaTestImpl.getToDeltaInvokations());
-    long fromDeltas = clientVM.invoke(() -> DeltaTestImpl.getFromDeltaInvokations());
-    long fromDeltaFailures = clientVM.invoke(() -> DeltaTestImpl.getFromDeltaFailures());
+    long toDeltas = serverVM.invoke(DeltaTestImpl::getToDeltaInvokations);
+    long fromDeltas = clientVM.invoke(DeltaTestImpl::getFromDeltaInvokations);
+    long fromDeltaFailures = clientVM.invoke(DeltaTestImpl::getFromDeltaFailures);
 
     assertThat(toDeltas).isEqualTo(EVENTS_SIZE - 1);
     assertThat(fromDeltas).isEqualTo(EVENTS_SIZE - 1);
@@ -419,7 +419,7 @@ public class DeltaPropagationDUnitTest implements Serializable {
     });
 
     for (VM vm : toArray(serverVM, clientVM)) {
-      vm.invoke(() -> prepareDeltas());
+      vm.invoke(this::prepareDeltas);
     }
 
     serverVM.invoke(() -> {
@@ -441,10 +441,10 @@ public class DeltaPropagationDUnitTest implements Serializable {
       region.put(LAST_KEY, "");
     });
 
-    clientVM.invoke(() -> await().until(() -> LAST_KEY_RECEIVED.get()));
+    clientVM.invoke(() -> await().until(LAST_KEY_RECEIVED::get));
 
-    long toDeltas = serverVM.invoke(() -> DeltaTestImpl.getToDeltaInvokations());
-    long fromDeltas = clientVM.invoke(() -> DeltaTestImpl.getFromDeltaInvokations());
+    long toDeltas = serverVM.invoke(DeltaTestImpl::getToDeltaInvokations);
+    long fromDeltas = clientVM.invoke(DeltaTestImpl::getFromDeltaInvokations);
 
     assertThat(toDeltas).isEqualTo(EVENTS_SIZE - 1);
     assertThat(fromDeltas).isEqualTo(EVENTS_SIZE - 1);
@@ -477,7 +477,7 @@ public class DeltaPropagationDUnitTest implements Serializable {
     });
 
     for (VM vm : toArray(serverVM, clientVM)) {
-      vm.invoke(() -> prepareDeltas());
+      vm.invoke(this::prepareDeltas);
     }
 
     serverVM.invoke(() -> {
@@ -499,10 +499,10 @@ public class DeltaPropagationDUnitTest implements Serializable {
       region.put(LAST_KEY, "");
     });
 
-    clientVM.invoke(() -> await().until(() -> LAST_KEY_RECEIVED.get()));
+    clientVM.invoke(() -> await().until(LAST_KEY_RECEIVED::get));
 
-    long toDeltas = serverVM.invoke(() -> DeltaTestImpl.getToDeltaInvokations());
-    long fromDeltas = clientVM.invoke(() -> DeltaTestImpl.getFromDeltaInvokations());
+    long toDeltas = serverVM.invoke(DeltaTestImpl::getToDeltaInvokations);
+    long fromDeltas = clientVM.invoke(DeltaTestImpl::getFromDeltaInvokations);
 
     assertThat(toDeltas).isEqualTo(EVENTS_SIZE - 1);
     assertThat(fromDeltas).isEqualTo(EVENTS_SIZE - 1 - 1);
@@ -534,7 +534,7 @@ public class DeltaPropagationDUnitTest implements Serializable {
     });
 
     for (VM vm : toArray(serverVM, clientVM)) {
-      vm.invoke(() -> prepareDeltas());
+      vm.invoke(this::prepareDeltas);
     }
 
     serverVM.invoke(() -> {
@@ -547,10 +547,10 @@ public class DeltaPropagationDUnitTest implements Serializable {
       region.put(LAST_KEY, "");
     });
 
-    clientVM.invoke(() -> await().until(() -> LAST_KEY_RECEIVED.get()));
+    clientVM.invoke(() -> await().until(LAST_KEY_RECEIVED::get));
 
-    long toDeltas = serverVM.invoke(() -> DeltaTestImpl.getToDeltaInvokations());
-    long fromDeltas = clientVM.invoke(() -> DeltaTestImpl.getFromDeltaInvokations());
+    long toDeltas = serverVM.invoke(DeltaTestImpl::getToDeltaInvokations);
+    long fromDeltas = clientVM.invoke(DeltaTestImpl::getFromDeltaInvokations);
 
     assertThat(toDeltas).isEqualTo(EVENTS_SIZE - 1);
     assertThat(fromDeltas).isEqualTo(EVENTS_SIZE - 1 - 1);
@@ -593,7 +593,7 @@ public class DeltaPropagationDUnitTest implements Serializable {
     });
 
     clientVM.invoke(() -> {
-      await().until(() -> LAST_KEY_RECEIVED.get());
+      await().until(LAST_KEY_RECEIVED::get);
 
       assertThat(DeltaTestImpl.getFromDeltaInvokations()).isZero();
     });
@@ -640,7 +640,7 @@ public class DeltaPropagationDUnitTest implements Serializable {
     });
 
     for (VM clientVM : toArray(client1VM, client2VM)) {
-      clientVM.invoke(() -> await().until(() -> LAST_KEY_RECEIVED.get()));
+      clientVM.invoke(() -> await().until(LAST_KEY_RECEIVED::get));
     }
 
     client1VM.invoke(() -> {
@@ -680,7 +680,7 @@ public class DeltaPropagationDUnitTest implements Serializable {
       region.create(LAST_KEY, "");
     });
 
-    clientVM.invoke(() -> await().until(() -> LAST_KEY_RECEIVED.get()));
+    clientVM.invoke(() -> await().until(LAST_KEY_RECEIVED::get));
 
     serverVM.invoke(() -> {
       assertThat(DeltaTestImpl.getToDeltaInvokations()).isZero();
@@ -703,7 +703,7 @@ public class DeltaPropagationDUnitTest implements Serializable {
     VM server2VM = vm1;
 
     for (VM vm : toArray(clientVM, server1VM, server2VM)) {
-      vm.invoke(() -> prepareDeltas());
+      vm.invoke(this::prepareDeltas);
     }
 
     int serverPort = server1VM.invoke(() -> {
@@ -781,7 +781,7 @@ public class DeltaPropagationDUnitTest implements Serializable {
     VM server2VM = vm1;
 
     for (VM vm : toArray(clientVM, server1VM, server2VM)) {
-      vm.invoke(() -> prepareDeltas());
+      vm.invoke(this::prepareDeltas);
     }
 
     for (VM vm : toArray(server1VM, server2VM)) {
@@ -834,11 +834,11 @@ public class DeltaPropagationDUnitTest implements Serializable {
     });
 
     clientVM.invoke(() -> {
-      await().until(() -> LAST_KEY_RECEIVED.get());
+      await().until(LAST_KEY_RECEIVED::get);
 
-      long toDeltasOnServer1 = server1VM.invoke(() -> DeltaTestImpl.getToDeltaInvokations());
-      long fromDeltasOnServer2 = server2VM.invoke(() -> DeltaTestImpl.getFromDeltaInvokations());
-      long toDeltasOnServer2 = server2VM.invoke(() -> DeltaTestImpl.getToDeltaInvokations());
+      long toDeltasOnServer1 = server1VM.invoke(DeltaTestImpl::getToDeltaInvokations);
+      long fromDeltasOnServer2 = server2VM.invoke(DeltaTestImpl::getFromDeltaInvokations);
+      long toDeltasOnServer2 = server2VM.invoke(DeltaTestImpl::getToDeltaInvokations);
       long fromDeltasOnClient = DeltaTestImpl.getFromDeltaInvokations();
 
       assertThat(toDeltasOnServer1).isEqualTo(EVENTS_SIZE - 1);
@@ -856,7 +856,7 @@ public class DeltaPropagationDUnitTest implements Serializable {
     VM server3VM = vm2;
 
     for (VM vm : toArray(clientVM, server1VM, server2VM, server3VM)) {
-      vm.invoke(() -> prepareDeltas());
+      vm.invoke(this::prepareDeltas);
     }
 
     // Do puts after slowing the dispatcher.
@@ -902,7 +902,7 @@ public class DeltaPropagationDUnitTest implements Serializable {
         closeCache();
       });
 
-      await().until(() -> LAST_KEY_RECEIVED.get());
+      await().until(LAST_KEY_RECEIVED::get);
 
       VM primaryServer2VM = pool.getPrimaryPort() == serverPort1 ? server1VM
           : pool.getPrimaryPort() == serverPort2 ? server2VM : server3VM;
@@ -911,7 +911,7 @@ public class DeltaPropagationDUnitTest implements Serializable {
         vm.invoke(() -> LATCH.get().countDown());
       }
 
-      primaryServer2VM.invoke(() -> closeCache());
+      primaryServer2VM.invoke(this::closeCache);
 
       long fromDeltasOnClient = DeltaTestImpl.getFromDeltaInvokations();
       assertThat(fromDeltasOnClient).isEqualTo(EVENTS_SIZE - 1);
@@ -949,7 +949,7 @@ public class DeltaPropagationDUnitTest implements Serializable {
     });
 
     for (VM vm : toArray(clientVM, serverVM)) {
-      vm.invoke(() -> prepareDeltas());
+      vm.invoke(this::prepareDeltas);
     }
 
     String durableClientId = getName() + "_client";
@@ -1081,7 +1081,7 @@ public class DeltaPropagationDUnitTest implements Serializable {
 
     // Step 0
     for (VM vm : toArray(getController(), server1VM, server2VM)) {
-      vm.invoke(() -> prepareDeltas());
+      vm.invoke(this::prepareDeltas);
     }
 
     // Step 1
@@ -1154,13 +1154,13 @@ public class DeltaPropagationDUnitTest implements Serializable {
       InternalPool pool = (InternalPool) PoolManager.getAll().values().stream().findFirst().get();
       VM primaryVM = pool.getPrimaryPort() == serverPort1 ? server1VM : server2VM;
 
-      await().until(() -> MARKER_RECEIVED.get());
+      await().until(MARKER_RECEIVED::get);
 
       // Step 6
-      primaryVM.invoke(() -> closeCache());
+      primaryVM.invoke(this::closeCache);
 
       // Step 7
-      await().until(() -> LAST_KEY_RECEIVED.get());
+      await().until(LAST_KEY_RECEIVED::get);
 
       // Step 8
       long fromDeltasOnClient = DeltaTestImpl.getFromDeltaInvokations();

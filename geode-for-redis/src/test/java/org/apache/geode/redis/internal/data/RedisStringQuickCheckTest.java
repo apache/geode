@@ -30,6 +30,7 @@ import com.pholser.junit.quickcheck.runner.JUnitQuickcheck;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.PartitionedRegion;
 
 /**
  * Property testing of RedisString.
@@ -41,7 +42,7 @@ public class RedisStringQuickCheckTest {
   public void setrangePrefixSuffix(@Size(min = 10, max = 50) ArrayList<Byte> existingByteArray,
       @Size(min = 0, max = 10) ArrayList<Byte> valueToAddArray,
       @InRange(minInt = 0, maxInt = 60) int offset) {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(Region.class));
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     byte[] existingBytes = Bytes.toArray(existingByteArray);
     byte[] valueToAdd = Bytes.toArray(valueToAddArray);
 

@@ -134,13 +134,13 @@ public class GatewayReceiverXmlParsingValidationsJUnitTest {
 
     @Override
     public GatewayReceiverFactory setSocketBufferSize(int socketBufferSize) {
-      this.socketBuffSize = socketBufferSize;
+      socketBuffSize = socketBufferSize;
       return this;
     }
 
     @Override
     public GatewayReceiverFactory setBindAddress(String address) {
-      this.bindAdd = address;
+      bindAdd = address;
       return this;
     }
 
@@ -156,38 +156,38 @@ public class GatewayReceiverXmlParsingValidationsJUnitTest {
 
     @Override
     public GatewayReceiverFactory setMaximumTimeBetweenPings(int time) {
-      this.timeBetPings = time;
+      timeBetPings = time;
       return this;
     }
 
     @Override
     public GatewayReceiverFactory setHostnameForSenders(String address) {
-      this.hostnameForSenders = address;
+      hostnameForSenders = address;
       return this;
     }
 
     @Override
     public GatewayReceiverFactory setManualStart(boolean start) {
-      this.manualStart = start;
+      manualStart = start;
       return this;
     }
 
     @Override
     public GatewayReceiver create() {
       GatewayReceiver receiver = mock(GatewayReceiver.class);
-      when(receiver.isManualStart()).thenReturn(this.manualStart);
-      when(receiver.getBindAddress()).thenReturn(this.bindAdd);
-      when(receiver.getEndPort()).thenReturn(this.endPort);
-      when(receiver.getStartPort()).thenReturn(this.startPort);
-      when(receiver.getSocketBufferSize()).thenReturn(this.socketBuffSize);
-      when(receiver.getHostnameForSenders()).thenReturn(this.hostnameForSenders);
-      when(receiver.getMaximumTimeBetweenPings()).thenReturn(this.timeBetPings);
-      this.cache.addGatewayReceiver(receiver);
+      when(receiver.isManualStart()).thenReturn(manualStart);
+      when(receiver.getBindAddress()).thenReturn(bindAdd);
+      when(receiver.getEndPort()).thenReturn(endPort);
+      when(receiver.getStartPort()).thenReturn(startPort);
+      when(receiver.getSocketBufferSize()).thenReturn(socketBuffSize);
+      when(receiver.getHostnameForSenders()).thenReturn(hostnameForSenders);
+      when(receiver.getMaximumTimeBetweenPings()).thenReturn(timeBetPings);
+      cache.addGatewayReceiver(receiver);
       return receiver;
     }
 
     public boolean isManualStart() {
-      return this.manualStart;
+      return manualStart;
     }
   }
 

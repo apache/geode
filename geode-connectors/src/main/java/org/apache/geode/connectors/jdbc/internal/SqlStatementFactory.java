@@ -21,7 +21,7 @@ class SqlStatementFactory {
   private final String quote;
 
   public SqlStatementFactory(String identifierQuoteString) {
-    this.quote = identifierQuoteString;
+    quote = identifierQuoteString;
   }
 
   String createSelectQueryString(String quotedTablePath, EntryColumnData entryColumnData) {

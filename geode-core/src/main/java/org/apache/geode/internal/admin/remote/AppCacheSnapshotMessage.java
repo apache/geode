@@ -48,7 +48,7 @@ public class AppCacheSnapshotMessage extends RegionAdminMessage {
         // LinkedList entries = getEntriesForRegion(r, this.getSender());
         // new ResponseThread(this.getSender(), numResults, dm, this.snapshotId).start();
         SnapshotResultMessage m = SnapshotResultMessage.create(r, snapshotId);
-        m.setRecipient(this.getSender());
+        m.setRecipient(getSender());
         dm.putOutgoing(m);
       } catch (CacheException ex) {
         throw new GemFireCacheException(ex);
@@ -121,12 +121,12 @@ public class AppCacheSnapshotMessage extends RegionAdminMessage {
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     // this.numResults = in.readInt();
-    this.snapshotId = in.readInt();
+    snapshotId = in.readInt();
   }
 
   @Override
   public String toString() {
-    return "AppCacheSnapshotMessage from " + this.getSender();
+    return "AppCacheSnapshotMessage from " + getSender();
   }
 
   /// inner classes /////////////////////////////////////////////////

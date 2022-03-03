@@ -15,6 +15,7 @@
 package org.apache.geode.security.templates;
 
 import java.io.FileInputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
@@ -62,14 +63,14 @@ public class PKCSAuthenticator implements Authenticator {
     this.systemLogWriter = systemLogWriter;
     this.securityLogWriter = securityLogWriter;
 
-    this.pubKeyFilePath = securityProperties.getProperty(PUBLIC_KEY_FILE);
-    if (this.pubKeyFilePath == null) {
+    pubKeyFilePath = securityProperties.getProperty(PUBLIC_KEY_FILE);
+    if (pubKeyFilePath == null) {
       throw new AuthenticationFailedException("PKCSAuthenticator: property " + PUBLIC_KEY_FILE
           + " not specified as the public key file.");
     }
 
-    this.pubKeyPass = securityProperties.getProperty(PUBLIC_KEYSTORE_PASSWORD);
-    this.aliasCertificateMap = new HashMap();
+    pubKeyPass = securityProperties.getProperty(PUBLIC_KEYSTORE_PASSWORD);
+    aliasCertificateMap = new HashMap();
 
     populateMap();
   }
@@ -96,7 +97,7 @@ public class PKCSAuthenticator implements Authenticator {
 
       final Signature sig = Signature.getInstance(cert.getSigAlgName());
       sig.initVerify(cert);
-      sig.update(alias.getBytes("UTF-8"));
+      sig.update(alias.getBytes(StandardCharsets.UTF_8));
 
       if (!sig.verify(signatureBytes)) {
         throw newException("verification of client signature failed");
@@ -115,8 +116,8 @@ public class PKCSAuthenticator implements Authenticator {
   private void populateMap() {
     try {
       final KeyStore keyStore = KeyStore.getInstance("JKS");
-      final char[] passPhrase = this.pubKeyPass != null ? this.pubKeyPass.toCharArray() : null;
-      final FileInputStream keyStoreFile = new FileInputStream(this.pubKeyFilePath);
+      final char[] passPhrase = pubKeyPass != null ? pubKeyPass.toCharArray() : null;
+      final FileInputStream keyStoreFile = new FileInputStream(pubKeyFilePath);
 
       try {
         keyStore.load(keyStoreFile, passPhrase);
@@ -128,7 +129,7 @@ public class PKCSAuthenticator implements Authenticator {
         final Object alias = e.nextElement();
         final Certificate cert = keyStore.getCertificate((String) alias);
         if (cert instanceof X509Certificate) {
-          this.aliasCertificateMap.put(alias, cert);
+          aliasCertificateMap.put(alias, cert);
         }
       }
 
@@ -154,8 +155,8 @@ public class PKCSAuthenticator implements Authenticator {
 
   private X509Certificate getCertificate(final String alias)
       throws NoSuchAlgorithmException, InvalidKeySpecException {
-    if (this.aliasCertificateMap.containsKey(alias)) {
-      return (X509Certificate) this.aliasCertificateMap.get(alias);
+    if (aliasCertificateMap.containsKey(alias)) {
+      return (X509Certificate) aliasCertificateMap.get(alias);
     }
     return null;
   }

@@ -17,8 +17,8 @@ package org.apache.geode.management.internal.cli.domain;
 import java.io.Serializable;
 
 public class Stock implements Serializable {
-  private String key;
-  private double value;
+  private final String key;
+  private final double value;
 
   public Stock(String key, double value) {
     this.key = key;
@@ -26,10 +26,10 @@ public class Stock implements Serializable {
   }
 
   public String getKey() {
-    return this.key;
+    return key;
   }
 
   public double getValue() {
-    return this.value;
+    return value;
   }
 }

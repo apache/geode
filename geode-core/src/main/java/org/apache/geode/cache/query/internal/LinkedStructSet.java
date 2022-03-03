@@ -62,7 +62,7 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
   @Override
   public boolean equals(Object other) {
     return other instanceof SortedStructSet
-        && this.structType.equals(((SortedStructSet) other).structType) && super.equals(other);
+        && structType.equals(((SortedStructSet) other).structType) && super.equals(other);
   }
 
   /** Add a Struct */
@@ -73,7 +73,7 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
           "This set only accepts StructImpl");
     }
     StructImpl s = (StructImpl) obj;
-    if (!s.getStructType().equals(this.structType)) {
+    if (!s.getStructType().equals(structType)) {
       throw new IllegalArgumentException(
           "obj does not have the same StructType");
     }
@@ -87,7 +87,7 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
       return false;
     }
     Struct s = (Struct) obj;
-    return this.structType.equals(StructTypeImpl.typeFromStruct(s)) && contains(s);
+    return structType.equals(StructTypeImpl.typeFromStruct(s)) && contains(s);
   }
 
   /** Remove the specified Struct */
@@ -97,12 +97,12 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
       return false;
     }
     Struct s = (Struct) o;
-    return this.structType.equals(StructTypeImpl.typeFromStruct(s)) && remove(s);
+    return structType.equals(StructTypeImpl.typeFromStruct(s)) && remove(s);
   }
 
   @Override
   public CollectionType getCollectionType() {
-    return new CollectionTypeImpl(Ordered.class, this.structType);
+    return new CollectionTypeImpl(Ordered.class, structType);
   }
 
   // note: this method is dangerous in that it could result in undefined
@@ -115,7 +115,7 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
       throw new IllegalArgumentException(
           "element type must be struct");
     }
-    this.structType = (StructTypeImpl) elementType;
+    structType = (StructTypeImpl) elementType;
   }
 
   @Override
@@ -135,7 +135,7 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
    */
   @Override
   public boolean isModifiable() {
-    return this.modifiable;
+    return modifiable;
   }
 
   @Override
@@ -173,12 +173,12 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.modifiable = in.readBoolean();
+    modifiable = in.readBoolean();
     int size = in.readInt();
-    this.structType = (StructTypeImpl) context.getDeserializer().readObject(in);
+    structType = context.getDeserializer().readObject(in);
     for (int j = size; j > 0; j--) {
       Object[] fieldValues = context.getDeserializer().readObject(in);
-      this.add(new StructImpl(this.structType, fieldValues));
+      add(new StructImpl(structType, fieldValues));
     }
   }
 
@@ -191,9 +191,9 @@ public class LinkedStructSet extends LinkedHashSet<Struct>
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     // how do we serialize the comparator?
-    out.writeBoolean(this.modifiable);
-    out.writeInt(this.size());
-    context.getSerializer().writeObject(this.structType, out);
+    out.writeBoolean(modifiable);
+    out.writeInt(size());
+    context.getSerializer().writeObject(structType, out);
     for (Struct struct : this) {
       context.getSerializer().writeObject(struct.getFieldValues(), out);
     }

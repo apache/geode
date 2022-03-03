@@ -26,7 +26,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -59,7 +58,7 @@ import org.apache.geode.test.junit.categories.LuceneTest;
 @Category({LuceneTest.class})
 public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest {
 
-  private static int WAIT_FOR_FLUSH_TIME = 10000;
+  private static final int WAIT_FOR_FLUSH_TIME = 10000;
 
 
   @Test
@@ -308,7 +307,7 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
     luceneService.createIndexFactory().setFields("title", "description").create(INDEX_NAME,
         REGION_NAME);
 
-    Region region = this.cache.<String, TestObject>createRegionFactory(RegionShortcut.PARTITION)
+    Region region = cache.<String, TestObject>createRegionFactory(RegionShortcut.PARTITION)
         .setCacheLoader(new TestCacheLoader()).create(REGION_NAME);
 
     region.get("object-1");
@@ -332,8 +331,8 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
   private void verifySerializedValues(Region region) {
     Set entries = region.entrySet();
     assertFalse(entries.isEmpty());
-    for (Iterator i = entries.iterator(); i.hasNext();) {
-      EntrySnapshot entry = (EntrySnapshot) i.next();
+    for (final Object o : entries) {
+      EntrySnapshot entry = (EntrySnapshot) o;
       RegionEntry re = entry.getRegionEntry();
       Object reValue = re.getValue(null);
       assertTrue(reValue instanceof CachedDeserializable);

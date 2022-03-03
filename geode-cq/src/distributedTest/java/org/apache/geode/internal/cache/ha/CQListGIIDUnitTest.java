@@ -153,24 +153,22 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     clientVM1 = host.getVM(2);
     clientVM2 = host.getVM(3);
 
-    PORT1 = ((Integer) serverVM0.invoke(
-        () -> CQListGIIDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY)))
-            .intValue();
-    PORT2 = ((Integer) serverVM1
-        .invoke(() -> CQListGIIDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_ENTRY)))
-            .intValue();
+    PORT1 = serverVM0.invoke(
+        () -> CQListGIIDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY));
+    PORT2 = serverVM1
+        .invoke(() -> CQListGIIDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_ENTRY));
   }
 
   @Override
   public final void preTearDown() throws Exception {
-    serverVM0.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
-    serverVM1.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
+    serverVM0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
+    serverVM1.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
     closeCache();
-    clientVM1.invoke(() -> CQListGIIDUnitTest.closeCache());
-    clientVM2.invoke(() -> CQListGIIDUnitTest.closeCache());
+    clientVM1.invoke(CQListGIIDUnitTest::closeCache);
+    clientVM2.invoke(CQListGIIDUnitTest::closeCache);
     // then close the servers
-    serverVM0.invoke(() -> CQListGIIDUnitTest.closeCache());
-    serverVM1.invoke(() -> CQListGIIDUnitTest.closeCache());
+    serverVM0.invoke(CQListGIIDUnitTest::closeCache);
+    serverVM1.invoke(CQListGIIDUnitTest::closeCache);
     disconnectAllFromDS();
   }
 
@@ -188,7 +186,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static Integer createServerCache(String ePolicy) throws Exception {
-    return createServerCache(ePolicy, Integer.valueOf(1));
+    return createServerCache(ePolicy, 1);
   }
 
   public static Integer createServerCache(String ePolicy, Integer cap) throws Exception {
@@ -213,26 +211,26 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
       File[] dirs1 = new File[] {overflowDirectory};
 
       server1.getClientSubscriptionConfig().setEvictionPolicy(ePolicy);
-      server1.getClientSubscriptionConfig().setCapacity(cap.intValue());
+      server1.getClientSubscriptionConfig().setCapacity(cap);
       // specify diskstore for this server
       server1.getClientSubscriptionConfig()
           .setDiskStoreName(dsf.setDiskDirs(dirs1).create("bsi").getName());
     }
     server1.start();
     Thread.sleep(2000);
-    return Integer.valueOf(server1.getPort());
+    return server1.getPort();
   }
 
   public static Integer createOneMoreBridgeServer(Boolean notifyBySubscription) throws Exception {
     int port = getRandomAvailableTCPPort();
     CacheServer server1 = cache.addCacheServer();
     server1.setPort(port);
-    server1.setNotifyBySubscription(notifyBySubscription.booleanValue());
+    server1.setNotifyBySubscription(notifyBySubscription);
     server1.getClientSubscriptionConfig()
         .setEvictionPolicy(HARegionQueue.HA_EVICTION_POLICY_MEMORY);
     // let this server to use default diskstore
     server1.start();
-    return Integer.valueOf(server1.getPort());
+    return server1.getPort();
   }
 
   public static Region createRegion(String name, String rootName, RegionAttributes attrs)
@@ -291,12 +289,12 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
 
   public static void createClientCache(Integer port1, Integer port2, String rLevel)
       throws Exception {
-    createClientCache(port1, port2, Integer.valueOf(-1), rLevel, Boolean.FALSE);
+    createClientCache(port1, port2, -1, rLevel, Boolean.FALSE);
   }
 
   public static void createClientCache(Integer port1, Integer port2, String rLevel,
       Boolean addListener) throws Exception {
-    createClientCache(port1, port2, Integer.valueOf(-1), rLevel, addListener);
+    createClientCache(port1, port2, -1, rLevel, addListener);
   }
 
   public static void createClientCache(Integer port1, Integer port2, Integer port3, String rLevel)
@@ -323,11 +321,11 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     PoolFactory pf = PoolManager.createFactory();
     int endPointCount = 1;
     pf.addServer(host, port1);
-    if (port2.intValue() != -1) {
+    if (port2 != -1) {
       pf.addServer(host, port2);
       endPointCount++;
     }
-    if (port3.intValue() != -1) {
+    if (port3 != -1) {
       pf.addServer(host, port3);
       endPointCount++;
     }
@@ -407,7 +405,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
       fail("Failed to execute  CQ " + cqName, ex);
     }
 
-    if (initialResults.booleanValue()) {
+    if (initialResults) {
       SelectResults cqResults = null;
 
       try {
@@ -543,16 +541,16 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
   @Ignore("TODO: test is disabled")
   @Test
   public void testSpecificClientCQIsGIIedPart1() throws Exception {
-    Integer size = Integer.valueOf(10);
+    Integer size = 10;
     // slow start for dispatcher
     serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
     serverVM1.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("30000"));
 
     // createClientCache(Integer.valueOf(PORT1), Integer.valueOf(PORT2), "1");
-    clientVM1.invoke(() -> CQListGIIDUnitTest.createClientCache(Integer.valueOf(PORT1),
-        Integer.valueOf(PORT2), "1"));
-    clientVM2.invoke(() -> CQListGIIDUnitTest.createClientCache(Integer.valueOf(PORT1),
-        Integer.valueOf(PORT2), "0"));
+    clientVM1.invoke(() -> CQListGIIDUnitTest.createClientCache(PORT1,
+        PORT2, "1"));
+    clientVM2.invoke(() -> CQListGIIDUnitTest.createClientCache(PORT1,
+        PORT2, "0"));
 
     clientVM1.invoke(() -> CQListGIIDUnitTest.createCQ("testSpecificClientCQIsGIIed_0", cqs[0]));
     clientVM1
@@ -561,17 +559,17 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
     clientVM2
         .invoke(() -> CQListGIIDUnitTest.executeCQ("testSpecificClientCQIsGIIed_0", Boolean.FALSE));
 
-    serverVM1.invoke(() -> CQListGIIDUnitTest.stopServer());
+    serverVM1.invoke(CQListGIIDUnitTest::stopServer);
 
     serverVM0.invoke(() -> CQListGIIDUnitTest.putEntries(regions[0], size));
 
-    serverVM1.invoke(() -> CQListGIIDUnitTest.startServer());
+    serverVM1.invoke(CQListGIIDUnitTest::startServer);
     Thread.sleep(3000); // TODO: Find a better 'n reliable alternative
 
-    serverVM0.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, Integer.valueOf(2)));
-    serverVM1.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, Integer.valueOf(1)));
-    serverVM0.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
-    serverVM1.invoke(() -> ConflationDUnitTestHelper.unsetIsSlowStart());
+    serverVM0.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, 2));
+    serverVM1.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, 1));
+    serverVM0.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
+    serverVM1.invoke(ConflationDUnitTestHelper::unsetIsSlowStart);
   }
 
   /**
@@ -580,21 +578,20 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
    */
   @Test
   public void testClientCQNotLostAtGIIReceiver() throws Exception {
-    Integer size = Integer.valueOf(10);
+    Integer size = 10;
     VM serverVM2 = clientVM2;
 
-    int port3 = ((Integer) serverVM2.invoke(
-        () -> CQListGIIDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY)))
-            .intValue();
+    int port3 = serverVM2.invoke(
+        () -> CQListGIIDUnitTest.createServerCache(HARegionQueue.HA_EVICTION_POLICY_MEMORY));
 
     // slow start for dispatcher
     serverVM0.invoke(() -> ConflationDUnitTestHelper.setIsSlowStart("45000"));
 
     // createClientCache(Integer.valueOf(PORT1), Integer.valueOf(PORT2), "1");
-    createClientCache(Integer.valueOf(PORT1), Integer.valueOf(PORT2), Integer.valueOf(port3), "1");
+    createClientCache(PORT1, PORT2, port3, "1");
     try {
-      clientVM1.invoke(() -> CQListGIIDUnitTest.createClientCache(Integer.valueOf(PORT1),
-          Integer.valueOf(port3), Integer.valueOf(PORT2), "1"));
+      clientVM1.invoke(() -> CQListGIIDUnitTest.createClientCache(PORT1,
+          port3, PORT2, "1"));
       try {
         createCQ("testSpecificClientCQIsGIIed_0", cqs[0]);
         executeCQ("testSpecificClientCQIsGIIed_0", Boolean.FALSE);
@@ -605,15 +602,15 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
 
         serverVM0.invoke(() -> CQListGIIDUnitTest.putEntries(regions[0], size));
 
-        serverVM1.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, Integer.valueOf(1)));
+        serverVM1.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, 1));
 
-        serverVM2.invoke(() -> CQListGIIDUnitTest.stopServer());
+        serverVM2.invoke(CQListGIIDUnitTest::stopServer);
         Thread.sleep(3000); // TODO: Find a better 'n reliable alternative
 
-        serverVM0.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, Integer.valueOf(2)));
-        serverVM1.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, Integer.valueOf(2)));
+        serverVM0.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, 2));
+        serverVM1.invoke(() -> CQListGIIDUnitTest.VerifyCUMCQList(size, 2));
       } finally {
-        clientVM1.invoke(() -> CQListGIIDUnitTest.destroyClientPool());
+        clientVM1.invoke(CQListGIIDUnitTest::destroyClientPool);
       }
 
     } finally {
@@ -628,10 +625,10 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
         CacheServerImpl server = (CacheServerImpl) iter.next();
         Map haContainer = server.getAcceptor().getCacheClientNotifier().getHaContainer();
         Object[] keys = haContainer.keySet().toArray();
-        logger.fine("### numOfKeys :" + numOfKeys.intValue() + " keys.length : " + keys.length
+        logger.fine("### numOfKeys :" + numOfKeys + " keys.length : " + keys.length
             + " haContainer size : " + haContainer.size());
         assertEquals(numOfKeys.intValue(), keys.length);
-        for (int i = 0; i < numOfKeys.intValue(); i++) {
+        for (int i = 0; i < numOfKeys; i++) {
           logger.fine("i=: " + i);
           ClientUpdateMessageImpl cum = (ClientUpdateMessageImpl) haContainer.get(keys[i]);
           assertNotNull(cum);
@@ -651,7 +648,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
       Iterator iter = cache.getCacheServers().iterator();
       if (iter.hasNext()) {
         CacheServer server = (CacheServer) iter.next();
-        if (server.getPort() == port.intValue()) {
+        if (server.getPort() == port) {
           server.stop();
         }
       }
@@ -689,19 +686,19 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
       boolean dispatched = false;
       Map haContainer = null;
       haContainer = cache.getRegion(
-          SEPARATOR + CacheServerImpl.generateNameForClientMsgsRegion(port.intValue()));
+          SEPARATOR + CacheServerImpl.generateNameForClientMsgsRegion(port));
       if (haContainer == null) {
         Object[] servers = cache.getCacheServers().toArray();
-        for (int i = 0; i < servers.length; i++) {
-          if (port.intValue() == ((CacheServerImpl) servers[i]).getPort()) {
-            haContainer = ((CacheServerImpl) servers[i]).getAcceptor().getCacheClientNotifier()
+        for (final Object server : servers) {
+          if (port == ((CacheServerImpl) server).getPort()) {
+            haContainer = ((CacheServerImpl) server).getAcceptor().getCacheClientNotifier()
                 .getHaContainer();
             break;
           }
         }
       }
       long startTime = System.currentTimeMillis();
-      while (waitLimit.longValue() > (System.currentTimeMillis() - startTime)) {
+      while (waitLimit > (System.currentTimeMillis() - startTime)) {
         if (haContainer.size() == 0) {
           dispatched = true;
           break;

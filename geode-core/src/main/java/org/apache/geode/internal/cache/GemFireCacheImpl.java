@@ -1065,7 +1065,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       expirationScheduler = expirationSchedulerFactory.apply(system);
 
       if (DEBUG_CREATION_STACK) {
-        creationStack = new Exception(String.format("Created GemFireCache %s", toString()));
+        creationStack = new Exception(String.format("Created GemFireCache %s", this));
       }
 
       this.txEntryStateFactory = txEntryStateFactory;
@@ -1451,7 +1451,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       initializeDeclarativeCache();
       completedCacheXml = true;
     } catch (Throwable throwable) {
-      logger.error("Cache initialization for " + toString() + " failed because:", throwable);
+      logger.error("Cache initialization for " + this + " failed because:", throwable);
       throw throwable;
     } finally {
       if (!completedCacheXml) {
@@ -1626,7 +1626,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
     } catch (IOException ex) {
       throw new CacheXmlException(String.format(
-          "While opening Cache XML %s the following error occurred %s", url.toString(), ex));
+          "While opening Cache XML %s the following error occurred %s", url, ex));
 
     } catch (CacheXmlException ex) {
       throw new CacheXmlException(

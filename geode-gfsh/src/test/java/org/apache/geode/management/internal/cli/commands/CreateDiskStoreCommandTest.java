@@ -101,7 +101,7 @@ public class CreateDiskStoreCommandTest {
 
   @Test
   public void commandFailsIfDirSizeIsOverTheMaximum() {
-    long invalidValue = Long.valueOf(Integer.MAX_VALUE) + 1;
+    long invalidValue = (long) Integer.MAX_VALUE + 1;
     gfsh.executeAndAssertThat(command,
         "create disk-store --name=ds1 --dir=/data/persist#" + invalidValue)
         .statusIsError()

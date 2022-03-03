@@ -140,10 +140,10 @@ public class FunctionHelper {
   public static Number SUM(Number[] vals) {
     try {
       double sum = 0.0;
-      for (int i = 0; i < vals.length; i++) {
-        sum = sum + vals[i].doubleValue();
+      for (final Number val : vals) {
+        sum = sum + val.doubleValue();
       }
-      return Double.valueOf(sum);
+      return sum;
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
       // If this ever returns, rethrow the error. We're poisoned
@@ -167,7 +167,7 @@ public class FunctionHelper {
    */
   public static Number AVG(Number[] vals) {
     try {
-      return Double.valueOf(SUM(vals).doubleValue() / vals.length);
+      return SUM(vals).doubleValue() / vals.length;
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
       // If this ever returns, rethrow the error. We're poisoned

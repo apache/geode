@@ -44,7 +44,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.cache.lucene.LuceneSerializer;
@@ -64,7 +63,6 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.PartitionRegionConfig;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.PartitionedRegion.RetryTimeKeeper;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
@@ -83,8 +81,8 @@ public class PartitionedRepositoryManagerJUnitTest {
   protected PartitionRegionConfig prConfig;
   protected DistributedRegion prRoot;
 
-  protected Map<Integer, BucketRegion> fileAndChunkBuckets = new HashMap<Integer, BucketRegion>();
-  protected Map<Integer, BucketRegion> dataBuckets = new HashMap<Integer, BucketRegion>();
+  protected Map<Integer, BucketRegion> fileAndChunkBuckets = new HashMap<>();
+  protected Map<Integer, BucketRegion> dataBuckets = new HashMap<>();
   protected LuceneIndexStats indexStats;
   protected FileSystemStats fileSystemStats;
   protected LuceneIndexImpl indexForPR;
@@ -217,13 +215,10 @@ public class PartitionedRepositoryManagerJUnitTest {
 
     when(fileDataStore.getLocalBucketById(eq(0))).thenReturn(null);
 
-    when(fileAndChunkRegion.getOrCreateNodeForBucketWrite(eq(0), (RetryTimeKeeper) any()))
-        .then(new Answer() {
-          @Override
-          public Object answer(InvocationOnMock invocation) throws Throwable {
-            when(fileDataStore.getLocalBucketById(eq(0))).thenReturn(fileAndChunkBuckets.get(0));
-            return null;
-          }
+    when(fileAndChunkRegion.getOrCreateNodeForBucketWrite(eq(0), any()))
+        .then((Answer) invocation -> {
+          when(fileDataStore.getLocalBucketById(eq(0))).thenReturn(fileAndChunkBuckets.get(0));
+          return null;
         });
 
     assertNotNull(repoManager.getRepository(userRegion, 0, null));
@@ -301,7 +296,7 @@ public class PartitionedRepositoryManagerJUnitTest {
       final Collection<IndexRepository> repositories = new HashSet<>();
       try {
         repositories.addAll(repoManager.getRepositories(ctx));
-      } catch (BucketNotFoundException | LuceneIndexCreationInProgressException e) {
+      } catch (BucketNotFoundException | LuceneIndexCreationInProgressException ignored) {
       }
       return repositories.size() == 2;
     });

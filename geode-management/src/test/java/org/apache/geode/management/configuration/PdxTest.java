@@ -25,7 +25,7 @@ import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class PdxTest {
 
-  private static ObjectMapper mapper = GeodeJsonMapper.getMapper();
+  private static final ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
   @Test
   public void getUri() {

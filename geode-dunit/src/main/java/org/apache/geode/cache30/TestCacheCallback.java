@@ -40,9 +40,9 @@ public abstract class TestCacheCallback implements CacheCallback {
    */
   public boolean wasInvoked() {
     checkForError();
-    boolean value = this.invoked;
+    boolean value = invoked;
     if (value) {
-      this.invoked = false;
+      invoked = false;
     }
     return value;
   }
@@ -56,7 +56,7 @@ public abstract class TestCacheCallback implements CacheCallback {
   }
 
   public boolean waitForInvocation(int timeoutMs, long interval) {
-    if (!this.invoked) {
+    if (!invoked) {
       GeodeAwaitility.await("listener was never invoked").until(() -> invoked);
     }
     return wasInvoked();
@@ -64,12 +64,12 @@ public abstract class TestCacheCallback implements CacheCallback {
 
   public boolean isClosed() {
     checkForError();
-    return this.isClosed;
+    return isClosed;
   }
 
   @Override
   public void close() {
-    this.isClosed = true;
+    isClosed = true;
     close2();
   }
 
@@ -81,9 +81,8 @@ public abstract class TestCacheCallback implements CacheCallback {
   }
 
   private void checkForError() {
-    if (this.callbackError != null) {
-      AssertionError error = new AssertionError("Exception occurred in callback");
-      error.initCause(this.callbackError);
+    if (callbackError != null) {
+      AssertionError error = new AssertionError("Exception occurred in callback", callbackError);
       throw error;
     }
   }

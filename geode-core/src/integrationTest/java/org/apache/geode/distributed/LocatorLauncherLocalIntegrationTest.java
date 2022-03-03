@@ -220,7 +220,7 @@ public class LocatorLauncherLocalIntegrationTest extends LocatorLauncherIntegrat
         .setWorkingDirectory(getWorkingDirectoryPath())
         .build();
 
-    Throwable thrown = catchThrowable(() -> launcher.status());
+    Throwable thrown = catchThrowable(launcher::status);
 
     assertThat(thrown)
         .isInstanceOf(IllegalArgumentException.class)

@@ -119,7 +119,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
           return temporalResult != 0;
         default:
           throw new IllegalArgumentException(String.format("Unknown operator: %s",
-              Integer.valueOf(comparator)));
+              comparator));
       }
     }
 
@@ -143,7 +143,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
         throw new TypeMismatchException(
             String.format(
                 "Unable to use a relational comparison operator to compare an instance of class ' %s ' with an instance of ' %s '",
-                new Object[] {object1Class.getName(), object2Class.getName()}));
+                object1Class.getName(), object2Class.getName()));
       }
     }
 
@@ -201,17 +201,18 @@ public class TypeUtils implements OQLLexerTokenTypes {
    * @return the castTarget
    * @throws InternalGemFireError if cast will fail
    */
-  public static Object checkCast(Object castTarget, Class castClass) {
+  @SuppressWarnings("unchecked")
+  public static <T> T checkCast(Object castTarget, Class<T> castClass) {
     if (castTarget == null) {
       return null; // null can be cast to anything
     }
 
     if (!castClass.isInstance(castTarget)) {
       throw new InternalGemFireError(String.format("expected instance of %s but was %s",
-          new Object[] {castClass.getName(), castTarget.getClass().getName()}));
+          castClass.getName(), castTarget.getClass().getName()));
     }
 
-    return castTarget;
+    return (T) castTarget;
   }
 
   /**
@@ -228,11 +229,11 @@ public class TypeUtils implements OQLLexerTokenTypes {
     }
 
     if (obj instanceof Byte) {
-      return Integer.valueOf(((Byte) obj).intValue());
+      return ((Byte) obj).intValue();
     }
 
     if (obj instanceof Short) {
-      return Integer.valueOf(((Short) obj).intValue());
+      return ((Short) obj).intValue();
     }
 
     // Ketan : Added later. Indexes should be created
@@ -320,9 +321,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
     // chars
     if (srcType == Character.class || srcType == Character.TYPE) {
       // chars: same size wrapper/primitive
-      if (destType == Character.class || destType == Character.TYPE) {
-        return true;
-      }
+      return destType == Character.class || destType == Character.TYPE;
     }
 
     // no other possibilities
@@ -429,7 +428,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
     switch (compOp) {
       case TOK_EQ: {
         if (obj1 == null) {
-          result = Boolean.valueOf(obj2 == null);
+          result = obj2 == null;
         } else { // obj1 is not null obj2 must be
           result = Boolean.FALSE;
         }
@@ -439,7 +438,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
 
       case TOK_NE: {
         if (obj1 == null) {
-          result = Boolean.valueOf(obj2 != null);
+          result = obj2 != null;
         } else { // obj1 is not null so obj2 must be
           result = Boolean.TRUE;
         }
@@ -513,7 +512,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
         throw new TypeMismatchException(
             String.format("Unable to compare object of type ' %s ' with object of type ' %s '",
 
-                new Object[] {obj1.getClass().getName(), obj2.getClass().getName()}),
+                obj1.getClass().getName(), obj2.getClass().getName()),
             e);
       } else {
         throw e;

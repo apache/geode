@@ -19,11 +19,11 @@ package org.apache.geode.internal.statistics;
  */
 public class CounterMonitor extends StatisticsMonitor {
 
-  public static enum Type {
+  public enum Type {
     GREATER_THAN, LESS_THAN
   }
 
-  private volatile Number threshold;
+  private final Number threshold;
 
   public CounterMonitor(Number threshold) {
     super();
@@ -49,7 +49,7 @@ public class CounterMonitor extends StatisticsMonitor {
   @Override
   protected StringBuilder appendToString() {
     final StringBuilder sb = new StringBuilder();
-    sb.append("threshold=").append(this.threshold);
+    sb.append("threshold=").append(threshold);
     return sb;
   }
 }

@@ -125,7 +125,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
                 lastCallback = event.getCallbackArgument();
               }
               if (event.getKey().equals("sleepkey")) {
-                int sleepMs = ((Integer) event.getNewValue()).intValue();
+                int sleepMs = (Integer) event.getNewValue();
                 try {
                   Thread.sleep(sleepMs);
                 } catch (InterruptedException ignore) {
@@ -140,7 +140,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
                 lastCallback = event.getCallbackArgument();
               }
               if (event.getKey().equals("sleepkey")) {
-                int sleepMs = ((Integer) event.getNewValue()).intValue();
+                int sleepMs = (Integer) event.getNewValue();
                 try {
                   Thread.sleep(sleepMs);
                 } catch (InterruptedException ignore) {
@@ -448,19 +448,9 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
       // make sure two ack updates do not conflate but are both queued
       long startQueuedMsgs = stats.getAsyncQueuedMsgs();
       long startConflatedMsgs = stats.getAsyncConflatedMsgs();
-      Thread t = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          ar.put("ackKey", "ackValue");
-        }
-      });
+      Thread t = new Thread(() -> ar.put("ackKey", "ackValue"));
       t.start();
-      Thread t2 = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          ar.put("ackKey", "ackValue");
-        }
-      });
+      Thread t2 = new Thread(() -> ar.put("ackKey", "ackValue"));
       t2.start();
       // give threads a chance to get queued
       try {
@@ -826,12 +816,12 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
   protected static final int CALLBACK_DESTROY = 3;
   protected static final int CALLBACK_REGION_INVALIDATE = 4;
 
-  protected static final Integer CALLBACK_CREATE_INTEGER = new Integer(CALLBACK_CREATE);
-  protected static final Integer CALLBACK_UPDATE_INTEGER = new Integer(CALLBACK_UPDATE);
-  protected static final Integer CALLBACK_INVALIDATE_INTEGER = new Integer(CALLBACK_INVALIDATE);
-  protected static final Integer CALLBACK_DESTROY_INTEGER = new Integer(CALLBACK_DESTROY);
+  protected static final Integer CALLBACK_CREATE_INTEGER = CALLBACK_CREATE;
+  protected static final Integer CALLBACK_UPDATE_INTEGER = CALLBACK_UPDATE;
+  protected static final Integer CALLBACK_INVALIDATE_INTEGER = CALLBACK_INVALIDATE;
+  protected static final Integer CALLBACK_DESTROY_INTEGER = CALLBACK_DESTROY;
   protected static final Integer CALLBACK_REGION_INVALIDATE_INTEGER =
-      new Integer(CALLBACK_REGION_INVALIDATE);
+      CALLBACK_REGION_INVALIDATE;
 
   private static class CallbackWrapper {
     public final Object callbackArgument;
@@ -856,12 +846,12 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     public void afterCreate(EntryEvent event) {
       LogWriterUtils.getLogWriter()
           .info(event.getRegion().getName() + " afterCreate " + event.getKey());
-      synchronized (this.CONTROL_LOCK) {
+      synchronized (CONTROL_LOCK) {
         if (event.getCallbackArgument() != null) {
-          this.callbackArguments
+          callbackArguments
               .add(new CallbackWrapper(event.getCallbackArgument(), CALLBACK_CREATE));
-          this.callbackTypes.add(CALLBACK_CREATE_INTEGER);
-          this.CONTROL_LOCK.notifyAll();
+          callbackTypes.add(CALLBACK_CREATE_INTEGER);
+          CONTROL_LOCK.notifyAll();
         }
       }
       processEvent(event);
@@ -871,12 +861,12 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     public void afterUpdate(EntryEvent event) {
       LogWriterUtils.getLogWriter()
           .info(event.getRegion().getName() + " afterUpdate " + event.getKey());
-      synchronized (this.CONTROL_LOCK) {
+      synchronized (CONTROL_LOCK) {
         if (event.getCallbackArgument() != null) {
-          this.callbackArguments
+          callbackArguments
               .add(new CallbackWrapper(event.getCallbackArgument(), CALLBACK_UPDATE));
-          this.callbackTypes.add(CALLBACK_UPDATE_INTEGER);
-          this.CONTROL_LOCK.notifyAll();
+          callbackTypes.add(CALLBACK_UPDATE_INTEGER);
+          CONTROL_LOCK.notifyAll();
         }
       }
       processEvent(event);
@@ -884,36 +874,36 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
 
     @Override
     public void afterInvalidate(EntryEvent event) {
-      synchronized (this.CONTROL_LOCK) {
+      synchronized (CONTROL_LOCK) {
         if (event.getCallbackArgument() != null) {
-          this.callbackArguments
+          callbackArguments
               .add(new CallbackWrapper(event.getCallbackArgument(), CALLBACK_INVALIDATE));
-          this.callbackTypes.add(CALLBACK_INVALIDATE_INTEGER);
-          this.CONTROL_LOCK.notifyAll();
+          callbackTypes.add(CALLBACK_INVALIDATE_INTEGER);
+          CONTROL_LOCK.notifyAll();
         }
       }
     }
 
     @Override
     public void afterDestroy(EntryEvent event) {
-      synchronized (this.CONTROL_LOCK) {
+      synchronized (CONTROL_LOCK) {
         if (event.getCallbackArgument() != null) {
-          this.callbackArguments
+          callbackArguments
               .add(new CallbackWrapper(event.getCallbackArgument(), CALLBACK_DESTROY));
-          this.callbackTypes.add(CALLBACK_DESTROY_INTEGER);
-          this.CONTROL_LOCK.notifyAll();
+          callbackTypes.add(CALLBACK_DESTROY_INTEGER);
+          CONTROL_LOCK.notifyAll();
         }
       }
     }
 
     @Override
     public void afterRegionInvalidate(RegionEvent event) {
-      synchronized (this.CONTROL_LOCK) {
+      synchronized (CONTROL_LOCK) {
         if (event.getCallbackArgument() != null) {
-          this.callbackArguments
+          callbackArguments
               .add(new CallbackWrapper(event.getCallbackArgument(), CALLBACK_REGION_INVALIDATE));
-          this.callbackTypes.add(CALLBACK_REGION_INVALIDATE_INTEGER);
-          this.CONTROL_LOCK.notifyAll();
+          callbackTypes.add(CALLBACK_REGION_INVALIDATE_INTEGER);
+          CONTROL_LOCK.notifyAll();
         }
       }
     }
@@ -929,7 +919,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     }
 
     private void processSleep(EntryEvent event) {
-      int sleepMs = ((Integer) event.getNewValue()).intValue();
+      int sleepMs = (Integer) event.getNewValue();
       LogWriterUtils.getLogWriter().info("[processSleep] sleeping for " + sleepMs);
       try {
         Thread.sleep(sleepMs);
@@ -939,11 +929,11 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     }
 
     private void processWait(EntryEvent event) {
-      int sleepMs = ((Integer) event.getNewValue()).intValue();
+      int sleepMs = (Integer) event.getNewValue();
       LogWriterUtils.getLogWriter().info("[processWait] waiting for " + sleepMs);
-      synchronized (this.CONTROL_LOCK) {
+      synchronized (CONTROL_LOCK) {
         try {
-          this.CONTROL_LOCK.wait(sleepMs);
+          CONTROL_LOCK.wait(sleepMs);
         } catch (InterruptedException ignore) {
           return;
         }
@@ -954,7 +944,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
       LogWriterUtils.getLogWriter().info("[processDisconnect] disconnecting");
       disconnectFromDS();
     }
-  };
+  }
 
   /**
    * Make sure a multiple no ack regions conflate properly. [bruce] disabled when use of this dunit
@@ -1038,7 +1028,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     // put vm0 cache listener into wait
     LogWriterUtils.getLogWriter()
         .info("[doTestMultipleRegionConflation] about to put vm0 into wait");
-    r1.put(KEY_WAIT, new Integer(millisToWait));
+    r1.put(KEY_WAIT, millisToWait);
 
     // build up queue size
     LogWriterUtils.getLogWriter()
@@ -1070,17 +1060,17 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
       }
       if (flag) {
         if (i == 6) {
-          r1.invalidate(putKey, new Integer(i));
+          r1.invalidate(putKey, i);
         } else if (i == 24) {
-          r1.invalidateRegion(new Integer(i));
+          r1.invalidateRegion(i);
         } else {
-          r1.put(putKey, value, new Integer(i));
+          r1.put(putKey, value, i);
         }
       } else {
         if (i == 15) {
-          r2.destroy(putKey, new Integer(i));
+          r2.destroy(putKey, i);
         } else {
-          r2.put(putKey, value, new Integer(i));
+          r2.put(putKey, value, i);
         }
       }
       flag = !flag;
@@ -1164,12 +1154,10 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
           assertEquals(doTestMultipleRegionConflation_R1_Listener.callbackArguments.size(),
               doTestMultipleRegionConflation_R1_Listener.callbackTypes.size());
           int i = 0;
-          for (Iterator iter =
-              doTestMultipleRegionConflation_R1_Listener.callbackArguments.iterator(); iter
-                  .hasNext();) {
-            CallbackWrapper wrapper = (CallbackWrapper) iter.next();
-            assertEquals(new Integer(r1ExpectedArgs[i]), wrapper.callbackArgument);
-            assertEquals(new Integer(r1ExpectedTypes[i]),
+          for (final Object o : doTestMultipleRegionConflation_R1_Listener.callbackArguments) {
+            CallbackWrapper wrapper = (CallbackWrapper) o;
+            assertEquals(r1ExpectedArgs[i], wrapper.callbackArgument);
+            assertEquals(r1ExpectedTypes[i],
                 doTestMultipleRegionConflation_R1_Listener.callbackTypes.get(i));
             i++;
           }
@@ -1184,12 +1172,10 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
           assertEquals(doTestMultipleRegionConflation_R2_Listener.callbackArguments.size(),
               doTestMultipleRegionConflation_R2_Listener.callbackTypes.size());
           int i = 0;
-          for (Iterator iter =
-              doTestMultipleRegionConflation_R2_Listener.callbackArguments.iterator(); iter
-                  .hasNext();) {
-            CallbackWrapper wrapper = (CallbackWrapper) iter.next();
-            assertEquals(new Integer(r2ExpectedArgs[i]), wrapper.callbackArgument);
-            assertEquals(new Integer(r2ExpectedTypes[i]),
+          for (final Object o : doTestMultipleRegionConflation_R2_Listener.callbackArguments) {
+            CallbackWrapper wrapper = (CallbackWrapper) o;
+            assertEquals(r2ExpectedArgs[i], wrapper.callbackArgument);
+            assertEquals(r2ExpectedTypes[i],
                 doTestMultipleRegionConflation_R2_Listener.callbackTypes.get(i));
             i++;
           }
@@ -1254,7 +1240,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     // put vm0 cache listener into wait
     getLogWriter().info("[testDisconnectCleanup] about to put vm0 into wait");
     int millisToWait = 1000 * 60 * 5; // 5 minutes
-    r.put(KEY_WAIT, new Integer(millisToWait));
+    r.put(KEY_WAIT, millisToWait);
     r.put(KEY_DISCONNECT, KEY_DISCONNECT);
 
     // build up queue size
@@ -1407,7 +1393,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     // put vm0 cache listener into wait
     LogWriterUtils.getLogWriter().info("[testPartialMessage] about to put vm0 into wait");
     final int millisToWait = 1000 * 60 * 5; // 5 minutes
-    r.put(KEY_WAIT, new Integer(millisToWait));
+    r.put(KEY_WAIT, millisToWait);
 
     // build up queue size
     LogWriterUtils.getLogWriter().info("[testPartialMessage] building up queue size...");
@@ -1420,7 +1406,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     int count = 0;
     while (stats.getAsyncQueuedMsgs() == initialQueuedMsgs) {
       count++;
-      r.put(key, value, new Integer(count));
+      r.put(key, value, count);
     }
 
     final int partialId = count;
@@ -1434,7 +1420,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     // conflate 10 times
     while (stats.getAsyncConflatedMsgs() < 10) {
       count++;
-      r.put(key, value, new Integer(count));
+      r.put(key, value, count);
       if (count == partialId + 1) {
         assertEquals(initialQueuedMsgs + 2, stats.getAsyncQueuedMsgs());
         assertEquals(0, stats.getAsyncConflatedMsgs());
@@ -1472,7 +1458,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
                 CallbackWrapper last =
                     (CallbackWrapper) doTestPartialMessage_Listener.callbackArguments.getLast();
                 Integer lastId = (Integer) last.callbackArgument;
-                if (lastId.intValue() == conflateId) {
+                if (lastId == conflateId) {
                   done = true;
                 } else {
                   doTestPartialMessage_Listener.CONTROL_LOCK.wait(millisToWait);
@@ -1509,7 +1495,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
             CallbackWrapper wrapper = (CallbackWrapper) argIter.next();
             Integer arg = (Integer) wrapper.callbackArgument;
             typeIter.next(); // Integer type
-            if (arg.intValue() < partialId) {
+            if (arg < partialId) {
               continue;
             }
             assertEquals(new Integer(expectedArgs[i]), arg);

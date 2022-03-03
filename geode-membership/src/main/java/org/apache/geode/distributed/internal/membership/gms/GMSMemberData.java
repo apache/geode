@@ -123,9 +123,9 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
       boolean networkPartitionDetectionEnabled, boolean preferredForCoordinator,
       short versionOrdinal,
       long msbs, long lsbs, byte memberWeight, boolean isPartial, String uniqueTag) {
-    this.inetAddr = i;
+    inetAddr = i;
     this.hostName = hostName;
-    this.udpPort = membershipPort;
+    udpPort = membershipPort;
     this.processId = processId;
     this.vmKind = vmKind;
     this.directPort = directPort;
@@ -136,9 +136,9 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
     this.durableTimeout = durableTimeout;
     this.networkPartitionDetectionEnabled = networkPartitionDetectionEnabled;
     this.preferredForCoordinator = preferredForCoordinator;
-    this.version = Versioning.getVersion(versionOrdinal);
-    this.uuidMSBs = msbs;
-    this.uuidLSBs = lsbs;
+    version = Versioning.getVersion(versionOrdinal);
+    uuidMSBs = msbs;
+    uuidLSBs = lsbs;
     this.memberWeight = memberWeight;
     this.isPartial = isPartial;
     this.uniqueTag = uniqueTag;
@@ -146,15 +146,15 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
 
   public GMSMemberData(InetAddress i, int p, short versionOrdinal, long msbs, long lsbs,
       int viewId) {
-    this.inetAddr = i;
-    this.hostName = i.getHostName();
-    this.udpPort = p;
-    this.version = Versioning.getVersion(versionOrdinal);
-    this.uuidMSBs = msbs;
-    this.uuidLSBs = lsbs;
-    this.vmViewId = viewId;
-    this.vmKind = MemberIdentifier.NORMAL_DM_TYPE;
-    this.preferredForCoordinator = true;
+    inetAddr = i;
+    hostName = i.getHostName();
+    udpPort = p;
+    version = Versioning.getVersion(versionOrdinal);
+    uuidMSBs = msbs;
+    uuidLSBs = lsbs;
+    vmViewId = viewId;
+    vmKind = MemberIdentifier.NORMAL_DM_TYPE;
+    preferredForCoordinator = true;
   }
 
 
@@ -164,43 +164,43 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
    * @param other the member to create a copy of
    */
   public GMSMemberData(GMSMemberData other) {
-    this.hostName = other.hostName;
-    this.udpPort = other.udpPort;
-    this.preferredForCoordinator = other.preferredForCoordinator;
-    this.networkPartitionDetectionEnabled = other.networkPartitionDetectionEnabled;
-    this.memberWeight = other.memberWeight;
-    this.inetAddr = other.inetAddr;
-    this.processId = other.processId;
-    this.vmKind = other.vmKind;
-    this.vmViewId = other.vmViewId;
-    this.directPort = other.directPort;
-    this.name = other.name;
-    this.durableId = other.durableId;
-    this.durableTimeout = other.durableTimeout;
-    this.groups = other.groups;
-    this.version = other.version;
-    this.uuidLSBs = other.uuidLSBs;
-    this.uuidMSBs = other.uuidMSBs;
-    this.isPartial = other.isPartial;
-    this.uniqueTag = other.uniqueTag;
+    hostName = other.hostName;
+    udpPort = other.udpPort;
+    preferredForCoordinator = other.preferredForCoordinator;
+    networkPartitionDetectionEnabled = other.networkPartitionDetectionEnabled;
+    memberWeight = other.memberWeight;
+    inetAddr = other.inetAddr;
+    processId = other.processId;
+    vmKind = other.vmKind;
+    vmViewId = other.vmViewId;
+    directPort = other.directPort;
+    name = other.name;
+    durableId = other.durableId;
+    durableTimeout = other.durableTimeout;
+    groups = other.groups;
+    version = other.version;
+    uuidLSBs = other.uuidLSBs;
+    uuidMSBs = other.uuidMSBs;
+    isPartial = other.isPartial;
+    uniqueTag = other.uniqueTag;
   }
 
 
   @Override
   public int getMembershipPort() {
-    return this.udpPort;
+    return udpPort;
   }
 
 
   @Override
   public boolean isPreferredForCoordinator() {
-    return this.preferredForCoordinator;
+    return preferredForCoordinator;
   }
 
 
   @Override
   public void setPreferredForCoordinator(boolean preferred) {
-    this.preferredForCoordinator = preferred;
+    preferredForCoordinator = preferred;
   }
 
 
@@ -216,7 +216,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
 
   @Override
   public InetAddress getInetAddress() {
-    return this.inetAddr;
+    return inetAddr;
   }
 
   @Override
@@ -238,11 +238,11 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
   @Override
   public void setUUID(UUID u) {
     if (u == null) {
-      this.uuidLSBs = 0;
-      this.uuidMSBs = 0;
+      uuidLSBs = 0;
+      uuidMSBs = 0;
     } else {
-      this.uuidLSBs = u.getLeastSignificantBits();
-      this.uuidMSBs = u.getMostSignificantBits();
+      uuidLSBs = u.getLeastSignificantBits();
+      uuidMSBs = u.getMostSignificantBits();
     }
   }
 
@@ -251,20 +251,20 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
    */
   @Override
   public UUID getUUID() {
-    if (this.uuidLSBs == 0 && this.uuidMSBs == 0) {
+    if (uuidLSBs == 0 && uuidMSBs == 0) {
       return null;
     }
-    return new UUID(this.uuidMSBs, this.uuidLSBs);
+    return new UUID(uuidMSBs, uuidLSBs);
   }
 
   @Override
   public long getUuidMostSignificantBits() {
-    return this.uuidMSBs;
+    return uuidMSBs;
   }
 
   @Override
   public long getUuidLeastSignificantBits() {
-    return this.uuidLSBs;
+    return uuidLSBs;
   }
 
   /*
@@ -330,21 +330,21 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
 
     // bug #41983, address of kill-9'd member is reused
     // before it can be ejected from membership
-    if (compareViewIds && this.vmViewId >= 0 && his.vmViewId >= 0) {
-      if (this.vmViewId < his.vmViewId) {
+    if (compareViewIds && vmViewId >= 0 && his.vmViewId >= 0) {
+      if (vmViewId < his.vmViewId) {
         result = -1;
-      } else if (his.vmViewId < this.vmViewId) {
+      } else if (his.vmViewId < vmViewId) {
         result = 1;
       }
     }
-    if (compareUUIDs && result == 0 && this.uuidMSBs != 0 && his.uuidMSBs != 0) {
-      if (this.uuidMSBs < his.uuidMSBs) {
+    if (compareUUIDs && result == 0 && uuidMSBs != 0 && his.uuidMSBs != 0) {
+      if (uuidMSBs < his.uuidMSBs) {
         result = -1;
-      } else if (his.uuidMSBs < this.uuidMSBs) {
+      } else if (his.uuidMSBs < uuidMSBs) {
         result = 1;
-      } else if (this.uuidLSBs < his.uuidLSBs) {
+      } else if (uuidLSBs < his.uuidLSBs) {
         result = -1;
-      } else if (his.uuidLSBs < this.uuidLSBs) {
+      } else if (his.uuidLSBs < uuidLSBs) {
         result = 1;
       }
     }
@@ -356,14 +356,14 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
   public int compareAdditionalData(MemberData o) {
     GMSMemberData his = (GMSMemberData) o;
     int result = 0;
-    if (this.uuidMSBs != 0 && his.uuidMSBs != 0) {
-      if (this.uuidMSBs < his.uuidMSBs) {
+    if (uuidMSBs != 0 && his.uuidMSBs != 0) {
+      if (uuidMSBs < his.uuidMSBs) {
         result = -1;
-      } else if (his.uuidMSBs < this.uuidMSBs) {
+      } else if (his.uuidMSBs < uuidMSBs) {
         result = 1;
-      } else if (this.uuidLSBs < his.uuidLSBs) {
+      } else if (uuidLSBs < his.uuidLSBs) {
         result = -1;
-      } else if (his.uuidLSBs < this.uuidLSBs) {
+      } else if (his.uuidLSBs < uuidLSBs) {
         result = 1;
       }
     }
@@ -386,10 +386,10 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
 
   @Override
   public int hashCode() {
-    if (this.inetAddr == null) {
-      return this.udpPort;
+    if (inetAddr == null) {
+      return udpPort;
     }
-    return this.udpPort + inetAddr.hashCode();
+    return udpPort + inetAddr.hashCode();
   }
 
   @Override
@@ -448,7 +448,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
 
   @Override
   public void setVmViewId(int id) {
-    this.vmViewId = id;
+    vmViewId = id;
   }
 
 
@@ -533,7 +533,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
 
   @Override
   public void setPort(int p) {
-    this.udpPort = p;
+    udpPort = p;
   }
 
   /**
@@ -541,7 +541,7 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
    */
   @Override
   public boolean hasUUID() {
-    return !(this.uuidLSBs == 0 && this.uuidMSBs == 0);
+    return !(uuidLSBs == 0 && uuidMSBs == 0);
   }
 
 
@@ -585,21 +585,21 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
     setVersion(Versioning.getVersion(VersioningIO.readOrdinal(in)));
 
     int flags = in.readShort();
-    this.networkPartitionDetectionEnabled = (flags & NPD_ENABLED_BIT) != 0;
-    this.preferredForCoordinator = (flags & COORD_ENABLED_BIT) != 0;
+    networkPartitionDetectionEnabled = (flags & NPD_ENABLED_BIT) != 0;
+    preferredForCoordinator = (flags & COORD_ENABLED_BIT) != 0;
 
-    this.inetAddr = StaticSerialization.readInetAddress(in);
-    if (this.inetAddr != null) {
-      this.hostName = inetAddr.getHostAddress();
+    inetAddr = StaticSerialization.readInetAddress(in);
+    if (inetAddr != null) {
+      hostName = inetAddr.getHostAddress();
     }
-    this.udpPort = in.readInt();
-    this.vmViewId = in.readInt();
-    this.uuidMSBs = in.readLong();
-    this.uuidLSBs = in.readLong();
+    udpPort = in.readInt();
+    vmViewId = in.readInt();
+    uuidMSBs = in.readLong();
+    uuidLSBs = in.readLong();
     if (context.getSerializationVersion().ordinal() >= KnownVersion.GEODE_1_2_0.ordinal()) {
-      this.vmKind = in.readByte();
+      vmKind = in.readByte();
     }
-    this.isPartial = true;
+    isPartial = true;
   }
 
 
@@ -620,8 +620,8 @@ public class GMSMemberData implements MemberData, Comparable<GMSMemberData> {
   @Override
   public void readAdditionalData(DataInput in) throws ClassNotFoundException, IOException {
     try {
-      this.uuidMSBs = in.readLong();
-      this.uuidLSBs = in.readLong();
+      uuidMSBs = in.readLong();
+      uuidLSBs = in.readLong();
       memberWeight = (byte) (in.readByte() & 0xFF);
     } catch (EOFException e) {
       // some IDs do not have UUID or membership weight information

@@ -47,17 +47,17 @@ public class ObjectTypeImpl implements ObjectType, DataSerializableFixedID {
   }
 
   public ObjectTypeImpl(String className) throws ClassNotFoundException {
-    this.clazz = InternalDataSerializer.getCachedClass(className);
+    clazz = InternalDataSerializer.getCachedClass(className);
   }
 
   @Override
   public Class resolveClass() {
-    return this.clazz;
+    return clazz;
   }
 
   @Override
   public String getSimpleClassName() {
-    String cn = this.clazz.getName();
+    String cn = clazz.getName();
     int i = cn.lastIndexOf('.');
     return i < 0 ? cn : cn.substring(i + 1);
   }
@@ -67,17 +67,17 @@ public class ObjectTypeImpl implements ObjectType, DataSerializableFixedID {
     if (!(obj instanceof ObjectTypeImpl)) {
       return false;
     }
-    return this.clazz == ((ObjectTypeImpl) obj).clazz;
+    return clazz == ((ObjectTypeImpl) obj).clazz;
   }
 
   @Override
   public int hashCode() {
-    return this.clazz.hashCode();
+    return clazz.hashCode();
   }
 
   @Override
   public String toString() {
-    return this.clazz.getName();
+    return clazz.getName();
   }
 
   @Override
@@ -113,13 +113,13 @@ public class ObjectTypeImpl implements ObjectType, DataSerializableFixedID {
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    this.clazz = DataSerializer.readClass(in);
+    clazz = DataSerializer.readClass(in);
   }
 
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    DataSerializer.writeClass(this.clazz, out);
+    DataSerializer.writeClass(clazz, out);
   }
 
   @Override

@@ -44,7 +44,6 @@ public class HScanIntegrationTest extends AbstractHScanIntegrationTest {
     jedis.hset(HASH_KEY, FIELD_ONE, VALUE_ONE);
 
     assertThatThrownBy(() -> jedis.sendCommand(HASH_KEY, Protocol.Command.HSCAN, HASH_KEY,
-        GREATER_THAN_LONG_MAX))
-            .hasMessageContaining(ERROR_CURSOR);
+        GREATER_THAN_LONG_MAX)).hasMessage(ERROR_CURSOR);
   }
 }

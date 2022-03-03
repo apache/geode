@@ -27,9 +27,9 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class LogChecker {
-  private static List<String> suspectStrings;
-  private static List<String> excludeStrings;
-  private static Logger logger = LogService.getLogger();
+  private static final List<String> suspectStrings;
+  private static final List<String> excludeStrings;
+  private static final Logger logger = LogService.getLogger();
 
   static {
     suspectStrings = new ArrayList<>();

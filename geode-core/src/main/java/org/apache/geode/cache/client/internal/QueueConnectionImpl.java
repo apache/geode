@@ -44,15 +44,15 @@ public class QueueConnectionImpl implements Connection {
   private final AtomicReference<Connection> clientToServerConn = new AtomicReference<>();
   private final Endpoint endpoint;
   private volatile ClientUpdater updater;
-  private QueueManagerImpl manager;
+  private final QueueManagerImpl manager;
   private final AtomicBoolean sentClientReady = new AtomicBoolean();
-  private FailureTracker failureTracker;
+  private final FailureTracker failureTracker;
 
   public QueueConnectionImpl(QueueManagerImpl manager, Connection clientToServer,
       ClientUpdater updater, FailureTracker failureTracker) {
     this.manager = manager;
-    this.clientToServerConn.set(clientToServer);
-    this.endpoint = clientToServer.getEndpoint();
+    clientToServerConn.set(clientToServer);
+    endpoint = clientToServer.getEndpoint();
     this.updater = updater;
     this.failureTracker = failureTracker;
   }
@@ -83,16 +83,16 @@ public class QueueConnectionImpl implements Connection {
 
   @Override
   public void destroy() {
-    Connection conn = this.clientToServerConn.get();
+    Connection conn = clientToServerConn.get();
     if (conn != null) {
       manager.connectionCrashed(conn);
     } // else someone else destroyed it
   }
 
   public void internalDestroy() {
-    Connection currentConn = this.clientToServerConn.get();
+    Connection currentConn = clientToServerConn.get();
     if (currentConn != null) {
-      if (!this.clientToServerConn.compareAndSet(currentConn, null)) {
+      if (!clientToServerConn.compareAndSet(currentConn, null)) {
         // someone else did (or is doing) the internalDestroy so return
         return;
       }
@@ -123,7 +123,7 @@ public class QueueConnectionImpl implements Connection {
    * test hook
    */
   public ClientUpdater getUpdater() {
-    return this.updater;
+    return updater;
   }
 
   @Override
@@ -138,7 +138,7 @@ public class QueueConnectionImpl implements Connection {
 
   @Override
   public Endpoint getEndpoint() {
-    return this.endpoint;
+    return endpoint;
   }
 
   @Override
@@ -192,7 +192,7 @@ public class QueueConnectionImpl implements Connection {
   }
 
   public Connection getConnection() {
-    Connection result = this.clientToServerConn.get();
+    Connection result = clientToServerConn.get();
     if (result == null) {
       throw new ConnectionDestroyedException();
     }
@@ -219,7 +219,7 @@ public class QueueConnectionImpl implements Connection {
 
   @Override
   public String toString() {
-    Connection result = this.clientToServerConn.get();
+    Connection result = clientToServerConn.get();
     if (result != null) {
       return result.toString();
     } else {
@@ -244,11 +244,11 @@ public class QueueConnectionImpl implements Connection {
 
   @Override
   public void setConnectionID(long id) {
-    this.clientToServerConn.get().setConnectionID(id);
+    clientToServerConn.get().setConnectionID(id);
   }
 
   @Override
   public long getConnectionID() {
-    return this.clientToServerConn.get().getConnectionID();
+    return clientToServerConn.get().getConnectionID();
   }
 }

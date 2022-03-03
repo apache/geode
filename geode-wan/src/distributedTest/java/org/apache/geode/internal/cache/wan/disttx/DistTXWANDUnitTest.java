@@ -49,8 +49,8 @@ public class DistTXWANDUnitTest extends WANTestBase {
   @Ignore("TODO: test is disabled")
   @Test
   public void testPartitionedSerialPropagation_SenderSameAsCoordinator() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -83,8 +83,8 @@ public class DistTXWANDUnitTest extends WANTestBase {
 
   @Test
   public void testPartitionedSerialPropagation_SenderNotSameAsCoordinator() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);
@@ -119,8 +119,8 @@ public class DistTXWANDUnitTest extends WANTestBase {
 
   @Test
   public void testPartitionedRegionParallelPropagation() throws Exception {
-    Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
+    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
+    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2, vm3);
     createReceiverInVMs(vm2, vm3);

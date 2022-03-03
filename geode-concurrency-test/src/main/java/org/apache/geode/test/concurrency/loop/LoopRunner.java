@@ -76,7 +76,7 @@ public class LoopRunner implements Runner {
 
   private static class DelegatingExecutor implements ParallelExecutor {
     private final ExecutorService executorService;
-    private List<Future<?>> futures;
+    private final List<Future<?>> futures;
     private final AtomicInteger callablesStarting = new AtomicInteger(0);
     private final CountDownLatch start = new CountDownLatch(1);
 
@@ -100,7 +100,6 @@ public class LoopRunner implements Runner {
     @Override
     public void execute() throws ExecutionException, InterruptedException {
       while (callablesStarting.get() > 0) {
-        ;
       }
 
       start.countDown();

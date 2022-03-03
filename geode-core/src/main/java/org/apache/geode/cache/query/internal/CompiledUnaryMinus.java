@@ -18,7 +18,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.geode.cache.query.AmbiguousNameException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
@@ -27,7 +26,7 @@ import org.apache.geode.cache.query.TypeMismatchException;
 
 public class CompiledUnaryMinus extends AbstractCompiledValue {
 
-  private CompiledValue _value;
+  private final CompiledValue _value;
 
   public CompiledUnaryMinus(CompiledValue value) {
     _value = value;
@@ -36,7 +35,7 @@ public class CompiledUnaryMinus extends AbstractCompiledValue {
 
   @Override
   public List getChildren() {
-    return Collections.singletonList(this._value);
+    return Collections.singletonList(_value);
   }
 
   @Override
@@ -52,30 +51,30 @@ public class CompiledUnaryMinus extends AbstractCompiledValue {
 
   @Override
   public Set computeDependencies(ExecutionContext context)
-      throws TypeMismatchException, AmbiguousNameException, NameResolutionException {
-    return context.addDependencies(this, this._value.computeDependencies(context));
+      throws TypeMismatchException, NameResolutionException {
+    return context.addDependencies(this, _value.computeDependencies(context));
   }
 
   private Object minus(Object obj) throws TypeMismatchException {
 
     if (obj instanceof Number) {
       if (obj instanceof Integer) {
-        return Integer.valueOf(((Integer) obj).intValue() * -1);
+        return (Integer) obj * -1;
       }
       if (obj instanceof Long) {
-        return Long.valueOf(((Long) obj).longValue() * -1);
+        return (Long) obj * -1;
       }
       if (obj instanceof Double) {
-        return Double.valueOf(((Double) obj).doubleValue() * -1);
+        return (Double) obj * -1;
       }
       if (obj instanceof Float) {
-        return Float.valueOf(((Float) obj).floatValue() * -1);
+        return (Float) obj * -1;
       }
       if (obj instanceof Byte) {
-        return Byte.valueOf((byte) (((Byte) obj).byteValue() * -1));
+        return (byte) ((Byte) obj * -1);
       }
       if (obj instanceof Short) {
-        return Short.valueOf((short) (((Short) obj).shortValue() * -1));
+        return (short) ((Short) obj * -1);
       }
     } else if (obj == null || obj == QueryService.UNDEFINED) {
       return QueryService.UNDEFINED;

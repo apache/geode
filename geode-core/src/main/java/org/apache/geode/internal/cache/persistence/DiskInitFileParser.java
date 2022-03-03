@@ -497,7 +497,7 @@ public class DiskInitFileParser {
       }
     }
     if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       for (int i = 0; i < OPLOG_TYPE.getLen(); i++) {
         sb.append(" ").append(seq[i]);
       }

@@ -56,7 +56,6 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category({GfshTest.class}) // GEODE-1705 GEODE-3404
                             // GEODE-3359
-@SuppressWarnings("serial")
 public class DurableClientCommandsDUnitTest {
 
   private static final String STOCKS_REGION = "stocks";

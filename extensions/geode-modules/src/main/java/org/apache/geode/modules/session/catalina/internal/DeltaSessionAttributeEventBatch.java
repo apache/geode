@@ -47,13 +47,13 @@ public class DeltaSessionAttributeEventBatch extends AbstractGatewayDeltaEvent {
   public void apply(Cache cache) {
     @SuppressWarnings("unchecked")
     Region<String, DeltaSessionInterface> region = getRegion(cache);
-    DeltaSessionInterface session = region.get(this.key);
+    DeltaSessionInterface session = region.get(key);
     if (session == null) {
-      String builder = "Session " + this.key
+      String builder = "Session " + key
           + " was not found while attempting to apply " + this;
       cache.getLogger().warning(builder);
     } else {
-      session.applyAttributeEvents(region, this.eventQueue);
+      session.applyAttributeEvents(region, eventQueue);
       if (cache.getLogger().fineEnabled()) {
         cache.getLogger().fine("Applied " + this);
       }
@@ -63,18 +63,18 @@ public class DeltaSessionAttributeEventBatch extends AbstractGatewayDeltaEvent {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.eventQueue = DataSerializer.readArrayList(in);
+    eventQueue = DataSerializer.readArrayList(in);
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
-    DataSerializer.writeArrayList((ArrayList) this.eventQueue, out);
+    DataSerializer.writeArrayList((ArrayList) eventQueue, out);
   }
 
   public String toString() {
     return "DeltaSessionAttributeEventBatch[" + "regionName="
-        + this.regionName + "; sessionId=" + this.key + "; numberOfEvents="
-        + this.eventQueue.size() + "]";
+        + regionName + "; sessionId=" + key + "; numberOfEvents="
+        + eventQueue.size() + "]";
   }
 }

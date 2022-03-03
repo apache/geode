@@ -163,7 +163,7 @@ public class IndexUsageInNestedQueryWithParamsJUnitTest {
   }
 
   public class QueryParameterProvider {
-    private Cache cache;
+    private final Cache cache;
 
     public QueryParameterProvider(Cache cache) {
       this.cache = cache;
@@ -180,7 +180,7 @@ public class IndexUsageInNestedQueryWithParamsJUnitTest {
 
       private QueryParameter(final String queryString) {
         try {
-          this.query = executorService
+          query = executorService
               .submit(() -> cache.getQueryService().newQuery(queryString)).get();
         } catch (InterruptedException e) {
           throw new RuntimeException("Thread was unexpectedly interrupted", e);
@@ -227,7 +227,7 @@ public class IndexUsageInNestedQueryWithParamsJUnitTest {
       }
 
       private Map<Long, Bound> getBounds(final PortfolioData portfolioData) {
-        final Map<Long, Bound> boundsMap = new HashMap<Long, Bound>();
+        final Map<Long, Bound> boundsMap = new HashMap<>();
         if (portfolioData != null) {
           for (final Bound bound : portfolioData.bounds) {
             if (bound != null) {

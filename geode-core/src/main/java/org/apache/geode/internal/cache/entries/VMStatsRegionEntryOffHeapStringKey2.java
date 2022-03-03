@@ -125,8 +125,8 @@ public class VMStatsRegionEntryOffHeapStringKey2 extends VMStatsRegionEntryOffHe
       }
     }
     tempBits1 |= key.length();
-    this.bits1 = tempBits1;
-    this.bits2 = tempBits2;
+    bits1 = tempBits1;
+    bits2 = tempBits2;
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
@@ -186,7 +186,7 @@ public class VMStatsRegionEntryOffHeapStringKey2 extends VMStatsRegionEntryOffHe
 
   @Override
   public int getEntryHash() {
-    return this.hash;
+    return hash;
   }
 
   @Override
@@ -196,7 +196,7 @@ public class VMStatsRegionEntryOffHeapStringKey2 extends VMStatsRegionEntryOffHe
 
   @Override
   public HashEntry<Object, Object> getNextEntry() {
-    return this.nextEntry;
+    return nextEntry;
   }
 
   @Override
@@ -226,7 +226,7 @@ public class VMStatsRegionEntryOffHeapStringKey2 extends VMStatsRegionEntryOffHe
 
   @Override
   public long getLastAccessed() throws InternalStatisticsDisabledException {
-    return this.lastAccessed;
+    return lastAccessed;
   }
 
   @Override
@@ -236,12 +236,12 @@ public class VMStatsRegionEntryOffHeapStringKey2 extends VMStatsRegionEntryOffHe
 
   @Override
   public long getHitCount() throws InternalStatisticsDisabledException {
-    return this.hitCount & 0xFFFFFFFFL;
+    return hitCount & 0xFFFFFFFFL;
   }
 
   @Override
   public long getMissCount() throws InternalStatisticsDisabledException {
-    return this.missCount & 0xFFFFFFFFL;
+    return missCount & 0xFFFFFFFFL;
   }
 
   private void incrementHitCount() {
@@ -263,8 +263,8 @@ public class VMStatsRegionEntryOffHeapStringKey2 extends VMStatsRegionEntryOffHe
   public void txDidDestroy(long timeStamp) {
     setLastModified(timeStamp);
     setLastAccessed(timeStamp);
-    this.hitCount = 0;
-    this.missCount = 0;
+    hitCount = 0;
+    missCount = 0;
   }
 
   @Override
@@ -275,21 +275,21 @@ public class VMStatsRegionEntryOffHeapStringKey2 extends VMStatsRegionEntryOffHe
   // ----------------------------------------- key code -------------------------------------------
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   private int getKeyLength() {
-    return (int) (this.bits1 & 0x003fL);
+    return (int) (bits1 & 0x003fL);
   }
 
   private int getEncoding() {
     // 0 means encoded as char
     // 1 means encoded as bytes that are all <= 0x7f;
-    return (int) (this.bits1 >> 6) & 0x03;
+    return (int) (bits1 >> 6) & 0x03;
   }
 
   @Override
   public Object getKey() {
     int keyLength = getKeyLength();
     char[] chars = new char[keyLength];
-    long tempBits1 = this.bits1;
-    long tempBits2 = this.bits2;
+    long tempBits1 = bits1;
+    long tempBits2 = bits2;
     if (getEncoding() == 1) {
       for (int i = 0; i < keyLength; i++) {
         if (i < 7) {
@@ -321,8 +321,8 @@ public class VMStatsRegionEntryOffHeapStringKey2 extends VMStatsRegionEntryOffHe
       String stringKey = (String) key;
       int keyLength = getKeyLength();
       if (stringKey.length() == keyLength) {
-        long tempBits1 = this.bits1;
-        long tempBits2 = this.bits2;
+        long tempBits1 = bits1;
+        long tempBits2 = bits2;
         if (getEncoding() == 1) {
           for (int i = 0; i < keyLength; i++) {
             char character;

@@ -41,7 +41,7 @@ import org.apache.geode.pdx.internal.PdxUnreadData;
  *
  * <pre>
  * Object o = r.get("stringBuf");
- * StringBuffer s = (StringBuffer) CopyHelper.copy(o);
+ * StringBuilder s = (StringBuilder) CopyHelper.copy(o);
  * s.append("... and they lived happily ever after.  The End.");
  * r.put("stringBuf", s);
  * </pre>
@@ -120,10 +120,7 @@ public final class CopyHelper {
     if (o instanceof Character) {
       return true;
     }
-    if (o instanceof UUID) {
-      return true;
-    }
-    return false;
+    return o instanceof UUID;
   }
 
   /**
@@ -178,7 +175,7 @@ public final class CopyHelper {
             // The other problem is that if the class is private, we still
             // need to make the method accessible even if the method is public,
             // because Object.clone is protected.
-            Method m = c.getDeclaredMethod("clone", new Class[0]);
+            Method m = c.getDeclaredMethod("clone");
             m.setAccessible(true);
             copy = (T) m.invoke(o, new Object[0]);
             return copy;
@@ -245,12 +242,11 @@ public final class CopyHelper {
     }
   }
 
-  @SuppressWarnings("unchecked")
   private static <T> T doDeepCopy(T o) {
     try {
       HeapDataOutputStream hdos = new HeapDataOutputStream(KnownVersion.CURRENT);
       DataSerializer.writeObject(o, hdos);
-      return (T) DataSerializer.readObject(new DataInputStream(hdos.getInputStream()));
+      return DataSerializer.readObject(new DataInputStream(hdos.getInputStream()));
     } catch (ClassNotFoundException ex) {
       throw new CopyException(
           String.format("Copy failed on instance of %s", o.getClass()),

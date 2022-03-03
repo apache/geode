@@ -76,9 +76,7 @@ public class RegionMappingConfiguration implements Extension<Region<?, ?>> {
       PdxType pdxType = getPdxTypeForClass(internalCache, pdxClazz);
 
       List<FieldMapping> fieldMappings = createDefaultFieldMapping(service, pdxType);
-      fieldMappings.forEach(fieldMapping -> {
-        mapping.addFieldMapping(fieldMapping);
-      });
+      fieldMappings.forEach(mapping::addFieldMapping);
     }
     service.validateMapping(mapping);
     createRegionMapping(service, mapping);
@@ -154,7 +152,7 @@ public class RegionMappingConfiguration implements Extension<Region<?, ?>> {
   private Object createInstance(Class<?> clazz) {
     try {
       Constructor<?> ctor = clazz.getConstructor();
-      return ctor.newInstance(new Object[] {});
+      return ctor.newInstance();
     } catch (NoSuchMethodException | SecurityException | InstantiationException
         | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
       throw new JdbcConnectorException(

@@ -144,12 +144,12 @@ public class RedisStats {
     return keyspaceMisses.get();
   }
 
-  public long startPassiveExpirationCheck() {
+  public long startActiveExpirationCheck() {
     return getCurrentTimeNanos();
   }
 
-  public void endPassiveExpirationCheck(long start, long expireCount) {
-    geodeRedisStats.endPassiveExpirationCheck(start, expireCount);
+  public void endActiveExpirationCheck(long start, long expireCount) {
+    geodeRedisStats.endActiveExpirationCheck(start, expireCount);
   }
 
   public long startExpiration() {
@@ -160,7 +160,6 @@ public class RedisStats {
     geodeRedisStats.endExpiration(start);
     expirations.incrementAndGet();
   }
-
 
   public long startPublish() {
     return geodeRedisStats.startPublish();

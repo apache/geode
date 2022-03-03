@@ -18,7 +18,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Test;
@@ -82,9 +81,8 @@ public class CallbackArgDUnitTest extends JUnit4CacheTestCase {
           @Override
           public void afterCommit(TransactionEvent e) {
             assertEquals(6, e.getEvents().size());
-            Iterator it = e.getEvents().iterator();
-            while (it.hasNext()) {
-              EntryEvent ee = (EntryEvent) it.next();
+            for (final org.apache.geode.cache.CacheEvent<?, ?> cacheEvent : e.getEvents()) {
+              EntryEvent ee = (EntryEvent) cacheEvent;
               assertEquals(callbackArg, ee.getCallbackArgument());
               assertEquals(true, ee.isCallbackArgumentAvailable());
             }
@@ -109,8 +107,8 @@ public class CallbackArgDUnitTest extends JUnit4CacheTestCase {
   int clCount = 0;
 
   Object getCurrentExpectedKey() {
-    Object result = this.expectedKeys.get(this.clCount);
-    this.clCount += 1;
+    Object result = expectedKeys.get(clCount);
+    clCount += 1;
     return result;
   }
 
@@ -157,25 +155,24 @@ public class CallbackArgDUnitTest extends JUnit4CacheTestCase {
       public void afterCommit(TransactionEvent e) {
         assertEquals(6, e.getEvents().size());
         ArrayList keys = new ArrayList();
-        Iterator it = e.getEvents().iterator();
-        while (it.hasNext()) {
-          EntryEvent ee = (EntryEvent) it.next();
+        for (final org.apache.geode.cache.CacheEvent<?, ?> cacheEvent : e.getEvents()) {
+          EntryEvent ee = (EntryEvent) cacheEvent;
           keys.add(ee.getKey());
           assertEquals(callbackArg, ee.getCallbackArgument());
           assertEquals(true, ee.isCallbackArgumentAvailable());
         }
-        assertEquals(CallbackArgDUnitTest.this.expectedKeys, keys);
-        CallbackArgDUnitTest.this.invokeCount = 1;
+        assertEquals(expectedKeys, keys);
+        invokeCount = 1;
       }
     };
     CacheTransactionManager ctm = getCache().getCacheTransactionManager();
     ctm.addListener(tl1);
 
-    this.invokeCount = 0;
-    this.clCount = 0;
-    this.expectedKeys = Arrays.asList(new String[] {"b", "c", "a", "a2", "c2", "b2"});
+    invokeCount = 0;
+    clCount = 0;
+    expectedKeys = Arrays.asList("b", "c", "a", "a2", "c2", "b2");
     doCommitOtherVm();
-    assertEquals(1, this.invokeCount);
-    assertEquals(6, this.clCount);
+    assertEquals(1, invokeCount);
+    assertEquals(6, clCount);
   }
 }

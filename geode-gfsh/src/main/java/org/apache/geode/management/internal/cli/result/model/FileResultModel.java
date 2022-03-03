@@ -53,9 +53,9 @@ public class FileResultModel {
   public FileResultModel() {}
 
   public FileResultModel(String fileName, String content) {
-    this.filename = FilenameUtils.getName(fileName);
-    this.data = content.getBytes();
-    this.type = FILE_TYPE_TEXT;
+    filename = FilenameUtils.getName(fileName);
+    data = content.getBytes();
+    type = FILE_TYPE_TEXT;
   }
 
   public FileResultModel(File file, int fileType) {
@@ -63,12 +63,12 @@ public class FileResultModel {
       throw new IllegalArgumentException("Unsupported file type is specified.");
     }
 
-    this.filename = FilenameUtils.getName(file.getName());
-    this.type = fileType;
+    filename = FilenameUtils.getName(file.getName());
+    type = fileType;
 
     if (fileType == FILE_TYPE_BINARY) {
       try {
-        this.data = FileUtils.readFileToByteArray(file);
+        data = FileUtils.readFileToByteArray(file);
       } catch (IOException e) {
         throw new RuntimeException("Unable to read file: " + file.getAbsolutePath(), e);
       }
@@ -104,9 +104,9 @@ public class FileResultModel {
   @JsonIgnore
   public long getLength() {
     if (type == FILE_TYPE_BINARY || type == FILE_TYPE_TEXT) {
-      return this.data.length;
+      return data.length;
     } else {
-      return this.file.length();
+      return file.length();
     }
   }
 

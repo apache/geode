@@ -15,7 +15,6 @@
 package org.apache.geode.cache.wan.internal.client.locator;
 
 import java.net.SocketTimeoutException;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
@@ -87,8 +86,8 @@ public class GatewaySenderBatchOp {
       getMessage().addIntPart(dsId);
       getMessage().addBytesPart(new byte[] {removeFromQueueOnException ? (byte) 1 : (byte) 0});
       // Add each event
-      for (Iterator i = events.iterator(); i.hasNext();) {
-        GatewaySenderEventImpl event = (GatewaySenderEventImpl) i.next();
+      for (final Object o : events) {
+        GatewaySenderEventImpl event = (GatewaySenderEventImpl) o;
         // Add action
         int action = event.getAction();
         getMessage().addIntPart(action);
@@ -115,7 +114,7 @@ public class GatewaySenderBatchOp {
           getMessage().addStringOrObjPart(key);
           if (action < 2 || action == GatewaySenderEventImpl.UPDATE_ACTION_NO_GENERATE_CALLBACKS) {
             byte[] value = event.getSerializedValue();
-            byte valueIsObject = event.getValueIsObject();;
+            byte valueIsObject = event.getValueIsObject();
             // Add value (which is already a serialized byte[])
             getMessage().addRawPart(value, (valueIsObject == 0x01));
           }
@@ -140,31 +139,31 @@ public class GatewaySenderBatchOp {
       if (getMessage().getNumberOfParts() == 0) {
         return attemptRead(cnx);
       }
-      this.failed = true;
-      this.timedOut = false;
+      failed = true;
+      timedOut = false;
       long start = startAttempt(cnx.getStats());
       try {
         try {
           attemptSend(cnx);
-          this.failed = false;
+          failed = false;
         } finally {
           endSendAttempt(cnx.getStats(), start);
         }
       } finally {
         endAttempt(cnx.getStats(), start);
       }
-      return this.failed;
+      return failed;
     }
 
     private Object attemptRead(Connection cnx) throws Exception {
-      this.failed = true;
+      failed = true;
       try {
         Object result = attemptReadResponse(cnx);
-        this.failed = false;
+        failed = false;
         return result;
       } catch (SocketTimeoutException ste) {
-        this.failed = false;
-        this.timedOut = true;
+        failed = false;
+        timedOut = true;
         throw ste;
       }
     }
@@ -207,8 +206,8 @@ public class GatewaySenderBatchOp {
 
     private static int calcPartCount(List events) {
       int numberOfParts = 4; // for the number of events and the batchId
-      for (Iterator i = events.iterator(); i.hasNext();) {
-        GatewaySenderEventImpl event = (GatewaySenderEventImpl) i.next();
+      for (final Object o : events) {
+        GatewaySenderEventImpl event = (GatewaySenderEventImpl) o;
         numberOfParts += event.getNumberOfParts();
       }
       return numberOfParts;
@@ -265,7 +264,7 @@ public class GatewaySenderBatchOp {
             break;
           default:
             throw new InternalGemFireError(String.format("Unknown message type %s",
-                Integer.valueOf(msg.getMessageType())));
+                msg.getMessageType()));
         }
       } finally {
         msg.clear();

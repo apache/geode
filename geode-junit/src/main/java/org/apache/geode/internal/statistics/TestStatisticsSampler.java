@@ -21,7 +21,6 @@ import org.apache.geode.Statistics;
 /**
  * @since GemFire 7.0
  */
-@SuppressWarnings("unchecked")
 public class TestStatisticsSampler implements StatisticsSampler {
 
   private final StatisticsManager manager;
@@ -32,12 +31,12 @@ public class TestStatisticsSampler implements StatisticsSampler {
 
   @Override
   public int getStatisticsModCount() {
-    return this.manager.getStatListModCount();
+    return manager.getStatListModCount();
   }
 
   @Override
   public Statistics[] getStatistics() {
-    List<Statistics> statsList = this.manager.getStatsList();
+    List<Statistics> statsList = manager.getStatsList();
     synchronized (statsList) {
       return statsList.toArray(new Statistics[statsList.size()]);
     }

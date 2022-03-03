@@ -75,9 +75,9 @@ public class GetConnectedServerCountRegressionTest implements Serializable {
     uniqueName = getClass().getSimpleName() + "_" + testName.getMethodName();
     hostName = getHostName();
 
-    port1 = server1.invoke(() -> createServerCache());
-    port2 = server2.invoke(() -> createServerCache());
-    port3 = server3.invoke(() -> createServerCache());
+    port1 = server1.invoke(this::createServerCache);
+    port2 = server2.invoke(this::createServerCache);
+    port3 = server3.invoke(this::createServerCache);
 
     createClientCache();
     awaitConnectedServerCount(3);
@@ -85,7 +85,7 @@ public class GetConnectedServerCountRegressionTest implements Serializable {
 
   @Test
   public void getConnectedServerCountShouldNotIncludeStoppedServer() {
-    server2.invoke(() -> stopServer());
+    server2.invoke(this::stopServer);
     awaitConnectedServerCount(2);
   }
 

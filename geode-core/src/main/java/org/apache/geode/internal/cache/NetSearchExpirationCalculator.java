@@ -37,12 +37,12 @@ public class NetSearchExpirationCalculator extends EntryExpiryTask {
 
   @Override
   protected ExpirationAttributes getTTLAttributes() {
-    return this.ttlAttr;
+    return ttlAttr;
   }
 
   @Override
   protected ExpirationAttributes getIdleAttributes() {
-    return this.idleAttr;
+    return idleAttr;
   }
 
 }

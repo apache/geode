@@ -70,6 +70,6 @@ public class CancelStatListenerResponse extends AdminResponse {
   @Override
   public String toString() {
     return String.format("CancelStatListenerResponse from %s",
-        this.getRecipient());
+        getRecipient());
   }
 }

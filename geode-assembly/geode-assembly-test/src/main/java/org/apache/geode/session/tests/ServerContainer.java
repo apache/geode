@@ -57,8 +57,8 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public abstract class ServerContainer {
   private final File containerConfigHome;
   private final IntSupplier portSupplier;
-  private InstalledLocalContainer container;
-  private ContainerInstall install;
+  private final InstalledLocalContainer container;
+  private final ContainerInstall install;
 
   private String locatorAddress;
   private int locatorPort;

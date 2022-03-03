@@ -23,7 +23,6 @@ import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -100,7 +99,7 @@ public class IndexElemArrayJUnitTest {
       list.add(i);
     }
     try {
-      list.addAll(Collections.singleton(new Object()));
+      list.add(new Object());
     } catch (IllegalStateException e) {
       assertThat(list.size()).isEqualTo(255);
     }
@@ -127,9 +126,9 @@ public class IndexElemArrayJUnitTest {
     IntStream.range(0, 1000).parallel().forEach(i -> {
       callables.add(() -> {
         if (i % 3 == 0) {
-          return add(Integer.valueOf(new Random().nextInt(4)));
+          return add(new Random().nextInt(4));
         } else if (i % 3 == 1) {
-          return remove(Integer.valueOf(new Random().nextInt(4)));
+          return remove(new Random().nextInt(4));
         } else {
           return iterateList();
         }
@@ -160,7 +159,7 @@ public class IndexElemArrayJUnitTest {
     if (iter.hasNext()) {
       iter.next();
     }
-    return Integer.valueOf(list.size());
+    return list.size();
   }
 
   private void add() {
@@ -210,7 +209,7 @@ public class IndexElemArrayJUnitTest {
   private void remove() {
     list.remove(4);
     assertEquals(6, list.size());
-    int temp[] = {1, 2, 3, 5, 6, 7};
+    int[] temp = {1, 2, 3, 5, 6, 7};
     for (int i = 0; i < 6; i++) {
       assertEquals(temp[i], list.get(i));
     }

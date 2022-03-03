@@ -42,7 +42,7 @@ import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 public class CommonAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase {
 
   private static final long serialVersionUID = 1L;
-  private static MyAsyncEventListener myAsyncEventListener = new MyAsyncEventListener();
+  private static final MyAsyncEventListener myAsyncEventListener = new MyAsyncEventListener();
 
   public CommonAsyncEventQueueDUnitTest() {
     super();
@@ -77,7 +77,7 @@ public class CommonAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase {
   public void testSameSenderWithNonColocatedRegions() throws Exception {
     IgnoredException.addIgnoredException("cannot have the same parallel async");
     Integer lnPort =
-        (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
+        vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
     vm1.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
     vm1.invoke(() -> AsyncEventQueueTestBase.createAsyncEventQueue("ln", true, 100, 100, false,
         false, null, false));
@@ -104,7 +104,7 @@ public class CommonAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase {
     String regionName = getTestMethodName() + "_PR1";
 
     Integer lnPort =
-        (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
+        vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
     vm1.invoke(() -> AsyncEventQueueTestBase.createCache(lnPort));
 
     vm1.invoke(() -> {

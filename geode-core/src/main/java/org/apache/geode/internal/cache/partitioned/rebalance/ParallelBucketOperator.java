@@ -47,9 +47,9 @@ public class ParallelBucketOperator implements BucketOperator {
   private final Semaphore operationSemaphore;
   private final int maxParallelOperations;
   private final ConcurrentLinkedQueue<Completion> pendingSuccess =
-      new ConcurrentLinkedQueue<BucketOperator.Completion>();
+      new ConcurrentLinkedQueue<>();
   private final ConcurrentLinkedQueue<Completion> pendingFailure =
-      new ConcurrentLinkedQueue<BucketOperator.Completion>();
+      new ConcurrentLinkedQueue<>();
 
 
   /**
@@ -65,8 +65,8 @@ public class ParallelBucketOperator implements BucketOperator {
   public ParallelBucketOperator(int maxParallelOperations, ExecutorService executor,
       BucketOperator operator) {
     this.maxParallelOperations = maxParallelOperations;
-    this.operationSemaphore = new Semaphore(maxParallelOperations);
-    this.delegate = operator;
+    operationSemaphore = new Semaphore(maxParallelOperations);
+    delegate = operator;
     this.executor = executor;
   }
 
@@ -84,29 +84,26 @@ public class ParallelBucketOperator implements BucketOperator {
       final Completion completion) {
     drainCompletions();
     operationSemaphore.acquireUninterruptibly();
-    executor.execute(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          delegate.createRedundantBucket(targetMember, bucketId, colocatedRegionBytes,
-              new Completion() {
-                @Override
-                public void onSuccess() {
-                  pendingSuccess.add(completion);
-                }
+    executor.execute(() -> {
+      try {
+        delegate.createRedundantBucket(targetMember, bucketId, colocatedRegionBytes,
+            new Completion() {
+              @Override
+              public void onSuccess() {
+                pendingSuccess.add(completion);
+              }
 
-                @Override
-                public void onFailure() {
-                  pendingFailure.add(completion);
-                }
-              });
-        } catch (CancelException e) {
-          // ignore
-        } catch (RegionDestroyedException e) {
-          // ignore
-        } finally {
-          operationSemaphore.release();
-        }
+              @Override
+              public void onFailure() {
+                pendingFailure.add(completion);
+              }
+            });
+      } catch (CancelException e) {
+        // ignore
+      } catch (RegionDestroyedException e) {
+        // ignore
+      } finally {
+        operationSemaphore.release();
       }
     });
 

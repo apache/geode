@@ -19,7 +19,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -287,16 +286,17 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
       byte[] baValue = new byte[sizeOfElement * 1024 * 1024];
       int baSize = CachedDeserializableFactory.getByteSize(baValue);
       result += baSize;
-      pr.put(new Integer(counter), baValue);
+      pr.put(counter, baValue);
     }
     return result;
   }
 
   private static void verifySize(String regionName, int noOfElememts, int entrySize) {
     final Region pr = cache.getRegion(regionName);
-    for (final Iterator i =
-        ((PartitionedRegion) pr).getDataStore().getAllLocalBuckets().iterator(); i.hasNext();) {
-      final Map.Entry entry = (Map.Entry) i.next();
+    for (final Map.Entry<Integer, BucketRegion> integerBucketRegionEntry : ((PartitionedRegion) pr)
+        .getDataStore()
+        .getAllLocalBuckets()) {
+      final Map.Entry entry = (Map.Entry) integerBucketRegionEntry;
       final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
       if (bucketRegion == null) {
         continue;
@@ -308,7 +308,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
         LogWriterUtils.getLogWriter().info("Checking for entry in bucket region: " + bucketRegion);
         for (int counter = 1; counter <= noOfElememts; counter++) {
           assertEquals(entrySize,
-              ((AbstractLRURegionEntry) map.getEntry(new Integer(counter))).getEntrySize());
+              ((AbstractLRURegionEntry) map.getEntry(counter)).getEntrySize());
         }
       }
     }
@@ -316,7 +316,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
 
   private void putCustomizedData(int counter, Object object) {
     final Region pr = cache.getRegion("PR1");
-    pr.put(new Integer(counter), object);
+    pr.put(counter, object);
 
   }
 
@@ -328,15 +328,16 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
 
   private int getSizeOfCustomizedData(int counter) {
     final Region pr = cache.getRegion("PR1");
-    for (final Iterator i =
-        ((PartitionedRegion) pr).getDataStore().getAllLocalBuckets().iterator(); i.hasNext();) {
-      final Map.Entry entry = (Map.Entry) i.next();
+    for (final Map.Entry<Integer, BucketRegion> integerBucketRegionEntry : ((PartitionedRegion) pr)
+        .getDataStore()
+        .getAllLocalBuckets()) {
+      final Map.Entry entry = (Map.Entry) integerBucketRegionEntry;
       final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
       if (bucketRegion == null) {
         continue;
       } else {
         RegionMap map = bucketRegion.getRegionMap();
-        return ((AbstractLRURegionEntry) map.getEntry(new Integer(counter))).getEntrySize();
+        return ((AbstractLRURegionEntry) map.getEntry(counter)).getEntrySize();
       }
     }
     return 0;
@@ -344,9 +345,10 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
 
   private int getSizeOfCustomizedObject(Object object) {
     final Region pr = cache.getRegion("PR1");
-    for (final Iterator i =
-        ((PartitionedRegion) pr).getDataStore().getAllLocalBuckets().iterator(); i.hasNext();) {
-      final Map.Entry entry = (Map.Entry) i.next();
+    for (final Map.Entry<Integer, BucketRegion> integerBucketRegionEntry : ((PartitionedRegion) pr)
+        .getDataStore()
+        .getAllLocalBuckets()) {
+      final Map.Entry entry = (Map.Entry) integerBucketRegionEntry;
       final BucketRegion bucketRegion = (BucketRegion) entry.getValue();
       if (bucketRegion == null) {
         continue;

@@ -77,7 +77,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -864,24 +863,24 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     serverSSLAlias = other.getServerSSLAlias();
     locatorSSLAlias = other.getLocatorSSLAlias();
 
-    this.sslEndPointIdentificationEnabled = other.getSSLEndPointIdentificationEnabled();
-    this.securableCommunicationChannels =
+    sslEndPointIdentificationEnabled = other.getSSLEndPointIdentificationEnabled();
+    securableCommunicationChannels =
         ((DistributionConfigImpl) other).securableCommunicationChannels;
 
-    this.sslUseDefaultSSLContext = other.getSSLUseDefaultContext();
-    this.sslCiphers = other.getSSLCiphers();
-    this.sslProtocols = other.getSSLProtocols();
-    this.sslRequireAuthentication = other.getSSLRequireAuthentication();
-    this.sslKeyStore = other.getSSLKeyStore();
-    this.sslKeyStorePassword = other.getSSLKeyStorePassword();
-    this.sslKeyStoreType = other.getSSLKeyStoreType();
-    this.sslTrustStore = other.getSSLTrustStore();
-    this.sslTrustStorePassword = other.getSSLTrustStorePassword();
-    this.sslTrustStoreType = other.getSSLTrustStoreType();
-    this.sslProperties = other.getSSLProperties();
-    this.sslDefaultAlias = other.getSSLDefaultAlias();
-    this.sslWebServiceRequireAuthentication = other.getSSLWebRequireAuthentication();
-    this.sslParameterExtension = other.getSSLParameterExtension();
+    sslUseDefaultSSLContext = other.getSSLUseDefaultContext();
+    sslCiphers = other.getSSLCiphers();
+    sslProtocols = other.getSSLProtocols();
+    sslRequireAuthentication = other.getSSLRequireAuthentication();
+    sslKeyStore = other.getSSLKeyStore();
+    sslKeyStorePassword = other.getSSLKeyStorePassword();
+    sslKeyStoreType = other.getSSLKeyStoreType();
+    sslTrustStore = other.getSSLTrustStore();
+    sslTrustStorePassword = other.getSSLTrustStorePassword();
+    sslTrustStoreType = other.getSSLTrustStoreType();
+    sslProperties = other.getSSLProperties();
+    sslDefaultAlias = other.getSSLDefaultAlias();
+    sslWebServiceRequireAuthentication = other.getSSLWebRequireAuthentication();
+    sslParameterExtension = other.getSSLParameterExtension();
 
     validateSerializableObjects = other.getValidateSerializableObjects();
     serializableObjectFilter = other.getSerializableObjectFilter();
@@ -978,8 +977,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     // For gemfire.security-* properties, we will need to look at
     // all the system properties instead of looping through attNames
     Set attNameSet = new HashSet();
-    for (int index = 0; index < attNames.length; ++index) {
-      attNameSet.add(GeodeGlossary.GEMFIRE_PREFIX + attNames[index]);
+    for (final String s : attNames) {
+      attNameSet.add(GeodeGlossary.GEMFIRE_PREFIX + s);
     }
 
     // Ensure that we're also iterating over the default properties - see GEODE-4690.
@@ -1551,9 +1550,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     if (apiProps != null) {
       setSource(apiProps, ConfigSource.api());
       modifiable = true;
-      Iterator it = apiProps.entrySet().iterator();
-      while (it.hasNext()) {
-        Map.Entry me = (Map.Entry) it.next();
+      for (final Map.Entry<Object, Object> objectObjectEntry : apiProps.entrySet()) {
+        Map.Entry me = (Map.Entry) objectObjectEntry;
         String propName = (String) me.getKey();
         props.put(propName, me.getValue());
         if (isSpecialPropertyName(propName)) {
@@ -1573,7 +1571,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
    * a collection of configuration properties that are used to skip some security properties
    * during initialization due to dependency issues
    */
-  private Set<String> specialPropertyNames = new HashSet<>(Arrays.asList(CLUSTER_SSL_ENABLED,
+  private final Set<String> specialPropertyNames = new HashSet<>(Arrays.asList(CLUSTER_SSL_ENABLED,
       SECURITY_PEER_AUTH_INIT, SECURITY_PEER_AUTHENTICATOR,
       LOG_WRITER_NAME, DS_CONFIG_NAME,
       SECURITY_LOG_WRITER_NAME, LOG_OUTPUTSTREAM_NAME,
@@ -1675,9 +1673,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     // Allow attributes to be modified
     modifiable = true;
     this.props = props;
-    Iterator it = props.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry me = (Map.Entry) it.next();
+    for (final Object o : props.entrySet()) {
+      Map.Entry me = (Map.Entry) o;
       String propName = (String) me.getKey();
       // if ssl-enabled is set to true before the mcast port is set to 0, then it will error.
       // security should not be enabled before the mcast port is set to 0.
@@ -1721,9 +1718,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     properties.remove(SECURITY_SYSTEM_PREFIX + SECURITY_PEER_AUTH_INIT);
     properties.remove(SECURITY_SYSTEM_PREFIX + SECURITY_PEER_AUTHENTICATOR);
 
-    Iterator iter = security.keySet().iterator();
-    while (iter.hasNext()) {
-      properties.remove(SECURITY_SYSTEM_PREFIX + iter.next());
+    for (final Object o : security.keySet()) {
+      properties.remove(SECURITY_SYSTEM_PREFIX + o);
     }
     System.setProperties(properties);
   }
@@ -3019,7 +3015,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     // sslEndPointIdentificationEnabled is a boxed boolean and no default value is set, so that
     // we can differentiate between an assigned default vs user provided override. This is set
     // to true when ssl-use-default-context is true or else its false. So return false if its null.
-    if (this.sslEndPointIdentificationEnabled == null) {
+    if (sslEndPointIdentificationEnabled == null) {
       return false;
     }
     return sslEndPointIdentificationEnabled;
@@ -3048,8 +3044,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   @Override
   public void setSSLUseDefaultContext(final boolean sslUseDefaultSSLContext) {
-    if (this.sslEndPointIdentificationEnabled == null) {
-      this.sslEndPointIdentificationEnabled = Boolean.TRUE;
+    if (sslEndPointIdentificationEnabled == null) {
+      sslEndPointIdentificationEnabled = Boolean.TRUE;
     }
     this.sslUseDefaultSSLContext = sslUseDefaultSSLContext;
   }

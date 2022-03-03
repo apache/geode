@@ -42,8 +42,8 @@ import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 @Category(OQLQueryTest.class)
 public class MaxIntegrationTest extends AggregateFunctionQueryBaseIntegrationTest {
-  private Map<String, Comparable> queries = new HashMap<>();
-  private Map<String, Comparable> equiJoinQueries = new HashMap<>();
+  private final Map<String, Comparable> queries = new HashMap<>();
+  private final Map<String, Comparable> equiJoinQueries = new HashMap<>();
 
   public void prepareStructures() {
     Supplier<Stream<Portfolio>> supplierOne =

@@ -15,11 +15,13 @@
 package org.apache.geode.redis.internal.commands.executor.set;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_DIFFERENT_SLOTS;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_SLOT;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static redis.clients.jedis.Protocol.Command.SMOVE;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -29,20 +31,18 @@ import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.Protocol;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
-import org.apache.geode.redis.internal.RedisConstants;
 
 public abstract class AbstractSMoveIntegrationTest implements RedisIntegrationTest {
   private JedisCluster jedis;
-  private static final String nonExistentSetKey = "{tag1}nonExistentSet";
-  private static final String sourceKey = "{tag1}sourceKey";
-  private static final String[] sourceMembers = {"one", "two", "three", "four", "five"};
-  private static final String destKey = "{tag1}destKey";
-  private static final String[] destMembers = {"a", "b", "c"};
-  private static final String movedMember = "one";
+  private static final String NON_EXISTENT_SET_KEY = "{tag1}nonExistentSet";
+  private static final String SOURCE_KEY = "{tag1}sourceKey";
+  private static final String[] SOURCE_MEMBERS = {"one", "two", "three", "four", "five"};
+  private static final String DESTINATION_KEY = "{tag1}destKey";
+  private static final String[] DESTINATION_MEMBERS = {"a", "b", "c"};
+  private static final String MOVED_MEMBER = "one";
 
   @Before
   public void setUp() {
@@ -57,182 +57,187 @@ public abstract class AbstractSMoveIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void smove_givenWrongNumberOfArguments_returnsError() {
-    assertExactNumberOfArgs(jedis, Protocol.Command.SMOVE, 3);
+    assertExactNumberOfArgs(jedis, SMOVE, 3);
   }
 
   @Test
   public void smove_withWrongTypeSource_returnsWrongTypeError() {
-    jedis.set(sourceKey, "value");
-    jedis.sadd(destKey, destMembers);
+    jedis.set(SOURCE_KEY, "value");
+    jedis.sadd(DESTINATION_KEY, DESTINATION_MEMBERS);
 
-    assertThatThrownBy(() -> jedis.smove(sourceKey, destKey, movedMember))
-        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.smove(SOURCE_KEY, DESTINATION_KEY, MOVED_MEMBER))
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
   public void smove_withWrongTypeDest_returnsWrongTypeError() {
-    jedis.sadd(sourceKey, sourceMembers);
-    jedis.set(destKey, "value");
+    jedis.sadd(SOURCE_KEY, SOURCE_MEMBERS);
+    jedis.set(DESTINATION_KEY, "value");
 
-    assertThatThrownBy(() -> jedis.smove(sourceKey, destKey, movedMember))
-        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.smove(SOURCE_KEY, DESTINATION_KEY, MOVED_MEMBER))
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
   public void smove_withWrongTypeSourceAndDest_returnsWrongTypeError() {
-    jedis.set(sourceKey, "sourceMember");
-    jedis.set(destKey, "destMember");
+    jedis.set(SOURCE_KEY, "sourceMember");
+    jedis.set(DESTINATION_KEY, "destMember");
 
-    assertThatThrownBy(() -> jedis.smove(sourceKey, destKey, movedMember))
-        .hasMessageContaining(RedisConstants.ERROR_WRONG_TYPE);
+    assertThatThrownBy(() -> jedis.smove(SOURCE_KEY, DESTINATION_KEY, MOVED_MEMBER))
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
   public void smove_withNonExistentSource_returnsZero_sourceKeyDoesNotExist() {
-    jedis.sadd(destKey, destMembers);
+    jedis.sadd(DESTINATION_KEY, DESTINATION_MEMBERS);
 
-    assertThat(jedis.smove(nonExistentSetKey, destKey, movedMember))
+    assertThat(jedis.smove(NON_EXISTENT_SET_KEY, DESTINATION_KEY, MOVED_MEMBER))
         .isEqualTo(0);
-    assertThat(jedis.exists(nonExistentSetKey)).isFalse();
+    assertThat(jedis.exists(NON_EXISTENT_SET_KEY)).isFalse();
   }
 
   @Test
   public void smove_withNonExistentMemberInSource_returnsZero_memberNotAddedToDest() {
     String nonExistentMember = "foo";
-    jedis.sadd(sourceKey, sourceMembers);
-    jedis.sadd(destKey, destMembers);
+    jedis.sadd(SOURCE_KEY, SOURCE_MEMBERS);
+    jedis.sadd(DESTINATION_KEY, DESTINATION_MEMBERS);
 
-    assertThat(jedis.smove(nonExistentSetKey, destKey, nonExistentMember))
+    assertThat(jedis.smove(NON_EXISTENT_SET_KEY, DESTINATION_KEY, nonExistentMember))
         .isEqualTo(0);
-    assertThat(jedis.sismember(destKey, nonExistentMember)).isFalse();
+    assertThat(jedis.sismember(DESTINATION_KEY, nonExistentMember)).isFalse();
   }
 
   @Test
   public void smove_withExistentSourceAndNonExistentDest_returnsOne_memberMovedFromSourceToCreatedDest() {
-    jedis.sadd(sourceKey, sourceMembers);
+    jedis.sadd(SOURCE_KEY, SOURCE_MEMBERS);
 
-    String[] sourceResult = ArrayUtils.remove(sourceMembers, 0);
-    String[] destResult = new String[] {movedMember};
+    String[] sourceResult = ArrayUtils.remove(SOURCE_MEMBERS, 0);
+    String[] destResult = new String[] {MOVED_MEMBER};
 
-    assertThat(jedis.smove(sourceKey, destKey, movedMember))
+    assertThat(jedis.smove(SOURCE_KEY, DESTINATION_KEY, MOVED_MEMBER))
         .isEqualTo(1);
 
-    assertThat(jedis.smembers(sourceKey)).containsExactlyInAnyOrder(sourceResult);
-    assertThat(jedis.smembers(destKey)).containsExactlyInAnyOrder(destResult);
+    assertThat(jedis.smembers(SOURCE_KEY)).containsExactlyInAnyOrder(sourceResult);
+    assertThat(jedis.smembers(DESTINATION_KEY)).containsExactlyInAnyOrder(destResult);
   }
 
   @Test
   public void smove_withExistentSourceAndDest_returnsOne_memberMovedFromSourceToDest() {
-    jedis.sadd(sourceKey, sourceMembers);
-    jedis.sadd(destKey, destMembers);
+    jedis.sadd(SOURCE_KEY, SOURCE_MEMBERS);
+    jedis.sadd(DESTINATION_KEY, DESTINATION_MEMBERS);
 
-    String[] sourceResult = ArrayUtils.remove(sourceMembers, 0);
-    String[] destResult = ArrayUtils.add(destMembers, movedMember);
+    String[] sourceResult = ArrayUtils.remove(SOURCE_MEMBERS, 0);
+    String[] destResult = ArrayUtils.add(DESTINATION_MEMBERS, MOVED_MEMBER);
 
-    assertThat(jedis.smove(sourceKey, destKey, movedMember))
+    assertThat(jedis.smove(SOURCE_KEY, DESTINATION_KEY, MOVED_MEMBER))
         .isEqualTo(1);
 
-    assertThat(jedis.smembers(sourceKey)).containsExactlyInAnyOrder(sourceResult);
-    assertThat(jedis.smembers(destKey)).containsExactlyInAnyOrder(destResult);
+    assertThat(jedis.smembers(SOURCE_KEY)).containsExactlyInAnyOrder(sourceResult);
+    assertThat(jedis.smembers(DESTINATION_KEY)).containsExactlyInAnyOrder(destResult);
   }
 
   @Test
   public void smove_withSameSourceAndDest_withMemberInDest_returnsOne_setNotModified() {
-    jedis.sadd(sourceKey, sourceMembers);
-    assertThat(jedis.smove(sourceKey, sourceKey, movedMember))
+    jedis.sadd(SOURCE_KEY, SOURCE_MEMBERS);
+    assertThat(jedis.smove(SOURCE_KEY, SOURCE_KEY, MOVED_MEMBER))
         .isEqualTo(1);
 
-    assertThat(jedis.smembers(sourceKey)).containsExactlyInAnyOrder(sourceMembers);
+    assertThat(jedis.smembers(SOURCE_KEY)).containsExactlyInAnyOrder(SOURCE_MEMBERS);
   }
 
   @Test
   public void smove_withExistentSourceAndDest_withMemberInDest_returnsOne_memberRemovedFromSource() {
-    jedis.sadd(sourceKey, sourceMembers);
-    String[] newDestMembers = ArrayUtils.add(destMembers, movedMember);
-    jedis.sadd(destKey, newDestMembers);
+    jedis.sadd(SOURCE_KEY, SOURCE_MEMBERS);
+    String[] newDestMembers = ArrayUtils.add(DESTINATION_MEMBERS, MOVED_MEMBER);
+    jedis.sadd(DESTINATION_KEY, newDestMembers);
 
-    String[] sourceResult = ArrayUtils.remove(sourceMembers, 0);
+    String[] sourceResult = ArrayUtils.remove(SOURCE_MEMBERS, 0);
 
-    assertThat(jedis.smove(sourceKey, destKey, movedMember))
+    assertThat(jedis.smove(SOURCE_KEY, DESTINATION_KEY, MOVED_MEMBER))
         .isEqualTo(1);
 
-    assertThat(jedis.smembers(sourceKey)).containsExactlyInAnyOrder(sourceResult);
-    assertThat(jedis.smembers(destKey)).containsExactlyInAnyOrder(newDestMembers);
+    assertThat(jedis.smembers(SOURCE_KEY)).containsExactlyInAnyOrder(sourceResult);
+    assertThat(jedis.smembers(DESTINATION_KEY)).containsExactlyInAnyOrder(newDestMembers);
   }
 
   @Test
   public void smoveWithSetsFromDifferentSlots_returnsCrossSlotError() {
     String setKeyDifferentSlot = "{tag2}setKey2";
-    jedis.sadd(sourceKey, setKeyDifferentSlot);
-    jedis.sadd(sourceKey, sourceMembers);
-    jedis.sadd(setKeyDifferentSlot, destMembers);
+    jedis.sadd(SOURCE_KEY, setKeyDifferentSlot);
+    jedis.sadd(SOURCE_KEY, SOURCE_MEMBERS);
+    jedis.sadd(setKeyDifferentSlot, DESTINATION_MEMBERS);
 
-    assertThatThrownBy(() -> jedis.smove(sourceKey, setKeyDifferentSlot, movedMember))
-        .hasMessageContaining(ERROR_DIFFERENT_SLOTS);
+    assertThatThrownBy(
+        () -> jedis.sendCommand(SOURCE_KEY, SMOVE, SOURCE_KEY, setKeyDifferentSlot, MOVED_MEMBER))
+            .hasMessage(ERROR_WRONG_SLOT);
   }
 
   @Test
   public void ensureSetConsistency_whenRunningConcurrently_withSRemAndSMove() {
-    String[] sourceMemberRemoved = ArrayUtils.remove(sourceMembers, 0);
-    String[] destMemberAdded = ArrayUtils.add(destMembers, movedMember);
+    String[] sourceMemberRemoved = ArrayUtils.remove(SOURCE_MEMBERS, 0);
+    String[] destMemberAdded = ArrayUtils.add(DESTINATION_MEMBERS, MOVED_MEMBER);
 
-    jedis.sadd(sourceKey, sourceMembers);
-    jedis.sadd(destKey, destMembers);
+    jedis.sadd(SOURCE_KEY, SOURCE_MEMBERS);
+    jedis.sadd(DESTINATION_KEY, DESTINATION_MEMBERS);
 
     final AtomicLong moved = new AtomicLong(0);
     new ConcurrentLoopingThreads(1000,
-        i -> jedis.srem(sourceKey, movedMember),
-        i -> moved.set(jedis.smove(sourceKey, destKey, movedMember)))
+        i -> jedis.srem(SOURCE_KEY, MOVED_MEMBER),
+        i -> moved.set(jedis.smove(SOURCE_KEY, DESTINATION_KEY, MOVED_MEMBER)))
             .runWithAction(() -> {
               if (moved.get() == 1) {
-                assertThat(jedis.smembers(sourceKey))
+                assertThat(jedis.smembers(SOURCE_KEY))
                     .containsExactlyInAnyOrder(sourceMemberRemoved);
-                assertThat(jedis.smembers(destKey)).containsExactlyInAnyOrder(destMemberAdded);
+                assertThat(jedis.smembers(DESTINATION_KEY))
+                    .containsExactlyInAnyOrder(destMemberAdded);
               } else {
-                assertThat(jedis.smembers(sourceKey))
+                assertThat(jedis.smembers(SOURCE_KEY))
                     .containsExactlyInAnyOrder(sourceMemberRemoved);
-                assertThat(jedis.smembers(destKey)).containsExactlyInAnyOrder(destMembers);
+                assertThat(jedis.smembers(DESTINATION_KEY)).containsExactlyInAnyOrder(
+                    DESTINATION_MEMBERS);
               }
-              jedis.sadd(sourceKey, movedMember);
-              jedis.srem(destKey, movedMember);
+              jedis.sadd(SOURCE_KEY, MOVED_MEMBER);
+              jedis.srem(DESTINATION_KEY, MOVED_MEMBER);
             });
   }
 
   @Test
   public void ensureSetConsistency_whenRunningConcurrently_withSMovesFromSameSourceAndDifferentDestination() {
-    String[] sourceMemberRemoved = ArrayUtils.remove(sourceMembers, 0);
-    String[] destMemberAdded = ArrayUtils.add(destMembers, movedMember);
-    String[] nonExisistentMemberAdded = {movedMember};
+    String[] sourceMemberRemoved = ArrayUtils.remove(SOURCE_MEMBERS, 0);
+    String[] destMemberAdded = ArrayUtils.add(DESTINATION_MEMBERS, MOVED_MEMBER);
+    String[] nonExisistentMemberAdded = {MOVED_MEMBER};
 
-    jedis.sadd(sourceKey, sourceMembers);
-    jedis.sadd(destKey, destMembers);
+    jedis.sadd(SOURCE_KEY, SOURCE_MEMBERS);
+    jedis.sadd(DESTINATION_KEY, DESTINATION_MEMBERS);
 
     final AtomicLong movedToNonExistent = new AtomicLong(0);
     final AtomicLong movedToDest = new AtomicLong(0);
     new ConcurrentLoopingThreads(1000,
-        i -> movedToNonExistent.set(jedis.smove(sourceKey, nonExistentSetKey, movedMember)),
-        i -> movedToDest.set(jedis.smove(sourceKey, destKey, movedMember)))
+        i -> movedToNonExistent.set(jedis.smove(SOURCE_KEY, NON_EXISTENT_SET_KEY, MOVED_MEMBER)),
+        i -> movedToDest.set(jedis.smove(SOURCE_KEY, DESTINATION_KEY, MOVED_MEMBER)))
             .runWithAction(() -> {
               // Asserts that only one smove was preformed
               assertThat(movedToNonExistent.get() ^ movedToDest.get()).isEqualTo(1);
-              assertThat(jedis.smembers(sourceKey)).containsExactlyInAnyOrder(sourceMemberRemoved);
+              assertThat(jedis.smembers(SOURCE_KEY)).containsExactlyInAnyOrder(sourceMemberRemoved);
 
               if (movedToNonExistent.get() == 1) {
-                assertThat(jedis.smembers(nonExistentSetKey))
+                assertThat(jedis.smembers(NON_EXISTENT_SET_KEY))
                     .containsExactlyInAnyOrder(nonExisistentMemberAdded);
               } else {
-                assertThat(jedis.exists(nonExistentSetKey)).isFalse();
+                assertThat(jedis.exists(NON_EXISTENT_SET_KEY)).isFalse();
               }
 
               if (movedToDest.get() == 1) {
-                assertThat(jedis.smembers(destKey)).containsExactlyInAnyOrder(destMemberAdded);
+                assertThat(jedis.smembers(DESTINATION_KEY))
+                    .containsExactlyInAnyOrder(destMemberAdded);
               } else {
-                assertThat(jedis.smembers(destKey)).containsExactlyInAnyOrder(destMembers);
+                assertThat(jedis.smembers(DESTINATION_KEY)).containsExactlyInAnyOrder(
+                    DESTINATION_MEMBERS);
               }
 
-              jedis.sadd(sourceKey, movedMember);
-              jedis.srem(destKey, movedMember);
-              jedis.srem(nonExistentSetKey, movedMember);
+              jedis.sadd(SOURCE_KEY, MOVED_MEMBER);
+              jedis.srem(DESTINATION_KEY, MOVED_MEMBER);
+              jedis.srem(NON_EXISTENT_SET_KEY, MOVED_MEMBER);
             });
   }
 }
