@@ -605,10 +605,7 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   @Test
   public void testLset() {
-    runCommandAndAssertNoStatUpdates(LIST_KEY, k -> {
-      jedis.lpush(k, "value");
-      jedis.lset(k, 1, "newvalue");
-    });
+    runCommandAndAssertNoStatUpdates(LIST_KEY, k -> jedis.lset(k, 0, "newvalue"));
   }
 
   @Test

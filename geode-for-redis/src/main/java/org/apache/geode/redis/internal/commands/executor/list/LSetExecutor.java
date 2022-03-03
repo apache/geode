@@ -16,6 +16,11 @@
 package org.apache.geode.redis.internal.commands.executor.list;
 
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NO_SUCH_KEY;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
+import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
+
 import java.util.List;
 
 import org.apache.geode.cache.Region;
@@ -24,26 +29,31 @@ import org.apache.geode.redis.internal.commands.executor.CommandExecutor;
 import org.apache.geode.redis.internal.commands.executor.RedisResponse;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class LSetExecutor implements CommandExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    Region<RedisKey, RedisData> region = context.getRegion();
     List<byte[]> commandElements = command.getProcessedCommand();
-
     RedisKey key = command.getKey();
-    context.listLockedExecute(key, false, RedisData::exists);
 
-    long index = Coder.bytesToLong(commandElements.get(2));
-    byte[] value = commandElements.get(3);
+    return context.listLockedExecute(key, false, list -> {
+      if (!list.exists()) {
+        return RedisResponse.error(ERROR_NO_SUCH_KEY);
+      }
 
-    context.listLockedExecute(key, false, list -> {
-      list.lset(region, key, (int) index, value);
-      return null;
+      int index;
+      try {
+        index = narrowLongToInt(bytesToLong(commandElements.get(2)));
+      } catch (NumberFormatException e) {
+        return RedisResponse.error(ERROR_NOT_INTEGER);
+      }
+
+      Region<RedisKey, RedisData> region = context.getRegion();
+      byte[] value = commandElements.get(3);
+      list.lset(region, key, index, value);
+
+      return RedisResponse.ok();
     });
-
-    return RedisResponse.ok();
   }
 }
