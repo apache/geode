@@ -152,8 +152,9 @@ cd ${GEODE}/../..
 echo "1. In a separate terminal window, ${0%/*}/deploy_rc_pipeline.sh -v ${VERSION_MM}"
 echo "2. Monitor https://concourse.apachegeode-ci.info/teams/main/pipelines/apache-support-${VERSION_MM//./-}-rc until all green"
 echo "3. If you haven't already, add a ${VERSION} section to https://cwiki.apache.org/confluence/display/GEODE/Release+Notes"
-jiraverid=$(curl -s 'https://issues.apache.org/jira/secure/ConfigureReleaseNote.jspa?projectId=12318420' | tr -d ' \n' | tr '<' '\n'| awk '/optionvalue.*'$VERSION'$/{sub(/optionvalue="/,"");sub(/">.*/,"");print}')
-echo "   The 'full list' link will be https://issues.apache.org/jira/secure/ReleaseNote.jspa?projectId=12318420&version=$jiraverid"
+JIRABASE=https://issues.apache.org/jira/secure
+jiraverid=$(curl -s $JIRABASE'/ConfigureReleaseNote.jspa?projectId=12318420' | tr -d ' \n' | tr '<' '\n'| awk '/optionvalue.*'$VERSION'$/{sub(/optionvalue="/,"");sub(/">.*/,"");print}')
+echo "   The 'full list' link will be $JIRABASE/ReleaseNote.jspa?projectId=12318420&version=$jiraverid"
 echo "4. Send the following email to announce the RC:"
 echo "To: dev@geode.apache.org"
 echo "Subject: [VOTE] Apache Geode ${FULL_VERSION}"
