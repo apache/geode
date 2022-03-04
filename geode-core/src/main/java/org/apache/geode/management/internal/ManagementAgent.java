@@ -298,13 +298,11 @@ public class ManagementAgent {
     if (StringUtils.isNotEmpty(sslConfig.getTruststoreType())) {
       sslProps.put(SSLConfigurationFactory.JAVAX_TRUSTSTORE_TYPE, sslConfig.getTruststoreType());
     }
-    if (StringUtils.isNotEmpty(sslConfig.getCiphers())
-        && !sslConfig.getCiphers().equalsIgnoreCase("any")) {
+    if (!sslConfig.isAnyCiphers()) {
       sslProps.put("javax.rmi.ssl.client.enabledCipherSuites", sslConfig.getCiphers());
     }
-    if (StringUtils.isNotEmpty(sslConfig.getProtocols())
-        && !sslConfig.getProtocols().equalsIgnoreCase("any")) {
-      sslProps.put("javax.rmi.ssl.client.enabledProtocols", sslConfig.getProtocols());
+    if (!SSLConfig.isAnyProtocols(sslConfig.getClientProtocols())) {
+      sslProps.put("javax.rmi.ssl.client.enabledProtocols", sslConfig.getClientProtocols());
     }
 
     return sslProps;

@@ -208,9 +208,9 @@ public class NettyRedisServer {
         sslContextBuilder.ciphers(Arrays.asList(sslConfigForServer.getCiphersAsStringArray()));
       }
 
-      if (!sslConfigForServer.isAnyProtocols()) {
+      if (!sslConfigForServer.isAnyProtocols(sslConfigForServer.getServerProtocols())) {
         sslContextBuilder.protocols(
-            Arrays.asList(sslConfigForServer.getProtocolsAsStringArray()));
+            Arrays.asList(sslConfigForServer.getServerProtocolsAsStringArray()));
       }
 
       if (sslConfigForServer.isRequireAuth()) {

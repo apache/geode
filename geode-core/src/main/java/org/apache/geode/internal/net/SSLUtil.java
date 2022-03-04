@@ -20,6 +20,7 @@ import static org.apache.geode.internal.net.filewatch.FileWatchingX509ExtendedTr
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
+import java.util.stream.Stream;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -29,8 +30,9 @@ import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import org.apache.geode.annotations.VisibleForTesting;
 
 public class SSLUtil {
   /**
@@ -38,16 +40,20 @@ public class SSLUtil {
    * this list as new algorithms become available and are supported by Geode. Remove old,
    * no-longer trusted algorithms.
    */
-  protected static final String[] DEFAULT_ALGORITMS = {
-      "TLSv1.3",
-      "TLSv1.2"}; // TLSv1.3 is not available in JDK 8 at this time
+  static final String[] DEFAULT_ALGORITHMS = {"TLSv1.3", "TLSv1.2"};
 
-
-
-  public static SSLContext getSSLContextInstance(SSLConfig sslConfig)
+  public static @NotNull SSLContext getSSLContextInstance(final @NotNull SSLConfig sslConfig)
       throws NoSuchAlgorithmException {
-    String[] protocols = sslConfig.getProtocolsAsStringArray();
-    return findSSLContextForProtocols(protocols, DEFAULT_ALGORITMS);
+    final String[] protocols = combineProtocols(sslConfig);
+    return findSSLContextForProtocols(protocols, DEFAULT_ALGORITHMS);
+  }
+
+  static @NotNull String[] combineProtocols(final @NotNull SSLConfig sslConfig) {
+    return Stream.concat(
+        Stream.of(sslConfig.getServerProtocolsAsStringArray()),
+        Stream.of(sslConfig.getClientProtocolsAsStringArray()))
+        .distinct()
+        .toArray(String[]::new);
   }
 
   /**
@@ -60,9 +66,8 @@ public class SSLUtil {
    * and a second argument of D, E
    * the search order would be A, B, D, E, C
    */
-  @VisibleForTesting
-  protected static SSLContext findSSLContextForProtocols(final String[] protocols,
-      final String[] protocolsForAny)
+  static @NotNull SSLContext findSSLContextForProtocols(final @NotNull String[] protocols,
+      final @NotNull String[] protocolsForAny)
       throws NoSuchAlgorithmException {
     for (String protocol : protocols) {
       if (protocol.equalsIgnoreCase("any")) {
@@ -82,29 +87,32 @@ public class SSLUtil {
     throw new NoSuchAlgorithmException();
   }
 
-  /** Read an array of values from a string, whitespace or comma separated. */
-  public static String[] readArray(String text) {
+  /** Splits an array of values from a string, whitespace or comma separated. */
+  static @NotNull String[] split(final @Nullable String text) {
     if (StringUtils.isBlank(text)) {
-      return null;
+      return new String[0];
     }
 
     return text.split("[\\s,]+");
   }
 
-  public static SSLContext createAndConfigureSSLContext(SSLConfig sslConfig,
-      boolean skipSslVerification) {
+  public static @NotNull SSLContext createAndConfigureSSLContext(final @NotNull SSLConfig sslConfig,
+      final boolean skipSslVerification) {
     try {
       if (sslConfig.useDefaultSSLContext()) {
         return SSLContext.getDefault();
       }
-      SSLContext ssl = getSSLContextInstance(sslConfig);
 
-      KeyManager[] keyManagers = null;
+      final SSLContext ssl = getSSLContextInstance(sslConfig);
+
+      final KeyManager[] keyManagers;
       if (sslConfig.getKeystore() != null) {
         keyManagers = new KeyManager[] {newFileWatchingKeyManager(sslConfig)};
+      } else {
+        keyManagers = null;
       }
 
-      TrustManager[] trustManagers = null;
+      final TrustManager[] trustManagers;
       if (skipSslVerification) {
         trustManagers = new TrustManager[] {new X509TrustManager() {
           @Override
@@ -121,6 +129,8 @@ public class SSLUtil {
         }};
       } else if (sslConfig.getTruststore() != null) {
         trustManagers = new TrustManager[] {newFileWatchingTrustManager(sslConfig)};
+      } else {
+        trustManagers = null;
       }
 
       ssl.init(keyManagers, trustManagers, new SecureRandom());
@@ -130,11 +140,11 @@ public class SSLUtil {
     }
   }
 
-  static KeyManagerFactory getDefaultKeyManagerFactory() throws NoSuchAlgorithmException {
+  static @NotNull KeyManagerFactory getDefaultKeyManagerFactory() throws NoSuchAlgorithmException {
     return KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
   }
 
-  static TrustManagerFactory getDefaultTrustManagerFactory()
+  static @NotNull TrustManagerFactory getDefaultTrustManagerFactory()
       throws NoSuchAlgorithmException {
     return TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
   }

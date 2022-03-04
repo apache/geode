@@ -51,16 +51,27 @@ import org.apache.geode.test.version.VersionManager;
 public class GfshRule extends ExternalResource {
 
   private final TemporaryFolder temporaryFolder = new TemporaryFolder();
+  private final String version;
+  private final Path javaHome;
+
   private List<GfshExecution> gfshExecutions;
   private Path gfsh;
-  private final String version;
 
   public GfshRule() {
-    this(null);
+    this(null, null);
   }
 
-  public GfshRule(String version) {
+  public GfshRule(final String version) {
+    this(version, null);
+  }
+
+  public GfshRule(final Path javaHome) {
+    this(null, javaHome);
+  }
+
+  public GfshRule(final String version, final Path javaHome) {
     this.version = version;
+    this.javaHome = javaHome;
   }
 
   @Override
@@ -192,6 +203,9 @@ public class GfshRule extends ExternalResource {
     if (gfshDebugPort > 0) {
       environmentMap.put("JAVA_ARGS",
           "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=" + gfshDebugPort);
+    }
+    if (null != javaHome) {
+      environmentMap.put("JAVA_HOME", javaHome.toString());
     }
 
     return processBuilder;

@@ -76,32 +76,31 @@ class SCClusterSocketCreator extends ClusterSocketCreatorImpl {
    * Configure the SSLServerSocket based on this SocketCreator's settings.
    */
   private void finishServerSocket(SSLServerSocket serverSocket) {
-    SSLConfig sslConfig = coreSocketCreator.getSslConfig();
+    configureServerSocket(coreSocketCreator.getSslConfig(), serverSocket);
+  }
+
+  static void configureServerSocket(final SSLConfig sslConfig, final SSLServerSocket serverSocket) {
     serverSocket.setUseClientMode(false);
     if (sslConfig.isRequireAuth()) {
-      // serverSocket.setWantClientAuth( true );
       serverSocket.setNeedClientAuth(true);
     }
     serverSocket.setEnableSessionCreation(true);
 
-    // restrict protocols
-    String[] protocols = sslConfig.getProtocolsAsStringArray();
-    if (!"any".equalsIgnoreCase(protocols[0])) {
+    final String[] protocols = sslConfig.getServerProtocolsAsStringArray();
+    if (!SSLConfig.isAnyProtocols(protocols)) {
       serverSocket.setEnabledProtocols(protocols);
     }
-    // restrict ciphers
-    String[] ciphers = sslConfig.getCiphersAsStringArray();
-    if (!"any".equalsIgnoreCase(ciphers[0])) {
-      serverSocket.setEnabledCipherSuites(ciphers);
+
+    if (!sslConfig.isAnyCiphers()) {
+      serverSocket.setEnabledCipherSuites(sslConfig.getCiphersAsStringArray());
     }
 
-    SSLParameterExtension sslParameterExtension = sslConfig.getSSLParameterExtension();
+    final SSLParameterExtension sslParameterExtension = sslConfig.getSSLParameterExtension();
     if (sslParameterExtension != null) {
-      SSLParameters modifiedParams =
+      final SSLParameters modifiedParams =
           sslParameterExtension.modifySSLServerSocketParameters(serverSocket.getSSLParameters());
       serverSocket.setSSLParameters(modifiedParams);
     }
-
   }
 
 

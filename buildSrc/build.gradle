@@ -31,7 +31,7 @@ repositories {
 
 dependencies {
   testRuntimeOnly('org.apache.geode:geode-junit:1.3.0') {
-    exclude group: 'org.apache.logging.log4j'
+    transitive(false)
   }
   implementation(gradleApi())
   implementation('org.apache.commons:commons-lang3:3.12.0')

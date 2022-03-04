@@ -31,13 +31,19 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_AUTH
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST_PROCESSOR;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_CLIENT_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_SERVER_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_USE_DEFAULT_CONTEXT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
+import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_SSL_CLIENT_PROTOCOLS;
+import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_SSL_PROTOCOLS;
+import static org.apache.geode.distributed.internal.DistributionConfig.DEFAULT_SSL_SERVER_PROTOCOLS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -54,19 +60,19 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import org.apache.geode.UnmodifiableException;
 import org.apache.geode.internal.ConfigSource;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.serialization.filter.SerializableObjectConfig;
 import org.apache.geode.security.TestPostProcessor;
 import org.apache.geode.security.TestSecurityManager;
-import org.apache.geode.test.junit.categories.MembershipTest;
 
-@Category({MembershipTest.class})
-public class DistributionConfigJUnitTest {
+@Tag("membership")
+public class DistributionConfigImplTest {
 
   private Map<Class<?>, Class<?>> classMap;
 
@@ -78,7 +84,7 @@ public class DistributionConfigJUnitTest {
 
   private DistributionConfigImpl config;
 
-  @Before
+  @BeforeEach
   public void before() {
     classMap = new HashMap<>();
     classMap.put(boolean.class, Boolean.class);
@@ -102,15 +108,15 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testGetAttributeNames() {
     String[] attNames = AbstractDistributionConfig._getAttNames();
-    assertThat(attNames).hasSize(170);
+    assertThat(attNames).hasSize(172);
 
-    List boolList = new ArrayList();
-    List intList = new ArrayList();
-    List fileList = new ArrayList();
-    List stringList = new ArrayList();
-    List otherList = new ArrayList();
+    List<String> boolList = new ArrayList<>();
+    List<String> intList = new ArrayList<>();
+    List<String> fileList = new ArrayList<>();
+    List<String> stringList = new ArrayList<>();
+    List<String> otherList = new ArrayList<>();
     for (String attName : attNames) {
-      Class clazz = AbstractDistributionConfig._getAttributeType(attName);
+      Class<?> clazz = AbstractDistributionConfig._getAttributeType(attName);
       if (clazz.equals(Boolean.class)) {
         boolList.add(attName);
       } else if (clazz.equals(Integer.class)) {
@@ -128,9 +134,9 @@ public class DistributionConfigJUnitTest {
     System.out.println();
     System.out.println("intList: " + intList);
     System.out.println();
-    System.out.println("stringlList: " + stringList);
+    System.out.println("stringList: " + stringList);
     System.out.println();
-    System.out.println("filelList: " + fileList);
+    System.out.println("fileList: " + fileList);
     System.out.println();
     System.out.println("otherList: " + otherList);
 
@@ -138,22 +144,22 @@ public class DistributionConfigJUnitTest {
     // are.
     assertThat(boolList).hasSize(36);
     assertThat(intList).hasSize(36);
-    assertThat(stringList).hasSize(88);
+    assertThat(stringList).hasSize(90);
     assertThat(fileList).hasSize(5);
     assertThat(otherList).hasSize(5);
   }
 
   @Test
   public void testAttributeDesc() {
-    String[] attNames = AbstractDistributionConfig._getAttNames();
-    for (String attName : attNames) {
-      assertThat(AbstractDistributionConfig.dcAttDescriptions).containsKey(attName)
-          .as("Does not contain description for attribute " + attName);
+    final String[] attNames = AbstractDistributionConfig._getAttNames();
+    for (final String attName : attNames) {
+      assertThat(AbstractDistributionConfig.dcAttDescriptions)
+          .as("Does not contain description for attribute " + attName).containsKey(attName);
     }
-    List<String> attList = Arrays.asList(attNames);
-    for (Object attName : AbstractDistributionConfig.dcAttDescriptions.keySet()) {
+    final List<String> attList = Arrays.asList(attNames);
+    for (final String attName : AbstractDistributionConfig.dcAttDescriptions.keySet()) {
       if (!attList.contains(attName)) {
-        System.out.println("Has unused description for " + attName.toString());
+        System.out.println("Has unused description for " + attName);
       }
     }
   }
@@ -173,7 +179,7 @@ public class DistributionConfigJUnitTest {
       assertThat(setter.getParameterCount()).isEqualTo(1);
 
       if (!(attr.equalsIgnoreCase(LOG_LEVEL) || attr.equalsIgnoreCase(SECURITY_LOG_LEVEL))) {
-        Class clazz = attributes.get(attr).type();
+        Class<?> clazz = attributes.get(attr).type();
         try {
           setter.invoke(mock(DistributionConfig.class), any(clazz));
         } catch (Exception e) {
@@ -194,18 +200,19 @@ public class DistributionConfigJUnitTest {
     // make sure that DS_QUORUM_CHECKER_NAME is tested (GEODE-8389)
     assertThat(internalAttributeNames).contains(DistributionConfig.DS_QUORUM_CHECKER_NAME);
     for (String attributeName : config.getInternalAttributeNames()) {
-      assertThat(config.isInternalAttribute(attributeName)).isTrue()
+      assertThat(config.isInternalAttribute(attributeName))
           .withFailMessage(
-              attributeName + " is not considered to be internal, but is annotated to be internal");
-      assertThat(config.sameAs(DistributionConfigImpl.produce(configProperties, false))).isTrue()
-          .withFailMessage("sameAs failed for " + attributeName);
-      assertThat(config.sameAs(DistributionConfigImpl.produce(configProperties, true))).isTrue()
-          .withFailMessage("sameAs failed for " + attributeName);
+              attributeName + " is not considered to be internal, but is annotated to be internal")
+          .isTrue();
+      assertThat(config.sameAs(DistributionConfigImpl.produce(configProperties, false)))
+          .withFailMessage("sameAs failed for " + attributeName).isTrue();
+      assertThat(config.sameAs(DistributionConfigImpl.produce(configProperties, true)))
+          .withFailMessage("sameAs failed for " + attributeName).isTrue();
       configProperties.put(attributeName, new Object());
-      assertThat(config.sameAs(DistributionConfigImpl.produce(configProperties, false))).isTrue()
-          .withFailMessage("sameAs failed for " + attributeName);
-      assertThat(config.sameAs(DistributionConfigImpl.produce(configProperties, true))).isTrue()
-          .withFailMessage("sameAs failed for " + attributeName);
+      assertThat(config.sameAs(DistributionConfigImpl.produce(configProperties, false)))
+          .withFailMessage("sameAs failed for " + attributeName).isTrue();
+      assertThat(config.sameAs(DistributionConfigImpl.produce(configProperties, true)))
+          .withFailMessage("sameAs failed for " + attributeName).isTrue();
     }
   }
 
@@ -218,8 +225,8 @@ public class DistributionConfigJUnitTest {
       assertThat(getter.getParameterCount()).isEqualTo(0);
 
       if (!(attr.equalsIgnoreCase(LOG_LEVEL) || attr.equalsIgnoreCase(SECURITY_LOG_LEVEL))) {
-        Class clazz = attributes.get(attr).type();
-        Class returnClass = getter.getReturnType();
+        Class<?> clazz = attributes.get(attr).type();
+        Class<?> returnClass = getter.getReturnType();
         if (returnClass.isPrimitive()) {
           returnClass = classMap.get(returnClass);
         }
@@ -289,7 +296,7 @@ public class DistributionConfigJUnitTest {
   @Test
   public void testDistributionConfigImplModifiable() {
     // default DistributionConfigImpl contains only 2 modifiable attributes
-    List modifiables = new ArrayList<>();
+    List<String> modifiables = new ArrayList<>();
     for (String attName : attNames) {
       if (config.isAttributeModifiable(attName)) {
         modifiables.add(attName);
@@ -305,7 +312,7 @@ public class DistributionConfigJUnitTest {
     InternalDistributedSystem ds = mock(InternalDistributedSystem.class);
     when(ds.getOriginalConfig()).thenReturn(config);
     RuntimeDistributionConfigImpl runtime = new RuntimeDistributionConfigImpl(ds);
-    List modifiables = new ArrayList<>();
+    List<String> modifiables = new ArrayList<>();
     for (String attName : attNames) {
       if (runtime.isAttributeModifiable(attName)) {
         modifiables.add(attName);
@@ -325,14 +332,18 @@ public class DistributionConfigJUnitTest {
     assertThat(modifiables.get(9)).isEqualTo(STATISTIC_SAMPLING_ENABLED);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test()
   public void testSetInvalidAttributeObject() {
-    config.setAttributeObject("fake attribute", "test", ConfigSource.api());
+    assertThatThrownBy(
+        () -> config.setAttributeObject("fake attribute", "test", ConfigSource.api()))
+            .isInstanceOf(IllegalArgumentException.class);
   }
 
-  @Test(expected = UnmodifiableException.class)
+  @Test()
   public void testSetUnmodifiableAttributeObject() {
-    config.setAttributeObject(ARCHIVE_DISK_SPACE_LIMIT, 0, ConfigSource.api());
+    assertThatThrownBy(
+        () -> config.setAttributeObject(ARCHIVE_DISK_SPACE_LIMIT, 0, ConfigSource.api()))
+            .isInstanceOf(UnmodifiableException.class);
   }
 
   @Test
@@ -341,9 +352,10 @@ public class DistributionConfigJUnitTest {
     assertThat(config.getHttpServicePort()).isEqualTo(8080);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test()
   public void testOutOfRangeAttributeObject() {
-    config.setAttributeObject(HTTP_SERVICE_PORT, -1, ConfigSource.api());
+    assertThatThrownBy(() -> config.setAttributeObject(HTTP_SERVICE_PORT, -1, ConfigSource.api()))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
@@ -426,9 +438,11 @@ public class DistributionConfigJUnitTest {
     props.put(SSL_ENABLED_COMPONENTS, "all");
 
     DistributionConfig config = new DistributionConfigImpl(props);
+    assertThat(config.getSecurableCommunicationChannels()).containsExactlyInAnyOrder(
+        SecurableCommunicationChannel.ALL);
   }
 
-  @Test(expected = IllegalArgumentException.class)
+  @Test
   public void testSSLEnabledComponentsLegacyFail() {
     Properties props = new Properties();
     props.put(MCAST_PORT, "0");
@@ -436,7 +450,8 @@ public class DistributionConfigJUnitTest {
     props.put(HTTP_SERVICE_SSL_ENABLED, "true");
     props.put(SSL_ENABLED_COMPONENTS, "all");
 
-    DistributionConfig config = new DistributionConfigImpl(props);
+    assertThatThrownBy(() -> new DistributionConfigImpl(props))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
@@ -448,6 +463,8 @@ public class DistributionConfigJUnitTest {
     props.put(SSL_ENABLED_COMPONENTS, "");
 
     DistributionConfig config = new DistributionConfigImpl(props);
+    assertThat(config.getClusterSSLEnabled()).isTrue();
+    assertThat(config.getHttpServiceSSLEnabled()).isTrue();
   }
 
   @Test
@@ -479,7 +496,7 @@ public class DistributionConfigJUnitTest {
   }
 
   @Test
-  public void invalidAuthToken() throws Exception {
+  public void invalidAuthToken() {
     Properties props = new Properties();
     props.put(SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS, "manager");
     assertThatThrownBy(() -> new DistributionConfigImpl(props))
@@ -487,7 +504,7 @@ public class DistributionConfigJUnitTest {
   }
 
   @Test
-  public void authTokenIsCaseInsensitive() throws Exception {
+  public void authTokenIsCaseInsensitive() {
     Properties props = new Properties();
     props.put(SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS, "MANAGEment");
     DistributionConfig config = new DistributionConfigImpl(props);
@@ -500,4 +517,176 @@ public class DistributionConfigJUnitTest {
 
     assertThat(config).isInstanceOf(SerializableObjectConfig.class);
   }
+
+  @Test
+  void getSSLProtocolsReturnsValueOfPropertySSL_PROTOCOLS() {
+    final Properties props = new Properties();
+    final String protocols = "SuperProtocol1";
+    props.put(SSL_PROTOCOLS, protocols);
+    final DistributionConfig config = new DistributionConfigImpl(props);
+    assertThat(config.getSSLProtocols()).isEqualTo(protocols);
+  }
+
+  @Test
+  void getSSLProtocolsReturnsDefaultValue() {
+    final DistributionConfig config = new DistributionConfigImpl(new Properties());
+    assertThat(config.getSSLProtocols()).isEqualTo(DEFAULT_SSL_PROTOCOLS);
+  }
+
+  @Test
+  void getSSLProtocolsReturnsValueFromSetSSLProtocols() {
+    final DistributionConfig config = new DistributionConfigImpl(new Properties());
+    final String protocols = "SuperProtocol1";
+    config.setSSLProtocols(protocols);
+    assertThat(config.getSSLProtocols()).isEqualTo(protocols);
+  }
+
+  @Test
+  void getSSLProtocolsReturnsValueAfterCopyConstructed() {
+    final Properties props = new Properties();
+    final String protocols = "SuperProtocol1";
+    props.put(SSL_PROTOCOLS, protocols);
+    final DistributionConfig config = new DistributionConfigImpl(props);
+    final DistributionConfig copy = new DistributionConfigImpl(config);
+    assertThat(copy.getSSLProtocols()).isEqualTo(protocols);
+  }
+
+  @Test
+  void equalsConsidersSSLProtocols() {
+    final DistributionConfig configA = new DistributionConfigImpl(new Properties());
+    final DistributionConfig configB = new DistributionConfigImpl(new Properties());
+    assertThat(configA).isEqualTo(configB);
+    final String protocols = "SuperProtocol1";
+    configA.setSSLProtocols(protocols);
+    assertThat(configA).isNotEqualTo(configB);
+    configB.setSSLProtocols(protocols);
+    assertThat(configA).isEqualTo(configB);
+  }
+
+  @Test
+  void hashCodeConsidersSSLProtocols() {
+    final DistributionConfig configA = new DistributionConfigImpl(new Properties());
+    final DistributionConfig configB = new DistributionConfigImpl(new Properties());
+    assertThat(configA).hasSameHashCodeAs(configB);
+    final String protocols = "SuperProtocol1";
+    configA.setSSLProtocols(protocols);
+    assertThat(configA).doesNotHaveSameHashCodeAs(configB);
+    configB.setSSLProtocols(protocols);
+    assertThat(configA).hasSameHashCodeAs(configB);
+  }
+
+  @Test
+  void getSSLClientProtocolsReturnsValueOfPropertySSL_CLIENT_PROTOCOLS() {
+    final Properties props = new Properties();
+    final String protocols = "SuperProtocol1";
+    props.put(SSL_CLIENT_PROTOCOLS, protocols);
+    final DistributionConfig config = new DistributionConfigImpl(props);
+    assertThat(config.getSSLClientProtocols()).isEqualTo(protocols);
+  }
+
+  @Test
+  void getSSLClientProtocolsReturnsDefaultValue() {
+    final DistributionConfig config = new DistributionConfigImpl(new Properties());
+    assertThat(config.getSSLClientProtocols()).isEqualTo(DEFAULT_SSL_CLIENT_PROTOCOLS);
+  }
+
+  @Test
+  void getSSLClientProtocolsReturnsValueFromSetSSLClientProtocols() {
+    final DistributionConfig config = new DistributionConfigImpl(new Properties());
+    final String protocols = "SuperProtocol1";
+    config.setSSLClientProtocols(protocols);
+    assertThat(config.getSSLClientProtocols()).isEqualTo(protocols);
+  }
+
+  @Test
+  void getSSLClientProtocolsReturnsValueAfterCopyConstructed() {
+    final Properties props = new Properties();
+    final String protocols = "SuperProtocol1";
+    props.put(SSL_CLIENT_PROTOCOLS, protocols);
+    final DistributionConfig config = new DistributionConfigImpl(props);
+    final DistributionConfig copy = new DistributionConfigImpl(config);
+    assertThat(copy.getSSLClientProtocols()).isEqualTo(protocols);
+  }
+
+  @Test
+  void equalsConsidersSSLClientProtocols() {
+    final DistributionConfig configA = new DistributionConfigImpl(new Properties());
+    final DistributionConfig configB = new DistributionConfigImpl(new Properties());
+    assertThat(configA).isEqualTo(configB);
+    final String protocols = "SuperProtocol1";
+    configA.setSSLClientProtocols(protocols);
+    assertThat(configA).isNotEqualTo(configB);
+    configB.setSSLClientProtocols(protocols);
+    assertThat(configA).isEqualTo(configB);
+  }
+
+  @Test
+  void hashCodeConsidersSSLClientProtocols() {
+    final DistributionConfig configA = new DistributionConfigImpl(new Properties());
+    final DistributionConfig configB = new DistributionConfigImpl(new Properties());
+    assertThat(configA).hasSameHashCodeAs(configB);
+    final String protocols = "SuperProtocol1";
+    configA.setSSLClientProtocols(protocols);
+    assertThat(configA).doesNotHaveSameHashCodeAs(configB);
+    configB.setSSLClientProtocols(protocols);
+    assertThat(configA).hasSameHashCodeAs(configB);
+  }
+
+  @Test
+  void getSSLServerProtocolsReturnsValueOfPropertySSL_SERVER_PROTOCOLS() {
+    final Properties props = new Properties();
+    final String protocols = "SuperProtocol1";
+    props.put(SSL_SERVER_PROTOCOLS, protocols);
+    final DistributionConfig config = new DistributionConfigImpl(props);
+    assertThat(config.getSSLServerProtocols()).isEqualTo(protocols);
+  }
+
+  @Test
+  void getSSLServerProtocolsReturnsDefaultValue() {
+    final DistributionConfig config = new DistributionConfigImpl(new Properties());
+    assertThat(config.getSSLServerProtocols()).isEqualTo(DEFAULT_SSL_SERVER_PROTOCOLS);
+  }
+
+  @Test
+  void getSSLServerProtocolsReturnsValueFromSetSSLServerProtocols() {
+    final DistributionConfig config = new DistributionConfigImpl(new Properties());
+    final String protocols = "SuperProtocol1";
+    config.setSSLServerProtocols(protocols);
+    assertThat(config.getSSLServerProtocols()).isEqualTo(protocols);
+  }
+
+  @Test
+  void getSSLServerProtocolsReturnsValueAfterCopyConstructed() {
+    final Properties props = new Properties();
+    final String protocols = "SuperProtocol1";
+    props.put(SSL_SERVER_PROTOCOLS, protocols);
+    final DistributionConfig config = new DistributionConfigImpl(props);
+    final DistributionConfig copy = new DistributionConfigImpl(config);
+    assertThat(copy.getSSLServerProtocols()).isEqualTo(protocols);
+  }
+
+  @Test
+  void equalsConsidersSSLServerProtocols() {
+    final DistributionConfig configA = new DistributionConfigImpl(new Properties());
+    final DistributionConfig configB = new DistributionConfigImpl(new Properties());
+    assertThat(configA).isEqualTo(configB);
+    final String protocols = "SuperProtocol1";
+    configA.setSSLServerProtocols(protocols);
+    assertThat(configA).isNotEqualTo(configB);
+    configB.setSSLServerProtocols(protocols);
+    assertThat(configA).isEqualTo(configB);
+  }
+
+  @Test
+  void hashCodeConsidersSSLServerProtocols() {
+    final DistributionConfig configA = new DistributionConfigImpl(new Properties());
+    final DistributionConfig configB = new DistributionConfigImpl(new Properties());
+    assertThat(configA).hasSameHashCodeAs(configB);
+    final String protocols = "SuperProtocol1";
+    configA.setSSLServerProtocols(protocols);
+    assertThat(configA).doesNotHaveSameHashCodeAs(configB);
+    configB.setSSLServerProtocols(protocols);
+    assertThat(configA).hasSameHashCodeAs(configB);
+  }
+
 }

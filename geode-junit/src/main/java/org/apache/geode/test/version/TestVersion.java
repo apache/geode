@@ -17,7 +17,7 @@ package org.apache.geode.test.version;
 import java.io.Serializable;
 import java.util.Objects;
 
-public class TestVersion implements Comparable, Serializable {
+public class TestVersion implements Comparable<TestVersion>, Serializable {
   public static final TestVersion CURRENT_VERSION = new TestVersion(VersionManager.CURRENT_VERSION);
 
   private final int major;
@@ -81,11 +81,10 @@ public class TestVersion implements Comparable, Serializable {
   }
 
   @Override
-  public int compareTo(Object o) {
-    if (o == null) {
+  public int compareTo(final TestVersion other) {
+    if (other == null) {
       throw new NullPointerException("parameter may not be null");
     }
-    TestVersion other = (TestVersion) o;
     int comparison = Integer.compare(major, other.major);
     if (comparison != 0) {
       return comparison;

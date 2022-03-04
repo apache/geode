@@ -1,0 +1,77 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import org.apache.tools.ant.taskdefs.condition.Os
+
+apply plugin: 'de.undercouch.download'
+
+static def getPlatformInfo() {
+  if (Os.isFamily(Os.FAMILY_MAC)) {
+    return ['macos', 'zip']
+  } else if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+    return ['windows', 'zip']
+  } else {
+    return ['linux', 'tar.gz']
+  }
+}
+
+def getJavaVersionUrl(String version, String os, String packageType) {
+  final url = new URL("https://api.bell-sw.com/v1/liberica/releases?version=${version}&bitness=64&os=${os}&arch=x86&package-type=${packageType}&bundle-type=jdk&output=text&fields=downloadUrl")
+  final connection = url.openConnection()
+  connection.setRequestProperty("User-Agent", "Gradle/${gradle.gradleVersion}")
+  connection.setRequestProperty("Accept", "*/*")
+  final downloadUrl = connection.getInputStream().withCloseable {
+    it.text
+  }
+
+  return downloadUrl
+}
+
+ext.javaHomeForVersion = {Test test, String name, String version ->
+  final basePath = "${buildDir}/${name}"
+
+  def (os, packageType) = getPlatformInfo()
+
+  final downloadTaskName = name + "Download"
+  final downloadTask = project.tasks.findByName(downloadTaskName) ?:
+      project.tasks.register(downloadTaskName, Download) {
+    final packageFile = new File(basePath + "." + packageType).absoluteFile
+    dest packageFile
+    overwrite false
+    if (packageFile.exists()) {
+      src packageFile.toURI().toString()
+    } else {
+      src getJavaVersionUrl(version, os, packageType)
+    }
+  }.get()
+
+  final extractTaskName = name + "Extract"
+  final extractTask = project.tasks.findByName(extractTaskName) ?:
+      project.tasks.register(extractTaskName, Copy) {
+        dependsOn downloadTask
+        from(("zip" == packageType) ? zipTree(downloadTask.dest) : tarTree(downloadTask.dest)) {
+          eachFile {
+            it.relativePath = new RelativePath(true, it.relativePath.segments.drop(1))
+          }
+        }
+        into basePath
+      }.get()
+
+  test.dependsOn extractTask
+
+  return extractTask.outputs.files.first()
+}

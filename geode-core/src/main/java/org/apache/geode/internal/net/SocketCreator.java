@@ -362,38 +362,37 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   }
 
   @VisibleForTesting
-  void configureSSLEngine(SSLEngine engine, String hostName, int port, boolean clientSocket) {
-    SSLParameters parameters = engine.getSSLParameters();
-    boolean updateEngineWithParameters = false;
+  void configureSSLEngine(final SSLEngine engine, final String hostName, final int port,
+      final boolean clientSocket) {
+    engine.setUseClientMode(clientSocket);
+    final SSLParameters parameters = engine.getSSLParameters();
+    configureSSLParameters(parameters, hostName, port, clientSocket);
+    engine.setSSLParameters(parameters);
+  }
+
+  @VisibleForTesting
+  void configureSSLParameters(final SSLParameters parameters, final String hostName,
+      final int port, final boolean clientSocket) {
     if (sslConfig.doEndpointIdentification()) {
       // set server-names so that endpoint identification algorithms can find what's expected
-      if (setServerNames(parameters, new HostAndPort(hostName, port))) {
-        updateEngineWithParameters = true;
-      }
+      setServerNames(parameters, new HostAndPort(hostName, port));
     }
 
-    engine.setUseClientMode(clientSocket);
     if (clientSocket) {
-      if (checkAndEnableHostnameValidation(parameters)) {
-        updateEngineWithParameters = true;
-      }
+      checkAndEnableHostnameValidation(parameters);
     } else {
-      engine.setNeedClientAuth(sslConfig.isRequireAuth());
+      parameters.setNeedClientAuth(sslConfig.isRequireAuth());
     }
 
-    String[] protocols = sslConfig.getProtocolsAsStringArray();
-
-    if (protocols != null && !"any".equalsIgnoreCase(protocols[0])) {
-      engine.setEnabledProtocols(protocols);
+    final String[] protocols = clientSocket ? sslConfig.getClientProtocolsAsStringArray()
+        : sslConfig.getServerProtocolsAsStringArray();
+    if (!SSLConfig.isAnyProtocols(protocols)) {
+      parameters.setProtocols(protocols);
     }
 
-    String[] ciphers = sslConfig.getCiphersAsStringArray();
+    final String[] ciphers = sslConfig.getCiphersAsStringArray();
     if (ciphers != null && !"any".equalsIgnoreCase(ciphers[0])) {
-      engine.setEnabledCipherSuites(ciphers);
-    }
-
-    if (updateEngineWithParameters) {
-      engine.setSSLParameters(parameters);
+      parameters.setCipherSuites(ciphers);
     }
   }
 
@@ -576,10 +575,8 @@ public class SocketCreator extends TcpSocketCreatorImpl {
         sslSocket.setSSLParameters(parameters);
       }
 
-      String[] protocols = sslConfig.getProtocolsAsStringArray();
-
-      // restrict cyphers
-      if (protocols != null && !"any".equalsIgnoreCase(protocols[0])) {
+      String[] protocols = sslConfig.getClientProtocolsAsStringArray();
+      if (!SSLConfig.isAnyProtocols(protocols)) {
         sslSocket.setEnabledProtocols(protocols);
       }
       String[] ciphers = sslConfig.getCiphersAsStringArray();

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.net;
 
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_PROTOCOLS;
@@ -22,7 +23,10 @@ import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_R
 import java.security.KeyStore;
 import java.util.Properties;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -45,6 +49,8 @@ public class SSLConfig {
   private final boolean useDefaultSSLContext;
   private final boolean enabled;
   private final String protocols;
+  private final String serverProtocols;
+  private final String clientProtocols;
   private final String ciphers;
   private final boolean requireAuth;
   private final String keystore;
@@ -67,26 +73,30 @@ public class SSLConfig {
   @Immutable
   private final SSLParameterExtension sslParameterExtension;
 
-  private SSLConfig(boolean endpointIdentification,
-      boolean useDefaultSSLContext,
-      boolean enabled,
-      String protocols,
-      String ciphers,
-      boolean requireAuth,
-      String keystore,
-      String keystoreType,
-      String keystorePassword,
-      String truststore,
-      String truststorePassword,
-      String truststoreType,
-      String alias,
-      SecurableCommunicationChannel securableCommunicationChannel,
-      Properties properties,
-      SSLParameterExtension sslParameterExtension) {
+  private SSLConfig(final boolean endpointIdentification,
+      final boolean useDefaultSSLContext,
+      final boolean enabled,
+      final @NotNull String protocols,
+      final @Nullable String clientProtocols,
+      final @Nullable String serverProtocols,
+      final String ciphers,
+      final boolean requireAuth,
+      final String keystore,
+      final String keystoreType,
+      final String keystorePassword,
+      final String truststore,
+      final String truststorePassword,
+      final String truststoreType,
+      final String alias,
+      final SecurableCommunicationChannel securableCommunicationChannel,
+      final Properties properties,
+      final SSLParameterExtension sslParameterExtension) {
     this.endpointIdentification = endpointIdentification;
     this.useDefaultSSLContext = useDefaultSSLContext;
     this.enabled = enabled;
     this.protocols = protocols;
+    this.clientProtocols = isEmpty(clientProtocols) ? protocols : clientProtocols;
+    this.serverProtocols = isEmpty(serverProtocols) ? protocols : serverProtocols;
     this.ciphers = ciphers;
     this.requireAuth = requireAuth;
     this.keystore = keystore;
@@ -137,20 +147,28 @@ public class SSLConfig {
     return useDefaultSSLContext;
   }
 
-  public String getProtocols() {
-    return protocols;
+  public String getClientProtocols() {
+    return clientProtocols;
   }
 
-  public String[] getProtocolsAsStringArray() {
-    return SSLUtil.readArray(protocols);
+  public @NotNull String[] getClientProtocolsAsStringArray() {
+    return SSLUtil.split(clientProtocols);
+  }
+
+  public String getServerProtocols() {
+    return serverProtocols;
+  }
+
+  public @NotNull String[] getServerProtocolsAsStringArray() {
+    return SSLUtil.split(serverProtocols);
   }
 
   public String getCiphers() {
     return ciphers;
   }
 
-  public String[] getCiphersAsStringArray() {
-    return SSLUtil.readArray(ciphers);
+  public @NotNull String[] getCiphersAsStringArray() {
+    return SSLUtil.split(ciphers);
   }
 
   public boolean isRequireAuth() {
@@ -183,16 +201,24 @@ public class SSLConfig {
   /**
    * Returns true if protocols is either null, empty or is set to "any" (ignoring case)
    */
-  public boolean isAnyProtocols() {
+  public static boolean isAnyProtocols(final String protocols) {
     return StringUtils.isBlank(protocols) || "any".equalsIgnoreCase(protocols);
+  }
+
+  /**
+   * Returns true if protocols is either null, empty or is set to "any" (ignoring case)
+   */
+  public static boolean isAnyProtocols(final String... protocols) {
+    return ArrayUtils.isEmpty(protocols) || "any".equalsIgnoreCase(protocols[0]);
   }
 
   @Override
   public String toString() {
-    return "SSLConfig{" + "enabled=" + enabled + ", protocols='" + protocols + '\'' + ", ciphers='"
-        + ciphers + '\'' + ", requireAuth=" + requireAuth + ", keystore='" + keystore + '\''
-        + ", keystoreType='" + keystoreType + '\'' + ", keystorePassword='" + keystorePassword
-        + '\'' + ", truststore='" + truststore + '\'' + ", truststorePassword='"
+    return "SSLConfig{" + "enabled=" + enabled + ", protocols='" + protocols + '\''
+        + ", clientProtocols='" + clientProtocols + '\'' + ", serverProtocols='" + serverProtocols
+        + '\'' + ", ciphers='" + ciphers + '\'' + ", requireAuth=" + requireAuth + ", keystore='"
+        + keystore + '\'' + ", keystoreType='" + keystoreType + '\'' + ", keystorePassword='"
+        + keystorePassword + '\'' + ", truststore='" + truststore + '\'' + ", truststorePassword='"
         + truststorePassword + '\'' + ", truststoreType='" + truststoreType + '\'' + ", alias='"
         + alias + '\'' + ", securableCommunicationChannel=" + securableCommunicationChannel
         + ", properties=" + properties + '\'' + ", sslParameterExtension=" + sslParameterExtension
@@ -215,6 +241,10 @@ public class SSLConfig {
     }
   }
 
+  public static Builder builder() {
+    return new Builder();
+  }
+
   /**
    * Builder class to be used to construct SSLConfig instances.
    * In order to build an {@link SSLConfig} instance an instance of this
@@ -234,6 +264,8 @@ public class SSLConfig {
     private boolean useDefaultSSLContext = DistributionConfig.DEFAULT_SSL_USE_DEFAULT_CONTEXT;
     private boolean enabled = DistributionConfig.DEFAULT_SSL_ENABLED;
     private String protocols = DistributionConfig.DEFAULT_SSL_PROTOCOLS;
+    private String clientProtocols = DistributionConfig.DEFAULT_SSL_CLIENT_PROTOCOLS;
+    private String serverProtocols = DistributionConfig.DEFAULT_SSL_SERVER_PROTOCOLS;
     private String ciphers = DistributionConfig.DEFAULT_SSL_CIPHERS;
     private boolean requireAuth = DistributionConfig.DEFAULT_SSL_REQUIRE_AUTHENTICATION;
     private String keystore = DistributionConfig.DEFAULT_SSL_KEYSTORE;
@@ -251,9 +283,9 @@ public class SSLConfig {
 
     public SSLConfig build() {
       return new SSLConfig(endpointIdentification, useDefaultSSLContext, enabled,
-          protocols, ciphers, requireAuth, keystore, keystoreType, keystorePassword,
-          truststore, truststorePassword, truststoreType, alias, securableCommunicationChannel,
-          properties, sslParameterExtension);
+          protocols, clientProtocols, serverProtocols, ciphers, requireAuth, keystore, keystoreType,
+          keystorePassword, truststore, truststorePassword, truststoreType, alias,
+          securableCommunicationChannel, properties, sslParameterExtension);
     }
 
     public Builder setAlias(final String alias) {
@@ -303,6 +335,16 @@ public class SSLConfig {
 
     public Builder setProtocols(String protocols) {
       this.protocols = protocols;
+      return this;
+    }
+
+    public Builder setClientProtocols(String clientProtocols) {
+      this.clientProtocols = clientProtocols;
+      return this;
+    }
+
+    public Builder setServerProtocols(String serverProtocols) {
+      this.serverProtocols = serverProtocols;
       return this;
     }
 

@@ -619,6 +619,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   private boolean sslUseDefaultSSLContext = DEFAULT_SSL_USE_DEFAULT_CONTEXT;
   private String sslProtocols = DEFAULT_SSL_PROTOCOLS;
+  private String sslClientProtocols = DEFAULT_SSL_CLIENT_PROTOCOLS;
+  private String sslServerProtocols = DEFAULT_SSL_SERVER_PROTOCOLS;
   private String sslCiphers = DEFAULT_SSL_CIPHERS;
   private boolean sslRequireAuthentication = DEFAULT_SSL_REQUIRE_AUTHENTICATION;
   private String sslKeyStore = DEFAULT_SSL_KEYSTORE;
@@ -870,6 +872,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     sslUseDefaultSSLContext = other.getSSLUseDefaultContext();
     sslCiphers = other.getSSLCiphers();
     sslProtocols = other.getSSLProtocols();
+    sslClientProtocols = other.getSSLClientProtocols();
+    sslServerProtocols = other.getSSLServerProtocols();
     sslRequireAuthentication = other.getSSLRequireAuthentication();
     sslKeyStore = other.getSSLKeyStore();
     sslKeyStorePassword = other.getSSLKeyStorePassword();
@@ -3062,6 +3066,26 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   }
 
   @Override
+  public String getSSLClientProtocols() {
+    return sslClientProtocols;
+  }
+
+  @Override
+  public void setSSLClientProtocols(final String sslClientProtocols) {
+    this.sslClientProtocols = sslClientProtocols;
+  }
+
+  @Override
+  public String getSSLServerProtocols() {
+    return sslServerProtocols;
+  }
+
+  @Override
+  public void setSSLServerProtocols(final String sslServerProtocols) {
+    this.sslServerProtocols = sslServerProtocols;
+  }
+
+  @Override
   public String getSSLCiphers() {
     return sslCiphers;
   }
@@ -3348,7 +3372,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(httpServiceSSLTrustStorePassword, that.httpServiceSSLTrustStorePassword)
         .append(httpServiceSSLAlias, that.httpServiceSSLAlias)
         .append(securableCommunicationChannels, that.securableCommunicationChannels)
-        .append(sslProtocols, that.sslProtocols).append(sslCiphers, that.sslCiphers)
+        .append(sslProtocols, that.sslProtocols).append(sslClientProtocols, that.sslClientProtocols)
+        .append(sslServerProtocols, that.sslServerProtocols).append(sslCiphers, that.sslCiphers)
         .append(sslKeyStore, that.sslKeyStore).append(sslKeyStoreType, that.sslKeyStoreType)
         .append(sslKeyStorePassword, that.sslKeyStorePassword)
         .append(sslTrustStore, that.sslTrustStore)
@@ -3426,6 +3451,7 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(httpServiceSSLKeyStoreType).append(httpServiceSSLKeyStorePassword)
         .append(httpServiceSSLTrustStore).append(httpServiceSSLTrustStorePassword)
         .append(httpServiceSSLAlias).append(securableCommunicationChannels).append(sslProtocols)
+        .append(sslClientProtocols).append(sslServerProtocols)
         .append(sslCiphers).append(sslRequireAuthentication).append(sslKeyStore)
         .append(sslKeyStoreType).append(sslKeyStorePassword).append(sslTrustStore)
         .append(sslTrustStorePassword).append(sslParameterExtension)

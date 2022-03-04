@@ -2142,11 +2142,14 @@ public interface ConfigurationProperties {
    * <U>Since</U>: Geode 1.3
    */
   String SSL_TRUSTSTORE_TYPE = "ssl-truststore-type";
+
   /**
-   * The static String definition of the <i>"cluster-ssl-protocols"</i> property <a
+   * The static String definition of the <i>"ssl-protocols"</i> property <a
    * name="ssl-protocols"/a>
    * </p>
-   * <U>Description</U>: A space separated list of the SSL protocols to enable. Those listed must be
+   * <U>Description</U>: A space separated list of the SSL protocols to enable on both the client
+   * and server side of the SSL connection. See {@link #SSL_CLIENT_PROTOCOLS} and
+   * {@link #SSL_SERVER_PROTOCOLS} for configuring each side individually. Those listed must be
    * supported by the available providers.
    * </p>
    * <U>Default</U>: "any"
@@ -2154,6 +2157,29 @@ public interface ConfigurationProperties {
    * <U>Since</U>: Geode 1.0
    */
   String SSL_PROTOCOLS = "ssl-protocols";
+
+  /**
+   * The static String definition of the <i>"ssl-client-protocols"</i> property <a
+   * name="ssl-client-protocols"/a>
+   * </p>
+   * <U>Description</U>: A space separated list of the SSL protocols to enable on the client side
+   * of the SSL connection. Those listed must be supported by the available providers.
+   * </p>
+   * <U>Default</U>: The value of {@link #SSL_PROTOCOLS}.
+   */
+  String SSL_CLIENT_PROTOCOLS = "ssl-client-protocols";
+
+  /**
+   * The static String definition of the <i>"ssl-server-protocols"</i> property <a
+   * name="ssl-server-protocols"/a>
+   * </p>
+   * <U>Description</U>: A space separated list of the SSL protocols to enable on the server side
+   * of the SSL connection. Those listed must be supported by the available providers.
+   * </p>
+   * <U>Default</U>: The value of {@link #SSL_PROTOCOLS}.
+   */
+  String SSL_SERVER_PROTOCOLS = "ssl-server-protocols";
+
   /**
    * The static String definition of the <i>"ssl-require-authentication"</i> property <a
    * name="ssl-require-authentication"/a>
