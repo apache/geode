@@ -15,7 +15,7 @@
 package org.apache.geode.redis.internal.commands.executor.list;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
-import static org.apache.geode.redis.internal.RedisConstants.WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,7 +29,6 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.exceptions.JedisDataException;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
@@ -64,11 +63,9 @@ public abstract class AbstractLInsertIntegrationTest implements RedisIntegration
 
   @Test
   public void linsert_onKeyThatDoesNotExist_withInvalidBefore_errorsBecauseOfWrongNumOfArgs() {
-    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.LINSERT, KEY, "LINSERT",
+    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.LINSERT, KEY,
         "notBefore", "doesn't matter", insertedValue))
-            .isInstanceOf(JedisDataException.class)
-            .hasMessage(
-                String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "linsert"));
+            .hasMessage(ERROR_SYNTAX);
   }
 
   @Test
@@ -76,7 +73,6 @@ public abstract class AbstractLInsertIntegrationTest implements RedisIntegration
     jedis.sadd(KEY, initialValue);
 
     assertThatThrownBy(() -> jedis.linsert(KEY, BEFORE, initialValue, insertedValue))
-        .isInstanceOf(JedisDataException.class)
         .hasMessage(RedisConstants.ERROR_WRONG_TYPE);
   }
 
@@ -94,120 +90,93 @@ public abstract class AbstractLInsertIntegrationTest implements RedisIntegration
   public void linsert_withInvalidBEFORE_errors() {
     jedis.lpush(KEY, initialValue);
 
-    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.LINSERT, KEY, "LINSERT",
-        "notBefore", initialValue, insertedValue))
-            .isInstanceOf(JedisDataException.class)
-            .hasMessage(
-                String.format(WRONG_NUMBER_OF_ARGUMENTS_FOR_COMMAND, "linsert"));
+    assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.LINSERT, KEY,
+        "notBefore", initialValue, insertedValue)).hasMessage(ERROR_SYNTAX);
   }
 
   @Test
   public void linsert_BEFORE_onKeyWithMultipleValues_withValidPivot_insertsValue() {
-    jedis.lpush(KEY, initialValue + "4");
-    jedis.lpush(KEY, initialValue + "3");
-    jedis.lpush(KEY, initialValue + "2");
-    jedis.lpush(KEY, initialValue + "1");
-    jedis.lpush(KEY, initialValue + "0");
+    jedis.lpush(KEY, "4", "3", "2", "1", "0");
 
-    assertThat(jedis.linsert(KEY, BEFORE, initialValue + "2", insertedValue)).isEqualTo(6L);
+    assertThat(jedis.linsert(KEY, BEFORE, "2", insertedValue)).isEqualTo(6L);
 
     assertThat(jedis.llen(KEY)).isEqualTo(6L);
 
-    assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "0");
-    assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "1");
+    assertThat(jedis.lpop(KEY)).isEqualTo("0");
+    assertThat(jedis.lpop(KEY)).isEqualTo("1");
     assertThat(jedis.lpop(KEY)).isEqualTo(insertedValue);
-    assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "2");
-    assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "3");
-    assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "4");
+    assertThat(jedis.lpop(KEY)).isEqualTo("2");
+    assertThat(jedis.lpop(KEY)).isEqualTo("3");
+    assertThat(jedis.lpop(KEY)).isEqualTo("4");
   }
 
   @Test
   public void linsert_BEFORE_onKeyWithMultipleDuplicateValues_withValidPivot_insertsValue() {
-    jedis.lpush(KEY, initialValue + "3");
-    jedis.lpush(KEY, initialValue + "2");
-    jedis.lpush(KEY, initialValue + "1");
-    jedis.lpush(KEY, initialValue + "3");
-    jedis.lpush(KEY, initialValue + "0");
+    jedis.lpush(KEY, "3", "2", "1", "3", "0");
 
-    assertThat(jedis.linsert(KEY, BEFORE, initialValue + "3", insertedValue)).isEqualTo(6L);
+    assertThat(jedis.linsert(KEY, BEFORE, "3", insertedValue)).isEqualTo(6L);
 
     assertThat(jedis.llen(KEY)).isEqualTo(6L);
 
-    assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "0");
+    assertThat(jedis.lpop(KEY)).isEqualTo("0");
     assertThat(jedis.lpop(KEY)).isEqualTo(insertedValue);
-    assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "3");
-    assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "1");
-    assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "2");
-    assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "3");
+    assertThat(jedis.lpop(KEY)).isEqualTo("3");
+    assertThat(jedis.lpop(KEY)).isEqualTo("1");
+    assertThat(jedis.lpop(KEY)).isEqualTo("2");
+    assertThat(jedis.lpop(KEY)).isEqualTo("3");
   }
 
   @Test
   public void linsert_AFTER_onKeyWithMultipleDuplicateValues_withValidPivot_insertsValue() {
-    jedis.lpush(KEY, initialValue + "3");
-    jedis.lpush(KEY, initialValue + "2");
-    jedis.lpush(KEY, initialValue + "1");
-    jedis.lpush(KEY, initialValue + "3");
-    jedis.lpush(KEY, initialValue + "0");
+    jedis.lpush(KEY, "3", "2", "1", "3", "0");
 
-    assertThat(jedis.linsert(KEY, AFTER, initialValue + "3", insertedValue)).isEqualTo(6L);
+    assertThat(jedis.linsert(KEY, AFTER, "3", insertedValue)).isEqualTo(6L);
 
     assertThat(jedis.llen(KEY)).isEqualTo(6L);
 
-    assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "0");
-    assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "3");
+    assertThat(jedis.lpop(KEY)).isEqualTo("0");
+    assertThat(jedis.lpop(KEY)).isEqualTo("3");
     assertThat(jedis.lpop(KEY)).isEqualTo(insertedValue);
-    assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "1");
-    assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "2");
-    assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "3");
+    assertThat(jedis.lpop(KEY)).isEqualTo("1");
+    assertThat(jedis.lpop(KEY)).isEqualTo("2");
+    assertThat(jedis.lpop(KEY)).isEqualTo("3");
   }
 
   @Test
   public void linsert_AFTER_onKeyWithMultipleValues_withValidPivot_insertsValue() {
-    jedis.lpush(KEY, initialValue + "4");
-    jedis.lpush(KEY, initialValue + "3");
-    jedis.lpush(KEY, initialValue + "2");
-    jedis.lpush(KEY, initialValue + "1");
-    jedis.lpush(KEY, initialValue + "0");
+    jedis.lpush(KEY, "4", "3", "2", "1", "0");
 
-    assertThat(jedis.linsert(KEY, AFTER, initialValue + "2", insertedValue)).isEqualTo(6L);
+    assertThat(jedis.linsert(KEY, AFTER, "2", insertedValue)).isEqualTo(6L);
 
-    assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "0");
-    assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "1");
-    assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "2");
+    assertThat(jedis.lpop(KEY)).isEqualTo("0");
+    assertThat(jedis.lpop(KEY)).isEqualTo("1");
+    assertThat(jedis.lpop(KEY)).isEqualTo("2");
     assertThat(jedis.lpop(KEY)).isEqualTo(insertedValue);
-    assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "3");
-    assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "4");
+    assertThat(jedis.lpop(KEY)).isEqualTo("3");
+    assertThat(jedis.lpop(KEY)).isEqualTo("4");
   }
 
   @Test
   public void linsert_BEFORE_firstElement() {
-    jedis.lpush(KEY, initialValue + "4");
-    jedis.lpush(KEY, initialValue + "3");
-    jedis.lpush(KEY, initialValue + "2");
-    jedis.lpush(KEY, initialValue + "1");
-    jedis.lpush(KEY, initialValue + "0");
+    jedis.lpush(KEY, "4", "3", "2", "1", "0");
 
-    assertThat(jedis.linsert(KEY, BEFORE, initialValue + "0", insertedValue)).isEqualTo(6L);
+    assertThat(jedis.linsert(KEY, BEFORE, "0", insertedValue)).isEqualTo(6L);
 
     assertThat(jedis.lpop(KEY)).isEqualTo(insertedValue);
-    assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "0");
+    assertThat(jedis.lpop(KEY)).isEqualTo("0");
   }
 
   @Test
   public void linsert_AFTER_lastElement() {
-    jedis.lpush(KEY, initialValue + "4");
-    jedis.lpush(KEY, initialValue + "3");
-    jedis.lpush(KEY, initialValue + "2");
-    jedis.lpush(KEY, initialValue + "1");
-    jedis.lpush(KEY, initialValue + "0");
+    jedis.lpush(KEY, "4", "3", "2", "1", "0");
 
-    assertThat(jedis.linsert(KEY, AFTER, initialValue + "4", insertedValue)).isEqualTo(6L);
+    assertThat(jedis.linsert(KEY, AFTER, "4", insertedValue)).isEqualTo(6L);
 
-    assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "0");
-    assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "1");
-    assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "2");
-    assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "3");
-    assertThat(jedis.lpop(KEY)).isEqualTo(initialValue + "4");
+    assertThat(jedis.lpop(KEY)).isEqualTo("0");
+    assertThat(jedis.lpop(KEY)).isEqualTo("1");
+    assertThat(jedis.lpop(KEY)).isEqualTo("2");
+    assertThat(jedis.lpop(KEY)).isEqualTo("3");
+    assertThat(jedis.lpop(KEY)).isEqualTo("4");
     assertThat(jedis.lpop(KEY)).isEqualTo(insertedValue);
     assertThat(jedis.lpop(KEY)).isNull();
   }
@@ -228,14 +197,11 @@ public abstract class AbstractLInsertIntegrationTest implements RedisIntegration
           assertThat(jedis).satisfiesAnyOf(
               // LINSERT happened first
               jedisClient -> {
-                assertThat(jedisClient.lindex(KEY, 8))
-                    .as("failure 1")
-                    .isEqualTo(insertedValue);
+                assertThat(jedisClient.lindex(KEY, 8)).isEqualTo(insertedValue);
                 assertThat(jedisClient.lindex(KEY, 0)).isEqualTo("snake");
               },
               // LPUSH happened first
-              jedisClient -> assertThat(jedisClient.lindex(KEY, 0))
-                  .as("failure 1").isEqualTo(insertedValue));
+              jedisClient -> assertThat(jedisClient.lindex(KEY, 0)).isEqualTo(insertedValue));
 
           jedis.del(KEY);
           jedis.lpush(KEY, initialElements);
