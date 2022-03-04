@@ -135,7 +135,7 @@ public class RedisList extends AbstractRedisData {
    *        and holds a list, otherwise no operation is performed.
    * @return the length of the list after the operation
    */
-  public synchronized long lpush(List<byte[]> elementsToAdd, Region<RedisKey, RedisData> region,
+  public long lpush(List<byte[]> elementsToAdd, Region<RedisKey, RedisData> region,
       RedisKey key, final boolean onlyIfExists) {
     elementsPushHead(elementsToAdd);
     storeChanges(region, key, new AddByteArrays(elementsToAdd));
@@ -150,7 +150,7 @@ public class RedisList extends AbstractRedisData {
    *        and holds a list, otherwise no operation is performed.
    * @return the length of the list after the operation
    */
-  public synchronized long rpush(List<byte[]> elementsToAdd, Region<RedisKey, RedisData> region,
+  public long rpush(List<byte[]> elementsToAdd, Region<RedisKey, RedisData> region,
       RedisKey key, final boolean onlyIfExists) {
     elementsPushTail(elementsToAdd);
     storeChanges(region, key, new AddByteArraysTail(elementsToAdd));
