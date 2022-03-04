@@ -28,7 +28,7 @@ benchmarks:
   - title: 'with-ssl'
     flag: '-PwithSsl -PtestJVM=/usr/lib/jvm/bellsoft-java11-amd64'
     options: '--tests=org.apache.geode.benchmark.tests.*GetBenchmark --tests=org.apache.geode.benchmark.tests.*PutBenchmark'
-    max_in_flight: 1
+    max_in_flight: 2
     timeout: 5h
   - title: 'with-security-manager'
     flag: '-PwithSecurityManager'
