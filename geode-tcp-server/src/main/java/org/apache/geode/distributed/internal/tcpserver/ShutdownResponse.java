@@ -21,7 +21,7 @@ import org.apache.geode.internal.serialization.BasicSerializable;
 /**
  * A response from the TCP server that it received a ShutdownRequest
  *
- * @see TcpClient#requestToServer(HostAndPort, Object, int)
+ * @see TcpClient#requestToServer(HostAndPort, Object, int, boolean)
  * @see ShutdownRequest
  * @since GemFire 5.7
  */

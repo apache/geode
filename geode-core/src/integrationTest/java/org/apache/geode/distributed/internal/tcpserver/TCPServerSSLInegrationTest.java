@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -48,14 +47,11 @@ import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.net.SocketCreatorFailHandshake;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.util.internal.GeodeGlossary;
 
 @Category({MembershipTest.class})
-public class TCPServerSSLJUnitTest {
-
-  Logger logger = LogService.getLogger();
+public class TCPServerSSLInegrationTest {
 
   private InetAddress localhost;
   private int port;
@@ -117,12 +113,12 @@ public class TCPServerSSLJUnitTest {
   }
 
   @Test
-  public void testSSLSocketTimeOut() throws IOException, ClassNotFoundException {
+  public void testSSLSocketTimeOut() throws ClassNotFoundException {
 
     try {
 
       getTcpClient().requestToServer(new HostAndPort(localhost.getHostAddress(), port),
-          Boolean.FALSE, 5 * 1000);
+          Boolean.FALSE, 5 * 1000, true);
       throw new AssertionError("expected to get an exception but didn't");
 
     } catch (final IllegalStateException | IOException t) {

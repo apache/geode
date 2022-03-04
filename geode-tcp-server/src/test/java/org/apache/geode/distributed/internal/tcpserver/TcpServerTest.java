@@ -49,7 +49,7 @@ import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
-public class TcpServerJUnitTest {
+public class TcpServerTest {
 
   private static final int TIMEOUT = 60 * 1000;
   private InetAddress localhost;
@@ -83,10 +83,11 @@ public class TcpServerJUnitTest {
     final TcpClient tcpClient = createTcpClient();
     @SuppressWarnings("deprecation")
     InfoRequest testInfoRequest = new InfoRequest();
-    assertThatThrownBy(() -> tcpClient.requestToServer(new HostAndPort("unknown host name", port),
-        testInfoRequest, TIMEOUT))
-            .as("Hostname resolved unexpectedly. Check for DNS hijacking in addition to code errors.")
-            .isInstanceOf(UnknownHostException.class);
+    assertThatThrownBy(
+        () -> tcpClient.requestToServer(new HostAndPort("unknown host name", port), testInfoRequest,
+            TIMEOUT, true))
+                .as("Hostname resolved unexpectedly. Check for DNS hijacking in addition to code errors.")
+                .isInstanceOf(UnknownHostException.class);
   }
 
   @SuppressWarnings("deprecation")
@@ -100,7 +101,8 @@ public class TcpServerJUnitTest {
     InfoRequest testInfoRequest = new InfoRequest();
     InfoResponse testInfoResponse =
         (InfoResponse) tcpClient.requestToServer(new HostAndPort(localhost.getHostAddress(), port),
-            testInfoRequest, TIMEOUT);
+            testInfoRequest, TIMEOUT, true);
+    assertThat(testInfoResponse).isNotNull();
     assertThat(testInfoResponse.getInfo()[0]).contains("geode-tcp-server");
 
     String[] requestedInfo = tcpClient.getInfo(new HostAndPort(localhost.getHostAddress(), port));
@@ -130,8 +132,7 @@ public class TcpServerJUnitTest {
     Thread delayedThread = new Thread(() -> {
       try {
         tcpClient.requestToServer(new HostAndPort(localhost.getHostAddress(), port),
-            new TestObject(1),
-            TIMEOUT);
+            new TestObject(1), TIMEOUT, true);
       } catch (IOException | ClassNotFoundException e) {
         e.printStackTrace();
       }
@@ -142,7 +143,7 @@ public class TcpServerJUnitTest {
       Thread.sleep(500);
       assertFalse(done.get());
       tcpClient.requestToServer(new HostAndPort(localhost.getHostAddress(), port),
-          new TestObject(0), TIMEOUT);
+          new TestObject(0), TIMEOUT, true);
       assertFalse(done.get());
 
       latch.countDown();
@@ -169,7 +170,7 @@ public class TcpServerJUnitTest {
     // Due to the mocked handler, an EOFException will be thrown on the client. This is expected.
     assertThatThrownBy(
         () -> tcpClient.requestToServer(new HostAndPort(localhost.getHostAddress(), port),
-            new TestObject(), TIMEOUT))
+            new TestObject(), TIMEOUT, true))
                 .isInstanceOf(EOFException.class);
 
     // Change the mock handler behavior to echo the request back
@@ -181,8 +182,9 @@ public class TcpServerJUnitTest {
     test.id = 5;
     TestObject result =
         (TestObject) tcpClient.requestToServer(new HostAndPort(localhost.getHostAddress(), port),
-            test, TIMEOUT);
+            test, TIMEOUT, true);
 
+    assertThat(result).isNotNull();
     assertEquals(test.id, result.id);
 
     stopServer(tcpClient);
@@ -235,6 +237,7 @@ public class TcpServerJUnitTest {
       TestObject delay = (TestObject) request;
       if (delay.id > 0) {
         try {
+          // noinspection ResultOfMethodCallIgnored
           latch.await(120 * 1000, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();

@@ -127,7 +127,7 @@ public class ConnectCommandWithSSLMultiKeyTest {
     // should fail at connecting to locator stage
     assertThat(gfsh.getGfshOutput()).doesNotContain("Connecting to Manager at");
     assertThat(gfsh.getGfshOutput()).containsPattern(
-        "trying to connect a non-SSL-enabled client to an SSL-enabled locator|Broken pipe \\(Write failed\\)|Connection reset");
+        "Server expecting SSL handshake|Read timed out|Broken pipe \\(Write failed\\)|Connection reset");
 
     failToConnectWithoutSSLTo(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     assertThat(gfsh.getGfshOutput()).contains("non-JRMP server at remote endpoint");

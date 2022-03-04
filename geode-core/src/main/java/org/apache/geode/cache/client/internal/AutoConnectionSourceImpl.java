@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.ToDataException;
 import org.apache.geode.annotations.Immutable;
@@ -114,19 +115,25 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
    */
   private final Map<InetSocketAddress, Exception> locatorState = new HashMap<>();
 
-  public AutoConnectionSourceImpl(List<HostAndPort> contacts, String serverGroup,
-      int handshakeTimeout,
-      SocketFactory socketFactory) {
+  public AutoConnectionSourceImpl(final @NotNull List<HostAndPort> contacts,
+      final @NotNull String serverGroup,
+      final int handshakeTimeout, final @NotNull SocketFactory socketFactory) {
+    this(contacts, serverGroup, handshakeTimeout, new TcpClient(SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
+        InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
+        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
+        socketFactory::createSocket));
+  }
+
+  AutoConnectionSourceImpl(final @NotNull List<HostAndPort> contacts,
+      final @NotNull String serverGroup,
+      final int handshakeTimeout, final @NotNull TcpClient tcpClient) {
     locators.set(new LocatorList(new ArrayList<>(contacts)));
     onlineLocators.set(new LocatorList(Collections.emptyList()));
     initialLocators = Collections.unmodifiableList(locators.get().getLocatorAddresses());
     connectionTimeout = handshakeTimeout;
     this.serverGroup = serverGroup;
-    tcpClient = new TcpClient(SocketCreatorFactory
-        .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR),
-        InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
-        InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
-        socketFactory::createSocket);
+    this.tcpClient = tcpClient;
   }
 
   @Override
@@ -168,7 +175,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   }
 
   @Override
-  public ServerLocation findServer(Set excludedServers) {
+  public ServerLocation findServer(Set<ServerLocation> excludedServers) {
     if (PoolImpl.TEST_DURABLE_IS_NET_DOWN) {
       return null;
     }
@@ -251,7 +258,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     }
   }
 
-  private ServerLocationResponse queryLocators(ServerLocationRequest request) {
+  ServerLocationResponse queryLocators(ServerLocationRequest request) {
     ServerLocationResponse response = null;
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
@@ -295,7 +302,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
       badLocators.remove(hostAddress);
     }
 
-    addbadLocators(newLocatorAddresses, badLocators);
+    addBadLocators(newLocatorAddresses, badLocators);
 
     LocatorList newLocatorList = new LocatorList(newLocatorAddresses);
 
@@ -328,12 +335,12 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
    * This method will add bad locator only when locator with hostname and port is not already in
    * list.
    */
-  protected void addbadLocators(List<HostAndPort> newLocators, Set<HostAndPort> badLocators) {
-    for (HostAndPort badloc : badLocators) {
+  protected void addBadLocators(List<HostAndPort> newLocators, Set<HostAndPort> badLocators) {
+    for (HostAndPort badLocator : badLocators) {
       boolean addIt = true;
-      for (HostAndPort goodloc : newLocators) {
-        boolean isSameHost = badloc.getHostName().equals(goodloc.getHostName());
-        if (isSameHost && badloc.getPort() == goodloc.getPort()) {
+      for (HostAndPort goodLocator : newLocators) {
+        boolean isSameHost = badLocator.getHostName().equals(goodLocator.getHostName());
+        if (isSameHost && badLocator.getPort() == goodLocator.getPort()) {
           // ip has been changed so don't add this in current
           // list
           addIt = false;
@@ -342,7 +349,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
         }
       }
       if (addIt) {
-        newLocators.add(badloc);
+        newLocators.add(badLocator);
       }
     }
   }
@@ -432,9 +439,8 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
 
 
     /**
-     * An iterator which iterates all of the controllers, starting at the last known good
+     * An iterator which iterates over all the controllers, starting at the last known good
      * controller.
-     *
      */
     protected class LocatorIterator implements Iterator<HostAndPort> {
       private final int startLocator = currentLocatorIndex.get();

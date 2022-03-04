@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.distributed;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -36,7 +37,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_LOCATOR_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
@@ -80,7 +80,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.GemFireConfigException;
-import org.apache.geode.SystemConnectException;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
@@ -112,7 +111,6 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.NetworkUtils;
-import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
@@ -127,7 +125,6 @@ import org.apache.geode.test.junit.categories.MembershipTest;
  * @since GemFire 4.0
  */
 @Category(MembershipTest.class)
-@SuppressWarnings("serial")
 public class LocatorDUnitTest implements Serializable {
   private static final Logger logger = LogService.getLogger();
 
@@ -257,7 +254,7 @@ public class LocatorDUnitTest implements Serializable {
   }
 
   @Test
-  @Ignore("GEODE=7760 - test sometimes hangs due to product issue")
+  @Ignore("GEODE-7760 - test sometimes hangs due to product issue")
   public void testCrashLocatorMultipleTimes() throws Exception {
     port1 = getRandomAvailableTCPPort();
     DistributedTestUtils.deleteLocatorStateFile(port1);
@@ -344,7 +341,7 @@ public class LocatorDUnitTest implements Serializable {
 
     // ensure that I, as a collocated locator owner, can create a cache region
     Cache cache = CacheFactory.create(system);
-    Region r = cache.createRegionFactory(RegionShortcut.REPLICATE).create("test-region");
+    Region<?, ?> r = cache.createRegionFactory(RegionShortcut.REPLICATE).create("test-region");
     assertThat(r).describedAs("expected to create a region").isNotNull();
 
     // create a lock service and have every vm get a lock
@@ -376,7 +373,8 @@ public class LocatorDUnitTest implements Serializable {
 
     assertThat(MembershipManagerHelper.getCoordinator(system))
         .describedAs("should be the coordinator").isEqualTo(system.getDistributedMember());
-    MembershipView view = MembershipManagerHelper.getDistribution(system).getView();
+    MembershipView<InternalDistributedMember> view =
+        MembershipManagerHelper.getDistribution(system).getView();
     logger.info("view after becoming coordinator is " + view);
     assertThat(system.getDistributedMember())
         .describedAs("should not be the first member in the view (" + view + ")")
@@ -450,129 +448,6 @@ public class LocatorDUnitTest implements Serializable {
     properties.setProperty(SSL_PROTOCOLS, "any");
 
     startVerifyAndStopLocator(vm1, vm2, port1, port2, properties);
-  }
-
-  @Test
-  public void testNonSSLLocatorDiesWhenConnectingToSSLLocator() {
-    addIgnoredException("Unrecognized SSL message, plaintext connection");
-    addIgnoredException(IllegalStateException.class);
-
-    Properties properties = new Properties();
-    properties.setProperty(DISABLE_AUTO_RECONNECT, "true");
-    properties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
-    properties.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "false");
-    properties.setProperty(MEMBER_TIMEOUT, "2000");
-    properties.setProperty(USE_CLUSTER_CONFIGURATION, "false");
-    properties.setProperty(SSL_CIPHERS, "any");
-    properties.setProperty(SSL_ENABLED_COMPONENTS, LOCATOR.getConstant());
-    properties.setProperty(SSL_KEYSTORE, getSingleKeyKeystore());
-    properties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
-    properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
-    properties.setProperty(SSL_PROTOCOLS, "any");
-    properties.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
-    properties.setProperty(SSL_TRUSTSTORE, getSingleKeyKeystore());
-    properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
-
-    // we set port1 so that the state file gets cleaned up later.
-    port1 = startLocatorGetPort(vm1, properties, 0);
-
-    vm1.invoke("expect only one member in system",
-        () -> expectSystemToContainThisManyMembers(1));
-
-    properties.setProperty(LOCATORS, hostName + "[" + port1 + "]");
-    properties.remove(SSL_ENABLED_COMPONENTS);
-
-    // we set port2 so that the state file gets cleaned up later.
-    vm2.invoke(() -> {
-      assertThatThrownBy(() -> startLocatorBase(properties, 0))
-          .isInstanceOfAny(IllegalThreadStateException.class, SystemConnectException.class);
-
-      assertThat(Locator.getLocator()).isNull();
-    });
-
-    vm1.invoke("expect only one member in system",
-        () -> expectSystemToContainThisManyMembers(1));
-
-    vm1.invoke("stop locator", LocatorDUnitTest::stopLocator);
-  }
-
-  @Test
-  public void testSSLEnabledLocatorDiesWhenConnectingToNonSSLLocator() {
-    addIgnoredException("Remote host closed connection during handshake");
-    addIgnoredException("Unrecognized SSL message, plaintext connection");
-    IgnoredException.addIgnoredException(IllegalStateException.class);
-
-
-    Properties properties = getClusterProperties("", "false");
-    properties.remove(LOCATORS);
-    properties.setProperty(SSL_CIPHERS, "any");
-    properties.setProperty(SSL_PROTOCOLS, "any");
-
-    // we set port1 so that the state file gets cleaned up later.
-    port1 = startLocatorGetPort(vm1, properties, 0);
-    vm1.invoke("expectSystemToContainThisManyMembers",
-        () -> expectSystemToContainThisManyMembers(1));
-
-    properties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
-    properties.setProperty(SSL_KEYSTORE, getSingleKeyKeystore());
-    properties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
-    properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
-    properties.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
-    properties.setProperty(SSL_TRUSTSTORE, getSingleKeyKeystore());
-    properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
-    properties.setProperty(SSL_ENABLED_COMPONENTS, LOCATOR.getConstant());
-    properties.setProperty(USE_CLUSTER_CONFIGURATION, "false");
-
-    String locators = hostName + "[" + port1 + "]";
-
-    properties.setProperty(LOCATORS, locators);
-
-    // we set port2 so that the state file gets cleaned up later.
-    assertThatThrownBy(() -> startLocatorGetPort(vm2, properties, 0))
-        .isInstanceOfAny(IllegalStateException.class, RMIException.class);
-    assertThat(Locator.getLocator()).isNull();
-
-    vm1.invoke("expectSystemToContainThisManyMembers",
-        () -> expectSystemToContainThisManyMembers(1));
-
-    vm1.invoke("stop locator", LocatorDUnitTest::stopLocator);
-  }
-
-  @Test
-  public void testStartTwoLocatorsWithDifferentSSLCertificates() {
-    addIgnoredException("Remote host closed connection during handshake");
-    addIgnoredException("unable to find valid certification path to requested target");
-    addIgnoredException("Received fatal alert: certificate_unknown");
-    addIgnoredException("Unrecognized SSL message, plaintext connection");
-
-    String locators = hostName + "[" + port1 + "]," + hostName + "[" + port2 + "]";
-
-    Properties properties = getClusterProperties(locators, "false");
-    properties.setProperty(SSL_CIPHERS, "any");
-    properties.setProperty(SSL_ENABLED_COMPONENTS, LOCATOR.getConstant());
-    properties.setProperty(SSL_KEYSTORE, getSingleKeyKeystore());
-    properties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
-    properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
-    properties.setProperty(SSL_PROTOCOLS, "any");
-    properties.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
-    properties.setProperty(SSL_TRUSTSTORE, getSingleKeyKeystore());
-    properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
-
-    startLocator(vm1, properties, port1);
-
-    vm1.invoke("expectSystemToContainThisManyMembers",
-        () -> expectSystemToContainThisManyMembers(1));
-
-    properties.setProperty(SSL_KEYSTORE, getMultiKeyKeystore());
-    properties.setProperty(SSL_LOCATOR_ALIAS, "locatorkey");
-    properties.setProperty(SSL_TRUSTSTORE, getMultiKeyTruststore());
-
-    assertThatThrownBy(() -> startLocator(vm2, properties, port2))
-        .isInstanceOfAny(IllegalStateException.class, RMIException.class);
-    assertThat(Locator.getLocator()).isNull();
-
-    vm1.invoke("expectSystemToContainThisManyMembers",
-        () -> expectSystemToContainThisManyMembers(1));
   }
 
   /**
@@ -975,10 +850,8 @@ public class LocatorDUnitTest implements Serializable {
           return leader != oldLeader;
         });
 
-    await().untilAsserted(() -> {
-      assertThat(distributedMember)
-          .isEqualTo(MembershipManagerHelper.getLeadMember(testRunnerLocatorDS));
-    });
+    await().untilAsserted(() -> assertThat(distributedMember)
+        .isEqualTo(MembershipManagerHelper.getLeadMember(testRunnerLocatorDS)));
   }
 
   /**
@@ -1092,7 +965,7 @@ public class LocatorDUnitTest implements Serializable {
     // now ensure that one of the remaining members became the coordinator
     await().until(() -> !coord.equals(MembershipManagerHelper.getCoordinator(system)));
 
-    DistributedMember newCoord = MembershipManagerHelper.getCoordinator(system);
+    final DistributedMember newCoord = MembershipManagerHelper.getCoordinator(system);
     logger.info("coordinator after shutdown of locator was " + newCoord);
     if (newCoord == null || coord.equals(newCoord)) {
       fail("another member should have become coordinator after the locator was stopped: "
@@ -1104,9 +977,7 @@ public class LocatorDUnitTest implements Serializable {
     // that the coordinator has changed
     startLocatorPreferredCoordinators(vm0, port2);
 
-    DistributedMember tempCoord = newCoord;
-
-    await().until(() -> !tempCoord.equals(MembershipManagerHelper.getCoordinator(system)));
+    await().until(() -> !newCoord.equals(MembershipManagerHelper.getCoordinator(system)));
 
     system.disconnect();
 
@@ -1210,7 +1081,7 @@ public class LocatorDUnitTest implements Serializable {
   }
 
 
-  private MembershipView getView() {
+  private MembershipView<InternalDistributedMember> getView() {
     return system.getDistributionManager().getDistribution().getView();
   }
 
@@ -1354,13 +1225,13 @@ public class LocatorDUnitTest implements Serializable {
     dsProps.setProperty(LOCATORS, newLocators);
 
     getBlackboard().initBlackboard();
-    AsyncInvocation async1 = vm1.invokeAsync(() -> {
+    AsyncInvocation<Void> async1 = vm1.invokeAsync(() -> {
       getBlackboard().signalGate("vm1ready");
       getBlackboard().waitForGate("readyToConnect", 30, SECONDS);
       System.out.println("vm1 is ready to connect");
       startLocatorBase(dsProps, port2);
     });
-    AsyncInvocation async2 = vm2.invokeAsync(() -> {
+    AsyncInvocation<Void> async2 = vm2.invokeAsync(() -> {
       getBlackboard().signalGate("vm2ready");
       getBlackboard().waitForGate("readyToConnect", 30, SECONDS);
       System.out.println("vm2 is ready to connect");
@@ -1451,9 +1322,7 @@ public class LocatorDUnitTest implements Serializable {
     locator = Locator.startLocatorAndDS(port1, null, properties);
     system = (InternalDistributedSystem) locator.getDistributedSystem();
 
-    vm0.invoke("disconnect", () -> {
-      getConnectedDistributedSystem(properties).disconnect();
-    });
+    vm0.invoke("disconnect", () -> getConnectedDistributedSystem(properties).disconnect());
   }
 
   /**
@@ -1567,10 +1436,6 @@ public class LocatorDUnitTest implements Serializable {
       }
       return lead == null;
     });
-  }
-
-  private int startLocatorGetPort(VM vm, Properties properties, int port) {
-    return vm.invoke(() -> startLocatorBase(properties, port).getPort());
   }
 
   private void startLocator(VM vm, Properties properties, int port) {

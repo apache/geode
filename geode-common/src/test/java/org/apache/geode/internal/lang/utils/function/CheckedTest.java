@@ -13,16 +13,27 @@
  * the License.
  */
 
-package org.apache.geode.distributed.internal.tcpserver;
+package org.apache.geode.internal.lang.utils.function;
 
+import static org.apache.geode.internal.lang.utils.function.Checked.rethrowFunction;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.apache.geode.internal.serialization.BasicSerializable;
+import org.junit.jupiter.api.Test;
 
-/**
- * A request to the TCP server to shutdown
- *
- * @see TcpClient#requestToServer(HostAndPort, Object, int, boolean)
- * @see ShutdownResponse
- */
-public class ShutdownRequest implements BasicSerializable {
+class CheckedTest {
+
+  @Test
+  void rethrowFunctionThrowsCheckedException() {
+    assertThatThrownBy(() -> rethrowFunction(t -> {
+      throw new Exception();
+    }).apply(null)).isExactlyInstanceOf(Exception.class);
+  }
+
+  @Test
+  void rethrowFunctionReturnsResults() {
+    final Object o = new Object();
+    assertThat(rethrowFunction(t -> o).apply(null)).isSameAs(o);
+  }
+
 }

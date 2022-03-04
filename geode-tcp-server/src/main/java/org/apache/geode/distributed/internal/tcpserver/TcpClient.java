@@ -12,32 +12,39 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.distributed.internal.tcpserver;
 
+import static java.util.Objects.requireNonNull;
+import static org.apache.geode.internal.lang.utils.JavaWorkarounds.computeIfAbsent;
+import static org.apache.geode.internal.lang.utils.function.Checked.rethrowFunction;
+import static org.apache.geode.internal.serialization.Versioning.getKnownVersionOrDefault;
+import static org.apache.geode.internal.serialization.Versioning.getVersion;
+
+import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
-import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.ObjectDeserializer;
 import org.apache.geode.internal.serialization.ObjectSerializer;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
-import org.apache.geode.internal.serialization.Versioning;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
@@ -53,7 +60,7 @@ public class TcpClient {
 
   private static final int DEFAULT_REQUEST_TIMEOUT = 60 * 2 * 1000;
 
-  private final ConcurrentHashMap<HostAndPort, Short> serverVersions = new ConcurrentHashMap<>();
+  private final ConcurrentMap<HostAndPort, Short> serverVersions = new ConcurrentHashMap<>();
 
   private final TcpSocketCreator socketCreator;
   private final ObjectSerializer objectSerializer;
@@ -78,17 +85,17 @@ public class TcpClient {
   /**
    * Stops the TcpServer running on a given host and port
    */
-  public void stop(HostAndPort addr) throws java.net.ConnectException {
+  public void stop(HostAndPort hostAndPort) throws java.net.ConnectException {
     try {
       ShutdownRequest request = new ShutdownRequest();
-      requestToServer(addr, request, DEFAULT_REQUEST_TIMEOUT);
+      requestToServer(hostAndPort, request, DEFAULT_REQUEST_TIMEOUT, true);
     } catch (java.net.ConnectException ce) {
       // must not be running, rethrow so the caller can handle.
       // In most cases this Exception should be ignored.
       throw ce;
     } catch (Exception ex) {
       logger.error(
-          "TcpClient.stop(): exception connecting to locator " + addr + ex);
+          "TcpClient.stop(): exception connecting to locator " + hostAndPort + ex);
     }
   }
 
@@ -100,41 +107,26 @@ public class TcpClient {
    * @deprecated this was created for the deprecated Admin API
    */
   @Deprecated
-  public String[] getInfo(HostAndPort addr) {
+  public String[] getInfo(HostAndPort hostAndPort) {
     try {
       InfoRequest request = new InfoRequest();
       InfoResponse response =
-          (InfoResponse) requestToServer(addr, request, DEFAULT_REQUEST_TIMEOUT);
+          (InfoResponse) requireNonNull(
+              requestToServer(hostAndPort, request, DEFAULT_REQUEST_TIMEOUT, true));
       return response.getInfo();
     } catch (java.net.ConnectException ignore) {
       return null;
     } catch (Exception ex) {
       logger.error(
-          "TcpClient.getInfo(): exception connecting to locator " + addr + ": " + ex);
+          "TcpClient.getInfo(): exception connecting to locator " + hostAndPort + ": " + ex);
       return null;
     }
-
-  }
-
-  /**
-   * Send a request to a Locator and expect a reply
-   *
-   * @param addr The locator's address
-   * @param request The request message
-   * @param timeout Timeout for sending the message and receiving a reply
-   * @return the reply. This may return a null
-   *         if we're unable to form a connection to the TcpServer before the given timeout elapses
-   */
-  public Object requestToServer(HostAndPort addr, Object request, int timeout)
-      throws IOException, ClassNotFoundException {
-
-    return requestToServer(addr, request, timeout, true);
   }
 
   /**
    * Send a request to a Locator
    *
-   * @param addr The locator's address
+   * @param address The locator's address
    * @param request The request message
    * @param timeout Timeout for sending the message and receiving a reply
    * @param replyExpected Whether to wait for a reply
@@ -143,16 +135,14 @@ public class TcpClient {
    * @throws ClassNotFoundException if the deserializer throws this exception
    * @throws IOException if there is a problem interacting with the server
    */
-  public Object requestToServer(HostAndPort addr, Object request, int timeout,
-      boolean replyExpected) throws IOException, ClassNotFoundException {
-    long giveupTime = System.currentTimeMillis() + timeout;
+  public @Nullable Object requestToServer(final @NotNull HostAndPort address,
+      @NotNull Object request, final int timeout, final boolean replyExpected)
+      throws IOException, ClassNotFoundException {
+    final long expirationTime = System.currentTimeMillis() + timeout;
 
     // Get the GemFire version of the TcpServer first, before sending any other request.
-    final short serverVersionShort = getServerVersion(addr, timeout);
-    KnownVersion serverVersion =
-        Versioning.getKnownVersionOrDefault(
-            Versioning.getVersion(serverVersionShort),
-            null);
+    final short serverVersionShort = getServerVersion(address, timeout);
+    KnownVersion serverVersion = getKnownVersionOrDefault(getVersion(serverVersionShort), null);
     final String debugVersionMessage;
     if (serverVersion == null) {
       serverVersion = KnownVersion.CURRENT;
@@ -163,53 +153,36 @@ public class TcpClient {
       debugVersionMessage = null;
     }
 
-    long newTimeout = giveupTime - System.currentTimeMillis();
+    final int newTimeout = (int) (expirationTime - System.currentTimeMillis());
     if (newTimeout <= 0) {
       return null;
     }
 
-    logger.debug("TcpClient sending {} to {}", request, addr);
+    return requestToServer(address, request, newTimeout, replyExpected, serverVersionShort,
+        serverVersion, debugVersionMessage);
+  }
 
-    Socket sock =
-        socketCreator.forCluster().connect(addr, (int) newTimeout, null, socketFactory);
-    sock.setSoTimeout((int) newTimeout);
-    DataOutputStream out = null;
+  Object requestToServer(final @NotNull HostAndPort address, final @NotNull Object request,
+      final int timeout, final boolean replyExpected, final short serverVersionOrdinal,
+      final @NotNull KnownVersion serverVersion, final @Nullable String debugVersionMessage)
+      throws IOException, ClassNotFoundException {
+    logger.debug("TcpClient sending {} to {}", request, address);
+
+    final Socket sock = socketCreator.forCluster().connect(address, timeout, null, socketFactory);
     try {
-
-      out = new DataOutputStream(new BufferedOutputStream(sock.getOutputStream()));
-
-      if (serverVersion.isOlderThan(KnownVersion.CURRENT)) {
-        out = new VersionedDataOutputStream(out, serverVersion);
-      }
-
-      out.writeInt(TcpServer.GOSSIPVERSION);
-      out.writeShort(serverVersionShort);
-
-      objectSerializer.writeObject(request, out);
-      out.flush();
-
-      if (replyExpected) {
-
-        try (DataInputStream dataInputStream = new DataInputStream(sock.getInputStream());
-            VersionedDataInputStream versionedDataInputStream =
-                new VersionedDataInputStream(dataInputStream, serverVersion)) {
-          if (debugVersionMessage != null && logger.isDebugEnabled()) {
-            logger.debug(debugVersionMessage);
+      sock.setSoTimeout(timeout);
+      try (final DataOutputStream out = createDataOutputStream(sock, serverVersion)) {
+        sendRequest(out, serverVersionOrdinal, request);
+        if (replyExpected) {
+          try (final DataInputStream in = createDataInputStream(sock, serverVersion)) {
+            if (debugVersionMessage != null && logger.isDebugEnabled()) {
+              logger.debug(debugVersionMessage);
+            }
+            return receiveResponse(in, address);
           }
-          try {
-            Object response = objectDeserializer.readObject(versionedDataInputStream);
-            logger.debug("received response: {}", response);
-            return response;
-          } catch (EOFException ex) {
-            logger.debug("requestToServer EOFException ", ex);
-            EOFException eof = new EOFException("Locator at " + addr
-                + " did not respond. This is normal if the locator was shutdown. If it wasn't check its log for exceptions.");
-            eof.initCause(ex);
-            throw eof;
-          }
+        } else {
+          return null;
         }
-      } else {
-        return null;
       }
     } finally {
       try {
@@ -226,85 +199,139 @@ public class TcpClient {
       } catch (Exception e) {
         logger.error("Error closing socket ", e);
       }
-      if (out != null) {
-        out.close();
-      }
     }
   }
 
-  private Short getServerVersion(final HostAndPort address, final int timeout)
+  @Nullable
+  Object receiveResponse(final @NotNull DataInputStream in, final @NotNull HostAndPort address)
       throws IOException, ClassNotFoundException {
-
-    // Get GemFire version of TcpServer first, before sending any other request.
-    Short serverVersion = serverVersions.get(address);
-    if (serverVersion != null) {
-      return serverVersion;
-    }
-
-    final Socket sock;
     try {
-      sock = socketCreator.forCluster().connect(address, timeout, null, socketFactory);
-      sock.setSoTimeout(timeout);
-    } catch (SSLHandshakeException e) {
-      if ((e.getCause() instanceof EOFException)
-          && (e.getCause().getMessage().contains("SSL peer shut down incorrectly"))) {
-        throw new IOException("Remote host terminated the handshake", e);
-      } else {
-        throw new IllegalStateException("Unable to form SSL connection", e);
-      }
-    } catch (SSLException e) {
-      throw new IllegalStateException("Unable to form SSL connection", e);
+      final Object response = objectDeserializer.readObject(in);
+      logger.debug("received response: {}", response);
+      return response;
+    } catch (EOFException ex) {
+      logger.debug("requestToServer EOFException ", ex);
+      throw createEOFException(address, ex);
     }
+  }
 
-    // TODO do we really need versioned in/out? Should it be some OLDEST_VERSION constant?
-    try (OutputStream outputStream = new BufferedOutputStream(sock.getOutputStream());
-        final DataOutputStream out =
-            new VersionedDataOutputStream(new DataOutputStream(outputStream), KnownVersion.OLDEST);
-        final InputStream inputStream = sock.getInputStream();
-        final DataInputStream in = new DataInputStream(inputStream);
-        final VersionedDataInputStream versionedIn =
-            new VersionedDataInputStream(in, KnownVersion.OLDEST)) {
+  static @NotNull EOFException createEOFException(final @NotNull HostAndPort address,
+      final @NotNull Exception cause) {
+    final EOFException exception = new EOFException("Locator at " + address
+        + " did not respond. This is normal if the locator was shutdown. If it wasn't check its log for exceptions.");
+    exception.initCause(cause);
+    return exception;
+  }
 
-      out.writeInt(TcpServer.GOSSIPVERSION);
-      out.writeShort(KnownVersion.OLDEST.ordinal());
+  static @NotNull DataInputStream createDataInputStream(final @NotNull Socket sock,
+      final @NotNull KnownVersion version)
+      throws IOException {
+    DataInputStream in = new DataInputStream(new BufferedInputStream(sock.getInputStream()));
+    if (version.isOlderThan(KnownVersion.CURRENT)) {
+      in = new VersionedDataInputStream(in, version);
+    }
+    return in;
+  }
 
-      final VersionRequest verRequest = new VersionRequest();
-      objectSerializer.writeObject(verRequest, out);
-      out.flush();
+  static @NotNull DataOutputStream createDataOutputStream(final @NotNull Socket socket,
+      final @NotNull KnownVersion version) throws IOException {
+    DataOutputStream out = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+    if (version.isOlderThan(KnownVersion.CURRENT)) {
+      out = new VersionedDataOutputStream(out, version);
+    }
+    return out;
+  }
 
+  @SuppressWarnings("RedundantThrows") // Thrown through rethrowFunction
+  short getServerVersion(final @NotNull HostAndPort address, final int timeout) throws IOException {
+    return computeIfAbsent(serverVersions, address, rethrowFunction((k) -> {
+      final Socket socket =
+          socketCreator.forCluster().connect(address, timeout, null, socketFactory);
       try {
-        final Object readObject = objectDeserializer.readObject(versionedIn);
-        if (!(readObject instanceof VersionResponse)) {
-          throw new IllegalThreadStateException(
-              "Server version response invalid: This could be the result of trying to connect a non-SSL-enabled client to an SSL-enabled locator.");
-        }
+        socket.setSoTimeout(timeout);
+        return getServerVersion(socket);
+      } finally {
+        resetSocketAndLogExceptions(socket);
+      }
+    }));
+  }
 
-        final VersionResponse response = (VersionResponse) readObject;
-        serverVersion = response.getVersionOrdinal();
-        serverVersions.put(address, serverVersion);
+  @NotNull
+  Short getServerVersion(final @NotNull Socket socket)
+      throws IOException {
+    try (
+        final DataInputStream in = createDataInputStream(socket, KnownVersion.OLDEST);
+        final DataOutputStream out = createDataOutputStream(socket, KnownVersion.OLDEST)) {
+      return getServerVersion(in, out);
+    }
+  }
 
-        return serverVersion;
+  @NotNull
+  Short getServerVersion(final @NotNull DataInputStream in, final @NotNull DataOutputStream out)
+      throws IOException {
+    sendRequest(out, KnownVersion.OLDEST.ordinal(), new VersionRequest());
+    try {
+      assertNotSslAlert(in);
+      final VersionResponse versionResponse = objectDeserializer.readObject(in);
+      return versionResponse.getVersionOrdinal();
+    } catch (EOFException ignored) {
+      // old locators will not recognize the version request and will close the connection
+      return KnownVersion.OLDEST.ordinal();
+    } catch (IOException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new IOException("Server version response invalid.", e);
+    }
+  }
 
-      } catch (EOFException ex) {
-        // old locators will not recognize the version request and will close the connection
+  /**
+   * If this client is not expecting to use SSL then SSL messages won't be decoded by the SSL layer,
+   * which will result in SSL messages being decoded here. In that even the server side will have
+   * sent us an alert message that we didn't send an SSL message to it.
+   *
+   * @param in stream to check for SSL alert message
+   * @throws IOException if stream appears to start with SSL alert message.
+   */
+  static void assertNotSslAlert(final @NotNull DataInputStream in) throws IOException {
+    in.mark(1);
+    try {
+      if (in.read() == 0x15) {
+        throw new SSLHandshakeException("Server expecting SSL handshake.");
       }
     } finally {
-      if (!sock.isClosed()) {
-        try {
-          sock.setSoLinger(true, 0); // initiate an abort on close to shut down the server's socket
-        } catch (Exception e) {
-          logger.error("Error aborting socket ", e);
-        }
-        try {
-          sock.close();
-        } catch (Exception e) {
-          logger.error("Error closing socket ", e);
-        }
+      in.reset();
+    }
+  }
+
+  /**
+   * Writes and flushes the header and request object to the server.
+   */
+  void sendRequest(final @NotNull DataOutputStream out, final short ordinalVersion,
+      final @NotNull Object request) throws IOException {
+    out.writeInt(TcpServer.GOSSIPVERSION);
+    out.writeShort(ordinalVersion);
+    objectSerializer.writeObject(request, out);
+    out.flush();
+  }
+
+  /**
+   * Forces a socket reset to avoid TIME_WAIT state.
+   *
+   * @param socket to reset
+   */
+  static void resetSocketAndLogExceptions(final @NotNull Socket socket) {
+    if (!socket.isClosed()) {
+      try {
+        // initiate an abort on close to shut down the server's socket
+        socket.setSoLinger(true, 0);
+      } catch (Exception e) {
+        logger.error("Error aborting socket ", e);
+      }
+      try {
+        socket.close();
+      } catch (Exception e) {
+        logger.error("Error closing socket ", e);
       }
     }
-
-    // TODO seems more appropriate for this to not be cached or to be an exception.
-    serverVersions.putIfAbsent(address, KnownVersion.OLDEST.ordinal());
-    return KnownVersion.OLDEST.ordinal();
   }
 }
