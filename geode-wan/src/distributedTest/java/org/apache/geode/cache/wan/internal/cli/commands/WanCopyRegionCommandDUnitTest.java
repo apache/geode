@@ -861,8 +861,11 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     Future<CommandResultAssert> wanCopyCommandFuture =
         executorServiceRule.submit(wanCopyCommandCallable);
 
-    // Wait for the command to start
-    waitForWanCopyRegionCommandToStart(isParallelGatewaySender, isPartitionedRegion, serversInA);
+    // Wait for the command to have copied at least one entry.
+    // This way, the below puts will not be replicated by the command.
+    await().untilAsserted(
+        () -> assertThat(serverInB.invoke(() -> getRegionSize(regionName)))
+            .isGreaterThan(0));
 
     // While the command is running, send some random operations over a different set of keys
     client.invoke(() -> doPutsFrom(regionName, entries, entries + 2000));
@@ -1460,7 +1463,8 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
   }
 
   private void waitForWanCopyRegionCommandToStart(boolean useParallel, boolean usePartitionedRegion,
-      List<VM> servers) {
+      List<VM> servers) throws InterruptedException {
+    // Wait for the command execution to be registered in the service
     final int executionsExpected = useParallel && usePartitionedRegion ? servers.size() : 1;
     await().untilAsserted(
         () -> assertThat(getNumberOfCurrentExecutionsInServers(servers))
