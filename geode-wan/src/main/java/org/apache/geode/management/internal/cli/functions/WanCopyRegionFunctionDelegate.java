@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.time.Clock;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -39,6 +40,7 @@ import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand;
@@ -184,9 +186,9 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
     return batch;
   }
 
-  private List<?> getEntries(Region<?, ?> region, GatewaySender sender) {
+  private Collection<?> getEntries(Region<?, ?> region, GatewaySender sender) {
     if (region instanceof PartitionedRegion && sender.isParallel()) {
-      return ((PartitionedRegion) region).getDataStore().getEntries();
+      return PartitionRegionHelper.getLocalPrimaryData(region).entrySet();
     }
     return new ArrayList<>(region.entrySet());
   }
@@ -366,10 +368,6 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
       }
       BucketRegion bucketRegion = ((PartitionedRegion) event.getRegion()).getDataStore()
           .getLocalBucketById(event.getKeyInfo().getBucketId());
-      if (bucketRegion != null && !bucketRegion.getBucketAdvisor().isPrimary()
-          && sender.isParallel()) {
-        return null;
-      }
       if (bucketRegion != null) {
         bucketRegion.handleWANEvent(event);
       }
