@@ -33,6 +33,8 @@ public class BlockingCommandListener implements EventListener {
   private final List<RedisKey> keys;
   private final byte[][] commandOptions;
   private final long timeout;
+  private final long timeAdded;
+  private Runnable cleanupTask;
 
   /**
    * Constructor to create an instance of a BlockingCommandListener in response to a blocking
@@ -41,7 +43,7 @@ public class BlockingCommandListener implements EventListener {
    *
    * @param context the associated ExecutionHandlerContext
    * @param command the blocking command
-   * @param timeout the timeout for the command to block
+   * @param timeout the timeout for the command to block in milliseconds
    * @param keys the list of keys the command is interested in
    * @param commandOptions any additional options (other than the keys and timeout) required to
    *        resubmit the command.
@@ -53,6 +55,7 @@ public class BlockingCommandListener implements EventListener {
     this.timeout = timeout;
     this.keys = Collections.unmodifiableList(keys);
     this.commandOptions = commandOptions;
+    timeAdded = System.currentTimeMillis();
   }
 
   @Override
@@ -63,7 +66,7 @@ public class BlockingCommandListener implements EventListener {
   @Override
   public EventResponse process(RedisCommandType commandType, RedisKey key) {
     if (!keys.contains(key)) {
-      return EventResponse.CONTIINUE;
+      return EventResponse.CONTINUE;
     }
 
     resubmitCommand();
@@ -78,10 +81,17 @@ public class BlockingCommandListener implements EventListener {
     keys.forEach(x -> byteArgs.add(x.toBytes()));
     byteArgs.addAll(Arrays.asList(commandOptions));
 
+    // Recalculate the timeout since we've already been waiting
+    long adjustedTimeout = timeout;
+    if (adjustedTimeout > 0) {
+      adjustedTimeout = (adjustedTimeout - (System.currentTimeMillis() - timeAdded)) / 1000;
+      adjustedTimeout = Math.max(1, adjustedTimeout);
+    }
+
     // The commands we are currently supporting all have the timeout at the end of the argument
     // list. Some newer Redis 7 commands (BLMPOP and BZMPOP) have the timeout as the first argument
     // after the command. We'll need to adjust this once those commands are supported.
-    byteArgs.add(Coder.longToBytes(timeout));
+    byteArgs.add(Coder.longToBytes(adjustedTimeout));
 
     context.resubmitCommand(new Command(command, byteArgs));
   }
@@ -89,6 +99,18 @@ public class BlockingCommandListener implements EventListener {
   @Override
   public long getTimeout() {
     return timeout;
+  }
+
+  @Override
+  public void setCleanupTask(Runnable cleanupTask) {
+    this.cleanupTask = cleanupTask;
+  }
+
+  @Override
+  public void cleanup() {
+    if (cleanupTask != null) {
+      cleanupTask.run();
+    }
   }
 
   @Override

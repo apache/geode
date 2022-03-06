@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
+import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.internal.commands.RedisCommandType;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -150,4 +151,28 @@ public class EventDistributorTest {
         .until(() -> distributor.size() == 0);
   }
 
+  @Test
+  public void concurrencyOfManyRegistrationsForTheSameKeys() {
+    EventDistributor distributor = new EventDistributor();
+    RedisKey keyA = new RedisKey("keyA".getBytes());
+    RedisKey keyB = new RedisKey("keyB".getBytes());
+    RedisKey keyC = new RedisKey("keyC".getBytes());
+
+    // Should not produce any exceptions
+    new ConcurrentLoopingThreads(10_000,
+        i -> distributor.registerListener(new TestEventListener(100, keyA, keyB, keyC)),
+        i -> distributor.registerListener(new TestEventListener(100, keyB, keyC, keyA)),
+        i -> distributor.registerListener(new TestEventListener(100, keyC, keyA, keyB)),
+        i -> distributor.afterBucketRemoved(keyA.getBucketId(), null),
+        i -> distributor.afterBucketRemoved(keyB.getBucketId(), null),
+        i -> distributor.afterBucketRemoved(keyC.getBucketId(), null),
+        i -> distributor.fireEvent(null, keyA),
+        i -> distributor.fireEvent(null, keyB),
+        i -> distributor.fireEvent(null, keyC))
+            .run();
+
+    GeodeAwaitility.await().atMost(Duration.ofSeconds(30))
+        .during(Duration.ofSeconds(1))
+        .untilAsserted(() -> assertThat(distributor.size()).isEqualTo(0));
+  }
 }

@@ -143,7 +143,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   public void writeToChannel(RedisResponse response) {
-    if (response != null) {
+    if (response != RedisResponse.BLOCKED) {
       client.writeToChannel(response);
     }
   }

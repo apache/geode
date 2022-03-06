@@ -25,7 +25,7 @@ public enum EventResponse {
   /**
    * This response would be used by listeners handling keyspace events
    */
-  CONTIINUE,
+  CONTINUE,
   /**
    * This response would be used by listeners handling blocking commands
    */

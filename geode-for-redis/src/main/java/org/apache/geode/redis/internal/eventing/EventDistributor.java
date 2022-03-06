@@ -15,34 +15,39 @@
 
 package org.apache.geode.redis.internal.eventing;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import org.apache.logging.log4j.Logger;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.partition.PartitionListenerAdapter;
-import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
 import org.apache.geode.redis.internal.commands.RedisCommandType;
 import org.apache.geode.redis.internal.data.RedisKey;
 
 public class EventDistributor extends PartitionListenerAdapter {
 
-  private static final Logger logger = LogService.getLogger();
-  private final Map<RedisKey, List<EventListener>> listeners = new HashMap<>();
-  private final Map<EventListener, TimerTask> timerTasks = new HashMap<>();
-  private final Timer timer = new Timer("GeodeForRedisEventTimer", true);
+  private final Map<RedisKey, Queue<EventListener>> listeners = new ConcurrentHashMap<>();
+
+  private final ScheduledThreadPoolExecutor timerExecutor =
+      new ScheduledThreadPoolExecutor(1,
+          new LoggingThreadFactory("GeodeForRedisEventTimer-", true));
+
   private int keysRegistered = 0;
+
+  public EventDistributor() {
+    timerExecutor.setRemoveOnCancelPolicy(true);
+  }
 
   public synchronized void registerListener(EventListener listener) {
     for (RedisKey key : listener.keys()) {
-      listeners.computeIfAbsent(key, k -> new ArrayList<>()).add(listener);
+      listeners.computeIfAbsent(key, k -> new LinkedBlockingQueue<>()).add(listener);
     }
 
     if (listener.getTimeout() != 0) {
@@ -52,12 +57,8 @@ public class EventDistributor extends PartitionListenerAdapter {
     keysRegistered += listener.keys().size();
   }
 
-  public synchronized void fireEvent(RedisCommandType command, RedisKey key) {
-    if (listeners.isEmpty()) {
-      return;
-    }
-
-    List<EventListener> listenerList = listeners.get(key);
+  public void fireEvent(RedisCommandType command, RedisKey key) {
+    Queue<EventListener> listenerList = listeners.get(key);
     if (listenerList == null) {
       return;
     }
@@ -79,9 +80,9 @@ public class EventDistributor extends PartitionListenerAdapter {
   }
 
   @Override
-  public synchronized void afterBucketRemoved(int bucketId, Iterable<?> keys) {
+  public void afterBucketRemoved(int bucketId, Iterable<?> keys) {
     Set<EventListener> resubmittingList = new HashSet<>();
-    for (Map.Entry<RedisKey, List<EventListener>> entry : listeners.entrySet()) {
+    for (Map.Entry<RedisKey, Queue<EventListener>> entry : listeners.entrySet()) {
       if (entry.getKey().getBucketId() == bucketId) {
         resubmittingList.addAll(entry.getValue());
       }
@@ -96,7 +97,10 @@ public class EventDistributor extends PartitionListenerAdapter {
   private synchronized void removeListener(EventListener listener) {
     boolean listenerRemoved = false;
     for (RedisKey key : listener.keys()) {
-      List<EventListener> listenerList = listeners.get(key);
+      Queue<EventListener> listenerList = listeners.get(key);
+      if (listenerList == null) {
+        continue;
+      }
       listenerRemoved |= listenerList.remove(listener);
       if (listenerList.isEmpty()) {
         listeners.remove(key);
@@ -105,24 +109,13 @@ public class EventDistributor extends PartitionListenerAdapter {
 
     if (listenerRemoved) {
       keysRegistered -= listener.keys().size();
-      if (listener.getTimeout() > 0) {
-        timerTasks.remove(listener).cancel();
-      }
+      listener.cleanup();
     }
   }
 
   private void scheduleTimeout(EventListener listener, long timeout) {
-    TimerTask task = new TimerTask() {
-      @Override
-      public void run() {
-        try {
-          removeListener(listener);
-        } catch (Exception e) {
-          logger.warn("Unable to remove EventListener {}", listener, e);
-        }
-      }
-    };
-    timerTasks.put(listener, task);
-    timer.schedule(task, timeout);
+    ScheduledFuture<?> scheduledTask =
+        timerExecutor.schedule(() -> removeListener(listener), timeout, TimeUnit.MILLISECONDS);
+    listener.setCleanupTask(() -> scheduledTask.cancel(false));
   }
 }

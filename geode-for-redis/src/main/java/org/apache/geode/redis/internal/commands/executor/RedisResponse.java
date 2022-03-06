@@ -42,6 +42,11 @@ import org.apache.geode.redis.internal.netty.CoderException;
 
 public class RedisResponse {
 
+  /**
+   * Static value returned by blocking commands. Effectively a no-op.
+   */
+  public static final RedisResponse BLOCKED = new RedisResponse(x -> null);
+
   private final Function<ByteBuf, ByteBuf> coderCallback;
 
   private Runnable afterWriteCallback;

@@ -47,6 +47,6 @@ public class BLPopExecutor implements CommandExecutor {
     List<byte[]> popped = context.lockedExecute(keys.get(0), keys,
         () -> RedisList.blpop(context, keys, (int) timeoutMillis));
 
-    return popped == null ? null : RedisResponse.array(popped, true);
+    return popped == null ? RedisResponse.BLOCKED : RedisResponse.array(popped, true);
   }
 }

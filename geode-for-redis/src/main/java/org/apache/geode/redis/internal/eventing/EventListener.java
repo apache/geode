@@ -55,4 +55,14 @@ public interface EventListener {
   default long getTimeout() {
     return 0;
   }
+
+  /**
+   * Set a runnable that is responsible for any cleanup when this listener is removed.
+   */
+  default void setCleanupTask(Runnable r) {}
+
+  /**
+   * Called when this listener is removed
+   */
+  default void cleanup() {}
 }
