@@ -130,7 +130,8 @@ jobs:
         version: every
         attempts: 2
         params:
-          integration_tool: rebase
+          integration_tool: merge
+          list_changed_files: true
       - get: geode-ci
         attempts: 2
       - get: {{ build_test.PLATFORM }}-builder-image-family
@@ -306,7 +307,8 @@ jobs:
         version: every
         attempts: 2
         params:
-          integration_tool: rebase
+          integration_tool: merge
+          list_changed_files: true
       - get: geode-ci
         attempts: 2
       - get: {{ test.PLATFORM }}-builder-image-family
