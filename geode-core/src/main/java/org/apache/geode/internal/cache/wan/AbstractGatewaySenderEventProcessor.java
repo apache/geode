@@ -469,6 +469,16 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
           boolean interrupted = Thread.interrupted();
           try {
             if (resetLastPeekedEvents) {
+              if (!batchIdToEventsMap.isEmpty()) {
+                for (Map.Entry<Integer, List<GatewaySenderEventImpl>[]> entry : batchIdToEventsMap
+                    .entrySet()) {
+                  for (GatewaySenderEventImpl event : entry.getValue()[0]) {
+                    if (!event.getPossibleDuplicate()) {
+                      event.setPossibleDuplicate(true);
+                    }
+                  }
+                }
+              }
               resetLastPeekedEvents();
               resetLastPeekedEvents = false;
             }
@@ -1216,6 +1226,18 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
         logger.warn("Destroying GatewayEventDispatcher with actively queued data.");
       }
       if (resetLastPeekedEvents) {
+        if (!batchIdToEventsMap.isEmpty()) {
+          for (Map.Entry<Integer, List<GatewaySenderEventImpl>[]> entry : batchIdToEventsMap
+              .entrySet()) {
+            for (GatewaySenderEventImpl event : entry.getValue()[0]) {
+              if (!event.getPossibleDuplicate()) {
+                event.setPossibleDuplicate(true);
+              }
+            }
+          }
+        }
+
+
         resetLastPeekedEvents();
         resetLastPeekedEvents = false;
       }
