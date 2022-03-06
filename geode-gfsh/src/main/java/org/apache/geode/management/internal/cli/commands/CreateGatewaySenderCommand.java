@@ -297,7 +297,7 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
               .getParamValue(
                   CliStrings.CREATE_GATEWAYSENDER__ENFORCE_THREADS_CONNECT_SAME_RECEIVER);
 
-      if (dispatcherThreads != null && dispatcherThreads > 1 && orderPolicy == null) {
+      if (!parallel && dispatcherThreads != null && dispatcherThreads > 1 && orderPolicy == null) {
         return ResultModel.createError(
             "Must specify --order-policy when --dispatcher-threads is larger than 1.");
       }

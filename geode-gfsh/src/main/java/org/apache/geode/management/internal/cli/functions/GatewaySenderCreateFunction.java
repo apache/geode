@@ -137,8 +137,8 @@ public class GatewaySenderCreateFunction implements InternalFunction<GatewaySend
       gateway.setDispatcherThreads(dispatcherThreads);
     }
 
-    if (dispatcherThreads != null && dispatcherThreads > 1) {
-      String orderPolicy = gatewaySenderCreateArgs.getOrderPolicy();
+    String orderPolicy = gatewaySenderCreateArgs.getOrderPolicy();
+    if (orderPolicy != null && dispatcherThreads != null && dispatcherThreads > 1) {
       gateway.setOrderPolicy(OrderPolicy.valueOf(orderPolicy));
     }
 
