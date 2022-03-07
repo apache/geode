@@ -16,6 +16,7 @@ package org.apache.geode.redis.internal.commands.executor.list;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_SYNTAX;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -73,7 +74,7 @@ public abstract class AbstractLInsertIntegrationTest implements RedisIntegration
     jedis.sadd(KEY, initialValue);
 
     assertThatThrownBy(() -> jedis.linsert(KEY, BEFORE, initialValue, insertedValue))
-        .hasMessage(RedisConstants.ERROR_WRONG_TYPE);
+        .hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
