@@ -200,7 +200,6 @@ public class MessageDispatcher extends LoggingThread {
     synchronized (re_auth_lock) {
       subjectUpdated = true;
       re_auth_lock.notify();
-
     }
   }
 
@@ -444,6 +443,7 @@ public class MessageDispatcher extends LoggingThread {
           clientMessage = null;
         } catch (AuthenticationExpiredException expired) {
           waitForReAuthenticationStartTime = System.currentTimeMillis();
+          long waitFinishTime = waitForReAuthenticationStartTime + reAuthenticateWaitTime;
           // only send the message to clients who can handle the message
           if (getProxy().getVersion().isNewerThanOrEqualTo(RE_AUTHENTICATION_START_VERSION)) {
             EventID eventId = createEventId();
@@ -454,7 +454,11 @@ public class MessageDispatcher extends LoggingThread {
           // trigger credential refresh on its own.
           synchronized (re_auth_lock) {
             subjectUpdated = false;
-            re_auth_lock.wait(reAuthenticateWaitTime);
+            long remainingWaitTime = waitFinishTime - System.currentTimeMillis();
+            while (!subjectUpdated && remainingWaitTime > 0) {
+              re_auth_lock.wait(remainingWaitTime);
+              remainingWaitTime = waitFinishTime - System.currentTimeMillis();
+            }
           }
           // the above wait timed out
           if (!subjectUpdated) {
