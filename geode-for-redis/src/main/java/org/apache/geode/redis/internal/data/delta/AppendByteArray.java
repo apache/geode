@@ -26,14 +26,16 @@ import java.io.IOException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.redis.internal.data.AbstractRedisData;
 
-public class AppendByteArray implements DeltaInfo {
+public class AppendByteArray extends DeltaInfo {
   private final byte[] byteArray;
 
-  public AppendByteArray(byte[] value) {
+  public AppendByteArray(short version, byte[] value) {
+    super(version);
     byteArray = value;
   }
 
   public void serializeTo(DataOutput out) throws IOException {
+    super.serializeTo(out);
     DataSerializer.writeEnum(APPEND_BYTE_ARRAY, out);
     DataSerializer.writeByteArray(byteArray, out);
   }

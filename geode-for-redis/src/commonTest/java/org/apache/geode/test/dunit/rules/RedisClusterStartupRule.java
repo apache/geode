@@ -34,7 +34,9 @@ import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.logging.internal.log4j.api.FastLogger;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.ClusterNode;
 import org.apache.geode.redis.ClusterNodes;
 import org.apache.geode.redis.internal.GeodeRedisServer;
@@ -47,6 +49,8 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 public class RedisClusterStartupRule extends ClusterStartupRule {
+
+  private static final Logger logger = LogService.getLogger();
 
   public static final int REDIS_CLIENT_TIMEOUT =
       Math.toIntExact(GeodeAwaitility.getTimeout().toMillis());
@@ -218,6 +222,8 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
           }
 
           try {
+            logger.info("Moving bucket {} from {} -> {}", redisKey.getBucketId(),
+                primaryMember.getName(), targetMember.getName());
             PartitionRegionHelper.moveBucketByKey(r, primaryMember, targetMember, redisKey);
           } catch (IllegalStateException e) {
             if (targetServerName == null || !e.getMessage().contains("is already hosting")) {
@@ -228,6 +234,50 @@ public class RedisClusterStartupRule extends ClusterStartupRule {
           // Who is the primary now?
           return PartitionRegionHelper.getPrimaryMemberForKey(r, redisKey);
         });
+  }
+
+  public void switchPrimaryForKey(String key, MemberVM... candidateMembers) {
+    Set<DistributedMember> redundantMembers = getMember(1).invoke(() -> {
+      RedisKey redisKey = new RedisKey(key.getBytes());
+      Region<RedisKey, RedisData> r = RedisClusterStartupRule.getCache()
+          .getRegion(RegionProvider.DEFAULT_REDIS_REGION_NAME);
+
+      return PartitionRegionHelper.getRedundantMembersForKey(r, redisKey);
+    });
+
+    DistributedMember targetMember = redundantMembers.iterator().next();
+
+    for (MemberVM vm : candidateMembers) {
+      if (targetMember.getName().equals(vm.getName())) {
+        boolean bucketMoved = vm.invoke("switchPrimaryForKey " + key + " -> " + vm.getName(),
+            () -> {
+              RedisKey redisKey = new RedisKey(key.getBytes());
+              Region<RedisKey, RedisData> r = RedisClusterStartupRule.getCache()
+                  .getRegion(RegionProvider.DEFAULT_REDIS_REGION_NAME);
+              PartitionedRegion pr = (PartitionedRegion) r;
+              return pr.getRegionAdvisor().getBucketAdvisor(redisKey.getBucketId())
+                  .becomePrimary(false);
+            });
+        if (!bucketMoved) {
+          throw new RuntimeException("Failed to switch primary for key " + key + " to " +
+              vm.getName());
+        }
+        break;
+      }
+    }
+
+    DistributedMember newMember = getMember(1).invoke("Getting primary for key " + key,
+        () -> {
+          RedisKey redisKey = new RedisKey(key.getBytes());
+          Region<RedisKey, RedisData> r = RedisClusterStartupRule.getCache()
+              .getRegion(RegionProvider.DEFAULT_REDIS_REGION_NAME);
+          return PartitionRegionHelper.getPrimaryMemberForKey(r, redisKey);
+        });
+
+    if (!targetMember.equals(newMember)) {
+      throw new RuntimeException("Failed to switch primary for key " + key + " from " +
+          targetMember.getName() + " != " + newMember.getName());
+    }
   }
 
   /**

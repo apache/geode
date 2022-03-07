@@ -76,6 +76,8 @@ public abstract class AbstractRedisData implements RedisData {
 
   public static final long NO_EXPIRATION = -1L;
 
+  protected short version = 0;
+
   /**
    * The timestamp at which this instance should expire.
    * NO_EXPIRATION means it never expires.
@@ -84,6 +86,14 @@ public abstract class AbstractRedisData implements RedisData {
    */
   private volatile long expirationTimestamp = NO_EXPIRATION;
   private static final ThreadLocal<DeltaInfo> deltaInfo = new ThreadLocal<>();
+
+  public int getVersion() {
+    return version;
+  }
+
+  public void setVersion(short version) {
+    this.version = version;
+  }
 
   @Override
   public void setExpirationTimestamp(Region<RedisKey, RedisData> region, RedisKey key, long value) {
@@ -193,12 +203,14 @@ public abstract class AbstractRedisData implements RedisData {
 
   @Override
   public void toData(DataOutput out, SerializationContext context) throws IOException {
+    out.writeShort(version);
     out.writeLong(expirationTimestamp);
   }
 
   @Override
   public void fromData(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
+    version = in.readShort();
     expirationTimestamp = in.readLong();
   }
 
@@ -218,7 +230,14 @@ public abstract class AbstractRedisData implements RedisData {
 
   @Override
   public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
+    short deltaVersion = DataSerializer.readPrimitiveShort(in);
     DeltaType deltaType = readEnum(DeltaType.class, in);
+
+    if (deltaType.isVersioned() && deltaVersion == getVersion()) {
+      return;
+    }
+    setVersion(deltaVersion);
+
     switch (deltaType) {
       case SET_TIMESTAMP:
         SetTimestamp.deserializeFrom(in, this);

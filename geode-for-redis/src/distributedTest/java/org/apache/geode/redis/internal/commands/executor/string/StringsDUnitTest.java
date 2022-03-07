@@ -19,11 +19,8 @@ import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADD
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
@@ -39,7 +36,6 @@ import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.params.SetParams;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
@@ -55,14 +51,17 @@ public class StringsDUnitTest {
   private static final int LIST_SIZE = 1000;
   private static final int NUM_ITERATIONS = 1000;
   private static JedisCluster jedisCluster;
+  private static MemberVM server1;
+  private static MemberVM server2;
+  private static MemberVM server3;
 
   @BeforeClass
   public static void classSetup() {
     MemberVM locator = clusterStartUp.startLocatorVM(0);
     int locatorPort = locator.getPort();
-    clusterStartUp.startRedisVM(1, locatorPort);
-    clusterStartUp.startRedisVM(2, locatorPort);
-    clusterStartUp.startRedisVM(3, locatorPort);
+    server1 = clusterStartUp.startRedisVM(1, locatorPort);
+    server2 = clusterStartUp.startRedisVM(2, locatorPort);
+    server3 = clusterStartUp.startRedisVM(3, locatorPort);
 
     int redisServerPort1 = clusterStartUp.getRedisPort(1);
     jedisCluster =
@@ -253,49 +252,23 @@ public class StringsDUnitTest {
   }
 
   @Test
-  public void givenBucketsMoveDuringAppend_thenDataIsNotLost() throws Exception {
-    AtomicBoolean running = new AtomicBoolean(true);
+  public void givenBucketsMoveAndPrimarySwitches_thenNoDuplicateAppendsOccur() {
+    String KEY = "APPEND";
+    AtomicInteger counter = new AtomicInteger(0);
 
-    List<String> hashtags = new ArrayList<>();
-    hashtags.add(clusterStartUp.getKeyOnServer("append", 1));
-    hashtags.add(clusterStartUp.getKeyOnServer("append", 2));
-    hashtags.add(clusterStartUp.getKeyOnServer("append", 3));
-
-    Runnable task1 = () -> appendPerformAndVerify(1, hashtags.get(0), running);
-    Runnable task2 = () -> appendPerformAndVerify(2, hashtags.get(1), running);
-    Runnable task3 = () -> appendPerformAndVerify(3, hashtags.get(2), running);
-
-    Future<Void> future1 = executor.runAsync(task1);
-    Future<Void> future2 = executor.runAsync(task2);
-    Future<Void> future3 = executor.runAsync(task3);
-
-    for (int i = 0; i < 100 && running.get(); i++) {
-      clusterStartUp.moveBucketForKey(hashtags.get(i % hashtags.size()));
-      GeodeAwaitility.await().during(Duration.ofMillis(200)).until(() -> true);
-    }
-
-    running.set(false);
-
-    future1.get();
-    future2.get();
-    future3.get();
+    new ConcurrentLoopingThreads(1000,
+        i -> {
+          String appendString = "-" + KEY + "-" + i + "-";
+          jedisCluster.append(KEY, appendString);
+          counter.incrementAndGet();
+        },
+        i -> clusterStartUp.moveBucketForKey(KEY)).runWithAction(() -> {
+          clusterStartUp.switchPrimaryForKey(KEY, server1, server2, server3);
+          verifyAppendResult(KEY, counter.get());
+        });
   }
 
-  private void appendPerformAndVerify(int index, String hashtag, AtomicBoolean isRunning) {
-    String key = "{" + hashtag + "}-key-" + index;
-    int iterationCount = 0;
-
-    while (isRunning.get()) {
-      String appendString = "-" + key + "-" + iterationCount + "-";
-      try {
-        jedisCluster.append(key, appendString);
-      } catch (Exception ex) {
-        isRunning.set(false);
-        throw new RuntimeException("Exception performing APPEND " + appendString, ex);
-      }
-      iterationCount++;
-    }
-
+  private void verifyAppendResult(String key, int iterationCount) {
     String storedString = jedisCluster.get(key);
 
     int startIndex = 0;

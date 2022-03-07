@@ -19,6 +19,21 @@ package org.apache.geode.redis.internal.data.delta;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public interface DeltaInfo {
-  void serializeTo(DataOutput out) throws IOException;
+import org.apache.geode.DataSerializer;
+
+public abstract class DeltaInfo {
+
+  private final short version;
+
+  public DeltaInfo(short version) {
+    this.version = version;
+  }
+
+  public void serializeTo(DataOutput out) throws IOException {
+    DataSerializer.writePrimitiveShort(version, out);
+  };
+
+  public short getVersion() {
+    return version;
+  }
 }

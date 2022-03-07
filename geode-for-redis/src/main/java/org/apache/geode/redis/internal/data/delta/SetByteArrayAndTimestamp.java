@@ -29,16 +29,18 @@ import org.apache.geode.redis.internal.data.AbstractRedisData;
  * This delta info is used by RedisString set ops to set the bytes
  * and the timestamp.
  */
-public class SetByteArrayAndTimestamp implements DeltaInfo {
+public class SetByteArrayAndTimestamp extends DeltaInfo {
   private final byte[] byteArray;
   private final long timestamp;
 
   public SetByteArrayAndTimestamp(byte[] bytes, long timestamp) {
+    super((short) 0);
     byteArray = bytes;
     this.timestamp = timestamp;
   }
 
   public void serializeTo(DataOutput out) throws IOException {
+    super.serializeTo(out);
     DataSerializer.writeEnum(DeltaType.SET_BYTE_ARRAY_AND_TIMESTAMP, out);
     DataSerializer.writeByteArray(byteArray, out);
     DataSerializer.writePrimitiveLong(timestamp, out);

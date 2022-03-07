@@ -31,11 +31,12 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.redis.internal.data.AbstractRedisData;
 
-public class AddByteArrayDoublePairs implements DeltaInfo {
+public class AddByteArrayDoublePairs extends DeltaInfo {
   private final List<byte[]> byteArrays;
   private final double[] doubles;
 
   public AddByteArrayDoublePairs(int size) {
+    super((short) 0);
     byteArrays = new ArrayList<>(size);
     doubles = new double[size];
   }
@@ -46,6 +47,7 @@ public class AddByteArrayDoublePairs implements DeltaInfo {
   }
 
   public void serializeTo(DataOutput out) throws IOException {
+    super.serializeTo(out);
     DataSerializer.writeEnum(ADD_BYTE_ARRAY_DOUBLE_PAIRS, out);
     InternalDataSerializer.writeArrayLength(byteArrays.size(), out);
     for (int i = 0; i < byteArrays.size(); i++) {

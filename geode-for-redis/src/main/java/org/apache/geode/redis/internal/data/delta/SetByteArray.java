@@ -29,14 +29,16 @@ import org.apache.geode.redis.internal.data.AbstractRedisData;
  * This delta info simply sets a RedisData's current
  * byte array overwriting any existing one.
  */
-public class SetByteArray implements DeltaInfo {
+public class SetByteArray extends DeltaInfo {
   private final byte[] byteArray;
 
   public SetByteArray(byte[] value) {
+    super((short) 0);
     byteArray = value;
   }
 
   public void serializeTo(DataOutput out) throws IOException {
+    super.serializeTo(out);
     DataSerializer.writeEnum(SET_BYTE_ARRAY, out);
     DataSerializer.writeByteArray(byteArray, out);
   }

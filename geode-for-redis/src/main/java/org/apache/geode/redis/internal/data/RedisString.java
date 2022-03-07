@@ -73,7 +73,7 @@ public class RedisString extends AbstractRedisData {
 
   public int append(Region<RedisKey, RedisData> region, RedisKey key, byte[] appendValue) {
     valueAppend(appendValue);
-    storeChanges(region, key, new AppendByteArray(appendValue));
+    storeChanges(region, key, new AppendByteArray(version, appendValue));
     return value.length;
   }
 
@@ -464,13 +464,14 @@ public class RedisString extends AbstractRedisData {
 
   ////// methods that modify the "value" field ////////////
 
-  protected void valueAppend(byte[] bytes) {
+  protected synchronized void valueAppend(byte[] bytes) {
     int initialLength = value.length;
     int additionalLength = bytes.length;
     byte[] combined = new byte[initialLength + additionalLength];
     System.arraycopy(value, 0, combined, 0, initialLength);
     System.arraycopy(bytes, 0, combined, initialLength, additionalLength);
     value = combined;
+    version++;
   }
 
   @Override
