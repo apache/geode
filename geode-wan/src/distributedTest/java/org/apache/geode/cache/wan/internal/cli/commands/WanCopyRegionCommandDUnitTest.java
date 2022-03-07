@@ -26,7 +26,6 @@ import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionComm
 import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__NO__RUNNING__COMMAND;
 import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__REGION__NOT__FOUND;
 import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__SENDER__NOT__FOUND;
-import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY;
 import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__REGION;
 import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__SENDERID;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
@@ -38,7 +37,9 @@ import static org.junit.Assert.assertNotNull;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
@@ -134,7 +135,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     // Check command status and output
     CommandResultAssert command =
-        verifyStatusIsError(gfsh.executeAndAssertThat(commandString));
+        verifyStatusIsError(gfsh.executeAndAssertThat(commandString), serversInA.size());
     String message =
         CliStrings.format(WAN_COPY_REGION__MSG__REGION__NOT__FOUND,
             regionName);
@@ -170,7 +171,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     // Check command status and output
     CommandResultAssert command =
-        verifyStatusIsError(gfsh.executeAndAssertThat(commandString));
+        verifyStatusIsError(gfsh.executeAndAssertThat(commandString), serversInA.size());
     String message =
         CliStrings.format(WAN_COPY_REGION__MSG__SENDER__NOT__FOUND, senderIdInA);
     command
@@ -223,9 +224,9 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         .getCommandString();
 
     // Check command status and output
-    if (isParallelGatewaySender) {
+    if (isPartitionedRegion) {
       CommandResultAssert command =
-          verifyStatusIsError(gfsh.executeAndAssertThat(commandString));
+          verifyStatusIsError(gfsh.executeAndAssertThat(commandString), serversInA.size());
       Condition<String> exceptionError =
           new Condition<>(s -> s.startsWith("Error ("), "Error");
       command
@@ -235,20 +236,14 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
           .haveExactly(3, exceptionError);
     } else {
       CommandResultAssert command =
-          verifyStatusIsErrorInOneServer(gfsh.executeAndAssertThat(commandString));
+          verifyStatusIsError(gfsh.executeAndAssertThat(commandString), 1);
       Condition<String> exceptionError =
           new Condition<>(s -> s.startsWith("Error ("), "Error");
-      Condition<String> senderNotPrimary = new Condition<>(
-          s -> s.equals(CliStrings
-              .format(WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY,
-                  senderIdInA)),
-          "sender not primary");
       command
           .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
           .hasColumn("Message")
           .asList()
-          .haveExactly(1, exceptionError)
-          .haveExactly(2, senderNotPrimary);
+          .haveExactly(1, exceptionError);
     }
   }
 
@@ -280,20 +275,14 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
       boolean usePartitionedRegion, Gateway gwToBeStopped, boolean stopPrimarySender)
       throws Exception {
 
-    if (gwToBeStopped == Gateway.SENDER && (useParallel || stopPrimarySender)) {
+    if (gwToBeStopped == Gateway.SENDER && (usePartitionedRegion || stopPrimarySender)) {
       addIgnoredExceptionsForSenderInUseWentDown();
     }
-    if (gwToBeStopped == Gateway.RECEIVER &&
-        (usePartitionedRegion || !useParallel)) {
+    if (gwToBeStopped == Gateway.RECEIVER) {
       addIgnoredExceptionsForReceiverConnectedToSenderInUseWentDown();
     }
     final int wanCopyRegionBatchSize = 10;
-    final int entries;
-    if (!useParallel && !usePartitionedRegion && stopPrimarySender) {
-      entries = 2500;
-    } else {
-      entries = 1000;
-    }
+    final int entries = 2500;
 
     final String regionName = getRegionName(usePartitionedRegion);
 
@@ -352,14 +341,16 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         executorServiceRule.submit(wanCopyCommandCallable);
 
     // Wait for the wan-copy command to start
-    waitForWanCopyRegionCommandToStart(useParallel, usePartitionedRegion, serversInA);
+    waitForWanCopyRegionCommandToStart(usePartitionedRegion, serversInA);
 
     // Stop sender or receiver and verify result
     if (gwToBeStopped == Gateway.SENDER) {
-      stopSenderAndVerifyResult(useParallel, stopPrimarySender, server2InA, serversInA, senderIdInA,
+      stopSenderAndVerifyResult(usePartitionedRegion, stopPrimarySender, server2InA, serversInA,
+          senderIdInA,
           wanCopyCommandFuture);
     } else if (gwToBeStopped == Gateway.RECEIVER) {
-      stopReceiverAndVerifyResult(useParallel, stopPrimarySender, entries, regionName, server1InB,
+      stopReceiverAndVerifyResult(usePartitionedRegion, stopPrimarySender, entries, regionName,
+          serversInA, server1InB,
           server2InB, server3InB, wanCopyCommandFuture);
     }
   }
@@ -419,7 +410,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         executorServiceRule.submit(wanCopyCommandCallable);
 
     // Wait for the wan-copy command to start
-    waitForWanCopyRegionCommandToStart(isParallelGatewaySender, isPartitionedRegion, serversInA);
+    waitForWanCopyRegionCommandToStart(isPartitionedRegion, serversInA);
 
     // Destroy region in a server in A
     server1InA.invoke(() -> cache.getRegion(regionName).destroyRegion());
@@ -520,7 +511,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         executorServiceRule.submit(wanCopyCommandCallable);
 
     // Wait for the wan-copy command to start
-    waitForWanCopyRegionCommandToStart(useParallel, usePartitionedRegion, serversInA);
+    waitForWanCopyRegionCommandToStart(usePartitionedRegion, serversInA);
 
     // Execute again the same wan-copy region command
     String commandString = new CommandStringBuilder(WAN_COPY_REGION)
@@ -534,28 +525,22 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         s -> s.equals(CliStrings.format(WAN_COPY_REGION__MSG__ALREADY__RUNNING__COMMAND,
             regionName, senderIdInA)),
         "already running");
-    if (useParallel) {
+    if (usePartitionedRegion) {
       CommandResultAssert command =
-          verifyStatusIsError(gfsh.executeAndAssertThat(commandString));
+          verifyStatusIsError(gfsh.executeAndAssertThat(commandString), serversInA.size());
       command
           .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
           .hasColumn("Message")
           .asList()
-          .haveExactly(3, exceptionError);
+          .haveExactly(serversInA.size(), exceptionError);
     } else {
       CommandResultAssert command =
-          verifyStatusIsErrorInOneServer(gfsh.executeAndAssertThat(commandString));
-      Condition<String> senderNotPrimary = new Condition<>(
-          s -> s.equals(CliStrings
-              .format(WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY,
-                  senderIdInA)),
-          "sender not primary");
+          verifyStatusIsError(gfsh.executeAndAssertThat(commandString), 1);
       command
           .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
           .hasColumn("Message")
           .asList()
-          .haveExactly(1, exceptionError)
-          .haveExactly(2, senderNotPrimary);
+          .haveExactly(1, exceptionError);
     }
 
     // cancel command
@@ -640,9 +625,9 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         .getCommandString();
 
     // Check command status and output
-    CommandResultAssert command =
-        verifyStatusIsOk(gfsh.executeAndAssertThat(commandString));
-    if (isPartitionedRegion && isParallelGatewaySender) {
+    CommandResultAssert command;
+    if (isPartitionedRegion) {
+      command = verifyStatusIsOk(gfsh.executeAndAssertThat(commandString), serversInA.size());
       String msg1 = CliStrings.format(WAN_COPY_REGION__MSG__COPIED__ENTRIES, 33);
       String msg2 = CliStrings.format(WAN_COPY_REGION__MSG__COPIED__ENTRIES, 34);
       command
@@ -650,13 +635,12 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
           .hasColumn("Message")
           .containsExactlyInAnyOrder(msg1, msg1, msg2);
     } else {
+      command = verifyStatusIsOk(gfsh.executeAndAssertThat(commandString), 1);
       String msg1 = CliStrings.format(WAN_COPY_REGION__MSG__COPIED__ENTRIES, 100);
-      String msg2 = CliStrings
-          .format(WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY, senderIdInA);
       command
           .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
           .hasColumn("Message")
-          .containsExactlyInAnyOrder(msg1, msg2, msg2);
+          .containsExactlyInAnyOrder(msg1);
     }
 
     // Check that entries are copied in "B"
@@ -667,7 +651,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     // Check that wanCopyRegionBatchSize is correctly used by the command
     long receivedBatches = serverInB.invoke(() -> getReceiverStats().get(2));
-    if (isPartitionedRegion && isParallelGatewaySender) {
+    if (isPartitionedRegion) {
       assertThat(receivedBatches).isEqualTo(6);
     } else {
       assertThat(receivedBatches).isEqualTo(5);
@@ -732,7 +716,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     // for the random operations to be done at the same time
     // as the command is running.
     // The rate is divided by the number of servers in case the sender is parallel
-    int maxRate = (entries / 5) / (isParallelGatewaySender ? serversInA.size() : 1);
+    int maxRate = (entries / 5) / (isPartitionedRegion ? serversInA.size() : 1);
 
     // Execute wan-copy region command
     Callable<CommandResultAssert> wanCopyCommandCallable = () -> {
@@ -754,7 +738,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         executorServiceRule.submit(wanCopyCommandCallable);
 
     // Wait for the wan-copy command to start
-    waitForWanCopyRegionCommandToStart(isParallelGatewaySender, isPartitionedRegion, serversInA);
+    waitForWanCopyRegionCommandToStart(isPartitionedRegion, serversInA);
 
     // While the command is running, send some random operations over the same keys
     AsyncInvocation<Void> asyncOps1 =
@@ -766,7 +750,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     // Check command status and output
     CommandResultAssert command = wanCopyCommandFuture.get();
-    verifyStatusIsOk(command);
+    verifyStatusIsOk(command, isPartitionedRegion ? serversInA.size() : 1);
 
     // Wait for random operations to finish
     asyncOps1.await();
@@ -840,7 +824,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     // for the random operations to be done at the same time
     // as the command is running.
     // The rate is divided by the number of servers in case the sender is parallel
-    int maxRate = (entries / 5) / (isParallelGatewaySender ? serversInA.size() : 1);
+    int maxRate = (entries / 5) / (isPartitionedRegion ? serversInA.size() : 1);
 
     // Execute wan-copy region command
     Callable<CommandResultAssert> wanCopyCommandCallable = () -> {
@@ -872,7 +856,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     // Check command status and output
     CommandResultAssert command = wanCopyCommandFuture.get();
-    verifyStatusIsOk(command);
+    verifyStatusIsOk(command, isPartitionedRegion ? serversInA.size() : 1);
 
     // Wait for entries to be replicated (replication queues empty)
     for (VM server : serversInA) {
@@ -921,7 +905,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         .getCommandString();
 
     CommandResultAssert cancelCommandResult =
-        verifyStatusIsError(gfsh.executeAndAssertThat(cancelCommand));
+        verifyStatusIsError(gfsh.executeAndAssertThat(cancelCommand), serversInA.size());
     String msg1 = CliStrings.format(WAN_COPY_REGION__MSG__NO__RUNNING__COMMAND,
         regionName, senderIdInA);
     cancelCommandResult
@@ -996,7 +980,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         executorServiceRule.submit(wanCopyCommandCallable);
 
     // Wait for the wan-copy command to start
-    waitForWanCopyRegionCommandToStart(isParallelGatewaySender, isPartitionedRegion, serversInA);
+    waitForWanCopyRegionCommandToStart(isPartitionedRegion, serversInA);
 
     // Cancel wan-copy region command
     GfshCommandRule gfshCancelCommand = new GfshCommandRule();
@@ -1009,8 +993,8 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     CommandResultAssert cancelCommandResult =
         gfshCancelCommand.executeAndAssertThat(cancelCommand);
 
-    if (isPartitionedRegion && isParallelGatewaySender) {
-      verifyStatusIsOk(cancelCommandResult);
+    if (isPartitionedRegion) {
+      verifyStatusIsOk(cancelCommandResult, serversInA.size());
       cancelCommandResult
           .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
           .hasColumn("Message")
@@ -1029,22 +1013,19 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     // Check wan-copy region command output
     CommandResultAssert wanCopyCommandResult = wanCopyCommandFuture.get();
-    if (isPartitionedRegion && isParallelGatewaySender) {
-      verifyStatusIsError(wanCopyCommandResult);
+    if (isPartitionedRegion) {
+      verifyStatusIsError(wanCopyCommandResult, serversInA.size());
       String msg = WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED;
       wanCopyCommandResult
           .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
           .hasColumn("Message")
           .containsExactly(msg, msg, msg);
     } else {
-      verifyStatusIsErrorInOneServer(wanCopyCommandResult);
-      String msg1 = CliStrings
-          .format(WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY, senderIdInA);
+      verifyStatusIsError(wanCopyCommandResult, 1);
       wanCopyCommandResult
           .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
           .hasColumn("Message")
-          .containsExactlyInAnyOrder(WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED, msg1,
-              msg1);
+          .containsExactlyInAnyOrder(WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED);
     }
     addIgnoredExceptionsForClosingAfterCancelCommand();
   }
@@ -1157,13 +1138,14 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     createReceiverInVMs(serverInC);
   }
 
-  private void stopReceiverAndVerifyResult(boolean useParallel, boolean stopPrimarySender,
-      int entries, String regionName, VM server1InB, VM server2InB, VM server3InB,
+  private void stopReceiverAndVerifyResult(boolean usePartitioned, boolean stopPrimarySender,
+      int entries, String regionName, List<VM> serversInA, VM server1InB, VM server2InB,
+      VM server3InB,
       Future<CommandResultAssert> commandFuture)
       throws InterruptedException, java.util.concurrent.ExecutionException {
-    // if parallel sender: stop any receiver
-    // if serial sender: stop receiver connected to primary or secondary
-    if (useParallel) {
+    // if partitioned region: stop any receiver
+    // if replicated: stop receiver connected to primary or secondary
+    if (usePartitioned) {
       server2InB.invoke(() -> cache.close());
     } else {
       // Region type has no influence on which server should be stopped
@@ -1177,22 +1159,22 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     CommandResultAssert result = commandFuture.get();
     // Verify result
-    if (useParallel) {
-      verifyResultOfStoppingReceiverWhenUsingParallelSender(result);
+    if (usePartitioned) {
+      verifyResultOfStoppingReceiverWhenUsingPartitionedRegion(result, serversInA.size());
     } else {
-      verifyResultOfStoppingReceiverWhenUsingSerialSender(result);
+      verifyResultOfStoppingReceiverWhenUsingReplicatedRegion(result);
       server2InB.invoke(() -> validateRegionSize(regionName, entries));
     }
   }
 
-  private void stopSenderAndVerifyResult(boolean useParallel, boolean stopPrimarySender,
+  private void stopSenderAndVerifyResult(boolean usePartitioned, boolean stopPrimarySender,
       VM server2InA, List<VM> serversInA, String senderIdInA,
       Future<CommandResultAssert> wanCopyCommandFuture)
       throws InterruptedException, java.util.concurrent.ExecutionException {
-    // If parallel: stop any server
-    // If serial: stop primary or secondary
-    if (useParallel) {
-      server2InA.invoke(() -> killSender(senderIdInA));
+    // If partitioned: stop any server
+    // If replicated: stop primary or secondary
+    if (usePartitioned) {
+      server2InA.invoke(() -> killSender());
     } else {
       for (VM server : serversInA) {
         boolean senderWasStopped = server.invoke(() -> {
@@ -1211,7 +1193,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     CommandResultAssert result = wanCopyCommandFuture.get();
     // Verify result
-    if (useParallel) {
+    if (usePartitioned) {
       verifyResultOfStoppingParallelSender(result);
     } else {
       if (stopPrimarySender) {
@@ -1222,26 +1204,22 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     }
   }
 
-  public void verifyResultOfStoppingReceiverWhenUsingSerialSender(
+  public void verifyResultOfStoppingReceiverWhenUsingReplicatedRegion(
       CommandResultAssert command) {
-    verifyStatusIsOk(command);
+    verifyStatusIsOk(command, 1);
     Condition<String> haveEntriesCopied =
         new Condition<>(s -> s.startsWith("Entries copied: "), "Entries copied");
-    Condition<String> senderNotPrimary = new Condition<>(
-        s -> s.equals("Sender B is serial and not primary. 0 entries copied."),
-        "sender not primary");
 
     command
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Message")
         .asList()
-        .haveExactly(1, haveEntriesCopied)
-        .haveExactly(2, senderNotPrimary);
+        .haveExactly(1, haveEntriesCopied);
   }
 
-  public void verifyResultOfStoppingReceiverWhenUsingParallelSender(
-      CommandResultAssert command) {
-    verifyStatusIsOk(command);
+  public void verifyResultOfStoppingReceiverWhenUsingPartitionedRegion(
+      CommandResultAssert command, int members) {
+    verifyStatusIsOk(command, members);
     Condition<String> haveEntriesCopied =
         new Condition<>(s -> s.startsWith("Entries copied: "), "Entries copied");
 
@@ -1249,7 +1227,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Message")
         .asList()
-        .haveExactly(3, haveEntriesCopied);
+        .haveExactly(members, haveEntriesCopied);
   }
 
   public void verifyResultOfStoppingParallelSender(CommandResultAssert command) {
@@ -1274,7 +1252,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
   public void verifyResultOfStoppingPrimarySerialSender(
       CommandResultAssert command) {
-    verifyStatusIsErrorInOneServer(command);
+    verifyStatusIsError(command, 1);
 
     Condition<String> startsWithError = new Condition<>(
         s -> (s.startsWith("Execution failed. Error:")
@@ -1285,16 +1263,11 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
             || s.equals(WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED)),
         "execution error");
 
-    Condition<String> senderNotPrimary = new Condition<>(
-        s -> s.equals("Sender B is serial and not primary. 0 entries copied."),
-        "sender not primary");
-
     command
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Message")
         .asList()
-        .haveExactly(1, startsWithError)
-        .haveExactly(2, senderNotPrimary);
+        .haveExactly(1, startsWithError);
   }
 
   public void verifyResultStoppingSecondarySerialSender(
@@ -1307,28 +1280,24 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     command
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Member")
-        .hasSize(3);
+        .hasSize(1);
     command
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Message")
-        .hasSize(3);
+        .hasSize(1);
     command
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Status")
-        .containsExactlyInAnyOrder("OK", "OK", "OK");
+        .containsExactly("OK");
 
     Condition<String> haveEntriesCopied =
         new Condition<>(s -> s.startsWith("Entries copied:"), "Entries copied");
-    Condition<String> senderNotPrimary = new Condition<>(
-        s -> s.equals("Sender B is serial and not primary. 0 entries copied."),
-        "sender not primary");
 
     command
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Message")
         .asList()
-        .haveExactly(1, haveEntriesCopied)
-        .haveExactly(2, senderNotPrimary);
+        .haveExactly(1, haveEntriesCopied);
   }
 
   private String getRegionName(boolean isPartitionedRegion) {
@@ -1359,7 +1328,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     }
   }
 
-  public CommandResultAssert verifyStatusIsOk(CommandResultAssert command) {
+  public CommandResultAssert verifyStatusIsOk(CommandResultAssert command, int members) {
     command.statusIsSuccess();
     command
         .hasTableSection()
@@ -1368,19 +1337,21 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     command
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Member")
-        .hasSize(3);
-    command
-        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
-        .hasColumn("Status")
-        .containsExactly("OK", "OK", "OK");
+        .hasSize(members);
     command
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Message")
-        .hasSize(3);
+        .hasSize(members);
+    String[] okList =
+        (String[]) (new ArrayList(Collections.nCopies(members, "OK"))).toArray(new String[0]);
+    command
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasColumn("Status")
+        .containsExactly(okList);
     return command;
   }
 
-  public CommandResultAssert verifyStatusIsError(CommandResultAssert command) {
+  public CommandResultAssert verifyStatusIsError(CommandResultAssert command, int members) {
     command.statusIsError();
     command
         .hasTableSection()
@@ -1389,15 +1360,17 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     command
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Member")
-        .hasSize(3);
+        .hasSize(members);
     command
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Message")
-        .hasSize(3);
+        .hasSize(members);
+    String[] errorList =
+        (String[]) (new ArrayList(Collections.nCopies(members, "ERROR"))).toArray(new String[0]);
     command
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Status")
-        .containsExactly("ERROR", "ERROR", "ERROR");
+        .containsExactly(errorList);
     return command;
   }
 
@@ -1462,10 +1435,9 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     }
   }
 
-  private void waitForWanCopyRegionCommandToStart(boolean useParallel, boolean usePartitionedRegion,
-      List<VM> servers) throws InterruptedException {
+  private void waitForWanCopyRegionCommandToStart(boolean usePartitionedRegion, List<VM> servers) {
     // Wait for the command execution to be registered in the service
-    final int executionsExpected = useParallel && usePartitionedRegion ? servers.size() : 1;
+    final int executionsExpected = usePartitionedRegion ? servers.size() : 1;
     await().untilAsserted(
         () -> assertThat(getNumberOfCurrentExecutionsInServers(servers))
             .isEqualTo(executionsExpected));

@@ -42,6 +42,7 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.internal.WanCopyRegionFunctionService;
 import org.apache.geode.cache.wan.internal.WanCopyRegionFunctionServiceAlreadyRunningException;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.wan.InternalGatewaySender;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.cli.CliFunction;
@@ -148,8 +149,8 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
           CliStrings.format(WAN_COPY_REGION__MSG__SENDER__NOT__RUNNING, senderId));
     }
-    if (!sender.isParallel() && !((InternalGatewaySender) sender).isPrimary()) {
-      return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
+    if (!(region instanceof PartitionedRegion) && !((InternalGatewaySender) sender).isPrimary()) {
+      return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.IGNORABLE,
           CliStrings.format(WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY,
               senderId));
     }

@@ -88,7 +88,7 @@ wan-copy region --region=myRegion--sender-id=mySender --max-rate=1000 --batch-si
 ```
 
 ``` pre
-wan-copy region --region=/overload --sender-id=sender1 --cancel
+wan-copy region --region=/myRegion --sender-id=sender1 --cancel
 ```
 
 ``` pre
@@ -98,7 +98,7 @@ wan-copy region --region=* --sender-id=* --cancel
 **Sample Output:**
 
 ``` pre
-gfsh>wan-copy region --region=/overload --sender-id=myParallelSender --max-rate=100 --batch-size=100
+gfsh>wan-copy region --region=/myRegion --sender-id=myParallelSender --max-rate=100 --batch-size=100
         Member     | Status | Message
     -------------- | ------ | -----------------------
     server-sender  | OK     | Entries copied: 333
@@ -108,17 +108,14 @@ gfsh>wan-copy region --region=/overload --sender-id=myParallelSender --max-rate=
 ```
 
 ``` pre
-gfsh>wan-copy region --region=/overload --sender-id=mySerialSender --max-rate=100 --batch-size=100
+gfsh>wan-copy region --region=/myRegion --sender-id=mySerialSender --max-rate=100 --batch-size=100
         Member     | Status | Message
     -------------- | ------ | ----------------------------------------------------------------------
-    server-sender2 | OK     | Sender mySerialSender is serial and not primary. 0 entries copied.
-    server-sender3 | OK     | Sender mySerialSender is serial and not primary. 0 entries copied.
     server-sender  | OK     | Entries copied: 1000
 ```
 
-
 ``` pre
-gfsh>wan-copy region --region=/overload --sender-id=sender1 --cancel
+gfsh>wan-copy region --region=/myRegion --sender-id=sender1 --cancel
         Member     | Status | Message
     -------------- | ------ | ------------------
     server-sender2 | OK     | Execution canceled
@@ -136,11 +133,9 @@ gfsh>wan-copy region --region=myRegion --sender-id=myParallelSender --max-rate=1
 ```
 
 ``` pre
-gfsh>wan-copy region --region=myRegion --sender-id=myParallelSender --max-rate=100 --batch-size=10
+gfsh>wan-copy region --region=myRegion --sender-id=mySerialSender --max-rate=100 --batch-size=10
         Member     | Status | Message
-    -------------- | ------ | ----------------------------------------------------------------------
-    server-sender2 | OK     | Sender mySerialSender is serial and not primary. 0 entries copied.
-    server-sender3 | OK     | Sender mySerialSender is serial and not primary. 0 entries copied.
+    -------------- | ------ | ------------------------------------------------------------------------------------
     server-sender  | OK     | Operation canceled after having copied 4 entries
 ```
 

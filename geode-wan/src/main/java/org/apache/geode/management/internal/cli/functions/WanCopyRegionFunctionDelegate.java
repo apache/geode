@@ -101,7 +101,7 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
     Thread.sleep(waitBeforeCopyMs);
     ConnectionState connectionState = new ConnectionState();
     int copiedEntries = 0;
-    Iterator<?> entriesIter = getEntries(region, sender).iterator();
+    Iterator<?> entriesIter = getEntries(region).iterator();
     final long startTime = clock.millis();
 
     try {
@@ -186,8 +186,8 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
     return batch;
   }
 
-  private Collection<?> getEntries(Region<?, ?> region, GatewaySender sender) {
-    if (region instanceof PartitionedRegion && sender.isParallel()) {
+  private Collection<?> getEntries(Region<?, ?> region) {
+    if (region instanceof PartitionedRegion) {
       return PartitionRegionHelper.getLocalPrimaryData(region).entrySet();
     }
     return new ArrayList<>(region.entrySet());
@@ -334,7 +334,7 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
       final EntryEventImpl event;
       if (region instanceof PartitionedRegion) {
         event =
-            createEventForPartitionedRegion(sender, cache, region, entry, newestTimestampAllowed);
+            createEventForPartitionedRegion(cache, region, entry, newestTimestampAllowed);
       } else {
         event = createEventForReplicatedRegion(cache, region, entry, newestTimestampAllowed);
       }
@@ -357,8 +357,7 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
       return createEvent(cache, region, entry, newestTimestampAllowed);
     }
 
-    private EntryEventImpl createEventForPartitionedRegion(GatewaySender sender,
-        InternalCache cache,
+    private EntryEventImpl createEventForPartitionedRegion(InternalCache cache,
         InternalRegion region,
         Region.Entry<?, ?> entry,
         long newestTimestampAllowed) {
