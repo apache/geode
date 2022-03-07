@@ -118,7 +118,7 @@ public class WanCopyRegionFunctionTest {
 
     CliFunctionResult result = function.executeFunction(contextMock);
 
-    assertThat(result.getStatus()).isEqualTo(CliFunctionResult.StatusState.OK.toString());
+    assertThat(result.isIgnorableFailure()).isEqualTo(true);
     assertThat(result.getStatusMessage())
         .isEqualTo("Sender mySender is serial and not primary. 0 entries copied.");
   }

@@ -130,6 +130,9 @@ public class WanCopyRegionCommand extends GfshCommand {
                 ((FunctionInvocationTargetException) result).getMessage());
         cliFunctionResults.add(errorResult);
       } else {
+        if (((CliFunctionResult) result).isIgnorableFailure()) {
+          continue;
+        }
         cliFunctionResults.add((CliFunctionResult) result);
       }
     }

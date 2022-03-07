@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.time.Clock;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -39,6 +40,7 @@ import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand;
@@ -99,7 +101,7 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
     Thread.sleep(waitBeforeCopyMs);
     ConnectionState connectionState = new ConnectionState();
     int copiedEntries = 0;
-    Iterator<?> entriesIter = getEntries(region, sender).iterator();
+    Iterator<?> entriesIter = getEntries(region).iterator();
     final long startTime = clock.millis();
 
     try {
@@ -184,9 +186,9 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
     return batch;
   }
 
-  private List<?> getEntries(Region<?, ?> region, GatewaySender sender) {
-    if (region instanceof PartitionedRegion && sender.isParallel()) {
-      return ((PartitionedRegion) region).getDataStore().getEntries();
+  private Collection<?> getEntries(Region<?, ?> region) {
+    if (region instanceof PartitionedRegion) {
+      return PartitionRegionHelper.getLocalPrimaryData(region).entrySet();
     }
     return new ArrayList<>(region.entrySet());
   }
@@ -332,7 +334,7 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
       final EntryEventImpl event;
       if (region instanceof PartitionedRegion) {
         event =
-            createEventForPartitionedRegion(sender, cache, region, entry, newestTimestampAllowed);
+            createEventForPartitionedRegion(cache, region, entry, newestTimestampAllowed);
       } else {
         event = createEventForReplicatedRegion(cache, region, entry, newestTimestampAllowed);
       }
@@ -355,8 +357,7 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
       return createEvent(cache, region, entry, newestTimestampAllowed);
     }
 
-    private EntryEventImpl createEventForPartitionedRegion(GatewaySender sender,
-        InternalCache cache,
+    private EntryEventImpl createEventForPartitionedRegion(InternalCache cache,
         InternalRegion region,
         Region.Entry<?, ?> entry,
         long newestTimestampAllowed) {
@@ -366,10 +367,6 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
       }
       BucketRegion bucketRegion = ((PartitionedRegion) event.getRegion()).getDataStore()
           .getLocalBucketById(event.getKeyInfo().getBucketId());
-      if (bucketRegion != null && !bucketRegion.getBucketAdvisor().isPrimary()
-          && sender.isParallel()) {
-        return null;
-      }
       if (bucketRegion != null) {
         bucketRegion.handleWANEvent(event);
       }
