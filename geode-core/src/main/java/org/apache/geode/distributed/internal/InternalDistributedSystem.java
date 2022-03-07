@@ -651,9 +651,11 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * Initializes this connection to a distributed system with the current configuration state.
    */
-  private void initialize(SecurityManager securityManager, PostProcessor postProcessor,
+  @VisibleForTesting
+  void initialize(SecurityManager securityManager, PostProcessor postProcessor,
       MetricsService.Builder metricsServiceBuilder,
-      final MembershipLocator<InternalDistributedMember> membershipLocatorArg) {
+      final MembershipLocator<InternalDistributedMember> membershipLocatorArg,
+      ClusterDistributionManagerConstructor clusterDistributionManagerConstructor) {
 
     if (originalConfig.getLocators().equals("")) {
       if (originalConfig.getMcastPort() != 0) {
@@ -753,7 +755,7 @@ public class InternalDistributedSystem extends DistributedSystem
 
       if (!isLoner) {
         try {
-          dm = ClusterDistributionManager.create(this, membershipLocator);
+          dm = clusterDistributionManagerConstructor.create(this, membershipLocator);
           // fix bug #46324
           if (InternalLocator.hasLocator()) {
             InternalLocator internalLocator = InternalLocator.getLocator();
@@ -808,6 +810,9 @@ public class InternalDistributedSystem extends DistributedSystem
       // was created
       InternalInstantiator.logInstantiators();
     } catch (RuntimeException ex) {
+      if (startedLocator != null) {
+        stopLocator();
+      }
       config.close();
       throw ex;
     }
@@ -907,9 +912,7 @@ public class InternalDistributedSystem extends DistributedSystem
         startedPeerLocation = true;
       } finally {
         if (!startedPeerLocation) {
-          startedLocator.stop();
-          startedLocator = null;
-          membershipLocator = null;
+          stopLocator();
         }
       }
     } catch (IOException e) {
@@ -936,6 +939,12 @@ public class InternalDistributedSystem extends DistributedSystem
         }
       }
     }
+  }
+
+  private void stopLocator() {
+    startedLocator.stop();
+    startedLocator = null;
+    membershipLocator = null;
   }
 
   /**
@@ -2968,6 +2977,22 @@ public class InternalDistributedSystem extends DistributedSystem
     };
   }
 
+  @FunctionalInterface
+  @VisibleForTesting
+  interface ClusterDistributionManagerConstructor {
+    ClusterDistributionManager create(InternalDistributedSystem system,
+        final MembershipLocator<InternalDistributedMember> membershipLocator);
+  }
+
+  private static class DefaultClusterDistributionManagerConstructor
+      implements ClusterDistributionManagerConstructor {
+    @Override
+    public ClusterDistributionManager create(InternalDistributedSystem system,
+        final MembershipLocator<InternalDistributedMember> membershipLocator) {
+      return ClusterDistributionManager.create(system, membershipLocator);
+    }
+  }
+
   public static class Builder {
 
     private final Properties configProperties;
@@ -2976,6 +3001,9 @@ public class InternalDistributedSystem extends DistributedSystem
     private MetricsService.Builder metricsServiceBuilder;
 
     private MembershipLocator<InternalDistributedMember> locator;
+
+    private ClusterDistributionManagerConstructor clusterDistributionManagerConstructor =
+        new DefaultClusterDistributionManagerConstructor();
 
     public Builder(Properties configProperties, MetricsService.Builder metricsServiceBuilder) {
       this.configProperties = configProperties;
@@ -2990,6 +3018,12 @@ public class InternalDistributedSystem extends DistributedSystem
     public Builder setLocator(
         final MembershipLocator<InternalDistributedMember> locator) {
       this.locator = locator;
+      return this;
+    }
+
+    public Builder setClusterDistributionManagerConstructor(
+        ClusterDistributionManagerConstructor clusterDistributionManagerConstructor) {
+      this.clusterDistributionManagerConstructor = clusterDistributionManagerConstructor;
       return this;
     }
 
@@ -3011,7 +3045,7 @@ public class InternalDistributedSystem extends DistributedSystem
                 FunctionStatsManager::new);
         newSystem
             .initialize(securityConfig.getSecurityManager(), securityConfig.getPostProcessor(),
-                metricsServiceBuilder, locator);
+                metricsServiceBuilder, locator, clusterDistributionManagerConstructor);
         notifyConnectListeners(newSystem);
         stopThreads = false;
         return newSystem;

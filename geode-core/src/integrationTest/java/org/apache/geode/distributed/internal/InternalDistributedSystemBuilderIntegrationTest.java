@@ -14,8 +14,11 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -26,6 +29,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.SystemConnectException;
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.api.MembershipLocator;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.metrics.internal.MetricsService;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
@@ -43,7 +51,9 @@ public class InternalDistributedSystemBuilderIntegrationTest {
 
   @After
   public void tearDown() {
-    system.disconnect();
+    if (system != null) {
+      system.disconnect();
+    }
   }
 
   @Test
@@ -75,5 +85,37 @@ public class InternalDistributedSystemBuilderIntegrationTest {
         .isSameAs(theSecurityManager);
     assertThat(system.getSecurityService().getPostProcessor())
         .isSameAs(thePostProcessor);
+  }
+
+  @Test
+  public void buildThatStartsLocatorAndFailsThenStopsLocator() {
+    // Create properties the cause the locator to be started
+    int locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    Properties configProperties = new Properties();
+    configProperties.setProperty(MCAST_PORT, "0");
+    configProperties.setProperty(START_LOCATOR, "localhost[" + locatorPort + "]");
+
+    // Create a Builder with the TestClusterDistributionManagerConstructor
+    InternalDistributedSystem.Builder builder =
+        new InternalDistributedSystem.Builder(configProperties, metricsSessionBuilder)
+            .setClusterDistributionManagerConstructor(
+                new TestClusterDistributionManagerConstructor());
+
+    // Assert that attempting to build the InternalDistributedSystem throws the
+    // SystemConnectException
+    assertThatExceptionOfType(SystemConnectException.class).isThrownBy(builder::build);
+
+    // Assert that no locator exists after the build attempt
+    assertThat(Locator.getLocator()).isNull();
+  }
+
+  static class TestClusterDistributionManagerConstructor implements
+      InternalDistributedSystem.ClusterDistributionManagerConstructor {
+
+    @Override
+    public ClusterDistributionManager create(InternalDistributedSystem system,
+        MembershipLocator<InternalDistributedMember> membershipLocator) {
+      throw new SystemConnectException("Problem starting up membership services");
+    }
   }
 }
