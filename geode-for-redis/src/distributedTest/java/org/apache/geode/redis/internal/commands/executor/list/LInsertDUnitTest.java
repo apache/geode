@@ -24,7 +24,7 @@ import static redis.clients.jedis.args.ListPosition.BEFORE;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.After;
 import org.junit.Before;
@@ -86,7 +86,7 @@ public class LInsertDUnitTest {
 
   @Test
   public void givenBucketsMoveDuringLInsert_operationsAreNotLost() throws Exception {
-    AtomicLong numInserts = new AtomicLong(0);
+    AtomicBoolean continueInserting = new AtomicBoolean(true);
     List<String> listHashtags = makeListHashtags();
     List<String> keys = makeListKeys(listHashtags);
 
@@ -98,23 +98,34 @@ public class LInsertDUnitTest {
     lpushPerformAndVerify(keys.get(1), elementList2);
     lpushPerformAndVerify(keys.get(2), elementList3);
 
-    Runnable task1 = () -> linsertPerformAndVerify(keys.get(0), BEFORE,
-        jedis.lindex(keys.get(0), 2), insertedValue, numInserts);
-    Runnable task2 = () -> linsertPerformAndVerify(keys.get(1), AFTER,
-        jedis.lindex(keys.get(1), 2), insertedValue, numInserts);
-    Runnable task3 = () -> linsertPerformAndVerify(keys.get(2), AFTER,
-        jedis.lindex(keys.get(2), 2), insertedValue, numInserts);
+    Runnable task1 = () -> {
+      while (continueInserting.get()) {
+        linsertPerformAndVerify(keys.get(0), BEFORE, jedis.lindex(keys.get(0), 2), insertedValue);
+      }
+    };
+    Runnable task2 = () -> {
+      while (continueInserting.get()) {
+        linsertPerformAndVerify(keys.get(1), AFTER, jedis.lindex(keys.get(1), 2), insertedValue);
+      }
+    };
+    Runnable task3 = () -> {
+      while (continueInserting.get()) {
+        linsertPerformAndVerify(keys.get(2), AFTER, jedis.lindex(keys.get(2), 2), insertedValue);
+      }
+    };
 
     Future<Void> future1 = executor.runAsync(task1);
     Future<Void> future2 = executor.runAsync(task2);
     Future<Void> future3 = executor.runAsync(task3);
 
-    for (int i = 0; i < 50 && numInserts.get() > 0; i++) {
+    for (int i = 0; i < 50; i++) {
+      if (i == 20) {
+        continueInserting.set(false);
+      }
+
       clusterStartUp.moveBucketForKey(listHashtags.get(i % listHashtags.size()));
       Thread.sleep(500);
     }
-
-    numInserts.set(0);
 
     future1.get();
     future2.get();
@@ -137,11 +148,9 @@ public class LInsertDUnitTest {
     return keys;
   }
 
-  private void linsertPerformAndVerify(String key, ListPosition pos, String pivot, String value,
-      AtomicLong runningCount) {
+  private void linsertPerformAndVerify(String key, ListPosition pos, String pivot, String value) {
     long startLength = jedis.llen(key);
     assertThat(jedis.linsert(key, pos, pivot, value)).isEqualTo(startLength + 1);
-    runningCount.incrementAndGet();
 
     for (int i = 0; i < startLength + 1; i++) {
       if (pos == BEFORE && jedis.lindex(key, i).equalsIgnoreCase(value)) {
