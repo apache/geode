@@ -16,6 +16,7 @@
 
 package org.apache.geode.redis.internal.data;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
@@ -24,6 +25,11 @@ class NullRedisList extends RedisList {
 
   NullRedisList() {
     super();
+  }
+
+  @Override
+  public List<byte[]> lrange(int start, int stop) {
+    return Collections.emptyList();
   }
 
   @Override

@@ -22,7 +22,11 @@ import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_LIST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Objects;
 
 import org.apache.geode.DataSerializer;
@@ -38,8 +42,51 @@ public class RedisList extends AbstractRedisData {
   protected static final int REDIS_LIST_OVERHEAD = memoryOverhead(RedisList.class);
   private final SizeableByteArrayList elementList;
 
+  private static final int INVALID_INDEX = -1;
+
   public RedisList() {
     this.elementList = new SizeableByteArrayList();
+  }
+
+  /**
+   * @param start start index of desired elements
+   * @param stop stop index of desired elements
+   * @return list of elements in the range (inclusive).
+   */
+  public List<byte[]> lrange(int start, int stop) {
+    start = normalizeStartIndex(start);
+    stop = normalizeStopIndex(stop);
+
+    int elementSize = elementList.size();
+    if (start > stop || elementSize <= start) {
+      return Collections.emptyList();
+    }
+
+    int resultLength = stop - start + 1;
+
+    // Finds the shortest distance to access nodes in range
+    if (start <= elementSize - stop - 1) {
+      // Starts at head to access nodes at start index then iterates forwards
+      List<byte[]> result = new ArrayList<>(resultLength);
+      ListIterator<byte[]> iterator = elementList.listIterator(start);
+
+      for (int i = start; i <= stop; i++) {
+        byte[] element = iterator.next();
+        result.add(element);
+      }
+      return result;
+
+    } else {
+      // Starts at tail to access nodes at stop index then iterates backwards
+      byte[][] result = new byte[resultLength][];
+      ListIterator<byte[]> iterator = elementList.listIterator(stop + 1);
+
+      for (int i = resultLength - 1; i >= 0; i--) {
+        byte[] element = iterator.previous();
+        result[i] = element;
+      }
+      return Arrays.asList(result);
+    }
   }
 
   /**
@@ -48,16 +95,35 @@ public class RedisList extends AbstractRedisData {
    * @return element at index. Null if index is out of range.
    */
   public byte[] lindex(int index) {
-    if (index < 0) {
-      // Changes negative index to corresponding positive index to utilize get(int index)
-      index = elementList.size() + index;
-    }
+    index = getArrayIndex(index);
 
-    if (index < 0 || elementList.size() <= index) {
+    if (index == INVALID_INDEX || elementList.size() <= index) {
       return null;
     } else {
       return elementList.get(index);
     }
+  }
+
+  private int normalizeStartIndex(int startIndex) {
+    return Math.max(0, getArrayIndex(startIndex));
+  }
+
+  private int normalizeStopIndex(int stopIndex) {
+    return Math.min(elementList.size() - 1, getArrayIndex(stopIndex));
+  }
+
+  /**
+   * Changes negative index to corresponding positive index.
+   * If there is no corresponding positive index, returns INVALID_INDEX.
+   */
+  private int getArrayIndex(int listIndex) {
+    if (listIndex < 0) {
+      listIndex = elementList.size() + listIndex;
+      if (listIndex < 0) {
+        return INVALID_INDEX;
+      }
+    }
+    return listIndex;
   }
 
   /**
