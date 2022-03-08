@@ -143,10 +143,6 @@ dependencies {
   }
   // Deprecated admin API
   geodeLibdirJarsDeprecated(group: 'javax.mail', name: 'javax.mail-api')
-  // exclude mx4j, once the deprecated code is deleted we can remove these entirely
-  geodeLibdirJarsDeprecated('mx4j:mx4j')
-  geodeLibdirJarsDeprecated('mx4j:mx4j-remote')
-  geodeLibdirJarsDeprecated('mx4j:mx4j-tools')
 
   // spring web should be only part of gfsh or pulse. It is in core due to incomplete refactoring
   geodeLibdirJarsDeprecated(group: 'org.springframework', name: 'spring-web')

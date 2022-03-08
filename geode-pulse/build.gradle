@@ -32,12 +32,6 @@ dependencies {
 
   implementation('org.springframework.security:spring-security-core')
   implementation('javax.servlet:javax.servlet-api')
-  implementation('mx4j:mx4j') {
-    ext.optional = true
-  }
-  implementation('mx4j:mx4j-remote') {
-    ext.optional = true
-  }
 
   uiTestImplementation('junit:junit')
   uiTestImplementation('org.apache.httpcomponents:httpcore')

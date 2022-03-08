@@ -235,7 +235,6 @@ dependencies {
   //Commons modeler is used by the (deprecated) admin API
   compileOnly('commons-modeler:commons-modeler') {
     exclude module: 'commons-logging-api'
-    exclude module: 'mx4j-jmx'
     exclude module: 'xml-apis'
     ext.optional = true
   }
@@ -255,21 +254,6 @@ dependencies {
   //The resource-API is used by the JCA support.
   api('javax.resource:javax.resource-api')
 
-
-  //MX4J is used by the old admin API
-  compileOnly('mx4j:mx4j') {
-    ext.optional = true
-  }
-
-  //MX4J remote is used by the old admin API
-  compileOnly('mx4j:mx4j-remote') {
-    ext.optional = true
-  }
-
-  //MX4J tools is used by the old admin API
-  compileOnly('mx4j:mx4j-tools') {
-    ext.optional = true
-  }
 
   //JNA is used for locking memory and preallocating disk files.
   implementation('net.java.dev.jna:jna')
@@ -367,9 +351,6 @@ dependencies {
   integrationTestRuntimeOnly('commons-modeler:commons-modeler')
   integrationTestRuntimeOnly('org.springframework:spring-web')
   integrationTestRuntimeOnly('javax.mail:javax.mail-api')
-  integrationTestRuntimeOnly('mx4j:mx4j')
-  integrationTestRuntimeOnly('mx4j:mx4j-remote')
-  integrationTestRuntimeOnly('mx4j:mx4j-tools')
   // End deprecated requirements
 
 
