@@ -215,7 +215,7 @@ public class DistributedClearOperation extends DistributedCacheOperation {
     protected boolean operateOnRegion(CacheEvent event, ClusterDistributionManager dm)
         throws EntryNotFoundException {
 
-      DistributedRegion region = (DistributedRegion) event.getRegion();
+      LocalRegion region = (LocalRegion) event.getRegion();
       switch (clearOp) {
         case OP_CLEAR:
           region.clearRegionLocally((RegionEventImpl) event, false, rvv);
@@ -223,9 +223,11 @@ public class DistributedClearOperation extends DistributedCacheOperation {
           appliedOperation = true;
           break;
         case OP_LOCK_FOR_CLEAR:
-          if (region.getDataPolicy().withStorage()) {
-            DistributedClearOperation.regionLocked(getSender(), region.getFullPath(), region);
-            region.lockLocallyForClear(dm, getSender(), event);
+          if (region.getDataPolicy().withStorage() && region instanceof DistributedRegion) {
+            DistributedRegion distributedRegion = (DistributedRegion) region;
+            DistributedClearOperation.regionLocked(getSender(), region.getFullPath(),
+                distributedRegion);
+            distributedRegion.lockLocallyForClear(dm, getSender(), event);
           }
           appliedOperation = true;
           break;
