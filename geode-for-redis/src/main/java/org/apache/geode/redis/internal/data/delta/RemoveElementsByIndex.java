@@ -36,13 +36,17 @@ public class RemoveElementsByIndex extends DeltaInfo {
     this.indexes = new ArrayList<>();
   }
 
+  @Override
+  public DeltaType getType() {
+    return REMOVE_ELEMENTS_BY_INDEX;
+  }
+
   public void add(int index) {
     indexes.add(index);
   }
 
   public void serializeTo(DataOutput out) throws IOException {
     super.serializeTo(out);
-    DataSerializer.writeEnum(REMOVE_ELEMENTS_BY_INDEX, out);
     InternalDataSerializer.writeArrayLength(indexes.size(), out);
     for (int index : indexes) {
       DataSerializer.writePrimitiveInt(index, out);

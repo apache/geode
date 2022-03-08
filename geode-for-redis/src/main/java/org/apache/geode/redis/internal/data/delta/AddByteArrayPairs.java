@@ -41,6 +41,11 @@ public class AddByteArrayPairs extends DeltaInfo {
     add(fieldName, fieldValue);
   }
 
+  @Override
+  public DeltaType getType() {
+    return ADD_BYTE_ARRAY_PAIRS;
+  }
+
   public final void add(byte[] byteArray1, byte[] byteArray2) {
     byteArrayPairs.add(byteArray1);
     byteArrayPairs.add(byteArray2);
@@ -48,7 +53,6 @@ public class AddByteArrayPairs extends DeltaInfo {
 
   public void serializeTo(DataOutput out) throws IOException {
     super.serializeTo(out);
-    DataSerializer.writeEnum(ADD_BYTE_ARRAY_PAIRS, out);
     InternalDataSerializer.writeArrayLength(byteArrayPairs.size(), out);
     for (byte[] bytes : byteArrayPairs) {
       DataSerializer.writeByteArray(bytes, out);

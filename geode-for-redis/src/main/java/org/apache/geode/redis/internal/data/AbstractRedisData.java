@@ -230,13 +230,15 @@ public abstract class AbstractRedisData implements RedisData {
 
   @Override
   public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
-    short deltaVersion = DataSerializer.readPrimitiveShort(in);
     DeltaType deltaType = readEnum(DeltaType.class, in);
 
-    if (deltaType.isVersioned() && deltaVersion == getVersion()) {
-      return;
+    if (deltaType.isVersioned()) {
+      short deltaVersion = DataSerializer.readPrimitiveShort(in);
+      if (deltaVersion == getVersion()) {
+        return;
+      }
+      setVersion(deltaVersion);
     }
-    setVersion(deltaVersion);
 
     switch (deltaType) {
       case SET_TIMESTAMP:

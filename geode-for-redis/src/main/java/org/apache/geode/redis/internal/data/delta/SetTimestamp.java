@@ -33,9 +33,13 @@ public class SetTimestamp extends DeltaInfo {
     timestamp = value;
   }
 
+  @Override
+  public DeltaType getType() {
+    return SET_TIMESTAMP;
+  }
+
   public void serializeTo(DataOutput out) throws IOException {
     super.serializeTo(out);
-    DataSerializer.writeEnum(SET_TIMESTAMP, out);
     DataSerializer.writePrimitiveLong(timestamp, out);
   }
 

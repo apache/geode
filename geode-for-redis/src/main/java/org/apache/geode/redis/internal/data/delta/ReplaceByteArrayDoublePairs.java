@@ -35,9 +35,13 @@ public class ReplaceByteArrayDoublePairs extends DeltaInfo {
     this.members = members;
   }
 
+  @Override
+  public DeltaType getType() {
+    return REPLACE_BYTE_ARRAY_DOUBLE_PAIRS;
+  }
+
   public void serializeTo(DataOutput out) throws IOException {
     super.serializeTo(out);
-    DataSerializer.writeEnum(REPLACE_BYTE_ARRAY_DOUBLE_PAIRS, out);
     InternalDataSerializer.writeArrayLength(members.size(), out);
     for (byte[] member : members.keySet()) {
       DataSerializer.writeByteArray(member, out);

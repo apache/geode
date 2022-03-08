@@ -33,8 +33,13 @@ public abstract class DeltaInfo {
     this.version = version;
   }
 
+  public abstract DeltaType getType();
+
   public void serializeTo(DataOutput out) throws IOException {
-    DataSerializer.writePrimitiveShort(version, out);
+    DataSerializer.writeEnum(getType(), out);
+    if (getType().isVersioned()) {
+      DataSerializer.writePrimitiveShort(version, out);
+    }
   }
 
   public short getVersion() {

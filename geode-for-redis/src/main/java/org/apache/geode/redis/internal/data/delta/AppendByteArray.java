@@ -34,9 +34,13 @@ public class AppendByteArray extends DeltaInfo {
     byteArray = value;
   }
 
+  @Override
+  public DeltaType getType() {
+    return APPEND_BYTE_ARRAY;
+  }
+
   public void serializeTo(DataOutput out) throws IOException {
     super.serializeTo(out);
-    DataSerializer.writeEnum(APPEND_BYTE_ARRAY, out);
     DataSerializer.writeByteArray(byteArray, out);
   }
 

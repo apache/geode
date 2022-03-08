@@ -36,9 +36,13 @@ public class SetByteArray extends DeltaInfo {
     byteArray = value;
   }
 
+  @Override
+  public DeltaType getType() {
+    return SET_BYTE_ARRAY;
+  }
+
   public void serializeTo(DataOutput out) throws IOException {
     super.serializeTo(out);
-    DataSerializer.writeEnum(SET_BYTE_ARRAY, out);
     DataSerializer.writeByteArray(byteArray, out);
   }
 

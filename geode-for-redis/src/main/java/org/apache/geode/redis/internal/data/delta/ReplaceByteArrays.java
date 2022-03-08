@@ -35,9 +35,13 @@ public class ReplaceByteArrays extends DeltaInfo {
     this.byteArrays = deltas;
   }
 
+  @Override
+  public DeltaType getType() {
+    return REPLACE_BYTE_ARRAYS;
+  }
+
   public void serializeTo(DataOutput out) throws IOException {
     super.serializeTo(out);
-    DataSerializer.writeEnum(REPLACE_BYTE_ARRAYS, out);
     InternalDataSerializer.writeArrayLength(byteArrays.size(), out);
     for (byte[] bytes : byteArrays) {
       DataSerializer.writeByteArray(bytes, out);

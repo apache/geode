@@ -41,13 +41,17 @@ public class AddByteArrays extends DeltaInfo {
     byteArrays = deltas;
   }
 
+  @Override
+  public DeltaType getType() {
+    return ADD_BYTE_ARRAYS;
+  }
+
   public void add(byte[] delta) {
     byteArrays.add(delta);
   }
 
   public void serializeTo(DataOutput out) throws IOException {
     super.serializeTo(out);
-    DataSerializer.writeEnum(ADD_BYTE_ARRAYS, out);
     InternalDataSerializer.writeArrayLength(byteArrays.size(), out);
     for (byte[] bytes : byteArrays) {
       DataSerializer.writeByteArray(bytes, out);

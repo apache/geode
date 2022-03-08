@@ -30,7 +30,6 @@ import java.util.function.Consumer;
 
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -320,12 +319,12 @@ public class StringsDUnitTest {
       int subsectionStart = Math.max(0, idx - (2 * expectedValue.length()));
       int subsectionEnd = Math.min(storedString.length(), idx + (2 * expectedValue.length()));
 
-      if (!foundValue.equals(expectedValue)) {
-        Assert.fail("unexpected " + foundValue + " at index " + i + " iterationCount="
-            + iterationCount
-            + " in String subsection: " + storedString.substring(subsectionStart, subsectionEnd));
-        break;
-      }
+      assertThat(foundValue)
+          .as("unexpected " + foundValue + " at index " + i + " iterationCount="
+              + iterationCount
+              + " in String subsection: " + storedString.substring(subsectionStart, subsectionEnd))
+          .isEqualTo(expectedValue);
+
       idx += expectedValue.length();
       i++;
     }

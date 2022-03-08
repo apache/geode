@@ -36,9 +36,13 @@ public class ReplaceByteAtOffset extends DeltaInfo {
     byteValue = bits;
   }
 
+  @Override
+  public DeltaType getType() {
+    return REPLACE_BYTE_AT_OFFSET;
+  }
+
   public void serializeTo(DataOutput out) throws IOException {
     super.serializeTo(out);
-    DataSerializer.writeEnum(REPLACE_BYTE_AT_OFFSET, out);
     InternalDataSerializer.writeArrayLength(offset, out);
     DataSerializer.writePrimitiveByte(byteValue, out);
   }

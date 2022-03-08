@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.data.delta;
 
 import static org.apache.geode.DataSerializer.readByteArray;
 import static org.apache.geode.DataSerializer.readPrimitiveLong;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.SET_BYTE_ARRAY_AND_TIMESTAMP;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -38,9 +39,13 @@ public class SetByteArrayAndTimestamp extends DeltaInfo {
     this.timestamp = timestamp;
   }
 
+  @Override
+  public DeltaType getType() {
+    return SET_BYTE_ARRAY_AND_TIMESTAMP;
+  }
+
   public void serializeTo(DataOutput out) throws IOException {
     super.serializeTo(out);
-    DataSerializer.writeEnum(DeltaType.SET_BYTE_ARRAY_AND_TIMESTAMP, out);
     DataSerializer.writeByteArray(byteArray, out);
     DataSerializer.writePrimitiveLong(timestamp, out);
   }

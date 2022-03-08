@@ -42,13 +42,17 @@ public class RemoveByteArrays extends DeltaInfo {
     byteArrays = deltas;
   }
 
+  @Override
+  public DeltaType getType() {
+    return REMOVE_BYTE_ARRAYS;
+  }
+
   public void add(byte[] delta) {
     byteArrays.add(delta);
   }
 
   public void serializeTo(DataOutput out) throws IOException {
     super.serializeTo(out);
-    DataSerializer.writeEnum(REMOVE_BYTE_ARRAYS, out);
     InternalDataSerializer.writeArrayLength(byteArrays.size(), out);
     for (byte[] bytes : byteArrays) {
       DataSerializer.writeByteArray(bytes, out);
