@@ -71,6 +71,7 @@ import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.cache.query.MultiIndexCreationException;
+import org.apache.geode.cache.query.internal.index.IndexCreationData;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedLockService;
@@ -95,6 +96,9 @@ public class PartitionedRegionTest {
   private AttributesFactory attributesFactory;
 
   private PartitionedRegion partitionedRegion;
+
+  private final String indexName = "index";
+  private final Index index = mock(Index.class);
 
   @Rule
   public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
@@ -721,6 +725,60 @@ public class PartitionedRegionTest {
     doThrow(exception).when(indexManager).populateIndexes(indexes);
 
     assertThat(spyPartitionedRegion.populateEmptyIndexes(indexes, new HashMap<>())).isTrue();
+  }
+
+  @Test
+  public void createEmptyIndexesCanAddIndexToIndexSet() throws Exception {
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+    HashSet<IndexCreationData> indexDefinitions = setupIndexCreationData();
+    Set<Index> indexes = new HashSet<>();
+    HashMap<String, Exception> exceptionsMap = new HashMap<>();
+    doReturn(index).when(spyPartitionedRegion).createIndex(true, null, indexName, null, null, null,
+        false, false);
+
+    assertThat(
+        spyPartitionedRegion.createEmptyIndexes(indexDefinitions, true, indexes, exceptionsMap))
+            .isFalse();
+    assertThat(indexes).contains(index);
+    assertThat(exceptionsMap).hasSize(0);
+  }
+
+  @Test
+  public void createEmptyIndexesThrowsIfCreateIndexFailedWithCacheClosedException()
+      throws Exception {
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+    HashSet<IndexCreationData> indexDefinitions = setupIndexCreationData();
+    CacheClosedException exception = new CacheClosedException();
+    doThrow(exception).when(spyPartitionedRegion).createIndex(true, null, indexName, null, null,
+        null, false, false);
+
+    assertThatThrownBy(() -> spyPartitionedRegion.createEmptyIndexes(indexDefinitions, true,
+        new HashSet<>(), new HashMap<>())).isEqualTo(exception);
+  }
+
+  @Test
+  public void createEmptyIndexesAddsExceptionToMapIfCreateIndexFailed() throws Exception {
+    PartitionedRegion spyPartitionedRegion = spy(partitionedRegion);
+    HashSet<IndexCreationData> indexDefinitions = setupIndexCreationData();
+    Set<Index> indexes = new HashSet<>();
+    HashMap<String, Exception> exceptionsMap = new HashMap<>();
+    RuntimeException runtimeException = new RuntimeException();
+    doThrow(runtimeException).when(spyPartitionedRegion).createIndex(true, null, indexName, null,
+        null, null, false, false);
+
+    assertThat(
+        spyPartitionedRegion.createEmptyIndexes(indexDefinitions, true, indexes, exceptionsMap))
+            .isTrue();
+    assertThat(indexes).hasSize(0);
+    assertThat(exceptionsMap.get(indexName)).isEqualTo(runtimeException);
+  }
+
+  @NotNull
+  private HashSet<IndexCreationData> setupIndexCreationData() {
+    HashSet<IndexCreationData> indexDefinitions = new HashSet<>();
+    IndexCreationData indexCreationData = new IndexCreationData(indexName);
+    indexDefinitions.add(indexCreationData);
+    return indexDefinitions;
   }
 
   private static <K> Set<K> asSet(K... values) {
