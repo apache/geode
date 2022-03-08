@@ -129,7 +129,9 @@ import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.persistence.ConflictingPersistentDataException;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.IndexExistsException;
 import org.apache.geode.cache.query.IndexMaintenanceException;
+import org.apache.geode.cache.query.IndexNameConflictException;
 import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.cache.query.MultiIndexCreationException;
 import org.apache.geode.cache.query.NameResolutionException;
@@ -2439,9 +2441,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     long start = getCachePerfStats().startIndexInitialization();
     List oqlIndexes = internalRegionArgs.getIndexes();
 
-    if (indexManager == null) {
-      indexManager = IndexUtils.getIndexManager(cache, this, true);
-    }
     DiskRegion dr = getDiskRegion();
     boolean isOverflowToDisk = false;
     if (dr != null) {
@@ -2463,20 +2462,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         IndexCreationData icd = (IndexCreationData) o;
         try {
           if (icd.getPartitionedIndex() != null) {
-            ExecutionContext externalContext = new ExecutionContext(null, cache);
-            if (internalRegionArgs.getPartitionedRegion() != null) {
-              externalContext.setBucketRegion(internalRegionArgs.getPartitionedRegion(),
-                  (BucketRegion) this);
-            }
-            if (logger.isDebugEnabled()) {
-              logger.debug("IndexManager Index creation process for {}", icd.getIndexName());
-            }
-
-            // load entries during initialization only for non overflow regions
-            indexes.add(indexManager.createIndex(icd.getIndexName(), icd.getIndexType(),
-                icd.getIndexExpression(), icd.getIndexFromClause(), icd.getIndexImportString(),
-                externalContext, icd.getPartitionedIndex(), !isOverflowToDisk));
-            prIndexes.add(icd.getPartitionedIndex());
+            createOQLIndexOnPartitionedRegion(internalRegionArgs, isOverflowToDisk, indexes,
+                prIndexes, icd);
           } else {
             if (logger.isDebugEnabled()) {
               logger.debug("QueryService Index creation process for {}" + icd.getIndexName());
@@ -2516,6 +2503,29 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       indexManager.setPopulateFlagForIndexes(prIndexes);
     }
     getCachePerfStats().endIndexInitialization(start);
+  }
+
+  @VisibleForTesting
+  void createOQLIndexOnPartitionedRegion(InternalRegionArguments internalRegionArgs,
+      boolean isOverflowToDisk, Set<Index> indexes, Set<Index> prIndexes, IndexCreationData icd)
+      throws IndexNameConflictException, IndexExistsException {
+    if (indexManager == null) {
+      setIndexManager(IndexUtils.getIndexManager(cache, this, true));
+    }
+    ExecutionContext externalContext = new ExecutionContext(null, cache);
+    if (internalRegionArgs.getPartitionedRegion() != null) {
+      externalContext.setBucketRegion(internalRegionArgs.getPartitionedRegion(),
+          (BucketRegion) this);
+    }
+    if (logger.isDebugEnabled()) {
+      logger.debug("IndexManager Index creation process for {}", icd.getIndexName());
+    }
+
+    // load entries during initialization only for non overflow regions
+    indexes.add(indexManager.createIndex(icd.getIndexName(), icd.getIndexType(),
+        icd.getIndexExpression(), icd.getIndexFromClause(), icd.getIndexImportString(),
+        externalContext, icd.getPartitionedIndex(), !isOverflowToDisk));
+    prIndexes.add(icd.getPartitionedIndex());
   }
 
   /**
@@ -7350,7 +7360,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
   }
 
-  private void checkRegionDestroyed(boolean checkCancel) {
+  @VisibleForTesting
+  void checkRegionDestroyed(boolean checkCancel) {
     if (checkCancel) {
       cache.getCancelCriterion().checkCancelInProgress(null);
     }
