@@ -36,6 +36,7 @@ import java.util.List;
 
 import javax.net.ssl.SSLHandshakeException;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import org.apache.geode.cache.client.internal.locator.ServerLocationRequest;
@@ -53,6 +54,7 @@ import org.apache.geode.internal.serialization.ObjectSerializer;
 class AutoConnectionSourceImplTest {
 
   @Test
+  @Disabled("Effort under way to resolve flakiness.")
   void queryLocatorsTriesNextLocatorOnSSLExceptions() throws IOException, ClassNotFoundException {
     final HostAndPort locator1 = mock(HostAndPort.class);
     final HostAndPort locator2 = mock(HostAndPort.class);
