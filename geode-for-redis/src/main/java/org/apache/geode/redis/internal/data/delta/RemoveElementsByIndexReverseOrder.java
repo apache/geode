@@ -17,7 +17,7 @@ package org.apache.geode.redis.internal.data.delta;
 
 import static org.apache.geode.DataSerializer.readPrimitiveInt;
 import static org.apache.geode.internal.InternalDataSerializer.readArrayLength;
-import static org.apache.geode.redis.internal.data.delta.DeltaType.REMOVE_ELEMENTS_BY_INDEX;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.REMOVE_ELEMENTS_BY_INDEX_REVERSE_ORDER;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -29,29 +29,23 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.redis.internal.data.AbstractRedisData;
 
-public class RemoveElementsByIndex extends DeltaInfo {
+public class RemoveElementsByIndexReverseOrder implements DeltaInfo {
   private final List<Integer> indexes;
-
-  public RemoveElementsByIndex(byte version) {
-    super(version);
-    this.indexes = new ArrayList<>();
-  }
-
-  public RemoveElementsByIndex(List<Integer> indexes) {
-    this.indexes = indexes;
-  }
-
-  @Override
-  public DeltaType getType() {
-    return REMOVE_ELEMENTS_BY_INDEX;
-  }
 
   public void add(int index) {
     indexes.add(index);
   }
 
+  public RemoveElementsByIndexReverseOrder() {
+    this.indexes = new ArrayList<>();
+  }
+
+  public RemoveElementsByIndexReverseOrder(List<Integer> indexes) {
+    this.indexes = indexes;
+  }
+
   public void serializeTo(DataOutput out) throws IOException {
-    super.serializeTo(out);
+    DataSerializer.writeEnum(REMOVE_ELEMENTS_BY_INDEX_REVERSE_ORDER, out);
     InternalDataSerializer.writeArrayLength(indexes.size(), out);
     for (int index : indexes) {
       DataSerializer.writePrimitiveInt(index, out);
@@ -65,6 +59,6 @@ public class RemoveElementsByIndex extends DeltaInfo {
       indexes.add(readPrimitiveInt(in));
       size--;
     }
-    redisData.applyRemoveElementsByIndex(indexes);
+    redisData.applyRemoveElementsByIndexReverseOrder(indexes);
   }
 }

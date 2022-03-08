@@ -27,6 +27,7 @@ import static org.apache.geode.redis.internal.data.delta.DeltaType.APPEND_BYTE_A
 import static org.apache.geode.redis.internal.data.delta.DeltaType.INSERT_BYTE_ARRAY;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REMOVE_BYTE_ARRAYS;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REMOVE_ELEMENTS_BY_INDEX;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.REMOVE_ELEMENTS_BY_INDEX_REVERSE_ORDER;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_ARRAYS;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_ARRAY_AT_OFFSET;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_ARRAY_DOUBLE_PAIRS;
@@ -65,6 +66,7 @@ import org.apache.geode.redis.internal.data.delta.DeltaType;
 import org.apache.geode.redis.internal.data.delta.InsertByteArray;
 import org.apache.geode.redis.internal.data.delta.RemoveByteArrays;
 import org.apache.geode.redis.internal.data.delta.RemoveElementsByIndex;
+import org.apache.geode.redis.internal.data.delta.RemoveElementsByIndexReverseOrder;
 import org.apache.geode.redis.internal.data.delta.ReplaceByteArrayAtOffset;
 import org.apache.geode.redis.internal.data.delta.ReplaceByteArrayDoublePairs;
 import org.apache.geode.redis.internal.data.delta.ReplaceByteArrays;
@@ -302,6 +304,9 @@ public abstract class AbstractRedisData implements RedisData {
       case REMOVE_ELEMENTS_BY_INDEX:
         RemoveElementsByIndex.deserializeFrom(in, this);
         break;
+      case REMOVE_ELEMENTS_BY_INDEX_REVERSE_ORDER:
+        RemoveElementsByIndexReverseOrder.deserializeFrom(in, this);
+        break;
     }
   }
 
@@ -364,6 +369,10 @@ public abstract class AbstractRedisData implements RedisData {
 
   public void applyRemoveElementsByIndex(List<Integer> indexes) {
     throw new IllegalStateException("unexpected " + REMOVE_ELEMENTS_BY_INDEX);
+  }
+
+  public void applyRemoveElementsByIndexReverseOrder(List<Integer> indexes) {
+    throw new IllegalStateException("unexpected " + REMOVE_ELEMENTS_BY_INDEX_REVERSE_ORDER);
   }
 
   @Override

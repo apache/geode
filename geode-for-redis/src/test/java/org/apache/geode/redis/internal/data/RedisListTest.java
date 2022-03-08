@@ -17,16 +17,24 @@
 package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_LIST;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.reflect.Modifier;
 
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.Region;
 import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.SerializationContext;
 
@@ -108,6 +116,58 @@ public class RedisListTest {
     RedisList list2 = NULL_REDIS_LIST;
     assertThat(list1).isEqualTo(list2);
     assertThat(list2).isEqualTo(list1);
+  }
+
+  @Test
+  public void lrem_storesStableDelta_inOrderRemove() {
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
+    when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
+
+    byte[] element = new byte[] {1};
+    RedisList list = createRedisList();
+
+    list.lrem(2, element, region, null);
+
+    verify(region).put(any(), any());
+    assertThat(list.hasDelta()).isFalse();
+  }
+
+  @Test
+  public void lrem_storesStableDelta_reverseOrderRemove() {
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
+    when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
+
+    byte[] element = new byte[] {1};
+    RedisList list = createRedisList();
+
+    list.lrem(-2, element, region, null);
+
+    verify(region).put(any(), any());
+    assertThat(list.hasDelta()).isFalse();
+  }
+
+  private Object validateDeltaSerialization(InvocationOnMock invocation) throws IOException {
+    RedisList value = invocation.getArgument(1, RedisList.class);
+    assertThat(value.hasDelta()).isTrue();
+    HeapDataOutputStream out = new HeapDataOutputStream(100);
+    value.toDelta(out);
+    ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
+    RedisList list2 = createRedisList();
+    assertThat(list2).isNotEqualTo(value);
+    list2.fromDelta(in);
+    assertThat(list2).isEqualTo(value);
+    return null;
+  }
+
+
+  private RedisList createRedisList() {
+    RedisList newList = new RedisList();
+    newList.elementPush(new byte[] {1});
+    newList.elementPush(new byte[] {2});
+    newList.elementPush(new byte[] {1});
+    newList.elementPush(new byte[] {1});
+    newList.elementPush(new byte[] {3});
+    return newList;
   }
 
   private RedisList createRedisList(int e1, int e2) {

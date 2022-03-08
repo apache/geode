@@ -189,23 +189,23 @@ Could not connect to Redis at 127.0.0.1:6379: Connection refused
 | INCRBY             | INCRBYFLOAT        | INFO **[4]**       | KEYS               |
 | LINDEX             | LINSERT            | LLEN               | LOLWUT             |
 | LPOP               | LPUSH              | LPUSHX             | LRANGE             |
-| LSET               | MGET               | MSET               | MSETNX             |
-| PERSIST            | PEXPIRE            | PEXPIREAT          | PING               |
-| PSETEX             | PSUBSCRIBE         | PTTL               | PUBLISH            |
-| PUBSUB             | PUNSUBSCRIBE       | RENAME             | RENAMENX           |
-| RESTORE            | RPUSH              | RPOP               | SADD               |
-| SCARD              | SDIFF              | SDIFFSTORE         | SET                |
-| SETEX              | SETNX              | SETRANGE           | SINTER             |
-| SINTERSTORE        | SISMEMBER          | SMEMBERS           | SMOVE              |
-| SPOP               | SRANDMEMBER        | SREM               | SSCAN **[3]**      |
-| STRLEN             | SUBSCRIBE          | SUNION             | SUNIONSTORE        |
-| TTL                | TYPE               | UNSUBSCRIBE        | QUIT               |
-| ZADD               | ZCARD              | ZCOUNT             | ZINCRBY            |
-| ZINTERSTORE        | ZLEXCOUNT          | ZPOPMAX            | ZPOPMIN            |
-| ZRANGE             | ZRANGEBYLEX        | ZRANGEBYSCORE      | ZRANK              |
-| ZREM               | ZREMRANGEBYLEX     | ZREMRANGEBYRANK    | ZREMRANGEBYSCORE   |
-| ZREVRANGE          | ZREVRANGEBYLEX     | ZREVRANGEBYSCORE   | ZREVRANK           |
-| ZSCAN **[3]**      | ZSCORE             | ZUNIONSTORE        |                    |
+| LREM               | LSET               | MGET               | MSET               |
+| MSETNX             | PERSIST            | PEXPIRE            | PEXPIREAT          |
+| PING               | PSETEX             | PSUBSCRIBE         | PTTL               |
+| PUBLISH            | PUBSUB             | PUNSUBSCRIBE       | RENAME             |
+| RENAMENX           | RESTORE            | RPUSH              | RPOP               |
+| SADD               | SCARD              | SDIFF              | SDIFFSTORE         |
+| SET                | SETEX              | SETNX              | SETRANGE           |
+| SINTER             | SINTERSTORE        | SISMEMBER          | SMEMBERS           |
+| SMOVE              | SPOP               | SRANDMEMBER        | SREM               |
+| SSCAN **[3]**      | STRLEN             | SUBSCRIBE          | SUNION             |
+| SUNIONSTORE        | TTL                | TYPE               | UNSUBSCRIBE        |
+| QUIT               | ZADD               | ZCARD              | ZCOUNT             |
+| ZINCRBY            | ZINTERSTORE        | ZLEXCOUNT          | ZPOPMAX            |
+| ZPOPMIN            | ZRANGE             | ZRANGEBYLEX        | ZRANGEBYSCORE      |
+| ZRANK              | ZREM               | ZREMRANGEBYLEX     | ZREMRANGEBYRANK    |
+| ZREMRANGEBYSCORE   | ZREVRANGE          | ZREVRANGEBYLEX     | ZREVRANGEBYSCORE   |
+| ZREVRANK           | ZSCAN **[3]**      | ZSCORE             | ZUNIONSTORE        |
 
 Commands not listed above are **not implemented**.
 

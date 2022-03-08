@@ -19,8 +19,10 @@ import static org.apache.geode.internal.JvmSizeUtils.getReferenceSize;
 import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.apache.geode.internal.JvmSizeUtils.roundUpSize;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.ListIterator;
 
 import org.apache.geode.internal.size.Sizeable;
@@ -30,6 +32,57 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
   private static final int NODE_OVERHEAD =
       roundUpSize(getObjectHeaderSize() + 3 * getReferenceSize());
   private int memberOverhead;
+
+  /**
+   * @param o element to remove from the list
+   * @param count number of elements that match object o to remove from the list.
+   *        Count that is equal to 0 removes all matching elements from the list.
+   * @return list of indexes that were removed in order.
+   */
+  public List<Integer> removeObjectsStartingAtHead(Object o, int count) {
+    int index = 0;
+    ListIterator<byte[]> iterator = this.listIterator(index);
+    List<Integer> indexesRemoved = 0 < count ? new ArrayList<>(count) : new ArrayList<>();
+
+    while (iterator.hasNext()) {
+      byte[] element = iterator.next();
+      if (Arrays.equals(element, (byte[]) o)) {
+        iterator.remove();
+        memberOverhead -= calculateByteArrayOverhead(element);
+        indexesRemoved.add(index);
+      }
+
+      if (count != 0 && indexesRemoved.size() == count) {
+        break;
+      }
+
+      index++;
+    }
+    return indexesRemoved;
+  }
+
+  /**
+   * @param o element to remove from the list
+   * @param count number of elements that match object o to remove from the list.
+   * @return list of indexes that were removed in reversed order.
+   */
+  public List<Integer> removeObjectsStartingAtTail(Object o, int count) {
+    int index = this.size() - 1;
+    ListIterator<byte[]> descendingIterator = this.listIterator(this.size());
+    List<Integer> indexesRemoved = new ArrayList<>(count);
+
+    while (descendingIterator.hasPrevious() && indexesRemoved.size() != count) {
+      byte[] element = descendingIterator.previous();
+      if (Arrays.equals(element, (byte[]) o)) {
+        descendingIterator.remove();
+        memberOverhead -= calculateByteArrayOverhead(element);
+        indexesRemoved.add(index);
+      }
+
+      index--;
+    }
+    return indexesRemoved;
+  }
 
   @Override
   public int indexOf(Object o) {
@@ -47,6 +100,46 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
   @Override
   public int lastIndexOf(Object o) {
     throw new UnsupportedOperationException();
+  }
+
+  /**
+   * @param remove in order (smallest to largest) list of indexes to remove
+   */
+  public void removeIndexesInOrder(List<Integer> remove) {
+    int removeIndex = 0;
+    int firstIndexToRemove = remove.get(0);
+    ListIterator<byte[]> iterator = this.listIterator(firstIndexToRemove);
+
+    // Iterates only through the indexes to remove
+    // TODO: Might need to modify implementation after GEODE-10108 is merged in
+    for (int i = firstIndexToRemove; i <= remove.get(remove.size() - 1); i++) {
+      byte[] element = iterator.next();
+      if (i == remove.get(removeIndex)) {
+        iterator.remove();
+        memberOverhead -= calculateByteArrayOverhead(element);
+        removeIndex++;
+      }
+    }
+  }
+
+  /**
+   * @param remove reverse order (largest to smallest) list of indexes to remove
+   */
+  public void removeIndexesReverseOrder(List<Integer> remove) {
+    int removeIndex = 0;
+    int firstIndexToRemove = remove.get(0);
+    ListIterator<byte[]> iterator = this.listIterator(firstIndexToRemove + 1);
+
+    // Iterates only through the indexes to remove
+    // TODO: Might need to modify implementation after GEODE-10108 is merged in
+    for (int i = firstIndexToRemove; remove.get(remove.size() - 1) <= i; i--) {
+      byte[] element = iterator.previous();
+      if (i == remove.get(removeIndex)) {
+        iterator.remove();
+        memberOverhead -= calculateByteArrayOverhead(element);
+        removeIndex++;
+      }
+    }
   }
 
   @Override
