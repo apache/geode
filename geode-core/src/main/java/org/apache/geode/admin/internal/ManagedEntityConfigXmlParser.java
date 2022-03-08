@@ -40,6 +40,7 @@ import org.apache.geode.internal.Assert;
  *
  * @since GemFire 4.0
  */
+@Deprecated
 public class ManagedEntityConfigXmlParser extends ManagedEntityConfigXml implements ContentHandler {
 
   /** The <code>DistributedSystemConfig</code> to be configured */

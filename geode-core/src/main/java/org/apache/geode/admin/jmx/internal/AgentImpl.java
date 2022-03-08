@@ -77,6 +77,7 @@ import org.apache.geode.logging.internal.spi.LogConfigSupplier;
  *
  * @since GemFire 3.5
  */
+@Deprecated
 public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
     org.apache.geode.admin.jmx.internal.ManagedResource, LogConfigSupplier {
 

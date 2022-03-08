@@ -26,6 +26,7 @@ import org.apache.geode.GemFireCheckedException;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public class AdminException extends GemFireCheckedException {
   private static final long serialVersionUID = 879398950879472021L;
 

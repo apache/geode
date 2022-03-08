@@ -24,6 +24,7 @@ import java.rmi.RemoteException;
  * get bound to. 2. Port property can not be changed once set.
  *
  */
+@Deprecated
 public interface RMIRegistryServiceMBean {
 
   /**

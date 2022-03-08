@@ -24,6 +24,7 @@ package org.apache.geode.admin;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public interface Alert {
 
   /** The level at which this alert is issued */

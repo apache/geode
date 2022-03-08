@@ -24,6 +24,7 @@ import org.apache.geode.admin.MemberHealthConfig;
  *
  * @since GemFire 3.5
  */
+@Deprecated
 public abstract class MemberHealthConfigImpl implements MemberHealthConfig, java.io.Serializable {
 
   private static final long serialVersionUID = 3966032573073580490L;

@@ -52,6 +52,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  *
  * @since GemFire 4.0
  */
+@Deprecated
 public class CacheServerJmxImpl extends CacheServerImpl
     implements ManagedResource, CacheVmConfig, CacheServerConfig, SystemMemberJmx {
 

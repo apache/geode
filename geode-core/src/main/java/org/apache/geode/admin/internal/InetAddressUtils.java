@@ -26,6 +26,7 @@ import org.apache.geode.internal.inet.LocalHostUtil;
  * strings.
  */
 @SuppressWarnings("unused")
+@Deprecated
 public class InetAddressUtils {
 
   private InetAddressUtils() {

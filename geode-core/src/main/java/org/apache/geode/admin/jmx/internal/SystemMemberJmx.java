@@ -47,6 +47,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  *
  * @since GemFire 4.0
  */
+@Deprecated
 public interface SystemMemberJmx extends SystemMember, NotificationListener {
   /**
    * Notification type for indicating a cache got created on a member of this distributed system.

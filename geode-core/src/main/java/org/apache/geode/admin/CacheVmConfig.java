@@ -25,6 +25,7 @@ package org.apache.geode.admin;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public interface CacheVmConfig extends ManagedEntityConfig {
   /**
    * Returns the <code>cache.xml</code> declarative caching initialization file used to configure

@@ -24,6 +24,7 @@ import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
  * Provides MBean support for managing a distribution locator.
  *
  */
+@Deprecated
 public class DistributionLocatorJmxImpl
     extends org.apache.geode.admin.internal.DistributionLocatorImpl
     implements org.apache.geode.admin.jmx.internal.ManagedResource, DistributionLocatorConfig {

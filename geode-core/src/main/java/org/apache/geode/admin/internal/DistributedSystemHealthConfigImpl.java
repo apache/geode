@@ -24,6 +24,7 @@ import org.apache.geode.admin.DistributedSystemHealthConfig;
  *
  * @since GemFire 3.5
  */
+@Deprecated
 public class DistributedSystemHealthConfigImpl implements DistributedSystemHealthConfig {
 
   /**

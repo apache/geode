@@ -30,6 +30,7 @@ import java.rmi.server.UnicastRemoteObject;
  * This MBean is an implementation of {@link RMIRegistryServiceMBean}.
  *
  */
+@Deprecated
 public class RMIRegistryService implements RMIRegistryServiceMBean {
   /* RMI Registry host */
   private String host;

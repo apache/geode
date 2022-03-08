@@ -68,6 +68,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  *
  * @since GemFire 3.5
  */
+@Deprecated
 public class DistributedSystemConfigImpl implements DistributedSystemConfig {
 
   private static final Logger logger = LogService.getLogger();

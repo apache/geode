@@ -54,6 +54,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  *
  * @since GemFire 3.5
  */
+@Deprecated
 public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
     org.apache.geode.admin.internal.ConfigurationParameterListener {
 

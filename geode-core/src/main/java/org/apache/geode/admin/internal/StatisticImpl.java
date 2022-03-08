@@ -23,6 +23,7 @@ import org.apache.geode.internal.admin.Stat;
  * @since GemFire 3.5
  *
  */
+@Deprecated
 public class StatisticImpl implements org.apache.geode.admin.Statistic {
 
   private static final long serialVersionUID = 3899296873901634399L;

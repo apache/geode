@@ -38,6 +38,7 @@ import org.apache.geode.cache.SubscriptionAttributes;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public interface SystemMemberRegion {
   // attributes
   /**

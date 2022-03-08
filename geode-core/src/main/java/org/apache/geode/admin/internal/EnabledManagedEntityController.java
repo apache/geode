@@ -48,6 +48,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  *
  * @since GemFire 4.0
  */
+@Deprecated
 class EnabledManagedEntityController implements ManagedEntityController {
   private static final Logger logger = LogService.getLogger();
 

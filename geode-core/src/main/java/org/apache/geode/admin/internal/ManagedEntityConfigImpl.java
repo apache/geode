@@ -33,6 +33,7 @@ import org.apache.geode.internal.inet.LocalHostUtil;
  *
  * @since GemFire 4.0
  */
+@Deprecated
 public abstract class ManagedEntityConfigImpl implements ManagedEntityConfig {
 
   /** The name of the host on which the managed entity runs */

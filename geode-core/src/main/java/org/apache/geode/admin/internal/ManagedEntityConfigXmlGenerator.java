@@ -56,6 +56,7 @@ import org.apache.geode.internal.Assert;
  *
  * @since GemFire 4.0
  */
+@Deprecated
 public class ManagedEntityConfigXmlGenerator extends ManagedEntityConfigXml implements XMLReader {
 
   /** An empty <code>Attributes</code> */

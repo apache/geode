@@ -30,6 +30,7 @@ import org.apache.geode.internal.admin.StatAlertDefinition;
  * </ol>
  *
  */
+@Deprecated
 public interface StatAlertsAggregator {
 
   /**

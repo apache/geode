@@ -25,6 +25,7 @@ package org.apache.geode.admin;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public class RuntimeAdminException extends org.apache.geode.GemFireException {
 
   private static final long serialVersionUID = -7512771113818634005L;

@@ -29,6 +29,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * DisabledManagedEntityController as a place holder.
  *
  */
+@Deprecated
 class DisabledManagedEntityController implements ManagedEntityController {
 
   private static final Logger logger = LogService.getLogger();

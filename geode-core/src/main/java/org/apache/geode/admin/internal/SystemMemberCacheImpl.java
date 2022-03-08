@@ -44,6 +44,7 @@ import org.apache.geode.internal.admin.StatResource;
  *
  * @since GemFire 3.5
  */
+@Deprecated
 public class SystemMemberCacheImpl implements SystemMemberCache {
   protected final GemFireVM vm;
   protected CacheInfo info;

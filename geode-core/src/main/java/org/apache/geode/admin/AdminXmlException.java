@@ -24,6 +24,7 @@ package org.apache.geode.admin;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public class AdminXmlException extends RuntimeAdminException {
   private static final long serialVersionUID = -6848726449157550169L;
 

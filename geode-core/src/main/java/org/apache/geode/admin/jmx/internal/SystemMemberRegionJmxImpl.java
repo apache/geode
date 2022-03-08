@@ -26,6 +26,7 @@ import org.apache.geode.internal.admin.GemFireVM;
  *
  * @since GemFire 3.5
  */
+@Deprecated
 public class SystemMemberRegionJmxImpl
     extends org.apache.geode.admin.internal.SystemMemberRegionImpl
     implements org.apache.geode.admin.jmx.internal.ManagedResource {

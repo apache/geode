@@ -106,6 +106,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  *
  * @since GemFire 3.5
  */
+@Deprecated
 public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminDistributedSystem,
     org.apache.geode.internal.admin.JoinLeaveListener,
     org.apache.geode.internal.admin.AlertListener,

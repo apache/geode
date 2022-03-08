@@ -58,6 +58,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  *
  * @since GemFire 3.5
  */
+@Deprecated
 public class AgentLauncher {
 
   private static final Logger logger = LogService.getLogger();

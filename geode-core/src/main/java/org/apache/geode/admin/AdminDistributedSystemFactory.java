@@ -33,6 +33,7 @@ import org.apache.geode.internal.logging.LocalLogWriter;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public class AdminDistributedSystemFactory {
 
   /**

@@ -35,6 +35,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
  *
  * @since GemFire 5.7
  */
+@Deprecated
 public class StatAlertNotification extends StatAlert
     implements Serializable, DataSerializableFixedID {
   private static final long serialVersionUID = -1634729103430107871L;

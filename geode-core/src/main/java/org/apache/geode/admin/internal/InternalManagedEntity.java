@@ -24,6 +24,7 @@ import org.apache.geode.admin.ManagedEntityConfig;
  *
  * @since GemFire 4.0
  */
+@Deprecated
 public interface InternalManagedEntity extends ManagedEntity {
 
   /** The state of a managed entity is unknown. */

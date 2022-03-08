@@ -99,6 +99,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  *
  * @since GemFire 3.5
  */
+@Deprecated
 public class AdminDistributedSystemJmxImpl extends AdminDistributedSystemImpl
     implements ManagedResource, DistributedSystemConfig, StatAlertsAggregator {
 

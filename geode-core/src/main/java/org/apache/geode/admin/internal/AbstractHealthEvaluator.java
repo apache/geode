@@ -35,6 +35,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  *
  * @since GemFire 3.5
  */
+@Deprecated
 public abstract class AbstractHealthEvaluator {
 
   private static final Logger logger = LogService.getLogger();

@@ -35,6 +35,7 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
  *
  * @since GemFire 4.0
  */
+@Deprecated
 public class DistributionLocatorConfigImpl extends ManagedEntityConfigImpl
     implements DistributionLocatorConfig {
 

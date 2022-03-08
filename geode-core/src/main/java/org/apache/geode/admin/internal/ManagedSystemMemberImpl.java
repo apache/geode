@@ -29,6 +29,7 @@ import org.apache.geode.internal.admin.GemFireVM;
  *
  * @since GemFire 4.0
  */
+@Deprecated
 public abstract class ManagedSystemMemberImpl extends SystemMemberImpl
     implements InternalManagedEntity {
 

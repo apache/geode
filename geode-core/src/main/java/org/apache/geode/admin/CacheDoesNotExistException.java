@@ -24,6 +24,7 @@ package org.apache.geode.admin;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public class CacheDoesNotExistException extends AdminException {
   private static final long serialVersionUID = -1639933911265729978L;
 

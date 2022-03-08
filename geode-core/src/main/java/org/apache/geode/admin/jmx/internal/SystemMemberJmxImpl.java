@@ -55,6 +55,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * @since GemFire 3.5
  *
  */
+@Deprecated
 public class SystemMemberJmxImpl extends org.apache.geode.admin.internal.SystemMemberImpl
     implements SystemMemberJmx, javax.management.NotificationListener,
     org.apache.geode.admin.jmx.internal.ManagedResource {

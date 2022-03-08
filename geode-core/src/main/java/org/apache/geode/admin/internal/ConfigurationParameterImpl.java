@@ -32,6 +32,7 @@ import org.apache.geode.admin.UnmodifiableConfigurationException;
  * @since GemFire 3.5
  *
  */
+@Deprecated
 public class ConfigurationParameterImpl implements org.apache.geode.admin.ConfigurationParameter {
 
   /** Identifying name of this configuration parameter */

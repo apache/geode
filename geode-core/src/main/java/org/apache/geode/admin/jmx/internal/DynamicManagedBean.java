@@ -29,6 +29,7 @@ import org.apache.commons.modeler.OperationInfo;
  *
  * @since GemFire 5.0.1
  */
+@Deprecated
 public class DynamicManagedBean extends org.apache.commons.modeler.ManagedBean {
   private static final long serialVersionUID = 4051924500150228160L;
 

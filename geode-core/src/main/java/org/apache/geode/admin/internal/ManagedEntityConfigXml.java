@@ -33,6 +33,7 @@ import org.apache.geode.internal.classloader.ClassPathLoader;
  *
  * @since GemFire 4.0
  */
+@Deprecated
 abstract class ManagedEntityConfigXml implements EntityResolver, ErrorHandler {
 
   /** The location of the DTD file */

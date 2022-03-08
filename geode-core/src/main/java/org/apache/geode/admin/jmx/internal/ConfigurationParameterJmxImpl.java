@@ -35,6 +35,7 @@ import org.apache.geode.admin.UnmodifiableConfigurationException;
  * @since GemFire 3.5
  *
  */
+@Deprecated
 public class ConfigurationParameterJmxImpl
     extends org.apache.geode.admin.internal.ConfigurationParameterImpl implements Serializable {
 

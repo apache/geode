@@ -40,6 +40,7 @@ import java.util.Date;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public class AdminConfig {
   // Name, Type, Host, Port
   public static Entry[] loadConfig(File file) throws IOException {

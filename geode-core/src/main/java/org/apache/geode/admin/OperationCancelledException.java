@@ -25,6 +25,7 @@ package org.apache.geode.admin;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public class OperationCancelledException extends RuntimeAdminException {
   private static final long serialVersionUID = 5474068770227602546L;
 

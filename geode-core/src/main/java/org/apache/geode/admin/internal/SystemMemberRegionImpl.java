@@ -42,6 +42,7 @@ import org.apache.geode.internal.admin.remote.AdminRegion;
  *
  * @since GemFire 3.5
  */
+@Deprecated
 public class SystemMemberRegionImpl implements SystemMemberRegion {
 
   private final AdminRegion r;

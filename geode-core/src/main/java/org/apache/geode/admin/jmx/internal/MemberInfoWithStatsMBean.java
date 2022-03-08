@@ -81,6 +81,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  *
  * @since GemFire 6.5
  */
+@Deprecated
 public class MemberInfoWithStatsMBean extends AbstractDynamicMBean implements NotificationEmitter {
   private static final Logger logger = LogService.getLogger();
 

@@ -29,6 +29,7 @@ import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.admin.GfManagerAgent;
 import org.apache.geode.internal.logging.MergeLogFiles;
 
+@Deprecated
 public class LogCollator {
 
   private GfManagerAgent system;
