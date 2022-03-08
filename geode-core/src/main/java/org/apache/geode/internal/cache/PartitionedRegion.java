@@ -8537,7 +8537,8 @@ public class PartitionedRegion extends LocalRegion
     return new ArrayList<>(indexes);
   }
 
-  private boolean createEmptyIndexes(HashSet<IndexCreationData> indexDefinitions,
+  @VisibleForTesting
+  boolean createEmptyIndexes(HashSet<IndexCreationData> indexDefinitions,
       boolean remotelyOriginated, Set<Index> indexes, HashMap<String, Exception> exceptionsMap) {
     boolean throwException = false;
     for (IndexCreationData icd : indexDefinitions) {
@@ -8550,6 +8551,9 @@ public class PartitionedRegion extends LocalRegion
         if (ind != null) {
           indexes.add(ind);
         }
+      } catch (CancelException cancelException) {
+        // Do not add cancel exception to exceptionsMap, re-throw instead.
+        throw cancelException;
       } catch (Exception ex) {
         // If an index creation fails, add the exception to the map and
         // continue creating rest of the indexes.The failed indexes will
