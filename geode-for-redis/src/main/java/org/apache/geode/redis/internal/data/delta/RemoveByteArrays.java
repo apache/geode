@@ -39,7 +39,6 @@ public class RemoveByteArrays extends DeltaInfo {
   }
 
   public RemoveByteArrays(List<byte[]> deltas) {
-    super((short) 0);
     byteArrays = deltas;
   }
 

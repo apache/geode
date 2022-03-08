@@ -38,7 +38,6 @@ public class AddByteArrays extends DeltaInfo {
   }
 
   public AddByteArrays(List<byte[]> deltas) {
-    super((short) 0);
     byteArrays = deltas;
   }
 

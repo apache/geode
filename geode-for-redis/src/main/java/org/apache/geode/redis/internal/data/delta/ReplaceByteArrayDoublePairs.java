@@ -32,7 +32,6 @@ public class ReplaceByteArrayDoublePairs extends DeltaInfo {
   private final RedisSortedSet.MemberMap members;
 
   public ReplaceByteArrayDoublePairs(RedisSortedSet.MemberMap members) {
-    super((short) 0);
     this.members = members;
   }
 

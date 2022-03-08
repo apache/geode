@@ -32,7 +32,6 @@ public class ReplaceByteArrayAtOffset extends DeltaInfo {
   private final byte[] byteArray;
 
   public ReplaceByteArrayAtOffset(int offset, byte[] bytes) {
-    super((short) 0);
     this.offset = offset;
     byteArray = bytes;
   }

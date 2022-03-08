@@ -36,7 +36,6 @@ public class AddByteArrayDoublePairs extends DeltaInfo {
   private final double[] doubles;
 
   public AddByteArrayDoublePairs(int size) {
-    super((short) 0);
     byteArrays = new ArrayList<>(size);
     doubles = new double[size];
   }

@@ -32,7 +32,6 @@ public class ReplaceByteArrays extends DeltaInfo {
   private final Set<byte[]> byteArrays;
 
   public ReplaceByteArrays(Set<byte[]> deltas) {
-    super((short) 0);
     this.byteArrays = deltas;
   }
 

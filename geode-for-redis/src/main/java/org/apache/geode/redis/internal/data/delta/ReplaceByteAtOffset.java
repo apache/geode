@@ -32,7 +32,6 @@ public class ReplaceByteAtOffset extends DeltaInfo {
   private final byte byteValue;
 
   public ReplaceByteAtOffset(int offset, byte bits) {
-    super((short) 0);
     this.offset = offset;
     byteValue = bits;
   }

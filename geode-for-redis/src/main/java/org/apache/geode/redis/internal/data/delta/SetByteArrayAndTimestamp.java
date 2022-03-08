@@ -34,7 +34,6 @@ public class SetByteArrayAndTimestamp extends DeltaInfo {
   private final long timestamp;
 
   public SetByteArrayAndTimestamp(byte[] bytes, long timestamp) {
-    super((short) 0);
     byteArray = bytes;
     this.timestamp = timestamp;
   }

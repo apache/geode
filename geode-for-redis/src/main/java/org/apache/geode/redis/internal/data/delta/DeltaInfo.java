@@ -25,7 +25,11 @@ public abstract class DeltaInfo {
 
   private final short version;
 
-  public DeltaInfo(short version) {
+  protected DeltaInfo() {
+    this((short) 0);
+  }
+
+  protected DeltaInfo(short version) {
     this.version = version;
   }
 

@@ -33,7 +33,6 @@ public class SetByteArray extends DeltaInfo {
   private final byte[] byteArray;
 
   public SetByteArray(byte[] value) {
-    super((short) 0);
     byteArray = value;
   }
 
