@@ -15,17 +15,6 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
-import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__ALREADY__RUNNING__COMMAND;
-import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED;
-import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__EXECUTIONS__CANCELED;
-import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__EXECUTION__CANCELED;
-import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__EXECUTION__FAILED;
-import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__NO__RUNNING__COMMAND;
-import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__REGION__NOT__FOUND;
-import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__REGION__NOT__USING_SENDER;
-import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__SENDER__NOT__FOUND;
-import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__SENDER__NOT__RUNNING;
-import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY;
 
 import java.io.Serializable;
 import java.util.concurrent.CancellationException;
@@ -79,6 +68,27 @@ public class WanCopyRegionFunction extends CliFunction<Object[]> implements Decl
   private final WanCopyRegionFunctionServiceProvider serviceProvider;
 
   private static final Logger logger = LogService.getLogger();
+
+  public static final String WAN_COPY_REGION__MSG__REGION__NOT__FOUND = "Region {0} not found";
+  public static final String WAN_COPY_REGION__MSG__REGION__NOT__USING_SENDER =
+      "Region {0} is not configured to use sender {1}";
+  public static final String WAN_COPY_REGION__MSG__SENDER__NOT__FOUND = "Sender {0} not found";
+  public static final String WAN_COPY_REGION__MSG__SENDER__SERIAL__AND__NOT__PRIMARY =
+      "Sender {0} is serial and not primary. 0 entries copied.";
+  public static final String WAN_COPY_REGION__MSG__SENDER__NOT__RUNNING =
+      "Sender {0} is not running";
+  public static final String WAN_COPY_REGION__MSG__EXECUTION__CANCELED = "Execution canceled";
+  public static final String WAN_COPY_REGION__MSG__EXECUTIONS__CANCELED =
+      "Executions canceled: {0}";
+  public static final String WAN_COPY_REGION__MSG__EXECUTION__FAILED =
+      "Execution failed. Error: {0}";
+  public static final String WAN_COPY_REGION__MSG__CANCELED__BEFORE__HAVING__COPIED =
+      "Operation canceled before having copied all entries";
+  public static final String WAN_COPY_REGION__MSG__NO__RUNNING__COMMAND =
+      "No running command to be canceled for region {0} and sender {1}";
+  public static final String WAN_COPY_REGION__MSG__ALREADY__RUNNING__COMMAND =
+      "There is already a command running for region {0} and sender {1}";
+
 
   public WanCopyRegionFunction() {
     this(new WanCopyRegionFunctionServiceProviderImpl());

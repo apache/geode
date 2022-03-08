@@ -14,11 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__COMMAND__NOT__SUPPORTED__AT__REMOTE__SITE;
-import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__ERROR__AFTER__HAVING__COPIED;
-import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__NO__CONNECTION;
-import static org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand.WAN_COPY_REGION__MSG__NO__CONNECTION__POOL;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.time.Clock;
@@ -41,7 +36,6 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.pooling.ConnectionDestroyedException;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.cache.wan.internal.cli.commands.WanCopyRegionCommand;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.DefaultEntryEventFactory;
 import org.apache.geode.internal.cache.DestroyedEntry;
@@ -74,6 +68,16 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
   private final int waitBeforeCopyMs;
 
   private static final Logger logger = LogService.getLogger();
+
+  public static final String WAN_COPY_REGION__MSG__NO__CONNECTION__POOL =
+      "No connection pool available to receiver";
+  public static final String WAN_COPY_REGION__MSG__COMMAND__NOT__SUPPORTED__AT__REMOTE__SITE =
+      "Command not supported at remote site.";
+  public static final String WAN_COPY_REGION__MSG__NO__CONNECTION =
+      "No connection available to receiver after having copied {0} entries";
+  public static final String WAN_COPY_REGION__MSG__ERROR__AFTER__HAVING__COPIED =
+      "Error ({0}) in operation after having copied {1} entries";
+  public static final String WAN_COPY_REGION__MSG__COPIED__ENTRIES = "Entries copied: {0}";
 
   WanCopyRegionFunctionDelegate() {
     this(Clock.systemDefaultZone(), new ThreadSleeperImpl(), new EventCreatorImpl(),
@@ -129,13 +133,13 @@ public class WanCopyRegionFunctionDelegate implements Serializable {
     if (region.isDestroyed()) {
       return new CliFunctionResult(memberName, CliFunctionResult.StatusState.ERROR,
           CliStrings.format(
-              WanCopyRegionCommand.WAN_COPY_REGION__MSG__ERROR__AFTER__HAVING__COPIED,
+              WAN_COPY_REGION__MSG__ERROR__AFTER__HAVING__COPIED,
               "Region destroyed",
               copiedEntries));
     }
 
     return new CliFunctionResult(memberName, CliFunctionResult.StatusState.OK,
-        CliStrings.format(WanCopyRegionCommand.WAN_COPY_REGION__MSG__COPIED__ENTRIES,
+        CliStrings.format(WAN_COPY_REGION__MSG__COPIED__ENTRIES,
             copiedEntries));
   }
 
