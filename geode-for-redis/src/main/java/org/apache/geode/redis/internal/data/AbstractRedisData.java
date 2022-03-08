@@ -87,7 +87,7 @@ public abstract class AbstractRedisData implements RedisData {
   private volatile long expirationTimestamp = NO_EXPIRATION;
   private static final ThreadLocal<DeltaInfo> deltaInfo = new ThreadLocal<>();
 
-  public int getVersion() {
+  public short getVersion() {
     return version;
   }
 
@@ -401,7 +401,8 @@ public abstract class AbstractRedisData implements RedisData {
       return false;
     }
     AbstractRedisData that = (AbstractRedisData) o;
-    return getExpirationTimestamp() == that.getExpirationTimestamp();
+    return getVersion() == that.getVersion() &&
+        getExpirationTimestamp() == that.getExpirationTimestamp();
   }
 
   @Override
@@ -411,7 +412,7 @@ public abstract class AbstractRedisData implements RedisData {
 
   @Override
   public String toString() {
-    return "expirationTimestamp=" + expirationTimestamp;
+    return "version=" + version + ", expirationTimestamp=" + expirationTimestamp;
   }
 
 }

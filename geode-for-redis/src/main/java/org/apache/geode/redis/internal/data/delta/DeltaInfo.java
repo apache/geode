@@ -35,7 +35,7 @@ public abstract class DeltaInfo {
 
   public void serializeTo(DataOutput out) throws IOException {
     DataSerializer.writePrimitiveShort(version, out);
-  };
+  }
 
   public short getVersion() {
     return version;

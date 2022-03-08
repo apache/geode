@@ -21,12 +21,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -35,7 +39,12 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.params.SetParams;
 
+import org.apache.geode.internal.cache.BucketDump;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.redis.ConcurrentLoopingThreads;
+import org.apache.geode.redis.internal.services.RegionProvider;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
@@ -252,60 +261,72 @@ public class StringsDUnitTest {
   }
 
   @Test
-  public void givenBucketsMoveAndPrimarySwitches_thenNoDuplicateAppendsOccur() {
-    String KEY = "APPEND";
-    AtomicInteger counter = new AtomicInteger(0);
+  public void givenBucketsMoveDuringAppend_thenDataIsNotLost() throws Exception {
+    AtomicBoolean running = new AtomicBoolean(true);
 
-    new ConcurrentLoopingThreads(1000,
-        i -> {
-          String appendString = "-" + KEY + "-" + i + "-";
-          jedisCluster.append(KEY, appendString);
-          counter.incrementAndGet();
-        },
-        i -> clusterStartUp.moveBucketForKey(KEY)).runWithAction(() -> {
-          clusterStartUp.switchPrimaryForKey(KEY, server1, server2, server3);
-          verifyAppendResult(KEY, counter.get());
-        });
+    List<String> hashtags = new ArrayList<>();
+    hashtags.add(clusterStartUp.getKeyOnServer("append", 1));
+    hashtags.add(clusterStartUp.getKeyOnServer("append", 2));
+    hashtags.add(clusterStartUp.getKeyOnServer("append", 3));
+
+    Future<Integer> future1 = executor.submit(() -> performAppend(1, hashtags.get(0), running));
+    Future<Integer> future2 = executor.submit(() -> performAppend(2, hashtags.get(1), running));
+    Future<Integer> future3 = executor.submit(() -> performAppend(3, hashtags.get(2), running));
+
+    for (int i = 0; i < 100 && running.get(); i++) {
+      clusterStartUp.moveBucketForKey(hashtags.get(i % hashtags.size()));
+      Thread.sleep(200);
+    }
+
+    running.set(false);
+
+    verifyAppendResult(makeKey(hashtags.get(0), 1), future1.get());
+    verifyAppendResult(makeKey(hashtags.get(1), 2), future2.get());
+    verifyAppendResult(makeKey(hashtags.get(2), 3), future3.get());
+
+    compareBuckets();
+  }
+
+  private String makeKey(String hashtag, int index) {
+    return "{" + hashtag + "}-key-" + index;
+  }
+
+  private int performAppend(int index, String hashtag, AtomicBoolean isRunning) {
+    String key = makeKey(hashtag, index);
+    int iterationCount = 0;
+
+    while (isRunning.get()) {
+      String appendString = "-" + key + "-" + iterationCount + "-";
+      try {
+        jedisCluster.append(key, appendString);
+      } catch (Exception ex) {
+        isRunning.set(false);
+        throw new RuntimeException("Exception performing APPEND " + appendString, ex);
+      }
+      iterationCount++;
+    }
+
+    return iterationCount;
   }
 
   private void verifyAppendResult(String key, int iterationCount) {
     String storedString = jedisCluster.get(key);
 
-    int startIndex = 0;
+    int idx = 0;
     int i = 0;
-    boolean lastWasDuplicate = false;
-    boolean reachedEnd = false;
-    while (!reachedEnd) {
+    while (i < iterationCount) {
       String expectedValue = "-" + key + "-" + i + "-";
+      String foundValue = storedString.substring(idx, idx + expectedValue.length());
+      int subsectionStart = Math.max(0, idx - (2 * expectedValue.length()));
+      int subsectionEnd = Math.min(storedString.length(), idx + (2 * expectedValue.length()));
 
-      int endIndex = startIndex + expectedValue.length();
-      reachedEnd = endIndex == storedString.length();
-      String foundValue = storedString.substring(startIndex, endIndex);
-
-      int subsectionStart = Math.max(0, startIndex - (2 * expectedValue.length()));
-      int subsectionEnd = Math.min(storedString.length(), endIndex + (2 * expectedValue.length()));
-
-      try {
-        assertThat(foundValue).as("unexpected " + foundValue
-            + " at index " + i
-            + " iterationCount=" + iterationCount
-            + " in String subsection: " + storedString.substring(subsectionStart, subsectionEnd))
-            .isEqualTo(expectedValue);
-        lastWasDuplicate = false;
-      } catch (AssertionError error) {
-        // Jedis client retries can lead to duplicated appends, so check if the append is a
-        // duplicate of the previous one, but only allow one duplicated append in a row
-        String previousAppend = "-" + key + "-" + (i - 1) + "-";
-        if (lastWasDuplicate || !foundValue.equals(previousAppend)) {
-          throw error;
-        }
-
-        // Decrement the counter to account for the duplicated append and reset the flag to detect
-        // multiple duplicated appends in a row
-        lastWasDuplicate = true;
-        i--;
+      if (!foundValue.equals(expectedValue)) {
+        Assert.fail("unexpected " + foundValue + " at index " + i + " iterationCount="
+            + iterationCount
+            + " in String subsection: " + storedString.substring(subsectionStart, subsectionEnd));
+        break;
       }
-      startIndex = endIndex;
+      idx += expectedValue.length();
       i++;
     }
   }
@@ -341,4 +362,20 @@ public class StringsDUnitTest {
       }
     };
   }
+
+  private void compareBuckets() {
+    server1.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      PartitionedRegion region =
+          (PartitionedRegion) cache.getRegion(RegionProvider.DEFAULT_REDIS_REGION_NAME);
+      for (int j = 0; j < region.getTotalNumberOfBuckets(); j++) {
+        List<BucketDump> buckets = region.getAllBucketEntries(j);
+        assertThat(buckets.size()).isEqualTo(2);
+        Map<Object, Object> bucket1 = buckets.get(0).getValues();
+        Map<Object, Object> bucket2 = buckets.get(1).getValues();
+        assertThat(bucket1).containsExactlyEntriesOf(bucket2);
+      }
+    });
+  }
+
 }
