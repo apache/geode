@@ -83,7 +83,7 @@ function resolve() {
     spec=https://dist.apache.org/repos/dist/dev/geode/${spec}/apache-geode-${mmp}${suffix}.tgz
   elif [[ $spec =~ ^([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
     #bare released version -> release url
-    spec=https://downloads.apache.org/geode/${spec}/apache-geode-${spec}${suffix}.tgz
+    spec=https://archive.apache.org/dist/geode/${spec}/apache-geode-${spec}${suffix}.tgz
   elif echo "$spec" | grep -q '^http.*tgz$' ; then
     #tgz url
     echo "$spec" | grep -q -- "${suffix}.tgz$" || return
@@ -104,9 +104,9 @@ function resolve() {
 
   #extract it (if not already extracted)
   dirname=$(echo $spec | sed -e 's#.*/##' -e 's#.tgz$##')
-  [ "${licFromWs}" = "true" ] && rm -Rf ${EXTRACT}/$dirname
+  [ "${licFromWs}" = "true" ] && rm -Rf ${EXTRACT}/$dirname || true
   [ -d ${EXTRACT}/$dirname ] || tar xzf $spec -C ${EXTRACT}
-  [ -d ${EXTRACT}/$dirname ] && echo ${EXTRACT}/$dirname
+  [ -d ${EXTRACT}/$dirname ] && echo ${EXTRACT}/$dirname || true
 }
 
 NEW_DIR=$(resolve $NEW_VERSION)
