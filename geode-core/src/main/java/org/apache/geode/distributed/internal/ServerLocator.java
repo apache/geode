@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
@@ -229,11 +230,11 @@ public class ServerLocator implements TcpHandler, RestartHandler, DistributionAd
   }
 
   private Object pickQueueServers(QueueConnectionRequest clientRequest) {
-    HashSet<ServerLocation> excludedServers = new HashSet<>(clientRequest.getExcludedServers());
+    Set<ServerLocation> excludedServers = new HashSet<>(clientRequest.getExcludedServers());
 
     /* If this is a request to find durable queues, lets go find them */
 
-    ArrayList<ServerLocation> servers = new ArrayList<>();
+    List<ServerLocation> servers = new ArrayList<>();
     boolean durableQueueFound = false;
     if (clientRequest.isFindDurable() && clientRequest.getProxyId().isDurable()) {
       servers = FindDurableQueueProcessor.sendAndFind(this, clientRequest.getProxyId(),

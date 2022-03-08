@@ -30,6 +30,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -70,13 +71,98 @@ public class ParallelGatewaySenderConnectionLoadBalanceDistributedTest implement
   private static final String DISTRIBUTED_SYSTEM_ID_SITE1 = "1";
   private static final String DISTRIBUTED_SYSTEM_ID_SITE2 = "2";
   private static final String REGION_NAME = "test1";
-  private static final int NUMBER_OF_DISPATCHER_THREADS = 20;
+  private static final int NUMBER_OF_DISPATCHER_THREADS = 21;
   private static final int NUM_CONNECTION_PER_SERVER_OFFSET = 4;
   private static final int LOAD_POLL_INTERVAL_OFFSET = 2000;
 
+  @Before
+  public void setupMultiSite() throws Exception {
+    Properties props = new Properties();
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, DISTRIBUTED_SYSTEM_ID_SITE1);
+    locator1Site1 = clusterStartupRule.startLocatorVM(0, props);
+    locator2Site1 = clusterStartupRule.startLocatorVM(1, props, locator1Site1.getPort());
+
+    // start servers for site #1
+    server1Site1 =
+        clusterStartupRule.startServerVM(2, locator1Site1.getPort(), locator2Site1.getPort());
+    server2Site1 =
+        clusterStartupRule.startServerVM(3, locator1Site1.getPort(), locator2Site1.getPort());
+    server3Site1 =
+        clusterStartupRule.startServerVM(4, locator1Site1.getPort(), locator2Site1.getPort());
+
+    connectGfshToSite(locator1Site1);
+
+    // create partition region on site #1
+    CommandStringBuilder regionCmd = new CommandStringBuilder(CliStrings.CREATE_REGION);
+    regionCmd.addOption(CliStrings.CREATE_REGION__REGION, REGION_NAME);
+    regionCmd.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION");
+    regionCmd.addOption(CliStrings.CREATE_REGION__REDUNDANTCOPIES, "1");
+
+    gfsh.executeAndAssertThat(regionCmd.toString()).statusIsSuccess();
+
+    String csb = new CommandStringBuilder(CliStrings.CREATE_GATEWAYRECEIVER)
+        .addOption(CliStrings.CREATE_GATEWAYRECEIVER__BINDADDRESS, "localhost")
+        .getCommandString();
+
+    gfsh.executeAndAssertThat(csb).statusIsSuccess();
+
+    server1Site1.invoke(() -> verifyReceiverState(true));
+    locator2Site1.invoke(
+        () -> validateGatewayReceiverMXBeanProxy(getMember(server1Site1.getVM()), true));
+    locator1Site1.invoke(
+        () -> validateGatewayReceiverMXBeanProxy(getMember(server1Site1.getVM()), true));
+
+    server2Site1.invoke(() -> verifyReceiverState(true));
+    locator2Site1.invoke(
+        () -> validateGatewayReceiverMXBeanProxy(getMember(server2Site1.getVM()), true));
+    locator1Site1.invoke(
+        () -> validateGatewayReceiverMXBeanProxy(getMember(server2Site1.getVM()), true));
+
+    server3Site1.invoke(() -> verifyReceiverState(true));
+    locator2Site1.invoke(
+        () -> validateGatewayReceiverMXBeanProxy(getMember(server3Site1.getVM()), true));
+    locator1Site1.invoke(
+        () -> validateGatewayReceiverMXBeanProxy(getMember(server3Site1.getVM()), true));
+
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, DISTRIBUTED_SYSTEM_ID_SITE2);
+    props.setProperty(REMOTE_LOCATORS,
+        "localhost[" + locator1Site1.getPort() + "],localhost[" + locator2Site1.getPort() + "]");
+    locator1Site2 = clusterStartupRule.startLocatorVM(5, props);
+
+    // start servers for site #2
+    server1Site2 = clusterStartupRule.startServerVM(6, locator1Site2.getPort());
+    server2Site2 = clusterStartupRule.startServerVM(7, locator1Site2.getPort());
+
+    // create parallel gateway-sender on site #2
+    connectGfshToSite(locator1Site2);
+    String command = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER)
+        .addOption(CliStrings.CREATE_GATEWAYSENDER__ID, "ln")
+        .addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, "1")
+        .addOption(CliStrings.CREATE_GATEWAYSENDER__PARALLEL, "true")
+        .addOption(CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS,
+            "" + NUMBER_OF_DISPATCHER_THREADS)
+        .addOption(CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY, "key")
+        .getCommandString();
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
+
+    server1Site2.invoke(() -> verifySenderState("ln", true, false));
+    server2Site2.invoke(() -> verifySenderState("ln", true, false));
+    locator1Site2.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server1Site2.getVM()), "ln", true, false));
+    locator1Site2.invoke(
+        () -> validateGatewaySenderMXBeanProxy(getMember(server2Site2.getVM()), "ln", true, false));
+
+    // create partition region on site #2
+    regionCmd = new CommandStringBuilder(CliStrings.CREATE_REGION);
+    regionCmd.addOption(CliStrings.CREATE_REGION__REGION, REGION_NAME);
+    regionCmd.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION");
+    regionCmd.addOption(CliStrings.CREATE_REGION__GATEWAYSENDERID, "ln");
+    regionCmd.addOption(CliStrings.CREATE_REGION__REDUNDANTCOPIES, "1");
+    gfsh.executeAndAssertThat(regionCmd.toString()).statusIsSuccess();
+  }
+
   @Test
   public void testGatewayConnectionCorrectlyLoadBalancedAtStartup() throws Exception {
-    startWAN();
     // Do put operations to initialize gateway-sender connections
     startClientSite2(locator1Site2.getPort());
     doPutsClientSite2(0, 500);
@@ -86,7 +172,6 @@ public class ParallelGatewaySenderConnectionLoadBalanceDistributedTest implement
 
   @Test
   public void testGatewayConnLoadBalancedAfterCoordinatorLocatorShutdown() throws Exception {
-    startWAN();
     // Do put operations to initialize gateway-sender connections
     startClientSite2(locator1Site2.getPort());
     doPutsClientSite2(0, 400);
@@ -111,7 +196,6 @@ public class ParallelGatewaySenderConnectionLoadBalanceDistributedTest implement
   @Test
   public void testGatewayConnLoadBalancedAfterCoordinatorLocatorShutdownAndGatewayReceiverStopped()
       throws Exception {
-    startWAN();
     // Do put operations to initialize gateway-sender connections
     startClientSite2(locator1Site2.getPort());
     doPutsClientSite2(0, 400);
@@ -206,91 +290,6 @@ public class ParallelGatewaySenderConnectionLoadBalanceDistributedTest implement
     }
   }
 
-  void startWAN() throws Exception {
-    Properties props = new Properties();
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, DISTRIBUTED_SYSTEM_ID_SITE1);
-    locator1Site1 = clusterStartupRule.startLocatorVM(1, props);
-    locator2Site1 = clusterStartupRule.startLocatorVM(7, props, locator1Site1.getPort());
-
-    // start servers for site #1
-    server1Site1 =
-        clusterStartupRule.startServerVM(3, locator1Site1.getPort(), locator2Site1.getPort());
-    server2Site1 =
-        clusterStartupRule.startServerVM(4, locator1Site1.getPort(), locator2Site1.getPort());
-    server3Site1 =
-        clusterStartupRule.startServerVM(6, locator1Site1.getPort(), locator2Site1.getPort());
-
-    connectGfshToSite(locator1Site1);
-
-    // create partition region on site #1
-    CommandStringBuilder regionCmd = new CommandStringBuilder(CliStrings.CREATE_REGION);
-    regionCmd.addOption(CliStrings.CREATE_REGION__REGION, REGION_NAME);
-    regionCmd.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION");
-    regionCmd.addOption(CliStrings.CREATE_REGION__REDUNDANTCOPIES, "1");
-
-    gfsh.executeAndAssertThat(regionCmd.toString()).statusIsSuccess();
-
-    String csb = new CommandStringBuilder(CliStrings.CREATE_GATEWAYRECEIVER)
-        .addOption(CliStrings.CREATE_GATEWAYRECEIVER__BINDADDRESS, "localhost")
-        .getCommandString();
-
-    gfsh.executeAndAssertThat(csb).statusIsSuccess();
-
-    server1Site1.invoke(() -> verifyReceiverState(true));
-    locator2Site1.invoke(
-        () -> validateGatewayReceiverMXBeanProxy(getMember(server1Site1.getVM()), true));
-    locator1Site1.invoke(
-        () -> validateGatewayReceiverMXBeanProxy(getMember(server1Site1.getVM()), true));
-
-    server2Site1.invoke(() -> verifyReceiverState(true));
-    locator2Site1.invoke(
-        () -> validateGatewayReceiverMXBeanProxy(getMember(server2Site1.getVM()), true));
-    locator1Site1.invoke(
-        () -> validateGatewayReceiverMXBeanProxy(getMember(server2Site1.getVM()), true));
-
-    server3Site1.invoke(() -> verifyReceiverState(true));
-    locator2Site1.invoke(
-        () -> validateGatewayReceiverMXBeanProxy(getMember(server3Site1.getVM()), true));
-    locator1Site1.invoke(
-        () -> validateGatewayReceiverMXBeanProxy(getMember(server3Site1.getVM()), true));
-
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, DISTRIBUTED_SYSTEM_ID_SITE2);
-    props.setProperty(REMOTE_LOCATORS,
-        "localhost[" + locator1Site1.getPort() + "],localhost[" + locator2Site1.getPort() + "]");
-    locator1Site2 = clusterStartupRule.startLocatorVM(2, props);
-
-    // start servers for site #2
-    server1Site2 = clusterStartupRule.startServerVM(5, locator1Site2.getPort());
-    server2Site2 = clusterStartupRule.startServerVM(9, locator1Site2.getPort());
-
-    // create parallel gateway-sender on site #2
-    connectGfshToSite(locator1Site2);
-    String command = new CommandStringBuilder(CliStrings.CREATE_GATEWAYSENDER)
-        .addOption(CliStrings.CREATE_GATEWAYSENDER__ID, "ln")
-        .addOption(CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, "1")
-        .addOption(CliStrings.CREATE_GATEWAYSENDER__PARALLEL, "true")
-        .addOption(CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS,
-            "" + NUMBER_OF_DISPATCHER_THREADS)
-        .addOption(CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY, "key")
-        .getCommandString();
-    gfsh.executeAndAssertThat(command).statusIsSuccess();
-
-    server1Site2.invoke(() -> verifySenderState("ln", true, false));
-    server2Site2.invoke(() -> verifySenderState("ln", true, false));
-    locator1Site2.invoke(
-        () -> validateGatewaySenderMXBeanProxy(getMember(server1Site2.getVM()), "ln", true, false));
-    locator1Site2.invoke(
-        () -> validateGatewaySenderMXBeanProxy(getMember(server2Site2.getVM()), "ln", true, false));
-
-    // create partition region on site #2
-    regionCmd = new CommandStringBuilder(CliStrings.CREATE_REGION);
-    regionCmd.addOption(CliStrings.CREATE_REGION__REGION, REGION_NAME);
-    regionCmd.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION");
-    regionCmd.addOption(CliStrings.CREATE_REGION__GATEWAYSENDERID, "ln");
-    regionCmd.addOption(CliStrings.CREATE_REGION__REDUNDANTCOPIES, "1");
-    gfsh.executeAndAssertThat(regionCmd.toString()).statusIsSuccess();
-  }
-
   void startClientSite2(int locatorPort) throws Exception {
     clientSite2 =
         clusterStartupRule.startClientVM(8, c -> c.withLocatorConnection(locatorPort));
@@ -299,11 +298,11 @@ public class ParallelGatewaySenderConnectionLoadBalanceDistributedTest implement
     });
   }
 
-  void doPutsClientSite2(int starRange, int stopRange) {
+  void doPutsClientSite2(int startRange, int stopRange) {
     clientSite2.invoke(() -> {
       Region<Integer, Integer> region =
           ClusterStartupRule.clientCacheRule.getCache().getRegion(REGION_NAME);
-      for (int i = starRange; i < stopRange; i++) {
+      for (int i = startRange; i < stopRange; i++) {
         region.put(i, i);
       }
     });

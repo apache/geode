@@ -30,6 +30,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.jetbrains.annotations.TestOnly;
+
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.server.ServerLoad;
@@ -416,7 +418,8 @@ public class LocatorLoadSnapshot {
     return result;
   }
 
-  public synchronized Map<ServerLocationAndMemberId, LoadHolder> getGatewayReceiverLoadMap() {
+  @TestOnly
+  synchronized Map<ServerLocationAndMemberId, LoadHolder> getGatewayReceiverLoadMap() {
     Map<ServerLocationAndMemberId, LoadHolder> connectionMap =
         connectionLoadMap.get(GatewayReceiver.RECEIVER_GROUP);
     Map<ServerLocationAndMemberId, LoadHolder> result = new HashMap<>();
@@ -424,7 +427,6 @@ public class LocatorLoadSnapshot {
       ServerLocationAndMemberId member = new ServerLocationAndMemberId(entry.getKey()
           .getServerLocation(), entry.getKey().getMemberId());
       result.put(member, entry.getValue());
-
     }
     return result;
   }
@@ -519,6 +521,7 @@ public class LocatorLoadSnapshot {
     }
   }
 
+  @VisibleForTesting
   void updateQueueLoadMap(ServerLocation location, float load, float loadPerConnection) {
     Map<ServerLocation, LoadHolder> groupMap = queueLoadMap.get(null);
     LoadHolder holder = groupMap.get(location);

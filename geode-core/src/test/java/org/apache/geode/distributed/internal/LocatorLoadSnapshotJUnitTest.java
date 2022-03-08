@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -632,11 +633,11 @@ public class LocatorLoadSnapshotJUnitTest {
   }
 
   @Test
-  public void updateConnectionMapWithServerLocationAndMemberId() {
+  public void testThatConnectionLoadIsCorrectlyUpdatedForTrafficConnectionGroup() {
     final LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
 
     final ServerLocation serverLocation = new ServerLocation("localhost", 1);
-    final String uniqueId = new InternalDistributedMember("localhost", 1).getUniqueId();;
+    final String uniqueId = new InternalDistributedMember("localhost", 1).getUniqueId();
 
     loadSnapshot.addServer(serverLocation, uniqueId, new String[0], new ServerLoad(50, 1, 0, 1),
         LOAD_POLL_INTERVAL);
@@ -647,14 +648,14 @@ public class LocatorLoadSnapshotJUnitTest {
         new LocatorLoadSnapshot.LoadHolder(serverLocation, 60, 2, LOAD_POLL_INTERVAL);
 
     Map<ServerLocation, ServerLoad> serverLoadMap = loadSnapshot.getLoadMap();
-    assertEquals(expectedLoadHolder.getLoad(),
-        serverLoadMap.get(serverLocation).getConnectionLoad(), 0);
-    assertEquals(expectedLoadHolder.getLoadPerConnection(),
-        serverLoadMap.get(serverLocation).getLoadPerConnection(), 0);
+    assertThat(expectedLoadHolder.getLoad())
+        .isEqualTo(serverLoadMap.get(serverLocation).getConnectionLoad());
+    assertThat(expectedLoadHolder.getLoadPerConnection())
+        .isEqualTo(serverLoadMap.get(serverLocation).getLoadPerConnection());
   }
 
   @Test
-  public void updateConnectionMapWithServerLocationAndMemberIdGatewayReceiver() {
+  public void testThatConnectionLoadIsCorrectlyUpdatedForGatewayReceiverGroup() {
     final LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
 
     final ServerLocation serverLocation = new ServerLocation("localhost", 1);
@@ -674,19 +675,19 @@ public class LocatorLoadSnapshotJUnitTest {
 
     Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder> serverLoadMap =
         loadSnapshot.getGatewayReceiverLoadMap();
-    assertEquals(expectedLoadHolder.getLoad(),
-        serverLoadMap.get(servLocAndMemberId).getLoad(), 0);
-    assertEquals(expectedLoadHolder.getLoadPerConnection(),
-        serverLoadMap.get(servLocAndMemberId).getLoadPerConnection(), 0);
+    assertThat(expectedLoadHolder.getLoad())
+        .isEqualTo(serverLoadMap.get(servLocAndMemberId).getLoad());
+    assertThat(expectedLoadHolder.getLoadPerConnection())
+        .isEqualTo(serverLoadMap.get(servLocAndMemberId).getLoadPerConnection());
   }
 
   @Test
-  public void updateConnectionMapWithServerLocationAndMemberIdTrafficConnectionAndGatewayReceiverGroup() {
+  public void testThatConnectionLoadIsCorrectlyUpdatedForBothGatewayReceiverGroupAndTrafficConnectionGroup() {
     final LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
 
     final ServerLocation serverLocation = new ServerLocation("localhost", 1);
     final ServerLocation gatewayReceiverLocation = new ServerLocation("gatewayReciverHost", 111);
-    final String uniqueId = new InternalDistributedMember("localhost", 1).getUniqueId();;
+    final String uniqueId = new InternalDistributedMember("localhost", 1).getUniqueId();
     final ServerLocationAndMemberId servLocAndMemberId =
         new ServerLocationAndMemberId(gatewayReceiverLocation, uniqueId);
 
@@ -702,7 +703,6 @@ public class LocatorLoadSnapshotJUnitTest {
     LocatorLoadSnapshot.LoadHolder expectedGatewayLoad =
         new LocatorLoadSnapshot.LoadHolder(serverLocation, 90, 10, LOAD_POLL_INTERVAL);
 
-
     loadSnapshot.updateConnectionLoadMap(serverLocation, uniqueId, expectedLoadHolder.getLoad(),
         expectedLoadHolder.getLoadPerConnection());
     loadSnapshot.updateConnectionLoadMap(gatewayReceiverLocation, uniqueId,
@@ -710,16 +710,16 @@ public class LocatorLoadSnapshotJUnitTest {
 
     Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder> gatewayReceiverLoadMap =
         loadSnapshot.getGatewayReceiverLoadMap();
-    assertEquals(expectedGatewayLoad.getLoad(),
-        gatewayReceiverLoadMap.get(servLocAndMemberId).getLoad(), 0);
-    assertEquals(expectedGatewayLoad.getLoadPerConnection(),
-        gatewayReceiverLoadMap.get(servLocAndMemberId).getLoadPerConnection(), 0);
+    assertThat(expectedGatewayLoad.getLoad())
+        .isEqualTo(gatewayReceiverLoadMap.get(servLocAndMemberId).getLoad());
+    assertThat(expectedGatewayLoad.getLoadPerConnection())
+        .isEqualTo(gatewayReceiverLoadMap.get(servLocAndMemberId).getLoadPerConnection());
 
     Map<ServerLocation, ServerLoad> serverLoadMap = loadSnapshot.getLoadMap();
-    assertEquals(expectedLoadHolder.getLoad(),
-        serverLoadMap.get(serverLocation).getConnectionLoad(), 0);
-    assertEquals(expectedLoadHolder.getLoadPerConnection(),
-        serverLoadMap.get(serverLocation).getLoadPerConnection(), 0);
+    assertThat(expectedLoadHolder.getLoad())
+        .isEqualTo(serverLoadMap.get(serverLocation).getConnectionLoad());
+    assertThat(expectedLoadHolder.getLoadPerConnection())
+        .isEqualTo(serverLoadMap.get(serverLocation).getLoadPerConnection());
   }
 
   @Test
@@ -740,8 +740,6 @@ public class LocatorLoadSnapshotJUnitTest {
     final LocatorLoadSnapshot loadSnapshot = new LocatorLoadSnapshot();
 
     final ServerLocation serverLocation = new ServerLocation("localhost", 1);
-    LocatorLoadSnapshot.LoadHolder loadHolder =
-        new LocatorLoadSnapshot.LoadHolder(serverLocation, 50, 1, LOAD_POLL_INTERVAL);
     final String uniqueId = "memberId1";
 
     loadSnapshot.addServer(serverLocation, uniqueId, new String[0], new ServerLoad(50, 1, 0, 1),
@@ -755,9 +753,10 @@ public class LocatorLoadSnapshotJUnitTest {
 
     Map<ServerLocation, ServerLoad> serverLoadMap = loadSnapshot.getLoadMap();
     ServerLoad queueServerLoad = serverLoadMap.get(serverLocation);
-    assertEquals(expectedLoadHolder.getLoad(), queueServerLoad.getSubscriptionConnectionLoad(), 0);
-    assertEquals(expectedLoadHolder.getLoadPerConnection(),
-        queueServerLoad.getLoadPerSubscriptionConnection(), 0);
+    assertThat(expectedLoadHolder.getLoad())
+        .isEqualTo(queueServerLoad.getSubscriptionConnectionLoad());
+    assertThat(expectedLoadHolder.getLoadPerConnection())
+        .isEqualTo(queueServerLoad.getLoadPerSubscriptionConnection());
   }
 
   @Test
