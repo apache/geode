@@ -16,6 +16,7 @@
 
 package org.apache.geode.management.internal.operation;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -56,7 +57,7 @@ public class RebalanceOperationPerformerTest {
   public void executeRebalanceOnDSWithNoRegionsReturnsSuccessAndNoRegionMessage() {
     ManagementService managementService = mock(ManagementService.class);
     DistributedSystemMXBean distributedSystemMXBean = mock(DistributedSystemMXBean.class);
-    when(distributedSystemMXBean.listRegions()).thenReturn(new String[] {});
+    when(distributedSystemMXBean.listAllRegionPaths()).thenReturn(new String[] {});
     when(managementService.getDistributedSystemMXBean()).thenReturn(distributedSystemMXBean);
     InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
     InternalCache cache = mock(InternalCache.class);
@@ -82,7 +83,7 @@ public class RebalanceOperationPerformerTest {
     when(regionMXBean.getMembers()).thenReturn(new String[] {"member1"});
     when(managementService.getDistributedRegionMXBean("/region1")).thenReturn(regionMXBean);
     DistributedSystemMXBean distributedSystemMXBean = mock(DistributedSystemMXBean.class);
-    when(distributedSystemMXBean.listRegions()).thenReturn(new String[] {"region1"});
+    when(distributedSystemMXBean.listAllRegionPaths()).thenReturn(new String[] {"region1"});
     when(managementService.getDistributedSystemMXBean()).thenReturn(distributedSystemMXBean);
     InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
     InternalCache cache = mock(InternalCache.class);
@@ -113,7 +114,7 @@ public class RebalanceOperationPerformerTest {
     when(regionMXBean.getMembers()).thenReturn(new String[] {"member1", "member2"});
     when(managementService.getDistributedRegionMXBean("/region1")).thenReturn(regionMXBean);
     DistributedSystemMXBean distributedSystemMXBean = mock(DistributedSystemMXBean.class);
-    when(distributedSystemMXBean.listRegions()).thenReturn(new String[] {"region1"});
+    when(distributedSystemMXBean.listAllRegionPaths()).thenReturn(new String[] {"region1"});
     when(managementService.getDistributedSystemMXBean()).thenReturn(distributedSystemMXBean);
     InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
     InternalCache cache = mock(InternalCache.class);
@@ -145,7 +146,7 @@ public class RebalanceOperationPerformerTest {
     assertThat(result.getRebalanceRegionResults()).isNotNull();
     assertThat(result.getRebalanceRegionResults()).hasSize(1);
     RebalanceRegionResult regionResult = result.getRebalanceRegionResults().get(0);
-    assertThat(regionResult.getRegionName()).isEqualTo("region1");
+    assertThat(regionResult.getRegionName()).isEqualTo(SEPARATOR + "region1");
     assertThat(regionResult.getBucketCreateBytes()).isEqualTo(0);
     assertThat(regionResult.getBucketCreateTimeInMilliseconds()).isEqualTo(1);
     assertThat(regionResult.getBucketCreatesCompleted()).isEqualTo(2);

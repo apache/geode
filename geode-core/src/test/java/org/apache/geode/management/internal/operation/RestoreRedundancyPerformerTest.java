@@ -79,7 +79,7 @@ public class RestoreRedundancyPerformerTest {
         .thenReturn(new String[] {DS_MEMBER_NAME_SERVER1, DS_MEMBER_NAME_SERVER2});
     when(server1.getName()).thenReturn(DS_MEMBER_NAME_SERVER1);
     when(server2.getName()).thenReturn(DS_MEMBER_NAME_SERVER2);
-    when(distributedSystemMXBean.listRegions()).thenReturn(new String[] {REGION_1});
+    when(distributedSystemMXBean.listAllRegionPaths()).thenReturn(new String[] {REGION_1});
     when(internalDistributedSystem.getDistributionManager())
         .thenReturn(distributionManager);
     Set<InternalDistributedMember> dsMembers = new HashSet<>();
