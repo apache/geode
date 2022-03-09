@@ -157,7 +157,7 @@ public class RebalanceOperationPerformer {
 
       // translate to the return type we want
       RebalanceRegionResultImpl result = new RebalanceRegionResultImpl();
-      result.setRegionName(regionName.replace("/", ""));
+      result.setRegionName(regionName);
       result.setBucketCreateBytes(results.getTotalBucketCreateBytes());
       result.setBucketCreateTimeInMilliseconds(results.getTotalBucketCreateTime());
       result.setBucketCreatesCompleted(results.getTotalBucketCreatesCompleted());
@@ -206,8 +206,8 @@ public class RebalanceOperationPerformer {
   private static List<MemberPRInfo> getMemberRegionList(InternalCache cache,
       List<String> listExcludedRegion) {
     List<MemberPRInfo> listMemberPRInfo = new ArrayList<>();
-    String[] listDSRegions =
-        ManagementService.getManagementService(cache).getDistributedSystemMXBean().listRegions();
+    String[] listDSRegions = ManagementService.getManagementService(cache)
+        .getDistributedSystemMXBean().listAllRegionPaths();
     final Set<DistributedMember> dsMembers = ManagementUtils.getAllMembers(cache);
 
     for (String regionName : listDSRegions) {
@@ -451,7 +451,7 @@ public class RebalanceOperationPerformer {
     result.setPrimaryTransferTimeInMilliseconds(Long.parseLong(rstList.get(6)));
     result.setPrimaryTransfersCompleted(Integer.parseInt(rstList.get(7)));
     result.setTimeInMilliseconds(Long.parseLong(rstList.get(8)));
-    result.setRegionName(rstList.get(9).replace("/", ""));
+    result.setRegionName(rstList.get(9));
 
     return result;
   }

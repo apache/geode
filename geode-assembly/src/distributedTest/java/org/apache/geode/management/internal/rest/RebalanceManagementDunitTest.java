@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.rest;
 
+import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -94,7 +95,8 @@ public class RebalanceManagementDunitTest {
         .isGreaterThanOrEqualTo(cmr.getOperationStart().getTime());
     assertThat(result.getRebalanceRegionResults().size()).isEqualTo(2);
     RebalanceRegionResult firstRegionSummary = result.getRebalanceRegionResults().get(0);
-    assertThat(firstRegionSummary.getRegionName()).isIn("customers1", "customers2");
+    assertThat(firstRegionSummary.getRegionName()).isIn(SEPARATOR + "customers1",
+        SEPARATOR + "customers2");
   }
 
   @Test
@@ -109,7 +111,7 @@ public class RebalanceManagementDunitTest {
     RebalanceResult result = cmr.getFutureResult().get();
     assertThat(result.getRebalanceRegionResults().size()).isEqualTo(1);
     RebalanceRegionResult firstRegionSummary = result.getRebalanceRegionResults().get(0);
-    assertThat(firstRegionSummary.getRegionName()).isEqualTo("customers2");
+    assertThat(firstRegionSummary.getRegionName()).isEqualTo(SEPARATOR + "customers2");
     assertThat(firstRegionSummary.getBucketCreateBytes()).isEqualTo(0);
     assertThat(firstRegionSummary.getTimeInMilliseconds()).isGreaterThanOrEqualTo(0);
   }
@@ -124,7 +126,7 @@ public class RebalanceManagementDunitTest {
     RebalanceResult result = cmr.getFutureResult().get();
     assertThat(result.getRebalanceRegionResults().size()).isEqualTo(1);
     RebalanceRegionResult firstRegionSummary = result.getRebalanceRegionResults().get(0);
-    assertThat(firstRegionSummary.getRegionName()).isEqualTo("customers2");
+    assertThat(firstRegionSummary.getRegionName()).isEqualTo(SEPARATOR + "customers2");
     assertThat(firstRegionSummary.getBucketCreateBytes()).isEqualTo(0);
     assertThat(firstRegionSummary.getTimeInMilliseconds()).isGreaterThanOrEqualTo(0);
   }
@@ -161,7 +163,7 @@ public class RebalanceManagementDunitTest {
     RebalanceResult result = cmr.getFutureResult().get();
     assertThat(result.getRebalanceRegionResults().size()).isEqualTo(1);
     RebalanceRegionResult firstRegionSummary = result.getRebalanceRegionResults().get(0);
-    assertThat(firstRegionSummary.getRegionName()).isEqualTo("customers1");
+    assertThat(firstRegionSummary.getRegionName()).isEqualTo(SEPARATOR + "customers1");
     assertThat(firstRegionSummary.getBucketCreateBytes()).isEqualTo(0);
     assertThat(firstRegionSummary.getTimeInMilliseconds()).isGreaterThanOrEqualTo(0);
   }
