@@ -72,11 +72,12 @@ public class RedisString extends AbstractRedisData {
   }
 
   public int append(Region<RedisKey, RedisData> region, RedisKey key, byte[] appendValue) {
+    byte newVersion;
     synchronized (this) {
       valueAppend(appendValue);
-      version++;
+      newVersion = incrementAndGetVersion();
     }
-    storeChanges(region, key, new AppendByteArray(version, appendValue));
+    storeChanges(region, key, new AppendByteArray(newVersion, appendValue));
     return value.length;
   }
 

@@ -29,7 +29,7 @@ import org.apache.geode.redis.internal.data.AbstractRedisData;
 public class AppendByteArray extends DeltaInfo {
   private final byte[] byteArray;
 
-  public AppendByteArray(short version, byte[] value) {
+  public AppendByteArray(byte version, byte[] value) {
     super(version);
     byteArray = value;
   }

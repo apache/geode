@@ -23,13 +23,13 @@ import org.apache.geode.DataSerializer;
 
 public abstract class DeltaInfo {
 
-  private final short version;
+  private final byte version;
 
   protected DeltaInfo() {
-    this((short) 0);
+    this((byte) 0);
   }
 
-  protected DeltaInfo(short version) {
+  protected DeltaInfo(byte version) {
     this.version = version;
   }
 
@@ -38,11 +38,11 @@ public abstract class DeltaInfo {
   public void serializeTo(DataOutput out) throws IOException {
     DataSerializer.writeEnum(getType(), out);
     if (getType().isVersioned()) {
-      DataSerializer.writePrimitiveShort(version, out);
+      DataSerializer.writePrimitiveByte(version, out);
     }
   }
 
-  public short getVersion() {
+  public byte getVersion() {
     return version;
   }
 }
