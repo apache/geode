@@ -78,13 +78,13 @@ public class P2PMessagingConcurrencyDUnitTest {
   private static final int SENDERS = 1;
 
   // number of concurrent sending tasks to run
-  private static final int TASKS_PER_SENDER = 10;
+  private static final int TASKS_PER_SENDER = 2;
 
   // how many messages will each sending task generate?
-  private static final int MESSAGES_PER_SENDING_TASK = 1_000;
+  private static final int MESSAGES_PER_SENDING_TASK = 200_000_000;
 
   // (exclusive) upper bound of random message size, in bytes
-  private static final int LARGEST_MESSAGE_BOUND = 32 * 1024 + 2; // 32KiB + 2
+  private static final int LARGEST_MESSAGE_BOUND = 48 * 1024 + 2;
 
   private static boolean RANDOMIZE_PAYLOAD_CONTENT = false;
 
@@ -142,37 +142,37 @@ public class P2PMessagingConcurrencyDUnitTest {
        * (equal), larger/smaller, smaller/larger, minimal
        */
       "true, true, true, 32768, 32768",
-      "true, true, true, 65536, 32768",
-      "true, true, true, 32768, 65536",
-      "true, true, true, 1024, 1024",
-      "true, true, false, 32768, 32768",
-      "true, true, false, 65536, 32768",
-      "true, true, false, 32768, 65536",
-      "true, true, false, 1024, 1024",
-      "true, false, true, 32768, 32768",
-      "true, false, true, 65536, 32768",
-      "true, false, true, 32768, 65536",
-      "true, false, true, 1024, 1024",
-      "true, false, false, 32768, 32768",
-      "true, false, false, 65536, 32768",
-      "true, false, false, 32768, 65536",
-      "true, false, false, 1024, 1024",
-      "false, true, true, 32768, 32768",
-      "false, true, true, 65536, 32768",
-      "false, true, true, 32768, 65536",
-      "false, true, true, 1024, 1024",
-      "false, true, false, 32768, 32768",
-      "false, true, false, 65536, 32768",
-      "false, true, false, 32768, 65536",
-      "false, true, false, 1024, 1024",
-      "false, false, true, 32768, 32768",
-      "false, false, true, 65536, 32768",
-      "false, false, true, 32768, 65536",
-      "false, false, true, 1024, 1024",
-      "false, false, false, 32768, 32768",
-      "false, false, false, 65536, 32768",
-      "false, false, false, 32768, 65536",
-      "false, false, false, 1024, 1024",
+//      "true, true, true, 65536, 32768",
+//      "true, true, true, 32768, 65536",
+//      "true, true, true, 1024, 1024",
+//      "true, true, false, 32768, 32768",
+//      "true, true, false, 65536, 32768",
+//      "true, true, false, 32768, 65536",
+//      "true, true, false, 1024, 1024",
+//      "true, false, true, 32768, 32768",
+//      "true, false, true, 65536, 32768",
+//      "true, false, true, 32768, 65536",
+//      "true, false, true, 1024, 1024",
+//      "true, false, false, 32768, 32768",
+//      "true, false, false, 65536, 32768",
+//      "true, false, false, 32768, 65536",
+//      "true, false, false, 1024, 1024",
+//      "false, true, true, 32768, 32768",
+//      "false, true, true, 65536, 32768",
+//      "false, true, true, 32768, 65536",
+//      "false, true, true, 1024, 1024",
+//      "false, true, false, 32768, 32768",
+//      "false, true, false, 65536, 32768",
+//      "false, true, false, 32768, 65536",
+//      "false, true, false, 1024, 1024",
+//      "false, false, true, 32768, 32768",
+//      "false, false, true, 65536, 32768",
+//      "false, false, true, 32768, 65536",
+//      "false, false, true, 1024, 1024",
+//      "false, false, false, 32768, 32768",
+//      "false, false, false, 65536, 32768",
+//      "false, false, false, 32768, 65536",
+//      "false, false, false, 1024, 1024",
   })
   public void testP2PMessaging(
       final boolean requireOrderedDelivery, final boolean conserveSockets,
