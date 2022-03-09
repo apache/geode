@@ -178,8 +178,10 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
               try {
                 PartitionedRegion partitionedRegion = PartitionedRegionHelper
                     .getPartitionedRegionUsingBucketRegionName(dm.getCache(), regionPath);
-                if (partitionedRegion != null) {
-                  partitionedRegion.getRegionAdvisor().removeIdAndBucket(getSender(),
+                String bucketName = PartitionedRegionHelper.getBucketName(regionPath);
+                if (partitionedRegion != null && bucketName != null) {
+                  int bucketId = PartitionedRegionHelper.getBucketId(bucketName);
+                  partitionedRegion.getRegionAdvisor().removeIdAndBucket(bucketId, getSender(),
                       serialNum, op.isRegionDestroy() && !op.isClose());
                 }
               } catch (PRLocallyDestroyedException ignore) {

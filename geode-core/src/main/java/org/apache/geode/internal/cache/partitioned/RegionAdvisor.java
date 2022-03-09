@@ -432,20 +432,20 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     }
   }
 
-  public void removeIdAndBucket(InternalDistributedMember memberId, int serial,
+  public void removeIdAndBucket(int bucketId, InternalDistributedMember memberId, int serial,
       boolean regionDestroyed) {
     synchronized (preInitQueueMonitor) {
       if (preInitQueue != null) {
         // Queue profile during pre-initialization
         QueuedBucketProfile qbf =
-            new QueuedBucketProfile(memberId, new int[] {serial}, regionDestroyed);
+            new QueuedBucketProfile(bucketId, memberId, serial, regionDestroyed);
         preInitQueue.add(qbf);
         return;
       }
     }
 
     if (buckets != null) {
-      buckets[serial].getBucketAdvisor().removeIdWithSerial(memberId, serial, regionDestroyed);
+      buckets[bucketId].getBucketAdvisor().removeIdWithSerial(memberId, serial, regionDestroyed);
     }
   }
 
