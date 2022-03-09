@@ -176,9 +176,9 @@ public class GeodeConsoleAppender extends AbstractOutputStreamAppender<OutputStr
       delegate.setIgnoreExceptions(isIgnoreExceptions());
       delegate.setLayout(getLayout());
       // AbstractOutputStreamAppender
-      delegate.withImmediateFlush(isImmediateFlush());
-      delegate.withBufferedIo(isBufferedIo());
-      delegate.withBufferSize(getBufferSize());
+      delegate.setImmediateFlush(isImmediateFlush());
+      delegate.setBufferedIo(isBufferedIo());
+      delegate.setBufferSize(getBufferSize());
       // ConsoleAppender
       delegate.setTarget(target);
       delegate.setFollow(follow);
