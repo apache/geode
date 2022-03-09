@@ -177,7 +177,7 @@ class DependencyConstraints implements Plugin<Project> {
       }
     }
 
-    dependencySet(group: 'org.mockito', version: '4.3.1') {
+    dependencySet(group: 'org.mockito', version: '4.4.0') {
       entry('mockito-core')
       entry('mockito-junit-jupiter')
     }
