@@ -152,6 +152,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
         while (pi.hasNext()) {
           Object o = pi.next();
           QueuedBucketProfile qbp = (QueuedBucketProfile) o;
+
           if (!qbp.isRemoval) {
             if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE)) {
               logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
@@ -180,13 +181,18 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
               logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
                   "applying queued profile removal for all buckets for {}", qbp.memberId);
             }
-            for (int i = 0; i < buckets.length; i++) {
-              BucketAdvisor ba = buckets[i].getBucketAdvisor();
-              int serial = qbp.serials[i];
-              if (serial != ILLEGAL_SERIAL) {
-                ba.removeIdWithSerial(qbp.memberId, serial, qbp.destroyed);
-              }
-            } // for
+            if (qbp.serials.length == 1) {
+              buckets[qbp.bucketId].getBucketAdvisor().removeIdWithSerial(qbp.memberId,
+                  qbp.serials[0], qbp.destroyed);
+            } else {
+              for (int i = 0; i < buckets.length; i++) {
+                BucketAdvisor ba = buckets[i].getBucketAdvisor();
+                int serial = qbp.serials[i];
+                if (serial != ILLEGAL_SERIAL) {
+                  ba.removeIdWithSerial(qbp.memberId, serial, qbp.destroyed);
+                }
+              } // for
+            }
           } // apply removal for member still in the view
         } // while
         finishedInitQueue = true;
@@ -423,6 +429,23 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       }
 
       super.removeIdWithSerial(memberId, prSerial, regionDestroyed);
+    }
+  }
+
+  public void removeIdAndBucket(InternalDistributedMember memberId, int serial,
+      boolean regionDestroyed) {
+    synchronized (preInitQueueMonitor) {
+      if (preInitQueue != null) {
+        // Queue profile during pre-initialization
+        QueuedBucketProfile qbf =
+            new QueuedBucketProfile(memberId, new int[] {serial}, regionDestroyed);
+        preInitQueue.add(qbf);
+        return;
+      }
+    }
+
+    if (buckets != null) {
+      buckets[serial].getBucketAdvisor().removeIdWithSerial(memberId, serial, regionDestroyed);
     }
   }
 
@@ -1459,6 +1482,19 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       memberDeparted = false;
       memberId = mbr;
       this.serials = serials;
+      this.destroyed = destroyed;
+      fromMembershipListener = false;
+    }
+
+    QueuedBucketProfile(int bucketId, InternalDistributedMember mbr, int serial,
+        boolean destroyed) {
+      this.bucketId = bucketId;
+      bucketProfile = null;
+      isRemoval = true;
+      crashed = false;
+      memberDeparted = false;
+      memberId = mbr;
+      this.serials = new int[] {serial};
       this.destroyed = destroyed;
       fromMembershipListener = false;
     }

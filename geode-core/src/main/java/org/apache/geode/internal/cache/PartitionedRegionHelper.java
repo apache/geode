@@ -717,6 +717,32 @@ public class PartitionedRegionHelper {
 
   }
 
+  public static PartitionedRegion getPartitionedRegionUsingBucketRegionName(Cache cache,
+      String fullPath)
+      throws PRLocallyDestroyedException {
+    if (cache == null) {
+      // No cache
+      return null;
+    }
+    // fullPath = /__PR/_B_1_10
+    String bucketName = getBucketName(fullPath);
+    if (bucketName == null) {
+      return null;
+    }
+    String prid = getPRPath(bucketName);
+    Region region;
+    final InitializationLevel oldLevel = LocalRegion.setThreadInitLevelRequirement(ANY_INIT);
+    try {
+      region = cache.getRegion(prid);
+    } finally {
+      LocalRegion.setThreadInitLevelRequirement(oldLevel);
+    }
+    if (!(region instanceof PartitionedRegion)) {
+      return null;
+    }
+    return (PartitionedRegion) region;
+  }
+
   private static final String BUCKET_FULL_PATH_PREFIX =
       PR_ROOT_REGION_NAME + SEPARATOR + BUCKET_REGION_PREFIX;
 
