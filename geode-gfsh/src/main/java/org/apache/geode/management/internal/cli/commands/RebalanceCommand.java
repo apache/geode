@@ -186,9 +186,9 @@ public class RebalanceCommand extends GfshCommand {
 
     String headerText;
     if (simulate) {
-      headerText = "Simulated partition regions";
+      headerText = "Simulated rebalance of partitioned region";
     } else {
-      headerText = "Rebalanced partition regions";
+      headerText = "Rebalanced partitioned region";
     }
     for (int i = resultItemCount; i < rstlist.size(); i++) {
       headerText = headerText + " " + rstlist.get(i);

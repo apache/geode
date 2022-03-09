@@ -162,7 +162,7 @@ public class RebalanceOperationPerformer
 
       // translate to the return type we want
       RebalanceRegionResultImpl result = new RebalanceRegionResultImpl();
-      result.setRegionName(regionName.replace(SEPARATOR, ""));
+      result.setRegionName(regionName);
       result.setBucketCreateBytes(results.getTotalBucketCreateBytes());
       result.setBucketCreateTimeInMilliseconds(results.getTotalBucketCreateTime());
       result.setBucketCreatesCompleted(results.getTotalBucketCreatesCompleted());
@@ -214,7 +214,7 @@ public class RebalanceOperationPerformer
       List<String> listExcludedRegion) {
     List<MemberPRInfo> listMemberPRInfo = new ArrayList<>();
     String[] listDSRegions =
-        managementService.getDistributedSystemMXBean().listRegions();
+        managementService.getDistributedSystemMXBean().listAllRegionPaths();
     Set<DistributedMember> dsMembers = ManagementUtils.getAllMembers(cache);
 
     for (String regionName : listDSRegions) {
@@ -474,10 +474,10 @@ public class RebalanceOperationPerformer
     result.setTimeInMilliseconds(Long.parseLong(rstList.get(8)));
     if (rstList.size() < 11) {
       result.setNumOfMembers(-1);
-      result.setRegionName(rstList.get(9).replace(SEPARATOR, ""));
+      result.setRegionName(rstList.get(9));
     } else {
       result.setNumOfMembers(Integer.parseInt(rstList.get(9)));
-      result.setRegionName(rstList.get(10).replace(SEPARATOR, ""));
+      result.setRegionName(rstList.get(10));
     }
 
 
