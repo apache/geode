@@ -28,15 +28,20 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.redis.internal.data.AbstractRedisData;
 import org.apache.geode.redis.internal.data.RedisSet;
 
-public class ReplaceByteArrays implements DeltaInfo {
+public class ReplaceByteArrays extends DeltaInfo {
   private final Set<byte[]> byteArrays;
 
   public ReplaceByteArrays(Set<byte[]> deltas) {
     this.byteArrays = deltas;
   }
 
+  @Override
+  public DeltaType getType() {
+    return REPLACE_BYTE_ARRAYS;
+  }
+
   public void serializeTo(DataOutput out) throws IOException {
-    DataSerializer.writeEnum(REPLACE_BYTE_ARRAYS, out);
+    super.serializeTo(out);
     InternalDataSerializer.writeArrayLength(byteArrays.size(), out);
     for (byte[] bytes : byteArrays) {
       DataSerializer.writeByteArray(bytes, out);

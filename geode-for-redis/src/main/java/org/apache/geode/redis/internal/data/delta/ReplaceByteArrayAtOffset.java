@@ -27,7 +27,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.redis.internal.data.AbstractRedisData;
 
-public class ReplaceByteArrayAtOffset implements DeltaInfo {
+public class ReplaceByteArrayAtOffset extends DeltaInfo {
   private final int offset;
   private final byte[] byteArray;
 
@@ -36,7 +36,13 @@ public class ReplaceByteArrayAtOffset implements DeltaInfo {
     byteArray = bytes;
   }
 
+  @Override
+  public DeltaType getType() {
+    return REPLACE_BYTE_ARRAY_AT_OFFSET;
+  }
+
   public void serializeTo(DataOutput out) throws IOException {
+    super.serializeTo(out);
     DataSerializer.writeEnum(REPLACE_BYTE_ARRAY_AT_OFFSET, out);
     InternalDataSerializer.writeArrayLength(offset, out);
     DataSerializer.writeByteArray(byteArray, out);

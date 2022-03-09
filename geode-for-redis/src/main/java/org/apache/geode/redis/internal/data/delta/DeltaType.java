@@ -20,7 +20,7 @@ public enum DeltaType {
   ADD_BYTE_ARRAYS,
   ADD_BYTE_ARRAY_PAIRS,
   ADD_BYTE_ARRAY_DOUBLE_PAIRS,
-  APPEND_BYTE_ARRAY,
+  APPEND_BYTE_ARRAY(true),
   REMOVE_BYTE_ARRAYS,
   REPLACE_BYTE_ARRAYS,
   REPLACE_BYTE_ARRAY_AT_OFFSET,
@@ -29,5 +29,19 @@ public enum DeltaType {
   SET_BYTE_ARRAY,
   SET_BYTE_ARRAY_AND_TIMESTAMP,
   SET_TIMESTAMP,
-  REMOVE_ELEMENTS_BY_INDEX
+  REMOVE_ELEMENTS_BY_INDEX;
+
+  private final boolean versioned;
+
+  DeltaType() {
+    this(false);
+  }
+
+  DeltaType(boolean versioned) {
+    this.versioned = versioned;
+  }
+
+  public boolean isVersioned() {
+    return versioned;
+  }
 }

@@ -19,9 +19,9 @@ import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADD
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -38,8 +38,12 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.params.SetParams;
 
+import org.apache.geode.internal.cache.BucketDump;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.redis.ConcurrentLoopingThreads;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
+import org.apache.geode.redis.internal.services.RegionProvider;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
@@ -55,14 +59,17 @@ public class StringsDUnitTest {
   private static final int LIST_SIZE = 1000;
   private static final int NUM_ITERATIONS = 1000;
   private static JedisCluster jedisCluster;
+  private static MemberVM server1;
+  private static MemberVM server2;
+  private static MemberVM server3;
 
   @BeforeClass
   public static void classSetup() {
     MemberVM locator = clusterStartUp.startLocatorVM(0);
     int locatorPort = locator.getPort();
-    clusterStartUp.startRedisVM(1, locatorPort);
-    clusterStartUp.startRedisVM(2, locatorPort);
-    clusterStartUp.startRedisVM(3, locatorPort);
+    server1 = clusterStartUp.startRedisVM(1, locatorPort);
+    server2 = clusterStartUp.startRedisVM(2, locatorPort);
+    server3 = clusterStartUp.startRedisVM(3, locatorPort);
 
     int redisServerPort1 = clusterStartUp.getRedisPort(1);
     jedisCluster =
@@ -261,28 +268,30 @@ public class StringsDUnitTest {
     hashtags.add(clusterStartUp.getKeyOnServer("append", 2));
     hashtags.add(clusterStartUp.getKeyOnServer("append", 3));
 
-    Runnable task1 = () -> appendPerformAndVerify(1, hashtags.get(0), running);
-    Runnable task2 = () -> appendPerformAndVerify(2, hashtags.get(1), running);
-    Runnable task3 = () -> appendPerformAndVerify(3, hashtags.get(2), running);
-
-    Future<Void> future1 = executor.runAsync(task1);
-    Future<Void> future2 = executor.runAsync(task2);
-    Future<Void> future3 = executor.runAsync(task3);
+    Future<Integer> future1 = executor.submit(() -> performAppend(1, hashtags.get(0), running));
+    Future<Integer> future2 = executor.submit(() -> performAppend(2, hashtags.get(1), running));
+    Future<Integer> future3 = executor.submit(() -> performAppend(3, hashtags.get(2), running));
 
     for (int i = 0; i < 100 && running.get(); i++) {
       clusterStartUp.moveBucketForKey(hashtags.get(i % hashtags.size()));
-      GeodeAwaitility.await().during(Duration.ofMillis(200)).until(() -> true);
+      Thread.sleep(200);
     }
 
     running.set(false);
 
-    future1.get();
-    future2.get();
-    future3.get();
+    verifyAppendResult(makeKey(hashtags.get(0), 1), future1.get());
+    verifyAppendResult(makeKey(hashtags.get(1), 2), future2.get());
+    verifyAppendResult(makeKey(hashtags.get(2), 3), future3.get());
+
+    compareBuckets();
   }
 
-  private void appendPerformAndVerify(int index, String hashtag, AtomicBoolean isRunning) {
-    String key = "{" + hashtag + "}-key-" + index;
+  private String makeKey(String hashtag, int index) {
+    return "{" + hashtag + "}-key-" + index;
+  }
+
+  private int performAppend(int index, String hashtag, AtomicBoolean isRunning) {
+    String key = makeKey(hashtag, index);
     int iterationCount = 0;
 
     while (isRunning.get()) {
@@ -296,43 +305,27 @@ public class StringsDUnitTest {
       iterationCount++;
     }
 
+    return iterationCount;
+  }
+
+  private void verifyAppendResult(String key, int iterationCount) {
     String storedString = jedisCluster.get(key);
 
-    int startIndex = 0;
+    int idx = 0;
     int i = 0;
-    boolean lastWasDuplicate = false;
-    boolean reachedEnd = false;
-    while (!reachedEnd) {
+    while (i < iterationCount) {
       String expectedValue = "-" + key + "-" + i + "-";
+      String foundValue = storedString.substring(idx, idx + expectedValue.length());
+      int subsectionStart = Math.max(0, idx - (2 * expectedValue.length()));
+      int subsectionEnd = Math.min(storedString.length(), idx + (2 * expectedValue.length()));
 
-      int endIndex = startIndex + expectedValue.length();
-      reachedEnd = endIndex == storedString.length();
-      String foundValue = storedString.substring(startIndex, endIndex);
+      assertThat(foundValue)
+          .as("unexpected " + foundValue + " at index " + i + " iterationCount="
+              + iterationCount
+              + " in String subsection: " + storedString.substring(subsectionStart, subsectionEnd))
+          .isEqualTo(expectedValue);
 
-      int subsectionStart = Math.max(0, startIndex - (2 * expectedValue.length()));
-      int subsectionEnd = Math.min(storedString.length(), endIndex + (2 * expectedValue.length()));
-
-      try {
-        assertThat(foundValue).as("unexpected " + foundValue
-            + " at index " + i
-            + " iterationCount=" + iterationCount
-            + " in String subsection: " + storedString.substring(subsectionStart, subsectionEnd))
-            .isEqualTo(expectedValue);
-        lastWasDuplicate = false;
-      } catch (AssertionError error) {
-        // Jedis client retries can lead to duplicated appends, so check if the append is a
-        // duplicate of the previous one, but only allow one duplicated append in a row
-        String previousAppend = "-" + key + "-" + (i - 1) + "-";
-        if (lastWasDuplicate || !foundValue.equals(previousAppend)) {
-          throw error;
-        }
-
-        // Decrement the counter to account for the duplicated append and reset the flag to detect
-        // multiple duplicated appends in a row
-        lastWasDuplicate = true;
-        i--;
-      }
-      startIndex = endIndex;
+      idx += expectedValue.length();
       i++;
     }
   }
@@ -368,4 +361,20 @@ public class StringsDUnitTest {
       }
     };
   }
+
+  private void compareBuckets() {
+    server1.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      PartitionedRegion region =
+          (PartitionedRegion) cache.getRegion(RegionProvider.DEFAULT_REDIS_REGION_NAME);
+      for (int j = 0; j < region.getTotalNumberOfBuckets(); j++) {
+        List<BucketDump> buckets = region.getAllBucketEntries(j);
+        assertThat(buckets.size()).isEqualTo(2);
+        Map<Object, Object> bucket1 = buckets.get(0).getValues();
+        Map<Object, Object> bucket2 = buckets.get(1).getValues();
+        assertThat(bucket1).containsExactlyEntriesOf(bucket2);
+      }
+    });
+  }
+
 }

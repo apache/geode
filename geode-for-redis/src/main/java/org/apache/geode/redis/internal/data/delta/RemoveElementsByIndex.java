@@ -29,19 +29,24 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.redis.internal.data.AbstractRedisData;
 
-public class RemoveElementsByIndex implements DeltaInfo {
+public class RemoveElementsByIndex extends DeltaInfo {
   private final List<Integer> indexes;
-
-  public void add(int index) {
-    indexes.add(index);
-  }
 
   public RemoveElementsByIndex() {
     this.indexes = new ArrayList<>();
   }
 
+  @Override
+  public DeltaType getType() {
+    return REMOVE_ELEMENTS_BY_INDEX;
+  }
+
+  public void add(int index) {
+    indexes.add(index);
+  }
+
   public void serializeTo(DataOutput out) throws IOException {
-    DataSerializer.writeEnum(REMOVE_ELEMENTS_BY_INDEX, out);
+    super.serializeTo(out);
     InternalDataSerializer.writeArrayLength(indexes.size(), out);
     for (int index : indexes) {
       DataSerializer.writePrimitiveInt(index, out);

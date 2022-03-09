@@ -28,15 +28,20 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.redis.internal.data.AbstractRedisData;
 import org.apache.geode.redis.internal.data.RedisSortedSet;
 
-public class ReplaceByteArrayDoublePairs implements DeltaInfo {
+public class ReplaceByteArrayDoublePairs extends DeltaInfo {
   private final RedisSortedSet.MemberMap members;
 
   public ReplaceByteArrayDoublePairs(RedisSortedSet.MemberMap members) {
     this.members = members;
   }
 
+  @Override
+  public DeltaType getType() {
+    return REPLACE_BYTE_ARRAY_DOUBLE_PAIRS;
+  }
+
   public void serializeTo(DataOutput out) throws IOException {
-    DataSerializer.writeEnum(REPLACE_BYTE_ARRAY_DOUBLE_PAIRS, out);
+    super.serializeTo(out);
     InternalDataSerializer.writeArrayLength(members.size(), out);
     for (byte[] member : members.keySet()) {
       DataSerializer.writeByteArray(member, out);

@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal.data.delta;
 
 import static org.apache.geode.DataSerializer.readByteArray;
 import static org.apache.geode.DataSerializer.readPrimitiveLong;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.SET_BYTE_ARRAY_AND_TIMESTAMP;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -29,7 +30,7 @@ import org.apache.geode.redis.internal.data.AbstractRedisData;
  * This delta info is used by RedisString set ops to set the bytes
  * and the timestamp.
  */
-public class SetByteArrayAndTimestamp implements DeltaInfo {
+public class SetByteArrayAndTimestamp extends DeltaInfo {
   private final byte[] byteArray;
   private final long timestamp;
 
@@ -38,8 +39,13 @@ public class SetByteArrayAndTimestamp implements DeltaInfo {
     this.timestamp = timestamp;
   }
 
+  @Override
+  public DeltaType getType() {
+    return SET_BYTE_ARRAY_AND_TIMESTAMP;
+  }
+
   public void serializeTo(DataOutput out) throws IOException {
-    DataSerializer.writeEnum(DeltaType.SET_BYTE_ARRAY_AND_TIMESTAMP, out);
+    super.serializeTo(out);
     DataSerializer.writeByteArray(byteArray, out);
     DataSerializer.writePrimitiveLong(timestamp, out);
   }

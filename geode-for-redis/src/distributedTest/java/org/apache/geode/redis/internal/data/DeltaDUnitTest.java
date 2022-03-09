@@ -171,14 +171,7 @@ public class DeltaDUnitTest {
         assertThat(buckets.size()).isEqualTo(2);
         Map<Object, Object> bucket1 = buckets.get(0).getValues();
         Map<Object, Object> bucket2 = buckets.get(1).getValues();
-        assertThat(bucket1).containsExactlyInAnyOrderEntriesOf(bucket2);
-
-        bucket1.keySet().forEach(key -> {
-          RedisData value1 = (RedisData) bucket1.get(key);
-          RedisData value2 = (RedisData) bucket2.get(key);
-
-          assertThat(value1.getExpirationTimestamp()).isEqualTo(value2.getExpirationTimestamp());
-        });
+        assertThat(bucket1).containsExactlyEntriesOf(bucket2);
       }
     });
   }

@@ -31,15 +31,20 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.redis.internal.data.AbstractRedisData;
 
-public class RemoveByteArrays implements DeltaInfo {
+public class RemoveByteArrays extends DeltaInfo {
   private final List<byte[]> byteArrays;
 
   public RemoveByteArrays() {
-    byteArrays = new ArrayList<>();
+    this(new ArrayList<>());
   }
 
   public RemoveByteArrays(List<byte[]> deltas) {
     byteArrays = deltas;
+  }
+
+  @Override
+  public DeltaType getType() {
+    return REMOVE_BYTE_ARRAYS;
   }
 
   public void add(byte[] delta) {
@@ -47,7 +52,7 @@ public class RemoveByteArrays implements DeltaInfo {
   }
 
   public void serializeTo(DataOutput out) throws IOException {
-    DataSerializer.writeEnum(REMOVE_BYTE_ARRAYS, out);
+    super.serializeTo(out);
     InternalDataSerializer.writeArrayLength(byteArrays.size(), out);
     for (byte[] bytes : byteArrays) {
       DataSerializer.writeByteArray(bytes, out);

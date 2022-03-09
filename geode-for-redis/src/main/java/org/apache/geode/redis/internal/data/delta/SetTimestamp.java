@@ -26,15 +26,20 @@ import java.io.IOException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.redis.internal.data.AbstractRedisData;
 
-public class SetTimestamp implements DeltaInfo {
+public class SetTimestamp extends DeltaInfo {
   private final long timestamp;
 
   public SetTimestamp(long value) {
     timestamp = value;
   }
 
+  @Override
+  public DeltaType getType() {
+    return SET_TIMESTAMP;
+  }
+
   public void serializeTo(DataOutput out) throws IOException {
-    DataSerializer.writeEnum(SET_TIMESTAMP, out);
+    super.serializeTo(out);
     DataSerializer.writePrimitiveLong(timestamp, out);
   }
 

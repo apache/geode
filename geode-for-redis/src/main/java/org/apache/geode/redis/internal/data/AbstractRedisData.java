@@ -76,6 +76,8 @@ public abstract class AbstractRedisData implements RedisData {
 
   public static final long NO_EXPIRATION = -1L;
 
+  private byte version = 0;
+
   /**
    * The timestamp at which this instance should expire.
    * NO_EXPIRATION means it never expires.
@@ -84,6 +86,18 @@ public abstract class AbstractRedisData implements RedisData {
    */
   private volatile long expirationTimestamp = NO_EXPIRATION;
   private static final ThreadLocal<DeltaInfo> deltaInfo = new ThreadLocal<>();
+
+  public byte getVersion() {
+    return version;
+  }
+
+  public byte incrementAndGetVersion() {
+    return ++version;
+  }
+
+  public void setVersion(byte version) {
+    this.version = version;
+  }
 
   @Override
   public void setExpirationTimestamp(Region<RedisKey, RedisData> region, RedisKey key, long value) {
@@ -193,12 +207,14 @@ public abstract class AbstractRedisData implements RedisData {
 
   @Override
   public void toData(DataOutput out, SerializationContext context) throws IOException {
+    out.writeByte(version);
     out.writeLong(expirationTimestamp);
   }
 
   @Override
   public void fromData(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
+    version = in.readByte();
     expirationTimestamp = in.readLong();
   }
 
@@ -219,6 +235,15 @@ public abstract class AbstractRedisData implements RedisData {
   @Override
   public void fromDelta(DataInput in) throws IOException, InvalidDeltaException {
     DeltaType deltaType = readEnum(DeltaType.class, in);
+
+    if (deltaType.isVersioned()) {
+      byte deltaVersion = DataSerializer.readPrimitiveByte(in);
+      if (deltaVersion == getVersion()) {
+        return;
+      }
+      setVersion(deltaVersion);
+    }
+
     switch (deltaType) {
       case SET_TIMESTAMP:
         SetTimestamp.deserializeFrom(in, this);
@@ -382,7 +407,8 @@ public abstract class AbstractRedisData implements RedisData {
       return false;
     }
     AbstractRedisData that = (AbstractRedisData) o;
-    return getExpirationTimestamp() == that.getExpirationTimestamp();
+    return getVersion() == that.getVersion() &&
+        getExpirationTimestamp() == that.getExpirationTimestamp();
   }
 
   @Override
@@ -392,7 +418,7 @@ public abstract class AbstractRedisData implements RedisData {
 
   @Override
   public String toString() {
-    return "expirationTimestamp=" + expirationTimestamp;
+    return "version=" + version + ", expirationTimestamp=" + expirationTimestamp;
   }
 
 }
