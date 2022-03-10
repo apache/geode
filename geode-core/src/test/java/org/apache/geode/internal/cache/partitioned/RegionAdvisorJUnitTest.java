@@ -27,14 +27,11 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.BucketAdvisor;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.ProxyBucketRegion;
 
@@ -88,43 +85,22 @@ public class RegionAdvisorJUnitTest {
     int serial = 1234;
     boolean regionDestroyed = true;
     InternalDistributedMember memberId = mock(InternalDistributedMember.class);
-    Bucket bucket = mock(Bucket.class);
-    when(bucket.isHosting()).thenReturn(true);
-    when(bucket.getId()).thenReturn(bucketId);
-    int version = 0;
-    RegionAttributes regionAttributes = mock(RegionAttributes.class);
-    PartitionAttributes partitionAttributes = mock(PartitionAttributes.class);
-    when(partitionedRegion.getAttributes()).thenReturn(regionAttributes);
-    when(regionAttributes.getPartitionAttributes()).thenReturn(partitionAttributes);
-    when(partitionAttributes.getTotalNumBuckets()).thenReturn(1);
-    when(partitionedRegion.getPartitionAttributes()).thenReturn(partitionAttributes);
-    when(partitionAttributes.getColocatedWith()).thenReturn(null);
-    InternalCache internalCache = mock(InternalCache.class);
-    when(partitionedRegion.getCache()).thenReturn(internalCache);
-    InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
-    when(internalCache.getInternalDistributedSystem()).thenReturn(internalDistributedSystem);
     DistributionManager distributionManager = mock(DistributionManager.class);
-    when(internalDistributedSystem.getDistributionManager()).thenReturn(distributionManager);
     when(regionAdvisor.getDistributionManager()).thenReturn(distributionManager);
     when(distributionManager.isCurrentMember(any())).thenReturn(true);
-    DataPolicy dataPolicy = mock(DataPolicy.class);
-    when(partitionedRegion.getDataPolicy()).thenReturn(dataPolicy);
-    when(dataPolicy.withPersistence()).thenReturn(false);
-    regionAdvisor.initializeRegionAdvisor();
-    BucketAdvisor.BucketProfile bucketProfile =
-        new BucketAdvisor.BucketProfile(memberId, version, bucket);
-    // regionAdvisor.putBucketProfile(bucketId, bucketProfile);
-    assertThat(regionAdvisor.preInitQueue).isNotNull();
-    // assertThat(regionAdvisor.preInitQueue.size()).isEqualTo(1);
-    // assertThat(regionAdvisor.getBucketAdvisor(bucketId).getNumProfiles()).isEqualTo(0);
+    ProxyBucketRegion proxyBucketRegion = mock(ProxyBucketRegion.class);
+    BucketAdvisor bucketAdvisor = mock(BucketAdvisor.class);
+    when(proxyBucketRegion.getBucketAdvisor()).thenReturn(bucketAdvisor);
+    regionAdvisor.buckets = new ProxyBucketRegion[] {proxyBucketRegion};
 
+    assertThat(regionAdvisor.preInitQueue).isNotNull();
     regionAdvisor.removeIdAndBucket(bucketId, memberId, serial, regionDestroyed);
     assertThat(regionAdvisor.preInitQueue).isNotNull();
     assertThat(regionAdvisor.preInitQueue.size()).isEqualTo(1);
-
     regionAdvisor.processProfilesQueuedDuringInitialization();
     assertThat(regionAdvisor.preInitQueue).isNull();
-    assertThat(regionAdvisor.getBucketAdvisor(bucketId).getNumProfiles()).isEqualTo(0);
+    verify(bucketAdvisor, times(1)).removeIdWithSerial(memberId,
+        serial, regionDestroyed);
   }
 
   @Test
@@ -133,43 +109,20 @@ public class RegionAdvisorJUnitTest {
     int serial = 5678;
     boolean regionDestroyed = true;
     InternalDistributedMember memberId = mock(InternalDistributedMember.class);
-    Bucket bucket = mock(Bucket.class);
-    when(bucket.isHosting()).thenReturn(true);
-    when(bucket.getId()).thenReturn(bucketId);
-    int version = 0;
-    RegionAttributes regionAttributes = mock(RegionAttributes.class);
-    PartitionAttributes partitionAttributes = mock(PartitionAttributes.class);
-    when(partitionedRegion.getAttributes()).thenReturn(regionAttributes);
-    when(regionAttributes.getPartitionAttributes()).thenReturn(partitionAttributes);
-    when(partitionAttributes.getTotalNumBuckets()).thenReturn(1);
-    when(partitionedRegion.getPartitionAttributes()).thenReturn(partitionAttributes);
-    when(partitionAttributes.getColocatedWith()).thenReturn(null);
-    InternalCache internalCache = mock(InternalCache.class);
-    when(partitionedRegion.getCache()).thenReturn(internalCache);
-    InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
-    when(internalCache.getInternalDistributedSystem()).thenReturn(internalDistributedSystem);
     DistributionManager distributionManager = mock(DistributionManager.class);
-    when(internalDistributedSystem.getDistributionManager()).thenReturn(distributionManager);
     when(regionAdvisor.getDistributionManager()).thenReturn(distributionManager);
     when(distributionManager.isCurrentMember(any())).thenReturn(true);
-    DataPolicy dataPolicy = mock(DataPolicy.class);
-    when(partitionedRegion.getDataPolicy()).thenReturn(dataPolicy);
-    when(dataPolicy.withPersistence()).thenReturn(false);
-    regionAdvisor.initializeRegionAdvisor();
-    BucketAdvisor.BucketProfile bucketProfile =
-        new BucketAdvisor.BucketProfile(memberId, version, bucket);
-    // regionAdvisor.putBucketProfile(bucketId, bucketProfile);
-    assertThat(regionAdvisor.preInitQueue).isNotNull();
-    // assertThat(regionAdvisor.preInitQueue.size()).isEqualTo(1);
-    // assertThat(regionAdvisor.getBucketAdvisor(bucketId).getNumProfiles()).isEqualTo(0);
+    ProxyBucketRegion proxyBucketRegion = mock(ProxyBucketRegion.class);
+    BucketAdvisor bucketAdvisor = mock(BucketAdvisor.class);
+    when(proxyBucketRegion.getBucketAdvisor()).thenReturn(bucketAdvisor);
+    regionAdvisor.buckets = new ProxyBucketRegion[] {proxyBucketRegion};
 
+    assertThat(regionAdvisor.preInitQueue).isNotNull();
     regionAdvisor.processProfilesQueuedDuringInitialization();
     assertThat(regionAdvisor.preInitQueue).isNull();
-    assertThat(regionAdvisor.getBucketAdvisor(bucketId).getNumProfiles()).isEqualTo(0);
-    // assertThat(regionAdvisor.getBucketAdvisor(bucketId).getProfile(memberId)).isEqualTo(bucketProfile);
-
     regionAdvisor.removeIdAndBucket(bucketId, memberId, serial, regionDestroyed);
     assertThat(regionAdvisor.preInitQueue).isNull();
-    assertThat(regionAdvisor.getBucketAdvisor(bucketId).getNumProfiles()).isEqualTo(0);
+    verify(bucketAdvisor, times(1)).removeIdWithSerial(memberId,
+        serial, regionDestroyed);
   }
 }
