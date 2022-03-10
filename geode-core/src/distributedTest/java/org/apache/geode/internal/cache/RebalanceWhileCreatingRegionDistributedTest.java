@@ -23,7 +23,6 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.Logger;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
@@ -41,10 +40,8 @@ import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedBlackboard;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
-@Category({SecurityTest.class})
 public class RebalanceWhileCreatingRegionDistributedTest implements Serializable {
 
   @Rule
@@ -57,6 +54,10 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
   public DistributedBlackboard blackboard = new DistributedBlackboard();
 
   private static final Logger logger = LogService.getLogger();
+
+  public static final String BEFORE_REMOVE_BUCKET_MESSAGE = "Before_RemoveBucketMessage";
+
+  public static final String AFTER_CREATE_PROXY_REGION = "After_CreateProxyRegion";
 
   @Test
   public void testRebalanceDuringRegionCreation() throws Exception {
@@ -227,13 +228,13 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
   private void waitToCreateProxyRegion(String regionName) throws Exception {
     logger.info(
         "RebalanceWhileCreatingRegionDistributedTest.waitToCreateRegion about to wait for Before_RemoveBucketMessage gate");
-    blackboard.waitForGate("Before_RemoveBucketMessage");
+    blackboard.waitForGate(BEFORE_REMOVE_BUCKET_MESSAGE);
     logger.info(
         "RebalanceWhileCreatingRegionDistributedTest.waitToCreateRegion done wait for Before_RemoveBucketMessage gate");
     createRegion(regionName, RegionShortcut.PARTITION_PROXY);
     logger.info(
         "RebalanceWhileCreatingRegionDistributedTest.waitToCreateRegion about to signal After_CreateProxyRegion gate");
-    blackboard.signalGate("After_CreateProxyRegion");
+    blackboard.signalGate(AFTER_CREATE_PROXY_REGION);
     logger.info(
         "RebalanceWhileCreatingRegionDistributedTest.waitToCreateRegion done signal After_CreateProxyRegion gate");
   }
@@ -241,13 +242,13 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
   private void waitToCreateSingleBucketProxyRegion(String regionName) throws Exception {
     logger.info(
         "RebalanceWhileCreatingRegionDistributedTest.waitToCreateRegion about to wait for Before_RemoveBucketMessage gate");
-    blackboard.waitForGate("Before_RemoveBucketMessage");
+    blackboard.waitForGate(BEFORE_REMOVE_BUCKET_MESSAGE);
     logger.info(
         "RebalanceWhileCreatingRegionDistributedTest.waitToCreateRegion done wait for Before_RemoveBucketMessage gate");
     createSingleBucketRegion(regionName, RegionShortcut.PARTITION_PROXY);
     logger.info(
         "RebalanceWhileCreatingRegionDistributedTest.waitToCreateRegion about to signal After_CreateProxyRegion gate");
-    blackboard.signalGate("After_CreateProxyRegion");
+    blackboard.signalGate(AFTER_CREATE_PROXY_REGION);
     logger.info(
         "RebalanceWhileCreatingRegionDistributedTest.waitToCreateRegion done signal After_CreateProxyRegion gate");
   }
@@ -268,7 +269,7 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
       if (message instanceof RemoveBucketMessage) {
         logger.info(
             "TestDistributionMessageObserver.beforeProcessMessage about to signal Before_RemoveBucketMessage gate");
-        blackboard.signalGate("Before_RemoveBucketMessage");
+        blackboard.signalGate(BEFORE_REMOVE_BUCKET_MESSAGE);
         logger.info(
             "TestDistributionMessageObserver.beforeProcessMessage done signal Before_RemoveBucketMessage gate");
       }
@@ -283,7 +284,7 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
               "TestDistributionMessageObserver.beforeSendMessage about to wait for After_CreateProxyRegion gate regionName={}",
               drm.regionPath);
           try {
-            blackboard.waitForGate("After_CreateProxyRegion");
+            blackboard.waitForGate(AFTER_CREATE_PROXY_REGION);
           } catch (Exception e) {
             throw new RuntimeException(e);
           }
