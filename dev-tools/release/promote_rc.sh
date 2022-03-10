@@ -266,7 +266,10 @@ rm Dockerfile.bak
 set -x
 git add Dockerfile
 git diff --staged --color | cat
-git commit -m "$JIRA: update Dockerfile to apache-geode ${VERSION}"
+git commit -m "$JIRA: update Dockerfile to apache-geode ${VERSION}
+
+The Dockerfile is updated _after_ the release is already tagged,
+because it needs to embed the sha256 of the release"
 git push
 set +x
 
