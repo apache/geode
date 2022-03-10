@@ -24,18 +24,17 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.cache.InternalCache;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.BucketAdvisor;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.ProxyBucketRegion;
 
@@ -112,11 +111,12 @@ public class RegionAdvisorJUnitTest {
     when(partitionedRegion.getDataPolicy()).thenReturn(dataPolicy);
     when(dataPolicy.withPersistence()).thenReturn(false);
     regionAdvisor.initializeRegionAdvisor();
-    BucketAdvisor.BucketProfile bucketProfile = new BucketAdvisor.BucketProfile(memberId, version, bucket);
-//    regionAdvisor.putBucketProfile(bucketId, bucketProfile);
+    BucketAdvisor.BucketProfile bucketProfile =
+        new BucketAdvisor.BucketProfile(memberId, version, bucket);
+    // regionAdvisor.putBucketProfile(bucketId, bucketProfile);
     assertThat(regionAdvisor.preInitQueue).isNotNull();
-//    assertThat(regionAdvisor.preInitQueue.size()).isEqualTo(1);
-//    assertThat(regionAdvisor.getBucketAdvisor(bucketId).getNumProfiles()).isEqualTo(0);
+    // assertThat(regionAdvisor.preInitQueue.size()).isEqualTo(1);
+    // assertThat(regionAdvisor.getBucketAdvisor(bucketId).getNumProfiles()).isEqualTo(0);
 
     regionAdvisor.removeIdAndBucket(bucketId, memberId, serial, regionDestroyed);
     assertThat(regionAdvisor.preInitQueue).isNotNull();
@@ -156,16 +156,17 @@ public class RegionAdvisorJUnitTest {
     when(partitionedRegion.getDataPolicy()).thenReturn(dataPolicy);
     when(dataPolicy.withPersistence()).thenReturn(false);
     regionAdvisor.initializeRegionAdvisor();
-    BucketAdvisor.BucketProfile bucketProfile = new BucketAdvisor.BucketProfile(memberId, version, bucket);
-//    regionAdvisor.putBucketProfile(bucketId, bucketProfile);
+    BucketAdvisor.BucketProfile bucketProfile =
+        new BucketAdvisor.BucketProfile(memberId, version, bucket);
+    // regionAdvisor.putBucketProfile(bucketId, bucketProfile);
     assertThat(regionAdvisor.preInitQueue).isNotNull();
-//    assertThat(regionAdvisor.preInitQueue.size()).isEqualTo(1);
-//    assertThat(regionAdvisor.getBucketAdvisor(bucketId).getNumProfiles()).isEqualTo(0);
+    // assertThat(regionAdvisor.preInitQueue.size()).isEqualTo(1);
+    // assertThat(regionAdvisor.getBucketAdvisor(bucketId).getNumProfiles()).isEqualTo(0);
 
     regionAdvisor.processProfilesQueuedDuringInitialization();
     assertThat(regionAdvisor.preInitQueue).isNull();
     assertThat(regionAdvisor.getBucketAdvisor(bucketId).getNumProfiles()).isEqualTo(0);
-//    assertThat(regionAdvisor.getBucketAdvisor(bucketId).getProfile(memberId)).isEqualTo(bucketProfile);
+    // assertThat(regionAdvisor.getBucketAdvisor(bucketId).getProfile(memberId)).isEqualTo(bucketProfile);
 
     regionAdvisor.removeIdAndBucket(bucketId, memberId, serial, regionDestroyed);
     assertThat(regionAdvisor.preInitQueue).isNull();

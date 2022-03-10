@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.Serializable;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -30,8 +32,11 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.partitioned.RemoveBucketMessage;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedBlackboard;
@@ -119,10 +124,95 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
     });
   }
 
+  @Test
+  public void testMoveSingleBucketDuringRegionCreation() throws Exception {
+    // Init Blackboard
+    blackboard.initBlackboard();
+
+    // Start Locator
+    MemberVM locator = cluster.startLocatorVM(0);
+
+    // Start servers
+    int locatorPort = locator.getPort();
+    MemberVM server1 = cluster.startServerVM(1, locatorPort);
+    MemberVM server2 = cluster.startServerVM(2, locatorPort);
+    MemberVM accessor = cluster.startServerVM(3, locatorPort);
+
+    // Add DistributionMessageObserver
+    String regionName = testName.getMethodName();
+    Stream.of(server1, server2, accessor)
+        .forEach(server -> server.invoke(() -> addDistributionMessageObserver(regionName)));
+
+    // Create regions in each server
+    InternalDistributedMember source = server1.invoke(() -> {
+      createSingleBucketRegion(regionName, RegionShortcut.PARTITION);
+      Region<Integer, Integer> region =
+          ClusterStartupRule.getCache().getRegion(regionName);
+      region.put(123, 123);
+      PartitionedRegionDataStore partitionedRegionDataStore =
+          ((PartitionedRegion) region).getDataStore();
+      // Make sure server1 has the primary bucket
+      assertThat(partitionedRegionDataStore).isNotNull();
+      assertThat(partitionedRegionDataStore.getNumberOfPrimaryBucketsManaged()).isEqualTo(1);
+      return InternalDistributedSystem.getAnyInstance().getDistributedMember();
+    });
+
+    InternalDistributedMember destination = server2.invoke(() -> {
+      createSingleBucketRegion(regionName, RegionShortcut.PARTITION);
+      Region<Integer, Integer> region =
+          ClusterStartupRule.getCache().getRegion(regionName);
+      PartitionedRegionDataStore partitionedRegionDataStore =
+          ((PartitionedRegion) region).getDataStore();
+      // Make sure server2 does not have primary bucket
+      assertThat(partitionedRegionDataStore).isNotNull();
+      assertThat(partitionedRegionDataStore.getNumberOfPrimaryBucketsManaged()).isEqualTo(0);
+      return InternalDistributedSystem.getAnyInstance().getDistributedMember();
+    });
+
+    // Asynchronously wait to create the proxy region in the accessor
+    AsyncInvocation asyncInvocation = accessor.invokeAsync(() -> {
+      waitToCreateSingleBucketProxyRegion(regionName);
+    });
+
+    // Move the primary bucket from server1 to server2 and close the cache in the end
+    server2.invoke(() -> {
+      PartitionedRegion partitionedRegion =
+          (PartitionedRegion) ClusterStartupRule.getCache().getRegion(regionName);
+      PartitionedRegionDataStore partitionedRegionDataStore = partitionedRegion.getDataStore();
+      partitionedRegionDataStore.moveBucket(0, source, true);
+      ClusterStartupRule.getCache().close();
+    });
+
+    asyncInvocation.get();
+
+    // Make sure the accessor knows that the primary bucket has moved to server2
+    accessor.invoke(() -> {
+      PartitionedRegion pr =
+          (PartitionedRegion) ClusterStartupRule.getCache().getRegion(regionName);
+      assertThat(pr.getRegionAdvisor().getBucket(0).getBucketAdvisor().getProfile(source))
+          .isNull();
+    });
+  }
+
   private void createRegion(String regionName, RegionShortcut shortcut) {
     PartitionAttributesFactory<Integer, Integer> paf = new PartitionAttributesFactory<>();
     paf.setRedundantCopies(0);
     paf.setTotalNumBuckets(3);
+    if (shortcut.isProxy()) {
+      paf.setLocalMaxMemory(0);
+    }
+
+    RegionFactory<Integer, Integer> rf =
+        ClusterStartupRule.getCache().createRegionFactory(shortcut);
+    rf.setPartitionAttributes(paf.create());
+
+    rf.create(regionName);
+  }
+
+  private void createSingleBucketRegion(String regionName, RegionShortcut shortcut) {
+    PartitionAttributesFactory<Integer, Integer> paf = new PartitionAttributesFactory<>();
+    paf.setRedundantCopies(0);
+    paf.setTotalNumBuckets(1);
     if (shortcut.isProxy()) {
       paf.setLocalMaxMemory(0);
     }
@@ -141,6 +231,20 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
     logger.info(
         "RebalanceWhileCreatingRegionDistributedTest.waitToCreateRegion done wait for Before_RemoveBucketMessage gate");
     createRegion(regionName, RegionShortcut.PARTITION_PROXY);
+    logger.info(
+        "RebalanceWhileCreatingRegionDistributedTest.waitToCreateRegion about to signal After_CreateProxyRegion gate");
+    blackboard.signalGate("After_CreateProxyRegion");
+    logger.info(
+        "RebalanceWhileCreatingRegionDistributedTest.waitToCreateRegion done signal After_CreateProxyRegion gate");
+  }
+
+  private void waitToCreateSingleBucketProxyRegion(String regionName) throws Exception {
+    logger.info(
+        "RebalanceWhileCreatingRegionDistributedTest.waitToCreateRegion about to wait for Before_RemoveBucketMessage gate");
+    blackboard.waitForGate("Before_RemoveBucketMessage");
+    logger.info(
+        "RebalanceWhileCreatingRegionDistributedTest.waitToCreateRegion done wait for Before_RemoveBucketMessage gate");
+    createSingleBucketRegion(regionName, RegionShortcut.PARTITION_PROXY);
     logger.info(
         "RebalanceWhileCreatingRegionDistributedTest.waitToCreateRegion about to signal After_CreateProxyRegion gate");
     blackboard.signalGate("After_CreateProxyRegion");
