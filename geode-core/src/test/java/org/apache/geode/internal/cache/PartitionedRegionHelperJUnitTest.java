@@ -15,9 +15,14 @@
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.Test;
+
+import org.apache.geode.cache.Cache;
 
 
 public class PartitionedRegionHelperJUnitTest {
@@ -39,6 +44,40 @@ public class PartitionedRegionHelperJUnitTest {
       assertEquals(SEPARATOR + "root" + SEPARATOR + "region_one",
           PartitionedRegionHelper.getPRPath(bucketName));
     }
+  }
+
+  @Test
+  public void testGetPartitionedRegionUsingBucketRegionName() {
+    Cache cache = mock(Cache.class);
+    String fullPath = "__PR/_B__partitionedRegion_66";
+
+    // cache == null
+    assertThat(PartitionedRegionHelper.getPartitionedRegionUsingBucketRegionName(null, fullPath))
+        .isNull();
+
+    // fullPath == null
+    assertThat(PartitionedRegionHelper.getPartitionedRegionUsingBucketRegionName(cache, null))
+        .isNull();
+
+    // fullPath == ""
+    assertThat(PartitionedRegionHelper.getPartitionedRegionUsingBucketRegionName(cache, ""))
+        .isNull();
+
+    // fullPath == arbitrary string
+    assertThat(PartitionedRegionHelper.getPartitionedRegionUsingBucketRegionName(cache, "abcdef"))
+        .isNull();
+
+    // fullPath represents an InternalRegion
+    InternalRegion internalRegion = mock(InternalRegion.class);
+    when(cache.getRegion("partitionedRegion")).thenReturn(internalRegion);
+    assertThat(PartitionedRegionHelper.getPartitionedRegionUsingBucketRegionName(cache, fullPath))
+        .isNull();
+
+    // fullPath represents a PartitionedRegion
+    PartitionedRegion partitionedRegion = mock(PartitionedRegion.class);
+    when(cache.getRegion("/partitionedRegion")).thenReturn(partitionedRegion);
+    assertThat(PartitionedRegionHelper.getPartitionedRegionUsingBucketRegionName(cache, fullPath))
+        .isEqualTo(partitionedRegion);
   }
 
 }

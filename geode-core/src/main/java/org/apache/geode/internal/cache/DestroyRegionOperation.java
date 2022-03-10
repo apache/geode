@@ -43,7 +43,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.admin.remote.DestroyRegionMessage;
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
-import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
@@ -180,8 +179,6 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
                   partitionedRegion.getRegionAdvisor().removeIdAndBucket(bucketId, getSender(),
                       serialNum, op.isRegionDestroy() && !op.isClose());
                 }
-              } catch (PRLocallyDestroyedException ignore) {
-                // region not found - it's been destroyed
               } catch (RegionDestroyedException ignore) {
                 // ditto
               } catch (PartitionedRegionException e) {

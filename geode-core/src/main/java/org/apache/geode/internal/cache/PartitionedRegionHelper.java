@@ -718,8 +718,7 @@ public class PartitionedRegionHelper {
   }
 
   public static PartitionedRegion getPartitionedRegionUsingBucketRegionName(Cache cache,
-      String fullPath)
-      throws PRLocallyDestroyedException {
+      String fullPath) {
     if (cache == null) {
       // No cache
       return null;
