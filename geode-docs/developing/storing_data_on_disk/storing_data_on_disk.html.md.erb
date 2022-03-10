@@ -47,11 +47,10 @@ Use the following steps to configure your data regions for persistence and overf
           </region-attributes>
         </region>
         ```
-        **Note:** For partition regions if the partition region attribute `local-max-memory` is set then the eviction attribute `lru-memory-size maximum` is overwritten with the value of `local-max-memory`
-        Both `local-max-memory` and `lru-memory-size maximum` are local member attributes and not cluster-wide.
-        gfsh:
-
-        You cannot configure `lru-memory-size` using gfsh.
+        **Notes:**
+        - For partitioned regions, if the partition region attribute `local-max-memory` is set, then the eviction attribute `lru-memory-size maximum` is overwritten with the value \
+of `local-max-memory`. Both `local-max-memory` and `lru-memory-size maximum` are local member attributes and not cluster-wide.
+        - You cannot configure `lru-memory-size` using gfsh.
     -   For persistence, set the `data-policy` to `persistent-replicate` and name the disk store to use.
 
         Example:
