@@ -47,22 +47,25 @@ public interface EventListener {
    * events for blocking commands. Listeners that handle keyspace event notification will not use
    * this.
    */
-  default void resubmitCommand() {};
+  void resubmitCommand();
 
   /**
-   * Retrieve the timeout for this listener. The default is no timeout.
+   * Retrieve the timeout for this listener.
    */
-  default long getTimeout() {
-    return 0;
-  }
+  long getTimeout();
+
+  /**
+   * Callback used when the listener times out.
+   */
+  void timeout();
 
   /**
    * Set a runnable that is responsible for any cleanup when this listener is removed.
    */
-  default void setCleanupTask(Runnable r) {}
+  void setCleanupTask(Runnable r);
 
   /**
    * Called when this listener is removed
    */
-  default void cleanup() {}
+  void cleanup();
 }

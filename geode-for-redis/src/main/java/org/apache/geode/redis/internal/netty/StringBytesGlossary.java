@@ -62,6 +62,12 @@ public class StringBytesGlossary {
   public static final byte[] NIL = stringToBytes("$-1\r\n");
 
   /**
+   * byte array of a nil array response
+   */
+  @MakeImmutable
+  public static final byte[] NIL_ARRAY = stringToBytes("*-1\r\n");
+
+  /**
    * byte array of an empty array
    */
   @MakeImmutable

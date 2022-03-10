@@ -114,8 +114,12 @@ public class EventDistributor extends PartitionListenerAdapter {
   }
 
   private void scheduleTimeout(EventListener listener, long timeout) {
+    Runnable timeoutTask = () -> {
+      removeListener(listener);
+      listener.timeout();
+    };
     ScheduledFuture<?> scheduledTask =
-        timerExecutor.schedule(() -> removeListener(listener), timeout, TimeUnit.MILLISECONDS);
+        timerExecutor.schedule(timeoutTask, timeout, TimeUnit.NANOSECONDS);
     listener.setCleanupTask(() -> scheduledTask.cancel(false));
   }
 }

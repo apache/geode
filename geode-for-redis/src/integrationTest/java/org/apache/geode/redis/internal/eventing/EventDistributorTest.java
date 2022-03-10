@@ -63,9 +63,21 @@ public class EventDistributorTest {
     }
 
     @Override
+    public void resubmitCommand() {}
+
+    @Override
     public long getTimeout() {
       return timeout;
     }
+
+    @Override
+    public void timeout() {}
+
+    @Override
+    public void setCleanupTask(Runnable r) {}
+
+    @Override
+    public void cleanup() {}
   }
 
   @Test
@@ -174,5 +186,10 @@ public class EventDistributorTest {
     GeodeAwaitility.await().atMost(Duration.ofSeconds(30))
         .during(Duration.ofSeconds(1))
         .untilAsserted(() -> assertThat(distributor.size()).isEqualTo(0));
+  }
+
+  @Test
+  public void wat() {
+
   }
 }

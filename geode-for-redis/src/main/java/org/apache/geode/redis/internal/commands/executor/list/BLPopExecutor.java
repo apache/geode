@@ -14,6 +14,8 @@
  */
 package org.apache.geode.redis.internal.commands.executor.list;
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NEGATIVE_TIMEOUT;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,21 +33,25 @@ public class BLPopExecutor implements CommandExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> arguments = command.getCommandArguments();
-    int keyCount = arguments.size() - 1;
-    double timeoutMillis;
+    double timeoutSeconds;
     try {
-      timeoutMillis = Coder.bytesToDouble(arguments.get(keyCount)) * 1000;
+      timeoutSeconds = Coder.bytesToDouble(arguments.get(arguments.size() - 1));
     } catch (NumberFormatException e) {
       return RedisResponse.error(RedisConstants.ERROR_TIMEOUT_INVALID);
     }
 
+    if (timeoutSeconds < 0) {
+      return RedisResponse.error(ERROR_NEGATIVE_TIMEOUT);
+    }
+
+    int keyCount = arguments.size() - 1;
     List<RedisKey> keys = new ArrayList<>(keyCount);
     for (int i = 0; i < keyCount; i++) {
       keys.add(new RedisKey(arguments.get(i)));
     }
 
     List<byte[]> popped = context.lockedExecute(keys.get(0), keys,
-        () -> RedisList.blpop(context, keys, (int) timeoutMillis));
+        () -> RedisList.blpop(context, keys, timeoutSeconds));
 
     return popped == null ? RedisResponse.BLOCKED : RedisResponse.array(popped, true);
   }

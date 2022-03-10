@@ -44,6 +44,7 @@ import org.apache.geode.redis.internal.data.delta.InsertByteArray;
 import org.apache.geode.redis.internal.data.delta.RemoveElementsByIndex;
 import org.apache.geode.redis.internal.eventing.BlockingCommandListener;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
+import org.apache.geode.redis.internal.services.RegionProvider;
 import org.apache.geode.redis.internal.data.delta.ReplaceByteArrayAtOffset;
 
 public class RedisList extends AbstractRedisData {
@@ -220,12 +221,11 @@ public class RedisList extends AbstractRedisData {
   }
 
   public static List<byte[]> blpop(ExecutionHandlerContext context, List<RedisKey> keys,
-      int timeout) {
-    Region<RedisKey, RedisData> region = context.getRegion();
+      double timeoutSeconds) {
+    RegionProvider regionProvider = context.getRegionProvider();
     for (RedisKey key : keys) {
-      if (region.containsKey(key)) {
-        RedisList list =
-            context.getRegionProvider().getTypedRedisData(REDIS_LIST, key, false);
+      RedisList list = regionProvider.getTypedRedisData(REDIS_LIST, key, false);
+      if (!list.isNull()) {
         byte[] poppedValue = list.lpop(context.getRegion(), key);
 
         // return the key and value
@@ -236,8 +236,15 @@ public class RedisList extends AbstractRedisData {
       }
     }
 
-    context.registerListener(new BlockingCommandListener(context, RedisCommandType.BLPOP,
-        timeout, keys));
+    List<byte[]> commandArgs = new ArrayList<>(keys.size() + 1);
+    commandArgs.add(RedisCommandType.BLPOP.name().getBytes());
+    keys.forEach(x -> commandArgs.add(x.toBytes()));
+    // This is a placeholder for the timeout. If the command is resubmitted it will be updated with
+    // an adjusted timeout value.
+    commandArgs.add("0".getBytes());
+
+    context.registerListener(new BlockingCommandListener(context, RedisCommandType.BLPOP, keys,
+        timeoutSeconds, commandArgs));
 
     return null;
   }

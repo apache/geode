@@ -124,6 +124,13 @@ public class RedisResponse {
   }
 
   @Immutable
+  private static final RedisResponse NIL_ARRAY = new RedisResponse(Coder::getNilArrayResponse);
+
+  public static RedisResponse nilArray() {
+    return NIL_ARRAY;
+  }
+
+  @Immutable
   private static final RedisResponse EMPTY = new RedisResponse(Coder::getEmptyResponse);
 
   public static RedisResponse flattenedArray(Collection<Collection<?>> nestedCollection) {

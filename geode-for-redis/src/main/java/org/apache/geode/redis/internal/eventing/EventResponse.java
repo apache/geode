@@ -23,11 +23,12 @@ import org.apache.geode.redis.internal.data.RedisKey;
  */
 public enum EventResponse {
   /**
-   * This response would be used by listeners handling keyspace events
+   * Response indicating that processing should continue.
    */
   CONTINUE,
   /**
-   * This response would be used by listeners handling blocking commands
+   * Response indicating that processing should stop and the listener should be
+   * removed.
    */
-  REMOVE_AND_STOP;
+  REMOVE_AND_STOP
 }

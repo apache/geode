@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.commands.executor.list;
 
+import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertAtLeastNArgs;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.After;
@@ -62,24 +64,27 @@ public abstract class AbstractBLPopIntegrationTest implements RedisIntegrationTe
 
   @Test
   public void testInvalidArguments_throwErrors() {
-    assertThatThrownBy(() -> jedis.sendCommand("key", Protocol.Command.BLPOP))
-        .hasMessageContaining("ERR wrong number of arguments for 'blpop' command");
-    assertThatThrownBy(() -> jedis.sendCommand("key1", Protocol.Command.BLPOP, "key"))
-        .hasMessageContaining("ERR wrong number of arguments for 'blpop' command");
+    assertAtLeastNArgs(jedis, Protocol.Command.BLPOP, 2);
   }
 
   @Test
   public void testInvalidTimeout_throwsError() {
     assertThatThrownBy(() -> jedis.sendCommand("key1", Protocol.Command.BLPOP, "key1",
         "0.A"))
-            .hasMessageContaining(RedisConstants.ERROR_TIMEOUT_INVALID);
+            .hasMessage(RedisConstants.ERROR_TIMEOUT_INVALID);
   }
 
   @Test
   public void testKeysInDifferentSlots_throwsError() {
     assertThatThrownBy(() -> jedis.sendCommand("key1", Protocol.Command.BLPOP, "key1",
         "key2", "0"))
-            .hasMessageContaining(RedisConstants.ERROR_WRONG_SLOT);
+            .hasMessage(RedisConstants.ERROR_WRONG_SLOT);
+  }
+
+  @Test
+  public void testNegativeTimeout_throwsError() {
+    assertThatThrownBy(() -> jedis.blpop(-1, "key1"))
+        .hasMessage(RedisConstants.ERROR_NEGATIVE_TIMEOUT);
   }
 
   @Test
@@ -93,6 +98,15 @@ public abstract class AbstractBLPopIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
+  public void testBLPopWithDoesNotError_whenTimeoutHasExponent() {
+    jedis.lpush(KEY, "value1", "value2");
+
+    Object result = jedis.sendCommand(KEY, Protocol.Command.BLPOP, KEY, "1E+3");
+
+    assertThat(result).isNotNull();
+  }
+
+  @Test
   public void testBLPopWhenValueDoesNotExist() throws Exception {
     Future<List<String>> future = executor.submit(() -> jedis.blpop(0, KEY));
 
@@ -101,6 +115,14 @@ public abstract class AbstractBLPopIntegrationTest implements RedisIntegrationTe
 
     assertThat(future.get()).containsExactly(KEY, "value2");
     assertThat(jedis.lpop(KEY)).isEqualTo("value1");
+  }
+
+  @Test
+  public void testBLPopWhenTimeoutIsExceeded() {
+    int timeout = 10;
+    Future<List<String>> future = executor.submit(() -> jedis.blpop(timeout, KEY));
+    GeodeAwaitility.await().atMost(timeout * 2, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertThat(future.get()).isNull());
   }
 
   @Test

@@ -15,13 +15,12 @@
 
 package org.apache.geode.redis.internal.eventing;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.redis.internal.commands.Command;
 import org.apache.geode.redis.internal.commands.RedisCommandType;
+import org.apache.geode.redis.internal.commands.executor.RedisResponse;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -31,9 +30,9 @@ public class BlockingCommandListener implements EventListener {
   private final ExecutionHandlerContext context;
   private final RedisCommandType command;
   private final List<RedisKey> keys;
-  private final byte[][] commandOptions;
-  private final long timeout;
-  private final long timeAdded;
+  private final List<byte[]> commandArgs;
+  private final long timeoutNanos;
+  private final long timeSubmitted;
   private Runnable cleanupTask;
 
   /**
@@ -42,20 +41,19 @@ public class BlockingCommandListener implements EventListener {
    * into the Netty pipeline.
    *
    * @param context the associated ExecutionHandlerContext
-   * @param command the blocking command
-   * @param timeout the timeout for the command to block in milliseconds
+   * @param command the blocking command associated with this listener
    * @param keys the list of keys the command is interested in
-   * @param commandOptions any additional options (other than the keys and timeout) required to
-   *        resubmit the command.
+   * @param timeoutSeconds the timeout for the command to block in seconds
+   * @param commandArgs all arguments to the command which are used for resubmission
    */
   public BlockingCommandListener(ExecutionHandlerContext context, RedisCommandType command,
-      long timeout, List<RedisKey> keys, byte[]... commandOptions) {
+      List<RedisKey> keys, double timeoutSeconds, List<byte[]> commandArgs) {
     this.context = context;
     this.command = command;
-    this.timeout = timeout;
+    this.timeoutNanos = (long) (timeoutSeconds * 1e9);
     this.keys = Collections.unmodifiableList(keys);
-    this.commandOptions = commandOptions;
-    timeAdded = System.currentTimeMillis();
+    this.commandArgs = commandArgs;
+    timeSubmitted = System.nanoTime();
   }
 
   @Override
@@ -75,30 +73,30 @@ public class BlockingCommandListener implements EventListener {
 
   @Override
   public void resubmitCommand() {
-    List<byte[]> byteArgs = new ArrayList<>(keys.size() + 1);
-    byteArgs.add(command.name().getBytes());
-
-    keys.forEach(x -> byteArgs.add(x.toBytes()));
-    byteArgs.addAll(Arrays.asList(commandOptions));
-
     // Recalculate the timeout since we've already been waiting
-    long adjustedTimeout = timeout;
-    if (adjustedTimeout > 0) {
-      adjustedTimeout = (adjustedTimeout - (System.currentTimeMillis() - timeAdded)) / 1000;
-      adjustedTimeout = Math.max(1, adjustedTimeout);
+    double adjustedTimeoutSeconds = 0;
+    if (timeoutNanos > 0) {
+      long adjustedTimeoutNanos = timeoutNanos - (System.nanoTime() - timeSubmitted);
+      adjustedTimeoutNanos = Math.max(1, adjustedTimeoutNanos);
+      adjustedTimeoutSeconds = ((double) adjustedTimeoutNanos) / 1e9;
     }
 
     // The commands we are currently supporting all have the timeout at the end of the argument
     // list. Some newer Redis 7 commands (BLMPOP and BZMPOP) have the timeout as the first argument
     // after the command. We'll need to adjust this once those commands are supported.
-    byteArgs.add(Coder.longToBytes(adjustedTimeout));
+    commandArgs.set(commandArgs.size() - 1, Coder.doubleToBytes(adjustedTimeoutSeconds));
 
-    context.resubmitCommand(new Command(command, byteArgs));
+    context.resubmitCommand(new Command(command, commandArgs));
   }
 
   @Override
   public long getTimeout() {
-    return timeout;
+    return timeoutNanos;
+  }
+
+  @Override
+  public void timeout() {
+    context.writeToChannel(RedisResponse.nilArray());
   }
 
   @Override
