@@ -484,11 +484,18 @@ else
 fi
 rm settings.gradle.bak
 
+action="Add"
+ser=""
 if [ $PATCH -ne 0 ] ; then
   #if the serialization version has not changed, we can drop the previous patch
   if [ "$cursver" = "$prevsver" ] ; then
     sed -e "/'${PREV}'/d" -i.bak settings.gradle
     rm settings.gradle.bak
+    action="Replace ${PREV} with"
+    ser="
+
+The serialization version has not changed between ${PREV} and ${VERSION},
+so there should be no need to keep both"
   fi
 fi
 
@@ -508,9 +515,10 @@ fi
 set -x
 git add settings.gradle
 git diff --staged --color | cat
-git commit -m "$JIRA: Add ${VERSION} as old version
+git commit -m "$JIRA: ${action} ${VERSION} as old version
 
-Adds ${VERSION} to old versions${BENCHMSG} on develop"
+${action} ${VERSION} in old versions${BENCHMSG} on develop
+to enable rolling upgrade tests from ${VERSION}${ser}"
 git push -u myfork
 set +x
 
@@ -529,11 +537,18 @@ sed -e "s/].each/,\\
  '${VERSION}'].each/" \
   -i.bak settings.gradle
 rm settings.gradle.bak
+action="Add"
+ser=""
 if [ $PATCH -ne 0 ] ; then
   #if the serialization version has not changed, we can drop the previous patch
   if [ "$cursver" = "$prevsver" ] ; then
     sed -e "/'${PREV}'/d" -i.bak settings.gradle
     rm settings.gradle.bak
+    action="Replace ${PREV} with"
+    ser="
+
+The serialization version has not changed between ${PREV} and ${VERSION},
+so there should be no need to keep both"
   fi
 else
   #also update benchmark baseline for support branch to its new minor
@@ -552,9 +567,10 @@ fi
 set -x
 git add settings.gradle
 git diff --staged --color | cat
-git commit -m "$JIRA: Add ${VERSION} as old version
+git commit -m "$JIRA: ${action} ${VERSION} as old version
 
-Adds ${VERSION} to old versions${BENCHMSG2} on support/$VERSION_MM"
+${action} ${VERSION} in old versions${BENCHMSG2} on support/$VERSION_MM
+to enable rolling upgrade tests from ${VERSION}${ser}"
 git push
 set +x
 
