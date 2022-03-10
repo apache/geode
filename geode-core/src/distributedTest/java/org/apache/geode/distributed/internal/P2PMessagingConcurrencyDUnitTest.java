@@ -81,7 +81,7 @@ public class P2PMessagingConcurrencyDUnitTest {
   private static final int TASKS_PER_SENDER = 2;
 
   // how many messages will each sending task generate?
-  private static final int MESSAGES_PER_SENDING_TASK = 200_000_000;
+  private static final int MESSAGES_PER_SENDING_TASK = 2_000_000_000;
 
   // (exclusive) upper bound of random message size, in bytes
   private static final int LARGEST_MESSAGE_BOUND = 48 * 1024 + 2;
