@@ -213,9 +213,8 @@ function waitforserver {
     echo "$url exists and is correct size"
   done
 }
-for server in downloads.apache.org/geode repo1.maven.org/maven2/org/apache/geode/apache-geode ; do
-  waitforserver "$server"
-done
+
+waitforserver "downloads.apache.org/geode"
 
 
 echo ""
@@ -636,6 +635,8 @@ touch ../did.remove
 DID_REMOVE=$(cat ../did.remove)
 rm ../keep ../did.remove
 
+
+waitforserver "repo1.maven.org/maven2/org/apache/geode/apache-geode"
 
 echo ""
 NEWVERSION="${VERSION_MM}.$(( PATCH + 1 ))"
