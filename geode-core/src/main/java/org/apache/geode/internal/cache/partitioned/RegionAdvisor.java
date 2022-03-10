@@ -152,7 +152,6 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
         while (pi.hasNext()) {
           Object o = pi.next();
           QueuedBucketProfile qbp = (QueuedBucketProfile) o;
-
           if (!qbp.isRemoval) {
             if (logger.isTraceEnabled(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE)) {
               logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
