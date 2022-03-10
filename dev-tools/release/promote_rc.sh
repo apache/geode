@@ -179,17 +179,22 @@ for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
 done
 
 
-for server in dlcdn.apache.org/geode downloads.apache.org/geode repo1.maven.org/maven2/org/apache/geode/apache-geode ; do
+function waitforserver {
+  server="$1"
+  msg="$2"
   file=apache-geode-${VERSION}.tgz
   baseurl=https://${server}/${VERSION}/${file}
   echo ""
   echo "============================================================"
   echo "Waiting for ${baseurl} to appear..."
-  if  echo "${server}" | grep -q repo1 ; then
+  if echo "${server}" | grep -q repo1 ; then
     echo "(may take up to one hour after clicking 'Release' on http://repository.apache.org/ )"
+  elif echo "${server}" | grep -q dlcdn ; then
+    echo "(may take a few hours)"
   else
     echo "(may take up to 15 minutes)"
   fi
+  [ -z "$msg" ] || echo "$msg"
   echo "============================================================"
   for suffix in "" .asc .sha256 ; do
     if [ "${suffix}" = ".sha256" ] && echo "${server}" | grep -q repo1 ; then
@@ -207,6 +212,9 @@ for server in dlcdn.apache.org/geode downloads.apache.org/geode repo1.maven.org/
     done
     echo "$url exists and is correct size"
   done
+}
+for server in downloads.apache.org/geode repo1.maven.org/maven2/org/apache/geode/apache-geode ; do
+  waitforserver "$server"
 done
 
 
@@ -662,3 +670,4 @@ echo 'Send email!  Note: MUST be sent from your @apache.org email address (see h
 ${0%/*}/print_announce_email.sh -v "${VERSION}" -f "${LATER}"
 echo ""
 which pbcopy >/dev/null && ${0%/*}/print_announce_email.sh -v "${VERSION}" -f "${LATER}" | pbcopy && echo "(copied to clipboard)"
+waitforserver "dlcdn.apache.org/geode" "Please wait for this to complete before sending the announce email."
