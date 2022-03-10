@@ -3979,4 +3979,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   SearchLoadAndWriteProcessor getSearchLoadAndWriteProcessor() {
     return SearchLoadAndWriteProcessor.getProcessor();
   }
+
+  Set<InternalDistributedMember> getDestroyRegionRecipients() {
+    CacheDistributionAdvisor advisor = getCacheDistributionAdvisor();
+    return advisor.adviseDestroyRegion();
+  }
 }

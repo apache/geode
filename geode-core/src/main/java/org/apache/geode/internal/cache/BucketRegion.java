@@ -2544,4 +2544,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         versionTag, tailKey);
   }
 
+  @Override
+  Set<InternalDistributedMember> getDestroyRegionRecipients() {
+    return getSystem().getDistributionManager().getOtherDistributionManagerIds();
+  }
+
 }

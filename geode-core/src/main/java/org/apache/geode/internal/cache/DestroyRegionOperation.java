@@ -39,6 +39,7 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.admin.remote.DestroyRegionMessage;
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
@@ -92,13 +93,8 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
   }
 
   @Override
-  protected Set getRecipients() {
-    if (getRegion() instanceof BucketRegion) {
-      return getRegion().getSystem().getDistributionManager().getOtherDistributionManagerIds();
-    } else {
-      CacheDistributionAdvisor advisor = getRegion().getCacheDistributionAdvisor();
-      return advisor.adviseDestroyRegion();
-    }
+  protected Set<InternalDistributedMember> getRecipients() {
+    return getRegion().getDestroyRegionRecipients();
   }
 
   @Override

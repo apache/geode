@@ -25,8 +25,6 @@ import org.junit.Test;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 public class DestroyRegionOperationJUnitTest {
@@ -39,16 +37,12 @@ public class DestroyRegionOperationJUnitTest {
     DistributedSystem distributedSystem = mock(DistributedSystem.class);
     when(bucketRegion.getCache()).thenReturn(internalCache);
     when(internalCache.getDistributedSystem()).thenReturn(distributedSystem);
-    InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
-    when(bucketRegion.getSystem()).thenReturn(internalDistributedSystem);
-    DistributionManager distributionManager = mock(DistributionManager.class);
-    when(internalDistributedSystem.getDistributionManager()).thenReturn(distributionManager);
     InternalDistributedMember member1 = mock(InternalDistributedMember.class);
     InternalDistributedMember member2 = mock(InternalDistributedMember.class);
     Set<InternalDistributedMember> members = new HashSet<>();
     members.add(member1);
     members.add(member2);
-    when(distributionManager.getOtherDistributionManagerIds()).thenReturn(members);
+    when(bucketRegion.getDestroyRegionRecipients()).thenReturn(members);
 
     RegionEventImpl event = new RegionEventImpl(bucketRegion, Operation.REGION_LOCAL_DESTROY, null,
         false, internalDistributedMember,
@@ -58,11 +52,10 @@ public class DestroyRegionOperationJUnitTest {
 
     DistributedRegion distributedRegion = mock(DistributedRegion.class);
     when(distributedRegion.getCache()).thenReturn(internalCache);
-    CacheDistributionAdvisor cacheDistributionAdvisor = mock(CacheDistributionAdvisor.class);
-    when(distributedRegion.getCacheDistributionAdvisor()).thenReturn(cacheDistributionAdvisor);
     Set<InternalDistributedMember> member = new HashSet<>();
     member.add(member1);
-    when(cacheDistributionAdvisor.adviseDestroyRegion()).thenReturn(member);
+    when(distributedRegion.getDestroyRegionRecipients()).thenReturn(member);
+
     event = new RegionEventImpl(distributedRegion, Operation.REGION_DESTROY, null,
         false, internalDistributedMember, false);
     destroyRegionOperation = new DestroyRegionOperation(event, true);
