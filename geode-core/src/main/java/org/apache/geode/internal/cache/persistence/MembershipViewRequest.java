@@ -116,7 +116,7 @@ public class MembershipViewRequest extends DistributionMessage implements Messag
         persistenceAdvisor = ((DistributedRegion) region).getPersistenceAdvisor();
       } else if (region == null) {
         Bucket proxy =
-            PartitionedRegionHelper.getProxyBucketRegion(dm.getCache(), regionPath, false);
+            PartitionedRegionHelper.getProxyBucketRegion(dm.getCache(), regionPath);
         if (proxy != null) {
           persistenceAdvisor = proxy.getPersistenceAdvisor();
         }

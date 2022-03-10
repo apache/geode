@@ -798,7 +798,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
         } else {
           if (lclRgn == null) {
             handleCacheDistributionAdvisee(
-                PartitionedRegionHelper.getProxyBucketRegion(dm.getCache(), adviseePath, false),
+                PartitionedRegionHelper.getProxyBucketRegion(dm.getCache(), adviseePath),
                 adviseePath, removeProfile, exchangeProfiles, false, replyProfiles);
           } else {
             if (logger.isDebugEnabled()) {

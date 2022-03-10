@@ -377,7 +377,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
           if (lclRgn == null) {
             // check to see if a ProxyBucketRegion (not a true region) exists
             handleCacheDistributionAdvisee(
-                PartitionedRegionHelper.getProxyBucketRegion(cache, regionPath, false), false);
+                PartitionedRegionHelper.getProxyBucketRegion(cache, regionPath), false);
           } else {
             if (logger.isDebugEnabled()) {
               logger.debug("<lclRgn scope is not distributed. Scope={}> {}",

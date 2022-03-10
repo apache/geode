@@ -167,9 +167,6 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
           Throwable thr = null;
           try {
             if (lclRgn == null) {
-              // following block is specific to buckets...
-              // need to wait for queued bucket profiles to be processed
-              // or this destroy may do nothing and result in a stale profile
               try {
                 PartitionedRegion partitionedRegion = PartitionedRegionHelper
                     .getPartitionedRegionUsingBucketRegionName(dm.getCache(), regionPath);
@@ -180,7 +177,7 @@ public class DestroyRegionOperation extends DistributedCacheOperation {
                       serialNum, op.isRegionDestroy() && !op.isClose());
                 }
               } catch (RegionDestroyedException ignore) {
-                // ditto
+                // region not found - it's been destroyed
               } catch (PartitionedRegionException e) {
                 if (!e.getMessage().contains("destroyed")) {
                   throw e;

@@ -197,7 +197,6 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
         finishedInitQueue = true;
       } finally {
         preInitQueue = null; // prevent further additions to the queue
-        preInitQueueMonitor.notifyAll();
         if (!finishedInitQueue && !getAdvisee().getCancelCriterion().isCancelInProgress()) {
           logger.error("Failed to process all queued BucketProfiles for {}",
               getAdvisee());
@@ -1021,36 +1020,6 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       }
     }
     return result;
-  }
-
-  /**
-   * Returns the bucket identified by bucketId after waiting for initialization to finish processing
-   * queued profiles. Call synchronizes and waits on {@link #preInitQueueMonitor}.
-   *
-   * @param bucketId the bucket identifier
-   * @return the bucket identified by bucketId
-   * @throws org.apache.geode.distributed.DistributedSystemDisconnectedException if interrupted for
-   *         shutdown cancellation
-   */
-  public Bucket getBucketPostInit(int bucketId) {
-    synchronized (preInitQueueMonitor) {
-      boolean interrupted = false;
-      try {
-        while (preInitQueue != null) {
-          try {
-            preInitQueueMonitor.wait(); // spurious wakeup ok
-          } catch (InterruptedException e) {
-            interrupted = true;
-            getAdvisee().getCancelCriterion().checkCancelInProgress(e);
-          }
-        }
-      } finally {
-        if (interrupted) {
-          Thread.currentThread().interrupt();
-        }
-      }
-    }
-    return getBucket(bucketId);
   }
 
   /**
