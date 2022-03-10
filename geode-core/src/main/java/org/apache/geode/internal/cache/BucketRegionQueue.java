@@ -646,7 +646,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
   }
 
   @VisibleForTesting
-  List<Object> getHelperQueueList() {
+  public List<Object> getHelperQueueList() {
     getInitializationLock().readLock().lock();
     try {
       if (getPartitionedRegion().isDestroyed()) {
