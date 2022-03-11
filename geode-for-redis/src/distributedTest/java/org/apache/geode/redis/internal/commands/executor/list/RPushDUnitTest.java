@@ -19,12 +19,15 @@ import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADD
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.IntStream;
 
+import com.google.common.collect.Streams;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,6 +35,7 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 
+import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
@@ -61,8 +65,10 @@ public class RPushDUnitTest {
     clusterStartUp.startRedisVM(1, locator.getPort());
     clusterStartUp.startRedisVM(2, locator.getPort());
     clusterStartUp.startRedisVM(3, locator.getPort());
+
     int redisServerPort = clusterStartUp.getRedisPort(1);
     jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort), 10_000);
+
     listHashtags = makeListHashtags();
     keys = makeListKeys(listHashtags);
     keyToElementListMap = new HashMap<>();
@@ -116,6 +122,39 @@ public class RPushDUnitTest {
       assertThat(length).isGreaterThanOrEqualTo(MINIMUM_ITERATIONS * 2 * PUSH_LIST_SIZE);
       validateListContents(key, keyToElementListMap);
     }
+  }
+
+  @Test
+  public void concurrentRpush_behavesCorrectly() {
+    String KEY = "muggle";
+    String[] rpushElements1 = IntStream.range(0, 10)
+        .mapToObj(Integer::toString)
+        .toArray(String[]::new);
+    String[] rpushElements2 = IntStream.range(10, 20)
+        .mapToObj(Integer::toString)
+        .toArray(String[]::new);
+
+    String[] expectedContents1 =
+        Streams.concat(Arrays.stream(rpushElements1), Arrays.stream(rpushElements2))
+            .toArray(String[]::new);
+
+    String[] expectedContents2 =
+        Streams.concat(Arrays.stream(rpushElements2), Arrays.stream(rpushElements1))
+            .toArray(String[]::new);
+
+    new ConcurrentLoopingThreads(1000,
+        i -> jedis.rpush(KEY, rpushElements1),
+        i -> jedis.rpush(KEY, rpushElements2))
+            .runWithAction(() -> {
+              String[] actualContents = new String[expectedContents1.length];
+              for (int i = 0; i < actualContents.length; ++i) {
+                actualContents[i] = jedis.lindex(KEY, i);
+              }
+              assertThat(actualContents).satisfiesAnyOf(
+                  actual -> assertThat(actual).containsExactly(expectedContents1),
+                  actual -> assertThat(actual).containsExactly(expectedContents2));
+              jedis.del(KEY);
+            });
   }
 
   @Test

@@ -143,7 +143,7 @@ public class RedisList extends AbstractRedisData {
   }
 
   /**
-   * @param elementsToAdd elements to add to this list; NOTE this list may be modified by this call
+   * @param elementsToAdd elements to add to this list;
    * @param region the region this instance is stored in
    * @param key the name of the list to add to
    * @param onlyIfExists if true then the elements should only be added if the key already exists
@@ -152,8 +152,12 @@ public class RedisList extends AbstractRedisData {
    */
   public long rpush(List<byte[]> elementsToAdd, Region<RedisKey, RedisData> region,
       RedisKey key, final boolean onlyIfExists) {
-    elementsPushTail(elementsToAdd);
-    storeChanges(region, key, new AddByteArraysTail(elementsToAdd));
+    byte newVersion;
+    synchronized (this) {
+      newVersion = incrementAndGetVersion();
+      elementsToAdd.forEach(this::elementPushTail);
+    }
+    storeChanges(region, key, new AddByteArraysTail(newVersion, elementsToAdd));
     return elementList.size();
   }
 
@@ -245,12 +249,6 @@ public class RedisList extends AbstractRedisData {
 
   protected synchronized void elementPushTail(byte[] element) {
     elementList.addLast(element);
-  }
-
-  protected synchronized void elementsPushTail(List<byte[]> elementsToAdd) {
-    for (byte[] element : elementsToAdd) {
-      elementPushTail(element);
-    }
   }
 
   @Override
