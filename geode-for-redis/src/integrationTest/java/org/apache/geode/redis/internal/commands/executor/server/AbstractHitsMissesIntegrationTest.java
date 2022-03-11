@@ -613,6 +613,11 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
     runCommandAndAssertNoStatUpdates(LIST_KEY, k -> jedis.rpush(k, "element"));
   }
 
+  @Test
+  public void testRpop() {
+    runCommandAndAssertNoStatUpdates(LIST_KEY, k -> jedis.rpop(k));
+  }
+
   /************* Helper Methods *************/
   private void runCommandAndAssertHitsAndMisses(String key, Consumer<String> command) {
     Map<String, String> info = RedisTestHelper.getInfo(jedis);

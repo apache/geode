@@ -166,13 +166,19 @@ public class RedisList extends AbstractRedisData {
 
   /**
    * @param region the region this instance is stored in
-   * @param key the name of the set to add to
+   * @param key the name of the list to add to
    * @return the element actually popped
    */
   public byte[] lpop(Region<RedisKey, RedisData> region, RedisKey key) {
-    byte[] popped = elementRemove(0);
-    RemoveElementsByIndex removed = new RemoveElementsByIndex();
-    removed.add(0);
+    byte newVersion;
+    byte[] popped;
+    RemoveElementsByIndex removed;
+    synchronized (this) {
+      newVersion = incrementAndGetVersion();
+      popped = removeFirstElement();
+      removed = new RemoveElementsByIndex(newVersion);
+      removed.add(0);
+    }
     storeChanges(region, key, removed);
     return popped;
   }
@@ -199,6 +205,26 @@ public class RedisList extends AbstractRedisData {
 
     elementReplace(adjustedIndex, value);
     storeChanges(region, key, new ReplaceByteArrayAtOffset(index, value));
+  }
+
+  /**
+   * @param region the region this instance is stored in
+   * @param key the name of the list to add to
+   * @return the element actually popped
+   */
+  public byte[] rpop(Region<RedisKey, RedisData> region, RedisKey key) {
+    byte newVersion;
+    int index = elementList.size() - 1;
+    byte[] popped;
+    RemoveElementsByIndex removed;
+    synchronized (this) {
+      newVersion = incrementAndGetVersion();
+      popped = removeLastElement();
+      removed = new RemoveElementsByIndex(newVersion);
+      removed.add(index);
+    }
+    storeChanges(region, key, removed);
+    return popped;
   }
 
   @Override
@@ -260,6 +286,13 @@ public class RedisList extends AbstractRedisData {
 
   protected synchronized boolean elementRemove(byte[] element) {
     return elementList.remove(element);
+
+  public synchronized byte[] removeFirstElement() {
+    return elementList.removeFirst();
+  }
+
+  public synchronized byte[] removeLastElement() {
+    return elementList.removeLast();
   }
 
   protected synchronized void elementPushHead(byte[] element) {

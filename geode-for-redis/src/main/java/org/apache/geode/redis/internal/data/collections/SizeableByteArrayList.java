@@ -71,6 +71,20 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
   }
 
   @Override
+  public byte[] removeFirst() {
+    byte[] element = super.removeFirst();
+    memberOverhead -= calculateByteArrayOverhead(element);
+    return element;
+  }
+
+  @Override
+  public byte[] removeLast() {
+    byte[] element = super.removeLast();
+    memberOverhead -= calculateByteArrayOverhead(element);
+    return element;
+  }
+
+  @Override
   public void addFirst(byte[] element) {
     memberOverhead += calculateByteArrayOverhead(element);
     super.addFirst(element);

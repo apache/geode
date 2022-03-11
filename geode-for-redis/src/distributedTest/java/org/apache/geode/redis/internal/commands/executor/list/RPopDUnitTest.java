@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.redis.internal.commands.executor.list;
 
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
@@ -35,7 +34,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-public class LPopDUnitTest {
+public class RPopDUnitTest {
   public static final int INITIAL_LIST_SIZE = 10000;
 
   @Rule
@@ -63,23 +62,25 @@ public class LPopDUnitTest {
   }
 
   @Test
-  public void shouldDistributeDataAmongCluster_andRetainDataAfterServerCrash() {
-    String key = makeListKeyWithHashtag(1, clusterStartUp.getKeyOnServer("lpop", 1));
+  public void shouldPropagateDeltasAmongCluster_andRetainDataAfterServerCrash() {
+    String key = makeListKeyWithHashtag(1, clusterStartUp.getKeyOnServer("rpop", 1));
     List<String> elementList = makeElementList(key, INITIAL_LIST_SIZE);
     lpushPerformAndVerify(key, elementList);
 
-    // Remove all but last element
-    for (int i = INITIAL_LIST_SIZE - 1; i > 0; i--) {
-      assertThat(jedis.lpop(key)).isEqualTo(makeElementString(key, i));
+    // Remove all but first element
+    for (int i = 0; i < INITIAL_LIST_SIZE - 1; i++) {
+      assertThat(jedis.rpop(key)).isEqualTo(makeElementString(key, i));
     }
+
     clusterStartUp.crashVM(1); // kill primary server
 
-    assertThat(jedis.lpop(key)).isEqualTo(elementList.get(0));
+    assertThat(jedis.llen(key)).isEqualTo(1);
+    assertThat(jedis.rpop(key)).isEqualTo(elementList.get(elementList.size() - 1));
     assertThat(jedis.exists(key)).isFalse();
   }
 
   @Test
-  public void givenBucketsMoveDuringLpop_thenOperationsAreNotLost() throws Exception {
+  public void givenBucketsMoveDuringRpop_thenOperationsAreNotLost() throws Exception {
     AtomicLong runningCount = new AtomicLong(3);
     List<String> listHashtags = makeListHashtags();
     List<String> keys = makeListKeys(listHashtags);
@@ -93,11 +94,11 @@ public class LPopDUnitTest {
     lpushPerformAndVerify(keys.get(2), elementList3);
 
     Runnable task1 =
-        () -> lpopPerformAndVerify(keys.get(0), runningCount);
+        () -> rpopPerformAndVerify(keys.get(0), runningCount);
     Runnable task2 =
-        () -> lpopPerformAndVerify(keys.get(1), runningCount);
+        () -> rpopPerformAndVerify(keys.get(1), runningCount);
     Runnable task3 =
-        () -> lpopPerformAndVerify(keys.get(2), runningCount);
+        () -> rpopPerformAndVerify(keys.get(2), runningCount);
 
     Future<Void> future1 = executor.runAsync(task1);
     Future<Void> future2 = executor.runAsync(task2);
@@ -117,9 +118,9 @@ public class LPopDUnitTest {
 
   private List<String> makeListHashtags() {
     List<String> listHashtags = new ArrayList<>();
-    listHashtags.add(clusterStartUp.getKeyOnServer("lpop", 1));
-    listHashtags.add(clusterStartUp.getKeyOnServer("lpop", 2));
-    listHashtags.add(clusterStartUp.getKeyOnServer("lpop", 3));
+    listHashtags.add(clusterStartUp.getKeyOnServer("rpop", 1));
+    listHashtags.add(clusterStartUp.getKeyOnServer("rpop", 2));
+    listHashtags.add(clusterStartUp.getKeyOnServer("rpop", 3));
     return listHashtags;
   }
 
@@ -139,15 +140,15 @@ public class LPopDUnitTest {
         .isEqualTo(elementList.size());
   }
 
-  private void lpopPerformAndVerify(String key, AtomicLong runningCount) {
+  private void rpopPerformAndVerify(String key, AtomicLong runningCount) {
     assertThat(jedis.llen(key)).isEqualTo(INITIAL_LIST_SIZE);
 
-    int elementCount = INITIAL_LIST_SIZE - 1;
-    while (jedis.llen(key) > 0 && runningCount.get() > 0) {
-      // String expected = makeElementString(key, elementCount);
+    int elementCount = 0;
+    int elementListSize = INITIAL_LIST_SIZE - 1;
+    while (jedis.llen(key) > 0 && elementCount <= elementListSize && runningCount.get() > 0) {
       String element = "";
       try {
-        element = jedis.lpop(key);
+        element = jedis.rpop(key);
         String[] chunks = element.split("-");
         int actualCount = Integer.parseInt(chunks[4]);
         int expectedCount = elementCount;
@@ -155,11 +156,11 @@ public class LPopDUnitTest {
             .as("Actual element count did not match expected element count for element " + element)
             .satisfiesAnyOf(
                 count -> assertThat(count).isEqualTo(expectedCount),
-                count -> assertThat(count).isEqualTo(expectedCount - 1));
-        elementCount = actualCount - 1;
+                count -> assertThat(count).isEqualTo(expectedCount + 1));
+        elementCount = actualCount + 1;
       } catch (Exception ex) {
         runningCount.set(0); // test is over
-        throw new RuntimeException("Exception performing LPOP for list '"
+        throw new RuntimeException("Exception performing RPOP for list '"
             + key + "' at element " + element + ": " + ex.getMessage());
       }
     }
