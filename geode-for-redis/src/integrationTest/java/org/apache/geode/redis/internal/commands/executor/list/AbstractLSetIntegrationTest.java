@@ -18,6 +18,7 @@ import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExact
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INDEX_OUT_OF_RANGE;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NO_SUCH_KEY;
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -61,6 +62,13 @@ public abstract class AbstractLSetIntegrationTest implements RedisIntegrationTes
   public void lset_onKeyThatDoesNotExist_returnsError_doesNotCreateKey() {
     assertThatThrownBy(() -> jedis.lset(KEY, 1, newValue)).hasMessage(ERROR_NO_SUCH_KEY);
     assertThat(jedis.exists(KEY)).isFalse();
+  }
+
+  @Test
+  public void lset_onKeyThatIsNotAList_errors() {
+    jedis.sadd(KEY, "member");
+
+    assertThatThrownBy(() -> jedis.lset(KEY, 1, newValue)).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test

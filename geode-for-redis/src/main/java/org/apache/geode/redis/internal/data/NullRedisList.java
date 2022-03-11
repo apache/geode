@@ -16,7 +16,6 @@
 
 package org.apache.geode.redis.internal.data;
 
-
 import java.util.Collections;
 import java.util.List;
 
