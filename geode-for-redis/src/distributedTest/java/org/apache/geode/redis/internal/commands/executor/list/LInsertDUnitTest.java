@@ -98,31 +98,19 @@ public class LInsertDUnitTest {
     lpushPerformAndVerify(keys.get(1), elementList2);
     lpushPerformAndVerify(keys.get(2), elementList3);
 
-    Runnable task1 = () -> {
-      while (continueInserting.get()) {
-        linsertPerformAndVerify(keys.get(0), BEFORE, jedis.lindex(keys.get(0), 2), insertedValue);
-      }
-    };
-    Runnable task2 = () -> {
-      while (continueInserting.get()) {
-        linsertPerformAndVerify(keys.get(1), AFTER, jedis.lindex(keys.get(1), 2), insertedValue);
-      }
-    };
-    Runnable task3 = () -> {
-      while (continueInserting.get()) {
-        linsertPerformAndVerify(keys.get(2), AFTER, jedis.lindex(keys.get(2), 2), insertedValue);
-      }
-    };
+    Runnable task1 = () -> linsertPerformAndVerify(keys.get(0), BEFORE,
+        jedis.lindex(keys.get(0), 2), insertedValue, continueInserting);
+    Runnable task2 = () -> linsertPerformAndVerify(keys.get(1), AFTER, jedis.lindex(keys.get(1), 2),
+        insertedValue, continueInserting);
+    Runnable task3 = () -> linsertPerformAndVerify(keys.get(2), AFTER, jedis.lindex(keys.get(2), 2),
+        insertedValue, continueInserting);
 
     Future<Void> future1 = executor.runAsync(task1);
     Future<Void> future2 = executor.runAsync(task2);
     Future<Void> future3 = executor.runAsync(task3);
 
-    for (int i = 0; i < 50; i++) {
-      if (i == 20) {
-        continueInserting.set(false);
-      }
-
+    for (int i = 0; i < 20; i++) {
+      continueInserting.set(false);
       clusterStartUp.moveBucketForKey(listHashtags.get(i % listHashtags.size()));
       Thread.sleep(500);
     }
@@ -148,23 +136,26 @@ public class LInsertDUnitTest {
     return keys;
   }
 
-  private void linsertPerformAndVerify(String key, ListPosition pos, String pivot, String value) {
-    long startLength = jedis.llen(key);
-    assertThat(jedis.linsert(key, pos, pivot, value)).isEqualTo(startLength + 1);
+  private void linsertPerformAndVerify(String key, ListPosition pos, String pivot, String value,
+      AtomicBoolean continueInserting) {
+    while (continueInserting.get()) {
+      long startLength = jedis.llen(key);
+      assertThat(jedis.linsert(key, pos, pivot, value)).isEqualTo(startLength + 1);
 
-    for (int i = 0; i < startLength + 1; i++) {
-      if (pos == BEFORE && jedis.lindex(key, i).equalsIgnoreCase(value)) {
-        assertThat(jedis.lindex(key, i + 1)).isEqualTo(pivot);
-        break;
-      } else if (pos == AFTER && jedis.lindex(key, i).equalsIgnoreCase(pivot)) {
-        assertThat(jedis.lindex(key, i + 1)).isEqualTo(value);
-        break;
-      }
+      for (int i = 0; i < startLength + 1; i++) {
+        if (pos == BEFORE && jedis.lindex(key, i).equalsIgnoreCase(value)) {
+          assertThat(jedis.lindex(key, i + 1)).isEqualTo(pivot);
+          break;
+        } else if (pos == AFTER && jedis.lindex(key, i).equalsIgnoreCase(pivot)) {
+          assertThat(jedis.lindex(key, i + 1)).isEqualTo(value);
+          break;
+        }
 
-      if (i == startLength) {
-        assertThat(jedis.lindex(key, startLength))
-            .as("neither element nor pivot was found")
-            .isEqualTo(value);
+        if (i == startLength) {
+          assertThat(jedis.lindex(key, startLength))
+              .as("neither element nor pivot was found")
+              .isEqualTo(value);
+        }
       }
     }
   }
