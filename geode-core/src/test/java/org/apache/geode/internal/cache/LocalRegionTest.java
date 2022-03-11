@@ -17,10 +17,12 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -28,7 +30,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import org.junit.Before;
@@ -39,6 +43,7 @@ import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskWriteAttributes;
 import org.apache.geode.cache.EntryDestroyedException;
@@ -50,6 +55,11 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
+import org.apache.geode.cache.query.Index;
+import org.apache.geode.cache.query.internal.QueryConfigurationService;
+import org.apache.geode.cache.query.internal.index.IndexCreationData;
+import org.apache.geode.cache.query.internal.index.IndexManager;
+import org.apache.geode.cache.query.internal.index.PartitionedIndex;
 import org.apache.geode.distributed.internal.DSClock;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -336,5 +346,62 @@ public class LocalRegionTest {
     assertThat(clientEvent.isPossibleDuplicate()).isTrue();
     assertThat(clientEvent.isConcurrencyConflict()).isTrue();
     assertThat(clientEvent.getVersionTag()).isEqualTo(tag);
+  }
+
+  @Test
+  public void createOQLIndexOnPartitionedRegionAddsIndexesToSets() throws Exception {
+    LocalRegion region =
+        new LocalRegion("region", regionAttributes, null, cache, internalRegionArguments,
+            internalDataView, regionMapConstructor, serverRegionProxyConstructor, entryEventFactory,
+            poolFinder, regionPerfStatsFactory, disabledClock());
+    when(cache.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
+    when(cache.getService(any())).thenReturn(mock(QueryConfigurationService.class));
+    IndexManager indexManager = mock(IndexManager.class);
+    region.setIndexManager(indexManager);
+    Set<Index> indexes = new HashSet<>();
+    Set<Index> prIndexes = new HashSet<>();
+    Index index = mock(Index.class);
+    PartitionedIndex prIndex = mock(PartitionedIndex.class);
+    IndexCreationData indexCreationData = mock(IndexCreationData.class);
+    when(indexCreationData.getPartitionedIndex()).thenReturn(prIndex);
+    when(indexManager.createIndex(eq(null), eq(null), eq(null), eq(null), eq(null), any(),
+        eq(prIndex), eq(true))).thenReturn(index);
+
+    region.createOQLIndexOnPartitionedRegion(internalRegionArguments, false, indexes, prIndexes,
+        indexCreationData);
+
+    assertThat(indexes).contains(index);
+    assertThat(prIndexes).contains(prIndex);
+  }
+
+  @Test
+  public void createOQLIndexOnPartitionedRegionThrowsIfIndexManagerIsNullDueToCacheClosed() {
+    LocalRegion region =
+        spy(new LocalRegion("region", regionAttributes, null, cache, internalRegionArguments,
+            internalDataView, regionMapConstructor, serverRegionProxyConstructor, entryEventFactory,
+            poolFinder, regionPerfStatsFactory, disabledClock()));
+    CacheClosedException exception = new CacheClosedException();
+    CancelCriterion cancelCriterion = mock(CancelCriterion.class);
+    when(cache.getCancelCriterion()).thenReturn(cancelCriterion);
+    doThrow(exception).when(cancelCriterion).checkCancelInProgress(null);
+    doReturn(true).when(region).isDestroyed();
+
+    assertThatThrownBy(() -> region.createOQLIndexOnPartitionedRegion(internalRegionArguments,
+        false, new HashSet<>(), new HashSet<>(), mock(IndexCreationData.class)))
+            .isEqualTo(exception);
+  }
+
+  @Test
+  public void setIndexManagerChecksReadiness() {
+    LocalRegion region =
+        spy(new LocalRegion("region", regionAttributes, null, cache, internalRegionArguments,
+            internalDataView, regionMapConstructor, serverRegionProxyConstructor, entryEventFactory,
+            poolFinder, regionPerfStatsFactory, disabledClock()));
+    doNothing().when(region).checkRegionDestroyed(true);
+
+    region.setIndexManager(mock(IndexManager.class));
+
+    verify(region).checkReadiness();
+    verify(region).checkRegionDestroyed(true);
   }
 }
