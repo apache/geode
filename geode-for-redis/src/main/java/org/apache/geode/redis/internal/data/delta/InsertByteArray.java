@@ -25,13 +25,18 @@ import java.io.IOException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.redis.internal.data.AbstractRedisData;
 
-public class InsertByteArray implements DeltaInfo {
+public class InsertByteArray extends DeltaInfo {
   private final byte[] byteArray;
   private final int index;
 
   public InsertByteArray(byte[] delta, int index) {
     byteArray = delta;
     this.index = index;
+  }
+
+  @Override
+  public DeltaType getType() {
+    return INSERT_BYTE_ARRAY;
   }
 
   public void serializeTo(DataOutput out) throws IOException {
