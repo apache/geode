@@ -1769,8 +1769,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   }
 
   @VisibleForTesting
-  public int getNumOfPosssibleDuplicateEvents() {
-    int numberOfPosssibleDuplicateEvents = 0;
+  public int getNumOfPossibleDuplicateEvents() {
+    int numberOfPossibleDuplicateEvents = 0;
 
     for (PartitionedRegion prQ : userRegionNameToShadowPRMap.values()) {
       Set<BucketRegion> primaryBuckets = prQ.getDataStore().getAllLocalPrimaryBucketRegions();
@@ -1781,12 +1781,12 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         for (Object o : objects) {
           GatewaySenderEventImpl gse = (GatewaySenderEventImpl) o;
           if (gse.getPossibleDuplicate()) {
-            numberOfPosssibleDuplicateEvents++;
+            numberOfPossibleDuplicateEvents++;
           }
         }
       }
     }
-    return numberOfPosssibleDuplicateEvents;
+    return numberOfPossibleDuplicateEvents;
   }
 
   /**

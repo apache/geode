@@ -469,16 +469,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
           boolean interrupted = Thread.interrupted();
           try {
             if (resetLastPeekedEvents) {
-              if (!batchIdToEventsMap.isEmpty()) {
-                for (Map.Entry<Integer, List<GatewaySenderEventImpl>[]> entry : batchIdToEventsMap
-                    .entrySet()) {
-                  for (GatewaySenderEventImpl event : entry.getValue()[0]) {
-                    if (!event.getPossibleDuplicate()) {
-                      event.setPossibleDuplicate(true);
-                    }
-                  }
-                }
-              }
+              pendingEventsInBatchesMarkAsPossibleDuplicate();
               resetLastPeekedEvents();
               resetLastPeekedEvents = false;
             }
@@ -1226,18 +1217,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
         logger.warn("Destroying GatewayEventDispatcher with actively queued data.");
       }
       if (resetLastPeekedEvents) {
-        if (!batchIdToEventsMap.isEmpty()) {
-          for (Map.Entry<Integer, List<GatewaySenderEventImpl>[]> entry : batchIdToEventsMap
-              .entrySet()) {
-            for (GatewaySenderEventImpl event : entry.getValue()[0]) {
-              if (!event.getPossibleDuplicate()) {
-                event.setPossibleDuplicate(true);
-              }
-            }
-          }
-        }
-
-
+        pendingEventsInBatchesMarkAsPossibleDuplicate();
         resetLastPeekedEvents();
         resetLastPeekedEvents = false;
       }
@@ -1341,6 +1321,19 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
   }
 
   protected abstract void enqueueEvent(GatewayQueueEvent<?, ?> event);
+
+  private void pendingEventsInBatchesMarkAsPossibleDuplicate() {
+    if (!batchIdToEventsMap.isEmpty()) {
+      for (Map.Entry<Integer, List<GatewaySenderEventImpl>[]> entry : batchIdToEventsMap
+          .entrySet()) {
+        for (GatewaySenderEventImpl event : entry.getValue()[0]) {
+          if (!event.getPossibleDuplicate()) {
+            event.setPossibleDuplicate(true);
+          }
+        }
+      }
+    }
+  }
 
   protected static class SenderStopperCallable implements Callable<Boolean> {
     private final AbstractGatewaySenderEventProcessor processor;

@@ -235,8 +235,8 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
   }
 
   @VisibleForTesting
-  public int getNumOfPosssibleDuplicateEvents() {
+  public int getNumOfPossibleDuplicateEvents() {
     return ((ParallelGatewaySenderQueue) (processors[0].getQueue()))
-        .getNumOfPosssibleDuplicateEvents();
+        .getNumOfPossibleDuplicateEvents();
   }
 }

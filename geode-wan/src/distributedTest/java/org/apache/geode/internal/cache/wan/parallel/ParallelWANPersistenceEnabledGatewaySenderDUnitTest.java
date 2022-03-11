@@ -2242,11 +2242,13 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
 
 
   /**
-   * Enable persistence for region as well as GatewaySender and see if remote site receives all the
-   * events.
+   * When gateway senders starts to unqueue, stop gateway sender, and check that some evnts are
+   * dispatched to receiving side,
+   * but events are not removed on sending side.
    */
   @Test
-  public void testPersistentPartitionedRegionWithGatewaySenderStartStopEventsDispatchedNoChangesInQueue() {
+  public void testPersistentPartitionedRegionWithGatewaySenderStartStopEventsDispatchedNoChangesInQueue()
+      throws InterruptedException {
     Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
@@ -2284,16 +2286,11 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
 
     createReceiverInVMs(vm2, vm3);
 
-    AsyncInvocation inv1 = vm4.invokeAsync(startSenderRunnable());
-    AsyncInvocation inv2 = vm5.invokeAsync(startSenderRunnable());
+    AsyncInvocation<Void> inv1 = vm4.invokeAsync(startSenderRunnable());
+    AsyncInvocation<Void> inv2 = vm5.invokeAsync(startSenderRunnable());
 
-    try {
-      inv1.join();
-      inv2.join();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-      fail();
-    }
+    inv1.get();
+    inv2.get();
 
     logger.info("Waiting for senders running.");
     // wait for senders running
@@ -2302,16 +2299,11 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
 
     logger.info("All the senders are now running...");
 
-    AsyncInvocation inv3 = vm4.invokeAsync(stopSenderRunnable());
-    AsyncInvocation inv4 = vm5.invokeAsync(stopSenderRunnable());
+    AsyncInvocation<Void> inv3 = vm4.invokeAsync(stopSenderRunnable());
+    AsyncInvocation<Void> inv4 = vm5.invokeAsync(stopSenderRunnable());
 
-    try {
-      inv3.join();
-      inv4.join();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-      fail();
-    }
+    inv3.get();
+    inv4.get();
 
     vm4.invoke(waitForSenderNonRunnable());
     vm5.invoke(waitForSenderNonRunnable());
@@ -2327,10 +2319,10 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     assertThat(regionSize1).isGreaterThan(0);
     assertThat(regionSize2).isGreaterThan(0);
 
-    Integer vm4NumDupplicate = vm4.invoke(() -> WANTestBase.getNumOfPosssibleDuplicateEvents("ln"));
-    Integer vm5NumDupplicate = vm5.invoke(() -> WANTestBase.getNumOfPosssibleDuplicateEvents("ln"));
+    Integer vm4NumDuplicate = vm4.invoke(() -> WANTestBase.getNumOfPossibleDuplicateEvents("ln"));
+    Integer vm5NumDuplicate = vm5.invoke(() -> WANTestBase.getNumOfPossibleDuplicateEvents("ln"));
 
-    assertThat(vm4NumDupplicate + vm5NumDupplicate).isGreaterThan(100);
+    assertThat(vm4NumDuplicate + vm5NumDuplicate).isGreaterThan(100);
 
   }
 
