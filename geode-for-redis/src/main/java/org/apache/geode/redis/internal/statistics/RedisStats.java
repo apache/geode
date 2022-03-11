@@ -20,7 +20,6 @@ import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.getTime;
 import static org.apache.geode.logging.internal.executors.LoggingExecutors.newSingleThreadScheduledExecutor;
 
-import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -227,6 +226,7 @@ public class RedisStats {
     private int tickNumber = 0;
     private long valueReadLastTick;
     private final long[] valuesReadOverLastNSamples;
+    private long currentTotal = 0;
     private final Callable<Long> statCallable;
 
     private RollingAverageStat(int samplesPerSecond, Callable<Long> getCurrentValue) {
@@ -243,12 +243,13 @@ public class RedisStats {
       }
       long delta = currentValue - valueReadLastTick;
       valueReadLastTick = currentValue;
+
+      currentTotal = currentTotal + delta - valuesReadOverLastNSamples[tickNumber];
       valuesReadOverLastNSamples[tickNumber] = delta;
-      tickNumber++;
-      if (tickNumber >= valuesReadOverLastNSamples.length) {
-        tickNumber = 0;
-      }
-      return Arrays.stream(valuesReadOverLastNSamples).sum();
+      // same as mod (%) but measurably faster...
+      tickNumber = (tickNumber + 1) & (valuesReadOverLastNSamples.length - 1);
+
+      return currentTotal;
     }
   }
 }
