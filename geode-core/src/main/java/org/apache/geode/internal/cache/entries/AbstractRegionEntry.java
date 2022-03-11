@@ -170,8 +170,7 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
         // by the RegionMap. It is unclear why this code is needed. ARM destroy
         // does this also and we are now doing it as phase3 of the ARM destroy.
         removePhase2();
-        ((DiskRecoveryStore) rgn).getRegionMap().removeEntry(event.getKey(), this, true, event,
-            rgn);
+        ((DiskRecoveryStore) rgn).getRegionMap().removeEntry(event.getKey(), this, true);
       }
     }
   }

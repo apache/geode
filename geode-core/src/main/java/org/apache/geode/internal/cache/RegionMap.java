@@ -324,13 +324,6 @@ public interface RegionMap extends EvictableMap {
    */
   void removeEntry(Object key, RegionEntry value, boolean updateStats);
 
-  /**
-   * Removes the given key if the enclosing RegionEntry is still in this map for the given
-   * EntryEvent
-   */
-  void removeEntry(Object key, RegionEntry re, boolean updateStat, EntryEventImpl event,
-      InternalRegion owner);
-
   void copyRecoveredEntries(RegionMap rm);
 
   /**
