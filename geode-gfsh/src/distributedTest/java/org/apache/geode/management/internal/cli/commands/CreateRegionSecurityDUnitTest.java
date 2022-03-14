@@ -84,6 +84,6 @@ public class CreateRegionSecurityDUnitTest {
     gfsh.executeAndAssertThat("create region --type=REPLICATE_PROXY --name=" + regionName)
         .statusIsError()
         .containsOutput(
-            "Region " + SEPARATOR + "dataManageAuthorized already exists on these members");
+            "Region " + SEPARATOR + "dataManageAuthorized already exists on the cluster");
   }
 }
