@@ -35,6 +35,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.redis.internal.commands.Command;
 import org.apache.geode.redis.internal.commands.RedisCommandType;
 import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.data.collections.SizeableByteArrayList;
@@ -220,8 +221,8 @@ public class RedisList extends AbstractRedisData {
     return popped;
   }
 
-  public static List<byte[]> blpop(ExecutionHandlerContext context, List<RedisKey> keys,
-      double timeoutSeconds) {
+  public static List<byte[]> blpop(ExecutionHandlerContext context, Command command,
+      List<RedisKey> keys, double timeoutSeconds) {
     RegionProvider regionProvider = context.getRegionProvider();
     for (RedisKey key : keys) {
       RedisList list = regionProvider.getTypedRedisData(REDIS_LIST, key, false);
@@ -236,15 +237,7 @@ public class RedisList extends AbstractRedisData {
       }
     }
 
-    List<byte[]> commandArgs = new ArrayList<>(keys.size() + 1);
-    commandArgs.add(RedisCommandType.BLPOP.name().getBytes());
-    keys.forEach(x -> commandArgs.add(x.toBytes()));
-    // This is a placeholder for the timeout. If the command is resubmitted it will be updated with
-    // an adjusted timeout value.
-    commandArgs.add("0".getBytes());
-
-    context.registerListener(new BlockingCommandListener(context, RedisCommandType.BLPOP, keys,
-        timeoutSeconds, commandArgs));
+    context.registerListener(new BlockingCommandListener(context, command, keys, timeoutSeconds));
 
     return null;
   }

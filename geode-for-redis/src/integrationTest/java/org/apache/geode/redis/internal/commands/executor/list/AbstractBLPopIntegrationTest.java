@@ -88,6 +88,14 @@ public abstract class AbstractBLPopIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
+  public void testBLPopForNonListKey() {
+    jedis.set("not-a-list", "value");
+
+    assertThatThrownBy(() -> jedis.blpop(0, "not-a-list"))
+        .hasMessage(RedisConstants.ERROR_WRONG_TYPE);
+  }
+
+  @Test
   public void testBLPopWhenValueExists() {
     jedis.lpush(KEY, "value1", "value2");
 

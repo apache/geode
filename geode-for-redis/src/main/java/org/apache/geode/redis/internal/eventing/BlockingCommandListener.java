@@ -17,7 +17,11 @@ package org.apache.geode.redis.internal.eventing;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.redis.internal.commands.Command;
 import org.apache.geode.redis.internal.commands.RedisCommandType;
 import org.apache.geode.redis.internal.commands.executor.RedisResponse;
@@ -28,12 +32,11 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class BlockingCommandListener implements EventListener {
 
   private final ExecutionHandlerContext context;
-  private final RedisCommandType command;
+  private final Command command;
   private final List<RedisKey> keys;
-  private final List<byte[]> commandArgs;
-  private final long timeoutNanos;
+  private final double timeoutSeconds;
   private final long timeSubmitted;
-  private Runnable cleanupTask;
+  private AtomicBoolean active = new AtomicBoolean(true);
 
   /**
    * Constructor to create an instance of a BlockingCommandListener in response to a blocking
@@ -44,15 +47,13 @@ public class BlockingCommandListener implements EventListener {
    * @param command the blocking command associated with this listener
    * @param keys the list of keys the command is interested in
    * @param timeoutSeconds the timeout for the command to block in seconds
-   * @param commandArgs all arguments to the command which are used for resubmission
    */
-  public BlockingCommandListener(ExecutionHandlerContext context, RedisCommandType command,
-      List<RedisKey> keys, double timeoutSeconds, List<byte[]> commandArgs) {
+  public BlockingCommandListener(ExecutionHandlerContext context, Command command,
+      List<RedisKey> keys, double timeoutSeconds) {
     this.context = context;
     this.command = command;
-    this.timeoutNanos = (long) (timeoutSeconds * 1e9);
+    this.timeoutSeconds = timeoutSeconds;
     this.keys = Collections.unmodifiableList(keys);
-    this.commandArgs = commandArgs;
     timeSubmitted = System.nanoTime();
   }
 
@@ -67,7 +68,9 @@ public class BlockingCommandListener implements EventListener {
       return EventResponse.CONTINUE;
     }
 
-    resubmitCommand();
+    if (active.compareAndSet(true, false)) {
+      resubmitCommand();
+    }
     return EventResponse.REMOVE_AND_STOP;
   }
 
@@ -75,7 +78,8 @@ public class BlockingCommandListener implements EventListener {
   public void resubmitCommand() {
     // Recalculate the timeout since we've already been waiting
     double adjustedTimeoutSeconds = 0;
-    if (timeoutNanos > 0) {
+    if (timeoutSeconds > 0.0D) {
+      long timeoutNanos = (long) (timeoutSeconds * 1e9);
       long adjustedTimeoutNanos = timeoutNanos - (System.nanoTime() - timeSubmitted);
       adjustedTimeoutNanos = Math.max(1, adjustedTimeoutNanos);
       adjustedTimeoutSeconds = ((double) adjustedTimeoutNanos) / 1e9;
@@ -84,36 +88,34 @@ public class BlockingCommandListener implements EventListener {
     // The commands we are currently supporting all have the timeout at the end of the argument
     // list. Some newer Redis 7 commands (BLMPOP and BZMPOP) have the timeout as the first argument
     // after the command. We'll need to adjust this once those commands are supported.
-    commandArgs.set(commandArgs.size() - 1, Coder.doubleToBytes(adjustedTimeoutSeconds));
+    List<byte[]> commandArguments = command.getCommandArguments();
+    commandArguments.set(commandArguments.size() - 1, Coder.doubleToBytes(adjustedTimeoutSeconds));
 
-    context.resubmitCommand(new Command(command, commandArgs));
+    context.resubmitCommand(command);
   }
 
   @Override
-  public long getTimeout() {
-    return timeoutNanos;
+  public void scheduleTimeout(ScheduledExecutorService executor, EventDistributor distributor) {
+    if (timeoutSeconds == 0) {
+      return;
+    }
+
+    long timeoutNanos = (long) (timeoutSeconds * 1e9);
+    executor.schedule(() -> timeout(distributor), timeoutNanos, TimeUnit.NANOSECONDS);
   }
 
-  @Override
-  public void timeout() {
-    context.writeToChannel(RedisResponse.nilArray());
-  }
-
-  @Override
-  public void setCleanupTask(Runnable cleanupTask) {
-    this.cleanupTask = cleanupTask;
-  }
-
-  @Override
-  public void cleanup() {
-    if (cleanupTask != null) {
-      cleanupTask.run();
+  @VisibleForTesting
+  void timeout(EventDistributor distributor) {
+    if (active.compareAndSet(true, false)) {
+      distributor.removeListener(this);
+      context.writeToChannel(RedisResponse.nilArray());
     }
   }
 
   @Override
   public String toString() {
-    return "BlockingCommandListener [command:" + command.name() + " keys:" + keys + "]";
+    return "BlockingCommandListener [command:" + command.getCommandType().name()
+        + " keys:" + keys + "]";
   }
 
 }

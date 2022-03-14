@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.eventing;
 
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.geode.redis.internal.commands.RedisCommandType;
 import org.apache.geode.redis.internal.data.RedisKey;
@@ -50,22 +51,9 @@ public interface EventListener {
   void resubmitCommand();
 
   /**
-   * Retrieve the timeout for this listener.
+   * Retrieve the timeout in nanoseconds for this listener
    */
-  long getTimeout();
+  // long getTimeout();
 
-  /**
-   * Callback used when the listener times out.
-   */
-  void timeout();
-
-  /**
-   * Set a runnable that is responsible for any cleanup when this listener is removed.
-   */
-  void setCleanupTask(Runnable r);
-
-  /**
-   * Called when this listener is removed
-   */
-  void cleanup();
+  void scheduleTimeout(ScheduledExecutorService executor, EventDistributor distributor);
 }

@@ -15,15 +15,14 @@
 
 package org.apache.geode.redis.internal.eventing;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.partition.PartitionListenerAdapter;
@@ -39,8 +38,6 @@ public class EventDistributor extends PartitionListenerAdapter {
       new ScheduledThreadPoolExecutor(1,
           new LoggingThreadFactory("GeodeForRedisEventTimer-", true));
 
-  private int keysRegistered = 0;
-
   public EventDistributor() {
     timerExecutor.setRemoveOnCancelPolicy(true);
   }
@@ -50,11 +47,7 @@ public class EventDistributor extends PartitionListenerAdapter {
       listeners.computeIfAbsent(key, k -> new LinkedBlockingQueue<>()).add(listener);
     }
 
-    if (listener.getTimeout() != 0) {
-      scheduleTimeout(listener, listener.getTimeout());
-    }
-
-    keysRegistered += listener.keys().size();
+    listener.scheduleTimeout(timerExecutor, this);
   }
 
   public void fireEvent(RedisCommandType command, RedisKey key) {
@@ -75,8 +68,8 @@ public class EventDistributor extends PartitionListenerAdapter {
    * The total number of keys registered by all listeners (includes duplicates).
    */
   @VisibleForTesting
-  public int size() {
-    return keysRegistered;
+  public int getRegisteredKeys() {
+    return listeners.values().stream().mapToInt(Collection::size).sum();
   }
 
   @Override
@@ -89,37 +82,22 @@ public class EventDistributor extends PartitionListenerAdapter {
     }
 
     resubmittingList.forEach(x -> {
-      x.resubmitCommand();
       removeListener(x);
+      x.resubmitCommand();
     });
   }
 
-  private synchronized void removeListener(EventListener listener) {
-    boolean listenerRemoved = false;
+  public synchronized void removeListener(EventListener listener) {
     for (RedisKey key : listener.keys()) {
       Queue<EventListener> listenerList = listeners.get(key);
       if (listenerList == null) {
         continue;
       }
-      listenerRemoved |= listenerList.remove(listener);
+      listenerList.remove(listener);
       if (listenerList.isEmpty()) {
         listeners.remove(key);
       }
     }
-
-    if (listenerRemoved) {
-      keysRegistered -= listener.keys().size();
-      listener.cleanup();
-    }
   }
 
-  private void scheduleTimeout(EventListener listener, long timeout) {
-    Runnable timeoutTask = () -> {
-      removeListener(listener);
-      listener.timeout();
-    };
-    ScheduledFuture<?> scheduledTask =
-        timerExecutor.schedule(timeoutTask, timeout, TimeUnit.NANOSECONDS);
-    listener.setCleanupTask(() -> scheduledTask.cancel(false));
-  }
 }

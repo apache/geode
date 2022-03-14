@@ -32,6 +32,6 @@ public class BLPopIntegrationTest extends AbstractBLPopIntegrationTest {
 
   public void awaitEventDistributorSize(int size) {
     EventDistributor distributor = server.getServer().getEventDistributor();
-    GeodeAwaitility.await().until(() -> distributor.size() == size);
+    GeodeAwaitility.await().until(() -> distributor.getRegisteredKeys() == size);
   }
 }

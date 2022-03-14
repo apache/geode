@@ -92,7 +92,7 @@ public class BLPopDUnitTest {
   private int getRegisteredListeners(MemberVM vm) {
     return vm.invoke(() -> {
       GeodeRedisService service = ClusterStartupRule.getCache().getService(GeodeRedisService.class);
-      return service.getRedisServer().getEventDistributor().size();
+      return service.getRedisServer().getEventDistributor().getRegisteredKeys();
     });
   }
 
