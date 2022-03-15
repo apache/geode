@@ -16,8 +16,6 @@ package org.apache.geode.redis.internal.commands.executor.list;
 
 import static org.apache.geode.redis.RedisCommandArgumentsTestHelper.assertExactNumberOfArgs;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INDEX_OUT_OF_RANGE;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
-import static org.apache.geode.redis.internal.RedisConstants.ERROR_NO_SUCH_KEY;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_WRONG_TYPE;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
@@ -60,7 +58,7 @@ public abstract class AbstractLSetIntegrationTest implements RedisIntegrationTes
 
   @Test
   public void lset_onKeyThatDoesNotExist_returnsError_doesNotCreateKey() {
-    assertThatThrownBy(() -> jedis.lset(KEY, 1, newValue)).hasMessage(ERROR_NO_SUCH_KEY);
+    assertThatThrownBy(() -> jedis.lset(KEY, 1, newValue)).isNotNull();
     assertThat(jedis.exists(KEY)).isFalse();
   }
 
@@ -79,21 +77,6 @@ public abstract class AbstractLSetIntegrationTest implements RedisIntegrationTes
 
     assertThatThrownBy(() -> jedis.lset(KEY, -10, newValue))
         .hasMessage(ERROR_INDEX_OUT_OF_RANGE);
-  }
-
-  @Test
-  public void lset_returnsNotAnIntegerError_givenKeyExistsAndIndexIsNotAValidInteger() {
-    jedis.lpush(KEY, initialValue);
-    assertThatThrownBy(
-        () -> jedis.sendCommand(KEY, Protocol.Command.LSET, KEY, "notAnInteger", "newElement"))
-            .hasMessage(ERROR_NOT_INTEGER);
-  }
-
-  @Test
-  public void lset_returnsNoSuchKeyError_givenKeyDoesNotExistAndIndexIsNotAValidInteger() {
-    assertThatThrownBy(
-        () -> jedis.sendCommand(KEY, Protocol.Command.LSET, KEY, "notAnInteger", "newElement"))
-            .hasMessage(ERROR_NO_SUCH_KEY);
   }
 
   @Test
@@ -186,7 +169,7 @@ public abstract class AbstractLSetIntegrationTest implements RedisIntegrationTes
                   // LPOP was applied first
                   poppedValue -> {
                     assertThat(poppedValue).isEqualTo(initialValue);
-                    assertThat(lsetException.get()).hasMessage(ERROR_NO_SUCH_KEY);
+                    assertThat(lsetException.get()).hasMessage(ERROR_INDEX_OUT_OF_RANGE);
                   },
                   // LSET was applied first
                   poppedValue -> {
