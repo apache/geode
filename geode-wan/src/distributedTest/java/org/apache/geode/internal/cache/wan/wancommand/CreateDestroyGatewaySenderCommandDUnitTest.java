@@ -389,4 +389,51 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
     VMProvider.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1, server2,
         server3);
   }
+
+
+  /**
+   * GatewaySender with given attribute values and transport filters.
+   */
+  @Test
+  public void testCreateDestroyParallelGatewaySenderWithDispatcherThreads() {
+    int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 1000;
+    String command = CliStrings.CREATE_GATEWAYSENDER + " --" + CliStrings.CREATE_GATEWAYSENDER__ID
+        + "=ln" + " --" + CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID + "=2" + " --"
+        + CliStrings.CREATE_GATEWAYSENDER__PARALLEL + "=true" + " --"
+        + CliStrings.CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE + "=1000" + " --"
+        + CliStrings.CREATE_GATEWAYSENDER__SOCKETREADTIMEOUT + "=" + socketReadTimeout + " --"
+        + CliStrings.CREATE_GATEWAYSENDER__ENABLEBATCHCONFLATION + "=true" + " --"
+        + CliStrings.CREATE_GATEWAYSENDER__BATCHSIZE + "=1000" + " --"
+        + CliStrings.CREATE_GATEWAYSENDER__BATCHTIMEINTERVAL + "=5000" + " --"
+        + CliStrings.CREATE_GATEWAYSENDER__ENABLEPERSISTENCE + "=true" + " --"
+        + CliStrings.CREATE_GATEWAYSENDER__DISKSYNCHRONOUS + "=false" + " --"
+        + CliStrings.CREATE_GATEWAYSENDER__MAXQUEUEMEMORY + "=1000" + " --"
+        + CliStrings.CREATE_GATEWAYSENDER__ALERTTHRESHOLD + "=100" + " --"
+        + CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS + "=4";
+
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
+        .hasTableSection().hasRowSize(3).hasColumn("Message").containsOnly(
+            "GatewaySender \"ln\" created on \"" + SERVER_3 + "\"",
+            "GatewaySender \"ln\" created on \"" + SERVER_4 + "\"",
+            "GatewaySender \"ln\" created on \"" + SERVER_5 + "\"");
+
+    VMProvider.invokeInEveryMember(() -> {
+      verifySenderState("ln", true, false);
+      verifySenderAttributes("ln", 2, true, false, 1000, socketReadTimeout, true, 1000, 5000, true,
+          false, 1000, 100, 4, GatewaySender.OrderPolicy.KEY, null, null, false);
+    }, server1, server2, server3);
+
+    // destroy gateway sender and verify AEQs cleaned up
+    gfsh.executeAndAssertThat(DESTROY).statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
+        .hasTableSection().hasRowSize(3).hasColumn("Message").containsOnly(
+            "GatewaySender \"ln\" destroyed on \"" + SERVER_3 + "\"",
+            "GatewaySender \"ln\" destroyed on \"" + SERVER_4 + "\"",
+            "GatewaySender \"ln\" destroyed on \"" + SERVER_5 + "\"");
+
+    VMProvider.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1, server2,
+        server3);
+  }
+
 }

@@ -104,6 +104,18 @@ public class CreateGatewaySenderCommandTest {
   }
 
   @Test
+  public void parallelAndDispatcherThreadsWithoutOrderPolicy() {
+    doReturn(mock(Set.class)).when(command).getMembers(any(), any());
+    cliFunctionResult = new CliFunctionResult("member",
+        CliFunctionResult.StatusState.OK, "cliFunctionResult");
+    functionResults.add(cliFunctionResult);
+    gfsh.executeAndAssertThat(command,
+        "create gateway-sender --id=ln --remote-distributed-system-id=1 "
+            + "--parallel --dispatcher-threads=3")
+        .statusIsSuccess();
+  }
+
+  @Test
   public void orderPolicyAutoComplete() {
     String command =
         "create gateway-sender --id=ln --remote-distributed-system-id=1 --order-policy";
