@@ -113,7 +113,7 @@ public class MessageDispatcher extends LoggingThread {
   private volatile boolean _isStopped = true;
 
   private volatile long waitForReAuthenticationStartTime = -1;
-  private final Object re_auth_lock = new Object();
+  private final Object reAuthenticationLock = new Object();
 
   /**
    * A lock object used to control pausing this dispatcher
@@ -197,9 +197,9 @@ public class MessageDispatcher extends LoggingThread {
   private volatile boolean subjectUpdated = false;
 
   public void notifyReAuthentication() {
-    synchronized (re_auth_lock) {
+    synchronized (reAuthenticationLock) {
       subjectUpdated = true;
-      re_auth_lock.notify();
+      reAuthenticationLock.notifyAll();
     }
   }
 
@@ -448,16 +448,16 @@ public class MessageDispatcher extends LoggingThread {
             sendMessageDirectly(new ClientReAuthenticateMessage(eventId));
           }
 
-          waitForReAuthenticationStartTime = System.currentTimeMillis();
-          long waitFinishTime = waitForReAuthenticationStartTime + reAuthenticateWaitTime;
           // We wait for all versions of clients to re-authenticate. For older clients we still
           // wait, just in case client will perform some operations to
           // trigger credential refresh on its own.
-          synchronized (re_auth_lock) {
+          synchronized (reAuthenticationLock) {
+            waitForReAuthenticationStartTime = System.currentTimeMillis();
+            long waitFinishTime = waitForReAuthenticationStartTime + reAuthenticateWaitTime;
             subjectUpdated = false;
             long remainingWaitTime = waitFinishTime - System.currentTimeMillis();
             while (!subjectUpdated && remainingWaitTime > 0) {
-              re_auth_lock.wait(remainingWaitTime);
+              reAuthenticationLock.wait(remainingWaitTime);
               remainingWaitTime = waitFinishTime - System.currentTimeMillis();
             }
           }
@@ -467,8 +467,9 @@ public class MessageDispatcher extends LoggingThread {
             // reset the timer here since we are no longer waiting for re-auth to happen anymore
             waitForReAuthenticationStartTime = -1;
             synchronized (_stopDispatchingLock) {
-              logger.warn("Client did not re-authenticate back successfully in " + elapsedTime
-                  + "ms. Unregister this client proxy.");
+              logger.warn(
+                  "Client did not re-authenticate back successfully in {} ms. Unregister this client proxy.",
+                  elapsedTime);
               pauseOrUnregisterProxy(expired);
               exceptionOccurred = true;
             }
