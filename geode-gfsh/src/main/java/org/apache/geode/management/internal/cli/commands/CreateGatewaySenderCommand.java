@@ -285,7 +285,7 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
           (Boolean) parseResult
               .getParamValue(CliStrings.CREATE_GATEWAYSENDER__ENABLEBATCHCONFLATION);
 
-      if (dispatcherThreads != null && dispatcherThreads > 1 && orderPolicy == null) {
+      if (!parallel && dispatcherThreads != null && dispatcherThreads > 1 && orderPolicy == null) {
         return ResultModel.createError(
             "Must specify --order-policy when --dispatcher-threads is larger than 1.");
       }
