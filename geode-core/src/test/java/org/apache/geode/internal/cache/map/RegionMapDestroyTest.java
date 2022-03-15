@@ -558,8 +558,6 @@ public class RegionMapDestroyTest {
     // why not DESTROY token? since it was already destroyed why do we do the parts?
     verifyEntryDestroyed(existingRegionEntry, false);
     verify(regionMap, never()).removeEntry(eq(KEY), same(existingRegionEntry), anyBoolean());
-    verify(regionMap, never()).removeEntry(eq(KEY), same(existingRegionEntry), anyBoolean(),
-        same(event), same(owner));
     verifyInvokedDestroyMethodsOnRegion(false);
   }
 
@@ -908,7 +906,7 @@ public class RegionMapDestroyTest {
 
     verifyDestroyReturnedTrue();
     verifyEntryDestroyed(existingRegionEntry, false);
-    verify(regionMap, times(1)).removeEntry(KEY, existingRegionEntry, true, event, owner);
+    verify(regionMap, times(1)).removeEntry(KEY, existingRegionEntry, true);
     verifyInvokedDestroyMethodsOnRegion(false);
   }
 
@@ -1400,8 +1398,6 @@ public class RegionMapDestroyTest {
     verifyDestroyReturnedTrue();
     verifyEntryAddedToMap(newRegionEntry);
     verify(regionMap, never()).removeEntry(eq(KEY), same(newRegionEntry), anyBoolean());
-    verify(regionMap, never()).removeEntry(eq(KEY), same(newRegionEntry), anyBoolean(), same(event),
-        same(owner));
     verifyEntryDestroyed(newRegionEntry, true);
     verifyInvokedDestroyMethodsOnRegion(false);
   }
@@ -1731,7 +1727,7 @@ public class RegionMapDestroyTest {
 
   private void verifyMapDoesNotContainKey() throws Exception {
     verifyEntryDestroyed(existingRegionEntry, false);
-    verify(regionMap, times(1)).removeEntry(KEY, existingRegionEntry, true, event, owner);
+    verify(regionMap, times(1)).removeEntry(KEY, existingRegionEntry, true);
   }
 
   private void verifyNoDestroyInvocationsOnEntry(RegionEntry entry) throws RegionClearedException {

@@ -308,25 +308,6 @@ public abstract class AbstractRegionMap extends BaseRegionMap
   }
 
   @Override
-  public void removeEntry(Object key, RegionEntry regionEntry, boolean updateStat,
-      EntryEventImpl event, final InternalRegion internalRegion) {
-    boolean success = false;
-    if (regionEntry.isTombstone() && getEntryMap().get(key) == regionEntry) {
-      logger.fatal(
-          "Internal product error: attempt to directly remove a versioned tombstone from region entry map",
-          new Exception("stack trace"));
-      return; // can't remove tombstones except from the tombstone sweeper
-    }
-    if (getEntryMap().remove(key, regionEntry)) {
-      regionEntry.removePhase2();
-      success = true;
-      if (updateStat) {
-        incEntryCount(-1);
-      }
-    }
-  }
-
-  @Override
   public void incEntryCount(int delta) {
     LocalRegion lr = _getOwner();
     if (lr != null) {
@@ -384,8 +365,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
     RegionVersionVector localRvv = lr.getVersionVector();
     incClearCount(lr);
     // lock for size calcs if the region might have tombstones
-    Object lockObj = lr.getConcurrencyChecksEnabled() ? lr.getSizeGuard() : new Object();
-    synchronized (lockObj) {
+    synchronized (lr.getSizeGuard()) {
       if (rvv == null) {
         int delta = 0;
         try {

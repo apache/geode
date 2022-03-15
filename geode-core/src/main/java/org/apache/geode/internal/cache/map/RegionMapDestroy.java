@@ -409,7 +409,7 @@ public class RegionMapDestroy {
         if (!inTokenMode) {
           if (regionEntry.getVersionStamp() == null) {
             regionEntry.removePhase2();
-            focusedRegionMap.removeEntry(event.getKey(), regionEntry, true, event, internalRegion);
+            focusedRegionMap.removeEntry(event.getKey(), regionEntry, true);
             removed = true;
           }
         }
@@ -426,7 +426,7 @@ public class RegionMapDestroy {
           internalRegion.recordEvent(event);
           if (regionEntry.getVersionStamp() == null) {
             regionEntry.removePhase2();
-            focusedRegionMap.removeEntry(event.getKey(), regionEntry, true, event, internalRegion);
+            focusedRegionMap.removeEntry(event.getKey(), regionEntry, true);
             focusedRegionMap.lruEntryDestroy(regionEntry);
           } else {
             if (regionEntry.isTombstone()) {
@@ -457,7 +457,7 @@ public class RegionMapDestroy {
       internalRegion.checkReadiness();
       if (regionEntry.isRemoved() && !regionEntry.isTombstone()) {
         if (!removed) {
-          focusedRegionMap.removeEntry(event.getKey(), regionEntry, true, event, internalRegion);
+          focusedRegionMap.removeEntry(event.getKey(), regionEntry, true);
         }
       }
     }

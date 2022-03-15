@@ -18,7 +18,6 @@ import java.util.Map;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.internal.cache.EntryEventImpl;
-import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryFactory;
 import org.apache.geode.internal.cache.TXEntryState;
@@ -39,9 +38,6 @@ public interface FocusedRegionMap extends EvictableMap {
   void lruEntryDestroy(RegionEntry regionEntry); // TODO: subclass
 
   void removeEntry(Object key, RegionEntry regionEntry, boolean updateStat);
-
-  void removeEntry(Object key, RegionEntry regionEntry, boolean updateStat, EntryEventImpl event,
-      final InternalRegion internalRegion);
 
   void processVersionTag(RegionEntry regionEntry, EntryEventImpl event);
 

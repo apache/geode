@@ -343,12 +343,6 @@ class ProxyRegionMap extends BaseRegionMap {
     // nothing to do
   }
 
-  @Override
-  public void removeEntry(Object key, RegionEntry re, boolean updateStat, EntryEventImpl event,
-      InternalRegion owner) {
-    // nothing to do
-  }
-
   /**
    * Provides a dummy implementation of RegionEntry so that basicPut can return an instance that
    * make the upper levels think it did the put.
