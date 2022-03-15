@@ -180,6 +180,10 @@ public class StringBytesGlossary {
   @MakeImmutable
   public static final byte[] LIMIT = stringToBytes("LIMIT");
 
+  // LInsertExecutor
+  public static final byte[] BEFORE = stringToBytes("BEFORE");
+  public static final byte[] AFTER = stringToBytes("AFTER");
+
   // LolWutExecutor
   @MakeImmutable
   public static final byte[] VERSION = stringToBytes("VERSION");

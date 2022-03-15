@@ -14,6 +14,10 @@
  */
 package org.apache.geode.redis.internal.commands.executor.list;
 
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.AFTER;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.BEFORE;
+
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
@@ -23,7 +27,6 @@ import org.apache.geode.redis.internal.commands.executor.CommandExecutor;
 import org.apache.geode.redis.internal.commands.executor.RedisResponse;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 public class LInsertExecutor implements CommandExecutor {
@@ -32,14 +35,14 @@ public class LInsertExecutor implements CommandExecutor {
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElements = command.getProcessedCommand();
 
-    String direction = Coder.bytesToString(commandElements.get(2));
+    byte[] direction = commandElements.get(2);
     boolean before;
     byte[] referenceElement = commandElements.get(3);
     byte[] elementToInsert = commandElements.get(4);
 
-    if (direction.equalsIgnoreCase("before")) {
+    if (Arrays.equals(direction, BEFORE)) {
       before = true;
-    } else if (direction.equalsIgnoreCase("after")) {
+    } else if (Arrays.equals(direction, AFTER)) {
       before = false;
     } else {
       return RedisResponse.error(RedisConstants.ERROR_SYNTAX);

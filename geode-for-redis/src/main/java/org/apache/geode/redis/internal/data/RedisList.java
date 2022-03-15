@@ -137,15 +137,22 @@ public class RedisList extends AbstractRedisData {
    * @param before true if inserting before reference element, false if it is after
    * @param region the region this instance is store in
    * @param key the name of the list to add to
-   * @return the number of elements in the list after the element is inserted
+   * @return the number of elements in the list after the element is inserted,
+   *         or -1 if the pivot is not found.
    */
   public int linsert(byte[] elementToInsert, byte[] referenceElement, boolean before,
       Region<RedisKey, RedisData> region, RedisKey key) {
-    int index = elementInsert(elementToInsert, referenceElement, before);
-    if (index == -1) {
-      return index;
+    byte newVersion;
+    int index;
+
+    synchronized (this) {
+      index = elementInsert(elementToInsert, referenceElement, before);
+      if (index == -1) {
+        return index;
+      }
+      newVersion = incrementAndGetVersion();
     }
-    storeChanges(region, key, new InsertByteArray(elementToInsert, index));
+    storeChanges(region, key, new InsertByteArray(newVersion, elementToInsert, index));
 
     return elementList.size();
   }
@@ -312,13 +319,13 @@ public class RedisList extends AbstractRedisData {
 
     while (iterator.hasNext()) {
       if (Arrays.equals(iterator.next(), referenceElement)) {
-        if (!before) {
-          iterator.add(elementToInsert);
-          return i + 1;
-        } else {
+        if (before) {
           iterator.previous();
           iterator.add(elementToInsert);
           return i;
+        } else {
+          iterator.add(elementToInsert);
+          return i + 1;
         }
       }
       i++;

@@ -29,7 +29,8 @@ public class InsertByteArray extends DeltaInfo {
   private final byte[] byteArray;
   private final int index;
 
-  public InsertByteArray(byte[] delta, int index) {
+  public InsertByteArray(byte newVersion, byte[] delta, int index) {
+    super(newVersion);
     byteArray = delta;
     this.index = index;
   }
