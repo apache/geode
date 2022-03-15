@@ -302,7 +302,7 @@ public class GfshParserAutoCompletionIntegrationTest {
   public void testCompleteWithRegionTypeWithSpace() {
     String buffer = "create region --name=test --type=REPLICATE ";
     CommandCandidate candidate = gfshParserRule.complete(buffer);
-    assertThat(candidate.getCandidates()).hasSize(45);
+    assertThat(candidate.getCandidates()).hasSize(46);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "--async-event-queue-id");
   }
 

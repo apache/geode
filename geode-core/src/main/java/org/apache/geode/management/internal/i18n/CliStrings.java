@@ -1103,6 +1103,17 @@ public class CliStrings {
   public static final String CREATE_REGION__MSG__OBJECT_SIZER_MUST_BE_OBJECTSIZER_AND_DECLARABLE =
       "eviction-object-sizer must implement both ObjectSizer and Declarable interfaces";
 
+  public static final String CREATE_REGION__SCOPE = "scope";
+
+  public static final String CREATE_REGION__SCOPE__HELP =
+      "Sets the scope of the region. Scope cannot be set for Partitioned regions";
+
+  public static final String CREATE_REGION__MSG__SCOPE_CANNOT_BE_SET_ON_NON_REPLICATED_REGION =
+      "Scope cannot be set on non Replicated region types";
+
+  public static final String CREATE_REGION__SCOPE__SCOPE_CANNOT_BE_SET_IF_TYPE_NOT_SET =
+      "Scope cannot be used if --type is not set in the command";
+
   /* debug command */
   public static final String DEBUG = "debug";
   public static final String DEBUG__HELP = "Enable/Disable debugging output in GFSH.";

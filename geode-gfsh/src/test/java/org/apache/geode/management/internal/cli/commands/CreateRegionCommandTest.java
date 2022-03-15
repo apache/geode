@@ -42,6 +42,7 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.configuration.ClassName;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CreateRegionFunctionArgs;
+import org.apache.geode.management.internal.i18n.CliStrings;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 public class CreateRegionCommandTest {
@@ -77,6 +78,23 @@ public class CreateRegionCommandTest {
         .statusIsError()
         .hasInfoSection().hasOutput().contains("Invalid command");
   }
+
+  @Test
+  public void whenScopeIsSetForNonReplicatedRegionThenItMustFail() {
+    parser.executeAndAssertThat(command,
+        "create region --name=region --type=PARTITION --scope=DISTRIBUTED_NO_ACK").statusIsError()
+        .hasInfoSection().hasOutput().contains(
+            CliStrings.CREATE_REGION__MSG__SCOPE_CANNOT_BE_SET_ON_NON_REPLICATED_REGION);
+  }
+
+  @Test
+  public void whenScopeIsSetWithoutSettingRegionTypeThenItMustFail() {
+    parser.executeAndAssertThat(command,
+        "create region --name=region --scope=DISTRIBUTED_NO_ACK").statusIsError()
+        .hasInfoSection().hasOutput().contains(
+            CliStrings.CREATE_REGION__SCOPE__SCOPE_CANNOT_BE_SET_IF_TYPE_NOT_SET);
+  }
+
 
   @Test
   public void missingBothTypeAndUseAttributeFrom() {
