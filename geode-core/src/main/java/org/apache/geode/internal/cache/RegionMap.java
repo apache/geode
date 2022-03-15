@@ -331,12 +331,9 @@ public interface RegionMap extends EvictableMap {
    *
    * @param re the entry that was destroyed
    * @param destroyedVersion the version that was destroyed
-   * @param isEviction true if the tombstone is being evicted by LRU
-   * @param isScheduledTombstone TODO
    * @return true if the tombstone entry was removed from the entry map
    */
-  boolean removeTombstone(RegionEntry re, VersionHolder destroyedVersion, boolean isEviction,
-      boolean isScheduledTombstone);
+  boolean removeTombstone(RegionEntry re, VersionHolder destroyedVersion);
 
   /**
    * Checks to see if the given version is still the version in the map
