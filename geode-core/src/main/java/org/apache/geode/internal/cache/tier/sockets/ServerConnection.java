@@ -1231,6 +1231,7 @@ public class ServerConnection implements Runnable {
       secureLogger.debug("update subject on client proxy {} with uniqueId {}", clientProxy,
           uniqueId);
       clientProxy.setSubject(subject);
+      clientProxy.notifyReAuthentication();
     }
     return uniqueId;
   }
