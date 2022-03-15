@@ -16,15 +16,17 @@
 
 package org.apache.geode.redis.internal.statistics;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.MICROSECONDS;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.getTime;
 import static org.apache.geode.logging.internal.executors.LoggingExecutors.newSingleThreadScheduledExecutor;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.commands.RedisCommandType;
 
 public class RedisStats {
@@ -37,23 +39,25 @@ public class RedisStats {
   private final AtomicLong keyspaceMisses = new AtomicLong();
   private final AtomicLong uniqueChannelSubscriptions = new AtomicLong();
   private final AtomicLong uniquePatternSubscriptions = new AtomicLong();
-  private final ScheduledExecutorService perSecondExecutor;
+
+  private final ScheduledExecutorService rollingAverageExecutor;
+  private static final int ROLLING_AVERAGE_SAMPLES_PER_SECOND = 16;
+  private final RollingAverageStat networkBytesReadRollingAverageStat =
+      new RollingAverageStat(ROLLING_AVERAGE_SAMPLES_PER_SECOND, this::getTotalNetworkBytesRead);
   private volatile double networkKiloBytesReadOverLastSecond;
-  private volatile long opsPerformedLastTick;
-  private double opsPerformedOverLastSecond;
-  private long previousNetworkBytesRead;
+  private final RollingAverageStat opsPerformedRollingAverageStat =
+      new RollingAverageStat(ROLLING_AVERAGE_SAMPLES_PER_SECOND, this::getCommandsProcessed);
+  private volatile long opsPerformedOverLastSecond;
+
   private final StatisticsClock clock;
   private final GeodeRedisStats geodeRedisStats;
-  private final long START_TIME_IN_NANOS;
+  private final long startTimeInNanos;
 
-
-  public RedisStats(StatisticsClock clock,
-      GeodeRedisStats geodeRedisStats) {
-
+  public RedisStats(StatisticsClock clock, GeodeRedisStats geodeRedisStats) {
     this.clock = clock;
     this.geodeRedisStats = geodeRedisStats;
-    perSecondExecutor = startPerSecondUpdater();
-    START_TIME_IN_NANOS = clock.getTime();
+    rollingAverageExecutor = startRollingAverageUpdater();
+    startTimeInNanos = clock.getTime();
   }
 
   public void incCommandsProcessed() {
@@ -88,7 +92,7 @@ public class RedisStats {
     return networkKiloBytesReadOverLastSecond;
   }
 
-  public double getOpsPerformedOverLastSecond() {
+  public long getOpsPerformedOverLastSecond() {
     return opsPerformedOverLastSecond;
   }
 
@@ -114,7 +118,7 @@ public class RedisStats {
   }
 
   public long getUptimeInMilliseconds() {
-    long uptimeInNanos = getCurrentTimeNanos() - START_TIME_IN_NANOS;
+    long uptimeInNanos = getCurrentTimeNanos() - startTimeInNanos;
     return TimeUnit.NANOSECONDS.toMillis(uptimeInNanos);
   }
 
@@ -193,43 +197,59 @@ public class RedisStats {
 
   public void close() {
     geodeRedisStats.close();
-    stopPerSecondUpdater();
+    stopRollingAverageUpdater();
   }
 
-  private ScheduledExecutorService startPerSecondUpdater() {
-    int INTERVAL = 1;
+  private ScheduledExecutorService startRollingAverageUpdater() {
+    long microsPerSecond = 1_000_000;
+    final long delayMicros = microsPerSecond / ROLLING_AVERAGE_SAMPLES_PER_SECOND;
 
-    ScheduledExecutorService perSecondExecutor =
-        newSingleThreadScheduledExecutor("GemFireRedis-PerSecondUpdater-");
+    ScheduledExecutorService rollingAverageExecutor =
+        newSingleThreadScheduledExecutor("GemFireRedis-RollingAverageStatUpdater-");
 
-    perSecondExecutor.scheduleWithFixedDelay(
-        this::doPerSecondUpdates,
-        INTERVAL,
-        INTERVAL,
-        SECONDS);
+    rollingAverageExecutor.scheduleWithFixedDelay(this::doRollingAverageUpdates, delayMicros,
+        delayMicros, MICROSECONDS);
 
-    return perSecondExecutor;
+    return rollingAverageExecutor;
   }
 
-  private void stopPerSecondUpdater() {
-    perSecondExecutor.shutdownNow();
+  private void stopRollingAverageUpdater() {
+    rollingAverageExecutor.shutdownNow();
   }
 
-  private void doPerSecondUpdates() {
-    updateNetworkKilobytesReadLastSecond();
-    updateOpsPerformedOverLastSecond();
+  private void doRollingAverageUpdates() {
+    networkKiloBytesReadOverLastSecond = networkBytesReadRollingAverageStat.calculate() / 1024.0;
+    opsPerformedOverLastSecond = opsPerformedRollingAverageStat.calculate();
   }
 
-  private void updateNetworkKilobytesReadLastSecond() {
-    final long totalNetworkBytesRead = getTotalNetworkBytesRead();
-    long deltaNetworkBytesRead = totalNetworkBytesRead - previousNetworkBytesRead;
-    networkKiloBytesReadOverLastSecond = deltaNetworkBytesRead / 1024.0;
-    previousNetworkBytesRead = totalNetworkBytesRead;
-  }
+  private static class RollingAverageStat {
+    private int tickNumber = 0;
+    private long valueReadLastTick;
+    private final long[] valuesReadOverLastNSamples;
+    private long currentTotal = 0;
+    private final Callable<Long> statCallable;
 
-  private void updateOpsPerformedOverLastSecond() {
-    final long totalOpsPerformed = getCommandsProcessed();
-    opsPerformedOverLastSecond = totalOpsPerformed - opsPerformedLastTick;
-    opsPerformedLastTick = totalOpsPerformed;
+    private RollingAverageStat(int samplesPerSecond, Callable<Long> getCurrentValue) {
+      valuesReadOverLastNSamples = new long[samplesPerSecond];
+      statCallable = getCurrentValue;
+    }
+
+    private long calculate() {
+      long currentValue;
+      try {
+        currentValue = statCallable.call();
+      } catch (Exception e) {
+        throw new RedisException("Error while calculating RollingAverage stats", e);
+      }
+      long delta = currentValue - valueReadLastTick;
+      valueReadLastTick = currentValue;
+
+      currentTotal = currentTotal + delta - valuesReadOverLastNSamples[tickNumber];
+      valuesReadOverLastNSamples[tickNumber] = delta;
+      // same as mod (%) but measurably faster...
+      tickNumber = (tickNumber + 1) & (valuesReadOverLastNSamples.length - 1);
+
+      return currentTotal;
+    }
   }
 }

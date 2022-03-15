@@ -15,17 +15,24 @@
 package org.apache.geode.redis.internal.commands.executor.server;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.offset;
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.assertj.core.data.Offset;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 
@@ -34,17 +41,19 @@ import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.RedisTestHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisIntegrationTest {
+public abstract class AbstractInfoStatsIntegrationTest implements RedisIntegrationTest {
+  @Rule
+  public ExecutorServiceRule executor = new ExecutorServiceRule();
 
-  private static final int TIMEOUT = (int) GeodeAwaitility.getTimeout().toMillis();
   private static final String EXISTING_HASH_KEY = "Existing_Hash";
   private static final String EXISTING_STRING_KEY = "Existing_String";
   private static final String EXISTING_SET_KEY_1 = "Existing_Set_1";
   private static final String EXISTING_SET_KEY_2 = "Existing_Set_2";
 
   private Jedis jedis;
-  private static long START_TIME;
+  private static long startTime;
   private static StatisticsClock statisticsClock;
 
   private long preTestConnectionsReceived = 0;
@@ -73,12 +82,12 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisInte
   @BeforeClass
   public static void beforeClass() {
     statisticsClock = new EnabledStatisticsClock();
-    START_TIME = statisticsClock.getTime();
+    startTime = statisticsClock.getTime();
   }
 
   @Before
   public void before() {
-    jedis = new Jedis("localhost", getPort(), TIMEOUT);
+    jedis = new Jedis(BIND_ADDRESS, getPort(), REDIS_CLIENT_TIMEOUT);
     numInfoCalled.set(0);
 
     long preSetupCommandsProcessed = Long.parseLong(getInfo(jedis).get(COMMANDS_PROCESSED));
@@ -157,27 +166,43 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisInte
   }
 
   @Test
-  public void opsPerformedOverLastSecond_ShouldUpdate_givenOperationsOccurring() {
-    int NUMBER_SECONDS_TO_RUN = 10;
-    AtomicInteger numberOfCommandsExecuted = new AtomicInteger();
+  public void opsPerformedOverLastSecond_shouldUpdate_givenOperationsOccurring()
+      throws InterruptedException, ExecutionException, TimeoutException {
+    // Wait 2 seconds to allow the stat to return to zero following any set-up or previous tests
+    Thread.sleep(2000);
 
-    await().during(Duration.ofSeconds(NUMBER_SECONDS_TO_RUN)).until(() -> {
-      jedis.set("key", "value");
-      numberOfCommandsExecuted.getAndIncrement();
-      return true;
+    assertThat(Long.parseLong(getInfo(jedis).get(OPS_PERFORMED_OVER_LAST_SECOND))).isZero();
+
+    final long numberSecondsToRun = 4;
+
+    final long startTime = System.currentTimeMillis();
+    final long endTime = startTime + Duration.ofSeconds(numberSecondsToRun).toMillis();
+
+    // Take a sample in the middle of performing operations
+    final long timeToSampleAt = startTime + Duration.ofSeconds(numberSecondsToRun / 2).toMillis();
+
+    // Execute commands in the background
+    Future<Void> executeCommands = executor.submit(() -> {
+      Jedis jedis2 = new Jedis(BIND_ADDRESS, getPort(), REDIS_CLIENT_TIMEOUT);
+      while (System.currentTimeMillis() < endTime) {
+        jedis2.set("key", "value");
+      }
+      jedis2.close();
     });
-    double reportedCommandsPerLastSecond =
-        Double.parseDouble(getInfo(jedis).get(OPS_PERFORMED_OVER_LAST_SECOND));
 
-    long expected = numberOfCommandsExecuted.get() / NUMBER_SECONDS_TO_RUN;
+    // Wait until we're in the middle of performing operations
+    await().until(() -> System.currentTimeMillis() >= timeToSampleAt);
 
-    assertThat(reportedCommandsPerLastSecond).isCloseTo(expected, Offset.offset(4.0));
+    assertThat(Long.parseLong(getInfo(jedis).get(OPS_PERFORMED_OVER_LAST_SECOND))).isGreaterThan(0);
 
-    // if time passes w/o operations
-    await().during(NUMBER_SECONDS_TO_RUN, TimeUnit.SECONDS).until(() -> true);
+    executeCommands.get(GeodeAwaitility.getTimeout().toMillis(), TimeUnit.MILLISECONDS);
 
-    assertThat(Double.valueOf(getInfo(jedis).get(OPS_PERFORMED_OVER_LAST_SECOND)))
-        .isCloseTo(0.0, Offset.offset(1.0));
+    // Wait two seconds with no operations
+    Thread.sleep(2000);
+
+    // Confirm that instantaneous operations per second returns to zero when no operations are being
+    // performed
+    assertThat(Long.parseLong(getInfo(jedis).get(OPS_PERFORMED_OVER_LAST_SECOND))).isZero();
   }
 
   @Test
@@ -193,58 +218,77 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisInte
   }
 
   @Test
-  public void networkKiloBytesReadOverLastSecond_shouldBeCloseToBytesReadOverLastSecond() {
+  public void networkKiloBytesReadOverLastSecond_shouldUpdate_givenOperationsOccurring()
+      throws InterruptedException, ExecutionException, TimeoutException {
+    // Wait 2 seconds to allow the stat to return to zero following any set-up or previous tests
+    Thread.sleep(2000);
 
-    double REASONABLE_SOUNDING_OFFSET = .8;
-    int NUMBER_SECONDS_TO_RUN = 5;
-    String RESP_COMMAND_STRING = "*3\r\n$3\r\nset\r\n$3\r\nkey\r\n$5\r\nvalue\r\n";
-    int BYTES_SENT_PER_COMMAND = RESP_COMMAND_STRING.length();
-    AtomicInteger totalBytesSent = new AtomicInteger();
+    // Confirm that instantaneous KB read per second returns to zero when no operations are being
+    // performed, with a small offset to account for the info command being executed
+    assertThat(Double.parseDouble(getInfo(jedis).get(NETWORK_KB_READ_OVER_LAST_SECOND)))
+        .isCloseTo(0, offset(0.02));
 
-    await().during(Duration.ofSeconds(NUMBER_SECONDS_TO_RUN)).until(() -> {
-      jedis.set("key", "value");
-      totalBytesSent.addAndGet(BYTES_SENT_PER_COMMAND);
-      return true;
+    final int numberSecondsToRun = 4;
+    final String key = "key";
+    final String value = "value";
+
+    final long startTime = System.currentTimeMillis();
+    final long endTime = startTime + Duration.ofSeconds(numberSecondsToRun).toMillis();
+
+    // Take a sample in the middle of performing operations
+    final long timeToSampleAt = startTime + Duration.ofSeconds(numberSecondsToRun / 2).toMillis();
+
+    // Execute commands in the background
+    Future<Void> executeCommands = executor.submit(() -> {
+      Jedis jedis2 = new Jedis(BIND_ADDRESS, getPort(), REDIS_CLIENT_TIMEOUT);
+      while (System.currentTimeMillis() < endTime) {
+        jedis2.set(key, value);
+      }
+      jedis2.close();
     });
-    double actual_kbs = Double.parseDouble(getInfo(jedis).get(NETWORK_KB_READ_OVER_LAST_SECOND));
-    double expected_kbs = ((double) totalBytesSent.get() / NUMBER_SECONDS_TO_RUN) / 1000;
 
-    assertThat(actual_kbs).isCloseTo(expected_kbs, Offset.offset(REASONABLE_SOUNDING_OFFSET));
+    // Wait until we're in the middle of performing operations
+    await().until(() -> System.currentTimeMillis() >= timeToSampleAt);
 
-    // if time passes w/o operations
-    await().during(NUMBER_SECONDS_TO_RUN, TimeUnit.SECONDS)
-        .until(() -> true);
+    assertThat(Double.parseDouble(getInfo(jedis).get(NETWORK_KB_READ_OVER_LAST_SECOND)))
+        .isGreaterThan(0);
 
-    // Kb/s should eventually drop to 0 or at least very close since just executing the info
-    // command may result in the value increasing.
-    assertThat(Double.valueOf(getInfo(jedis).get(NETWORK_KB_READ_OVER_LAST_SECOND)))
-        .isCloseTo(0.0, Offset.offset(0.1));
+    executeCommands.get(GeodeAwaitility.getTimeout().toMillis(), TimeUnit.MILLISECONDS);
+
+    // Wait two seconds with no operations
+    Thread.sleep(2000);
+
+    // Confirm that instantaneous KB read per second returns to zero when no operations are being
+    // performed, with a small offset to account for the info command being executed
+    assertThat(Double.parseDouble(getInfo(jedis).get(NETWORK_KB_READ_OVER_LAST_SECOND)))
+        .isCloseTo(0, offset(0.02));
   }
 
   // ------------------- Clients Section -------------------------- //
 
   @Test
   public void connectedClients_incrAndDecrWhenClientConnectsAndDisconnects() {
-    Jedis jedis2 = new Jedis("localhost", getPort(), TIMEOUT);
+    Jedis jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
     jedis2.ping();
 
-    validateConnectedClients(jedis, preTestConnectedClients, 1);
+    await().untilAsserted(() -> assertThat(Long.valueOf(getInfo(jedis).get(CONNECTED_CLIENTS)))
+        .isEqualTo(preTestConnectedClients + 1));
 
     jedis2.close();
 
-    validateConnectedClients(jedis, preTestConnectedClients, 0);
+    await().untilAsserted(() -> assertThat(Long.valueOf(getInfo(jedis).get(CONNECTED_CLIENTS)))
+        .isEqualTo(preTestConnectedClients));
   }
 
   @Test
   public void totalConnectionsReceivedStat_shouldIncrement_whenNewConnectionOccurs() {
-    Jedis jedis2 = new Jedis("localhost", getPort(), TIMEOUT);
+    Jedis jedis2 = new Jedis("localhost", getPort(), REDIS_CLIENT_TIMEOUT);
     jedis2.ping();
 
-    validateConnectionsReceived(jedis, preTestConnectionsReceived, 1);
+    assertThat(Long.valueOf(getInfo(jedis).get(TOTAL_CONNECTIONS_RECEIVED)))
+        .isEqualTo(preTestConnectionsReceived + 1);
 
     jedis2.close();
-
-    validateConnectedClients(jedis, preTestConnectedClients, 0);
   }
 
   // ------------------- Server Section -------------------------- //
@@ -276,7 +320,7 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisInte
 
   // ------------------- Helper Methods ----------------------------- //
   public long getStartTime() {
-    return START_TIME;
+    return startTime;
   }
 
   public long getCurrentTime() {
@@ -306,14 +350,4 @@ public abstract class AbstractRedisInfoStatsIntegrationTest implements RedisInte
                 .isEqualTo(initialCommandsProcessed + diff));
   }
 
-  private void validateConnectedClients(Jedis jedis, long initialConnectedClients, int diff) {
-    await().atMost(Duration.ofSeconds(2)).untilAsserted(
-        () -> assertThat(Long.valueOf(getInfo(jedis).get(CONNECTED_CLIENTS)))
-            .isEqualTo(initialConnectedClients + diff));
-  }
-
-  private void validateConnectionsReceived(Jedis jedis, long initialConnectionsReceived, int diff) {
-    assertThat(Long.valueOf(getInfo(jedis).get(TOTAL_CONNECTIONS_RECEIVED)))
-        .isEqualTo(initialConnectionsReceived + diff);
-  }
 }
