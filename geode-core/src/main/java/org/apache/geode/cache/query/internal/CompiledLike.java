@@ -114,6 +114,8 @@ public class CompiledLike extends CompiledComparison {
     OrganizedOperands result = new OrganizedOperands();
     result.isSingleFilter = true;
     result.filterOperand = filter;
+    context.cachePut(CAN_APPLY_LIMIT_AT_INDEX, filterOperand.isLimitApplicableAtIndexLevel(context));
+
     return result;
   }
 
@@ -259,7 +261,7 @@ public class CompiledLike extends CompiledComparison {
         } else {
           // % is at the end of the string
           // the like predicate is broken down to 2 compile comparisons
-          cv = new CompiledComparison[] {c1, c2};
+          cv = new CompiledComparison[] {c1};
         }
       }
     } else {

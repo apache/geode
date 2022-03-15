@@ -494,9 +494,9 @@ public class HashIndex extends AbstractIndex {
     Boolean applyLimit = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_LIMIT_AT_INDEX);
     if (applyLimit != null && applyLimit) {
       limit = (Integer) context.cacheGet(CompiledValue.RESULT_LIMIT);
-      if (limit != -1 && limit < indexThresholdSize) {
-        limit = indexThresholdSize;
-      }
+      // if (limit != -1 && limit < indexThresholdSize) {
+      //   limit = indexThresholdSize;
+      // }
     }
 
     Boolean orderByClause = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_ORDER_BY_AT_INDEX);

@@ -107,9 +107,9 @@ public class PrimaryKeyIndex extends AbstractIndex {
     Boolean applyLimit = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_LIMIT_AT_INDEX);
     if (applyLimit != null && applyLimit) {
       limit = (Integer) context.cacheGet(CompiledValue.RESULT_LIMIT);
-      if (limit != -1 && limit < indexThresholdSize) {
-        limit = indexThresholdSize;
-      }
+      // if (limit != -1 && limit < indexThresholdSize) {
+      //   limit = indexThresholdSize;
+      // }
     }
     QueryObserver observer = QueryObserverHolder.getInstance();
     if (limit != -1 && results.size() == limit) {
@@ -188,9 +188,9 @@ public class PrimaryKeyIndex extends AbstractIndex {
 
     if (applyLimit != null && applyLimit) {
       limit = (Integer) context.cacheGet(CompiledValue.RESULT_LIMIT);
-      if (limit != -1 && limit < indexThresholdSize) {
-        limit = indexThresholdSize;
-      }
+      // if (limit != -1 && limit < indexThresholdSize) {
+      //   limit = indexThresholdSize;
+      // }
     }
     if (limit != -1 && results.size() == limit) {
       observer.limitAppliedAtIndexLevel(this, limit, results);
