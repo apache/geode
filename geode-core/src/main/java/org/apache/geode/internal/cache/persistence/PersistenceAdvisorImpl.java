@@ -28,6 +28,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.TestOnly;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
@@ -721,10 +722,18 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
   @Override
   public void removeListener(PersistentStateListener listener) {
     synchronized (this) {
+      if (!persistentStateListeners.contains(listener)) {
+        return;
+      }
       Set<PersistentStateListener> tmpListeners = new HashSet<>(persistentStateListeners);
       tmpListeners.remove(listener);
       persistentStateListeners = Collections.unmodifiableSet(tmpListeners);
     }
+  }
+
+  @TestOnly
+  Set<PersistentStateListener> getPersistentStateListenerSet() {
+    return persistentStateListeners;
   }
 
   private void notifyListenersMemberOnline(InternalDistributedMember member,
@@ -1155,6 +1164,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
     isClosed = true;
     persistentMemberManager.removeRevocationListener(profileChangeListener);
     cacheDistributionAdvisor.removeProfileChangeListener(profileChangeListener);
+    persistentStateListeners = Collections.emptySet();
     releaseTieLock();
   }
 
