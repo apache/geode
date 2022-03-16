@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.wan.parallel.ParallelQueueSetPossibleDuplicateMessage.LOAD_FROM_TEMP_QUEUE;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -282,11 +284,12 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
 
             InternalDistributedSystem ids = getCache().getInternalDistributedSystem();
             DistributionManager dm = ids.getDistributionManager();
-            dm.retainMembersWithSameOrNewerVersion(recipients, KnownVersion.GEODE_1_16_0);
+            dm.retainMembersWithSameOrNewerVersion(recipients, KnownVersion.GEODE_1_15_0);
 
             if (!recipients.isEmpty()) {
               ParallelQueueSetPossibleDuplicateMessage pqspdm =
-                  new ParallelQueueSetPossibleDuplicateMessage(regionToDispatchedKeysMap);
+                  new ParallelQueueSetPossibleDuplicateMessage(LOAD_FROM_TEMP_QUEUE,
+                      regionToDispatchedKeysMap);
               pqspdm.setRecipients(recipients);
               dm.putOutgoing(pqspdm);
             }

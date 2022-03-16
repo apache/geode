@@ -593,6 +593,13 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     } finally {
       if (prQ != null) {
         userRegionNameToShadowPRMap.put(userPR.getFullPath(), prQ);
+        prQ.setGWStoppedSent(false);
+        if (prQ.getDataStore() != null) {
+          final Set<BucketRegion> buckets = prQ.getDataStore().getAllLocalBucketRegions();
+          for (BucketRegion br : buckets) {
+            br.setReceivedGWStopped(false);
+          }
+        }
       }
       /*
        * Here, enqueueTempEvents need to be invoked when a sender is already running and userPR is
@@ -1781,25 +1788,14 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
         for (Object o : objects) {
           GatewaySenderEventImpl gse = (GatewaySenderEventImpl) o;
           if (gse.getPossibleDuplicate()) {
-<<<<<<< HEAD
             numberOfPossibleDuplicateEvents++;
-=======
-            numberOfPosssibleDuplicateEvents++;
->>>>>>> GEODE-9997: added test
           }
         }
       }
     }
-<<<<<<< HEAD
     return numberOfPossibleDuplicateEvents;
   }
 
-=======
-    return numberOfPosssibleDuplicateEvents;
-  }
-
-
->>>>>>> GEODE-9997: added test
   /**
    * This method does the cleanup of any threads, sockets, connection that are held up by the queue.
    * Note that this cleanup doesn't clean the data held by the queue.

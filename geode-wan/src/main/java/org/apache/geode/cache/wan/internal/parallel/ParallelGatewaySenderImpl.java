@@ -108,6 +108,17 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
   }
 
   @Override
+  public void prepareForStop() {
+    if (!isRunning()) {
+      return;
+    }
+    pause();
+    if (eventProcessor != null && !eventProcessor.isStopped()) {
+      eventProcessor.prepareForStopProcessing();
+    }
+  }
+
+  @Override
   public void stop() {
     getLifeCycleLock().writeLock().lock();
     try {

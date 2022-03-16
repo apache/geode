@@ -217,6 +217,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     }
   }
 
+  private boolean receivedGWStopped = false;
+
   private final int redundancy;
 
   /** the partitioned region to which this bucket belongs */
@@ -2533,6 +2535,13 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     // partitioned region, this is to avoid leaving stale bucket profile undeleted
     // on the member that is still in the process of creating the partitioned region
     return getSystem().getDistributionManager().getOtherDistributionManagerIds();
+
+  public boolean isReceivedGWStopped() {
+    return receivedGWStopped;
+  }
+
+  public void setReceivedGWStopped(boolean notified) {
+    receivedGWStopped = notified;
   }
 
 }

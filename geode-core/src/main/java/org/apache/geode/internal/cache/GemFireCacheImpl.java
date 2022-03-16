@@ -2182,6 +2182,13 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         return false;
       }
 
+      for (GatewaySender sender : allGatewaySenders) {
+        try {
+          sender.prepareForStop();
+        } catch (Exception ignore) {
+        }
+      }
+
       CLOSING_THREAD.set(Thread.currentThread());
       try {
         boolean isDebugEnabled = logger.isDebugEnabled();

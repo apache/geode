@@ -115,6 +115,9 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
   }
 
   @Override
+  public void prepareForStop() {}
+
+  @Override
   public void stop() {
     getLifeCycleLock().writeLock().lock();
     try {

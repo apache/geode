@@ -211,7 +211,14 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
           region.getParallelGatewaySender().getEventProcessor();
 
       if (ep != null && !(ep.getDispatcher() instanceof GatewaySenderEventCallbackDispatcher)) {
-        return;
+        if (isReceivedGWStopped()) {
+          setReceivedGWStopped(false);
+          return;
+        }
+        BucketAdvisor parent = getParentAdvisor(getBucketAdvisor());
+        if (parent.getHasBecomePrimary()) {
+          return;
+        }
       }
     }
     markAsDuplicate.addAll(eventSeqNumDeque);
@@ -656,7 +663,6 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
         && !eventSeqNumDeque.isEmpty() && getBucketAdvisor().isPrimary();
   }
 
-  @VisibleForTesting
   public List<Object> getHelperQueueList() {
     getInitializationLock().readLock().lock();
     try {
@@ -682,5 +688,15 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
 
   public boolean checkIfQueueContainsKey(Object key) {
     return eventSeqNumDeque.contains(key);
+  }
+
+  BucketAdvisor getParentAdvisor(BucketAdvisor advisor) {
+    BucketAdvisor parent = advisor.getParentAdvisor();
+    while (parent != null) {
+      advisor = parent;
+      parent = advisor.getParentAdvisor();
+    }
+    return advisor;
+
   }
 }

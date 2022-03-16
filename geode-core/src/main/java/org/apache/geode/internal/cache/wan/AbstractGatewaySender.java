@@ -586,6 +586,9 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   public abstract void startWithCleanQueue();
 
   @Override
+  public abstract void prepareForStop();
+
+  @Override
   public abstract void stop();
 
   /**

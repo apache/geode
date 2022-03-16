@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.wan.parallel;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
+import static org.apache.geode.internal.cache.wan.parallel.ParallelQueueSetPossibleDuplicateMessage.UNSUCCESSFULLY_DISPATCHED;
 import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -167,7 +168,8 @@ public class ParallelQueueSetPossibleDuplicateMessageJUnitTest {
 
   private void createAndProcessParallelQueueSetPossibleDuplicateMessage() {
     ParallelQueueSetPossibleDuplicateMessage message =
-        new ParallelQueueSetPossibleDuplicateMessage(createRegionToDispatchedKeysMap());
+        new ParallelQueueSetPossibleDuplicateMessage(UNSUCCESSFULLY_DISPATCHED,
+            createRegionToDispatchedKeysMap());
     message.process((ClusterDistributionManager) cache.getDistributionManager());
   }
 

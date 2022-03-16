@@ -16,10 +16,14 @@ package org.apache.geode.internal.cache.wan.parallel;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 <<<<<<< HEAD
+<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.assertThat;
 =======
 import static org.junit.Assert.assertEquals;
 >>>>>>> GEODE-9997: added test
+=======
+import static org.assertj.core.api.Assertions.assertThat;
+>>>>>>> GEODE-9997: new proposal
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -2244,7 +2248,6 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     vm3.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName(), 0));
   }
 
-
   /**
    * When gateway senders starts to unqueue, stop gateway sender, and check that some evnts are
    * dispatched to receiving side,
@@ -2330,7 +2333,6 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
 
   }
 
-
   @Test
   public void testpersistentWanGateway_checkPossibleDuplicateEvents_afterServerDown() {
     Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
@@ -2374,7 +2376,8 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     Integer vm6NumDupplicate = vm6.invoke(() -> WANTestBase.getNumOfPossibleDuplicateEvents("ln"));
     Integer vm7NumDupplicate = vm7.invoke(() -> WANTestBase.getNumOfPossibleDuplicateEvents("ln"));
 
-    assertEquals(800, (vm4NumDupplicate + vm5NumDupplicate + vm6NumDupplicate + vm7NumDupplicate));
+    assertThat(vm4NumDupplicate + vm5NumDupplicate + vm6NumDupplicate + vm7NumDupplicate)
+        .isEqualTo(800);
 
     vm5.invoke(() -> WANTestBase.killSender());
 
@@ -2382,7 +2385,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     vm6NumDupplicate = vm6.invoke(() -> WANTestBase.getNumOfPossibleDuplicateEvents("ln"));
     vm7NumDupplicate = vm7.invoke(() -> WANTestBase.getNumOfPossibleDuplicateEvents("ln"));
 
-    assertEquals(800, (vm4NumDupplicate + vm6NumDupplicate + vm7NumDupplicate));
+    assertThat(vm4NumDupplicate + vm6NumDupplicate + vm7NumDupplicate).isEqualTo(800);
   }
 
   private static class BlockingDestroyRegionObserver extends DistributionMessageObserver {

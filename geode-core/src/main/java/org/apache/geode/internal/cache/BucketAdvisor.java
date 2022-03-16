@@ -164,6 +164,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   private BucketAdvisor startingBucketAdvisor;
 
+  private volatile boolean hasBecomePrimary = false;
+
   private final PartitionedRegion pRegion;
 
   final ConcurrentMap<String, Boolean> destroyedShadowBuckets = new ConcurrentHashMap<>();
@@ -498,6 +500,13 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   }
 
 
+  BucketAdvisor getParentAdvisor() {
+    return parentAdvisor;
+  }
+
+  boolean getHasBecomePrimary() {
+    return hasBecomePrimary;
+  }
 
   /**
    * Called by the RegionAdvisor.profileRemoved, this method tests to see if the missing member is
@@ -1153,6 +1162,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     try {
       synchronized (this) {
         if (isHosting() && (isVolunteering() || isBecomingPrimary())) {
+          hasBecomePrimary = isBecomingPrimary();
           Bucket br = regionAdvisor.getBucket(getBucket().getId());
           if (br instanceof BucketRegion) {
             ((BucketRegion) br).beforeAcquiringPrimaryState();

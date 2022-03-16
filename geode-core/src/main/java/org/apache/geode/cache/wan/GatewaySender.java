@@ -16,6 +16,7 @@ package org.apache.geode.cache.wan;
 
 import java.util.List;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.lang.SystemProperty;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
@@ -214,6 +215,13 @@ public interface GatewaySender {
    * running, its configuration cannot be changed.
    */
   void startWithCleanQueue();
+
+
+  /**
+   * prepare GatewaySender for closing of Cache.
+   */
+  @Experimental
+  void prepareForStop();
 
   /**
    * Stops this GatewaySender. The scope of this operation is the VM on which it is invoked. In case
