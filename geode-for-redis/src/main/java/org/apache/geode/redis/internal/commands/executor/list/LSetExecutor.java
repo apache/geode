@@ -16,6 +16,7 @@
 package org.apache.geode.redis.internal.commands.executor.list;
 
 
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
 import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
 
@@ -35,8 +36,14 @@ public class LSetExecutor implements CommandExecutor {
     List<byte[]> commandElements = command.getProcessedCommand();
     RedisKey key = command.getKey();
     Region<RedisKey, RedisData> region = context.getRegion();
-    int index = narrowLongToInt(bytesToLong(commandElements.get(2)));
     byte[] value = commandElements.get(3);
+    int index;
+
+    try {
+      index = narrowLongToInt(bytesToLong(commandElements.get(2)));
+    } catch (NumberFormatException e) {
+      return RedisResponse.error(ERROR_NOT_INTEGER);
+    }
 
     return context.listLockedExecute(key, false, list -> {
       list.lset(region, key, index, value);
