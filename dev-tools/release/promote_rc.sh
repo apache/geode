@@ -202,8 +202,12 @@ function waitforserver {
     fi
     url=${baseurl}${suffix}
     expectedsize=$(cd ${SVN_DIR}/../../release/geode/${VERSION}; ls -l ${file}${suffix} | awk '{print $5}')
+    if [ -z "$expectedsize" ] ; then
+      echo "internal error: unable to get size of ${SVN_DIR}/../../release/geode/${VERSION}/${file}${suffix}"
+      exit 1
+    fi
     actualsize=0
-    while [ $expectedsize -ne $actualsize ] ; do
+    while [ "$expectedsize" -ne "$actualsize" ] ; do
       while ! curl -sk --output /dev/null --head --fail "$url"; do
         echo -n .
         sleep 12
@@ -611,7 +615,7 @@ echo "Removing old Geode versions from mirrors"
 echo "============================================================"
 set -x
 cd ${SVN_DIR}/../../release/geode
-svn update --set-depth immediates
+svn update
 #identify the latest patch release for "N-2" (the latest 3 major.minor releases), remove anything else from mirrors (all releases remain available on non-mirrored archive site)
 RELEASES_TO_KEEP=3
 set +x
@@ -687,4 +691,5 @@ echo 'Send email!  Note: MUST be sent from your @apache.org email address (see h
 ${0%/*}/print_announce_email.sh -v "${VERSION}" -f "${LATER}"
 echo ""
 which pbcopy >/dev/null && ${0%/*}/print_announce_email.sh -v "${VERSION}" -f "${LATER}" | pbcopy && echo "(copied to clipboard)"
-waitforserver "dlcdn.apache.org/geode" "Please wait for this to complete before sending the announce email."
+waitforserver "dlcdn.apache.org/geode" "Please wait for this to complete before sending the above [ANNOUNCE] email.
+All other tasks above can be completed now (while you wait for dlcdn)."
