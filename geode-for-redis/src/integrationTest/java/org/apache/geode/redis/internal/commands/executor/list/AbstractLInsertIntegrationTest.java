@@ -63,7 +63,7 @@ public abstract class AbstractLInsertIntegrationTest implements RedisIntegration
   }
 
   @Test
-  public void linsert_onKeyThatDoesNotExist_withInvalidBefore_errorsBecauseOfWrongNumOfArgs() {
+  public void linsert_onKeyThatDoesNotExist_withInvalidBefore_returnsSyntaxError() {
     assertThatThrownBy(() -> jedis.sendCommand(KEY, Protocol.Command.LINSERT, KEY,
         "notBefore", "doesn't matter", insertedValue))
             .hasMessage(ERROR_SYNTAX);
