@@ -71,16 +71,15 @@ public class RedisList extends AbstractRedisData {
    */
   public int lrem(int count, byte[] element, Region<RedisKey, RedisData> region, RedisKey key) {
     List<Integer> removedIndexes;
-    if (0 <= count) {
-      removedIndexes = elementList.removeObjectsStartingAtHead(element, count);
-      if (!removedIndexes.isEmpty()) {
-        storeChanges(region, key, new RemoveElementsByIndex(removedIndexes));
-      }
-    } else {
-      removedIndexes = elementList.removeObjectsStartingAtTail(element, -count);
-      if (!removedIndexes.isEmpty()) {
-        storeChanges(region, key, new RemoveElementsByIndexReverseOrder(removedIndexes));
-      }
+    byte version;
+    synchronized (this) {
+      removedIndexes = elementList.remove(element, count);
+      version = incrementAndGetVersion();
+    }
+
+    if (!removedIndexes.isEmpty()) {
+      storeChanges(region, key,
+          new RemoveElementsByIndex(version, removedIndexes));
     }
 
     return removedIndexes.size();
@@ -337,16 +336,7 @@ public class RedisList extends AbstractRedisData {
     if (indexes.size() == 1) {
       elementRemove(indexes.get(0));
     } else {
-      elementList.removeIndexesInOrder(indexes);
-    }
-  }
-
-  @Override
-  public void applyRemoveElementsByIndexReverseOrder(List<Integer> indexes) {
-    if (indexes.size() == 1) {
-      elementRemove(indexes.get(0));
-    } else {
-      elementList.removeIndexesReverseOrder(indexes);
+      elementList.removeIndexes(indexes);
     }
   }
 

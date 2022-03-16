@@ -37,7 +37,8 @@ public class RemoveElementsByIndex extends DeltaInfo {
     this.indexes = new ArrayList<>();
   }
 
-  public RemoveElementsByIndex(List<Integer> indexes) {
+  public RemoveElementsByIndex(byte version, List<Integer> indexes) {
+    super(version);
     this.indexes = indexes;
   }
 

@@ -124,7 +124,7 @@ public class RedisListTest {
     when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
 
     byte[] element = new byte[] {1};
-    RedisList list = createRedisList();
+    RedisList list = createRedisListWithDuplicateElements();
 
     list.lrem(2, element, region, null);
 
@@ -138,7 +138,7 @@ public class RedisListTest {
     when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
 
     byte[] element = new byte[] {1};
-    RedisList list = createRedisList();
+    RedisList list = createRedisListWithDuplicateElements();
 
     list.lrem(-2, element, region, null);
 
@@ -152,7 +152,7 @@ public class RedisListTest {
     HeapDataOutputStream out = new HeapDataOutputStream(100);
     value.toDelta(out);
     ByteArrayDataInput in = new ByteArrayDataInput(out.toByteArray());
-    RedisList list2 = createRedisList();
+    RedisList list2 = createRedisListWithDuplicateElements();
     assertThat(list2).isNotEqualTo(value);
     list2.fromDelta(in);
     assertThat(list2).isEqualTo(value);
@@ -160,7 +160,7 @@ public class RedisListTest {
   }
 
 
-  private RedisList createRedisList() {
+  private RedisList createRedisListWithDuplicateElements() {
     RedisList newList = new RedisList();
     newList.elementPush(new byte[] {1});
     newList.elementPush(new byte[] {2});

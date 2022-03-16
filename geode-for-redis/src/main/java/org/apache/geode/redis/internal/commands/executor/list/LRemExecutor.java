@@ -34,7 +34,6 @@ public class LRemExecutor implements CommandExecutor {
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElems = command.getProcessedCommand();
     Region<RedisKey, RedisData> region = context.getRegion();
-    RedisKey key = command.getKey();
 
     int count;
     try {
@@ -43,6 +42,7 @@ public class LRemExecutor implements CommandExecutor {
       return RedisResponse.error(ERROR_NOT_INTEGER);
     }
 
+    RedisKey key = command.getKey();
     int result = context.listLockedExecute(key, false,
         list -> list.lrem(count, commandElems.get(3), region, key));
 

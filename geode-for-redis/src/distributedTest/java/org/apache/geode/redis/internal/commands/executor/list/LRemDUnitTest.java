@@ -19,15 +19,12 @@ import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CL
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
@@ -38,8 +35,10 @@ import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 public class LRemDUnitTest {
-  private static final int MAX_MATCHING_ELEMENTS = 141; // Summation of 145 is 10011
-  private static final String ELEMENT_TO_CHECK = "insertedValue";
+  private static final int LIST_SIZE_FOR_BUCKET_TEST = 10000;
+  private static final int UNIQUE_ELEMENTS = 5000;
+  private static final int COUNT_OF_UNIQUE_ELEMENT = 2; // How many times a unique element is
+                                                        // repeated in list
 
   @Rule
   public RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule();
@@ -68,120 +67,99 @@ public class LRemDUnitTest {
   @Test
   public void shouldDistributeDataAmongCluster_andRetainDataAfterServerCrash() {
     String key = makeListKeyWithHashtag(1, clusterStartUp.getKeyOnServer("lrem", 1));
-    List<String> elementList = makeListWithRepeatingElements(key);
-    elementList.add(ELEMENT_TO_CHECK);
 
-    lpushPerformAndVerify(key, elementList);
-
-    Random rand = new Random();
-
-    // Check for an element that doesn't exist in the list
-    Collections.reverse(elementList);
-    assertThat(jedis.lrem(key, getCount(rand, 1), "nonExistentValue")).isEqualTo(0);
-    assertThat(jedis.lrange(key, 0, elementList.size())).isEqualTo(elementList);
+    // Create initial list and push it
+    final int initialListSize = 30;
+    final int uniqueElements = 3;
+    List<String> elementList = new ArrayList<>();
+    for (int i = 0; i < initialListSize; i++) {
+      elementList.add(makeElementString(key, i % uniqueElements));
+    }
+    jedis.lpush(key, elementList.toArray(new String[] {}));
 
     // Remove all elements except for ELEMENT_TO_CHECK
-    for (int i = MAX_MATCHING_ELEMENTS - 1; i >= 0; i--) {
-      assertThat(jedis.lrem(key, getCount(rand, i), makeElementString(key, i))).isEqualTo(i);
-    }
+    final int uniqueElementsCount = initialListSize / uniqueElements;
+    assertThat(jedis.lrem(key, 0, makeElementString(key, 0))).isEqualTo(uniqueElementsCount);
+    assertThat(jedis.lrem(key, -uniqueElementsCount, makeElementString(key, 1)))
+        .isEqualTo(uniqueElementsCount);
 
     clusterStartUp.crashVM(1); // kill primary server
 
-    assertThat(jedis.lrem(key, getCount(rand, 1), ELEMENT_TO_CHECK)).isEqualTo(1);
+    assertThat(jedis.llen(key)).isEqualTo(uniqueElementsCount);
+    assertThat(jedis.lrem(key, uniqueElementsCount, makeElementString(key, 2)))
+        .isEqualTo(uniqueElementsCount);
     assertThat(jedis.exists(key)).isFalse();
   }
 
-  // TODO: Need to remove ignore and modify once GEODE-10108 is done
-  @Ignore
+
   @Test
   public void givenBucketsMoveDuringLrem_thenOperationsAreNotLost() throws Exception {
-    AtomicLong runningCount = new AtomicLong(3);
+    AtomicBoolean running = new AtomicBoolean(true);
+
     List<String> listHashtags = makeListHashtags();
-    List<String> keys = makeListKeys(listHashtags);
+    String key1 = makeListKeyWithHashtag(1, listHashtags.get(0));
+    String key2 = makeListKeyWithHashtag(2, listHashtags.get(1));
+    String key3 = makeListKeyWithHashtag(3, listHashtags.get(2));
 
-    List<String> elementList1 = makeListWithRepeatingElements(keys.get(0));
-    List<String> elementList2 = makeListWithRepeatingElements(keys.get(1));
-    List<String> elementList3 = makeListWithRepeatingElements(keys.get(2));
+    List<String> elementList1 = makeListWithRepeatingElements(key1);
+    List<String> elementList2 = makeListWithRepeatingElements(key2);
+    List<String> elementList3 = makeListWithRepeatingElements(key3);
 
-    lpushPerformAndVerify(keys.get(0), elementList1);
-    lpushPerformAndVerify(keys.get(1), elementList2);
-    lpushPerformAndVerify(keys.get(2), elementList3);
+    jedis.lpush(key1, elementList1.toArray(new String[] {}));
+    jedis.lpush(key2, elementList2.toArray(new String[] {}));
+    jedis.lpush(key3, elementList3.toArray(new String[] {}));
 
-    int initialListSize = elementList1.size();
-    Runnable task1 =
-        () -> lremPerformAndVerify(keys.get(0), runningCount, initialListSize);
-    Runnable task2 =
-        () -> lremPerformAndVerify(keys.get(1), runningCount, initialListSize);
-    Runnable task3 =
-        () -> lremPerformAndVerify(keys.get(2), runningCount, initialListSize);
+    Future<Integer> future1 = executor.submit(() -> performLremAndVerify(key1, running, elementList1));
+    Future<Integer> future2 = executor.submit(() -> performLremAndVerify(key2, running, elementList2));
+    Future<Integer> future3 = executor.submit(() -> performLremAndVerify(key3, running, elementList3));
 
-    Future<Void> future1 = executor.runAsync(task1);
-    Future<Void> future2 = executor.runAsync(task2);
-    Future<Void> future3 = executor.runAsync(task3);
-
-    for (int i = 0; i < 50 && runningCount.get() > 0; i++) {
+    for (int i = 0; i < 50; i++) {
       clusterStartUp.moveBucketForKey(listHashtags.get(i % listHashtags.size()));
       Thread.sleep(500);
     }
 
-    runningCount.set(0);
+    running.set(false);
 
-    future1.get();
-    future2.get();
-    future3.get();
+    verifyLremResult(key1, future1.get());
+    verifyLremResult(key2, future2.get());
+    verifyLremResult(key3, future3.get());
   }
 
-  private void lremPerformAndVerify(String key, AtomicLong runningCount, int listSize) {
-    assertThat(jedis.llen(key)).isEqualTo(listSize);
-
-    Random rand = new Random();
-    long elementCount = MAX_MATCHING_ELEMENTS - 1;
-    while (jedis.llen(key) > 0 && runningCount.get() > 0) {
-      String element = makeElementString(key, (int) elementCount);
-      assertThat(jedis.lrem(key, getCount(rand, elementCount), element)).isEqualTo(elementCount);
-      elementCount--;
-    }
-
-    if (runningCount.get() > 0) {
-      assertThat(jedis.llen(key)).isZero();
-    }
-
-    runningCount.decrementAndGet(); // this thread done
-  }
-
-  /**
-   * Generates a count that is either 0, negative, or positive.
-   * A negative or positive count is matches the number of elements in the list.
-   */
-  private long getCount(Random rand, long numberOfElementsInList) {
-    long countDirection = rand.nextInt(3) - 1;
-    return countDirection * numberOfElementsInList;
-  }
-
-  /**
-   * Creates a list that contains MAX_MATCHING_ELEMENTS (150) elements.
-   * Almost all the elements in the list are added more than once.
-   */
-  private List<String> makeListWithRepeatingElements(String key) {
-    List<String> elementList = new ArrayList<>();
-    for (int i = 0; i < MAX_MATCHING_ELEMENTS; i++) {
+  private void verifyLremResult(String key, int iterationCount) {
+    for (int i = UNIQUE_ELEMENTS - 1; i >= iterationCount; i--) {
       String element = makeElementString(key, i);
+      assertThat(jedis.lrem(key, COUNT_OF_UNIQUE_ELEMENT, element))
+          .isEqualTo(COUNT_OF_UNIQUE_ELEMENT);
+    }
+    assertThat(jedis.exists(key)).isFalse();
+  }
 
-      // Adds i number of the element to the list
-      for (int j = 0; j < i; j++) {
-        elementList.add(element);
+  private Integer performLremAndVerify(String key, AtomicBoolean isRunning, List<String> list) {
+    assertThat(jedis.llen(key)).isEqualTo(LIST_SIZE_FOR_BUCKET_TEST);
+    int count = COUNT_OF_UNIQUE_ELEMENT;
+
+    int iterationCount = 0;
+    while (isRunning.get()) {
+      count = -count;
+      String element = makeElementString(key, iterationCount);
+      assertThat(jedis.lrem(key, count, element)).isEqualTo(COUNT_OF_UNIQUE_ELEMENT);
+      iterationCount++;
+
+      if (iterationCount == UNIQUE_ELEMENTS) {
+        iterationCount = 0;
+        jedis.lpush(key, list.toArray(new String[] {}));
       }
     }
 
-    return elementList;
+    return iterationCount;
   }
 
-  private void lpushPerformAndVerify(String key, List<String> elementList) {
-    jedis.lpush(key, elementList.toArray(new String[] {}));
-
-    Long listLength = jedis.llen(key);
-    assertThat(listLength).as("Initial list lengths not equal for key %s'", key)
-        .isEqualTo(elementList.size());
+  private List<String> makeListWithRepeatingElements(String key) {
+    List<String> elementList = new ArrayList<>();
+    for (int i = 0; i < LIST_SIZE_FOR_BUCKET_TEST; i++) {
+      elementList.add(makeElementString(key, i % UNIQUE_ELEMENTS));
+    }
+    return elementList;
   }
 
   private List<String> makeListHashtags() {
@@ -192,13 +170,6 @@ public class LRemDUnitTest {
     return listHashtags;
   }
 
-  private List<String> makeListKeys(List<String> listHashtags) {
-    List<String> keys = new ArrayList<>();
-    keys.add(makeListKeyWithHashtag(1, listHashtags.get(0)));
-    keys.add(makeListKeyWithHashtag(2, listHashtags.get(1)));
-    keys.add(makeListKeyWithHashtag(3, listHashtags.get(2)));
-    return keys;
-  }
 
   private String makeListKeyWithHashtag(int index, String hashtag) {
     return "{" + hashtag + "}-key-" + index;

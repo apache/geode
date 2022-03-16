@@ -73,7 +73,7 @@ public abstract class AbstractLRemIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
-  public void lrem_withCountAsZero_returnsNumberOfElementsRemoved() {
+  public void lrem_withCountAsZero_returnsNumberOfAllMatchingElementsRemoved() {
     jedis.lpush(LIST_KEY, LIST_ELEMENTS);
 
     final String[] result =
@@ -115,7 +115,7 @@ public abstract class AbstractLRemIntegrationTest implements RedisIntegrationTes
   }
 
   @Test
-  public void lrem_withInvalidIndex_returnsErrorNotInteger() {
+  public void lrem_withInvalidCount_returnsErrorNotInteger() {
     // Non Existent List
     assertThatThrownBy(() -> jedis.sendCommand(NON_EXISTENT_LIST_KEY, Protocol.Command.LREM,
         NON_EXISTENT_LIST_KEY, "b", "element")).hasMessage(ERROR_NOT_INTEGER);
@@ -133,15 +133,6 @@ public abstract class AbstractLRemIntegrationTest implements RedisIntegrationTes
     jedis.set(key, "dong");
     assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.LREM, key, "0", "element"))
         .hasMessage(ERROR_WRONG_TYPE);
-  }
-
-  @Test
-  public void lrem_withWrongTypeKey_withInvalidInput_returnsErrorNotInteger() {
-    String key = "{tag1}ding";
-    jedis.set(key, "dong");
-
-    assertThatThrownBy(() -> jedis.sendCommand(key, Protocol.Command.LREM, key, "b", "element"))
-        .hasMessage(ERROR_NOT_INTEGER);
   }
 
   @Test
