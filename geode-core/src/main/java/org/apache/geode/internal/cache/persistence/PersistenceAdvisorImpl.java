@@ -709,10 +709,18 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
   @Override
   public void removeListener(PersistentStateListener listener) {
     synchronized (this) {
+      if (!persistentStateListeners.contains(listener)) {
+        return;
+      }
       Set<PersistentStateListener> tmpListeners = new HashSet<>(persistentStateListeners);
       tmpListeners.remove(listener);
       persistentStateListeners = Collections.unmodifiableSet(tmpListeners);
     }
+  }
+
+  @VisibleForTesting
+  Set<PersistentStateListener> getPersistentStateListenerSet() {
+    return persistentStateListeners;
   }
 
   private void notifyListenersMemberOnline(InternalDistributedMember member,
@@ -1143,6 +1151,7 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
     isClosed = true;
     persistentMemberManager.removeRevocationListener(profileChangeListener);
     cacheDistributionAdvisor.removeProfileChangeListener(profileChangeListener);
+    persistentStateListeners = Collections.emptySet();
     releaseTieLock();
   }
 
