@@ -66,8 +66,7 @@ public class TombstoneServiceTest {
 
     replicateTombstoneSweeper.expireTombstone(tombstone);
     replicateTombstoneSweeper.expireBatch();
-    verify(regionMap, Mockito.never()).removeTombstone(tombstone.entry, tombstone, false,
-        true);
+    verify(regionMap, Mockito.never()).removeTombstone(tombstone.entry, tombstone);
   }
 
   @Test
@@ -83,7 +82,6 @@ public class TombstoneServiceTest {
 
     replicateTombstoneSweeper.expireTombstone(tombstone);
     replicateTombstoneSweeper.expireBatch();
-    verify(regionMap, Mockito.times(1)).removeTombstone(tombstone.entry, tombstone, false,
-        true);
+    verify(regionMap).removeTombstone(tombstone.entry, tombstone);
   }
 }

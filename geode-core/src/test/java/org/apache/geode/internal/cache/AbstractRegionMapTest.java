@@ -85,11 +85,11 @@ public class AbstractRegionMapTest {
     RegionEntry mockRegionEntry = mock(RegionEntry.class);
     VersionHolder mockVersionHolder = mock(VersionHolder.class);
 
-    when(mockAbstractRegionMap.removeTombstone(eq(mockRegionEntry), eq(mockVersionHolder),
-        anyBoolean(), anyBoolean())).thenReturn(true);
+    when(mockAbstractRegionMap.removeTombstone(eq(mockRegionEntry), eq(mockVersionHolder)))
+        .thenReturn(true);
 
     assertThat(
-        mockAbstractRegionMap.removeTombstone(mockRegionEntry, mockVersionHolder, true, true))
+        mockAbstractRegionMap.removeTombstone(mockRegionEntry, mockVersionHolder))
             .isTrue();
   }
 

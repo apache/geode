@@ -2309,8 +2309,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
 
   /** removes a tombstone that has expired locally */
   @Override
-  public boolean removeTombstone(RegionEntry re, VersionHolder version, boolean isEviction,
-      boolean isScheduledTombstone) {
+  public boolean removeTombstone(RegionEntry re, VersionHolder version) {
     boolean result = false;
     int destroyedVersion = version.getEntryVersion();
 
@@ -2341,7 +2340,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
           }
           try {
             re.setValue(_getOwner(), Token.REMOVED_PHASE2);
-            if (removeTombstone(re)) {
+            if (getEntryMap().remove(re.getKey(), re)) {
               _getOwner().cancelExpiryTask(re);
               result = true;
               incEntryCount(-1);
@@ -2350,9 +2349,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
               // returns true earlier) tombstone with bigger entry version, it's safe to delete
               // current tombstone 're' and adjust the tombstone count.
               // lruEntryDestroy(re); // tombstones are invisible to LRU
-              if (isScheduledTombstone) {
-                _getOwner().incTombstoneCount(-1);
-              }
+              _getOwner().incTombstoneCount(-1);
               RegionVersionVector vector = _getOwner().getVersionVector();
               if (vector != null) {
                 vector.recordGCVersion(version.getMemberID(), version.getRegionVersion());
@@ -2368,10 +2365,6 @@ public abstract class AbstractRegionMap extends BaseRegionMap
       }
     }
     return result;
-  }
-
-  private boolean removeTombstone(RegionEntry re) {
-    return getEntryMap().remove(re.getKey(), re);
   }
 
   // method used for debugging tombstone count issues

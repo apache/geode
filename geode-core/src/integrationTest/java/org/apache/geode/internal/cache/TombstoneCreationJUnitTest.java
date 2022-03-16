@@ -124,7 +124,7 @@ public class TombstoneCreationJUnitTest {
 
     RegionMap map = region.getRegionMap();
     tag = entry.asVersionTag();
-    map.removeTombstone(entry, tag, false, true);
+    map.removeTombstone(entry, tag);
 
     // now do an op that has local origin
     entry = new VersionedThinRegionEntryHeapObjectKey(region, key, Token.REMOVED_PHASE1);

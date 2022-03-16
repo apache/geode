@@ -761,8 +761,7 @@ class ProxyRegionMap extends BaseRegionMap {
   }
 
   @Override
-  public boolean removeTombstone(RegionEntry re, VersionHolder destroyedVersion, boolean isEviction,
-      boolean isScheduledTombstone) {
+  public boolean removeTombstone(RegionEntry re, VersionHolder destroyedVersion) {
     throw new IllegalStateException("removeTombstone should never be called on a proxy");
   }
 

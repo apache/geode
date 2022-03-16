@@ -290,8 +290,7 @@ public class TombstoneService {
 
       Set<Object> removedKeys = needsKeys ? new HashSet<>() : Collections.emptySet();
       for (Tombstone t : removals) {
-        boolean tombstoneWasStillInRegionMap =
-            t.region.getRegionMap().removeTombstone(t.entry, t, false, true);
+        boolean tombstoneWasStillInRegionMap = t.region.getRegionMap().removeTombstone(t.entry, t);
         if (needsKeys && tombstoneWasStillInRegionMap) {
           removedKeys.add(t.entry.getKey());
         }
@@ -334,7 +333,7 @@ public class TombstoneService {
       // TODO - RVV - to support persistent client regions
       // we need to actually record this as a destroy on disk, because
       // the GCC RVV doesn't make sense on the client.
-      t.region.getRegionMap().removeTombstone(t.entry, t, false, true);
+      t.region.getRegionMap().removeTombstone(t.entry, t);
     }
   }
 
@@ -438,7 +437,7 @@ public class TombstoneService {
         logger.trace(LogMarker.TOMBSTONE_VERBOSE, "removing expired tombstone {}", tombstone);
       }
       updateMemoryEstimate(-tombstone.getSize());
-      tombstone.region.getRegionMap().removeTombstone(tombstone.entry, tombstone, false, true);
+      tombstone.region.getRegionMap().removeTombstone(tombstone.entry, tombstone);
     }
 
     @Override
@@ -629,7 +628,7 @@ public class TombstoneService {
             DistributedRegion tr = (DistributedRegion) t.region;
             if (reapedKeys.containsKey(tr)) {
               boolean tombstoneWasStillInRegionMap =
-                  tr.getRegionMap().removeTombstone(t.entry, t, false, true);
+                  tr.getRegionMap().removeTombstone(t.entry, t);
               if (tombstoneWasStillInRegionMap && hasToTrackKeysForClients(tr)) {
                 Set<Object> keys = reapedKeys.get(tr);
                 if (keys.isEmpty()) {
