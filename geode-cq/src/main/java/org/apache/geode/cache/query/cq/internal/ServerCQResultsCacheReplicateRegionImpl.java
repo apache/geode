@@ -123,9 +123,8 @@ class ServerCQResultsCacheReplicateRegionImpl implements ServerCQResultsCache {
     synchronized (LOCK) {
       destroysWhileCqResultsInProgress.forEach(cqResultKeys::remove);
       destroysWhileCqResultsInProgress.clear();
+      return cqResultKeys.containsKey(key);
     }
-
-    return cqResultKeys.containsKey(key);
   }
 
   /**
