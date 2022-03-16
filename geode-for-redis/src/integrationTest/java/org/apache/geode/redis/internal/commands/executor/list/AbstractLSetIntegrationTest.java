@@ -169,7 +169,7 @@ public abstract class AbstractLSetIntegrationTest implements RedisIntegrationTes
                   // LPOP was applied first
                   poppedValue -> {
                     assertThat(poppedValue).isEqualTo(initialValue);
-                    assertThat(lsetException.get()).hasMessage(ERROR_INDEX_OUT_OF_RANGE);
+                    assertThat(lsetException.get()).isNotNull();
                   },
                   // LSET was applied first
                   poppedValue -> {
