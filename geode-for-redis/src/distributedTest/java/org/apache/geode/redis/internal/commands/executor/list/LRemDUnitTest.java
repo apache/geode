@@ -109,9 +109,12 @@ public class LRemDUnitTest {
     jedis.lpush(key2, elementList2.toArray(new String[] {}));
     jedis.lpush(key3, elementList3.toArray(new String[] {}));
 
-    Future<Integer> future1 = executor.submit(() -> performLremAndVerify(key1, running, elementList1));
-    Future<Integer> future2 = executor.submit(() -> performLremAndVerify(key2, running, elementList2));
-    Future<Integer> future3 = executor.submit(() -> performLremAndVerify(key3, running, elementList3));
+    Future<Integer> future1 =
+        executor.submit(() -> performLremAndVerify(key1, running, elementList1));
+    Future<Integer> future2 =
+        executor.submit(() -> performLremAndVerify(key2, running, elementList2));
+    Future<Integer> future3 =
+        executor.submit(() -> performLremAndVerify(key3, running, elementList3));
 
     for (int i = 0; i < 50; i++) {
       clusterStartUp.moveBucketForKey(listHashtags.get(i % listHashtags.size()));
