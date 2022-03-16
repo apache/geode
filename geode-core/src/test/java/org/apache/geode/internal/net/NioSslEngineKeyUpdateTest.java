@@ -34,6 +34,8 @@ import java.nio.channels.SocketChannel;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
+import java.security.Security;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -43,6 +45,7 @@ import java.util.concurrent.Executors;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
+import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.junit.Before;
@@ -59,10 +62,14 @@ import org.apache.geode.distributed.internal.DMStats;
 public class NioSslEngineKeyUpdateTest {
 
   private DMStats mockStats;
-  private NioSslEngine activeFilter;
+  private NioSslEngine clientFilter;
   private BufferPool bufferPool;
-  private NioSslEngine passiveFilter;
+  private NioSslEngine serverFilter;
   private int packetBufferSize;
+
+  {
+    Security.setProperty("jdk.tls.keyLimits", "AES/GCM/NoPadding KeyUpdate 2^7");
+  }
 
   @Before
   public void before() throws GeneralSecurityException, IOException {
@@ -89,78 +96,141 @@ public class NioSslEngineKeyUpdateTest {
     final SSLContext context = SSLContext.getInstance("TLS");
     final SecureRandom random = new SecureRandom();
     context.init(kmf.getKeyManagers(), tmf.getTrustManagers(), random);
+
+    final SSLParameters defaultParameters = context.getDefaultSSLParameters();
+    final String[] protocols = defaultParameters.getProtocols();
+    final String[] cipherSuites = defaultParameters.getCipherSuites();
+    System.out.println(String.format("TLS settings (default) before handshake: Protocols: %s, Cipher Suites: %s",
+        Arrays.toString(protocols), Arrays.toString(cipherSuites)));
+
     final SSLEngine clientEngine = context.createSSLEngine("server-host", 10001);
+    clientEngine.setEnabledProtocols(new String[]{"TLSv1.3"});
+    clientEngine.setEnabledCipherSuites(new String[]{"TLS_AES_256_GCM_SHA384"});
     clientEngine.setUseClientMode(true);
     packetBufferSize = clientEngine.getSession().getPacketBufferSize();
-    activeFilter = new NioSslEngine(clientEngine, bufferPool);
+    clientFilter = new NioSslEngine(clientEngine, bufferPool);
     final SSLEngine serverEngine = context.createSSLEngine("client-host", 10001);
+    serverEngine.setEnabledProtocols(new String[]{"TLSv1.3"});
+    serverEngine.setEnabledCipherSuites(new String[]{"TLS_AES_256_GCM_SHA384"});
     serverEngine.setUseClientMode(false);
-    passiveFilter = new NioSslEngine(serverEngine, bufferPool);
+    serverFilter = new NioSslEngine(serverEngine, bufferPool);
   }
 
   @Test
-  public void handshakeTest() throws InterruptedException {
+  public void handshakeTest() {
+    peerTest(NioSslEngineKeyUpdateTest::handshakeTLS,NioSslEngineKeyUpdateTest::handshakeTLS);
+  }
 
-    final ExecutorService executorService = Executors.newFixedThreadPool(2);
+  @Test
+  public void secureDataTransferTest() {
+    peerTest(
+        (final SocketChannel channel,
+         final NioSslEngine filter,
+         final ByteBuffer peerNetData) -> {
+          handshakeTLS(channel,filter,peerNetData);
+          send(channel, 100);
+          return true;
+          },
+        (final SocketChannel channel,
+         final NioSslEngine filter,
+         final ByteBuffer peerNetData) -> {
+          handshakeTLS(channel,filter,peerNetData);
+          final byte[] received = receive(channel, 100);
+          assertThat(received).contains(1,1);
+          return true;
+        });
+  }
 
-    final CompletableFuture<SocketAddress> boundAddress = new CompletableFuture<>();
-
-    final CompletableFuture<Boolean> passiveHandshakeFuture =
-        supplyAsync(
-            () -> {
-              try (final ServerSocketChannel boundChannel = ServerSocketChannel.open()) {
-                final InetSocketAddress bindAddress =
-                    new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
-                boundChannel.bind(bindAddress);
-                boundAddress.complete(boundChannel.getLocalAddress());
-                try (final SocketChannel acceptedChannel = boundChannel.accept()) {
-                  final ByteBuffer passiveSidePeerNetData =
-                      ByteBuffer.allocateDirect(packetBufferSize);
-
-                  acceptedChannel.configureBlocking(false);
-
-                  final boolean result =
-                      passiveFilter.handshake(acceptedChannel, 6_000, passiveSidePeerNetData);
-                  return result;
-                }
-              } catch (IOException e) {
-                throw new RuntimeException(e);
-              }
-            },
-            executorService);
-
-    Thread.sleep(2_000);
-
-    final CompletableFuture<Boolean> activeHandshakeFuture =
-        supplyAsync(
-            () -> {
-              try {
-                try (final SocketChannel connectedChannel = SocketChannel.open()) {
-                  connectedChannel.connect(boundAddress.get());
-                  final ByteBuffer activeSidePeerNetData =
-                      ByteBuffer.allocateDirect(packetBufferSize);
-
-                  connectedChannel.configureBlocking(false);
-
-                  final boolean result =
-                      activeFilter.handshake(connectedChannel, 6_000, activeSidePeerNetData);
-                  return result;
-                }
-              } catch (IOException | InterruptedException | ExecutionException e) {
-                throw new RuntimeException(e);
-              }
-            },
-            executorService);
-
-
-    CompletableFuture.allOf(passiveHandshakeFuture, activeHandshakeFuture)
-        .join();
-
+  @Test
+  public void handshakeTestWithKeyUpdate() {
+    peerTest(NioSslEngineKeyUpdateTest::handshakeTLS,NioSslEngineKeyUpdateTest::handshakeTLS);
   }
 
   @Test
   public void keyUpdateTest() {
 
+  }
+
+  private void peerTest(final PeerAction clientAction, final PeerAction serverAction) {
+    final ExecutorService executorService = Executors.newFixedThreadPool(2);
+
+    final CompletableFuture<SocketAddress> boundAddress = new CompletableFuture<>();
+
+    final CompletableFuture<Boolean> serverHandshakeFuture =
+        supplyAsync(
+            () -> server(boundAddress, packetBufferSize, serverFilter,
+                serverAction),
+            executorService);
+
+    final CompletableFuture<Boolean> clientHandshakeFuture =
+        supplyAsync(
+            () -> client(boundAddress, packetBufferSize, clientFilter,
+                clientAction),
+            executorService);
+
+    CompletableFuture.allOf(serverHandshakeFuture, clientHandshakeFuture)
+        .join();
+  }
+
+  private interface PeerAction {
+    boolean apply(final SocketChannel acceptedChannel,
+                  final NioSslEngine filter,
+                  final ByteBuffer peerNetData) throws IOException;
+  }
+
+  private static boolean client(final CompletableFuture<SocketAddress> boundAddress,
+                                final int packetBufferSize, final NioSslEngine filter,
+                                final PeerAction peerAction) {
+    try {
+      try (final SocketChannel connectedChannel = SocketChannel.open()) {
+        connectedChannel.connect(boundAddress.get());
+        final ByteBuffer peerNetData =
+            ByteBuffer.allocateDirect(packetBufferSize);
+
+        final boolean result =
+            peerAction.apply(connectedChannel, filter, peerNetData);
+        return result;
+      }
+    } catch (IOException | InterruptedException | ExecutionException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static boolean server(final CompletableFuture<SocketAddress> boundAddress,
+                                final int packetBufferSize, final NioSslEngine filter,
+                                final PeerAction peerAction) {
+    try (final ServerSocketChannel boundChannel = ServerSocketChannel.open()) {
+      final InetSocketAddress bindAddress =
+          new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
+      boundChannel.bind(bindAddress);
+      boundAddress.complete(boundChannel.getLocalAddress());
+      try (final SocketChannel acceptedChannel = boundChannel.accept()) {
+        final ByteBuffer peerNetData =
+            ByteBuffer.allocateDirect(packetBufferSize);
+
+        final boolean result =
+            peerAction.apply(acceptedChannel, filter, peerNetData);
+        return result;
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static boolean handshakeTLS(final SocketChannel channel,
+                                      final NioSslEngine filter,
+                                      final ByteBuffer peerNetData) throws IOException {
+    final boolean blocking = channel.isBlocking();
+    try {
+      channel.configureBlocking(false);
+      final boolean result =
+          filter.handshake(channel, 6_000, peerNetData);
+      System.out.println(String.format("TLS settings after successful handshake: Protocol: %s, Cipher Suite: %s",
+          filter.engine.getSession().getProtocol(), filter.engine.getSession().getCipherSuite()));
+      return result;
+    } finally {
+      channel.configureBlocking(blocking);
+    }
   }
 
   private Properties createKeystoreAndTruststore() throws GeneralSecurityException, IOException {
@@ -180,18 +250,20 @@ public class NioSslEngineKeyUpdateTest {
     return serverStore.propertiesWith("all", true, false);
   }
 
-  private static void receiveOneByte(final SocketChannel channel) throws IOException {
-    final ByteBuffer inboundTest = ByteBuffer.allocateDirect(1);
+  private static byte[] receive(final SocketChannel channel, final int n) throws IOException {
+    final ByteBuffer inboundTest = ByteBuffer.allocateDirect(n);
     channel.read(inboundTest);
     inboundTest.flip();
-    final byte[] received = new byte[1];
-    inboundTest.get(received, 0, 1);
-    assertThat(received).contains(1);
+    final byte[] received = new byte[n];
+    inboundTest.get(received, 0, n);
+    return received;
   }
 
-  private static void sendOneByte(final SocketChannel channel) throws IOException {
-    final ByteBuffer outboundTest = ByteBuffer.allocateDirect(1);
-    outboundTest.put((byte) 1);
+  private static void send(final SocketChannel channel, final int n) throws IOException {
+    final ByteBuffer outboundTest = ByteBuffer.allocateDirect(n);
+    for (int i = 0; i < n; i++) {
+      outboundTest.put((byte) 1);
+    }
     outboundTest.flip();
     channel.write(outboundTest);
   }
