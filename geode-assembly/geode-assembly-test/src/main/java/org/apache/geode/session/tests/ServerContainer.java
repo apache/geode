@@ -14,7 +14,9 @@
  */
 package org.apache.geode.session.tests;
 
+import static java.util.stream.Collectors.joining;
 import static org.apache.geode.session.tests.ContainerInstall.TMP_DIR;
+import static org.apache.geode.test.process.JavaModuleHelper.getJvmModuleOptions;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,8 +29,6 @@ import java.util.function.IntSupplier;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.JavaVersion;
-import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.Logger;
 import org.codehaus.cargo.container.ContainerType;
 import org.codehaus.cargo.container.InstalledLocalContainer;
@@ -197,15 +197,8 @@ public abstract class ServerContainer {
     config.setProperty(GeneralPropertySet.PORT_OFFSET, "0");
     int jvmJmxPort = portSupplier.getAsInt();
     String jvmArgs = "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=" + jvmJmxPort;
-    if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9)) {
-      jvmArgs += " --add-opens java.base/java.lang.module=ALL-UNNAMED" +
-          " --add-opens java.base/jdk.internal.module=ALL-UNNAMED" +
-          " --add-opens java.base/jdk.internal.reflect=ALL-UNNAMED" +
-          " --add-opens java.base/jdk.internal.misc=ALL-UNNAMED" +
-          " --add-opens java.base/jdk.internal.ref=ALL-UNNAMED" +
-          " --add-opens java.base/jdk.internal.platform.cgroupv1=ALL-UNNAMED" +
-          " --add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED";
-    }
+    jvmArgs += getJvmModuleOptions().stream()
+        .collect(joining(" ", " ", ""));
     config.setProperty(GeneralPropertySet.START_JVMARGS, jvmArgs);
     container.setConfiguration(config);
 

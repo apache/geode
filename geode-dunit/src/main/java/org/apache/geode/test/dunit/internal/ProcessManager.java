@@ -17,6 +17,7 @@ package org.apache.geode.test.dunit.internal;
 import static java.util.stream.Collectors.joining;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
 import static org.apache.geode.distributed.internal.DistributionConfig.MEMBERSHIP_PORT_RANGE_NAME;
+import static org.apache.geode.test.process.JavaModuleHelper.getJvmModuleOptions;
 import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
 import java.io.BufferedReader;
@@ -44,11 +45,7 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.JavaVersion;
-import org.apache.commons.lang3.SystemUtils;
 
-import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.membership.utils.AvailablePort;
 import org.apache.geode.test.dunit.VM;
@@ -302,28 +299,10 @@ class ProcessManager implements ChildVMLauncher {
     if (DUnitLauncher.LOG4J != null) {
       cmds.add("-Dlog4j.configurationFile=" + DUnitLauncher.LOG4J);
     }
-    cmds.add("-Djava.library.path=" + System.getProperty("java.library.path"));
-    cmds.add("-Xrunjdwp:transport=dt_socket,server=y,suspend=" + jdkSuspend + jdkDebug);
-    cmds.add("-XX:+HeapDumpOnOutOfMemoryError");
-    cmds.add("-Xmx512m");
-    cmds.add("-D" + GEMFIRE_PREFIX + "DEFAULT_MAX_OPLOG_SIZE=10");
-    cmds.add("-D" + GEMFIRE_PREFIX + "disallowMcastDefaults=true");
-    cmds.add("-D" + DistributionConfig.RESTRICT_MEMBERSHIP_PORT_RANGE + "=true");
-    cmds.add("-D" + GEMFIRE_PREFIX
-        + ConfigurationProperties.VALIDATE_SERIALIZABLE_OBJECTS + "=true");
-    cmds.add("-ea");
     cmds.add("-XX:MetaspaceSize=512m");
     cmds.add("-XX:SoftRefLRUPolicyMSPerMB=1");
     cmds.add(agent);
-    if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9)) {
-      // needed for client stats gathering, see VMStats50 class, it's using class inspection
-      // to call getProcessCpuTime method
-      cmds.add("--add-opens=jdk.management/com.sun.management.internal=ALL-UNNAMED");
-      // needed for server side code
-      cmds.add("--add-opens=java.xml/jdk.xml.internal=ALL-UNNAMED");
-      cmds.add("--add-opens=java.base/jdk.internal.module=ALL-UNNAMED");
-      cmds.add("--add-opens=java.base/java.lang.module=ALL-UNNAMED");
-    }
+    cmds.addAll(getJvmModuleOptions());
     cmds.add(ChildVM.class.getName());
     String[] rst = new String[cmds.size()];
     cmds.toArray(rst);
