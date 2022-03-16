@@ -36,7 +36,7 @@ public class BlockingCommandListener implements EventListener {
   private final List<RedisKey> keys;
   private final double timeoutSeconds;
   private final long timeSubmitted;
-  private AtomicBoolean active = new AtomicBoolean(true);
+  private final AtomicBoolean active = new AtomicBoolean(true);
 
   /**
    * Constructor to create an instance of a BlockingCommandListener in response to a blocking

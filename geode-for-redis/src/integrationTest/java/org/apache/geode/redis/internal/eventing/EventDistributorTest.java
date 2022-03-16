@@ -176,6 +176,12 @@ public class EventDistributorTest {
     assertThat(distributor.getRegisteredKeys()).isEqualTo(0);
   }
 
+  /**
+   * When a key points to a Queue (of listeners) that becomes empty that key is
+   * removed. Without correct synchronization we could add a new listener to a queue
+   * just before the key (and thus the queue) is removed. This test ensures that is
+   * not happening.
+   */
   @Test
   public void ensureNotRegisteringListenerOnQueueJustRemoved() {
     EventDistributor distributor = new EventDistributor();

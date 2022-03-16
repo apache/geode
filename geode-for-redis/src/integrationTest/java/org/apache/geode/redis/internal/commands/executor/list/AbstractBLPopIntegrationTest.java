@@ -20,7 +20,6 @@ import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CL
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -106,7 +105,7 @@ public abstract class AbstractBLPopIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
-  public void testBLPopWithDoesNotError_whenTimeoutHasExponent() {
+  public void testBLPopDoesNotError_whenTimeoutHasExponent() {
     jedis.lpush(KEY, "value1", "value2");
 
     Object result = jedis.sendCommand(KEY, Protocol.Command.BLPOP, KEY, "1E+3");
@@ -134,6 +133,25 @@ public abstract class AbstractBLPopIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
+  public void testBLpopFirstKeyDoesNotExistButSecondOneDoes() {
+    jedis.lpush("{A}key2", "value2");
+
+    List<String> result = jedis.blpop(0, "{A}key1", "{A}key2");
+
+    assertThat(result).containsExactly("{A}key2", "value2");
+  }
+
+  @Test
+  public void testBLpopKeyOrderingIsCorrect() {
+    jedis.lpush("{A}key2", "value2");
+    jedis.lpush("{A}key3", "value3");
+
+    List<String> result = jedis.blpop(0, "{A}key1", "{A}key3", "{A}key2");
+
+    assertThat(result).containsExactly("{A}key3", "value3");
+  }
+
+  @Test
   public void testConcurrentBLPop() throws Exception {
     int totalElements = 10_000;
     List<Object> accumulated = Collections.synchronizedList(new ArrayList<>(totalElements + 2));
@@ -148,7 +166,7 @@ public abstract class AbstractBLPopIntegrationTest implements RedisIntegrationTe
       result.add("value" + i);
     }
 
-    GeodeAwaitility.await().atMost(Duration.ofSeconds(5))
+    GeodeAwaitility.await()
         .untilAsserted(() -> assertThat(accumulated.size()).isEqualTo(totalElements));
 
     running.set(false);

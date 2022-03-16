@@ -49,24 +49,42 @@ public class BLPopDUnitTest {
   private static MemberVM server1;
   private static MemberVM server2;
   private static MemberVM server3;
+  private static int locatorPort;
+  private static int redisServerPort;
 
   @BeforeClass
   public static void classSetup() {
     MemberVM locator = cluster.startLocatorVM(0);
-    int locatorPort = locator.getPort();
+    locatorPort = locator.getPort();
 
     server1 = cluster.startRedisVM(1, locatorPort);
     server2 = cluster.startRedisVM(2, locatorPort);
     server3 = cluster.startRedisVM(3, locatorPort);
 
-    int redisServerPort1 = cluster.getRedisPort(1);
-    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort1), REDIS_CLIENT_TIMEOUT,
+    redisServerPort = cluster.getRedisPort(3);
+    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort), REDIS_CLIENT_TIMEOUT,
         20);
   }
 
   @After
   public void tearDown() {
     cluster.flushAll();
+  }
+
+  @Test
+  public void testClientRepeatsBLpopAfterServerCrash() throws Exception {
+    cluster.moveBucketForKey(LIST_KEY, "server-3");
+    Future<List<String>> blpopFuture = executor.submit(() -> jedis.blpop(0, LIST_KEY));
+
+    try {
+      cluster.crashVM(3);
+      jedis.lpush(LIST_KEY, "value");
+      List<String> result = blpopFuture.get();
+      assertThat(result).containsExactly(LIST_KEY, "value");
+    } finally {
+      cluster.startRedisVM(3, Integer.toString(redisServerPort), locatorPort);
+      cluster.rebalanceAllRegions();
+    }
   }
 
   @Test

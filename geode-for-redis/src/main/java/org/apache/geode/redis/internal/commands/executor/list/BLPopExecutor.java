@@ -49,8 +49,11 @@ public class BLPopExecutor implements CommandExecutor {
     for (int i = 0; i < keyCount; i++) {
       keys.add(new RedisKey(arguments.get(i)));
     }
+    // The order of keys is important and, since locking may alter the order passed into
+    // lockedExecute, we create a copy here.
+    List<RedisKey> keysForLocking = new ArrayList<>(keys);
 
-    List<byte[]> popped = context.lockedExecute(keys.get(0), keys,
+    List<byte[]> popped = context.lockedExecute(keys.get(0), keysForLocking,
         () -> RedisList.blpop(context, command, keys, timeoutSeconds));
 
     return popped == null ? RedisResponse.BLOCKED : RedisResponse.array(popped, true);

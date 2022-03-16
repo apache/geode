@@ -51,9 +51,12 @@ public interface EventListener {
   void resubmitCommand();
 
   /**
-   * Retrieve the timeout in nanoseconds for this listener
+   * Schedule the removal of this listener using the passed in {@link ScheduledExecutorService}
+   * and {@link EventDistributor}. The implementation is responsible for cancelling the timeout if
+   * necessary.
+   *
+   * @param executor the ScheduledExecutorService to use for scheduling
+   * @param distributor the EventDistributor which would be used to remove this listener
    */
-  // long getTimeout();
-
   void scheduleTimeout(ScheduledExecutorService executor, EventDistributor distributor);
 }
