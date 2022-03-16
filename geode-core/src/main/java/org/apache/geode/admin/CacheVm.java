@@ -27,6 +27,7 @@ package org.apache.geode.admin;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public interface CacheVm extends SystemMember, ManagedEntity {
   /**
    * Returns the configuration of this cache vm

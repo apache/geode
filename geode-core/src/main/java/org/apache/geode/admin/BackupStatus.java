@@ -29,6 +29,7 @@ import org.apache.geode.distributed.DistributedMember;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public interface BackupStatus {
   /**
    * Returns a map of disk stores that were successfully backed up. The key is an online distributed

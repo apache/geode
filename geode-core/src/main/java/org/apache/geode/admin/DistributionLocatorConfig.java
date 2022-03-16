@@ -38,6 +38,7 @@ import java.util.Properties;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public interface DistributionLocatorConfig extends ManagedEntityConfig {
 
   /**

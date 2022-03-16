@@ -25,6 +25,7 @@ import org.apache.geode.admin.GemFireHealthConfig;
  *
  * @since GemFire 3.5
  */
+@Deprecated
 public class GemFireHealthConfigImpl extends CacheHealthConfigImpl implements GemFireHealthConfig {
 
   private static final long serialVersionUID = -6797673296902808018L;

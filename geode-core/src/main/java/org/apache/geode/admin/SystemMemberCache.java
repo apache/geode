@@ -25,6 +25,7 @@ import org.apache.geode.cache.RegionAttributes;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public interface SystemMemberCache {
   // attributes
   /**

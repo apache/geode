@@ -37,6 +37,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
  *
  * @since GemFire 3.5
  */
+@Deprecated
 class DistributedSystemHealthEvaluator extends AbstractHealthEvaluator
     implements MembershipListener {
 

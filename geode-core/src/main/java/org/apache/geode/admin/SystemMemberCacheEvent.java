@@ -25,6 +25,7 @@ import org.apache.geode.cache.Operation;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public interface SystemMemberCacheEvent extends SystemMembershipEvent {
   /**
    * Returns the actual operation that caused this event.

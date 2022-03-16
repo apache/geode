@@ -29,6 +29,7 @@ import org.apache.geode.internal.admin.StatResource;
  *
  * @since GemFire 3.5
  */
+@Deprecated
 public class StatisticResourceImpl implements org.apache.geode.admin.StatisticResource {
 
   /** The underlying remote StatResource which this object delegates to */

@@ -61,6 +61,7 @@ import org.apache.geode.admin.AdminException;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public interface Agent {
 
   /** Lookup name for RMIConnector when rmi-registry-enabled is true */

@@ -54,6 +54,7 @@ import org.apache.geode.internal.inet.LocalHostUtil;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public class GemFireMemberStatus implements Serializable {
   private static final long serialVersionUID = 3389997790525991310L;
 

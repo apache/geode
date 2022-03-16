@@ -43,6 +43,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  *
  * @since GemFire 5.0
  */
+@Deprecated
 public class SystemMemberCacheEventProcessor {
   private static final Logger logger = LogService.getLogger();
 

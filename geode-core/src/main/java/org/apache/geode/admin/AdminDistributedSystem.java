@@ -36,6 +36,7 @@ import org.apache.geode.distributed.DistributedMember;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public interface AdminDistributedSystem {
 
   /**

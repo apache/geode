@@ -61,6 +61,7 @@ import mx4j.util.Utils;
  * @author <a href="mailto:biorn_steedom@users.sourceforge.net">Simone Bordet</a>
  * @version $Revision: 1.14 $
  */
+@Deprecated
 public class MX4JModelMBean implements ModelMBean, MBeanRegistration, NotificationEmitter {
   private static final String OBJECT_RESOURCE_TYPE = "ObjectReference";
 

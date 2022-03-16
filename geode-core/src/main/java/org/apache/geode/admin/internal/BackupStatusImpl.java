@@ -26,6 +26,7 @@ import org.apache.geode.distributed.DistributedMember;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public class BackupStatusImpl implements BackupStatus {
   private static final long serialVersionUID = 3704162840296921841L;
 

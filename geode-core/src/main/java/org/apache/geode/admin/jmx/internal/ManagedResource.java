@@ -24,6 +24,7 @@ import javax.management.modelmbean.ModelMBean;
  * @since GemFire 3.5
  *
  */
+@Deprecated
 public interface ManagedResource {
 
   /**

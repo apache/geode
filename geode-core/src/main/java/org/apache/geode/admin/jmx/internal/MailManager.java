@@ -38,6 +38,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  *
  * @since GemFire 5.1
  */
+@Deprecated
 public class MailManager {
 
   private static final Logger logger = LogService.getLogger();

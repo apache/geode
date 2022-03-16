@@ -35,6 +35,7 @@ import org.apache.geode.logging.internal.OSProcess;
  *
  * @since GemFire 3.5
  */
+@Deprecated
 class MemberHealthEvaluator extends AbstractHealthEvaluator {
 
   /** The config from which we get the evaluation criteria */

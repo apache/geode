@@ -25,6 +25,7 @@ package org.apache.geode.admin;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public class UnmodifiableConfigurationException extends AdminException {
   private static final long serialVersionUID = -7653547392992060646L;
 

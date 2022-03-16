@@ -62,6 +62,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public interface DistributedSystemConfig extends Cloneable {
 
   /**

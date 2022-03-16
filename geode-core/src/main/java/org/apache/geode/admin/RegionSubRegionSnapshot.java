@@ -38,6 +38,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public class RegionSubRegionSnapshot implements DataSerializable {
   private static final long serialVersionUID = -8052137675270041871L;
 

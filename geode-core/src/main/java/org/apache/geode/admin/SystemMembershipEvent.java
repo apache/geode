@@ -26,6 +26,7 @@ import org.apache.geode.distributed.DistributedMember;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public interface SystemMembershipEvent {
   /**
    * Returns the distributed member as a String.

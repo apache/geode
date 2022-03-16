@@ -42,6 +42,7 @@ import org.apache.geode.internal.admin.JoinLeaveListener;
  *
  * @since GemFire 3.5
  */
+@Deprecated
 public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, HealthListener {
 
   /** The distributed system whose health is being monitored */

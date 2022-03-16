@@ -22,6 +22,7 @@ import org.apache.geode.admin.ManagedEntityConfig;
  * Defines the actual administration (starting, stopping, etc.) of GemFire {@link ManagedEntity}s.
  *
  */
+@Deprecated
 interface ManagedEntityController {
   /**
    * Starts a managed entity.

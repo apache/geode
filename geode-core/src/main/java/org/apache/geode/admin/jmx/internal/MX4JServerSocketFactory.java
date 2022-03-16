@@ -45,6 +45,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  *
  * @since GemFire 3.5 (old name was SSLAdaptorServerSocketFactory)
  */
+@Deprecated
 public class MX4JServerSocketFactory implements mx4j.tools.adaptor.AdaptorServerSocketFactory,
     java.rmi.server.RMIServerSocketFactory {
 

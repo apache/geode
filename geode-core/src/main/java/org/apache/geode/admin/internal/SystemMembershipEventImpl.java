@@ -24,6 +24,7 @@ import org.apache.geode.distributed.DistributedMember;
  *
  * @since GemFire 5.0
  */
+@Deprecated
 public class SystemMembershipEventImpl implements SystemMembershipEvent {
 
   /** The id of the member that generated this event */

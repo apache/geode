@@ -26,6 +26,7 @@ import org.apache.geode.annotations.Immutable;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 @Immutable
 public class SystemMemberType implements java.io.Serializable {
   private static final long serialVersionUID = 3284366994485749302L;

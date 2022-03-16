@@ -22,6 +22,7 @@ import org.apache.geode.admin.CacheHealthConfig;
  *
  * @since GemFire 3.5
  */
+@Deprecated
 public abstract class CacheHealthConfigImpl extends MemberHealthConfigImpl
     implements CacheHealthConfig {
 

@@ -54,6 +54,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  *
  * @since GemFire 3.5
  */
+@Deprecated
 class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
 
   private static final Logger logger = LogService.getLogger();

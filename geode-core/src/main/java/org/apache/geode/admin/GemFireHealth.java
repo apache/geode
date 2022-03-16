@@ -39,6 +39,7 @@ import org.apache.geode.internal.Assert;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public interface GemFireHealth {
 
   /**

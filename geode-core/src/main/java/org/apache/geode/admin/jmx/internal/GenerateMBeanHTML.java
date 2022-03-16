@@ -42,6 +42,7 @@ import org.apache.geode.internal.classloader.ClassPathLoader;
  *
  * @since GemFire 3.5
  */
+@Deprecated
 public class GenerateMBeanHTML extends DefaultHandler {
 
   /** The location of the DTD for the MBean descriptions */

@@ -254,6 +254,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public interface AgentConfig extends DistributedSystemConfig {
 
   /** The prefix for JMX Agent configuration system properties */

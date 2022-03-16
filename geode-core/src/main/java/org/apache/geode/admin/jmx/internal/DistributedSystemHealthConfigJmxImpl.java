@@ -31,6 +31,7 @@ import org.apache.geode.admin.internal.DistributedSystemHealthConfigImpl;
  *
  * @since GemFire 3.5
  */
+@Deprecated
 public class DistributedSystemHealthConfigJmxImpl extends DistributedSystemHealthConfigImpl
     implements ManagedResource {
 

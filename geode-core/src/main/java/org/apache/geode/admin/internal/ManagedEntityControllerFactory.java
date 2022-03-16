@@ -27,6 +27,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * {@link ManagedEntity}s.
  *
  */
+@Deprecated
 public class ManagedEntityControllerFactory {
 
   private static final Logger logger = LogService.getLogger();

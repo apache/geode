@@ -35,6 +35,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * @since GemFire 3.5
  *
  */
+@Deprecated
 public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.StatisticResourceImpl
     implements javax.management.NotificationListener,
     org.apache.geode.admin.jmx.internal.ManagedResource {

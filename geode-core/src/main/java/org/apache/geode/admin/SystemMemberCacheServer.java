@@ -27,6 +27,7 @@ import org.apache.geode.cache.server.ServerLoadProbe;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public interface SystemMemberCacheServer {
 
   /**

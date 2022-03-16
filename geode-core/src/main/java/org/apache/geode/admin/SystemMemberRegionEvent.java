@@ -23,6 +23,7 @@ package org.apache.geode.admin;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public interface SystemMemberRegionEvent extends SystemMemberCacheEvent {
   /**
    * Returns the full path of the region the event was done on.

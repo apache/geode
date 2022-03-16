@@ -42,6 +42,7 @@ import org.apache.geode.internal.admin.GemFireVM;
  *
  * @since GemFire 3.5
  */
+@Deprecated
 public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.SystemMemberCacheImpl
     implements org.apache.geode.admin.jmx.internal.ManagedResource {
 

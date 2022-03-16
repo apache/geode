@@ -24,6 +24,7 @@ import org.apache.geode.admin.ConfigurationParameter;
  * @since GemFire 3.5
  *
  */
+@Deprecated
 public interface ConfigurationParameterListener {
   void configurationParameterValueChanged(ConfigurationParameter parm);
 }

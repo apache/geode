@@ -28,6 +28,7 @@ import org.apache.geode.internal.admin.GemFireVM;
  *
  * @since GemFire 4.0
  */
+@Deprecated
 public class SystemMemberBridgeServerJmxImpl extends SystemMemberBridgeServerImpl
     implements ManagedResource {
 

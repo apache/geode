@@ -63,6 +63,7 @@ import org.apache.geode.internal.util.IOUtils;
  *
  * @since GemFire 3.5 (in which it was named AgentConfig)
  */
+@Deprecated
 public class AgentConfigImpl extends DistributedSystemConfigImpl implements AgentConfig {
 
   // -------------------------------------------------------------------------

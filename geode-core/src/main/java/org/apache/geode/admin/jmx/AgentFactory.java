@@ -26,6 +26,7 @@ import org.apache.geode.admin.jmx.internal.AgentImpl;
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
  */
+@Deprecated
 public class AgentFactory {
 
   /**

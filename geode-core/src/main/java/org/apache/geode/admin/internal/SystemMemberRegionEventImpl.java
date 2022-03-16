@@ -25,6 +25,7 @@ import org.apache.geode.distributed.DistributedMember;
  *
  * @since GemFire 5.0
  */
+@Deprecated
 public class SystemMemberRegionEventImpl extends SystemMemberCacheEventImpl
     implements SystemMemberRegionEvent {
 

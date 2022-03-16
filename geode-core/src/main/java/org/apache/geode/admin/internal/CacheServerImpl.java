@@ -33,6 +33,7 @@ import org.apache.geode.internal.admin.remote.RemoteApplicationVM;
  *
  * @since GemFire 3.5
  */
+@Deprecated
 public class CacheServerImpl extends ManagedSystemMemberImpl implements CacheVm, CacheServer {
 
   /** How many new <code>CacheServer</code>s have been created? */
