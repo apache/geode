@@ -20,11 +20,13 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
@@ -37,6 +39,7 @@ import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.lang.SystemProperty;
 import org.apache.geode.internal.offheap.annotations.OffHeapIdentifier;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -59,13 +62,11 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
 
   public static final int UPDATE_OFF_HEAP_STATS_FREQUENCY_MS =
       SystemProperty.getProductIntegerProperty(
-          "update-off-heap-stats-frequency-ms").orElse(360000);
+          "off-heap-stats-update-frequency-ms").orElse(3600000);
 
-  /**
-   * Can be overridden during testing.
-   */
-  @MakeNotStatic
-  private static volatile int updateOffHeapStatsFrequencyMs = UPDATE_OFF_HEAP_STATS_FREQUENCY_MS;
+  private final ScheduledExecutorService updateNonRealTimeStatsExecutor;
+
+  private final ScheduledFuture<?> updateNonRealTimeStatsFuture;
 
   private volatile OffHeapMemoryStats stats;
 
@@ -95,17 +96,22 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
   private static final boolean DO_EXPENSIVE_VALIDATION =
       Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_DO_EXPENSIVE_VALIDATION");
 
-  private volatile Thread updateStatsTask;
+  public static MemoryAllocator create(OutOfOffHeapMemoryListener ooohml, OffHeapMemoryStats stats,
+      int slabCount, long offHeapMemorySize, long maxSlabSize,
+      int updateOffHeapStatsFrequencyMs) {
+    return create(ooohml, stats, slabCount, offHeapMemorySize, maxSlabSize, null,
+        SlabImpl::new, updateOffHeapStatsFrequencyMs);
+  }
 
   public static MemoryAllocator create(OutOfOffHeapMemoryListener ooohml, OffHeapMemoryStats stats,
       int slabCount, long offHeapMemorySize, long maxSlabSize) {
     return create(ooohml, stats, slabCount, offHeapMemorySize, maxSlabSize, null,
-        SlabImpl::new);
+        SlabImpl::new, UPDATE_OFF_HEAP_STATS_FREQUENCY_MS);
   }
 
   private static MemoryAllocatorImpl create(OutOfOffHeapMemoryListener ooohml,
       OffHeapMemoryStats stats, int slabCount, long offHeapMemorySize, long maxSlabSize,
-      Slab[] slabs, SlabFactory slabFactory) {
+      Slab[] slabs, SlabFactory slabFactory, int updateOffHeapStatsFrequencyMs) {
     MemoryAllocatorImpl result = singleton;
     boolean created = false;
     try {
@@ -149,18 +155,13 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
           }
         }
 
-        result = new MemoryAllocatorImpl(ooohml, stats, slabs);
+        result = new MemoryAllocatorImpl(ooohml, stats, slabs, updateOffHeapStatsFrequencyMs);
         singleton = result;
         LifecycleListener.invokeAfterCreate(result);
         created = true;
-        singleton.updateStatsTask = createUpdateFreeListStatsThread();
-        singleton.updateStatsTask.start();
       }
     } finally {
       if (!created) {
-        if (singleton != null && singleton.updateStatsTask != null) {
-          singleton.updateStatsTask.interrupt();
-        }
         if (stats != null) {
           stats.close();
         }
@@ -172,26 +173,11 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
     return result;
   }
 
-  private static Thread createUpdateFreeListStatsThread() {
-    return new Thread(() -> {
-      while (true) {
-        if (singleton != null) {
-          singleton.freeList.updateNonRealTimeStats();
-        }
-        try {
-          Thread.sleep(updateOffHeapStatsFrequencyMs);
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-          return;
-        }
-      }
-    });
-  }
-
   static MemoryAllocatorImpl createForUnitTest(OutOfOffHeapMemoryListener ooohml,
       OffHeapMemoryStats stats, int slabCount, long offHeapMemorySize, long maxSlabSize,
       SlabFactory memChunkFactory) {
-    return create(ooohml, stats, slabCount, offHeapMemorySize, maxSlabSize, null, memChunkFactory);
+    return create(ooohml, stats, slabCount, offHeapMemorySize, maxSlabSize, null, memChunkFactory,
+        UPDATE_OFF_HEAP_STATS_FREQUENCY_MS);
   }
 
   public static MemoryAllocatorImpl createForUnitTest(OutOfOffHeapMemoryListener oooml,
@@ -209,7 +195,8 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
         }
       }
     }
-    return create(oooml, stats, slabCount, offHeapMemorySize, maxSlabSize, slabs, null);
+    return create(oooml, stats, slabCount, offHeapMemorySize, maxSlabSize, slabs, null,
+        UPDATE_OFF_HEAP_STATS_FREQUENCY_MS);
   }
 
 
@@ -235,7 +222,8 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
   }
 
   private MemoryAllocatorImpl(final OutOfOffHeapMemoryListener oooml,
-      final OffHeapMemoryStats stats, final Slab[] slabs) {
+      final OffHeapMemoryStats stats, final Slab[] slabs,
+      int updateOffHeapStatsFrequencyMs) {
     if (oooml == null) {
       throw new IllegalArgumentException("OutOfOffHeapMemoryListener is null");
     }
@@ -250,6 +238,12 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
 
     this.stats.incMaxMemory(freeList.getTotalMemory());
     this.stats.incFreeMemory(freeList.getTotalMemory());
+
+    updateNonRealTimeStatsExecutor =
+        LoggingExecutors.newSingleThreadScheduledExecutor("Update Freelist Stats thread");
+    updateNonRealTimeStatsFuture =
+        updateNonRealTimeStatsExecutor.scheduleAtFixedRate(freeList::updateNonRealTimeStats, 0,
+            updateOffHeapStatsFrequencyMs, TimeUnit.MILLISECONDS);
   }
 
   public List<OffHeapStoredObject> getLostChunks(InternalCache cache) {
@@ -394,9 +388,6 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
     try {
       LifecycleListener.invokeBeforeClose(this);
     } finally {
-      if (updateStatsTask != null) {
-        updateStatsTask.interrupt();
-      }
       ooohml.close();
       if (Boolean.getBoolean(FREE_OFF_HEAP_MEMORY_PROPERTY)) {
         realClose();
@@ -416,6 +407,8 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
     if (setClosed()) {
       freeList.freeSlabs();
       stats.close();
+      updateNonRealTimeStatsFuture.cancel(true);
+      updateNonRealTimeStatsExecutor.shutdown();
       singleton = null;
     }
   }
@@ -546,10 +539,5 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
   @Override
   public MemoryInspector getMemoryInspector() {
     return memoryInspector;
-  }
-
-  @VisibleForTesting
-  public static void setUpdateOffHeapStatsFrequencyMs(int frequencyMs) {
-    updateOffHeapStatsFrequencyMs = frequencyMs;
   }
 }

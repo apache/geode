@@ -43,7 +43,7 @@ public interface OffHeapMemoryStats {
 
   void setFragmentation(int value);
 
-  void setFreedChunks(int value);
+  void setFreedChunks(long value);
 
   long getFreeMemory();
 

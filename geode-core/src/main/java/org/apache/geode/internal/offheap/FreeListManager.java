@@ -544,8 +544,7 @@ public class FreeListManager {
     for (int i = 0; i < tinyFreeLists.length(); i++) {
       OffHeapStoredObjectAddressStack cl = tinyFreeLists.get(i);
       if (cl != null) {
-        int length = cl.getLength();
-        fragmentCount += length;
+        fragmentCount += cl.size();
       }
     }
     return fragmentCount;
@@ -558,18 +557,12 @@ public class FreeListManager {
   private int getLargestFragment() {
     int largestFreeSpaceFromFragments = 0;
     for (Fragment f : fragmentList) {
-      int offset = f.getFreeIndex();
-      int diff = f.getSize() - offset;
-      if (diff < OffHeapStoredObject.MIN_CHUNK_SIZE) {
-        assert diff == 0;
-        continue;
-      }
-      if (diff > largestFreeSpaceFromFragments) {
-        largestFreeSpaceFromFragments = diff;
+      int fragmentFreeSpace = f.freeSpace();
+      if (fragmentFreeSpace > largestFreeSpaceFromFragments) {
+        largestFreeSpaceFromFragments = fragmentFreeSpace;
       }
     }
     return largestFreeSpaceFromFragments;
-
   }
 
   /**

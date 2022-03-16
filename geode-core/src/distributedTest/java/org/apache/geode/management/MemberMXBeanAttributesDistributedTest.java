@@ -42,11 +42,11 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
 import org.apache.geode.internal.statistics.HostStatSampler;
 import org.apache.geode.internal.statistics.SampleCollector;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 /**
  * Distributed tests for {@link MemberMXBean} attributes.
@@ -222,7 +222,7 @@ public class MemberMXBeanAttributesDistributedTest extends CacheTestCase {
   private void createMember() {
     Properties props = getDistributedSystemProperties();
     props.setProperty(OFF_HEAP_MEMORY_SIZE, "4096");
-    MemoryAllocatorImpl.setUpdateOffHeapStatsFrequencyMs(1000);
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "off-heap-stats-update-frequency-ms", "1000");
     getCache(props);
   }
 

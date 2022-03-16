@@ -112,7 +112,7 @@ public class NullOffHeapMemoryStats implements OffHeapMemoryStats {
   public void setFragmentation(int value) {}
 
   @Override
-  public void setFreedChunks(int value) {}
+  public void setFreedChunks(long value) {}
 
   @Override
   public int getFragmentation() {

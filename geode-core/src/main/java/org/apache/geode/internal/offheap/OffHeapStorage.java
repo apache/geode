@@ -80,11 +80,11 @@ public class OffHeapStorage implements OffHeapMemoryStats {
     final String fragmentsDesc =
         "The number of fragments of free off-heap memory. Updated every time a defragmentation is done.";
     final String freedChunksDesc =
-        "The number of off-heap memory chunks that have been freed since the last defragmentation and that are not currently being used to store an object in the off-heap memory space. Updated every time a defragmentation is done and periodically according to update-off-heap-stats-frequency-ms system property (default 3600 seconds).";
+        "The number of off-heap memory chunks that have been freed since the last defragmentation and that are not currently being used to store an object in the off-heap memory space. Updated every time a defragmentation is done and periodically according to off-heap-stats-update-frequency-ms system property (default 3600 seconds).";
     final String freeMemoryDesc =
         "The amount of off-heap memory, in bytes, that is not being used.";
     final String largestFragmentDesc =
-        "The largest fragment of off-heap memory that can be used to allocate an object. Updated every time a defragmentation is done and periodically according to update-off-heap-stats-frequency-ms system property (default 3600 seconds)";
+        "The largest fragment of off-heap memory that can be used to allocate an object. Updated every time a defragmentation is done and periodically according to off-heap-stats-update-frequency-ms system property (default 3600 seconds)";
     final String objectsDesc = "The number of objects stored in off-heap memory.";
     final String readsDesc =
         "The total number of reads of off-heap memory. Only reads of a full object increment this statistic. If only a part of the object is read this statistic is not incremented.";
@@ -226,12 +226,23 @@ public class OffHeapStorage implements OffHeapMemoryStats {
       OutOfOffHeapMemoryListener ooohml) {
     final OffHeapMemoryStats stats = new OffHeapStorage(sf);
 
-    // determine off-heap and slab sizes
     final long maxSlabSize = calcMaxSlabSize(offHeapMemorySize);
 
     final int slabCount = calcSlabCount(maxSlabSize, offHeapMemorySize);
 
     return MemoryAllocatorImpl.create(ooohml, stats, slabCount, offHeapMemorySize, maxSlabSize);
+  }
+
+  static MemoryAllocator basicCreateOffHeapStorage(StatisticsFactory sf, long offHeapMemorySize,
+      OutOfOffHeapMemoryListener ooohml, int updateOffHeapStatsFrequencyMs) {
+    final OffHeapMemoryStats stats = new OffHeapStorage(sf);
+
+    final long maxSlabSize = calcMaxSlabSize(offHeapMemorySize);
+
+    final int slabCount = calcSlabCount(maxSlabSize, offHeapMemorySize);
+
+    return MemoryAllocatorImpl.create(ooohml, stats, slabCount, offHeapMemorySize, maxSlabSize,
+        updateOffHeapStatsFrequencyMs);
   }
 
   private static final long MAX_SLAB_SIZE = Integer.MAX_VALUE;
@@ -394,10 +405,9 @@ public class OffHeapStorage implements OffHeapMemoryStats {
   }
 
   @Override
-  public void setFreedChunks(int value) {
-    this.stats.setInt(freedChunksId, value);
+  public void setFreedChunks(long value) {
+    stats.setLong(freedChunksId, value);
   }
-
 
   @Override
   public int getFragmentation() {
