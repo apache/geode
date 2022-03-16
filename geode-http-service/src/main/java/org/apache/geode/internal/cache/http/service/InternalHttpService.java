@@ -31,7 +31,7 @@ import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
-import org.eclipse.jetty.server.handler.AllowSymLinkAliasChecker;
+import org.eclipse.jetty.server.SymlinkAllowedResourceAliasChecker;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -191,7 +191,7 @@ public class InternalHttpService implements HttpService {
     webapp.setExtraClasspath(new File(".").getAbsolutePath());
 
     webapp.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
-    webapp.addAliasCheck(new AllowSymLinkAliasChecker());
+    webapp.addAliasCheck(new SymlinkAllowedResourceAliasChecker(webapp));
 
     if (attributeNameValuePairs != null) {
       attributeNameValuePairs.forEach(webapp::setAttribute);
