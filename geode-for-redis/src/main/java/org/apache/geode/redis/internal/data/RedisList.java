@@ -171,7 +171,7 @@ public class RedisList extends AbstractRedisData {
    * @return the length of the list after the operation
    */
   public long lpush(ExecutionHandlerContext context, List<byte[]> elementsToAdd,
-                    RedisKey key, boolean onlyIfExists) {
+      RedisKey key, boolean onlyIfExists) {
     byte newVersion;
     synchronized (this) {
       newVersion = incrementAndGetVersion();
