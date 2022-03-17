@@ -284,21 +284,11 @@ public class RedisList extends AbstractRedisData {
     return elementList.remove(index);
   }
 
-  protected synchronized boolean elementRemove(byte[] element) {
-    return elementList.remove(element);
+  protected synchronized void elementPushHead(byte[] element) {
+    elementList.addFirst(element);
+  }
 
-    public synchronized byte[] removeFirstElement() {
-      return elementList.removeFirst();
-    }
-
-    public synchronized byte[] removeLastElement() {
-      return elementList.removeLast();
-    }
-
-    protected synchronized void elementPushHead(byte[] element) {
-      elementList.addFirst(element);
-    }
-  public synchronized void elementsPushHead(List<byte[]> elementsToAdd) {
+  protected synchronized void elementsPushHead(List<byte[]> elementsToAdd) {
     for (byte[] element : elementsToAdd) {
       elementPushHead(element);
     }
@@ -312,48 +302,48 @@ public class RedisList extends AbstractRedisData {
     elementList.addLast(element);
   }
 
-    @Override
-    public RedisDataType getType() {
-      return REDIS_LIST;
-    }
+  @Override
+  public RedisDataType getType() {
+    return REDIS_LIST;
+  }
 
-    @Override
-    protected boolean removeFromRegion() {
-      return elementList.isEmpty();
-    }
+  @Override
+  protected boolean removeFromRegion() {
+    return elementList.isEmpty();
+  }
 
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (!(o instanceof RedisList)) {
-        return false;
-      }
-      if (!super.equals(o)) {
-        return false;
-      }
-      RedisList redisList = (RedisList) o;
-      return elementList.equals(redisList.elementList);
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
     }
+    if (!(o instanceof RedisList)) {
+      return false;
+    }
+    if (!super.equals(o)) {
+      return false;
+    }
+    RedisList redisList = (RedisList) o;
+    return elementList.equals(redisList.elementList);
+  }
 
-    @Override
-    public int hashCode() {
-      return Objects.hash(super.hashCode(), elementList.hashCode());
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), elementList.hashCode());
+  }
 
-    @Override
-    public String toString() {
-      return "RedisList{" + super.toString() + ", " + "size=" + elementList.size() + '}';
-    }
+  @Override
+  public String toString() {
+    return "RedisList{" + super.toString() + ", " + "size=" + elementList.size() + '}';
+  }
 
-    @Override
-    public KnownVersion[] getSerializationVersions() {
-      return null;
-    }
+  @Override
+  public KnownVersion[] getSerializationVersions() {
+    return null;
+  }
 
-    @Override
-    public int getSizeInBytes() {
-      return REDIS_LIST_OVERHEAD + elementList.getSizeInBytes();
-    }
+  @Override
+  public int getSizeInBytes() {
+    return REDIS_LIST_OVERHEAD + elementList.getSizeInBytes();
+  }
 }
