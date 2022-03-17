@@ -41,7 +41,7 @@ public class InsertByteArray extends DeltaInfo {
   }
 
   public void serializeTo(DataOutput out) throws IOException {
-    DataSerializer.writeEnum(INSERT_BYTE_ARRAY, out);
+    super.serializeTo(out);
     DataSerializer.writePrimitiveInt(index, out);
     DataSerializer.writeByteArray(byteArray, out);
   }

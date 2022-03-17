@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.commands.executor.list;
 
+import static java.lang.Math.max;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -140,7 +141,7 @@ public class LInsertDUnitTest {
       String valueBase, AtomicBoolean continueInserting) {
     int counter = 0;
     while (continueInserting.get()) {
-      String insertedValue = valueBase + counter;
+      String insertedValue = valueBase + counter++;
       long startLength = jedis.llen(key);
       String pivot = jedis.lindex(key, pivotIndex);
       assertThat(jedis.linsert(key, pos, pivot, insertedValue)).isEqualTo(startLength + 1);
@@ -148,33 +149,17 @@ public class LInsertDUnitTest {
       if (pos == BEFORE) {
         // Increment the pivot index as we just inserted a new value before it
         pivotIndex++;
-        assertThat(jedis.lindex(key, pivotIndex - 1)).isEqualTo(insertedValue);
-        assertThat(jedis.lindex(key, pivotIndex)).isEqualTo(pivot);
+        assertThat(jedis.lindex(key, max(pivotIndex - 1, 0))).isEqualTo(insertedValue);
+        assertThat(jedis.lindex(key, pivotIndex))
+            .as("BEFORE: incorrect element at " + pivotIndex + " in List subsection: "
+                + jedis.lrange(key, max(pivotIndex - 2, 0), pivotIndex + 2))
+            .isEqualTo(pivot);
       } else {
         assertThat(jedis.lindex(key, pivotIndex + 1)).isEqualTo(insertedValue);
-        assertThat(jedis.lindex(key, pivotIndex)).isEqualTo(pivot);
-      }
-    }
-  }
-
-  private void linsertPerformAndVerify2(String key, ListPosition pos, int pivotIndex,
-      String valueBase,
-      AtomicBoolean continueInserting) {
-    int counter = 0;
-    while (continueInserting.get()) {
-      String value = valueBase + counter;
-      long startLength = jedis.llen(key);
-      String pivot = jedis.lindex(key, pivotIndex);
-      assertThat(jedis.linsert(key, pos, pivot, value)).isEqualTo(startLength + 1);
-
-      if (pos == BEFORE) {
-        // Increment the pivot index as we just inserted a new value before it
-        pivotIndex++;
-        assertThat(jedis.lindex(key, pivotIndex - 1)).isEqualTo(insertedValue);
-        assertThat(jedis.lindex(key, pivotIndex)).isEqualTo(pivot);
-      } else {
-        assertThat(jedis.lindex(key, pivotIndex + 1)).isEqualTo(insertedValue);
-        assertThat(jedis.lindex(key, pivotIndex)).isEqualTo(pivot);
+        assertThat(jedis.lindex(key, pivotIndex))
+            .as("AFTER: incorrect element at " + pivotIndex + " in List subsection: "
+                + jedis.lrange(key, max(pivotIndex - 2, 0), pivotIndex + 2))
+            .isEqualTo(pivot);
       }
     }
   }
