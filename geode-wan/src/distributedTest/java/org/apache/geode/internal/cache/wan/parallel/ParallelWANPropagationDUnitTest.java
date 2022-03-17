@@ -17,8 +17,6 @@ package org.apache.geode.internal.cache.wan.parallel;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import junitparams.Parameters;
@@ -34,11 +32,6 @@ import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.RegionQueue;
-import org.apache.geode.internal.cache.execute.data.CustId;
-import org.apache.geode.internal.cache.execute.data.Order;
-import org.apache.geode.internal.cache.execute.data.OrderId;
-import org.apache.geode.internal.cache.execute.data.Shipment;
-import org.apache.geode.internal.cache.execute.data.ShipmentId;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.BatchException70;
 import org.apache.geode.internal.cache.wan.WANTestBase;
@@ -1240,113 +1233,6 @@ public class ParallelWANPropagationDUnitTest extends WANTestBase {
 
     vm4.invoke(() -> WANTestBase.validateEmptyBucketToTempQueueMap("ln"));
     vm5.invoke(() -> WANTestBase.validateEmptyBucketToTempQueueMap("ln"));
-  }
-
-  @Test
-  public void testPartitionedParallelPropagationWithGroupTransactionEventsAndMixOfEventsInAndNotInTransactions()
-      throws Exception {
-    Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
-    Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
-
-    createCacheInVMs(nyPort, vm2, vm3);
-    createReceiverInVMs(vm2, vm3);
-    createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
-
-    vm4.invoke(() -> setNumDispatcherThreadsForTheRun(2));
-    vm5.invoke(() -> setNumDispatcherThreadsForTheRun(2));
-    vm6.invoke(() -> setNumDispatcherThreadsForTheRun(2));
-    vm7.invoke(() -> setNumDispatcherThreadsForTheRun(2));
-
-    vm4.invoke(
-        () -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true, true));
-    vm5.invoke(
-        () -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true, true));
-    vm6.invoke(
-        () -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true, true));
-    vm7.invoke(
-        () -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true, true));
-
-    vm4.invoke(
-        () -> WANTestBase.createCustomerOrderShipmentPartitionedRegion("ln", 2, 10,
-            isOffHeap()));
-    vm5.invoke(
-        () -> WANTestBase.createCustomerOrderShipmentPartitionedRegion("ln", 2, 10,
-            isOffHeap()));
-    vm6.invoke(
-        () -> WANTestBase.createCustomerOrderShipmentPartitionedRegion("ln", 2, 10,
-            isOffHeap()));
-    vm7.invoke(
-        () -> WANTestBase.createCustomerOrderShipmentPartitionedRegion("ln", 2, 10,
-            isOffHeap()));
-
-    startSenderInVMs("ln", vm4, vm5, vm6, vm7);
-
-    vm2.invoke(() -> createCustomerOrderShipmentPartitionedRegion(null, 1, 8, isOffHeap()));
-    vm3.invoke(() -> createCustomerOrderShipmentPartitionedRegion(null, 1, 8, isOffHeap()));
-
-    int customers = 4;
-
-    int transactionsPerCustomer = 1000;
-    final Map<Object, Object> keyValuesInTransactions = new HashMap<>();
-    for (int custId = 0; custId < customers; custId++) {
-      for (int i = 0; i < transactionsPerCustomer; i++) {
-        CustId custIdObject = new CustId(custId);
-        OrderId orderId = new OrderId(i, custIdObject);
-        ShipmentId shipmentId1 = new ShipmentId(i, orderId);
-        ShipmentId shipmentId2 = new ShipmentId(i + 1, orderId);
-        ShipmentId shipmentId3 = new ShipmentId(i + 2, orderId);
-        keyValuesInTransactions.put(orderId, new Order());
-        keyValuesInTransactions.put(shipmentId1, new Shipment());
-        keyValuesInTransactions.put(shipmentId2, new Shipment());
-        keyValuesInTransactions.put(shipmentId3, new Shipment());
-      }
-    }
-
-    int ordersPerCustomerNotInTransactions = 1000;
-
-    final Map<Object, Object> keyValuesNotInTransactions = new HashMap<>();
-    for (int custId = 0; custId < customers; custId++) {
-      for (int i = 0; i < ordersPerCustomerNotInTransactions; i++) {
-        CustId custIdObject = new CustId(custId);
-        OrderId orderId = new OrderId(i + transactionsPerCustomer * customers, custIdObject);
-        keyValuesNotInTransactions.put(orderId, new Order());
-      }
-    }
-
-    // eventsPerTransaction is 1 (orders) + 3 (shipments)
-    int eventsPerTransaction = 4;
-    AsyncInvocation<Void> inv1 =
-        vm7.invokeAsync(
-            () -> WANTestBase.doOrderAndShipmentPutsInsideTransactions(keyValuesInTransactions,
-                eventsPerTransaction));
-
-    AsyncInvocation<Void> inv2 =
-        vm6.invokeAsync(
-            () -> WANTestBase.putGivenKeyValue(orderRegionName, keyValuesNotInTransactions));
-
-    inv1.await();
-    inv2.await();
-
-    int entries =
-        ordersPerCustomerNotInTransactions * customers + transactionsPerCustomer * customers;
-
-    vm4.invoke(() -> WANTestBase.validateRegionSize(orderRegionName, entries));
-    vm5.invoke(() -> WANTestBase.validateRegionSize(orderRegionName, entries));
-    vm6.invoke(() -> WANTestBase.validateRegionSize(orderRegionName, entries));
-    vm7.invoke(() -> WANTestBase.validateRegionSize(orderRegionName, entries));
-
-    vm2.invoke(() -> WANTestBase.validateRegionSize(orderRegionName, entries));
-    vm3.invoke(() -> WANTestBase.validateRegionSize(orderRegionName, entries));
-
-    vm4.invoke(() -> WANTestBase.checkConflatedStats("ln", 0));
-    vm5.invoke(() -> WANTestBase.checkConflatedStats("ln", 0));
-    vm6.invoke(() -> WANTestBase.checkConflatedStats("ln", 0));
-    vm7.invoke(() -> WANTestBase.checkConflatedStats("ln", 0));
-
-    vm7.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
-    vm6.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
-    vm5.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
-    vm4.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));
   }
 
   private static RegionShortcut[] getRegionShortcuts() {

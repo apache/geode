@@ -2273,10 +2273,15 @@ public class CliStrings {
       "Ensure that all the events of a transaction are sent in the same batch, i.e., they are never spread across different batches.\n"
           + "Only allowed on serial gateway senders with 1 dispatcher thread or on parallel ones.\n"
           + "Note that in order to work for a transaction, the regions to which the transaction \n"
-          + "events belong must be replicated by the same set of senders with this flag enabled.";
+          + "events belong must be replicated by the same set of senders with this flag enabled.\n"
+          + "Deprecated: Since Geode 1.15. Type must be used instead\";";
   public static final String CREATE_GATEWAYSENDER__PARALLEL = "parallel";
   public static final String CREATE_GATEWAYSENDER__PARALLEL__HELP =
-      "Whether this is Parallel GatewaySender.";
+      "Whether this is Parallel GatewaySender.\n"
+          + "Deprecated: Since Geode 1.15. Type must be used instead\";";
+  public static final String CREATE_GATEWAYSENDER__TYPE = "type";
+  public static final String CREATE_GATEWAYSENDER__TYPE__HELP =
+      "Type of the GatewaySender: SerialGatewaySender|ParallelGatewaySender|<other types added as plugins>";
   @Deprecated
   public static final String CREATE_GATEWAYSENDER__MANUALSTART = "manual-start";
   @Deprecated

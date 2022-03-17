@@ -191,8 +191,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
         + "=ln" + " --" + CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID + "=2" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__MANUALSTART + "=true" + " --"
         + CliStrings.CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE + "=1000" + " --"
-        + CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS + "=1" + " --"
-        + CliStrings.CREATE_GATEWAYSENDER__GROUPTRANSACTIONEVENTS + "=true";
+        + CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS + "=1" + " --";
 
     gfsh.executeAndAssertThat(command).statusIsSuccess()
         .doesNotContainOutput("Did not complete waiting")
@@ -204,7 +203,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
     VMProvider.invokeInEveryMember(() -> {
       verifySenderState("ln", false, false);
       verifySenderAttributes("ln", 2, false, true, 1000, 0, false, 100, 1000, false,
-          true, 100, 0, 1, null, null, null, true);
+          true, 100, 0, 1, null, null, null, false);
     }, server1, server2, server3);
 
     // destroy gateway sender and verify AEQs cleaned up

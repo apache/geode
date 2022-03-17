@@ -24,7 +24,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class RemoteConcurrentSerialGatewaySenderEventProcessor
     extends ConcurrentSerialGatewaySenderEventProcessor {
 
-  private static final Logger logger = LogService.getLogger();
+  protected static final Logger logger = LogService.getLogger();
 
   public RemoteConcurrentSerialGatewaySenderEventProcessor(AbstractGatewaySender sender,
       ThreadsMonitoring tMonitoring, boolean cleanQueues) {

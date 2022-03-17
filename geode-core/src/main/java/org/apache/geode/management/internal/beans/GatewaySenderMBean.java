@@ -230,6 +230,12 @@ public class GatewaySenderMBean extends NotificationBroadcasterSupport
   }
 
   @Override
+  public String getType() {
+    return bridge.getType();
+  }
+
+  @Deprecated
+  @Override
   public boolean mustGroupTransactionEvents() {
     return bridge.mustGroupTransactionEvents();
   }

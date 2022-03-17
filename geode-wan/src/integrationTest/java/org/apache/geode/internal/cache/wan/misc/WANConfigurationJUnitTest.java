@@ -41,6 +41,7 @@ import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
+import org.apache.geode.cache.wan.internal.parallel.ParallelGatewaySenderImpl;
 import org.apache.geode.cache30.MyGatewayEventFilter1;
 import org.apache.geode.cache30.MyGatewayTransportFilter1;
 import org.apache.geode.cache30.MyGatewayTransportFilter2;
@@ -69,7 +70,7 @@ public class WANConfigurationJUnitTest {
       cache = new CacheFactory().set(MCAST_PORT, "0").create();
 
       GatewaySenderFactory fact = cache.createGatewaySenderFactory();
-      fact.setParallel(true);
+      fact.setType(ParallelGatewaySenderImpl.TYPE);
       GatewaySender sender1 = fact.create("NYSender", 2);
       sender1.start();
       fail("Expected IllegalStateException but not thrown");
@@ -80,31 +81,6 @@ public class WANConfigurationJUnitTest {
         fail("Expected IllegalStateException but received :" + e);
       }
     }
-  }
-
-  @Test
-  public void test_create_SerialGatewaySender_ThrowsException_when_GroupTransactionEvents_isTrue_and_DispatcherThreads_is_greaterThanOne() {
-    cache = new CacheFactory().set(MCAST_PORT, "0").create();
-    GatewaySenderFactory fact = cache.createGatewaySenderFactory();
-    fact.setParallel(false);
-    fact.setDispatcherThreads(2);
-    fact.setGroupTransactionEvents(true);
-    assertThatThrownBy(() -> fact.create("NYSender", 2))
-        .isInstanceOf(GatewaySenderException.class)
-        .hasMessageContaining(
-            "SerialGatewaySender NYSender cannot be created with group transaction events set to true when dispatcher threads is greater than 1");
-  }
-
-  @Test
-  public void test_create_GatewaySender_ThrowsException_when_GroupTransactionEvents_isTrue_and_BatchConflation_is_enabled() {
-    cache = new CacheFactory().set(MCAST_PORT, "0").create();
-    GatewaySenderFactory fact = cache.createGatewaySenderFactory();
-    fact.setBatchConflationEnabled(true);
-    fact.setGroupTransactionEvents(true);
-    assertThatThrownBy(() -> fact.create("NYSender", 2))
-        .isInstanceOf(GatewaySenderException.class)
-        .hasMessageContaining(
-            "GatewaySender NYSender cannot be created with both group transaction events set to true and batch conflation enabled");
   }
 
   /**
@@ -401,19 +377,6 @@ public class WANConfigurationJUnitTest {
       } else {
         fail("Expected GatewaySenderException but received :" + e);
       }
-    }
-  }
-
-  @Test
-  public void test_GatewaySenderWithGatewaySenderEventListener2() {
-    cache = new CacheFactory().set(MCAST_PORT, "0").create();
-    GatewaySenderFactory fact = cache.createGatewaySenderFactory();
-    AsyncEventListener listener = new MyGatewaySenderEventListener();
-    ((InternalGatewaySenderFactory) fact).addAsyncEventListener(listener);
-    try {
-      ((InternalGatewaySenderFactory) fact).create("ln");
-    } catch (Exception e) {
-      fail("Received Exception :" + e);
     }
   }
 

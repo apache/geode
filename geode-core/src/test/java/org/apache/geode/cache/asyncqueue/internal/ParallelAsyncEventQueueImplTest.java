@@ -16,6 +16,8 @@
  */
 package org.apache.geode.cache.asyncqueue.internal;
 
+import static org.apache.geode.cache.wan.GatewaySender.DEFAULT_DISTRIBUTED_SYSTEM_ID;
+import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -43,20 +45,18 @@ import org.apache.geode.test.junit.categories.AEQTest;
 
 @Category(AEQTest.class)
 public class ParallelAsyncEventQueueImplTest {
-  private InternalCache cache;
-  private StatisticsClock statisticsClock;
-  private StatisticsFactory statsFactory;
-  private GatewaySenderAttributes attrs;
   private ParallelAsyncEventQueueImpl asyncEventQueue;
 
   @Before
   public void setUp() {
-    cache = mock(InternalCache.class, RETURNS_DEEP_STUBS);
-    statisticsClock = mock(StatisticsClock.class);
-    statsFactory = mock(StatisticsFactory.class);
-    attrs = new GatewaySenderAttributes();
-    attrs.setParallel(true);
-    attrs.setId("AsyncEventQueue_");
+    InternalCache cache = mock(InternalCache.class, RETURNS_DEEP_STUBS);
+    StatisticsClock statisticsClock = mock(StatisticsClock.class);
+    StatisticsFactory statsFactory = mock(StatisticsFactory.class);
+    GatewaySenderAttributes attrs = mock(GatewaySenderAttributes.class);
+    when(attrs.isParallel()).thenReturn(true);
+    when(attrs.getId()).thenReturn("AsyncEventQueue_");
+    when(attrs.getDispatcherThreads()).thenReturn(1);
+    when(attrs.getRemoteDSId()).thenReturn(DEFAULT_DISTRIBUTED_SYSTEM_ID);
 
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
     when(cache.getInternalDistributedSystem()).thenReturn(system);
@@ -72,7 +72,7 @@ public class ParallelAsyncEventQueueImplTest {
     when(cache.getGatewaySenderLockService()).thenReturn(distributedLockService);
 
     LocalRegion region = mock(LocalRegion.class);
-    when(cache.getRegion(any())).thenReturn(region);
+    when(cache.getRegion(any())).thenReturn(uncheckedCast(region));
     when(region.containsKey(any())).thenReturn(true);
     when(region.get(any())).thenReturn(1);
 

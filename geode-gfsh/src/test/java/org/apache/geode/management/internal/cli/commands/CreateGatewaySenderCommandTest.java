@@ -340,12 +340,11 @@ public class CreateGatewaySenderCommandTest {
     functionResults.add(cliFunctionResult);
     gfsh.executeAndAssertThat(command,
         "create gateway-sender --member=xyz --id=testGateway --remote-distributed-system-id=1"
-            + " --parallel=false"
             + " --manual-start=false"
             + " --disk-synchronous=false"
             + " --enable-persistence=false"
             + " --enable-batch-conflation=false"
-            + " --group-transaction-events=false")
+            + " --type=SerialGatewaySender")
         .statusIsSuccess();
     verify(command).executeAndGetFunctionResult(any(), argsArgumentCaptor.capture(), any());
 

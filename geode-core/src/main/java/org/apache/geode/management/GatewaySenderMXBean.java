@@ -271,6 +271,13 @@ public interface GatewaySenderMXBean {
    */
   boolean isParallel();
 
+  String getType();
+
+  /**
+   *
+   * @deprecated Use {@link #getType()}.
+   */
+  @Deprecated
   boolean mustGroupTransactionEvents();
 
   /**

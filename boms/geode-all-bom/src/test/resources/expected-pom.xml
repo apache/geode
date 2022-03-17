@@ -919,6 +919,12 @@
       </dependency>
       <dependency>
         <groupId>org.apache.geode</groupId>
+        <artifactId>geode-wan-txgrouping</artifactId>
+        <version>${version}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geode</groupId>
         <artifactId>geode-web</artifactId>
         <version>${version}</version>
         <scope>compile</scope>

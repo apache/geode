@@ -31,6 +31,7 @@ public class GatewaySenderFunctionArgs implements Serializable {
   private final Integer remoteDSId;
   private final Boolean parallel;
   private final Boolean groupTransactionEvents;
+  private final String type;
   private final Boolean manualStart;
   private final Integer socketBufferSize;
   private final Integer socketReadTimeout;
@@ -52,8 +53,13 @@ public class GatewaySenderFunctionArgs implements Serializable {
   public GatewaySenderFunctionArgs(CacheConfig.GatewaySender sender) {
     id = sender.getId();
     remoteDSId = string2int(sender.getRemoteDistributedSystemId());
-    parallel = sender.isParallel();
     groupTransactionEvents = sender.mustGroupTransactionEvents();
+    type = sender.getType();
+    if (type != null) {
+      parallel = sender.getType().contains("Parallel");
+    } else {
+      parallel = sender.isParallel();
+    }
     manualStart = sender.isManualStart();
     socketBufferSize = string2int(sender.getSocketBufferSize());
     socketReadTimeout = string2int(sender.getSocketReadTimeout());
@@ -105,6 +111,10 @@ public class GatewaySenderFunctionArgs implements Serializable {
 
   public Boolean mustGroupTransactionEvents() {
     return groupTransactionEvents;
+  }
+
+  public String getType() {
+    return type;
   }
 
   public Boolean isManualStart() {

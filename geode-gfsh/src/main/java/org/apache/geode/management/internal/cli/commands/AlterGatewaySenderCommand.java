@@ -113,18 +113,9 @@ public class AlterGatewaySenderCommand extends SingleGfshCommand {
           "alter-gateway-sender cannot be performed for --batch-time-interval values smaller then -1.");
     }
 
-    if (groupTransactionEvents != null && groupTransactionEvents
-        && !oldConfiguration.mustGroupTransactionEvents()) {
-      if (!oldConfiguration.isParallel() && (oldConfiguration.getDispatcherThreads() == null
-          || Integer.parseInt(oldConfiguration.getDispatcherThreads()) > 1)) {
-        return ResultModel.createError(
-            "alter-gateway-sender cannot be performed for --group-transaction-events attribute if serial sender and dispatcher-threads is greater than 1.");
-      }
-
-      if (oldConfiguration.isEnableBatchConflation()) {
-        return ResultModel.createError(
-            "alter-gateway-sender cannot be performed for --group-transaction-events attribute if batch-conflation is enabled.");
-      }
+    if (groupTransactionEvents != null && groupTransactionEvents) {
+      return ResultModel.createError(
+          "alter-gateway-sender cannot be performed for --group-transaction-events attribute.");
     }
 
     Set<DistributedMember> dsMembers = findMembers(onGroup, onMember);
