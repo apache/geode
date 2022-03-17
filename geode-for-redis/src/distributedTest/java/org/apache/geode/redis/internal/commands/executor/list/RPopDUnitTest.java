@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.After;
 import org.junit.Before;
@@ -81,7 +81,7 @@ public class RPopDUnitTest {
 
   @Test
   public void givenBucketsMoveDuringRpop_thenOperationsAreNotLost() throws Exception {
-    AtomicLong runningCount = new AtomicLong(3);
+    AtomicBoolean continueRunningRpop = new AtomicBoolean(true);
     List<String> listHashtags = makeListHashtags();
     List<String> keys = makeListKeys(listHashtags);
 
@@ -94,22 +94,23 @@ public class RPopDUnitTest {
     lpushPerformAndVerify(keys.get(2), elementList3);
 
     Runnable task1 =
-        () -> rpopPerformAndVerify(keys.get(0), runningCount);
+        () -> rpopPerformAndVerify(keys.get(0), continueRunningRpop, elementList1);
     Runnable task2 =
-        () -> rpopPerformAndVerify(keys.get(1), runningCount);
+        () -> rpopPerformAndVerify(keys.get(1), continueRunningRpop, elementList2);
     Runnable task3 =
-        () -> rpopPerformAndVerify(keys.get(2), runningCount);
+        () -> rpopPerformAndVerify(keys.get(2), continueRunningRpop, elementList3);
 
     Future<Void> future1 = executor.runAsync(task1);
     Future<Void> future2 = executor.runAsync(task2);
     Future<Void> future3 = executor.runAsync(task3);
 
-    for (int i = 0; i < 50 && runningCount.get() > 0; i++) {
+    int BUCKET_MOVES = 20;
+    for (int i = 0; i < BUCKET_MOVES; i++) {
       clusterStartUp.moveBucketForKey(listHashtags.get(i % listHashtags.size()));
       Thread.sleep(500);
     }
 
-    runningCount.set(0);
+    continueRunningRpop.set(false);
 
     future1.get();
     future2.get();
@@ -140,34 +141,26 @@ public class RPopDUnitTest {
         .isEqualTo(elementList.size());
   }
 
-  private void rpopPerformAndVerify(String key, AtomicLong runningCount) {
+  private void rpopPerformAndVerify(String key, AtomicBoolean continueRunning,
+      List<String> elementList) {
     assertThat(jedis.llen(key)).isEqualTo(INITIAL_LIST_SIZE);
 
-    int elementCount = 0;
-    int elementListSize = INITIAL_LIST_SIZE - 1;
-    while (jedis.llen(key) > 0 && elementCount <= elementListSize && runningCount.get() > 0) {
-      String element = "";
-      try {
-        element = jedis.rpop(key);
-        String[] chunks = element.split("-");
-        int actualCount = Integer.parseInt(chunks[4]);
-        int expectedCount = elementCount;
-        assertThat(actualCount)
-            .as("Actual element count did not match expected element count for element " + element)
-            .satisfiesAnyOf(
-                count -> assertThat(count).isEqualTo(expectedCount),
-                count -> assertThat(count).isEqualTo(expectedCount + 1));
-        elementCount = actualCount + 1;
-      } catch (Exception ex) {
-        runningCount.set(0); // test is over
-        throw new RuntimeException("Exception performing RPOP for list '"
-            + key + "' at element " + element + ": " + ex.getMessage());
+    while (continueRunning.get()) {
+      int currentSize = INITIAL_LIST_SIZE;
+      for (String element : elementList) {
+        try {
+          assertThat(jedis.rpop(key)).isEqualTo(element);
+          currentSize--;
+          assertThat(jedis.llen(key)).isEqualTo(currentSize);
+        } catch (Exception ex) {
+          continueRunning.set(false);
+          throw new RuntimeException("Exception performing RPOP for list '"
+              + key + "' at element " + element + ": " + ex.getMessage());
+        }
       }
+      assertThat(jedis.exists(key)).isFalse();
+      jedis.lpush(key, elementList.toArray(new String[0]));
     }
-    if (runningCount.get() > 0) {
-      assertThat(jedis.llen(key)).isZero();
-    }
-    runningCount.decrementAndGet(); // this thread done
   }
 
   private String makeListKeyWithHashtag(int index, String hashtag) {
