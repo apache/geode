@@ -26,6 +26,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.partition.PartitionListenerAdapter;
+import org.apache.geode.internal.lang.utils.JavaWorkarounds;
 import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
 import org.apache.geode.redis.internal.commands.RedisCommandType;
 import org.apache.geode.redis.internal.data.RedisKey;
@@ -44,7 +45,8 @@ public class EventDistributor extends PartitionListenerAdapter {
 
   public synchronized void registerListener(EventListener listener) {
     for (RedisKey key : listener.keys()) {
-      listeners.computeIfAbsent(key, k -> new LinkedBlockingQueue<>()).add(listener);
+      JavaWorkarounds.computeIfAbsent(listeners, key, k -> new LinkedBlockingQueue<>())
+          .add(listener);
     }
 
     listener.scheduleTimeout(timerExecutor, this);

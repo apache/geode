@@ -68,14 +68,16 @@ public class BlockingCommandListener implements EventListener {
       return EventResponse.CONTINUE;
     }
 
-    if (active.compareAndSet(true, false)) {
-      resubmitCommand();
-    }
+    resubmitCommand();
     return EventResponse.REMOVE_AND_STOP;
   }
 
   @Override
   public void resubmitCommand() {
+    if (!active.compareAndSet(true, false)) {
+      return;
+    }
+
     // Recalculate the timeout since we've already been waiting
     double adjustedTimeoutSeconds = 0;
     if (timeoutSeconds > 0.0D) {
@@ -96,7 +98,7 @@ public class BlockingCommandListener implements EventListener {
 
   @Override
   public void scheduleTimeout(ScheduledExecutorService executor, EventDistributor distributor) {
-    if (timeoutSeconds == 0) {
+    if (timeoutSeconds == 0 || !active.get()) {
       return;
     }
 

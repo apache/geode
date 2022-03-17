@@ -15,9 +15,11 @@
 
 package org.apache.geode.redis.internal.eventing;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
@@ -39,7 +41,6 @@ import org.apache.geode.redis.internal.commands.RedisCommandType;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 public class BlockingCommandListenerTest {
 
@@ -88,8 +89,29 @@ public class BlockingCommandListenerTest {
 
     eventDistributor.registerListener(listener);
 
-    GeodeAwaitility.await().atMost(Duration.ofSeconds(1))
+    await().atMost(Duration.ofSeconds(1))
         .untilAsserted(() -> assertThat(eventDistributor.getRegisteredKeys()).isEqualTo(0));
+  }
+
+  @Test
+  public void testListenersAffectedByBucketMovementAreInactiveAndDoNotProcessTimeout() {
+    ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
+    RedisKey key = new RedisKey("KEY".getBytes());
+    List<byte[]> commandArgs = Arrays.asList(key.toBytes(), "0".getBytes());
+    Command command = new Command(RedisCommandType.BLPOP, commandArgs);
+    BlockingCommandListener listener =
+        new BlockingCommandListener(context, command, Collections.singletonList(key), 1);
+    EventDistributor eventDistributor = new EventDistributor();
+
+    eventDistributor.registerListener(listener);
+
+    eventDistributor.afterBucketRemoved(key.getBucketId(), null);
+
+    verify(context, atMost(1)).resubmitCommand(any());
+    await().atMost(Duration.ofSeconds(5))
+        .during(Duration.ofSeconds(2))
+        .untilAsserted(() -> verify(context, atMost(0)).writeToChannel(any()));
+    assertThat(eventDistributor.getRegisteredKeys()).isEqualTo(0);
   }
 
   @Test
@@ -145,7 +167,7 @@ public class BlockingCommandListenerTest {
         i -> distributor.fireEvent(null, keyC))
             .run();
 
-    GeodeAwaitility.await().atMost(Duration.ofSeconds(1))
+    await().atMost(Duration.ofSeconds(1))
         .untilAsserted(() -> assertThat(distributor.getRegisteredKeys()).isEqualTo(0));
   }
 
