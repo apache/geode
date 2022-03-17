@@ -494,7 +494,8 @@ public class PartitionedRegion extends LocalRegion
     return bucketSorter;
   }
 
-  static PRIdMap getPrIdToPR() {
+  @VisibleForTesting
+  public static PRIdMap getPrIdToPR() {
     return prIdToPR;
   }
 
