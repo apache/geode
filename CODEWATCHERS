@@ -81,3 +81,8 @@ geode-core/**/org/apache/geode/cache/query/**                     @mkevo
 # Build and tooling
 #-----------------------------------------------------------------
 dev-tools/progress/**                                             @demery-pivotal
+
+#-----------------------------------------------------------------
+# Geode for Redis
+#-----------------------------------------------------------------
+geode-for-redis/**                                                @Kris-10-0
