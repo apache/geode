@@ -68,7 +68,7 @@ public class RPushDUnitTest {
     redisServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
     clusterStartUp.startRedisVM(3, Integer.toString(redisServerPort), locatorPort);
 
-    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort), 10_000);
+    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort), 10_000, 20);
   }
 
   @After
