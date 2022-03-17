@@ -32,9 +32,13 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.security.GeneralSecurityException;
+import java.security.KeyManagementException;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.security.UnrecoverableKeyException;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
@@ -49,6 +53,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.apache.geode.cache.ssl.CertStores;
@@ -61,66 +66,81 @@ import org.apache.geode.distributed.internal.DMStats;
  */
 public class NioSslEngineKeyUpdateTest {
 
-  private DMStats mockStats;
+  private static DMStats mockStats;
+  private static BufferPool bufferPool;
+  private static SSLContext sslContext;
+  private static KeyStore keystore;
+  private static char[] keystorePassword;
+  private static KeyStore truststore;
+
   private NioSslEngine clientFilter;
-  private BufferPool bufferPool;
   private NioSslEngine serverFilter;
   private int packetBufferSize;
 
   {
     // "-Djava.security.properties=/Users/bburcham/Projects/geode/geode-core/src/test/resources/org/apache/geode/internal/net/java.security"
-    Security.setProperty("jdk.tls.keyLimits", "AES/GCM/NoPadding KeyUpdate 2^2");
+    // 2^6 fails handshake test, 2^7 succeeds
+    Security.setProperty("jdk.tls.keyLimits", "AES/GCM/NoPadding KeyUpdate 2^6");
+    // Security.setProperty("jdk.tls.disabledAlgorithms","TLSv1.3, RC4, MD5withRSA, DH keySize <
+    // 768");
   }
 
-  @Before
-  public void before() throws GeneralSecurityException, IOException {
+  @BeforeClass
+  public static void beforeClass() throws GeneralSecurityException, IOException {
     mockStats = mock(DMStats.class);
     bufferPool = new BufferPool(mockStats);
 
     final Properties securityProperties = createKeystoreAndTruststore();
-    final KeyStore keystore = KeyStore.getInstance("JKS");
-    final char[] keystorePassword =
-        securityProperties.getProperty(SSL_KEYSTORE_PASSWORD).toCharArray();
+    keystore = KeyStore.getInstance("JKS");
+    keystorePassword = securityProperties.getProperty(SSL_KEYSTORE_PASSWORD).toCharArray();
     keystore.load(new FileInputStream(securityProperties.getProperty(SSL_KEYSTORE)),
         keystorePassword);
-    KeyStore truststore = KeyStore.getInstance("JKS");
+    truststore = KeyStore.getInstance("JKS");
     final char[] truststorePassword =
         securityProperties.getProperty(SSL_TRUSTSTORE_PASSWORD).toCharArray();
     truststore.load(new FileInputStream(securityProperties.getProperty(SSL_TRUSTSTORE)),
         truststorePassword);
+  }
 
+  @Before
+  public void before() throws NoSuchAlgorithmException, UnrecoverableKeyException,
+      KeyStoreException, KeyManagementException {
     final KeyManagerFactory kmf = KeyManagerFactory.getInstance("PKIX");
     kmf.init(keystore, keystorePassword);
     final TrustManagerFactory tmf = TrustManagerFactory.getInstance("PKIX");
     tmf.init(truststore);
 
-    final SSLContext context = SSLContext.getInstance("TLS");
+    sslContext = SSLContext.getInstance("TLS");
     final SecureRandom random = new SecureRandom();
-    context.init(kmf.getKeyManagers(), tmf.getTrustManagers(), random);
+    sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), random);
 
-    final SSLParameters defaultParameters = context.getDefaultSSLParameters();
+    final SSLParameters defaultParameters = sslContext.getDefaultSSLParameters();
     final String[] protocols = defaultParameters.getProtocols();
     final String[] cipherSuites = defaultParameters.getCipherSuites();
     System.out.println(
         String.format("TLS settings (default) before handshake: Protocols: %s, Cipher Suites: %s",
             Arrays.toString(protocols), Arrays.toString(cipherSuites)));
 
-    final SSLEngine clientEngine = context.createSSLEngine("server-host", 10001);
-    clientEngine.setEnabledProtocols(new String[] {"TLSv1.3"});
-    clientEngine.setEnabledCipherSuites(new String[] {"TLS_AES_256_GCM_SHA384"});
-    clientEngine.setUseClientMode(true);
+    final SSLEngine clientEngine = createSSLEngine("server-host", true, sslContext);
     packetBufferSize = clientEngine.getSession().getPacketBufferSize();
     clientFilter = new NioSslEngine(clientEngine, bufferPool);
-    final SSLEngine serverEngine = context.createSSLEngine("client-host", 10001);
-    serverEngine.setEnabledProtocols(new String[] {"TLSv1.3"});
-    serverEngine.setEnabledCipherSuites(new String[] {"TLS_AES_256_GCM_SHA384"});
-    serverEngine.setUseClientMode(false);
+
+    final SSLEngine serverEngine = createSSLEngine("client-host", false, sslContext);
     serverFilter = new NioSslEngine(serverEngine, bufferPool);
   }
 
   @Test
   public void handshakeTest() {
-    peerTest(NioSslEngineKeyUpdateTest::handshakeTLS, NioSslEngineKeyUpdateTest::handshakeTLS);
+    peerTest((final SocketChannel channel,
+        final NioSslEngine filter,
+        final ByteBuffer peerNetData) -> {
+      return handshakeTLS(channel, filter, peerNetData);
+    },
+        (final SocketChannel channel,
+            final NioSslEngine filter,
+            final ByteBuffer peerNetData) -> {
+          return handshakeTLS(channel, filter, peerNetData);
+        });
   }
 
   @Test
@@ -143,14 +163,13 @@ public class NioSslEngineKeyUpdateTest {
         });
   }
 
-  @Test
-  public void handshakeTestWithKeyUpdate() {
-    peerTest(NioSslEngineKeyUpdateTest::handshakeTLS, NioSslEngineKeyUpdateTest::handshakeTLS);
-  }
-
-  @Test
-  public void keyUpdateTest() {
-
+  private static SSLEngine createSSLEngine(final String peerHost, final boolean useClientMode,
+      final SSLContext sslContext) {
+    final SSLEngine engine = sslContext.createSSLEngine(peerHost, 10001);
+    engine.setEnabledProtocols(new String[] {"TLSv1.3"});
+    engine.setEnabledCipherSuites(new String[] {"TLS_AES_256_GCM_SHA384"});
+    engine.setUseClientMode(useClientMode);
+    return engine;
   }
 
   private void peerTest(final PeerAction clientAction, final PeerAction serverAction) {
@@ -237,7 +256,8 @@ public class NioSslEngineKeyUpdateTest {
     }
   }
 
-  private Properties createKeystoreAndTruststore() throws GeneralSecurityException, IOException {
+  private static Properties createKeystoreAndTruststore()
+      throws GeneralSecurityException, IOException {
     final CertificateMaterial ca = new CertificateBuilder()
         .commonName("Test CA")
         .isCA()
@@ -254,7 +274,9 @@ public class NioSslEngineKeyUpdateTest {
     return serverStore.propertiesWith("all", true, false);
   }
 
-  private static byte[] receive(final int n, final NioSslEngine filter,
+  private static byte[] receive(
+      final int n,
+      final NioSslEngine filter,
       final SocketChannel channel,
       final int packetBufferSize) throws IOException {
     final byte[] received = new byte[n];
@@ -275,7 +297,10 @@ public class NioSslEngineKeyUpdateTest {
     return received;
   }
 
-  private static void send(final int n, final NioSslEngine filter, final SocketChannel channel)
+  private static void send(
+      final int n,
+      final NioSslEngine filter,
+      final SocketChannel channel)
       throws IOException {
     final ByteBuffer appData = ByteBuffer.allocateDirect(n);
     for (int i = 0; i < n; i++) {
