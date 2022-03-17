@@ -116,6 +116,7 @@ public class IndexStatisticsJUnitTest {
 
     assertEquals(50, keyIndex1Stats.getTotalUses());
     assertEquals(0, keyIndex1Stats.getReadLockCount());
+    assertEquals(0, keyIndex1Stats.getReadLockCountLong());
 
     // NumOfValues should be reduced.
     for (int i = 0; i < 50; i++) {
@@ -240,6 +241,7 @@ public class IndexStatisticsJUnitTest {
     }
 
     assertEquals(0, keyIndex1Stats.getReadLockCount());
+    assertEquals(0, keyIndex1Stats.getReadLockCountLong());
     assertEquals(50, keyIndex1Stats.getTotalUses());
 
     // NumOfValues should be reduced.
@@ -368,6 +370,7 @@ public class IndexStatisticsJUnitTest {
     }
 
     assertEquals(0, keyIndexStats.getReadLockCount());
+    assertEquals(0, keyIndexStats.getReadLockCountLong());
 
     assertEquals(100, keyIndexStats.getTotalUses());
 
@@ -447,6 +450,7 @@ public class IndexStatisticsJUnitTest {
 
 
     assertEquals(0, mapIndexStats.getReadLockCount());
+    assertEquals(0, mapIndexStats.getReadLockCountLong());
 
     assertEquals(100, mapIndexStats.getTotalUses());
 
@@ -819,6 +823,8 @@ public class IndexStatisticsJUnitTest {
     assertEquals("Read locks should have been taken by the query ", 1, observer.readLockCount);
     assertEquals("Read lock count should have been released by the query ", 0,
         statusIndex.getStatistics().getReadLockCount());
+    assertEquals("Read lock count should have been released by the query ", 0,
+        statusIndex.getStatistics().getReadLockCountLong());
 
     QueryObserverHolder.setInstance(old);
     qs.removeIndexes();
@@ -851,17 +857,19 @@ public class IndexStatisticsJUnitTest {
     assertEquals("Read locks should have been taken by the query ", 1, observer.readLockCount);
     assertEquals("Read lock count should have been released by the query ", 0,
         secIdIndex.getStatistics().getReadLockCount());
+    assertEquals("Read lock count should have been released by the query ", 0,
+        secIdIndex.getStatistics().getReadLockCountLong());
 
     QueryObserverHolder.setInstance(old);
     qs.removeIndexes();
   }
 
   public static class QueryObserverImpl extends QueryObserverAdapter {
-    int readLockCount = 0;
+    long readLockCount = 0L;
 
     @Override
     public void beforeIndexLookup(Index index, int oper, Object key) {
-      readLockCount = index.getStatistics().getReadLockCount();
+      readLockCount = index.getStatistics().getReadLockCountLong();
     }
   }
 }
