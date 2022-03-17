@@ -35,6 +35,7 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.BucketDump;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -63,9 +64,10 @@ public class RPushDUnitTest {
     locatorPort = locator.getPort();
     server1 = clusterStartUp.startRedisVM(1, locatorPort);
     clusterStartUp.startRedisVM(2, locatorPort);
-    clusterStartUp.startRedisVM(3, locatorPort);
 
-    redisServerPort = clusterStartUp.getRedisPort(3);
+    redisServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    clusterStartUp.startRedisVM(3, Integer.toString(redisServerPort), locatorPort);
+
     jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort), 10_000);
   }
 
