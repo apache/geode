@@ -36,6 +36,7 @@ import java.util.Vector;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -130,6 +131,7 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
    * closing of connections by a gateway receiver for not having received the ping in time.
    */
   @Test
+  @Ignore("Changes required for this test are mutually exclusive with previous expected behavior. This test is ignored until those behaviors can be reconciled.")
   public void testPingsToReceiversWithSamePortAndHostnameForSendersReachTheRightReceivers()
       throws InterruptedException {
     String senderId = "ln";
