@@ -38,8 +38,9 @@ import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 public class LRemDUnitTest {
   private static final int LIST_SIZE_FOR_BUCKET_TEST = 10000;
   private static final int UNIQUE_ELEMENTS = 5000;
-  private static final int COUNT_OF_UNIQUE_ELEMENT = 2; // How many times a unique element is
-                                                        // repeated in list
+  // How many times a unique element is repeated in the list
+  private static final int COUNT_OF_UNIQUE_ELEMENT = 2;
+
 
   @Rule
   public RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule();
@@ -72,11 +73,11 @@ public class LRemDUnitTest {
     // Create initial list and push it
     final int initialListSize = 30;
     final int uniqueElements = 3;
-    List<String> elementList = new ArrayList<>();
+    String[] elementList = new String[initialListSize];
     for (int i = 0; i < initialListSize; i++) {
-      elementList.add(makeElementString(key, i % uniqueElements));
+      elementList[i] = makeElementString(key, i % uniqueElements);
     }
-    jedis.lpush(key, elementList.toArray(new String[] {}));
+    jedis.lpush(key, elementList);
 
     // Remove all elements except for ELEMENT_TO_CHECK
     final int uniqueElementsCount = initialListSize / uniqueElements;
@@ -102,13 +103,13 @@ public class LRemDUnitTest {
     String key2 = makeListKeyWithHashtag(2, listHashtags.get(1));
     String key3 = makeListKeyWithHashtag(3, listHashtags.get(2));
 
-    List<String> elementList1 = makeListWithRepeatingElements(key1);
-    List<String> elementList2 = makeListWithRepeatingElements(key2);
-    List<String> elementList3 = makeListWithRepeatingElements(key3);
+    String[] elementList1 = makeListWithRepeatingElements(key1);
+    String[] elementList2 = makeListWithRepeatingElements(key2);
+    String[] elementList3 = makeListWithRepeatingElements(key3);
 
-    jedis.lpush(key1, elementList1.toArray(new String[] {}));
-    jedis.lpush(key2, elementList2.toArray(new String[] {}));
-    jedis.lpush(key3, elementList3.toArray(new String[] {}));
+    jedis.lpush(key1, elementList1);
+    jedis.lpush(key2, elementList2);
+    jedis.lpush(key3, elementList3);
 
     Future<Integer> future1 =
         executor.submit(() -> performLremAndVerify(key1, running, elementList1));
@@ -138,7 +139,7 @@ public class LRemDUnitTest {
     assertThat(jedis.exists(key)).isFalse();
   }
 
-  private Integer performLremAndVerify(String key, AtomicBoolean isRunning, List<String> list) {
+  private Integer performLremAndVerify(String key, AtomicBoolean isRunning, String[] list) {
     assertThat(jedis.llen(key)).isEqualTo(LIST_SIZE_FOR_BUCKET_TEST);
     int count = COUNT_OF_UNIQUE_ELEMENT;
     List<String> expectedList = getReversedList(list);
@@ -155,7 +156,7 @@ public class LRemDUnitTest {
 
       if (iterationCount == UNIQUE_ELEMENTS) {
         iterationCount = 0;
-        jedis.lpush(key, list.toArray(new String[] {}));
+        jedis.lpush(key, list);
         expectedList = getReversedList(list);
       }
     }
@@ -163,10 +164,10 @@ public class LRemDUnitTest {
     return iterationCount;
   }
 
-  private List<String> makeListWithRepeatingElements(String key) {
-    List<String> elementList = new ArrayList<>();
+  private String[] makeListWithRepeatingElements(String key) {
+    String[] elementList = new String[LIST_SIZE_FOR_BUCKET_TEST];
     for (int i = 0; i < LIST_SIZE_FOR_BUCKET_TEST; i++) {
-      elementList.add(makeElementString(key, i % UNIQUE_ELEMENTS));
+      elementList[i] = makeElementString(key, i % UNIQUE_ELEMENTS);
     }
     return elementList;
   }
@@ -179,13 +180,12 @@ public class LRemDUnitTest {
     return listHashtags;
   }
 
-  private List<String> getReversedList(List<String> list) {
-    int listSize = list.size();
+  private List<String> getReversedList(String[] list) {
+    int listSize = list.length;
     List<String> reversedList = new ArrayList<>(listSize);
-    for(int i = listSize - 1; 0 <= i; i--) {
-      reversedList.add(list.get(i));
+    for (int i = LIST_SIZE_FOR_BUCKET_TEST - 1; 0 <= i; i--) {
+      reversedList.add(list[i]);
     }
-
     return reversedList;
   }
 
