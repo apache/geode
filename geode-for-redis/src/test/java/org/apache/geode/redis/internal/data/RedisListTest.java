@@ -119,7 +119,7 @@ public class RedisListTest {
   }
 
   @Test
-  public void lrem_storesStableDelta_inOrderRemove() {
+  public void removeIndexes_storesStableDelta() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
 
@@ -127,20 +127,6 @@ public class RedisListTest {
     RedisList list = createRedisListWithDuplicateElements();
 
     list.lrem(2, element, region, null);
-
-    verify(region).put(any(), any());
-    assertThat(list.hasDelta()).isFalse();
-  }
-
-  @Test
-  public void lrem_storesStableDelta_reverseOrderRemove() {
-    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
-    when(region.put(any(), any())).thenAnswer(this::validateDeltaSerialization);
-
-    byte[] element = new byte[] {1};
-    RedisList list = createRedisListWithDuplicateElements();
-
-    list.lrem(-2, element, region, null);
 
     verify(region).put(any(), any());
     assertThat(list.hasDelta()).isFalse();

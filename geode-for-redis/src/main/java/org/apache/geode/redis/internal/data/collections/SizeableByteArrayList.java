@@ -49,7 +49,7 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
 
   private List<Integer> removeObjectsStartingAtHead(Object o, int count) {
     int index = 0;
-    ListIterator<byte[]> iterator = this.listIterator(index);
+    ListIterator<byte[]> iterator = listIterator(index);
     List<Integer> indexesRemoved = new LinkedList<>();
 
     while (iterator.hasNext() && count != indexesRemoved.size()) {
@@ -66,8 +66,8 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
   }
 
   private List<Integer> removeObjectsStartingAtTail(Object o, int count) {
-    int index = this.size() - 1;
-    ListIterator<byte[]> descendingIterator = this.listIterator(this.size());
+    int index = size() - 1;
+    ListIterator<byte[]> descendingIterator = listIterator(size());
     List<Integer> indexesRemoved = new LinkedList<>();
 
     while (descendingIterator.hasPrevious() && indexesRemoved.size() != count) {
@@ -107,7 +107,7 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
   public void removeIndexes(List<Integer> remove) {
     int removeIndex = 0;
     int firstIndexToRemove = remove.get(0);
-    ListIterator<byte[]> iterator = this.listIterator(firstIndexToRemove);
+    ListIterator<byte[]> iterator = listIterator(firstIndexToRemove);
 
     // Iterates only through the indexes to remove
     for (int i = firstIndexToRemove; i <= remove.get(remove.size() - 1); i++) {

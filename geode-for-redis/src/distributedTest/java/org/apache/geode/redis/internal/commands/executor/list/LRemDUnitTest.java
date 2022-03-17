@@ -19,6 +19,7 @@ import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CL
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -140,17 +141,22 @@ public class LRemDUnitTest {
   private Integer performLremAndVerify(String key, AtomicBoolean isRunning, List<String> list) {
     assertThat(jedis.llen(key)).isEqualTo(LIST_SIZE_FOR_BUCKET_TEST);
     int count = COUNT_OF_UNIQUE_ELEMENT;
+    List<String> expectedList = getReversedList(list);
 
     int iterationCount = 0;
     while (isRunning.get()) {
       count = -count;
       String element = makeElementString(key, iterationCount);
       assertThat(jedis.lrem(key, count, element)).isEqualTo(COUNT_OF_UNIQUE_ELEMENT);
+
+      expectedList.removeAll(Collections.singleton(element));
+      assertThat(jedis.lrange(key, 0, -1)).isEqualTo(expectedList);
       iterationCount++;
 
       if (iterationCount == UNIQUE_ELEMENTS) {
         iterationCount = 0;
         jedis.lpush(key, list.toArray(new String[] {}));
+        expectedList = getReversedList(list);
       }
     }
 
@@ -171,6 +177,16 @@ public class LRemDUnitTest {
     listHashtags.add(clusterStartUp.getKeyOnServer("lrem", 2));
     listHashtags.add(clusterStartUp.getKeyOnServer("lrem", 3));
     return listHashtags;
+  }
+
+  private List<String> getReversedList(List<String> list) {
+    int listSize = list.size();
+    List<String> reversedList = new ArrayList<>(listSize);
+    for(int i = listSize - 1; 0 <= i; i--) {
+      reversedList.add(list.get(i));
+    }
+
+    return reversedList;
   }
 
 
