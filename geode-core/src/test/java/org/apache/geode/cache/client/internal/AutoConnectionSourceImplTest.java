@@ -15,7 +15,6 @@
 
 package org.apache.geode.cache.client.internal;
 
-import static java.net.InetSocketAddress.createUnresolved;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -36,7 +35,6 @@ import java.util.List;
 
 import javax.net.ssl.SSLHandshakeException;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import org.apache.geode.cache.client.internal.locator.ServerLocationRequest;
@@ -54,10 +52,9 @@ import org.apache.geode.internal.serialization.ObjectSerializer;
 class AutoConnectionSourceImplTest {
 
   @Test
-  @Disabled("Effort under way to resolve flakiness.")
   void queryLocatorsTriesNextLocatorOnSSLExceptions() throws IOException, ClassNotFoundException {
-    final HostAndPort locator1 = mock(HostAndPort.class);
-    final HostAndPort locator2 = mock(HostAndPort.class);
+    final HostAndPort locator1 = new HostAndPort("locator1", 1234);
+    final HostAndPort locator2 = new HostAndPort("locator2", 1234);
     final TcpSocketCreator socketCreator = mock(TcpSocketCreator.class);
     final ObjectSerializer objectSerializer = mock(ObjectSerializer.class);
     final ObjectDeserializer objectDeserializer = mock(ObjectDeserializer.class);
@@ -72,8 +69,6 @@ class AutoConnectionSourceImplTest {
     final TcpClient tcpClient =
         new TcpClient(socketCreator, objectSerializer, objectDeserializer, socketFactory);
 
-    when(locator1.getSocketInetAddress()).thenReturn(createUnresolved("locator1", 1234));
-    when(locator2.getSocketInetAddress()).thenReturn(createUnresolved("locator2", 1234));
     when(internalPool.getStats()).thenReturn(mock(PoolStats.class));
     when(response.hasResult()).thenReturn(true);
 
@@ -87,7 +82,7 @@ class AutoConnectionSourceImplTest {
     when(objectDeserializer.readObject(any())).thenReturn(new VersionResponse(), response);
 
     final AutoConnectionSourceImpl autoConnectionSource =
-        new AutoConnectionSourceImpl(locators, "", 42, tcpClient);
+        new AutoConnectionSourceImpl(locators, "", Integer.MAX_VALUE, tcpClient);
     autoConnectionSource.start(internalPool);
 
     assertThat(autoConnectionSource.queryLocators(request)).isSameAs(response);

@@ -20,15 +20,12 @@ import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Logger;
@@ -76,29 +73,6 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   @Immutable
   private static final LocatorListRequest LOCATOR_LIST_REQUEST = new LocatorListRequest();
 
-  /**
-   * A Comparator used to sort a list of locator addresses. This should not be
-   * used in other ways as it can return zero when two addresses aren't actually equal.
-   */
-  @Immutable
-  private static final Comparator<HostAndPort> SOCKET_ADDRESS_COMPARATOR =
-      (address, otherAddress) -> {
-        InetSocketAddress inetSocketAddress = address.getSocketInetAddress();
-        InetSocketAddress otherInetSocketAddress = otherAddress.getSocketInetAddress();
-        // shouldn't happen, but if it does we'll say they're the same.
-        if (inetSocketAddress.getHostString() == null
-            || otherInetSocketAddress.getHostString() == null) {
-          return 0;
-        }
-
-        int result = inetSocketAddress.getHostString()
-            .compareTo(otherInetSocketAddress.getHostString());
-        if (result != 0) {
-          return result;
-        } else {
-          return inetSocketAddress.getPort() - otherInetSocketAddress.getPort();
-        }
-      };
   private final List<HostAndPort> initialLocators;
 
   private final String serverGroup;
@@ -231,8 +205,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     Object returnObj = null;
     try {
       pool.getStats().incLocatorRequests();
-      returnObj = locatorConnection.requestToServer(locator, request,
-          connectionTimeout, true);
+      returnObj = locatorConnection.requestToServer(locator, request, connectionTimeout, true);
       ServerLocationResponse response = (ServerLocationResponse) returnObj;
       pool.getStats().incLocatorResponses();
       if (response != null) {
@@ -262,15 +235,13 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     ServerLocationResponse response = null;
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
-    Iterator<HostAndPort> controllerItr = locators.get().iterator();
-    while (controllerItr.hasNext()) {
-      HostAndPort hostAddress = controllerItr.next();
+    for (final HostAndPort locator : locators.get()) {
       if (isDebugEnabled) {
-        logger.debug("Sending query to locator {}: {}", hostAddress, request);
+        logger.debug("Sending query to locator {}: {}", locator, request);
       }
-      ServerLocationResponse tempResponse = queryOneLocator(hostAddress, request);
+      ServerLocationResponse tempResponse = queryOneLocator(locator, request);
       if (isDebugEnabled) {
-        logger.debug("Received query response from locator {}: {}", hostAddress, tempResponse);
+        logger.debug("Received query response from locator {}: {}", locator, tempResponse);
       }
       if (tempResponse != null) {
         response = tempResponse;
@@ -365,7 +336,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
       pool.getBackgroundProcessor().scheduleWithFixedDelay(new UpdateLocatorListTask(), 0,
           locatorUpdateInterval, TimeUnit.MILLISECONDS);
       logger.info("AutoConnectionSource UpdateLocatorListTask started with interval={} ms.",
-          new Object[] {locatorUpdateInterval});
+          locatorUpdateInterval);
     }
   }
 
@@ -398,77 +369,6 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
 
   long getLocatorUpdateInterval() {
     return locatorUpdateInterval;
-  }
-
-  /**
-   * A list of locators, which remembers the last known good locator.
-   */
-  private static class LocatorList {
-    protected final List<HostAndPort> locators;
-    AtomicInteger currentLocatorIndex = new AtomicInteger();
-
-    LocatorList(List<HostAndPort> locators) {
-      locators.sort(SOCKET_ADDRESS_COMPARATOR);
-      this.locators = Collections.unmodifiableList(locators);
-    }
-
-    public List<InetSocketAddress> getLocators() {
-      List<InetSocketAddress> locs = new ArrayList<>();
-      for (HostAndPort la : locators) {
-        locs.add(la.getSocketInetAddress());
-      }
-      return locs;
-    }
-
-    List<HostAndPort> getLocatorAddresses() {
-      return locators;
-    }
-
-    public int size() {
-      return locators.size();
-    }
-
-    public Iterator<HostAndPort> iterator() {
-      return new LocatorIterator();
-    }
-
-    @Override
-    public String toString() {
-      return locators.toString();
-    }
-
-
-    /**
-     * An iterator which iterates over all the controllers, starting at the last known good
-     * controller.
-     */
-    protected class LocatorIterator implements Iterator<HostAndPort> {
-      private final int startLocator = currentLocatorIndex.get();
-      private int locatorNum = 0;
-
-      @Override
-      public boolean hasNext() {
-        return locatorNum < locators.size();
-      }
-
-      @Override
-      public HostAndPort next() {
-        if (!hasNext()) {
-          return null;
-        } else {
-          int index = (locatorNum + startLocator) % locators.size();
-          HostAndPort nextLocator = locators.get(index);
-          currentLocatorIndex.set(index);
-          locatorNum++;
-          return nextLocator;
-        }
-      }
-
-      @Override
-      public void remove() {
-        throw new UnsupportedOperationException();
-      }
-    }
   }
 
   protected class UpdateLocatorListTask extends PoolTask {
