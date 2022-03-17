@@ -45,8 +45,6 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 
-import org.apache.geode.cache.control.RebalanceFactory;
-import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.RedisConstants;
@@ -54,7 +52,6 @@ import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.services.locking.LockingStripedCoordinator;
 import org.apache.geode.redis.internal.services.locking.StripedCoordinator;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
@@ -256,7 +253,7 @@ public class RenameDUnitTest {
           clusterStartUp.startRedisVM(3, x -> x
               .withProperty(GEODE_FOR_REDIS_PORT, finalRedisPort)
               .withConnectionToLocator(finalLocatorPort));
-          rebalanceAllRegions(server1);
+          clusterStartUp.rebalanceAllRegions();
         }
       } finally {
         running.set(false);
@@ -335,18 +332,6 @@ public class RenameDUnitTest {
     } catch (InterruptedException | BrokenBarrierException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private static void rebalanceAllRegions(MemberVM vm) {
-    vm.invoke("Running rebalance", () -> {
-      final ResourceManager manager = ClusterStartupRule.getCache().getResourceManager();
-      final RebalanceFactory factory = manager.createRebalanceFactory();
-      try {
-        factory.start().getResults();
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
-    });
   }
 
 }

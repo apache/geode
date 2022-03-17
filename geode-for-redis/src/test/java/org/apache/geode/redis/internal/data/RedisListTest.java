@@ -112,8 +112,8 @@ public class RedisListTest {
 
   private RedisList createRedisList(int e1, int e2) {
     RedisList newList = new RedisList();
-    newList.elementPush(new byte[] {(byte) e1});
-    newList.elementPush(new byte[] {(byte) e2});
+    newList.elementPushHead(new byte[] {(byte) e1});
+    newList.elementPushHead(new byte[] {(byte) e2});
     return newList;
   }
 }

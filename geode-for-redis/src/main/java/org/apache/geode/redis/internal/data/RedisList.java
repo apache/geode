@@ -36,6 +36,7 @@ import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.data.collections.SizeableByteArrayList;
 import org.apache.geode.redis.internal.data.delta.AddByteArrays;
+import org.apache.geode.redis.internal.data.delta.AddByteArraysTail;
 import org.apache.geode.redis.internal.data.delta.RemoveElementsByIndex;
 
 public class RedisList extends AbstractRedisData {
@@ -127,17 +128,36 @@ public class RedisList extends AbstractRedisData {
   }
 
   /**
-   * @param elementsToAdd elements to add to this set; NOTE this list may by modified by this call
+   * @param elementsToAdd elements to add to this list; NOTE this list may be modified by this call
    * @param region the region this instance is stored in
-   * @param key the name of the set to add to
+   * @param key the name of the list to add to
    * @param onlyIfExists if true then the elements should only be added if the key already exists
    *        and holds a list, otherwise no operation is performed.
    * @return the length of the list after the operation
    */
-  public long lpush(List<byte[]> elementsToAdd, Region<RedisKey, RedisData> region, RedisKey key,
-      final boolean onlyIfExists) {
-    elementsPush(elementsToAdd);
+  public long lpush(List<byte[]> elementsToAdd, Region<RedisKey, RedisData> region,
+      RedisKey key, final boolean onlyIfExists) {
+    elementsPushHead(elementsToAdd);
     storeChanges(region, key, new AddByteArrays(elementsToAdd));
+    return elementList.size();
+  }
+
+  /**
+   * @param elementsToAdd elements to add to this list;
+   * @param region the region this instance is stored in
+   * @param key the name of the list to add to
+   * @param onlyIfExists if true then the elements should only be added if the key already exists
+   *        and holds a list, otherwise no operation is performed.
+   * @return the length of the list after the operation
+   */
+  public long rpush(List<byte[]> elementsToAdd, Region<RedisKey, RedisData> region,
+      RedisKey key, final boolean onlyIfExists) {
+    byte newVersion;
+    synchronized (this) {
+      newVersion = incrementAndGetVersion();
+      elementsToAdd.forEach(this::elementPushTail);
+    }
+    storeChanges(region, key, new AddByteArraysTail(newVersion, elementsToAdd));
     return elementList.size();
   }
 
@@ -163,7 +183,12 @@ public class RedisList extends AbstractRedisData {
 
   @Override
   public void applyAddByteArrayDelta(byte[] bytes) {
-    elementPush(bytes);
+    elementPushHead(bytes);
+  }
+
+  @Override
+  public void applyAddByteArrayTailDelta(byte[] bytes) {
+    elementPushTail(bytes);
   }
 
   @Override
@@ -204,22 +229,26 @@ public class RedisList extends AbstractRedisData {
     return REDIS_LIST_ID;
   }
 
-  public synchronized byte[] elementRemove(int index) {
+  protected synchronized byte[] elementRemove(int index) {
     return elementList.remove(index);
   }
 
-  public synchronized boolean elementRemove(byte[] element) {
+  protected synchronized boolean elementRemove(byte[] element) {
     return elementList.remove(element);
   }
 
-  public synchronized void elementPush(byte[] element) {
+  protected synchronized void elementPushHead(byte[] element) {
     elementList.addFirst(element);
   }
 
-  public synchronized void elementsPush(List<byte[]> elementsToAdd) {
+  protected synchronized void elementsPushHead(List<byte[]> elementsToAdd) {
     for (byte[] element : elementsToAdd) {
-      elementPush(element);
+      elementPushHead(element);
     }
+  }
+
+  protected synchronized void elementPushTail(byte[] element) {
+    elementList.addLast(element);
   }
 
   @Override

@@ -20,6 +20,7 @@ import static org.apache.geode.DataSerializer.readEnum;
 import static org.apache.geode.internal.cache.TXManagerImpl.NOTX;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_KEY_EXISTS;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAYS;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAYS_TAIL;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAY_DOUBLE_PAIRS;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAY_PAIRS;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.APPEND_BYTE_ARRAY;
@@ -56,6 +57,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.data.delta.AddByteArrayDoublePairs;
 import org.apache.geode.redis.internal.data.delta.AddByteArrayPairs;
 import org.apache.geode.redis.internal.data.delta.AddByteArrays;
+import org.apache.geode.redis.internal.data.delta.AddByteArraysTail;
 import org.apache.geode.redis.internal.data.delta.AppendByteArray;
 import org.apache.geode.redis.internal.data.delta.DeltaInfo;
 import org.apache.geode.redis.internal.data.delta.DeltaType;
@@ -253,6 +255,11 @@ public abstract class AbstractRedisData implements RedisData {
           AddByteArrays.deserializeFrom(in, this);
         }
         break;
+      case ADD_BYTE_ARRAYS_TAIL:
+        synchronized (this) {
+          AddByteArraysTail.deserializeFrom(in, this);
+        }
+        break;
       case REMOVE_BYTE_ARRAYS:
         synchronized (this) {
           RemoveByteArrays.deserializeFrom(in, this);
@@ -301,6 +308,10 @@ public abstract class AbstractRedisData implements RedisData {
 
   public void applyAddByteArrayDelta(byte[] bytes) {
     throw new IllegalStateException("unexpected " + ADD_BYTE_ARRAYS);
+  }
+
+  public void applyAddByteArrayTailDelta(byte[] bytes) {
+    throw new IllegalStateException("unexpected " + ADD_BYTE_ARRAYS_TAIL);
   }
 
   public void applyRemoveByteArrayDelta(byte[] bytes) {

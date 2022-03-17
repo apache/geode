@@ -16,7 +16,6 @@
 package org.apache.geode.redis.internal.commands.executor.list;
 
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
-import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -63,7 +62,7 @@ public class LPushDUnitTest {
     clusterStartUp.startRedisVM(2, locator.getPort());
     clusterStartUp.startRedisVM(3, locator.getPort());
     int redisServerPort = clusterStartUp.getRedisPort(1);
-    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort), REDIS_CLIENT_TIMEOUT);
+    jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort), 10_000);
     listHashtags = makeListHashtags();
     keys = makeListKeys(listHashtags);
     keyToElementListMap = new HashMap<>();
