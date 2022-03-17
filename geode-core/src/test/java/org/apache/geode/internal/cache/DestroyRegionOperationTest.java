@@ -27,7 +27,7 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
-public class DestroyRegionOperationJUnitTest {
+public class DestroyRegionOperationTest {
 
   @Test
   public void testGetRecipients() {

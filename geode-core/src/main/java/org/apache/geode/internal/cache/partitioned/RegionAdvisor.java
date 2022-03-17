@@ -180,7 +180,7 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
               logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
                   "applying queued profile removal for all buckets for {}", qbp.memberId);
             }
-            if (qbp.serials.length == 1) {
+            if (qbp.serials.length == 1 && qbp.serials[0] != ILLEGAL_SERIAL) {
               buckets[qbp.bucketId].getBucketAdvisor().removeIdWithSerial(qbp.memberId,
                   qbp.serials[0], qbp.destroyed);
             } else {

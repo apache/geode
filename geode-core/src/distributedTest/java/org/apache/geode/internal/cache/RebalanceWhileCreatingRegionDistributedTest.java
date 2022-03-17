@@ -83,7 +83,8 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
     server2.invoke(() -> createRegion(regionName, RegionShortcut.PARTITION));
 
     // Asynchronously wait to create the proxy region in the accessor
-    accessor.invokeAsync(() -> waitToCreateProxyRegion(regionName));
+    AsyncInvocation asyncInvocation =
+        accessor.invokeAsync(() -> waitToCreateProxyRegion(regionName));
 
     // Connect client1
     ClientVM client1 =
@@ -122,6 +123,14 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
       Region<Integer, Integer> region =
           ClusterStartupRule.clientCacheRule.createProxyRegion(regionName);
       IntStream.range(0, 3).forEach(i -> region.put(i, i));
+    });
+
+    asyncInvocation.get();
+    accessor.invoke(() -> {
+      Region region = ClusterStartupRule.getCache().getRegion(regionName);
+      IntStream.range(3, 6).forEach(i -> region.put(i, i));
+      assertThat(region.size()).isEqualTo(6);
+      IntStream.range(0, 6).forEach(i -> assertThat(region.get(i)).isEqualTo(i));
     });
   }
 
@@ -191,6 +200,8 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
       PartitionedRegion pr =
           (PartitionedRegion) ClusterStartupRule.getCache().getRegion(regionName);
       assertThat(pr.getRegionAdvisor().getBucket(0).getBucketAdvisor().getProfile(source))
+          .isNull();
+      assertThat(pr.getRegionAdvisor().getBucket(0).getBucketAdvisor().getProfile(destination))
           .isNull();
     });
   }
