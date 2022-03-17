@@ -36,7 +36,6 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryEvent;
@@ -72,8 +71,6 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
 
   private static final boolean DISABLE_HEAP_EVICTOR_THREAD_POOL = Boolean
       .getBoolean(GEMFIRE_PREFIX + "HeapLRUCapacityController.DISABLE_HEAP_EVICTOR_THREAD_POOL");
-
-  private static final long TOTAL_BYTES_TO_EVICT_FROM_HEAP = setTotalBytesToEvictFromHeap();
 
   private static final String EVICTOR_THREAD_NAME = "EvictorThread";
 
@@ -448,8 +445,23 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
     return null;
   }
 
+  private long totalBytesToEvict = -1;
+
   public long getTotalBytesToEvict() {
-    return TOTAL_BYTES_TO_EVICT_FROM_HEAP;
+    long result = totalBytesToEvict;
+    if (result == -1) {
+      result = calculateTotalBytesToEvict();
+    }
+    return result;
+  }
+
+  private long calculateTotalBytesToEvict() {
+    float evictionBurstPercentage = Float.parseFloat(System
+        .getProperty(GEMFIRE_PREFIX + "HeapLRUCapacityController.evictionBurstPercentage", "0.4"));
+    long maxTenuredBytes = cache.getInternalResourceManager().getMaxHeapMemory();
+    long result = (long) (maxTenuredBytes * 0.01 * evictionBurstPercentage);
+    totalBytesToEvict = result;
+    return result;
   }
 
   protected ResourceType getResourceType() {
@@ -470,12 +482,5 @@ public class HeapEvictor implements ResourceListener<MemoryEvent> {
 
   int numFastLoops() {
     return numFastLoops;
-  }
-
-  private static long setTotalBytesToEvictFromHeap() {
-    float evictionBurstPercentage = Float.parseFloat(System
-        .getProperty(GEMFIRE_PREFIX + "HeapLRUCapacityController.evictionBurstPercentage", "0.4"));
-    long maxTenuredBytes = HeapMemoryMonitor.getTenuredPoolMaxMemory();
-    return (long) (maxTenuredBytes * 0.01 * evictionBurstPercentage);
   }
 }

@@ -66,10 +66,14 @@ import org.apache.geode.util.internal.GeodeGlossary;
 public class InternalResourceManager implements ResourceManager {
   private static final Logger logger = LogService.getLogger();
 
-  final int MAX_RESOURCE_MANAGER_EXE_THREADS =
-      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "resource.manager.threads", 1);
+  private final int MAX_RESOURCE_MANAGER_EXE_THREADS =
+      Integer.getInteger(GeodeGlossary.GEMFIRE_PREFIX + "resource.manager.threads", 2);
 
   private final Collection<CompletableFuture<Void>> startupTasks = new ArrayList<>();
+
+  public long getMaxHeapMemory() {
+    return getHeapMonitor().getMaxMemory();
+  }
 
   public enum ResourceType {
     HEAP_MEMORY(0x1), OFFHEAP_MEMORY(0x2), MEMORY(0x3), ALL(0xFFFFFFFF);
@@ -150,7 +154,7 @@ public class InternalResourceManager implements ResourceManager {
     // Create the monitors
     Map<ResourceType, ResourceMonitor> tempMonitors = new HashMap<>();
     tempMonitors.put(ResourceType.HEAP_MEMORY,
-        new HeapMemoryMonitor(this, cache, stats, new TenuredHeapConsumptionMonitor()));
+        new HeapMemoryMonitor(this, cache, stats));
     tempMonitors.put(ResourceType.OFFHEAP_MEMORY,
         new OffHeapMemoryMonitor(this, cache, cache.getOffHeapStore(), stats));
     resourceMonitors = Collections.unmodifiableMap(tempMonitors);
@@ -345,7 +349,7 @@ public class InternalResourceManager implements ResourceManager {
     inProgressRedundancyOperations.remove(completableFuture);
   }
 
-  void stopExecutor(ExecutorService executor) {
+  private void stopExecutor(ExecutorService executor) {
     if (executor == null) {
       return;
     }

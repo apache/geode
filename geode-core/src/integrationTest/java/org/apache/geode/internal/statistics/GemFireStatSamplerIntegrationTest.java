@@ -15,11 +15,9 @@
 package org.apache.geode.internal.statistics;
 
 import static java.io.File.separator;
-import static java.lang.Byte.MAX_VALUE;
 import static java.lang.System.currentTimeMillis;
 import static java.lang.System.getProperty;
 import static java.lang.System.setProperty;
-import static java.util.Arrays.fill;
 import static org.apache.geode.distributed.ConfigurationProperties.ARCHIVE_DISK_SPACE_LIMIT;
 import static org.apache.geode.distributed.ConfigurationProperties.ARCHIVE_FILE_SIZE_LIMIT;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
@@ -31,8 +29,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAM
 import static org.apache.geode.internal.GemFireVersion.getBuildId;
 import static org.apache.geode.internal.GemFireVersion.getGemFireVersion;
 import static org.apache.geode.internal.GemFireVersion.getSourceDate;
-import static org.apache.geode.internal.cache.control.HeapMemoryMonitor.getTenuredMemoryPoolMXBean;
-import static org.apache.geode.internal.cache.control.HeapMemoryMonitor.getTenuredPoolStatistics;
 import static org.apache.geode.internal.inet.LocalHostUtil.getLocalHost;
 import static org.apache.geode.internal.statistics.HostStatSampler.TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -42,7 +38,6 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -495,37 +490,6 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
                   .isTrue();
         });
     waitForFileToDelete(archiveFile1, 10 * sampleRate, 10);
-  }
-
-  @Test
-  public void testLocalStatListenerRegistration() throws Exception {
-    connect(createGemFireProperties());
-
-    final GemFireStatSampler statSampler = getGemFireStatSampler();
-    statSampler.waitForInitialization(5000);
-
-    final AtomicBoolean flag = new AtomicBoolean(false);
-    final LocalStatListener listener = value -> flag.set(true);
-
-    final String tenuredPoolName = getTenuredMemoryPoolMXBean().getName();
-    logger.info("TenuredPoolName: {}", tenuredPoolName);
-
-    Statistics tenuredPoolStatistics =
-        await("tenured pool statistics " + tenuredPoolName + " is not null")
-            .until(() -> getTenuredPoolStatistics(system.getStatisticsManager()), Objects::nonNull);
-
-    statSampler.addLocalStatListener(listener, tenuredPoolStatistics, "currentUsedMemory");
-
-    assertThat(statSampler.getLocalListeners().size() > 0)
-        .as("expected at least one stat listener, found " + statSampler.getLocalListeners().size())
-        .isTrue();
-
-    long maxTenuredMemory = getTenuredMemoryPoolMXBean().getUsage().getMax();
-
-    byte[] bytes = new byte[(int) (maxTenuredMemory * 0.01)];
-    fill(bytes, MAX_VALUE);
-
-    await("listener to be triggered").untilTrue(flag);
   }
 
   @Override

@@ -14,14 +14,10 @@
  */
 package org.apache.geode.cache.management;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.apache.geode.cache.Scope.LOCAL;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.cache.PartitionedRegionHelper.getHashKey;
-import static org.apache.geode.internal.cache.control.HeapMemoryMonitor.getTenuredMemoryPoolMXBean;
-import static org.apache.geode.internal.cache.control.HeapMemoryMonitor.getTenuredPoolMaxMemory;
-import static org.apache.geode.internal.cache.control.HeapMemoryMonitor.getTenuredPoolStatistics;
+import static org.apache.geode.internal.cache.control.HeapMemoryMonitor.setTestDisableMemoryUpdates;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
@@ -40,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -48,10 +43,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import org.apache.geode.DataSerializable;
-import org.apache.geode.Statistics;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheLoaderException;
@@ -92,8 +85,6 @@ import org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
 import org.apache.geode.internal.cache.control.ResourceListener;
 import org.apache.geode.internal.cache.control.TestMemoryThresholdListener;
-import org.apache.geode.internal.statistics.GemFireStatSampler;
-import org.apache.geode.internal.statistics.LocalStatListener;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
@@ -1735,7 +1726,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
   private final SerializableCallable setHeapMemoryMonitorTestMode = new SerializableCallable() {
     @Override
     public Object call() throws Exception {
-      HeapMemoryMonitor.setTestDisableMemoryUpdates(true);
+      setTestDisableMemoryUpdates(true);
       return null;
     }
   };
@@ -1753,7 +1744,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
         }
       }
       irm.getHeapMonitor().setTestMaxMemoryBytes(0);
-      HeapMemoryMonitor.setTestDisableMemoryUpdates(false);
+      setTestDisableMemoryUpdates(false);
       return null;
     }
   };
@@ -1814,64 +1805,6 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       optimizeForWrite = in.readBoolean();
     }
-  }
-
-  /**
-   * putting this test here because junit does not have host stat sampler enabled
-   */
-  @Test
-  public void testLocalStatListenerRegistration() throws Exception {
-    final CountDownLatch latch = new CountDownLatch(1);
-    Cache cache = getCache();
-    InternalDistributedSystem internalSystem =
-        (InternalDistributedSystem) cache.getDistributedSystem();
-    final GemFireStatSampler sampler = internalSystem.getStatSampler();
-    sampler.waitForInitialization(10000); // fix: remove infinite wait
-    final LocalStatListener l = value -> latch.countDown();
-
-    // fix: found race condition here...
-    WaitCriterion wc = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        Statistics si = getTenuredPoolStatistics(internalSystem.getStatisticsManager());
-        if (si != null) {
-          sampler.addLocalStatListener(l, si, "currentUsedMemory");
-          return true;
-        }
-        return false;
-      }
-
-      @Override
-      public String description() {
-        String tenuredPoolName = getTenuredMemoryPoolMXBean().getName();
-        return "Waiting for " + tenuredPoolName + " statistics to be added to create listener for";
-      }
-    };
-    GeodeAwaitility.await().untilAsserted(wc);
-
-    assertTrue("expected at least one stat listener, found " + sampler.getLocalListeners().size(),
-        sampler.getLocalListeners().size() > 0);
-    long maxTenuredMemory = getTenuredPoolMaxMemory();
-    AttributesFactory factory = new AttributesFactory();
-    factory.setScope(LOCAL);
-    Region r = createRegion(getUniqueName() + "region", factory.create());
-    // keep putting objects (of size 1% of maxTenuredMemory) and wait for stat callback
-    // if we don't get a callback after 75 attempts, throw exception
-    int count = 0;
-    while (true) {
-      count++;
-      if (count > 75) {
-        throw new AssertionError("Did not receive a stat listener callback");
-      }
-      byte[] value = new byte[(int) (maxTenuredMemory * 0.01)];
-      r.put("key-" + count, value);
-      if (latch.await(50, MILLISECONDS)) {
-        break;
-      } else {
-        continue;
-      }
-    }
-    r.close();
   }
 
   /**
@@ -2511,7 +2444,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     vm.invoke(new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        HeapMemoryMonitor.setTestDisableMemoryUpdates(false);
+        setTestDisableMemoryUpdates(false);
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
         InternalResourceManager irm = cache.getInternalResourceManager();
         HeapMemoryMonitor hmm = irm.getHeapMonitor();
@@ -2562,7 +2495,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
 
           }
 
-          HeapMemoryMonitor.setTestDisableMemoryUpdates(true);
+          setTestDisableMemoryUpdates(true);
         } finally {
           hmm.setMemoryStateChangeTolerance(previousMemoryStateChangeTolerance);
         }

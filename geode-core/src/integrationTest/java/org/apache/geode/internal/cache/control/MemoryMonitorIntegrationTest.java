@@ -19,7 +19,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryPoolMXBean;
 import java.util.Properties;
 import java.util.Set;
 
@@ -45,7 +44,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
-public class MemoryMonitorJUnitTest {
+public class MemoryMonitorIntegrationTest {
   private static final Logger logger = LogService.getLogger();
 
   public static final int SYSTEM_LISTENERS = 1;
@@ -380,37 +379,28 @@ public class MemoryMonitorJUnitTest {
     final float justright = 92.5f;
     final ResourceManager rm = cache.getResourceManager();
 
-    long usageThreshold = -1;
-    int once = 0;
-    for (MemoryPoolMXBean p : ManagementFactory.getMemoryPoolMXBeans()) {
-      if (p.isUsageThresholdSupported() && HeapMemoryMonitor.isTenured(p)) {
-        usageThreshold = p.getUsageThreshold();
-        once++;
-      }
-    }
-    assertEquals("Expected only one pool to be assigned", 1, once);
-
     // Default test, current default is disabled
     assertEquals(rm.getCriticalHeapPercentage(), MemoryThresholds.DEFAULT_CRITICAL_PERCENTAGE,
         0.01);
     NotificationEmitter emitter = (NotificationEmitter) ManagementFactory.getMemoryMXBean();
     try {
       emitter.removeNotificationListener(
-          InternalResourceManager.getInternalResourceManager(cache).getHeapMonitor());
+          InternalResourceManager.getInternalResourceManager(cache).getHeapMonitor()
+              .getHeapUsageMonitor());
       assertTrue("Expected that the resource manager was not registered", false);
-    } catch (ListenerNotFoundException ignored) {
+    } catch (ListenerNotFoundException expected) {
     }
 
     try {
       rm.setCriticalHeapPercentage(toohigh);
       assertTrue("Expected illegal argument exception for value " + toohigh, false);
-    } catch (IllegalArgumentException ignored) {
+    } catch (IllegalArgumentException expected) {
     }
 
     try {
       rm.setCriticalHeapPercentage(toolow);
       assertTrue("Expected illegal argument exception for value " + toolow, false);
-    } catch (IllegalArgumentException ignored) {
+    } catch (IllegalArgumentException expected) {
     }
 
     rm.setCriticalHeapPercentage(justright);
@@ -428,15 +418,10 @@ public class MemoryMonitorJUnitTest {
     emitter = (NotificationEmitter) ManagementFactory.getMemoryMXBean();
     try {
       emitter.removeNotificationListener(
-          InternalResourceManager.getInternalResourceManager(cache).getHeapMonitor());
+          InternalResourceManager.getInternalResourceManager(cache).getHeapMonitor()
+              .getHeapUsageMonitor());
       assertTrue("Expected that the resource manager was not registered", false);
-    } catch (ListenerNotFoundException ignored) {
-    }
-    // Assert the threshold was reset
-    for (MemoryPoolMXBean p : ManagementFactory.getMemoryPoolMXBeans()) {
-      if (HeapMemoryMonitor.isTenured(p)) {
-        assertEquals(usageThreshold, p.getUsageThreshold());
-      }
+    } catch (ListenerNotFoundException expected) {
     }
   }
 
