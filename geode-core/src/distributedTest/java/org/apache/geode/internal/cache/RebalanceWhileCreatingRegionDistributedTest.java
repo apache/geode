@@ -189,6 +189,7 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
       PartitionedRegion partitionedRegion =
           (PartitionedRegion) ClusterStartupRule.getCache().getRegion(regionName);
       PartitionedRegionDataStore partitionedRegionDataStore = partitionedRegion.getDataStore();
+      // Simulate rebalance operation by calling moveBucket()
       partitionedRegionDataStore.moveBucket(0, source, true);
       ClusterStartupRule.getCache().close();
     });
@@ -239,6 +240,7 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
   private void waitToCreateProxyRegion(String regionName) throws Exception {
     logger.info(
         "RebalanceWhileCreatingRegionDistributedTest.waitToCreateRegion about to wait for Before_RemoveBucketMessage gate");
+    // Wait after RemoveBucketMessage is sent due to rebalance or moveBucket()
     blackboard.waitForGate(BEFORE_REMOVE_BUCKET_MESSAGE);
     logger.info(
         "RebalanceWhileCreatingRegionDistributedTest.waitToCreateRegion done wait for Before_RemoveBucketMessage gate");
@@ -253,6 +255,7 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
   private void waitToCreateSingleBucketProxyRegion(String regionName) throws Exception {
     logger.info(
         "RebalanceWhileCreatingRegionDistributedTest.waitToCreateRegion about to wait for Before_RemoveBucketMessage gate");
+    // Wait after RemoveBucketMessage is sent due to rebalance or moveBucket()
     blackboard.waitForGate(BEFORE_REMOVE_BUCKET_MESSAGE);
     logger.info(
         "RebalanceWhileCreatingRegionDistributedTest.waitToCreateRegion done wait for Before_RemoveBucketMessage gate");
@@ -280,6 +283,11 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
       if (message instanceof RemoveBucketMessage) {
         logger.info(
             "TestDistributionMessageObserver.beforeProcessMessage about to signal Before_RemoveBucketMessage gate");
+        // When processing RemoveBucketMessage, it will create DestroyRegionMessage.
+        // At this time, the partitioned region has not been created on the accessor.
+        // Therefore, DistributionAdvisor doesn't have PartitionProfile from the accessor.
+        // If the recipients of DestroyRegionMessage is calculated based on DistributionAdvisor,
+        // the accessor will miss DestroyRegionMessage.
         blackboard.signalGate(BEFORE_REMOVE_BUCKET_MESSAGE);
         logger.info(
             "TestDistributionMessageObserver.beforeProcessMessage done signal Before_RemoveBucketMessage gate");
@@ -295,6 +303,14 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
               "TestDistributionMessageObserver.beforeSendMessage about to wait for After_CreateProxyRegion gate regionName={}",
               drm.regionPath);
           try {
+            // When processing RemoveBucketMessage, it will create DestroyRegionMessage.
+            // At this time, the partitioned region has not been created on the accessor.
+            // Therefore, DistributionAdvisor doesn't have PartitionProfile from the accessor.
+            // If the recipients of DestroyRegionMessage is calculated based on DistributionAdvisor,
+            // the accessor will miss DestroyRegionMessage.
+            // We also don't want to send DestroyRegionMessage too early before the accessor has
+            // actually start creating the partitioned region.
+            // Otherwise, the accessor will not have the bucket profile to be removed.
             blackboard.waitForGate(AFTER_CREATE_PROXY_REGION);
           } catch (Exception e) {
             throw new RuntimeException(e);
