@@ -2109,6 +2109,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Override
   public int getRegionSize() {
     synchronized (getSizeGuard()) {
+      // Synchronize on this to prevent changing the value in the middle of a size count
+      // see incTombstoneCount method and RegionSizeIntegrationTest
       synchronized (tombstoneCount) {
         int result = getRegionMap().size();
         // if this is a client with no tombstones then we subtract the number
@@ -2118,6 +2120,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           if (result < destroyedEntriesCount) {
             logger.error("Incorrect region size: mapSize={}, destroyedEntriesCount={}.", result,
                 destroyedEntriesCount);
+            return 0;
           }
           return result - destroyedEntriesCount;
         }
@@ -2126,6 +2129,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         if (result < tombstoneNumber) {
           logger.error("Incorrect region size: mapSize={}, tombstoneCount={}.", result,
               tombstoneNumber);
+          return 0;
         }
         return result - tombstoneNumber;
       }
@@ -3283,6 +3287,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * regions track the number of tombstones their map holds for size calculations
    */
   public void incTombstoneCount(int delta) {
+    // Synchronize on this to prevent changing the value in the middle of a size count
+    // see getRegionSize method and RegionSizeIntegrationTest
     synchronized (tombstoneCount) {
       tombstoneCount.addAndGet(delta);
     }

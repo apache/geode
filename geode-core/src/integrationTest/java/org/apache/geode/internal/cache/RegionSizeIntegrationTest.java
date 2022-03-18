@@ -38,7 +38,7 @@ public class RegionSizeIntegrationTest {
   @Rule
   public ServerStarterRule server = new ServerStarterRule().withNoCacheServer().withAutoStart();
 
-  // the test would fail consistently if we put a sleep statement inside the
+  // Before the fix the test would fail consistently if we put a sleep statement inside the
   // LocalRegion.getRegionSize() method after we got the region map size.
   @Test
   public void regionSizeShouldAlwaysBePositive() throws ExecutionException, InterruptedException {
