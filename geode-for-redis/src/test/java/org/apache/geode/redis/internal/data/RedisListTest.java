@@ -148,11 +148,11 @@ public class RedisListTest {
 
   private RedisList createRedisListWithDuplicateElements() {
     RedisList newList = new RedisList();
-    newList.elementPush(new byte[] {1});
-    newList.elementPush(new byte[] {2});
-    newList.elementPush(new byte[] {1});
-    newList.elementPush(new byte[] {1});
-    newList.elementPush(new byte[] {3});
+    newList.elementPushHead(new byte[] {1});
+    newList.elementPushHead(new byte[] {2});
+    newList.elementPushHead(new byte[] {1});
+    newList.elementPushHead(new byte[] {1});
+    newList.elementPushHead(new byte[] {3});
     return newList;
   }
 
