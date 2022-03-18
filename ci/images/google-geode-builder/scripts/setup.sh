@@ -30,7 +30,7 @@ apt-get install -y --no-install-recommends \
 echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list
 echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
 echo "deb [arch=amd64] https://apt.bell-sw.com/ stable main" | sudo tee /etc/apt/sources.list.d/bellsoft.list
-curl -sSL https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
+curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | apt-key add -
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 curl -fsSL https://download.bell-sw.com/pki/GPG-KEY-bellsoft | apt-key add -
 apt-get update
@@ -70,10 +70,10 @@ pip3 install setuptools
 pip3 install docker-compose
 
 pushd /tmp
-  curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz
+  curl -fO https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz
   tar xzf google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz -C /
   rm google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz
-  curl -sSO https://dl.google.com/cloudagents/install-monitoring-agent.sh
+  curl -fsSO https://dl.google.com/cloudagents/install-monitoring-agent.sh
   bash install-monitoring-agent.sh
   rm install-monitoring-agent.sh
 popd
@@ -83,7 +83,7 @@ gcloud config set component_manager/disable_update_check true
 gcloud config set metrics/environment github_docker_image
 gcloud components install docker-credential-gcr --quiet
 gcloud auth configure-docker --quiet
-curl -Lo /usr/local/bin/dunit-progress https://github.com/jdeppe-pivotal/progress-util/releases/download/0.2/progress.linux
+curl -fLo /usr/local/bin/dunit-progress https://github.com/jdeppe-pivotal/progress-util/releases/download/0.2/progress.linux
 chmod +x /usr/local/bin/dunit-progress
 wget --no-verbose -O /tmp/chromedriver_linux64.zip https://chromedriver.storage.googleapis.com/${CHROME_DRIVER_VERSION}/chromedriver_linux64.zip
 rm -rf /opt/selenium/chromedriver

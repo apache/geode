@@ -158,7 +158,7 @@ jobs:
               FULL_VERSION=$(cd geode && git fetch && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               SHA=$(cd geode && git rev-parse HEAD)
-              curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-${VERSION}-src.tgz > src.tgz
+              curl -fLs https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-${VERSION}-src.tgz > src.tgz
               tar xzf src.tgz
               cd apache-geode-${VERSION}-src
               java -version
@@ -196,7 +196,7 @@ jobs:
               FULL_VERSION=$(cd geode && git fetch && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               SHA=$(cd geode && git rev-parse HEAD)
-              curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-${VERSION}.tgz > bin.tgz
+              curl -fLs https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-${VERSION}.tgz > bin.tgz
               tar xzf bin.tgz
               cd apache-geode-${VERSION}
               java -version
@@ -261,11 +261,11 @@ jobs:
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               if [ "${FULL_VERSION}" = "${VERSION}" ] ; then
                 GRADLE_ARGS=""
-                curl -L -s https://downloads.apache.org/geode/${VERSION}/apache-geode-examples-${VERSION}-src.tgz > src.tgz
+                curl -fLs https://downloads.apache.org/geode/${VERSION}/apache-geode-examples-${VERSION}-src.tgz > src.tgz
               else
                 STAGING_MAVEN=$(cat geode-examples/gradle.properties | grep geodeRepositoryUrl | awk '{print $3}')
                 GRADLE_ARGS="-PgeodeReleaseUrl=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION} -PgeodeRepositoryUrl=${STAGING_MAVEN}"
-                curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-examples-${VERSION}-src.tgz > src.tgz
+                curl -fLs https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-examples-${VERSION}-src.tgz > src.tgz
               fi
               tar xzf src.tgz
               cd apache-geode-examples-${VERSION}-src
@@ -299,13 +299,13 @@ jobs:
               FULL_VERSION=$(cd geode-native && git fetch && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               #use geode from binary dist
-              curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-${VERSION}.tgz > geode-bin.tgz
+              curl -fLs https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-${VERSION}.tgz > geode-bin.tgz
               tar xzf geode-bin.tgz
               apt-get update || true
               DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake openssl doxygen build-essential libssl-dev zlib1g-dev
 
               echo skipping latest cmake tmp=`mktemp`
-              echo skipping latest cmake curl -o ${tmp} -v -L https://github.com/Kitware/CMake/releases/download/v3.21.2/cmake-3.21.2-linux-x86_64.sh
+              echo skipping latest cmake curl -fo ${tmp} -v -L https://github.com/Kitware/CMake/releases/download/v3.21.2/cmake-3.21.2-linux-x86_64.sh
               echo skipping latest cmake bash ${tmp} --skip-license --prefix=/usr/local
               echo skipping latest cmake rm -f ${tmp}
 
@@ -357,14 +357,14 @@ jobs:
               DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake openssl doxygen build-essential libssl-dev zlib1g-dev
 
               echo skipping latest cmake tmp=`mktemp`
-              echo skipping latest cmake curl -o ${tmp} -v -L https://github.com/Kitware/CMake/releases/download/v3.21.2/cmake-3.21.2-linux-x86_64.sh
+              echo skipping latest cmake curl -fo ${tmp} -v -L https://github.com/Kitware/CMake/releases/download/v3.21.2/cmake-3.21.2-linux-x86_64.sh
               echo skipping latest cmake bash ${tmp} --skip-license --prefix=/usr/local
               echo skipping latest cmake rm -f ${tmp}
 
               #cmake wrongly assumes javah wasn't removed until JDK10, but adoptopenjdk removed it in JDK8
               echo '/opt/java/openjdk/bin/javac -h "$@"' > /opt/java/openjdk/bin/javah
               chmod +x /opt/java/openjdk/bin/javah
-              curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-native-${VERSION}-src.tgz > src.tgz
+              curl -fLs https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-native-${VERSION}-src.tgz > src.tgz
               tar xzf src.tgz
               cd apache-geode-native-${VERSION}-src
               mkdir build
@@ -407,7 +407,7 @@ jobs:
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
               STAGING_MAVEN=$(cat geode-examples/gradle.properties | grep geodeRepositoryUrl | awk '{print $3}')
               cd upthewaterspout-tests
-              curl -L -s https://dist.apache.org/repos/dist/dev/geode/KEYS > KEYS
+              curl -fLs https://dist.apache.org/repos/dist/dev/geode/KEYS > KEYS
               gpg --import KEYS
               java -version
               ./gradlew build -PmavenURL=${STAGING_MAVEN} -PdownloadURL=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/ -Pversion=${FULL_VERSION}
@@ -437,7 +437,7 @@ jobs:
               apt install -qq -y --no-install-recommends unzip git keychain
               FULL_VERSION=$(cd geode-benchmarks && git fetch && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
-              curl -L -s https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-benchmarks-${VERSION}-src.tgz > src.tgz
+              curl -fLs https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}/apache-geode-benchmarks-${VERSION}-src.tgz > src.tgz
               tar xzf src.tgz
               cd apache-geode-benchmarks-${VERSION}-src
               java -version
@@ -477,7 +477,7 @@ jobs:
               apt install -qq -y --no-install-recommends git gpg gpg-agent
               FULL_VERSION=$(cd geode && git fetch && git describe --tags | sed -e 's#^rel/v##')
               VERSION=$(echo $FULL_VERSION|sed -e 's/\.RC.*//')
-              curl -L -s https://dist.apache.org/repos/dist/dev/geode/KEYS > KEYS
+              curl -fLs https://dist.apache.org/repos/dist/dev/geode/KEYS > KEYS
               gpg --import KEYS
               url=https://dist.apache.org/repos/dist/dev/geode/${FULL_VERSION}
               function verifyArtifactSizeSignatureLicenseNoticeAndCopyright {
@@ -489,7 +489,7 @@ jobs:
                 asc=${file}.asc
                 sha=${file}.sha256
                 sum=sha256sum
-                curl -L -s $url/$file > $file
+                curl -fLs $url/$file > $file
                 actualfilesize=$(wc -c < $file)
                 if [ $actualfilesize -lt $minfilesize ] ; then
                   echo "File size of $file is only $actualfilesize bytes, expected at least $minfilesize"
@@ -499,8 +499,8 @@ jobs:
                   echo "File size of $file is $actualfilesize, expected no more than $maxfilesize bytes"
                   return 1
                 fi
-                curl -L -s $url/$asc > $asc
-                curl -L -s $url/$sha > $sha
+                curl -fLs $url/$asc > $asc
+                curl -fLs $url/$sha > $sha
                 gpg --verify $asc
                 $sum -c $sha
                 echo $file >> exp
@@ -525,7 +525,7 @@ jobs:
               verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-examples-${VERSION}-src   840000    900000
               verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-native-${VERSION}-src    2400000   3200000
               verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-benchmarks-${VERSION}-src  85000    125000
-              curl -L -s ${url}/ | awk '/>..</{next}/<li>/{gsub(/ *<[^>]*>/,"");print}' | sort > actual-file-list
+              curl -fLs ${url}/ | awk '/>..</{next}/<li>/{gsub(/ *<[^>]*>/,"");print}' | sort > actual-file-list
               sort < exp > expected-file-list
               set +x
               echo ""
@@ -578,7 +578,7 @@ jobs:
                 file=$1
                 echo ""
                 echo Checking $file...
-                curl -L -s $url/$file | tar tvzf - | egrep '\.('"${BINARY_EXTENSIONS}"')$' | tee -a bins
+                curl -fLs $url/$file | tar tvzf - | egrep '\.('"${BINARY_EXTENSIONS}"')$' | tee -a bins
               }
               verifyNoBinaries apache-geode-${VERSION}-src.tgz
               verifyNoBinaries apache-geode-examples-${VERSION}-src.tgz

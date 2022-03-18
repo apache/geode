@@ -205,7 +205,7 @@ jobs:
         - -ec
         - |
           BASE_DIR=$(pwd)
-          curl "${CONCOURSE_URL}/api/v1/cli?arch=amd64&platform=linux" --output fly
+          curl -f "${CONCOURSE_URL}/api/v1/cli?arch=amd64&platform=linux" --output fly
           chmod +x fly
           TARGET_NAME=concourse
           ./fly -t ${TARGET_NAME} login -c "${CONCOURSE_URL}" -n "${CONCOURSE_TEAM}" -u "${CONCOURSE_USERNAME}" -p "${CONCOURSE_PASSWORD}"
@@ -375,7 +375,7 @@ jobs:
         - -ec
         - |
           . concourse-metadata-resource/concourse_metadata
-          curl -L -k -o fly "((concourse-url))/api/v1/cli?arch=amd64&platform=linux"
+          curl -fLko fly "((concourse-url))/api/v1/cli?arch=amd64&platform=linux"
           chmod +x fly
           job="{{test.name}}-test-{{java_test_version.name}}"
           ./fly -t cc login \
@@ -432,7 +432,7 @@ jobs:
         - -ec
         - |
           . concourse-metadata-resource/concourse_metadata
-          curl -L -k -o fly "((concourse-url))/api/v1/cli?arch=amd64&platform=linux"
+          curl -fLko fly "((concourse-url))/api/v1/cli?arch=amd64&platform=linux"
           chmod +x fly
           job="{{test.name}}-test-{{java_test_version.name}}"
           ./fly -t cc login \

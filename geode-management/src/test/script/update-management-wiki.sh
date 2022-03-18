@@ -143,7 +143,7 @@ echo "============================================================"
 echo "Download swagger JSON"
 echo "============================================================"
 set -x
-curl http://localhost:7070/management${URI_VERSION}/api-docs | jq . > static/swagger.json
+curl -f http://localhost:7070/management${URI_VERSION}/api-docs | jq . > static/swagger.json
 set +x
 
 echo ""
@@ -258,7 +258,7 @@ echo "============================================================"
 echo "Uploading to wiki"
 echo "============================================================"
 # get the current page version and ADD 1
-PAGE_VERSION=$(curl -s -u $APACHE_CREDS https://cwiki.apache.org/confluence/rest/api/content/${PAGE_ID} | jq .version.number)
+PAGE_VERSION=$(curl -fsu $APACHE_CREDS https://cwiki.apache.org/confluence/rest/api/content/${PAGE_ID} | jq .version.number)
 NEW_PAGE_VERSION=$(( PAGE_VERSION + 1 ))
 # insert page content as the value of the "value" attribute in json update message
 TITLE="${GEODE_VERSION} Management REST API - ${URI_VERSION#/}"
@@ -285,8 +285,8 @@ cat << EOF > static/body.json
 EOF
 # upload
 set -x
-curl -u "$APACHE_CREDS" -X PUT -H 'Content-Type: application/json' -d @static/body.json https://cwiki.apache.org/confluence/rest/api/content/${PAGE_ID}
-curl -v -S -u "$APACHE_CREDS" -X POST -H "X-Atlassian-Token: no-check" -F "file=@static/swagger.json" -F "comment=raw swagger json" "https://cwiki.apache.org/confluence/rest/api/content/${PAGE_ID}/child/attachment"
+curl -fu "$APACHE_CREDS" -X PUT -H 'Content-Type: application/json' -d @static/body.json https://cwiki.apache.org/confluence/rest/api/content/${PAGE_ID}
+curl -fvSu "$APACHE_CREDS" -X POST -H "X-Atlassian-Token: no-check" -F "file=@static/swagger.json" -F "comment=raw swagger json" "https://cwiki.apache.org/confluence/rest/api/content/${PAGE_ID}/child/attachment"
 set +x
 
 echo ""

@@ -57,7 +57,7 @@ OUTPUT_DIRECTORY=${OUTPUT_DIRECTORY:-$SCRIPTDIR}
 BIN_DIR=${OUTPUT_DIRECTORY}/bin
 TMP_DIR=${OUTPUT_DIRECTORY}/tmp
 mkdir -p ${BIN_DIR} ${TMP_DIR}
-curl -o ${BIN_DIR}/fly "https://concourse.apachegeode-ci.info/api/v1/cli?arch=amd64&platform=linux"
+curl -fo ${BIN_DIR}/fly "https://concourse.apachegeode-ci.info/api/v1/cli?arch=amd64&platform=linux"
 chmod +x ${BIN_DIR}/fly
 
 PATH=${PATH}:${BIN_DIR}

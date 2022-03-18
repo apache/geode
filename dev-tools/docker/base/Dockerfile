@@ -22,7 +22,7 @@ LABEL maintainer=dev@geode.apache.org
 
 ENV PATH $PATH:$JAVA_HOME/bin
 
-RUN curl -L -o /usr/local/bin/gosu https://github.com/tianon/gosu/releases/download/1.10/gosu-amd64
+RUN curl -fLo /usr/local/bin/gosu https://github.com/tianon/gosu/releases/download/1.10/gosu-amd64
 RUN chmod +x /usr/local/bin/gosu
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh

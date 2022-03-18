@@ -98,7 +98,7 @@ function resolve() {
   #download if url (and not already downloaded)
   if echo "$spec" | grep -q '^http.*tgz$' ; then
     filename=$(echo $spec | sed 's#.*/##')
-    [ -r ${DOWNLOAD}/$filename ] || curl -L "$spec" > ${DOWNLOAD}/$filename
+    [ -r ${DOWNLOAD}/$filename ] || curl -fL "$spec" > ${DOWNLOAD}/$filename
     spec=${DOWNLOAD}/$filename
   fi
 
