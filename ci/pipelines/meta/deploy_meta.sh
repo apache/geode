@@ -117,7 +117,7 @@ YML
   FLY_URL="${CONCOURSE_URL}/api/v1/cli?arch=amd64&platform=${platform}"
   FLY="${SCRIPTDIR}/fly"
   if [[ ! -e "${FLY}" ]]; then
-    curl -so ${FLY} ${FLY_URL}
+    curl -fso ${FLY} ${FLY_URL}
   fi
   chmod +x ${FLY}
   set +e

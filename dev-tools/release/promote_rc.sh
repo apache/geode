@@ -212,7 +212,7 @@ function waitforserver {
         echo -n .
         sleep 12
       done
-      actualsize=$(curl -sk --head "$url" | grep -i "Content-Length" | awk '{print $2}' | tr -d '\r')
+      actualsize=$(curl -fsk --head "$url" | grep -i "Content-Length" | awk '{print $2}' | tr -d '\r')
     done
     echo "$url exists and is correct size"
   done

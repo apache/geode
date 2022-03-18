@@ -37,8 +37,8 @@ RUN chmod +x /usr/local/bin/tini \
   && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
   && echo "deb http://packages.cloud.google.com/apt cloud-sdk-$(lsb_release -c -s) main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list \
   && echo "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list \
-  && curl -sSL https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
-  && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - \
+  && curl -fsSL https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
+  && curl -f https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add - \
   && curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - \
   && apt-get update \
   && apt-get purge lxc-docker \
@@ -66,7 +66,7 @@ RUN chmod +x /usr/local/bin/tini \
   && gcloud config set component_manager/disable_update_check true \
   && gcloud config set metrics/environment github_docker_image \
   && go build -o /usr/local/bin/tini-wrapper ./tini-wrapper.go \
-  && curl -Lo /usr/local/bin/dunit-progress https://github.com/jdeppe-pivotal/progress-util/releases/download/0.2/progress.linux \
+  && curl -fLo /usr/local/bin/dunit-progress https://github.com/jdeppe-pivotal/progress-util/releases/download/0.2/progress.linux \
   && chmod +x /usr/local/bin/dunit-progress \
   && wget --no-verbose -O /tmp/chromedriver_linux64.zip https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip \
   && rm -rf /opt/selenium/chromedriver \

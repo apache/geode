@@ -173,7 +173,7 @@ download() {
 
   # download dist. curl on mac doesn't like the cert provided...
   local zip_path=$(zip_path)
-  curl --insecure -L -o "$zip_path/$file_name" "$distributionUrl"
+  curl --insecure -fLo "$zip_path/$file_name" "$distributionUrl"
 
   pushd "$base_path"
     touch "$file_name.lck"
