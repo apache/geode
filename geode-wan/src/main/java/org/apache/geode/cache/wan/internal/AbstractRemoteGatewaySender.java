@@ -81,7 +81,7 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
     StringTokenizer locatorsOnThisVM = new StringTokenizer(locators, ",");
     while (locatorsOnThisVM.hasMoreTokens()) {
       String localLocator = locatorsOnThisVM.nextToken();
-      DistributionLocatorId locatorID = new DistributionLocatorId(localLocator);
+      DistributionLocatorId locatorID = DistributionLocatorId.unmarshal(localLocator);
       try {
         final RemoteLocatorResponse response =
             (RemoteLocatorResponse) new TcpClient(SocketCreatorFactory
@@ -107,7 +107,7 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
           }
           for (final String remoteLocator : response.getLocators()) {
             try {
-              DistributionLocatorId locatorId = new DistributionLocatorId(remoteLocator);
+              DistributionLocatorId locatorId = DistributionLocatorId.unmarshal(remoteLocator);
               pf.addLocator(locatorId.getHost().getHostName(), locatorId.getPort());
               locatorCount++;
             } catch (Exception e) {

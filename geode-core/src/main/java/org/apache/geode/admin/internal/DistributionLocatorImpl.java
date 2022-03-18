@@ -15,6 +15,8 @@
 
 package org.apache.geode.admin.internal;
 
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
@@ -206,7 +208,7 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
     for (Iterator<InternalDistributedMember> memberIter =
         hostedLocators.keySet().iterator(); memberIter.hasNext();) {
       for (final String s : hostedLocators.get(memberIter.next())) {
-        DistributionLocatorId locator = new DistributionLocatorId(s);
+        DistributionLocatorId locator = DistributionLocatorId.unmarshal(s);
         found = found || locator.getHostName().equals(host);
         if (!found && !host.contains(".")) {
           try {
@@ -221,8 +223,7 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
             // try config host as if it is an IP address instead of host name
           }
         }
-        if (locator.getBindAddress() != null && !locator.getBindAddress().isEmpty()
-            && bindAddress != null && !bindAddress.isEmpty()) {
+        if (!isEmpty(locator.getBindAddress()) && !isEmpty(bindAddress)) {
           found = found && locator.getBindAddress().equals(bindAddress);
         }
         found = found && locator.getPort() == port;
@@ -284,10 +285,11 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
     sb.append(" -port=");
     sb.append(getConfig().getPort());
     Properties props = config.getDistributedSystemProperties();
-    Enumeration en = props.propertyNames();
+    Enumeration<?> en = props.propertyNames();
     while (en.hasMoreElements()) {
       String pn = (String) en.nextElement();
-      sb.append(" -D" + GeodeGlossary.GEMFIRE_PREFIX + "" + pn + "=" + props.getProperty(pn));
+      sb.append(" -D" + GeodeGlossary.GEMFIRE_PREFIX + "").append(pn).append("=")
+          .append(props.getProperty(pn));
     }
 
     String bindAddress = getConfig().getBindAddress();

@@ -71,7 +71,7 @@ public class LocatorMembershipListenerTest {
   public SystemOutRule systemOutRule = new SystemOutRule();
 
   private DistributionLocatorId buildDistributionLocatorId(int port) {
-    return new DistributionLocatorId("localhost[" + port + "]");
+    return DistributionLocatorId.unmarshal("localhost[" + port + "]");
   }
 
   private List<LocatorJoinMessage> buildPermutationsForClusterId(int dsId, int locatorsAmount) {
@@ -204,7 +204,7 @@ public class LocatorMembershipListenerTest {
 
     ExecutorService executorService = Executors.newFixedThreadPool(allJoinMessages.size());
     List<Future<Object>> futures = executorService.invokeAll(requests);
-    for (Future future : futures) {
+    for (Future<Object> future : futures) {
       Object response = future.get();
       assertThat(response).isNull();
     }
@@ -234,7 +234,7 @@ public class LocatorMembershipListenerTest {
 
     ExecutorService executorService = Executors.newFixedThreadPool(allJoinMessages.size());
     List<Future<Object>> futures = executorService.invokeAll(requests);
-    for (Future future : futures) {
+    for (Future<Object> future : futures) {
       Object response = future.get();
       assertThat(response).isNull();
     }

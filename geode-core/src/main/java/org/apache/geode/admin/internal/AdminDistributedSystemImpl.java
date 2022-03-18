@@ -1321,11 +1321,11 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
     if (isMcastEnabled()) {
       String mcastId = getMcastAddress() + "["
           + getMcastPort() + "]";
-      locatorIds.add(new DistributionLocatorId(mcastId));
+      locatorIds.add(DistributionLocatorId.unmarshal(mcastId));
     }
     StringTokenizer st = new StringTokenizer(getLocators(), ",");
     while (st.hasMoreTokens()) {
-      locatorIds.add(new DistributionLocatorId(st.nextToken()));
+      locatorIds.add(DistributionLocatorId.unmarshal(st.nextToken()));
     }
 
     if (logger.isDebugEnabled()) {

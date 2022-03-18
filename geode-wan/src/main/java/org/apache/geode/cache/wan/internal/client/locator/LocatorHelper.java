@@ -121,7 +121,7 @@ public class LocatorHelper {
       final @NotNull LocatorMembershipListener locatorListener,
       final @NotNull DistributionLocatorId locator) {
     computeIfAbsent(locatorListener.getAllServerLocatorsInfo(), distributedSystemId,
-        k -> new CopyOnWriteHashSet<>()).add(locator.toString());
+        k -> new CopyOnWriteHashSet<>()).add(locator.marshalForClients());
   }
 
   /**

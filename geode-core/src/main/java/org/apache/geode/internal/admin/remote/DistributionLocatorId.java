@@ -15,17 +15,23 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import static java.lang.String.format;
+import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
+import static org.apache.commons.lang3.ObjectUtils.getIfNull;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.InternalGemFireException;
-import org.apache.geode.distributed.Locator;
+import org.apache.geode.annotations.internal.MakeNotSerializable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
@@ -38,212 +44,172 @@ import org.apache.geode.internal.net.SocketCreator;
  * Also identifies member name of the distribution locator. This is used to improve
  * locator discovery logic.
  * If member name is set to null, then design base logic will be used.
- *
+ * Serializable for RemoteLocatorJoinRequest and ServerLocationRequest.
  */
+@MakeNotSerializable
 public class DistributionLocatorId implements java.io.Serializable {
   private static final long serialVersionUID = 6587390186971937865L;
 
-  private InetAddress host;
+  private final InetAddress host;
   private final int port;
-  private final String bindAddress;
-  private transient SSLConfig sslConfig;
-  // the following two fields are not used but are retained for backward compatibility
-  // as this class is Serializable and is used in WAN locator information exchange
-  private final boolean peerLocator = true;
-  private final boolean serverLocator = true;
-  private String hostnameForClients;
+  private final @NotNull String bindAddress;
+  /**
+   * Serialization: Since this is {@code transient} it must be initialized after deserialization,
+   * thus it can't be {@code final}.
+   */
+  private transient @NotNull SSLConfig sslConfig;
+  private final String hostnameForClients;
   private String hostname;
-  // added due to improvement for cloud native environment
-  private String membername;
+  /**
+   * Serialization: Not include in some older versions and may be {@code null} abd must be
+   * initialized after deserialization, thus it can't be {@code final}.
+   */
+  private @NotNull String memberName;
   private final long timestamp;
-
 
   /**
    * Constructs a DistributionLocatorId with the given host and port.
    * This constructor is used for design base behavior.
-   *
    */
-  public DistributionLocatorId(InetAddress host, int port, String bindAddress,
-      SSLConfig sslConfig) {
-    this.host = host;
-    this.port = port;
-    this.bindAddress = validateBindAddress(bindAddress);
-    this.sslConfig = validateSSLConfig(sslConfig);
-    membername = DistributionConfig.DEFAULT_NAME;
-    timestamp = 0;
-
-  }
-
-  public DistributionLocatorId(int port, String bindAddress) {
-    this(port, bindAddress, null);
-  }
-
-  public DistributionLocatorId(int port, String bindAddress, String hostnameForClients) {
-    this(port, bindAddress, hostnameForClients, DistributionConfig.DEFAULT_NAME);
+  public DistributionLocatorId(final @NotNull InetAddress host, final int port,
+      final @Nullable String bindAddress, final @Nullable SSLConfig sslConfig) {
+    this(host, null, port, bindAddress, sslConfig, null, null);
   }
 
   /**
    * Constructs a DistributionLocatorId with the given port and member name.
    * The host will be set to the local host.
-   *
    */
-  public DistributionLocatorId(int port, String bindAddress, String hostnameForClients,
-      String membername) {
-    try {
-      host = LocalHostUtil.getLocalHost();
-    } catch (UnknownHostException ex) {
-      throw new InternalGemFireException(
-          "Failed getting local host", ex);
-    }
-    this.port = port;
-    this.bindAddress = validateBindAddress(bindAddress);
-    sslConfig = validateSSLConfig(null);
-    this.hostnameForClients = hostnameForClients;
-    if (membername == null) {
-      this.membername = DistributionConfig.DEFAULT_NAME;
-    } else {
-      this.membername = membername;
-    }
-    timestamp = System.currentTimeMillis();
+  public DistributionLocatorId(final int port, final @Nullable String bindAddress,
+      final @Nullable String hostnameForClients, final @Nullable String memberName) {
+    this(getLocalHostOrThrow(), null, port, bindAddress, null, hostnameForClients, memberName);
   }
 
-  public DistributionLocatorId(InetAddress host, int port, String bindAddress, SSLConfig sslConfig,
-      String hostnameForClients) {
+  public DistributionLocatorId(final @NotNull InetAddress address,
+      final @NotNull InternalLocator locator) {
+    this(address, null, locator.getPort(),
+        (locator.getBindAddressString() != null
+            ? locator.getBindAddressString()
+            : (locator.getBindAddress() != null ? locator.getBindAddress().getHostAddress()
+                : null)),
+        null,
+        locator.getHostnameForClients(), null);
+  }
+
+  private DistributionLocatorId(final @Nullable InetAddress host, @Nullable String hostname,
+      final int port,
+      final @Nullable String bindAddress, final @Nullable SSLConfig sslConfig,
+      final @Nullable String hostnameForClients, final @Nullable String memberName) {
     this.host = host;
+    this.hostname = hostname;
     this.port = port;
-    this.bindAddress = validateBindAddress(bindAddress);
-    this.sslConfig = validateSSLConfig(sslConfig);
+    this.bindAddress = bindAddressOrDefault(bindAddress);
+    this.sslConfig = sslConfigOrDefault(sslConfig);
     this.hostnameForClients = hostnameForClients;
-    membername = DistributionConfig.DEFAULT_NAME;
-    timestamp = 0;
-
-  }
-
-
-  /**
-   * Constructs a DistributionLocatorId with a String of the form: hostname[port] or
-   * hostname:bindaddress[port] or hostname@bindaddress[port]
-   * <p>
-   * The :bindaddress portion is optional. hostname[port] is the more common form.
-   * <p>
-   * Example: merry.gemstone.com[7056]<br>
-   * Example w/ bind address: merry.gemstone.com:81.240.0.1[7056], or
-   * merry.gemstone.com@fdf0:76cf:a0ed:9449::16[7056]
-   * <p>
-   * Use bindaddress[port] or hostname[port]. This object doesn't need to differentiate between the
-   * two.
-   */
-  public DistributionLocatorId(String marshalled) {
-    this(marshalled, DistributionConfig.DEFAULT_NAME);
-  }
-
-  /**
-   * Constructs a DistributionLocatorId with a String of the form: hostname[port] or
-   * hostname:bindaddress[port] or hostname@bindaddress[port]
-   * and membername
-   * <p>
-   * The :bindaddress portion is optional. hostname[port] is the more common form.
-   * <p>
-   * Example: merry.gemstone.com[7056]<br>
-   * Example w/ bind address: merry.gemstone.com:81.240.0.1[7056], or
-   * merry.gemstone.com@fdf0:76cf:a0ed:9449::16[7056]
-   * <p>
-   * Use bindaddress[port] or hostname[port]. This object doesn't need to differentiate between the
-   * two.
-   * <p>
-   * Membername example: locator1 or locator-ny1.
-   * <p>
-   */
-  public DistributionLocatorId(String marshalled, String membername) {
-    if (membername == null) {
-      this.membername = DistributionConfig.DEFAULT_NAME;
-    } else {
-      this.membername = membername;
-    }
+    this.memberName = memberNameOrDefault(memberName);
     timestamp = System.currentTimeMillis();
+  }
 
-    final int portStartIdx = marshalled.indexOf('[');
-    final int portEndIdx = marshalled.indexOf(']');
+  /**
+   * Unmarshall using default memberName.
+   *
+   * @see DistributionLocatorId#unmarshal(String, String)
+   */
+  public static @NotNull DistributionLocatorId unmarshal(final @NotNull String marshalled) {
+    return unmarshal(marshalled, null);
+  }
 
-    if (portStartIdx < 0 || portEndIdx < portStartIdx) {
+  /**
+   * Constructs a DistributionLocatorId with a String of the form: hostname[port] or
+   * hostname:bindaddress[port] or hostname@bindaddress[port]
+   * and memberName
+   * <p>
+   * The :bindaddress portion is optional. hostname[port] is the more common form.
+   * <p>
+   * Example: merry.gemstone.com[7056]<br>
+   * Example w/ bind address: merry.gemstone.com:81.240.0.1[7056], or
+   * merry.gemstone.com@fdf0:76cf:a0ed:9449::16[7056]
+   * <p>
+   * Use bindaddress[port] or hostname[port]. This object doesn't need to differentiate between the
+   * two.
+   * <p>
+   * memberName example: locator1 or locator-ny1.
+   * <p>
+   */
+  public static @NotNull DistributionLocatorId unmarshal(final @NotNull String marshalled,
+      final @Nullable String memberName) {
+
+    final int portStartIndex = marshalled.indexOf('[');
+    final int portEndIndex = marshalled.indexOf(']');
+
+    if (portStartIndex < 0 || portEndIndex < portStartIndex) {
       throw new IllegalArgumentException(
-          String.format("%s is not in the form hostname[port].",
-              marshalled));
+          format("%s is not in the form hostname[port].", marshalled));
     }
 
-    int bindIdx = marshalled.lastIndexOf('@');
-    if (bindIdx < 0) {
-      bindIdx = marshalled.lastIndexOf(':');
+    int bindAddressIndex = marshalled.lastIndexOf('@');
+    if (bindAddressIndex < 0) {
+      bindAddressIndex = marshalled.lastIndexOf(':');
     }
 
-    hostname = marshalled.substring(0, bindIdx > -1 ? bindIdx : portStartIdx);
+    String hostname =
+        marshalled.substring(0, bindAddressIndex > -1 ? bindAddressIndex : portStartIndex);
 
     if (hostname.indexOf(':') >= 0) {
-      bindIdx = marshalled.lastIndexOf('@');
-      hostname = marshalled.substring(0, bindIdx > -1 ? bindIdx : portStartIdx);
+      bindAddressIndex = marshalled.lastIndexOf('@');
+      hostname = marshalled.substring(0, bindAddressIndex > -1 ? bindAddressIndex : portStartIndex);
     }
 
+    InetAddress host = getInetAddressOrNull(hostname);
 
+    final int port;
     try {
-      host = InetAddress.getByName(hostname);
-    } catch (UnknownHostException ex) {
-      host = null;
-    }
-
-    try {
-      port = Integer.parseInt(marshalled.substring(portStartIdx + 1, portEndIdx));
+      port = Integer.parseInt(marshalled.substring(portStartIndex + 1, portEndIndex));
     } catch (NumberFormatException nfe) {
       throw new IllegalArgumentException(
-          String.format("%s does not contain a valid port number",
-              marshalled));
+          format("%s does not contain a valid port number", marshalled));
     }
 
-    if (bindIdx > -1) {
-      // found a bindaddress
-      bindAddress = validateBindAddress(marshalled.substring(bindIdx + 1, portStartIdx));
-    } else {
-      bindAddress = validateBindAddress(DistributionConfig.DEFAULT_BIND_ADDRESS);
-    }
-    sslConfig = validateSSLConfig(null);
+    final String bindAddress =
+        substringAfterFoundOrNull(marshalled, bindAddressIndex, portStartIndex);
+    final String hostnameForClients = parseHostnameForClients(marshalled);
 
-    int optionsIndex = marshalled.indexOf(',');
+    return new DistributionLocatorId(host, hostname, port, bindAddress, null, hostnameForClients,
+        memberName);
+  }
+
+  private static @Nullable String parseHostnameForClients(final @NotNull String marshalled) {
+    final int optionsIndex = marshalled.indexOf(',');
     if (optionsIndex > 0) {
-      String[] options = marshalled.substring(optionsIndex).split(",");
+      final String[] options = marshalled.substring(optionsIndex).split(",");
       for (final String option : options) {
-        String[] optionFields = option.split("=");
+        final String[] optionFields = option.split("=");
         if (optionFields.length == 2) {
-          if (optionFields[0].equalsIgnoreCase("peer")) {
-            // this setting is deprecated
-            // this.peerLocator = Boolean.valueOf(optionFields[1]).booleanValue();
-          } else if (optionFields[0].equalsIgnoreCase("server")) {
-            // this setting is deprecated
-            // this.serverLocator = Boolean.valueOf(optionFields[1]).booleanValue();
-          } else if (optionFields[0].equalsIgnoreCase("hostname-for-clients")) {
-            hostnameForClients = optionFields[1];
-          } else {
-            throw new IllegalArgumentException(marshalled + " invalid option " + optionFields[0]
-                + ". valid options are \"peer\", \"server\" and \"hostname-for-clients\"");
+          final String fieldName = optionFields[0].toLowerCase();
+          switch (fieldName) {
+            case "hostname-for-clients":
+              return optionFields[1];
+            case "peer":
+            case "server":
+              // these settings are deprecated
+              break;
+            default:
+              throw new IllegalArgumentException(marshalled + " invalid option " + fieldName
+                  + ". valid options are \"peer\", \"server\" and \"hostname-for-clients\"");
           }
         }
       }
     }
-  }
-
-  public DistributionLocatorId(InetAddress address, Locator locator) {
-    this(address, locator.getPort(),
-        (((InternalLocator) locator).getBindAddressString() != null
-            ? ((InternalLocator) locator).getBindAddressString()
-            : (locator.getBindAddress() != null ? locator.getBindAddress().getHostAddress()
-                : null)),
-        null,
-        locator.getHostnameForClients());
+    return null;
   }
 
   /**
-   * Returns marshaled string that is compatible as input for
-   * {@link #DistributionLocatorId(String)}.
+   * Returns marshaled string that is compatible as input for unmarshal.
+   *
+   * @see #unmarshal(String)
+   * @see #unmarshal(String, String)
    */
-  public String marshal() {
+  public @NotNull String marshal() {
     StringBuilder sb = new StringBuilder();
     sb.append(host.getHostAddress());
     if (!bindAddress.isEmpty()) {
@@ -258,19 +224,34 @@ public class DistributionLocatorId implements java.io.Serializable {
     return sb.toString();
   }
 
-  private SSLConfig validateSSLConfig(SSLConfig sslConfig) {
-    if (sslConfig == null) {
-      return new SSLConfig.Builder().build(); // uses defaults
+  /**
+   * Returns marshaled string that is compatible as input for unmarshal preferring the
+   * hostnameForClients or bindAddress values before the host value.
+   *
+   * @see #unmarshal(String)
+   * @see #unmarshal(String, String)
+   */
+  public @NotNull String marshalForClients() {
+    StringBuilder sb = new StringBuilder();
+
+    if (!isEmpty(hostnameForClients)) {
+      sb.append(hostnameForClients);
+    } else if (!isEmpty(bindAddress)) {
+      sb.append(bindAddress);
+    } else {
+      if (isMcastId()) {
+        sb.append(host.getHostAddress());
+      } else {
+        sb.append(SocketCreator.getHostName(host));
+      }
     }
-    return sslConfig;
+
+    sb.append("[").append(port).append("]");
+    return sb.toString();
   }
 
-  public SSLConfig getSSLConfig() {
+  public @NotNull SSLConfig getSSLConfig() {
     return sslConfig;
-  }
-
-  public void setSSLConfig(SSLConfig sslConfig) {
-    this.sslConfig = validateSSLConfig(sslConfig);
   }
 
   /** Returns the communication port. */
@@ -283,19 +264,15 @@ public class DistributionLocatorId implements java.io.Serializable {
    * ipString Otherwise we create InetAddress each time.
    *
    **/
-  public HostAndPort getHost() throws UnknownHostException {
+  public @NotNull HostAndPort getHost() throws UnknownHostException {
     if (host == null && hostname == null) {
       throw new UnknownHostException("locator ID has no hostname or resolved inet address");
     }
-    String addr = hostname;
-    if (host != null) {
-      addr = host.getHostName();
-    }
-    return new HostAndPort(addr, port);
+    return new HostAndPort(null == host ? hostname : host.getHostName(), port);
   }
 
   /** returns the host name */
-  public String getHostName() {
+  public @NotNull String getHostName() {
     if (hostname == null) {
       hostname = host.getHostName();
     }
@@ -310,98 +287,62 @@ public class DistributionLocatorId implements java.io.Serializable {
   /**
    * Returns the bindAddress; value is "" unless host has multiple network interfaces.
    */
-  public String getBindAddress() {
+  public @NotNull String getBindAddress() {
     return bindAddress;
   }
 
   /**
    * @since GemFire 5.7
    */
-  public String getHostnameForClients() {
+  public @NotNull String getHostnameForClients() {
     return hostnameForClients;
   }
 
-  public String getMemberName() {
-    if (membername == null) {
-      membername = DistributionConfig.DEFAULT_NAME;
-    }
-    return membername;
+  public @NotNull String getMemberName() {
+    return memberName;
   }
 
   public long getTimeStamp() {
     return timestamp;
   }
 
-  // private String hostNameToString() {
-  // if (this.host.isMulticastAddress()) {
-  // return this.host.getHostAddress();
-  // } else {
-  // return this.host.getHostName();
-  // }
-  // }
-
-  /** Returns the default bindAddress if bindAddress is null. */
-  private String validateBindAddress(String bindAddress) {
-    if (bindAddress == null) {
-      return DistributionConfig.DEFAULT_BIND_ADDRESS;
-    }
-    return bindAddress;
-  }
-
-  /**
-   * Returns a string representation of the object.
-   *
-   * @return a string representation of the object
-   */
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-
-    // If hostnameForClients is set, use that
-    if (hostnameForClients != null && hostnameForClients.length() > 0) {
-      sb.append(hostnameForClients);
-    } else if (bindAddress != null && bindAddress.length() > 0) {
-      // if bindAddress then use that instead of host...
-      sb.append(bindAddress);
-    } else {
-      if (isMcastId()) {
-        sb.append(host.getHostAddress());
-      } else {
-        sb.append(SocketCreator.getHostName(host));
-      }
-    }
-
-    sb.append("[").append(port).append("]");
-    return sb.toString();
+    return "DistributionLocatorId{" +
+        "host=" + host +
+        ", port=" + port +
+        ", bindAddress='" + bindAddress + '\'' +
+        ", sslConfig=" + sslConfig +
+        ", hostnameForClients='" + hostnameForClients + '\'' +
+        ", hostname='" + hostname + '\'' +
+        ", memberName='" + memberName + '\'' +
+        ", timestamp=" + timestamp +
+        '}';
   }
 
-  /**
-   * Indicates whether some other object is "equal to" this one.
-   *
-   * @param other the reference object with which to compare.
-   * @return true if this object is the same as the obj argument; false otherwise.
-   *
-   */
   @Override
-  public boolean equals(Object other) {
-    if (other == this) {
+  public boolean equals(final Object o) {
+    if (this == o) {
       return true;
     }
-    if (other == null) {
+    if (!(o instanceof DistributionLocatorId)) {
       return false;
     }
-    if (!(other instanceof DistributionLocatorId)) {
-      return false;
-    }
-    final DistributionLocatorId that = (DistributionLocatorId) other;
+    final DistributionLocatorId that = (DistributionLocatorId) o;
+    return port == that.port && Objects.equals(host, that.host) && bindAddress.equals(
+        that.bindAddress);
+  }
 
-    if (!Objects.equals(host, that.host)) {
-      return false;
-    }
-    if (port != that.port) {
-      return false;
-    }
-    return StringUtils.equals(bindAddress, that.bindAddress);
+  @Override
+  public int hashCode() {
+    int result = 17;
+    final int mult = 37;
+
+    result = mult * result + host.hashCode();
+    result = mult * result + port;
+    result = mult * result + bindAddress.hashCode();
+
+    return result;
   }
 
   /**
@@ -436,64 +377,46 @@ public class DistributionLocatorId implements java.io.Serializable {
   }
 
   /**
-   * Returns a hash code for the object. This method is supported for the benefit of hashtables such
-   * as those provided by java.util.Hashtable.
-   *
-   * @return the integer 0 if description is null; otherwise a unique integer.
+   * Required to initialize non-null values for transient or missing fields.
    */
-  @Override
-  public int hashCode() {
-    int result = 17;
-    final int mult = 37;
+  private void readObject(ObjectInputStream in) throws ClassNotFoundException, IOException {
+    in.defaultReadObject();
 
-    result = mult * result + (host == null ? 0 : host.hashCode());
-    result = mult * result + port;
-    result = mult * result + (bindAddress == null ? 0 : bindAddress.hashCode());
-
-    return result;
+    sslConfig = sslConfigOrDefault(null);
+    memberName = memberNameOrDefault(memberName);
   }
 
-  /**
-   * Converts a collection of {@link Locator} instances to a collection of DistributionLocatorId
-   * instances. Note this will use {@link LocalHostUtil#getLocalHost()} as the host for
-   * DistributionLocatorId. This is because all instances of Locator are local only.
-   *
-   * @param locators collection of Locator instances
-   * @return collection of DistributionLocatorId instances
-   * @see Locator
-   */
-  public static Collection<DistributionLocatorId> asDistributionLocatorIds(
-      Collection<Locator> locators) throws UnknownHostException {
-    if (locators.isEmpty()) {
-      return Collections.emptyList();
-    }
-    Collection<DistributionLocatorId> locatorIds = new ArrayList<>();
-    for (Locator locator : locators) {
-      DistributionLocatorId locatorId =
-          new DistributionLocatorId(LocalHostUtil.getLocalHost(), locator);
-      locatorIds.add(locatorId);
-    }
-    return locatorIds;
+  private static @NotNull String bindAddressOrDefault(final @Nullable String bindAddress) {
+    return defaultIfNull(bindAddress, DistributionConfig.DEFAULT_BIND_ADDRESS);
   }
 
-  /**
-   * Marshals a collection of {@link Locator} instances to a collection of DistributionLocatorId
-   * instances. Note this will use {@link LocalHostUtil#getLocalHost()} as the host for
-   * DistributionLocatorId. This is because all instances of Locator are local only.
-   *
-   * @param locatorIds collection of DistributionLocatorId instances
-   * @return collection of String instances
-   * @see #marshal()
-   */
-  public static Collection<String> asStrings(Collection<DistributionLocatorId> locatorIds) {
-    if (locatorIds.isEmpty()) {
-      return Collections.emptyList();
+  private static @NotNull SSLConfig sslConfigOrDefault(final @Nullable SSLConfig sslConfig) {
+    return getIfNull(sslConfig, () -> SSLConfig.builder().build());
+  }
+
+  private static @NotNull String memberNameOrDefault(final @Nullable String memberName) {
+    return defaultIfNull(memberName, DistributionConfig.DEFAULT_NAME);
+  }
+
+  private static @NotNull InetAddress getLocalHostOrThrow() {
+    try {
+      return LocalHostUtil.getLocalHost();
+    } catch (UnknownHostException e) {
+      throw new InternalGemFireException("Failed getting local host", e);
     }
-    Collection<String> strings = new ArrayList<>();
-    for (DistributionLocatorId locatorId : locatorIds) {
-      strings.add(locatorId.marshal());
+  }
+
+  private static @Nullable InetAddress getInetAddressOrNull(@NotNull String hostname) {
+    try {
+      return InetAddress.getByName(hostname);
+    } catch (UnknownHostException ignore) {
     }
-    return strings;
+    return null;
+  }
+
+  private static @Nullable String substringAfterFoundOrNull(final @NotNull String value,
+      final int found, final int end) {
+    return found < 0 ? null : value.substring(found + 1, end);
   }
 
 }

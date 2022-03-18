@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.admin.remote;
 
+import static java.util.Collections.emptySet;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
@@ -48,14 +50,14 @@ public class RemoteTransportConfig implements TransportConfig {
   private final boolean tcpDisabled;
   private final boolean disableAutoReconnect;
   private final DistributionLocatorId mcastId;
-  private final Set ids;
+  private final Set<DistributionLocatorId> ids;
   private final String bindAddress;
   private final SSLConfig sslConfig;
   private final String membershipPortRange;
   private final int tcpPort;
   private boolean isReconnectingDS;
   private MembershipInformation oldDSMembershipInfo;
-  private int vmKind = -1;
+  private final int vmKind;
 
   // -------------------------------------------------------------------------
   // Constructor(s)
@@ -100,15 +102,14 @@ public class RemoteTransportConfig implements TransportConfig {
     // See what type of discovery is being used
     if (initialHosts.length() == 0) {
       // loner system
-      ids = Collections.EMPTY_SET;
-      return;
+      ids = emptySet();
     } else {
-      HashSet locators = new HashSet();
+      Set<DistributionLocatorId> locators = new HashSet<>();
       StringTokenizer stringTokenizer = new StringTokenizer(initialHosts, ",");
       while (stringTokenizer.hasMoreTokens()) {
         String locator = stringTokenizer.nextToken();
         if (StringUtils.isNotEmpty(locator)) {
-          locators.add(new DistributionLocatorId(locator));
+          locators.add(DistributionLocatorId.unmarshal(locator));
         }
       }
 
@@ -116,9 +117,6 @@ public class RemoteTransportConfig implements TransportConfig {
         locators.add(mcastId);
       }
       ids = Collections.unmodifiableSet(locators);
-      if (mcastEnabled) {
-        Assert.assertTrue(mcastId != null);
-      }
     }
   }
 
@@ -126,9 +124,9 @@ public class RemoteTransportConfig implements TransportConfig {
    * Constructs a transport config given a collection of {@link DistributionLocatorId} instances.
    */
   public RemoteTransportConfig(boolean isMcastEnabled, boolean isTcpDisabled,
-      boolean isAutoReconnectDisabled, String bindAddress, SSLConfig sslConfig, Collection ids,
+      boolean isAutoReconnectDisabled, String bindAddress, SSLConfig sslConfig,
+      Collection<DistributionLocatorId> ids,
       String membershipPortRange, int tcpPort, int vmKind) {
-    DistributionLocatorId mid = null;
 
     if (bindAddress == null) {
       this.bindAddress = DistributionConfig.DEFAULT_BIND_ADDRESS;
@@ -141,23 +139,20 @@ public class RemoteTransportConfig implements TransportConfig {
     mcastEnabled = isMcastEnabled;
     tcpDisabled = isTcpDisabled;
     disableAutoReconnect = isAutoReconnectDisabled;
+
+    DistributionLocatorId mid = null;
     if (isMcastEnabled) {
-      if (ids.size() < 1) {
-        throw new IllegalArgumentException(
-            "expected at least one host/port id");
+      if (ids.isEmpty()) {
+        throw new IllegalArgumentException("expected at least one host/port id");
       }
-      Iterator it = ids.iterator();
-      while (it.hasNext() && mid == null) {
-        DistributionLocatorId id = (DistributionLocatorId) it.next();
+      for (final DistributionLocatorId id : ids) {
         if (id.isMcastId()) {
           mid = id;
-          // System.out.println("mcast id: " + id);
-        } else {
-          // System.out.println("non-mcast id: " + id);
+          break;
         }
       }
     }
-    this.ids = Collections.unmodifiableSet(new HashSet(ids));
+    this.ids = Collections.unmodifiableSet(new HashSet<>(ids));
     mcastId = mid;
     if (mcastEnabled) {
       Assert.assertTrue(mcastId != null);
@@ -185,7 +180,7 @@ public class RemoteTransportConfig implements TransportConfig {
    * Returns the set of DistributionLocatorId instances that define this transport. The set is
    * unmodifiable.
    */
-  public Set getIds() {
+  public Set<DistributionLocatorId> getIds() {
     return ids;
   }
 
@@ -267,11 +262,11 @@ public class RemoteTransportConfig implements TransportConfig {
     }
     // Create locator string
     StringBuilder locators = new StringBuilder();
-    for (Iterator iter = ids.iterator(); iter.hasNext();) {
-      DistributionLocatorId locator = (DistributionLocatorId) iter.next();
+    for (Iterator<DistributionLocatorId> iter = ids.iterator(); iter.hasNext();) {
+      DistributionLocatorId locator = iter.next();
       if (!locator.isMcastId()) {
         String baddr = locator.getBindAddress();
-        if (baddr != null && baddr.trim().length() > 0) {
+        if (!isBlank(baddr)) {
           locators.append(baddr);
         } else {
           locators.append(locator.getHostName());
@@ -304,9 +299,8 @@ public class RemoteTransportConfig implements TransportConfig {
   private String toString(boolean noMcast) {
     StringBuilder result = new StringBuilder();
     boolean first = true;
-    for (final Object id : ids) {
-      DistributionLocatorId dli = (DistributionLocatorId) id;
-      if (noMcast && dli.isMcastId()) {
+    for (final DistributionLocatorId id : ids) {
+      if (noMcast && id.isMcastId()) {
         continue;
       }
       if (!first) {
@@ -314,18 +308,10 @@ public class RemoteTransportConfig implements TransportConfig {
       } else {
         first = false;
       }
-      result.append(dli.toString());
+      result.append(id.toString());
     }
     return result.toString();
   }
-
-  /**
-   * returns a locators string suitable for use in locators= in gemfire.properties
-   */
-  public String locatorsString() {
-    return toString(true);
-  }
-
 
   // -------------------------------------------------------------------------
   // Methods overridden from java.lang.Object
@@ -338,7 +324,7 @@ public class RemoteTransportConfig implements TransportConfig {
 
   @Override
   public boolean equals(Object o) {
-    if (o != null && o instanceof RemoteTransportConfig) {
+    if (o instanceof RemoteTransportConfig) {
       RemoteTransportConfig other = (RemoteTransportConfig) o;
       return (mcastEnabled == other.mcastEnabled) && ids.equals(other.ids);
     }

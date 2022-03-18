@@ -24,7 +24,6 @@ import java.net.UnknownHostException;
 
 import org.junit.jupiter.api.Test;
 
-import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.inet.LocalHostUtil;
@@ -50,13 +49,13 @@ class DistributionLocatorIdTest {
   @Test
   void testEquals_and_DetailCompare() {
     DistributionLocatorId distributionLocatorId1 =
-        new DistributionLocatorId(40404, "127.0.0.1", null);
+        new DistributionLocatorId(40404, "127.0.0.1", null, null);
     DistributionLocatorId distributionLocatorId2 =
         new DistributionLocatorId(40404, "127.0.0.1", "127.0.1.0", "member2");
     DistributionLocatorId distributionLocatorId3 =
         new DistributionLocatorId(40404, "127.0.0.1", null, "member3");
     DistributionLocatorId distributionLocatorId4 =
-        new DistributionLocatorId(distributionLocatorId3.marshal());
+        DistributionLocatorId.unmarshal(distributionLocatorId3.marshal());
 
     assertThat(distributionLocatorId1).isEqualTo(distributionLocatorId2);
     assertThat(distributionLocatorId1).isEqualTo(distributionLocatorId3);
@@ -74,44 +73,45 @@ class DistributionLocatorIdTest {
   }
 
   @Test
-  void toStringReturnsMarshaledAddressWhenConstructedWithMarshaledAddress() {
-    final DistributionLocatorId locatorId = new DistributionLocatorId("localhost[1234]");
+  void marshalForClientsMarshaledAddressWhenConstructedWithMarshaledAddress() {
+    final DistributionLocatorId locatorId = DistributionLocatorId.unmarshal("localhost[1234]");
 
-    assertThat(locatorId).hasToString("localhost[1234]");
+    assertThat(locatorId.marshalForClients()).isEqualTo("localhost[1234]");
   }
 
   @Test
-  void toStringReturnsHostnameForClientsWhenConstructedWithHostnameForClients() {
+  void marshalForClientsHostnameForClientsWhenConstructedWithHostnameForClients() {
     final DistributionLocatorId locatorId =
         new DistributionLocatorId(1234, "bind-address.example.com",
-            "hostname-for-clients.example.com");
+            "hostname-for-clients.example.com", null);
 
-    assertThat(locatorId).hasToString("hostname-for-clients.example.com[1234]");
+    assertThat(locatorId.marshalForClients()).isEqualTo("hostname-for-clients.example.com[1234]");
   }
 
   @Test
-  void toStringReturnsBindAddressWhenConstructedWithBindAddress() {
+  void marshalForClientsBindAddressWhenConstructedWithBindAddress() {
     final DistributionLocatorId locatorId =
-        new DistributionLocatorId(1234, "bind-address.example.com");
+        new DistributionLocatorId(1234, "bind-address.example.com", null, null);
 
-    assertThat(locatorId).hasToString("bind-address.example.com[1234]");
+    assertThat(locatorId.marshalForClients()).isEqualTo("bind-address.example.com[1234]");
   }
 
   @Test
-  void toStringReturnsLocalHostNameWhenLocatorBindAddressAndHostnameForClientNotSet()
+  void marshalForClientsLocalHostNameWhenLocatorBindAddressAndHostnameForClientNotSet()
       throws UnknownHostException {
     final InetAddress localHost = LocalHostUtil.getLocalHost();
 
-    final Locator locator = mock(InternalLocator.class);
+    final InternalLocator locator = mock(InternalLocator.class);
     when(locator.getPort()).thenReturn(1234);
 
     final DistributionLocatorId locatorId = new DistributionLocatorId(localHost, locator);
 
-    assertThat(locatorId).hasToString(localHost.getCanonicalHostName() + "[1234]");
+    assertThat(locatorId.marshalForClients())
+        .isEqualTo(localHost.getCanonicalHostName() + "[1234]");
   }
 
   @Test
-  void toStringReturnsBindAddressWhenLocatorBindAddressSetAndHostnameForClientNotSet()
+  void marshalForClientsBindAddressWhenLocatorBindAddressSetAndHostnameForClientNotSet()
       throws UnknownHostException {
     final InetAddress localHost = LocalHostUtil.getLocalHost();
 
@@ -121,11 +121,11 @@ class DistributionLocatorIdTest {
 
     final DistributionLocatorId locatorId = new DistributionLocatorId(localHost, locator);
 
-    assertThat(locatorId).hasToString("bind-address.example.com[1234]");
+    assertThat(locatorId.marshalForClients()).isEqualTo("bind-address.example.com[1234]");
   }
 
   @Test
-  void toStringReturnsBindAddressWhenLocatorBindAddressAndHostnameForClientSet()
+  void marshalForClientsBindAddressWhenLocatorBindAddressAndHostnameForClientSet()
       throws UnknownHostException {
     final InetAddress localHost = LocalHostUtil.getLocalHost();
 
@@ -136,6 +136,6 @@ class DistributionLocatorIdTest {
 
     final DistributionLocatorId locatorId = new DistributionLocatorId(localHost, locator);
 
-    assertThat(locatorId).hasToString("hostname-for-clients.example.com[1234]");
+    assertThat(locatorId.marshalForClients()).isEqualTo("hostname-for-clients.example.com[1234]");
   }
 }
