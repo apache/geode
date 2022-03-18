@@ -79,6 +79,8 @@ java_test_versions:
   version: 8
 - name: openjdk11
   version: 11
+- name: openjdk17
+  version: 17
 
 metadata:
   initial_version: 1.15.0-((semver-prerelease-token)).0

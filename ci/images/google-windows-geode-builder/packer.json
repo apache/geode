@@ -78,6 +78,8 @@
         "Set-ExecutionPolicy Bypass -Scope Process -Force",
         "choco install -y git cygwin cyg-get liberica11jdk",
         "Move-Item \"C:\\Program Files\\BellSoft\\LibericaJDK-11*\" c:\\java11",
+        "choco install -y liberica17jdk",
+        "Move-Item \"C:\\Program Files\\BellSoft\\LibericaJDK-17*\" c:\\java17",
         "choco install -y liberica8jdk",
         "Move-Item \"C:\\Program Files\\BellSoft\\LibericaJDK-8*\" c:\\java8",
         "choco install openssh -params '/SSHServerFeature' -confirm",

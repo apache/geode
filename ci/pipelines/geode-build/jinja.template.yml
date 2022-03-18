@@ -91,7 +91,7 @@ GRADLE_GLOBAL_ARGS: ((gradle-global-args))
 
 {% macro all_gating_jobs() %}
   {%- for test in (tests) if not test.name=="stress-new" -%}
-  {%- for java_test_version in (java_test_versions) if ((not test.ONLY_JDK is defined) or test.ONLY_JDK==java_test_version.version) %}
+  {%- for java_test_version in (java_test_versions) if ((not test.ONLY_JDK is defined) or test.ONLY_JDK==java_test_version.version) and java_test_version.version!=17 %}
 - {{test.name}}-test-{{java_test_version.name}}
   {%- endfor -%}
   {%- endfor -%}
