@@ -78,4 +78,51 @@ public class RegionAdvisorJUnitTest {
     verify(bucketAdvisor, times(0)).removeIdWithSerial(any(InternalDistributedMember.class),
         anyInt(), anyBoolean());
   }
+
+  @Test
+  public void testRemoveIdAndBucketWithNonNullPreInitQueue() {
+    int bucketId = 0;
+    int serial = 1234;
+    boolean regionDestroyed = true;
+    InternalDistributedMember memberId = mock(InternalDistributedMember.class);
+    DistributionManager distributionManager = mock(DistributionManager.class);
+    when(regionAdvisor.getDistributionManager()).thenReturn(distributionManager);
+    when(distributionManager.isCurrentMember(any())).thenReturn(true);
+    ProxyBucketRegion proxyBucketRegion = mock(ProxyBucketRegion.class);
+    BucketAdvisor bucketAdvisor = mock(BucketAdvisor.class);
+    when(proxyBucketRegion.getBucketAdvisor()).thenReturn(bucketAdvisor);
+    regionAdvisor.buckets = new ProxyBucketRegion[] {proxyBucketRegion};
+
+    assertThat(regionAdvisor.preInitQueue).isNotNull();
+    regionAdvisor.removeIdAndBucket(bucketId, memberId, serial, regionDestroyed);
+    assertThat(regionAdvisor.preInitQueue).isNotNull();
+    assertThat(regionAdvisor.preInitQueue.size()).isEqualTo(1);
+    regionAdvisor.processProfilesQueuedDuringInitialization();
+    assertThat(regionAdvisor.preInitQueue).isNull();
+    verify(bucketAdvisor, times(1)).removeIdWithSerial(memberId,
+        serial, regionDestroyed);
+  }
+
+  @Test
+  public void testRemoveIdAndBucketWithNullPreInitQueue() {
+    int bucketId = 0;
+    int serial = 5678;
+    boolean regionDestroyed = true;
+    InternalDistributedMember memberId = mock(InternalDistributedMember.class);
+    DistributionManager distributionManager = mock(DistributionManager.class);
+    when(regionAdvisor.getDistributionManager()).thenReturn(distributionManager);
+    when(distributionManager.isCurrentMember(any())).thenReturn(true);
+    ProxyBucketRegion proxyBucketRegion = mock(ProxyBucketRegion.class);
+    BucketAdvisor bucketAdvisor = mock(BucketAdvisor.class);
+    when(proxyBucketRegion.getBucketAdvisor()).thenReturn(bucketAdvisor);
+    regionAdvisor.buckets = new ProxyBucketRegion[] {proxyBucketRegion};
+
+    assertThat(regionAdvisor.preInitQueue).isNotNull();
+    regionAdvisor.processProfilesQueuedDuringInitialization();
+    assertThat(regionAdvisor.preInitQueue).isNull();
+    regionAdvisor.removeIdAndBucket(bucketId, memberId, serial, regionDestroyed);
+    assertThat(regionAdvisor.preInitQueue).isNull();
+    verify(bucketAdvisor, times(1)).removeIdWithSerial(memberId,
+        serial, regionDestroyed);
+  }
 }

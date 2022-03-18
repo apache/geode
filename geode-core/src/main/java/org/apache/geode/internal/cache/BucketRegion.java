@@ -2544,4 +2544,13 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         versionTag, tailKey);
   }
 
+  @Override
+  Set<InternalDistributedMember> getDestroyRegionRecipients() {
+    // For DestroyRegionMessage that only removes bucket profile, send it to all
+    // the other members including member that is in the process of creating the
+    // partitioned region, this is to avoid leaving stale bucket profile undeleted
+    // on the member that is still in the process of creating the partitioned region
+    return getSystem().getDistributionManager().getOtherDistributionManagerIds();
+  }
+
 }

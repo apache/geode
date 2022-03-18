@@ -180,19 +180,23 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
               logger.trace(LogMarker.DISTRIBUTION_ADVISOR_VERBOSE,
                   "applying queued profile removal for all buckets for {}", qbp.memberId);
             }
-            for (int i = 0; i < buckets.length; i++) {
-              BucketAdvisor ba = buckets[i].getBucketAdvisor();
-              int serial = qbp.serials[i];
-              if (serial != ILLEGAL_SERIAL) {
-                ba.removeIdWithSerial(qbp.memberId, serial, qbp.destroyed);
-              }
-            } // for
+            if (qbp.serials.length == 1 && qbp.serials[0] != ILLEGAL_SERIAL) {
+              buckets[qbp.bucketId].getBucketAdvisor().removeIdWithSerial(qbp.memberId,
+                  qbp.serials[0], qbp.destroyed);
+            } else {
+              for (int i = 0; i < buckets.length; i++) {
+                BucketAdvisor ba = buckets[i].getBucketAdvisor();
+                int serial = qbp.serials[i];
+                if (serial != ILLEGAL_SERIAL) {
+                  ba.removeIdWithSerial(qbp.memberId, serial, qbp.destroyed);
+                }
+              } // for
+            }
           } // apply removal for member still in the view
         } // while
         finishedInitQueue = true;
       } finally {
         preInitQueue = null; // prevent further additions to the queue
-        preInitQueueMonitor.notifyAll();
         if (!finishedInitQueue && !getAdvisee().getCancelCriterion().isCancelInProgress()) {
           logger.error("Failed to process all queued BucketProfiles for {}",
               getAdvisee());
@@ -423,6 +427,23 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       }
 
       super.removeIdWithSerial(memberId, prSerial, regionDestroyed);
+    }
+  }
+
+  public void removeIdAndBucket(int bucketId, InternalDistributedMember memberId, int serial,
+      boolean regionDestroyed) {
+    synchronized (preInitQueueMonitor) {
+      if (preInitQueue != null) {
+        // Queue profile during pre-initialization
+        QueuedBucketProfile qbf =
+            new QueuedBucketProfile(bucketId, memberId, serial, regionDestroyed);
+        preInitQueue.add(qbf);
+        return;
+      }
+    }
+
+    if (buckets != null) {
+      buckets[bucketId].getBucketAdvisor().removeIdWithSerial(memberId, serial, regionDestroyed);
     }
   }
 
@@ -1002,36 +1023,6 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
   }
 
   /**
-   * Returns the bucket identified by bucketId after waiting for initialization to finish processing
-   * queued profiles. Call synchronizes and waits on {@link #preInitQueueMonitor}.
-   *
-   * @param bucketId the bucket identifier
-   * @return the bucket identified by bucketId
-   * @throws org.apache.geode.distributed.DistributedSystemDisconnectedException if interrupted for
-   *         shutdown cancellation
-   */
-  public Bucket getBucketPostInit(int bucketId) {
-    synchronized (preInitQueueMonitor) {
-      boolean interrupted = false;
-      try {
-        while (preInitQueue != null) {
-          try {
-            preInitQueueMonitor.wait(); // spurious wakeup ok
-          } catch (InterruptedException e) {
-            interrupted = true;
-            getAdvisee().getCancelCriterion().checkCancelInProgress(e);
-          }
-        }
-      } finally {
-        if (interrupted) {
-          Thread.currentThread().interrupt();
-        }
-      }
-    }
-    return getBucket(bucketId);
-  }
-
-  /**
    * Get the most recent primary node for the bucketId. Returns null if no primary can be found
    * within {@link DistributionConfig#getMemberTimeout}.
    *
@@ -1459,6 +1450,19 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
       memberDeparted = false;
       memberId = mbr;
       this.serials = serials;
+      this.destroyed = destroyed;
+      fromMembershipListener = false;
+    }
+
+    QueuedBucketProfile(int bucketId, InternalDistributedMember mbr, int serial,
+        boolean destroyed) {
+      this.bucketId = bucketId;
+      bucketProfile = null;
+      isRemoval = true;
+      crashed = false;
+      memberDeparted = false;
+      memberId = mbr;
+      this.serials = new int[] {serial};
       this.destroyed = destroyed;
       fromMembershipListener = false;
     }

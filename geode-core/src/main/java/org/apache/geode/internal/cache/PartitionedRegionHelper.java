@@ -671,11 +671,10 @@ public class PartitionedRegionHelper {
    * Find a ProxyBucketRegion by parsing the region fullPath
    *
    * @param fullPath full region path to parse
-   * @param postInit true if caller should wait for bucket initialization to complete
    * @return ProxyBucketRegion as Bucket or null if not found
    * @throws PRLocallyDestroyedException if the PartitionRegion is locally destroyed
    */
-  public static Bucket getProxyBucketRegion(Cache cache, String fullPath, boolean postInit)
+  public static Bucket getProxyBucketRegion(Cache cache, String fullPath)
       throws PRLocallyDestroyedException {
     if (cache == null) {
       // No cache
@@ -706,15 +705,38 @@ public class PartitionedRegionHelper {
 
     int bid = getBucketId(bucketName);
     RegionAdvisor ra = (RegionAdvisor) pr.getDistributionAdvisor();
-    if (postInit) {
-      return ra.getBucketPostInit(bid);
-    } else if (!ra.areBucketsInitialized()) {
+    if (!ra.areBucketsInitialized()) {
       // While the RegionAdvisor may be available, it's bucket meta-data may not be constructed yet
       return null;
     } else {
       return ra.getBucket(bid);
     }
 
+  }
+
+  public static PartitionedRegion getPartitionedRegionUsingBucketRegionName(Cache cache,
+      String fullPath) {
+    if (cache == null) {
+      // No cache
+      return null;
+    }
+    // fullPath = /__PR/_B_1_10
+    String bucketName = getBucketName(fullPath);
+    if (bucketName == null) {
+      return null;
+    }
+    String prid = getPRPath(bucketName);
+    Region region;
+    final InitializationLevel oldLevel = LocalRegion.setThreadInitLevelRequirement(ANY_INIT);
+    try {
+      region = cache.getRegion(prid);
+    } finally {
+      LocalRegion.setThreadInitLevelRequirement(oldLevel);
+    }
+    if (!(region instanceof PartitionedRegion)) {
+      return null;
+    }
+    return (PartitionedRegion) region;
   }
 
   private static final String BUCKET_FULL_PATH_PREFIX =
