@@ -17,7 +17,7 @@
 package org.apache.geode.redis.internal.data.delta;
 
 public enum DeltaType {
-  ADD_BYTE_ARRAYS,
+  ADD_BYTE_ARRAYS(true),
   ADD_BYTE_ARRAYS_TAIL(true),
   ADD_BYTE_ARRAY_PAIRS,
   ADD_BYTE_ARRAY_DOUBLE_PAIRS,
