@@ -3518,6 +3518,18 @@ public class WANTestBase extends DistributedTestCase {
     return numEntries;
   }
 
+  public static int getNumOfPossibleDuplicateEvents(final String senderId) {
+    GatewaySender sender = getGatewaySender(senderId);
+    RegionQueue regionQueue;
+    int numEntries = 0;
+    if (sender.isParallel()) {
+      regionQueue = ((AbstractGatewaySender) sender).getQueues().toArray(new RegionQueue[1])[0];
+      numEntries =
+          ((ConcurrentParallelGatewaySenderQueue) regionQueue).getNumOfPossibleDuplicateEvents();
+    }
+    return numEntries;
+  }
+
   public static void verifyTmpDroppedEventSize(String senderId, int size) {
     GatewaySender sender = getGatewaySender(senderId);
 

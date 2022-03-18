@@ -1778,6 +1778,27 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     return numEntriesInVM;
   }
 
+  @VisibleForTesting
+  public int getNumOfPossibleDuplicateEvents() {
+    int numberOfPossibleDuplicateEvents = 0;
+
+    for (PartitionedRegion prQ : userRegionNameToShadowPRMap.values()) {
+      Set<BucketRegion> primaryBuckets = prQ.getDataStore().getAllLocalPrimaryBucketRegions();
+      for (BucketRegion br : primaryBuckets) {
+        BucketRegionQueue brq = (BucketRegionQueue) br;
+        List<Object> objects = brq.getHelperQueueList();
+
+        for (Object o : objects) {
+          GatewaySenderEventImpl gse = (GatewaySenderEventImpl) o;
+          if (gse.getPossibleDuplicate()) {
+            numberOfPossibleDuplicateEvents++;
+          }
+        }
+      }
+    }
+    return numberOfPossibleDuplicateEvents;
+  }
+
   /**
    * This method does the cleanup of any threads, sockets, connection that are held up by the queue.
    * Note that this cleanup doesn't clean the data held by the queue.
