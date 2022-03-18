@@ -17,7 +17,7 @@
 
 benchmarks:
   baseline_branch_default: ''
-  baseline_version_default: '1.14.3'
+  baseline_version_default: '1.14.4'
   benchmark_branch: ((geode-build-branch))
   flavors:
   - title: 'base'
@@ -36,8 +36,8 @@ benchmarks:
     max_in_flight: 2
     timeout: 10h
   - title: 'radish'
-    baseline_branch: 'geode-for-redis-benchmark-baseline'
-    baseline_version: ''
+    baseline_branch: ''
+    baseline_version: '1.14.4'
     flag: '-PtestJVM=/usr/lib/jvm/bellsoft-java11-amd64 -Pbenchmark.withRedisCluster=geode -Pbenchmark.withServerCount=2'
     options: '--tests=org.apache.geode.benchmark.redis.tests.*'
     max_in_flight: 2
