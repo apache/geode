@@ -132,7 +132,7 @@ public class RedisList extends AbstractRedisData {
   }
 
   /**
-   * @param elementToInsert element to insert into the set
+   * @param elementToInsert element to insert into the list
    * @param referenceElement element to insert next to
    * @param before true if inserting before reference element, false if it is after
    * @param region the region this instance is store in
