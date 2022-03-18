@@ -179,17 +179,22 @@ for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ${GEODE_BENCHMARKS} ; do
 done
 
 
-for server in dlcdn.apache.org/geode downloads.apache.org/geode repo1.maven.org/maven2/org/apache/geode/apache-geode ; do
+function waitforserver {
+  server="$1"
+  msg="$2"
   file=apache-geode-${VERSION}.tgz
   baseurl=https://${server}/${VERSION}/${file}
   echo ""
   echo "============================================================"
   echo "Waiting for ${baseurl} to appear..."
-  if  echo "${server}" | grep -q repo1 ; then
+  if echo "${server}" | grep -q repo1 ; then
     echo "(may take up to one hour after clicking 'Release' on http://repository.apache.org/ )"
+  elif echo "${server}" | grep -q dlcdn ; then
+    echo "(may take a few hours)"
   else
     echo "(may take up to 15 minutes)"
   fi
+  [ -z "$msg" ] || echo "$msg"
   echo "============================================================"
   for suffix in "" .asc .sha256 ; do
     if [ "${suffix}" = ".sha256" ] && echo "${server}" | grep -q repo1 ; then
@@ -197,8 +202,12 @@ for server in dlcdn.apache.org/geode downloads.apache.org/geode repo1.maven.org/
     fi
     url=${baseurl}${suffix}
     expectedsize=$(cd ${SVN_DIR}/../../release/geode/${VERSION}; ls -l ${file}${suffix} | awk '{print $5}')
+    if [ -z "$expectedsize" ] ; then
+      echo "internal error: unable to get size of ${SVN_DIR}/../../release/geode/${VERSION}/${file}${suffix}"
+      exit 1
+    fi
     actualsize=0
-    while [ $expectedsize -ne $actualsize ] ; do
+    while [ "$expectedsize" -ne "$actualsize" ] ; do
       while ! curl -sk --output /dev/null --head --fail "$url"; do
         echo -n .
         sleep 12
@@ -207,7 +216,9 @@ for server in dlcdn.apache.org/geode downloads.apache.org/geode repo1.maven.org/
     done
     echo "$url exists and is correct size"
   done
-done
+}
+
+waitforserver "downloads.apache.org/geode"
 
 
 echo ""
@@ -266,7 +277,10 @@ rm Dockerfile.bak
 set -x
 git add Dockerfile
 git diff --staged --color | cat
-git commit -m "$JIRA: update Dockerfile to apache-geode ${VERSION}"
+git commit -m "$JIRA: update Dockerfile to apache-geode ${VERSION}
+
+The Dockerfile is updated _after_ the release is already tagged,
+because it needs to embed the sha256 of the release"
 git push
 set +x
 
@@ -473,11 +487,18 @@ else
 fi
 rm settings.gradle.bak
 
+action="Add"
+ser=""
 if [ $PATCH -ne 0 ] ; then
   #if the serialization version has not changed, we can drop the previous patch
   if [ "$cursver" = "$prevsver" ] ; then
     sed -e "/'${PREV}'/d" -i.bak settings.gradle
     rm settings.gradle.bak
+    action="Replace ${PREV} with"
+    ser="
+
+The serialization version has not changed between ${PREV} and ${VERSION},
+so there should be no need to keep both"
   fi
 fi
 
@@ -497,9 +518,10 @@ fi
 set -x
 git add settings.gradle
 git diff --staged --color | cat
-git commit -m "$JIRA: Add ${VERSION} as old version
+git commit -m "$JIRA: ${action} ${VERSION} as old version
 
-Adds ${VERSION} to old versions${BENCHMSG} on develop"
+${action} ${VERSION} in old versions${BENCHMSG} on develop
+to enable rolling upgrade tests from ${VERSION}${ser}"
 git push -u myfork
 set +x
 
@@ -518,11 +540,18 @@ sed -e "s/].each/,\\
  '${VERSION}'].each/" \
   -i.bak settings.gradle
 rm settings.gradle.bak
+action="Add"
+ser=""
 if [ $PATCH -ne 0 ] ; then
   #if the serialization version has not changed, we can drop the previous patch
   if [ "$cursver" = "$prevsver" ] ; then
     sed -e "/'${PREV}'/d" -i.bak settings.gradle
     rm settings.gradle.bak
+    action="Replace ${PREV} with"
+    ser="
+
+The serialization version has not changed between ${PREV} and ${VERSION},
+so there should be no need to keep both"
   fi
 else
   #also update benchmark baseline for support branch to its new minor
@@ -541,9 +570,10 @@ fi
 set -x
 git add settings.gradle
 git diff --staged --color | cat
-git commit -m "$JIRA: Add ${VERSION} as old version
+git commit -m "$JIRA: ${action} ${VERSION} as old version
 
-Adds ${VERSION} to old versions${BENCHMSG2} on support/$VERSION_MM"
+${action} ${VERSION} in old versions${BENCHMSG2} on support/$VERSION_MM
+to enable rolling upgrade tests from ${VERSION}${ser}"
 git push
 set +x
 
@@ -585,7 +615,7 @@ echo "Removing old Geode versions from mirrors"
 echo "============================================================"
 set -x
 cd ${SVN_DIR}/../../release/geode
-svn update --set-depth immediates
+svn update
 #identify the latest patch release for "N-2" (the latest 3 major.minor releases), remove anything else from mirrors (all releases remain available on non-mirrored archive site)
 RELEASES_TO_KEEP=3
 set +x
@@ -609,6 +639,8 @@ touch ../did.remove
 DID_REMOVE=$(cat ../did.remove)
 rm ../keep ../did.remove
 
+
+waitforserver "repo1.maven.org/maven2/org/apache/geode/apache-geode"
 
 echo ""
 NEWVERSION="${VERSION_MM}.$(( PATCH + 1 ))"
@@ -659,3 +691,5 @@ echo 'Send email!  Note: MUST be sent from your @apache.org email address (see h
 ${0%/*}/print_announce_email.sh -v "${VERSION}" -f "${LATER}"
 echo ""
 which pbcopy >/dev/null && ${0%/*}/print_announce_email.sh -v "${VERSION}" -f "${LATER}" | pbcopy && echo "(copied to clipboard)"
+waitforserver "dlcdn.apache.org/geode" "Please wait for this to complete before sending the above [ANNOUNCE] email.
+All other tasks above can be completed now (while you wait for dlcdn)."

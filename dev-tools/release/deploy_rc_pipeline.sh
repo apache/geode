@@ -47,8 +47,14 @@ else
     exit 1
 fi
 
+if [[ $VERSION_MM =~ ^(1\.1[0-4])$ ]]; then
+  needscmake=""
+else
+  needscmake="-e s/echo.skipping.latest.cmake.//"
+fi
+
 PIPEYML=$PWD/rc-pipeline.yml
-cat << "EOF" | sed -e "s/<VERSION_MM>/${VERSION_MM}/" > $PIPEYML
+cat << "EOF" | sed -e "s/<VERSION_MM>/${VERSION_MM}/" $needscmake > $PIPEYML
 ---
 
 resources:
@@ -297,6 +303,12 @@ jobs:
               tar xzf geode-bin.tgz
               apt-get update || true
               DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake openssl doxygen build-essential libssl-dev zlib1g-dev
+
+              echo skipping latest cmake tmp=`mktemp`
+              echo skipping latest cmake curl -o ${tmp} -v -L https://github.com/Kitware/CMake/releases/download/v3.21.2/cmake-3.21.2-linux-x86_64.sh
+              echo skipping latest cmake bash ${tmp} --skip-license --prefix=/usr/local
+              echo skipping latest cmake rm -f ${tmp}
+
               #cmake wrongly assumes javah wasn't removed until JDK10, but adoptopenjdk removed it in JDK8
               echo '/opt/java/openjdk/bin/javac -h "$@"' > /opt/java/openjdk/bin/javah
               chmod +x /opt/java/openjdk/bin/javah
@@ -343,6 +355,12 @@ jobs:
               cd ..
               apt-get update || true
               DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y cmake openssl doxygen build-essential libssl-dev zlib1g-dev
+
+              echo skipping latest cmake tmp=`mktemp`
+              echo skipping latest cmake curl -o ${tmp} -v -L https://github.com/Kitware/CMake/releases/download/v3.21.2/cmake-3.21.2-linux-x86_64.sh
+              echo skipping latest cmake bash ${tmp} --skip-license --prefix=/usr/local
+              echo skipping latest cmake rm -f ${tmp}
+
               #cmake wrongly assumes javah wasn't removed until JDK10, but adoptopenjdk removed it in JDK8
               echo '/opt/java/openjdk/bin/javac -h "$@"' > /opt/java/openjdk/bin/javah
               chmod +x /opt/java/openjdk/bin/javah
@@ -503,10 +521,10 @@ jobs:
                 head -1 "${tld}/LICENSE" | grep -q "Apache License"
               }
               verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-${VERSION}-src          16000000  20000000
-              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-${VERSION}             120000000 135000000
+              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-${VERSION}             120000000 137000000
               verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-examples-${VERSION}-src   840000    900000
               verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-native-${VERSION}-src    2400000   3200000
-              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-benchmarks-${VERSION}-src  85000    115000
+              verifyArtifactSizeSignatureLicenseNoticeAndCopyright apache-geode-benchmarks-${VERSION}-src  85000    125000
               curl -L -s ${url}/ | awk '/>..</{next}/<li>/{gsub(/ *<[^>]*>/,"");print}' | sort > actual-file-list
               sort < exp > expected-file-list
               set +x
