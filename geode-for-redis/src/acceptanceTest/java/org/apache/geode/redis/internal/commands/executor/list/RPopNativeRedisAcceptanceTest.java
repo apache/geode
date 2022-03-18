@@ -11,38 +11,26 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
+package org.apache.geode.redis.internal.commands.executor.list;
 
-package org.apache.geode.redis.internal.data.delta;
 
-public enum DeltaType {
-  ADD_BYTE_ARRAYS,
-  ADD_BYTE_ARRAYS_TAIL(true),
-  ADD_BYTE_ARRAY_PAIRS,
-  ADD_BYTE_ARRAY_DOUBLE_PAIRS,
-  APPEND_BYTE_ARRAY(true),
-  REMOVE_BYTE_ARRAYS,
-  REPLACE_BYTE_ARRAYS,
-  REPLACE_BYTE_ARRAY_AT_OFFSET,
-  REPLACE_BYTE_ARRAY_DOUBLE_PAIRS,
-  REPLACE_BYTE_AT_OFFSET,
-  SET_BYTE_ARRAY,
-  SET_BYTE_ARRAY_AND_TIMESTAMP,
-  SET_TIMESTAMP,
-  REMOVE_ELEMENTS_BY_INDEX(true);
+import org.junit.ClassRule;
 
-  private final boolean versioned;
+import org.apache.geode.redis.NativeRedisClusterTestRule;
 
-  DeltaType() {
-    this(false);
+public class RPopNativeRedisAcceptanceTest extends AbstractRPopIntegrationTest {
+
+  @ClassRule
+  public static NativeRedisClusterTestRule redis = new NativeRedisClusterTestRule();
+
+  @Override
+  public int getPort() {
+    return redis.getExposedPorts().get(0);
   }
 
-  DeltaType(boolean versioned) {
-    this.versioned = versioned;
-  }
-
-  public boolean isVersioned() {
-    return versioned;
+  @Override
+  public void flushAll() {
+    redis.flushAll();
   }
 }

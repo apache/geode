@@ -76,4 +76,9 @@ class NullRedisList extends RedisList {
   public int llen() {
     return 0;
   }
+
+  @Override
+  public byte[] rpop(Region<RedisKey, RedisData> region, RedisKey key) {
+    return null;
+  }
 }

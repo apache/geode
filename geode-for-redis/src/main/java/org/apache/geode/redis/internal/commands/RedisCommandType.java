@@ -85,6 +85,7 @@ import org.apache.geode.redis.internal.commands.executor.list.LPushExecutor;
 import org.apache.geode.redis.internal.commands.executor.list.LPushXExecutor;
 import org.apache.geode.redis.internal.commands.executor.list.LRangeExecutor;
 import org.apache.geode.redis.internal.commands.executor.list.LSetExecutor;
+import org.apache.geode.redis.internal.commands.executor.list.RPopExecutor;
 import org.apache.geode.redis.internal.commands.executor.list.RPushExecutor;
 import org.apache.geode.redis.internal.commands.executor.pubsub.PsubscribeExecutor;
 import org.apache.geode.redis.internal.commands.executor.pubsub.PubSubExecutor;
@@ -399,6 +400,7 @@ public enum RedisCommandType {
       new Parameter().exact(4).flags(WRITE, DENYOOM)),
   RPUSH(new RPushExecutor(), Category.LIST, SUPPORTED,
       new Parameter().min(3).flags(WRITE, DENYOOM, FAST)),
+  RPOP(new RPopExecutor(), Category.LIST, SUPPORTED, new Parameter().exact(2).flags(WRITE, FAST)),
 
   /********** Publish Subscribe **********/
 

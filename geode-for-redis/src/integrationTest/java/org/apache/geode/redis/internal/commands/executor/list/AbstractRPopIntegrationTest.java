@@ -33,10 +33,9 @@ import redis.clients.jedis.Protocol;
 import org.apache.geode.redis.ConcurrentLoopingThreads;
 import org.apache.geode.redis.RedisIntegrationTest;
 
-public abstract class AbstractLPopIntegrationTest implements RedisIntegrationTest {
+public abstract class AbstractRPopIntegrationTest implements RedisIntegrationTest {
   public static final String KEY = "key";
   public static final String PREEXISTING_VALUE = "preexistingValue";
-  // TODO: make private when we implement Redis 6.2+ behavior for LPOP
   protected JedisCluster jedis;
 
   @Before
@@ -50,64 +49,73 @@ public abstract class AbstractLPopIntegrationTest implements RedisIntegrationTes
     jedis.close();
   }
 
-  // Overridden in LPopIntegrationTest until we implement Redis 6.2+ semantics
+  // Overridden in RPopIntegrationTest until we implement Redis 6.2+ semantics
   @Test
-  public void lpop_givenWrongNumOfArgs_returnsError() {
-    assertAtMostNArgs(jedis, Protocol.Command.LPOP, 2);
+  public void rpop_givenWrongNumOfArgs_returnsError() {
+    assertAtMostNArgs(jedis, Protocol.Command.RPOP, 2);
   }
 
   @Test
-  public void lpop_withNonListKey_Fails() {
-    jedis.set("string", PREEXISTING_VALUE);
-    assertThatThrownBy(() -> jedis.lpop("string")).hasMessage(ERROR_WRONG_TYPE);
+  public void rpop_withNonListKey_Fails() {
+    jedis.set("nonKey", PREEXISTING_VALUE);
+    assertThatThrownBy(() -> jedis.rpop("nonKey")).hasMessage(ERROR_WRONG_TYPE);
   }
 
   @Test
-  public void lpop_withNonExistentKey_returnsNull() {
-    assertThat(jedis.lpop("nonexistent")).isNull();
+  public void rpop_withNonExistentKey_returnsNull() {
+    assertThat(jedis.rpop("nonexistentKey")).isNull();
   }
 
   @Test
-  public void lpop_returnsLeftmostMember() {
+  public void rpop_returnsRightmostMember() {
     jedis.lpush(KEY, "e1", "e2");
-    String result = jedis.lpop(KEY);
-    assertThat(result).isEqualTo("e2");
+    String result = jedis.rpop(KEY);
+    assertThat(result).isEqualTo("e1");
   }
 
   @Test
-  public void lpop_removesKey_whenLastElementRemoved() {
-    final String keyWithTagForKeysCommand = "{tag}" + KEY;
-
-    jedis.lpush(keyWithTagForKeysCommand, "e1");
-    jedis.lpop(keyWithTagForKeysCommand);
-    assertThat(jedis.keys(keyWithTagForKeysCommand)).isEmpty();
-  }
-
-  @Test
-  public void lpop_removesKey_whenLastElementRemoved_multipleTimes() {
+  public void rpop_removesKey_whenLastElementRemoved() {
     jedis.lpush(KEY, "e1");
-    assertThat(jedis.lpop(KEY)).isEqualTo("e1");
-    assertThat(jedis.lpop(KEY)).isNull();
-    assertThat(jedis.lpop(KEY)).isNull();
+    jedis.rpop(KEY);
     assertThat(jedis.exists(KEY)).isFalse();
   }
 
   @Test
-  public void lpop_withConcurrentLPush_returnsCorrectValue() {
+  public void rpop_removesKey_whenLastElementRemoved_multipleTimes() {
+    jedis.lpush(KEY, "e1");
+    assertThat(jedis.rpop(KEY)).isEqualTo("e1");
+    assertThat(jedis.rpop(KEY)).isNull();
+    assertThat(jedis.exists(KEY)).isFalse();
+  }
+
+  @Test
+  public void rpop_removesElementsInCorrectOrder_onRepeatedInvocation() {
+    jedis.lpush(KEY, "e1");
+    jedis.lpush(KEY, "e2");
+    jedis.lpush(KEY, "e3");
+
+    assertThat(jedis.rpop(KEY)).isEqualTo("e1");
+    assertThat(jedis.rpop(KEY)).isEqualTo("e2");
+    assertThat(jedis.rpop(KEY)).isEqualTo("e3");
+  }
+
+  @Test
+  public void rpop_withConcurrentLPush_returnsCorrectValue() {
     String[] valuesInitial = new String[] {"un", "deux", "troix"};
     String[] valuesToAdd = new String[] {"plum", "peach", "orange"};
     jedis.lpush(KEY, valuesInitial);
 
-    final AtomicReference<String> lpopReference = new AtomicReference<>();
+    final AtomicReference<String> rpopReference = new AtomicReference<>();
     new ConcurrentLoopingThreads(1000,
         i -> jedis.lpush(KEY, valuesToAdd),
-        i -> lpopReference.set(jedis.lpop(KEY)))
+        i -> rpopReference.set(jedis.rpop(KEY)))
             .runWithAction(() -> {
-              assertThat(lpopReference).satisfiesAnyOf(
-                  lpopResult -> assertThat(lpopReference.get()).isEqualTo("orange"),
-                  lpopResult -> assertThat(lpopReference.get()).isEqualTo("troix"));
+              assertThat(rpopReference).satisfiesAnyOf(
+                  rpopResult -> assertThat(rpopReference.get()).isEqualTo("plum"),
+                  rpopResult -> assertThat(rpopReference.get()).isEqualTo("un"));
               jedis.del(KEY);
               jedis.lpush(KEY, valuesInitial);
             });
   }
+
 }

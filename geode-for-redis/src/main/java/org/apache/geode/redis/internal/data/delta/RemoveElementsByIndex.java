@@ -32,7 +32,8 @@ import org.apache.geode.redis.internal.data.AbstractRedisData;
 public class RemoveElementsByIndex extends DeltaInfo {
   private final List<Integer> indexes;
 
-  public RemoveElementsByIndex() {
+  public RemoveElementsByIndex(byte version) {
+    super(version);
     this.indexes = new ArrayList<>();
   }
 

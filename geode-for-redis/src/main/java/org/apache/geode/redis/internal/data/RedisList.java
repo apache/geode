@@ -166,12 +166,18 @@ public class RedisList extends AbstractRedisData {
 
   /**
    * @param region the region this instance is stored in
-   * @param key the name of the set to add to
+   * @param key the name of the list to add to
    * @return the element actually popped
    */
   public byte[] lpop(Region<RedisKey, RedisData> region, RedisKey key) {
-    byte[] popped = elementRemove(0);
-    RemoveElementsByIndex removed = new RemoveElementsByIndex();
+    byte newVersion;
+    byte[] popped;
+    RemoveElementsByIndex removed;
+    synchronized (this) {
+      newVersion = incrementAndGetVersion();
+      popped = removeElement(0);
+    }
+    removed = new RemoveElementsByIndex(newVersion);
     removed.add(0);
     storeChanges(region, key, removed);
     return popped;
@@ -201,6 +207,26 @@ public class RedisList extends AbstractRedisData {
     storeChanges(region, key, new ReplaceByteArrayAtOffset(index, value));
   }
 
+  /**
+   * @param region the region this instance is stored in
+   * @param key the name of the list to add to
+   * @return the element actually popped
+   */
+  public byte[] rpop(Region<RedisKey, RedisData> region, RedisKey key) {
+    byte newVersion;
+    int index = elementList.size() - 1;
+    byte[] popped;
+    RemoveElementsByIndex removed;
+    synchronized (this) {
+      newVersion = incrementAndGetVersion();
+      popped = removeElement(index);
+    }
+    removed = new RemoveElementsByIndex(newVersion);
+    removed.add(index);
+    storeChanges(region, key, removed);
+    return popped;
+  }
+
   @Override
   public void applyAddByteArrayDelta(byte[] bytes) {
     elementPushHead(bytes);
@@ -214,7 +240,7 @@ public class RedisList extends AbstractRedisData {
   @Override
   public void applyRemoveElementsByIndex(List<Integer> indexes) {
     for (int index : indexes) {
-      elementRemove(index);
+      removeElement(index);
     }
   }
 
@@ -254,12 +280,8 @@ public class RedisList extends AbstractRedisData {
     return REDIS_LIST_ID;
   }
 
-  protected synchronized byte[] elementRemove(int index) {
+  public synchronized byte[] removeElement(int index) {
     return elementList.remove(index);
-  }
-
-  protected synchronized boolean elementRemove(byte[] element) {
-    return elementList.remove(element);
   }
 
   protected synchronized void elementPushHead(byte[] element) {
