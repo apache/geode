@@ -233,4 +233,10 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
     return ((ParallelGatewaySenderQueue) (processors[0].getQueue()))
         .getNumEntriesOverflowOnDiskTestOnly();
   }
+
+  @VisibleForTesting
+  public int getNumOfPossibleDuplicateEvents() {
+    return ((ParallelGatewaySenderQueue) (processors[0].getQueue()))
+        .getNumOfPossibleDuplicateEvents();
+  }
 }

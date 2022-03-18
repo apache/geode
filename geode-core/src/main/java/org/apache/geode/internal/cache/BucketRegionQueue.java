@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.RegionAttributes;
@@ -645,8 +644,7 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
         && !eventSeqNumDeque.isEmpty() && getBucketAdvisor().isPrimary();
   }
 
-  @VisibleForTesting
-  List<Object> getHelperQueueList() {
+  public List<Object> getHelperQueueList() {
     getInitializationLock().readLock().lock();
     try {
       if (getPartitionedRegion().isDestroyed()) {
