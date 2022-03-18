@@ -176,6 +176,7 @@ gradle.taskGraph.whenReady({ graph ->
       jvmArgs += ['-XX:+HeapDumpOnOutOfMemoryError', '-ea']
       if (project.hasProperty('testJVMVer') && testJVMVer.toInteger() >= 9) {
         jvmArgs += [
+                "--illegal-access=warn",
                 "--add-opens=java.base/java.io=ALL-UNNAMED",
                 "--add-opens=java.base/java.lang=ALL-UNNAMED",
                 "--add-opens=java.base/java.lang.annotation=ALL-UNNAMED",
