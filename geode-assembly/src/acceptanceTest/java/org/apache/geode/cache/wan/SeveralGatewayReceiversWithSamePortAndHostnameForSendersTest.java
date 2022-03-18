@@ -36,7 +36,6 @@ import java.util.Vector;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -101,8 +100,8 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
   @BeforeClass
   public static void beforeClass() throws Exception {
     // Start locator
-    docker.execForService("locator", "gfsh", "run",
-        "--file=/geode/scripts/geode-starter-locator.gfsh");
+    docker.execForService("locator", "gfsh", "-e",
+        startLocatorCommand());
     // Start server1
     docker.execForService("server1", "gfsh", "run",
         "--file=/geode/scripts/geode-starter-server1.gfsh");
@@ -131,7 +130,6 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
    * closing of connections by a gateway receiver for not having received the ping in time.
    */
   @Test
-  @Ignore("Changes required for this test are mutually exclusive with previous expected behavior. This test is ignored until those behaviors can be reconciled.")
   public void testPingsToReceiversWithSamePortAndHostnameForSendersReachTheRightReceivers()
       throws InterruptedException {
     String senderId = "ln";
@@ -378,6 +376,13 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
     String ipAddress = docker.getIpAddressForService("haproxy", "geode-wan-test");
     return "create gateway-receiver --hostname-for-senders=" + ipAddress
         + " --start-port=2324 --end-port=2324 --maximum-time-between-pings=10000";
+  }
+
+  private static String startLocatorCommand() {
+    String ipAddress = docker.getIpAddressForService("haproxy", "geode-wan-test");
+    return "start locator --name=locator --port=20334 --connect=false --redirect-output --enable-cluster-configuration=true --hostname-for-clients="
+        + ipAddress + " --J=-Dgemfire.distributed-system-id=2";
+
   }
 
 }
