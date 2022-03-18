@@ -2109,24 +2109,30 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Override
   public int getRegionSize() {
     synchronized (getSizeGuard()) {
-      int result = getRegionMap().size();
-      // if this is a client with no tombstones then we subtract the number
-      // of entries being affected by register-interest refresh
-      if (imageState.isClient() && !getConcurrencyChecksEnabled()) {
-        int destroyedEntriesCount = imageState.getDestroyedEntriesCount();
-        if (result < destroyedEntriesCount) {
-          logger.error("Incorrect region size: mapSize={}, destroyedEntriesCount={}.", result,
-              destroyedEntriesCount);
+      // Synchronize on this to prevent changing the value in the middle of a size count
+      // see incTombstoneCount method and RegionSizeIntegrationTest
+      synchronized (tombstoneCount) {
+        int result = getRegionMap().size();
+        // if this is a client with no tombstones then we subtract the number
+        // of entries being affected by register-interest refresh
+        if (imageState.isClient() && !getConcurrencyChecksEnabled()) {
+          int destroyedEntriesCount = imageState.getDestroyedEntriesCount();
+          if (result < destroyedEntriesCount) {
+            logger.error("Incorrect region size: mapSize={}, destroyedEntriesCount={}.", result,
+                destroyedEntriesCount);
+            return 0;
+          }
+          return result - destroyedEntriesCount;
         }
-        return result - destroyedEntriesCount;
-      }
 
-      int tombstoneNumber = tombstoneCount.get();
-      if (result < tombstoneNumber) {
-        logger.error("Incorrect region size: mapSize={}, tombstoneCount={}.", result,
-            tombstoneNumber);
+        int tombstoneNumber = tombstoneCount.get();
+        if (result < tombstoneNumber) {
+          logger.error("Incorrect region size: mapSize={}, tombstoneCount={}.", result,
+              tombstoneNumber);
+          return 0;
+        }
+        return result - tombstoneNumber;
       }
-      return result - tombstoneNumber;
     }
   }
 
@@ -3281,7 +3287,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * regions track the number of tombstones their map holds for size calculations
    */
   public void incTombstoneCount(int delta) {
-    tombstoneCount.addAndGet(delta);
+    // Synchronize on this to prevent changing the value in the middle of a size count
+    // see getRegionSize method and RegionSizeIntegrationTest
+    synchronized (tombstoneCount) {
+      tombstoneCount.addAndGet(delta);
+    }
     cachePerfStats.incTombstoneCount(delta);
 
     // don't include the tombstones in any of our entry count stats
