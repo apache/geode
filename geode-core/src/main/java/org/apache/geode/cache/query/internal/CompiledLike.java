@@ -114,7 +114,7 @@ public class CompiledLike extends CompiledComparison {
     OrganizedOperands result = new OrganizedOperands();
     result.isSingleFilter = true;
     result.filterOperand = filter;
-    context.cachePut(CAN_APPLY_LIMIT_AT_INDEX, filterOperand.isLimitApplicableAtIndexLevel(context));
+    context.cachePut(CAN_APPLY_LIMIT_AT_INDEX, filter.isLimitApplicableAtIndexLevel(context));
 
     return result;
   }
