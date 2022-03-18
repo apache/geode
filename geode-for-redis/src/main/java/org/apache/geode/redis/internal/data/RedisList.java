@@ -331,13 +331,11 @@ public class RedisList extends AbstractRedisData {
   }
 
   @Override
-  public void applyRemoveElementsByIndex(List<Integer> indexes) {
-    synchronized (this) {
-      if (indexes.size() == 1) {
-        elementRemove(indexes.get(0));
-      } else {
-        elementList.removeIndexes(indexes);
-      }
+  public synchronized void applyRemoveElementsByIndex(List<Integer> indexes) {
+    if (indexes.size() == 1) {
+      removeElement(indexes.get(0));
+    } else {
+      elementList.removeIndexes(indexes);
     }
   }
 
