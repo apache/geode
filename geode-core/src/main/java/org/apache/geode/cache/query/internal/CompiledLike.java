@@ -108,13 +108,13 @@ public class CompiledLike extends CompiledComparison {
       } else {
         filter = new RangeJunction(OQLLexerTokenTypes.LITERAL_and, indpndntItrs,
             completeExpansionNeeded, cvs);
+        context.cachePut(CAN_APPLY_LIMIT_AT_INDEX, false);
       }
     }
 
     OrganizedOperands result = new OrganizedOperands();
     result.isSingleFilter = true;
     result.filterOperand = filter;
-    context.cachePut(CAN_APPLY_LIMIT_AT_INDEX, filter.isLimitApplicableAtIndexLevel(context));
 
     return result;
   }
