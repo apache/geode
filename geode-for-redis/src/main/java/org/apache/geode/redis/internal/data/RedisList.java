@@ -167,8 +167,12 @@ public class RedisList extends AbstractRedisData {
    */
   public long lpush(List<byte[]> elementsToAdd, Region<RedisKey, RedisData> region,
       RedisKey key, final boolean onlyIfExists) {
-    elementsPushHead(elementsToAdd);
-    storeChanges(region, key, new AddByteArrays(elementsToAdd));
+    byte newVersion;
+    synchronized (this) {
+      newVersion = incrementAndGetVersion();
+      elementsPushHead(elementsToAdd);
+    }
+    storeChanges(region, key, new AddByteArrays(elementsToAdd, newVersion));
     return elementList.size();
   }
 

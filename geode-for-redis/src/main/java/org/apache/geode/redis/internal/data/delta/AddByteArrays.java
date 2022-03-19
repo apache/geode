@@ -33,11 +33,13 @@ import org.apache.geode.redis.internal.data.AbstractRedisData;
 public class AddByteArrays extends DeltaInfo {
   private final List<byte[]> byteArrays;
 
-  public AddByteArrays() {
-    this(new ArrayList<>());
+  public AddByteArrays(byte version) {
+    super(version);
+    byteArrays = new ArrayList<>();
   }
 
-  public AddByteArrays(List<byte[]> deltas) {
+  public AddByteArrays(List<byte[]> deltas, byte version) {
+    super(version);
     byteArrays = deltas;
   }
 
