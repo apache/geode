@@ -28,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.args.BitOP;
+import redis.clients.jedis.args.ListPosition;
 
 import org.apache.geode.redis.RedisIntegrationTest;
 import org.apache.geode.redis.RedisTestHelper;
@@ -576,6 +577,12 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
   @Test
   public void testLindex() {
     runCommandAndAssertHitsAndMisses(LIST_KEY, k -> jedis.lindex(k, 1));
+  }
+
+  @Test
+  public void testLinsert() {
+    runCommandAndAssertNoStatUpdates(LIST_KEY,
+        k -> jedis.linsert(k, ListPosition.BEFORE, "premier", "toInsert"));
   }
 
   @Test

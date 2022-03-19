@@ -24,6 +24,7 @@ import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRA
 import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAY_DOUBLE_PAIRS;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAY_PAIRS;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.APPEND_BYTE_ARRAY;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.INSERT_BYTE_ARRAY;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REMOVE_BYTE_ARRAYS;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REMOVE_ELEMENTS_BY_INDEX;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_ARRAYS;
@@ -61,6 +62,7 @@ import org.apache.geode.redis.internal.data.delta.AddByteArraysTail;
 import org.apache.geode.redis.internal.data.delta.AppendByteArray;
 import org.apache.geode.redis.internal.data.delta.DeltaInfo;
 import org.apache.geode.redis.internal.data.delta.DeltaType;
+import org.apache.geode.redis.internal.data.delta.InsertByteArray;
 import org.apache.geode.redis.internal.data.delta.RemoveByteArrays;
 import org.apache.geode.redis.internal.data.delta.RemoveElementsByIndex;
 import org.apache.geode.redis.internal.data.delta.ReplaceByteArrayAtOffset;
@@ -88,10 +90,6 @@ public abstract class AbstractRedisData implements RedisData {
    */
   private volatile long expirationTimestamp = NO_EXPIRATION;
   private static final ThreadLocal<DeltaInfo> deltaInfo = new ThreadLocal<>();
-
-  public byte getVersion() {
-    return version;
-  }
 
   public byte incrementAndGetVersion() {
     return ++version;
@@ -240,7 +238,7 @@ public abstract class AbstractRedisData implements RedisData {
 
     if (deltaType.isVersioned()) {
       byte deltaVersion = DataSerializer.readPrimitiveByte(in);
-      if (deltaVersion == getVersion()) {
+      if (deltaVersion == version) {
         return;
       }
       setVersion(deltaVersion);
@@ -271,6 +269,11 @@ public abstract class AbstractRedisData implements RedisData {
       case ADD_BYTE_ARRAY_PAIRS:
         synchronized (this) {
           AddByteArrayPairs.deserializeFrom(in, this);
+        }
+        break;
+      case INSERT_BYTE_ARRAY:
+        synchronized (this) {
+          InsertByteArray.deserializeFrom(in, this);
         }
         break;
       case ADD_BYTE_ARRAY_DOUBLE_PAIRS:
@@ -312,6 +315,10 @@ public abstract class AbstractRedisData implements RedisData {
 
   public void applyAddByteArrayTailDelta(byte[] bytes) {
     throw new IllegalStateException("unexpected " + ADD_BYTE_ARRAYS_TAIL);
+  }
+
+  public void applyInsertByteArrayDelta(byte[] bytes, int index) {
+    throw new IllegalStateException("unexpected " + INSERT_BYTE_ARRAY);
   }
 
   public void applyRemoveByteArrayDelta(byte[] bytes) {
@@ -418,7 +425,7 @@ public abstract class AbstractRedisData implements RedisData {
       return false;
     }
     AbstractRedisData that = (AbstractRedisData) o;
-    return getVersion() == that.getVersion() &&
+    return version == that.version &&
         getExpirationTimestamp() == that.getExpirationTimestamp();
   }
 
