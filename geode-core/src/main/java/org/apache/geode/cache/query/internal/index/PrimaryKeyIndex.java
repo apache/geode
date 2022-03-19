@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import static org.apache.geode.cache.query.internal.CompiledValue.indexThresholdSize;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -108,7 +107,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
     if (applyLimit != null && applyLimit) {
       limit = (Integer) context.cacheGet(CompiledValue.RESULT_LIMIT);
       // if (limit != -1 && limit < indexThresholdSize) {
-      //   limit = indexThresholdSize;
+      // limit = indexThresholdSize;
       // }
     }
     QueryObserver observer = QueryObserverHolder.getInstance();
@@ -189,7 +188,7 @@ public class PrimaryKeyIndex extends AbstractIndex {
     if (applyLimit != null && applyLimit) {
       limit = (Integer) context.cacheGet(CompiledValue.RESULT_LIMIT);
       // if (limit != -1 && limit < indexThresholdSize) {
-      //   limit = indexThresholdSize;
+      // limit = indexThresholdSize;
       // }
     }
     if (limit != -1 && results.size() == limit) {

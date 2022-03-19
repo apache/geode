@@ -15,7 +15,6 @@
 package org.apache.geode.cache.query.internal.index;
 
 import static java.lang.Integer.MAX_VALUE;
-import static org.apache.geode.cache.query.internal.CompiledValue.indexThresholdSize;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
 
 import java.util.ArrayList;
@@ -1169,7 +1168,7 @@ public class RangeIndex extends AbstractIndex {
     if (applyLimit != null && applyLimit) {
       limit = (Integer) context.cacheGet(CompiledValue.RESULT_LIMIT);
       // if (limit != -1 && limit < indexThresholdSize) {
-      //   limit = indexThresholdSize;
+      // limit = indexThresholdSize;
       // }
     }
 
