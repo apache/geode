@@ -184,8 +184,8 @@ public class RedisList extends AbstractRedisData {
   }
 
   /**
+   * @param context the context of the executing command
    * @param elementsToAdd elements to add to this list;
-   * @param region the region this instance is stored in
    * @param key the name of the list to add to
    * @param onlyIfExists if true then the elements should only be added if the key already exists
    *        and holds a list, otherwise no operation is performed.
