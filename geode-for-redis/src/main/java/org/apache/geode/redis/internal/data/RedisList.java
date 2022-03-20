@@ -35,18 +35,18 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.commands.Command;
 import org.apache.geode.redis.internal.commands.RedisCommandType;
-import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.data.collections.SizeableByteArrayList;
 import org.apache.geode.redis.internal.data.delta.AddByteArrays;
 import org.apache.geode.redis.internal.data.delta.AddByteArraysTail;
 import org.apache.geode.redis.internal.data.delta.InsertByteArray;
 import org.apache.geode.redis.internal.data.delta.RemoveElementsByIndex;
+import org.apache.geode.redis.internal.data.delta.ReplaceByteArrayAtOffset;
 import org.apache.geode.redis.internal.eventing.BlockingCommandListener;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.services.RegionProvider;
-import org.apache.geode.redis.internal.data.delta.ReplaceByteArrayAtOffset;
 
 public class RedisList extends AbstractRedisData {
   protected static final int REDIS_LIST_OVERHEAD = memoryOverhead(RedisList.class);
