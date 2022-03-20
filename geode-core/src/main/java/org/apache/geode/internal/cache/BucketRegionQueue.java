@@ -30,7 +30,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheWriterException;

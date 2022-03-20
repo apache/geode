@@ -15,15 +15,7 @@
 package org.apache.geode.internal.cache.wan.parallel;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
-<<<<<<< HEAD
-<<<<<<< HEAD
 import static org.assertj.core.api.Assertions.assertThat;
-=======
-import static org.junit.Assert.assertEquals;
->>>>>>> GEODE-9997: added test
-=======
-import static org.assertj.core.api.Assertions.assertThat;
->>>>>>> GEODE-9997: new proposal
 import static org.junit.Assert.fail;
 
 import java.io.IOException;

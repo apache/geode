@@ -2535,6 +2535,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     // partitioned region, this is to avoid leaving stale bucket profile undeleted
     // on the member that is still in the process of creating the partitioned region
     return getSystem().getDistributionManager().getOtherDistributionManagerIds();
+  }
 
   public boolean isReceivedGWStopped() {
     return receivedGWStopped;
