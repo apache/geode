@@ -62,7 +62,7 @@ class NullRedisList extends RedisList {
   }
 
   @Override
-  public long rpush(List<byte[]> elementsToAdd, Region<RedisKey, RedisData> region, RedisKey key,
+  public long rpush(ExecutionHandlerContext context, List<byte[]> elementsToAdd, RedisKey key,
       final boolean onlyIfExists) {
     if (onlyIfExists) {
       return 0;
@@ -72,7 +72,9 @@ class NullRedisList extends RedisList {
     for (byte[] element : elementsToAdd) {
       newList.elementPushTail(element);
     }
-    region.create(key, newList);
+    context.getRegion().create(key, newList);
+    context.fireEvent(RedisCommandType.RPUSH, key);
+
     return elementsToAdd.size();
   }
 

@@ -125,6 +125,17 @@ public abstract class AbstractBLPopIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
+  public void testRPushFiresEventForBLPop() throws Exception {
+    Future<List<String>> future = executor.submit(() -> jedis.blpop(0, KEY));
+
+    awaitEventDistributorSize(1);
+    jedis.rpush(KEY, "value1", "value2");
+
+    assertThat(future.get()).containsExactly(KEY, "value1");
+    assertThat(jedis.lpop(KEY)).isEqualTo("value2");
+  }
+
+  @Test
   public void testBLPopWhenTimeoutIsExceeded() {
     int timeout = 10;
     Future<List<String>> future = executor.submit(() -> jedis.blpop(timeout, KEY));

@@ -191,14 +191,16 @@ public class RedisList extends AbstractRedisData {
    *        and holds a list, otherwise no operation is performed.
    * @return the length of the list after the operation
    */
-  public long rpush(List<byte[]> elementsToAdd, Region<RedisKey, RedisData> region,
-      RedisKey key, final boolean onlyIfExists) {
+  public long rpush(ExecutionHandlerContext context, List<byte[]> elementsToAdd, RedisKey key,
+      boolean onlyIfExists) {
     byte newVersion;
     synchronized (this) {
       newVersion = incrementAndGetVersion();
       elementsToAdd.forEach(this::elementPushTail);
     }
-    storeChanges(region, key, new AddByteArraysTail(newVersion, elementsToAdd));
+    storeChanges(context.getRegion(), key, new AddByteArraysTail(newVersion, elementsToAdd));
+    context.fireEvent(RedisCommandType.RPUSH, key);
+
     return elementList.size();
   }
 
