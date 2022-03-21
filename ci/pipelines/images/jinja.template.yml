@@ -73,6 +73,34 @@ resources:
     - infrastructure/scripts/aws/image
     uri: https://github.com/((geode-fork))/geode-benchmarks.git
 
+- name: packer-145-image
+  icon: docker
+  type: registry-image
+  source:
+    registry_mirror:
+      host: mirror.gcr.io
+    repository: hashicorp/packer
+    tag: 1.4.5
+
+- name: gcloud-sdk-image
+  icon: docker
+  type: registry-image
+  source:
+    registry_mirror:
+      host: mirror.gcr.io
+    repository: google/cloud-sdk
+    tag: alpine
+
+# Base image for full-regression-runner
+- name: alpine-314-image
+  icon: docker
+  type: registry-image
+  source:
+    registry_mirror:
+      host: mirror.gcr.io
+    repository: alpine
+    tag: 3.14
+
 - name: google-geode-builder
   type: git
   source:
@@ -339,10 +367,13 @@ jobs:
   serial: true
   plan:
   - in_parallel:
-    - get: alpine-docker-image
-      trigger: true
     - get: alpine-tools-dockerfile
       trigger: true
+    # Base images, used for tracking
+    - get: gcloud-sdk-image
+      trigger: true
+    - get: packer-145-image
+    - get: alpine-314-image
   - put: alpine-tools-docker-image
     params:
       build: alpine-tools-dockerfile/ci/images/alpine-tools
