@@ -16,12 +16,14 @@
 package org.apache.geode.distributed;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.process.JavaModuleHelper.getJvmModuleOptions;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Rule;
@@ -102,8 +104,12 @@ public class ServerLauncherDUnitTest {
 
     ProcessBuilder pBuilder = new ProcessBuilder();
     pBuilder.directory(tempDir.newFolder());
-    pBuilder.command(javaBin.toString(), "-classpath", System.getProperty("java.class.path"),
-        serverLauncherClass, port + "");
+    pBuilder.command(javaBin.toString(), "-classpath", System.getProperty("java.class.path"));
+    // Copy all --add-opens and --add-exports options to the command line
+    List<String> command = pBuilder.command();
+    command.addAll(getJvmModuleOptions());
+    command.add(serverLauncherClass);
+    command.add(String.valueOf(port));
 
     pBuilder.redirectErrorStream(true);
     Process process = pBuilder.start();

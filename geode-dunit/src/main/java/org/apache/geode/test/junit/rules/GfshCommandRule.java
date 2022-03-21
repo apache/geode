@@ -14,7 +14,9 @@
  */
 package org.apache.geode.test.junit.rules;
 
+import static java.util.stream.Collectors.joining;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.process.JavaModuleHelper.getJvmModuleOptions;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -268,7 +270,15 @@ public class GfshCommandRule extends DescribedExternalResource {
    *             after that method call.
    */
   public CommandResult executeCommand(String command) {
-    gfsh.executeCommand(command);
+    String moduleArgs = "";
+    if (command.matches("^start +server.*") || command.matches("^start +locator.*")) {
+      moduleArgs = getJvmModuleOptions().stream()
+          .map(s -> "--J=" + s)
+          .collect(joining(" ", " ", ""));
+    }
+
+    gfsh.executeCommand(command + moduleArgs);
+
     CommandResult result;
     try {
       result = gfsh.getResult();
