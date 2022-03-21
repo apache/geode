@@ -16,12 +16,8 @@ package org.apache.geode.internal.cache;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
-<<<<<<< HEAD
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-=======
->>>>>>> changes after review
 
 import org.junit.Test;
 
