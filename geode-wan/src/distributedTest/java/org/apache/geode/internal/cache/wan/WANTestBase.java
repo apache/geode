@@ -1281,6 +1281,7 @@ public class WANTestBase extends DistributedTestCase {
     statsList.add(gatewayReceiverStats.getOutoforderBatchesReceived());
     statsList.add(gatewayReceiverStats.getEarlyAcks());
     statsList.add(gatewayReceiverStats.getExceptionsOccurred());
+    statsList.add(gatewayReceiverStats.getPossibleDuplicateEventsReceived());
     return statsList;
   }
 

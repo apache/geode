@@ -2380,6 +2380,7 @@ public class ParallelWANPersistenceEnabledGatewaySenderDUnitTest extends WANTest
     assertThat(vm4NumDupplicate + vm6NumDupplicate + vm7NumDupplicate).isEqualTo(800);
   }
 
+
   private static class BlockingDestroyRegionObserver extends DistributionMessageObserver {
     private final CountDownLatch startedBlocking = new CountDownLatch(1);
 
