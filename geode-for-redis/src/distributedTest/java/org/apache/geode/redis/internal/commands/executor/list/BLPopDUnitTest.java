@@ -30,6 +30,7 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.redis.internal.GeodeRedisService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -59,9 +60,10 @@ public class BLPopDUnitTest {
 
     server1 = cluster.startRedisVM(1, locatorPort);
     server2 = cluster.startRedisVM(2, locatorPort);
-    server3 = cluster.startRedisVM(3, locatorPort);
 
-    redisServerPort = cluster.getRedisPort(3);
+    redisServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    server3 = cluster.startRedisVM(3, Integer.toString(redisServerPort), locatorPort);
+
     jedis = new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPort), REDIS_CLIENT_TIMEOUT,
         20);
   }
