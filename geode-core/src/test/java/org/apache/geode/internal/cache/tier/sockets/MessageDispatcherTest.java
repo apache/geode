@@ -137,7 +137,7 @@ public class MessageDispatcherTest {
 
   @Test
   public void newClientWillGetClientReAuthenticateMessage() throws Exception {
-    doReturn(false, false, false, true).when(dispatcher).isStopped();
+    doReturn(false, false, false, false, false, true).when(dispatcher).isStopped();
     doThrow(AuthenticationExpiredException.class).when(dispatcher).dispatchMessage(any());
     when(messageQueue.peek()).thenReturn(message);
     when(proxy.getVersion()).thenReturn(KnownVersion.GEODE_1_15_0);
@@ -145,7 +145,7 @@ public class MessageDispatcherTest {
     doNothing().when(dispatcher).sendMessageDirectly(any());
 
     // make sure wait time is short
-    doReturn(1L).when(dispatcher).getSystemProperty(eq(RE_AUTHENTICATE_WAIT_TIME), anyLong());
+    doReturn(-1L).when(dispatcher).getSystemProperty(eq(RE_AUTHENTICATE_WAIT_TIME), anyLong());
     dispatcher.runDispatcher();
 
     // verify a ReAuthenticate message will be send to the user
@@ -159,9 +159,9 @@ public class MessageDispatcherTest {
 
   @Test
   public void oldClientWillNotGetClientReAuthenticateMessage() throws Exception {
-    doReturn(false, false, false, true).when(dispatcher).isStopped();
+    doReturn(false, false, false, false, false, true).when(dispatcher).isStopped();
     // make sure wait time is short
-    doReturn(1L).when(dispatcher).getSystemProperty(eq(RE_AUTHENTICATE_WAIT_TIME), anyLong());
+    doReturn(-1L).when(dispatcher).getSystemProperty(eq(RE_AUTHENTICATE_WAIT_TIME), anyLong());
 
     doThrow(AuthenticationExpiredException.class).when(dispatcher).dispatchMessage(any());
     when(messageQueue.peek()).thenReturn(message);

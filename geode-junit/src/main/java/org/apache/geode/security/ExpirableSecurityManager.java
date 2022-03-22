@@ -39,7 +39,6 @@ public class ExpirableSecurityManager extends SimpleSecurityManager implements S
       new ConcurrentHashMap<>();
   private final Map<String, List<String>> unauthorizedOps =
       new ConcurrentHashMap<>();
-  private boolean allowDuplicate = false;
 
   @Override
   public Object authenticate(final Properties credentials) throws AuthenticationFailedException {
@@ -66,10 +65,6 @@ public class ExpirableSecurityManager extends SimpleSecurityManager implements S
     expired_users.add(user);
   }
 
-  public void setAllowDuplicate(boolean allowDuplicate) {
-    this.allowDuplicate = allowDuplicate;
-  }
-
   public Set<String> getExpiredUsers() {
     return expired_users;
   }
@@ -88,7 +83,7 @@ public class ExpirableSecurityManager extends SimpleSecurityManager implements S
     if (list == null) {
       list = new ArrayList<>();
     }
-    if (allowDuplicate || !list.contains(permission.toString())) {
+    if (!list.contains(permission.toString())) {
       list.add(permission.toString());
     }
     maps.put(user.toString(), list);
@@ -98,7 +93,6 @@ public class ExpirableSecurityManager extends SimpleSecurityManager implements S
     expired_users.clear();
     authorizedOps.clear();
     unauthorizedOps.clear();
-    allowDuplicate = false;
   }
 
 }

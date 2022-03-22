@@ -113,7 +113,6 @@ public class MessageDispatcher extends LoggingThread {
   private volatile boolean _isStopped = true;
 
   private volatile long waitForReAuthenticationStartTime = -1;
-  private final Object reAuthenticationLock = new Object();
 
   /**
    * A lock object used to control pausing this dispatcher
@@ -192,15 +191,6 @@ public class MessageDispatcher extends LoggingThread {
 
   public boolean isWaitingForReAuthentication() {
     return waitForReAuthenticationStartTime > 0;
-  }
-
-  private volatile boolean subjectUpdated = false;
-
-  public void notifyReAuthentication() {
-    synchronized (reAuthenticationLock) {
-      subjectUpdated = true;
-      reAuthenticationLock.notifyAll();
-    }
   }
 
   private CacheClientProxy getProxy() {
@@ -442,39 +432,34 @@ public class MessageDispatcher extends LoggingThread {
           _messageQueue.remove();
           clientMessage = null;
         } catch (AuthenticationExpiredException expired) {
-          // only send the message to clients who can handle the message
-          if (getProxy().getVersion().isNewerThanOrEqualTo(RE_AUTHENTICATION_START_VERSION)) {
-            EventID eventId = createEventId();
-            sendMessageDirectly(new ClientReAuthenticateMessage(eventId));
-          }
-
-          // We wait for all versions of clients to re-authenticate. For older clients we still
-          // wait, just in case client will perform some operations to
-          // trigger credential refresh on its own.
-          synchronized (reAuthenticationLock) {
+          if (waitForReAuthenticationStartTime == -1) {
             waitForReAuthenticationStartTime = System.currentTimeMillis();
-            long waitFinishTime = waitForReAuthenticationStartTime + reAuthenticateWaitTime;
-            subjectUpdated = false;
-            long remainingWaitTime = waitFinishTime - System.currentTimeMillis();
-            while (!subjectUpdated && remainingWaitTime > 0) {
-              reAuthenticationLock.wait(remainingWaitTime);
-              remainingWaitTime = waitFinishTime - System.currentTimeMillis();
+            // only send the message to clients who can handle the message
+            if (getProxy().getVersion().isNewerThanOrEqualTo(RE_AUTHENTICATION_START_VERSION)) {
+              EventID eventId = createEventId();
+              sendMessageDirectly(new ClientReAuthenticateMessage(eventId));
             }
-          }
-          // the above wait timed out
-          if (!subjectUpdated) {
+            // We wait for all versions of clients to re-authenticate. For older clients we still
+            // wait, just in case client will perform some operations to
+            // trigger credential refresh on its own.
+            Thread.sleep(200);
+          } else {
             long elapsedTime = System.currentTimeMillis() - waitForReAuthenticationStartTime;
-            // reset the timer here since we are no longer waiting for re-auth to happen anymore
-            waitForReAuthenticationStartTime = -1;
-            synchronized (_stopDispatchingLock) {
-              logger.warn(
-                  "Client did not re-authenticate back successfully in {} ms. Unregister this client proxy.",
-                  elapsedTime);
-              pauseOrUnregisterProxy(expired);
+            if (elapsedTime > reAuthenticateWaitTime) {
+              // reset the timer here since we are no longer waiting for re-auth to happen anymore
+              waitForReAuthenticationStartTime = -1;
+              synchronized (_stopDispatchingLock) {
+                logger.warn("Client did not re-authenticate back successfully in " + elapsedTime
+                    + "ms. Unregister this client proxy.");
+                pauseOrUnregisterProxy(expired);
+              }
               exceptionOccurred = true;
+            } else {
+              Thread.sleep(200);
             }
           }
         }
+
       } catch (MessageTooLargeException e) {
         logger.warn("Message too large to send to client: {}, {}", clientMessage, e.getMessage());
       } catch (IOException e) {
