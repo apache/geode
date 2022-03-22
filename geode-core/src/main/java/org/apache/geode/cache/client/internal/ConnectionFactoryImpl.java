@@ -132,7 +132,8 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     } catch (Exception e) {
       String message = e.getMessage();
       if (message != null && (message.contains("Connection refused")
-          || message.contains("Connection reset"))) {
+          || message.contains("Connection reset")
+          || message.contains("Remote host terminated the handshake"))) {
         // this is the most common case, so don't print an exception
         if (logger.isDebugEnabled()) {
           logger.debug("Unable to connect to {}: connection refused", location);

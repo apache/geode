@@ -600,8 +600,11 @@ public class SocketCreator extends TcpSocketCreatorImpl {
           throw ex;
         }
       } catch (SSLHandshakeException ex) {
-        logger.fatal(String.format("Problem forming SSL connection to %s[%s].",
-            socket.getInetAddress(), socket.getPort()), ex);
+        String message = ex.getMessage();
+        if (message != null && !message.contains("Remote host terminated the handshake")) {
+          logger.fatal(String.format("Problem forming SSL connection to %s[%s].",
+              socket.getInetAddress(), socket.getPort()), ex);
+        }
         throw ex;
       } catch (SSLPeerUnverifiedException ex) {
         if (sslConfig.isRequireAuth()) {
