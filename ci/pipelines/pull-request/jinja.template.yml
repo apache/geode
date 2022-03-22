@@ -35,6 +35,7 @@ resources:
     repository: {{repository.fork}}/geode
     disable_ci_skip: false
     skip_ssl_verification: false
+    base_branch: {{repository.branch}}
 - name: geode-windows
   type: pull-request
   source:
@@ -43,6 +44,7 @@ resources:
     disable_ci_skip: false
     skip_ssl_verification: false
     labels: [windows]
+    base_branch: {{repository.branch}}
 - name: geode-status
   type: pull-request
   source:
