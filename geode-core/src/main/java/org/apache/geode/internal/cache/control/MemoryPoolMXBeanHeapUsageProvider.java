@@ -47,8 +47,24 @@ public class MemoryPoolMXBeanHeapUsageProvider implements HeapUsageProvider, Not
   };
 
   private static MemoryPoolMXBean findTenuredMemoryPoolMXBean() {
+    if (HEAP_POOL != null && !HEAP_POOL.equals("")) {
+      // give preference to using an existing pool that matches HEAP_POOL
+      for (MemoryPoolMXBean memoryPoolMXBean : ManagementFactory.getMemoryPoolMXBeans()) {
+        if (HEAP_POOL.equals(memoryPoolMXBean.getName())) {
+          return memoryPoolMXBean;
+        }
+      }
+      logger.warn("No memory pool was found with the name {}. Known pools are: {}",
+          HEAP_POOL, getAllMemoryPoolNames());
+
+    }
     for (MemoryPoolMXBean memoryPoolMXBean : ManagementFactory.getMemoryPoolMXBeans()) {
-      if (memoryPoolMXBean.isUsageThresholdSupported() && isTenured(memoryPoolMXBean)) {
+      if (isTenured(memoryPoolMXBean)) {
+        if (HEAP_POOL != null && !HEAP_POOL.equals("")) {
+          logger.warn(
+              "Ignoring gemfire.ResourceManager.HEAP_POOL system property and using pool {}.",
+              memoryPoolMXBean.getName());
+        }
         return memoryPoolMXBean;
       }
     }
@@ -81,8 +97,6 @@ public class MemoryPoolMXBeanHeapUsageProvider implements HeapUsageProvider, Not
    * Determines if the name of the memory pool MXBean provided matches a list of known tenured pool
    * names.
    *
-   * checkTenuredHeapConsumption
-   *
    * @param memoryPoolMXBean The memory pool MXBean to check.
    * @return True if the pool name matches a known tenured pool name, false otherwise.
    */
@@ -100,10 +114,8 @@ public class MemoryPoolMXBeanHeapUsageProvider implements HeapUsageProvider, Not
         || name.equals("Tenured Gen") // Hitachi 1.5 GC
         || name.equals("Java heap") // IBM 1.5, 1.6 GC
         || name.equals("GenPauseless Old Gen") // azul C4/GPGC collector
-        || name.equals("ZHeap") // Sun ZGC
-
-        // Allow a user specified pool name to be monitored
-        || (name.equals(HEAP_POOL));
+        || name.equals("ZHeap") // ZGC
+    ;
   }
 
   /**
@@ -180,16 +192,15 @@ public class MemoryPoolMXBeanHeapUsageProvider implements HeapUsageProvider, Not
   private void startJVMThresholdListener() {
     final MemoryPoolMXBean memoryPoolMXBean = getTenuredMemoryPoolMXBean();
 
-    // Set collection threshold to a low value, so that we can get
-    // notifications after every GC run. After each such collection
-    // threshold notification we set the usage thresholds to an
-    // appropriate value.
-    memoryPoolMXBean.setCollectionUsageThreshold(1);
-
-    final long usageThreshold = memoryPoolMXBean.getUsageThreshold();
-    logger.info(
-        String.format("Overriding MemoryPoolMXBean heap threshold bytes %s on pool %s",
-            usageThreshold, memoryPoolMXBean.getName()));
+    if (memoryPoolMXBean.isCollectionUsageThresholdSupported()) {
+      // Set collection threshold to a low value, so that we can get
+      // notifications after every GC run.
+      memoryPoolMXBean.setCollectionUsageThreshold(1);
+      logger.info(
+          String.format(
+              "Setting MemoryPoolMXBean heap collection usage threshold to '1' on pool %s",
+              memoryPoolMXBean.getName()));
+    }
 
     getNotificationEmitter().addNotificationListener(this, null, null);
   }
