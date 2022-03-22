@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.control;
 
+import java.lang.management.ManagementFactory;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.ServiceLoader;
@@ -22,6 +23,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.LongConsumer;
 
+import javax.management.NotificationEmitter;
 import javax.management.NotificationListener;
 
 import org.apache.logging.log4j.Logger;
@@ -107,7 +109,9 @@ public class HeapMemoryMonitor implements MemoryMonitor, LongConsumer {
       // return the first one defined as a service
       return heapUsageMonitor;
     }
-    return new MemoryPoolMXBeanHeapUsageProvider();
+    return new MemoryPoolMXBeanHeapUsageProvider(ManagementFactory::getMemoryPoolMXBeans,
+        () -> (NotificationEmitter) ManagementFactory.getMemoryMXBean(),
+        () -> Runtime.getRuntime().maxMemory());
   }
 
   public void setMemoryStateChangeTolerance(int memoryStateChangeTolerance) {

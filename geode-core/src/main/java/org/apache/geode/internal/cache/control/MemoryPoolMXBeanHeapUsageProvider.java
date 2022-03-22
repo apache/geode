@@ -14,11 +14,12 @@
  */
 package org.apache.geode.internal.cache.control;
 
-import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryType;
 import java.util.List;
 import java.util.function.LongConsumer;
+import java.util.function.LongSupplier;
+import java.util.function.Supplier;
 
 import javax.management.ListenerNotFoundException;
 import javax.management.Notification;
@@ -46,19 +47,20 @@ public class MemoryPoolMXBeanHeapUsageProvider implements HeapUsageProvider, Not
   private static final LongConsumer disabledHeapUsageListener = (usedMemory) -> {
   };
 
-  private static MemoryPoolMXBean findTenuredMemoryPoolMXBean() {
+  private static MemoryPoolMXBean findTenuredMemoryPoolMXBean(
+      Supplier<List<MemoryPoolMXBean>> memoryPoolSupplier) {
     if (HEAP_POOL != null && !HEAP_POOL.equals("")) {
       // give preference to using an existing pool that matches HEAP_POOL
-      for (MemoryPoolMXBean memoryPoolMXBean : ManagementFactory.getMemoryPoolMXBeans()) {
+      for (MemoryPoolMXBean memoryPoolMXBean : memoryPoolSupplier.get()) {
         if (HEAP_POOL.equals(memoryPoolMXBean.getName())) {
           return memoryPoolMXBean;
         }
       }
       logger.warn("No memory pool was found with the name {}. Known pools are: {}",
-          HEAP_POOL, getAllMemoryPoolNames());
+          HEAP_POOL, getAllMemoryPoolNames(memoryPoolSupplier));
 
     }
-    for (MemoryPoolMXBean memoryPoolMXBean : ManagementFactory.getMemoryPoolMXBeans()) {
+    for (MemoryPoolMXBean memoryPoolMXBean : memoryPoolSupplier.get()) {
       if (isTenured(memoryPoolMXBean)) {
         if (HEAP_POOL != null && !HEAP_POOL.equals("")) {
           logger.warn(
@@ -69,7 +71,7 @@ public class MemoryPoolMXBeanHeapUsageProvider implements HeapUsageProvider, Not
       }
     }
     logger.error("No tenured pools found.  Known pools are: {}",
-        getAllMemoryPoolNames());
+        getAllMemoryPoolNames(memoryPoolSupplier));
     return null;
   }
 
@@ -78,13 +80,15 @@ public class MemoryPoolMXBeanHeapUsageProvider implements HeapUsageProvider, Not
    * http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=7078465 by getting max memory from runtime
    * and subtracting all other heap pools from it.
    */
-  private static long calculateTenuredPoolMaxMemory(MemoryPoolMXBean poolBean) {
+  private static long calculateTenuredPoolMaxMemory(
+      Supplier<List<MemoryPoolMXBean>> memoryPoolSupplier,
+      LongSupplier maxJVMHeapSupplier,
+      MemoryPoolMXBean poolBean) {
     if (poolBean != null && poolBean.getUsage().getMax() != -1) {
       return poolBean.getUsage().getMax();
     } else {
-      long calculatedMaxMemory = Runtime.getRuntime().maxMemory();
-      List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
-      for (MemoryPoolMXBean p : pools) {
+      long calculatedMaxMemory = maxJVMHeapSupplier.getAsLong();
+      for (MemoryPoolMXBean p : memoryPoolSupplier.get()) {
         if (p.getType() == MemoryType.HEAP && p.getUsage().getMax() != -1) {
           calculatedMaxMemory -= p.getUsage().getMax();
         }
@@ -121,10 +125,10 @@ public class MemoryPoolMXBeanHeapUsageProvider implements HeapUsageProvider, Not
   /**
    * Returns the names of all available memory pools as a single string.
    */
-  private static String getAllMemoryPoolNames() {
+  private static String getAllMemoryPoolNames(Supplier<List<MemoryPoolMXBean>> memoryPoolSupplier) {
     StringBuilder builder = new StringBuilder("[");
 
-    for (MemoryPoolMXBean memoryPoolBean : ManagementFactory.getMemoryPoolMXBeans()) {
+    for (MemoryPoolMXBean memoryPoolBean : memoryPoolSupplier.get()) {
       builder.append("(Name=").append(memoryPoolBean.getName()).append(";Type=")
           .append(memoryPoolBean.getType()).append(";collectionUsageThresholdSupported=")
           .append(memoryPoolBean.isCollectionUsageThresholdSupported()).append("), ");
@@ -138,6 +142,8 @@ public class MemoryPoolMXBeanHeapUsageProvider implements HeapUsageProvider, Not
     return builder.toString();
   }
 
+  private final Supplier<List<MemoryPoolMXBean>> memoryPoolSupplier;
+  private final Supplier<NotificationEmitter> notificationEmitterSupplier;
   private final TenuredHeapConsumptionMonitor tenuredHeapConsumptionMonitor;
   // JVM MXBean used to report changes in heap memory usage
   private final MemoryPoolMXBean tenuredMemoryPoolMXBean;
@@ -146,10 +152,16 @@ public class MemoryPoolMXBeanHeapUsageProvider implements HeapUsageProvider, Not
 
   private volatile LongConsumer heapUsageListener = disabledHeapUsageListener;
 
-  public MemoryPoolMXBeanHeapUsageProvider() {
+  public MemoryPoolMXBeanHeapUsageProvider(Supplier<List<MemoryPoolMXBean>> memoryPoolSupplier,
+      Supplier<NotificationEmitter> notificationEmitterSupplier,
+      LongSupplier maxJVMHeapSupplier) {
+    this.memoryPoolSupplier = memoryPoolSupplier;
+    this.notificationEmitterSupplier = notificationEmitterSupplier;
     tenuredHeapConsumptionMonitor = new TenuredHeapConsumptionMonitor();
-    tenuredMemoryPoolMXBean = findTenuredMemoryPoolMXBean();
-    tenuredPoolMaxMemory = calculateTenuredPoolMaxMemory(tenuredMemoryPoolMXBean);
+    tenuredMemoryPoolMXBean = findTenuredMemoryPoolMXBean(memoryPoolSupplier);
+    tenuredPoolMaxMemory =
+        calculateTenuredPoolMaxMemory(memoryPoolSupplier, maxJVMHeapSupplier,
+            tenuredMemoryPoolMXBean);
   }
 
   @Override
@@ -183,7 +195,7 @@ public class MemoryPoolMXBeanHeapUsageProvider implements HeapUsageProvider, Not
     }
 
     throw new IllegalStateException(String.format("No tenured pools found.  Known pools are: %s",
-        getAllMemoryPoolNames()));
+        getAllMemoryPoolNames(memoryPoolSupplier)));
   }
 
   /**
@@ -205,8 +217,8 @@ public class MemoryPoolMXBeanHeapUsageProvider implements HeapUsageProvider, Not
     getNotificationEmitter().addNotificationListener(this, null, null);
   }
 
-  private static NotificationEmitter getNotificationEmitter() {
-    return (NotificationEmitter) ManagementFactory.getMemoryMXBean();
+  private NotificationEmitter getNotificationEmitter() {
+    return notificationEmitterSupplier.get();
   }
 
   private void stopJVMThresholdListener() {
