@@ -417,7 +417,7 @@ public class NioSslEngineTest {
         // give the NioSslEngine something to write on its socket channel, simulating a TLS close
         // message
         outputSharing.getBuffer().put("Goodbye cruel world".getBytes());
-        return new SSLEngineResult(CLOSED, FINISHED, 0, 0);
+        return new SSLEngineResult(OK, NEED_UNWRAP, 0, 0);
       }
     });
     when(mockChannel.write(any(ByteBuffer.class))).thenThrow(new ClosedChannelException());

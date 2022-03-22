@@ -420,8 +420,7 @@ public class NioSslEngine implements NioFilter {
 
         // Get close message
         result = engine.wrap(empty, myNetData);
-        System.out.println(String.format("BGB: status: %s, handshake status: %s",
-            result.getStatus(), result.getHandshakeStatus()));
+
         /*
          * We would have liked to make this one of the while() conditions but
          * if status is CLOSED we'll get a "Broken pipe" exception in the next write()

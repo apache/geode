@@ -141,7 +141,6 @@ public class ConnectionCloseSSLTLSDUnitTest implements Serializable {
                         } catch (TimeoutException | InterruptedException e) {
                           fail("message observus interruptus");
                         }
-                        logger.info("BGB: got before process message: " + message);
                       });
                     }
                   };

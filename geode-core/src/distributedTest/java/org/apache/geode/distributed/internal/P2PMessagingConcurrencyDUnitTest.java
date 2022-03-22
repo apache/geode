@@ -81,9 +81,10 @@ public class P2PMessagingConcurrencyDUnitTest {
   /*
    * Upper bound (exclusive) of random message size, in bytes.
    * The magnitude is chosen to give us a mix of messages around
-   * 16KB. I want a number that is not a power of two since I
-   * believe, for no particular reason, that it might catch more bugs
-   * than a power of two would, so I add 2.
+   * 16KB. I want a number that results in a largest message that
+   * is not a power of two since I believe, for no particular reason,
+   * that it might catch more bugs than a power of two would,
+   * so I add 2.
    */
   private static final int LARGEST_MESSAGE_BOUND = 32 * 1024 + 2;
 
