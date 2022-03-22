@@ -63,36 +63,53 @@ import org.apache.geode.cache.ssl.CertificateMaterial;
 import org.apache.geode.distributed.internal.DMStats;
 
 /**
- * Test NioSslEngine (a subclass of NioFilter) interaction with SSLEngine.
+ * In TLSv1.3, when a GCM-based cipher is used, there is a limit on the number
+ * of bytes that may be encoded with a key. When that limit is reached, a TLS
+ * KeyUpdate message is generated (by the SSLEngine). That message causes a new
+ * key to be negotiated between the peer SSLEngines.
+ *
+ * Geode's {@link NioSslEngine} class (subclass of {@link NioFilter}) encapsulates
+ * Java's {@link SSLEngine}. Geode's MsgStreamer, Connection, and ConnectionTable
+ * classes interact with NioSslEngine to accomplish peer-to-peer (P2P) messaging.
+ *
+ * This test constructs a pair of SSLEngine's and wraps them in NioSslEngine.
+ * Rather than relying on MsgStreamer, Connection, or ConnectionTable classes
+ * (which themselves have a lot of dependencies on other classes), this test
+ * implements simplified logic for driving the sending and receiving of data,
+ * i.e. calling NioSslEngine.wrap() and NioSslEngine.unwrap(). See
+ * {@link #send(int, NioSslEngine, SocketChannel, int)} and
+ * {@link #receive(int, NioSslEngine, SocketChannel, ByteBuffer)}.
+ *
+ * The {@link #secureDataTransferTest()} arranges for the encrypted bytes limit
+ * to be reached very quickly (see {@link #ENCRYPTED_BYTES_LIMIT}).
+ * The test verifies data transfer continues correctly, after the limit is reached.
+ * This indirectly verifies that the KeyUpdate protocol initiated by the sending
+ * SSLEngine is correctly handled by all the components involved.
  */
 public class NioSslEngineKeyUpdateTest {
 
-  /*
-   * The purpose of this test is to verify that when the GCM cipher is used with
-   * TLSv1.3, that when a TLS KeyUpdate message is sent, it's properly handled
-   * and data transfer proceeds.
-   */
-  public static final String TLS_PROTOCOL = "TLSv1.3";
-  public static final String TLS_CIPHER_SUITE = "TLS_AES_256_GCM_SHA384";
+  private static final String TLS_PROTOCOL = "TLSv1.3";
+  private static final String TLS_CIPHER_SUITE = "TLS_AES_256_GCM_SHA384";
+
+  // number of bytes the GCM cipher can encrypt before initiating a KeyUpdate
+  private static final int ENCRYPTED_BYTES_LIMIT = 1;
 
   /*
    * KeyUpdate messages don't happen in the handshake, they happen afterward.
    * This is the number of bytes we'll transfer after the TLS handshake.
    */
-  public static final int BYTES_TO_TRANSFER_AFTER_HANDSHAKE = 2;
+  private static final int BYTES_TO_TRANSFER_AFTER_HANDSHAKE = 2;
 
   {
+    assert IsPowerOfTwo(ENCRYPTED_BYTES_LIMIT) && ENCRYPTED_BYTES_LIMIT != 0;
+
     // The bytes will be sent using two calls to wrap so the number must be even
     assert BYTES_TO_TRANSFER_AFTER_HANDSHAKE % 2 == 0;
 
-    /*
-     * For TLSv1.3 with TLS_AES_256_GCM_SHA384 handshakeTest passes with
-     * the key limit set to 1 (= 2^0).
-     *
-     * With BYTES_TO_TRANSFER_AFTER_HANDSHAKE = 2, and key limit set to 1,
-     * secureDataTransferTest fails with IOException "Tag mismatch!"
-     */
-    Security.setProperty("jdk.tls.keyLimits", "AES/GCM/NoPadding KeyUpdate 2^0");
+    assert BYTES_TO_TRANSFER_AFTER_HANDSHAKE > ENCRYPTED_BYTES_LIMIT;
+
+    Security.setProperty("jdk.tls.keyLimits",
+        "AES/GCM/NoPadding KeyUpdate " + ENCRYPTED_BYTES_LIMIT);
   }
 
   private static BufferPool bufferPool;
@@ -101,8 +118,8 @@ public class NioSslEngineKeyUpdateTest {
   private static char[] keystorePassword;
   private static KeyStore truststore;
 
-  private NioSslEngine clientFilter;
-  private NioSslEngine serverFilter;
+  private SSLEngine clientEngine;
+  private SSLEngine serverEngine;
   private int packetBufferSize;
 
   @BeforeClass
@@ -143,20 +160,24 @@ public class NioSslEngineKeyUpdateTest {
         String.format("TLS settings (default) before handshake: Protocols: %s, Cipher Suites: %s",
             Arrays.toString(protocols), Arrays.toString(cipherSuites)));
 
-    final SSLEngine clientEngine = createSSLEngine("server-host", true, sslContext);
+    clientEngine = createSSLEngine("server-host", true, sslContext);
     packetBufferSize = clientEngine.getSession().getPacketBufferSize();
-    clientFilter = new NioSslEngine(clientEngine, bufferPool);
 
-    final SSLEngine serverEngine = createSSLEngine("client-host", false, sslContext);
-    serverFilter = new NioSslEngine(serverEngine, bufferPool);
+    serverEngine = createSSLEngine("client-host", false, sslContext);
   }
 
   @Test
   public void handshakeTest() {
     clientServerTest(
-        (channel, filter, peerNetData) -> handshakeTLS(channel, filter, peerNetData, "Client:"),
-        (channel1, filter1, peerNetData1) -> handshakeTLS(channel1, filter1, peerNetData1,
-            "Server:"));
+        (channel, filter, peerNetData) -> {
+          handshakeTLS(channel, filter, peerNetData, "Client:");
+          return true;
+        },
+        (channel, filter, peerNetData1) -> {
+          handshakeTLS(channel, filter, peerNetData1,
+              "Server:");
+          return true;
+        });
   }
 
   @Test
@@ -171,8 +192,9 @@ public class NioSslEngineKeyUpdateTest {
            * is not evaluated by wrap(). Calling it twice seems to fix that.
            */
           // send(BYTES_TO_TRANSFER_AFTER_HANDSHAKE, filter, channel);
-          send(BYTES_TO_TRANSFER_AFTER_HANDSHAKE / 2, filter, channel);
-          send(BYTES_TO_TRANSFER_AFTER_HANDSHAKE / 2, filter, channel);
+          send(BYTES_TO_TRANSFER_AFTER_HANDSHAKE / 2, filter, channel, 0);
+          send(BYTES_TO_TRANSFER_AFTER_HANDSHAKE / 2, filter, channel,
+              BYTES_TO_TRANSFER_AFTER_HANDSHAKE / 2);
           return true;
         },
         (final SocketChannel channel,
@@ -186,7 +208,11 @@ public class NioSslEngineKeyUpdateTest {
           for (int i = 0; i < 2; i++) {
             final byte[] received =
                 receive(BYTES_TO_TRANSFER_AFTER_HANDSHAKE / 2, filter, channel, peerNetData);
-            assertThat(received).hasSize(BYTES_TO_TRANSFER_AFTER_HANDSHAKE / 2).containsOnly(1);
+            assertThat(received).hasSize(BYTES_TO_TRANSFER_AFTER_HANDSHAKE / 2);
+            for (int j = i * BYTES_TO_TRANSFER_AFTER_HANDSHAKE / 2; j < (i + 1)
+                * BYTES_TO_TRANSFER_AFTER_HANDSHAKE / 2; j++) {
+              assertThat(received[j % received.length]).isEqualTo((byte) j);
+            }
           }
           return true;
         });
@@ -210,14 +236,14 @@ public class NioSslEngineKeyUpdateTest {
 
     final CompletableFuture<Boolean> serverHandshakeFuture =
         supplyAsync(
-            () -> server(boundAddress, packetBufferSize, serverFilter,
-                serverAction, serversWaiting),
+            () -> server(boundAddress, packetBufferSize,
+                serverAction, serversWaiting, serverEngine),
             executorService);
 
     final CompletableFuture<Boolean> clientHandshakeFuture =
         supplyAsync(
-            () -> client(boundAddress, packetBufferSize, clientFilter,
-                clientAction, serversWaiting),
+            () -> client(boundAddress, packetBufferSize,
+                clientAction, serversWaiting, clientEngine),
             executorService);
 
     CompletableFuture.allOf(serverHandshakeFuture, clientHandshakeFuture)
@@ -233,19 +259,27 @@ public class NioSslEngineKeyUpdateTest {
         final ByteBuffer peerNetData) throws IOException;
   }
 
-  private static boolean client(final CompletableFuture<SocketAddress> boundAddress,
-      final int packetBufferSize, final NioSslEngine filter,
+  private static boolean client(
+      final CompletableFuture<SocketAddress> boundAddress,
+      final int packetBufferSize,
       final PeerAction peerAction,
-      final CountDownLatch serversWaiting) {
+      final CountDownLatch serversWaiting,
+      final SSLEngine engine) {
     try {
       try (final SocketChannel connectedChannel = SocketChannel.open()) {
         connectedChannel.connect(boundAddress.get());
         final ByteBuffer peerNetData =
             ByteBuffer.allocateDirect(packetBufferSize);
 
+        final NioSslEngine filter = new NioSslEngine(engine, bufferPool);
+
         final boolean result =
             peerAction.apply(connectedChannel, filter, peerNetData);
+
         serversWaiting.await(); // wait for last server to give up before closing our socket
+
+        filter.close(connectedChannel);
+
         return result;
       }
     } catch (IOException | InterruptedException | ExecutionException e) {
@@ -254,10 +288,12 @@ public class NioSslEngineKeyUpdateTest {
     }
   }
 
-  private static boolean server(final CompletableFuture<SocketAddress> boundAddress,
-      final int packetBufferSize, final NioSslEngine filter,
+  private static boolean server(
+      final CompletableFuture<SocketAddress> boundAddress,
+      final int packetBufferSize,
       final PeerAction peerAction,
-      final CountDownLatch serversWaiting) {
+      final CountDownLatch serversWaiting,
+      final SSLEngine engine) {
     try (final ServerSocketChannel boundChannel = ServerSocketChannel.open()) {
       final InetSocketAddress bindAddress =
           new InetSocketAddress(InetAddress.getLoopbackAddress(), 0);
@@ -266,8 +302,14 @@ public class NioSslEngineKeyUpdateTest {
       try (final SocketChannel acceptedChannel = boundChannel.accept()) {
         final ByteBuffer peerNetData =
             ByteBuffer.allocateDirect(packetBufferSize);
+
+        final NioSslEngine filter = new NioSslEngine(engine, bufferPool);
+
         final boolean result =
             peerAction.apply(acceptedChannel, filter, peerNetData);
+
+        filter.close(acceptedChannel);
+
         return result;
       }
     } catch (IOException e) {
@@ -394,15 +436,16 @@ public class NioSslEngineKeyUpdateTest {
   private static void send(
       final int bytesToSend,
       final NioSslEngine filter,
-      final SocketChannel channel)
+      final SocketChannel channel,
+      final int startingValue)
       throws IOException {
     // if we wanted to send more than one buffer-full we could add an outer loop
     final ByteBuffer appData = ByteBuffer.allocateDirect(bytesToSend);
     for (int i = 0; i < bytesToSend; i++) {
-      appData.put((byte) 1);
+      appData.put((byte) (i + startingValue));
     }
     appData.flip();
-    try (final ByteBufferSharing netDataSharing = filter.wrap(appData)) {
+    try (final ByteBufferSharing netDataSharing = filter.wrap(appData, channel)) {
       final ByteBuffer netData = netDataSharing.getBuffer();
       while (netData.remaining() > 0) {
         channel.write(netData);
@@ -410,4 +453,7 @@ public class NioSslEngineKeyUpdateTest {
     }
   }
 
+  private static boolean IsPowerOfTwo(final int x) {
+    return ((x & (x - 1)) == 0);
+  }
 }

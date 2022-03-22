@@ -207,8 +207,9 @@ public class NioSslEngineTest {
       testEngine.addReturnResult(
           new SSLEngineResult(OK, NEED_TASK, appData.remaining(), appData.remaining()));
       spyNioSslEngine.engine = testEngine;
+      SocketChannel mockChannel = mock(SocketChannel.class);
 
-      try (final ByteBufferSharing outputSharing2 = spyNioSslEngine.wrap(appData)) {
+      try (final ByteBufferSharing outputSharing2 = spyNioSslEngine.wrap(appData, mockChannel)) {
         ByteBuffer wrappedBuffer = outputSharing2.getBuffer();
 
         verify(spyBufferPool, times(1)).expandWriteBufferIfNeeded(any(BufferPool.BufferType.class),
@@ -238,8 +239,10 @@ public class NioSslEngineTest {
       testEngine.addReturnResult(
           new SSLEngineResult(CLOSED, NEED_TASK, appData.remaining(), appData.remaining()));
       spyNioSslEngine.engine = testEngine;
+      SocketChannel mockChannel = mock(SocketChannel.class);
 
-      assertThatThrownBy(() -> spyNioSslEngine.wrap(appData)).isInstanceOf(SSLException.class)
+      assertThatThrownBy(() -> spyNioSslEngine.wrap(appData, mockChannel))
+          .isInstanceOf(SSLException.class)
           .hasMessageContaining("Error encrypting data");
     }
   }
@@ -367,9 +370,10 @@ public class NioSslEngineTest {
     SocketChannel mockChannel = mock(SocketChannel.class);
     Socket mockSocket = mock(Socket.class);
     when(mockChannel.socket()).thenReturn(mockSocket);
+    when(mockChannel.isBlocking()).thenReturn(true);
     when(mockSocket.isClosed()).thenReturn(false);
 
-    when(mockEngine.isOutboundDone()).thenReturn(Boolean.FALSE);
+    when(mockEngine.isOutboundDone()).thenReturn(Boolean.FALSE).thenReturn(Boolean.TRUE);
     when(mockEngine.wrap(any(ByteBuffer.class), any(ByteBuffer.class))).thenReturn(
         new SSLEngineResult(CLOSED, FINISHED, 0, 0));
     nioSslEngine.close(mockChannel);
@@ -383,13 +387,14 @@ public class NioSslEngineTest {
   }
 
   @Test
-  public void closeWhenUnwrapError() throws Exception {
+  public void closeWhenWrapError() throws Exception {
     SocketChannel mockChannel = mock(SocketChannel.class);
     Socket mockSocket = mock(Socket.class);
     when(mockChannel.socket()).thenReturn(mockSocket);
+    when(mockChannel.isBlocking()).thenReturn(true);
     when(mockSocket.isClosed()).thenReturn(true);
 
-    when(mockEngine.isOutboundDone()).thenReturn(Boolean.FALSE);
+    when(mockEngine.isOutboundDone()).thenReturn(Boolean.FALSE).thenReturn(Boolean.TRUE);
     when(mockEngine.wrap(any(ByteBuffer.class), any(ByteBuffer.class))).thenReturn(
         new SSLEngineResult(BUFFER_OVERFLOW, FINISHED, 0, 0));
     assertThatThrownBy(() -> nioSslEngine.close(mockChannel)).isInstanceOf(GemFireIOException.class)
@@ -403,6 +408,7 @@ public class NioSslEngineTest {
     Socket mockSocket = mock(Socket.class);
     when(mockChannel.socket()).thenReturn(mockSocket);
     when(mockSocket.isClosed()).thenReturn(true);
+    when(mockChannel.isBlocking()).thenReturn(true);
 
     when(mockEngine.isOutboundDone()).thenReturn(Boolean.FALSE);
     when(mockEngine.wrap(any(ByteBuffer.class), any(ByteBuffer.class))).thenAnswer((x) -> {

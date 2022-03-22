@@ -22,6 +22,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.security.Security;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -46,6 +47,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedExecutorServiceRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -76,11 +78,19 @@ public class P2PMessagingConcurrencyDUnitTest {
   // number of concurrent (sending) tasks to run
   private static final int SENDER_COUNT = 10;
 
-  // (exclusive) upper bound of random message size, in bytes
-  private static final int LARGEST_MESSAGE_BOUND = 32 * 1024 + 2; // 32KiB + 2
+  /*
+   * Upper bound (exclusive) of random message size, in bytes.
+   * The magnitude is chosen to give us a mix of messages around
+   * 16KB. I want a number that is not a power of two since I
+   * believe, for no particular reason, that it might catch more bugs
+   * than a power of two would, so I add 2.
+   */
+  private static final int LARGEST_MESSAGE_BOUND = 32 * 1024 + 2;
 
   // random seed
   private static final int RANDOM_SEED = 1234;
+
+  public static final boolean TEST_WITH_TLS_KEY_UPDATE_MESSAGE_PROCESSING = false;
 
   private static Properties securityProperties;
 
@@ -111,6 +121,10 @@ public class P2PMessagingConcurrencyDUnitTest {
     final Properties receiverConfiguration =
         gemFireConfiguration(conserveSockets, useTLS, receiveSocketBufferSize);
 
+    if (TEST_WITH_TLS_KEY_UPDATE_MESSAGE_PROCESSING) {
+      configureForTestingTLSKeyUpdateMessage();
+    }
+
     final MemberVM locator =
         clusterStartupRule.startLocatorVM(0, 0, VersionManager.CURRENT_VERSION,
             x -> x.withProperties(senderConfiguration).withConnectionToLocator()
@@ -118,6 +132,21 @@ public class P2PMessagingConcurrencyDUnitTest {
 
     sender = clusterStartupRule.startServerVM(1, senderConfiguration, locator.getPort());
     receiver = clusterStartupRule.startServerVM(2, receiverConfiguration, locator.getPort());
+  }
+
+  private void configureForTestingTLSKeyUpdateMessage() {
+    final SerializableRunnableIF setSystemProperties = () -> {
+      System.setProperty("javax.net.debug", "all");
+      /*
+       * 2^12 is large enough to support non-P2P TLS messaging e.g. locator with no
+       * TLS KeyUpdate message processing, but small enough to ensure that KeyUpdate
+       * messages will be generated/processed by P2P messaging.
+       */
+      Security.setProperty("jdk.tls.keyLimits", "AES/GCM/NoPadding KeyUpdate 2^12");
+    };
+    clusterStartupRule.getVM(0).invoke(setSystemProperties);
+    clusterStartupRule.getVM(1).invoke(setSystemProperties);
+    clusterStartupRule.getVM(2).invoke(setSystemProperties);
   }
 
   @Test

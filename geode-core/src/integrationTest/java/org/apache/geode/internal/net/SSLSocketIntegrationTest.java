@@ -256,7 +256,7 @@ public class SSLSocketIntegrationTest {
     ByteBuffer buffer = bbos.getContentBuffer();
     System.out.println(
         "client buffer position is " + buffer.position() + " and limit is " + buffer.limit());
-    try (final ByteBufferSharing outputSharing = engine.wrap(buffer)) {
+    try (final ByteBufferSharing outputSharing = engine.wrap(buffer, clientChannel)) {
       ByteBuffer wrappedBuffer = outputSharing.getBuffer();
       System.out.println("client wrapped buffer position is " + wrappedBuffer.position()
           + " and limit is " + wrappedBuffer.limit());

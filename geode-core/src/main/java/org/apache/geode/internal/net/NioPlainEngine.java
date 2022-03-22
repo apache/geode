@@ -45,7 +45,7 @@ public class NioPlainEngine implements NioFilter {
   }
 
   @Override
-  public ByteBufferSharing wrap(ByteBuffer buffer) {
+  public ByteBufferSharing wrap(ByteBuffer buffer, final SocketChannel channel) {
     return shareBuffer(buffer);
   }
 

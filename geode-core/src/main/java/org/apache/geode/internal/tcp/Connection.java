@@ -2527,7 +2527,7 @@ public class Connection implements Runnable {
         long queueTimeoutTarget = now + asyncQueueTimeout;
         channel.configureBlocking(false);
         try {
-          try (final ByteBufferSharing outputSharing = ioFilter.wrap(buffer)) {
+          try (final ByteBufferSharing outputSharing = ioFilter.wrap(buffer, channel)) {
             final ByteBuffer wrappedBuffer = outputSharing.getBuffer();
 
             int waitTime = 1;
@@ -2682,7 +2682,7 @@ public class Connection implements Runnable {
           }
           // fall through
         }
-        try (final ByteBufferSharing outputSharing = ioFilter.wrap(buffer)) {
+        try (final ByteBufferSharing outputSharing = ioFilter.wrap(buffer, channel)) {
           final ByteBuffer wrappedBuffer = outputSharing.getBuffer();
 
           while (wrappedBuffer.remaining() > 0) {
