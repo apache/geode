@@ -630,7 +630,7 @@ public class CreateRegionCommandDUnitTest {
         .statusIsError().containsOutput("already exists on the cluster");
     gfsh.executeAndAssertThat(
         "create region --type=REPLICATE_PROXY --group=group1 --name=" + regionName).statusIsError()
-        .containsOutput("already exists on these members: server-1");
+        .containsOutput("already exists in groups: group1");
   }
 
   @Test
@@ -648,7 +648,7 @@ public class CreateRegionCommandDUnitTest {
         .statusIsError().containsOutput("already exists on the cluster");
     gfsh.executeAndAssertThat(
         "create region --type=PARTITION_PROXY --group=group1 --name=" + regionName).statusIsError()
-        .containsOutput("already exists on these members: server-1");
+        .containsOutput("already exists in groups: group1");
   }
 
   @Test
@@ -671,7 +671,7 @@ public class CreateRegionCommandDUnitTest {
         .containsOutput("The existing region is not a replicate region");
     gfsh.executeAndAssertThat(
         "create region --type=PARTITION_PROXY --group=group1 --name=" + regionName).statusIsError()
-        .containsOutput("already exists on these members: server-1");
+        .containsOutput("already exists in groups: group1");
   }
 
   @Test
@@ -686,7 +686,8 @@ public class CreateRegionCommandDUnitTest {
         .containsOutput("Region /startWithLocalRegion already exists on the cluster.");
     gfsh.executeAndAssertThat(
         "create region --type=PARTITION_PROXY --group=group2 --name=" + regionName).statusIsError()
-        .containsOutput("Region /startWithLocalRegion already exists on the cluster");
+        .containsOutput(
+            "The existing region is not a partitioned region");
   }
 
   @Test
