@@ -35,6 +35,7 @@ resources:
     repository: {{repository.fork}}/geode
     disable_ci_skip: false
     skip_ssl_verification: false
+    base_branch: {{repository.branch}}
 - name: geode-status
   type: pull-request
   source:
@@ -45,11 +46,11 @@ resources:
 - name: geode-ci
   type: git
   source:
-    branch: develop
+    branch: {{repository.branch}}
     depth: 1
     paths:
     - ci/*
-    uri: https://github.com/apache/geode.git
+    uri: https://github.com/{{repository.upstream_fork}}/geode.git
 - name: concourse-metadata-resource
   type: concourse-metadata-resource
   source: {}
