@@ -499,7 +499,11 @@ public abstract class AbstractExecution implements InternalExecution {
           // create a new FunctionException on the original one's message (not cause).
           functionException = new FunctionException(functionException.getLocalizedMessage());
         }
-        sender.lastResult(functionException);
+        try {
+          sender.lastResult(functionException);
+        } catch (FunctionException ignore) {
+          logger.info("toberal another way");
+        }
       } else {
         ((InternalResultSender) sender).setException(functionException);
       }

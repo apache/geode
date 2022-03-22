@@ -66,6 +66,7 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
   private PdxSerializer pdxSerializer = null;
   private boolean pdxReadSerialized = false;
   private boolean pdxReadSerializedUserSet = false;
+  private int maxThreads = -1;
   // By default we start one server per jvm
   private int serverCount = 1;
 
@@ -121,6 +122,11 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
       }
     }
     servers.clear();
+  }
+
+  public ServerStarterRule withMaxThreads(int maxThreads) {
+    this.maxThreads = maxThreads;
+    return this;
   }
 
   public ServerStarterRule withPDXPersistent() {
@@ -218,6 +224,9 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
         server.setPort(memberPort);
       } else {
         server.setPort(0);
+      }
+      if (maxThreads >= 0) {
+        server.setMaxThreads(maxThreads);
       }
       try {
         server.start();

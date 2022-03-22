@@ -553,7 +553,9 @@ public class ClientHealthMonitor {
         logger.warn("{} is being terminated because its client timeout of {} has expired.",
             serverConnection, serverConnection.getClientReadTimeout());
         try {
+          logger.info("toberal before handleTermination");
           serverConnection.handleTermination(true);
+          logger.info("toberal after handleTermination");
           // Not all the code in a ServerConnection correctly
           // handles interrupt. In particular it is possible to be doing
           // p2p distribution and to have sent a message to one peer but
@@ -563,6 +565,7 @@ public class ClientHealthMonitor {
           // Just to be sure we clean it up.
           // This call probably isn't needed.
           removeConnection(proxyID, serverConnection);
+          logger.info("toberal after removeConnection");
         }
       }
 
@@ -786,6 +789,7 @@ public class ClientHealthMonitor {
             // Validate all ServerConnection threads. If a thread has been
             // processing a message for more than the socket timeout time,
             // close it it since the client will have timed out and resent.
+            // toberal check this
             validateThreads(proxyID);
 
             Long latestHeartbeatValue = entry.getValue();
