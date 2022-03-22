@@ -505,13 +505,21 @@ fi
 if [ -z "$LATER" ] ; then
   #also update benchmark baseline for develop to this new minor
   sed \
-    -e "s/^    baseline_version:.*/    baseline_version: '${VERSION}'/" \
     -e "s/^  baseline_version_default:.*/  baseline_version_default: '${VERSION}'/" \
-    -e "s/^    baseline_branch:.*/    baseline_branch: ''/" \
     -e "s/^  baseline_branch_default:.*/  baseline_branch_default: ''/" \
     -i.bak ci/pipelines/shared/jinja.variables.yml
   rm ci/pipelines/shared/jinja.variables.yml.bak
-  BENCHMSG=" and set as Benchmarks baseline"
+  BENCHMSG=" and set as default Benchmarks baseline"
+  #if custom baseline on develop is newer [than release branch cut date], resetting might
+  #be the wrong choice.  but, assuming it's older, a new minor is the time to un-custom it
+  if [ $PATCH = 0 ] ; then
+    sed \
+      -e "s/^    baseline_version:.*/    baseline_version: '${VERSION}'/" \
+      -e "s/^    baseline_branch:.*/    baseline_branch: ''/" \
+      -i.bak ci/pipelines/shared/jinja.variables.yml
+    rm ci/pipelines/shared/jinja.variables.yml.bak
+    BENCHMSG=" and set as Benchmarks baseline"
+  fi
   set -x
   git add ci/pipelines/shared/jinja.variables.yml
 fi
