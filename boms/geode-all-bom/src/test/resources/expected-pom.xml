@@ -398,16 +398,6 @@
         <version>3.6.14.Final</version>
       </dependency>
       <dependency>
-        <groupId>org.mockito</groupId>
-        <artifactId>mockito-core</artifactId>
-        <version>4.4.0</version>
-      </dependency>
-      <dependency>
-        <groupId>org.mockito</groupId>
-        <artifactId>mockito-junit-jupiter</artifactId>
-        <version>4.4.0</version>
-      </dependency>
-      <dependency>
         <groupId>org.mortbay.jetty</groupId>
         <artifactId>servlet-api</artifactId>
         <version>3.0.20100224</version>
@@ -476,6 +466,16 @@
         <groupId>org.junit-pioneer</groupId>
         <artifactId>junit-pioneer</artifactId>
         <version>1.6.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>4.4.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-junit-jupiter</artifactId>
+        <version>4.4.0</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>

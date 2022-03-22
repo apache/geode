@@ -291,7 +291,6 @@ dependencies {
   gfshDependencies(project(':geode-log4j'))
   gfshDependencies(project(':geode-wan'))
   gfshDependencies(project(':geode-rebalancer'))
-  gfshDependencies(project(':geode-for-redis'))
   gfshDependencies(project(':geode-old-client-support'))
   gfshDependencies(project(':geode-memcached'))
   gfshDependencies(project(':geode-cq'))
@@ -524,6 +523,7 @@ distributions {
         from { project(':extensions:geode-modules-assembly').distTcServer30 }
         from { project(':extensions:geode-modules-assembly').distTomcat }
         from { project(':extensions:geode-modules-assembly').distAppServer }
+        from { project(':geode-for-redis').distZip }
       }
     }
   }

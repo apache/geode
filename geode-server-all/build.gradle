@@ -37,7 +37,6 @@ dependencies {
   api(project(':geode-connectors'))
   api(project(':geode-core'))
   api(project(':geode-cq'))
-  api(project(':geode-for-redis'))
   api(project(':geode-gfsh'))
   api(project(':geode-log4j'))
   api(project(':geode-logging'))

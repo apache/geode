@@ -21,6 +21,7 @@ import static org.apache.geode.management.internal.i18n.CliStrings.START_LOCATOR
 import static org.apache.geode.management.internal.i18n.CliStrings.START_LOCATOR__J;
 import static org.apache.geode.management.internal.i18n.CliStrings.START_LOCATOR__PORT;
 import static org.apache.geode.management.internal.i18n.CliStrings.START_SERVER;
+import static org.apache.geode.management.internal.i18n.CliStrings.START_SERVER__CLASSPATH;
 import static org.apache.geode.management.internal.i18n.CliStrings.START_SERVER__CRITICAL__HEAP__PERCENTAGE;
 import static org.apache.geode.management.internal.i18n.CliStrings.START_SERVER__DIR;
 import static org.apache.geode.management.internal.i18n.CliStrings.START_SERVER__INITIAL_HEAP;
@@ -57,11 +58,15 @@ import redis.clients.jedis.util.JedisClusterCRC16;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.redis.mocks.MockSubscriber;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.rules.RequiresRedisHome;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 
 public class OutOfMemoryDUnitTest {
+
+  @ClassRule
+  public static RequiresRedisHome redisHome = new RequiresRedisHome();
 
   @ClassRule
   public static RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
@@ -138,7 +143,8 @@ public class OutOfMemoryDUnitTest {
         .addOption(START_SERVER__INITIAL_HEAP, "125m")
         .addOption(START_SERVER__MAXHEAP, "125m")
         .addOption(START_SERVER__CRITICAL__HEAP__PERCENTAGE, "50")
-        .addOption(START_SERVER__J, "-XX:CMSInitiatingOccupancyFraction=45");
+        .addOption(START_SERVER__J, "-XX:CMSInitiatingOccupancyFraction=45")
+        .addOption(START_SERVER__CLASSPATH, redisHome.getGeodeForRedisHome() + "/lib/*");
     gfsh.executeAndAssertThat(startServerCommand.getCommandString()).statusIsSuccess();
   }
 
