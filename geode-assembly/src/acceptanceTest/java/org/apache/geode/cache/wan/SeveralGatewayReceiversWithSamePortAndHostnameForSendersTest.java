@@ -103,15 +103,14 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
     docker.execForService("locator", "gfsh", "-e",
         startLocatorCommand());
     // Start server1
-    docker.execForService("server1", "gfsh", "run",
-        "--file=/geode/scripts/geode-starter-server1.gfsh");
-    // Start server2
-    docker.execForService("server2", "gfsh", "run",
-        "--file=/geode/scripts/geode-starter-server2.gfsh");
+    docker.execForService("server1", "gfsh", "-e",
+        "start server --name=server1 --locators=locator[20334]");
+    docker.execForService("server2", "gfsh", "-e",
+        "start server --name=server2 --locators=locator[20334]");
 
-    // Create partition region
-    docker.execForService("locator", "gfsh", "run",
-        "--file=/geode/scripts/geode-starter-create.gfsh");
+    docker.execForService("locator", "gfsh",
+        "-e", "connect --locator=locator[20334]",
+        "-e", "create region --name=region-wan --type=PARTITION");
 
     // Create gateway receiver
     String createGatewayReceiverCommand = createGatewayReceiverCommand();
@@ -232,8 +231,10 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
   }
 
   private String runListGatewayReceiversCommandInServer(int serverN) {
-    return docker.execForService("locator", "gfsh", "run",
-        "--file=/geode/scripts/geode-list-gateway-receivers-server" + serverN + ".gfsh");
+    return docker.execForService("locator", "gfsh",
+        "-e", "set variable --name=APP_RESULT_VIEWER --value=200",
+        "-e", "connect --locator=locator[20334]",
+        "-e", "list gateways --receivers-only --member=server" + serverN);
   }
 
   private Vector<String> parseSendersConnectedFromGfshOutput(String gfshOutput) {
