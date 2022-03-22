@@ -126,8 +126,8 @@ public class MemoryPoolMXBeanHeapUsageProvider implements HeapUsageProvider, Not
 
     for (MemoryPoolMXBean memoryPoolBean : ManagementFactory.getMemoryPoolMXBeans()) {
       builder.append("(Name=").append(memoryPoolBean.getName()).append(";Type=")
-          .append(memoryPoolBean.getType()).append(";UsageThresholdSupported=")
-          .append(memoryPoolBean.isUsageThresholdSupported()).append("), ");
+          .append(memoryPoolBean.getType()).append(";collectionUsageThresholdSupported=")
+          .append(memoryPoolBean.isCollectionUsageThresholdSupported()).append("), ");
     }
 
     if (builder.length() > 1) {
