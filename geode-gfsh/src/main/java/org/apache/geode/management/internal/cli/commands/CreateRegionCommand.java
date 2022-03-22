@@ -615,8 +615,94 @@ public class CreateRegionCommand extends SingleGfshCommand {
     return false;
   }
 
+  RegionConfig findNonProxyRegionsInClusterConfigurationByName(String regionName,
+      InternalConfigurationPersistenceService persistenceService) {
+    RegionConfig regionConfig;
+    for (String group : persistenceService.getGroups()) {
+      CacheConfig config = persistenceService.getCacheConfig(group);
+      if (config != null) {
+        regionConfig =
+            config.getRegions().stream().filter(
+                region -> region.getName().equals(regionName) && !region.getType()
+                    .contains("PROXY"))
+                .findFirst().orElse(null);
+        if (regionConfig != null) {
+          return regionConfig;
+        }
+      }
+    }
+    return null;
+  }
+
+  boolean isRegionExistsInGroup(String regionName, String group,
+      InternalConfigurationPersistenceService persistenceService) {
+    CacheConfig config = persistenceService.getCacheConfig(group);
+    RegionConfig regionConfig = null;
+    if (config != null) {
+      regionConfig =
+          config.getRegions().stream().filter(region -> region.getName().equals(regionName))
+              .findFirst().orElse(null);
+    }
+    return regionConfig != null;
+  }
+
+  private void failIfRegionExistsInClusterConfiguration(String regionPathFull, String[] groups,
+      RegionShortcut regionShortcut) {
+    InternalConfigurationPersistenceService persistenceService =
+        getConfigurationPersistenceService();
+    if (persistenceService == null) {
+      return;
+    }
+
+    RegionPath regionPath = new RegionPath(regionPathFull);
+    RegionConfig regionConfig =
+        findNonProxyRegionsInClusterConfigurationByName(regionPath.getName(), persistenceService);
+    if (regionConfig == null) {
+      return;
+    }
+
+    String existingDataPolicy = regionConfig.getType();
+    boolean existingRegionIsNotProxy = !existingDataPolicy.contains("PROXY");
+    if (regionShortcut.isLocal() || existingDataPolicy.equals("NORMAL")
+        || (!regionShortcut.isProxy() && existingRegionIsNotProxy)) {
+      throw new EntityExistsException(
+          String.format("Region %s already exists on the cluster.", regionPath.getRegionPath()));
+    }
+
+    if (regionShortcut.isPartition() && !existingDataPolicy.contains("PARTITION")) {
+      LogService.getLogger().info("Create region command: got EntityExists exception");
+      throw new EntityExistsException("The existing region is not a partitioned region");
+    }
+
+    if (regionShortcut.isReplicate() && !existingDataPolicy.equals("EMPTY")
+        && !existingDataPolicy.contains("REPLICATE") && !existingDataPolicy.contains("PRELOADED")) {
+      throw new EntityExistsException("The existing region is not a replicate region");
+    }
+
+    if (groups == null) {
+      if (isRegionExistsInGroup(regionPath.getName(), null, persistenceService)) {
+        throw new EntityExistsException(
+            String.format("Region %s already exists on the cluster.", regionPath.getRegionPath()));
+      }
+    } else {
+      List<String> groupsExists = new ArrayList<>();
+      for (String group : groups) {
+        if (isRegionExistsInGroup(regionPath.getName(), group, persistenceService)) {
+          groupsExists.add(group);
+        }
+      }
+      if (!groupsExists.isEmpty()) {
+        throw new EntityExistsException(
+            String.format("Region %s already exists in groups: %s.", regionPath.getRegionPath(),
+                StringUtils.join(groupsExists, ",")));
+      }
+    }
+  }
+
   private void failIfRegionAlreadyExists(String regionPath, RegionShortcut regionShortcut,
       String[] groups) throws EntityExistsException {
+
+    failIfRegionExistsInClusterConfiguration(regionPath, groups, regionShortcut);
     /*
      * Adding name collision check for regions created with regionShortcut only.
      * Regions can be categories as Proxy(replicate/partition), replicate/partition, and local
