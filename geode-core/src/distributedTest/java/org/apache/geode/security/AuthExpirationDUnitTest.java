@@ -30,7 +30,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -66,12 +65,6 @@ public class AuthExpirationDUnitTest {
 
 
   private ClientVM clientVM;
-
-  @Before
-  public void before() throws Exception {
-    // this is enabled to show how many times authorize call is made with each permission key
-    getSecurityManager().setAllowDuplicate(true);
-  }
 
   @After
   public void after() {
@@ -117,7 +110,7 @@ public class AuthExpirationDUnitTest {
     Map<String, List<String>> authorizedOps = getSecurityManager().getAuthorizedOps();
     assertThat(authorizedOps.keySet().size()).isEqualTo(2);
     assertThat(authorizedOps.get("user1")).asList().containsExactly("DATA:READ:region",
-        "DATA:READ:region", "DATA:READ:region:1");
+        "DATA:READ:region:1");
     assertThat(authorizedOps.get("user2")).asList().containsExactly("DATA:READ:region:2");
 
     Map<String, List<String>> unAuthorizedOps = getSecurityManager().getUnAuthorizedOps();

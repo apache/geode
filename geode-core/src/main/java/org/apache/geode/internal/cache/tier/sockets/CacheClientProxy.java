@@ -723,13 +723,6 @@ public class CacheClientProxy implements ClientSession {
     return _messageDispatcher.isWaitingForReAuthentication();
   }
 
-  public void notifyReAuthentication() {
-    if (_messageDispatcher == null) {
-      return;
-    }
-    _messageDispatcher.notifyReAuthentication();
-  }
-
   /**
    * Returns whether the proxy is paused. It is paused if its message dispatcher is paused. This
    * only applies to durable clients.
