@@ -853,7 +853,8 @@ public class QueueManagerImpl implements QueueManager {
       return;
     }
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    if (queueConnections.getPrimary() != null && !queueConnections.getPrimary().isDestroyed()) {
+    if (queueConnections != null && queueConnections.getPrimary() != null
+        && !queueConnections.getPrimary().isDestroyed()) {
       if (isDebugEnabled) {
         logger.debug("Primary recovery not needed");
       }
