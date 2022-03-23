@@ -1071,11 +1071,6 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
-  public void setQueryMonitorRequiredForResourceManager(boolean required) {
-    delegate.setQueryMonitorRequiredForResourceManager(required);
-  }
-
-  @Override
   public boolean isQueryMonitorDisabledForLowMemory() {
     return delegate.isQueryMonitorDisabledForLowMemory();
   }

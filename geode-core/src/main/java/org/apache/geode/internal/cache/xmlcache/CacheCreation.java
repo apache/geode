@@ -1352,11 +1352,6 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public void setQueryMonitorRequiredForResourceManager(final boolean required) {
-    throw new UnsupportedOperationException("Should not be invoked");
-  }
-
-  @Override
   public boolean isQueryMonitorDisabledForLowMemory() {
     throw new UnsupportedOperationException("Should not be invoked");
   }
