@@ -49,10 +49,13 @@ function changes_for_path() {
 function save_classpath() {
   echo "Building and saving classpath"
   pushd geode >> /dev/null
+    printenv
+    set -x
     BUILD_LOG=/tmp/classpath-build.log
     # Do this twice since devBuild still dumps a warning string to stdout.
     ./gradlew --console=plain -q compileTestJava compileIntegrationTestJava compileDistributedTestJava devBuild >${BUILD_LOG} 2>&1 || (cat ${BUILD_LOG}; false)
     ./gradlew --console=plain -q printTestClasspath 2>/dev/null >/tmp/classpath.txt
+    set +x
   popd >> /dev/null
 }
 
