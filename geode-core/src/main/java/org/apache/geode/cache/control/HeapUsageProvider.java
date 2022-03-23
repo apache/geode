@@ -14,13 +14,12 @@
  */
 package org.apache.geode.cache.control;
 
-import java.util.ServiceLoader;
 import java.util.function.LongConsumer;
 
 /**
  * This interface can be implemented with a class
- * that is then configured as a java service (see {@link ServiceLoader}
- * and will then be used by geode to determine how much heap memory
+ * that is then specified using the {@link #HEAP_USAGE_PROVIDER_CLASS_NAME}
+ * system property and will then be used by geode to determine how much heap memory
  * is in use and what the maximum heap size is.
  * This interface provides the heap usage in two ways.
  * It must implement {@link #getBytesUsed()} which is used by geode to directly
@@ -33,6 +32,17 @@ import java.util.function.LongConsumer;
  * then startNotifications and stopNotifications can have empty implementations.
  */
 public interface HeapUsageProvider {
+
+  /**
+   * If specified with either the prefix "geode." then it must be the name of a class that
+   * implements the {@link HeapUsageProvider} interface and has a zero-arg public constructor.
+   * If the class can not be found or an instance can not be constructed than the Cache startup
+   * will fail with an exception.
+   * Otherwise, a single instance will be created and used by Geode's ResourceManager
+   * to determine if the eviction-heap-threshold or the critical-heap-threshold are exceeded.
+   */
+  String HEAP_USAGE_PROVIDER_CLASS_NAME = "heapUsageProviderClassName";
+
   /**
    * Called by geode when this provider should start providing notifications
    * to the given listener.

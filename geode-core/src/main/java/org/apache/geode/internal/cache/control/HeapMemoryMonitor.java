@@ -14,16 +14,17 @@
  */
 package org.apache.geode.internal.cache.control;
 
-import java.lang.management.ManagementFactory;
+import static org.apache.geode.cache.control.HeapUsageProvider.HEAP_USAGE_PROVIDER_CLASS_NAME;
+import static org.apache.geode.internal.lang.SystemProperty.getProductStringProperty;
+
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.ServiceLoader;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.LongConsumer;
 
-import javax.management.NotificationEmitter;
 import javax.management.NotificationListener;
 
 import org.apache.logging.log4j.Logger;
@@ -31,12 +32,12 @@ import org.jetbrains.annotations.TestOnly;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.control.HeapUsageProvider;
 import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.query.internal.QueryMonitor;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
@@ -44,6 +45,7 @@ import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceT
 import org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState;
 import org.apache.geode.internal.cache.control.ResourceAdvisor.ResourceManagerProfile;
 import org.apache.geode.internal.cache.execute.AllowExecutionInLowMemory;
+import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -65,7 +67,7 @@ public class HeapMemoryMonitor implements MemoryMonitor, LongConsumer {
   // Internal for polling the JVM for changes in heap memory usage.
   private static final int POLLER_INTERVAL = Integer.getInteger(POLLER_INTERVAL_PROP, 500);
 
-  private final HeapUsageProvider heapUsageMonitor;
+  private final HeapUsageProvider heapUsageProvider;
 
   // This holds a new event as it transitions from updateStateAndSendEvent(...) to fillInProfile()
   private final ThreadLocal<MemoryEvent> upcomingEvent = new ThreadLocal<>();
@@ -75,7 +77,7 @@ public class HeapMemoryMonitor implements MemoryMonitor, LongConsumer {
   private volatile MemoryState currentState = MemoryState.DISABLED;
 
   // Set when startMonitoring() and stopMonitoring() are called
-  boolean started = false;
+  private boolean started = false;
 
   // Set to true when setEvictionThreshold(...) is called.
   private boolean hasEvictionThreshold = false;
@@ -88,30 +90,52 @@ public class HeapMemoryMonitor implements MemoryMonitor, LongConsumer {
   @MutableForTesting
   private static long testBytesUsedForThresholdSet = -1;
 
-  @Immutable
-  private static final ServiceLoader<HeapUsageProvider> heapUsageMonitorLoader =
-      ServiceLoader.load(HeapUsageProvider.class);
-
   HeapMemoryMonitor(final InternalResourceManager resourceManager, final InternalCache cache,
       final ResourceManagerStats stats) {
+    this(resourceManager, cache, stats, createHeapUsageProvider());
+  }
+
+  @VisibleForTesting
+  HeapMemoryMonitor(final InternalResourceManager resourceManager, final InternalCache cache,
+      final ResourceManagerStats stats, final HeapUsageProvider heapUsageProvider) {
     this.resourceManager = resourceManager;
     resourceAdvisor = (ResourceAdvisor) cache.getDistributionAdvisor();
     this.cache = cache;
     this.stats = stats;
-    heapUsageMonitor = findHeapUsageMonitor();
-    thresholds = new MemoryThresholds(heapUsageMonitor.getMaxMemory());
+    this.heapUsageProvider = heapUsageProvider;
+    thresholds = new MemoryThresholds(heapUsageProvider.getMaxMemory());
     mostRecentEvent = new MemoryEvent(ResourceType.HEAP_MEMORY,
         MemoryState.DISABLED, MemoryState.DISABLED, null, 0L, true, thresholds);
   }
 
-  private static HeapUsageProvider findHeapUsageMonitor() {
-    for (HeapUsageProvider heapUsageMonitor : heapUsageMonitorLoader) {
-      // return the first one defined as a service
-      return heapUsageMonitor;
+  private static HeapUsageProvider createHeapUsageProvider() {
+    Optional<String> propertyValue = getProductStringProperty(HEAP_USAGE_PROVIDER_CLASS_NAME);
+    if (propertyValue.isPresent()) {
+      String className = propertyValue.get();
+      Class<?> clazz;
+      try {
+        clazz = ClassPathLoader.getLatest().forName(className);
+      } catch (Exception ex) {
+        throw new IllegalArgumentException("Could not load class \"" + className +
+            "\" for system property \"geode." + HEAP_USAGE_PROVIDER_CLASS_NAME + "\"", ex);
+      }
+      Object instance;
+      try {
+        instance = clazz.newInstance();
+      } catch (Exception ex) {
+        throw new IllegalArgumentException("Could not create an instance of class \"" + className +
+            "\" for system property \"geode." + HEAP_USAGE_PROVIDER_CLASS_NAME +
+            "\". Make sure it has a public zero-arg constructor.", ex);
+      }
+      if (!(instance instanceof HeapUsageProvider)) {
+        throw new IllegalArgumentException("The class \"" + className +
+            "\" for system property \"geode." + HEAP_USAGE_PROVIDER_CLASS_NAME +
+            "\" is not an instance of HeapUsageProvider.");
+      }
+      return (HeapUsageProvider) instance;
+    } else {
+      return new MemoryPoolMXBeanHeapUsageProvider();
     }
-    return new MemoryPoolMXBeanHeapUsageProvider(ManagementFactory::getMemoryPoolMXBeans,
-        () -> (NotificationEmitter) ManagementFactory.getMemoryMXBean(),
-        () -> Runtime.getRuntime().maxMemory());
   }
 
   public void setMemoryStateChangeTolerance(int memoryStateChangeTolerance) {
@@ -128,7 +152,7 @@ public class HeapMemoryMonitor implements MemoryMonitor, LongConsumer {
         return;
       }
       if (!testDisableMemoryUpdates) {
-        heapUsageMonitor.startNotifications(this);
+        heapUsageProvider.startNotifications(this);
         startHeapUsagePoller();
       }
       started = true;
@@ -142,7 +166,7 @@ public class HeapMemoryMonitor implements MemoryMonitor, LongConsumer {
         return;
       }
       if (!testDisableMemoryUpdates) {
-        heapUsageMonitor.stopNotifications();
+        heapUsageProvider.stopNotifications();
         stopHeapUsagePoller();
       }
 
@@ -327,7 +351,7 @@ public class HeapMemoryMonitor implements MemoryMonitor, LongConsumer {
    */
   @Override
   public long getBytesUsed() {
-    return heapUsageMonitor.getBytesUsed();
+    return heapUsageProvider.getBytesUsed();
   }
 
   /**
@@ -348,25 +372,27 @@ public class HeapMemoryMonitor implements MemoryMonitor, LongConsumer {
     }
 
     if (event.getState().isCritical() && !event.getPreviousState().isCritical()) {
-      cache.getLogger().error(
+      logger.error(
           createCriticalThresholdLogMessage(event, eventOrigin, true));
-      if (!cache.isQueryMonitorDisabledForLowMemory()) {
-        cache.getQueryMonitor().setLowMemory(true, event.getBytesUsed());
+      QueryMonitor queryMonitor = cache.getQueryMonitor();
+      if (queryMonitor != null) {
+        queryMonitor.setLowMemory(true, event.getBytesUsed());
       }
 
     } else if (!event.getState().isCritical() && event.getPreviousState().isCritical()) {
-      cache.getLogger().error(
+      logger.error(
           createCriticalThresholdLogMessage(event, eventOrigin, false));
-      if (!cache.isQueryMonitorDisabledForLowMemory()) {
-        cache.getQueryMonitor().setLowMemory(false, event.getBytesUsed());
+      QueryMonitor queryMonitor = cache.getQueryMonitor();
+      if (queryMonitor != null) {
+        queryMonitor.setLowMemory(false, event.getBytesUsed());
       }
     }
 
     if (event.getState().isEviction() && !event.getPreviousState().isEviction()) {
-      cache.getLogger().info(String.format("Member: %s above %s eviction threshold",
+      logger.info(String.format("Member: %s above %s eviction threshold",
           event.getMember(), "heap"));
     } else if (!event.getState().isEviction() && event.getPreviousState().isEviction()) {
-      cache.getLogger().info(String.format("Member: %s below %s eviction threshold",
+      logger.info(String.format("Member: %s below %s eviction threshold",
           event.getMember(), "heap"));
     }
 
@@ -400,8 +426,7 @@ public class HeapMemoryMonitor implements MemoryMonitor, LongConsumer {
         // error condition, so you also need to check to see if the JVM
         // is still usable:
         SystemFailure.checkFailure();
-        cache.getLogger()
-            .error("Exception occurred when notifying listeners ", t);
+        logger.error("Exception occurred when notifying listeners ", t);
       }
     }
   }
@@ -506,7 +531,7 @@ public class HeapMemoryMonitor implements MemoryMonitor, LongConsumer {
       MemoryThresholds newThresholds;
 
       if (testMaxMemoryBytes == 0) {
-        newThresholds = new MemoryThresholds(heapUsageMonitor.getMaxMemory());
+        newThresholds = new MemoryThresholds(heapUsageProvider.getMaxMemory());
       } else {
         newThresholds = new MemoryThresholds(testMaxMemoryBytes,
             thresholds.getCriticalThreshold(), thresholds.getEvictionThreshold());
@@ -554,12 +579,12 @@ public class HeapMemoryMonitor implements MemoryMonitor, LongConsumer {
   }
 
   public long getMaxMemory() {
-    return heapUsageMonitor.getMaxMemory();
+    return heapUsageProvider.getMaxMemory();
   }
 
   @TestOnly
-  public NotificationListener getHeapUsageMonitor() {
-    return (MemoryPoolMXBeanHeapUsageProvider) heapUsageMonitor;
+  public NotificationListener getHeapUsageProvider() {
+    return (MemoryPoolMXBeanHeapUsageProvider) heapUsageProvider;
   }
 
   private ScheduledFuture<?> heapUsagePollerFuture;
@@ -593,7 +618,7 @@ public class HeapMemoryMonitor implements MemoryMonitor, LongConsumer {
     @Override
     public void run() {
       try {
-        updateStateAndSendEvent(heapUsageMonitor.getBytesUsed(), "polling");
+        updateStateAndSendEvent(heapUsageProvider.getBytesUsed(), "polling");
       } catch (Exception e) {
         logger.debug("Poller Thread caught exception:", e);
       }

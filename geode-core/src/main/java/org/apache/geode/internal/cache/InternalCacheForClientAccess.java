@@ -1076,11 +1076,6 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
-  public boolean isQueryMonitorDisabledForLowMemory() {
-    return delegate.isQueryMonitorDisabledForLowMemory();
-  }
-
-  @Override
   public boolean isRESTServiceRunning() {
     return delegate.isRESTServiceRunning();
   }

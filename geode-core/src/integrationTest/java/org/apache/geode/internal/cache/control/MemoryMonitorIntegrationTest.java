@@ -386,7 +386,7 @@ public class MemoryMonitorIntegrationTest {
     try {
       emitter.removeNotificationListener(
           InternalResourceManager.getInternalResourceManager(cache).getHeapMonitor()
-              .getHeapUsageMonitor());
+              .getHeapUsageProvider());
       assertTrue("Expected that the resource manager was not registered", false);
     } catch (ListenerNotFoundException expected) {
     }
@@ -419,7 +419,7 @@ public class MemoryMonitorIntegrationTest {
     try {
       emitter.removeNotificationListener(
           InternalResourceManager.getInternalResourceManager(cache).getHeapMonitor()
-              .getHeapUsageMonitor());
+              .getHeapUsageProvider());
       assertTrue("Expected that the resource manager was not registered", false);
     } catch (ListenerNotFoundException expected) {
     }

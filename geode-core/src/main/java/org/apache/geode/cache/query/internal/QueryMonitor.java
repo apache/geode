@@ -93,8 +93,7 @@ public class QueryMonitor {
    * immediately upon cancelation (via {@link #stopMonitoringQueryExecution(ExecutionContext)}).
    *
    * @param executor is responsible for processing scheduled cancelation tasks
-   * @param cache is interrogated via {@link InternalCache#isQueryMonitorDisabledForLowMemory} at
-   *        each low-memory state change
+   * @param cache is not used // TODO remove this parameter
    * @param defaultMaxQueryExecutionTime is the maximum time, in milliseconds, that any query is
    *        allowed to run
    */
@@ -332,12 +331,7 @@ public class QueryMonitor {
         final boolean isLowMemory,
         final long usedBytes,
         final InternalCache cache) {
-      if (cache.isQueryMonitorDisabledForLowMemory()) {
-        return;
-      }
-
       memoryUsedBytes = usedBytes;
-
       _setLowMemory(executor, isLowMemory, usedBytes, cache);
     }
 

@@ -4345,24 +4345,16 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
-  public boolean isQueryMonitorDisabledForLowMemory() {
-    return queryMonitorDisabledForLowMem;
-  }
-
-  @Override
   public QueryMonitor getQueryMonitor() {
     // Check to see if monitor is required if ResourceManager critical heap percentage is set
     // or whether we override it with the system variable;
     boolean monitorRequired =
         !queryMonitorDisabledForLowMem && queryMonitorRequiredForResourceManager;
-    // Added for DUnit test purpose, which turns-on and off the this.testMaxQueryExecutionTime.
     if (!(MAX_QUERY_EXECUTION_TIME > 0 || monitorRequired)) {
-      // if this.testMaxQueryExecutionTime is set, send the QueryMonitor.
-      // Else send null, so that the QueryMonitor is turned-off.
       return null;
     }
 
-    // Return the QueryMonitor service if MAX_QUERY_EXECUTION_TIME is set or it is required by the
+    // Return the QueryMonitor service if MAX_QUERY_EXECUTION_TIME is > 0 or it is required by the
     // ResourceManager and not overridden by system property.
     QueryMonitor tempQueryMonitor = queryMonitor;
     if (tempQueryMonitor == null) {

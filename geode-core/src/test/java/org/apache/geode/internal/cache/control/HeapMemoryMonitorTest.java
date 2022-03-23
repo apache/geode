@@ -17,18 +17,19 @@ package org.apache.geode.internal.cache.control;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.LowMemoryException;
+import org.apache.geode.cache.control.HeapUsageProvider;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
@@ -67,8 +68,11 @@ public class HeapMemoryMonitorTest {
     when(internalCache.getDistributionAdvisor()).thenReturn(resourceAdvisor);
     when(internalCache.getMyId()).thenReturn(myself);
 
-    heapMonitor = new HeapMemoryMonitor(mock(InternalResourceManager.class), internalCache,
-        mock(ResourceManagerStats.class));
+    InternalResourceManager resourceManager = mock(InternalResourceManager.class);
+    when(resourceManager.getExecutor()).thenReturn(mock(ScheduledExecutorService.class));
+
+    heapMonitor = new HeapMemoryMonitor(resourceManager, internalCache,
+        mock(ResourceManagerStats.class), mock(HeapUsageProvider.class));
     previousMemoryStateChangeTolerance = heapMonitor.getMemoryStateChangeTolerance();
     heapMonitor.setMemoryStateChangeTolerance(memoryStateChangeTolerance);
     memberSet = new HashSet<>();
@@ -401,13 +405,6 @@ public class HeapMemoryMonitorTest {
 
   // ========== private methods ==========
   private void setupHeapMonitorThresholds(boolean enableEviction, boolean enableCritical) {
-    // Initialize the most recent state to NORMAL
-    heapMonitor = spy(heapMonitor);
-
-    // This will prevent the polling monitor from firing and causing state transitions. We
-    // want complete control over the state transitions in this test.
-    heapMonitor.started = true;
-
     HeapMemoryMonitor.setTestBytesUsedForThresholdSet(50);
     heapMonitor.setTestMaxMemoryBytes(100);
 

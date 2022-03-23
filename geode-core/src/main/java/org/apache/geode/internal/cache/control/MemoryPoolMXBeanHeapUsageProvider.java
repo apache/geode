@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.control;
 
+import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryType;
 import java.util.List;
@@ -29,6 +30,7 @@ import javax.management.NotificationListener;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.control.HeapUsageProvider;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -152,7 +154,14 @@ public class MemoryPoolMXBeanHeapUsageProvider implements HeapUsageProvider, Not
 
   private volatile LongConsumer heapUsageListener = disabledHeapUsageListener;
 
-  public MemoryPoolMXBeanHeapUsageProvider(Supplier<List<MemoryPoolMXBean>> memoryPoolSupplier,
+  public MemoryPoolMXBeanHeapUsageProvider() {
+    this(ManagementFactory::getMemoryPoolMXBeans,
+        () -> (NotificationEmitter) ManagementFactory.getMemoryMXBean(),
+        () -> Runtime.getRuntime().maxMemory());
+  }
+
+  @VisibleForTesting
+  MemoryPoolMXBeanHeapUsageProvider(Supplier<List<MemoryPoolMXBean>> memoryPoolSupplier,
       Supplier<NotificationEmitter> notificationEmitterSupplier,
       LongSupplier maxJVMHeapSupplier) {
     this.memoryPoolSupplier = memoryPoolSupplier;
