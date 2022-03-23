@@ -463,7 +463,11 @@ server1 | Region "/customer" altered on "server1"
 
 ## <a id="topic_7E6B7E1B972D4F418CB45354D1089C2B" class="no-quick-link"></a>alter runtime
 
-Alters configuration properties for all members or a subset of members while the member or members are running.
+Alters configuration properties for all servers or a subset of servers while the member or members are running.
+Alter runtime is a cluster configuration command that affects the configuration for newly joining servers.
+In order for running members to adopt the alteration, they must be stopped and restarted.
+
+The alter runtime command does not apply to locators.
 
 For more information on these configuration properties, see [cache.xml](../../../reference/topics/chapter_overview_cache_xml.html#cache_xml) and configuration parameter reference.
 
@@ -527,7 +531,7 @@ alter runtime [--members=value(,value)*] [--groups=value(,value)*]
 <td>0</td>
 </tr>
 <tr>
-<td><span class="keyword parmname">\-\-loglevel </span></td>
+<td><span class="keyword parmname">\-\-log-level </span></td>
 <td>The new log level. This option is required and you must specify a value.
 Valid values are: `ALL`, `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `FATAL`, `OFF`. 
 <td>INFO</td>
@@ -578,13 +582,13 @@ Valid values are: `ALL`, `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `FATAL`, `OF
 **Example Commands:**
 
 ``` pre
-alter runtime --members=server1 --loglevel=WARN --enable-statistics=true
+alter runtime --members=server1 --log-level=WARN --enable-statistics=true
 ```
 
 **Sample Output:**
 
 ``` pre
-gfsh>alter runtime --members=server1 --loglevel=WARN --enable-statistics=true
+gfsh>alter runtime --members=server1 --log-level=WARN --enable-statistics=true
 Runtime configuration altered successfully for the following member(s)
 192.0.2.0(server1:240)<v1>:64871
 ```
