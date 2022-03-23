@@ -22,12 +22,14 @@ limitations under the License.
 
 Changes the logging level on specified members.
 
+The `change loglevel` command applies only to the members specified, whether they are servers or locators. The change does not apply to unspecified or subsequently-added members.
+
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
 **Syntax:**
 
 ``` pre
-change loglevel --loglevel=value [--members=value(,value)*] [--groups=value(,value)*]
+change loglevel --log-level=value [--members=value(,value)*] [--groups=value(,value)*]
 ```
 
 <a id="topic_E74ED23CB60342538B2175C326E7D758__table_2277A2CE8F6E4731B45FEFA2B1366DB6"></a>
@@ -58,7 +60,7 @@ change loglevel --loglevel=value [--members=value(,value)*] [--groups=value(,val
 <td> </td>
 </tr>
 <tr>
-<td><span class="keyword parmname">\-\-loglevel</span></td>
+<td><span class="keyword parmname">\-\-log-level</span></td>
 <td><em>Required.</em> Log level to change. Valid options are:
  <code>ALL</code>, <code>TRACE</code>, <code>DEBUG</code>, <code>INFO</code>, <code>WARN</code>, <code>ERROR</code>, <code>FATAL</code>, <code>OFF</code>. 
 </td>
@@ -72,13 +74,13 @@ change loglevel --loglevel=value [--members=value(,value)*] [--groups=value(,val
 **Example Commands:**
 
 ``` pre
-gfsh>change loglevel --loglevel=DEBUG --members=server1
+gfsh>change loglevel --log-level=DEBUG --members=server1
 ```
 
 **Sample Output:**
 
 ``` pre
-gfsh>change loglevel --loglevel=DEBUG --members=server1
+gfsh>change loglevel --log-level=DEBUG --members=server1
 
 Summary
 
