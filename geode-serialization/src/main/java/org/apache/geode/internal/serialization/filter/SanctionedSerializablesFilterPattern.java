@@ -98,6 +98,7 @@ public class SanctionedSerializablesFilterPattern implements FilterPattern {
 
         // jar deployment
         .add("com.sun.proxy.$Proxy*")
+        .add("jdk.proxy*")
         .add("com.healthmarketscience.rmiio.RemoteInputStream")
         .add("javax.rmi.ssl.SslRMIClientSocketFactory")
         .add("javax.net.ssl.SSLHandshakeException")
