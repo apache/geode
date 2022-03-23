@@ -132,6 +132,7 @@ public class HeapMemoryMonitor implements MemoryMonitor, LongConsumer {
             "\" for system property \"geode." + HEAP_USAGE_PROVIDER_CLASS_NAME +
             "\" is not an instance of HeapUsageProvider.");
       }
+      logger.info("Using custom HeapUsageProvider class: {}", className);
       return (HeapUsageProvider) instance;
     } else {
       return new MemoryPoolMXBeanHeapUsageProvider();
