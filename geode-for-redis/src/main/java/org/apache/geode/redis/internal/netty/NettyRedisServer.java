@@ -63,6 +63,7 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementException;
+import org.apache.geode.redis.internal.RedisConfiguration;
 import org.apache.geode.redis.internal.eventing.EventDistributor;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.services.RegionProvider;
@@ -76,7 +77,8 @@ public class NettyRedisServer {
 
   private static final Logger logger = LogService.getLogger();
 
-  private final Supplier<DistributionConfig> configSupplier;
+  private final DistributionConfig gemfireConfig;
+  private final RedisConfiguration redisConfig;
   private final RegionProvider regionProvider;
   private final PubSub pubsub;
   private final Supplier<Boolean> allowUnsupportedSupplier;
@@ -91,12 +93,13 @@ public class NettyRedisServer {
   private final EventDistributor eventDistributor;
   private final int writeTimeoutSeconds;
 
-  public NettyRedisServer(Supplier<DistributionConfig> configSupplier,
+  public NettyRedisServer(DistributionConfig gemfireConfig, RedisConfiguration redisConfig,
       RegionProvider regionProvider, PubSub pubsub, Supplier<Boolean> allowUnsupportedSupplier,
       int port, String requestedAddress, RedisStats redisStats,
       DistributedMember member, RedisSecurityService securityService,
       EventDistributor eventDistributor) {
-    this.configSupplier = configSupplier;
+    this.gemfireConfig = gemfireConfig;
+    this.redisConfig = redisConfig;
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;
     this.allowUnsupportedSupplier = allowUnsupportedSupplier;
@@ -157,7 +160,7 @@ public class NettyRedisServer {
   }
 
   private ChannelInitializer<SocketChannel> createChannelInitializer() {
-    String redisUsername = configSupplier.get().getRedisUsername();
+    String redisUsername = redisConfig.getUsername();
 
     return new ChannelInitializer<SocketChannel>() {
       @Override
@@ -182,7 +185,7 @@ public class NettyRedisServer {
   private void addSSLIfEnabled(SocketChannel ch, ChannelPipeline p) {
 
     SSLConfig sslConfigForServer =
-        SSLConfigurationFactory.getSSLConfigForComponent(configSupplier.get(),
+        SSLConfigurationFactory.getSSLConfigForComponent(gemfireConfig,
             SecurableCommunicationChannel.SERVER);
 
     if (!sslConfigForServer.isEnabled()) {
@@ -258,7 +261,7 @@ public class NettyRedisServer {
    * @return Buffer size to use for server
    */
   private int getBufferSize() {
-    return configSupplier.get().getSocketBufferSize();
+    return gemfireConfig.getSocketBufferSize();
   }
 
   /**

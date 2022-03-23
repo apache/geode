@@ -69,13 +69,13 @@ public class GeodeRedisServer {
   /**
    * Constructor for {@code GeodeRedisServer} that will configure the server to bind to the given
    * address and port.
-   *
-   * @param bindAddress The address to which the server will attempt to bind to; null
-   *        causes it to bind to all local addresses.
-   * @param port The port the server will bind to, will throw an IllegalArgumentException if
-   *        argument is less than 0. If the port is 0 a random port is assigned.
    */
-  public GeodeRedisServer(String bindAddress, int port, InternalCache cache) {
+  public GeodeRedisServer(RedisConfiguration configuration, InternalCache cache) {
+    int port = configuration.getPort();
+    String bindAddress = configuration.getBindAddress();
+
+    logger.info(String.format("Starting GeodeRedisServer on bind address %s on port %s",
+        bindAddress, port));
 
     unsupportedCommandsEnabled = Boolean.getBoolean(ENABLE_UNSUPPORTED_COMMANDS_PARAM);
 
@@ -84,7 +84,8 @@ public class GeodeRedisServer {
     RedisMemberInfoRetrievalFunction infoFunction = RedisMemberInfoRetrievalFunction.register();
 
     eventDistributor = new EventDistributor();
-    regionProvider = new RegionProvider(cache, stripedCoordinator, redisStats, eventDistributor);
+    regionProvider = new RegionProvider(cache, configuration, stripedCoordinator, redisStats,
+        eventDistributor);
     pubSub = new PubSubImpl(new Subscriptions(redisStats), regionProvider, redisStats);
 
     activeExpirationManager = new ActiveExpirationManager(regionProvider);
@@ -92,8 +93,8 @@ public class GeodeRedisServer {
     DistributedMember member = cache.getDistributedSystem().getDistributedMember();
     RedisSecurityService securityService = new RedisSecurityService(cache.getSecurityService());
 
-    nettyRedisServer = new NettyRedisServer(() -> cache.getInternalDistributedSystem().getConfig(),
-        regionProvider, pubSub,
+    nettyRedisServer = new NettyRedisServer(cache.getInternalDistributedSystem().getConfig(),
+        configuration, regionProvider, pubSub,
         this::allowUnsupportedCommands, port, bindAddress, redisStats,
         member, securityService, eventDistributor);
 

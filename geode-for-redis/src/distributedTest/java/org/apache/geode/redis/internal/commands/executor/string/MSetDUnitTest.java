@@ -15,7 +15,7 @@
 
 package org.apache.geode.redis.internal.commands.executor.string;
 
-import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_PORT;
+import static org.apache.geode.redis.internal.SystemPropertyBasedRedisConfiguration.GEODE_FOR_REDIS_PORT;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -71,7 +71,7 @@ public class MSetDUnitTest {
     String finalRedisPort = Integer.toString(server3Port);
     int finalLocatorPort = locatorPort;
     clusterStartUp.startRedisVM(3, x -> x
-        .withProperty(GEODE_FOR_REDIS_PORT, finalRedisPort)
+        .withSystemProperty(GEODE_FOR_REDIS_PORT, finalRedisPort)
         .withConnectionToLocator(finalLocatorPort));
 
     clusterStartUp.enableDebugLogging(1);
@@ -135,7 +135,7 @@ public class MSetDUnitTest {
         Thread.sleep(2000);
         clusterStartUp.crashVM(3);
         clusterStartUp.startRedisVM(3, x -> x
-            .withProperty(GEODE_FOR_REDIS_PORT, finalRedisPort)
+            .withSystemProperty(GEODE_FOR_REDIS_PORT, finalRedisPort)
             .withConnectionToLocator(finalLocatorPort));
         clusterStartUp.enableDebugLogging(3);
         rebalanceAllRegions(server1);

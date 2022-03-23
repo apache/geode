@@ -16,8 +16,6 @@
 
 package org.apache.geode.redis;
 
-import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_REDUNDANT_COPIES;
-import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_USERNAME;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
@@ -26,6 +24,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.redis.internal.GeodeRedisServer;
+import org.apache.geode.redis.internal.RedisConfiguration;
 import org.apache.geode.test.junit.rules.serializable.SerializableExternalResource;
 
 public class GeodeRedisServerRule extends SerializableExternalResource {
@@ -39,7 +38,6 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
     cacheFactory.set(LOG_LEVEL, "warn");
     cacheFactory.set(MCAST_PORT, "0");
     cacheFactory.set(LOCATORS, "");
-    cacheFactory.set(GEODE_FOR_REDIS_REDUNDANT_COPIES, "0");
   }
 
   public void setEnableUnsupportedCommands(boolean allow) {
@@ -48,8 +46,10 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
 
   @Override
   protected void before() {
+    RedisConfiguration config = TestRedisConfiguration.builder()
+        .withAddress("localhost").withPort(0).build();
     cache = cacheFactory.create();
-    server = new GeodeRedisServer("localhost", 0, (InternalCache) cache);
+    server = new GeodeRedisServer(config, (InternalCache) cache);
     server.setAllowUnsupportedCommands(enableUnsupportedCommands);
 
     // Ensure that buckets are created up front
@@ -72,12 +72,6 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
 
   public GeodeRedisServer getServer() {
     return server;
-  }
-
-  public GeodeRedisServerRule withUsername(String username) {
-    cacheFactory.set(GEODE_FOR_REDIS_USERNAME, username);
-
-    return this;
   }
 
   public int getPort() {

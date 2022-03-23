@@ -45,11 +45,12 @@ import redis.clients.jedis.Jedis;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.redis.TestRedisConfiguration;
 import org.apache.geode.redis.internal.GeodeRedisServer;
+import org.apache.geode.redis.internal.RedisConfiguration;
 import org.apache.geode.security.AuthenticationExpiredException;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.ResourcePermission;
@@ -117,15 +118,19 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
     cf.set(LOG_LEVEL, "error");
     cf.set(MCAST_PORT, "0");
     cf.set(LOCATORS, "");
-    if (username != null) {
-      cf.set(ConfigurationProperties.GEODE_FOR_REDIS_USERNAME, username);
-    }
     if (withSecurityManager) {
       cf.set(ConfigurationProperties.SECURITY_MANAGER, SimpleSecurityManager.class.getName());
     }
     cache = cf.create();
     port = AvailablePortHelper.getRandomAvailableTCPPort();
-    server = new GeodeRedisServer("localhost", port, (InternalCache) cache);
+
+    TestRedisConfiguration.Builder redisConfigBuilder = TestRedisConfiguration.builder();
+    redisConfigBuilder.withAddress("localhost").withPort(port).build();
+    if (username != null) {
+      redisConfigBuilder.withUsername(username);
+    }
+
+    server = new GeodeRedisServer(redisConfigBuilder.build(), (InternalCache) cache);
     server.getRegionProvider().getSlotAdvisor().getBucketSlots();
     jedis = new Jedis("localhost", port, 100000);
   }
@@ -134,13 +139,6 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
       boolean withSecurityManager) throws Exception {
     System.setProperty(REDIS_REGION_NAME_PROPERTY, regionName);
     setupCache(username, withSecurityManager);
-  }
-
-  @Test
-  public void testAuthConfig() throws Exception {
-    setupCacheWithSecurity(false);
-    InternalDistributedSystem iD = (InternalDistributedSystem) cache.getDistributedSystem();
-    assertThat(iD.getConfig().getRedisUsername()).isEqualTo(getUsername());
   }
 
   @Test
@@ -278,7 +276,9 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
         .set(ConfigurationProperties.SECURITY_MANAGER, securityManager.getName())
         .create();
     port = AvailablePortHelper.getRandomAvailableTCPPort();
-    server = new GeodeRedisServer("localhost", port, (InternalCache) cache);
+    RedisConfiguration config = TestRedisConfiguration.builder()
+        .withAddress("localhost").withPort(port).build();
+    server = new GeodeRedisServer(config, (InternalCache) cache);
     jedis = new Jedis("localhost", port, 100000);
   }
 
