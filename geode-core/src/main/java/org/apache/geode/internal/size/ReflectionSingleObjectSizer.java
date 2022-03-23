@@ -95,8 +95,25 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
    */
   public static long sizeof(Class<?> clazz, boolean roundResult) {
     Assert.assertTrue(!clazz.isArray());
+    long size = unsafeSizeof(clazz);
+    if (size == -1) {
+      size = safeSizeof(clazz);
+    }
+    if (roundResult) {
+      size = roundUpSize(size);
+    }
+    return size;
+  }
+
+  /**
+   * Returns -1 if it was not able to compute the size; otherwise returns the size
+   */
+  private static long unsafeSizeof(Class<?> clazz) {
+    if (unsafe == null) {
+      return -1;
+    }
     long size;
-    if (unsafe != null) {
+    try {
       Field lastField = null;
       long lastFieldOffset = 0;
       do {
@@ -124,26 +141,31 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
         // class with no fields
         size = OBJECT_SIZE;
       }
-    } else {
-      // This code is not as accurate as unsafe but gives an estimate of memory used.
-      // If it is wrong it will always under estimate because it does not account
-      // for any of the field alignment that the jvm does.
-      size = OBJECT_SIZE;
-      do {
-        Field[] fields = clazz.getDeclaredFields();
-        for (Field field : fields) {
-          if (!Modifier.isStatic(field.getModifiers())) {
-            size += sizeType(field.getType());
-          }
+      return size;
+    } catch (UnsupportedOperationException ex) {
+      // This happens on java 17 because hidden classes do not support
+      // unsafe.fieldOffset.
+      return -1;
+    }
+  }
+
+  private static long safeSizeof(Class<?> clazz) {
+    // This code is not as accurate as unsafe but gives an estimate of memory used.
+    // If it is wrong it will always under estimate because it does not account
+    // for any of the field alignment that the jvm does.
+    long size = OBJECT_SIZE;
+    do {
+      Field[] fields = clazz.getDeclaredFields();
+      for (Field field : fields) {
+        if (!Modifier.isStatic(field.getModifiers())) {
+          size += sizeType(field.getType());
         }
-        clazz = clazz.getSuperclass();
-      } while (clazz != null);
-    }
-    if (roundResult) {
-      size = roundUpSize(size);
-    }
+      }
+      clazz = clazz.getSuperclass();
+    } while (clazz != null);
     return size;
   }
+
 
   private static int sizeType(Class<?> t) {
 
