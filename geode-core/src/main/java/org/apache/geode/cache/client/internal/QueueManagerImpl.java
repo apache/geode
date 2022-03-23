@@ -1422,6 +1422,7 @@ public class QueueManagerImpl implements QueueManager {
    *
    */
   protected class RedundancySatisfierTask extends PoolTask {
+    private ConnectionList queue = queueConnections;
     private boolean isCancelled;
     private ScheduledFuture<?> future;
 
@@ -1449,7 +1450,7 @@ public class QueueManagerImpl implements QueueManager {
             return;
           }
         }
-        Set<ServerLocation> excludedServers = queueConnections.getAllLocations();
+        Set<ServerLocation> excludedServers = queue.getAllLocations();
         excludedServers.addAll(denyList.getBadServers());
         excludedServers.addAll(factory.getDenyList().getBadServers());
         recoverPrimary(excludedServers);
@@ -1470,10 +1471,10 @@ public class QueueManagerImpl implements QueueManager {
         SystemFailure.checkFailure();
         synchronized (lock) {
           if (t instanceof GemFireSecurityException) {
-            queueConnections =
-                queueConnections.setPrimaryDiscoveryFailed((GemFireSecurityException) t);
+            queue =
+                queue.setPrimaryDiscoveryFailed((GemFireSecurityException) t);
           } else {
-            queueConnections = queueConnections.setPrimaryDiscoveryFailed(null);
+            queue = queue.setPrimaryDiscoveryFailed(null);
           }
           lock.notifyAll();
           pool.getCancelCriterion().checkCancelInProgress(t);
