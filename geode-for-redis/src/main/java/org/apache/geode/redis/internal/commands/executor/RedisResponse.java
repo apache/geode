@@ -42,6 +42,11 @@ import org.apache.geode.redis.internal.netty.CoderException;
 
 public class RedisResponse {
 
+  /**
+   * Static value returned by blocking commands. Effectively a no-op.
+   */
+  public static final RedisResponse BLOCKED = new RedisResponse(x -> null);
+
   private final Function<ByteBuf, ByteBuf> coderCallback;
 
   private Runnable afterWriteCallback;
@@ -116,6 +121,13 @@ public class RedisResponse {
 
   public static RedisResponse nil() {
     return NIL;
+  }
+
+  @Immutable
+  private static final RedisResponse NIL_ARRAY = new RedisResponse(Coder::getNilArrayResponse);
+
+  public static RedisResponse nilArray() {
+    return NIL_ARRAY;
   }
 
   @Immutable

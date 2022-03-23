@@ -27,6 +27,7 @@ import static org.apache.geode.redis.internal.netty.StringBytesGlossary.INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.INFINITY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.INTEGER_ID;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NIL;
+import static org.apache.geode.redis.internal.netty.StringBytesGlossary.NIL_ARRAY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.N_INF;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.N_INFINITY;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.N_INF_STRING;
@@ -235,6 +236,11 @@ public class Coder {
 
   public static ByteBuf getNilResponse(ByteBuf buffer) {
     buffer.writeBytes(NIL);
+    return buffer;
+  }
+
+  public static ByteBuf getNilArrayResponse(ByteBuf buffer) {
+    buffer.writeBytes(NIL_ARRAY);
     return buffer;
   }
 

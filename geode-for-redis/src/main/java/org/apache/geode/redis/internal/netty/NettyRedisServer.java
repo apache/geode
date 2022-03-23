@@ -63,6 +63,7 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.ManagementException;
+import org.apache.geode.redis.internal.eventing.EventDistributor;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.services.RegionProvider;
 import org.apache.geode.redis.internal.services.locking.RedisSecurityService;
@@ -87,12 +88,14 @@ public class NettyRedisServer {
   private final int serverPort;
   private final DistributedMember member;
   private final RedisSecurityService securityService;
+  private final EventDistributor eventDistributor;
   private final int writeTimeoutSeconds;
 
   public NettyRedisServer(Supplier<DistributionConfig> configSupplier,
       RegionProvider regionProvider, PubSub pubsub, Supplier<Boolean> allowUnsupportedSupplier,
       int port, String requestedAddress, RedisStats redisStats,
-      DistributedMember member, RedisSecurityService securityService) {
+      DistributedMember member, RedisSecurityService securityService,
+      EventDistributor eventDistributor) {
     this.configSupplier = configSupplier;
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;
@@ -100,6 +103,7 @@ public class NettyRedisServer {
     this.redisStats = redisStats;
     this.member = member;
     this.securityService = securityService;
+    this.eventDistributor = eventDistributor;
 
     writeTimeoutSeconds =
         getIntegerSystemProperty(WRITE_TIMEOUT_SECONDS, DEFAULT_REDIS_WRITE_TIMEOUT_SECONDS, 1);
@@ -170,7 +174,7 @@ public class NettyRedisServer {
         pipeline.addLast(ExecutionHandlerContext.class.getSimpleName(),
             new ExecutionHandlerContext(socketChannel, regionProvider, pubsub,
                 allowUnsupportedSupplier, redisStats, redisUsername,
-                getPort(), member, securityService));
+                getPort(), member, securityService, eventDistributor));
       }
     };
   }

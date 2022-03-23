@@ -36,7 +36,7 @@ public class RPushExecutor implements CommandExecutor {
     List<byte[]> elementsToAdd = commandElements.subList(2, commandElements.size());
 
     final long newLength = context.listLockedExecute(key, false,
-        list -> list.rpush(elementsToAdd, region, key, shouldPushOnlyIfKeyExists()));
+        list -> list.rpush(context, elementsToAdd, key, shouldPushOnlyIfKeyExists()));
 
     return RedisResponse.integer(newLength);
   }

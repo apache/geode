@@ -31,9 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelId;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
@@ -62,6 +60,8 @@ import org.apache.geode.redis.internal.data.RedisList;
 import org.apache.geode.redis.internal.data.RedisSet;
 import org.apache.geode.redis.internal.data.RedisSortedSet;
 import org.apache.geode.redis.internal.data.RedisString;
+import org.apache.geode.redis.internal.eventing.EventDistributor;
+import org.apache.geode.redis.internal.eventing.EventListener;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.services.RegionProvider;
 import org.apache.geode.redis.internal.services.locking.RedisSecurityService;
@@ -103,9 +103,10 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   private final RedisStats redisStats;
   private final DistributedMember member;
   private final RedisSecurityService securityService;
+  private final EventDistributor eventDistributor;
   private BigInteger scanCursor;
   private final AtomicBoolean channelInactive = new AtomicBoolean();
-  private final ChannelId channelId;
+  private final Channel channel;
 
   private final int serverPort;
 
@@ -122,7 +123,9 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       String username,
       int serverPort,
       DistributedMember member,
-      RedisSecurityService securityService) {
+      RedisSecurityService securityService,
+      EventDistributor eventDistributor) {
+    this.channel = channel;
     this.regionProvider = regionProvider;
     this.pubsub = pubsub;
     this.allowUnsupportedSupplier = allowUnsupportedSupplier;
@@ -132,15 +135,17 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     this.serverPort = serverPort;
     this.member = member;
     this.securityService = securityService;
+    this.eventDistributor = eventDistributor;
     scanCursor = new BigInteger("0");
-    channelId = channel.id();
     redisStats.addClient();
 
     channel.closeFuture().addListener(future -> logout());
   }
 
-  public ChannelFuture writeToChannel(RedisResponse response) {
-    return client.writeToChannel(response);
+  public void writeToChannel(RedisResponse response) {
+    if (response != RedisResponse.BLOCKED) {
+      client.writeToChannel(response);
+    }
   }
 
   /**
@@ -149,13 +154,12 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) {
     Command command = (Command) msg;
-    command.setChannelHandlerContext(ctx);
     if (!channelInactive.get()) {
       try {
-        executeCommand(command);
+        executeCommand(ctx, command);
         redisStats.incCommandsProcessed();
       } catch (Throwable ex) {
-        exceptionCaught(command.getChannelHandlerContext(), ex);
+        exceptionCaught(ctx, ex);
       }
     }
   }
@@ -232,7 +236,14 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     }
   }
 
-  private void executeCommand(Command command) throws Exception {
+  public void resubmitCommand(Command command) {
+    ChannelHandlerContext ctx =
+        channel.pipeline().context(ByteToCommandDecoder.class.getSimpleName());
+    ctx.fireChannelRead(command);
+  }
+
+  private void executeCommand(ChannelHandlerContext channelContext, Command command)
+      throws Exception {
     try {
       if (logger.isDebugEnabled()) {
         logger.debug("Executing Redis command: {} - {}", command,
@@ -277,7 +288,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
       }
 
       if (command.isOfType(RedisCommandType.QUIT)) {
-        channelInactive(command.getChannelHandlerContext());
+        channelInactive(channelContext);
       }
     } catch (Exception e) {
       if (!(e instanceof RedisDataMovedException)) {
@@ -306,7 +317,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
    */
   private void logout() {
     if (subject != null) {
-      securityService.logout(channelId);
+      securityService.logout(channel.id());
       subject = null;
     }
   }
@@ -393,7 +404,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   }
 
   public Subject login(Properties properties) {
-    subject = securityService.login(channelId, properties);
+    subject = securityService.login(channel.id(), properties);
     return subject;
   }
 
@@ -408,6 +419,13 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     }
   }
 
+  public void registerListener(EventListener listener) {
+    eventDistributor.registerListener(listener);
+  }
+
+  public void fireEvent(RedisCommandType command, RedisKey key) {
+    eventDistributor.fireEvent(command, key);
+  }
 
   public Region<RedisKey, RedisData> getRegion() {
     return getRegionProvider().getLocalDataRegion();

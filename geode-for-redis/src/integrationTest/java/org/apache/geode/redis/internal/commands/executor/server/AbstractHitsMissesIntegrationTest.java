@@ -575,6 +575,12 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
 
   /************* List related commands *************/
   @Test
+  public void testBLPop() {
+    jedis.lpush(LIST_KEY, "element");
+    runCommandAndAssertNoStatUpdates(LIST_KEY, k -> jedis.blpop(0, k));
+  }
+
+  @Test
   public void testLindex() {
     runCommandAndAssertHitsAndMisses(LIST_KEY, k -> jedis.lindex(k, 1));
   }

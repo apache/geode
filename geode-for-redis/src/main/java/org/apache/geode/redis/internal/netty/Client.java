@@ -155,11 +155,11 @@ public class Client {
     return result;
   }
 
-  public ChannelFuture writeToChannel(RedisResponse response) {
+  public void writeToChannel(RedisResponse response) {
     if (!logger.isDebugEnabled() && !response.hasAfterWriteCallback()) {
-      return channel.writeAndFlush(response.encode(byteBufAllocator));
+      channel.writeAndFlush(response.encode(byteBufAllocator));
     } else {
-      return channel.writeAndFlush(response.encode(byteBufAllocator))
+      channel.writeAndFlush(response.encode(byteBufAllocator))
           .addListener((ChannelFutureListener) f -> {
             response.afterWrite();
             logResponse(response, channel.remoteAddress(), f.cause());

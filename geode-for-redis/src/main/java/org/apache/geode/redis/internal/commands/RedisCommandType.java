@@ -78,6 +78,7 @@ import org.apache.geode.redis.internal.commands.executor.key.RestoreExecutor;
 import org.apache.geode.redis.internal.commands.executor.key.ScanExecutor;
 import org.apache.geode.redis.internal.commands.executor.key.TTLExecutor;
 import org.apache.geode.redis.internal.commands.executor.key.TypeExecutor;
+import org.apache.geode.redis.internal.commands.executor.list.BLPopExecutor;
 import org.apache.geode.redis.internal.commands.executor.list.LIndexExecutor;
 import org.apache.geode.redis.internal.commands.executor.list.LInsertExecutor;
 import org.apache.geode.redis.internal.commands.executor.list.LLenExecutor;
@@ -388,6 +389,8 @@ public enum RedisCommandType {
 
   /************** Lists *****************/
 
+  BLPOP(new BLPopExecutor(), Category.LIST, SUPPORTED,
+      new Parameter().min(3).lastKey(-2).flags(WRITE, NOSCRIPT)),
   LINDEX(new LIndexExecutor(), Category.LIST, SUPPORTED, new Parameter().exact(3).flags(READONLY)),
   LINSERT(new LInsertExecutor(), Category.LIST, SUPPORTED,
       new Parameter().exact(5).flags(WRITE, DENYOOM)),
