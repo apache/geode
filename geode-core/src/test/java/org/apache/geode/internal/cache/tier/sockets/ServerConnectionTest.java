@@ -30,7 +30,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.quality.Strictness.STRICT_STUBS;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -41,11 +40,8 @@ import java.util.Map;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.shiro.subject.Subject;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.junit.MockitoJUnit;
-import org.mockito.junit.MockitoRule;
 
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -67,9 +63,6 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category(ClientServerTest.class)
 public class ServerConnectionTest {
-  @Rule
-  public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
-
   private AcceptorImpl acceptor;
   private Message requestMessage;
   private ServerSideHandshake handshake;

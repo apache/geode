@@ -384,7 +384,7 @@ dependencies {
 
   upgradeTestRuntime(project(path: ':geode-old-versions', configuration: 'testOutput'))
   upgradeTestRuntime(project(':geode-log4j'))
-
+  upgradeTestRuntime(project(':geode-old-client-support'))
 
   performanceTestCompile(project(':geode-junit')) {
     exclude module: 'geode-core'

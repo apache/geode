@@ -21,6 +21,7 @@ import static org.apache.geode.cache.query.dunit.SecurityTestUtils.createAndExec
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_LOG_LEVEL;
+import static org.apache.geode.internal.Assert.fail;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -29,6 +30,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
+import org.awaitility.core.ConditionTimeoutException;
 import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -289,8 +291,13 @@ public class AuthExpirationDUnitTest {
     // client will recover but there will be message loss
     clientVM.invoke(() -> {
       Region<Object, Object> clientRegion = ClusterStartupRule.getClientCache().getRegion("region");
-      await().during(10, TimeUnit.SECONDS).untilAsserted(
-          () -> assertThat(clientRegion.keySet()).hasSizeLessThan(100));
+
+      try {
+        await().atMost(10, TimeUnit.SECONDS).until(() -> clientRegion.keySet().size() == 100);
+        fail("size should not exceeds 100");
+      } catch (ConditionTimeoutException e) {
+        // if timed out, the test is successful
+      }
       clientRegion.put("key100", "value100");
     });
 

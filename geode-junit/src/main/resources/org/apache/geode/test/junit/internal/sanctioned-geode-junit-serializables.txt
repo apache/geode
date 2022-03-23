@@ -33,7 +33,6 @@ org/apache/geode/cache/query/data/Village,false,name:java/lang/String,zip:int
 org/apache/geode/cache/query/functional/StructSetOrResultsSet$ValidationLevel,false
 org/apache/geode/cache/snapshot/RegionGenerator$RegionType,false
 org/apache/geode/cache/snapshot/RegionGenerator$SerializationType,false
-org/apache/geode/cache/ssl/CertificateMaterial,false,certificate:java/security/cert/X509Certificate,issuer:java/security/cert/X509Certificate,keyPair:java/security/KeyPair
 org/apache/geode/cache30/MyGatewayTransportFilter1,false
 org/apache/geode/cache30/MyGatewayTransportFilter2,false
 org/apache/geode/codeAnalysis/SanctionedSerializablesServiceIntegrationTestBase$ServiceResourceExpectation,false

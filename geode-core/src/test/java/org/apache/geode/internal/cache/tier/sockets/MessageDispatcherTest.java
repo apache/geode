@@ -140,7 +140,7 @@ public class MessageDispatcherTest {
     doReturn(false, false, false, false, false, true).when(dispatcher).isStopped();
     doThrow(AuthenticationExpiredException.class).when(dispatcher).dispatchMessage(any());
     when(messageQueue.peek()).thenReturn(message);
-    when(proxy.getVersion()).thenReturn(Version.GEODE_1_12_0);
+    when(proxy.getVersion()).thenReturn(Version.GEODE_1_12_10);
     doReturn(eventID).when(dispatcher).createEventId();
     doNothing().when(dispatcher).sendMessageDirectly(any());
 

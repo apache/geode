@@ -1,4 +1,5 @@
 /*
+ *
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
  * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
@@ -11,6 +12,7 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
 package org.apache.geode.security;
 
@@ -21,14 +23,17 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIE
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
+import org.awaitility.core.ConditionTimeoutException;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -50,6 +55,7 @@ import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.dunit.SecurityTestUtils.EventsCqListner;
 import org.apache.geode.cache.query.dunit.SecurityTestUtils.KeysCacheListener;
+import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClientVM;
@@ -64,7 +70,8 @@ import org.apache.geode.test.version.VersionManager;
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class AuthExpirationBackwardCompatibleDUnitTest {
-  private static String test_start_version = "1.14.0";
+  private static String test_start_version = "1.12.9";
+  private static String feature_start_version = "1.12.10";
   private static RegionService user0Service;
   private static RegionService user1Service;
 
@@ -73,7 +80,6 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
 
   @Parameterized.Parameters(name = "{0}")
   public static Collection<String> data() {
-    // only test versions greater than or equal to 1.14.0
     return VersionManager.getInstance().getVersionsLaterThanAndEqualTo(test_start_version);
   }
 
@@ -139,9 +145,14 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
 
   private static void doPutAndExpectFailure(Region<Object, Object> region, int times) {
     for (int i = 1; i < times; i++) {
-      assertThatThrownBy(() -> region.put(1, "value1"))
-          .isInstanceOf(ServerOperationException.class)
-          .hasCauseInstanceOf(AuthenticationFailedException.class);
+      try {
+        region.put(1, "value1");
+        fail("Exception expected");
+      } catch (Exception e) {
+        assertThat(e).isInstanceOf(ServerOperationException.class);
+        assertThat(e.getCause()).isInstanceOfAny(AuthenticationFailedException.class,
+            AuthenticationRequiredException.class);
+      }
     }
   }
 
@@ -259,7 +270,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
   @Test
   public void cqOlderClientWillNotReAuthenticateAutomatically() throws Exception {
     // this test should only test the older client
-    if (TestVersion.compare(clientVersion, test_start_version) > 0) {
+    if (TestVersion.compare(clientVersion, feature_start_version) > 0) {
       return;
     }
 
@@ -283,10 +294,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
     clientVM.invoke(() -> {
       // even user gets refreshed, the old client wouldn't be able to send in the new credentials
       UpdatableUserAuthInitialize.setUser("user2");
-      await().during(10, TimeUnit.SECONDS)
-          .untilAsserted(
-              () -> assertThat(CQLISTENER0.getKeys())
-                  .containsExactly("1"));
+      wontHappenDuring(10, TimeUnit.SECONDS, () -> CQLISTENER0.getKeys().contains("2"));
 
       // queue is closed, client would re-connect with the new credential, but the old queue is lost
       Region<Object, Object> clientRegion =
@@ -346,14 +354,11 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
 
     clientVM.invoke(() -> {
       UpdatableUserAuthInitialize.setUser("user1_extended");
-      // user0Service listener will get one event
-      await().during(10, TimeUnit.SECONDS).untilAsserted(
-          () -> assertThat(CQLISTENER0.getKeys())
-              .containsExactly("1"));
+      // user0Service listener will only get one event
+      wontHappenDuring(10, TimeUnit.SECONDS, () -> CQLISTENER0.getKeys().size() > 1);
 
       // user1Service listener will not get any events
-      await().during(10, TimeUnit.SECONDS).untilAsserted(
-          () -> assertThat(CQLISTENER1.getKeys()).isEmpty());
+      wontHappenDuring(10, TimeUnit.SECONDS, () -> CQLISTENER1.getKeys().size() > 0);
 
       user0Service.close();
       user1Service.close();
@@ -367,7 +372,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
   @Test
   public void cqOlderClientWithClientInteractionWillDeliverEventEventually() throws Exception {
     // this test should only test the older client
-    if (TestVersion.compare(clientVersion, test_start_version) > 0) {
+    if (TestVersion.compare(clientVersion, feature_start_version) > 0) {
       return;
     }
     startClientWithCQ();
@@ -565,12 +570,11 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
     // for old client, server close the proxy, client have reconnect mechanism which
     // also triggers re-auth, clients re-register interest, but with InterestResultPolicy.NONE
     // there would be message loss
-    if (TestVersion.compare(clientVersion, test_start_version) <= 0) {
+    if (TestVersion.compare(clientVersion, feature_start_version) <= 0) {
       clientVM.invoke(() -> {
         Region<Object, Object> clientRegion =
             ClusterStartupRule.getClientCache().getRegion("region");
-        await().during(10, TimeUnit.SECONDS).untilAsserted(
-            () -> assertThat(clientRegion).hasSizeLessThan(2));
+        wontHappenDuring(10, TimeUnit.SECONDS, () -> clientRegion.size() >= 2);
         // but client will reconnect successfully using the 2nd user
         clientRegion.put("2", "value2");
       });
@@ -661,7 +665,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
     clientVM.invoke(() -> {
       IgnoredException.addIgnoredException(AuthenticationFailedException.class);
       Region<Object, Object> clientRegion = ClusterStartupRule.getClientCache().getRegion("region");
-      await().during(10, TimeUnit.SECONDS).untilAsserted(() -> assertThat(clientRegion).isEmpty());
+      wontHappenDuring(10, TimeUnit.SECONDS, () -> !clientRegion.isEmpty());
       assertThatThrownBy(() -> clientRegion.put("key100", "value100"))
           .hasCauseInstanceOf(AuthenticationFailedException.class);
     });
@@ -699,7 +703,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
     clientVM.invoke(() -> {
       IgnoredException.addIgnoredException(AuthenticationFailedException.class);
       Region<Object, Object> clientRegion = ClusterStartupRule.getClientCache().getRegion("region");
-      await().during(10, TimeUnit.SECONDS).untilAsserted(() -> assertThat(clientRegion).isEmpty());
+      wontHappenDuring(10, TimeUnit.SECONDS, () -> !clientRegion.isEmpty());
     });
 
     // since we set a timeout, queue will be destroyed
@@ -723,5 +727,15 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
       CQLISTENER0 = createAndExecuteCQ(ClusterStartupRule.getClientCache().getQueryService(), "CQ1",
           "select * from /region");
     });
+  }
+
+  private static void wontHappenDuring(int timeout, TimeUnit unit,
+      Callable<Boolean> thisWontHappen) {
+    try {
+      await().atMost(timeout, unit).until(thisWontHappen);
+      Assert.fail("unexpected");
+    } catch (ConditionTimeoutException e) {
+      // if timed out, the test is successful
+    }
   }
 }

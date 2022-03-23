@@ -105,9 +105,9 @@ public class WANRollingUpgradeCreateGatewaySenderMixedSiteOneCurrentSiteTwo
     this.gfsh.connectAndVerify(jmxManagerPort, GfshCommandRule.PortType.jmxManager);
     CommandResultAssert cmd = this.gfsh
         .executeAndAssertThat(getCreateGatewaySenderCommand("toSite2", site2DistributedSystemId));
-    // Special case for 1.12.1 since it introduces an ordinal version change
+    // Special case for 1.12.1 and 1.12.10 since it introduces an ordinal version change
     if (!majorMinor(oldVersion).equals(majorMinor(Version.CURRENT.getName()))
-        || (oldVersion.equals("1.12.0") && Version.CURRENT.getName().equals("1.12.1"))) {
+        || oldVersion.equals("1.12.0") || oldVersion.equals("1.12.9")) {
       cmd.statusIsError()
           .containsOutput(CliStrings.CREATE_GATEWAYSENDER__MSG__CAN_NOT_CREATE_DIFFERENT_VERSIONS);
     } else {

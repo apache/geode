@@ -27,7 +27,7 @@ import org.apache.geode.internal.serialization.Version;
 
 public class ClientReAuthenticateMessage implements ClientMessage {
   @Immutable
-  public static final Version RE_AUTHENTICATION_START_VERSION = Version.GEODE_1_12_1;
+  public static final Version RE_AUTHENTICATION_START_VERSION = Version.GEODE_1_12_10;
   /**
    * This {@code ClientMessage}'s {@code EventID}
    */
