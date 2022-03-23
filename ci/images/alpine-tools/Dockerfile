@@ -56,3 +56,4 @@ RUN apk --no-cache add \
   && pip3 install awscli
 
 ENV JAVA_HOME /usr/lib/jvm/default-jvm
+ENV PATH="$PATH:$JAVA_HOME/bin"
