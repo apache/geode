@@ -715,6 +715,16 @@ public class GemFireCacheImplTest {
   }
 
   @Test
+  public void getQueryMonitorDoesNotCareIfCriticalOffheapPercentageIsGreaterThanZero() {
+    when(internalResourceManager.getCriticalHeapPercentage()).thenReturn(0.0f);
+    when(internalResourceManager.getCriticalOffHeapPercentage()).thenReturn(1.0f);
+
+    QueryMonitor queryMonitor = gemFireCacheImpl.getQueryMonitor();
+
+    assertThat(queryMonitor).isNull();
+  }
+
+  @Test
   public void getQueryMonitorReturnsInstanceGivenMaxQueryExecutionTimeGreaterThanZero() {
     when(internalResourceManager.getCriticalHeapPercentage()).thenReturn(0.0f);
     final int originalValue = GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME;
