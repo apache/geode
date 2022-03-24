@@ -37,9 +37,11 @@ import org.mockito.InOrder;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.event.EventTracker;
 import org.apache.geode.internal.cache.versions.RegionVersionHolder;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
+import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
 
@@ -49,6 +51,8 @@ public class DistributedRegionTest {
   private RegionVersionHolder<VersionSource<Object>> holder;
   private VersionSource<Object> lostMemberVersionID;
   private InternalDistributedMember member;
+  private EntryEventImpl event;
+  private EventTracker eventTracker;
 
   @Before
   @SuppressWarnings("unchecked")
@@ -57,6 +61,8 @@ public class DistributedRegionTest {
     holder = mock(RegionVersionHolder.class);
     lostMemberVersionID = mock(VersionSource.class);
     member = mock(InternalDistributedMember.class);
+    event = mock(EntryEventImpl.class);
+    eventTracker = mock(EventTracker.class);
   }
 
   @Test
@@ -259,5 +265,133 @@ public class DistributedRegionTest {
         .isInstanceOf(GatewaySenderConfigurationException.class)
         .hasMessage("Parallel Gateway Sender " + senderId
             + " can not be used with replicated region " + regionPath);
+  }
+
+  @Test
+  public void hasSeenEventDoseNotFindAndSetVersionTagIfFoundInEventTrackerAndVersionTagIsSet() {
+    DistributedRegion distributedRegion = mock(DistributedRegion.class);
+    doCallRealMethod().when(distributedRegion).hasSeenEvent(event);
+    when(distributedRegion.getEventTracker()).thenReturn(eventTracker);
+    when(eventTracker.hasSeenEvent(event)).thenReturn(true);
+    when(event.getVersionTag()).thenReturn(mock(VersionTag.class));
+
+    assertThat(distributedRegion.hasSeenEvent(event)).isTrue();
+    verify(distributedRegion).markEventAsDuplicate(event);
+    verify(distributedRegion, never()).findAndSetVersionTag(event);
+  }
+
+  @Test
+  public void hasSeenEventDoseNotFindAndSetVersionTagIfFoundInEventTrackerAndConcurrencyChecksNotEnabled() {
+    DistributedRegion distributedRegion = mock(DistributedRegion.class);
+    doCallRealMethod().when(distributedRegion).hasSeenEvent(event);
+    when(distributedRegion.getEventTracker()).thenReturn(eventTracker);
+    when(eventTracker.hasSeenEvent(event)).thenReturn(true);
+    when(event.getRegion()).thenReturn(distributedRegion);
+    when(distributedRegion.getConcurrencyChecksEnabled()).thenReturn(false);
+
+    assertThat(distributedRegion.hasSeenEvent(event)).isTrue();
+    verify(distributedRegion).markEventAsDuplicate(event);
+    verify(distributedRegion, never()).findAndSetVersionTag(event);
+  }
+
+  @Test
+  public void hasSeenEventDoseNotFindAndSetVersionTagIfFoundInEventTrackerAndEventIdIsNotSet() {
+    DistributedRegion distributedRegion = mock(DistributedRegion.class);
+    doCallRealMethod().when(distributedRegion).hasSeenEvent(event);
+    when(distributedRegion.getEventTracker()).thenReturn(eventTracker);
+    when(eventTracker.hasSeenEvent(event)).thenReturn(true);
+    when(event.getRegion()).thenReturn(distributedRegion);
+    when(distributedRegion.getConcurrencyChecksEnabled()).thenReturn(false);
+    when(event.getEventId()).thenReturn(null);
+
+    assertThat(distributedRegion.hasSeenEvent(event)).isTrue();
+    verify(distributedRegion).markEventAsDuplicate(event);
+    verify(distributedRegion, never()).findAndSetVersionTag(event);
+  }
+
+  @Test
+  public void hasSeenEventWillFindAndSetVersionTagIfFoundInEventTrackerButValidTagNotSet() {
+    DistributedRegion distributedRegion = mock(DistributedRegion.class);
+    doCallRealMethod().when(distributedRegion).hasSeenEvent(event);
+    when(distributedRegion.getEventTracker()).thenReturn(eventTracker);
+    when(eventTracker.hasSeenEvent(event)).thenReturn(true);
+    when(event.getRegion()).thenReturn(distributedRegion);
+    when(distributedRegion.getConcurrencyChecksEnabled()).thenReturn(true);
+    when(event.getEventId()).thenReturn(mock(EventID.class));
+
+    assertThat(distributedRegion.hasSeenEvent(event)).isTrue();
+    verify(distributedRegion).markEventAsDuplicate(event);
+    verify(distributedRegion).findAndSetVersionTag(event);
+  }
+
+  @Test
+  public void hasSeenEventDoseNotFindAndSetVersionTagIfNotFoundEventInEventTrackerAndNotADuplicateEvent() {
+    DistributedRegion distributedRegion = mock(DistributedRegion.class);
+    doCallRealMethod().when(distributedRegion).hasSeenEvent(event);
+    when(distributedRegion.getEventTracker()).thenReturn(eventTracker);
+    when(eventTracker.hasSeenEvent(event)).thenReturn(false);
+    when(event.isPossibleDuplicate()).thenReturn(false);
+
+    assertThat(distributedRegion.hasSeenEvent(event)).isFalse();
+    verify(distributedRegion, never()).findAndSetVersionTag(event);
+  }
+
+  @Test
+  public void hasSeenEventDoseNotFindAndSetVersionTagIfNotFoundInEventTrackerAndConcurrencyChecksNotEnabled() {
+    DistributedRegion distributedRegion = mock(DistributedRegion.class);
+    doCallRealMethod().when(distributedRegion).hasSeenEvent(event);
+    when(distributedRegion.getEventTracker()).thenReturn(eventTracker);
+    when(eventTracker.hasSeenEvent(event)).thenReturn(false);
+    when(event.isPossibleDuplicate()).thenReturn(true);
+    when(event.getRegion()).thenReturn(distributedRegion);
+    when(distributedRegion.getConcurrencyChecksEnabled()).thenReturn(false);
+
+    assertThat(distributedRegion.hasSeenEvent(event)).isFalse();
+    verify(distributedRegion, never()).findAndSetVersionTag(event);
+  }
+
+  @Test
+  public void hasSeenEventDoseNotFindAndSetVersionTagIfNotFoundInEventTrackerAndVersionTagIsSet() {
+    DistributedRegion distributedRegion = mock(DistributedRegion.class);
+    doCallRealMethod().when(distributedRegion).hasSeenEvent(event);
+    when(distributedRegion.getEventTracker()).thenReturn(eventTracker);
+    when(eventTracker.hasSeenEvent(event)).thenReturn(false);
+    when(event.isPossibleDuplicate()).thenReturn(true);
+    when(event.getRegion()).thenReturn(distributedRegion);
+    when(distributedRegion.getConcurrencyChecksEnabled()).thenReturn(true);
+    when(event.getVersionTag()).thenReturn(mock(VersionTag.class));
+
+    assertThat(distributedRegion.hasSeenEvent(event)).isFalse();
+    verify(distributedRegion, never()).findAndSetVersionTag(event);
+  }
+
+  @Test
+  public void hasSeenEventDoseNotFindAndSetVersionTagIfNotFoundInEventTrackerAndNoEventId() {
+    DistributedRegion distributedRegion = mock(DistributedRegion.class);
+    doCallRealMethod().when(distributedRegion).hasSeenEvent(event);
+    when(distributedRegion.getEventTracker()).thenReturn(eventTracker);
+    when(eventTracker.hasSeenEvent(event)).thenReturn(false);
+    when(event.isPossibleDuplicate()).thenReturn(true);
+    when(event.getRegion()).thenReturn(distributedRegion);
+    when(distributedRegion.getConcurrencyChecksEnabled()).thenReturn(true);
+    when(event.getEventId()).thenReturn(null);
+
+    assertThat(distributedRegion.hasSeenEvent(event)).isFalse();
+    verify(distributedRegion, never()).findAndSetVersionTag(event);
+  }
+
+  @Test
+  public void hasSeenEventWillFindAndSetVersionTagIfNotFoundInEventTrackerAndIsPossibleDuplicateWithConcurrencyChecksEnabled() {
+    DistributedRegion distributedRegion = mock(DistributedRegion.class);
+    doCallRealMethod().when(distributedRegion).hasSeenEvent(event);
+    when(distributedRegion.getEventTracker()).thenReturn(eventTracker);
+    when(eventTracker.hasSeenEvent(event)).thenReturn(false);
+    when(event.isPossibleDuplicate()).thenReturn(true);
+    when(event.getRegion()).thenReturn(distributedRegion);
+    when(distributedRegion.getConcurrencyChecksEnabled()).thenReturn(true);
+    when(event.getEventId()).thenReturn(mock(EventID.class));
+
+    assertThat(distributedRegion.hasSeenEvent(event)).isFalse();
+    verify(distributedRegion).findAndSetVersionTag(event);
   }
 }

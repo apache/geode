@@ -526,21 +526,36 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     isDuplicate = getEventTracker().hasSeenEvent(event);
     if (isDuplicate) {
       markEventAsDuplicate(event);
+      if (event.getVersionTag() == null && event.getRegion().getConcurrencyChecksEnabled()
+          && event.getEventId() != null) {
+        // For a retry, versionTag can be missing possibly due to no versionTag recorded during gii.
+        findAndSetVersionTag(event);
+        if (event.getVersionTag() == null) {
+          logger.info("No version tag can be found in cluster when retrying the following event {}",
+              event);
+        }
+      }
     } else {
       // bug #48205 - a retried PR operation may already have a version assigned to it
       // in another VM
       if (event.isPossibleDuplicate() && event.getRegion().getConcurrencyChecksEnabled()
           && event.getVersionTag() == null && event.getEventId() != null) {
-        boolean isBulkOp = event.getOperation().isPutAll() || event.getOperation().isRemoveAll();
-        VersionTag tag =
-            FindVersionTagOperation.findVersionTag(event.getRegion(), event.getEventId(), isBulkOp);
-        event.setVersionTag(tag);
+        findAndSetVersionTag(event);
       }
     }
     return isDuplicate;
   }
 
-  private void markEventAsDuplicate(EntryEventImpl event) {
+  @VisibleForTesting
+  void findAndSetVersionTag(EntryEventImpl event) {
+    boolean isBulkOp = event.getOperation().isPutAll() || event.getOperation().isRemoveAll();
+    VersionTag tag =
+        FindVersionTagOperation.findVersionTag(event.getRegion(), event.getEventId(), isBulkOp);
+    event.setVersionTag(tag);
+  }
+
+  @VisibleForTesting
+  void markEventAsDuplicate(EntryEventImpl event) {
     event.setPossibleDuplicate(true);
     if (getConcurrencyChecksEnabled() && event.getVersionTag() == null) {
       if (event.isBulkOpInProgress()) {
