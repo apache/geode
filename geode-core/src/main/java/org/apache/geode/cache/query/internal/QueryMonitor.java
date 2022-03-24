@@ -74,6 +74,8 @@ public class QueryMonitor {
 
   private final ScheduledThreadPoolExecutor executor;
 
+  private final boolean lowMemoryMonitoringDisabled;
+
   @MakeNotStatic
   private static volatile MemoryState memoryState = MemoryStateImpl.HEAP_AVAILABLE;
 
@@ -95,11 +97,11 @@ public class QueryMonitor {
    * @param executor is responsible for processing scheduled cancelation tasks
    * @param cache is not used // TODO remove this parameter
    * @param defaultMaxQueryExecutionTime is the maximum time, in milliseconds, that any query is
-   *        allowed to run
+   * @param lowMemoryMonitoringDisabled if true then setting low memory has no effect
    */
   public QueryMonitor(final ScheduledThreadPoolExecutor executor,
       final InternalCache cache,
-      final long defaultMaxQueryExecutionTime) {
+      final long defaultMaxQueryExecutionTime, boolean lowMemoryMonitoringDisabled) {
     Objects.requireNonNull(executor);
     Objects.requireNonNull(cache);
 
@@ -108,6 +110,7 @@ public class QueryMonitor {
 
     this.executor = executor;
     this.executor.setRemoveOnCancelPolicy(true);
+    this.lowMemoryMonitoringDisabled = lowMemoryMonitoringDisabled;
   }
 
   /**
@@ -192,6 +195,9 @@ public class QueryMonitor {
    * resulting in a failure to cancel queries.
    */
   public void setLowMemory(final boolean isLowMemory, final long usedBytes) {
+    if (lowMemoryMonitoringDisabled) {
+      return;
+    }
     memoryState.setLowMemory(executor, isLowMemory, usedBytes, cache);
   }
 

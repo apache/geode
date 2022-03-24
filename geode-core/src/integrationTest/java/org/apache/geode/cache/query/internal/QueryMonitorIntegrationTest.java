@@ -77,7 +77,7 @@ public class QueryMonitorIntegrationTest {
       queryMonitor = new QueryMonitor(
           scheduledThreadPoolExecutor,
           cache,
-          NEVER_EXPIRE_MILLIS);
+          NEVER_EXPIRE_MILLIS, false);
 
       queryMonitor.monitorQueryExecution(executionContext);
 
@@ -109,7 +109,7 @@ public class QueryMonitorIntegrationTest {
     QueryMonitor queryMonitor = new QueryMonitor(
         new ScheduledThreadPoolExecutor(1),
         cache,
-        EXPIRE_QUICK_MILLIS);
+        EXPIRE_QUICK_MILLIS, false);
 
     final Answer<Void> processSetQueryCanceledException = invocation -> {
       final Object[] args = invocation.getArguments();
@@ -149,7 +149,7 @@ public class QueryMonitorIntegrationTest {
     final QueryMonitor queryMonitor = new QueryMonitor(
         queryMonitorExecutor,
         cache,
-        NEVER_EXPIRE_MILLIS);
+        NEVER_EXPIRE_MILLIS, false);
 
     // We want to ensure isolation of cancellation tasks for different query threads/executions.
     // Here we ensure that if we monitor/unmonitor two executions in different threads that

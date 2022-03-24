@@ -92,7 +92,7 @@ public class MonitorQueryUnderContentionBenchmark {
   public void trialSetup() throws InterruptedException {
     queryMonitor =
         new QueryMonitor((ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1),
-            mock(InternalCache.class), QUERY_MAX_EXECUTION_TIME);
+            mock(InternalCache.class), QUERY_MAX_EXECUTION_TIME, false);
 
     final int numberOfThreads =
         THREAD_POOL_PROCESSOR_MULTIPLE * Runtime.getRuntime().availableProcessors();
