@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -300,6 +301,33 @@ public class RegisterInterestTracker {
     ConcurrentMap<String, RegionInterestEntry> mapOfInterest =
         getRegionToInterestsMap(interestType, isDurable, receiveUpdatesAsInvalidates);
     return mapOfInterest.get(regionName);
+  }
+
+  public boolean hasInterestsWithResultPolicy(final @NotNull String regionName, boolean isDurable,
+      final @NotNull InterestResultPolicy interestResultPolicy) {
+    // Iterate InterestTypes searching for any with the input interestResultPolicy
+    return Stream.of(InterestType.values())
+        .anyMatch(interestType -> hasInterestsWithResultPolicy(regionName, isDurable,
+            interestResultPolicy, interestType));
+  }
+
+  public boolean hasInterestsWithResultPolicy(final @NotNull String regionName, boolean isDurable,
+      final @NotNull InterestResultPolicy interestResultPolicy,
+      final @NotNull InterestType interestType) {
+    // Check the RegionInterestEntries with receiveUpdatesAsInvalidates both true and false
+    return Stream.of(true, false)
+        .anyMatch(receiveUpdatesAsInvalidates -> hasInterestsWithResultPolicy(regionName, isDurable,
+            interestResultPolicy, interestType, receiveUpdatesAsInvalidates));
+  }
+
+  private boolean hasInterestsWithResultPolicy(final @NotNull String regionName, boolean isDurable,
+      final @NotNull InterestResultPolicy interestResultPolicy,
+      final @NotNull InterestType interestType, boolean receiveUpdatesAsInvalidates) {
+    RegionInterestEntry regionInterestEntry =
+        readRegionInterests(regionName, interestType, isDurable, receiveUpdatesAsInvalidates);
+    return regionInterestEntry != null && regionInterestEntry.getInterests().values().stream()
+        .anyMatch(actualInterestResultPolicy -> actualInterestResultPolicy
+            .getOrdinal() == interestResultPolicy.getOrdinal());
   }
 
   /**

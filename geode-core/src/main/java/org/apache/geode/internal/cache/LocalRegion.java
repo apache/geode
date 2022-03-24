@@ -5325,7 +5325,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     // If the marker has been processed, process this put event normally;
     // otherwise, this event occurred in the past and has been stored for a
     // durable client. In this case, just invoke the put callbacks.
-    if (processedMarker) {
+    if (processedMarker || hasRegisterInterestsWithResultPolicy(true, InterestResultPolicy.NONE)) {
       boolean ifNew = false; // can overwrite an existing key
       boolean ifOld = false; // can create a new key
       long lastModified = 0L; // use now
@@ -5340,6 +5340,12 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
             true);
       }
     }
+  }
+
+  private boolean hasRegisterInterestsWithResultPolicy(boolean isDurable,
+      InterestResultPolicy interestResultPolicy) {
+    return getServerProxy().getPool().getRITracker().hasInterestsWithResultPolicy(fullPath,
+        isDurable, interestResultPolicy);
   }
 
   /**
