@@ -89,10 +89,6 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
     return sizeof(clazz, true);
   }
 
-  /**
-   * Since unsafe.fieldOffset(Field) will give us the offset to the first byte of that field all we
-   * need to do is find which of the non-static declared fields has the greatest offset.
-   */
   public static long sizeof(Class<?> clazz, boolean roundResult) {
     Assert.assertTrue(!clazz.isArray());
     long size = unsafeSizeof(clazz);
@@ -106,47 +102,49 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
   }
 
   /**
-   * Returns -1 if it was not able to compute the size; otherwise returns the size
+   * Returns -1 if it was not able to compute the size; otherwise returns the size.
+   * Since unsafe.fieldOffset(Field) will give us the offset to the first byte of that field all we
+   * need to do is find which of the non-static declared fields has the greatest offset.
    */
   private static long unsafeSizeof(Class<?> clazz) {
     if (unsafe == null) {
       return -1;
     }
     long size;
-    try {
-      Field lastField = null;
-      long lastFieldOffset = 0;
-      do {
-        Field[] fields = clazz.getDeclaredFields();
-        for (Field field : fields) {
-          if (!Modifier.isStatic(field.getModifiers())) {
+    Field lastField = null;
+    long lastFieldOffset = 0;
+    do {
+      Field[] fields = clazz.getDeclaredFields();
+      for (Field field : fields) {
+        if (!Modifier.isStatic(field.getModifiers())) {
+          try {
             long offset = unsafe.fieldOffset(field);
             if (offset >= lastFieldOffset) {
               lastFieldOffset = offset;
               lastField = field;
             }
+          } catch (UnsupportedOperationException ex) {
+            // This happens on java 17 because hidden classes do not support
+            // unsafe.fieldOffset.
+            return -1;
           }
         }
-        if (lastField != null) {
-          // if we have found a field in a subclass then one of them will be the last field
-          // so just break without looking at super class fields.
-          break;
-        }
-        clazz = clazz.getSuperclass();
-      } while (clazz != null);
-
-      if (lastField != null) {
-        size = lastFieldOffset + sizeType(lastField.getType());
-      } else {
-        // class with no fields
-        size = OBJECT_SIZE;
       }
-      return size;
-    } catch (UnsupportedOperationException ex) {
-      // This happens on java 17 because hidden classes do not support
-      // unsafe.fieldOffset.
-      return -1;
+      if (lastField != null) {
+        // if we have found a field in a subclass then one of them will be the last field
+        // so just break without looking at super class fields.
+        break;
+      }
+      clazz = clazz.getSuperclass();
+    } while (clazz != null);
+
+    if (lastField != null) {
+      size = lastFieldOffset + sizeType(lastField.getType());
+    } else {
+      // class with no fields
+      size = OBJECT_SIZE;
     }
+    return size;
   }
 
   private static long safeSizeof(Class<?> clazz) {
