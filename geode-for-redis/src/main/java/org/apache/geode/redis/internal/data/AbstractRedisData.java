@@ -420,7 +420,8 @@ public abstract class AbstractRedisData implements RedisData {
     }
   }
 
-  private boolean txActive(Region<RedisKey, RedisData> region) {
+  @Override
+  public boolean txActive(Region<RedisKey, RedisData> region) {
     TXId txId;
     if (region instanceof LocalDataSet) {
       txId = ((LocalDataSet) region).getProxy().getTXId();

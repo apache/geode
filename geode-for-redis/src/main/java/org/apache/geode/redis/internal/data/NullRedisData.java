@@ -98,6 +98,11 @@ public class NullRedisData implements RedisData {
   }
 
   @Override
+  public boolean txActive(Region<RedisKey, RedisData> region) {
+    return false;
+  }
+
+  @Override
   public boolean rename(ExecutionHandlerContext context, RedisKey oldKey, RedisKey newKey,
       boolean ifNotExists) {
     return false;

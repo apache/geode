@@ -39,6 +39,8 @@ import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.ConcurrentLoopingThreads;
+import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.redis.internal.data.RedisString;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
@@ -47,6 +49,8 @@ import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 public class MSetDUnitTest {
 
   private static final Logger logger = LogService.getLogger();
+
+  public static RedisString valueReference;
 
   @ClassRule
   public static RedisClusterStartupRule clusterStartUp = new RedisClusterStartupRule(4);
@@ -112,6 +116,33 @@ public class MSetDUnitTest {
                     .allSatisfy(value -> assertThat(value).startsWith("valueOne")),
                 values -> assertThat(values)
                     .allSatisfy(value -> assertThat(value).startsWith("valueTwo"))));
+  }
+
+  @Test
+  public void testMSet_isTransactional() {
+    String hashTag = "{" + clusterStartUp.getKeyOnServer("tag", 1) + "}";
+    String key1 = hashTag + "key1";
+    String value1 = "value1";
+    jedis.set(key1, value1);
+
+    clusterStartUp.getMember(1).invoke(() -> {
+      valueReference =
+          (RedisString) ClusterStartupRule.getCache().getRegion(DEFAULT_REDIS_REGION_NAME)
+              .get(new RedisKey(key1.getBytes()));
+      assertThat(new String(valueReference.getValue())).isEqualTo(value1);
+    });
+
+    String newValue = "should_not_be_set";
+
+    jedis.mset(key1, newValue);
+    clusterStartUp.getMember(1).invoke(() -> {
+      RedisString newValueReference =
+          (RedisString) ClusterStartupRule.getCache().getRegion(DEFAULT_REDIS_REGION_NAME)
+              .get(new RedisKey(key1.getBytes()));
+      assertThat(newValueReference == valueReference)
+          .as("References to old and updated values should be different").isFalse();
+      assertThat(new String(newValueReference.getValue())).isEqualTo(newValue);
+    });
   }
 
   @Test

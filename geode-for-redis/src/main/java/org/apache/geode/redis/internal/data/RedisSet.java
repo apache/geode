@@ -73,6 +73,11 @@ public class RedisSet extends AbstractRedisData {
     this.members = members;
   }
 
+  public RedisSet(RedisSet redisSet) {
+    members = new MemberSet(redisSet.members.size());
+    members.addAll(redisSet.members);
+  }
+
   public RedisSet(int expectedSize) {
     members = new MemberSet(expectedSize);
   }
@@ -88,10 +93,13 @@ public class RedisSet extends AbstractRedisData {
     RedisSet destination = regionProvider.getTypedRedisData(REDIS_SET, destKey, false);
     List<byte[]> memberList = new ArrayList<>();
     memberList.add(member);
-    if (source.srem(memberList, regionProvider.getDataRegion(), sourceKey) == 0) {
+    if (!source.sismember(member)) {
       return 0;
     }
-    destination.sadd(memberList, regionProvider.getDataRegion(), destKey);
+    RedisSet newSource = new RedisSet(source);
+    newSource.srem(memberList, regionProvider.getDataRegion(), sourceKey);
+    RedisSet newDestination = new RedisSet(destination);
+    newDestination.sadd(memberList, regionProvider.getDataRegion(), destKey);
     return 1;
   }
 

@@ -70,6 +70,8 @@ public interface RedisData extends Delta, DataSerializable, Sizeable {
 
   String type();
 
+  boolean txActive(Region<RedisKey, RedisData> region);
+
   boolean rename(ExecutionHandlerContext context, RedisKey oldKey, RedisKey newKey,
       boolean ifTargetNotExists);
 

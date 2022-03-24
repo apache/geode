@@ -215,8 +215,9 @@ public class SetExecutor implements CommandExecutor {
       SetOptions options) {
     RedisString redisString;
     RedisData redisData = regionProvider.getRedisData(key);
+    boolean isTransaction = redisData.txActive(regionProvider.getDataRegion());
 
-    if (redisData.isNull() || redisData.getType() != REDIS_STRING) {
+    if (redisData.isNull() || redisData.getType() != REDIS_STRING || isTransaction) {
       redisString = new RedisString(value);
       redisString.handleSetExpiration(options);
       regionProvider.getDataRegion().put(key, redisString);
