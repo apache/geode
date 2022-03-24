@@ -33,28 +33,28 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
   private int memberOverhead;
 
   /**
-   * @param o element to remove from the list
+   * @param toRemove element to remove from the list
    * @param count number of elements that match object o to remove from the list.
    *        Count that is equal to 0 removes all matching elements from the list.
    * @return list of indexes that were removed in order.
    */
-  public List<Integer> remove(Object o, int count) {
+  public List<Integer> remove(byte[] elementToRemove, int count) {
     if (0 <= count) {
       count = count == 0 ? this.size() : count;
-      return removeObjectsStartingAtHead(o, count);
+      return removeObjectsStartingAtHead(elementToRemove, count);
     } else {
-      return removeObjectsStartingAtTail(o, -count);
+      return removeObjectsStartingAtTail(elementToRemove, -count);
     }
   }
 
-  private List<Integer> removeObjectsStartingAtHead(Object o, int count) {
+  private List<Integer> removeObjectsStartingAtHead(byte[] elementToRemove, int count) {
     int index = 0;
     ListIterator<byte[]> iterator = listIterator(index);
     List<Integer> indexesRemoved = new LinkedList<>();
 
     while (iterator.hasNext() && count != indexesRemoved.size()) {
       byte[] element = iterator.next();
-      if (Arrays.equals(element, (byte[]) o)) {
+      if (Arrays.equals(element, elementToRemove)) {
         iterator.remove();
         memberOverhead -= calculateByteArrayOverhead(element);
         indexesRemoved.add(index);
@@ -65,14 +65,14 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
     return indexesRemoved;
   }
 
-  private List<Integer> removeObjectsStartingAtTail(Object o, int count) {
+  private List<Integer> removeObjectsStartingAtTail(byte[] elementToRemove, int count) {
     int index = size() - 1;
     ListIterator<byte[]> descendingIterator = listIterator(size());
     List<Integer> indexesRemoved = new LinkedList<>();
 
     while (descendingIterator.hasPrevious() && indexesRemoved.size() != count) {
       byte[] element = descendingIterator.previous();
-      if (Arrays.equals(element, (byte[]) o)) {
+      if (Arrays.equals(element, elementToRemove)) {
         descendingIterator.remove();
         memberOverhead -= calculateByteArrayOverhead(element);
         indexesRemoved.add(0, index);

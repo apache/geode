@@ -425,8 +425,7 @@ public abstract class AbstractRedisData implements RedisData {
       return false;
     }
     AbstractRedisData that = (AbstractRedisData) o;
-    return version == that.version &&
-        getExpirationTimestamp() == that.getExpirationTimestamp();
+    return getExpirationTimestamp() == that.getExpirationTimestamp();
   }
 
   @Override
