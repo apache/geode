@@ -35,6 +35,7 @@ resources:
     repository: {{repository.fork}}/geode
     disable_ci_skip: false
     skip_ssl_verification: false
+    base_branch: {{repository.branch}}
 - name: geode-windows
   type: pull-request
   source:
@@ -42,6 +43,7 @@ resources:
     repository: {{repository.fork}}/geode
     disable_ci_skip: false
     skip_ssl_verification: false
+    base_branch: {{repository.branch}}
     labels: [windows]
 - name: geode-jdk8
   type: pull-request
@@ -50,6 +52,7 @@ resources:
     repository: {{repository.fork}}/geode
     disable_ci_skip: false
     skip_ssl_verification: false
+    base_branch: {{repository.branch}}
     labels: [jdk8]
 - name: geode-jdk17
   type: pull-request
@@ -58,6 +61,7 @@ resources:
     repository: {{repository.fork}}/geode
     disable_ci_skip: false
     skip_ssl_verification: false
+    base_branch: {{repository.branch}}
     labels: [jdk17]
 - name: geode-status
   type: pull-request
