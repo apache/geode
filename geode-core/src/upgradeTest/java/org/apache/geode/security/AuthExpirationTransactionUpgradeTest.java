@@ -41,6 +41,8 @@ import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.ServerOperationException;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.TXId;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -97,7 +99,7 @@ public class AuthExpirationTransactionUpgradeTest {
 
   @Test
   public void transactionSucceedsWhenAuthenticationExpires() {
-    TransactionId txId =
+    String txId =
         clientVM.invoke(() -> firstSetOfPutOperations("transaction0", "region", 0, 3));
 
     getSecurityManager().addExpiredUser("transaction0");
@@ -124,7 +126,7 @@ public class AuthExpirationTransactionUpgradeTest {
 
   @Test
   public void transactionCanCommitWhenAuthExpiresAndReAuthenicationFails() {
-    TransactionId txId =
+    String txId =
         clientVM.invoke(() -> firstSetOfPutOperations("transaction0", "region", 0, 3));
 
     getSecurityManager().addExpiredUser("transaction0");
@@ -136,7 +138,7 @@ public class AuthExpirationTransactionUpgradeTest {
       TXManagerImpl txManager = (TXManagerImpl) clientCache.getCacheTransactionManager();
       assertThat(txManager.getTXState()).isNotNull();
       assertThat(txManager.getTXState().isInProgress()).isTrue();
-      assertThat(txManager.getTransactionId()).isEqualTo(txId);
+      assertThat(txManager.getTransactionId().toString()).isEqualTo(txId);
       if (TestVersion.compare(client_version, feature_start_version) < 0) {
         IntStream.range(3, 6)
             .forEach(num -> assertThatThrownBy(() -> region.put(num, "value" + num)).isInstanceOf(
@@ -167,7 +169,7 @@ public class AuthExpirationTransactionUpgradeTest {
 
   @Test
   public void transactionCanRollbackWhenAuthExpiresAndReAuthenticationFails() {
-    TransactionId txId =
+    String txId =
         clientVM.invoke(() -> firstSetOfPutOperations("transaction0", "region", 0, 3));
 
     getSecurityManager().addExpiredUser("transaction0");
@@ -179,7 +181,7 @@ public class AuthExpirationTransactionUpgradeTest {
       TXManagerImpl txManager = (TXManagerImpl) clientCache.getCacheTransactionManager();
       assertThat(txManager.getTXState()).isNotNull();
       assertThat(txManager.getTXState().isInProgress()).isTrue();
-      assertThat(txManager.getTransactionId()).isEqualTo(txId);
+      assertThat(txManager.getTransactionId().toString()).isEqualTo(txId);
       if (TestVersion.compare(client_version, feature_start_version) < 0) {
         IntStream.range(3, 6)
             .forEach(num -> assertThatThrownBy(() -> region.put(num, "value" + num)).isInstanceOf(
@@ -210,7 +212,7 @@ public class AuthExpirationTransactionUpgradeTest {
 
   @Test
   public void transactionCanRollbackWhenAuthenticationExpires() {
-    TransactionId txId =
+    String txId =
         clientVM.invoke(() -> firstSetOfPutOperations("transaction0", "region", 0, 3));
 
     getSecurityManager().addExpiredUser("transaction0");
@@ -237,7 +239,7 @@ public class AuthExpirationTransactionUpgradeTest {
 
   @Test
   public void transactionCanResumeWhenAuthenticationExpires() {
-    TransactionId txId = clientVM.invoke(() -> {
+    String txId = clientVM.invoke(() -> {
       UpdatableUserAuthInitialize.setUser("transaction0");
       ClientCache clientCache = ClusterStartupRule.getClientCache();
       Region<Object, Object> region = clientCache.createClientRegionFactory(
@@ -245,7 +247,7 @@ public class AuthExpirationTransactionUpgradeTest {
       CacheTransactionManager txManager = clientCache.getCacheTransactionManager();
       txManager.begin();
       IntStream.range(0, 3).forEach(num -> region.put(num, "value" + num));
-      return txManager.suspend();
+      return txManager.suspend().toString();
     });
 
     getSecurityManager().addExpiredUser("transaction0");
@@ -255,10 +257,14 @@ public class AuthExpirationTransactionUpgradeTest {
       ClientCache clientCache = ClusterStartupRule.getClientCache();
       Region<Object, Object> region = clientCache.getRegion("/region");
       TXManagerImpl txManager = (TXManagerImpl) clientCache.getCacheTransactionManager();
-      txManager.resume(txId);
+      int uniqueID = Integer.parseInt(txId.substring(txId.lastIndexOf(":") + 1));
+      InternalDistributedMember internalDistributedMember =
+          (InternalDistributedMember) clientCache.getDistributedSystem().getDistributedMember();
+      TransactionId transactionId = new TXId(internalDistributedMember, uniqueID);
+      txManager.resume(transactionId);
       assertThat(txManager.getTXState()).isNotNull();
       assertThat(txManager.getTXState().isInProgress()).isTrue();
-      assertThat(txManager.getTransactionId()).isEqualTo(txId);
+      assertThat(txManager.getTransactionId().toString()).isEqualTo(txId);
       IntStream.range(3, 6).forEach(num -> region.put(num, "value" + num));
       txManager.commit();
     });
@@ -284,7 +290,7 @@ public class AuthExpirationTransactionUpgradeTest {
         .forEach(num -> assertThat(serverRegion.get(num)).isEqualTo("value" + num));
   }
 
-  private static TransactionId firstSetOfPutOperations(String user, String regionName,
+  private static String firstSetOfPutOperations(String user, String regionName,
       int startRange, int endRange) {
     UpdatableUserAuthInitialize.setUser(user);
     ClientCache clientCache = ClusterStartupRule.getClientCache();
@@ -293,18 +299,18 @@ public class AuthExpirationTransactionUpgradeTest {
     CacheTransactionManager txManager = clientCache.getCacheTransactionManager();
     txManager.begin();
     IntStream.range(startRange, endRange).forEach(num -> region.put(num, "value" + num));
-    return txManager.getTransactionId();
+    return txManager.getTransactionId().toString();
   }
 
   private static CacheTransactionManager secondSetOfPutOperations(String user, String regionPath,
-      TransactionId txId, int startRange, int endRange) {
+      String txId, int startRange, int endRange) {
     UpdatableUserAuthInitialize.setUser(user);
     ClientCache clientCache = ClusterStartupRule.getClientCache();
     Region<Object, Object> region = clientCache.getRegion(regionPath);
     TXManagerImpl txManager = (TXManagerImpl) clientCache.getCacheTransactionManager();
     assertThat(txManager.getTXState()).isNotNull();
     assertThat(txManager.getTXState().isInProgress()).isTrue();
-    assertThat(txManager.getTransactionId()).isEqualTo(txId);
+    assertThat(txManager.getTransactionId().toString()).isEqualTo(txId);
     IntStream.range(3, 6).forEach(num -> region.put(num, "value" + num));
     return txManager;
   }
