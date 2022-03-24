@@ -315,7 +315,7 @@ dependencies {
     implementation(project(':geode-logging'))
     implementation(project(':geode-membership'))
     implementation(project(':geode-unsafe'))
-    api(project(':geode-serialization'))
+    implementation(project(':geode-serialization'))
     implementation(project(':geode-tcp-server'))
 
     //geode-management currently has pieces of the public API
@@ -329,7 +329,6 @@ dependencies {
         exclude module: 'geode-core'
     }
     testImplementation(project(':geode-concurrency-test'))
-    testImplementation(project(':geode-serialization'))
     testImplementation('org.apache.bcel:bcel')
     testImplementation('org.assertj:assertj-core')
     testImplementation('org.mockito:mockito-core')
@@ -356,7 +355,6 @@ dependencies {
     integrationTestImplementation(project(':geode-dunit'))
     integrationTestImplementation(project(':geode-log4j'))
     integrationTestImplementation(project(':geode-concurrency-test'))
-    integrationTestImplementation(project(':geode-serialization'))
     integrationTestImplementation('org.apache.bcel:bcel')
     integrationTestImplementation('org.apache.logging.log4j:log4j-core')
     integrationTestImplementation('org.powermock:powermock-core')

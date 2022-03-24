@@ -27,9 +27,7 @@ import org.apache.geode.test.dunit.internal.Master;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category(SerializationTest.class)
-public class AnalyzeDUnitSerializablesIntegrationTest
-    extends AnalyzeSerializablesWithClassAnalysisRuleTestBase {
-
+public class AnalyzeDUnitSerializablesIntegrationTest extends AnalyzeSerializablesJUnitTestBase {
   private static final Logger logger = LogService.getLogger();
 
   private static final Set<Class<?>> IGNORE_CLASSES = new HashSet<>();

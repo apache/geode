@@ -23,8 +23,7 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category({ClientSubscriptionTest.class, SerializationTest.class})
-public class AnalyzeCQSerializablesIntegrationTest
-    extends AnalyzeSerializablesWithClassAnalysisRuleTestBase {
+public class AnalyzeCQSerializablesIntegrationTest extends AnalyzeSerializablesJUnitTestBase {
 
   @Override
   protected String getModuleName() {

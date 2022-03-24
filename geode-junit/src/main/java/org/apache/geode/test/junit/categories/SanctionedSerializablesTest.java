@@ -14,8 +14,5 @@
  */
 package org.apache.geode.test.junit.categories;
 
-/**
- * A test category for SanctionedSerializables.
- */
-public interface SanctionedSerializablesTest extends SerializationTest {
+public interface SanctionedSerializablesTest {
 }

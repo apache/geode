@@ -16,8 +16,6 @@ package org.apache.geode.internal.serialization;
 
 import java.net.URL;
 
-import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
-
 public class SerializationSanctionedSerializablesService implements SanctionedSerializablesService {
 
   @Override

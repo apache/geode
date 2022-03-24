@@ -18,6 +18,7 @@ package org.apache.geode.internal.cache.persistence;
 
 import static org.apache.geode.internal.cache.persistence.DefaultDiskDirs.getDefaultDiskDirs;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.DEFAULT_DISK_DIRS_PROPERTY;
+import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Rule;
@@ -26,7 +27,6 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.internal.lang.SystemProperty;
 import org.apache.geode.test.junit.categories.PersistenceTest;
 
 @Category({PersistenceTest.class})
@@ -40,7 +40,7 @@ public class DefaultDiskDirsIntegrationTest {
 
   @Test
   public void getDefaultDiskDirsReturnsOverriddenValue() {
-    System.setProperty(SystemProperty.DEFAULT_PREFIX + DEFAULT_DISK_DIRS_PROPERTY,
+    System.setProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY,
         temporaryFolder.getRoot().getAbsolutePath());
     assertThat(getDefaultDiskDirs()[0]).exists().isEqualTo(temporaryFolder.getRoot());
   }

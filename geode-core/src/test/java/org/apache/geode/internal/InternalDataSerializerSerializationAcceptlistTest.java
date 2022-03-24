@@ -17,15 +17,14 @@ package org.apache.geode.internal;
 import static java.util.Collections.emptySet;
 import static org.apache.geode.distributed.internal.DistributionConfig.SERIALIZABLE_OBJECT_FILTER_NAME;
 import static org.apache.geode.distributed.internal.DistributionConfig.VALIDATE_SERIALIZABLE_OBJECTS_NAME;
-import static org.apache.geode.internal.InternalDataSerializer.initializeSerializationFilter;
-import static org.apache.geode.internal.serialization.filter.ObjectInputFilterUtils.supportsObjectInputFilter;
+import static org.apache.geode.internal.lang.ClassUtils.isClassAvailable;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InvalidClassException;
 import java.io.Serializable;
 import java.util.Properties;
@@ -37,9 +36,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.internal.serialization.filter.SerializableObjectConfig;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category(SerializationTest.class)
@@ -51,9 +50,9 @@ public class InternalDataSerializerSerializationAcceptlistTest {
 
   @BeforeClass
   public static void hasObjectInputFilter() {
-    assertThat(supportsObjectInputFilter())
-        .as("java.io.ObjectInputFilter or sun.misc.ObjectInputFilter is available")
-        .isTrue();
+    assumeTrue("ObjectInputFilter is present in this JVM",
+        isClassAvailable("sun.misc.ObjectInputFilter") ||
+            isClassAvailable("java.io.ObjectInputFilter"));
   }
 
   @Before
@@ -70,37 +69,23 @@ public class InternalDataSerializerSerializationAcceptlistTest {
 
   @Test
   public void distributionConfigDefaults() {
-    SerializableObjectConfig config = new DistributionConfigImpl(new Properties());
+    DistributionConfig distributionConfig = new DistributionConfigImpl(new Properties());
 
-    assertThat(config.getValidateSerializableObjects()).isFalse();
-    assertThat(config.getSerializableObjectFilter()).isEqualTo("!*");
+    assertThat(distributionConfig.getValidateSerializableObjects()).isFalse();
+    assertThat(distributionConfig.getSerializableObjectFilter()).isEqualTo("!*");
   }
 
   @Test
-  public void canSerializeWhenFilterIsDisabled() throws ClassNotFoundException, IOException {
-    initializeSerializationFilter(emptyConfig(), emptySet());
-    DataSerializer.writeObject(testSerializable, outputStream);
-
-    Object deserializedObject;
-    try (InputStream in = new ByteArrayInputStream(outputStream.toByteArray());
-        DataInputStream dataInputStream = new DataInputStream(in)) {
-      deserializedObject = DataSerializer.readObject(dataInputStream);
-    }
-
-    assertThat(deserializedObject).isInstanceOf(testSerializable.getClass());
+  public void canSerializeWhenFilterIsDisabled() throws Exception {
+    trySerializingTestObject(new Properties());
   }
 
   @Test
-  public void notAcceptlistedWithFilterCannotSerialize() throws IOException {
+  public void notAcceptlistedWithFilterCannotSerialize() {
     properties.setProperty(VALIDATE_SERIALIZABLE_OBJECTS_NAME, "true");
-    initializeSerializationFilter(config(properties), emptySet());
-    DataSerializer.writeObject(testSerializable, outputStream);
 
     Throwable thrown = catchThrowable(() -> {
-      try (InputStream in = new ByteArrayInputStream(outputStream.toByteArray());
-          DataInputStream dataInputStream = new DataInputStream(in)) {
-        DataSerializer.readObject(dataInputStream);
-      }
+      trySerializingTestObject(properties);
     });
 
     assertThat(thrown).isInstanceOf(InvalidClassException.class);
@@ -110,100 +95,51 @@ public class InternalDataSerializerSerializationAcceptlistTest {
   public void acceptlistedWithFilterCanSerialize() throws Exception {
     properties.setProperty(VALIDATE_SERIALIZABLE_OBJECTS_NAME, "true");
     properties.setProperty(SERIALIZABLE_OBJECT_FILTER_NAME, TestSerializable.class.getName());
-    initializeSerializationFilter(config(properties), emptySet());
-    DataSerializer.writeObject(testSerializable, outputStream);
 
-    Object deserializedObject;
-    try (InputStream in = new ByteArrayInputStream(outputStream.toByteArray());
-        DataInputStream dataInputStream = new DataInputStream(in)) {
-      deserializedObject = DataSerializer.readObject(dataInputStream);
-    }
-
-    assertThat(deserializedObject).isInstanceOf(testSerializable.getClass());
+    trySerializingTestObject(properties);
   }
 
   @Test
-  public void acceptlistedWithNonMatchingFilterCannotSerialize() throws IOException {
-    properties.setProperty(VALIDATE_SERIALIZABLE_OBJECTS_NAME, "true");
-    properties.setProperty(SERIALIZABLE_OBJECT_FILTER_NAME, "RabidMonkeyTurnip");
-    initializeSerializationFilter(config(properties), emptySet());
-    DataSerializer.writeObject(testSerializable, outputStream);
-
+  public void acceptlistedWithNonMatchingFilterCannotSerialize() {
     Throwable thrown = catchThrowable(() -> {
-      try (InputStream in = new ByteArrayInputStream(outputStream.toByteArray());
-          DataInputStream dataInputStream = new DataInputStream(in)) {
-        DataSerializer.readObject(dataInputStream);
-      }
+      trySerializingWithFilter("RabidMonkeyTurnip");
     });
 
     assertThat(thrown).isInstanceOf(InvalidClassException.class);
   }
 
   @Test
-  public void acceptlistedWithPartialMatchingFilterCannotSerialize() throws IOException {
-    // Not fully qualified class name
-    properties.setProperty(VALIDATE_SERIALIZABLE_OBJECTS_NAME, "true");
-    properties.setProperty(SERIALIZABLE_OBJECT_FILTER_NAME, "TestSerializable");
-    initializeSerializationFilter(config(properties), emptySet());
-    DataSerializer.writeObject(testSerializable, outputStream);
-
+  public void acceptlistedWithPartialMatchingFilterCannotSerialize() {
     Throwable thrown = catchThrowable(() -> {
-      try (InputStream in = new ByteArrayInputStream(outputStream.toByteArray());
-          DataInputStream dataInputStream = new DataInputStream(in)) {
-        DataSerializer.readObject(dataInputStream);
-      }
+      trySerializingWithFilter("TestSerializable"); // Not fully qualified class name
     });
 
     assertThat(thrown).isInstanceOf(InvalidClassException.class);
   }
 
   @Test
-  public void acceptlistedWithEmptyFilterCannotSerialize() throws IOException {
-    properties.setProperty(VALIDATE_SERIALIZABLE_OBJECTS_NAME, "true");
-    properties.setProperty(SERIALIZABLE_OBJECT_FILTER_NAME, "");
-    initializeSerializationFilter(config(properties), emptySet());
-    DataSerializer.writeObject(testSerializable, outputStream);
-
+  public void acceptlistedWithEmptyFilterCannotSerialize() {
     Throwable thrown = catchThrowable(() -> {
-      try (InputStream in = new ByteArrayInputStream(outputStream.toByteArray());
-          DataInputStream dataInputStream = new DataInputStream(in)) {
-        DataSerializer.readObject(dataInputStream);
-      }
+      trySerializingWithFilter("");
     });
 
     assertThat(thrown).isInstanceOf(InvalidClassException.class);
   }
 
   @Test
-  public void acceptlistedWithIncorrectPathFilterCannotSerialize() throws IOException {
-    properties.setProperty(VALIDATE_SERIALIZABLE_OBJECTS_NAME, "true");
-    properties.setProperty(SERIALIZABLE_OBJECT_FILTER_NAME,
-        "org.apache.commons.InternalDataSerializerSerializationAcceptlistTest$TestSerializable");
-    initializeSerializationFilter(config(properties), emptySet());
-    DataSerializer.writeObject(testSerializable, outputStream);
-
+  public void acceptlistedWithIncorrectPathFilterCannotSerialize() {
     Throwable thrown = catchThrowable(() -> {
-      try (InputStream in = new ByteArrayInputStream(outputStream.toByteArray());
-          DataInputStream dataInputStream = new DataInputStream(in)) {
-        DataSerializer.readObject(dataInputStream);
-      }
+      trySerializingWithFilter(
+          "org.apache.commons.InternalDataSerializerSerializationAcceptlistTest$TestSerializable");
     });
 
     assertThat(thrown).isInstanceOf(InvalidClassException.class);
   }
 
   @Test
-  public void acceptlistedWithWildcardPathFilterCannotSerialize() throws IOException {
-    properties.setProperty(VALIDATE_SERIALIZABLE_OBJECTS_NAME, "true");
-    properties.setProperty(SERIALIZABLE_OBJECT_FILTER_NAME, "org.apache.*");
-    initializeSerializationFilter(config(properties), emptySet());
-    DataSerializer.writeObject(testSerializable, outputStream);
-
+  public void acceptlistedWithWildcardPathFilterCannotSerialize() {
     Throwable thrown = catchThrowable(() -> {
-      try (InputStream in = new ByteArrayInputStream(outputStream.toByteArray());
-          DataInputStream dataInputStream = new DataInputStream(in)) {
-        DataSerializer.readObject(dataInputStream);
-      }
+      trySerializingWithFilter("org.apache.*");
     });
 
     assertThat(thrown).isInstanceOf(InvalidClassException.class);
@@ -211,26 +147,26 @@ public class InternalDataSerializerSerializationAcceptlistTest {
 
   @Test
   public void acceptlistedWithWildcardSubpathFilterCanSerialize() throws Exception {
+    trySerializingWithFilter("org.apache.**");
+  }
+
+  private void trySerializingWithFilter(String filter) throws Exception {
     properties.setProperty(VALIDATE_SERIALIZABLE_OBJECTS_NAME, "true");
-    properties.setProperty(SERIALIZABLE_OBJECT_FILTER_NAME, "org.apache.**");
-    initializeSerializationFilter(config(properties), emptySet());
+    properties.setProperty(SERIALIZABLE_OBJECT_FILTER_NAME, filter);
+
+    trySerializingTestObject(properties);
+  }
+
+  private void trySerializingTestObject(Properties properties)
+      throws IOException, ClassNotFoundException {
+    DistributionConfig distributionConfig = new DistributionConfigImpl(properties);
+    InternalDataSerializer.initializeSerializationFilter(distributionConfig, emptySet());
+
     DataSerializer.writeObject(testSerializable, outputStream);
 
-    Object deserializedObject;
-    try (InputStream in = new ByteArrayInputStream(outputStream.toByteArray());
-        DataInputStream dataInputStream = new DataInputStream(in)) {
-      deserializedObject = DataSerializer.readObject(dataInputStream);
-    }
-
-    assertThat(deserializedObject).isInstanceOf(testSerializable.getClass());
-  }
-
-  private static SerializableObjectConfig emptyConfig() {
-    return config(new Properties());
-  }
-
-  private static SerializableObjectConfig config(Properties properties) {
-    return new DistributedSerializableObjectConfig(properties);
+    // if this throws, we're good!
+    DataSerializer
+        .readObject(new DataInputStream(new ByteArrayInputStream(outputStream.toByteArray())));
   }
 
   @SuppressWarnings("serial")
