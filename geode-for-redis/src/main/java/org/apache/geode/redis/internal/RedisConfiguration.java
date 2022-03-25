@@ -15,11 +15,33 @@
 
 package org.apache.geode.redis.internal;
 
+/**
+ * Interface that defines access to 'official' properties for Geode for Redis
+ */
 public interface RedisConfiguration {
 
+  /**
+   * The default Geode for Redis port. Can be set using
+   * {@link SystemPropertyBasedRedisConfiguration#GEODE_FOR_REDIS_PORT}.
+   */
   int DEFAULT_REDIS_PORT = 6379;
+
+  /**
+   * The default Geode for Redis bind address. Can be set using
+   * {@link SystemPropertyBasedRedisConfiguration#GEODE_FOR_REDIS_BIND_ADDRESS}.
+   */
   String DEFAULT_REDIS_BIND_ADDRESS = "127.0.0.1";
+
+  /**
+   * The default Geode for Redis redundant copies. Must be in the range (0..3). Can be set using
+   * {@link SystemPropertyBasedRedisConfiguration#GEODE_FOR_REDIS_REDUNDANT_COPIES}.
+   */
   int DEFAULT_REDIS_REDUNDANT_COPIES = 1;
+
+  /**
+   * The default Geode for Redis username. Can be set using
+   * {@link SystemPropertyBasedRedisConfiguration#GEODE_FOR_REDIS_USERNAME}.
+   */
   String DEFAULT_REDIS_USERNAME = "default";
 
   boolean isEnabled();

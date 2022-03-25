@@ -19,17 +19,37 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.internal.inet.LocalHostUtil;
 
+/**
+ * Concrete implementation of {@link RedisConfiguration} used during runtime. Note that the
+ * presence of any of the system properties will automatically enable Geode for Redis. In order to
+ * use all defaults one can also set {@link #GEODE_FOR_REDIS_ENABLED} to {@code true}.
+ */
 public class SystemPropertyBasedRedisConfiguration implements RedisConfiguration {
 
+  /**
+   * Default is {@link RedisConfiguration#DEFAULT_REDIS_PORT}.
+   */
   public static final String GEODE_FOR_REDIS_PORT = "gemfire.geode-for-redis-port";
 
+  /**
+   * Default is {@link RedisConfiguration#DEFAULT_REDIS_BIND_ADDRESS}.
+   */
   public static final String GEODE_FOR_REDIS_BIND_ADDRESS = "gemfire.geode-for-redis-bind-address";
 
+  /**
+   * Default is {@link RedisConfiguration#DEFAULT_REDIS_REDUNDANT_COPIES}.
+   */
   public static final String GEODE_FOR_REDIS_REDUNDANT_COPIES =
       "gemfire.geode-for-redis-redundant-copies";
 
+  /**
+   * Default is {@link RedisConfiguration#DEFAULT_REDIS_USERNAME}.
+   */
   public static final String GEODE_FOR_REDIS_USERNAME = "gemfire.geode-for-redis-username";
 
+  /**
+   * Default is {@code false}.
+   */
   public static final String GEODE_FOR_REDIS_ENABLED = "gemfire.geode-for-redis-enabled";
 
   private int port;
