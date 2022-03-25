@@ -208,6 +208,7 @@ gradle.taskGraph.whenReady({ graph ->
                 "--add-opens=java.base/jdk.internal.loader=ALL-UNNAMED",
                 "--add-opens=java.base/jdk.internal.misc=ALL-UNNAMED",
                 "--add-opens=java.base/jdk.internal.module=ALL-UNNAMED",
+                "--add-opens=java.base/jdk.internal.platform=ALL-UNNAMED",
                 "--add-opens=java.base/jdk.internal.ref=ALL-UNNAMED",
                 "--add-opens=java.base/jdk.internal.reflect=ALL-UNNAMED",
                 "--add-opens=java.base/jdk.internal.util.jar=ALL-UNNAMED",
@@ -245,6 +246,7 @@ gradle.taskGraph.whenReady({ graph ->
         ]
 
         if (System.getProperty("os.name").startsWith('Linux')) {
+          jvmArgs += "--add-opens=java.base/jdk.internal.platform=ALL-UNNAMED"
           jvmArgs += "--add-opens=java.base/jdk.internal.platform.cgroupv1=ALL-UNNAMED"
         }
         if(testJVMVer.toInteger() >= 17) {
