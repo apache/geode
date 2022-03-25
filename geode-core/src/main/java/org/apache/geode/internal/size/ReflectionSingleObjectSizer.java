@@ -21,6 +21,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.JvmSizeUtils;
 import org.apache.geode.unsafe.internal.sun.misc.Unsafe;
@@ -90,8 +91,13 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
   }
 
   public static long sizeof(Class<?> clazz, boolean roundResult) {
+    return sizeof(clazz, roundResult, unsafe);
+  }
+
+  @VisibleForTesting
+  static long sizeof(Class<?> clazz, boolean roundResult, Unsafe myUnsafe) {
     Assert.assertTrue(!clazz.isArray());
-    long size = unsafeSizeof(clazz);
+    long size = unsafeSizeof(clazz, myUnsafe);
     if (size == -1) {
       size = safeSizeof(clazz);
     }
@@ -106,8 +112,9 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
    * Since unsafe.fieldOffset(Field) will give us the offset to the first byte of that field all we
    * need to do is find which of the non-static declared fields has the greatest offset.
    */
-  private static long unsafeSizeof(Class<?> clazz) {
-    if (unsafe == null) {
+  @VisibleForTesting
+  static long unsafeSizeof(Class<?> clazz, Unsafe myUnsafe) {
+    if (myUnsafe == null) {
       return -1;
     }
     long size;
@@ -118,7 +125,7 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
       for (Field field : fields) {
         if (!Modifier.isStatic(field.getModifiers())) {
           try {
-            long offset = unsafe.fieldOffset(field);
+            long offset = myUnsafe.fieldOffset(field);
             if (offset >= lastFieldOffset) {
               lastFieldOffset = offset;
               lastField = field;
@@ -147,7 +154,8 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
     return size;
   }
 
-  private static long safeSizeof(Class<?> clazz) {
+  @VisibleForTesting
+  static long safeSizeof(Class<?> clazz) {
     // This code is not as accurate as unsafe but gives an estimate of memory used.
     // If it is wrong it will always under estimate because it does not account
     // for any of the field alignment that the jvm does.
