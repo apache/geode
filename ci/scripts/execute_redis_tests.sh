@@ -30,6 +30,8 @@ git apply ${REDIS_PATCH}
 
 export JAVA_HOME=${JAVA_TEST_PATH}
 
+export REDIS_CLASSPATH=${PWD}/../geode-for-redis/build/install/geode-for-redis/lib/*
+
 ../geode-assembly/build/install/apache-geode/bin/gfsh start server \
   --J=-Denable-unsupported-commands=true \
   --name=server1 \
@@ -41,7 +43,8 @@ export JAVA_HOME=${JAVA_TEST_PATH}
   --J=-Dgemfire.security-manager=org.apache.geode.examples.SimpleSecurityManager \
   --J=-Dgemfire.jmx-manager=true \
   --J=-Dgemfire.jmx-manager-start=true \
-  --J=-Dgemfire.jmx-manager-port=1099
+  --J=-Dgemfire.jmx-manager-port=1099 \
+  --classpath=$REDIS_CLASSPATH
 
 # This will cause all buckets to be created
 ../geode-assembly/build/install/apache-geode/bin/gfsh -e "connect --jmx-manager=localhost[1099]" \
@@ -64,7 +67,8 @@ failCount=0
   --J=-Dgemfire.geode-for-redis-bind-address=127.0.0.1 \
   --J=-Dgemfire.jmx-manager=true \
   --J=-Dgemfire.jmx-manager-start=true \
-  --J=-Dgemfire.jmx-manager-port=1099
+  --J=-Dgemfire.jmx-manager-port=1099 \
+  --classpath=$REDIS_CLASSPATH
 
 # This will cause all buckets to be created
 ../geode-assembly/build/install/apache-geode/bin/gfsh -e "connect --jmx-manager=localhost[1099]" \

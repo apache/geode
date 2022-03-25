@@ -144,6 +144,7 @@ repeatDistributedTest {
 
 tasks.register("redisAPITest") {
   dependsOn ':geode-assembly:installDist'
+  dependsOn ':geode-for-redis:installDist'
   doLast {
     exec {
       executable "../ci/scripts/execute_redis_tests.sh"
