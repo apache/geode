@@ -100,7 +100,7 @@ public class P2PMessagingConcurrencyDUnitTest {
    * Non-random payload content makes debugging easier when a NULL cipher is used.
    * Null ciphers are not allowed on TLSv1.3 though.
    */
-  private static boolean RANDOMIZE_PAYLOAD_CONTENT = false;
+  private static boolean RANDOMIZE_PAYLOAD_CONTENT = true;
 
   private static final byte[] NON_RANDOM_PAYLOAD_PATTERN =
       "EVERYGOODBOYDOESFINE".getBytes(StandardCharsets.UTF_8);
@@ -113,8 +113,11 @@ public class P2PMessagingConcurrencyDUnitTest {
    * after a preconfigured number of bytes have been encrypted by an SSLEngine.
    * Setting this to true causes generation of KeyUpdate TLS messages.
    * See NioSslEngineKeyUpdateTest for more details.
+   *
+   * Leave this turned off for CI since ENCRYPTED_BYTES_LIMIT is
+   * performance-sensitive. Turning it on in CI can make this test flaky.
    */
-  private static final boolean TEST_WITH_TLS_KEY_UPDATE_MESSAGE_PROCESSING = true;
+  private static final boolean TEST_WITH_TLS_KEY_UPDATE_MESSAGE_PROCESSING = false;
 
   private static final int ENCRYPTED_BYTES_LIMIT = 1024 * 8; // 2^13
 
