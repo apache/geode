@@ -636,6 +636,11 @@ public abstract class AbstractHitsMissesIntegrationTest implements RedisIntegrat
     runCommandAndAssertNoStatUpdates(LIST_KEY, k -> jedis.rpop(k));
   }
 
+  @Test
+  public void testRpopLpush() {
+    runMultiKeyCommandAndAssertNoStatUpdates(LIST_KEY, (k1, k2) -> jedis.rpoplpush(k1, k2));
+  }
+
   /************* Helper Methods *************/
   private void runCommandAndAssertHitsAndMisses(String key, Consumer<String> command) {
     Map<String, String> info = RedisTestHelper.getInfo(jedis);
