@@ -59,6 +59,32 @@ public class RedisList extends AbstractRedisData {
   }
 
   /**
+   * @param count number of elements to remove.
+   *        A count that is 0 removes all matching elements in the list.
+   *        Positive count starts from the head and moves to the tail.
+   *        Negative count starts from the tail and moves to the head.
+   * @param element element to remove
+   * @param region the region this instance is stored in
+   * @param key the name of the set to add
+   * @return amount of elements that were actually removed
+   */
+  public int lrem(int count, byte[] element, Region<RedisKey, RedisData> region, RedisKey key) {
+    List<Integer> removedIndexes;
+    byte version;
+    synchronized (this) {
+      removedIndexes = elementList.remove(element, count);
+      version = incrementAndGetVersion();
+    }
+
+    if (!removedIndexes.isEmpty()) {
+      storeChanges(region, key,
+          new RemoveElementsByIndex(version, removedIndexes));
+    }
+
+    return removedIndexes.size();
+  }
+
+  /**
    * @param start start index of desired elements
    * @param stop stop index of desired elements
    * @return list of elements in the range (inclusive).
@@ -100,8 +126,9 @@ public class RedisList extends AbstractRedisData {
   }
 
   /**
-   * @param index index of desired element. Positive index starts at the head. Negative index starts
-   *        at the tail.
+   * @param index index of desired element.
+   *        Positive index starts at the head.
+   *        Negative index starts at the tail.
    * @return element at index. Null if index is out of range.
    */
   public byte[] lindex(int index) {
@@ -304,9 +331,11 @@ public class RedisList extends AbstractRedisData {
   }
 
   @Override
-  public void applyRemoveElementsByIndex(List<Integer> indexes) {
-    for (int index : indexes) {
-      removeElement(index);
+  public synchronized void applyRemoveElementsByIndex(List<Integer> indexes) {
+    if (indexes.size() == 1) {
+      removeElement(indexes.get(0));
+    } else {
+      elementList.removeIndexes(indexes);
     }
   }
 

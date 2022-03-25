@@ -16,6 +16,10 @@ package org.apache.geode.redis.internal.data.collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 import org.junit.Test;
 
 import org.apache.geode.cache.util.ObjectSizer;
@@ -23,6 +27,7 @@ import org.apache.geode.internal.size.ReflectionObjectSizer;
 
 public class SizeableByteArrayListTest {
   private final ObjectSizer sizer = ReflectionObjectSizer.getInstance();
+  private final int INITIAL_NUMBER_OF_ELEMENTS = 20;
 
   @Test
   public void getSizeInBytesIsAccurate_ForEmptySizeableByteArrayList() {
@@ -32,32 +37,67 @@ public class SizeableByteArrayListTest {
 
   @Test
   public void getSizeInBytesIsAccurate_ForSizeableByteArrayListElements() {
-    int initialNumberOfElements = 20;
     int elementsToAdd = 100;
 
     // Create a list with an initial size and confirm that it correctly reports its size
-    SizeableByteArrayList list = new SizeableByteArrayList();
-    for (int i = 0; i < initialNumberOfElements; ++i) {
-      list.addFirst(makeByteArrayOfSpecifiedLength(i + 1));
-    }
+    SizeableByteArrayList list = createList();
     assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
 
     // Add elements and assert that the size is correct after each add
-    for (int i = initialNumberOfElements; i < initialNumberOfElements + elementsToAdd; ++i) {
+    for (int i = INITIAL_NUMBER_OF_ELEMENTS; i < INITIAL_NUMBER_OF_ELEMENTS + elementsToAdd; ++i) {
       list.addFirst(makeByteArrayOfSpecifiedLength(i));
       assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
     }
-    assertThat(list.size()).isEqualTo(initialNumberOfElements + elementsToAdd);
+    assertThat(list.size()).isEqualTo(INITIAL_NUMBER_OF_ELEMENTS + elementsToAdd);
 
     // Remove all the elements and assert that the size is correct after each remove
-    for (int i = 0; i < initialNumberOfElements + elementsToAdd; ++i) {
+    for (int i = 0; i < INITIAL_NUMBER_OF_ELEMENTS + elementsToAdd; ++i) {
       list.remove(0);
       assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
     }
     assertThat(list.size()).isEqualTo(0);
   }
 
-  byte[] makeByteArrayOfSpecifiedLength(int length) {
+  @Test
+  public void removeObjects_getSizeInBytesIsAccurate() {
+    // Create a list with an initial size and confirm that it correctly reports its size
+    SizeableByteArrayList list = createList();
+    assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+
+    // Remove all the elements and assert that the size is correct after each remove
+    Random rand = new Random();
+    for (int i = 0; i < INITIAL_NUMBER_OF_ELEMENTS; ++i) {
+      list.remove(makeByteArrayOfSpecifiedLength(i + 1), rand.nextInt(3) - 1);
+      assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+    }
+    assertThat(list.size()).isEqualTo(0);
+  }
+
+  @Test
+  public void removeIndexes_getSizeInBytesIsAccurate() {
+    // Create a list with an initial size and confirm that it correctly reports its size
+    SizeableByteArrayList list = createList();
+    assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+
+    // Remove all the elements and assert that the size is correct after each remove
+    for (int i = INITIAL_NUMBER_OF_ELEMENTS - 1; 0 <= i; --i) {
+      List<Integer> indexToRemove = new ArrayList<>(1);
+      indexToRemove.add(i);
+      list.removeIndexes(indexToRemove);
+      assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+    }
+    assertThat(list.size()).isEqualTo(0);
+  }
+
+  private SizeableByteArrayList createList() {
+    SizeableByteArrayList list = new SizeableByteArrayList();
+    for (int i = 0; i < INITIAL_NUMBER_OF_ELEMENTS; ++i) {
+      list.addFirst(makeByteArrayOfSpecifiedLength(i + 1));
+    }
+    return list;
+  }
+
+  private byte[] makeByteArrayOfSpecifiedLength(int length) {
     byte[] newByteArray = new byte[length];
     for (int i = 0; i < length; i++) {
       newByteArray[i] = (byte) i;

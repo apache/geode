@@ -21,6 +21,7 @@ import static org.apache.geode.internal.JvmSizeUtils.roundUpSize;
 
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.ListIterator;
 
 import org.apache.geode.internal.size.Sizeable;
@@ -30,6 +31,57 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
   private static final int NODE_OVERHEAD =
       roundUpSize(getObjectHeaderSize() + 3 * getReferenceSize());
   private int memberOverhead;
+
+  /**
+   * @param toRemove element to remove from the list
+   * @param count number of elements that match object o to remove from the list.
+   *        Count that is equal to 0 removes all matching elements from the list.
+   * @return list of indexes that were removed in order.
+   */
+  public List<Integer> remove(byte[] elementToRemove, int count) {
+    if (0 <= count) {
+      count = count == 0 ? this.size() : count;
+      return removeObjectsStartingAtHead(elementToRemove, count);
+    } else {
+      return removeObjectsStartingAtTail(elementToRemove, -count);
+    }
+  }
+
+  private List<Integer> removeObjectsStartingAtHead(byte[] elementToRemove, int count) {
+    int index = 0;
+    ListIterator<byte[]> iterator = listIterator(index);
+    List<Integer> indexesRemoved = new LinkedList<>();
+
+    while (iterator.hasNext() && count != indexesRemoved.size()) {
+      byte[] element = iterator.next();
+      if (Arrays.equals(element, elementToRemove)) {
+        iterator.remove();
+        memberOverhead -= calculateByteArrayOverhead(element);
+        indexesRemoved.add(index);
+      }
+
+      index++;
+    }
+    return indexesRemoved;
+  }
+
+  private List<Integer> removeObjectsStartingAtTail(byte[] elementToRemove, int count) {
+    int index = size() - 1;
+    ListIterator<byte[]> descendingIterator = listIterator(size());
+    List<Integer> indexesRemoved = new LinkedList<>();
+
+    while (descendingIterator.hasPrevious() && indexesRemoved.size() != count) {
+      byte[] element = descendingIterator.previous();
+      if (Arrays.equals(element, elementToRemove)) {
+        descendingIterator.remove();
+        memberOverhead -= calculateByteArrayOverhead(element);
+        indexesRemoved.add(0, index);
+      }
+
+      index--;
+    }
+    return indexesRemoved;
+  }
 
   @Override
   public int indexOf(Object o) {
@@ -47,6 +99,25 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
   @Override
   public int lastIndexOf(Object o) {
     throw new UnsupportedOperationException();
+  }
+
+  /**
+   * @param remove in order (smallest to largest) list of indexes to remove
+   */
+  public void removeIndexes(List<Integer> remove) {
+    int removeIndex = 0;
+    int firstIndexToRemove = remove.get(0);
+    ListIterator<byte[]> iterator = listIterator(firstIndexToRemove);
+
+    // Iterates only through the indexes to remove
+    for (int i = firstIndexToRemove; i <= remove.get(remove.size() - 1); i++) {
+      byte[] element = iterator.next();
+      if (i == remove.get(removeIndex)) {
+        iterator.remove();
+        memberOverhead -= calculateByteArrayOverhead(element);
+        removeIndex++;
+      }
+    }
   }
 
   @Override
