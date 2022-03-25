@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
@@ -107,7 +108,8 @@ public class RegisterInterestTracker {
     return result;
   }
 
-  void addSingleInterest(final @NotNull LocalRegion r, final @NotNull Object key,
+  @VisibleForTesting
+  public void addSingleInterest(final @NotNull LocalRegion r, final @NotNull Object key,
       final @NotNull InterestType interestType,
       final @NotNull InterestResultPolicy pol, final boolean isDurable,
       boolean receiveUpdatesAsInvalidates) {
