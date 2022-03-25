@@ -50,6 +50,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.SerializableConsumerIF;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 /*
@@ -58,7 +59,6 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
  * exceptions here and have them run with all topologies in child classes.
  */
 public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
-
   @Rule
   public transient ExpectedException thrown = ExpectedException.none();
 
@@ -93,12 +93,12 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
 
   @Test
   public void functionContextGetCacheIsNotNullAndOpen() {
-    ResultCollector rc = getExecution().execute((context) -> {
+    ResultCollector rc = getExecution().execute(identifiableFunction((context) -> {
       Cache cache = context.getCache();
       assertNotNull(cache);
       assertFalse(cache.isClosed());
       context.getResultSender().lastResult("done");
-    });
+    }));
     List<String> results = (List<String>) rc.getResult();
     assertEquals(numberOfExecutions(), results.size());
     results.stream().forEach(element -> assertEquals("done", element));
@@ -106,9 +106,9 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
 
   @Test
   public void defaultCollectorReturnsSingleResult() {
-    ResultCollector rc = getExecution().execute((context) -> {
+    ResultCollector rc = getExecution().execute(identifiableFunction((context) -> {
       context.getResultSender().lastResult("done");
-    });
+    }));
     List<String> results = (List<String>) rc.getResult();
     assertEquals(numberOfExecutions(), results.size());
     results.stream().forEach(element -> assertEquals("done", element));
@@ -116,10 +116,10 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
 
   @Test()
   public void defaultCollectorReturnsAllIntermediateResults() {
-    ResultCollector rc = getExecution().execute((context) -> {
+    ResultCollector rc = getExecution().execute(identifiableFunction((context) -> {
       context.getResultSender().sendResult("one");
       context.getResultSender().lastResult("two");
-    });
+    }));
     final List<String> result = (List<String>) rc.getResult();
     assertEquals(numberOfExecutions(), result.stream().filter(s -> s.equals("one")).count());
     assertEquals(numberOfExecutions(), result.stream().filter(s -> s.equals("two")).count());
@@ -132,9 +132,9 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
     thrown.expect(FunctionException.class);
     // GEODE-1762 - clients wrap cause in a ServerOperationException
     // thrown.expectCause(isA(IllegalStateException.class));
-    ResultCollector rc = getExecution().execute((context) -> {
+    ResultCollector rc = getExecution().execute(identifiableFunction((context) -> {
       throw new IllegalStateException();
-    });
+    }));
     final Object result = rc.getResult();
   }
 
@@ -142,9 +142,9 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
   public void defaultCollectorThrowsExceptionAfterFunctionThrowsFunctionException() {
     // GEODE-1762 - clients throw from execute, but peers throw from rc.getResult
     thrown.expect(FunctionException.class);
-    ResultCollector rc = getExecution().execute((context) -> {
+    ResultCollector rc = getExecution().execute(identifiableFunction((context) -> {
       throw new FunctionException();
-    });
+    }));
     final Object result = rc.getResult();
   }
 
@@ -159,9 +159,9 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
     thrown.expect(Exception.class);
     // thrown.expect(FunctionException.class);
     // thrown.expectCause(isA(IllegalStateException.class));
-    ResultCollector rc = getExecution().execute((context) -> {
+    ResultCollector rc = getExecution().execute(identifiableFunction((context) -> {
       context.getResultSender().lastResult(new IllegalStateException());
-    });
+    }));
     final Object result = rc.getResult();
   }
 
@@ -170,9 +170,9 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
     // GEODE-1762 - clients throw from execute, but peers throw from rc.getResult
     thrown.expect(FunctionException.class);
     thrown.expectCause(is((Throwable) null));
-    ResultCollector rc = getExecution().execute((context) -> {
+    ResultCollector rc = getExecution().execute(identifiableFunction((context) -> {
       context.getResultSender().lastResult(new FunctionException());
-    });
+    }));
     final Object result = rc.getResult();
   }
 
@@ -183,10 +183,10 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
     thrown.expect(Exception.class);
     // thrown.expect(FunctionException.class);
     // thrown.expectCause(isA(IllegalStateException.class));
-    ResultCollector rc = getExecution().execute((context) -> {
+    ResultCollector rc = getExecution().execute(identifiableFunction((context) -> {
       context.getResultSender().sendResult(new IllegalStateException());
       context.getResultSender().lastResult("done");
-    });
+    }));
     final Object result = rc.getResult();
   }
 
@@ -195,18 +195,18 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
     // GEODE-1762 - clients throw from execute, but peers throw from rc.getResult
     thrown.expect(FunctionException.class);
     thrown.expectCause(is((Throwable) null));
-    ResultCollector rc = getExecution().execute((context) -> {
+    ResultCollector rc = getExecution().execute(identifiableFunction((context) -> {
       context.getResultSender().sendResult(new FunctionException());
       context.getResultSender().lastResult("done");
-    });
+    }));
     final Object result = rc.getResult();
   }
 
   @Test
   public void defaultCollectorReturnsResultOfSendException() {
-    ResultCollector rc = getExecution().execute((context) -> {
+    ResultCollector rc = getExecution().execute(identifiableFunction((context) -> {
       context.getResultSender().sendException(new IllegalStateException());
-    });
+    }));
     final List<Object> result = (List<Object>) rc.getResult();
     assertEquals(numberOfExecutions(), result.size());
     result.stream()
@@ -215,9 +215,9 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
 
   @Test
   public void defaultCollectorReturnsResultOfSendFunctionException() {
-    ResultCollector rc = getExecution().execute((context) -> {
+    ResultCollector rc = getExecution().execute(identifiableFunction((context) -> {
       context.getResultSender().sendException(new FunctionException());
-    });
+    }));
     final List<Object> result = (List<Object>) rc.getResult();
     assertEquals(numberOfExecutions(), result.size());
     result.stream().forEach(element -> assertEquals(FunctionException.class, element.getClass()));
@@ -228,9 +228,10 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
     // GEODE-1762 - clients throw from execute, but peers throw from rc.getResult
     IgnoredException.addIgnoredException("java.lang.IllegalStateException");
     try {
-      ResultCollector rc = getExecution().withCollector(customCollector).execute((context) -> {
-        throw new IllegalStateException();
-      });
+      ResultCollector rc =
+          getExecution().withCollector(customCollector).execute(identifiableFunction((context) -> {
+            throw new IllegalStateException();
+          }));
       rc.getResult();
       fail("should have received an exception");
     } catch (FunctionException ignored) {
@@ -243,9 +244,10 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
   public void customCollectorDoesNotSeeExceptionFunctionThrowsFunctionException() {
     // GEODE-1762 - clients throw from execute, but peers throw from rc.getResult
     try {
-      ResultCollector rc = getExecution().withCollector(customCollector).execute((context) -> {
-        throw new FunctionException();
-      });
+      ResultCollector rc =
+          getExecution().withCollector(customCollector).execute(identifiableFunction((context) -> {
+            throw new FunctionException();
+          }));
       rc.getResult();
       fail("should have received an exception");
     } catch (FunctionException ignored) {
@@ -258,9 +260,9 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
   public void customCollectorDoesNotSeeExceptionAfterFunctionReturnsIllegalStateException() {
     // GEODE-1762 - clients throw from execute, but peers throw from rc.getResult
     try {
-      ResultCollector rc = getExecution().execute((context) -> {
+      ResultCollector rc = getExecution().execute(identifiableFunction((context) -> {
         context.getResultSender().lastResult(new IllegalStateException());
-      });
+      }));
       rc.getResult();
       fail("should have received an exception");
       // GEODE-1762 - clients throw a ServerOperationException
@@ -273,10 +275,10 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
   public void customCollectorDoesNotSeeExceptionAfterFunctionReturnsIllegalStateExceptionAsIntermediateResult() {
     // GEODE-1762 - clients throw from execute, but peers throw from rc.getResult
     try {
-      ResultCollector rc = getExecution().execute((context) -> {
+      ResultCollector rc = getExecution().execute(identifiableFunction((context) -> {
         context.getResultSender().sendResult(new IllegalStateException());
         context.getResultSender().lastResult("done");
-      });
+      }));
       rc.getResult();
       fail("should have received an exception");
       // GEODE-1762 - clients throw a ServerOperationException
@@ -287,9 +289,10 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
 
   @Test
   public void customCollectorReturnsResultOfSendException() {
-    ResultCollector rc = getExecution().withCollector(customCollector).execute((context) -> {
-      context.getResultSender().sendException(new IllegalStateException());
-    });
+    ResultCollector rc =
+        getExecution().withCollector(customCollector).execute(identifiableFunction((context) -> {
+          context.getResultSender().sendException(new IllegalStateException());
+        }));
     final List<Object> result = (List<Object>) rc.getResult();
     assertEquals(numberOfExecutions(), result.size());
     result.stream()
@@ -299,9 +302,10 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
 
   @Test
   public void customCollectorReturnsResultOfSendFunctionException() {
-    ResultCollector rc = getExecution().withCollector(customCollector).execute((context) -> {
-      context.getResultSender().sendException(new FunctionException());
-    });
+    ResultCollector rc =
+        getExecution().withCollector(customCollector).execute(identifiableFunction((context) -> {
+          context.getResultSender().sendException(new FunctionException());
+        }));
     final List<Object> result = (List<Object>) rc.getResult();
     assertEquals(numberOfExecutions(), result.size());
     result.stream().forEach(element -> assertEquals(FunctionException.class, element.getClass()));
@@ -337,7 +341,7 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
    */
   @Test
   public void resultCollectorHonorsFunctionTimeout() throws InterruptedException {
-    Function sleepingFunction = context -> {
+    Function sleepingFunction = identifiableFunction((context) -> {
       try {
         long endTime = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
         while (!context.getCache().isClosed() && System.nanoTime() < endTime) {
@@ -347,7 +351,7 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
         // exit
       }
       context.getResultSender().sendResult("FAILED");
-    };
+    });
 
     ResultCollector collector = getExecution().execute(sleepingFunction);
     thrown.expect(FunctionException.class);
@@ -356,10 +360,10 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
 
   protected List<InternalDistributedMember> getAllMembers() {
     // Get a list of all of the members
-    ResultCollector rs = getExecution().execute(functionContext -> {
+    ResultCollector rs = getExecution().execute(identifiableFunction(functionContext -> {
       functionContext.getResultSender()
           .lastResult(InternalDistributedSystem.getAnyInstance().getDistributedMember());
-    });
+    }));
     return (List<InternalDistributedMember>) rs.getResult();
   }
 
@@ -433,4 +437,17 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
     }
   }
 
+  public static <T> Function<T> identifiableFunction(SerializableConsumerIF<FunctionContext<T>> f) {
+    return new Function<T>() {
+      @Override
+      public String getId() {
+        return getClass().getName();
+      }
+
+      @Override
+      public void execute(FunctionContext<T> context) {
+        f.accept(context);
+      }
+    };
+  }
 }
