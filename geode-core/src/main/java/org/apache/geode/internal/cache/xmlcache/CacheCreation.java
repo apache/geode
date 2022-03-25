@@ -162,7 +162,6 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.InternalGatewaySenderFactory;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
 import org.apache.geode.internal.jndi.JNDIInvoker;
-import org.apache.geode.internal.lang.SystemProperty;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
@@ -194,7 +193,7 @@ public class CacheCreation implements InternalCache {
   private static final RegionAttributes defaults = new AttributesFactory().create();
 
   @Immutable
-  private static final Optional<Boolean> parallelDiskStoreRecovery = SystemProperty
+  private static final Optional<Boolean> parallelDiskStoreRecovery = SystemPropertyHelper
       .getProductBooleanProperty(SystemPropertyHelper.PARALLEL_DISK_STORE_RECOVERY);
 
   /**

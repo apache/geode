@@ -16,7 +16,7 @@ package org.apache.geode.test.dunit.internal;
 
 import java.net.URL;
 
-import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
+import org.apache.geode.internal.serialization.SanctionedSerializablesService;
 
 public class DUnitSanctionedSerializablesService implements SanctionedSerializablesService {
 

@@ -20,6 +20,7 @@ import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.geode.internal.cache.persistence.MembershipChangeListenerFactory.cancelCondition;
+import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -57,7 +58,6 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvice;
-import org.apache.geode.internal.lang.SystemProperty;
 
 public class PersistenceInitialImageAdvisorTest {
 
@@ -73,8 +73,7 @@ public class PersistenceInitialImageAdvisorTest {
 
   @Before
   public void setUp() {
-    System.setProperty(SystemProperty.DEFAULT_PREFIX + PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS,
-        String.valueOf(15));
+    System.setProperty(GEODE_PREFIX + PERSISTENT_VIEW_RETRY_TIMEOUT_SECONDS, String.valueOf(15));
 
     persistenceAdvisor = mock(InternalPersistenceAdvisor.class);
     cacheDistributionAdvisor = mock(CacheDistributionAdvisor.class, RETURNS_DEEP_STUBS);

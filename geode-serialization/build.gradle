@@ -25,13 +25,9 @@ dependencies {
 
   //Geode-common has annotations and other pieces used by geode-serialization
   implementation(project(':geode-common'))
-  implementation(project(':geode-logging'))
 
   //FastUtil contains optimized collections that are used in multiple places in core
   implementation('it.unimi.dsi:fastutil')
-
-  // serialization filtering uses Apache Commons
-  implementation('org.apache.commons:commons-lang3')
 
   //Log4j is used everywhere
   implementation('org.apache.logging.log4j:log4j-api')

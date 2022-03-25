@@ -59,6 +59,7 @@ public class MembershipDependenciesJUnitTest {
               .or(resideInAPackage("org.apache.geode.internal.lang.."))
               .or(resideInAPackage("org.apache.geode.annotations.."))
               .or(resideInAPackage("org.apache.geode.codeAnalysis.."))
+
               .or(not(resideInAPackage("org.apache.geode..")))
               .or(type(AvailablePortHelper.class))
 

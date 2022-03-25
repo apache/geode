@@ -27,13 +27,10 @@ dependencies {
   implementation('com.fasterxml.jackson.core:jackson-databind')
 
   // test
-  testImplementation('com.github.stefanbirkner:system-rules') {
-    exclude module: 'junit-dep'
-  }
   testImplementation('junit:junit')
-  testImplementation('org.apache.commons:commons-lang3')
   testImplementation('org.assertj:assertj-core')
   testImplementation('org.mockito:mockito-core')
+
 
   // jmhTest
   jmhTestImplementation('junit:junit')

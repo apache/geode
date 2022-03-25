@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.eviction;
 
 import java.util.Optional;
 
-import org.apache.geode.internal.lang.SystemProperty;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 
 public class EvictionListBuilder {
@@ -28,7 +27,7 @@ public class EvictionListBuilder {
   public EvictionListBuilder(EvictionController evictionController) {
     this.controller = evictionController;
     Optional<Boolean> asyncScan =
-        SystemProperty.getProductBooleanProperty(SystemPropertyHelper.EVICTION_SCAN_ASYNC);
+        SystemPropertyHelper.getProductBooleanProperty(SystemPropertyHelper.EVICTION_SCAN_ASYNC);
     evictionScanAsync = asyncScan.orElse(true);
   }
 

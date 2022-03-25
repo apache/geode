@@ -27,7 +27,6 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
-import org.apache.geode.internal.lang.SystemProperty;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.logging.internal.executors.LoggingExecutors;
@@ -48,7 +47,7 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
   private static final Logger logger = LogService.getLogger();
 
   @Immutable
-  private static final Optional<Integer> EVICTION_SCAN_MAX_THREADS = SystemProperty
+  private static final Optional<Integer> EVICTION_SCAN_MAX_THREADS = SystemPropertyHelper
       .getProductIntegerProperty(SystemPropertyHelper.EVICTION_SCAN_MAX_THREADS);
 
   @MakeNotStatic
@@ -88,7 +87,7 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
   }
 
   private double calculateScanThreshold() {
-    Optional<Integer> configuredThresholdPercent = SystemProperty
+    Optional<Integer> configuredThresholdPercent = SystemPropertyHelper
         .getProductIntegerProperty(SystemPropertyHelper.EVICTION_SCAN_THRESHOLD_PERCENT);
 
     int thresholdPercent =
