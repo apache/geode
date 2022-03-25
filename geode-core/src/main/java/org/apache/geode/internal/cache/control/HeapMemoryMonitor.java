@@ -612,6 +612,10 @@ public class HeapMemoryMonitor implements MemoryMonitor, LongConsumer {
     }
   }
 
+  public void close() {
+    heapUsageProvider.close();
+  }
+
   /**
    * Polls the heap usage
    */

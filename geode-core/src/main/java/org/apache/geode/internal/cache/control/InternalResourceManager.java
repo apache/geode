@@ -176,6 +176,7 @@ public class InternalResourceManager implements ResourceManager {
     stopExecutor(notifyExecutor);
 
     stats.close();
+    getHeapMonitor().close();
     closed = true;
   }
 

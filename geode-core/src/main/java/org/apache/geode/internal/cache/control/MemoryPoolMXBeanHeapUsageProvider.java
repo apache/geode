@@ -195,6 +195,11 @@ public class MemoryPoolMXBeanHeapUsageProvider implements HeapUsageProvider, Not
     return getTenuredMemoryPoolMXBean().getUsage().getUsed();
   }
 
+  @Override
+  public void close() {
+    // nothing needed
+  }
+
   /**
    * Returns the tenured pool MXBean or throws an IllegalStateException if one couldn't be found.
    */

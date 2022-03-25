@@ -32,16 +32,18 @@ import java.util.function.LongConsumer;
  * then startNotifications and stopNotifications can have empty implementations.
  */
 public interface HeapUsageProvider {
-
   /**
-   * If specified with either the prefix "geode." then it must be the name of a class that
+   * This is the name of a system property but this String must be prefixed with either
+   * "geode." or "gemfire.".
+   * If set then its value must be the name of a class that
    * implements the {@link HeapUsageProvider} interface and has a zero-arg public constructor.
    * If the class can not be found or an instance can not be constructed than the Cache startup
    * will fail with an exception.
    * Otherwise, a single instance will be created and used by Geode's ResourceManager
    * to determine if the eviction-heap-threshold or the critical-heap-threshold are exceeded.
+   * This single instance will be used until the Geode Cache is closed.
    */
-  String HEAP_USAGE_PROVIDER_CLASS_NAME = "heapUsageProviderClassName";
+  String HEAP_USAGE_PROVIDER_CLASS_NAME = "resource-manager.heap-usage-provider.class-name";
 
   /**
    * Called by geode when this provider should start providing notifications
@@ -72,8 +74,11 @@ public interface HeapUsageProvider {
    * to return a reasonable value.
    *
    * @return the number of heap memory bytes currently in use
-   * @throws IllegalStateException if this provider is not able to determine heap usage
    */
   long getBytesUsed();
 
+  /**
+   * Called when this provider will no longer be used by Geode.
+   */
+  void close();
 }
