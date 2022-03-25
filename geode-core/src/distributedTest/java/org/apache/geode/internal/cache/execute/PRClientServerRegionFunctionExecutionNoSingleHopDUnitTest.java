@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -27,6 +29,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
@@ -37,6 +41,7 @@ import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionAdapter;
@@ -50,6 +55,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -406,6 +412,76 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
         PRClientServerRegionFunctionExecutionDUnitTest::FunctionExecution_Inline_Bug40714);
   }
 
+  /**
+   * This test case verifies that if the execution of a function handled
+   * by a Function Execution thread times out at the client, the ServerConnection
+   * thread will eventually be released.
+   * In order to test this, a slow function will be executed by a client
+   * with a small time-out a number of times equal to the number of servers
+   * in the cluster * the max number of threads configured.
+   * After the function executions have timed-out, another request will be
+   * sent by the client to any server and it should be served timely.
+   * If the ServerConnection threads had not been released, this new
+   * request will never be served because there would be not ServerConnection
+   * threads available and the test case will time-out.
+   */
+  @Test
+  public void testClientFunctionExecutionTimingOutDoesNotLeaveServerConnectionThreadsHanged() {
+    // Set client connect-timeout to a very high value so that if there are no
+    // ServerConnection threads available the test will time-out before the client times-out.
+    int connectTimeout = (int) (GeodeAwaitility.getTimeout().toMillis() * 2);
+    int maxThreads = 2;
+    createScenarioWithClientConnectTimeout(connectTimeout, maxThreads);
+
+    // The function must be executed a number of times equal
+    // to the number of servers * the max-threads, to check if all the
+    // threads are hanged.
+    int executions = (3 * maxThreads);
+
+    // functionTimeoutSecs should be lower than the
+    // time taken by the slow function to return all
+    // the results
+    int functionTimeoutSecs = 2;
+
+    Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_SLOW);
+    registerFunctionAtServer(function);
+
+    // Run the function that will time-out at the client
+    // the number of specified times.
+    IntStream.range(0, executions)
+        .forEach(i -> assertThatThrownBy(() -> client
+            .invoke(() -> executeSlowFunctionOnRegionNoFilter(function, PartitionedRegionName,
+                functionTimeoutSecs)))
+                    .getCause().getCause().isInstanceOf(ServerConnectivityException.class));
+
+    // Make sure that the get returns timely. If it hangs, it means
+    // that there are no threads available in the servers to handle the
+    // request because they were hanged due to the previous function
+    // executions.
+    await().until(() -> {
+      client.invoke(() -> executeGet(PartitionedRegionName, "key"));
+      return true;
+    });
+  }
+
+  private Object executeGet(String regionName, Object key) {
+    Region region = cache.getRegion(regionName);
+    return region.get(key);
+  }
+
+  private Object executeSlowFunctionOnRegionNoFilter(Function function, String regionName,
+      int functionTimeoutSecs) {
+    FunctionService.registerFunction(function);
+    Region region = cache.getRegion(regionName);
+
+    Execution execution = FunctionService.onRegion(region);
+
+    Object[] args = {new Boolean(true)};
+    return execution.setArguments(args).execute(function.getId(), functionTimeoutSecs,
+        TimeUnit.SECONDS).getResult();
+  }
+
+
   public static void registerFunction() {
     FunctionService.registerFunction(new FunctionAdapter() {
       @Override
@@ -524,6 +600,13 @@ public class PRClientServerRegionFunctionExecutionNoSingleHopDUnitTest
         createCommonServerAttributes("TestPartitionedRegion", null, 0, null);
     createClientServerScenarioNoSingleHop(commonAttributes, 20, 20, 20);
   }
+
+  private void createScenarioWithClientConnectTimeout(int connectTimeout, int maxThreads) {
+    ArrayList commonAttributes =
+        createCommonServerAttributes("TestPartitionedRegion", null, 0, null);
+    createClientServerScenarioNoSingleHop(commonAttributes, 20, 20, 20, maxThreads, connectTimeout);
+  }
+
 
   private void createScenarioForBucketFilter() {
     ArrayList commonAttributes = createCommonServerAttributes("TestPartitionedRegion",

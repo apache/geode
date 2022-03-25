@@ -99,6 +99,7 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
   public static final String TEST_FUNCTION_SINGLE_HOP_FORCE_NETWORK_HOP =
       "executeFunctionSingleHopForceNetworkHop";
   public static final String TEST_FUNCTION_GET_NETWORK_HOP = "executeFunctionGetNetworkHop";
+  public static final String TEST_FUNCTION_SLOW = "SlowFunction";
   private static final String ID = "id";
   private static final String HAVE_RESULTS = "haveResults";
   private final Properties props;
@@ -197,6 +198,8 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
       executeSingleHopForceNetworkHop(context);
     } else if (id.equals(TEST_FUNCTION_GET_NETWORK_HOP)) {
       executeGetNetworkHop(context);
+    } else if (id.equals(TEST_FUNCTION_SLOW)) {
+      executeSlowFunction(context);
     } else if (noAckTest.equals("true")) {
       execute1(context);
     }
@@ -1041,6 +1044,20 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
     context.getResultSender().lastResult(networkHopType);
   }
 
+  private void executeSlowFunction(FunctionContext context) {
+    int entries = 4;
+    int waitBetweenEntriesMs = 5000;
+    for (int i = 0; i < entries; i++) {
+      try {
+        Thread.sleep(waitBetweenEntriesMs);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      context.getResultSender().sendResult(i);
+    }
+    context.getResultSender().lastResult(entries);
+  }
+
   /**
    * Get the function identifier, used by clients to invoke this function
    *
@@ -1096,6 +1113,10 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
 
   @Override
   public boolean isHA() {
+
+    if (getId().equals(TEST_FUNCTION_SLOW)) {
+      return false;
+    }
 
     if (getId().equals(TEST_FUNCTION10)) {
       return true;

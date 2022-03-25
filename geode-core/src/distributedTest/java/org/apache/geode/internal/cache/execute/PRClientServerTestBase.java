@@ -46,6 +46,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.execute.Function;
@@ -131,6 +132,11 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
   }
 
   public static Integer createCacheServer(ArrayList commonAttributes, Integer localMaxMemory) {
+    return createCacheServer(commonAttributes, localMaxMemory, -1);
+  }
+
+  public static Integer createCacheServer(ArrayList commonAttributes, Integer localMaxMemory,
+      int maxThreads) {
     AttributesFactory factory = new AttributesFactory();
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
 
@@ -150,6 +156,9 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     assertNotNull(server1);
     int port = getRandomAvailableTCPPort();
     server1.setPort(port);
+    if (maxThreads > 0) {
+      server1.setMaxThreads(maxThreads);
+    }
     try {
       server1.start();
     } catch (IOException e) {
@@ -368,6 +377,36 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     assertNotNull(region);
   }
 
+  private static void createNoSingleHopCacheClient(String host,
+      Integer port1, Integer port2, Integer port3, int connectTimeout) {
+    CacheServerTestUtil.disableShufflingOfEndpoints();
+
+    Pool p;
+    try {
+      PoolFactory factory = PoolManager.createFactory().addServer(host, port1)
+          .addServer(host, port2).addServer(host, port3).setPingInterval(2000)
+          .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1).setReadTimeout(2000)
+          .setSocketBufferSize(1000).setRetryAttempts(0)
+          .setSocketConnectTimeout(connectTimeout)
+          .setPRSingleHopEnabled(false);
+      if (connectTimeout > 0) {
+        factory.setSocketConnectTimeout(connectTimeout);
+      }
+
+      p = factory.create("PRClientServerTestBase");
+    } finally {
+      CacheServerTestUtil.enableShufflingOfEndpoints();
+    }
+    pool = (PoolImpl) p;
+    AttributesFactory factory = new AttributesFactory();
+    factory.setScope(Scope.LOCAL);
+    factory.setDataPolicy(DataPolicy.EMPTY);
+    factory.setPoolName(p.getName());
+    RegionAttributes attrs = factory.create();
+    Region region = cache.createRegion(PartitionedRegionName, attrs);
+    assertNotNull(region);
+  }
+
   private static void createCacheClientWithoutRegion(String host, Integer port1, Integer port2,
       Integer port3) {
     CacheServerTestUtil.disableShufflingOfEndpoints();
@@ -487,6 +526,22 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
         .createCacheServer(commonAttributes, localMaxMemoryServer3));
     client.invoke(() -> PRClientServerTestBase.createNoSingleHopCacheClient(
         NetworkUtils.getServerHostName(server1.getHost()), port1, port2, port3));
+  }
+
+  void createClientServerScenarioNoSingleHop(ArrayList commonAttributes,
+      int localMaxMemoryServer1, int localMaxMemoryServer2,
+      int localMaxMemoryServer3,
+      int maxThreads,
+      int connectTimeout) {
+    createCacheInClientServer();
+    Integer port1 = server1.invoke(() -> PRClientServerTestBase
+        .createCacheServer(commonAttributes, localMaxMemoryServer1, maxThreads));
+    Integer port2 = server2.invoke(() -> PRClientServerTestBase
+        .createCacheServer(commonAttributes, localMaxMemoryServer2, maxThreads));
+    Integer port3 = server3.invoke(() -> PRClientServerTestBase
+        .createCacheServer(commonAttributes, localMaxMemoryServer3, maxThreads));
+    client.invoke(() -> PRClientServerTestBase.createNoSingleHopCacheClient(
+        NetworkUtils.getServerHostName(server1.getHost()), port1, port2, port3, connectTimeout));
   }
 
   void createClientServerScenarioSelectorNoSingleHop(ArrayList commonAttributes,
