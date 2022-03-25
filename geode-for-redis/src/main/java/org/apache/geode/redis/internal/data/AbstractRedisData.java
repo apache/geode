@@ -95,6 +95,10 @@ public abstract class AbstractRedisData implements RedisData {
     return ++version;
   }
 
+  public byte getVersion() {
+    return version;
+  }
+
   public void setVersion(byte version) {
     this.version = version;
   }

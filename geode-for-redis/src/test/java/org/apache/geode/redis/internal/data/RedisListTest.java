@@ -132,6 +132,17 @@ public class RedisListTest {
     assertThat(list.hasDelta()).isFalse();
   }
 
+  @Test
+  public void versionDoesNotUpdateWhenReferenceElementNotFound() {
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
+    RedisList list = createRedisList(1, 2);
+
+    byte originalVersion = list.getVersion();
+    list.linsert(new byte[] {(byte) 3}, new byte[] {(byte) 0}, true, region, null);
+
+    assertThat(list.getVersion()).isEqualTo(originalVersion);
+  }
+
   private Object validateDeltaSerialization(InvocationOnMock invocation) throws IOException {
     RedisList value = invocation.getArgument(1, RedisList.class);
     assertThat(value.hasDelta()).isTrue();
