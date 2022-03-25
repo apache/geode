@@ -21,7 +21,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.JvmSizeUtils;
 import org.apache.geode.unsafe.internal.sun.misc.Unsafe;
@@ -29,8 +28,6 @@ import org.apache.geode.unsafe.internal.sun.misc.Unsafe;
 /**
  * Figure out the size of an object using reflection. This class does not follow any object
  * references, it just calculates the size of a flat object.
- *
- *
  */
 public class ReflectionSingleObjectSizer implements SingleObjectSizer {
 
@@ -94,7 +91,6 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
     return sizeof(clazz, roundResult, unsafe);
   }
 
-  @VisibleForTesting
   static long sizeof(Class<?> clazz, boolean roundResult, Unsafe myUnsafe) {
     Assert.assertTrue(!clazz.isArray());
     long size = unsafeSizeof(clazz, myUnsafe);
@@ -112,7 +108,6 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
    * Since unsafe.fieldOffset(Field) will give us the offset to the first byte of that field all we
    * need to do is find which of the non-static declared fields has the greatest offset.
    */
-  @VisibleForTesting
   static long unsafeSizeof(Class<?> clazz, Unsafe myUnsafe) {
     if (myUnsafe == null) {
       return -1;
@@ -154,10 +149,9 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
     return size;
   }
 
-  @VisibleForTesting
   static long safeSizeof(Class<?> clazz) {
     // This code is not as accurate as unsafe but gives an estimate of memory used.
-    // If it is wrong it will always under estimate because it does not account
+    // If it is wrong it will always underestimate because it does not account
     // for any of the field alignment that the jvm does.
     long size = OBJECT_SIZE;
     do {
