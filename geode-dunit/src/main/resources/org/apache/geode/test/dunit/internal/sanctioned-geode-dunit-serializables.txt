@@ -104,7 +104,6 @@ org/apache/geode/cache30/RegionTestCase$6,false,this$0:org/apache/geode/cache30/
 org/apache/geode/cache30/RegionTestCase$7,false,this$0:org/apache/geode/cache30/RegionTestCase,val$name:java/lang/String
 org/apache/geode/cache30/RegionTestCase$8,false,this$0:org/apache/geode/cache30/RegionTestCase,val$name:java/lang/String
 org/apache/geode/cache30/RegionTestCase$9,false,this$0:org/apache/geode/cache30/RegionTestCase,val$name:java/lang/String
-org/apache/geode/internal/cache/InternalCacheForClientAccessDUnitTest,true,1,clientVM:org/apache/geode/test/dunit/VM,dunitRule:org/apache/geode/test/dunit/rules/DistributedRule,serverVM:org/apache/geode/test/dunit/VM
 org/apache/geode/internal/cache/tier/sockets/CacheServerTestUtil,false
 org/apache/geode/internal/cache/tier/sockets/ClientServerMiscDUnitTestBase,false,props:java/util/Properties,putRange_1End:int,putRange_1Start:int,putRange_2End:int,putRange_2Start:int,testVersion:java/lang/String
 org/apache/geode/internal/cache/tier/sockets/ClientServerMiscDUnitTestBase$1,false,this$0:org/apache/geode/internal/cache/tier/sockets/ClientServerMiscDUnitTestBase,val$rName:java/lang/String
@@ -115,7 +114,6 @@ org/apache/geode/management/internal/cli/commands/ExportLogsDistributedTestBase$
 org/apache/geode/management/internal/cli/commands/Product,false,contractSize:java/lang/String,productCodes:java/util/TreeMap,productID:java/lang/Long,status:java/lang/String
 org/apache/geode/management/internal/cli/commands/QueryCommandIntegrationTestBase$Address,false,city:java/lang/String,street:java/lang/String
 org/apache/geode/management/internal/cli/commands/QueryCommandIntegrationTestBase$Customer,false,address:org/apache/geode/management/internal/cli/commands/QueryCommandIntegrationTestBase$Address,name:java/lang/String
-org/apache/geode/management/internal/cli/commands/RebalanceCommandDistributedTest,false,cluster:org/apache/geode/test/dunit/rules/ClusterStartupRule,locator:org/apache/geode/test/dunit/rules/MemberVM,server1:org/apache/geode/test/dunit/rules/MemberVM,server2:org/apache/geode/test/dunit/rules/MemberVM
 org/apache/geode/management/internal/cli/commands/ShowDeadlockDistributedTestBase$LockFunction,false
 org/apache/geode/management/internal/cli/commands/ShowLogCommandDistributedTestBase,false
 org/apache/geode/management/internal/configuration/ClusterConfig,false,groups:java/util/List

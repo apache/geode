@@ -46,7 +46,7 @@ import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 
-public class InternalCacheForClientAccessDUnitTest<tearDown> implements java.io.Serializable {
+public class InternalCacheForClientAccessDistributedTest implements java.io.Serializable {
   public static final long serialVersionUID = 1l;
 
   @Rule
