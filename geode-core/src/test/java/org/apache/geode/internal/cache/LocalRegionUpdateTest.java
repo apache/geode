@@ -47,30 +47,25 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.tier.InterestType;
 
 public class LocalRegionUpdateTest {
-  private EntryEventFactory entryEventFactory;
-  private InternalCache cache;
   private InternalDataView internalDataView;
-  private InternalDistributedSystem internalDistributedSystem;
-  private InternalRegionArguments internalRegionArguments;
-  private RegionAttributes<?, ?> regionAttributes;
-  private LocalRegion.RegionMapConstructor regionMapConstructor;
-  private Function<LocalRegion, RegionPerfStats> regionPerfStatsFactory;
-
-  @Rule
-  public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
   private LocalRegion region;
   private RegisterInterestTracker registerInterestTracker;
 
+  @Rule
+  public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
+
   @Before
   public void setUp() {
-    entryEventFactory = mock(EntryEventFactory.class);
-    cache = mock(InternalCache.class);
     internalDataView = mock(InternalDataView.class);
-    internalDistributedSystem = mock(InternalDistributedSystem.class);
-    internalRegionArguments = mock(InternalRegionArguments.class);
-    regionAttributes = mock(RegionAttributes.class);
-    regionMapConstructor = mock(LocalRegion.RegionMapConstructor.class);
-    regionPerfStatsFactory = localRegion -> {
+
+    EntryEventFactory entryEventFactory = mock(EntryEventFactory.class);
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem internalDistributedSystem = mock(InternalDistributedSystem.class);
+    InternalRegionArguments internalRegionArguments = mock(InternalRegionArguments.class);
+
+    LocalRegion.RegionMapConstructor regionMapConstructor =
+        mock(LocalRegion.RegionMapConstructor.class);
+    Function<LocalRegion, RegionPerfStats> regionPerfStatsFactory = localRegion -> {
       localRegion.getLocalSize();
       return mock(RegionPerfStats.class);
     };
@@ -91,7 +86,8 @@ public class LocalRegionUpdateTest {
     regionAttributesFactory.setPoolName("Pool1");
     regionAttributesFactory.setConcurrencyChecksEnabled(false);
     regionAttributesFactory.setSubscriptionAttributes(subscriptionAttributes);
-    regionAttributes = regionAttributesFactory.createRegionAttributes();
+    RegionAttributes<Object, Object> regionAttributes =
+        regionAttributesFactory.createRegionAttributes();
 
     registerInterestTracker = new RegisterInterestTracker();
     when(poolImpl.getRITracker()).thenReturn(registerInterestTracker);
