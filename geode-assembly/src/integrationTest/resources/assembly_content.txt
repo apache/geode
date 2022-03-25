@@ -977,14 +977,12 @@ lib/commons-logging-1.2.jar
 lib/commons-modeler-2.0.1.jar
 lib/commons-validator-1.7.jar
 lib/fastutil-8.5.8.jar
-lib/geo-0.8.0.jar
 lib/geode-common-0.0.0.jar
 lib/geode-connectors-0.0.0.jar
 lib/geode-core-0.0.0.jar
 lib/geode-cq-0.0.0.jar
 lib/geode-dependencies.jar
 lib/geode-deployment-legacy-0.0.0.jar
-lib/geode-for-redis-0.0.0.jar
 lib/geode-gfsh-0.0.0.jar
 lib/geode-http-service-0.0.0.jar
 lib/geode-jca-0.0.0.rar
@@ -1043,13 +1041,6 @@ lib/micrometer-core-1.8.3.jar
 lib/mx4j-3.0.2.jar
 lib/mx4j-remote-3.0.2.jar
 lib/mx4j-tools-3.0.1.jar
-lib/netty-buffer-4.1.74.Final.jar
-lib/netty-codec-4.1.74.Final.jar
-lib/netty-common-4.1.74.Final.jar
-lib/netty-handler-4.1.74.Final.jar
-lib/netty-resolver-4.1.74.Final.jar
-lib/netty-tcnative-classes-2.0.48.Final.jar
-lib/netty-transport-4.1.74.Final.jar
 lib/ra.jar
 lib/rmiio-2.1.2.jar
 lib/shiro-cache-1.8.0.jar
@@ -1077,4 +1068,5 @@ tools/Modules/Apache_Geode_Modules-0.0.0-AppServer.zip
 tools/Modules/Apache_Geode_Modules-0.0.0-Tomcat.zip
 tools/Modules/Apache_Geode_Modules-0.0.0-tcServer.zip
 tools/Modules/Apache_Geode_Modules-0.0.0-tcServer30.zip
+tools/Modules/geode-for-redis-0.0.0.zip
 tools/Pulse/geode-pulse-0.0.0.war
