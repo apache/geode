@@ -109,12 +109,12 @@ public class Command {
   }
 
   /**
-   * Used to get the command element list when every argument is also a key
+   * Used to get the command argument list when every argument is also a key
    *
-   * @return List of command elements in form of {@link List}
+   * @return List of command arguments in form of {@link RedisKey}
    */
   public List<RedisKey> getProcessedCommandKeys() {
-    return commandElems.stream().map(RedisKey::new).collect(Collectors.toList());
+    return commandElems.stream().skip(1).map(RedisKey::new).collect(Collectors.toList());
   }
 
   /**
