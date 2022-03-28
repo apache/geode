@@ -17,6 +17,7 @@ package org.apache.geode.internal.size;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Map;
@@ -26,6 +27,7 @@ import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 
 public class ObjectTraverser {
@@ -59,6 +61,11 @@ public class ObjectTraverser {
   private static void doSearch(Object root, VisitStack stack)
       throws IllegalArgumentException, IllegalAccessException {
     Class clazz = root.getClass();
+    if (Proxy.isProxyClass(clazz)) {
+      LogService.getLogger()
+          .warn("skipping sizing " + root + " because its class " + clazz + " is a proxy");
+      return;
+    }
     boolean includeStatics = stack.shouldIncludeStatics(clazz);
     FieldSet set = FIELD_CACHE.get(clazz);
     if (set == null) {
