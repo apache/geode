@@ -103,7 +103,7 @@ public class P2PMessagingConcurrencyDUnitTest {
   private static boolean RANDOMIZE_PAYLOAD_CONTENT = true;
 
   private static final byte[] NON_RANDOM_PAYLOAD_PATTERN =
-      "EVERYGOODBOYDOESFINE".getBytes(StandardCharsets.UTF_8);
+      "LOREMIPSUMDOLORSITAMET".getBytes(StandardCharsets.UTF_8);
 
   // random seed
   private static final int RANDOM_SEED = 1234;
