@@ -73,7 +73,6 @@ public class ObjectTraverser {
     }
 
     if (set == NON_PRIMATIVE_ARRAY) {
-      Class componentType = clazz.getComponentType();
       int length = Array.getLength(root);
       for (int i = 0; i < length; i++) {
         Object value = Array.get(root, i);
@@ -84,14 +83,25 @@ public class ObjectTraverser {
 
     if (includeStatics) {
       for (Field field : set.getStaticFields()) {
-        Object value = field.get(root);
+        Object value = readField(field, root);
         stack.add(root, value);
       }
     }
 
     for (Field field : set.getNonPrimativeFields()) {
-      Object value = field.get(root);
+      Object value = readField(field, root);
       stack.add(root, value);
+    }
+  }
+
+  private static Object readField(Field field, Object instance) throws IllegalAccessException {
+    try {
+      return field.get(instance);
+    } catch (IllegalAccessException ex) {
+      // only call this after we see IllegalAccess
+      // so that we don't call it on public fields
+      field.setAccessible(true);
+      return field.get(instance);
     }
   }
 
@@ -120,7 +130,6 @@ public class ObjectTraverser {
         Class fieldType = field.getType();
         // skip static fields if we've already counted them once
         if (!fieldType.isPrimitive()) {
-          field.setAccessible(true);
           if (Modifier.isStatic(field.getModifiers())) {
             staticFields.add(field);
           } else {
