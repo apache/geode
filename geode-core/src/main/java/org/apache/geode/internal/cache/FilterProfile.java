@@ -1323,10 +1323,6 @@ public class FilterProfile implements DataSerializableFixedID {
         continue;
       }
 
-      if (event.getOperation() == null) {
-        continue;
-      }
-
       if (event.getOperation().isEntry()) {
         EntryEvent entryEvent = (EntryEvent) event;
         clientsInv = pf.getInterestedClients(entryEvent, pf.allKeyClientsInv,
