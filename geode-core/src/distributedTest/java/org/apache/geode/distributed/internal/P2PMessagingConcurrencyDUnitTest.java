@@ -106,9 +106,6 @@ public class P2PMessagingConcurrencyDUnitTest {
   private static final byte[] NON_RANDOM_PAYLOAD_PATTERN =
       "LOREMIPSUMDOLORSITAMET".getBytes(StandardCharsets.UTF_8);
 
-  // random seed
-  private static final int RANDOM_SEED = 1234;
-
   /*
    * On TLSv1.3 using a GCM-based cipher, a KeyUpdate TLS message will be sent
    * after a preconfigured number of bytes have been encrypted by an SSLEngine.

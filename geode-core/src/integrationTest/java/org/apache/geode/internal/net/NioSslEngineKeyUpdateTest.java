@@ -53,9 +53,9 @@ import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.apache.geode.cache.ssl.CertStores;
 import org.apache.geode.cache.ssl.CertificateBuilder;
@@ -122,7 +122,7 @@ public class NioSslEngineKeyUpdateTest {
   private SSLEngine serverEngine;
   private int packetBufferSize;
 
-  @BeforeClass
+  @BeforeAll
   public static void beforeClass() throws GeneralSecurityException, IOException {
     DMStats mockStats = mock(DMStats.class);
     bufferPool = new BufferPool(mockStats);
@@ -141,7 +141,7 @@ public class NioSslEngineKeyUpdateTest {
         truststorePassword);
   }
 
-  @Before
+  @BeforeEach
   public void before() throws NoSuchAlgorithmException, UnrecoverableKeyException,
       KeyStoreException, KeyManagementException {
     final KeyManagerFactory kmf = KeyManagerFactory.getInstance("PKIX");
@@ -188,10 +188,13 @@ public class NioSslEngineKeyUpdateTest {
             final ByteBuffer peerNetData) -> {
           handshakeTLS(channel, filter, peerNetData, "Client:");
           /*
-           * if we call send() only once, it seems that jdk.tls.keyLimits
-           * is not evaluated by wrap(). Calling it twice seems to fix that.
+           * if we call send() only once like this:
+           *
+           * send(BYTES_TO_TRANSFER_AFTER_HANDSHAKE, filter, channel);
+           *
+           * ...it seems that jdk.tls.keyLimits is not evaluated by wrap().
+           * Calling it twice fixes that.
            */
-          // send(BYTES_TO_TRANSFER_AFTER_HANDSHAKE, filter, channel);
           send(BYTES_TO_TRANSFER_AFTER_HANDSHAKE / 2, filter, channel, 0);
           send(BYTES_TO_TRANSFER_AFTER_HANDSHAKE / 2, filter, channel,
               BYTES_TO_TRANSFER_AFTER_HANDSHAKE / 2);
