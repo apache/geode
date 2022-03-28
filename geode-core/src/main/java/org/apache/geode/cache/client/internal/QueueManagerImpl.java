@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.TestOnly;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.GemFireConfigException;
@@ -315,6 +316,12 @@ public class QueueManagerImpl implements QueueManager {
   }
 
 
+  @TestOnly
+  public void setSendClientReady() {
+    synchronized (lock) {
+      sentClientReady = true;
+    }
+  }
 
   @Override
   public void readyForEvents(InternalDistributedSystem system) {

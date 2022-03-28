@@ -323,7 +323,7 @@ public class QueueManagerJUnitTest {
     manager = new QueueManagerImpl(pool, endpoints, source, factory, 2,
         20, logger, ClientProxyMembershipID.getNewProxyMembership(ds));
     manager.start(background);
-
+    manager.setSendClientReady();
     manager.clearQueueConnections();
     factory.addConnection(0, 0, 4);
     manager.recoverPrimary(excludedServers);
