@@ -1007,7 +1007,7 @@ lib/httpcore-4.4.15.jar
 lib/istack-commons-runtime-4.0.1.jar
 lib/jackson-annotations-2.13.2.jar
 lib/jackson-core-2.13.2.jar
-lib/jackson-databind-2.13.2.jar
+lib/jackson-databind-2.13.2.1.jar
 lib/javax.activation-api-1.2.0.jar
 lib/javax.mail-api-1.6.2.jar
 lib/javax.resource-api-1.7.1.jar
