@@ -46,6 +46,8 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("slf4j-api.version", "1.7.32")
     deps.put("jboss-modules.version", "1.11.0.Final")
     deps.put("jackson.version", "2.13.2")
+    deps.put("jackson.databind.version", "2.13.2.1")
+    deps.put("jackson.bom.version", "2.13.2.20220324")
     deps.put("springshell.version", "1.2.0.RELEASE")
     deps.put("springframework.version", "5.3.16")
 
@@ -185,7 +187,14 @@ class DependencyConstraints implements Plugin<Project> {
     dependencySet(group: 'com.fasterxml.jackson.core', version: get('jackson.version')) {
       entry('jackson-annotations')
       entry('jackson-core')
+    }
+
+    dependencySet(group: 'com.fasterxml.jackson.core', version: get('jackson.databind.version')) {
       entry('jackson-databind')
+    }
+
+    dependencySet(group: 'com.fasterxml.jackson', version: get('jackson.bom.version')) {
+      entry('jackson-bom')
     }
 
     dependencySet(group: 'com.fasterxml.jackson.datatype', version: get('jackson.version')) {

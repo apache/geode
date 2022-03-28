@@ -38,7 +38,7 @@ httpcore-4.4.15.jar
 istack-commons-runtime-4.0.1.jar
 jackson-annotations-2.13.2.jar
 jackson-core-2.13.2.jar
-jackson-databind-2.13.2.jar
+jackson-databind-2.13.2.1.jar
 javax.activation-api-1.2.0.jar
 javax.resource-api-1.7.1.jar
 javax.servlet-api-3.1.0.jar
