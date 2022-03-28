@@ -546,9 +546,9 @@ public class QueueManagerImpl implements QueueManager {
           // couldn't find a server to make primary
           break;
         }
-        if (sentClientReady) {
-          markQueueAsReadyForEvents(primaryQueue);
-        }
+
+        markQueueAsReadyForEvents(primaryQueue);
+
         if (!addToConnectionList(primaryQueue, true)) {
           excludedServers.add(primaryQueue.getServer());
           primaryQueue = null;
@@ -812,7 +812,9 @@ public class QueueManagerImpl implements QueueManager {
   }
 
   public void markQueueAsReadyForEvents(QueueConnectionImpl primary) {
-    if (primary != null && primary.sendClientReady()) {
+    logger.info("MLH markQueueAsReadyForEvents marking ready", new Exception("stack"));
+
+    if (primary != null && sentClientReady && primary.sendClientReady()) {
       readyForEventsAfterFailover(primary);
     }
   }
