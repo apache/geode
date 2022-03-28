@@ -54,8 +54,9 @@ dependencies {
   provided('org.apache.logging.log4j:log4j-api')
   provided('commons-codec:commons-codec')
   provided('org.apache.commons:commons-lang3')
-  implementation('com.github.davidmoten:geo')
-  implementation('io.netty:netty-handler')
+  implementation('io.netty:netty-handler') {
+    exclude module: 'netty-tcnative-classes'
+  }
 
   testImplementation(project(':geode-junit'))
   testImplementation('org.mockito:mockito-core')

@@ -47,14 +47,15 @@
   </dependencyManagement>
   <dependencies>
     <dependency>
-      <groupId>com.github.davidmoten</groupId>
-      <artifactId>geo</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-handler</artifactId>
       <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>netty-tcnative-classes</artifactId>
+          <groupId>*</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 </project>
