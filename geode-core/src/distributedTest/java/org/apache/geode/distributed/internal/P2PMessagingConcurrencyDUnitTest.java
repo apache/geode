@@ -33,6 +33,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.LongAdder;
 
@@ -255,7 +256,7 @@ public class P2PMessagingConcurrencyDUnitTest {
       bytesTransferredAdder = new LongAdder();
 
       final ClusterDistributionManager cdm = getCDM();
-      final Random random = new Random(RANDOM_SEED);
+      final Random random = ThreadLocalRandom.current();
       final AtomicInteger nextSenderId = new AtomicInteger();
 
       /*
