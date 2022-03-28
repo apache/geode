@@ -89,8 +89,8 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'antlr', name: 'antlr', version: get('antlr.version'))
         api(group: 'cglib', name: 'cglib', version: get('cglib.version'))
         api(group: 'com.carrotsearch.randomizedtesting', name: 'randomizedtesting-runner', version: '2.7.3')
-        api(group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.10', version: '2.10.5')
-        api(group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.11.2')
+        api(group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.10', version: '2.12.6')
+        api(group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.12.6')
         api(group: 'com.github.davidmoten', name: 'geo', version: '0.7.1')
         api(group: 'com.github.stefanbirkner', name: 'system-rules', version: '1.19.0')
         api(group: 'com.github.stephenc.findbugs', name: 'findbugs-annotations', version: '1.3.9-1')
@@ -162,17 +162,17 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'redis.clients', name: 'jedis', version: '2.9.0')
         api(group: 'xerces', name: 'xercesImpl', version: '2.12.0')
         api(group: 'com.arakelian', name: 'java-jq', version: '0.10.1')
-        api(group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-joda', version: '2.9.8')
+        api(group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-joda', version: '2.12.6')
         api(group: 'joda-time', name: 'joda-time', version: '2.9.8')
       }
     }
 
-    dependencySet(group: 'com.fasterxml.jackson.core', version: '2.10.5') {
+    dependencySet(group: 'com.fasterxml.jackson.core', version: '2.12.6') {
       entry('jackson-annotations')
       entry('jackson-core')
     }
 
-    dependencySet(group: 'com.fasterxml.jackson.core', version: '2.10.5.1') {
+    dependencySet(group: 'com.fasterxml.jackson.core', version: '2.12.6.1') {
       entry('jackson-databind')
     }
 
