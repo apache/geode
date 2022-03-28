@@ -941,9 +941,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
     DataSerializer s;
     try {
-      init.setAccessible(true);
-      s = init.newInstance();
-
+      s = newInstance(init);
     } catch (IllegalAccessException ignored) {
       throw new IllegalArgumentException(
           String.format("Could not instantiate an instance of %s",
@@ -2349,13 +2347,22 @@ public abstract class InternalDataSerializer extends DataSerializer {
     }
   }
 
+  private static <I> I newInstance(Constructor<I> constructor)
+      throws InvocationTargetException, InstantiationException, IllegalAccessException {
+    try {
+      return constructor.newInstance();
+    } catch (IllegalAccessException ex) {
+      constructor.setAccessible(true);
+      return constructor.newInstance();
+    }
+  }
+
   private static Object readDataSerializable(final DataInput in)
       throws IOException, ClassNotFoundException {
     final Class<?> c = readClass(in);
     try {
       Constructor<?> init = c.getConstructor();
-      init.setAccessible(true);
-      Object o = init.newInstance();
+      Object o = newInstance(init);
 
       invokeFromData(o, in);
 
