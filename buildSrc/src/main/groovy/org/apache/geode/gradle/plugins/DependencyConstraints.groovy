@@ -89,7 +89,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'antlr', name: 'antlr', version: get('antlr.version'))
         api(group: 'cglib', name: 'cglib', version: get('cglib.version'))
         api(group: 'com.carrotsearch.randomizedtesting', name: 'randomizedtesting-runner', version: '2.7.3')
-        api(group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.10', version: '2.12.6')
+        api(group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.10', version: '2.10.5')
         api(group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.12.6')
         api(group: 'com.github.davidmoten', name: 'geo', version: '0.7.1')
         api(group: 'com.github.stefanbirkner', name: 'system-rules', version: '1.19.0')
