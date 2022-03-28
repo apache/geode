@@ -591,7 +591,7 @@ public class InternalInstantiator {
               instantiatorClass.getName()));
     }
 
-    Constructor init;
+    Constructor<?> init;
     boolean intConstructor = false;
     try {
       init = instantiatorClass.getDeclaredConstructor(Class.class, int.class);
@@ -614,8 +614,12 @@ public class InternalInstantiator {
 
     Instantiator s;
     try {
-      init.setAccessible(true);
-      s = (Instantiator) init.newInstance(instantiatedClass, convertId(id, intConstructor));
+      try {
+        s = (Instantiator) init.newInstance(instantiatedClass, convertId(id, intConstructor));
+      } catch (IllegalAccessException ignore) {
+        init.setAccessible(true);
+        s = (Instantiator) init.newInstance(instantiatedClass, convertId(id, intConstructor));
+      }
     } catch (IllegalAccessException ex) {
       throw new IllegalArgumentException(String
           .format("Could not access zero-argument constructor of %s", instantiatorClass.getName()));

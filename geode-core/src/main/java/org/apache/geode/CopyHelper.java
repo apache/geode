@@ -167,17 +167,7 @@ public final class CopyHelper {
         }
         if (o instanceof Cloneable) {
           try {
-            // Note that Object.clone is protected so we need to use reflection
-            // to call clone even though this object implements Cloneable
-            Class<?> c = o.getClass();
-            // By convention, the user should make the clone method public.
-            // But even if they don't, let's go ahead and use it.
-            // The other problem is that if the class is private, we still
-            // need to make the method accessible even if the method is public,
-            // because Object.clone is protected.
-            Method m = c.getDeclaredMethod("clone");
-            m.setAccessible(true);
-            copy = (T) m.invoke(o, new Object[0]);
+            copy = callClone(o);
             return copy;
           } catch (NoSuchMethodException | IllegalAccessException | SecurityException ignore) {
             // try using Serialization
@@ -202,6 +192,36 @@ public final class CopyHelper {
       if (copy != null) {
         PdxUnreadData.copy(o, copy);
       }
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private static <T> T callClone(T o)
+      throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+    // Note that Object.clone is protected so we need to use reflection
+    // to call clone even though this object implements Cloneable
+    Class<?> c = o.getClass();
+    // By convention, the user should make the clone method public.
+    // But even if they don't, let's go ahead and use it.
+    // The other problem is that if the class is private, we still
+    // need to make the method accessible even if the method is public,
+    // because Object.clone is protected.
+    Method m = c.getDeclaredMethod("clone");
+    try {
+      return (T) m.invoke(o, new Object[0]);
+    } catch (IllegalAccessException ignore) {
+      try {
+        m.setAccessible(true);
+      } catch (RuntimeException ex) {
+        // starting in Java 9 setAccessible can throw InaccessibleObjectException.
+        // If we see one here give up on using clone and use serialization instead.
+        if (ex.getClass().getName().contains("InaccessibleObjectException")) {
+          return doDeepCopy(o);
+        } else {
+          throw ex;
+        }
+      }
+      return (T) m.invoke(o, new Object[0]);
     }
   }
 
