@@ -78,7 +78,12 @@ public interface Function<T> extends Identifiable<String> {
    */
   @Override
   default String getId() {
-    return getClass().getCanonicalName();
+    Class<?> clazz = getClass();
+    String canonicalName = clazz.getCanonicalName();
+    if (canonicalName == null) {
+      return clazz.getName();
+    }
+    return canonicalName;
   }
 
   /**
