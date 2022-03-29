@@ -124,7 +124,7 @@ public abstract class AbstractMSetIntegrationTest implements RedisIntegrationTes
 
   @Test
   public void testMSet_concurrentInstances_mustBeAtomic() {
-    int KEY_COUNT = 5000;
+    int KEY_COUNT = 500;
     String[] keys = new String[KEY_COUNT];
 
     for (int i = 0; i < keys.length; i++) {
