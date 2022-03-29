@@ -819,8 +819,6 @@ public class QueueManagerImpl implements QueueManager {
   }
 
   public void markQueueAsReadyForEvents(QueueConnectionImpl primary) {
-    logger.info("MLH markQueueAsReadyForEvents marking ready", new Exception("stack"));
-
     if (primary != null && sentClientReady && primary.sendClientReady()) {
       readyForEventsAfterFailover(primary);
     }

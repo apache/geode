@@ -263,13 +263,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
             0),
         regionName, getClientDistributedSystemProperties(durableClientId, durableClientTimeout)));
 
-    // Send clientReady message
-    durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
-      @Override
-      public void run2() throws CacheException {
-        CacheServerTestUtil.getCache().readyForEvents();
-      }
-    });
+
 
     // Step 3: Client registers Interests
     // KEY_STONE1, KEY_STONE2 are registered as durableKeys & KEY_STONE3,
@@ -283,6 +277,14 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
         .invoke(() -> DurableRegistrationDUnitTest.registerKey(K3, Boolean.TRUE));
     durableClientVM
         .invoke(() -> DurableRegistrationDUnitTest.registerKey(K4, Boolean.TRUE));
+
+    // Send clientReady message
+    durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
+      @Override
+      public void run2() throws CacheException {
+        CacheServerTestUtil.getCache().readyForEvents();
+      }
+    });
 
     // Step 4: Update Values on the Server for KEY_STONE1, KEY_STONE2,
     // KEY_STONE3, KEY_STONE4
@@ -324,15 +326,6 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
                 true, 0),
             regionName, getClientDistributedSystemProperties(durableClientId), Boolean.TRUE));
 
-    // Step 9: Send clientReady message
-    durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
-      @Override
-      public void run2() throws CacheException {
-        CacheServerTestUtil.getCache().readyForEvents();
-      }
-    });
-
-    // pause(1000);
 
     // Step 10: Register all Keys
     durableClientVM
@@ -344,6 +337,15 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
         .invoke(() -> DurableRegistrationDUnitTest.registerKey(K1, Boolean.FALSE));
     durableClientVM
         .invoke(() -> DurableRegistrationDUnitTest.registerKey(K2, Boolean.FALSE));
+
+
+    // Step 9: Send clientReady message
+    durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
+      @Override
+      public void run2() throws CacheException {
+        CacheServerTestUtil.getCache().readyForEvents();
+      }
+    });
 
     // Step 11: Unregister Some Keys (Here K1, K3)
     durableClientVM.invoke(() -> DurableRegistrationDUnitTest.unregisterKey(K1));
@@ -375,7 +377,6 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
     } catch (Exception e) {
       fail("Prob in KEY_STONE4: "
           + durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K4)));
-
     }
 
     try {
@@ -383,15 +384,14 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
     } catch (Exception e) {
       fail("Prob in KEY_STONE1: "
           + durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K1)));
-
     }
 
     try {
-      assertNull(durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K3)));
+      assertEquals("PingPong3",
+          durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K3)));
     } catch (Exception e) {
       fail("Prob in KEY_STONE3: "
           + durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K3)));
-
     }
 
     // Stop the durable client
