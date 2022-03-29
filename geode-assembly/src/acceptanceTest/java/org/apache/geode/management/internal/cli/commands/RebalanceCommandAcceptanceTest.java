@@ -38,10 +38,11 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.assertions.TabularResultModelAssert;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule.PortType;
 import org.apache.geode.test.junit.rules.MemberStarterRule;
 
 @RunWith(Parameterized.class)
-public class RebalanceCommandDistributedTest implements Serializable {
+public class RebalanceCommandAcceptanceTest implements Serializable {
   private static final int ENTRIES_PER_REGION = 200;
   private static final String REGION_ONE_NAME = "region-1";
   private static final String REGION_TWO_NAME = "region-2";
@@ -56,12 +57,12 @@ public class RebalanceCommandDistributedTest implements Serializable {
   protected MemberVM locator, server1, server2;
 
   @Parameterized.Parameters(name = "ConnectionType:{0}")
-  public static GfshCommandRule.PortType[] connectionTypes() {
-    return new GfshCommandRule.PortType[] {http, jmxManager};
+  public static PortType[] connectionTypes() {
+    return new PortType[] {http, jmxManager};
   }
 
   @Parameterized.Parameter
-  public static GfshCommandRule.PortType portType;
+  public static PortType portType;
 
   private void setUpRegions() {
     server1.invoke(() -> {

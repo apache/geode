@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.cli.commands;
+package org.apache.geode.cache.query.dunit;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
@@ -31,13 +31,14 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.management.internal.cli.commands.Product;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.version.VersionManager;
 
-public class NestedQueryClassCastExceptionFailureDUnitTest {
+public class NestedQueryClassCastExceptionFailureDistributedTest {
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
 
