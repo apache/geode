@@ -15,9 +15,13 @@
 
 package org.apache.geode.cache.wan.internal.client.locator;
 
+import static org.apache.geode.internal.lang.utils.JavaWorkarounds.computeIfAbsent;
+
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
+
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListener;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -111,19 +115,13 @@ public class LocatorHelper {
   }
 
   /**
-   * This method decides whether the given locator is server locator, if so then add this locator
-   * in allServerLocatorsInfo map.
+   * Add given locator to the locatorListener's allServerLocatorsInfo map.
    */
-  private static void addServerLocator(Integer distributedSystemId,
-      LocatorMembershipListener locatorListener, DistributionLocatorId locator) {
-    ConcurrentMap<Integer, Set<String>> allServerLocatorsInfo =
-        locatorListener.getAllServerLocatorsInfo();
-    Set<String> locatorsSet = new CopyOnWriteHashSet<>();
-    locatorsSet.add(locator.toString());
-    Set<String> existingValue = allServerLocatorsInfo.putIfAbsent(distributedSystemId, locatorsSet);
-    if (existingValue != null) {
-      existingValue.add(locator.toString());
-    }
+  static void addServerLocator(final @NotNull Integer distributedSystemId,
+      final @NotNull LocatorMembershipListener locatorListener,
+      final @NotNull DistributionLocatorId locator) {
+    computeIfAbsent(locatorListener.getAllServerLocatorsInfo(), distributedSystemId,
+        k -> new CopyOnWriteHashSet<>()).add(locator.toString());
   }
 
   /**
