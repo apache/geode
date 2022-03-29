@@ -21,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,7 +34,7 @@ import org.apache.geode.deployment.internal.modules.processors.JarProcessor;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
- * A {@link JarProcessor} that knows how to process shadow jar files. A shadow jar is defined to be
+ * A {@link JarProcessor} that knows how to process jar-of-jar files. A jar-of-jars is defined to be
  * a jar file
  * that contains jar files on the "root" level of the jar. i.e
  * example.jar ->
@@ -42,7 +43,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * /innerJar1.jar
  * /innerJar2.jar
  */
-public class ShadowJarProcessor implements JarProcessor {
+public class JarOfJarsProcessor implements JarProcessor {
   private static final String JAR_OF_JARS_IDENTIFIER = "JarOfJars";
   private static final Logger logger = LogService.getLogger();
 
@@ -67,15 +68,14 @@ public class ShadowJarProcessor implements JarProcessor {
       Enumeration<JarEntry> entries = jarFile.entries();
       while (entries.hasMoreElements()) {
         JarEntry entry = entries.nextElement();
-        if (!entry.isDirectory() && entry.getName().endsWith(".jar")) {
-          logger.info(getIdentifier() + " - Can Process Jar ");
+        if (!entry.isDirectory() && !entry.getName().contains("/")
+            && entry.getName().endsWith(".jar")) {
           return true;
         }
       }
     } catch (IOException e) {
       logger.warn(e);
     }
-    logger.info(getIdentifier() + " - Cannot Process Jar ");
     return false;
   }
 
@@ -91,14 +91,16 @@ public class ShadowJarProcessor implements JarProcessor {
       Enumeration<JarEntry> entries = jarFile.entries();
       while (entries.hasMoreElements()) {
         JarEntry entry = entries.nextElement();
-        if (!entry.isDirectory() && entry.getName().endsWith(".jar")) {
+        if (!entry.isDirectory() && !entry.getName().contains("/")
+            && entry.getName().endsWith(".jar")) {
           // extract file into directory and add it as a resource
           Path extractedJarFile = extractInnerJarFile(file, jarFile, entry);
           resourcePaths.add(extractedJarFile.toAbsolutePath().toString());
         }
       }
     } catch (IOException e) {
-      e.printStackTrace();
+      logger.warn("Could not process jar " + file.getName());
+      return Collections.emptyList();
     }
     resourcePaths.add(file.toPath().toAbsolutePath().toString());
     return resourcePaths;
@@ -112,8 +114,7 @@ public class ShadowJarProcessor implements JarProcessor {
       throw new IOException("Jar entry has invalid path");
     }
     try (InputStream inputStream = jarFile.getInputStream(entry)) {
-      try (
-          FileOutputStream outputStream = new FileOutputStream(extractedJarFile.toFile())) {
+      try (FileOutputStream outputStream = new FileOutputStream(extractedJarFile.toFile())) {
         while (inputStream.available() > 0) {
           outputStream.write(inputStream.read());
         }

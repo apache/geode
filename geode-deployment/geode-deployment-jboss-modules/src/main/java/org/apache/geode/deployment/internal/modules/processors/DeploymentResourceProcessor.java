@@ -58,7 +58,7 @@ public class DeploymentResourceProcessor {
     List<JarProcessor> jarProcessors = new LinkedList<>();
     ServiceLoader<JarProcessor> loadedJarProcessor = ServiceLoader.load(JarProcessor.class);
     loadedJarProcessor.forEach(jarProcessor -> {
-      logger.info("Registering jarProcessor: " + jarProcessor.getIdentifier());
+      logger.debug("Registering jarProcessor: " + jarProcessor.getIdentifier());
       jarProcessors.add(jarProcessor);
     });
     return jarProcessors;

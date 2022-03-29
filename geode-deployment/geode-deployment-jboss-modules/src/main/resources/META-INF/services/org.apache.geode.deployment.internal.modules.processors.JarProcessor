@@ -1,2 +1,2 @@
 org.apache.geode.deployment.internal.modules.processors.impl.DefaultJarProcessor
-org.apache.geode.deployment.internal.modules.processors.impl.ShadowJarProcessor
+org.apache.geode.deployment.internal.modules.processors.impl.JarOfJarsProcessor
