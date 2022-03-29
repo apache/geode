@@ -47,7 +47,7 @@ public class GeodeRedisServerRule extends SerializableExternalResource {
   @Override
   protected void before() {
     RedisConfiguration config = TestRedisConfiguration.builder()
-        .withAddress("localhost").withPort(0).build();
+        .withAddress("127.0.0.1").withPort(0).build();
     cache = cacheFactory.create();
     server = new GeodeRedisServer(config, (InternalCache) cache);
     server.setAllowUnsupportedCommands(enableUnsupportedCommands);

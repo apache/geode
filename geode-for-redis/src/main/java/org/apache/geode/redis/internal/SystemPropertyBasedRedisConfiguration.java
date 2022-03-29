@@ -17,6 +17,7 @@ package org.apache.geode.redis.internal;
 
 import org.apache.commons.lang3.StringUtils;
 
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.inet.LocalHostUtil;
 
 /**
@@ -58,18 +59,17 @@ public class SystemPropertyBasedRedisConfiguration implements RedisConfiguration
   private String username;
   private final boolean enabled;
 
-  public SystemPropertyBasedRedisConfiguration() throws IllegalArgumentException {
+  public SystemPropertyBasedRedisConfiguration(DistributionConfig distributionConfig)
+      throws IllegalArgumentException {
+    String serverBindAddress = distributionConfig.getServerBindAddress();
+
     boolean tmpEnabled = validateAndSetPort();
-    tmpEnabled |= validateAndSetBindAddress();
+    tmpEnabled |= validateAndSetBindAddress(serverBindAddress);
     tmpEnabled |= validateAndSetRedundantCopies();
     tmpEnabled |= validateAndSetUsername();
     tmpEnabled |= Boolean.getBoolean(GEODE_FOR_REDIS_ENABLED);
 
     enabled = tmpEnabled;
-  }
-
-  public static SystemPropertyBasedRedisConfiguration generate() throws IllegalArgumentException {
-    return new SystemPropertyBasedRedisConfiguration();
   }
 
   public boolean isEnabled() {
@@ -135,10 +135,14 @@ public class SystemPropertyBasedRedisConfiguration implements RedisConfiguration
     return true;
   }
 
-  private boolean validateAndSetBindAddress() {
+  private boolean validateAndSetBindAddress(String serverBindAddress) {
     String value = System.getProperty(GEODE_FOR_REDIS_BIND_ADDRESS);
     if (StringUtils.isEmpty(value)) {
-      bindAddress = DEFAULT_REDIS_BIND_ADDRESS;
+      if (StringUtils.isEmpty(serverBindAddress)) {
+        bindAddress = DEFAULT_REDIS_BIND_ADDRESS;
+      } else {
+        bindAddress = serverBindAddress;
+      }
       return false;
     }
 

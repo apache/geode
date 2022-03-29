@@ -28,9 +28,12 @@ public interface RedisConfiguration {
 
   /**
    * The default Geode for Redis bind address. Can be set using
-   * {@link SystemPropertyBasedRedisConfiguration#GEODE_FOR_REDIS_BIND_ADDRESS}.
+   * {@link SystemPropertyBasedRedisConfiguration#GEODE_FOR_REDIS_BIND_ADDRESS}. If this property
+   * is not set, then the Geode property {@code server-bind-address} is considered and used as the
+   * bind address if it is set. Otherwise the default is the empty string which means that the
+   * Geode for Redis server will bind to all addresses.
    */
-  String DEFAULT_REDIS_BIND_ADDRESS = "127.0.0.1";
+  String DEFAULT_REDIS_BIND_ADDRESS = "";
 
   /**
    * The default Geode for Redis redundant copies. Must be in the range (0..3). Can be set using

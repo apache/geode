@@ -35,7 +35,8 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
   @Override
   public boolean init(Cache cache) {
     this.cache = (InternalCache) cache;
-    configuration = new SystemPropertyBasedRedisConfiguration();
+    configuration = new SystemPropertyBasedRedisConfiguration(
+        ((InternalCache) cache).getInternalDistributedSystem().getConfig());
     if (!configuration.isEnabled()) {
       return false;
     }

@@ -32,7 +32,9 @@ import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import redis.clients.jedis.Jedis;
 
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.inet.LocalHostUtil;
@@ -191,6 +193,25 @@ public class GeodeRedisServerStartupAcceptanceTest {
 
     assertThat(cluster.getRedisPort(server))
         .isNotEqualTo(GeodeRedisServer.DEFAULT_REDIS_SERVER_PORT);
+  }
+
+  @Test
+  public void bindAddressDefaultsToServerBindAddress() throws Exception {
+    MemberVM server = cluster.startServerVM(0, s -> s
+        .withProperty(DistributionConfig.SERVER_BIND_ADDRESS_NAME, "127.0.0.1")
+        .withSystemProperty(GEODE_FOR_REDIS_PORT, "0")
+        .withSystemProperty(GEODE_FOR_REDIS_ENABLED, "true"));
+
+    int port = cluster.getRedisPort(server);
+    try (Jedis jedis = new Jedis("127.0.0.1", port)) {
+      assertThat(jedis.ping()).isEqualTo("PONG");
+    }
+
+    String hostname = LocalHostUtil.getLocalHostName();
+    try (Jedis jedis = new Jedis(hostname, port)) {
+      assertThatThrownBy(jedis::ping)
+          .hasStackTraceContaining("Connection refused ");
+    }
   }
 
   @Test
