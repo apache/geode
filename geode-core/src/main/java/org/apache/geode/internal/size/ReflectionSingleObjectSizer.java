@@ -28,8 +28,6 @@ import org.apache.geode.unsafe.internal.sun.misc.Unsafe;
 /**
  * Figure out the size of an object using reflection. This class does not follow any object
  * references, it just calculates the size of a flat object.
- *
- *
  */
 public class ReflectionSingleObjectSizer implements SingleObjectSizer {
 
@@ -89,61 +87,85 @@ public class ReflectionSingleObjectSizer implements SingleObjectSizer {
     return sizeof(clazz, true);
   }
 
-  /**
-   * Since unsafe.fieldOffset(Field) will give us the offset to the first byte of that field all we
-   * need to do is find which of the non-static declared fields has the greatest offset.
-   */
   public static long sizeof(Class<?> clazz, boolean roundResult) {
-    Assert.assertTrue(!clazz.isArray());
-    long size;
-    if (unsafe != null) {
-      Field lastField = null;
-      long lastFieldOffset = 0;
-      do {
-        Field[] fields = clazz.getDeclaredFields();
-        for (Field field : fields) {
-          if (!Modifier.isStatic(field.getModifiers())) {
-            long offset = unsafe.fieldOffset(field);
-            if (offset >= lastFieldOffset) {
-              lastFieldOffset = offset;
-              lastField = field;
-            }
-          }
-        }
-        if (lastField != null) {
-          // if we have found a field in a subclass then one of them will be the last field
-          // so just break without looking at super class fields.
-          break;
-        }
-        clazz = clazz.getSuperclass();
-      } while (clazz != null);
+    return sizeof(clazz, roundResult, unsafe);
+  }
 
-      if (lastField != null) {
-        size = lastFieldOffset + sizeType(lastField.getType());
-      } else {
-        // class with no fields
-        size = OBJECT_SIZE;
-      }
-    } else {
-      // This code is not as accurate as unsafe but gives an estimate of memory used.
-      // If it is wrong it will always under estimate because it does not account
-      // for any of the field alignment that the jvm does.
-      size = OBJECT_SIZE;
-      do {
-        Field[] fields = clazz.getDeclaredFields();
-        for (Field field : fields) {
-          if (!Modifier.isStatic(field.getModifiers())) {
-            size += sizeType(field.getType());
-          }
-        }
-        clazz = clazz.getSuperclass();
-      } while (clazz != null);
+  static long sizeof(Class<?> clazz, boolean roundResult, Unsafe myUnsafe) {
+    Assert.assertTrue(!clazz.isArray());
+    long size = unsafeSizeof(clazz, myUnsafe);
+    if (size == -1) {
+      size = safeSizeof(clazz);
     }
     if (roundResult) {
       size = roundUpSize(size);
     }
     return size;
   }
+
+  /**
+   * Returns -1 if it was not able to compute the size; otherwise returns the size.
+   * Since unsafe.fieldOffset(Field) will give us the offset to the first byte of that field all we
+   * need to do is find which of the non-static declared fields has the greatest offset.
+   */
+  static long unsafeSizeof(Class<?> clazz, Unsafe myUnsafe) {
+    if (myUnsafe == null) {
+      return -1;
+    }
+    long size;
+    Field lastField = null;
+    long lastFieldOffset = 0;
+    do {
+      Field[] fields = clazz.getDeclaredFields();
+      for (Field field : fields) {
+        if (!Modifier.isStatic(field.getModifiers())) {
+          try {
+            long offset = myUnsafe.fieldOffset(field);
+            if (offset >= lastFieldOffset) {
+              lastFieldOffset = offset;
+              lastField = field;
+            }
+          } catch (UnsupportedOperationException ex) {
+            // This happens on java 17 because hidden classes do not support
+            // unsafe.fieldOffset.
+            return -1;
+          }
+        }
+      }
+      if (lastField != null) {
+        // if we have found a field in a subclass then one of them will be the last field
+        // so just break without looking at super class fields.
+        break;
+      }
+      clazz = clazz.getSuperclass();
+    } while (clazz != null);
+
+    if (lastField != null) {
+      size = lastFieldOffset + sizeType(lastField.getType());
+    } else {
+      // class with no fields
+      size = OBJECT_SIZE;
+    }
+    return size;
+  }
+
+  static long safeSizeof(Class<?> clazz) {
+    // This code is not as accurate as unsafe but gives an estimate of memory used.
+    // If it is wrong it will always underestimate because it does not account
+    // for any of the field alignment that the jvm does.
+    long size = OBJECT_SIZE;
+    do {
+      Field[] fields = clazz.getDeclaredFields();
+      for (Field field : fields) {
+        if (!Modifier.isStatic(field.getModifiers())) {
+          size += sizeType(field.getType());
+        }
+      }
+      clazz = clazz.getSuperclass();
+    } while (clazz != null);
+    return size;
+  }
+
 
   private static int sizeType(Class<?> t) {
 

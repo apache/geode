@@ -43,7 +43,6 @@ public class ReplaceByteArrayAtOffset extends DeltaInfo {
 
   public void serializeTo(DataOutput out) throws IOException {
     super.serializeTo(out);
-    DataSerializer.writeEnum(REPLACE_BYTE_ARRAY_AT_OFFSET, out);
     InternalDataSerializer.writeArrayLength(offset, out);
     DataSerializer.writeByteArray(byteArray, out);
   }

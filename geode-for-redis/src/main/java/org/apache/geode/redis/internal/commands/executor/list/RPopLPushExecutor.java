@@ -11,10 +11,12 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-package org.apache.geode.redis.internal.commands.executor.key;
+package org.apache.geode.redis.internal.commands.executor.list;
 
+import static org.apache.geode.redis.internal.data.RedisList.rpoplpush;
+
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.geode.redis.internal.commands.Command;
@@ -23,24 +25,16 @@ import org.apache.geode.redis.internal.commands.executor.RedisResponse;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class DelExecutor implements CommandExecutor {
-
+public class RPopLPushExecutor implements CommandExecutor {
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    List<RedisKey> commandElems = command.getProcessedCommandKeys();
+    List<RedisKey> keys = command.getProcessedCommandKeys();
+    RedisKey source = keys.get(0);
+    RedisKey destination = keys.get(1);
 
-    long numRemoved = commandElems
-        .stream()
-        .filter(key -> del(context, key))
-        .count();
+    byte[] moved = context.lockedExecuteInTransaction(source, Arrays.asList(source, destination),
+        () -> rpoplpush(context, source, destination));
 
-    return RedisResponse.integer(numRemoved);
-  }
-
-  public static boolean del(ExecutionHandlerContext context, RedisKey key) {
-    return context.dataLockedExecute(key, false, data -> {
-      // data unused in this lambda but needs to be created to possibly trigger MOVED exception
-      return context.getRegion().remove(key) != null;
-    });
+    return RedisResponse.bulkString(moved);
   }
 }

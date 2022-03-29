@@ -11,36 +11,41 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-package org.apache.geode.redis.internal.commands.executor.key;
+package org.apache.geode.redis.internal.commands.executor.list;
+
+import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
+import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
+import static org.apache.geode.redis.internal.netty.Coder.narrowLongToInt;
 
 import java.util.List;
 
+import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.commands.Command;
 import org.apache.geode.redis.internal.commands.executor.CommandExecutor;
 import org.apache.geode.redis.internal.commands.executor.RedisResponse;
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
-public class DelExecutor implements CommandExecutor {
+public class LRemExecutor implements CommandExecutor {
 
   @Override
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
-    List<RedisKey> commandElems = command.getProcessedCommandKeys();
+    List<byte[]> commandElems = command.getProcessedCommand();
+    Region<RedisKey, RedisData> region = context.getRegion();
 
-    long numRemoved = commandElems
-        .stream()
-        .filter(key -> del(context, key))
-        .count();
+    int count;
+    try {
+      count = narrowLongToInt(bytesToLong(commandElems.get(2)));
+    } catch (NumberFormatException e) {
+      return RedisResponse.error(ERROR_NOT_INTEGER);
+    }
 
-    return RedisResponse.integer(numRemoved);
-  }
+    RedisKey key = command.getKey();
+    int result = context.listLockedExecute(key, false,
+        list -> list.lrem(count, commandElems.get(3), region, key));
 
-  public static boolean del(ExecutionHandlerContext context, RedisKey key) {
-    return context.dataLockedExecute(key, false, data -> {
-      // data unused in this lambda but needs to be created to possibly trigger MOVED exception
-      return context.getRegion().remove(key) != null;
-    });
+    return RedisResponse.integer(result);
   }
 }

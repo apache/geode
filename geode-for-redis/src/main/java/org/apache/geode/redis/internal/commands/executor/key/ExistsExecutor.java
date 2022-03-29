@@ -27,12 +27,10 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class ExistsExecutor implements CommandExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<RedisKey> commandElems = command.getProcessedCommandKeys();
 
     long existsCount = commandElems
-        .subList(1, commandElems.size())
         .stream()
         .filter(key -> exists(context, key))
         .count();

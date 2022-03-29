@@ -29,7 +29,7 @@ public class DumpExecutor implements CommandExecutor {
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<RedisKey> commandElems = command.getProcessedCommandKeys();
 
-    byte[] rawData = dump(context, commandElems.get(1));
+    byte[] rawData = dump(context, commandElems.get(0));
 
     return RedisResponse.bulkString(rawData);
   }

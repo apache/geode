@@ -58,7 +58,7 @@ public class ReflectionObjectSizerJUnitTest {
       this.reference = reference;
     }
 
-    Object reference = null;
+    Object reference;
   }
 
 }

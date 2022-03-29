@@ -277,6 +277,17 @@ public class RedisSetTest {
     assertThat(set1.hasDelta()).isFalse();
   }
 
+  @Test
+  public void versionDoesNotUpdateForDuplicateAddedMember() {
+    Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
+    RedisSet set = createRedisSet(1, 2);
+
+    byte originalVersion = set.getVersion();
+    set.sadd(Collections.singletonList(new byte[] {(byte) 1}), region, null);
+
+    assertThat(set.getVersion()).isEqualTo(originalVersion);
+  }
+
   /************* test size of bytes in use *************/
 
   /******* constructor *******/

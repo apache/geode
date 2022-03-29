@@ -12,15 +12,19 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.rollingupgrade;
+package org.apache.geode.redis.internal.commands.executor.list;
 
-import org.junit.Test;
+import org.junit.ClassRule;
 
-public class RollingUpgradeRollServersOnPersistentRegion_dataserializable
-    extends RollingUpgradeDUnitTest {
+import org.apache.geode.redis.GeodeRedisServerRule;
 
-  @Test
-  public void testRollServersOnPersistentRegion_dataserializable() throws Exception {
-    doTestRollAll("persistentReplicate", "dataserializable", oldVersion);
+public class RPopLPushIntegrationTest extends AbstractRPopLPushIntegrationTest {
+
+  @ClassRule
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
+
+  @Override
+  public int getPort() {
+    return server.getPort();
   }
 }

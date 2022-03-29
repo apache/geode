@@ -422,14 +422,14 @@ public class RedisSet extends AbstractRedisData {
    * @return the number of members actually added
    */
   public long sadd(List<byte[]> membersToAdd, Region<RedisKey, RedisData> region, RedisKey key) {
-    byte newVersion;
     int membersAdded = 0;
-    AddByteArrays delta;
+    AddByteArrays delta = null;
     synchronized (this) {
-      newVersion = incrementAndGetVersion();
-      delta = new AddByteArrays(newVersion);
       for (byte[] member : membersToAdd) {
         if (membersAdd(member)) {
+          if (delta == null) {
+            delta = new AddByteArrays(incrementAndGetVersion());
+          }
           delta.add(member);
           membersAdded++;
         }

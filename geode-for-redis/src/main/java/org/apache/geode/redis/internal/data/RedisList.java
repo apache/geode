@@ -58,6 +58,116 @@ public class RedisList extends AbstractRedisData {
     this.elementList = new SizeableByteArrayList();
   }
 
+  public static List<byte[]> blpop(ExecutionHandlerContext context, Command command,
+      List<RedisKey> keys, double timeoutSeconds) {
+    RegionProvider regionProvider = context.getRegionProvider();
+    for (RedisKey key : keys) {
+      RedisList list = regionProvider.getTypedRedisData(REDIS_LIST, key, false);
+      if (!list.isNull()) {
+        byte[] poppedValue = list.lpop(context.getRegion(), key);
+
+        // return the key and value
+        List<byte[]> result = new ArrayList<>(2);
+        result.add(key.toBytes());
+        result.add(poppedValue);
+        return result;
+      }
+    }
+
+    context.registerListener(new BlockingCommandListener(context, command, keys, timeoutSeconds));
+
+    return null;
+  }
+
+  /**
+   * @param index index of desired element.
+   *        Positive index starts at the head.
+   *        Negative index starts at the tail.
+   * @return element at index. Null if index is out of range.
+   */
+  public byte[] lindex(int index) {
+    index = getArrayIndex(index);
+
+    if (index == INVALID_INDEX || elementList.size() <= index) {
+      return null;
+    } else {
+      return elementList.get(index);
+    }
+  }
+
+  /**
+   * @param elementToInsert element to insert into the list
+   * @param referenceElement element to insert next to
+   * @param before true if inserting before reference element, false if it is after
+   * @param region the region this instance is store in
+   * @param key the name of the list to add to
+   * @return the number of elements in the list after the element is inserted,
+   *         or -1 if the pivot is not found.
+   */
+  public int linsert(byte[] elementToInsert, byte[] referenceElement, boolean before,
+      Region<RedisKey, RedisData> region, RedisKey key) {
+    byte newVersion;
+    int index;
+
+    synchronized (this) {
+      index = elementInsert(elementToInsert, referenceElement, before);
+      if (index == -1) {
+        return index;
+      }
+      newVersion = incrementAndGetVersion();
+    }
+    storeChanges(region, key, new InsertByteArray(newVersion, elementToInsert, index));
+
+    return elementList.size();
+  }
+
+  /**
+   * @return the number of elements in the list
+   */
+  public int llen() {
+    return elementList.size();
+  }
+
+  /**
+   * @param region the region this instance is stored in
+   * @param key the name of the list to add to
+   * @return the element actually popped
+   */
+  public byte[] lpop(Region<RedisKey, RedisData> region, RedisKey key) {
+    byte newVersion;
+    byte[] popped;
+    RemoveElementsByIndex removed;
+    synchronized (this) {
+      newVersion = incrementAndGetVersion();
+      popped = removeElement(0);
+    }
+    removed = new RemoveElementsByIndex(newVersion);
+    removed.add(0);
+    storeChanges(region, key, removed);
+    return popped;
+  }
+
+  /**
+   * @param context the context of the executing command
+   * @param elementsToAdd elements to add to this list
+   * @param key the name of the set to add to
+   * @param onlyIfExists if true then the elements should only be added if the key already exists
+   *        and holds a list, otherwise no operation is performed.
+   * @return the length of the list after the operation
+   */
+  public long lpush(ExecutionHandlerContext context, List<byte[]> elementsToAdd,
+      RedisKey key, boolean onlyIfExists) {
+    byte newVersion;
+    synchronized (this) {
+      newVersion = incrementAndGetVersion();
+      elementsPushHead(elementsToAdd);
+    }
+    storeChanges(context.getRegion(), key, new AddByteArrays(elementsToAdd, newVersion));
+    context.fireEvent(RedisCommandType.LPUSH, key);
+
+    return elementList.size();
+  }
+
   /**
    * @param start start index of desired elements
    * @param stop stop index of desired elements
@@ -100,87 +210,46 @@ public class RedisList extends AbstractRedisData {
   }
 
   /**
-   * @param index index of desired element. Positive index starts at the head. Negative index starts
-   *        at the tail.
-   * @return element at index. Null if index is out of range.
+   * @param count number of elements to remove.
+   *        A count that is 0 removes all matching elements in the list.
+   *        Positive count starts from the head and moves to the tail.
+   *        Negative count starts from the tail and moves to the head.
+   * @param element element to remove
+   * @param region the region this instance is stored in
+   * @param key the name of the set to add
+   * @return amount of elements that were actually removed
    */
-  public byte[] lindex(int index) {
-    index = getArrayIndex(index);
-
-    if (index == INVALID_INDEX || elementList.size() <= index) {
-      return null;
-    } else {
-      return elementList.get(index);
-    }
-  }
-
-  private int normalizeStartIndex(int startIndex) {
-    return Math.max(0, getArrayIndex(startIndex));
-  }
-
-  private int normalizeStopIndex(int stopIndex) {
-    return Math.min(elementList.size() - 1, getArrayIndex(stopIndex));
-  }
-
-  /**
-   * Changes negative index to corresponding positive index.
-   * If there is no corresponding positive index, returns INVALID_INDEX.
-   */
-  private int getArrayIndex(int listIndex) {
-    if (listIndex < 0) {
-      listIndex = elementList.size() + listIndex;
-      if (listIndex < 0) {
-        return INVALID_INDEX;
-      }
-    }
-    return listIndex;
-  }
-
-  /**
-   * @param elementToInsert element to insert into the list
-   * @param referenceElement element to insert next to
-   * @param before true if inserting before reference element, false if it is after
-   * @param region the region this instance is store in
-   * @param key the name of the list to add to
-   * @return the number of elements in the list after the element is inserted,
-   *         or -1 if the pivot is not found.
-   */
-  public int linsert(byte[] elementToInsert, byte[] referenceElement, boolean before,
-      Region<RedisKey, RedisData> region, RedisKey key) {
-    byte newVersion;
-    int index;
-
+  public int lrem(int count, byte[] element, Region<RedisKey, RedisData> region, RedisKey key) {
+    List<Integer> removedIndexes;
+    byte version;
     synchronized (this) {
-      index = elementInsert(elementToInsert, referenceElement, before);
-      if (index == -1) {
-        return index;
-      }
-      newVersion = incrementAndGetVersion();
+      removedIndexes = elementList.remove(element, count);
+      version = incrementAndGetVersion();
     }
-    storeChanges(region, key, new InsertByteArray(newVersion, elementToInsert, index));
 
-    return elementList.size();
+    if (!removedIndexes.isEmpty()) {
+      storeChanges(region, key,
+          new RemoveElementsByIndex(version, removedIndexes));
+    }
+
+    return removedIndexes.size();
   }
 
   /**
-   * @param context the context of the executing command
-   * @param elementsToAdd elements to add to this list
-   * @param key the name of the set to add to
-   * @param onlyIfExists if true then the elements should only be added if the key already exists
-   *        and holds a list, otherwise no operation is performed.
-   * @return the length of the list after the operation
+   * @param region the region to set on
+   * @param key the key to set on
+   * @param index the index specified by the user
+   * @param value the value to set
    */
-  public long lpush(ExecutionHandlerContext context, List<byte[]> elementsToAdd,
-      RedisKey key, boolean onlyIfExists) {
-    byte newVersion;
-    synchronized (this) {
-      newVersion = incrementAndGetVersion();
-      elementsPushHead(elementsToAdd);
+  public void lset(Region<RedisKey, RedisData> region, RedisKey key, int index, byte[] value) {
+    int listSize = elementList.size();
+    int adjustedIndex = index >= 0 ? index : listSize + index;
+    if (adjustedIndex > listSize - 1 || adjustedIndex < 0) {
+      throw new RedisException(ERROR_INDEX_OUT_OF_RANGE);
     }
-    storeChanges(context.getRegion(), key, new AddByteArrays(elementsToAdd, newVersion));
-    context.fireEvent(RedisCommandType.LPUSH, key);
 
-    return elementList.size();
+    elementReplace(adjustedIndex, value);
+    storeChanges(region, key, new ReplaceByteArrayAtOffset(index, value));
   }
 
   /**
@@ -209,70 +278,6 @@ public class RedisList extends AbstractRedisData {
    * @param key the name of the list to add to
    * @return the element actually popped
    */
-  public byte[] lpop(Region<RedisKey, RedisData> region, RedisKey key) {
-    byte newVersion;
-    byte[] popped;
-    RemoveElementsByIndex removed;
-    synchronized (this) {
-      newVersion = incrementAndGetVersion();
-      popped = removeElement(0);
-    }
-    removed = new RemoveElementsByIndex(newVersion);
-    removed.add(0);
-    storeChanges(region, key, removed);
-    return popped;
-  }
-
-  public static List<byte[]> blpop(ExecutionHandlerContext context, Command command,
-      List<RedisKey> keys, double timeoutSeconds) {
-    RegionProvider regionProvider = context.getRegionProvider();
-    for (RedisKey key : keys) {
-      RedisList list = regionProvider.getTypedRedisData(REDIS_LIST, key, false);
-      if (!list.isNull()) {
-        byte[] poppedValue = list.lpop(context.getRegion(), key);
-
-        // return the key and value
-        List<byte[]> result = new ArrayList<>(2);
-        result.add(key.toBytes());
-        result.add(poppedValue);
-        return result;
-      }
-    }
-
-    context.registerListener(new BlockingCommandListener(context, command, keys, timeoutSeconds));
-
-    return null;
-  }
-
-  /**
-   * @return the number of elements in the list
-   */
-  public int llen() {
-    return elementList.size();
-  }
-
-  /**
-   * @param region the region to set on
-   * @param key the key to set on
-   * @param index the index specified by the user
-   * @param value the value to set
-   */
-  public void lset(Region<RedisKey, RedisData> region, RedisKey key, int index, byte[] value) {
-    int listSize = elementList.size();
-    int adjustedIndex = index >= 0 ? index : listSize + index;
-    if (adjustedIndex > listSize - 1 || adjustedIndex < 0) {
-      throw new RedisException(ERROR_INDEX_OUT_OF_RANGE);
-    }
-
-    elementReplace(adjustedIndex, value);
-    storeChanges(region, key, new ReplaceByteArrayAtOffset(index, value));
-  }
-
-  /**
-   * @param region the region this instance is stored in
-   * @param key the name of the list to add to
-   * @return the element actually popped
-   */
   public byte[] rpop(Region<RedisKey, RedisData> region, RedisKey key) {
     byte newVersion;
     int index = elementList.size() - 1;
@@ -286,6 +291,49 @@ public class RedisList extends AbstractRedisData {
     removed.add(index);
     storeChanges(region, key, removed);
     return popped;
+  }
+
+  /**
+   *
+   * @param context The {@link ExecutionHandlerContext} for this operation, passed to allow events
+   *        to be triggered
+   * @param source The {@link RedisKey} associated with the source RedisList
+   * @param destination The {@link RedisKey} associated with the destination RedisList
+   * @return The list element moved from source to destination, as a byte array
+   */
+  public static byte[] rpoplpush(ExecutionHandlerContext context, RedisKey source,
+      RedisKey destination) {
+    RegionProvider regionProvider = context.getRegionProvider();
+    RedisList sourceList = regionProvider.getTypedRedisData(REDIS_LIST, source, false);
+    RedisList destinationList = regionProvider.getTypedRedisData(REDIS_LIST, destination, false);
+    Region<RedisKey, RedisData> region = regionProvider.getDataRegion();
+    byte[] moved = sourceList.rpop(region, source);
+    if (moved != null) {
+      destinationList.lpush(context, Collections.singletonList(moved), destination, false);
+    }
+    return moved;
+  }
+
+  private int normalizeStartIndex(int startIndex) {
+    return Math.max(0, getArrayIndex(startIndex));
+  }
+
+  private int normalizeStopIndex(int stopIndex) {
+    return Math.min(elementList.size() - 1, getArrayIndex(stopIndex));
+  }
+
+  /**
+   * Changes negative index to corresponding positive index.
+   * If there is no corresponding positive index, returns INVALID_INDEX.
+   */
+  private int getArrayIndex(int listIndex) {
+    if (listIndex < 0) {
+      listIndex = elementList.size() + listIndex;
+      if (listIndex < 0) {
+        return INVALID_INDEX;
+      }
+    }
+    return listIndex;
   }
 
   @Override
@@ -304,9 +352,11 @@ public class RedisList extends AbstractRedisData {
   }
 
   @Override
-  public void applyRemoveElementsByIndex(List<Integer> indexes) {
-    for (int index : indexes) {
-      removeElement(index);
+  public synchronized void applyRemoveElementsByIndex(List<Integer> indexes) {
+    if (indexes.size() == 1) {
+      removeElement(indexes.get(0));
+    } else {
+      elementList.removeIndexes(indexes);
     }
   }
 

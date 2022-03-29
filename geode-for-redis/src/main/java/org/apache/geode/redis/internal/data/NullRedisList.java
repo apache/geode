@@ -46,11 +46,17 @@ class NullRedisList extends RedisList {
   }
 
   @Override
+  public int lrem(int count, byte[] element, Region<RedisKey, RedisData> region, RedisKey key) {
+    return 0;
+  }
+
+  @Override
   public long lpush(ExecutionHandlerContext context, List<byte[]> elementsToAdd, RedisKey key,
       boolean onlyIfExists) {
     if (onlyIfExists) {
       return 0;
     }
+
     RedisList newList = new RedisList();
     for (byte[] element : elementsToAdd) {
       newList.elementPushHead(element);

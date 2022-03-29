@@ -16,11 +16,23 @@ package org.apache.geode.internal.cache.rollingupgrade;
 
 import org.junit.Test;
 
-public class RollingUpgradeRollServersOnReplicatedRegion_dataserializable
-    extends RollingUpgradeDUnitTest {
+public class RollingUpgradeOnReplicatedRegionDistributedTest
+    extends RollingUpgradeDistributedTest {
 
   @Test
-  public void testRollServersOnReplicatedRegion_dataserializable() throws Exception {
+  public void whenRollingMemebersWithReplicatedRegionWithDataSerializableMustSucceed()
+      throws Exception {
     doTestRollAll("replicate", "dataserializable", oldVersion);
+  }
+
+  @Test
+  public void whenRollingMemebersWithReplicatedRegionWithSerializableMustSucceed()
+      throws Exception {
+    doTestRollAll("replicate", "serializable", oldVersion);
+  }
+
+  @Test
+  public void whenRollingMemebersWithReplicatedRegionWithStringsMustSucceed() throws Exception {
+    doTestRollAll("replicate", "strings", oldVersion);
   }
 }

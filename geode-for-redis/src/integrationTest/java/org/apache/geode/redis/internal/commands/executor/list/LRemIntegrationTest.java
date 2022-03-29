@@ -12,16 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.rollingupgrade;
+package org.apache.geode.redis.internal.commands.executor.list;
 
-import org.junit.Test;
 
-public class RollingUpgradeRollServersOnPartitionedRegion_dataserializable
-    extends RollingUpgradeDUnitTest {
+import org.junit.ClassRule;
 
-  @Test
-  public void testRollServersOnPartitionedRegion_dataserializable() throws Exception {
-    doTestRollAll("partitionedRedundant", "dataserializable", oldVersion);
+import org.apache.geode.redis.GeodeRedisServerRule;
+
+public class LRemIntegrationTest extends AbstractLRemIntegrationTest {
+
+  @ClassRule
+  public static GeodeRedisServerRule server = new GeodeRedisServerRule();
+
+  @Override
+  public int getPort() {
+    return server.getPort();
   }
-
 }

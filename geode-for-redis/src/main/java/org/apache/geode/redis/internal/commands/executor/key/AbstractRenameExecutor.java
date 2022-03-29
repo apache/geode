@@ -30,11 +30,10 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public abstract class AbstractRenameExecutor implements CommandExecutor {
 
   @Override
-  public RedisResponse executeCommand(Command command,
-      ExecutionHandlerContext context) {
+  public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<RedisKey> commandElems = command.getProcessedCommandKeys();
-    RedisKey key = command.getKey();
-    RedisKey newKey = commandElems.get(2);
+    RedisKey key = commandElems.get(0);
+    RedisKey newKey = commandElems.get(1);
 
     if (key.equals(newKey)) {
       return getTargetSameAsSourceResponse();
