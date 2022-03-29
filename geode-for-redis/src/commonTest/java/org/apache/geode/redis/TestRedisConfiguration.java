@@ -16,6 +16,7 @@
 package org.apache.geode.redis;
 
 import org.apache.geode.redis.internal.RedisConfiguration;
+import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 
 public class TestRedisConfiguration implements RedisConfiguration {
 
@@ -25,7 +26,7 @@ public class TestRedisConfiguration implements RedisConfiguration {
   private final String username;
 
   public static class Builder {
-    private String address = RedisConfiguration.DEFAULT_REDIS_BIND_ADDRESS;
+    private String address = RedisClusterStartupRule.BIND_ADDRESS;
     private int port = RedisConfiguration.DEFAULT_REDIS_PORT;
     private int redundantCopies = RedisConfiguration.DEFAULT_REDIS_REDUNDANT_COPIES;
     private String username = RedisConfiguration.DEFAULT_REDIS_USERNAME;

@@ -15,11 +15,11 @@
 
 package org.apache.geode.redis.internal.commands.executor;
 
-import static org.apache.geode.redis.internal.RedisConfiguration.DEFAULT_REDIS_BIND_ADDRESS;
 import static org.apache.geode.redis.internal.RedisConfiguration.DEFAULT_REDIS_PORT;
 import static org.apache.geode.redis.internal.SystemPropertyBasedRedisConfiguration.GEODE_FOR_REDIS_BIND_ADDRESS;
 import static org.apache.geode.redis.internal.SystemPropertyBasedRedisConfiguration.GEODE_FOR_REDIS_ENABLED;
 import static org.apache.geode.redis.internal.SystemPropertyBasedRedisConfiguration.GEODE_FOR_REDIS_PORT;
+import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -123,7 +123,7 @@ public class GeodeRedisServerStartupUsingGfshAcceptanceTest {
         + " --classpath=" + redisHome.getGeodeForRedisHome() + "/lib/*");
     gfshRule.execute(command);
 
-    try (Jedis jedis = new Jedis(DEFAULT_REDIS_BIND_ADDRESS, DEFAULT_REDIS_PORT)) {
+    try (Jedis jedis = new Jedis(BIND_ADDRESS, DEFAULT_REDIS_PORT)) {
       assertThat(jedis.ping()).isEqualTo("PONG");
     }
   }
@@ -137,7 +137,7 @@ public class GeodeRedisServerStartupUsingGfshAcceptanceTest {
 
     gfshRule.execute(command);
 
-    try (Jedis jedis = new Jedis(DEFAULT_REDIS_BIND_ADDRESS, port)) {
+    try (Jedis jedis = new Jedis(BIND_ADDRESS, port)) {
       assertThat(jedis.ping()).isEqualTo("PONG");
     }
   }
@@ -171,7 +171,7 @@ public class GeodeRedisServerStartupUsingGfshAcceptanceTest {
 
     gfshRule.execute(command);
 
-    try (Jedis jedis = new Jedis(DEFAULT_REDIS_BIND_ADDRESS, port)) {
+    try (Jedis jedis = new Jedis(BIND_ADDRESS, port)) {
       assertThat(jedis.ping()).isEqualTo("PONG");
     }
   }
@@ -185,7 +185,7 @@ public class GeodeRedisServerStartupUsingGfshAcceptanceTest {
 
     gfshRule.execute(command);
 
-    try (Jedis jedis = new Jedis(DEFAULT_REDIS_BIND_ADDRESS, port)) {
+    try (Jedis jedis = new Jedis(BIND_ADDRESS, port)) {
       assertThatThrownBy(() -> jedis.ping()).isInstanceOf(JedisConnectionException.class);
     }
   }
