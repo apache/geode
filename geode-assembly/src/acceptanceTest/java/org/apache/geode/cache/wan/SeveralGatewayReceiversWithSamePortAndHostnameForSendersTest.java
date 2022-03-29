@@ -220,8 +220,8 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
   /**
    * The aim of this test is verify that when several gateway receivers in a remote site share the
    * same port and hostname-for-senders, the pings sent from the gateway senders reach the right
-   * gateway receiver and not just any of the receivers. Failure to do this may result in the
-   * closing of connections by a gateway receiver for not having received the ping in time.
+   * gateway receiver and not just any of the receivers. Check that only one destination will be
+   * pinged.
    */
   @Test
   public void testPingsToReceiversWithSamePortAndHostnameForSendersReachTheRightReceiver()
@@ -235,11 +235,9 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
     VM vm1 = VM.getVM(1);
     createCache(vm1, locPort);
 
-    // We must use more than one dispatcher thread. With just one dispatcher thread, only one
+    // We use one dispatcher thread. With just one dispatcher thread, only one
     // connection will be created by the sender towards one of the receivers and it will be
     // monitored by the one ping thread for that remote receiver.
-    // With more than one thread, several connections will be opened and there should be one ping
-    // thread per remote receiver.
     createGatewaySender(vm1, senderId, 2, true, 5,
         1, GatewaySender.DEFAULT_ORDER_POLICY);
 
@@ -259,6 +257,9 @@ public class SeveralGatewayReceiversWithSamePortAndHostnameForSendersTest {
     // by the receivers because each has received the pings timely.
     int maxTimeBetweenPingsInReceiver = 15000;
     Thread.sleep(maxTimeBetweenPingsInReceiver);
+
+    int senderPoolDisconnects = getSenderPoolDisconnects(vm1, senderId);
+    assertEquals(0, senderPoolDisconnects);
 
     int poolEndPointSize = getPoolEndPointSize(vm1, senderId);
     assertEquals(1, poolEndPointSize);

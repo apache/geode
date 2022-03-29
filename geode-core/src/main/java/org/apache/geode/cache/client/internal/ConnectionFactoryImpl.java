@@ -114,7 +114,13 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   @Override
   public Connection createClientToServerConnection(ServerLocation location, boolean forQueue)
       throws GemFireSecurityException {
-    FailureTracker failureTracker = denyList.getFailureTracker(location);
+    ServerLocation serverLocation;
+    if (location instanceof ServerLocationAndMemberId) {
+      serverLocation = ((ServerLocationAndMemberId) location).getServerLocation();
+    } else {
+      serverLocation = location;
+    }
+    FailureTracker failureTracker = denyList.getFailureTracker(serverLocation);
 
     Connection connection = null;
     try {
@@ -147,46 +153,6 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
 
     return connection;
   }
-
-
-  @Override
-  public Connection createClientToServerConnection(
-      ServerLocationAndMemberId serverLocationAndMemberId, boolean forQueue)
-      throws GemFireSecurityException {
-    FailureTracker failureTracker =
-        denyList.getFailureTracker(serverLocationAndMemberId.getServerLocation());
-
-    Connection connection = null;
-    try {
-      connection = connectionConnector.connectClientToServer(serverLocationAndMemberId, forQueue);
-      failureTracker.reset();
-      authenticateIfRequired(connection);
-    } catch (GemFireConfigException | CancelException | GemFireSecurityException
-        | GatewayConfigurationException e) {
-      throw e;
-    } catch (ServerRefusedConnectionException src) {
-      // propagate this up, don't retry
-      logger.warn("Could not create a new connection to server: {}",
-          src.getMessage());
-      testFailedConnectionToServer = true;
-      throw src;
-    } catch (Exception e) {
-      String message = e.getMessage();
-      if (message != null && (message.contains("Connection refused")
-          || message.contains("Connection reset"))) {
-        // this is the most common case, so don't print an exception
-        if (logger.isDebugEnabled()) {
-          logger.debug("Unable to connect to {}: connection refused", serverLocationAndMemberId);
-        }
-      } else {
-        logger.warn("Could not connect to: " + serverLocationAndMemberId, e);
-      }
-      testFailedConnectionToServer = true;
-    }
-
-    return connection;
-  }
-
 
   @VisibleForTesting
   void authenticateIfRequired(Connection conn) {

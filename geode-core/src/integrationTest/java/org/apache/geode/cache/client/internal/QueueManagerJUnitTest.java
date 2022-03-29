@@ -58,7 +58,6 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -639,15 +638,6 @@ public class QueueManagerJUnitTest {
 
     @Override
     public Connection createClientToServerConnection(ServerLocation location, boolean forQueue) {
-      if (nextConnections.isEmpty()) {
-        return null;
-      }
-      return nextConnections.removeFirst();
-    }
-
-    @Override
-    public Connection createClientToServerConnection(
-        ServerLocationAndMemberId serverLocationAndMemberId, boolean forQueue) {
       if (nextConnections.isEmpty()) {
         return null;
       }

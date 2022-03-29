@@ -112,50 +112,18 @@ public class ConnectionImpl implements Connection {
     }
     theSocket.setSoTimeout(readTimeout);
 
-    endpoint = endpointManager.referenceEndpoint(location, status.getMemberId());
-    connectFinished = true;
-    endpoint.getStats().incConnections(1);
-    return status;
-  }
-
-  public ServerQueueStatus connect(EndpointManager endpointManager,
-      ServerLocationAndMemberId serverLocationAndMemberId,
-      ClientSideHandshake handshake, int socketBufferSize, int handshakeTimeout, int readTimeout,
-      CommunicationMode communicationMode, GatewaySender sender, SocketCreator sc,
-      SocketFactory socketFactory)
-      throws IOException {
-    theSocket =
-        sc.forClient()
-            .connect(new HostAndPort(serverLocationAndMemberId.getServerLocation().getHostName(),
-                serverLocationAndMemberId.getServerLocation().getPort()),
-                handshakeTimeout,
-                socketBufferSize, socketFactory::createSocket);
-    theSocket.setTcpNoDelay(true);
-    theSocket.setSendBufferSize(socketBufferSize);
-
-    // Verify buffer sizes
-    verifySocketBufferSize(socketBufferSize, theSocket.getReceiveBufferSize(), "receive");
-    verifySocketBufferSize(socketBufferSize, theSocket.getSendBufferSize(), "send");
-
-    theSocket.setSoTimeout(handshakeTimeout);
-    out = theSocket.getOutputStream();
-    in = theSocket.getInputStream();
-    status = handshake.handshakeWithServer(this, serverLocationAndMemberId.getServerLocation(),
-        communicationMode);
-    commBuffer = ServerConnection.allocateCommBuffer(socketBufferSize, theSocket);
-    if (sender != null) {
-      commBufferForAsyncRead = ServerConnection.allocateCommBuffer(socketBufferSize, theSocket);
+    if (location instanceof ServerLocationAndMemberId) {
+      ServerLocationAndMemberId serverLocationAndMemberId = (ServerLocationAndMemberId) location;
+      endpoint = endpointManager.getEndpointMap().get(serverLocationAndMemberId);
+      location = serverLocationAndMemberId.getServerLocation();
     }
-    theSocket.setSoTimeout(readTimeout);
-
-    endpoint = endpointManager.getEndpointMap().get(serverLocationAndMemberId);
     if (endpoint == null) {
       // this is possible in DT
-      endpoint = endpointManager.referenceEndpoint(serverLocationAndMemberId.getServerLocation(),
-          status.getMemberId());
+      endpoint = endpointManager.referenceEndpoint(location, status.getMemberId());
+
     }
-    endpoint.getStats().incConnections(1);
     connectFinished = true;
+    endpoint.getStats().incConnections(1);
     return status;
   }
 

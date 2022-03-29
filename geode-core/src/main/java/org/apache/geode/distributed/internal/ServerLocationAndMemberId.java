@@ -14,7 +14,7 @@
  */
 package org.apache.geode.distributed.internal;
 
-public class ServerLocationAndMemberId {
+public class ServerLocationAndMemberId extends ServerLocation {
 
   private final ServerLocation serverLocation;
   private final String memberId;
@@ -22,6 +22,16 @@ public class ServerLocationAndMemberId {
   public ServerLocationAndMemberId(ServerLocation serverLocation, String memberId) {
     this.serverLocation = serverLocation;
     this.memberId = memberId;
+  }
+
+  @Override
+  public String getHostName() {
+    return serverLocation.getHostName();
+  }
+
+  @Override
+  public int getPort() {
+    return serverLocation.getPort();
   }
 
   public ServerLocation getServerLocation() {
@@ -50,6 +60,11 @@ public class ServerLocationAndMemberId {
     }
 
     return memberId.equals(other.getMemberId());
+  }
+
+  @Override
+  public void compareAndSetRequiresCredentials(boolean bool) {
+    serverLocation.compareAndSetRequiresCredentials(bool);
   }
 
   @Override

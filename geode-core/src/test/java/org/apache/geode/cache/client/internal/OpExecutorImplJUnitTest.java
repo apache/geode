@@ -403,14 +403,6 @@ public class OpExecutorImplJUnitTest {
     }
 
     @Override
-    public Connection borrowConnection(ServerLocationAndMemberId serverLocationAndMemberId,
-        long acquireTimeout,
-        boolean onlyUseExistingCnx) {
-      borrows++;
-      return new DummyConnection(serverLocationAndMemberId.getServerLocation());
-    }
-
-    @Override
     public void close(boolean keepAlive) {
       // nothing
     }
@@ -418,13 +410,11 @@ public class OpExecutorImplJUnitTest {
     @Override
     public void returnConnection(Connection connection) {
       returns++;
-
     }
 
     @Override
     public void returnConnection(Connection connection, boolean accessed) {
       returns++;
-
     }
 
     @Override
