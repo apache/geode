@@ -7,32 +7,32 @@ fromData,8
 toData,8
 
 org/apache/geode/redis/internal/data/RedisHash,2
-toData,15
-fromData,58
+toData,14
+fromData,55
 
 org/apache/geode/redis/internal/data/RedisKey,2
 fromData,19
 toData,19
 
 org/apache/geode/redis/internal/data/RedisList,2
-toData,55
-fromData,42
+toData,52
+fromData,39
 
 org/apache/geode/redis/internal/data/RedisSet,2
-toData,55
-fromData,51
+toData,52
+fromData,48
 
 org/apache/geode/redis/internal/data/RedisSortedSet,2
-toData,15
-fromData,86
+toData,14
+fromData,83
 
 org/apache/geode/redis/internal/data/RedisString,2
-toData,15
-fromData,15
+toData,14
+fromData,14
 
 org/apache/geode/redis/internal/pubsub/Publisher$PublishRequest,2
-fromData,55
-toData,61
+fromData,53
+toData,59
 
 org/apache/geode/redis/internal/services/cluster/RedisMemberInfo,2
 fromData,28

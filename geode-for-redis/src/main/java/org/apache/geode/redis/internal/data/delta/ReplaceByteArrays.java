@@ -15,7 +15,6 @@
 package org.apache.geode.redis.internal.data.delta;
 
 import static org.apache.geode.DataSerializer.readByteArray;
-import static org.apache.geode.internal.InternalDataSerializer.readArrayLength;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_ARRAYS;
 
 import java.io.DataInput;
@@ -24,7 +23,6 @@ import java.io.IOException;
 import java.util.Set;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.redis.internal.data.AbstractRedisData;
 import org.apache.geode.redis.internal.data.RedisSet;
 
@@ -42,7 +40,7 @@ public class ReplaceByteArrays extends DeltaInfo {
 
   public void serializeTo(DataOutput out) throws IOException {
     super.serializeTo(out);
-    InternalDataSerializer.writeArrayLength(byteArrays.size(), out);
+    DataSerializer.writePrimitiveInt(byteArrays.size(), out);
     for (byte[] bytes : byteArrays) {
       DataSerializer.writeByteArray(bytes, out);
     }
@@ -50,7 +48,7 @@ public class ReplaceByteArrays extends DeltaInfo {
 
   // Create a member set as you read it in
   public static void deserializeFrom(DataInput in, AbstractRedisData redisData) throws IOException {
-    int size = readArrayLength(in);
+    int size = DataSerializer.readPrimitiveInt(in);
     RedisSet.MemberSet members = new RedisSet.MemberSet(size);
     while (size > 0) {
       members.add(readByteArray(in));

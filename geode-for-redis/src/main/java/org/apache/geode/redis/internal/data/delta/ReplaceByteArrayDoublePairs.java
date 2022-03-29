@@ -16,7 +16,6 @@ package org.apache.geode.redis.internal.data.delta;
 
 import static org.apache.geode.DataSerializer.readByteArray;
 import static org.apache.geode.DataSerializer.readPrimitiveDouble;
-import static org.apache.geode.internal.InternalDataSerializer.readArrayLength;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_ARRAY_DOUBLE_PAIRS;
 
 import java.io.DataInput;
@@ -24,7 +23,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.redis.internal.data.AbstractRedisData;
 import org.apache.geode.redis.internal.data.RedisSortedSet;
 
@@ -42,7 +40,7 @@ public class ReplaceByteArrayDoublePairs extends DeltaInfo {
 
   public void serializeTo(DataOutput out) throws IOException {
     super.serializeTo(out);
-    InternalDataSerializer.writeArrayLength(members.size(), out);
+    DataSerializer.writePrimitiveInt(members.size(), out);
     for (byte[] member : members.keySet()) {
       DataSerializer.writeByteArray(member, out);
       DataSerializer.writePrimitiveDouble(members.get(member).getScore(), out);
@@ -50,7 +48,7 @@ public class ReplaceByteArrayDoublePairs extends DeltaInfo {
   }
 
   public static void deserializeFrom(DataInput in, AbstractRedisData redisData) throws IOException {
-    int size = readArrayLength(in);
+    int size = DataSerializer.readPrimitiveInt(in);
     RedisSortedSet.MemberMap membersMap = new RedisSortedSet.MemberMap(size);
     RedisSortedSet.ScoreSet scoreSet = new RedisSortedSet.ScoreSet();
     while (size > 0) {

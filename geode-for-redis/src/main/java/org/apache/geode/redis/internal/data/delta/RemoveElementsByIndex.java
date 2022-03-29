@@ -16,7 +16,6 @@
 package org.apache.geode.redis.internal.data.delta;
 
 import static org.apache.geode.DataSerializer.readPrimitiveInt;
-import static org.apache.geode.internal.InternalDataSerializer.readArrayLength;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REMOVE_ELEMENTS_BY_INDEX;
 
 import java.io.DataInput;
@@ -26,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.redis.internal.data.AbstractRedisData;
 
 public class RemoveElementsByIndex extends DeltaInfo {
@@ -53,14 +51,14 @@ public class RemoveElementsByIndex extends DeltaInfo {
 
   public void serializeTo(DataOutput out) throws IOException {
     super.serializeTo(out);
-    InternalDataSerializer.writeArrayLength(indexes.size(), out);
+    DataSerializer.writePrimitiveInt(indexes.size(), out);
     for (int index : indexes) {
       DataSerializer.writePrimitiveInt(index, out);
     }
   }
 
   public static void deserializeFrom(DataInput in, AbstractRedisData redisData) throws IOException {
-    int size = readArrayLength(in);
+    int size = DataSerializer.readPrimitiveInt(in);
     List<Integer> indexes = new ArrayList<>();
     while (size > 0) {
       indexes.add(readPrimitiveInt(in));

@@ -54,7 +54,6 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXId;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.services.RegionProvider;
@@ -84,10 +83,9 @@ public class RedisSetTest {
 
   @Test
   public void confirmToDataIsSynchronized() throws NoSuchMethodException {
-    assertThat(Modifier
-        .isSynchronized(RedisSet.class
-            .getMethod("toData", DataOutput.class, SerializationContext.class).getModifiers()))
-                .isTrue();
+    assertThat(Modifier.isSynchronized(
+        RedisSet.class.getMethod("toData", DataOutput.class).getModifiers()))
+            .isTrue();
   }
 
   private RedisSet createRedisSet(int m1, int m2) {
@@ -491,7 +489,7 @@ public class RedisSetTest {
   private void iterateOverSet(RedisSet set, AtomicBoolean running) throws Exception {
     while (running.get()) {
       HeapDataOutputStream out = new HeapDataOutputStream(100);
-      set.toData(out, null);
+      set.toData(out);
     }
   }
 

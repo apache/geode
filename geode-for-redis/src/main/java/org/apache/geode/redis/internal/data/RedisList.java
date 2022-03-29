@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_INDEX_OUT_OF_RANGE;
+import static org.apache.geode.redis.internal.RedisConstants.REDIS_LIST_DATA_SERIALIZABLE_ID;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_LIST;
 
 import java.io.DataInput;
@@ -30,11 +31,10 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
 
+import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.Instantiator;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.commands.Command;
 import org.apache.geode.redis.internal.data.collections.SizeableByteArrayList;
@@ -49,6 +49,15 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.services.RegionProvider;
 
 public class RedisList extends AbstractRedisData {
+
+  static {
+    Instantiator.register(new Instantiator(RedisList.class, REDIS_LIST_DATA_SERIALIZABLE_ID) {
+      public DataSerializable newInstance() {
+        return new RedisList();
+      }
+    });
+  }
+
   protected static final int REDIS_LIST_OVERHEAD = memoryOverhead(RedisList.class);
   private final SizeableByteArrayList elementList;
 
@@ -295,7 +304,6 @@ public class RedisList extends AbstractRedisData {
   }
 
   /**
-   *
    * @param context The {@link ExecutionHandlerContext} for this operation, passed to allow events
    *        to be triggered
    * @param source The {@link RedisKey} associated with the source RedisList
@@ -373,8 +381,8 @@ public class RedisList extends AbstractRedisData {
    */
 
   @Override
-  public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
-    super.toData(out, context);
+  public synchronized void toData(DataOutput out) throws IOException {
+    super.toData(out);
     DataSerializer.writePrimitiveInt(elementList.size(), out);
     for (byte[] element : elementList) {
       DataSerializer.writeByteArray(element, out);
@@ -382,19 +390,13 @@ public class RedisList extends AbstractRedisData {
   }
 
   @Override
-  public void fromData(DataInput in, DeserializationContext context)
-      throws IOException, ClassNotFoundException {
-    super.fromData(in, context);
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    super.fromData(in);
     int size = DataSerializer.readPrimitiveInt(in);
     for (int i = 0; i < size; ++i) {
       byte[] element = DataSerializer.readByteArray(in);
       elementList.addLast(element);
     }
-  }
-
-  @Override
-  public int getDSFID() {
-    return REDIS_LIST_ID;
   }
 
   public synchronized int elementInsert(byte[] elementToInsert, byte[] referenceElement,
@@ -478,11 +480,6 @@ public class RedisList extends AbstractRedisData {
   @Override
   public String toString() {
     return "RedisList{" + super.toString() + ", " + "size=" + elementList.size() + '}';
-  }
-
-  @Override
-  public KnownVersion[] getSerializationVersions() {
-    return null;
   }
 
   @Override

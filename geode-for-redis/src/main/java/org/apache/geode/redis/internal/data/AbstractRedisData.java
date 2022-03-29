@@ -52,9 +52,7 @@ import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXId;
-import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.data.delta.AddByteArrayDoublePairs;
 import org.apache.geode.redis.internal.data.delta.AddByteArrayPairs;
 import org.apache.geode.redis.internal.data.delta.AddByteArrays;
@@ -216,14 +214,13 @@ public abstract class AbstractRedisData implements RedisData {
   }
 
   @Override
-  public void toData(DataOutput out, SerializationContext context) throws IOException {
+  public void toData(DataOutput out) throws IOException {
     out.writeByte(version);
     out.writeLong(expirationTimestamp);
   }
 
   @Override
-  public void fromData(DataInput in, DeserializationContext context)
-      throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     version = in.readByte();
     expirationTimestamp = in.readLong();
   }

@@ -36,7 +36,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.SerializationContext;
 
 public class RedisListTest {
 
@@ -57,10 +56,9 @@ public class RedisListTest {
 
   @Test
   public void confirmToDataIsSynchronized() throws NoSuchMethodException {
-    assertThat(Modifier
-        .isSynchronized(RedisList.class
-            .getMethod("toData", DataOutput.class, SerializationContext.class).getModifiers()))
-                .isTrue();
+    assertThat(Modifier.isSynchronized(
+        RedisList.class.getMethod("toData", DataOutput.class).getModifiers()))
+            .isTrue();
   }
 
   @Test

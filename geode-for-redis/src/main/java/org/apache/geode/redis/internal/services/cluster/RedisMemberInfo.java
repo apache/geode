@@ -15,20 +15,29 @@
 
 package org.apache.geode.redis.internal.services.cluster;
 
+import static org.apache.geode.redis.internal.RedisConstants.MEMBER_INFO_DATA_SERIALIZABLE_ID;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.Instantiator;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
-import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.internal.serialization.SerializationContext;
 
-public class RedisMemberInfo implements DataSerializableFixedID, Serializable {
+public class RedisMemberInfo implements DataSerializable, Serializable {
+
+  static {
+    Instantiator
+        .register(new Instantiator(RedisMemberInfo.class, MEMBER_INFO_DATA_SERIALIZABLE_ID) {
+          public DataSerializable newInstance() {
+            return new RedisMemberInfo();
+          }
+        });
+  }
 
   private static final long serialVersionUID = -10228877687322470L;
 
@@ -37,7 +46,7 @@ public class RedisMemberInfo implements DataSerializableFixedID, Serializable {
   private int redisPort;
 
   // For serialization
-  public RedisMemberInfo() {}
+  private RedisMemberInfo() {}
 
   public RedisMemberInfo(DistributedMember member, String hostAddress, int redisPort) {
     this.member = member;
@@ -58,28 +67,17 @@ public class RedisMemberInfo implements DataSerializableFixedID, Serializable {
   }
 
   @Override
-  public int getDSFID() {
-    return REDIS_MEMBER_INFO_ID;
-  }
-
-  @Override
-  public void toData(DataOutput out, SerializationContext context) throws IOException {
+  public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(member, out);
     DataSerializer.writeString(hostAddress, out);
     out.writeInt(redisPort);
   }
 
   @Override
-  public void fromData(DataInput in, DeserializationContext context)
-      throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     member = DataSerializer.readObject(in);
     hostAddress = DataSerializer.readString(in);
     redisPort = DataSerializer.readPrimitiveInt(in);
-  }
-
-  @Override
-  public KnownVersion[] getSerializationVersions() {
-    return null;
   }
 
   @Override

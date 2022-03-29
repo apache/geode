@@ -17,14 +17,15 @@
 package org.apache.geode.redis.internal.data;
 
 
+import static org.apache.geode.redis.internal.RedisConstants.REDIS_NULL_DATA_DATA_SERIALIZABLE_ID;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 
+import org.apache.geode.DataSerializable;
+import org.apache.geode.Instantiator;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.services.RegionProvider;
 
@@ -32,6 +33,16 @@ import org.apache.geode.redis.internal.services.RegionProvider;
  * Implements behaviour for when no instance of RedisData exists.
  */
 public class NullRedisData implements RedisData {
+
+  static {
+    Instantiator
+        .register(new Instantiator(NullRedisData.class, REDIS_NULL_DATA_DATA_SERIALIZABLE_ID) {
+          public DataSerializable newInstance() {
+            return new NullRedisData();
+          }
+        });
+  }
+
   @Override
   public boolean isNull() {
     return true;
@@ -103,23 +114,13 @@ public class NullRedisData implements RedisData {
   }
 
   @Override
-  public int getDSFID() {
-    return REDIS_NULL_DATA_ID;
-  }
-
-  @Override
-  public void toData(DataOutput out, SerializationContext context) {
+  public void toData(DataOutput out) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void fromData(DataInput in, DeserializationContext context) {
+  public void fromData(DataInput in) {
     throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public KnownVersion[] getSerializationVersions() {
-    return null;
   }
 
   @Override

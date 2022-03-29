@@ -17,6 +17,7 @@
 package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
+import static org.apache.geode.redis.internal.RedisConstants.REDIS_SET_DATA_SERIALIZABLE_ID;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SET;
 
@@ -36,12 +37,11 @@ import it.unimi.dsi.fastutil.bytes.ByteArrays;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
+import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.Instantiator;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.commands.executor.GlobPattern;
 import org.apache.geode.redis.internal.data.collections.SizeableObjectOpenCustomHashSetWithCursor;
 import org.apache.geode.redis.internal.data.delta.AddByteArrays;
@@ -50,6 +50,15 @@ import org.apache.geode.redis.internal.data.delta.ReplaceByteArrays;
 import org.apache.geode.redis.internal.services.RegionProvider;
 
 public class RedisSet extends AbstractRedisData {
+
+  static {
+    Instantiator.register(new Instantiator(RedisSet.class, REDIS_SET_DATA_SERIALIZABLE_ID) {
+      public DataSerializable newInstance() {
+        return new RedisSet();
+      }
+    });
+  }
+
   protected static final int REDIS_SET_OVERHEAD = memoryOverhead(RedisSet.class);
   private MemberSet members;
 
@@ -381,8 +390,8 @@ public class RedisSet extends AbstractRedisData {
    */
 
   @Override
-  public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
-    super.toData(out, context);
+  public synchronized void toData(DataOutput out) throws IOException {
+    super.toData(out);
     DataSerializer.writePrimitiveInt(members.size(), out);
     for (byte[] member : members) {
       DataSerializer.writeByteArray(member, out);
@@ -390,19 +399,13 @@ public class RedisSet extends AbstractRedisData {
   }
 
   @Override
-  public void fromData(DataInput in, DeserializationContext context)
-      throws IOException, ClassNotFoundException {
-    super.fromData(in, context);
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    super.fromData(in);
     int size = DataSerializer.readPrimitiveInt(in);
     members = new MemberSet(size);
     for (int i = 0; i < size; ++i) {
       members.add(DataSerializer.readByteArray(in));
     }
-  }
-
-  @Override
-  public int getDSFID() {
-    return REDIS_SET_ID;
   }
 
   @VisibleForTesting
@@ -516,11 +519,6 @@ public class RedisSet extends AbstractRedisData {
   @Override
   public String toString() {
     return "RedisSet{" + super.toString() + ", " + "size=" + members.size() + '}';
-  }
-
-  @Override
-  public KnownVersion[] getSerializationVersions() {
-    return null;
   }
 
   @Override

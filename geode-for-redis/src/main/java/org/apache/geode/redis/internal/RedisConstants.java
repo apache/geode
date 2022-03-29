@@ -22,6 +22,19 @@ import org.apache.geode.redis.internal.commands.executor.server.CommandCommandEx
 public class RedisConstants {
 
   /*
+   * DataSerializable Instantiator IDs
+   */
+  public static int PUBLISH_REQUEST_DATA_SERIALIZABLE_ID = 1045;
+  public static int MEMBER_INFO_DATA_SERIALIZABLE_ID = 1046;
+  public static int REDIS_NULL_DATA_DATA_SERIALIZABLE_ID = 1047;
+  public static int REDIS_KEY_DATA_SERIALIZABLE_ID = 1048;
+  public static int REDIS_LIST_DATA_SERIALIZABLE_ID = 1049;
+  public static int REDIS_SET_DATA_SERIALIZABLE_ID = 1050;
+  public static int REDIS_STRING_DATA_SERIALIZABLE_ID = 1051;
+  public static int REDIS_HASH_DATA_SERIALIZABLE_ID = 1052;
+  public static int REDIS_SORTED_SET_DATA_SERIALIZABLE_ID = 1053;
+
+  /*
    * Error responses
    */
   public static final String PARSING_EXCEPTION_MESSAGE =
