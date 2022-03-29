@@ -17,21 +17,15 @@
 package org.apache.geode.deployment.internal.modules;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
-import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
@@ -41,6 +35,7 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.internal.execute.FunctionToFileTracker;
 import org.apache.geode.deployment.internal.JarDeploymentService;
+import org.apache.geode.deployment.internal.modules.processors.DeploymentResourceProcessor;
 import org.apache.geode.deployment.internal.modules.service.GeodeJBossModuleService;
 import org.apache.geode.deployment.internal.modules.service.ModuleService;
 import org.apache.geode.deployment.internal.modules.xml.generator.GeodeJBossXmlGenerator;
@@ -94,12 +89,17 @@ public class ModularJarDeploymentService implements JarDeploymentService {
     Deployment existingDeployment = deployments.get(moduleName);
     if (existingDeployment != null
         && JarFileUtils.hasSameContent(existingDeployment.getFile(), deployment.getFile())) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Deployment: {} is identical to existing deployment. Nothing to deploy",
+            deployment.getId());
+      }
       return Success.of(null);
     }
 
     // if no application is specified, assume the default
     String applicationName = deployment.getApplicationName() != null
-        ? deployment.getApplicationName() : defaultApplicationName;
+        ? deployment.getApplicationName()
+        : defaultApplicationName;
 
     List<String> moduleDependencies = getModuleDependencies(deployment, applicationName);
 
@@ -123,22 +123,18 @@ public class ModularJarDeploymentService implements JarDeploymentService {
     return moduleDependencies;
   }
 
-  private ServiceResult<Deployment> updateModule(Deployment deployment,
-      String moduleName,
-      String applicationName,
-      List<String> moduleDependencies) {
+  private ServiceResult<Deployment> updateModule(Deployment deployment, String moduleName,
+      String applicationName, List<String> moduleDependencies) {
     moduleService.unregisterModule(moduleName);
     return createModule(deployment, moduleName, applicationName, moduleDependencies);
   }
 
-  private ServiceResult<Deployment> createModule(Deployment deployment,
-      String moduleName,
-      String applicationName,
-      List<String> moduleDependencies) {
-    ServiceResult<Deployment> deploymentStructureResult =
+  private ServiceResult<Deployment> createModule(Deployment deployment, String moduleName,
+      String applicationName, List<String> moduleDependencies) {
+    ServiceResult<Deployment> createStructureResult =
         createDeploymentStructure(deployment, moduleName, moduleDependencies);
-    if (deploymentStructureResult.isFailure()) {
-      return deploymentStructureResult;
+    if (createStructureResult.isFailure()) {
+      return createStructureResult;
     }
 
     boolean moduleRegistered = moduleService.linkModule(moduleName, applicationName, true);
@@ -147,10 +143,10 @@ public class ModularJarDeploymentService implements JarDeploymentService {
         moduleName);
 
     if (moduleRegistered) {
-      Deployment deploymentCopy = new Deployment(deployment, deployment.getFile());
-      deploymentCopy.setDeployedTime(Instant.now().toString());
-      deployments.put(moduleName, deploymentCopy);
-      return registerFunctions(deploymentCopy);
+      // Deployment deploymentCopy = new Deployment(deployment, deployment.getFile());
+      // deploymentCopy.setDeployedTime(Instant.now().toString());
+      deployments.put(moduleName, deployment);
+      return registerFunctions(deployment);
     } else {
       return Failure.of("Module could not be registered");
     }
@@ -166,9 +162,27 @@ public class ModularJarDeploymentService implements JarDeploymentService {
   }
 
   private ServiceResult<Deployment> createDeploymentStructure(Deployment deployment,
-      String artifactId,
-      List<String> moduleDependencies) {
+      String artifactId, List<String> moduleDependencies) {
     // copy jar to lib
+    ServiceResult<Deployment> copyResult = copyJarToModuleLib(deployment, artifactId);
+    if (copyResult.isFailure()) {
+      return Failure.of(copyResult.getErrorMessage());
+    }
+
+    ServiceResult<List<String>> resourcesResult = DeploymentResourceProcessor.process(deployment);
+
+    if (resourcesResult.isFailure()) {
+      return Failure.of(resourcesResult.getErrorMessage());
+    }
+
+    // generate module.xml
+    generator.generate(deploymentsDirectory,
+        artifactId, null, resourcesResult.getMessage(), moduleDependencies,
+        false);
+    return Success.of(deployment);
+  }
+
+  private ServiceResult<Deployment> copyJarToModuleLib(Deployment deployment, String artifactId) {
     try {
       File jarFileInLibDirectory =
           deploymentsDirectory.resolve(artifactId).resolve("main").resolve("lib")
@@ -178,58 +192,7 @@ public class ModularJarDeploymentService implements JarDeploymentService {
     } catch (IOException e) {
       return Failure.of(e);
     }
-
-    List<String> expandedResources;
-    try {
-      expandedResources = explodeJarFile(deployment).stream().map(File::getAbsolutePath)
-          .collect(Collectors.toList());
-    } catch (IOException e) {
-      return Failure.of(e);
-    }
-
-    // generate module.xml
-    generator.generate(deploymentsDirectory,
-        artifactId, null, expandedResources, moduleDependencies,
-        false);
     return Success.of(deployment);
-  }
-
-  private List<File> explodeJarFile(Deployment deployment) throws IOException {
-    List<File> resources = new LinkedList<>();
-    File deployedFile = deployment.getFile();
-    resources.add(deployedFile);
-
-    try (JarFile jarFile = new JarFile(deployedFile)) {
-      Enumeration<JarEntry> entries = jarFile.entries();
-      while (entries.hasMoreElements()) {
-        JarEntry entry = entries.nextElement();
-        if (!entry.isDirectory() && entry.getName().endsWith(".jar")) {
-          // extract file into directory and add it as a resource
-          File extractedJarFile = extractInnerJarFile(deployedFile, jarFile, entry);
-          resources.add(extractedJarFile);
-        }
-      }
-    }
-    return resources;
-  }
-
-  private File extractInnerJarFile(File deployedFile, JarFile jarFile, JarEntry entry)
-      throws IOException {
-    File extractedJarFile = deployedFile.getParentFile().toPath().resolve(entry.getName()).toFile();
-    if (!extractedJarFile.toPath().normalize().startsWith(deployedFile.getParentFile().toPath())) {
-      throw new IOException("Jar entry has invalid path");
-    }
-    InputStream inputStream = jarFile.getInputStream(entry);
-    FileOutputStream outputStream = new FileOutputStream(extractedJarFile);
-
-    while (inputStream.available() > 0) {
-      outputStream.write(inputStream.read());
-    }
-
-    outputStream.close();
-    inputStream.close();
-
-    return extractedJarFile;
   }
 
   private ServiceResult<String> validateDeployment(Deployment deployment) {
@@ -314,8 +277,7 @@ public class ModularJarDeploymentService implements JarDeploymentService {
       return Failure.of(fileName + " not deployed");
     }
 
-    boolean serviceResult = moduleService.unregisterModule(artifactId);
-    if (serviceResult) {
+    if (moduleService.unregisterModule(artifactId)) {
       Deployment removedDeployment = deployments.remove(artifactId);
       if (removedDeployment != null) {
         functionToFileTracker.unregisterFunctionsForDeployment(removedDeployment.getFileName());

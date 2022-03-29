@@ -365,16 +365,16 @@ public class DeployJarAcceptanceTest extends AbstractDockerizedAcceptanceTest {
   @Test
   public void testSpringVersionsDoNotConflict() {
     String jarPath = System.getProperty("DEPLOY_TEST_SPRING_JAR");
-    DeployAndExecuteSpringFunction(jarPath);
+    deployAndExecuteSpringFunction(jarPath);
   }
 
   @Test
-  public void testSpringVersionsDoNotConflictUsingJarJar() {
+  public void testSpringVersionsDoNotConflictUsingJarOfJar() {
     String jarPath = System.getProperty("DEPLOY_TEST_SPRING_JAR_JAR");
-    DeployAndExecuteSpringFunction(jarPath);
+    deployAndExecuteSpringFunction(jarPath);
   }
 
-  private void DeployAndExecuteSpringFunction(String jarPath) {
+  private void deployAndExecuteSpringFunction(String jarPath) {
     assertThat(jarPath).isNotNull();
 
     System.out.println(GfshScript
