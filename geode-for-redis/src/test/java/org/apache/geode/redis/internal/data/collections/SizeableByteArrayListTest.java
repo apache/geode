@@ -16,6 +16,7 @@ package org.apache.geode.redis.internal.data.collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -87,6 +88,38 @@ public class SizeableByteArrayListTest {
       assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
     }
     assertThat(list.size()).isEqualTo(0);
+  }
+
+  @Test
+  public void setIndex_getSizeInBytesIsAccurate() {
+    // Create a list with one initial element and confirm that it correctly reports its size
+    SizeableByteArrayList list = new SizeableByteArrayList();
+    byte[] element = "element name".getBytes(StandardCharsets.UTF_8);
+    list.addFirst(element);
+    long initialSize = list.getSizeInBytes();
+    assertThat(initialSize).isEqualTo(sizer.sizeof(list));
+
+    // Set the list's element to a larger element and ensure the size is correct
+    byte[] largerElement = "a larger updated element name".getBytes(StandardCharsets.UTF_8);
+    list.set(0, largerElement);
+    assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+
+    // Revert the list's element to the original value and ensure size is consistent
+    list.set(0, element);
+    assertThat(list.getSizeInBytes()).isEqualTo(initialSize);
+  }
+
+  @Test
+  public void addIndex_getSizeInBytesIsAccurate() {
+    // Create a new list and confirm that it correctly reports its size
+    SizeableByteArrayList list = createList();
+    assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+
+    // Add an element by index and assert size is updated
+    byte[] element = "element name".getBytes(StandardCharsets.UTF_8);
+    list.add(1, element);
+    long sizeAfterAddingElement = list.getSizeInBytes();
+    assertThat(sizeAfterAddingElement).isEqualTo(sizer.sizeof(list));
   }
 
   private SizeableByteArrayList createList() {
