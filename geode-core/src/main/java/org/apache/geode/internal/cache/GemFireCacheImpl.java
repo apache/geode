@@ -388,12 +388,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       new CopyOnWriteArraySet<>();
 
   /**
-   * Property set to true if resource manager heap percentage is set and query monitor is required
-   */
-  @MakeNotStatic
-  private static boolean queryMonitorRequiredForResourceManager;
-
-  /**
    * TODO: remove static from defaultDiskStoreName and move methods to InternalCache
    */
   @MakeNotStatic
@@ -4339,12 +4333,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
-  @SuppressWarnings("ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
-  public void setQueryMonitorRequiredForResourceManager(boolean required) {
-    queryMonitorRequiredForResourceManager = required;
-  }
-
-  @Override
   public boolean isQueryMonitorDisabledForLowMemory() {
     return queryMonitorDisabledForLowMem;
   }
@@ -4353,10 +4341,10 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public QueryMonitor getQueryMonitor() {
     // Check to see if monitor is required if ResourceManager critical heap percentage is set
     // or whether we override it with the system variable;
-    boolean monitorRequired =
-        !queryMonitorDisabledForLowMem && queryMonitorRequiredForResourceManager;
+    boolean lowMemoryMonitoringDisabled = queryMonitorDisabledForLowMem
+        || resourceManager.getCriticalHeapPercentage() == 0;
     // Added for DUnit test purpose, which turns-on and off the this.testMaxQueryExecutionTime.
-    if (!(MAX_QUERY_EXECUTION_TIME > 0 || monitorRequired)) {
+    if (MAX_QUERY_EXECUTION_TIME <= 0 && lowMemoryMonitoringDisabled) {
       // if this.testMaxQueryExecutionTime is set, send the QueryMonitor.
       // Else send null, so that the QueryMonitor is turned-off.
       return null;
@@ -4371,7 +4359,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         if (tempQueryMonitor == null) {
           int maxTime = MAX_QUERY_EXECUTION_TIME;
 
-          if (monitorRequired && maxTime < 0) {
+          if (!lowMemoryMonitoringDisabled && maxTime < 0) {
             // this means that the resource manager is being used and we need to monitor query
             // memory usage
 

@@ -464,8 +464,6 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Inte
 
   DistributionAdvisor getDistributionAdvisor();
 
-  void setQueryMonitorRequiredForResourceManager(boolean required);
-
   boolean isQueryMonitorDisabledForLowMemory();
 
   boolean isRESTServiceRunning();

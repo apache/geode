@@ -376,8 +376,6 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
             "Critical percentage must be greater than the eviction percentage.");
       }
 
-      cache.setQueryMonitorRequiredForResourceManager(criticalThreshold != 0);
-
       thresholds = new MemoryThresholds(thresholds.getMaxMemoryBytes(), criticalThreshold,
           thresholds.getEvictionThreshold());
 
@@ -535,10 +533,9 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
 
   @Override
   public MemoryThresholds getThresholds() {
-    MemoryThresholds saveThresholds = thresholds;
-
-    return new MemoryThresholds(saveThresholds.getMaxMemoryBytes(),
-        saveThresholds.getCriticalThreshold(), saveThresholds.getEvictionThreshold());
+    // MemoryThresholds is immutable so we
+    // can just return it instead of making a copy.
+    return thresholds;
   }
 
   /**

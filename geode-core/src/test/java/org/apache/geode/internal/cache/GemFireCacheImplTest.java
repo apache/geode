@@ -52,6 +52,7 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.SerializationException;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.client.PoolFactory;
+import org.apache.geode.cache.query.internal.QueryMonitor;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -80,6 +81,8 @@ public class GemFireCacheImplTest {
   private PoolFactory poolFactory;
   private ReplyProcessor21Factory replyProcessor21Factory;
   private TypeRegistry typeRegistry;
+  private final InternalResourceManager internalResourceManager =
+      mock(InternalResourceManager.class);
 
   private GemFireCacheImpl gemFireCacheImpl;
 
@@ -179,9 +182,7 @@ public class GemFireCacheImplTest {
 
   @Test
   public void registerPdxMetaDataThrowsIfInstanceIsNotPDX() {
-    Throwable thrown = catchThrowable(() -> {
-      gemFireCacheImpl.registerPdxMetaData("string");
-    });
+    Throwable thrown = catchThrowable(() -> gemFireCacheImpl.registerPdxMetaData("string"));
 
     assertThat(thrown)
         .isInstanceOf(SerializationException.class)
@@ -213,10 +214,8 @@ public class GemFireCacheImplTest {
       });
     }
 
-    await().untilAsserted(() -> {
-      assertThat(eventThreadPoolExecutor.getCompletedTaskCount())
-          .isEqualTo(eventThreadLimit);
-    });
+    await().untilAsserted(() -> assertThat(eventThreadPoolExecutor.getCompletedTaskCount())
+        .isEqualTo(eventThreadLimit));
   }
 
   @Test
@@ -455,9 +454,8 @@ public class GemFireCacheImplTest {
 
   @Test
   public void addGatewayReceiverServer_requiresPreviouslyAddedGatewayReceiver() {
-    Throwable thrown = catchThrowable(() -> {
-      gemFireCacheImpl.addGatewayReceiverServer(mock(GatewayReceiver.class));
-    });
+    Throwable thrown = catchThrowable(
+        () -> gemFireCacheImpl.addGatewayReceiverServer(mock(GatewayReceiver.class)));
 
     assertThat(thrown)
         .isInstanceOf(NullPointerException.class);
@@ -641,28 +639,28 @@ public class GemFireCacheImplTest {
     String diskStoreName = "MyDiskStore";
     AtomicInteger nTrue = new AtomicInteger();
     AtomicInteger nFalse = new AtomicInteger();
-    IntStream.range(0, nThread).forEach(tid -> {
-      executorServiceRule.submit(() -> {
-        try {
-          boolean lockResult = gemFireCacheImpl.doLockDiskStore(diskStoreName);
-          if (lockResult) {
-            nTrue.incrementAndGet();
-          } else {
-            nFalse.incrementAndGet();
-          }
-        } finally {
-          boolean unlockResult = gemFireCacheImpl.doUnlockDiskStore(diskStoreName);
-          if (unlockResult) {
-            nTrue.incrementAndGet();
-          } else {
-            nFalse.incrementAndGet();
-          }
+    IntStream.range(0, nThread).forEach(tid -> executorServiceRule.submit(() -> {
+      try {
+        boolean lockResult = gemFireCacheImpl.doLockDiskStore(diskStoreName);
+        if (lockResult) {
+          nTrue.incrementAndGet();
+        } else {
+          nFalse.incrementAndGet();
         }
-      });
-    });
+      } finally {
+        boolean unlockResult = gemFireCacheImpl.doUnlockDiskStore(diskStoreName);
+        if (unlockResult) {
+          nTrue.incrementAndGet();
+        } else {
+          nFalse.incrementAndGet();
+        }
+      }
+    }));
     executorServiceRule.getExecutorService().shutdown();
-    executorServiceRule.getExecutorService()
-        .awaitTermination(GeodeAwaitility.getTimeout().toNanos(), TimeUnit.NANOSECONDS);
+    boolean terminated =
+        executorServiceRule.getExecutorService()
+            .awaitTermination(GeodeAwaitility.getTimeout().toNanos(), TimeUnit.NANOSECONDS);
+    assertThat(terminated).isTrue();
     // 1 thread returns true for locking, all 10 threads return true for unlocking
     assertThat(nTrue.get()).isEqualTo(11);
     // 9 threads return false for locking
@@ -698,6 +696,47 @@ public class GemFireCacheImplTest {
     assertThat(gemFireCacheImpl.isClosed()).isTrue();
   }
 
+  @Test
+  public void getQueryMonitorReturnsNullGivenCriticalHeapPercentageOfZero() {
+    when(internalResourceManager.getCriticalHeapPercentage()).thenReturn(0.0f);
+
+    QueryMonitor queryMonitor = gemFireCacheImpl.getQueryMonitor();
+
+    assertThat(queryMonitor).isNull();
+  }
+
+  @Test
+  public void getQueryMonitorReturnsInstanceGivenCriticalHeapPercentage() {
+    when(internalResourceManager.getCriticalHeapPercentage()).thenReturn(1.0f);
+
+    QueryMonitor queryMonitor = gemFireCacheImpl.getQueryMonitor();
+
+    assertThat(queryMonitor).isNotNull();
+  }
+
+  @Test
+  public void getQueryMonitorDoesNotCareIfCriticalOffheapPercentageIsGreaterThanZero() {
+    when(internalResourceManager.getCriticalHeapPercentage()).thenReturn(0.0f);
+    when(internalResourceManager.getCriticalOffHeapPercentage()).thenReturn(1.0f);
+
+    QueryMonitor queryMonitor = gemFireCacheImpl.getQueryMonitor();
+
+    assertThat(queryMonitor).isNull();
+  }
+
+  @Test
+  public void getQueryMonitorReturnsInstanceGivenMaxQueryExecutionTimeGreaterThanZero() {
+    when(internalResourceManager.getCriticalHeapPercentage()).thenReturn(0.0f);
+    final int originalValue = GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME;
+    GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME = 1;
+    try {
+      QueryMonitor queryMonitor = gemFireCacheImpl.getQueryMonitor();
+      assertThat(queryMonitor).isNotNull();
+    } finally {
+      GemFireCacheImpl.MAX_QUERY_EXECUTION_TIME = originalValue;
+    }
+  }
+
   @SuppressWarnings({"LambdaParameterHidesMemberVariable", "OverlyCoupledMethod", "unchecked"})
   private GemFireCacheImpl gemFireCacheImpl(boolean useAsyncEventListeners) {
     return new GemFireCacheImpl(
@@ -718,7 +757,7 @@ public class GemFireCacheImplTest {
         distributionAdvisee -> mock(ResourceAdvisor.class),
         mock(Function.class),
         jmxManagerAdvisee -> mock(JmxManagerAdvisor.class),
-        internalCache -> mock(InternalResourceManager.class),
+        internalCache -> internalResourceManager,
         () -> 1,
         (cache, statisticsClock) -> mock(HeapEvictor.class),
         mock(Runnable.class),
