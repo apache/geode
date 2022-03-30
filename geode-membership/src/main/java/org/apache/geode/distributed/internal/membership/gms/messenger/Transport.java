@@ -85,7 +85,9 @@ public class Transport<ID extends MemberIdentifier> extends UDP {
       super.doSend(cluster_name, buf, offset, length, dest);
     } catch (SocketException sock_ex) {
       if (!sock.isClosed() && !stack.getChannel().isClosed()) {
-        log.error("Exception caught while sending message", sock_ex);
+        if (messenger != null) {
+          messenger.handleJGroupsIOException(sock_ex, dest);
+        }
       }
     } catch (IOException e) {
       if (messenger != null
