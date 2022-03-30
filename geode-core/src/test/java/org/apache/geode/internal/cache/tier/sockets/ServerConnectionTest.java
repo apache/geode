@@ -104,11 +104,6 @@ public class ServerConnectionTest {
     distributionManager = mock(DistributionManager.class);
     threadsMonitoring = mock(ThreadsMonitoring.class);
 
-    when(cachedRegionHelper.getCache()).thenReturn(cache);
-    when(cache.getInternalDistributedSystem()).thenReturn(internalDistributedSystem);
-    when(internalDistributedSystem.getDM()).thenReturn(distributionManager);
-    when(distributionManager.getThreadMonitoring()).thenReturn(threadsMonitoring);
-
     serverConnection =
         new ServerConnectionFactory().makeServerConnection(socket, cache,
             cachedRegionHelper, mock(CacheServerStats.class), 0, 0, null,
