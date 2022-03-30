@@ -341,6 +341,7 @@ public class CommandInitializer {
     allCommands.put(Version.GEODE_1_12_1, geode18Commands);
     allCommands.put(Version.GEODE_1_13_0, geode18Commands);
     allCommands.put(Version.GEODE_1_13_2, geode18Commands);
+    allCommands.put(Version.GEODE_1_13_10, geode18Commands);
 
     return Collections.unmodifiableMap(allCommands);
   }
