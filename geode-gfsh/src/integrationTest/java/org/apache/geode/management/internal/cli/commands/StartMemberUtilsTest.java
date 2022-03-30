@@ -159,6 +159,11 @@ public class StartMemberUtilsTest {
 
   }
 
+  private static int getJavaMajorVersion() {
+    String version = System.getProperty("java.specification.version");
+    return Integer.parseInt(version.substring(version.indexOf('.') + 1));
+  }
+
   @Test
   public void testAddMaxHeap() {
     List<String> baseCommandLine = new ArrayList<>();
@@ -172,9 +177,14 @@ public class StartMemberUtilsTest {
 
     // Only Max Heap Option Set
     StartMemberUtils.addMaxHeap(baseCommandLine, "32g");
-    assertThat(baseCommandLine.size()).isEqualTo(3);
-    assertThat(baseCommandLine).containsExactly("-Xmx32g", "-XX:+UseConcMarkSweepGC",
-        "-XX:CMSInitiatingOccupancyFraction=" + StartMemberUtils.CMS_INITIAL_OCCUPANCY_FRACTION);
+    if (getJavaMajorVersion() < 14) {
+      assertThat(baseCommandLine.size()).isEqualTo(3);
+      assertThat(baseCommandLine).containsExactly("-Xmx32g", "-XX:+UseConcMarkSweepGC",
+          "-XX:CMSInitiatingOccupancyFraction=" + StartMemberUtils.CMS_INITIAL_OCCUPANCY_FRACTION);
+    } else {
+      assertThat(baseCommandLine.size()).isEqualTo(1);
+      assertThat(baseCommandLine).containsExactly("-Xmx32g");
+    }
 
     // All Options Set
     List<String> customCommandLine = new ArrayList<>(

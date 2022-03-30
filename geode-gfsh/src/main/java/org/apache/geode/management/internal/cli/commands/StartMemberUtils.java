@@ -135,18 +135,27 @@ class StartMemberUtils {
     }
   }
 
+  private static int getJavaMajorVersion() {
+    String version = System.getProperty("java.specification.version");
+    return Integer.parseInt(version.substring(version.indexOf('.') + 1));
+  }
+
   static void addMaxHeap(final List<String> commandLine, final String maxHeap) {
     if (StringUtils.isNotBlank(maxHeap)) {
       commandLine.add("-Xmx" + maxHeap);
 
-      String collectorKey = "-XX:+UseConcMarkSweepGC";
-      if (!commandLine.contains(collectorKey)) {
-        commandLine.add(collectorKey);
-      }
+      if (getJavaMajorVersion() < 14) {
+        String collectorKey = "-XX:+UseConcMarkSweepGC";
+        if (!commandLine.contains(collectorKey)) {
+          commandLine.add(collectorKey);
+        }
 
-      String occupancyFractionKey = "-XX:CMSInitiatingOccupancyFraction=";
-      if (commandLine.stream().noneMatch(s -> s.contains(occupancyFractionKey))) {
-        commandLine.add(occupancyFractionKey + CMS_INITIAL_OCCUPANCY_FRACTION);
+        String occupancyFractionKey = "-XX:CMSInitiatingOccupancyFraction=";
+        if (commandLine.stream().noneMatch(s -> s.contains(occupancyFractionKey))) {
+          commandLine.add(occupancyFractionKey + CMS_INITIAL_OCCUPANCY_FRACTION);
+        }
+      } else {
+        // TODO: configure ZGC?
       }
     }
   }
