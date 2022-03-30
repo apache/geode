@@ -221,18 +221,19 @@ public class RedisList extends AbstractRedisData {
    */
   public int lrem(int count, byte[] element, Region<RedisKey, RedisData> region, RedisKey key) {
     List<Integer> removedIndexes;
-    byte newVersion;
     synchronized (this) {
       removedIndexes = elementList.remove(element, count);
-      if (removedIndexes.isEmpty()) {
-        return 0;
-      }
-
-      newVersion = incrementAndGetVersion();
     }
 
-    storeChanges(region, key,
-        new RemoveElementsByIndex(newVersion, removedIndexes));
+    if (!removedIndexes.isEmpty()) {
+      byte newVersion;
+      synchronized (this) {
+        newVersion = incrementAndGetVersion();
+      }
+
+      storeChanges(region, key,
+          new RemoveElementsByIndex(newVersion, removedIndexes));
+    }
     return removedIndexes.size();
   }
 
