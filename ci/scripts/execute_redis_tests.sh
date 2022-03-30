@@ -78,7 +78,10 @@ failCount=0
 --single unit/type/zset \
 --single unit/quit \
 --single unit/pubsub \
---single unit/dump
+--single unit/dump \
+--single unit/type/list \
+--single unit/type/list-2 \
+#--single unit/type/list-3 TODO enable when GEODE-10160 is fixed
 
 ((failCount += $?))
 

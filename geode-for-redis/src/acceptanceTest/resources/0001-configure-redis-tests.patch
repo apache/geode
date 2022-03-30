@@ -1336,6 +1336,1044 @@ index d2c679d32..6d17de48b 100644
  
      # The following test can only be executed if we don't use Valgrind, and if
      # we are using x86_64 architecture, because:
+diff --git a/tests/unit/type/list-3.tcl b/tests/unit/type/list-3.tcl
+index b5bd48cb0..5b9a529c7 100644
+--- a/tests/unit/type/list-3.tcl
++++ b/tests/unit/type/list-3.tcl
+@@ -21,7 +21,7 @@ start_server {
+         r lset mylist -1 [string repeat x 1014]"702"
+         r lpop mylist
+         r lset mylist -1 [string repeat x 4149]"852"
+-        r linsert mylist before 401 [string repeat x 9927]"12"
++        r linsert mylist BEFORE 401 [string repeat x 9927]"12"
+         r lrange mylist 0 -1
+         r ping ; # It's enough if the server is still alive
+     } {PONG}
+@@ -47,9 +47,9 @@ start_server {
+                 5 {
+                     set otherele [randomInt 1000]
+                     if {[randomInt 2] == 0} {
+-                        set where before
++                        set where BEFORE
+                     } else {
+-                        set where after
++                        set where AFTER
+                     }
+                     r linsert key $where $otherele $ele
+                 }
+diff --git a/tests/unit/type/list.tcl b/tests/unit/type/list.tcl
+index 1557082a2..c900c9cbc 100644
+--- a/tests/unit/type/list.tcl
++++ b/tests/unit/type/list.tcl
+@@ -85,130 +85,130 @@ start_server {
+         assert_encoding quicklist $key
+     }
+ 
+-    foreach {type large} [array get largevalue] {
+-        test "BLPOP, BRPOP: single existing list - $type" {
+-            set rd [redis_deferring_client]
+-            create_list blist "a b $large c d"
+-
+-            $rd blpop blist 1
+-            assert_equal {blist a} [$rd read]
+-            $rd brpop blist 1
+-            assert_equal {blist d} [$rd read]
+-
+-            $rd blpop blist 1
+-            assert_equal {blist b} [$rd read]
+-            $rd brpop blist 1
+-            assert_equal {blist c} [$rd read]
+-        }
+-
+-        test "BLPOP, BRPOP: multiple existing lists - $type" {
+-            set rd [redis_deferring_client]
+-            create_list blist1 "a $large c"
+-            create_list blist2 "d $large f"
+-
+-            $rd blpop blist1 blist2 1
+-            assert_equal {blist1 a} [$rd read]
+-            $rd brpop blist1 blist2 1
+-            assert_equal {blist1 c} [$rd read]
+-            assert_equal 1 [r llen blist1]
+-            assert_equal 3 [r llen blist2]
+-
+-            $rd blpop blist2 blist1 1
+-            assert_equal {blist2 d} [$rd read]
+-            $rd brpop blist2 blist1 1
+-            assert_equal {blist2 f} [$rd read]
+-            assert_equal 1 [r llen blist1]
+-            assert_equal 1 [r llen blist2]
+-        }
+-
+-        test "BLPOP, BRPOP: second list has an entry - $type" {
+-            set rd [redis_deferring_client]
+-            r del blist1
+-            create_list blist2 "d $large f"
+-
+-            $rd blpop blist1 blist2 1
+-            assert_equal {blist2 d} [$rd read]
+-            $rd brpop blist1 blist2 1
+-            assert_equal {blist2 f} [$rd read]
+-            assert_equal 0 [r llen blist1]
+-            assert_equal 1 [r llen blist2]
+-        }
+-
+-        test "BRPOPLPUSH - $type" {
+-            r del target
+-
+-            set rd [redis_deferring_client]
+-            create_list blist "a b $large c d"
+-
+-            $rd brpoplpush blist target 1
+-            assert_equal d [$rd read]
+-
+-            assert_equal d [r rpop target]
+-            assert_equal "a b $large c" [r lrange blist 0 -1]
+-        }
+-    }
+-
+-    test "BLPOP, LPUSH + DEL should not awake blocked client" {
+-        set rd [redis_deferring_client]
+-        r del list
+-
+-        $rd blpop list 0
+-        r multi
+-        r lpush list a
+-        r del list
+-        r exec
+-        r del list
+-        r lpush list b
+-        $rd read
+-    } {list b}
+-
+-    test "BLPOP, LPUSH + DEL + SET should not awake blocked client" {
+-        set rd [redis_deferring_client]
+-        r del list
+-
+-        $rd blpop list 0
+-        r multi
+-        r lpush list a
+-        r del list
+-        r set list foo
+-        r exec
+-        r del list
+-        r lpush list b
+-        $rd read
+-    } {list b}
++  #  foreach {type large} [array get largevalue] {
++  #      test "BLPOP, BRPOP: single existing list - $type" {
++  #          set rd [redis_deferring_client]
++  #          create_list blist "a b $large c d"
++  #
++  #          $rd blpop blist 1
++  #          assert_equal {blist a} [$rd read]
++  #          $rd brpop blist 1
++  #          assert_equal {blist d} [$rd read]
++  #
++  #          $rd blpop blist 1
++  #          assert_equal {blist b} [$rd read]
++  #          $rd brpop blist 1
++  #          assert_equal {blist c} [$rd read]
++  #      }
++  #
++  #      test "BLPOP, BRPOP: multiple existing lists - $type" {
++  #          set rd [redis_deferring_client]
++  #          create_list blist1 "a $large c"
++  #          create_list blist2 "d $large f"
++  #
++  #          $rd blpop blist1 blist2 1
++  #          assert_equal {blist1 a} [$rd read]
++  #          $rd brpop blist1 blist2 1
++  #          assert_equal {blist1 c} [$rd read]
++  #          assert_equal 1 [r llen blist1]
++  #          assert_equal 3 [r llen blist2]
++  #
++  #          $rd blpop blist2 blist1 1
++  #          assert_equal {blist2 d} [$rd read]
++  #          $rd brpop blist2 blist1 1
++  #          assert_equal {blist2 f} [$rd read]
++  #          assert_equal 1 [r llen blist1]
++  #          assert_equal 1 [r llen blist2]
++  #      }
++  #
++  #      test "BLPOP, BRPOP: second list has an entry - $type" {
++  #          set rd [redis_deferring_client]
++  #          r del blist1
++  #          create_list blist2 "d $large f"
++  #
++  #          $rd blpop blist1 blist2 1
++  #          assert_equal {blist2 d} [$rd read]
++  #          $rd brpop blist1 blist2 1
++  #          assert_equal {blist2 f} [$rd read]
++  #          assert_equal 0 [r llen blist1]
++  #          assert_equal 1 [r llen blist2]
++  #      }
++  #
++  #      test "BRPOPLPUSH - $type" {
++  #          r del target
++  #
++  #          set rd [redis_deferring_client]
++  #          create_list blist "a b $large c d"
++  #
++  #          $rd brpoplpush blist target 1
++  #          assert_equal d [$rd read]
++  #
++  #          assert_equal d [r rpop target]
++  #          assert_equal "a b $large c" [r lrange blist 0 -1]
++  #      }
++  #  }
++  #
++  #  test "BLPOP, LPUSH + DEL should not awake blocked client" {
++  #      set rd [redis_deferring_client]
++  #      r del list
++  #
++  #      $rd blpop list 0
++  #      r multi
++  #      r lpush list a
++  #      r del list
++  #      r exec
++  #      r del list
++  #      r lpush list b
++  #      $rd read
++  #  } {list b}
++
++  #  test "BLPOP, LPUSH + DEL + SET should not awake blocked client" {
++  #      set rd [redis_deferring_client]
++  #      r del list
++  #
++  #      $rd blpop list 0
++  #      r multi
++  #      r lpush list a
++  #      r del list
++  #      r set list foo
++  #      r exec
++  #      r del list
++  #      r lpush list b
++  #      $rd read
++  #  } {list b}
+ 
+     test "BLPOP with same key multiple times should work (issue #801)" {
+         set rd [redis_deferring_client]
+-        r del list1 list2
++        r del "{tag}list1" "{tag}list2"
+ 
+         # Data arriving after the BLPOP.
+-        $rd blpop list1 list2 list2 list1 0
+-        r lpush list1 a
+-        assert_equal [$rd read] {list1 a}
+-        $rd blpop list1 list2 list2 list1 0
+-        r lpush list2 b
+-        assert_equal [$rd read] {list2 b}
++        $rd blpop "{tag}list1" "{tag}list2" "{tag}list2" "{tag}list1" 0
++        r lpush "{tag}list1" a
++        assert_equal [$rd read] {{{tag}list1} a}
++        $rd blpop "{tag}list1" "{tag}list2" "{tag}list2" "{tag}list1" 0
++        r lpush "{tag}list2" b
++        assert_equal [$rd read] {{{tag}list2} b}
+ 
+         # Data already there.
+-        r lpush list1 a
+-        r lpush list2 b
+-        $rd blpop list1 list2 list2 list1 0
+-        assert_equal [$rd read] {list1 a}
+-        $rd blpop list1 list2 list2 list1 0
+-        assert_equal [$rd read] {list2 b}
+-    }
+-
+-    test "MULTI/EXEC is isolated from the point of view of BLPOP" {
+-        set rd [redis_deferring_client]
+-        r del list
+-        $rd blpop list 0
+-        r multi
+-        r lpush list a
+-        r lpush list b
+-        r lpush list c
+-        r exec
+-        $rd read
+-    } {list c}
++        r lpush "{tag}list1" a
++        r lpush "{tag}list2" b
++        $rd blpop "{tag}list1" "{tag}list2" "{tag}list2" "{tag}list1" 0
++        assert_equal [$rd read] {{{tag}list1} a}
++        $rd blpop "{tag}list1" "{tag}list2" "{tag}list2" "{tag}list1" 0
++        assert_equal [$rd read] {{{tag}list2} b}
++    }
++
++  #  test "MULTI/EXEC is isolated from the point of view of BLPOP" {
++  #      set rd [redis_deferring_client]
++  #      r del list
++  #      $rd blpop list 0
++  #      r multi
++  #      r lpush list a
++  #      r lpush list b
++  #      r lpush list c
++  #      r exec
++  #      $rd read
++  #  } {list c}
+ 
+     test "BLPOP with variadic LPUSH" {
+         set rd [redis_deferring_client]
+@@ -222,203 +222,204 @@ start_server {
+         assert_equal foo [lindex [r lrange blist 0 -1] 0]
+     }
+ 
+-    test "BRPOPLPUSH with zero timeout should block indefinitely" {
+-        set rd [redis_deferring_client]
+-        r del blist target
+-        $rd brpoplpush blist target 0
+-        after 1000
+-        r rpush blist foo
+-        assert_equal foo [$rd read]
+-        assert_equal {foo} [r lrange target 0 -1]
+-    }
+-
+-    test "BRPOPLPUSH with a client BLPOPing the target list" {
+-        set rd [redis_deferring_client]
+-        set rd2 [redis_deferring_client]
+-        r del blist target
+-        $rd2 blpop target 0
+-        $rd brpoplpush blist target 0
+-        after 1000
+-        r rpush blist foo
+-        assert_equal foo [$rd read]
+-        assert_equal {target foo} [$rd2 read]
+-        assert_equal 0 [r exists target]
+-    }
+-
+-    test "BRPOPLPUSH with wrong source type" {
+-        set rd [redis_deferring_client]
+-        r del blist target
+-        r set blist nolist
+-        $rd brpoplpush blist target 1
+-        assert_error "WRONGTYPE*" {$rd read}
+-    }
+-
+-    test "BRPOPLPUSH with wrong destination type" {
+-        set rd [redis_deferring_client]
+-        r del blist target
+-        r set target nolist
+-        r lpush blist foo
+-        $rd brpoplpush blist target 1
+-        assert_error "WRONGTYPE*" {$rd read}
+-
+-        set rd [redis_deferring_client]
+-        r del blist target
+-        r set target nolist
+-        $rd brpoplpush blist target 0
+-        after 1000
+-        r rpush blist foo
+-        assert_error "WRONGTYPE*" {$rd read}
+-        assert_equal {foo} [r lrange blist 0 -1]
+-    }
+-
+-    test "BRPOPLPUSH maintains order of elements after failure" {
+-        set rd [redis_deferring_client]
+-        r del blist target
+-        r set target nolist
+-        $rd brpoplpush blist target 0
+-        r rpush blist a b c
+-        assert_error "WRONGTYPE*" {$rd read}
+-        r lrange blist 0 -1
+-    } {a b c}
+-
+-    test "BRPOPLPUSH with multiple blocked clients" {
+-        set rd1 [redis_deferring_client]
+-        set rd2 [redis_deferring_client]
+-        r del blist target1 target2
+-        r set target1 nolist
+-        $rd1 brpoplpush blist target1 0
+-        $rd2 brpoplpush blist target2 0
+-        r lpush blist foo
+-
+-        assert_error "WRONGTYPE*" {$rd1 read}
+-        assert_equal {foo} [$rd2 read]
+-        assert_equal {foo} [r lrange target2 0 -1]
+-    }
+-
+-    test "Linked BRPOPLPUSH" {
+-      set rd1 [redis_deferring_client]
+-      set rd2 [redis_deferring_client]
+-
+-      r del list1 list2 list3
+-
+-      $rd1 brpoplpush list1 list2 0
+-      $rd2 brpoplpush list2 list3 0
+-
+-      r rpush list1 foo
+-
+-      assert_equal {} [r lrange list1 0 -1]
+-      assert_equal {} [r lrange list2 0 -1]
+-      assert_equal {foo} [r lrange list3 0 -1]
+-    }
+-
+-    test "Circular BRPOPLPUSH" {
+-      set rd1 [redis_deferring_client]
+-      set rd2 [redis_deferring_client]
+-
+-      r del list1 list2
+-
+-      $rd1 brpoplpush list1 list2 0
+-      $rd2 brpoplpush list2 list1 0
+-
+-      r rpush list1 foo
+-
+-      assert_equal {foo} [r lrange list1 0 -1]
+-      assert_equal {} [r lrange list2 0 -1]
+-    }
+-
+-    test "Self-referential BRPOPLPUSH" {
+-      set rd [redis_deferring_client]
+-
+-      r del blist
+-
+-      $rd brpoplpush blist blist 0
+-
+-      r rpush blist foo
+-
+-      assert_equal {foo} [r lrange blist 0 -1]
+-    }
+-
+-    test "BRPOPLPUSH inside a transaction" {
+-        r del xlist target
+-        r lpush xlist foo
+-        r lpush xlist bar
+-
+-        r multi
+-        r brpoplpush xlist target 0
+-        r brpoplpush xlist target 0
+-        r brpoplpush xlist target 0
+-        r lrange xlist 0 -1
+-        r lrange target 0 -1
+-        r exec
+-    } {foo bar {} {} {bar foo}}
+-
+-    test "PUSH resulting from BRPOPLPUSH affect WATCH" {
+-        set blocked_client [redis_deferring_client]
+-        set watching_client [redis_deferring_client]
+-        r del srclist dstlist somekey
+-        r set somekey somevalue
+-        $blocked_client brpoplpush srclist dstlist 0
+-        $watching_client watch dstlist
+-        $watching_client read
+-        $watching_client multi
+-        $watching_client read
+-        $watching_client get somekey
+-        $watching_client read
+-        r lpush srclist element
+-        $watching_client exec
+-        $watching_client read
+-    } {}
+-
+-    test "BRPOPLPUSH does not affect WATCH while still blocked" {
+-        set blocked_client [redis_deferring_client]
+-        set watching_client [redis_deferring_client]
+-        r del srclist dstlist somekey
+-        r set somekey somevalue
+-        $blocked_client brpoplpush srclist dstlist 0
+-        $watching_client watch dstlist
+-        $watching_client read
+-        $watching_client multi
+-        $watching_client read
+-        $watching_client get somekey
+-        $watching_client read
+-        $watching_client exec
+-        # Blocked BLPOPLPUSH may create problems, unblock it.
+-        r lpush srclist element
+-        $watching_client read
+-    } {somevalue}
+-
+-    test {BRPOPLPUSH timeout} {
+-      set rd [redis_deferring_client]
+-
+-      $rd brpoplpush foo_list bar_list 1
+-      after 2000
+-      $rd read
+-    } {}
+-
+-    test "BLPOP when new key is moved into place" {
+-        set rd [redis_deferring_client]
+-
+-        $rd blpop foo 5
+-        r lpush bob abc def hij
+-        r rename bob foo
+-        $rd read
+-    } {foo hij}
+-
+-    test "BLPOP when result key is created by SORT..STORE" {
+-        set rd [redis_deferring_client]
+-
+-        # zero out list from previous test without explicit delete
+-        r lpop foo
+-        r lpop foo
+-        r lpop foo
+-
+-        $rd blpop foo 5
+-        r lpush notfoo hello hola aguacate konichiwa zanzibar
+-        r sort notfoo ALPHA store foo
+-        $rd read
+-    } {foo aguacate}
+-
+-    foreach {pop} {BLPOP BRPOP} {
++  #  test "BRPOPLPUSH with zero timeout should block indefinitely" {
++  #      set rd [redis_deferring_client]
++  #      r del blist target
++  #      $rd brpoplpush blist target 0
++  #      after 1000
++  #      r rpush blist foo
++  #      assert_equal foo [$rd read]
++  #      assert_equal {foo} [r lrange target 0 -1]
++  #  }
++  #
++  #  test "BRPOPLPUSH with a client BLPOPing the target list" {
++  #      set rd [redis_deferring_client]
++  #      set rd2 [redis_deferring_client]
++  #      r del blist target
++  #      $rd2 blpop target 0
++  #      $rd brpoplpush blist target 0
++  #      after 1000
++  #      r rpush blist foo
++  #      assert_equal foo [$rd read]
++  #      assert_equal {target foo} [$rd2 read]
++  #      assert_equal 0 [r exists target]
++  #  }
++  #
++  #  test "BRPOPLPUSH with wrong source type" {
++  #      set rd [redis_deferring_client]
++  #      r del blist target
++  #      r set blist nolist
++  #      $rd brpoplpush blist target 1
++  #      assert_error "WRONGTYPE*" {$rd read}
++  #  }
++  #
++  #  test "BRPOPLPUSH with wrong destination type" {
++  #      set rd [redis_deferring_client]
++  #      r del blist target
++  #      r set target nolist
++  #      r lpush blist foo
++  #      $rd brpoplpush blist target 1
++  #      assert_error "WRONGTYPE*" {$rd read}
++  #
++  #      set rd [redis_deferring_client]
++  #      r del blist target
++  #      r set target nolist
++  #      $rd brpoplpush blist target 0
++  #      after 1000
++  #      r rpush blist foo
++  #      assert_error "WRONGTYPE*" {$rd read}
++  #      assert_equal {foo} [r lrange blist 0 -1]
++  #  }
++  #
++  #  test "BRPOPLPUSH maintains order of elements after failure" {
++  #      set rd [redis_deferring_client]
++  #      r del blist target
++  #      r set target nolist
++  #      $rd brpoplpush blist target 0
++  #      r rpush blist a b c
++  #      assert_error "WRONGTYPE*" {$rd read}
++  #      r lrange blist 0 -1
++  #  } {a b c}
++  #
++  #  test "BRPOPLPUSH with multiple blocked clients" {
++  #      set rd1 [redis_deferring_client]
++  #      set rd2 [redis_deferring_client]
++  #      r del blist target1 target2
++  #      r set target1 nolist
++  #      $rd1 brpoplpush blist target1 0
++  #      $rd2 brpoplpush blist target2 0
++  #      r lpush blist foo
++  #
++  #      assert_error "WRONGTYPE*" {$rd1 read}
++  #      assert_equal {foo} [$rd2 read]
++  #      assert_equal {foo} [r lrange target2 0 -1]
++  #  }
++  #
++  #  test "Linked BRPOPLPUSH" {
++  #    set rd1 [redis_deferring_client]
++  #    set rd2 [redis_deferring_client]
++  #
++  #    r del list1 list2 list3
++  #
++  #    $rd1 brpoplpush list1 list2 0
++  #    $rd2 brpoplpush list2 list3 0
++  #
++  #    r rpush list1 foo
++  #
++  #    assert_equal {} [r lrange list1 0 -1]
++  #    assert_equal {} [r lrange list2 0 -1]
++  #    assert_equal {foo} [r lrange list3 0 -1]
++  #  }
++  #
++  #  test "Circular BRPOPLPUSH" {
++  #    set rd1 [redis_deferring_client]
++  #    set rd2 [redis_deferring_client]
++  #
++  #    r del list1 list2
++  #
++  #    $rd1 brpoplpush list1 list2 0
++  #    $rd2 brpoplpush list2 list1 0
++  #
++  #    r rpush list1 foo
++  #
++  #    assert_equal {foo} [r lrange list1 0 -1]
++  #    assert_equal {} [r lrange list2 0 -1]
++  #  }
++  #
++  #  test "Self-referential BRPOPLPUSH" {
++  #    set rd [redis_deferring_client]
++  #
++  #    r del blist
++  #
++  #    $rd brpoplpush blist blist 0
++  #
++  #    r rpush blist foo
++  #
++  #    assert_equal {foo} [r lrange blist 0 -1]
++  #  }
++  #
++  #  test "BRPOPLPUSH inside a transaction" {
++  #      r del xlist target
++  #      r lpush xlist foo
++  #      r lpush xlist bar
++  #
++  #      r multi
++  #      r brpoplpush xlist target 0
++  #      r brpoplpush xlist target 0
++  #      r brpoplpush xlist target 0
++  #      r lrange xlist 0 -1
++  #      r lrange target 0 -1
++  #      r exec
++  #  } {foo bar {} {} {bar foo}}
++  #
++  #  test "PUSH resulting from BRPOPLPUSH affect WATCH" {
++  #      set blocked_client [redis_deferring_client]
++  #      set watching_client [redis_deferring_client]
++  #      r del srclist dstlist somekey
++  #      r set somekey somevalue
++  #      $blocked_client brpoplpush srclist dstlist 0
++  #      $watching_client watch dstlist
++  #      $watching_client read
++  #      $watching_client multi
++  #      $watching_client read
++  #      $watching_client get somekey
++  #      $watching_client read
++  #      r lpush srclist element
++  #      $watching_client exec
++  #      $watching_client read
++  #  } {}
++  #
++  #  test "BRPOPLPUSH does not affect WATCH while still blocked" {
++  #      set blocked_client [redis_deferring_client]
++  #      set watching_client [redis_deferring_client]
++  #      r del srclist dstlist somekey
++  #      r set somekey somevalue
++  #      $blocked_client brpoplpush srclist dstlist 0
++  #      $watching_client watch dstlist
++  #      $watching_client read
++  #      $watching_client multi
++  #      $watching_client read
++  #      $watching_client get somekey
++  #      $watching_client read
++  #      $watching_client exec
++  #      # Blocked BLPOPLPUSH may create problems, unblock it.
++  #      r lpush srclist element
++  #      $watching_client read
++  #  } {somevalue}
++  #
++  #  test {BRPOPLPUSH timeout} {
++  #    set rd [redis_deferring_client]
++  #
++  #    $rd brpoplpush foo_list bar_list 1
++  #    after 2000
++  #    $rd read
++  #  } {}
++
++  #  test "BLPOP when new key is moved into place" {
++  #      set rd [redis_deferring_client]
++  #
++  #      $rd blpop "{tag}foo" 5
++  #      r lpush "{tag}bob" abc def hij
++  #      r rename "{tag}bob" "{tag}foo"
++  #      $rd read
++  #  } {foo hij}
++
++  #  test "BLPOP when result key is created by SORT..STORE" {
++  #      set rd [redis_deferring_client]
++  #
++  #      # zero out list from previous test without explicit delete
++  #      r lpop foo
++  #      r lpop foo
++  #      r lpop foo
++  #
++  #      $rd blpop foo 5
++  #      r lpush notfoo hello hola aguacate konichiwa zanzibar
++  #      r sort notfoo ALPHA store foo
++  #      $rd read
++  #  } {foo aguacate}
++
++  #  foreach {pop} {BLPOP BRPOP} {}
++    foreach {pop} {BLPOP} {
+         test "$pop: with single empty list argument" {
+             set rd [redis_deferring_client]
+             r del blist1
+@@ -434,11 +435,11 @@ start_server {
+             assert_error "ERR*is negative*" {$rd read}
+         }
+ 
+-        test "$pop: with non-integer timeout" {
+-            set rd [redis_deferring_client]
+-            $rd $pop blist1 1.1
+-            assert_error "ERR*not an integer*" {$rd read}
+-        }
++    #    test "$pop: with non-integer timeout" {
++    #        set rd [redis_deferring_client]
++    #        $rd $pop blist1 1.1
++    #        assert_error "ERR*not an integer*" {$rd read}
++    #    }
+ 
+         test "$pop: with zero timeout should block indefinitely" {
+             # To test this, use a timeout of 0 and wait a second.
+@@ -452,83 +453,84 @@ start_server {
+ 
+         test "$pop: second argument is not a list" {
+             set rd [redis_deferring_client]
+-            r del blist1 blist2
+-            r set blist2 nolist
+-            $rd $pop blist1 blist2 1
++            r del "{tag}blist1" "{tag}blist2"
++            r set "{tag}blist2" "{tag}nolist"
++            $rd $pop "{tag}blist1" "{tag}blist2" 1
+             assert_error "WRONGTYPE*" {$rd read}
+         }
+ 
+         test "$pop: timeout" {
+             set rd [redis_deferring_client]
+-            r del blist1 blist2
+-            $rd $pop blist1 blist2 1
++            r del "{tag}blist1" "{tag}blist2"
++            $rd $pop "{tag}blist1" "{tag}blist2" 1
+             assert_equal {} [$rd read]
+         }
+ 
+         test "$pop: arguments are empty" {
+             set rd [redis_deferring_client]
+-            r del blist1 blist2
+-
+-            $rd $pop blist1 blist2 1
+-            r rpush blist1 foo
+-            assert_equal {blist1 foo} [$rd read]
+-            assert_equal 0 [r exists blist1]
+-            assert_equal 0 [r exists blist2]
+-
+-            $rd $pop blist1 blist2 1
+-            r rpush blist2 foo
+-            assert_equal {blist2 foo} [$rd read]
+-            assert_equal 0 [r exists blist1]
+-            assert_equal 0 [r exists blist2]
+-        }
+-    }
+-
+-    test {BLPOP inside a transaction} {
+-        r del xlist
+-        r lpush xlist foo
+-        r lpush xlist bar
+-        r multi
+-        r blpop xlist 0
+-        r blpop xlist 0
+-        r blpop xlist 0
+-        r exec
+-    } {{xlist bar} {xlist foo} {}}
+-
+-    test {LPUSHX, RPUSHX - generic} {
+-        r del xlist
+-        assert_equal 0 [r lpushx xlist a]
+-        assert_equal 0 [r llen xlist]
+-        assert_equal 0 [r rpushx xlist a]
+-        assert_equal 0 [r llen xlist]
+-    }
++            r del "{tag}blist1" "{tag}blist2"
++
++            $rd $pop "{tag}blist1" "{tag}blist2" 1
++            r rpush "{tag}blist1" foo
++            assert_equal {{{tag}blist1} foo} [$rd read]
++            assert_equal 0 [r exists "{tag}blist1"]
++            assert_equal 0 [r exists "{tag}blist2"]
++
++            $rd $pop "{tag}blist1" "{tag}blist2" 1
++            r rpush "{tag}blist2" foo
++            assert_equal {{{tag}blist2} foo} [$rd read]
++            assert_equal 0 [r exists "{tag}blist1"]
++            assert_equal 0 [r exists "{tag}blist2"]
++        }
++    }
++
++  #  test {BLPOP inside a transaction} {
++  #      r del xlist
++  #      r lpush xlist foo
++  #      r lpush xlist bar
++  #      r multi
++  #      r blpop xlist 0
++  #      r blpop xlist 0
++  #      r blpop xlist 0
++  #      r exec
++  #  } {{xlist bar} {xlist foo} {}}
++
++  #  test {LPUSHX, RPUSHX - generic} {
++  #      r del xlist
++  #      assert_equal 0 [r lpushx xlist a]
++  #      assert_equal 0 [r llen xlist]
++  #      assert_equal 0 [r rpushx xlist a]
++  #      assert_equal 0 [r llen xlist]
++  #  }
+ 
+     foreach {type large} [array get largevalue] {
+-        test "LPUSHX, RPUSHX - $type" {
+-            create_list xlist "$large c"
+-            assert_equal 3 [r rpushx xlist d]
+-            assert_equal 4 [r lpushx xlist a]
+-            assert_equal 6 [r rpushx xlist 42 x]
+-            assert_equal 9 [r lpushx xlist y3 y2 y1]
+-            assert_equal "y1 y2 y3 a $large c d 42 x" [r lrange xlist 0 -1]
+-        }
+-
+-        test "LINSERT - $type" {
+-            create_list xlist "a $large c d"
+-            assert_equal 5 [r linsert xlist before c zz] "before c"
+-            assert_equal "a $large zz c d" [r lrange xlist 0 10] "lrangeA"
+-            assert_equal 6 [r linsert xlist after c yy] "after c"
+-            assert_equal "a $large zz c yy d" [r lrange xlist 0 10] "lrangeB"
+-            assert_equal 7 [r linsert xlist after d dd] "after d"
+-            assert_equal -1 [r linsert xlist after bad ddd] "after bad"
+-            assert_equal "a $large zz c yy d dd" [r lrange xlist 0 10] "lrangeC"
+-            assert_equal 8 [r linsert xlist before a aa] "before a"
+-            assert_equal -1 [r linsert xlist before bad aaa] "before bad"
+-            assert_equal "aa a $large zz c yy d dd" [r lrange xlist 0 10] "lrangeD"
+-
+-            # check inserting integer encoded value
+-            assert_equal 9 [r linsert xlist before aa 42] "before aa"
+-            assert_equal 42 [r lrange xlist 0 0] "lrangeE"
+-        }
++     #   test "LPUSHX, RPUSHX - $type" {
++     #       create_list xlist "$large c"
++     #       assert_equal 3 [r rpushx xlist d]
++     #       assert_equal 4 [r lpushx xlist a]
++     #       assert_equal 6 [r rpushx xlist 42 x]
++     #       assert_equal 9 [r lpushx xlist y3 y2 y1]
++     #       assert_equal "y1 y2 y3 a $large c d 42 x" [r lrange xlist 0 -1]
++     #   }
++
++     # TODO: enable when GEODE-10198 is fixed
++     #   test "LINSERT - $type" {
++     #       create_list xlist "a $large c d"
++     #       assert_equal 5 [r linsert xlist before c zz] "before c"
++     #       assert_equal "a $large zz c d" [r lrange xlist 0 10] "lrangeA"
++     #       assert_equal 6 [r linsert xlist after c yy] "after c"
++     #       assert_equal "a $large zz c yy d" [r lrange xlist 0 10] "lrangeB"
++     #       assert_equal 7 [r linsert xlist after d dd] "after d"
++     #       assert_equal -1 [r linsert xlist after bad ddd] "after bad"
++     #       assert_equal "a $large zz c yy d dd" [r lrange xlist 0 10] "lrangeC"
++     #       assert_equal 8 [r linsert xlist before a aa] "before a"
++     #       assert_equal -1 [r linsert xlist before bad aaa] "before bad"
++     #       assert_equal "aa a $large zz c yy d dd" [r lrange xlist 0 10] "lrangeD"
++     #
++     #       # check inserting integer encoded value
++     #       assert_equal 9 [r linsert xlist before aa 42] "before aa"
++     #       assert_equal 42 [r lrange xlist 0 0] "lrangeE"
++     #   }
+     }
+ 
+     test {LINSERT raise error on bad syntax} {
+@@ -568,12 +570,12 @@ start_server {
+             check_random_access_consistency mylist
+         }
+ 
+-        test "Check if list is still ok after a DEBUG RELOAD - $type" {
+-            r debug reload
+-            assert_encoding $type mylist
+-            check_numbered_list_consistency mylist
+-            check_random_access_consistency mylist
+-        }
++      #  test "Check if list is still ok after a DEBUG RELOAD - $type" {
++      #      r debug reload
++      #      assert_encoding $type mylist
++      #      check_numbered_list_consistency mylist
++      #      check_random_access_consistency mylist
++      #  }
+     }
+ 
+     test {LLEN against non-list value error} {
+@@ -602,69 +604,69 @@ start_server {
+         assert_error WRONGTYPE* {r rpush mylist 0}
+     }
+ 
+-    foreach {type large} [array get largevalue] {
+-        test "RPOPLPUSH base case - $type" {
+-            r del mylist1 mylist2
+-            create_list mylist1 "a $large c d"
+-            assert_equal d [r rpoplpush mylist1 mylist2]
+-            assert_equal c [r rpoplpush mylist1 mylist2]
+-            assert_equal "a $large" [r lrange mylist1 0 -1]
+-            assert_equal "c d" [r lrange mylist2 0 -1]
+-            assert_encoding quicklist mylist2
+-        }
+-
+-        test "RPOPLPUSH with the same list as src and dst - $type" {
+-            create_list mylist "a $large c"
+-            assert_equal "a $large c" [r lrange mylist 0 -1]
+-            assert_equal c [r rpoplpush mylist mylist]
+-            assert_equal "c a $large" [r lrange mylist 0 -1]
+-        }
+-
+-        foreach {othertype otherlarge} [array get largevalue] {
+-            test "RPOPLPUSH with $type source and existing target $othertype" {
+-                create_list srclist "a b c $large"
+-                create_list dstlist "$otherlarge"
+-                assert_equal $large [r rpoplpush srclist dstlist]
+-                assert_equal c [r rpoplpush srclist dstlist]
+-                assert_equal "a b" [r lrange srclist 0 -1]
+-                assert_equal "c $large $otherlarge" [r lrange dstlist 0 -1]
+-
+-                # When we rpoplpush'ed a large value, dstlist should be
+-                # converted to the same encoding as srclist.
+-                if {$type eq "linkedlist"} {
+-                    assert_encoding quicklist dstlist
+-                }
+-            }
+-        }
+-    }
+-
+-    test {RPOPLPUSH against non existing key} {
+-        r del srclist dstlist
+-        assert_equal {} [r rpoplpush srclist dstlist]
+-        assert_equal 0 [r exists srclist]
+-        assert_equal 0 [r exists dstlist]
+-    }
+-
+-    test {RPOPLPUSH against non list src key} {
+-        r del srclist dstlist
+-        r set srclist x
+-        assert_error WRONGTYPE* {r rpoplpush srclist dstlist}
+-        assert_type string srclist
+-        assert_equal 0 [r exists newlist]
+-    }
+-
+-    test {RPOPLPUSH against non list dst key} {
+-        create_list srclist {a b c d}
+-        r set dstlist x
+-        assert_error WRONGTYPE* {r rpoplpush srclist dstlist}
+-        assert_type string dstlist
+-        assert_equal {a b c d} [r lrange srclist 0 -1]
+-    }
+-
+-    test {RPOPLPUSH against non existing src key} {
+-        r del srclist dstlist
+-        assert_equal {} [r rpoplpush srclist dstlist]
+-    } {}
++  #  foreach {type large} [array get largevalue] {
++  #      test "RPOPLPUSH base case - $type" {
++  #          r del mylist1 mylist2
++  #          create_list mylist1 "a $large c d"
++  #          assert_equal d [r rpoplpush mylist1 mylist2]
++  #          assert_equal c [r rpoplpush mylist1 mylist2]
++  #          assert_equal "a $large" [r lrange mylist1 0 -1]
++  #          assert_equal "c d" [r lrange mylist2 0 -1]
++  #          assert_encoding quicklist mylist2
++  #      }
++  #
++  #      test "RPOPLPUSH with the same list as src and dst - $type" {
++  #          create_list mylist "a $large c"
++  #          assert_equal "a $large c" [r lrange mylist 0 -1]
++  #          assert_equal c [r rpoplpush mylist mylist]
++  #          assert_equal "c a $large" [r lrange mylist 0 -1]
++  #      }
++  #
++  #      foreach {othertype otherlarge} [array get largevalue] {
++  #          test "RPOPLPUSH with $type source and existing target $othertype" {
++  #              create_list srclist "a b c $large"
++  #              create_list dstlist "$otherlarge"
++  #              assert_equal $large [r rpoplpush srclist dstlist]
++  #              assert_equal c [r rpoplpush srclist dstlist]
++  #              assert_equal "a b" [r lrange srclist 0 -1]
++  #              assert_equal "c $large $otherlarge" [r lrange dstlist 0 -1]
++  #
++  #              # When we rpoplpush'ed a large value, dstlist should be
++  #              # converted to the same encoding as srclist.
++  #              if {$type eq "linkedlist"} {
++  #                  assert_encoding quicklist dstlist
++  #              }
++  #          }
++  #      }
++  #  }
++  #
++  #  test {RPOPLPUSH against non existing key} {
++  #      r del srclist dstlist
++  #      assert_equal {} [r rpoplpush srclist dstlist]
++  #      assert_equal 0 [r exists srclist]
++  #      assert_equal 0 [r exists dstlist]
++  #  }
++  #
++  #  test {RPOPLPUSH against non list src key} {
++  #      r del srclist dstlist
++  #      r set srclist x
++  #      assert_error WRONGTYPE* {r rpoplpush srclist dstlist}
++  #      assert_type string srclist
++  #      assert_equal 0 [r exists newlist]
++  #  }
++  #
++  #  test {RPOPLPUSH against non list dst key} {
++  #      create_list srclist {a b c d}
++  #      r set dstlist x
++  #      assert_error WRONGTYPE* {r rpoplpush srclist dstlist}
++  #      assert_type string dstlist
++  #      assert_equal {a b c d} [r lrange srclist 0 -1]
++  #  }
++  #
++  #  test {RPOPLPUSH against non existing src key} {
++  #      r del srclist dstlist
++  #      assert_equal {} [r rpoplpush srclist dstlist]
++  #  } {}
+ 
+     foreach {type large} [array get largevalue] {
+         test "Basic LPOP/RPOP - $type" {
+@@ -778,7 +780,7 @@ start_server {
+     }
+ 
+     test {LSET against non existing key} {
+-        assert_error ERR*key* {r lset nosuchkey 10 foo}
++        assert_error ERR* {r lset nosuchkey 10 foo}
+     }
+ 
+     test {LSET against non list value} {
+@@ -821,17 +823,17 @@ start_server {
+         }
+     }
+ 
+-    test "Regression for bug 593 - chaining BRPOPLPUSH with other blocking cmds" {
+-        set rd1 [redis_deferring_client]
+-        set rd2 [redis_deferring_client]
+-
+-        $rd1 brpoplpush a b 0
+-        $rd1 brpoplpush a b 0
+-        $rd2 brpoplpush b c 0
+-        after 1000
+-        r lpush a data
+-        $rd1 close
+-        $rd2 close
+-        r ping
+-    } {PONG}
++  #  test "Regression for bug 593 - chaining BRPOPLPUSH with other blocking cmds" {
++  #      set rd1 [redis_deferring_client]
++  #      set rd2 [redis_deferring_client]
++  #
++  #      $rd1 brpoplpush a b 0
++  #      $rd1 brpoplpush a b 0
++  #      $rd2 brpoplpush b c 0
++  #      after 1000
++  #      r lpush a data
++  #      $rd1 close
++  #      $rd2 close
++  #      r ping
++  #  } {PONG}
+ }
 diff --git a/tests/unit/type/set.tcl b/tests/unit/type/set.tcl
 index 7b467f1c4..0c5ca1753 100644
 --- a/tests/unit/type/set.tcl
