@@ -406,7 +406,6 @@ public class RegionMapPut extends AbstractRegionMapPut {
         EntryEventImpl event = getEvent();
         if (getOwner().getConcurrencyChecksEnabled() &&
             event.getOperation() == Operation.PUT_IF_ABSENT &&
-            !event.hasValidVersionTag() &&
             event.isPossibleDuplicate()) {
           Object retainedValue = getRegionEntry().getValueRetain(getOwner());
           try {
