@@ -252,8 +252,10 @@ public class FreeListManager {
     OffHeapMemoryStats stats = ma.getStats();
     lw.info("OutOfOffHeapMemory allocating size of " + chunkSize + ". allocated="
         + allocatedSize.get() + " defragmentations=" + defragmentationCount.get()
-        + " objects=" + stats.getObjects() + " free=" + stats.getFreeMemory() + " fragments="
-        + stats.getFragments() + " largestFragment=" + stats.getLargestFragment()
+        + " objects=" + stats.getObjects() + " free=" + stats.getFreeMemory()
+        + " freedChunks=" + stats.getFreedChunks()
+        + " fragments=" + stats.getFragments()
+        + " largestFragment=" + stats.getLargestFragment()
         + " fragmentation=" + stats.getFragmentation());
     logFragmentState(lw);
     logTinyState(lw);
@@ -518,8 +520,49 @@ public class FreeListManager {
     ma.getStats().setLargestFragment(largestFragment);
     ma.getStats().setFragments(tmp.size());
     ma.getStats().setFragmentation(getFragmentation());
+    ma.getStats().setFreedChunks(0);
 
     return result;
+  }
+
+  public void updateNonRealTimeStats() {
+    ma.getStats().setLargestFragment(largestFragmentSize());
+    ma.getStats().setFreedChunks(getFreedChunks());
+  }
+
+  public int getFreedChunks() {
+    int elementCountFromTinyFreeLists =
+        getElementCountFromTinyFreeLists();
+    int elementCountFromHugeFreeLists =
+        getElementCountFromHugeFreeLists();
+
+    return elementCountFromTinyFreeLists + elementCountFromHugeFreeLists;
+  }
+
+  private int getElementCountFromTinyFreeLists() {
+    int fragmentCount = 0;
+    for (int i = 0; i < tinyFreeLists.length(); i++) {
+      OffHeapStoredObjectAddressStack cl = tinyFreeLists.get(i);
+      if (cl != null) {
+        fragmentCount += cl.size();
+      }
+    }
+    return fragmentCount;
+  }
+
+  private int getElementCountFromHugeFreeLists() {
+    return hugeChunkSet.size();
+  }
+
+  private int largestFragmentSize() {
+    int largestFreeSpaceFromFragments = 0;
+    for (Fragment f : fragmentList) {
+      int fragmentFreeSpace = f.freeSpace();
+      if (fragmentFreeSpace > largestFreeSpaceFromFragments) {
+        largestFreeSpaceFromFragments = fragmentFreeSpace;
+      }
+    }
+    return largestFreeSpaceFromFragments;
   }
 
   /**
