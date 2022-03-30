@@ -15,6 +15,8 @@
 
 package org.apache.geode.cache.client.internal;
 
+import static org.apache.geode.logging.internal.spi.LoggingProvider.SECURITY_LOGGER_NAME;
+
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 
@@ -42,8 +44,8 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * @since GemFire 5.7
  */
 public abstract class AbstractOp implements Op {
-
-  private static final Logger logger = LogService.getLogger();
+  protected static final Logger logger = LogService.getLogger();
+  protected static final Logger secureLogger = LogService.getLogger(SECURITY_LOGGER_NAME);
 
   private final Message msg;
 
@@ -117,6 +119,10 @@ public abstract class AbstractOp implements Op {
 
       if (UserAttributes.userAttributes.get() == null) { // single user mode
         userId = cnx.getServer().getUserId();
+        if (userId == -1) {
+          throw new ServerConnectivityException(
+              "Invalid userId. Connection error while authenticating user");
+        }
       } else { // multi user mode
         Long id = UserAttributes.userAttributes.get().getServerToId().get(cnx.getServer());
         if (id == null) {
@@ -126,6 +132,8 @@ public abstract class AbstractOp implements Op {
         }
         userId = id;
       }
+      secureLogger.debug("{} Using userId {}: ",
+          MessageType.getString(this.getMessage().getMessageType()), userId);
       try (HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT)) {
         hdos.writeLong(cnx.getConnectionID());
         hdos.writeLong(userId);
@@ -165,11 +173,14 @@ public abstract class AbstractOp implements Op {
   }
 
   /**
-   * New implementations of AbstractOp should override this method to return false if the
-   * implementation should be excluded from client authentication. e.g. PingOp#needsUserId()
-   * <P/>
-   * Also, such an operation's <code>MessageType</code> must be added in the 'if' condition in
-   * {@link ServerConnection#updateAndGetSecurityPart()}
+   * @return true if this operation needs to be authenticated first
+   *
+   *         New implementations of AbstractOp should override this method to return false if the
+   *         implementation should be excluded from client authentication. e.g. PingOp#needsUserId()
+   *         <P/>
+   *         Also, such an operation's <code>MessageType</code> must be added in the 'if' condition
+   *         in
+   *         {@link ServerConnection#updateAndGetSecurityPart()}
    *
    * @see AbstractOp#sendMessage(Connection)
    * @see ServerConnection#updateAndGetSecurityPart()
