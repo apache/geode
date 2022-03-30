@@ -526,7 +526,7 @@ public class FreeListManager {
   }
 
   public void updateNonRealTimeStats() {
-    ma.getStats().setLargestFragment(getLargestFragment());
+    ma.getStats().setLargestFragment(largestFragmentSize());
     ma.getStats().setFreedChunks(getFreedChunks());
   }
 
@@ -554,7 +554,7 @@ public class FreeListManager {
     return hugeChunkSet.size();
   }
 
-  private int getLargestFragment() {
+  private int largestFragmentSize() {
     int largestFreeSpaceFromFragments = 0;
     for (Fragment f : fragmentList) {
       int fragmentFreeSpace = f.freeSpace();
