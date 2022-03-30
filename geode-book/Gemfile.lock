@@ -10,7 +10,7 @@ GEM
       public_suffix (>= 2.0.2, < 5.0)
     ansi (1.5.0)
     backports (3.21.0)
-    bookbindery (10.1.17)
+    bookbindery (10.1.18)
       ansi (~> 1.4)
       css_parser
       elasticsearch
