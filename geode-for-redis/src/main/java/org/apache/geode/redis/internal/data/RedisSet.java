@@ -90,6 +90,7 @@ public class RedisSet extends AbstractRedisData {
   public static int smove(RedisKey sourceKey, RedisKey destKey, byte[] member,
       RegionProvider regionProvider) {
     RedisSet source = regionProvider.getTypedRedisData(REDIS_SET, sourceKey, false);
+    RedisSet destination = regionProvider.getTypedRedisData(REDIS_SET, destKey, false);
 
     if (!source.sismember(member)) {
       return 0;
@@ -98,7 +99,6 @@ public class RedisSet extends AbstractRedisData {
       return 1;
     }
 
-    RedisSet destination = regionProvider.getTypedRedisData(REDIS_SET, destKey, false);
     List<byte[]> memberList = new ArrayList<>();
     memberList.add(member);
     RedisSet newSource = new RedisSet(source);
