@@ -28,6 +28,7 @@ import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.version.VersionManager;
@@ -81,23 +82,23 @@ public class WANRollingUpgradeCreateGatewaySenderMixedSiteOneCurrentSiteTwo
 
     // Start current site servers with receivers
     site2Server1.invoke(() -> createCache(site2Locators));
-    site2Server1.invoke(() -> createGatewayReceiver());
+    site2Server1.invoke(this::createGatewayReceiver);
     site2Server2.invoke(() -> createCache(site2Locators));
-    site2Server2.invoke(() -> createGatewayReceiver());
+    site2Server2.invoke(this::createGatewayReceiver);
 
     // Start mixed site servers
     site1Server1.invoke(() -> createCache(site1Locators));
     site1Server2.invoke(() -> createCache(site1Locators));
 
     // Roll mixed site locator to current with jmx manager
-    site1Locator.invoke(() -> stopLocator());
+    site1Locator.invoke(this::stopLocator);
     VM site1RolledLocator = host.getVM(VersionManager.CURRENT_VERSION, site1Locator.getId());
     int jmxManagerPort =
         site1RolledLocator.invoke(() -> startLocatorWithJmxManager(site1LocatorPort,
             site1DistributedSystemId, site1Locators, site2Locators));
 
     // Roll one mixed site server to current
-    site1Server2.invoke(() -> closeCache());
+    site1Server2.invoke(JUnit4CacheTestCase::closeCache);
     VM site1Server2RolledServer = host.getVM(VersionManager.CURRENT_VERSION, site1Server2.getId());
     site1Server2RolledServer.invoke(() -> createCache(site1Locators));
 
@@ -105,9 +106,10 @@ public class WANRollingUpgradeCreateGatewaySenderMixedSiteOneCurrentSiteTwo
     this.gfsh.connectAndVerify(jmxManagerPort, GfshCommandRule.PortType.jmxManager);
     CommandResultAssert cmd = this.gfsh
         .executeAndAssertThat(getCreateGatewaySenderCommand("toSite2", site2DistributedSystemId));
-    // Special case for 1.13.2 since it introduces an ordinal version change
+    // Special case for 1.13.9 since it introduces an ordinal version change
     if (!majorMinor(oldVersion).equals(majorMinor(Version.CURRENT.getName()))
-        || oldVersion.equals("1.13.0") || oldVersion.equals("1.13.1")) {
+        || oldVersion.equals("1.13.0") || oldVersion.equals("1.13.1")
+        || oldVersion.equals("1.13.8")) {
       cmd.statusIsError()
           .containsOutput(CliStrings.CREATE_GATEWAYSENDER__MSG__CAN_NOT_CREATE_DIFFERENT_VERSIONS);
     } else {
