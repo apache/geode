@@ -97,9 +97,13 @@ public class RedisSet extends AbstractRedisData {
       return 0;
     }
     RedisSet newSource = new RedisSet(source);
-    newSource.srem(memberList, regionProvider.getDataRegion(), sourceKey);
+    if (newSource.srem(memberList, regionProvider.getDataRegion(), sourceKey) == 0) {
+      return 0;
+    }
     RedisSet newDestination = new RedisSet(destination);
-    newDestination.sadd(memberList, regionProvider.getDataRegion(), destKey);
+    if (newDestination.sadd(memberList, regionProvider.getDataRegion(), destKey) == 0) {
+      return 0;
+    }
     return 1;
   }
 
