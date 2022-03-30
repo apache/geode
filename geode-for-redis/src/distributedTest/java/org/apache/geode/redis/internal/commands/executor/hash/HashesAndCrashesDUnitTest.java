@@ -276,7 +276,7 @@ public class HashesAndCrashesDUnitTest {
       } catch (RedisCommandExecutionException | RedisCommandTimeoutException ex) {
         logger.info("DEBUG = will retry {} - {}", text, ex.getMessage());
       } catch (Exception ex) {
-        if (ex.getMessage().contains("Connection reset by peer")
+        if (ex.getMessage().contains("Connection reset")
             || ex.getMessage().contains("Connection closed")) {
           logger.info("DEBUG = will retry {} - {}", text, ex.getMessage());
         } else {
