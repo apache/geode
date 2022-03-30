@@ -31,6 +31,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelId;
 import io.netty.handler.codec.ByteToMessageDecoder;
 
+import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.RedisProperties;
 import org.apache.geode.redis.internal.commands.Command;
@@ -97,8 +98,11 @@ public class ByteToCommandDecoder extends ByteToMessageDecoder {
 
     byte firstB = buffer.readByte();
     if (firstB != ARRAY_ID) {
+      LogService.getLogger().warn("DEBUG Expected: " + (char) ARRAY_ID + " Actual: '"
+          + (char) firstB + "' DEBUG buffer=" + buffer);
       throw new RedisCommandParserException(
-          "Expected: " + (char) ARRAY_ID + " Actual: " + (char) firstB);
+          "Expected: " + (char) ARRAY_ID + " Actual: '" + (char) firstB + "' DEBUG buffer="
+              + buffer);
     }
     List<byte[]> commandElems = parseArray(buffer);
 
