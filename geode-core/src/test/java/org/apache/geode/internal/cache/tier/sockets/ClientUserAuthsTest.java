@@ -28,6 +28,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.apache.shiro.subject.Subject;
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -94,7 +95,7 @@ public class ClientUserAuthsTest {
 
   @Test
   public void removeSubjectOfNonExistentId() {
-    assertThatThrownBy(() -> auth.removeSubject(5678L)).doesNotThrowAnyException();
+    auth.removeSubject(5678L);
   }
 
   @Test
