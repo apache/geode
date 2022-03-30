@@ -90,17 +90,17 @@ public class RedisSet extends AbstractRedisData {
   public static int smove(RedisKey sourceKey, RedisKey destKey, byte[] member,
       RegionProvider regionProvider) {
     RedisSet source = regionProvider.getTypedRedisData(REDIS_SET, sourceKey, false);
-    RedisSet destination = regionProvider.getTypedRedisData(REDIS_SET, destKey, false);
-    List<byte[]> memberList = new ArrayList<>();
-    memberList.add(member);
-    if (source == destination) {
-      return 1;
-    }
 
     if (!source.sismember(member)) {
       return 0;
     }
+    if (sourceKey.equals(destKey)) {
+      return 1;
+    }
 
+    RedisSet destination = regionProvider.getTypedRedisData(REDIS_SET, destKey, false);
+    List<byte[]> memberList = new ArrayList<>();
+    memberList.add(member);
     RedisSet newSource = new RedisSet(source);
     newSource.srem(memberList, regionProvider.getDataRegion(), sourceKey);
     RedisSet newDestination = new RedisSet(destination);
