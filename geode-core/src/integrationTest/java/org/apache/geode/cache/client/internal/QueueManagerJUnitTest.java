@@ -23,7 +23,6 @@ import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -245,9 +244,8 @@ public class QueueManagerJUnitTest {
     manager.start(background);
     manager.getAllConnections().getPrimary().destroy();
 
-    Throwable thrown = catchThrowable(() -> manager.getAllConnections().getPrimary());
-    assertThat(thrown).isInstanceOf(NoSubscriptionServersAvailableException.class);
-
+    assertThatThrownBy(() -> manager.getAllConnections().getPrimary())
+        .isInstanceOf(NoSubscriptionServersAvailableException.class);
     factory.addConnection(0, 0, 2);
     factory.addConnection(0, 0, 3);
 
@@ -314,7 +312,7 @@ public class QueueManagerJUnitTest {
     ServerRegionProxy serverRegionProxy = new ServerRegionProxy("region", pool);
 
     when(testRegion.getServerProxy()).thenReturn(serverRegionProxy);
-    RegionAttributes regionAttributes = mock(RegionAttributes.class);
+    RegionAttributes<Object, Object> regionAttributes = mock(RegionAttributes.class);
     when(testRegion.getAttributes()).thenReturn(regionAttributes);
     when(regionAttributes.getDataPolicy()).thenReturn(DataPolicy.DEFAULT);
 
@@ -344,36 +342,22 @@ public class QueueManagerJUnitTest {
     when(registerInterestTracker.getRegionToInterestsMap(eq(InterestType.KEY), anyBoolean(),
         anyBoolean())).thenReturn(
             keysConcurrentMap);
-    RegisterInterestTracker.RegionInterestEntry registerInterestEntry =
-        new RegisterInterestTracker.RegionInterestEntry(
-            localRegion);
 
-    registerInterestEntry.getInterests().put("bob", InterestResultPolicy.NONE);
-    keysConcurrentMap.put("testRegion", registerInterestEntry);
 
-    final ConcurrentHashMap<String, RegisterInterestTracker.RegionInterestEntry> regexConcurrentMap =
-        new ConcurrentHashMap<>();
-    when(registerInterestTracker.getRegionToInterestsMap(eq(InterestType.REGULAR_EXPRESSION),
-        anyBoolean(), anyBoolean())).thenReturn(
-            regexConcurrentMap);
+    for (InterestType interestType : InterestType.values()) {
+      final ConcurrentHashMap<String, RegisterInterestTracker.RegionInterestEntry> concurrentMap =
+          new ConcurrentHashMap<>();
+      when(registerInterestTracker.getRegionToInterestsMap(eq(interestType), anyBoolean(),
+          anyBoolean()))
+              .thenReturn(concurrentMap);
+      if (interestType.equals(InterestType.KEY)) {
+        RegisterInterestTracker.RegionInterestEntry registerInterestEntry =
+            new RegisterInterestTracker.RegionInterestEntry(localRegion);
 
-    final ConcurrentHashMap<String, RegisterInterestTracker.RegionInterestEntry> filterClassConcurrentMap =
-        new ConcurrentHashMap<>();
-    when(registerInterestTracker.getRegionToInterestsMap(eq(InterestType.FILTER_CLASS),
-        anyBoolean(), anyBoolean())).thenReturn(
-            filterClassConcurrentMap);
-
-    final ConcurrentHashMap<String, RegisterInterestTracker.RegionInterestEntry> cqConcurrentMap =
-        new ConcurrentHashMap<>();
-    when(registerInterestTracker.getRegionToInterestsMap(eq(InterestType.CQ), anyBoolean(),
-        anyBoolean())).thenReturn(
-            cqConcurrentMap);
-
-    final ConcurrentHashMap<String, RegisterInterestTracker.RegionInterestEntry> oqlQueryConcurrentMap =
-        new ConcurrentHashMap<>();
-    when(registerInterestTracker.getRegionToInterestsMap(eq(InterestType.OQL_QUERY), anyBoolean(),
-        anyBoolean())).thenReturn(
-            oqlQueryConcurrentMap);
+        registerInterestEntry.getInterests().put("bob", InterestResultPolicy.NONE);
+        concurrentMap.put("testRegion", registerInterestEntry);
+      }
+    }
   }
 
   private static void assertPortEquals(int expected, Connection actual) {

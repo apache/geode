@@ -89,6 +89,8 @@ public class LocalRegionUpdateTest {
     RegionAttributes<Object, Object> regionAttributes =
         regionAttributesFactory.createRegionAttributes();
 
+
+
     registerInterestTracker = new RegisterInterestTracker();
     when(poolImpl.getRITracker()).thenReturn(registerInterestTracker);
 

@@ -62,7 +62,7 @@ import org.apache.geode.test.version.VersionManager;
  *             instead.
  */
 public abstract class JUnit4DistributedTestCase implements DistributedTestFixture, Serializable {
-  private static final Logger logger = LogService.getLogger();
+  protected static final Logger logger = LogService.getLogger();
 
   /** This VM's connection to the distributed system */
   protected static InternalDistributedSystem system;

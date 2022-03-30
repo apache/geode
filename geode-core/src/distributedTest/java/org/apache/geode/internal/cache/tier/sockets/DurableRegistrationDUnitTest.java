@@ -19,12 +19,16 @@ import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIEN
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
+import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.createCacheClient;
+import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.createCacheServer;
+import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.disableShufflingOfEndpoints;
+import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.getCache;
+import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.resetDisableShufflingOfEndpointsFlag;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
@@ -48,12 +52,8 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
@@ -86,6 +86,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
   private VM durableClientVM;
 
   private String regionName;
+  private String hostName;
 
   private int PORT1;
 
@@ -105,132 +106,117 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
 
   @Override
   public final void postSetUp() throws Exception {
-    Host host = Host.getHost(0);
-    server1VM = host.getVM(0);
-    server2VM = host.getVM(1);
-    durableClientVM = host.getVM(2);
+    server1VM = VM.getVM(0);
+    server2VM = VM.getVM(1);
+    durableClientVM = VM.getVM(2);
+    hostName = VM.getHostName();
     regionName = DurableRegistrationDUnitTest.class.getName() + "_region";
-    CacheServerTestUtil.disableShufflingOfEndpoints();
+    disableShufflingOfEndpoints();
   }
 
   @Test
   public void testSimpleDurableClient() {
 
     // Step 1: Starting the servers
-    PORT1 = server1VM
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
-    PORT2 = server2VM
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
+    PORT1 = server1VM.invoke(() -> createCacheServer(regionName, Boolean.TRUE));
+    PORT2 = server2VM.invoke(() -> createCacheServer(regionName, Boolean.TRUE));
 
     // Step 2: Bring Up the Client
-    // Start a durable client that is not kept alive on the server when it
-    // stops normally
+    // Start a durable client that is not kept alive on the server when it stops normally
     final String durableClientId = getName() + "_client";
 
     final int durableClientTimeout = 600; // keep the client alive for 600
     // seconds
-    durableClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
-        getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true,
+    durableClientVM.invoke(() -> createCacheClient(
+        getClientPool(hostName, PORT1, PORT2, true,
             0),
         regionName, getClientDistributedSystemProperties(durableClientId, durableClientTimeout),
         Boolean.TRUE));
 
-    // Send clientReady message
-    durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
-      @Override
-      public void run2() throws CacheException {
-        CacheServerTestUtil.getCache().readyForEvents();
-      }
-    });
+
 
     // Step 3: Client registers Interests
     // KEY_STONE1, KEY_STONE2 are registered as durableKeys & KEY_STONE3,
     // KEY_STONE4 as non-durableKeys
+    durableClientVM.invoke(() -> registerKey(K1, Boolean.FALSE));
+    durableClientVM.invoke(() -> registerKey(K2, Boolean.FALSE));
+    durableClientVM.invoke(() -> registerKey(K3, Boolean.TRUE));
+    durableClientVM.invoke(() -> registerKey(K4, Boolean.TRUE));
 
-    durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K1, Boolean.FALSE));
-    durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K2, Boolean.FALSE));
-    durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K3, Boolean.TRUE));
-    durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K4, Boolean.TRUE));
+
+    // Send clientReady message
+    durableClientVM.invoke("Send clientReady", new CacheSerializableRunnable() {
+      @Override
+      public void run2() throws CacheException {
+        getCache().readyForEvents();
+      }
+    });
 
     // Step 4: Update Values on the Server for KEY_STONE1, KEY_STONE2,
     // KEY_STONE3, KEY_STONE4
-
-    server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue(K1, "Value1"));
-    server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue(K2, "Value2"));
-    server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue(K3, "Value3"));
-    server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue(K4, "Value4"));
+    server2VM.invoke(() -> putValue(K1, "Value1"));
+    server2VM.invoke(() -> putValue(K2, "Value2"));
+    server2VM.invoke(() -> putValue(K3, "Value3"));
+    server2VM.invoke(() -> putValue(K4, "Value4"));
 
     Wait.pause(1000);
+
     // Step 5: Verify Updates on the Client
+    assertEquals("Value1", server2VM.invoke(() -> getValue(K1)));
+    assertEquals("Value1", server1VM.invoke(() -> getValue(K1)));
 
-    assertEquals("Value1", server2VM.invoke(() -> DurableRegistrationDUnitTest.getValue(K1)));
-    assertEquals("Value1", server1VM.invoke(() -> DurableRegistrationDUnitTest.getValue(K1)));
-
-    assertEquals("Value1",
-        durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K1)));
-    assertEquals("Value2",
-        durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K2)));
-    assertEquals("Value3",
-        durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K3)));
-    assertEquals("Value4",
-        durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K4)));
+    assertEquals("Value1", durableClientVM.invoke(() -> getValue(K1)));
+    assertEquals("Value2", durableClientVM.invoke(() -> getValue(K2)));
+    assertEquals("Value3", durableClientVM.invoke(() -> getValue(K3)));
+    assertEquals("Value4", durableClientVM.invoke(() -> getValue(K4)));
 
     // Step 6: Close Cache of the DurableClient
-    durableClientVM.invoke(DurableRegistrationDUnitTest::closeCache);
-    // pause(5000);
+    durableClientVM.invoke(this::closeCache);
+
     // Step 7: Update KEY_STONE1,KEY_STONE2,KEY_STONE3,KEY_STONE4 on the
     // Server say with values PingPong1, PingPong2, PingPong3, PingPong4
-    server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue(K1, "PingPong1"));
-    server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue(K2, "PingPong2"));
-    server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue(K3, "PingPong3"));
-    server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue(K4, "PingPong4"));
+    server2VM.invoke(() -> putValue(K1, "PingPong1"));
+    server2VM.invoke(() -> putValue(K2, "PingPong2"));
+    server2VM.invoke(() -> putValue(K3, "PingPong3"));
+    server2VM.invoke(() -> putValue(K4, "PingPong4"));
 
     // Step 8: Re-start the Client
-    durableClientVM
-        .invoke(() -> CacheServerTestUtil.createCacheClient(
-            getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, PORT2,
-                true, 0),
-            regionName, getClientDistributedSystemProperties(durableClientId), Boolean.TRUE));
+    durableClientVM.invoke(() -> createCacheClient(
+        getClientPool(hostName, PORT1, PORT2,
+            true, 0),
+        regionName, getClientDistributedSystemProperties(durableClientId), Boolean.TRUE));
 
     // Send clientReady message
-    durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
+    durableClientVM.invoke("Send clientReady", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
-        CacheServerTestUtil.getCache().readyForEvents();
+        getCache().readyForEvents();
       }
     });
 
     Wait.pause(5000);
 
-    assertNull(durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K1)));
-    assertNull(durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K2)));
+    assertNull(durableClientVM.invoke(() -> getValue(K1)));
+    assertNull(durableClientVM.invoke(() -> getValue(K2)));
 
-    durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K1, Boolean.FALSE));
+    durableClientVM.invoke(() -> registerKey(K1, Boolean.FALSE));
 
     Wait.pause(5000);
-    assertNull(durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K1)));
-    assertNull(durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K2)));
+    assertNull(durableClientVM.invoke(() -> getValue(K1)));
+    assertNull(durableClientVM.invoke(() -> getValue(K2)));
 
-    server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue(K1, "PingPong_updated_1"));
-    server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue(K2, "PingPong_updated_2"));
-    server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue(K3, "PingPong_updated_3"));
-    server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue(K4, "PingPong_updated_4"));
+    server2VM.invoke(() -> putValue(K1, "PingPong_updated_1"));
+    server2VM.invoke(() -> putValue(K2, "PingPong_updated_2"));
+    server2VM.invoke(() -> putValue(K3, "PingPong_updated_3"));
+    server2VM.invoke(() -> putValue(K4, "PingPong_updated_4"));
 
     Wait.pause(5000);
 
     // Step 9: Verify Updates on the Client
-    assertEquals("PingPong_updated_1",
-        durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K1)));
-    assertNull(durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K2)));
-    assertEquals("PingPong_updated_3",
-        durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K3)));
-    assertEquals("PingPong_updated_4",
-        durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K4)));
+    assertEquals("PingPong_updated_1", durableClientVM.invoke(() -> getValue(K1)));
+    assertNull(durableClientVM.invoke(() -> getValue(K2)));
+    assertEquals("PingPong_updated_3", durableClientVM.invoke(() -> getValue(K3)));
+    assertEquals("PingPong_updated_4", durableClientVM.invoke(() -> getValue(K4)));
 
     // Step 10 : Stop all VMs
     // Stop the durable client
@@ -247,151 +233,125 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
   @Test
   public void testSimpleDurableClientWithRegistration() {
     // Step 1: Starting the servers
-    PORT1 = server1VM
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
-    PORT2 = server2VM
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
+    PORT1 = server1VM.invoke(() -> createCacheServer(regionName, Boolean.TRUE));
+    PORT2 = server2VM.invoke(() -> createCacheServer(regionName, Boolean.TRUE));
 
     // Step 2: Bring Up the Client
-    // Start a durable client that is not kept alive on the server when it
-    // stops normally
+    // Start a durable client that is not kept alive on the server when it stops normally
     final String durableClientId = getName() + "_client";
     // keep the client alive for 600 seconds
     final int durableClientTimeout = 600;
-    durableClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
-        getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true,
+    durableClientVM.invoke(() -> createCacheClient(
+        getClientPool(hostName, PORT1, PORT2, true,
             0),
         regionName, getClientDistributedSystemProperties(durableClientId, durableClientTimeout)));
-
-
 
     // Step 3: Client registers Interests
     // KEY_STONE1, KEY_STONE2 are registered as durableKeys & KEY_STONE3,
     // KEY_STONE4 as non-durableKeys
 
-    durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K1, Boolean.FALSE));
-    durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K2, Boolean.FALSE));
-    durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K3, Boolean.TRUE));
-    durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K4, Boolean.TRUE));
+    durableClientVM.invoke(() -> registerKey(K1, Boolean.FALSE));
+    durableClientVM.invoke(() -> registerKey(K2, Boolean.FALSE));
+    durableClientVM.invoke(() -> registerKey(K3, Boolean.TRUE));
+    durableClientVM.invoke(() -> registerKey(K4, Boolean.TRUE));
 
     // Send clientReady message
-    durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
+    durableClientVM.invoke("Send clientReady", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
-        CacheServerTestUtil.getCache().readyForEvents();
+        getCache().readyForEvents();
       }
     });
 
     // Step 4: Update Values on the Server for KEY_STONE1, KEY_STONE2,
     // KEY_STONE3, KEY_STONE4
-
-    server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue(K1, "Value1"));
-    server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue(K2, "Value2"));
-    server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue(K3, "Value3"));
-    server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue(K4, "Value4"));
+    server2VM.invoke(() -> putValue(K1, "Value1"));
+    server2VM.invoke(() -> putValue(K2, "Value2"));
+    server2VM.invoke(() -> putValue(K3, "Value3"));
+    server2VM.invoke(() -> putValue(K4, "Value4"));
 
     Wait.pause(1000);
+
     // Step 5: Verify Updates on the Client
+    assertEquals("Value1", server2VM.invoke(() -> getValue(K1)));
+    assertEquals("Value1", server1VM.invoke(() -> getValue(K1)));
 
-    assertEquals("Value1", server2VM.invoke(() -> DurableRegistrationDUnitTest.getValue(K1)));
-    assertEquals("Value1", server1VM.invoke(() -> DurableRegistrationDUnitTest.getValue(K1)));
-
-    assertEquals("Value1",
-        durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K1)));
-    assertEquals("Value2",
-        durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K2)));
-    assertEquals("Value3",
-        durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K3)));
-    assertEquals("Value4",
-        durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K4)));
+    assertEquals("Value1", durableClientVM.invoke(() -> getValue(K1)));
+    assertEquals("Value2", durableClientVM.invoke(() -> getValue(K2)));
+    assertEquals("Value3", durableClientVM.invoke(() -> getValue(K3)));
+    assertEquals("Value4", durableClientVM.invoke(() -> getValue(K4)));
 
     // Step 6: Close Cache of the DurableClient
-    durableClientVM.invoke(DurableRegistrationDUnitTest::closeCache);
-    // pause(5000);
+    durableClientVM.invoke(this::closeCache);
+
     // Step 7: Update KEY_STONE1,KEY_STONE2,KEY_STONE3,KEY_STONE4 on the
     // Server say with values PingPong1, PingPong2, PingPong3, PingPong4
-    server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue(K1, "PingPong1"));
-    server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue(K2, "PingPong2"));
-    server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue(K3, "PingPong3"));
-    server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue(K4, "PingPong4"));
+    server2VM.invoke(() -> putValue(K1, "PingPong1"));
+    server2VM.invoke(() -> putValue(K2, "PingPong2"));
+    server2VM.invoke(() -> putValue(K3, "PingPong3"));
+    server2VM.invoke(() -> putValue(K4, "PingPong4"));
 
     // Step 8: Re-start the Client
-    durableClientVM
-        .invoke(() -> CacheServerTestUtil.createCacheClient(
-            getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, PORT2,
-                true, 0),
-            regionName, getClientDistributedSystemProperties(durableClientId), Boolean.TRUE));
+    durableClientVM.invoke(() -> createCacheClient(
+        getClientPool(hostName, PORT1, PORT2, true, 0),
+        regionName, getClientDistributedSystemProperties(durableClientId), Boolean.TRUE));
 
 
-    // Step 10: Register all Keys
-    durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K3, Boolean.TRUE));
-    durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K4, Boolean.TRUE));
+    // Step 9: Register all Keys
+    durableClientVM.invoke(() -> registerKey(K3, Boolean.TRUE));
+    durableClientVM.invoke(() -> registerKey(K4, Boolean.TRUE));
 
-    durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K1, Boolean.FALSE));
-    durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K2, Boolean.FALSE));
+    durableClientVM.invoke(() -> registerKey(K1, Boolean.FALSE));
+    durableClientVM.invoke(() -> registerKey(K2, Boolean.FALSE));
 
 
-    // Step 9: Send clientReady message
-    durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
+    // Step 10: Send clientReady message
+    durableClientVM.invoke("Send clientReady", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
-        CacheServerTestUtil.getCache().readyForEvents();
+        getCache().readyForEvents();
       }
     });
 
     // Step 11: Unregister Some Keys (Here K1, K3)
-    durableClientVM.invoke(() -> DurableRegistrationDUnitTest.unregisterKey(K1));
-    durableClientVM.invoke(() -> DurableRegistrationDUnitTest.unregisterKey(K3));
+    durableClientVM.invoke(() -> unregisterKey(K1));
+    durableClientVM.invoke(() -> unregisterKey(K3));
 
     Wait.pause(5000);
 
     // Step 12: Modify values on the server for all the Keys
-    server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue(K1, "PingPong_updated_1"));
-    server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue(K2, "PingPong_updated_2"));
-    server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue(K3, "PingPong_updated_3"));
-    server2VM.invoke(() -> DurableRegistrationDUnitTest.putValue(K4, "PingPong_updated_4"));
+    server2VM.invoke(() -> putValue(K1, "PingPong_updated_1"));
+    server2VM.invoke(() -> putValue(K2, "PingPong_updated_2"));
+    server2VM.invoke(() -> putValue(K3, "PingPong_updated_3"));
+    server2VM.invoke(() -> putValue(K4, "PingPong_updated_4"));
 
     Wait.pause(5000);
 
     // Step 13: Check the values for the ones not unregistered and the
     // Unregistered Keys' Values should be null
     try {
-      assertEquals("PingPong_updated_2",
-          durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K2)));
+      assertEquals("PingPong_updated_2", durableClientVM.invoke(() -> getValue(K2)));
     } catch (Exception e) {
-      fail("Prob in KEY_STONE2: "
-          + durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K2)));
+      fail("Prob in KEY_STONE2: " + durableClientVM.invoke(() -> getValue(K2)));
     }
 
     try {
-      assertEquals("PingPong_updated_4",
-          durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K4)));
+      assertEquals("PingPong_updated_4", durableClientVM.invoke(() -> getValue(K4)));
     } catch (Exception e) {
-      fail("Prob in KEY_STONE4: "
-          + durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K4)));
+      fail("Prob in KEY_STONE4: " + durableClientVM.invoke(() -> getValue(K4)));
     }
 
     try {
-      assertNull(durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K1)));
+      assertNull(durableClientVM.invoke(() -> getValue(K1)));
     } catch (Exception e) {
-      fail("Prob in KEY_STONE1: "
-          + durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K1)));
+      fail("Prob in KEY_STONE1: " + durableClientVM.invoke(() -> getValue(K1)));
     }
 
     try {
-      assertEquals("PingPong3",
-          durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K3)));
+      assertEquals("PingPong3", durableClientVM.invoke(() -> getValue(K3)));
     } catch (Exception e) {
       fail("Prob in KEY_STONE3: "
-          + durableClientVM.invoke(() -> DurableRegistrationDUnitTest.getValue(K3)));
+          + durableClientVM.invoke(() -> getValue(K3)));
     }
 
     // Stop the durable client
@@ -409,59 +369,50 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
   public void testDurableClientWithRegistrationHA() {
 
     // Step 1: Start server1
-    PORT1 = server1VM
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
+    PORT1 = server1VM.invoke(() -> createCacheServer(regionName, Boolean.TRUE));
     PORT2 = getRandomAvailableTCPPort();
 
     // Step 2: Bring Up the Client
     final String durableClientId = getName() + "_client";
     // keep the client alive for 600 seconds
     final int durableClientTimeout = 600;
-    durableClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
-        getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true,
+    durableClientVM.invoke(() -> createCacheClient(
+        getClientPool(hostName, PORT1, PORT2, true,
             1),
         regionName, getClientDistributedSystemProperties(durableClientId, durableClientTimeout)));
 
     // Send clientReady message
-    durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
+    durableClientVM.invoke("Send clientReady", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
-        CacheServerTestUtil.getCache().readyForEvents();
+        getCache().readyForEvents();
       }
     });
 
     // Step 3: Client registers Interests
-    durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K1, Boolean.FALSE));
-    durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K2, Boolean.FALSE));
-    durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K3, Boolean.TRUE));
-    durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K4, Boolean.TRUE));
+    durableClientVM.invoke(() -> registerKey(K1, Boolean.FALSE));
+    durableClientVM.invoke(() -> registerKey(K2, Boolean.FALSE));
+    durableClientVM.invoke(() -> registerKey(K3, Boolean.TRUE));
+    durableClientVM.invoke(() -> registerKey(K4, Boolean.TRUE));
 
     // Step 4: Bring up the server2
-
-    server2VM
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE, PORT2));
+    server2VM.invoke(() -> createCacheServer(regionName, Boolean.TRUE, PORT2));
 
     Wait.pause(3000);
 
     // Check server2 got all the interests registered by the durable client.
-    server2VM.invoke(new CacheSerializableRunnable("Verify Interests.") {
+    server2VM.invoke("Verify Interests.", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
-        LogWriterUtils.getLogWriter()
-            .info("### Verifying interests registered by DurableClient. ###");
+        logger.info("### Verifying interests registered by DurableClient. ###");
         CacheClientNotifier ccn = CacheClientNotifier.getInstance();
         CacheClientProxy p = null;
 
         // Get proxy for the client.
         for (int i = 0; i < 60; i++) {
-          Iterator ps = ccn.getClientProxies().iterator();
+          Iterator<CacheClientProxy> ps = ccn.getClientProxies().iterator();
           if (!ps.hasNext()) {
             Wait.pause(1000);
-            continue;
           } else {
             p = (CacheClientProxy) ps.next();
             break;
@@ -472,15 +423,14 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
           fail("Proxy initialization taking long time. Increase the wait time.");
         }
 
-        Iterator rs = p.getInterestRegisteredRegions().iterator();
-        String rName = (String) rs.next();
+        Iterator<String> rs = p.getInterestRegisteredRegions().iterator();
+        String rName = rs.next();
         assertNotNull("Null region Name found.", rs);
         LocalRegion r = (LocalRegion) GemFireCacheImpl.getInstance().getRegion(rName);
         assertNotNull("Null region found.", r);
         FilterProfile pf = r.getFilterProfile();
-        Set intrests = Collections.EMPTY_SET;
 
-        Set interestKeys = pf.getKeysOfInterest(p.getProxyID().getDurableId());
+        Set<String> interestKeys = pf.getKeysOfInterest(p.getProxyID().getDurableId());
         assertNotNull("durable Interests not found for the proxy", interestKeys);
         assertEquals("The number of durable keys registered during HARegion GII doesn't match.",
             interestKeys.size(), 2);
@@ -508,77 +458,70 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
 
     // Step 1: Start server1
     PORT1 = server1VM
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE));
+        .invoke(() -> createCacheServer(regionName, Boolean.TRUE));
     PORT2 = getRandomAvailableTCPPort();
 
     // Step 2: Bring Up the Client
     final String durableClientId = getName() + "_client";
     // keep the client alive for 600 seconds
     final int durableClientTimeout = 600;
-    durableClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
-        getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, PORT2, true,
+    durableClientVM.invoke(() -> createCacheClient(
+        getClientPool(hostName, PORT1, PORT2, true,
             1),
         regionName, getClientDistributedSystemProperties(durableClientId, durableClientTimeout)));
 
     // Send clientReady message
-    durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
+    durableClientVM.invoke("Send clientReady", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
-        CacheServerTestUtil.getCache().readyForEvents();
+        getCache().readyForEvents();
       }
     });
 
     // Step 3: Client registers Interests
-    durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K1, Boolean.FALSE));
-    durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K2, Boolean.FALSE));
-    durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K3, Boolean.TRUE));
-    durableClientVM
-        .invoke(() -> DurableRegistrationDUnitTest.registerKey(K4, Boolean.TRUE));
+    durableClientVM.invoke(() -> registerKey(K1, Boolean.FALSE));
+    durableClientVM.invoke(() -> registerKey(K2, Boolean.FALSE));
+    durableClientVM.invoke(() -> registerKey(K3, Boolean.TRUE));
+    durableClientVM.invoke(() -> registerKey(K4, Boolean.TRUE));
 
     // Close Cache of the DurableClient
-    durableClientVM.invoke(DurableRegistrationDUnitTest::closeCache);
+    durableClientVM.invoke(this::closeCache);
 
     Wait.pause(2000);
 
     // Re-start the Client
-    durableClientVM
-        .invoke(() -> CacheServerTestUtil.createCacheClient(
-            getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, PORT2,
-                true, 1),
-            regionName, getClientDistributedSystemProperties(durableClientId), Boolean.TRUE));
+    durableClientVM.invoke(() -> createCacheClient(
+        getClientPool(hostName, PORT1, PORT2,
+            true, 1),
+        regionName, getClientDistributedSystemProperties(durableClientId), Boolean.TRUE));
 
     // Send clientReady message
-    durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
+    durableClientVM.invoke("Send clientReady", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
-        CacheServerTestUtil.getCache().readyForEvents();
+        getCache().readyForEvents();
       }
     });
 
     // Step 4: Bring up the server2
     server2VM
-        .invoke(() -> CacheServerTestUtil.createCacheServer(regionName, Boolean.TRUE, PORT2));
+        .invoke(() -> createCacheServer(regionName, Boolean.TRUE, PORT2));
 
     Wait.pause(3000);
 
     // Check server2 got all the interests registered by the durable client.
-    server2VM.invoke(new CacheSerializableRunnable("Verify Interests.") {
+    server2VM.invoke("Verify Interests.", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
-        LogWriterUtils.getLogWriter()
-            .info("### Verifying interests registered by DurableClient. ###");
+        logger.info("### Verifying interests registered by DurableClient. ###");
         CacheClientNotifier ccn = CacheClientNotifier.getInstance();
         CacheClientProxy p = null;
 
         // Get proxy for the client.
         for (int i = 0; i < 60; i++) {
-          Iterator ps = ccn.getClientProxies().iterator();
+          Iterator<CacheClientProxy> ps = ccn.getClientProxies().iterator();
           if (!ps.hasNext()) {
             Wait.pause(1000);
-            continue;
           } else {
             p = (CacheClientProxy) ps.next();
             break;
@@ -589,15 +532,14 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
           fail("Proxy initialization taking long time. Increase the wait time.");
         }
 
-        Iterator rs = p.getInterestRegisteredRegions().iterator();
+        Iterator<String> rs = p.getInterestRegisteredRegions().iterator();
         String rName = (String) rs.next();
         assertNotNull("Null region Name found.", rs);
         LocalRegion r = (LocalRegion) GemFireCacheImpl.getInstance().getRegion(rName);
         assertNotNull("Null region found.", r);
         FilterProfile pf = r.getFilterProfile();
-        Set intrests = Collections.EMPTY_SET;
 
-        Set interestKeys = pf.getKeysOfInterest(p.getProxyID().getDurableId());
+        Set<String> interestKeys = pf.getKeysOfInterest(p.getProxyID().getDurableId());
         assertNotNull("durable Interests not found for the proxy", interestKeys);
         assertEquals("The number of durable keys registered during HARegion GII doesn't match.",
             interestKeys.size(), 2);
@@ -618,12 +560,11 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
 
   }
 
-  private static void unregisterAllKeys() {
+  private void unregisterAllKeys() {
     // Get the region
-    Region region = CacheServerTestUtil.getCache()
-        .getRegion(DurableRegistrationDUnitTest.class.getName() + "_region");
-    // Region region =
-    // CacheServerTestUtil.getCache().getRegion(DurableClientSampleDUnitTest.regionName);
+    Region<String, String> region =
+        getCache().getRegion(DurableRegistrationDUnitTest.class.getName() + "_region");
+
     assertNotNull(region);
     region.unregisterInterest(K1);
     region.unregisterInterest(K2);
@@ -632,13 +573,12 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
 
   }
 
-  private static void registerKeys() throws Exception {
+  private void registerKeys() throws Exception {
     try {
       // Get the region
-      Region region = CacheServerTestUtil.getCache()
+      Region<String, String> region = getCache()
           .getRegion(DurableRegistrationDUnitTest.class.getName() + "_region");
-      // Region region =
-      // CacheServerTestUtil.getCache().getRegion(DurableClientSampleDUnitTest.regionName);
+
       assertNotNull(region);
 
       region.registerInterest(K1, InterestResultPolicy.KEYS_VALUES, false);
@@ -653,14 +593,13 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  private static String getValue(String key) {
-    Region r = CacheServerTestUtil.getCache()
-        .getRegion(DurableRegistrationDUnitTest.class.getName() + "_region");
-    // Region r = CacheServerTestUtil.getCache().getRegion(regionName);
+  private String getValue(String key) {
+    Region<String, String> r =
+        getCache().getRegion(DurableRegistrationDUnitTest.class.getName() + "_region");
+
     assertNotNull(r);
-    // String value = (String)r.get(key);
-    // String value = (String)r.getEntry(key).getValue();
-    Region.Entry re = r.getEntry(key);
+
+    Region.Entry<String, String> re = r.getEntry(key);
 
     if (re == null) {
       return null;
@@ -669,13 +608,12 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  private static void registerKey(String key, boolean isDurable) throws Exception {
+  private void registerKey(String key, boolean isDurable) throws Exception {
     try {
       // Get the region
-      Region region = CacheServerTestUtil.getCache()
+      Region<String, String> region = getCache()
           .getRegion(DurableRegistrationDUnitTest.class.getName() + "_region");
-      // Region region =
-      // CacheServerTestUtil.getCache().getRegion(regionName);
+
       assertNotNull(region);
       region.registerInterest(key, InterestResultPolicy.NONE, isDurable);
     } catch (Exception ex) {
@@ -683,13 +621,12 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  private static void unregisterKey(String key) throws Exception {
+  private void unregisterKey(String key) throws Exception {
     try {
       // Get the region
-      Region region = CacheServerTestUtil.getCache()
+      Region<String, String> region = getCache()
           .getRegion(DurableRegistrationDUnitTest.class.getName() + "_region");
-      // Region region =
-      // CacheServerTestUtil.getCache().getRegion(regionName);
+
       assertNotNull(region);
       region.unregisterInterest(key);
     } catch (Exception ex) {
@@ -697,11 +634,11 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  private static void putValue(String key, String value) {
+  private void putValue(String key, String value) {
     try {
-      Region r = CacheServerTestUtil.getCache()
+      Region<String, String> r = getCache()
           .getRegion(DurableRegistrationDUnitTest.class.getName() + "_region");
-      // Region r = CacheServerTestUtil.getCache().getRegion(regionName);
+
       assertNotNull(r);
       if (r.getEntry(key) != null) {
         r.put(key, value);
@@ -730,22 +667,11 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
         DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT);
   }
 
-  private static void checkNumberOfClientProxies(final int expected) {
-    WaitCriterion ev = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return expected == getNumberOfClientProxies();
-      }
-
-      @Override
-      public String description() {
-        return null;
-      }
-    };
-    GeodeAwaitility.await().untilAsserted(ev);
+  private void checkNumberOfClientProxies(final int expected) {
+    GeodeAwaitility.await().until(() -> expected == getNumberOfClientProxies());
   }
 
-  protected static int getNumberOfClientProxies() {
+  protected int getNumberOfClientProxies() {
     return getBridgeServer().getAcceptor().getCacheClientNotifier().getClientProxies().size();
   }
 
@@ -759,7 +685,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
     return properties;
   }
 
-  private static CacheClientProxy getClientProxy() {
+  private CacheClientProxy getClientProxy() {
     // Get the CacheClientNotifier
     CacheClientNotifier notifier = getBridgeServer().getAcceptor().getCacheClientNotifier();
 
@@ -772,15 +698,15 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
     return proxy;
   }
 
-  private static CacheServerImpl getBridgeServer() {
+  private CacheServerImpl getBridgeServer() {
     CacheServerImpl bridgeServer =
-        (CacheServerImpl) CacheServerTestUtil.getCache().getCacheServers().iterator().next();
+        (CacheServerImpl) getCache().getCacheServers().iterator().next();
     assertNotNull(bridgeServer);
     return bridgeServer;
   }
 
-  public static void closeCache() {
-    Cache cache = CacheServerTestUtil.getCache();
+  public void closeCache() {
+    Cache cache = getCache();
     if (cache != null && !cache.isClosed()) {
       cache.close(true);
       cache.getDistributedSystem().disconnect();
@@ -797,6 +723,6 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
 
   @Override
   public final void preTearDown() throws Exception {
-    CacheServerTestUtil.resetDisableShufflingOfEndpointsFlag();
+    resetDisableShufflingOfEndpointsFlag();
   }
 }

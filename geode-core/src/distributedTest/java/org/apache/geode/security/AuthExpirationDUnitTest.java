@@ -185,7 +185,7 @@ public class AuthExpirationDUnitTest {
       Region<Object, Object> region = clientCache
           .createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("region");
 
-      region.registerInterestForAllKeys(InterestResultPolicy.KEYS, true);
+      region.registerInterestForAllKeys(InterestResultPolicy.NONE, true);
       clientCache.readyForEvents();
       UpdatableUserAuthInitialize.setUser("user11");
       // wait for time longer than server's max time to wait to re-authenticate
