@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
@@ -64,7 +65,7 @@ import org.apache.geode.test.version.VersionManager;
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class AuthExpirationBackwardCompatibleDUnitTest {
-  private static String test_start_version = "1.14.0";
+  private static String test_start_version = "1.13.9";
   private static RegionService user0Service;
   private static RegionService user1Service;
 
@@ -73,7 +74,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
 
   @Parameterized.Parameters(name = "{0}")
   public static Collection<String> data() {
-    // only test versions greater than or equal to 1.14.0
+    // only test versions greater than or equal to 1.13.9
     return VersionManager.getInstance().getVersionsLaterThanAndEqualTo(test_start_version);
   }
 
@@ -142,8 +143,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
     for (int i = 1; i < times; i++) {
       assertThatThrownBy(() -> region.put(1, "value1"))
           .isInstanceOf(ServerOperationException.class)
-          .hasCauseInstanceOf(AuthenticationFailedException.class)
-          .hasCauseInstanceOf(AuthenticationRequiredException.class);
+          .hasCauseInstanceOf(AuthenticationFailedException.class);
     }
   }
 
@@ -309,6 +309,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
     assertThat(unAuthorizedOps.get("user1")).asList().contains("DATA:READ:region:2");
   }
 
+  @Ignore
   @Test
   // re-authentication in Multi-user mode in event dispatching is not supported.
   // we do support re-auth in multi-user mode in non-event dispatching case.
@@ -391,6 +392,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
     });
   }
 
+  @Ignore
   @Test
   public void createCQWillReAuth() throws Exception {
     int serverPort = server.getPort();
@@ -424,6 +426,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
     assertThat(authorizedOps.get("user2")).containsExactly("DATA:READ:region");
   }
 
+  @Ignore
   @Test
   public void stopCQ() throws Exception {
     int serverPort = server.getPort();
@@ -457,6 +460,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
     assertThat(authorizedOps.get("user2")).containsExactly("CLUSTER:MANAGE:QUERY");
   }
 
+  @Ignore
   @Test
   public void closeCQ() throws Exception {
     int serverPort = server.getPort();
