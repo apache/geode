@@ -268,7 +268,7 @@ public class DistributedRegionTest {
   }
 
   @Test
-  public void hasSeenEventDoseNotFindAndSetVersionTagIfFoundInEventTrackerAndVersionTagIsSet() {
+  public void hasSeenEventDoesNotFindAndSetVersionTagIfFoundInEventTrackerAndVersionTagIsSet() {
     DistributedRegion distributedRegion = mock(DistributedRegion.class);
     doCallRealMethod().when(distributedRegion).hasSeenEvent(event);
     when(distributedRegion.getEventTracker()).thenReturn(eventTracker);
@@ -281,7 +281,7 @@ public class DistributedRegionTest {
   }
 
   @Test
-  public void hasSeenEventDoseNotFindAndSetVersionTagIfFoundInEventTrackerAndConcurrencyChecksNotEnabled() {
+  public void hasSeenEventDoesNotFindAndSetVersionTagIfFoundInEventTrackerAndConcurrencyChecksNotEnabled() {
     DistributedRegion distributedRegion = mock(DistributedRegion.class);
     doCallRealMethod().when(distributedRegion).hasSeenEvent(event);
     when(distributedRegion.getEventTracker()).thenReturn(eventTracker);
@@ -295,7 +295,7 @@ public class DistributedRegionTest {
   }
 
   @Test
-  public void hasSeenEventDoseNotFindAndSetVersionTagIfFoundInEventTrackerAndEventIdIsNotSet() {
+  public void hasSeenEventDoesNotFindAndSetVersionTagIfFoundInEventTrackerAndEventIdIsNotSet() {
     DistributedRegion distributedRegion = mock(DistributedRegion.class);
     doCallRealMethod().when(distributedRegion).hasSeenEvent(event);
     when(distributedRegion.getEventTracker()).thenReturn(eventTracker);
@@ -325,7 +325,7 @@ public class DistributedRegionTest {
   }
 
   @Test
-  public void hasSeenEventDoseNotFindAndSetVersionTagIfNotFoundEventInEventTrackerAndNotADuplicateEvent() {
+  public void hasSeenEventDoesNotFindAndSetVersionTagIfNotFoundEventInEventTrackerAndNotADuplicateEvent() {
     DistributedRegion distributedRegion = mock(DistributedRegion.class);
     doCallRealMethod().when(distributedRegion).hasSeenEvent(event);
     when(distributedRegion.getEventTracker()).thenReturn(eventTracker);
@@ -337,7 +337,7 @@ public class DistributedRegionTest {
   }
 
   @Test
-  public void hasSeenEventDoseNotFindAndSetVersionTagIfNotFoundInEventTrackerAndConcurrencyChecksNotEnabled() {
+  public void hasSeenEventDoesNotFindAndSetVersionTagIfNotFoundInEventTrackerAndConcurrencyChecksNotEnabled() {
     DistributedRegion distributedRegion = mock(DistributedRegion.class);
     doCallRealMethod().when(distributedRegion).hasSeenEvent(event);
     when(distributedRegion.getEventTracker()).thenReturn(eventTracker);
@@ -351,7 +351,7 @@ public class DistributedRegionTest {
   }
 
   @Test
-  public void hasSeenEventDoseNotFindAndSetVersionTagIfNotFoundInEventTrackerAndVersionTagIsSet() {
+  public void hasSeenEventDoesNotFindAndSetVersionTagIfNotFoundInEventTrackerAndVersionTagIsSet() {
     DistributedRegion distributedRegion = mock(DistributedRegion.class);
     doCallRealMethod().when(distributedRegion).hasSeenEvent(event);
     when(distributedRegion.getEventTracker()).thenReturn(eventTracker);
@@ -366,7 +366,7 @@ public class DistributedRegionTest {
   }
 
   @Test
-  public void hasSeenEventDoseNotFindAndSetVersionTagIfNotFoundInEventTrackerAndNoEventId() {
+  public void hasSeenEventDoesNotFindAndSetVersionTagIfNotFoundInEventTrackerAndNoEventId() {
     DistributedRegion distributedRegion = mock(DistributedRegion.class);
     doCallRealMethod().when(distributedRegion).hasSeenEvent(event);
     when(distributedRegion.getEventTracker()).thenReturn(eventTracker);
