@@ -261,6 +261,10 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
     this.locatorClient = locatorClient;
   }
 
+  public List<HostAndPort> getLocators() {
+    return locators;
+  }
+
   static class SearchState<ID extends MemberIdentifier> {
     public int joinedMembersContacted;
     Set<ID> alreadyTried = new HashSet<>();
