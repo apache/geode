@@ -33,7 +33,6 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.InterestPolicy;
 import org.apache.geode.cache.InterestResultPolicy;
@@ -80,16 +79,13 @@ public class LocalRegionUpdateTest {
 
     when(regionMapConstructor.create(any(), any(), any())).thenReturn(mock(RegionMap.class));
 
-
-    AttributesFactory<Object, Object> regionAttributesFactory = new AttributesFactory<>();
-    regionAttributesFactory.setDataPolicy(DataPolicy.NORMAL);
-    regionAttributesFactory.setPoolName("Pool1");
-    regionAttributesFactory.setConcurrencyChecksEnabled(false);
-    regionAttributesFactory.setSubscriptionAttributes(subscriptionAttributes);
+    InternalRegionFactory<Object, Object> regionFactory = new InternalRegionFactory<>(cache);
+    regionFactory.setDataPolicy(DataPolicy.NORMAL);
+    regionFactory.setPoolName("Pool1");
+    regionFactory.setConcurrencyChecksEnabled(false);
+    regionFactory.setSubscriptionAttributes(subscriptionAttributes);
     RegionAttributes<Object, Object> regionAttributes =
-        regionAttributesFactory.createRegionAttributes();
-
-
+        regionFactory.getCreateAttributes();
 
     registerInterestTracker = new RegisterInterestTracker();
     when(poolImpl.getRITracker()).thenReturn(registerInterestTracker);
@@ -123,7 +119,7 @@ public class LocalRegionUpdateTest {
         null, true, false, new EntryEventImpl(),
         new EventID(new byte[] {1}, 1, 1));
 
-    verify(internalDataView, times(1)).putEntry(any(), anyBoolean(),
+    verify(internalDataView).putEntry(any(), anyBoolean(),
         anyBoolean(), any(), anyBoolean(), anyLong(), anyBoolean(), anyBoolean(), anyBoolean());
 
   }
