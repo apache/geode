@@ -94,6 +94,11 @@ public class OutOfMemoryDUnitTest {
 
   private final AtomicInteger numberOfKeys = new AtomicInteger(0);
 
+  private static int getJavaMajorVersion() {
+    String version = System.getProperty("java.specification.version");
+    return Integer.parseInt(version.substring(version.indexOf('.') + 1));
+  }
+
   @BeforeClass
   public static void setUpClass() throws Exception {
     IgnoredException.addIgnoredException("Member: .*? above .*? critical threshold");
@@ -142,9 +147,12 @@ public class OutOfMemoryDUnitTest {
         .addOption(START_SERVER__J, "-Dgemfire.geode-for-redis-port=" + redisPort)
         .addOption(START_SERVER__INITIAL_HEAP, "125m")
         .addOption(START_SERVER__MAXHEAP, "125m")
-        .addOption(START_SERVER__CRITICAL__HEAP__PERCENTAGE, "50")
-        .addOption(START_SERVER__J, "-XX:CMSInitiatingOccupancyFraction=45")
-        .addOption(START_SERVER__CLASSPATH, redisHome.getGeodeForRedisHome() + "/lib/*");
+        .addOption(START_SERVER__CLASSPATH, redisHome.getGeodeForRedisHome() + "/lib/*")
+        .addOption(START_SERVER__CRITICAL__HEAP__PERCENTAGE, "50");
+    // java 14 dropped support for CMS
+    if (getJavaMajorVersion() < 14) {
+      startServerCommand.addOption(START_SERVER__J, "-XX:CMSInitiatingOccupancyFraction=45");
+    }
     gfsh.executeAndAssertThat(startServerCommand.getCommandString()).statusIsSuccess();
   }
 
