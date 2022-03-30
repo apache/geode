@@ -15,9 +15,11 @@
 package org.apache.geode.internal.net;
 
 import static javax.net.ssl.SSLEngineResult.HandshakeStatus.FINISHED;
+import static javax.net.ssl.SSLEngineResult.HandshakeStatus.NEED_TASK;
 import static javax.net.ssl.SSLEngineResult.HandshakeStatus.NEED_UNWRAP;
 import static javax.net.ssl.SSLEngineResult.Status.BUFFER_OVERFLOW;
 import static javax.net.ssl.SSLEngineResult.Status.CLOSED;
+import static javax.net.ssl.SSLEngineResult.Status.OK;
 import static org.apache.geode.internal.net.BufferPool.BufferType.TRACKED_RECEIVER;
 import static org.apache.geode.internal.net.BufferPool.BufferType.TRACKED_SENDER;
 
@@ -37,6 +39,7 @@ import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLSession;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.annotations.VisibleForTesting;
@@ -228,8 +231,59 @@ public class NioSslEngine implements NioFilter {
   }
 
   @Override
-  public ByteBufferSharing wrap(ByteBuffer appData, final SocketChannel channel)
+  public ByteBufferSharing wrap(ByteBuffer appData)
       throws IOException {
+    System.out.println("BGB: entering wrap");
+    try {
+//      return wrapNew(appData);
+    return wrapOld(appData);
+    } finally {
+      System.out.println("BGB: leaving wrap");
+    }
+  }
+
+  public ByteBufferSharing wrapNew(ByteBuffer appData)
+      throws IOException {
+    try (final ByteBufferSharing outputSharing = outputBufferVendor.open()) {
+
+      ByteBuffer myNetData = outputSharing.getBuffer();
+
+      myNetData.clear();
+
+      while (appData.hasRemaining()) {
+        final SSLEngineResult wrapResult = doWrap(appData, myNetData);
+        switch (wrapResult.getStatus()) {
+          case BUFFER_OVERFLOW:
+            final int newCapacity = myNetData.position() + engine.getSession().getPacketBufferSize();
+            myNetData = outputSharing.expandWriteBufferIfNeeded(newCapacity);
+            break;
+          case BUFFER_UNDERFLOW:
+          case CLOSED:
+            throw new SSLException("Error encrypting data: " + wrapResult);
+        }
+
+        if (wrapResult.getHandshakeStatus() == NEED_TASK) {
+          handleBlockingTasks();
+        }
+      }
+
+      myNetData.flip();
+
+      return outputBufferVendor.open();
+    }
+  }
+
+  @NotNull
+  private SSLEngineResult doWrap(final ByteBuffer appData, final ByteBuffer myNetData)
+      throws SSLException {
+    System.out.printf("BGB: pre-wrap appData: %s, myNetData: %s%n", appData, myNetData);
+    SSLEngineResult wrapResult = engine.wrap(appData, myNetData);
+    System.out.printf("BGB: post-wrap appData: %s, myNetData: %s,%nBGB: status: %s, handshakeStatus: %s%n",
+        appData, myNetData, wrapResult.getStatus(), wrapResult.getHandshakeStatus());
+    return wrapResult;
+  }
+
+  public ByteBufferSharing wrapOld(ByteBuffer appData) throws IOException {
     try (final ByteBufferSharing outputSharing = outputBufferVendor.open()) {
 
       ByteBuffer myNetData = outputSharing.getBuffer();
@@ -246,26 +300,14 @@ public class NioSslEngine implements NioFilter {
           myNetData = outputSharing.expandWriteBufferIfNeeded(newCapacity);
         }
 
-        SSLEngineResult wrapResult = engine.wrap(appData, myNetData);
+        SSLEngineResult wrapResult = doWrap(appData, myNetData);
 
-        switch (wrapResult.getStatus()) {
-          case BUFFER_UNDERFLOW:
-            throw new SSLException("Error encrypting data: " + wrapResult);
-          case BUFFER_OVERFLOW:
-            write(channel, myNetData);
-            break;
-          case OK:
-            break;
-          case CLOSED:
-            throw new SSLException("Error encrypting data: " + wrapResult);
+        if (wrapResult.getHandshakeStatus() == NEED_TASK) {
+          handleBlockingTasks();
         }
 
-        switch (wrapResult.getHandshakeStatus()) {
-          case NEED_TASK:
-            handleBlockingTasks();
-            break;
-          case NEED_WRAP:
-            write(channel, myNetData);
+        if (wrapResult.getStatus() != OK) {
+          throw new SSLException("Error encrypting data: " + wrapResult);
         }
       }
 
@@ -274,6 +316,7 @@ public class NioSslEngine implements NioFilter {
       return outputBufferVendor.open();
     }
   }
+
 
   private void write(final SocketChannel channel, final ByteBuffer myNetData)
       throws IOException {

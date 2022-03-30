@@ -448,7 +448,7 @@ public class NioSslEngineKeyUpdateTest {
       appData.put((byte) (i + startingValue));
     }
     appData.flip();
-    try (final ByteBufferSharing netDataSharing = filter.wrap(appData, channel)) {
+    try (final ByteBufferSharing netDataSharing = filter.wrap(appData)) {
       final ByteBuffer netData = netDataSharing.getBuffer();
       while (netData.remaining() > 0) {
         channel.write(netData);

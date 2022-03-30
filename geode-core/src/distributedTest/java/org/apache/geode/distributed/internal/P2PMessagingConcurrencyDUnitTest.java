@@ -82,7 +82,7 @@ public class P2PMessagingConcurrencyDUnitTest {
   private static final int SENDERS = 1;
 
   // number of concurrent (sending) tasks to run in each sending JVM
-  private static final int TASKS_PER_SENDER = 10;
+  private static final int TASKS_PER_SENDER = 1;
 
   // how many messages will each sending task generate?
   private static final int MESSAGES_PER_SENDING_TASK = 1_000;
@@ -115,7 +115,7 @@ public class P2PMessagingConcurrencyDUnitTest {
    * Leave this turned off for CI since ENCRYPTED_BYTES_LIMIT is
    * performance-sensitive. Turning it on in CI can make this test flaky.
    */
-  private static final boolean TEST_WITH_TLS_KEY_UPDATE_MESSAGE_PROCESSING = false;
+  private static final boolean TEST_WITH_TLS_KEY_UPDATE_MESSAGE_PROCESSING = true;
 
   private static final int ENCRYPTED_BYTES_LIMIT = 1024 * 8; // 2^13
 
@@ -196,37 +196,37 @@ public class P2PMessagingConcurrencyDUnitTest {
        * (equal), larger/smaller, smaller/larger, minimal
        */
       "true, true, true, 32768, 32768",
-      "true, true, true, 65536, 32768",
-      "true, true, true, 32768, 65536",
-      "true, true, true, 1024, 1024",
-      "true, true, false, 32768, 32768",
-      "true, true, false, 65536, 32768",
-      "true, true, false, 32768, 65536",
-      "true, true, false, 1024, 1024",
-      "true, false, true, 32768, 32768",
-      "true, false, true, 65536, 32768",
-      "true, false, true, 32768, 65536",
-      "true, false, true, 1024, 1024",
-      "true, false, false, 32768, 32768",
-      "true, false, false, 65536, 32768",
-      "true, false, false, 32768, 65536",
-      "true, false, false, 1024, 1024",
-      "false, true, true, 32768, 32768",
-      "false, true, true, 65536, 32768",
-      "false, true, true, 32768, 65536",
-      "false, true, true, 1024, 1024",
-      "false, true, false, 32768, 32768",
-      "false, true, false, 65536, 32768",
-      "false, true, false, 32768, 65536",
-      "false, true, false, 1024, 1024",
-      "false, false, true, 32768, 32768",
-      "false, false, true, 65536, 32768",
-      "false, false, true, 32768, 65536",
-      "false, false, true, 1024, 1024",
-      "false, false, false, 32768, 32768",
-      "false, false, false, 65536, 32768",
-      "false, false, false, 32768, 65536",
-      "false, false, false, 1024, 1024",
+//      "true, true, true, 65536, 32768",
+//      "true, true, true, 32768, 65536",
+//      "true, true, true, 1024, 1024",
+//      "true, true, false, 32768, 32768",
+//      "true, true, false, 65536, 32768",
+//      "true, true, false, 32768, 65536",
+//      "true, true, false, 1024, 1024",
+//      "true, false, true, 32768, 32768",
+//      "true, false, true, 65536, 32768",
+//      "true, false, true, 32768, 65536",
+//      "true, false, true, 1024, 1024",
+//      "true, false, false, 32768, 32768",
+//      "true, false, false, 65536, 32768",
+//      "true, false, false, 32768, 65536",
+//      "true, false, false, 1024, 1024",
+//      "false, true, true, 32768, 32768",
+//      "false, true, true, 65536, 32768",
+//      "false, true, true, 32768, 65536",
+//      "false, true, true, 1024, 1024",
+//      "false, true, false, 32768, 32768",
+//      "false, true, false, 65536, 32768",
+//      "false, true, false, 32768, 65536",
+//      "false, true, false, 1024, 1024",
+//      "false, false, true, 32768, 32768",
+//      "false, false, true, 65536, 32768",
+//      "false, false, true, 32768, 65536",
+//      "false, false, true, 1024, 1024",
+//      "false, false, false, 32768, 32768",
+//      "false, false, false, 65536, 32768",
+//      "false, false, false, 32768, 65536",
+//      "false, false, false, 1024, 1024",
   })
   public void testP2PMessaging(
       final boolean requireOrderedDelivery,
@@ -253,7 +253,6 @@ public class P2PMessagingConcurrencyDUnitTest {
       bytesTransferredAdder = new LongAdder();
 
       final ClusterDistributionManager cdm = getCDM();
-      final Random random = ThreadLocalRandom.current();
       final AtomicInteger nextSenderId = new AtomicInteger();
 
       /*
@@ -283,7 +282,7 @@ public class P2PMessagingConcurrencyDUnitTest {
         for (int messageId = firstMessageId; messageId < firstMessageId
             + MESSAGES_PER_SENDING_TASK; messageId++) {
           final TestMessage msg =
-              new TestMessage(receiverMember, random, messageId, requireOrderedDelivery);
+              new TestMessage(receiverMember, messageId, requireOrderedDelivery);
 
           /*
            * HERE is the Geode API entrypoint we intend to test (putOutgoing()).
@@ -304,6 +303,7 @@ public class P2PMessagingConcurrencyDUnitTest {
       stopLatch.await();
 
       assertThat(failedRecipientCount.sum()).as("message delivery failed N times").isZero();
+      System.out.println("BGB: SENDER JVM DONE");
 
     }));
 
@@ -314,6 +314,7 @@ public class P2PMessagingConcurrencyDUnitTest {
         () -> assertThat(getByteCount(receiver))
             .as("bytes received != bytes sent")
             .isEqualTo(bytesSent));
+    System.out.println("BGB: TEST DONE");
   }
 
   private long getByteCount(final MemberVM member) {
@@ -336,23 +337,19 @@ public class P2PMessagingConcurrencyDUnitTest {
      * Left the field here in case it comes in handy later.
      */
     private volatile int messageId;
-    private volatile Random random;
     private boolean requireOrderedDelivery;
 
     TestMessage(
         final InternalDistributedMember receiver,
-        final Random random,
         final int messageId,
         final boolean requireOrderedDelivery) {
       setRecipient(receiver);
-      this.random = random;
       this.messageId = messageId;
       this.requireOrderedDelivery = requireOrderedDelivery;
     }
 
     // necessary for deserialization
     public TestMessage() {
-      random = null;
       messageId = 0;
     }
 
@@ -375,6 +372,8 @@ public class P2PMessagingConcurrencyDUnitTest {
       super.toData(out, context);
 
       out.writeInt(messageId);
+
+      final ThreadLocalRandom random = ThreadLocalRandom.current();
 
       final int length = random.nextInt(LARGEST_MESSAGE_BOUND);
 

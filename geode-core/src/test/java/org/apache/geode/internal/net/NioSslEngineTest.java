@@ -209,7 +209,7 @@ public class NioSslEngineTest {
       spyNioSslEngine.engine = testEngine;
       SocketChannel mockChannel = mock(SocketChannel.class);
 
-      try (final ByteBufferSharing outputSharing2 = spyNioSslEngine.wrap(appData, mockChannel)) {
+      try (final ByteBufferSharing outputSharing2 = spyNioSslEngine.wrap(appData)) {
         ByteBuffer wrappedBuffer = outputSharing2.getBuffer();
 
         verify(spyBufferPool, times(1)).expandWriteBufferIfNeeded(any(BufferPool.BufferType.class),
@@ -241,7 +241,7 @@ public class NioSslEngineTest {
       spyNioSslEngine.engine = testEngine;
       SocketChannel mockChannel = mock(SocketChannel.class);
 
-      assertThatThrownBy(() -> spyNioSslEngine.wrap(appData, mockChannel))
+      assertThatThrownBy(() -> spyNioSslEngine.wrap(appData))
           .isInstanceOf(SSLException.class)
           .hasMessageContaining("Error encrypting data");
     }
