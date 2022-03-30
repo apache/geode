@@ -22,6 +22,8 @@ apply from: "${rootDir}/${scriptDir}/warnings.gradle"
 apply from: "${project.projectDir}/../gradle/jmh.gradle"
 
 apply plugin: 'nebula.facet'
+apply plugin: 'distribution'
+
 facets {
   commonTest {
     testTaskName = 'commonTest'
@@ -32,20 +34,29 @@ commonTest {
   useJUnitPlatform()
 }
 
+configurations {
+  //The provided configuration is for declaring dependencies
+  //That are required at compile and test runtime, but should not
+  //be part of the zip file (because they are part of geode distribution)
+  provided
+  testImplementation.extendsFrom(provided);
+  compileOnly.extendsFrom(provided);
+}
+
 dependencies {
   api(platform(project(':boms:geode-all-bom')))
-  implementation(project(':geode-serialization'))
-  implementation(project(':geode-logging'))
-  implementation(project(':geode-core'))
-  implementation(project(':geode-gfsh'))
-  implementation(project(':geode-membership'))
-  implementation('it.unimi.dsi:fastutil')
-  implementation('com.github.davidmoten:geo')
-  implementation('io.netty:netty-handler')
-  implementation('org.apache.logging.log4j:log4j-api')
-  implementation('commons-codec:commons-codec')
-  implementation('org.apache.commons:commons-lang3')
-  implementation('it.unimi.dsi:fastutil')
+  provided(project(':geode-serialization'))
+  provided(project(':geode-logging'))
+  provided(project(':geode-core'))
+  provided(project(':geode-gfsh'))
+  provided(project(':geode-membership'))
+  provided('it.unimi.dsi:fastutil')
+  provided('org.apache.logging.log4j:log4j-api')
+  provided('commons-codec:commons-codec')
+  provided('org.apache.commons:commons-lang3')
+  implementation('io.netty:netty-handler') {
+    exclude module: 'netty-tcnative-classes'
+  }
 
   testImplementation(project(':geode-junit'))
   testImplementation('org.mockito:mockito-core')
@@ -113,24 +124,42 @@ dependencies {
 
 acceptanceTest {
   environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode"
+  environment 'GEODE_FOR_REDIS_HOME', "$buildDir/install/geode-for-redis"
   dependsOn(':geode-assembly:installDist')
+  dependsOn(':geode-for-redis:installDist')
 }
 
 distributedTest {
   environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode"
+  environment 'GEODE_FOR_REDIS_HOME', "$buildDir/install/geode-for-redis"
   dependsOn(':geode-assembly:installDist')
+  dependsOn(':geode-for-redis:installDist')
 }
 
 repeatDistributedTest {
   environment 'GEODE_HOME', "$buildDir/../../geode-assembly/build/install/apache-geode"
+  environment 'GEODE_FOR_REDIS_HOME', "$buildDir/install/geode-for-redis"
   dependsOn(':geode-assembly:installDist')
+  dependsOn(':geode-for-redis:installDist')
 }
 
 tasks.register("redisAPITest") {
   dependsOn ':geode-assembly:installDist'
+  dependsOn ':geode-for-redis:installDist'
   doLast {
     exec {
       executable "../ci/scripts/execute_redis_tests.sh"
+    }
+  }
+}
+
+distributions {
+  main {
+    contents {
+      into('lib') {
+        from(jar)
+        from(configurations.runtimeClasspath)
+      }
     }
   }
 }
