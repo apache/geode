@@ -18,7 +18,6 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -28,7 +27,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.apache.shiro.subject.Subject;
-import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 
