@@ -22,6 +22,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.Logger;
@@ -35,8 +38,10 @@ import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.offheap.annotations.OffHeapIdentifier;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -56,6 +61,14 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
 
   public static final String FREE_OFF_HEAP_MEMORY_PROPERTY =
       GeodeGlossary.GEMFIRE_PREFIX + "free-off-heap-memory";
+
+  public static final int UPDATE_OFF_HEAP_STATS_FREQUENCY_MS =
+      SystemPropertyHelper.getProductIntegerProperty(
+          "off-heap-stats-update-frequency-ms").orElse(3600000);
+
+  private final ScheduledExecutorService updateNonRealTimeStatsExecutor;
+
+  private final ScheduledFuture<?> updateNonRealTimeStatsFuture;
 
   private volatile OffHeapMemoryStats stats;
 
@@ -86,19 +99,21 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
       Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "OFF_HEAP_DO_EXPENSIVE_VALIDATION");
 
   public static MemoryAllocator create(OutOfOffHeapMemoryListener ooohml, OffHeapMemoryStats stats,
+      int slabCount, long offHeapMemorySize, long maxSlabSize,
+      int updateOffHeapStatsFrequencyMs) {
+    return create(ooohml, stats, slabCount, offHeapMemorySize, maxSlabSize, null,
+        SlabImpl::new, updateOffHeapStatsFrequencyMs);
+  }
+
+  public static MemoryAllocator create(OutOfOffHeapMemoryListener ooohml, OffHeapMemoryStats stats,
       int slabCount, long offHeapMemorySize, long maxSlabSize) {
     return create(ooohml, stats, slabCount, offHeapMemorySize, maxSlabSize, null,
-        new SlabFactory() {
-          @Override
-          public Slab create(int size) {
-            return new SlabImpl(size);
-          }
-        });
+        SlabImpl::new, UPDATE_OFF_HEAP_STATS_FREQUENCY_MS);
   }
 
   private static MemoryAllocatorImpl create(OutOfOffHeapMemoryListener ooohml,
       OffHeapMemoryStats stats, int slabCount, long offHeapMemorySize, long maxSlabSize,
-      Slab[] slabs, SlabFactory slabFactory) {
+      Slab[] slabs, SlabFactory slabFactory, int updateOffHeapStatsFrequencyMs) {
     MemoryAllocatorImpl result = singleton;
     boolean created = false;
     try {
@@ -142,7 +157,7 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
           }
         }
 
-        result = new MemoryAllocatorImpl(ooohml, stats, slabs);
+        result = new MemoryAllocatorImpl(ooohml, stats, slabs, updateOffHeapStatsFrequencyMs);
         singleton = result;
         LifecycleListener.invokeAfterCreate(result);
         created = true;
@@ -163,7 +178,8 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
   static MemoryAllocatorImpl createForUnitTest(OutOfOffHeapMemoryListener ooohml,
       OffHeapMemoryStats stats, int slabCount, long offHeapMemorySize, long maxSlabSize,
       SlabFactory memChunkFactory) {
-    return create(ooohml, stats, slabCount, offHeapMemorySize, maxSlabSize, null, memChunkFactory);
+    return create(ooohml, stats, slabCount, offHeapMemorySize, maxSlabSize, null, memChunkFactory,
+        UPDATE_OFF_HEAP_STATS_FREQUENCY_MS);
   }
 
   public static MemoryAllocatorImpl createForUnitTest(OutOfOffHeapMemoryListener oooml,
@@ -181,7 +197,8 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
         }
       }
     }
-    return create(oooml, stats, slabCount, offHeapMemorySize, maxSlabSize, slabs, null);
+    return create(oooml, stats, slabCount, offHeapMemorySize, maxSlabSize, slabs, null,
+        UPDATE_OFF_HEAP_STATS_FREQUENCY_MS);
   }
 
 
@@ -207,7 +224,8 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
   }
 
   private MemoryAllocatorImpl(final OutOfOffHeapMemoryListener oooml,
-      final OffHeapMemoryStats stats, final Slab[] slabs) {
+      final OffHeapMemoryStats stats, final Slab[] slabs,
+      int updateOffHeapStatsFrequencyMs) {
     if (oooml == null) {
       throw new IllegalArgumentException("OutOfOffHeapMemoryListener is null");
     }
@@ -221,8 +239,14 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
     this.freeList = new FreeListManager(this, slabs);
     this.memoryInspector = new MemoryInspectorImpl(this.freeList);
 
-    this.stats.incMaxMemory(this.freeList.getTotalMemory());
-    this.stats.incFreeMemory(this.freeList.getTotalMemory());
+    this.stats.incMaxMemory(freeList.getTotalMemory());
+    this.stats.incFreeMemory(freeList.getTotalMemory());
+
+    updateNonRealTimeStatsExecutor =
+        LoggingExecutors.newSingleThreadScheduledExecutor("Update Freelist Stats thread");
+    updateNonRealTimeStatsFuture =
+        updateNonRealTimeStatsExecutor.scheduleAtFixedRate(freeList::updateNonRealTimeStats, 0,
+            updateOffHeapStatsFrequencyMs, TimeUnit.MILLISECONDS);
   }
 
   public List<OffHeapStoredObject> getLostChunks(InternalCache cache) {
@@ -387,8 +411,10 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
   private void realClose() {
     // Removing this memory immediately can lead to a SEGV. See 47885.
     if (setClosed()) {
-      this.freeList.freeSlabs();
-      this.stats.close();
+      freeList.freeSlabs();
+      stats.close();
+      updateNonRealTimeStatsFuture.cancel(true);
+      updateNonRealTimeStatsExecutor.shutdown();
       singleton = null;
     }
   }
@@ -525,5 +551,4 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
   public MemoryInspector getMemoryInspector() {
     return this.memoryInspector;
   }
-
 }

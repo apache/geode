@@ -502,6 +502,13 @@ public class ShowMetricsCommand extends GfshCommand {
       writeToTableAndCsv(metricsTable, "", "objects", memberMxBean.getOffHeapObjects(), csvBuilder);
       writeToTableAndCsv(metricsTable, "", "fragmentation", memberMxBean.getOffHeapFragmentation(),
           csvBuilder);
+      writeToTableAndCsv(metricsTable, "", "largestFragment",
+          memberMxBean.getOffHeapLargestFragment(),
+          csvBuilder);
+      writeToTableAndCsv(metricsTable, "", "fragments", memberMxBean.getOffHeapFragments(),
+          csvBuilder);
+      writeToTableAndCsv(metricsTable, "", "freedChunks", memberMxBean.getOffHeapFreedChunks(),
+          csvBuilder);
       writeToTableAndCsv(metricsTable, "", "compactionTime",
           memberMxBean.getOffHeapCompactionTime(), csvBuilder);
     }

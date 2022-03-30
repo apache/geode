@@ -1352,6 +1352,36 @@ public class MemberMBeanBridge {
     return 0;
   }
 
+  long getOffHeapFragments() {
+    OffHeapMemoryStats stats = getOffHeapStats();
+
+    if (null != stats) {
+      return stats.getFragments();
+    }
+
+    return 0;
+  }
+
+  long getOffHeapFreedChunks() {
+    OffHeapMemoryStats stats = getOffHeapStats();
+
+    if (null != stats) {
+      return stats.getFreedChunks();
+    }
+
+    return 0;
+  }
+
+  int getOffHeapLargestFragment() {
+    OffHeapMemoryStats stats = getOffHeapStats();
+
+    if (null != stats) {
+      return stats.getLargestFragment();
+    }
+
+    return 0;
+  }
+
   long getOffHeapCompactionTime() {
     OffHeapMemoryStats stats = getOffHeapStats();
 
