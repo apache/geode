@@ -33,6 +33,8 @@ import org.apache.geode.cache.client.SocketFactory;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
+import org.apache.geode.distributed.internal.ServerLocationExtension;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
 import org.apache.geode.internal.cache.tier.ClientSideHandshake;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
@@ -111,7 +113,16 @@ public class ConnectionImpl implements Connection {
     }
     theSocket.setSoTimeout(readTimeout);
 
-    endpoint = endpointManager.referenceEndpoint(location, status.getMemberId());
+    if (location instanceof ServerLocationExtension) {
+      ServerLocationAndMemberId serverLocationAndMemberId =
+          ((ServerLocationExtension) location).getServerLocationAndMemberId();
+      endpoint = endpointManager.getEndpointMap().get(serverLocationAndMemberId);
+    }
+
+    if (endpoint == null) {
+      endpoint = endpointManager.referenceEndpoint(location, status.getMemberId());
+    }
+
     connectFinished = true;
     endpoint.getStats().incConnections(1);
     return status;
