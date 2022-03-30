@@ -150,8 +150,8 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
   @Test
   public void shouldRenameAtomically() {
     int numIterations = 100;
-    int numStringsFirstKey = 500000;
-    int numStringsSecondKey = 30000;
+    int numStringsFirstKey = 10000;
+    int numStringsSecondKey = 1000;
 
     String k1 = "{tag1}k1";
     String k2 = "{tag1}k2";
@@ -171,7 +171,7 @@ public abstract class AbstractRenameIntegrationTest implements RedisIntegrationT
         i -> {
           // introduce more variability as to when the rename happens
           try {
-            Thread.sleep(rand.nextInt(1000));
+            Thread.sleep(rand.nextInt(100));
           } catch (InterruptedException ignored) {
           }
           jedis.rename(k1, k2);
