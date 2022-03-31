@@ -1595,8 +1595,10 @@ public class GMSJoinLeaveJUnitTest {
     assertThatThrownBy(gmsJoinLeave::join)
         .isInstanceOf(MembershipConfigurationException.class)
         .hasMessageContaining(
-            "Could not contact any of the locators: [locator1:12345, locator2:54321]")
+            "Could not contact any of the locators: " + gmsJoinLeave.getLocators())
         .hasCauseInstanceOf(IOException.class);
+    assertThat(gmsJoinLeave.getLocators().toString()).contains("locator1", "locator2", "12345",
+        "54321");
   }
 
   private void mockRequestToServer(HostAndPort hostAndPort)
