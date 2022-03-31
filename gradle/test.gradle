@@ -249,6 +249,9 @@ gradle.taskGraph.whenReady({ graph ->
           jvmArgs += "--add-opens=java.base/jdk.internal.platform=ALL-UNNAMED"
           jvmArgs += "--add-opens=java.base/jdk.internal.platform.cgroupv1=ALL-UNNAMED"
         }
+        if(testJVMVer.toInteger() == 11) {
+          jvmArgs += "--illegal-access=warn"
+        }
         if(testJVMVer.toInteger() >= 17) {
           jvmArgs += "--add-exports=java.base/jdk.internal.util.random=ALL-UNNAMED"
         }

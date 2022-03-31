@@ -15,16 +15,23 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static java.util.stream.Collectors.toSet;
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
+import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
+import static org.apache.geode.distributed.ServerLauncher.Command.START;
+import static org.apache.geode.internal.lang.SystemUtils.IBM_J9_JVM_NAME;
+import static org.apache.geode.internal.lang.SystemUtils.JAVA_HOTSPOT_JVM_NAME;
+import static org.apache.geode.internal.lang.SystemUtils.ORACLE_JROCKIT_JVM_NAME;
+import static org.apache.geode.management.internal.cli.commands.MemberJvmOptions.getMemberJvmOptions;
 import static org.apache.geode.management.internal.cli.commands.StartServerCommand.addJvmOptionsForOutOfMemoryErrors;
+import static org.apache.geode.management.internal.cli.commands.VerifyCommandLine.verifyCommandLine;
+import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.condition.OS.WINDOWS;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -34,219 +41,417 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+import org.junit.jupiter.api.condition.EnabledOnOs;
 
-import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.ServerLauncher;
-import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.pdx.PdxSerializer;
-import org.apache.geode.util.internal.GeodeGlossary;
 
-public class StartServerCommandTest {
-  private StartServerCommand serverCommands;
+class StartServerCommandTest {
+  // JVM options to use with every start command.
+  private static final Set<String> START_COMMAND_UNCONDITIONAL_JVM_OPTIONS = Stream.of(
+      "-Dgemfire.launcher.registerSignalHandlers=true",
+      "-Djava.awt.headless=true",
+      "-Dsun.rmi.dgc.server.gcInterval=9223372036854775806")
+      .collect(toSet());
 
-  @Before
-  public void setup() {
-    serverCommands = new StartServerCommand();
-  }
+  @Nested
+  class AddJvmOptionsForOutOfMemoryErrors {
+    private static final String IS_HOTSPOT_VM = ".*" + JAVA_HOTSPOT_JVM_NAME + ".*";
+    private static final String IS_J9_VM = ".*" + IBM_J9_JVM_NAME + ".*";
+    private static final String IS_ROCKIT_VM = ".*" + ORACLE_JROCKIT_JVM_NAME + ".*";
 
-  @After
-  public void tearDown() {
-    serverCommands = null;
-  }
+    @Test
+    @EnabledIfSystemProperty(named = "java.vm.name", matches = IS_HOTSPOT_VM)
+    @EnabledOnOs(WINDOWS)
+    void onWindowsHotSpotVM() {
+      final List<String> jvmOptions = new ArrayList<>();
+      addJvmOptionsForOutOfMemoryErrors(jvmOptions);
+      assertThat(jvmOptions)
+          .containsExactly("-XX:OnOutOfMemoryError=taskkill /F /PID %p");
+    }
 
-  @Test
-  public void testServerClasspathOrder() {
-    String userClasspath = "/path/to/user/lib/app.jar:/path/to/user/classes";
-    String expectedClasspath =
-        StartMemberUtils.getGemFireJarPath().concat(File.pathSeparator).concat(userClasspath)
-            .concat(File.pathSeparator).concat(StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME);
-    String actualClasspath = serverCommands.getServerClasspath(false, userClasspath);
-    assertEquals(expectedClasspath, actualClasspath);
-  }
+    @Test
+    @EnabledIfSystemProperty(named = "java.vm.name", matches = IS_HOTSPOT_VM)
+    @DisabledOnOs(WINDOWS)
+    void onNonWindowsHotSpotVM() {
+      final List<String> jvmOptions = new ArrayList<>();
+      addJvmOptionsForOutOfMemoryErrors(jvmOptions);
+      assertThat(jvmOptions)
+          .containsExactly("-XX:OnOutOfMemoryError=kill -KILL %p");
+    }
 
-  @Test
-  public void testAddJvmOptionsForOutOfMemoryErrors() {
-    final List<String> jvmOptions = new ArrayList<>(1);
+    @Test
+    @EnabledIfSystemProperty(named = "java.vm.name", matches = IS_J9_VM)
+    void onJ9VM() {
+      final List<String> jvmOptions = new ArrayList<>();
+      addJvmOptionsForOutOfMemoryErrors(jvmOptions);
+      assertThat(jvmOptions)
+          .containsExactly("-Xcheck:memory");
+    }
 
-    addJvmOptionsForOutOfMemoryErrors(jvmOptions);
+    @Test
+    @EnabledIfSystemProperty(named = "java.vm.name", matches = IS_ROCKIT_VM)
+    void onRockitVM() {
+      final List<String> jvmOptions = new ArrayList<>();
+      addJvmOptionsForOutOfMemoryErrors(jvmOptions);
+      assertThat(jvmOptions)
+          .containsExactly("-XXexitOnOutOfMemory");
+    }
 
-    if (SystemUtils.isHotSpotVM()) {
-      if (SystemUtils.isWindows()) {
-        assertTrue(jvmOptions.contains("-XX:OnOutOfMemoryError=taskkill /F /PID %p"));
-      } else {
-        assertTrue(jvmOptions.contains("-XX:OnOutOfMemoryError=kill -KILL %p"));
-      }
-    } else if (SystemUtils.isJ9VM()) {
-      assertEquals(1, jvmOptions.size());
-      assertTrue(jvmOptions.contains("-Xcheck:memory"));
-    } else if (SystemUtils.isJRockitVM()) {
-      assertEquals(1, jvmOptions.size());
-      assertTrue(jvmOptions.contains("-XXexitOnOutOfMemory"));
-    } else {
-      assertTrue(jvmOptions.isEmpty());
+    @Test
+    @DisabledIfSystemProperty(named = "java.vm.name", matches = IS_HOTSPOT_VM)
+    @DisabledIfSystemProperty(named = "java.vm.name", matches = IS_J9_VM)
+    @DisabledIfSystemProperty(named = "java.vm.name", matches = IS_ROCKIT_VM)
+    void otherVM() {
+      final List<String> jvmOptions = new ArrayList<>();
+      addJvmOptionsForOutOfMemoryErrors(jvmOptions);
+      assertThat(jvmOptions)
+          .isEmpty();
     }
   }
 
-  @Test
-  public void testCreateServerCommandLine() throws Exception {
-    ServerLauncher serverLauncher = new ServerLauncher.Builder()
-        .setCommand(ServerLauncher.Command.START).setDisableDefaultServer(true)
-        .setMemberName("testCreateServerCommandLine").setRebalance(true).setServerPort(41214)
-        .setCriticalHeapPercentage(95.5f).setEvictionHeapPercentage(85.0f)
-        .setSocketBufferSize(1024 * 1024).setMessageTimeToLive(93).build();
+  @Nested
+  class GetServerClasspath {
+    private final StartServerCommand serverCommands = new StartServerCommand();
 
-    String[] commandLineElements = serverCommands.createStartServerCommandLine(serverLauncher, null,
-        null, new Properties(), null, false, new String[0], false, null, null);
+    @Test
+    public void addsUserClasspathImmediatelyAfterGemfireJarPath() {
+      String userClasspath = "/path/to/user/lib/app.jar:/path/to/user/classes";
 
-    assertNotNull(commandLineElements);
-    assertTrue(commandLineElements.length > 0);
+      String actualClasspath = serverCommands.getServerClasspath(false, userClasspath);
 
-    Set<String> expectedCommandLineElements = new HashSet<>(6);
-    expectedCommandLineElements.add(serverLauncher.getCommand().getName());
-    expectedCommandLineElements.add("--disable-default-server");
-    expectedCommandLineElements.add(serverLauncher.getMemberName().toLowerCase());
-    expectedCommandLineElements.add("--rebalance");
-    expectedCommandLineElements
-        .add(String.format("--server-port=%1$d", serverLauncher.getServerPort()));
-    expectedCommandLineElements.add(String.format("--critical-heap-percentage=%1$s",
-        serverLauncher.getCriticalHeapPercentage()));
-    expectedCommandLineElements.add(String.format("--eviction-heap-percentage=%1$s",
-        serverLauncher.getEvictionHeapPercentage()));
-    expectedCommandLineElements
-        .add(String.format("--socket-buffer-size=%1$d", serverLauncher.getSocketBufferSize()));
-    expectedCommandLineElements
-        .add(String.format("--message-time-to-live=%1$d", serverLauncher.getMessageTimeToLive()));
-
-    for (String commandLineElement : commandLineElements) {
-      expectedCommandLineElements.remove(commandLineElement.toLowerCase());
+      String expectedClasspath = String.join(
+          File.pathSeparator,
+          StartMemberUtils.getGemFireJarPath(),
+          userClasspath,
+          StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME);
+      assertThat(actualClasspath)
+          .isEqualTo(expectedClasspath);
     }
-    assertTrue(String.format("Expected ([]); but was (%1$s)", expectedCommandLineElements),
-        expectedCommandLineElements.isEmpty());
   }
 
-  @Test
-  public void testCreateServerCommandLineWithRestAPI() throws Exception {
-    ServerLauncher serverLauncher = new ServerLauncher.Builder()
-        .setCommand(ServerLauncher.Command.START).setDisableDefaultServer(true)
-        .setMemberName("testCreateServerCommandLine").setRebalance(true).setServerPort(41214)
-        .setCriticalHeapPercentage(95.5f).setEvictionHeapPercentage(85.0f).build();
+  @Nested
+  class CreateServerCommandLine {
+    private static final String SERVER_LAUNCHER_CLASS_NAME =
+        "org.apache.geode.distributed.ServerLauncher";
 
-    Properties gemfireProperties = new Properties();
-    gemfireProperties.setProperty(START_DEV_REST_API, "true");
-    gemfireProperties.setProperty(HTTP_SERVICE_PORT, "8080");
-    gemfireProperties.setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
+    private final StartServerCommand serverCommands = new StartServerCommand();
 
-    String[] commandLineElements = serverCommands.createStartServerCommandLine(serverLauncher, null,
-        null, gemfireProperties, null, false, new String[0], false, null, null);
+    @Test
+    void withTypicalOptions() throws Exception {
+      Set<String> expectedJvmOptions = new HashSet<>();
+      List<String> expectedStartCommandSequence = new ArrayList<>();
+      Set<String> expectedStartCommandOptions = new HashSet<>();
 
-    assertNotNull(commandLineElements);
-    assertTrue(commandLineElements.length > 0);
+      ServerLauncher.Builder serverLauncherBuilder = new ServerLauncher.Builder();
+      serverLauncherBuilder.setCommand(START);
+      expectedStartCommandSequence.add(SERVER_LAUNCHER_CLASS_NAME);
+      expectedStartCommandSequence.add(START.getName());
 
-    Set<String> expectedCommandLineElements = new HashSet<>(6);
+      final String memberName = "with-typical-options";
+      serverLauncherBuilder.setMemberName(memberName);
+      expectedStartCommandSequence.add(memberName);
 
-    expectedCommandLineElements.add(serverLauncher.getCommand().getName());
-    expectedCommandLineElements.add("--disable-default-server");
-    expectedCommandLineElements.add(serverLauncher.getMemberName().toLowerCase());
-    expectedCommandLineElements.add("--rebalance");
-    expectedCommandLineElements
-        .add(String.format("--server-port=%1$d", serverLauncher.getServerPort()));
-    expectedCommandLineElements.add(String.format("--critical-heap-percentage=%1$s",
-        serverLauncher.getCriticalHeapPercentage()));
-    expectedCommandLineElements.add(String.format("--eviction-heap-percentage=%1$s",
-        serverLauncher.getEvictionHeapPercentage()));
+      serverLauncherBuilder.setDisableDefaultServer(true);
+      expectedStartCommandOptions.add("--disable-default-server");
 
-    expectedCommandLineElements
-        .add("-d" + GeodeGlossary.GEMFIRE_PREFIX + "" + START_DEV_REST_API + "=" + "true");
-    expectedCommandLineElements
-        .add("-d" + GeodeGlossary.GEMFIRE_PREFIX + "" + HTTP_SERVICE_PORT + "=" + "8080");
-    expectedCommandLineElements.add("-d" + GeodeGlossary.GEMFIRE_PREFIX + ""
-        + HTTP_SERVICE_BIND_ADDRESS + "=" + "localhost");
+      serverLauncherBuilder.setRebalance(true);
+      expectedStartCommandOptions.add("--rebalance");
 
-    for (String commandLineElement : commandLineElements) {
-      expectedCommandLineElements.remove(commandLineElement.toLowerCase());
+      final int serverPort = 41214;
+      serverLauncherBuilder.setServerPort(serverPort);
+      expectedStartCommandOptions.add("--server-port=" + serverPort);
+
+      final float criticalHeapPercentage = 95.5f;
+      serverLauncherBuilder.setCriticalHeapPercentage(criticalHeapPercentage);
+      expectedStartCommandOptions.add(
+          String.format("--critical-heap-percentage=%s", criticalHeapPercentage));
+
+      final float evictionHeapPercentage = 85.0f;
+      serverLauncherBuilder.setEvictionHeapPercentage(evictionHeapPercentage);
+      expectedStartCommandOptions.add(
+          String.format("--eviction-heap-percentage=%s", evictionHeapPercentage));
+
+      final int socketBufferSize = 1024 * 1024;
+      serverLauncherBuilder.setSocketBufferSize(socketBufferSize);
+      expectedStartCommandOptions.add(String.format("--socket-buffer-size=%d", socketBufferSize));
+
+      final int messageTimeToLive = 93;
+      serverLauncherBuilder.setMessageTimeToLive(messageTimeToLive);
+      expectedStartCommandOptions.add(
+          String.format("--message-time-to-live=%d", messageTimeToLive));
+
+      ServerLauncher serverLauncher = serverLauncherBuilder.build();
+
+      expectedJvmOptions.addAll(START_COMMAND_UNCONDITIONAL_JVM_OPTIONS);
+      expectedJvmOptions.addAll(jdkSpecificJvmOptions());
+      expectedJvmOptions.addAll(getMemberJvmOptions());
+
+      String expectedClasspath = String.join(
+          File.pathSeparator,
+          StartMemberUtils.getGemFireJarPath(),
+          StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME);
+
+      List<String> expectedJavaCommandSequence = Arrays.asList(
+          StartMemberUtils.getJavaPath(),
+          "-server",
+          "-classpath",
+          expectedClasspath);
+
+      String[] commandLineElements = serverCommands.createStartServerCommandLine(
+          serverLauncher, null, null, new Properties(), null, false, new String[0], false, null,
+          null);
+
+      verifyCommandLine(commandLineElements, expectedJavaCommandSequence, expectedJvmOptions,
+          expectedStartCommandSequence, expectedStartCommandOptions);
     }
-    assertTrue(String.format("Expected ([]); but was (%1$s)", expectedCommandLineElements),
-        expectedCommandLineElements.isEmpty());
+
+    @Test
+    void withRestApiOptions() throws Exception {
+      Set<String> expectedJvmOptions = new HashSet<>();
+      List<String> expectedStartCommandSequence = new ArrayList<>();
+      Set<String> expectedStartCommandOptions = new HashSet<>();
+
+      ServerLauncher.Builder serverLauncherBuilder = new ServerLauncher.Builder();
+
+      expectedStartCommandSequence.add(SERVER_LAUNCHER_CLASS_NAME);
+
+      serverLauncherBuilder.setCommand(START);
+      expectedStartCommandSequence.add(START.getName());
+
+      final String memberName = "with-rest-api-options";
+      serverLauncherBuilder.setMemberName(memberName);
+      expectedStartCommandSequence.add(memberName);
+
+      serverLauncherBuilder.setDisableDefaultServer(true);
+      expectedStartCommandOptions.add("--disable-default-server");
+
+      serverLauncherBuilder.setRebalance(true);
+      expectedStartCommandOptions.add("--rebalance");
+
+      final int serverPort = 41214;
+      serverLauncherBuilder.setServerPort(serverPort);
+      expectedStartCommandOptions.add("--server-port=" + serverPort);
+
+      float criticalHeapPercentage = 95.5f;
+      serverLauncherBuilder.setCriticalHeapPercentage(criticalHeapPercentage);
+      expectedStartCommandOptions.add(
+          String.format("--critical-heap-percentage=%s", criticalHeapPercentage));
+
+      float evictionHeapPercentage = 85.0f;
+      serverLauncherBuilder.setEvictionHeapPercentage(evictionHeapPercentage);
+      expectedStartCommandOptions.add(
+          String.format("--eviction-heap-percentage=%s", evictionHeapPercentage));
+
+      ServerLauncher serverLauncher = serverLauncherBuilder.build();
+
+      Properties gemfireProperties = new Properties();
+
+      final String startDevRestApi = "true";
+      gemfireProperties.setProperty(START_DEV_REST_API, startDevRestApi);
+      expectedJvmOptions.add("-D" + GEMFIRE_PREFIX + START_DEV_REST_API + "=" + startDevRestApi);
+
+      final String httpServicePort = "8080";
+      gemfireProperties.setProperty(HTTP_SERVICE_PORT, httpServicePort);
+      expectedJvmOptions.add("-D" + GEMFIRE_PREFIX + HTTP_SERVICE_PORT + "=" + httpServicePort);
+
+      final String httpServiceBindAddress = "localhost";
+      gemfireProperties.setProperty(HTTP_SERVICE_BIND_ADDRESS, httpServiceBindAddress);
+      expectedJvmOptions.add("-D" + GEMFIRE_PREFIX + HTTP_SERVICE_BIND_ADDRESS
+          + "=" + httpServiceBindAddress);
+
+      final String expectedClasspath = String.join(
+          File.pathSeparator,
+          StartMemberUtils.getGemFireJarPath(),
+          StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME);
+
+      List<String> expectedJavaCommandSequence = Arrays.asList(
+          StartMemberUtils.getJavaPath(),
+          "-server",
+          "-classpath",
+          expectedClasspath);
+
+      expectedJvmOptions.addAll(START_COMMAND_UNCONDITIONAL_JVM_OPTIONS);
+      expectedJvmOptions.addAll(jdkSpecificJvmOptions());
+      expectedJvmOptions.addAll(getMemberJvmOptions());
+
+      String[] commandLineElements = serverCommands.createStartServerCommandLine(
+          serverLauncher, null, null, gemfireProperties, null, false, new String[0], false, null,
+          null);
+
+      verifyCommandLine(commandLineElements, expectedJavaCommandSequence, expectedJvmOptions,
+          expectedStartCommandSequence, expectedStartCommandOptions);
+    }
+
+    @Test
+    void withAllOptions() throws Exception {
+      Set<String> expectedJvmOptions = new HashSet<>();
+      List<String> expectedStartCommandSequence = new ArrayList<>();
+      Set<String> expectedStartCommandOptions = new HashSet<>();
+
+      ServerLauncher.Builder serverLauncherBuilder = new ServerLauncher.Builder();
+      expectedStartCommandSequence.add(SERVER_LAUNCHER_CLASS_NAME);
+
+      serverLauncherBuilder.setCommand(START);
+      expectedStartCommandSequence.add(START.getName());
+
+      final String memberName = "fullServer";
+      serverLauncherBuilder.setMemberName(memberName);
+      expectedStartCommandSequence.add(memberName);
+
+      serverLauncherBuilder.setAssignBuckets(true);
+      expectedStartCommandOptions.add("--assign-buckets");
+
+      final float criticalHeapPercentage = 95.5f;
+      serverLauncherBuilder.setCriticalHeapPercentage(criticalHeapPercentage);
+      expectedStartCommandOptions.add("--critical-heap-percentage=" + criticalHeapPercentage);
+
+      final float criticalOffHeapPercentage = 95.5f;
+      serverLauncherBuilder.setCriticalOffHeapPercentage(criticalOffHeapPercentage);
+      expectedStartCommandOptions.add(
+          "--critical-off-heap-percentage=" + criticalOffHeapPercentage);
+
+      serverLauncherBuilder.setDebug(true);
+      expectedStartCommandOptions.add("--debug");
+
+      serverLauncherBuilder.setDisableDefaultServer(true);
+      expectedStartCommandOptions.add("--disable-default-server");
+
+      final float evictionHeapPercentage = 85.0f;
+      serverLauncherBuilder.setEvictionHeapPercentage(evictionHeapPercentage);
+      expectedStartCommandOptions.add("--eviction-heap-percentage=" + evictionHeapPercentage);
+
+      final float evictionOffHeapPercentage = 85.0f;
+      serverLauncherBuilder.setEvictionOffHeapPercentage(evictionOffHeapPercentage);
+      expectedStartCommandOptions.add(
+          "--eviction-off-heap-percentage=" + evictionOffHeapPercentage);
+
+      serverLauncherBuilder.setForce(true);
+      expectedStartCommandOptions.add("--force");
+
+      // TODO: How does this affect the command line?
+      serverLauncherBuilder.setDeletePidFileOnStop(true);
+
+      final String hostNameForClients = "localhost";
+      serverLauncherBuilder.setHostNameForClients(hostNameForClients);
+      expectedStartCommandOptions.add("--hostname-for-clients=" + hostNameForClients);
+
+      final int maxConnections = 800;
+      serverLauncherBuilder.setMaxConnections(maxConnections);
+      expectedStartCommandOptions.add("--max-connections=" + maxConnections);
+
+      final int maxMessageCount = 500;
+      serverLauncherBuilder.setMaxMessageCount(maxMessageCount);
+      expectedStartCommandOptions.add("--max-message-count=" + maxMessageCount);
+
+      final int maxThreads = 100;
+      serverLauncherBuilder.setMaxThreads(maxThreads);
+      expectedStartCommandOptions.add("--max-threads=" + maxThreads);
+
+      final int messageTimeToLive = 93;
+      serverLauncherBuilder.setMessageTimeToLive(messageTimeToLive);
+      expectedStartCommandOptions.add("--message-time-to-live=" + messageTimeToLive);
+
+      // TODO: How do these affect the command line?
+      serverLauncherBuilder.setPdxDiskStore("pdxDiskStore");
+      serverLauncherBuilder.setPdxIgnoreUnreadFields(true);
+      serverLauncherBuilder.setPdxPersistent(true);
+      serverLauncherBuilder.setPdxReadSerialized(true);
+      serverLauncherBuilder.setPdxSerializer(mock(PdxSerializer.class));
+
+      serverLauncherBuilder.setRebalance(true);
+      expectedStartCommandOptions.add("--rebalance");
+
+      serverLauncherBuilder.setRedirectOutput(true);
+      expectedStartCommandOptions.add("--redirect-output");
+      expectedJvmOptions.add("-Dgemfire.OSProcess.DISABLE_REDIRECTION_CONFIGURATION=true");
+
+      final int serverPort = 41214;
+      serverLauncherBuilder.setServerPort(serverPort);
+      expectedStartCommandOptions.add("--server-port=" + serverPort);
+
+      final int socketBufferSize = 1024 * 1024;
+      serverLauncherBuilder.setSocketBufferSize(socketBufferSize);
+      expectedStartCommandOptions.add("--socket-buffer-size=" + socketBufferSize);
+
+      final String springXmlLocation = "/config/spring-server.xml";
+      serverLauncherBuilder.setSpringXmlLocation(springXmlLocation);
+      expectedStartCommandOptions.add("--spring-xml-location=" + springXmlLocation);
+
+      ServerLauncher serverLauncher = serverLauncherBuilder.build();
+
+      Properties gemfireProperties = new Properties();
+
+      final String disableAutoReconnect = "true";
+      gemfireProperties.setProperty(DISABLE_AUTO_RECONNECT, disableAutoReconnect);
+      expectedJvmOptions.add("-Dgemfire.disable-auto-reconnect=" + disableAutoReconnect);
+
+      final String statisticSampleRate = "1500";
+      gemfireProperties.setProperty(STATISTIC_SAMPLE_RATE, statisticSampleRate);
+      expectedJvmOptions.add("-Dgemfire.statistic-sample-rate=" + statisticSampleRate);
+
+      final String propertiesFilePath = "/config/customGemfire.properties";
+      File gemfirePropertiesFile = mock(File.class);
+      when(gemfirePropertiesFile.getAbsolutePath())
+          .thenReturn(propertiesFilePath);
+      expectedJvmOptions.add("-DgemfirePropertyFile=" + propertiesFilePath);
+
+      final String securityPropertiesFilePath = "/config/customGemfireSecurity.properties";
+      File gemfireSecurityPropertiesFile = mock(File.class);
+      when(gemfireSecurityPropertiesFile.getAbsolutePath())
+          .thenReturn(securityPropertiesFilePath);
+      expectedJvmOptions.add("-DgemfireSecurityPropertyFile=" + securityPropertiesFilePath);
+
+      final String customClasspath = "/temp/domain-1.0.0.jar";
+      final String heapSize = "1024m";
+      expectedJvmOptions.add("-Xms" + heapSize);
+      expectedJvmOptions.add("-Xmx" + heapSize);
+      expectedJvmOptions.add("-XX:+UseConcMarkSweepGC");
+      expectedJvmOptions.add("-XX:CMSInitiatingOccupancyFraction=60");
+
+      final String[] customJvmArguments = {
+          "-verbose:gc",
+          "-Xloggc:member-gc.log",
+          "-XX:+PrintGCDateStamps",
+          "-XX:+PrintGCDetails",
+      };
+      expectedJvmOptions.addAll(Arrays.asList(customJvmArguments));
+
+      final String expectedClasspath = String.join(
+          File.pathSeparator,
+          StartMemberUtils.getGemFireJarPath(),
+          customClasspath,
+          StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME);
+
+      List<String> expectedJavaCommandSequence = Arrays.asList(
+          StartMemberUtils.getJavaPath(),
+          "-server",
+          "-classpath",
+          expectedClasspath);
+
+      expectedJvmOptions.addAll(START_COMMAND_UNCONDITIONAL_JVM_OPTIONS);
+      expectedJvmOptions.addAll(jdkSpecificJvmOptions());
+      expectedJvmOptions.addAll(getMemberJvmOptions());
+
+      String[] commandLineElements = serverCommands.createStartServerCommandLine(
+          serverLauncher, gemfirePropertiesFile, gemfireSecurityPropertiesFile, gemfireProperties,
+          customClasspath, false, customJvmArguments, false, heapSize, heapSize);
+
+      verifyCommandLine(commandLineElements, expectedJavaCommandSequence, expectedJvmOptions,
+          expectedStartCommandSequence, expectedStartCommandOptions);
+    }
   }
 
-  @Test
-  public void testCreateStartServerCommandLineWithAllOptions() throws Exception {
-    ServerLauncher serverLauncher = new ServerLauncher.Builder().setAssignBuckets(Boolean.TRUE)
-        .setCommand(ServerLauncher.Command.START).setCriticalHeapPercentage(95.5f)
-        .setCriticalOffHeapPercentage(95.5f).setDebug(Boolean.TRUE)
-        .setDisableDefaultServer(Boolean.TRUE).setDeletePidFileOnStop(Boolean.TRUE)
-        .setEvictionHeapPercentage(85.0f).setEvictionOffHeapPercentage(85.0f).setForce(Boolean.TRUE)
-        .setHostNameForClients("localhost").setMaxConnections(800).setMaxMessageCount(500)
-        .setMaxThreads(100).setMemberName("fullServer").setMessageTimeToLive(93)
-        .setPdxDiskStore("pdxDiskStore").setPdxIgnoreUnreadFields(Boolean.TRUE)
-        .setPdxPersistent(Boolean.TRUE).setPdxReadSerialized(Boolean.TRUE)
-        .setPdxSerializer(mock(PdxSerializer.class)).setRebalance(Boolean.TRUE)
-        .setRedirectOutput(Boolean.TRUE).setRebalance(true).setServerPort(41214)
-        .setSocketBufferSize(1024 * 1024).setSpringXmlLocation("/config/spring-server.xml").build();
-
-    File gemfirePropertiesFile = spy(mock(File.class));
-    when(gemfirePropertiesFile.getAbsolutePath()).thenReturn("/config/customGemfire.properties");
-
-    File gemfireSecurityPropertiesFile = spy(mock(File.class));
-    when(gemfireSecurityPropertiesFile.getAbsolutePath())
-        .thenReturn("/config/customGemfireSecurity.properties");
-
-    Properties gemfireProperties = new Properties();
-    gemfireProperties.setProperty(ConfigurationProperties.STATISTIC_SAMPLE_RATE, "1500");
-    gemfireProperties.setProperty(ConfigurationProperties.DISABLE_AUTO_RECONNECT, "true");
-
-    String heapSize = "1024m";
-    String customClasspath = "/temp/domain-1.0.0.jar";
-    String[] jvmArguments = new String[] {"-verbose:gc", "-Xloggc:member-gc.log",
-        "-XX:+PrintGCDateStamps", "-XX:+PrintGCDetails"};
-
-    String[] commandLineElements = serverCommands.createStartServerCommandLine(serverLauncher,
-        gemfirePropertiesFile, gemfireSecurityPropertiesFile, gemfireProperties, customClasspath,
-        Boolean.FALSE, jvmArguments, Boolean.FALSE, heapSize, heapSize);
-
-    Set<String> expectedCommandLineElements = new HashSet<>();
-    expectedCommandLineElements.add(StartMemberUtils.getJavaPath());
-    expectedCommandLineElements.add("-server");
-    expectedCommandLineElements.add("-classpath");
-    expectedCommandLineElements
-        .add(StartMemberUtils.getGemFireJarPath().concat(File.pathSeparator).concat(customClasspath)
-            .concat(File.pathSeparator).concat(StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME));
-    expectedCommandLineElements
-        .add("-DgemfirePropertyFile=".concat(gemfirePropertiesFile.getAbsolutePath()));
-    expectedCommandLineElements.add(
-        "-DgemfireSecurityPropertyFile=".concat(gemfireSecurityPropertiesFile.getAbsolutePath()));
-    expectedCommandLineElements.add("-Dgemfire.statistic-sample-rate=1500");
-    expectedCommandLineElements.add("-Dgemfire.disable-auto-reconnect=true");
-    expectedCommandLineElements.addAll(Arrays.asList(jvmArguments));
-    expectedCommandLineElements.add("org.apache.geode.distributed.ServerLauncher");
-    expectedCommandLineElements.add("start");
-    expectedCommandLineElements.add("fullServer");
-    expectedCommandLineElements.add("--assign-buckets");
-    expectedCommandLineElements.add("--debug");
-    expectedCommandLineElements.add("--disable-default-server");
-    expectedCommandLineElements.add("--force");
-    expectedCommandLineElements.add("--rebalance");
-    expectedCommandLineElements.add("--redirect-output");
-    expectedCommandLineElements.add("--server-port=41214");
-    expectedCommandLineElements.add("--spring-xml-location=/config/spring-server.xml");
-    expectedCommandLineElements.add("--critical-heap-percentage=95.5");
-    expectedCommandLineElements.add("--eviction-heap-percentage=85.0");
-    expectedCommandLineElements.add("--critical-off-heap-percentage=95.5");
-    expectedCommandLineElements.add("--eviction-off-heap-percentage=85.0");
-    expectedCommandLineElements.add("--max-connections=800");
-    expectedCommandLineElements.add("--max-message-count=500");
-    expectedCommandLineElements.add("--max-threads=100");
-    expectedCommandLineElements.add("--message-time-to-live=93");
-    expectedCommandLineElements.add("--socket-buffer-size=1048576");
-    expectedCommandLineElements.add("--hostname-for-clients=localhost");
-
-    assertNotNull(commandLineElements);
-    assertTrue(commandLineElements.length > 0);
-
-    assertThat(commandLineElements).containsAll(expectedCommandLineElements);
+  private static List<String> jdkSpecificJvmOptions() {
+    List<String> jdkSpecificOptions = new ArrayList<>();
+    addJvmOptionsForOutOfMemoryErrors(jdkSpecificOptions);
+    return jdkSpecificOptions;
   }
 }
