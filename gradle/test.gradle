@@ -174,7 +174,10 @@ gradle.taskGraph.whenReady({ graph ->
 
       maxHeapSize '768m'
       jvmArgs += ['-XX:+HeapDumpOnOutOfMemoryError', '-ea']
-
+      if (project.hasProperty('testJVMVer') && testJVMVer.toInteger() >= 9) {
+        jvmArgs += [ "--illegal-access=debug",
+         ]
+      }
       if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
         executable = "${testJVM}/bin/java"
       }
