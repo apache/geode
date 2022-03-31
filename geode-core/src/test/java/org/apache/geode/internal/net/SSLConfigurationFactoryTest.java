@@ -15,11 +15,21 @@
 
 package org.apache.geode.internal.net;
 
+import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_CIPHERS;
+import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_KEYSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_KEYSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_KEYSTORE_TYPE;
+import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_PROTOCOLS;
+import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_REQUIRE_AUTHENTICATION;
+import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_TRUSTSTORE;
+import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_CLIENT_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_CLUSTER_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_DEFAULT_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
+import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_GATEWAY_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_JMX_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
@@ -77,16 +87,8 @@ public class SSLConfigurationFactoryTest {
 
   @Test
   public void getSSLConfigWithCommaDelimitedProtocols() {
-    Properties properties = new Properties();
-    properties.setProperty(SSL_ENABLED_COMPONENTS, "all");
-    properties.setProperty(SSL_KEYSTORE, "someKeyStore");
-    properties.setProperty(SSL_KEYSTORE_PASSWORD, "keystorePassword");
-    properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
-    properties.setProperty(SSL_TRUSTSTORE, "someKeyStore");
-    properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "keystorePassword");
-    properties.setProperty(SSL_DEFAULT_ALIAS, "defaultAlias");
-    properties.setProperty(SSL_CIPHERS, "Cipher1,Cipher2");
-    properties.setProperty(SSL_PROTOCOLS, "Protocol1,Protocol2");
+    final Properties properties =
+        createSSLProperties("all", "Cipher1,Cipher2", "Protocol1,Protocol2");
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
 
     assertSSLConfigForChannels(properties, distributionConfig);
@@ -94,16 +96,7 @@ public class SSLConfigurationFactoryTest {
 
   @Test
   public void getSSLConfigWithCommaDelimitedCiphers() {
-    Properties properties = new Properties();
-    properties.setProperty(SSL_ENABLED_COMPONENTS, "all");
-    properties.setProperty(SSL_KEYSTORE, "someKeyStore");
-    properties.setProperty(SSL_KEYSTORE_PASSWORD, "keystorePassword");
-    properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
-    properties.setProperty(SSL_TRUSTSTORE, "someKeyStore");
-    properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "keystorePassword");
-    properties.setProperty(SSL_DEFAULT_ALIAS, "defaultAlias");
-    properties.setProperty(SSL_CIPHERS, "Cipher1,Cipher2");
-    properties.setProperty(SSL_PROTOCOLS, "any");
+    final Properties properties = createSSLProperties("all", "Cipher1,Cipher2", "any");
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
 
     assertSSLConfigForChannels(properties, distributionConfig);
@@ -111,16 +104,7 @@ public class SSLConfigurationFactoryTest {
 
   @Test
   public void getSSLConfigForComponentALL() {
-    Properties properties = new Properties();
-    properties.setProperty(SSL_ENABLED_COMPONENTS, "all");
-    properties.setProperty(SSL_KEYSTORE, "someKeyStore");
-    properties.setProperty(SSL_KEYSTORE_PASSWORD, "keystorePassword");
-    properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
-    properties.setProperty(SSL_TRUSTSTORE, "someKeyStore");
-    properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "keystorePassword");
-    properties.setProperty(SSL_DEFAULT_ALIAS, "defaultAlias");
-    properties.setProperty(SSL_CIPHERS, "any");
-    properties.setProperty(SSL_PROTOCOLS, "any");
+    final Properties properties = createSSLProperties("all", "any", "any");
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
 
     assertSSLConfigForChannels(properties, distributionConfig);
@@ -128,16 +112,8 @@ public class SSLConfigurationFactoryTest {
 
   @Test
   public void getSSLConfigForComponentHTTPService() {
-    Properties properties = new Properties();
-    properties.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
-    properties.setProperty(SSL_KEYSTORE, "someKeyStore");
-    properties.setProperty(SSL_KEYSTORE_PASSWORD, "keystorePassword");
-    properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
-    properties.setProperty(SSL_TRUSTSTORE, "someKeyStore");
-    properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "keystorePassword");
-    properties.setProperty(SSL_DEFAULT_ALIAS, "defaultAlias");
-    properties.setProperty(SSL_CIPHERS, "any");
-    properties.setProperty(SSL_PROTOCOLS, "any");
+    final Properties properties =
+        createSSLProperties(SecurableCommunicationChannel.WEB.getConstant(), "any", "any");
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
 
     assertSSLConfigForChannels(properties, distributionConfig);
@@ -145,17 +121,9 @@ public class SSLConfigurationFactoryTest {
 
   @Test
   public void getSSLConfigForComponentHTTPServiceWithAlias() {
-    Properties properties = new Properties();
-    properties.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
-    properties.setProperty(SSL_KEYSTORE, "someKeyStore");
-    properties.setProperty(SSL_KEYSTORE_PASSWORD, "keystorePassword");
-    properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
-    properties.setProperty(SSL_TRUSTSTORE, "someKeyStore");
-    properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "keystorePassword");
-    properties.setProperty(SSL_DEFAULT_ALIAS, "defaultAlias");
+    final Properties properties =
+        createSSLProperties(SecurableCommunicationChannel.WEB.getConstant(), "any", "any");
     properties.setProperty(SSL_WEB_ALIAS, "httpAlias");
-    properties.setProperty(SSL_CIPHERS, "any");
-    properties.setProperty(SSL_PROTOCOLS, "any");
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
 
     assertSSLConfigForChannels(properties, distributionConfig);
@@ -163,18 +131,10 @@ public class SSLConfigurationFactoryTest {
 
   @Test
   public void getSSLConfigForComponentHTTPServiceWithMutualAuth() {
-    Properties properties = new Properties();
-    properties.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
-    properties.setProperty(SSL_KEYSTORE, "someKeyStore");
-    properties.setProperty(SSL_KEYSTORE_PASSWORD, "keystorePassword");
-    properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
-    properties.setProperty(SSL_TRUSTSTORE, "someKeyStore");
-    properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "keystorePassword");
-    properties.setProperty(SSL_DEFAULT_ALIAS, "defaultAlias");
+    final Properties properties =
+        createSSLProperties(SecurableCommunicationChannel.WEB.getConstant(), "any", "any");
     properties.setProperty(SSL_WEB_ALIAS, "httpAlias");
     properties.setProperty(SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION, "true");
-    properties.setProperty(SSL_CIPHERS, "any");
-    properties.setProperty(SSL_PROTOCOLS, "any");
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
 
     assertSSLConfigForChannels(properties, distributionConfig);
@@ -258,6 +218,82 @@ public class SSLConfigurationFactoryTest {
             SecurableCommunicationChannel.LOCATOR);
 
     assertThat(sslConfig.getServerProtocols()).isEqualTo("SomeServerProtocol");
+  }
+
+  @Test
+  void testLegacyGatewaySSLConfig() {
+    final Properties properties = createLegacyGatewaySSLProperties();
+    final SecurableCommunicationChannel securableComponent = SecurableCommunicationChannel.GATEWAY;
+
+    final SSLConfig sslConfig =
+        SSLConfigurationFactory.getSSLConfigForComponent(new DistributionConfigImpl(properties),
+            securableComponent);
+
+    assertLegacyGatewaySSLConfig(properties, sslConfig, securableComponent);
+    assertThat(sslConfig.doEndpointIdentification()).isEqualTo(false);
+  }
+
+  @Test
+  void testLegacyGatewaySSLConfigWithEndpointIdentificationEnabled() {
+    final Properties properties = new Properties();
+    properties.setProperty(SSL_ENDPOINT_IDENTIFICATION_ENABLED, "true");
+    final SecurableCommunicationChannel securableComponent = SecurableCommunicationChannel.GATEWAY;
+
+    final SSLConfig sslConfig =
+        SSLConfigurationFactory.getSSLConfigForComponent(new DistributionConfigImpl(properties),
+            securableComponent);
+
+    assertThat(sslConfig.doEndpointIdentification()).isEqualTo(true);
+  }
+
+  private Properties createSSLProperties(String component, String ciphers, String protocols) {
+    final Properties properties = new Properties();
+    properties.setProperty(SSL_ENABLED_COMPONENTS, component);
+    properties.setProperty(SSL_KEYSTORE, "someKeyStore");
+    properties.setProperty(SSL_KEYSTORE_PASSWORD, "keystorePassword");
+    properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
+    properties.setProperty(SSL_TRUSTSTORE, "someKeyStore");
+    properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "keystorePassword");
+    properties.setProperty(SSL_DEFAULT_ALIAS, "defaultAlias");
+    properties.setProperty(SSL_CIPHERS, ciphers);
+    properties.setProperty(SSL_PROTOCOLS, protocols);
+    return properties;
+  }
+
+  private Properties createLegacyGatewaySSLProperties() {
+    final Properties properties = new Properties();
+    properties.setProperty(GATEWAY_SSL_ENABLED, "true");
+    properties.setProperty(GATEWAY_SSL_KEYSTORE, "someKeyStore");
+    properties.setProperty(GATEWAY_SSL_KEYSTORE_PASSWORD, "keystorePassword");
+    properties.setProperty(GATEWAY_SSL_KEYSTORE_TYPE, "JKS");
+    properties.setProperty(GATEWAY_SSL_TRUSTSTORE, "someKeyStore");
+    properties.setProperty(GATEWAY_SSL_TRUSTSTORE_PASSWORD, "keystorePassword");
+    properties.setProperty(GATEWAY_SSL_REQUIRE_AUTHENTICATION, "true");
+    properties.setProperty(GATEWAY_SSL_CIPHERS, "any");
+    properties.setProperty(GATEWAY_SSL_PROTOCOLS, "any");
+    return properties;
+  }
+
+  private void assertLegacyGatewaySSLConfig(final Properties properties, final SSLConfig sslConfig,
+      final SecurableCommunicationChannel expectedComponent) {
+    assertThat(sslConfig.isEnabled())
+        .isEqualTo(Boolean.parseBoolean(properties.getProperty(GATEWAY_SSL_ENABLED)));
+    assertThat(sslConfig.getKeystore()).isEqualTo(properties.getProperty(GATEWAY_SSL_KEYSTORE));
+    assertThat(sslConfig.getKeystorePassword())
+        .isEqualTo(properties.getProperty(GATEWAY_SSL_KEYSTORE_PASSWORD));
+    assertThat(sslConfig.getKeystoreType())
+        .isEqualTo(properties.getProperty(GATEWAY_SSL_KEYSTORE_TYPE));
+    assertThat(sslConfig.getTruststore()).isEqualTo(properties.getProperty(GATEWAY_SSL_TRUSTSTORE));
+    assertThat(sslConfig.getTruststorePassword())
+        .isEqualTo(properties.getProperty(GATEWAY_SSL_TRUSTSTORE_PASSWORD));
+    assertThat(sslConfig.getCiphers()).isEqualTo(properties.getProperty(GATEWAY_SSL_CIPHERS));
+    assertThat(sslConfig.getClientProtocols())
+        .isEqualTo(properties.getProperty(GATEWAY_SSL_PROTOCOLS));
+    assertThat(sslConfig.getServerProtocols())
+        .isEqualTo(properties.getProperty(GATEWAY_SSL_PROTOCOLS));
+    assertThat(sslConfig.isRequireAuth()).isEqualTo(
+        Boolean.parseBoolean(properties.getProperty(GATEWAY_SSL_REQUIRE_AUTHENTICATION)));
+    assertThat(sslConfig.getSecuredCommunicationChannel()).isEqualTo(expectedComponent);
   }
 
   private void assertSSLConfig(final Properties properties, final SSLConfig sslConfig,
