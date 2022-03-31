@@ -221,9 +221,11 @@ public class SizeableByteArrayListTest {
     byte[] referenceElement = "element".getBytes(StandardCharsets.UTF_8);
     list.addFirst(referenceElement);
 
+    // Insert new element before reference element
     byte[] beforeElement = "before".getBytes(StandardCharsets.UTF_8);
     list.insert(beforeElement, referenceElement, true);
 
+    // Assert list contains exactly the elements in the expected order
     assertThat(list).containsExactly(beforeElement, referenceElement);
   }
 
@@ -234,9 +236,11 @@ public class SizeableByteArrayListTest {
     byte[] referenceElement = "element".getBytes(StandardCharsets.UTF_8);
     list.addFirst(referenceElement);
 
+    // Insert new element after reference element
     byte[] afterElement = "after".getBytes(StandardCharsets.UTF_8);
     list.insert(afterElement, referenceElement, false);
 
+    // Assert list contains exactly the elements in the expected order
     assertThat(list).containsExactly(referenceElement, afterElement);
   }
 
@@ -244,11 +248,13 @@ public class SizeableByteArrayListTest {
   public void insertElementAfterNonexistentReferenceElement_doesNotPlaceElement() {
     // Create a new list with a single element
     SizeableByteArrayList list = new SizeableByteArrayList();
-    byte[] referenceElement = "non-existent-element".getBytes(StandardCharsets.UTF_8);
+    byte[] nonExistentElement = "non-existent-element".getBytes(StandardCharsets.UTF_8);
 
+    // Attempt to insert an element after a non-existent reference element
     byte[] afterElement = "after".getBytes(StandardCharsets.UTF_8);
-    list.insert(afterElement, referenceElement, false);
+    list.insert(afterElement, nonExistentElement, false);
 
+    // Assert that no elements were added to the list
     assertThat(list).isEmpty();
   }
 
