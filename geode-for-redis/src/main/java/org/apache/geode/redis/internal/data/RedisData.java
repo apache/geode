@@ -34,6 +34,7 @@ import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.RedisException;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.services.RegionProvider;
 
 public interface RedisData extends Delta, DataSerializableFixedID, Sizeable {
@@ -69,7 +70,7 @@ public interface RedisData extends Delta, DataSerializableFixedID, Sizeable {
 
   String type();
 
-  boolean rename(Region<RedisKey, RedisData> region, RedisKey oldKey, RedisKey newKey,
+  boolean rename(ExecutionHandlerContext context, RedisKey oldKey, RedisKey newKey,
       boolean ifTargetNotExists);
 
   default boolean getForceRecalculateSize() {

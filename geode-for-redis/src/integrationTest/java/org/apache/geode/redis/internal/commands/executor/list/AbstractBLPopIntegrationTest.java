@@ -163,6 +163,38 @@ public abstract class AbstractBLPopIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
+  public void testBLPopWhenValueGetsCreated_withRename() throws Exception {
+    String initialName = "{tag}initial";
+    String changedName = "{tag}changed";
+    jedis.lpush(initialName, "value1", "value2");
+
+    Future<List<String>> future = executor.submit(() -> jedis.blpop(10, changedName));
+    awaitEventDistributorSize(1);
+
+    jedis.rename(initialName, changedName);
+
+    assertThat(future.get()).containsExactly(changedName, "value2");
+    assertThat(jedis.lpop(changedName)).isEqualTo("value1");
+  }
+
+  @Test
+  public void testBLPopWhenValueGetsCreated_withRestore() throws Exception {
+    String key = "key";
+    jedis.lpush(key, "value1", "value2");
+
+    byte[] dumpBytes = jedis.dump(key);
+    jedis.del(key);
+
+    Future<List<String>> future = executor.submit(() -> jedis.blpop(10, key));
+    awaitEventDistributorSize(1);
+
+    jedis.restore(key, 0, dumpBytes);
+
+    assertThat(future.get()).containsExactly(key, "value2");
+    assertThat(jedis.lpop(key)).isEqualTo("value1");
+  }
+
+  @Test
   public void testConcurrentBLPop() throws Exception {
     int totalElements = 10_000;
     List<Object> accumulated = Collections.synchronizedList(new ArrayList<>(totalElements + 2));

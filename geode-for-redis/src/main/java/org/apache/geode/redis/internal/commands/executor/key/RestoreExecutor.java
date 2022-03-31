@@ -31,6 +31,7 @@ import org.apache.geode.redis.internal.data.AbstractRedisData;
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.data.RedisKeyExistsException;
+import org.apache.geode.redis.internal.eventing.NotificationEvent;
 import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
@@ -103,6 +104,7 @@ public class RestoreExecutor implements CommandExecutor {
       RedisData value = data.restore(dataBytes, options.isReplace());
       ((AbstractRedisData) value).setExpirationTimestampNoDelta(expireAt);
       context.getRegion().put(key, value);
+      context.fireEvent(NotificationEvent.RESTORE, key);
       return null;
     });
   }

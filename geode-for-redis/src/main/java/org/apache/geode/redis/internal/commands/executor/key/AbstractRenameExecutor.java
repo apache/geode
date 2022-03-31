@@ -56,7 +56,7 @@ public abstract class AbstractRenameExecutor implements CommandExecutor {
 
     return context.lockedExecuteInTransaction(oldKey, keysToLock,
         () -> context.getRedisData(oldKey)
-            .rename(context.getRegion(), oldKey, newKey, ifTargetNotExists));
+            .rename(context, oldKey, newKey, ifTargetNotExists));
   }
 
   protected RedisResponse getNoSuchKeyResponse() {

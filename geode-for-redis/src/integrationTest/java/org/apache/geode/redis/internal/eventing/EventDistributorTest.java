@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 
 import org.apache.geode.redis.ConcurrentLoopingThreads;
-import org.apache.geode.redis.internal.commands.RedisCommandType;
 import org.apache.geode.redis.internal.data.RedisKey;
 
 public class EventDistributorTest {
@@ -45,7 +44,7 @@ public class EventDistributorTest {
     }
 
     @Override
-    public EventResponse process(RedisCommandType commandType, RedisKey key) {
+    public EventResponse process(NotificationEvent notificationEvent, RedisKey key) {
       fired += 1;
       return EventResponse.REMOVE_AND_STOP;
     }

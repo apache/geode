@@ -28,7 +28,6 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.partition.PartitionListenerAdapter;
 import org.apache.geode.internal.lang.utils.JavaWorkarounds;
 import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
-import org.apache.geode.redis.internal.commands.RedisCommandType;
 import org.apache.geode.redis.internal.data.RedisKey;
 
 public class EventDistributor extends PartitionListenerAdapter {
@@ -52,14 +51,14 @@ public class EventDistributor extends PartitionListenerAdapter {
     listener.scheduleTimeout(timerExecutor, this);
   }
 
-  public void fireEvent(RedisCommandType command, RedisKey key) {
+  public void fireEvent(NotificationEvent notificationEvent, RedisKey key) {
     Queue<EventListener> listenerList = listeners.get(key);
     if (listenerList == null) {
       return;
     }
 
     for (EventListener listener : listenerList) {
-      if (listener.process(command, key) == EventResponse.REMOVE_AND_STOP) {
+      if (listener.process(notificationEvent, key) == EventResponse.REMOVE_AND_STOP) {
         removeListener(listener);
         break;
       }

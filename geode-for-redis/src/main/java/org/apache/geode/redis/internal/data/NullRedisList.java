@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.redis.internal.commands.RedisCommandType;
+import org.apache.geode.redis.internal.eventing.NotificationEvent;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 
 class NullRedisList extends RedisList {
@@ -62,7 +62,7 @@ class NullRedisList extends RedisList {
       newList.elementPushHead(element);
     }
     context.getRegion().create(key, newList);
-    context.fireEvent(RedisCommandType.LPUSH, key);
+    context.fireEvent(NotificationEvent.LPUSH, key);
 
     return elementsToAdd.size();
   }
@@ -79,7 +79,7 @@ class NullRedisList extends RedisList {
       newList.elementPushTail(element);
     }
     context.getRegion().create(key, newList);
-    context.fireEvent(RedisCommandType.RPUSH, key);
+    context.fireEvent(NotificationEvent.RPUSH, key);
 
     return elementsToAdd.size();
   }

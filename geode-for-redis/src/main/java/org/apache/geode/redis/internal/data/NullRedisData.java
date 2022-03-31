@@ -25,6 +25,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.services.RegionProvider;
 
 /**
@@ -86,7 +87,7 @@ public class NullRedisData implements RedisData {
   }
 
   @Override
-  public boolean rename(Region<RedisKey, RedisData> region, RedisKey oldKey, RedisKey newKey,
+  public boolean rename(ExecutionHandlerContext context, RedisKey oldKey, RedisKey newKey,
       boolean ifNotExists) {
     return false;
   }

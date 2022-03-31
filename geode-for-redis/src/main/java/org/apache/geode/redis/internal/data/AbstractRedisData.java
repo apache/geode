@@ -72,6 +72,8 @@ import org.apache.geode.redis.internal.data.delta.ReplaceByteAtOffset;
 import org.apache.geode.redis.internal.data.delta.SetByteArray;
 import org.apache.geode.redis.internal.data.delta.SetByteArrayAndTimestamp;
 import org.apache.geode.redis.internal.data.delta.SetTimestamp;
+import org.apache.geode.redis.internal.eventing.NotificationEvent;
+import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.services.RegionProvider;
 
 public abstract class AbstractRedisData implements RedisData {
@@ -133,9 +135,9 @@ public abstract class AbstractRedisData implements RedisData {
   }
 
   @Override
-  public boolean rename(Region<RedisKey, RedisData> region, RedisKey oldKey, RedisKey newKey,
+  public boolean rename(ExecutionHandlerContext context, RedisKey oldKey, RedisKey newKey,
       boolean ifTargetNotExists) {
-
+    Region<RedisKey, RedisData> region = context.getRegion();
     if (ifTargetNotExists) {
       try {
         region.create(newKey, this, primaryMoveReadLockAcquired);
@@ -150,6 +152,10 @@ public abstract class AbstractRedisData implements RedisData {
       region.destroy(oldKey, primaryMoveReadLockAcquired);
     } catch (EntryNotFoundException ignore) {
     }
+
+    context.fireEvent(NotificationEvent.RENAME_FROM, oldKey);
+    context.fireEvent(NotificationEvent.RENAME_TO, newKey);
+
     return true;
   }
 
