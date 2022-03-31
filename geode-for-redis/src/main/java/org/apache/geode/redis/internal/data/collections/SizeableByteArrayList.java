@@ -152,7 +152,7 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
   @Override
   public void add(int index, byte[] element) {
     memberOverhead += calculateByteArrayOverhead(element);
-    super.add(element);
+    super.add(index, element);
   }
 
   @Override

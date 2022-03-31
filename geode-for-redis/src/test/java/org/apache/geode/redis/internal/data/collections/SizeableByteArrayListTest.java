@@ -81,17 +81,34 @@ public class SizeableByteArrayListTest {
     assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
 
     // Remove all the elements and assert that the size is correct after each remove
-    for (int i = INITIAL_NUMBER_OF_ELEMENTS - 1; 0 <= i; --i) {
-      List<Integer> indexToRemove = new ArrayList<>(1);
-      indexToRemove.add(i);
-      list.removeIndexes(indexToRemove);
+    for (int i = INITIAL_NUMBER_OF_ELEMENTS - 1; 0 <= i;) {
+      // Remove in batches of 5
+      List<Integer> indexesToRemove = new ArrayList<>(5);
+      for(int j=0; j<5 && i>=0; j++) {
+        indexesToRemove.add(i--);
+      }
+      list.removeIndexes(indexesToRemove);
       assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
     }
     assertThat(list.size()).isEqualTo(0);
   }
 
   @Test
-  public void setIndex_getSizeInBytesIsAccurate() {
+  public void remove_getSizeInBytesIsAccurate() {
+    // Create a list with an initial size and confirm that it correctly reports its size
+    SizeableByteArrayList list = createList();
+    assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+
+    // Remove all the elements and assert that the size is correct after each remove
+    for (int i = INITIAL_NUMBER_OF_ELEMENTS - 1; 0 <= i; --i) {
+      list.remove(i);
+      assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+    }
+    assertThat(list.size()).isEqualTo(0);
+  }
+
+  @Test
+  public void set_getSizeInBytesIsAccurate() {
     // Create a list with one initial element and confirm that it correctly reports its size
     SizeableByteArrayList list = new SizeableByteArrayList();
     byte[] element = "element name".getBytes(StandardCharsets.UTF_8);
@@ -110,7 +127,7 @@ public class SizeableByteArrayListTest {
   }
 
   @Test
-  public void addIndex_getSizeInBytesIsAccurate() {
+  public void add_getSizeInBytesIsAccurate() {
     // Create a new list and confirm that it correctly reports its size
     SizeableByteArrayList list = createList();
     assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
