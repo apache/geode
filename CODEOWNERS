@@ -23,39 +23,39 @@
 #-----------------------------------------------------------------
 # Serialization
 #-----------------------------------------------------------------
-geode-serialization/**                                            @echobravopapa @Bill @kirklund @kamilla1201 @jchen21
+geode-serialization/**                                            @echobravopapa @Bill @kirklund @kamilla1201 @jchen21 @pivotal-jbarrett
 geode-serialization/**/internal/serialization/filter/*            @kirklund @jchen21
-geode-core/**/org/apache/geode/pdx/**                             @upthewaterspout @dschneider-pivotal @agingade
+geode-core/**/org/apache/geode/pdx/**                             @upthewaterspout @dschneider-pivotal @agingade @pivotal-jbarrett
 geode-core/**/org/apache/geode/codeAnalysis/**                    @upthewaterspout @dschneider-pivotal @agingade @kirklund
-geode-core/**/org/apache/geode/internal/*                         @echobravopapa @Bill @kirklund @kamilla1201
+geode-core/**/org/apache/geode/internal/*                         @echobravopapa @Bill @kirklund @kamilla1201 @pivotal-jbarrett
 geode-core/**/META-INF/**/*SanctionedSerializablesService         @kirklund @jchen21
 
 #-----------------------------------------------------------------
 # Membership
 #-----------------------------------------------------------------
-geode-membership/**                                               @echobravopapa @Bill @kamilla1201
-geode-old-client-support/**                                       @echobravopapa @Bill @kamilla1201
-geode-tcp-server/**                                               @echobravopapa @Bill @kamilla1201
-geode-core/**/org/apache/geode/distributed/internal/membership/** @echobravopapa @Bill @kirklund @kamilla1201
+geode-membership/**                                               @echobravopapa @Bill @kamilla1201 @pivotal-jbarrett
+geode-old-client-support/**                                       @echobravopapa @Bill @kamilla1201 @pivotal-jbarrett
+geode-tcp-server/**                                               @echobravopapa @Bill @kamilla1201 @pivotal-jbarrett
+geode-core/**/org/apache/geode/distributed/internal/membership/** @echobravopapa @Bill @kirklund @kamilla1201 @pivotal-jbarrett
 
 #-----------------------------------------------------------------
 # P2P Messaging
 #-----------------------------------------------------------------
-geode-core/**/org/apache/geode/internal/tcp/**                    @echobravopapa @Bill @kamilla1201
-geode-core/**/org/apache/geode/distributed/internal/direct/**     @echobravopapa @Bill @kamilla1201
-geode-core/**/org/apache/geode/internal/net/**                    @echobravopapa @Bill @kamilla1201
-geode-core/**/org/apache/geode/net/**                             @Bill @mivanac @kamilla1201
-geode-core/**/org/apache/geode/distributed/*                      @echobravopapa @Bill @kirklund @kamilla1201
-geode-core/**/org/apache/geode/distributed/internal/*             @echobravopapa @Bill @kirklund @kamilla1201
+geode-core/**/org/apache/geode/internal/tcp/**                    @echobravopapa @Bill @kamilla1201 @pivotal-jbarrett
+geode-core/**/org/apache/geode/distributed/internal/direct/**     @echobravopapa @Bill @kamilla1201 @pivotal-jbarrett
+geode-core/**/org/apache/geode/internal/net/**                    @echobravopapa @Bill @kamilla1201 @pivotal-jbarrett
+geode-core/**/org/apache/geode/net/**                             @Bill @mivanac @kamilla1201 @pivotal-jbarrett
+geode-core/**/org/apache/geode/distributed/*                      @echobravopapa @Bill @kirklund @kamilla1201 @pivotal-jbarrett
+geode-core/**/org/apache/geode/distributed/internal/*             @echobravopapa @Bill @kirklund @kamilla1201 @pivotal-jbarrett
 
 #-----------------------------------------------------------------
 # Client/server messaging and cache operations
 #-----------------------------------------------------------------
-geode-core/**/org/apache/geode/cache/client/**                    @echobravopapa @Bill @kamilla1201
-geode-core/**/org/apache/geode/cache/server/**                    @echobravopapa @Bill @kamilla1201
-geode-core/**/org/apache/geode/cache/client/internal/**           @Bill @echobravopapa @kamilla1201
-geode-core/**/org/apache/geode/internal/cache/tier/**             @Bill @echobravopapa @agingade @kirklund @kamilla1201
-geode-assembly/**/apache/geode/client/sni/**                      @Bill @echobravopapa @kamilla1201
+geode-core/**/org/apache/geode/cache/client/**                    @echobravopapa @Bill @kamilla1201 @pivotal-jbarrett
+geode-core/**/org/apache/geode/cache/server/**                    @echobravopapa @Bill @kamilla1201 @pivotal-jbarrett
+geode-core/**/org/apache/geode/cache/client/internal/**           @Bill @echobravopapa @kamilla1201 @pivotal-jbarrett
+geode-core/**/org/apache/geode/internal/cache/tier/**             @Bill @echobravopapa @agingade @kirklund @kamilla1201 @pivotal-jbarrett
+geode-assembly/**/apache/geode/client/sni/**                      @Bill @echobravopapa @kamilla1201 @pivotal-jbarrett
 
 #-----------------------------------------------------------------
 # Client Queues
@@ -66,9 +66,9 @@ geode-core/**/org/apache/geode/internal/cache/**/CacheClient*     @agingade @bog
 #-----------------------------------------------------------------
 # Core Public API packages - Cache, Region, etc.
 #-----------------------------------------------------------------
-geode-core/**/org/apache/geode/*                                  @dschneider-pivotal @boglesby @kirklund @nabarunnag
-geode-core/**/org/apache/geode/cache/*                            @dschneider-pivotal @boglesby @kirklund @nabarunnag
-geode-core/**/org/apache/geode/cache/util/**                      @dschneider-pivotal @boglesby @nabarunnag
+geode-core/**/org/apache/geode/*                                  @dschneider-pivotal @boglesby @kirklund @nabarunnag @pivotal-jbarrett
+geode-core/**/org/apache/geode/cache/*                            @dschneider-pivotal @boglesby @kirklund @nabarunnag @pivotal-jbarrett
+geode-core/**/org/apache/geode/cache/util/**                      @dschneider-pivotal @boglesby @nabarunnag @pivotal-jbarrett
 
 #-----------------------------------------------------------------
 # Distributed Locks
@@ -123,8 +123,8 @@ geode-core/**/org/apache/geode/internal/cache/locks/**            @pivotal-eshu 
 #-----------------------------------------------------------------
 # Function Execution
 #-----------------------------------------------------------------
-geode-core/**/org/apache/geode/internal/cache/execute/**          @boglesby @kirklund @nabarunnag
-geode-core/**/org/apache/geode/cache/execute/**                   @boglesby @kirklund @nabarunnag
+geode-core/**/org/apache/geode/internal/cache/execute/**          @boglesby @kirklund @nabarunnag @pivotal-jbarrett
+geode-core/**/org/apache/geode/cache/execute/**                   @boglesby @kirklund @nabarunnag @pivotal-jbarrett
 
 #-----------------------------------------------------------------
 # Querying
@@ -135,9 +135,9 @@ geode-core/**/org/apache/geode/cache/query/**                     @nabarunnag @D
 #-----------------------------------------------------------------
 # Session State:
 #-----------------------------------------------------------------
-extensions/**                                                     @jdeppe-pivotal @BenjaminPerryRoss
-geode-core/**/org/apache/geode/internal/modules/util/**           @jdeppe-pivotal @BenjaminPerryRoss
-geode-assembly/**/org/apache/geode/session/**                     @jdeppe-pivotal @BenjaminPerryRoss
+extensions/**                                                     @jdeppe-pivotal @BenjaminPerryRoss @pivotal-jbarrett
+geode-core/**/org/apache/geode/internal/modules/util/**           @jdeppe-pivotal @BenjaminPerryRoss @pivotal-jbarrett
+geode-assembly/**/org/apache/geode/session/**                     @jdeppe-pivotal @BenjaminPerryRoss @pivotal-jbarrett
 
 #-----------------------------------------------------------------
 # DEV rest API
@@ -158,21 +158,21 @@ geode-memcached/**                                                @nabarunnag @D
 #-----------------------------------------------------------------
 # Misc Utilities
 #-----------------------------------------------------------------
-geode-core/**/org/apache/geode/internal/util/**                   @nabarunnag @boglesby @kirklund
-geode-core/**/org/apache/geode/internal/util/concurrent/**        @nabarunnag @boglesby @kirklund
-geode-core/**/org/apache/geode/internal/shared/**                 @nabarunnag @boglesby @kirklund
-geode-core/**/org/apache/geode/internal/sequencelog/**            @nabarunnag @boglesby
-geode-core/**/org/apache/geode/internal/concurrent/**             @nabarunnag @boglesby @kirklund
-geode-core/**/org/apache/geode/distributed/internal/unsafe/**     @nabarunnag @boglesby @kirklund
-geode-core/**/org/apache/geode/internal/lang/**                   @nabarunnag @boglesby @kirklund
-geode-core/**/org/apache/geode/internal/monitoring/**             @nabarunnag @boglesby @kirklund
-geode-core/**/org/apache/geode/internal/exception/**              @nabarunnag @boglesby @kirklund
-geode-core/**/org/apache/geode/lang/**                            @nabarunnag @boglesby @kirklund
-geode-core/**/org/apache/geode/ra/**                              @nabarunnag @boglesby
-geode-core/**/org/apache/geode/internal/cache/vmotion/**          @nabarunnag @boglesby
-geode-core/**/org/apache/geode/internal/jndi/**                   @nabarunnag @boglesby
-geode-common/**                                                   @nabarunnag @boglesby @kirklund
-geode-unsafe/**                                                   @nabarunnag @boglesby @kirklund
+geode-core/**/org/apache/geode/internal/util/**                   @nabarunnag @boglesby @kirklund @pivotal-jbarrett
+geode-core/**/org/apache/geode/internal/util/concurrent/**        @nabarunnag @boglesby @kirklund @pivotal-jbarrett
+geode-core/**/org/apache/geode/internal/shared/**                 @nabarunnag @boglesby @kirklund @pivotal-jbarrett
+geode-core/**/org/apache/geode/internal/sequencelog/**            @nabarunnag @boglesby @pivotal-jbarrett
+geode-core/**/org/apache/geode/internal/concurrent/**             @nabarunnag @boglesby @kirklund @pivotal-jbarrett
+geode-core/**/org/apache/geode/distributed/internal/unsafe/**     @nabarunnag @boglesby @kirklund @pivotal-jbarrett
+geode-core/**/org/apache/geode/internal/lang/**                   @nabarunnag @boglesby @kirklund @pivotal-jbarrett
+geode-core/**/org/apache/geode/internal/monitoring/**             @nabarunnag @boglesby @kirklund @pivotal-jbarrett
+geode-core/**/org/apache/geode/internal/exception/**              @nabarunnag @boglesby @kirklund @pivotal-jbarrett
+geode-core/**/org/apache/geode/lang/**                            @nabarunnag @boglesby @kirklund @pivotal-jbarrett
+geode-core/**/org/apache/geode/ra/**                              @nabarunnag @boglesby @pivotal-jbarrett
+geode-core/**/org/apache/geode/internal/cache/vmotion/**          @nabarunnag @boglesby @pivotal-jbarrett
+geode-core/**/org/apache/geode/internal/jndi/**                   @nabarunnag @boglesby @pivotal-jbarrett
+geode-common/**                                                   @nabarunnag @boglesby @kirklund @pivotal-jbarrett
+geode-unsafe/**                                                   @nabarunnag @boglesby @kirklund @pivotal-jbarrett
 
 #-----------------------------------------------------------------
 # Persistence
@@ -191,11 +191,11 @@ geode-core/**/org/apache/geode/internal/cache/versions/**         @dschneider-pi
 #-----------------------------------------------------------------
 # WAN messaging and queues
 #-----------------------------------------------------------------
-geode-wan/**                                                      @gesterzhou @boglesby @nabarunnag
-geode-core/**/org/apache/geode/cache/asyncqueue/**                @gesterzhou @boglesby @nabarunnag
-geode-core/**/org/apache/geode/cache/wan/**                       @gesterzhou @boglesby @nabarunnag
-geode-core/**/org/apache/geode/internal/cache/wan/**              @gesterzhou @boglesby @nabarunnag
-geode-assembly/**/apache/geode/cache/wan/**                       @gesterzhou @boglesby @nabarunnag
+geode-wan/**                                                      @gesterzhou @boglesby @nabarunnag @pivotal-jbarrett
+geode-core/**/org/apache/geode/cache/asyncqueue/**                @gesterzhou @boglesby @nabarunnag @pivotal-jbarrett
+geode-core/**/org/apache/geode/cache/wan/**                       @gesterzhou @boglesby @nabarunnag @pivotal-jbarrett
+geode-core/**/org/apache/geode/internal/cache/wan/**              @gesterzhou @boglesby @nabarunnag @pivotal-jbarrett
+geode-assembly/**/apache/geode/cache/wan/**                       @gesterzhou @boglesby @nabarunnag @pivotal-jbarrett
 
 #-----------------------------------------------------------------
 # Management
@@ -223,13 +223,13 @@ geode-core/**/org/apache/geode/cache/internal/*                   @jdeppe-pivota
 #-----------------------------------------------------------------
 # Security
 #-----------------------------------------------------------------
-geode-core/**/org/apache/geode/examples/**                        @jdeppe-pivotal @jinmeiliao @mhansonp
-geode-core/**/org/apache/geode/examples/security/**               @jdeppe-pivotal @jinmeiliao
-geode-core/**/org/apache/geode/security/**                        @jdeppe-pivotal @jinmeiliao @kirklund
-geode-core/**/org/apache/geode/internal/security/**               @jdeppe-pivotal @jinmeiliao @kirklund
-geode-core/**/org/apache/geode/cache/operations/**                @jdeppe-pivotal @jinmeiliao
-geode-core/**/org/apache/geode/internal/cache/operations/**       @jdeppe-pivotal @jinmeiliao
-geode-assembly/**/apache/geode/ssl/**                             @jdeppe-pivotal @jinmeiliao
+geode-core/**/org/apache/geode/examples/**                        @jdeppe-pivotal @jinmeiliao @mhansonp @pivotal-jbarrett
+geode-core/**/org/apache/geode/examples/security/**               @jdeppe-pivotal @jinmeiliao @pivotal-jbarrett
+geode-core/**/org/apache/geode/security/**                        @jdeppe-pivotal @jinmeiliao @kirklund @pivotal-jbarrett
+geode-core/**/org/apache/geode/internal/security/**               @jdeppe-pivotal @jinmeiliao @kirklund @pivotal-jbarrett
+geode-core/**/org/apache/geode/cache/operations/**                @jdeppe-pivotal @jinmeiliao @pivotal-jbarrett
+geode-core/**/org/apache/geode/internal/cache/operations/**       @jdeppe-pivotal @jinmeiliao @pivotal-jbarrett
+geode-assembly/**/apache/geode/ssl/**                             @jdeppe-pivotal @jinmeiliao @pivotal-jbarrett
 
 #-----------------------------------------------------------------
 # Logging
@@ -246,10 +246,10 @@ geode-assembly/**/org/apache/geode/logging/**                     @agingade @kir
 #-----------------------------------------------------------------
 # Metrics & Statistics
 #-----------------------------------------------------------------
-geode-core/**/org/apache/geode/internal/statistics/**             @mhansonp @kirklund
-geode-core/**/org/apache/geode/internal/stats50/**                @mhansonp @kirklund
-geode-core/**/org/apache/geode/metrics/**                         @mhansonp @kirklund
-geode-assembly/**/org/apache/geode/metrics/**                     @mhansonp @kirklund
+geode-core/**/org/apache/geode/internal/statistics/**             @mhansonp @kirklund @pivotal-jbarrett
+geode-core/**/org/apache/geode/internal/stats50/**                @mhansonp @kirklund @pivotal-jbarrett
+geode-core/**/org/apache/geode/metrics/**                         @mhansonp @kirklund @pivotal-jbarrett
+geode-assembly/**/org/apache/geode/metrics/**                     @mhansonp @kirklund @pivotal-jbarrett
 
 #-----------------------------------------------------------------
 # Region Snapshots
@@ -276,7 +276,7 @@ geode-core/**/org/apache/geode/internal/cache/control/**          @kirklund @Don
 #geode-concurrency-test/**
 geode-dunit/**                                                    @mhansonp @kirklund
 geode-junit/**                                                    @mhansonp @kirklund
-#geode-jmh/**
+geode-jmh/**                                                      @pivotal-jbarrett
 geode-junit/**/org/apache/geode/test/util/**                      @jdeppe-pivotal @kirklund
 geode-assembly/**/org/apache/geode/test/junit/**                  @jdeppe-pivotal @jinmeiliao @kirklund
 geode-assembly/**/org/apache/geode/rules/**                       @jdeppe-pivotal @jinmeiliao @kirklund
