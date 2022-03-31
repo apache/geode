@@ -20,6 +20,7 @@ import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.apache.geode.internal.JvmSizeUtils.roundUpSize;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -102,22 +103,13 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
   }
 
   /**
-   * @param remove in order (smallest to largest) list of indexes to remove
+   * @param indexes list of indexes to remove
    */
-  public void removeIndexes(List<Integer> remove) {
-    int removeIndex = 0;
-    int firstIndexToRemove = remove.get(0);
-    ListIterator<byte[]> iterator = listIterator(firstIndexToRemove);
-
-    // Iterates only through the indexes to remove
-    for (int i = firstIndexToRemove; i <= remove.get(remove.size() - 1); i++) {
-      byte[] element = iterator.next();
-      if (i == remove.get(removeIndex)) {
-        iterator.remove();
-        memberOverhead -= calculateByteArrayOverhead(element);
-        removeIndex++;
-      }
+  public void removeIndexes(List<Integer> indexes) {
+    if(indexes.size() > 1) {
+      indexes.sort(Comparator.reverseOrder());
     }
+    indexes.forEach(index -> this.remove((int)index));
   }
 
   @Override
