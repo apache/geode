@@ -229,6 +229,8 @@ public class SSLConfigurationFactory {
     sslConfigBuilder.setCiphers(distributionConfig.getGatewaySSLCiphers());
     sslConfigBuilder.setEnabled(distributionConfig.getGatewaySSLEnabled());
     sslConfigBuilder.setKeystore(distributionConfig.getGatewaySSLKeyStore());
+    sslConfigBuilder
+        .setEndpointIdentificationEnabled(distributionConfig.getSSLEndPointIdentificationEnabled());
     sslConfigBuilder.setKeystorePassword(distributionConfig.getGatewaySSLKeyStorePassword());
     sslConfigBuilder.setKeystoreType(distributionConfig.getGatewaySSLKeyStoreType());
     sslConfigBuilder.setTruststore(distributionConfig.getGatewaySSLTrustStore());
