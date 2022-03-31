@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static java.util.stream.Collectors.toList;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.management.internal.cli.shell.MXBeanProvider.getDistributedSystemMXBean;
 
@@ -25,6 +26,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import javax.management.MalformedObjectNameException;
 
@@ -122,11 +124,26 @@ class StartMemberUtils {
     }
   }
 
+  private static final String[] REQUIRED_OPENS = new String[]{};
+  private static final String[] REQUIRED_EXPORTS = new String[]{
+      "java.base/sun.nio.ch",
+      "java.management/com.sun.jmx.remote.security",
+  };
+  private static final List<String> OPENS = Stream.of(REQUIRED_OPENS)
+      .map(s -> "--add-opens=" + s + "=ALL-UNNAMED")
+      .collect(toList());
+
+  private static final List<String> EXPORTS = Stream.of(REQUIRED_EXPORTS)
+      .map(s -> "--add-exports=" + s + "=ALL-UNNAMED")
+      .collect(toList());
+
   static void addJvmArgumentsAndOptions(final List<String> commandLine,
       final String[] jvmArgsOpts) {
     if (jvmArgsOpts != null) {
       commandLine.addAll(Arrays.asList(jvmArgsOpts));
     }
+    commandLine.addAll(OPENS);
+    commandLine.addAll(EXPORTS);
   }
 
   static void addInitialHeap(final List<String> commandLine, final String initialHeap) {
