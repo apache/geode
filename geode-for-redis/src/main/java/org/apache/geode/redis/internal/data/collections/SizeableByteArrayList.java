@@ -122,7 +122,6 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
     }
   }
 
-
   @Override
   public boolean remove(Object o) {
     ListIterator<byte[]> iterator = this.listIterator();
@@ -142,6 +141,11 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
     byte[] element = super.remove(index);
     memberOverhead -= calculateByteArrayOverhead(element);
     return element;
+  }
+
+  @Override
+  public boolean removeLastOccurrence(Object o) {
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -168,10 +172,6 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
   public void addLast(byte[] element) {
     memberOverhead += calculateByteArrayOverhead(element);
     super.addLast(element);
-  }
-
-  public boolean removeLastOccurrence(Object o) {
-    throw new UnsupportedOperationException();
   }
 
   private int calculateByteArrayOverhead(byte[] element) {

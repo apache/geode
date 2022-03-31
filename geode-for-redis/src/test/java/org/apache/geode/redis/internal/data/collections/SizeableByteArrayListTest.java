@@ -75,6 +75,21 @@ public class SizeableByteArrayListTest {
   }
 
   @Test
+  public void removeObject_getSizeInBytesIsAccurate() {
+    // Create a list with an initial size and confirm that it correctly reports its size
+    SizeableByteArrayList list = createList();
+    assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+
+    // Remove all the elements and assert that the size is correct after each remove
+    Random rand = new Random();
+    for (int i = 0; i < INITIAL_NUMBER_OF_ELEMENTS; ++i) {
+      list.remove(makeByteArrayOfSpecifiedLength(i + 1));
+      assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+    }
+    assertThat(list.size()).isEqualTo(0);
+  }
+
+  @Test
   public void removeIndexes_getSizeInBytesIsAccurate() {
     // Create a list with an initial size and confirm that it correctly reports its size
     SizeableByteArrayList list = createList();
@@ -94,7 +109,7 @@ public class SizeableByteArrayListTest {
   }
 
   @Test
-  public void remove_getSizeInBytesIsAccurate() {
+  public void removeIndex_getSizeInBytesIsAccurate() {
     // Create a list with an initial size and confirm that it correctly reports its size
     SizeableByteArrayList list = createList();
     assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
@@ -127,7 +142,7 @@ public class SizeableByteArrayListTest {
   }
 
   @Test
-  public void add_getSizeInBytesIsAccurate() {
+  public void addElementAtIndex_getSizeInBytesIsAccurate() {
     // Create a new list and confirm that it correctly reports its size
     SizeableByteArrayList list = createList();
     assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
@@ -135,6 +150,32 @@ public class SizeableByteArrayListTest {
     // Add an element by index and assert size is updated
     byte[] element = "element name".getBytes(StandardCharsets.UTF_8);
     list.add(1, element);
+    long sizeAfterAddingElement = list.getSizeInBytes();
+    assertThat(sizeAfterAddingElement).isEqualTo(sizer.sizeof(list));
+  }
+
+  @Test
+  public void addFirst_getSizeInBytesIsAccurate() {
+    // Create a new list and confirm that it correctly reports its size
+    SizeableByteArrayList list = createList();
+    assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+
+    // Add an element and assert size is updated
+    byte[] element = "element name".getBytes(StandardCharsets.UTF_8);
+    list.addFirst(element);
+    long sizeAfterAddingElement = list.getSizeInBytes();
+    assertThat(sizeAfterAddingElement).isEqualTo(sizer.sizeof(list));
+  }
+
+  @Test
+  public void addLast_getSizeInBytesIsAccurate() {
+    // Create a new list and confirm that it correctly reports its size
+    SizeableByteArrayList list = createList();
+    assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+
+    // Add an element and assert size is updated
+    byte[] element = "element name".getBytes(StandardCharsets.UTF_8);
+    list.addLast(element);
     long sizeAfterAddingElement = list.getSizeInBytes();
     assertThat(sizeAfterAddingElement).isEqualTo(sizer.sizeof(list));
   }
