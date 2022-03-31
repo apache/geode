@@ -442,17 +442,20 @@ public class MessageDispatcher extends LoggingThread {
           _messageQueue.remove();
           clientMessage = null;
         } catch (AuthenticationExpiredException expired) {
-          // only send the message to clients who can handle the message
-          if (getProxy().getVersion().isNewerThanOrEqualTo(RE_AUTHENTICATION_START_VERSION)) {
-            EventID eventId = createEventId();
-            sendMessageDirectly(new ClientReAuthenticateMessage(eventId));
-          }
-
-          // We wait for all versions of clients to re-authenticate. For older clients we still
-          // wait, just in case client will perform some operations to
-          // trigger credential refresh on its own.
           synchronized (reAuthenticationLock) {
+            // turn on the "isWaitingForReAuthentication" flag before we send the re-auth message
+            // if we do it the other way around, the re-auth might be finished before we turn on the
+            // flag for the notify to happen.
             waitForReAuthenticationStartTime = System.currentTimeMillis();
+            // only send the message to clients who can handle the message
+            if (getProxy().getVersion().isNewerThanOrEqualTo(RE_AUTHENTICATION_START_VERSION)) {
+              EventID eventId = createEventId();
+              sendMessageDirectly(new ClientReAuthenticateMessage(eventId));
+            }
+
+            // We wait for all versions of clients to re-authenticate. For older clients we still
+            // wait, just in case client will perform some operations to
+            // trigger credential refresh on its own.
             long waitFinishTime = waitForReAuthenticationStartTime + reAuthenticateWaitTime;
             subjectUpdated = false;
             long remainingWaitTime = waitFinishTime - System.currentTimeMillis();
