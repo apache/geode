@@ -27,7 +27,9 @@ import static org.apache.geode.management.internal.i18n.CliStrings.START_SERVER_
 import static org.apache.geode.management.internal.i18n.CliStrings.START_SERVER__INITIAL_HEAP;
 import static org.apache.geode.management.internal.i18n.CliStrings.START_SERVER__J;
 import static org.apache.geode.management.internal.i18n.CliStrings.START_SERVER__LOCATORS;
+import static org.apache.geode.management.internal.i18n.CliStrings.START_SERVER__LOG_LEVEL;
 import static org.apache.geode.management.internal.i18n.CliStrings.START_SERVER__MAXHEAP;
+import static org.apache.geode.management.internal.i18n.CliStrings.START_SERVER__NAME;
 import static org.apache.geode.management.internal.i18n.CliStrings.START_SERVER__SERVER_PORT;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_OOM_COMMAND_NOT_ALLOWED;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -37,10 +39,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
@@ -53,6 +60,7 @@ import org.junit.rules.TemporaryFolder;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.JedisClusterCRC16;
 
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -91,6 +99,7 @@ public class OutOfMemoryDUnitTest {
   private static String server1Tag;
   private static String server2Tag;
   private static int[] redisServerPorts;
+  private static String logFile;
 
   private final AtomicInteger numberOfKeys = new AtomicInteger(0);
 
@@ -121,7 +130,7 @@ public class OutOfMemoryDUnitTest {
     gfsh.executeAndAssertThat(startLocatorCommand.getCommandString()).statusIsSuccess();
     redisServerPorts = getRandomAvailableTCPPorts(2);
 
-    startServer(redisServerPorts[0]);
+    logFile = startServer(redisServerPorts[0]);
     startServer(redisServerPorts[1]);
 
     List<ClusterNode> nodes;
@@ -137,9 +146,14 @@ public class OutOfMemoryDUnitTest {
         new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPorts[0]), REDIS_CLIENT_TIMEOUT);
   }
 
-  private static void startServer(int redisPort) throws Exception {
+  private static String startServer(int redisPort) throws Exception {
+    String serverDir = temporaryFolder.newFolder().getAbsolutePath();
+    String serverName = "server" + redisPort;
+
     CommandStringBuilder startServerCommand = new CommandStringBuilder(START_SERVER)
-        .addOption(START_SERVER__DIR, temporaryFolder.newFolder().getAbsolutePath())
+        .addOption(START_SERVER__DIR, serverDir)
+        .addOption(START_SERVER__NAME, serverName)
+        .addOption(START_SERVER__LOG_LEVEL, "info")
         .addOption(START_SERVER__SERVER_PORT, "0")
         .addOption(START_SERVER__LOCATORS, "localhost[" + locatorPort + "]")
         .addOption(START_SERVER__J, "-Dgemfire.geode-for-redis-enabled=true")
@@ -154,6 +168,8 @@ public class OutOfMemoryDUnitTest {
       startServerCommand.addOption(START_SERVER__J, "-XX:CMSInitiatingOccupancyFraction=45");
     }
     gfsh.executeAndAssertThat(startServerCommand.getCommandString()).statusIsSuccess();
+
+    return Paths.get(serverDir, serverName + ".log").toString();
   }
 
   private static String getHashtagForServerWithRedisPort(List<ClusterNode> nodes, int redisPort) {
@@ -177,6 +193,18 @@ public class OutOfMemoryDUnitTest {
     return "{" + key + "}";
   }
 
+  private void dumpLog(String filename) {
+    System.out.println("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv  " + filename +
+        "  vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
+    try (Stream<String> lines = Files.lines(Paths.get(filename), Charset.defaultCharset())) {
+      lines.forEachOrdered(System.out::println);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  " + filename +
+        "  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+  }
+
   @AfterClass
   public static void tearDownClass() throws Exception {
     jedis.close();
@@ -191,46 +219,64 @@ public class OutOfMemoryDUnitTest {
 
   @Test
   public void shouldReturnOOMError_forWriteOperations_whenThresholdReached() {
-    fillServer1Memory(jedis, false);
-    Future<Void> memoryPressure =
-        executor.submit(() -> maintainMemoryPressure(jedis, false));
+    try {
+      fillServer1Memory(jedis, false);
+      Future<Void> memoryPressure =
+          executor.submit(() -> maintainMemoryPressure(jedis, false));
 
-    await()
-        .untilAsserted(() -> assertThatThrownBy(() -> jedis.set(server1Tag + "oneMoreKey", "value"))
-            .hasMessage(ERROR_OOM_COMMAND_NOT_ALLOWED));
+      await()
+          .untilAsserted(
+              () -> assertThatThrownBy(() -> jedis.set(server1Tag + "oneMoreKey", "value"))
+                  .hasMessage(ERROR_OOM_COMMAND_NOT_ALLOWED));
 
-    memoryPressure.cancel(true);
+      memoryPressure.cancel(true);
+    } catch (JedisDataException e) {
+      dumpLog(logFile);
+      throw e;
+    }
   }
 
   @Test
   public void shouldReturnOOMError_forSubscribe_whenThresholdReached() {
-    MockSubscriber mockSubscriber = new MockSubscriber();
-    JedisCluster subJedis =
-        new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPorts[0]), REDIS_CLIENT_TIMEOUT);
+    try {
+      MockSubscriber mockSubscriber = new MockSubscriber();
+      JedisCluster subJedis =
+          new JedisCluster(new HostAndPort(BIND_ADDRESS, redisServerPorts[0]),
+              REDIS_CLIENT_TIMEOUT);
 
-    fillServer1Memory(jedis, false);
-    Future<Void> memoryPressure =
-        executor.submit(() -> maintainMemoryPressure(jedis, false));
+      fillServer1Memory(jedis, false);
+      Future<Void> memoryPressure =
+          executor.submit(() -> maintainMemoryPressure(jedis, false));
 
-    await()
-        .untilAsserted(() -> assertThatThrownBy(() -> subJedis.subscribe(mockSubscriber, "channel"))
-            .hasMessage(ERROR_OOM_COMMAND_NOT_ALLOWED));
+      await()
+          .untilAsserted(
+              () -> assertThatThrownBy(() -> subJedis.subscribe(mockSubscriber, "channel"))
+                  .hasMessage(ERROR_OOM_COMMAND_NOT_ALLOWED));
 
-    subJedis.close();
+      subJedis.close();
 
-    memoryPressure.cancel(true);
+      memoryPressure.cancel(true);
+    } catch (JedisDataException e) {
+      dumpLog(logFile);
+      throw e;
+    }
   }
 
   @Test
   public void shouldReturnOOMError_forPublish_whenThresholdReached() {
-    fillServer1Memory(jedis, false);
-    Future<Void> memoryPressure =
-        executor.submit(() -> maintainMemoryPressure(jedis, false));
+    try {
+      fillServer1Memory(jedis, false);
+      Future<Void> memoryPressure =
+          executor.submit(() -> maintainMemoryPressure(jedis, false));
 
-    await().untilAsserted(() -> assertThatThrownBy(() -> jedis.publish("channel", "message"))
-        .hasMessage(ERROR_OOM_COMMAND_NOT_ALLOWED));
+      await().untilAsserted(() -> assertThatThrownBy(() -> jedis.publish("channel", "message"))
+          .hasMessage(ERROR_OOM_COMMAND_NOT_ALLOWED));
 
-    memoryPressure.cancel(true);
+      memoryPressure.cancel(true);
+    } catch (JedisDataException e) {
+      dumpLog(logFile);
+      throw e;
+    }
   }
 
   @Test

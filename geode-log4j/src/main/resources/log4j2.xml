@@ -31,6 +31,7 @@
     <GeodeAlert name="ALERT"/>
   </Appenders>
   <Loggers>
+    <Logger name="io.netty" level="DEBUG" additivity="true"/>
     <Logger name="com.gemstone" level="INFO" additivity="true"/>
     <Logger name="org.apache.geode" level="INFO" additivity="true">
     <filters>

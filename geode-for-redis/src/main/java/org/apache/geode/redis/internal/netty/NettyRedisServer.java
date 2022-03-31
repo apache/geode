@@ -43,6 +43,8 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
@@ -168,6 +170,7 @@ public class NettyRedisServer {
         }
         ChannelPipeline pipeline = socketChannel.pipeline();
         addSSLIfEnabled(socketChannel, pipeline);
+        pipeline.addLast(new LoggingHandler(LogLevel.DEBUG));
         pipeline.addLast(ByteToCommandDecoder.class.getSimpleName(),
             new ByteToCommandDecoder(redisStats, securityService, socketChannel.id()));
         pipeline.addLast(new WriteTimeoutHandler(writeTimeoutSeconds));
