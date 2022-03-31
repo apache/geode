@@ -109,7 +109,7 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
     if(indexes.size() > 1) {
       indexes.sort(Comparator.reverseOrder());
     }
-    indexes.forEach(index -> this.remove((int)index));
+    indexes.forEach(index -> this.remove(index.intValue()));
   }
 
   @Override
