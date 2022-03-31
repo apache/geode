@@ -174,6 +174,29 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
     super.addLast(element);
   }
 
+  public int insert(byte[] elementToInsert, byte[] referenceElement, boolean before) {
+    int i = 0;
+    ListIterator<byte[]> iterator = listIterator();
+
+    while (iterator.hasNext()) {
+      if (Arrays.equals(iterator.next(), referenceElement)) {
+        if (before) {
+          iterator.previous();
+          iterator.add(elementToInsert);
+          memberOverhead += calculateByteArrayOverhead(elementToInsert);
+          return i;
+        } else {
+          iterator.add(elementToInsert);
+          memberOverhead += calculateByteArrayOverhead(elementToInsert);
+          return i + 1;
+        }
+      }
+      i++;
+    }
+
+    return -1;
+  }
+
   private int calculateByteArrayOverhead(byte[] element) {
     return NODE_OVERHEAD + memoryOverhead(element);
   }

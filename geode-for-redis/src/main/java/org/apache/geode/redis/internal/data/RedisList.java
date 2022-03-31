@@ -398,24 +398,7 @@ public class RedisList extends AbstractRedisData {
 
   public synchronized int elementInsert(byte[] elementToInsert, byte[] referenceElement,
       boolean before) {
-    int i = 0;
-    ListIterator<byte[]> iterator = elementList.listIterator();
-
-    while (iterator.hasNext()) {
-      if (Arrays.equals(iterator.next(), referenceElement)) {
-        if (before) {
-          iterator.previous();
-          iterator.add(elementToInsert);
-          return i;
-        } else {
-          iterator.add(elementToInsert);
-          return i + 1;
-        }
-      }
-      i++;
-    }
-
-    return -1;
+    return elementList.insert(elementToInsert, referenceElement, before);
   }
 
   public synchronized void elementInsert(byte[] toInsert, int index) {
