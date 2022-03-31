@@ -55,7 +55,7 @@ Old log files become eligible for online compaction when their live data (non-ga
         -   Compact the logs for a single online disk store through the API, with the `forceCompaction` method. This method first rolls the oplogs and then compacts them. Example:
 
             ``` pre
-            myCache.getDiskStore("myDiskStore").forceCompaction();
+            myCache.findDiskStore("myDiskStore").forceCompaction();
             ```
 
         -   Using `gfsh`, compact a disk store with the [compact disk-store](../../tools_modules/gfsh/command-pages/compact.html#topic_F113C95C076F424E9AA8AC4F1F6324CC) command. Examples:
