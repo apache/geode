@@ -106,7 +106,7 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
    * @param indexes list of indexes to remove
    */
   public void removeIndexes(List<Integer> indexes) {
-    if(indexes.size() > 1) {
+    if (indexes.size() > 1) {
       indexes.sort(Comparator.reverseOrder());
     }
     indexes.forEach(index -> this.remove(index.intValue()));

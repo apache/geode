@@ -84,7 +84,7 @@ public class SizeableByteArrayListTest {
     for (int i = INITIAL_NUMBER_OF_ELEMENTS - 1; 0 <= i;) {
       // Remove in batches of 5
       List<Integer> indexesToRemove = new ArrayList<>(5);
-      for(int j=0; j<5 && i>=0; j++) {
+      for (int j = 0; j < 5 && i >= 0; j++) {
         indexesToRemove.add(i--);
       }
       list.removeIndexes(indexesToRemove);
