@@ -40,9 +40,9 @@ import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
- * Removes a batch of events from the remote secondary queues
+ * Sets events in the remote secondary queues to possible duplicate
  *
- * @since GemFire 8.0
+ * @since Geode 1.15
  */
 public class ParallelQueueSetPossibleDuplicateMessage extends PooledDistributionMessage {
 
@@ -108,7 +108,7 @@ public class ParallelQueueSetPossibleDuplicateMessage extends PooledDistribution
 
               if (brq != null) {
                 if (reason == STOPPED_GATEWAY_SENDER) {
-                  brq.setReceivedGWStopped(true);
+                  brq.setReceivedGatewaySenderStoppedMessage(true);
                 }
               }
 

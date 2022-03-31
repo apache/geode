@@ -1363,7 +1363,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     if (reason == STOPPED_GATEWAY_SENDER) {
       final Set<Integer> buckets = queueRegion.getDataStore().getAllLocalPrimaryBucketIds();
       if (regionToDispatchedKeysMap.isEmpty()) {
-        if (queueRegion.isGWStoppedSent()) {
+        if (queueRegion.isSentGatewaySenderStoppedMessage()) {
           return;
         }
         Map<Integer, List<Object>> bucketIdToDispatchedKeys = new ConcurrentHashMap<>();
@@ -1393,8 +1393,8 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
       }
 
       if (reason == STOPPED_GATEWAY_SENDER) {
-        if (!queueRegion.isGWStoppedSent()) {
-          queueRegion.setGWStoppedSent(true);
+        if (!queueRegion.isSentGatewaySenderStoppedMessage()) {
+          queueRegion.setSentGatewaySenderStoppedMessage(true);
         }
       }
 

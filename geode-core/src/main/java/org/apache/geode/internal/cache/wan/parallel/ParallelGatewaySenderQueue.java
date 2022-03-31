@@ -593,11 +593,11 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     } finally {
       if (prQ != null) {
         userRegionNameToShadowPRMap.put(userPR.getFullPath(), prQ);
-        prQ.setGWStoppedSent(false);
+        prQ.setSentGatewaySenderStoppedMessage(false);
         if (prQ.getDataStore() != null) {
           final Set<BucketRegion> buckets = prQ.getDataStore().getAllLocalBucketRegions();
           for (BucketRegion br : buckets) {
-            br.setReceivedGWStopped(false);
+            br.setReceivedGatewaySenderStoppedMessage(false);
           }
         }
       }

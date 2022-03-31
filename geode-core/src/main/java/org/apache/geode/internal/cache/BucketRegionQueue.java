@@ -210,8 +210,8 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
           region.getParallelGatewaySender().getEventProcessor();
 
       if (ep != null && !(ep.getDispatcher() instanceof GatewaySenderEventCallbackDispatcher)) {
-        if (isReceivedGWStopped()) {
-          setReceivedGWStopped(false);
+        if (isReceivedGatewaySenderStoppedMessage()) {
+          setReceivedGatewaySenderStoppedMessage(false);
           return;
         }
         BucketAdvisor parent = getParentAdvisor(getBucketAdvisor());

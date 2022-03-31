@@ -217,7 +217,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     }
   }
 
-  private boolean receivedGWStopped = false;
+  private boolean receivedGatewaySenderStoppedMessage = false;
 
   private final int redundancy;
 
@@ -2537,12 +2537,12 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     return getSystem().getDistributionManager().getOtherDistributionManagerIds();
   }
 
-  public boolean isReceivedGWStopped() {
-    return receivedGWStopped;
+  public boolean isReceivedGatewaySenderStoppedMessage() {
+    return receivedGatewaySenderStoppedMessage;
   }
 
-  public void setReceivedGWStopped(boolean notified) {
-    receivedGWStopped = notified;
+  public void setReceivedGatewaySenderStoppedMessage(boolean notified) {
+    receivedGatewaySenderStoppedMessage = notified;
   }
 
 }

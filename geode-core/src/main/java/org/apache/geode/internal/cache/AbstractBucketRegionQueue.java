@@ -231,7 +231,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
       // .getBucketToTempQueueMap().get(getId());
       if (tempQueue != null && !tempQueue.isEmpty()) {
         synchronized (tempQueue) {
-          Map<String, Map<Integer, List<Object>>> regionToDispatchedKeysMap =
+          Map<String, Map<Integer, List<Object>>> regionToDuplicateEventsMap =
               new ConcurrentHashMap<>();
           try {
             boolean notifyDuplicate =
@@ -249,7 +249,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
                 event.setPossibleDuplicate(true);
                 if (addToQueue(event.getShadowKey(), event)) {
                   if (notifyDuplicate) {
-                    addDuplicateEvent(regionToDispatchedKeysMap, event);
+                    addDuplicateEvent(regionToDuplicateEventsMap, event);
                   }
                   event = null;
                 }
@@ -273,7 +273,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
             }
             getInitializationLock().writeLock().unlock();
           }
-          if (regionToDispatchedKeysMap.size() > 0
+          if (regionToDuplicateEventsMap.size() > 0
               && getPartitionedRegion().getRegionAdvisor() != null) {
             Set<InternalDistributedMember> recipients =
                 getPartitionedRegion().getRegionAdvisor().adviseDataStore();
@@ -287,11 +287,11 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
             dm.retainMembersWithSameOrNewerVersion(recipients, KnownVersion.GEODE_1_15_0);
 
             if (!recipients.isEmpty()) {
-              ParallelQueueSetPossibleDuplicateMessage pqspdm =
+              ParallelQueueSetPossibleDuplicateMessage possibleDuplicateMessage =
                   new ParallelQueueSetPossibleDuplicateMessage(LOAD_FROM_TEMP_QUEUE,
-                      regionToDispatchedKeysMap);
-              pqspdm.setRecipients(recipients);
-              dm.putOutgoing(pqspdm);
+                      regionToDuplicateEventsMap);
+              possibleDuplicateMessage.setRecipients(recipients);
+              dm.putOutgoing(possibleDuplicateMessage);
             }
           }
         }
@@ -308,11 +308,9 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
       regionToDispatchedKeysMap.put(getPartitionedRegion().getFullPath(), bucketIdToDispatchedKeys);
     }
 
-    List<Object> dispatchedKeys = bucketIdToDispatchedKeys.get(getId());
-    if (dispatchedKeys == null) {
-      dispatchedKeys = new ArrayList<>();
-      bucketIdToDispatchedKeys.put(getId(), dispatchedKeys);
-    }
+    List<Object> dispatchedKeys =
+        bucketIdToDispatchedKeys.computeIfAbsent(getId(), k -> new ArrayList<>());
+
     dispatchedKeys.add(event.getShadowKey());
   }
 
