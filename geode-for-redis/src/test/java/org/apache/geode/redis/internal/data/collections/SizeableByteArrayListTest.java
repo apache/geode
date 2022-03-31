@@ -85,7 +85,7 @@ public class SizeableByteArrayListTest {
       // Remove in batches of 5
       List<Integer> indexesToRemove = new ArrayList<>(5);
       for (int j = 0; j < 5 && i >= 0; j++) {
-        indexesToRemove.add(i--);
+        indexesToRemove.add(0, i--);
       }
       list.removeIndexes(indexesToRemove);
       assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
