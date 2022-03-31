@@ -49,7 +49,7 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("jackson.databind.version", "2.13.2.1")
     deps.put("jackson.bom.version", "2.13.2.20220324")
     deps.put("springshell.version", "1.2.0.RELEASE")
-    deps.put("springframework.version", "5.3.16")
+    deps.put("springframework.version", "5.3.18")
 
     // These version numbers are used in testing various versions of tomcat and are consumed explicitly
     // in will be called explicitly in the relevant extensions module, and respective configurations
@@ -288,7 +288,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-webmvc')
     }
 
-    dependencySet(group: 'org.springframework.boot', version: '2.6.4') {
+    dependencySet(group: 'org.springframework.boot', version: '2.6.5') {
       entry('spring-boot-starter')
       entry('spring-boot-starter-jetty')
       entry('spring-boot-starter-web')
