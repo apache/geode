@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.data;
 
+import static org.apache.geode.redis.internal.RedisConstants.REDIS_KEY_DATA_SERIALIZABLE_ID;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.apache.geode.redis.internal.services.RegionProvider.REDIS_SLOTS_PER_BUCKET;
 
@@ -23,14 +24,20 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
-import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.Instantiator;
 import org.apache.geode.redis.internal.commands.executor.cluster.RedisPartitionResolver;
 
-public class RedisKey implements DataSerializableFixedID {
+public class RedisKey implements DataSerializable {
+
+  static {
+    Instantiator.register(new Instantiator(RedisKey.class, REDIS_KEY_DATA_SERIALIZABLE_ID) {
+      public DataSerializable newInstance() {
+        return new RedisKey();
+      }
+    });
+  }
 
   private short slot;
   private byte[] value;
@@ -66,26 +73,15 @@ public class RedisKey implements DataSerializableFixedID {
   }
 
   @Override
-  public int getDSFID() {
-    return DataSerializableFixedID.REDIS_KEY;
-  }
-
-  @Override
-  public void toData(DataOutput out, SerializationContext context) throws IOException {
+  public void toData(DataOutput out) throws IOException {
     out.writeShort(slot);
     DataSerializer.writeByteArray(value, out);
   }
 
   @Override
-  public void fromData(DataInput in, DeserializationContext context)
-      throws IOException {
+  public void fromData(DataInput in) throws IOException {
     slot = in.readShort();
     value = DataSerializer.readByteArray(in);
-  }
-
-  @Override
-  public KnownVersion[] getSerializationVersions() {
-    return null;
   }
 
   @Override

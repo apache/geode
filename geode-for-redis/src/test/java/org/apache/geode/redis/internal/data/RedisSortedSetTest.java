@@ -61,7 +61,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionObjectSizer;
 import org.apache.geode.redis.internal.commands.executor.GlobPattern;
 import org.apache.geode.redis.internal.commands.executor.sortedset.SortedSetLexRangeOptions;
@@ -88,8 +87,8 @@ public class RedisSortedSetTest {
 
   @Test
   public void confirmToDataIsSynchronized() throws NoSuchMethodException {
-    assertThat(Modifier.isSynchronized(RedisSortedSet.class
-        .getMethod("toData", DataOutput.class, SerializationContext.class).getModifiers()))
+    assertThat(Modifier.isSynchronized(
+        RedisSortedSet.class.getMethod("toData", DataOutput.class).getModifiers()))
             .isTrue();
   }
 

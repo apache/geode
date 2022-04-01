@@ -25,10 +25,10 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Delta;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.size.Sizeable;
@@ -37,7 +37,7 @@ import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.services.RegionProvider;
 
-public interface RedisData extends Delta, DataSerializableFixedID, Sizeable {
+public interface RedisData extends Delta, DataSerializable, Sizeable {
 
   /**
    * Returns true if this instance does not exist.

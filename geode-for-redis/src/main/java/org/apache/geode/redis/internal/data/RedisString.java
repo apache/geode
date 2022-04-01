@@ -17,6 +17,7 @@
 package org.apache.geode.redis.internal.data;
 
 import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
+import static org.apache.geode.redis.internal.RedisConstants.REDIS_STRING_DATA_SERIALIZABLE_ID;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 
 import java.io.DataInput;
@@ -25,12 +26,11 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Arrays;
 
+import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.Instantiator;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.RedisConstants;
 import org.apache.geode.redis.internal.commands.executor.string.SetOptions;
 import org.apache.geode.redis.internal.data.delta.AppendByteArray;
@@ -41,6 +41,14 @@ import org.apache.geode.redis.internal.data.delta.SetByteArrayAndTimestamp;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisString extends AbstractRedisData {
+
+  static {
+    Instantiator.register(new Instantiator(RedisString.class, REDIS_STRING_DATA_SERIALIZABLE_ID) {
+      public DataSerializable newInstance() {
+        return new RedisString();
+      }
+    });
+  }
 
   private static final int REDIS_STRING_OVERHEAD = memoryOverhead(RedisString.class);
   // An array containing the number of set bits for each value from 0x00 to 0xff
@@ -365,22 +373,16 @@ public class RedisString extends AbstractRedisData {
    */
 
   @Override
-  public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
-    super.toData(out, context);
+  public synchronized void toData(DataOutput out) throws IOException {
+    super.toData(out);
     DataSerializer.writeByteArray(value, out);
   }
 
   @Override
-  public void fromData(DataInput in, DeserializationContext context)
-      throws IOException, ClassNotFoundException {
-    super.fromData(in, context);
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    super.fromData(in);
     value = DataSerializer.readByteArray(in);
 
-  }
-
-  @Override
-  public int getDSFID() {
-    return REDIS_STRING_ID;
   }
 
   @Override
@@ -475,11 +477,6 @@ public class RedisString extends AbstractRedisData {
     System.arraycopy(value, 0, combined, 0, initialLength);
     System.arraycopy(bytes, 0, combined, initialLength, additionalLength);
     value = combined;
-  }
-
-  @Override
-  public KnownVersion[] getSerializationVersions() {
-    return null;
   }
 
   @Override

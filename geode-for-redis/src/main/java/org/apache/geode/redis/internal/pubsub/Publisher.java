@@ -19,6 +19,7 @@ import static java.util.Arrays.asList;
 import static org.apache.geode.internal.lang.utils.JavaWorkarounds.computeIfAbsent;
 import static org.apache.geode.logging.internal.executors.LoggingExecutors.newCachedThreadPool;
 import static org.apache.geode.redis.internal.RedisConstants.INTERNAL_SERVER_ERROR;
+import static org.apache.geode.redis.internal.RedisConstants.PUBLISH_REQUEST_DATA_SERIALIZABLE_ID;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 import static org.apache.geode.redis.internal.netty.Coder.getErrorResponse;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.MESSAGE;
@@ -43,18 +44,15 @@ import io.netty.buffer.ByteBuf;
 import io.netty.util.ReferenceCountUtil;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.Instantiator;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
-import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.netty.Client;
 import org.apache.geode.redis.internal.netty.Coder;
@@ -250,7 +248,17 @@ public class Publisher {
     }
   }
 
-  public static class PublishRequest implements DataSerializableFixedID {
+  public static class PublishRequest implements DataSerializable {
+
+    static {
+      Instantiator
+          .register(new Instantiator(PublishRequest.class, PUBLISH_REQUEST_DATA_SERIALIZABLE_ID) {
+            public DataSerializable newInstance() {
+              return new PublishRequest();
+            }
+          });
+    }
+
     // note final can not be used because of DataSerializableFixedID
     private byte[] channel;
     private List<byte[]> messages;
@@ -287,33 +295,22 @@ public class Publisher {
     }
 
     @Override
-    public int getDSFID() {
-      return PUBLISH_REQUEST;
-    }
-
-    @Override
-    public void toData(DataOutput out, SerializationContext context) throws IOException {
+    public void toData(DataOutput out) throws IOException {
       DataSerializer.writeByteArray(getChannel(), out);
-      InternalDataSerializer.writeArrayLength(messages.size(), out);
+      DataSerializer.writePrimitiveInt(messages.size(), out);
       for (byte[] message : messages) {
         DataSerializer.writeByteArray(message, out);
       }
     }
 
     @Override
-    public void fromData(DataInput in, DeserializationContext context)
-        throws IOException {
+    public void fromData(DataInput in) throws IOException {
       channel = DataSerializer.readByteArray(in);
-      int messageCount = InternalDataSerializer.readArrayLength(in);
+      int messageCount = DataSerializer.readPrimitiveInt(in);
       messages = new ArrayList<>(messageCount);
       for (int i = 0; i < messageCount; i++) {
         messages.add(DataSerializer.readByteArray(in));
       }
-    }
-
-    @Override
-    public KnownVersion[] getSerializationVersions() {
-      return null;
     }
 
     @Override

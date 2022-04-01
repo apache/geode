@@ -18,6 +18,7 @@ package org.apache.geode.redis.internal.data;
 
 import static java.lang.Double.compare;
 import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
+import static org.apache.geode.redis.internal.RedisConstants.REDIS_SORTED_SET_DATA_SERIALIZABLE_ID;
 import static org.apache.geode.redis.internal.data.NullRedisDataStructures.NULL_REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.data.RedisDataType.REDIS_SORTED_SET;
 import static org.apache.geode.redis.internal.netty.Coder.doubleToBytes;
@@ -37,12 +38,11 @@ import java.util.Objects;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.Instantiator;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.RedisConstants;
@@ -63,6 +63,16 @@ import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.redis.internal.services.RegionProvider;
 
 public class RedisSortedSet extends AbstractRedisData {
+
+  static {
+    Instantiator
+        .register(new Instantiator(RedisSortedSet.class, REDIS_SORTED_SET_DATA_SERIALIZABLE_ID) {
+          public DataSerializable newInstance() {
+            return new RedisSortedSet();
+          }
+        });
+  }
+
   protected static final int REDIS_SORTED_SET_OVERHEAD = memoryOverhead(RedisSortedSet.class);
   private static final Logger logger = LogService.getLogger();
 
@@ -124,15 +134,14 @@ public class RedisSortedSet extends AbstractRedisData {
    */
 
   @Override
-  public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
-    super.toData(out, context);
+  public synchronized void toData(DataOutput out) throws IOException {
+    super.toData(out);
     members.toData(out);
   }
 
   @Override
-  public void fromData(DataInput in, DeserializationContext context)
-      throws IOException, ClassNotFoundException {
-    super.fromData(in, context);
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    super.fromData(in);
     int size = DataSerializer.readPrimitiveInt(in);
     members = new MemberMap(size);
     for (int i = 0; i < size; i++) {
@@ -167,11 +176,6 @@ public class RedisSortedSet extends AbstractRedisData {
       }
       return compare(otherEntry.getScore(), entry.getScore()) == 0;
     });
-  }
-
-  @Override
-  public int getDSFID() {
-    return REDIS_SORTED_SET_ID;
   }
 
   protected synchronized MemberAddResult memberAdd(byte[] memberToAdd, double scoreToAdd) {
@@ -728,11 +732,6 @@ public class RedisSortedSet extends AbstractRedisData {
   @Override
   public String toString() {
     return "RedisSortedSet{" + super.toString() + ", " + "size=" + members.size() + '}';
-  }
-
-  @Override
-  public KnownVersion[] getSerializationVersions() {
-    return null;
   }
 
   // Comparison to allow the use of LEAST_MEMBER_NAME and GREATEST_MEMBER_NAME to always be less

@@ -20,6 +20,7 @@ import static org.apache.geode.internal.JvmSizeUtils.memoryOverhead;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_NOT_INTEGER;
 import static org.apache.geode.redis.internal.RedisConstants.ERROR_OVERFLOW;
 import static org.apache.geode.redis.internal.RedisConstants.HASH_VALUE_NOT_FLOAT;
+import static org.apache.geode.redis.internal.RedisConstants.REDIS_HASH_DATA_SERIALIZABLE_ID;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToLong;
 import static org.apache.geode.redis.internal.netty.Coder.bytesToString;
 
@@ -37,12 +38,11 @@ import java.util.Objects;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
+import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.Instantiator;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.serialization.DeserializationContext;
-import org.apache.geode.internal.serialization.KnownVersion;
-import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.internal.commands.executor.GlobPattern;
 import org.apache.geode.redis.internal.data.collections.SizeableBytes2ObjectOpenCustomHashMapWithCursor;
@@ -51,6 +51,15 @@ import org.apache.geode.redis.internal.data.delta.RemoveByteArrays;
 import org.apache.geode.redis.internal.netty.Coder;
 
 public class RedisHash extends AbstractRedisData {
+
+  static {
+    Instantiator.register(new Instantiator(RedisHash.class, REDIS_HASH_DATA_SERIALIZABLE_ID) {
+      public DataSerializable newInstance() {
+        return new RedisHash();
+      }
+    });
+  }
+
   protected static final int REDIS_HASH_OVERHEAD = memoryOverhead(RedisHash.class);
 
   private Hash hash;
@@ -81,25 +90,19 @@ public class RedisHash extends AbstractRedisData {
    * to be thread safe with toData.
    */
   @Override
-  public synchronized void toData(DataOutput out, SerializationContext context) throws IOException {
-    super.toData(out, context);
+  public synchronized void toData(DataOutput out) throws IOException {
+    super.toData(out);
     hash.toData(out);
   }
 
   @Override
-  public void fromData(DataInput in, DeserializationContext context)
-      throws IOException, ClassNotFoundException {
-    super.fromData(in, context);
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    super.fromData(in);
     int size = DataSerializer.readInteger(in);
     hash = new Hash(size);
     for (int i = 0; i < size; i++) {
       hash.put(DataSerializer.readByteArray(in), DataSerializer.readByteArray(in));
     }
-  }
-
-  @Override
-  public int getDSFID() {
-    return REDIS_HASH_ID;
   }
 
   synchronized byte[] hashPut(byte[] field, byte[] value) {
@@ -353,11 +356,6 @@ public class RedisHash extends AbstractRedisData {
   @Override
   public String toString() {
     return "RedisHash{" + super.toString() + ", " + "size=" + hash.size() + "}";
-  }
-
-  @Override
-  public KnownVersion[] getSerializationVersions() {
-    return null;
   }
 
   @Override

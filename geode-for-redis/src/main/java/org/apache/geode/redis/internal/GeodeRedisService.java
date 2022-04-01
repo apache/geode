@@ -23,23 +23,10 @@ import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.ResourceEventsListener;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
-import org.apache.geode.internal.serialization.DataSerializableFixedIdRegistrant;
-import org.apache.geode.internal.serialization.DataSerializableFixedIdRegistrar;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
-import org.apache.geode.redis.internal.data.NullRedisData;
-import org.apache.geode.redis.internal.data.RedisHash;
-import org.apache.geode.redis.internal.data.RedisKey;
-import org.apache.geode.redis.internal.data.RedisList;
-import org.apache.geode.redis.internal.data.RedisSet;
-import org.apache.geode.redis.internal.data.RedisSortedSet;
-import org.apache.geode.redis.internal.data.RedisString;
-import org.apache.geode.redis.internal.pubsub.Publisher;
-import org.apache.geode.redis.internal.services.cluster.RedisMemberInfo;
 
-public class GeodeRedisService implements CacheService, ResourceEventsListener,
-    DataSerializableFixedIdRegistrant {
+public class GeodeRedisService implements CacheService, ResourceEventsListener {
   private static final Logger logger = LogService.getLogger();
   private GeodeRedisServer redisServer;
   private InternalCache cache;
@@ -54,20 +41,6 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener,
     this.cache.getInternalDistributedSystem().addResourceListener(this);
 
     return true;
-  }
-
-  @Override
-  public void register(DataSerializableFixedIdRegistrar registrar) {
-    registrar.register(DataSerializableFixedID.REDIS_KEY, RedisKey.class);
-    registrar.register(DataSerializableFixedID.PUBLISH_REQUEST,
-        Publisher.PublishRequest.class);
-    registrar.register(DataSerializableFixedID.REDIS_LIST_ID, RedisList.class);
-    registrar.register(DataSerializableFixedID.REDIS_SET_ID, RedisSet.class);
-    registrar.register(DataSerializableFixedID.REDIS_STRING_ID, RedisString.class);
-    registrar.register(DataSerializableFixedID.REDIS_HASH_ID, RedisHash.class);
-    registrar.register(DataSerializableFixedID.REDIS_NULL_DATA_ID, NullRedisData.class);
-    registrar.register(DataSerializableFixedID.REDIS_MEMBER_INFO_ID, RedisMemberInfo.class);
-    registrar.register(DataSerializableFixedID.REDIS_SORTED_SET_ID, RedisSortedSet.class);
   }
 
   @Override
