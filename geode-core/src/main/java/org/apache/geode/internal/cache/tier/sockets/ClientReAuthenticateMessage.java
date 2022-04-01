@@ -28,6 +28,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
 public class ClientReAuthenticateMessage implements ClientMessage {
   @Immutable
   public static final KnownVersion RE_AUTHENTICATION_START_VERSION = KnownVersion.GEODE_1_15_0;
+  @Immutable
   public static final KnownVersion RE_AUTHENTICATION_ALSO_VERSION = KnownVersion.GFE_9_12_0;
   /**
    * This {@code ClientMessage}'s {@code EventID}
