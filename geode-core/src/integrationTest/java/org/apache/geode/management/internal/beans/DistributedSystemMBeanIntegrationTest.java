@@ -40,8 +40,6 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 public class DistributedSystemMBeanIntegrationTest {
 
   public static final String SELECT_ALL = "select * from /testRegion r where r.id=1";
-  public static final String SELECT_ALL_BUT_LOCAL_DATE =
-      "select name, address, startDate, endDate, title from /testRegion r where r.id=1";
   public static final String SELECT_FIELDS = "select id, title from /testRegion r where r.id=1";
 
   @ClassRule
@@ -111,28 +109,22 @@ public class DistributedSystemMBeanIntegrationTest {
   }
 
   // this is simply to document the current behavior of gfsh
+  // gfsh doesn't attempt to format the date objects as of now, and it respect the json annotations
+  // when listing out the headers
   @Test
   public void queryAllUsingGfshDoesNotFormatDate() throws Exception {
     gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     TabularResultModelAssert tabularAssert =
-        gfsh.executeAndAssertThat("query --query='" + SELECT_ALL_BUT_LOCAL_DATE + "'")
+        gfsh.executeAndAssertThat("query --query='" + SELECT_ALL + "'")
             .statusIsSuccess()
             .hasTableSection();
+    // note gfsh doesn't show id field and shows "title" field as "Job Title" when doing select *
     tabularAssert.hasColumns().asList().containsExactlyInAnyOrder("name", "address", "startDate",
-        "endDate", "title");
+        "endDate", "birthday", "Job Title");
     tabularAssert.hasColumn("startDate").containsExactly(date.getTime() + "");
     tabularAssert.hasColumn("endDate").containsExactly(sqlDate.getTime() + "");
-  }
-
-  // this is simply to document the current behavior of gfsh
-  // gfsh refused to format the date objects as of jackson 2.12's fix#2683
-  @Test
-  public void queryAllUsingGfshRefusesToFormatLocalDate() throws Exception {
-    gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
-    gfsh.executeAndAssertThat("query --query='" + SELECT_ALL + "'")
-        .statusIsError()
-        .containsOutput(
-            "Java 8 date/time type `java.time.LocalDate` not supported by default: add Module \"com.fasterxml.jackson.datatype:jackson-datatype-jsr310\"");
+    tabularAssert.hasColumn("birthday")
+        .asList().asString().contains("\"year\":2020,\"month\":\"JANUARY\"");
   }
 
   @Test
