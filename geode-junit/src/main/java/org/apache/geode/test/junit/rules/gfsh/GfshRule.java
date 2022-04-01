@@ -15,6 +15,9 @@
 package org.apache.geode.test.junit.rules.gfsh;
 
 import static java.io.File.pathSeparator;
+import static org.apache.geode.internal.process.ProcessType.LOCATOR;
+import static org.apache.geode.internal.process.ProcessType.SERVER;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -199,18 +202,28 @@ public class GfshRule extends ExternalResource {
    * this will stop the server that's been started in this gfsh execution
    */
   public void stopServer(GfshExecution execution, String serverName) {
-    String command = "stop server --dir="
-        + execution.getWorkingDir().toPath().resolve(serverName).toAbsolutePath();
+    Path serverWorkingDir =
+        execution.getWorkingDir().toPath().resolve(serverName).toAbsolutePath();
+    String command = "stop server --dir=" + serverWorkingDir;
     execute(GfshScript.of(command).withName("Stop-server-" + serverName));
+
+    Path serverPidFile = serverWorkingDir.resolve(SERVER.getPidFileName());
+    assertThat(serverPidFile).doesNotExist();
+    await().untilAsserted(() -> assertThat(serverPidFile).doesNotExist());
   }
 
   /**
    * this will stop the lcoator that's been started in this gfsh execution
    */
   public void stopLocator(GfshExecution execution, String locatorName) {
-    String command = "stop locator --dir="
-        + execution.getWorkingDir().toPath().resolve(locatorName).toAbsolutePath();
+    Path locatorWorkingDir =
+        execution.getWorkingDir().toPath().resolve(locatorName).toAbsolutePath();
+    String command = "stop locator --dir=" + locatorWorkingDir;
     execute(GfshScript.of(command).withName("Stop-locator-" + locatorName));
+
+    Path locatorPidFile = locatorWorkingDir.resolve(LOCATOR.getPidFileName());
+    assertThat(locatorPidFile).doesNotExist();
+    await().untilAsserted(() -> assertThat(locatorPidFile).doesNotExist());
   }
 
   private void stopMembers(GfshExecution gfshExecution) {
