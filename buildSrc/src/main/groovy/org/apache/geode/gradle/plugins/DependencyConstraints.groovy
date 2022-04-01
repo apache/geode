@@ -87,8 +87,8 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'cglib', name: 'cglib', version: get('cglib.version'))
         api(group: 'com.arakelian', name: 'java-jq', version: '0.10.1')
         api(group: 'com.carrotsearch.randomizedtesting', name: 'randomizedtesting-runner', version: '2.7.7')
-        api(group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-joda', version: '2.12.6')
-        api(group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.12.6')
+        api(group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-joda', version: '2.9.8')
+        api(group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.11.2')
         api(group: 'com.fasterxml.jackson.module', name: 'jackson-module-scala_2.10', version: '2.10.0')
         api(group: 'com.github.davidmoten', name: 'geo', version: '0.7.7')
         api(group: 'com.github.stefanbirkner', name: 'system-rules', version: '1.19.0')
@@ -174,12 +174,12 @@ class DependencyConstraints implements Plugin<Project> {
       }
     }
 
-    dependencySet(group: 'com.fasterxml.jackson.core', version: '2.12.6') {
+    dependencySet(group: 'com.fasterxml.jackson.core', version: '2.10.5') {
       entry('jackson-annotations')
       entry('jackson-core')
     }
 
-    dependencySet(group: 'com.fasterxml.jackson.core', version: '2.12.6.1') {
+    dependencySet(group: 'com.fasterxml.jackson.core', version: '2.10.5.1') {
       entry('jackson-databind')
     }
 
