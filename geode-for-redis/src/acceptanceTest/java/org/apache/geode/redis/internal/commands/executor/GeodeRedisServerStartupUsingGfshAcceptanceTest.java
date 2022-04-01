@@ -119,8 +119,8 @@ public class GeodeRedisServerStartupUsingGfshAcceptanceTest {
   @Test
   public void gfshStartsRedisServer_whenRedisEnabled() {
     String command = "start server --server-port=0 "
-        + "--J=-D" + GEODE_FOR_REDIS_ENABLED + "=true",
-        + " --classpath=" + redisHome.getGeodeForRedisHome() + "/lib/*");
+        + "--J=-D" + GEODE_FOR_REDIS_ENABLED + "=true"
+        + " --classpath=" + redisHome.getGeodeForRedisHome() + "/lib/*";
     gfshRule.execute(command);
 
     try (Jedis jedis = new Jedis(BIND_ADDRESS, DEFAULT_REDIS_PORT)) {
@@ -161,13 +161,14 @@ public class GeodeRedisServerStartupUsingGfshAcceptanceTest {
   }
 
   @Test
-  public void gfshStartsRedisServer_whenAllBindAddress() {
+  public void gfshStartsRedisServer_withAnyLocalBindAddress() {
     int port = AvailablePortHelper.getRandomAvailableTCPPort();
     String anyLocal = LocalHostUtil.getAnyLocalAddress().getHostAddress();
 
     String command = "start server --server-port=0 "
         + " --J=-D" + GEODE_FOR_REDIS_PORT + "=" + port
-        + " --J=-D" + GEODE_FOR_REDIS_BIND_ADDRESS + "=" + anyLocal;
+        + " --J=-D" + GEODE_FOR_REDIS_BIND_ADDRESS + "=" + anyLocal
+        + " --classpath=" + redisHome.getGeodeForRedisHome() + "/lib/*";
 
     gfshRule.execute(command);
 
