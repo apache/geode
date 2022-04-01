@@ -1177,6 +1177,8 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
             if (hasPrimary() && isPrimary()) {
               shouldInvokeListeners = true;
             }
+          } else {
+            hasBecomePrimary = false;
           }
         }
       }
@@ -2169,6 +2171,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   private void changeFromPrimaryTo(byte requestedState) {
     try {
       primaryState = requestedState;
+      hasBecomePrimary = false;
     } finally {
       getPartitionedRegionStats().incPrimaryBucketCount(-1);
     }
