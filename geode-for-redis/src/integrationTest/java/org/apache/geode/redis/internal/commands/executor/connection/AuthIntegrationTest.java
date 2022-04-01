@@ -125,7 +125,7 @@ public class AuthIntegrationTest extends AbstractAuthIntegrationTest {
     port = AvailablePortHelper.getRandomAvailableTCPPort();
 
     TestRedisConfiguration.Builder redisConfigBuilder = TestRedisConfiguration.builder();
-    redisConfigBuilder.withAddress("localhost").withPort(port).build();
+    redisConfigBuilder.withAddress("localhost").withPort(port);
     if (username != null) {
       redisConfigBuilder.withUsername(username);
     }

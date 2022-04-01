@@ -87,7 +87,7 @@ public class TestRedisConfiguration implements RedisConfiguration {
 
   @Override
   public int getRedundantCopies() {
-    return 0;
+    return redundantCopies;
   }
 
   @Override

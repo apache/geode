@@ -67,8 +67,8 @@ public class GeodeRedisServer {
   private boolean shutdown;
 
   /**
-   * Constructor for {@code GeodeRedisServer} that will configure the server to bind to the given
-   * address and port.
+   * Constructor for {@code GeodeRedisServer} that will configure the server to bind to the
+   * address and port provided in the configuration.
    */
   public GeodeRedisServer(RedisConfiguration configuration, InternalCache cache) {
     int port = configuration.getPort();
