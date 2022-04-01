@@ -79,7 +79,7 @@ failCount=0
 --single unit/quit \
 --single unit/pubsub \
 --single unit/dump \
---single unit/type/list \
+--single unit/type/list
 #--single unit/type/list-2 \ TODO enable when GEODE-9953 merged
 #--single unit/type/list-3 TODO enable when GEODE-10160 is fixed
 
