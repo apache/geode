@@ -25,6 +25,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Map;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,7 +44,9 @@ import org.apache.geode.cache.operations.PutOperationContext;
 import org.apache.geode.internal.cache.EventIDHolder;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.Message;
@@ -108,6 +112,10 @@ public class Put70Test {
   private EventIDHolder clientEvent;
   @Mock
   private DataPolicy dataPolicy;
+  @Mock
+  private RegionAdvisor regionAdvisor;
+  @Mock
+  private PartitionedRegion partitionedRegion;
 
   @InjectMocks
   private Put70 put70;
@@ -173,6 +181,8 @@ public class Put70Test {
 
     when(localRegion.getAttributes()).thenReturn(attributes);
     when(attributes.getDataPolicy()).thenReturn(dataPolicy);
+
+    when(partitionedRegion.getAttributes()).thenReturn(attributes);
   }
 
   @After
@@ -297,8 +307,8 @@ public class Put70Test {
   public void shouldSetPossibleDuplicateReturnsFalseIfNotRecoveredVersionTagAndNoPersistence() {
     Put70 spy = Mockito.spy(put70);
     when(attributes.getConcurrencyChecksEnabled()).thenReturn(true);
-    when(dataPolicy.withPersistence()).thenReturn(false);
     doReturn(false).when(spy).recoverVersionTagForRetriedOperation(clientEvent);
+    doReturn(false).when(spy).isRegionWithPersistence(localRegion);
 
     assertThat(spy.shouldSetPossibleDuplicate(localRegion, clientEvent)).isFalse();
   }
@@ -307,10 +317,44 @@ public class Put70Test {
   public void shouldSetPossibleDuplicateReturnsTrueIfNotRecoveredVersionTagAndWithPersistence() {
     Put70 spy = Mockito.spy(put70);
     when(attributes.getConcurrencyChecksEnabled()).thenReturn(true);
-    when(dataPolicy.withPersistence()).thenReturn(true);
     doReturn(false).when(spy).recoverVersionTagForRetriedOperation(clientEvent);
+    doReturn(true).when(spy).isRegionWithPersistence(localRegion);
 
     assertThat(spy.shouldSetPossibleDuplicate(localRegion, clientEvent)).isTrue();
   }
 
+  @Test
+  public void isRegionWithPersistenceReturnsTrueIfDataPolicyWithPersistence() {
+    when(dataPolicy.withPersistence()).thenReturn(true);
+
+    assertThat(put70.isRegionWithPersistence(localRegion)).isTrue();
+  }
+
+  @Test
+  public void isRegionWithPersistenceReturnsTrueIfIsAccessorAndHavingPersistentMembers() {
+    when(dataPolicy.withPersistence()).thenReturn(false);
+    when(partitionedRegion.isDataStore()).thenReturn(false);
+    when(partitionedRegion.getRegionAdvisor()).thenReturn(regionAdvisor);
+    when(regionAdvisor.advisePersistentMembers()).thenReturn(uncheckedCast(mock(Map.class)));
+
+    assertThat(put70.isRegionWithPersistence(partitionedRegion)).isTrue();
+  }
+
+  @Test
+  public void isRegionWithPersistenceReturnsFalseIfIsAccessorAndHavingNoPersistentMembers() {
+    when(dataPolicy.withPersistence()).thenReturn(false);
+    when(partitionedRegion.isDataStore()).thenReturn(false);
+    when(partitionedRegion.getRegionAdvisor()).thenReturn(regionAdvisor);
+    when(regionAdvisor.advisePersistentMembers()).thenReturn(null);
+
+    assertThat(put70.isRegionWithPersistence(partitionedRegion)).isFalse();
+  }
+
+  @Test
+  public void isRegionWithPersistenceReturnsFalseIfIsNotAccessor() {
+    when(dataPolicy.withPersistence()).thenReturn(false);
+    when(partitionedRegion.isDataStore()).thenReturn(true);
+
+    assertThat(put70.isRegionWithPersistence(partitionedRegion)).isFalse();
+  }
 }
