@@ -41,6 +41,7 @@ public interface EntryOperation<K, V> {
    * @since GemFire 6.0
    * @deprecated
    */
+  @Deprecated
   Operation getOperation();
 
   /**
@@ -81,5 +82,6 @@ public interface EntryOperation<K, V> {
    * @return the value.
    * @deprecated
    */
+  @Deprecated
   V getNewValue();
 }

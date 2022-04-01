@@ -85,6 +85,7 @@ public abstract class CommandService {
    * @see CommandStatement#process()
    * @deprecated since Geode 1.3, simply call processCommand to execute the command
    */
+  @Deprecated
   public abstract CommandStatement createCommandStatement(String commandString);
 
   /**
@@ -99,6 +100,7 @@ public abstract class CommandService {
    * @see CommandStatement#process()
    * @deprecated since Geode 1.3, simply call processCommand to execute the command
    */
+  @Deprecated
   protected abstract CommandStatement createCommandStatement(String commandString,
       Map<String, String> env);
 

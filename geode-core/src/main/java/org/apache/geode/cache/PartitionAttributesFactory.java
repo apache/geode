@@ -71,6 +71,7 @@ public class PartitionAttributesFactory<K, V> {
    *             the resulting Region reference allows access to the partitioned Region without any
    *             consuming any heap storage.
    */
+  @Deprecated
   public static final String LOCAL_MAX_MEMORY_PROPERTY = "LOCAL_MAX_MEMORY";
 
   /**
@@ -108,6 +109,7 @@ public class PartitionAttributesFactory<K, V> {
    *             <p>
    *             <em>This setting must be the same in all processes using the Region.</em>
    */
+  @Deprecated
   public static final String GLOBAL_MAX_MEMORY_PROPERTY = "GLOBAL_MAX_MEMORY";
 
   /**
@@ -120,6 +122,7 @@ public class PartitionAttributesFactory<K, V> {
    *             <p>
    *             <em>This setting must be the same in all processes using the Region.</em>
    */
+  @Deprecated
   public static final String GLOBAL_MAX_BUCKETS_PROPERTY = "GLOBAL_MAX_BUCKETS";
 
   /**

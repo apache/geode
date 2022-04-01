@@ -121,6 +121,7 @@ public interface ClientSubscriptionConfig {
    * @since GemFire 5.7
    * @deprecated as of 6.5 use {@link #setDiskStoreName(String)} instead
    */
+  @Deprecated
   void setOverflowDirectory(String overflowDirectory);
 
   /**
@@ -130,6 +131,7 @@ public interface ClientSubscriptionConfig {
    * @since GemFire 5.7
    * @deprecated as of 6.5 use {@link #getDiskStoreName} instead
    */
+  @Deprecated
   String getOverflowDirectory();
 
   /**

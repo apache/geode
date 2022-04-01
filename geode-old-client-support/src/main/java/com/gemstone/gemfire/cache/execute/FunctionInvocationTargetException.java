@@ -25,6 +25,7 @@ import org.apache.geode.distributed.DistributedMember;
  * @deprecated please use the org.apache.geode version of this class
  *
  */
+@Deprecated
 public class FunctionInvocationTargetException extends FunctionException {
 
   private static final long serialVersionUID = 1L;

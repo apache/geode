@@ -487,6 +487,7 @@ public abstract class EvictionAttributes {
    * @since GemFire 5.7
    * @deprecated For internal use only.
    */
+  @Deprecated
   public static EvictionAttributes createLIFOEntryAttributes(int maximumEntries,
       EvictionAction evictionAction) {
     return new EvictionAttributesImpl().setAlgorithm(EvictionAlgorithm.LIFO_ENTRY)
@@ -498,6 +499,7 @@ public abstract class EvictionAttributes {
    * @since GemFire 5.7
    * @deprecated For internal use only.
    */
+  @Deprecated
   public static EvictionAttributes createLIFOMemoryAttributes(int maximumMegabytes,
       EvictionAction evictionAction) {
     return new EvictionAttributesImpl().setAlgorithm(EvictionAlgorithm.LIFO_MEMORY)

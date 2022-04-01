@@ -159,6 +159,7 @@ public interface AdminDistributedSystem {
    *
    * @deprecated Removed licensing in 8.0.
    */
+  @Deprecated
   java.util.Properties getLicense();
 
   /**
@@ -329,6 +330,7 @@ public interface AdminDistributedSystem {
    * @since GemFire 6.5
    * @deprecated use {@link #revokePersistentMember(UUID)} instead
    */
+  @Deprecated
   void revokePersistentMember(InetAddress host, String directory) throws AdminException;
 
   /**

@@ -939,6 +939,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
   /**
    * @deprecated as of prPersistSprint2
    */
+  @Deprecated
   @Override
   public DiskWriteAttributes getDiskWriteAttributes() {
     // not throw exception for mixed API, since it's internal

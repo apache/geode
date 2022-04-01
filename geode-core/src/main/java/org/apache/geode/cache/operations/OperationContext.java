@@ -29,6 +29,7 @@ import org.apache.geode.security.ResourcePermission;
  *
  * @deprecated since Geode1.0, use {@link ResourcePermission} instead
  */
+@Deprecated
 public abstract class OperationContext {
 
   public enum OperationCode {

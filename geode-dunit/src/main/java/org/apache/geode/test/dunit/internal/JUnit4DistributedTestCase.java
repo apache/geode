@@ -61,6 +61,7 @@ import org.apache.geode.test.version.VersionManager;
  * @deprecated Please use {@link DistributedRule} and Geode User APIs or {@link ClusterStartupRule}
  *             instead.
  */
+@Deprecated
 public abstract class JUnit4DistributedTestCase implements DistributedTestFixture, Serializable {
   private static final Logger logger = LogService.getLogger();
 

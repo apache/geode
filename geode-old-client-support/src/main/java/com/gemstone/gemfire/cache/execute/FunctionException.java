@@ -43,6 +43,7 @@ import com.gemstone.gemfire.GemFireException;
  * @see FunctionService
  * @deprecated please use the org.apache.geode version of this class
  */
+@Deprecated
 public class FunctionException extends GemFireException {
 
   private static final long serialVersionUID = 4893171227542647452L;

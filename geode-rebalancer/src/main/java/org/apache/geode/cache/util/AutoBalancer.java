@@ -159,6 +159,7 @@ public class AutoBalancer implements Declarable {
   /**
    * @deprecated as of Geode 1.5 use initialize instead.
    */
+  @Deprecated
   @Override
   public void init(Properties props) {
     internalInitialize(props);

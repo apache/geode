@@ -204,6 +204,7 @@ public interface ConfigurationProperties {
    *
    * @deprecated Since Geode 1.0 use {@link #SSL_CIPHERS}
    */
+  @Deprecated
   String CLUSTER_SSL_CIPHERS = "cluster-ssl-ciphers";
   /**
    * The static String definition of the <i>"cluster-ssl-enabled"</i> property <a
@@ -218,6 +219,7 @@ public interface ConfigurationProperties {
    *
    * @deprecated Since Geode 1.0 see {@link #SSL_ENABLED_COMPONENTS}
    */
+  @Deprecated
   String CLUSTER_SSL_ENABLED = "cluster-ssl-enabled";
   /**
    * The static String definition of the <i>"cluster-ssl-keystore"</i> property <a
@@ -231,6 +233,7 @@ public interface ConfigurationProperties {
    *
    * @deprecated Since Geode 1.0 use {@link #SSL_KEYSTORE}
    */
+  @Deprecated
   String CLUSTER_SSL_KEYSTORE = "cluster-ssl-keystore";
   /**
    * The static String definition of the <i>"cluster-ssl-keystore-password"</i> property <a
@@ -245,6 +248,7 @@ public interface ConfigurationProperties {
    *
    * @deprecated Since Geode 1.0 use {@link #SSL_KEYSTORE_PASSWORD}
    */
+  @Deprecated
   String CLUSTER_SSL_KEYSTORE_PASSWORD = "cluster-ssl-keystore-password";
   /**
    * The static String definition of the <i>"cluster-ssl-keystore-type"</i> property <a
@@ -258,6 +262,7 @@ public interface ConfigurationProperties {
    *
    * @deprecated Since Geode 1.0 use {@link #SSL_KEYSTORE_TYPE}
    */
+  @Deprecated
   String CLUSTER_SSL_KEYSTORE_TYPE = "cluster-ssl-keystore-type";
   /**
    * The static String definition of the <i>"cluster-ssl-protocols"</i> property <a
@@ -272,6 +277,7 @@ public interface ConfigurationProperties {
    *
    * @deprecated Since Geode 1.0 use {@link #SSL_PROTOCOLS}
    */
+  @Deprecated
   String CLUSTER_SSL_PROTOCOLS = "cluster-ssl-protocols";
   /**
    * The static String definition of the <i>"cluster-ssl-require-authentication"</i> property <a
@@ -286,6 +292,7 @@ public interface ConfigurationProperties {
    *
    * @deprecated Since Geode 1.0 use {@link #SSL_REQUIRE_AUTHENTICATION}
    */
+  @Deprecated
   String CLUSTER_SSL_REQUIRE_AUTHENTICATION = "cluster-ssl-require-authentication";
   /**
    * The static String definition of the <i>"cluster-ssl-truststore"</i> property <a
@@ -300,6 +307,7 @@ public interface ConfigurationProperties {
    *
    * @deprecated Since Geode 1.0 use {@link #SSL_TRUSTSTORE}
    */
+  @Deprecated
   String CLUSTER_SSL_TRUSTSTORE = "cluster-ssl-truststore";
   /**
    * The static String definition of the <i>"cluster-ssl-truststore-password"</i> property <a
@@ -314,6 +322,7 @@ public interface ConfigurationProperties {
    *
    * @deprecated Since Geode 1.0 use {@link #SSL_TRUSTSTORE_PASSWORD}
    */
+  @Deprecated
   String CLUSTER_SSL_TRUSTSTORE_PASSWORD = "cluster-ssl-truststore-password";
   /**
    * The static String definition of the <i>"conflate-events"</i> property <a
@@ -947,6 +956,7 @@ public interface ConfigurationProperties {
    *
    * @deprecated as of GemFire 8.0 use {@link #HTTP_SERVICE_PORT} instead.
    */
+  @Deprecated
   String JMX_MANAGER_HTTP_PORT = "jmx-manager-http-port";
   /**
    * The static String definition of the <i>"jmx-manager-password-file"</i> property <a
@@ -1477,6 +1487,7 @@ public interface ConfigurationProperties {
    *
    * @deprecated : This feature is scheduled to be removed.
    */
+  @Deprecated
   String ROLES = "roles";
   /**
    * The static String definition of the security prefix "security-" used in conjunction with other
@@ -1496,12 +1507,14 @@ public interface ConfigurationProperties {
    *
    * @deprecated since Geode 1.0, use security-manager
    */
+  @Deprecated
   String SECURITY_CLIENT_ACCESSOR = SECURITY_PREFIX + "client-accessor";
   /**
    * The static String definition of the <i>"security-client-accessor-pp"</i> property
    *
    * @deprecated since Geode 1.0, use security-post-processor
    */
+  @Deprecated
   String SECURITY_CLIENT_ACCESSOR_PP = SECURITY_PREFIX + "client-accessor-pp";
   /**
    * The static String definition of the <i>"security-client-auth-init"</i> property <a
@@ -1535,12 +1548,14 @@ public interface ConfigurationProperties {
    *
    * @deprecated since Geode 1.0, use security-manager
    */
+  @Deprecated
   String SECURITY_CLIENT_AUTHENTICATOR = SECURITY_PREFIX + "client-authenticator";
   /**
    * The static String definition of the <i>"security-client-dhalgo"</i> property
    *
    * @deprecated since Geode 1.5. Use SSL instead. See {{@link #SSL_ENABLED_COMPONENTS}}
    */
+  @Deprecated
   String SECURITY_CLIENT_DHALGO = SECURITY_PREFIX + "client-dhalgo";
   /**
    * The static String definition of the <i>"security-udp-dhalgo"</i> property. Application can set
@@ -1566,6 +1581,7 @@ public interface ConfigurationProperties {
    *
    * @deprecated since Geode 1.0, use security-manager
    */
+  @Deprecated
   String SECURITY_PEER_AUTHENTICATOR = SECURITY_PREFIX + "peer-authenticator";
   /**
    * The static String definition of the <i>"security-peer-verifymember-timeout"</i> property

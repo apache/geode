@@ -50,6 +50,7 @@ public interface LogMarker {
 
   // Verbose parent markers
   /** @deprecated Use GEODE_VERBOSE */
+  @Deprecated
   @Immutable
   Marker GEMFIRE_VERBOSE = MarkerManager.getMarker("GEMFIRE_VERBOSE");
   @Immutable

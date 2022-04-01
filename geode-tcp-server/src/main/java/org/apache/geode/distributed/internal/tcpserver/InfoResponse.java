@@ -30,6 +30,7 @@ import org.apache.geode.internal.serialization.StaticSerialization;
  * @see TcpClient#getInfo(HostAndPort)
  * @deprecated this was created for the deprecated Admin API
  */
+@Deprecated
 public class InfoResponse implements BasicSerializable {
   private String[] info;
 

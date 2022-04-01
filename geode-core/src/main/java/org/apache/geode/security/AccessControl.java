@@ -38,6 +38,7 @@ import org.apache.geode.distributed.DistributedMember;
  *
  * @deprecated since Geode 1.0, use {@link SecurityManager} instead
  */
+@Deprecated
 public interface AccessControl extends CacheCallback {
 
   /**

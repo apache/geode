@@ -92,6 +92,7 @@ public interface Result {
    * @return True if there is a file, false otherwise.
    * @deprecated since 1.10. file transfer in plugin commands is never supported
    */
+  @Deprecated
   default boolean hasIncomingFiles() {
     return false;
   }
@@ -105,6 +106,7 @@ public interface Result {
    * @throws RuntimeException If there is no file in the Result to save.
    * @deprecated since 1.10. file transfer in plugin commands is never supported
    */
+  @Deprecated
   default void saveIncomingFiles(String directory) throws IOException {}
 
   /****
@@ -114,6 +116,7 @@ public interface Result {
    * @return True if the command has failed to persist configuration changes , false otherwise.
    * @deprecated since 1.10. This only affect the gfsh output line which is not api bound
    */
+  @Deprecated
   default boolean failedToPersist() {
     return false;
   }
@@ -126,6 +129,7 @@ public interface Result {
    *
    * @deprecated since 1.10. This only affect the gfsh output line which is not api bound
    */
+  @Deprecated
   default void setCommandPersisted(boolean commandPersisted) {}
 
   /**

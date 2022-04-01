@@ -24,6 +24,7 @@ import java.util.Set;
  * @deprecated this feature is scheduled to be removed
  * @see RegionRoleListener
  */
+@Deprecated
 public interface RoleEvent<K, V> extends RegionEvent<K, V> {
 
   /**

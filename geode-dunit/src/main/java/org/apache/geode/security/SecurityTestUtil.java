@@ -35,6 +35,7 @@ import org.apache.geode.test.version.VersionManager;
 /**
  * @deprecated use @org.apache.geode.test.junit.rules.ClientCacheRule instead
  */
+@Deprecated
 public class SecurityTestUtil {
 
   @Deprecated

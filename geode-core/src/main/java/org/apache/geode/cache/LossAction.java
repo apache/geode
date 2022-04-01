@@ -31,6 +31,7 @@ import org.apache.geode.annotations.Immutable;
  *
  * @deprecated this feature is scheduled to be removed
  */
+@Deprecated
 @Immutable
 public class LossAction implements Serializable {
   private static final long serialVersionUID = -832035480397447797L;

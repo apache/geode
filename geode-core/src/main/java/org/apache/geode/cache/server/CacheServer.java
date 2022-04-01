@@ -96,6 +96,7 @@ public interface CacheServer {
    * @since GemFire 5.7
    * @deprecated as of 7.0 use the groups gemfire property
    */
+  @Deprecated
   @Immutable
   String[] DEFAULT_GROUPS = new String[0];
 
@@ -367,6 +368,7 @@ public interface CacheServer {
    * @since GemFire 5.7
    * @deprecated as of 7.0 use the groups gemfire property
    */
+  @Deprecated
   void setGroups(String[] groups);
 
   /**
@@ -378,6 +380,7 @@ public interface CacheServer {
    * @since GemFire 5.7
    * @deprecated as of 7.0 use the groups gemfire property
    */
+  @Deprecated
   String[] getGroups();
 
   /**

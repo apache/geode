@@ -103,6 +103,7 @@ public abstract class Locator {
    * @throws IOException If the locator cannot be started
    * @deprecated as of 7.0 use startLocatorAndDS instead.
    */
+  @Deprecated
   public static Locator startLocator(int port, File logFile) throws IOException {
 
     return startLocator(port, logFile, false, null, null, true, true,
@@ -167,6 +168,7 @@ public abstract class Locator {
    * @throws IOException If the locator cannot be started
    * @deprecated as of 7.0 use startLocatorAndDS instead.
    */
+  @Deprecated
   public static Locator startLocator(int port, File logFile, InetAddress bindAddress)
       throws IOException {
     HostAddress hostAddress = bindAddress == null ? null : new HostAddress(bindAddress);
@@ -243,6 +245,7 @@ public abstract class Locator {
    *
    * @since GemFire 5.7
    */
+  @Deprecated
   public static Locator startLocatorAndDS(int port, File logFile, InetAddress bindAddress,
       java.util.Properties dsProperties, boolean peerLocator, boolean serverLocator,
       String hostnameForClients) throws IOException {
@@ -266,6 +269,7 @@ public abstract class Locator {
    * @deprecated as of 7.0 use startLocator(int, File, InetAddress, java.util.Properties,
    *             peerLocator, serverLocator, hostnameForClients) instead.
    */
+  @Deprecated
   private static Locator startLocator(int port, File logFile, boolean startDistributedSystem,
       HostAddress bindAddress, java.util.Properties dsProperties, boolean peerLocator,
       boolean serverLocator, String hostnameForClients) throws IOException {
@@ -279,6 +283,7 @@ public abstract class Locator {
    *
    * @deprecated as of 7.0 use {@link #getLocator} instead
    */
+  @Deprecated
   public static List<Locator> getLocators() {
     Locator result = getLocator();
     if (result == null) {
@@ -304,6 +309,7 @@ public abstract class Locator {
    * @return the number of locators running in this VM
    * @deprecated as of 7.0 use {@link #hasLocator} instead.
    */
+  @Deprecated
   public static boolean hasLocators() {
     return hasLocator();
   }
@@ -443,6 +449,7 @@ public abstract class Locator {
    * @deprecated as of Geode 1.4 use {@link org.apache.geode.distributed.LocatorLauncher
    *             "LocatorLauncher" to start a locator}
    */
+  @Deprecated
   public static void main(String[] args) {
     org.apache.geode.internal.DistributionLocator.main(args);
   }

@@ -29,6 +29,7 @@ import org.apache.geode.annotations.Immutable;
  *
  * @deprecated this API is scheduled to be removed
  */
+@Deprecated
 @Immutable
 public class ResumptionAction implements java.io.Serializable {
   private static final long serialVersionUID = 6632254151314915610L;

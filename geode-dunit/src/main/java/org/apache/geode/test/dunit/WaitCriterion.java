@@ -36,6 +36,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
  * @see org.awaitility.Duration
  * @see org.awaitility.core.ConditionFactory
  */
+@Deprecated
 public interface WaitCriterion extends ThrowingRunnable {
 
   boolean done();

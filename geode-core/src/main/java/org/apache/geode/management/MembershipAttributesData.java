@@ -25,6 +25,7 @@ import org.apache.geode.distributed.Role;
  *
  * @deprecated this API is scheduled to be removed
  */
+@Deprecated
 public class MembershipAttributesData {
 
   /**

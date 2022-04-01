@@ -25,6 +25,7 @@ import java.util.Collections;
  * @since GemFire 8.1
  * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
+@Deprecated
 public class RemoveAllOperationContext extends OperationContext {
 
   /** The collection of keys for the operation */

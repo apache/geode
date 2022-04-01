@@ -22,6 +22,7 @@ import java.util.Set;
  * @since GemFire 6.0
  * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
+@Deprecated
 public class ExecuteFunctionOperationContext extends OperationContext {
 
   private final String functionId;
