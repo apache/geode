@@ -185,7 +185,7 @@ public class DockerComposeRule extends ExternalResource {
       throw new RuntimeException(e);
     }
 
-    return (long) dockerClient.inspectExecCmd(execCreateCmdResponse.getId()).exec().getExitCode();
+    return dockerClient.inspectExecCmd(execCreateCmdResponse.getId()).exec().getExitCodeLong();
   }
 
   /**
