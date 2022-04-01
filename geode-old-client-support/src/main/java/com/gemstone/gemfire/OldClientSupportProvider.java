@@ -128,7 +128,9 @@ public class OldClientSupportProvider implements OldClientSupportService {
     }
 
     // backward compatibility for authentication expiration
-    if (clientVersion.isOlderThan(ClientReAuthenticateMessage.RE_AUTHENTICATION_START_VERSION)) {
+    if (clientVersion.isOlderThan(ClientReAuthenticateMessage.RE_AUTHENTICATION_START_VERSION)
+        && clientVersion.ordinal() != ClientReAuthenticateMessage.RE_AUTHENTICATION_ALSO_VERSION
+            .ordinal()) {
       if (theThrowable instanceof AuthenticationExpiredException) {
         return new AuthenticationRequiredException(USER_NOT_FOUND);
       }

@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.internal.cache.EntryEventImpl.deserialize;
+import static org.apache.geode.internal.cache.tier.sockets.ClientReAuthenticateMessage.RE_AUTHENTICATION_ALSO_VERSION;
 import static org.apache.geode.internal.cache.tier.sockets.ClientReAuthenticateMessage.RE_AUTHENTICATION_START_VERSION;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.RE_AUTHENTICATE_WAIT_TIME;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
@@ -435,7 +436,8 @@ public class MessageDispatcher extends LoggingThread {
           if (waitForReAuthenticationStartTime == -1) {
             waitForReAuthenticationStartTime = System.currentTimeMillis();
             // only send the message to clients who can handle the message
-            if (getProxy().getVersion().isNewerThanOrEqualTo(RE_AUTHENTICATION_START_VERSION)) {
+            if (getProxy().getVersion().isNewerThanOrEqualTo(RE_AUTHENTICATION_START_VERSION)
+                || getProxy().getVersion().ordinal() == RE_AUTHENTICATION_ALSO_VERSION.ordinal()) {
               EventID eventId = createEventId();
               sendMessageDirectly(new ClientReAuthenticateMessage(eventId));
             }

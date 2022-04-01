@@ -181,6 +181,13 @@ public class KnownVersion extends AbstractVersion {
       new KnownVersion("GEODE", "1.12.1", (byte) 1, (byte) 12, (byte) 1, (byte) 0,
           GEODE_1_12_1_ORDINAL, true);
 
+  private static final short GFE_9_12_0_ORDINAL = 118;
+
+  @Immutable
+  public static final KnownVersion GFE_9_12_0 =
+      new KnownVersion("GFE", "9.12.0", (byte) 9, (byte) 12, (byte) 0, (byte) 0,
+          GFE_9_12_0_ORDINAL, true);
+
   private static final short GEODE_1_13_0_ORDINAL = 120;
 
   @Immutable

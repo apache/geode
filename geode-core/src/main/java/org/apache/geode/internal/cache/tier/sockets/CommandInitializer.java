@@ -202,6 +202,7 @@ public class CommandInitializer implements CommandRegistry {
     allCommands.put(KnownVersion.GEODE_1_11_0, geode18Commands);
     allCommands.put(KnownVersion.GEODE_1_12_0, geode18Commands);
     allCommands.put(KnownVersion.GEODE_1_12_1, geode18Commands);
+    allCommands.put(KnownVersion.GFE_9_12_0, geode18Commands);
     allCommands.put(KnownVersion.GEODE_1_13_0, geode18Commands);
     allCommands.put(KnownVersion.GEODE_1_13_2, geode18Commands);
     allCommands.put(KnownVersion.GEODE_1_14_0, geode18Commands);
