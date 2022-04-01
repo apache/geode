@@ -18,7 +18,6 @@ package org.apache.geode.redis.internal.eventing;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.apache.geode.redis.internal.commands.RedisCommandType;
 import org.apache.geode.redis.internal.data.RedisKey;
 
 /**
@@ -32,11 +31,11 @@ public interface EventListener {
    * Receive and process an event. This method should execute very quickly. The return value
    * determines additional process steps for the given event.
    *
-   * @param commandType the command triggering the event
+   * @param notificationEvent the event triggered by the command
    * @param key the key triggering the event
    * @return response determining subsequent processing steps
    */
-  EventResponse process(RedisCommandType commandType, RedisKey key);
+  EventResponse process(NotificationEvent notificationEvent, RedisKey key);
 
   /**
    * Return the list of keys this listener is interested in.

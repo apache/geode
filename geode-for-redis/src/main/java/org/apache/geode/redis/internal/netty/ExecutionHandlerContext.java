@@ -62,6 +62,7 @@ import org.apache.geode.redis.internal.data.RedisSortedSet;
 import org.apache.geode.redis.internal.data.RedisString;
 import org.apache.geode.redis.internal.eventing.EventDistributor;
 import org.apache.geode.redis.internal.eventing.EventListener;
+import org.apache.geode.redis.internal.eventing.NotificationEvent;
 import org.apache.geode.redis.internal.pubsub.PubSub;
 import org.apache.geode.redis.internal.services.RegionProvider;
 import org.apache.geode.redis.internal.services.locking.RedisSecurityService;
@@ -423,8 +424,8 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
     eventDistributor.registerListener(listener);
   }
 
-  public void fireEvent(RedisCommandType command, RedisKey key) {
-    eventDistributor.fireEvent(command, key);
+  public void fireEvent(NotificationEvent notificationEvent, RedisKey key) {
+    eventDistributor.fireEvent(notificationEvent, key);
   }
 
   public Region<RedisKey, RedisData> getRegion() {

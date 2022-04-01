@@ -23,7 +23,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.redis.internal.commands.Command;
-import org.apache.geode.redis.internal.commands.RedisCommandType;
 import org.apache.geode.redis.internal.commands.executor.RedisResponse;
 import org.apache.geode.redis.internal.data.RedisKey;
 import org.apache.geode.redis.internal.netty.Coder;
@@ -63,7 +62,7 @@ public class BlockingCommandListener implements EventListener {
   }
 
   @Override
-  public EventResponse process(RedisCommandType commandType, RedisKey key) {
+  public EventResponse process(NotificationEvent notificationEvent, RedisKey key) {
     if (!keys.contains(key)) {
       return EventResponse.CONTINUE;
     }

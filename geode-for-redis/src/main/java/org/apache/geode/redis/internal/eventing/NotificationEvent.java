@@ -15,19 +15,17 @@
 
 package org.apache.geode.redis.internal.eventing;
 
-import org.apache.geode.redis.internal.data.RedisKey;
-
 /**
- * Response returned by {@link EventListener#process(NotificationEvent, RedisKey)}
+ * These are the notification events used to trigger keyspace events and blocking commands.
+ *
+ * @see <a href="https://redis.io/docs/manual/keyspace-notifications">Redis notifications</a>
  */
-public enum EventResponse {
-  /**
-   * Response indicating that processing should continue.
-   */
-  CONTINUE,
-  /**
-   * Response indicating that processing should stop and the listener should be
-   * removed.
-   */
-  REMOVE_AND_STOP
+public enum NotificationEvent {
+
+  LPUSH,
+  RENAME_FROM,
+  RENAME_TO,
+  RESTORE,
+  RPUSH,
+
 }

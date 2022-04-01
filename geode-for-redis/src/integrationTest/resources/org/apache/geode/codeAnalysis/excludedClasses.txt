@@ -16,6 +16,7 @@ org/apache/geode/redis/internal/data/collections/SizeableByteArrayList
 org/apache/geode/redis/internal/data/collections/SizeableBytes2ObjectOpenCustomHashMapWithCursor
 org/apache/geode/redis/internal/data/collections/SizeableObjectOpenCustomHashSetWithCursor
 org/apache/geode/redis/internal/eventing/EventResponse
+org/apache/geode/redis/internal/eventing/NotificationEvent
 org/apache/geode/redis/internal/pubsub/Publisher$PublishFunction
 org/apache/geode/redis/internal/services/cluster/RedisMemberInfoRetrievalFunction
 org/apache/geode/redis/internal/services/locking/StripedExecutorService$State

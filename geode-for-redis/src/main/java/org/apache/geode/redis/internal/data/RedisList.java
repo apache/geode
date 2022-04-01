@@ -37,7 +37,6 @@ import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.commands.Command;
-import org.apache.geode.redis.internal.commands.RedisCommandType;
 import org.apache.geode.redis.internal.data.collections.SizeableByteArrayList;
 import org.apache.geode.redis.internal.data.delta.AddByteArrays;
 import org.apache.geode.redis.internal.data.delta.AddByteArraysTail;
@@ -45,6 +44,7 @@ import org.apache.geode.redis.internal.data.delta.InsertByteArray;
 import org.apache.geode.redis.internal.data.delta.RemoveElementsByIndex;
 import org.apache.geode.redis.internal.data.delta.ReplaceByteArrayAtOffset;
 import org.apache.geode.redis.internal.eventing.BlockingCommandListener;
+import org.apache.geode.redis.internal.eventing.NotificationEvent;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.services.RegionProvider;
 
@@ -163,7 +163,7 @@ public class RedisList extends AbstractRedisData {
       elementsPushHead(elementsToAdd);
     }
     storeChanges(context.getRegion(), key, new AddByteArrays(elementsToAdd, newVersion));
-    context.fireEvent(RedisCommandType.LPUSH, key);
+    context.fireEvent(NotificationEvent.LPUSH, key);
 
     return elementList.size();
   }
@@ -269,7 +269,7 @@ public class RedisList extends AbstractRedisData {
       elementsToAdd.forEach(this::elementPushTail);
     }
     storeChanges(context.getRegion(), key, new AddByteArraysTail(newVersion, elementsToAdd));
-    context.fireEvent(RedisCommandType.RPUSH, key);
+    context.fireEvent(NotificationEvent.RPUSH, key);
 
     return elementList.size();
   }
