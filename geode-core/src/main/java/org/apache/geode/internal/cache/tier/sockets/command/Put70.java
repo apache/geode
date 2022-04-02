@@ -468,7 +468,7 @@ public class Put70 extends BaseCommand {
     if (region.getAttributes().getConcurrencyChecksEnabled()) {
       // recover the version tag from other servers
       clientEvent.setRegion(region);
-      if (!recoverVersionTagForRetriedOperation(clientEvent) && !isRegionWithPersistence(region)) {
+      if (!isRegionWithPersistence(region) && !recoverVersionTagForRetriedOperation(clientEvent)) {
         // For persistent region, it is possible that all persistent copies went offline.
         // Do not reset possible duplicate in this case, as persistent data
         // can be recovered during the retry after recover of version tag failed.
