@@ -21,7 +21,6 @@ import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -464,7 +463,6 @@ public class Put70 extends BaseCommand {
 
   }
 
-  @VisibleForTesting
   boolean shouldSetPossibleDuplicate(LocalRegion region, EventIDHolder clientEvent) {
     boolean shouldSetPossibleDuplicate = true;
     if (region.getAttributes().getConcurrencyChecksEnabled()) {
@@ -480,7 +478,6 @@ public class Put70 extends BaseCommand {
     return shouldSetPossibleDuplicate;
   }
 
-  @VisibleForTesting
   boolean isRegionWithPersistence(LocalRegion region) {
     if (region.getAttributes().getDataPolicy().withPersistence()) {
       return true;
@@ -489,7 +486,7 @@ public class Put70 extends BaseCommand {
       PartitionedRegion partitionedRegion = (PartitionedRegion) region;
       if (!partitionedRegion.isDataStore()) {
         // if is accessor, find if region persist on other members.
-        return partitionedRegion.getRegionAdvisor().advisePersistentMembers() != null;
+        return partitionedRegion.getRegionAdvisor().advisePersistentMembers().size() > 0;
       }
     }
     return false;
