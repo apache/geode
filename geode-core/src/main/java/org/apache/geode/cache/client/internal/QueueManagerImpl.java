@@ -422,7 +422,7 @@ public class QueueManagerImpl implements QueueManager {
   private void initializeConnections() {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
-      logger.debug("SubscriptionManager - intitializing connections");
+      logger.debug("SubscriptionManager - initializing connections");
     }
 
     int queuesNeeded = redundancyLevel == -1 ? -1 : redundancyLevel + 1;
@@ -853,7 +853,8 @@ public class QueueManagerImpl implements QueueManager {
       return;
     }
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    if (queueConnections.getPrimary() != null && !queueConnections.getPrimary().isDestroyed()) {
+    if (queueConnections != null && queueConnections.getPrimary() != null
+        && !queueConnections.getPrimary().isDestroyed()) {
       if (isDebugEnabled) {
         logger.debug("Primary recovery not needed");
       }
@@ -1412,7 +1413,7 @@ public class QueueManagerImpl implements QueueManager {
   }
 
   /**
-   * Asynchronous task which tries to restablish a primary connection and satisfy redundant
+   * Asynchronous task which tries to reestablish a primary connection and satisfy redundant
    * requirements.
    *
    * This task should only be running in a single thread at a time. This task is the only way that
@@ -1469,8 +1470,8 @@ public class QueueManagerImpl implements QueueManager {
         SystemFailure.checkFailure();
         synchronized (lock) {
           if (t instanceof GemFireSecurityException) {
-            queueConnections =
-                queueConnections.setPrimaryDiscoveryFailed((GemFireSecurityException) t);
+            queueConnections = queueConnections
+                .setPrimaryDiscoveryFailed((GemFireSecurityException) t);
           } else {
             queueConnections = queueConnections.setPrimaryDiscoveryFailed(null);
           }
