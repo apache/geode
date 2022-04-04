@@ -93,9 +93,11 @@ public class RedisSet extends AbstractRedisData {
       RegionProvider regionProvider) {
     RedisSet source = regionProvider.getTypedRedisData(REDIS_SET, sourceKey, false);
     RedisSet destination = regionProvider.getTypedRedisData(REDIS_SET, destKey, false);
+
     if (!source.sismember(member)) {
       return 0;
     }
+
     if (sourceKey.equals(destKey)) {
       return 1;
     }

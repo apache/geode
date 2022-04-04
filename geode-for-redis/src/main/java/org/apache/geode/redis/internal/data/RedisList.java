@@ -372,27 +372,22 @@ public class RedisList extends AbstractRedisData {
       RedisKey destination) {
     RegionProvider regionProvider = context.getRegionProvider();
     RedisList sourceList = regionProvider.getTypedRedisData(REDIS_LIST, source, false);
-    RedisList destinationList = regionProvider.getTypedRedisData(REDIS_LIST, destination, false);
-    Region<RedisKey, RedisData> region = regionProvider.getDataRegion();
 
-    if (!sourceList.exists()) {
+    if (sourceList.isNull()) {
       return null;
     }
 
-    if (source.equals(destination)) {
-      RedisList newSourceList = new RedisList(sourceList);
-      byte[] moved = newSourceList.rpop(region, source);
-      newSourceList.lpush(context, Collections.singletonList(moved), destination, false);
-      return moved;
-    }
-
     RedisList newSourceList = new RedisList(sourceList);
+    Region<RedisKey, RedisData> region = regionProvider.getDataRegion();
     byte[] moved = newSourceList.rpop(region, source);
-    if (moved != null) {
-      RedisList newDestinationList = new RedisList(destinationList);
-      newDestinationList.lpush(context, Collections.singletonList(moved), destination, false);
-    }
 
+    if (source.equals(destination)) {
+      newSourceList.lpush(context, Collections.singletonList(moved), destination, false);
+    } else {
+      RedisList destinationList = regionProvider.getTypedRedisData(REDIS_LIST, destination, false);
+      new RedisList(destinationList).lpush(context, Collections.singletonList(moved), destination,
+          false);
+    }
     return moved;
   }
 

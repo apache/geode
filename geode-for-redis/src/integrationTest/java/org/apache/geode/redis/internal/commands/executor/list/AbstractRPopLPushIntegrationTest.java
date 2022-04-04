@@ -95,16 +95,14 @@ public abstract class AbstractRPopLPushIntegrationTest implements RedisIntegrati
   }
 
   @Test
-  public void rPopLPush_withNonexistentSourceKey_returnsNull() {
+  public void rPopLPush_withNonexistentSourceKeyAndNonListDestinationKey_returnsNull() {
+    jedis.set(DESTINATION_KEY, "not_a_list");
     assertThat(jedis.rpoplpush(SOURCE_KEY, DESTINATION_KEY)).isNull();
   }
 
   @Test
-  public void rPopLPush_withNonexistentDestinationKey_returnsPoppedElement() {
-    jedis.lpush(SOURCE_KEY, "1", "2", "3");
-    String poppedElement = jedis.rpoplpush(SOURCE_KEY, DESTINATION_KEY);
-    assertThat(jedis.lrange(DESTINATION_KEY, 0, -1)).containsExactly(poppedElement);
-    assertThat(jedis.lrange(SOURCE_KEY, 0, -1)).containsExactly("3", "2");
+  public void rPopLPush_withNonexistentSourceKey_returnsNull() {
+    assertThat(jedis.rpoplpush(SOURCE_KEY, DESTINATION_KEY)).isNull();
   }
 
   @Test

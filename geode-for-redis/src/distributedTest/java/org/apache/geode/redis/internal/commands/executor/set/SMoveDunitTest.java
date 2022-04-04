@@ -174,10 +174,9 @@ public class SMoveDunitTest {
             .hasMessage(SERVER_ERROR_MESSAGE);
 
     // Assert smove has not happened
-    assertThat(jedis.scard(sourceKey)).isEqualTo(sourceSize);
-    assertThat(jedis.smembers(sourceKey)).contains(memberToRemove);
-    assertThat(jedis.scard(throwingKey)).isEqualTo(destinationSize);
-    assertThat(jedis.smembers(throwingKey)).doesNotContain(memberToRemove);
+    assertThat(jedis.smembers(sourceKey)).containsExactlyInAnyOrderElementsOf(members);
+    assertThat(jedis.smembers(throwingKey))
+        .containsExactlyInAnyOrderElementsOf(membersForThrowingKey);
 
     IgnoredException.removeAllExpectedExceptions();
   }

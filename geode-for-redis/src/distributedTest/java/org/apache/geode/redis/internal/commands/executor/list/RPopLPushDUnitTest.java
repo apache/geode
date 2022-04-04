@@ -143,7 +143,7 @@ public class RPopLPushDUnitTest {
   }
 
   @Test
-  public void rpop_isTransactional() {
+  public void rpoplpush_isTransactional() {
     IgnoredException.addIgnoredException(THROWING_CACHE_WRITER_EXCEPTION);
 
     int primaryVMIndex = 1;
@@ -179,9 +179,7 @@ public class RPopLPushDUnitTest {
     Collections.reverse(reversedElementsForThrowingKey);
 
     // Assert rpoplpush has not happened
-    assertThat(jedis.llen(sourceKey)).isEqualTo(sourceSize);
     assertThat(jedis.lrange(sourceKey, 0, -1)).containsExactlyElementsOf(reversedInitialElements);
-    assertThat(jedis.llen(throwingKey)).isEqualTo(destinationSize);
     assertThat(jedis.lrange(throwingKey, 0, -1))
         .containsExactlyElementsOf(reversedElementsForThrowingKey);
 
