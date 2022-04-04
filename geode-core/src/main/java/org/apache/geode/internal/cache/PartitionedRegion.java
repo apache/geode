@@ -2979,201 +2979,215 @@ public class PartitionedRegion extends LocalRegion
       logger.debug("putInBucket: {} ({}) to {} to bucketId={} retry={} ms", event.getKey(),
           event.getKey().hashCode(), targetNode, bucketStringForLogs(bucketId), retryTimeout);
     }
-    // retry the put remotely until it finds the right node managing the bucket
 
-    RetryTimeKeeper retryTime = null;
-    boolean result = false;
-    InternalDistributedMember currentTarget = targetNode;
-    long timeOut = 0;
-    int count = 0;
-    for (;;) {
-      switch (count) {
-        case 0:
-          // Note we don't check for DM cancellation in common case.
-          // First time. Assume success, keep going.
-          break;
-        case 1:
-          cache.getCancelCriterion().checkCancelInProgress(null);
-          // Second time (first failure). Calculate timeout and keep going.
-          timeOut = System.currentTimeMillis() + retryTimeout;
-          break;
-        default:
-          cache.getCancelCriterion().checkCancelInProgress(null);
-          // test for timeout
-          long timeLeft = timeOut - System.currentTimeMillis();
-          if (timeLeft < 0) {
-            PRHARedundancyProvider.timedOut(this, null, null, "update an entry", retryTimeout);
-            // NOTREACHED
-          }
+    ProxyClientRequestObserver observer = ProxyClientRequestObserverHolder.getInstance();
+    Set<InternalDistributedMember> bucketOwners = null;
+    try {
+      if (observer != null) {
+        bucketOwners = getRegionAdvisor().getBucketOwners(bucketId);
+        observer.beforeSendRequest(bucketOwners);
+      }
 
-          // Didn't time out. Sleep a bit and then continue
-          boolean interrupted = Thread.interrupted();
-          try {
-            Thread.sleep(PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION);
-          } catch (InterruptedException ignore) {
-            interrupted = true;
-          } finally {
-            if (interrupted) {
-              Thread.currentThread().interrupt();
+      // retry the put remotely until it finds the right node managing the bucket
+
+      RetryTimeKeeper retryTime = null;
+      boolean result = false;
+      InternalDistributedMember currentTarget = targetNode;
+      long timeOut = 0;
+      int count = 0;
+      for (;;) {
+        switch (count) {
+          case 0:
+            // Note we don't check for DM cancellation in common case.
+            // First time. Assume success, keep going.
+            break;
+          case 1:
+            cache.getCancelCriterion().checkCancelInProgress(null);
+            // Second time (first failure). Calculate timeout and keep going.
+            timeOut = System.currentTimeMillis() + retryTimeout;
+            break;
+          default:
+            cache.getCancelCriterion().checkCancelInProgress(null);
+            // test for timeout
+            long timeLeft = timeOut - System.currentTimeMillis();
+            if (timeLeft < 0) {
+              PRHARedundancyProvider.timedOut(this, null, null, "update an entry", retryTimeout);
+              // NOTREACHED
             }
-          }
-          break;
-      } // switch
-      count++;
 
-      if (currentTarget == null) { // pick target
-        checkReadiness();
-        if (retryTime == null) {
-          retryTime = new RetryTimeKeeper(retryTimeout);
+            // Didn't time out. Sleep a bit and then continue
+            boolean interrupted = Thread.interrupted();
+            try {
+              Thread.sleep(PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION);
+            } catch (InterruptedException ignore) {
+              interrupted = true;
+            } finally {
+              if (interrupted) {
+                Thread.currentThread().interrupt();
+              }
+            }
+            break;
+        } // switch
+        count++;
+
+        if (currentTarget == null) { // pick target
+          checkReadiness();
+          if (retryTime == null) {
+            retryTime = new RetryTimeKeeper(retryTimeout);
+          }
+          currentTarget = waitForNodeOrCreateBucket(retryTime, event, bucketId);
+
+          // It's possible this is a GemFire thread e.g. ServerConnection
+          // which got to this point because of a distributed system shutdown or
+          // region closure which uses interrupt to break any sleep() or wait() calls
+          // e.g. waitForPrimary or waitForBucketRecovery in which case throw exception
+          checkShutdown();
+          continue;
+        } // pick target
+
+        try {
+          final boolean isLocal = (localMaxMemory > 0) && currentTarget.equals(getMyId());
+          if (logger.isDebugEnabled()) {
+            logger.debug("putInBucket: currentTarget = {}; ifNew = {}; ifOld = {}; isLocal = {}",
+                currentTarget, ifNew, ifOld, isLocal);
+          }
+          checkIfAboveThreshold(event);
+          if (isLocal) {
+            event.setInvokePRCallbacks(true);
+            long start = prStats.startPutLocal();
+            try {
+              final BucketRegion br =
+                  dataStore.getInitializedBucketForId(event.getKey(), bucketId);
+              // Local updates should insert a serialized (aka CacheDeserializable) object
+              // given that most manipulation of values is remote (requiring serialization to send).
+              // But... function execution always implies local manipulation of
+              // values so keeping locally updated values in Object form should be more efficient.
+              if (!FunctionExecutionPooledExecutor.isFunctionExecutionThread()) {
+                // TODO: this condition may not help since BucketRegion.virtualPut calls
+                // forceSerialized
+                br.forceSerialized(event);
+              }
+              if (ifNew) {
+                result = dataStore.createLocally(br, event, ifNew, ifOld, requireOldValue,
+                    lastModified);
+              } else {
+                result = dataStore.putLocally(br, event, ifNew, ifOld, expectedOldValue,
+                    requireOldValue, lastModified);
+              }
+            } finally {
+              prStats.endPutLocal(start);
+            }
+          } // local
+          else { // remote
+            // no need to perform early serialization (and create an un-necessary byte array)
+            // sending the message performs that work.
+            long start = prStats.startPutRemote();
+            try {
+              if (ifNew) {
+                result = createRemotely(currentTarget, bucketId, event, requireOldValue);
+              } else {
+                result = putRemotely(currentTarget, event, ifNew, ifOld, expectedOldValue,
+                    requireOldValue);
+                if (!requireOldValue) {
+                  // make sure old value is set to NOT_AVAILABLE token
+                  event.oldValueNotAvailable();
+                }
+              }
+            } finally {
+              prStats.endPutRemote(start);
+            }
+          } // remote
+
+          if (!result && !ifOld && !ifNew) {
+            Assert.assertTrue(!isLocal);
+            ForceReattemptException fre = new ForceReattemptException(
+                "false result when !ifNew and !ifOld is unacceptable - retrying");
+            fre.setHash(event.getKey().hashCode());
+            throw fre;
+          }
+
+          return result;
+        } catch (ConcurrentCacheModificationException e) {
+          if (logger.isDebugEnabled()) {
+            logger.debug("putInBucket: caught concurrent cache modification exception", e);
+          }
+          event.isConcurrencyConflict(true);
+
+          if (logger.isTraceEnabled()) {
+            logger.trace(
+                "ConcurrentCacheModificationException received for putInBucket for bucketId: {}{}{} for event: {}  No reattampt is done, returning from here",
+                getPRId(), BUCKET_ID_SEPARATOR, bucketId, event);
+          }
+          return result;
+        } catch (ForceReattemptException prce) {
+          prce.checkKey(event.getKey());
+          if (logger.isDebugEnabled()) {
+            logger.debug(
+                "putInBucket: Got ForceReattemptException for {} on VM {} for node {}{}{} for bucket = {}",
+                this, getMyId(), currentTarget, getPRId(), BUCKET_ID_SEPARATOR, bucketId, prce);
+            logger.debug("putInBucket: count={}", count);
+          }
+          checkReadiness();
+          InternalDistributedMember lastTarget = currentTarget;
+          if (retryTime == null) {
+            retryTime = new RetryTimeKeeper(retryTimeout);
+          }
+          currentTarget = getNodeForBucketWrite(bucketId, retryTime);
+          if (lastTarget.equals(currentTarget)) {
+            if (retryTime.overMaximum()) {
+              PRHARedundancyProvider.timedOut(this, null, null, "update an entry", retryTimeout);
+              // NOTREACHED
+            }
+            retryTime.waitToRetryNode();
+          }
+          event.setPossibleDuplicate(true);
+        } catch (PrimaryBucketException notPrimary) {
+          if (logger.isDebugEnabled()) {
+            logger.debug("Bucket {} on Node {} not primary", notPrimary.getLocalizedMessage(),
+                currentTarget);
+          }
+          getRegionAdvisor().notPrimary(bucketId, currentTarget);
+          if (retryTime == null) {
+            retryTime = new RetryTimeKeeper(retryTimeout);
+          }
+          currentTarget = getNodeForBucketWrite(bucketId, retryTime);
         }
-        currentTarget = waitForNodeOrCreateBucket(retryTime, event, bucketId);
 
         // It's possible this is a GemFire thread e.g. ServerConnection
         // which got to this point because of a distributed system shutdown or
-        // region closure which uses interrupt to break any sleep() or wait() calls
-        // e.g. waitForPrimary or waitForBucketRecovery in which case throw exception
+        // region closure which uses interrupt to break any sleep() or wait()
+        // calls
+        // e.g. waitForPrimary or waitForBucketRecovery in which case throw
+        // exception
         checkShutdown();
-        continue;
-      } // pick target
 
-      try {
-        final boolean isLocal = (localMaxMemory > 0) && currentTarget.equals(getMyId());
-        if (logger.isDebugEnabled()) {
-          logger.debug("putInBucket: currentTarget = {}; ifNew = {}; ifOld = {}; isLocal = {}",
-              currentTarget, ifNew, ifOld, isLocal);
-        }
-        checkIfAboveThreshold(event);
-        if (isLocal) {
-          event.setInvokePRCallbacks(true);
-          long start = prStats.startPutLocal();
-          try {
-            final BucketRegion br =
-                dataStore.getInitializedBucketForId(event.getKey(), bucketId);
-            // Local updates should insert a serialized (aka CacheDeserializable) object
-            // given that most manipulation of values is remote (requiring serialization to send).
-            // But... function execution always implies local manipulation of
-            // values so keeping locally updated values in Object form should be more efficient.
-            if (!FunctionExecutionPooledExecutor.isFunctionExecutionThread()) {
-              // TODO: this condition may not help since BucketRegion.virtualPut calls
-              // forceSerialized
-              br.forceSerialized(event);
-            }
-            if (ifNew) {
-              result = dataStore.createLocally(br, event, ifNew, ifOld, requireOldValue,
-                  lastModified);
-            } else {
-              result = dataStore.putLocally(br, event, ifNew, ifOld, expectedOldValue,
-                  requireOldValue, lastModified);
-            }
-          } finally {
-            prStats.endPutLocal(start);
+        // If we get here, the attempt failed...
+        if (count == 1) {
+          if (ifNew) {
+            prStats.incCreateOpsRetried();
+          } else {
+            prStats.incPutOpsRetried();
           }
-        } // local
-        else { // remote
-          // no need to perform early serialization (and create an un-necessary byte array)
-          // sending the message performs that work.
-          long start = prStats.startPutRemote();
-          try {
-            if (ifNew) {
-              result = createRemotely(currentTarget, bucketId, event, requireOldValue);
-            } else {
-              result = putRemotely(currentTarget, event, ifNew, ifOld, expectedOldValue,
-                  requireOldValue);
-              if (!requireOldValue) {
-                // make sure old value is set to NOT_AVAILABLE token
-                event.oldValueNotAvailable();
-              }
-            }
-          } finally {
-            prStats.endPutRemote(start);
-          }
-        } // remote
-
-        if (!result && !ifOld && !ifNew) {
-          Assert.assertTrue(!isLocal);
-          ForceReattemptException fre = new ForceReattemptException(
-              "false result when !ifNew and !ifOld is unacceptable - retrying");
-          fre.setHash(event.getKey().hashCode());
-          throw fre;
+        }
+        if (event.getOperation().isCreate()) {
+          prStats.incCreateRetries();
+        } else {
+          prStats.incPutRetries();
         }
 
-        return result;
-      } catch (ConcurrentCacheModificationException e) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("putInBucket: caught concurrent cache modification exception", e);
-        }
-        event.isConcurrencyConflict(true);
-
-        if (logger.isTraceEnabled()) {
-          logger.trace(
-              "ConcurrentCacheModificationException received for putInBucket for bucketId: {}{}{} for event: {}  No reattampt is done, returning from here",
-              getPRId(), BUCKET_ID_SEPARATOR, bucketId, event);
-        }
-        return result;
-      } catch (ForceReattemptException prce) {
-        prce.checkKey(event.getKey());
         if (logger.isDebugEnabled()) {
           logger.debug(
-              "putInBucket: Got ForceReattemptException for {} on VM {} for node {}{}{} for bucket = {}",
-              this, getMyId(), currentTarget, getPRId(), BUCKET_ID_SEPARATOR, bucketId, prce);
-          logger.debug("putInBucket: count={}", count);
-        }
-        checkReadiness();
-        InternalDistributedMember lastTarget = currentTarget;
-        if (retryTime == null) {
-          retryTime = new RetryTimeKeeper(retryTimeout);
-        }
-        currentTarget = getNodeForBucketWrite(bucketId, retryTime);
-        if (lastTarget.equals(currentTarget)) {
-          if (retryTime.overMaximum()) {
-            PRHARedundancyProvider.timedOut(this, null, null, "update an entry", retryTimeout);
-            // NOTREACHED
-          }
-          retryTime.waitToRetryNode();
-        }
-        event.setPossibleDuplicate(true);
-      } catch (PrimaryBucketException notPrimary) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("Bucket {} on Node {} not primary", notPrimary.getLocalizedMessage(),
+              "putInBucket for bucketId = {} failed (attempt # {} ({} ms left), retrying with node {}",
+              bucketStringForLogs(bucketId), count, (timeOut - System.currentTimeMillis()),
               currentTarget);
         }
-        getRegionAdvisor().notPrimary(bucketId, currentTarget);
-        if (retryTime == null) {
-          retryTime = new RetryTimeKeeper(retryTimeout);
-        }
-        currentTarget = getNodeForBucketWrite(bucketId, retryTime);
-      }
+      } // for
 
-      // It's possible this is a GemFire thread e.g. ServerConnection
-      // which got to this point because of a distributed system shutdown or
-      // region closure which uses interrupt to break any sleep() or wait()
-      // calls
-      // e.g. waitForPrimary or waitForBucketRecovery in which case throw
-      // exception
-      checkShutdown();
-
-      // If we get here, the attempt failed...
-      if (count == 1) {
-        if (ifNew) {
-          prStats.incCreateOpsRetried();
-        } else {
-          prStats.incPutOpsRetried();
-        }
+    } finally {
+      if (observer != null) {
+        observer.afterReceiveResponse(bucketOwners);
       }
-      if (event.getOperation().isCreate()) {
-        prStats.incCreateRetries();
-      } else {
-        prStats.incPutRetries();
-      }
-
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            "putInBucket for bucketId = {} failed (attempt # {} ({} ms left), retrying with node {}",
-            bucketStringForLogs(bucketId), count, (timeOut - System.currentTimeMillis()),
-            currentTarget);
-      }
-    } // for
-
+    }
     // NOTREACHED
   }
 
@@ -4173,8 +4187,20 @@ public class PartitionedRegion extends LocalRegion
             }
           }
 
-          obj = getRemotely(retryNode, bucketId, key, aCallbackArgument, preferCD, requestingClient,
-              clientEvent, returnTombstones);
+          // toberal
+          ProxyClientRequestObserver observer = ProxyClientRequestObserverHolder.getInstance();;
+          try {
+            if (observer != null) {
+              observer.beforeSendRequest(Collections.singleton(retryNode));
+            }
+            obj =
+                getRemotely(retryNode, bucketId, key, aCallbackArgument, preferCD, requestingClient,
+                    clientEvent, returnTombstones);
+          } finally {
+            if (observer != null) {
+              observer.afterReceiveResponse(Collections.singleton(retryNode));
+            }
+          }
 
           // TODO: there should be better way than this one
           String name = Thread.currentThread().getName();
@@ -4886,23 +4912,35 @@ public class PartitionedRegion extends LocalRegion
   private ResultCollector executeFunctionOnRemoteNode(InternalDistributedMember targetNode,
       final Function function, final Object object, final Set routingKeys, ResultCollector rc,
       int[] bucketArray, ServerToClientFunctionResultSender sender, AbstractExecution execution) {
-    PartitionedRegionFunctionResultSender resultSender =
-        new PartitionedRegionFunctionResultSender(null, this, 0, rc, sender, false, true,
-            execution.isForwardExceptions(), function, bucketArray);
 
-    PartitionedRegionFunctionResultWaiter resultReceiver =
-        new PartitionedRegionFunctionResultWaiter(getSystem(), getPRId(), rc, function,
-            resultSender);
+    ProxyClientRequestObserver observer = ProxyClientRequestObserverHolder.getInstance();
+    if (observer != null) {
+      observer.beforeSendRequest(Collections.singleton(targetNode));
+    }
 
-    FunctionRemoteContext context = new FunctionRemoteContext(function, object, routingKeys,
-        bucketArray, execution.isReExecute(), execution.isFnSerializationReqd(), getPrincipal());
+    try {
+      PartitionedRegionFunctionResultSender resultSender =
+          new PartitionedRegionFunctionResultSender(null, this, 0, rc, sender, false, true,
+              execution.isForwardExceptions(), function, bucketArray);
 
-    HashMap<InternalDistributedMember, FunctionRemoteContext> recipMap =
-        new HashMap<>();
+      PartitionedRegionFunctionResultWaiter resultReceiver =
+          new PartitionedRegionFunctionResultWaiter(getSystem(), getPRId(), rc, function,
+              resultSender);
 
-    recipMap.put(targetNode, context);
+      FunctionRemoteContext context = new FunctionRemoteContext(function, object, routingKeys,
+          bucketArray, execution.isReExecute(), execution.isFnSerializationReqd(), getPrincipal());
 
-    return resultReceiver.getPartitionedDataFrom(recipMap, this, execution);
+      HashMap<InternalDistributedMember, FunctionRemoteContext> recipMap =
+          new HashMap<>();
+
+      recipMap.put(targetNode, context);
+
+      return resultReceiver.getPartitionedDataFrom(recipMap, this, execution);
+    } finally {
+      if (observer != null) {
+        observer.afterReceiveResponse(Collections.singleton(targetNode));
+      }
+    }
   }
 
   /**

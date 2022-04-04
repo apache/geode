@@ -512,7 +512,20 @@ public class TXState implements TXStateInterface {
 
         lockTXRegions(regions);
 
+        ProxyClientRequestObserver observer = ProxyClientRequestObserverHolder.getInstance();
+        msg = buildMessage();
+        Set<InternalDistributedMember> txCommitRecipients = msg.getTxCommitRecipients();
         try {
+          if (observer != null) {
+            try {
+              observer.beforeSendRequest(txCommitRecipients);
+            } catch (Exception e) {
+              SystemFailure.checkFailure();
+              logger.error("toberal throwing exception {} before committing for tx: {}", e, this);
+              throw e;
+            }
+          }
+
           // apply changes to the cache
           applyChanges(entries);
           // For internal testing
@@ -523,7 +536,6 @@ public class TXState implements TXStateInterface {
           attachFilterProfileInformation(entries);
 
           // build and send the message
-          msg = buildMessage();
           commitMessage = msg;
           if (internalBeforeSend != null) {
             internalBeforeSend.run();
@@ -542,6 +554,9 @@ public class TXState implements TXStateInterface {
            */
           commitMessage = buildCompleteMessage();
         } finally {
+          if (observer != null) {
+            observer.afterReceiveResponse(txCommitRecipients);
+          }
           unlockTXRegions(regions);
         }
       } finally {
