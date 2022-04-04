@@ -61,10 +61,10 @@ public class SystemPropertyBasedRedisConfiguration implements RedisConfiguration
 
   public SystemPropertyBasedRedisConfiguration(DistributionConfig distributionConfig)
       throws IllegalArgumentException {
-    String serverBindAddress = distributionConfig.getServerBindAddress();
+    String geodeBindAddress = distributionConfig.getServerBindAddress();
 
     boolean tmpEnabled = validateAndSetPort();
-    tmpEnabled |= validateAndSetBindAddress(serverBindAddress);
+    tmpEnabled |= validateAndSetBindAddress(geodeBindAddress);
     tmpEnabled |= validateAndSetRedundantCopies();
     tmpEnabled |= validateAndSetUsername();
     tmpEnabled |= Boolean.getBoolean(GEODE_FOR_REDIS_ENABLED);
@@ -135,13 +135,13 @@ public class SystemPropertyBasedRedisConfiguration implements RedisConfiguration
     return true;
   }
 
-  private boolean validateAndSetBindAddress(String serverBindAddress) {
+  private boolean validateAndSetBindAddress(String geodeBindAddress) {
     String value = System.getProperty(GEODE_FOR_REDIS_BIND_ADDRESS);
     if (StringUtils.isEmpty(value)) {
-      if (StringUtils.isEmpty(serverBindAddress)) {
+      if (StringUtils.isEmpty(geodeBindAddress)) {
         bindAddress = DEFAULT_REDIS_BIND_ADDRESS;
       } else {
-        bindAddress = serverBindAddress;
+        bindAddress = geodeBindAddress;
       }
       return false;
     }
