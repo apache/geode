@@ -36,7 +36,9 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.LongAdder;
 
+import junitparams.Parameters;
 import org.jetbrains.annotations.NotNull;
+import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,11 +62,20 @@ import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 import org.apache.geode.test.version.VersionManager;
 
 /**
- * TODO: describe!
+ * In TLSv1.3, when a GCM-based cipher is used, there is a limit on the number
+ * of bytes that may be encoded with a key. When that limit is reached, a TLS
+ * KeyUpdate message is generated (by the SSLEngine). That message causes a new
+ * key to be negotiated between the peer SSLEngines.
  *
- * look at stat: reconnectAttempts
- * raise socket lease time to say 10min
+ * This test arranges for a low encryption byte limit to be set in each of the
+ * three members in turn: locator, sending member, receiving member. With the
+ * low byte limit configured, the test sends P2P messages via TLS and verifies
+ * that not only does one-way data transfer succeed, but also that no errors
+ * are generated to the logs.
  *
+ * The errors in the logs are the only way this test of one-way messaging can
+ * detect a failure to handle KeyUpdate messages. That's because the Connection
+ * framework transparently reconnects when connections are closed.
  */
 @Category({MembershipTest.class})
 @RunWith(GeodeParamsRunner.class)
@@ -99,32 +110,34 @@ public class P2PMessagingSSLTLSKeyUpdateDUnitTest {
   private MemberVM sender;
   private MemberVM receiver;
 
+  @After
+  public void afterEach() {
+    clusterStartupRule.getVM(0).bounceForcibly();
+    clusterStartupRule.getVM(1).bounceForcibly();
+    clusterStartupRule.getVM(2).bounceForcibly();
+  }
+
   /*
    * bytes sent on sender JVM, bytes received on receiver JVM
    * (not used in test JVM)
    */
   private static LongAdder bytesTransferredAdder;
 
-  private void configureJVMsAndStartClusterMembers() throws GeneralSecurityException, IOException {
+  private void configureJVMsAndStartClusterMembers(
+      final long locatorEncryptedBytesLimit,
+      final long senderEncryptedBytesLimit,
+      final long receiverEncryptedBytesLimit)
+      throws GeneralSecurityException, IOException {
+
+    clusterStartupRule.getVM(0).invoke(
+        setSecurityProperties(locatorEncryptedBytesLimit));
+    clusterStartupRule.getVM(1).invoke(
+        setSecurityProperties(senderEncryptedBytesLimit));
+    clusterStartupRule.getVM(2).invoke(
+        setSecurityProperties(receiverEncryptedBytesLimit));
 
     final Properties senderConfiguration = geodeConfigurationProperties();
     final Properties receiverConfiguration = geodeConfigurationProperties();
-
-    final SerializableRunnableIF setSystemProperties = () -> {
-      Security.setProperty("jdk.tls.keyLimits",
-          "AES/GCM/NoPadding KeyUpdate " + ENCRYPTED_BYTES_LIMIT);
-
-      final Class<?> sslCipher = Class.forName("sun.security.ssl.SSLCipher");
-      final Field cipherLimits = sslCipher.getDeclaredField("cipherLimits");
-      cipherLimits.setAccessible(true);
-      assertThat((Map<String, Long>) cipherLimits.get(null)).containsEntry(
-          "AES/GCM/NOPADDING:KEYUPDATE",
-          (long) ENCRYPTED_BYTES_LIMIT);
-    };
-
-    clusterStartupRule.getVM(0).invoke(setSystemProperties);
-    clusterStartupRule.getVM(1).invoke(setSystemProperties);
-    clusterStartupRule.getVM(2).invoke(setSystemProperties);
 
     final MemberVM locator =
         clusterStartupRule.startLocatorVM(0, 0, VersionManager.CURRENT_VERSION,
@@ -135,10 +148,35 @@ public class P2PMessagingSSLTLSKeyUpdateDUnitTest {
     receiver = clusterStartupRule.startServerVM(2, receiverConfiguration, locator.getPort());
   }
 
-  @Test
-  public void testP2PMessagingWithKeyUpdate() throws GeneralSecurityException, IOException {
+  @NotNull
+  private SerializableRunnableIF setSecurityProperties(final long encryptedBytesLimit) {
+    return () -> {
+      Security.setProperty("jdk.tls.keyLimits",
+          "AES/GCM/NoPadding KeyUpdate " + encryptedBytesLimit);
 
-    configureJVMsAndStartClusterMembers();
+      final Class<?> sslCipher = Class.forName("sun.security.ssl.SSLCipher");
+      final Field cipherLimits = sslCipher.getDeclaredField("cipherLimits");
+      cipherLimits.setAccessible(true);
+      assertThat((Map<String, Long>) cipherLimits.get(null)).containsEntry(
+          "AES/GCM/NOPADDING:KEYUPDATE",
+          encryptedBytesLimit);
+    };
+  }
+
+  @Test
+  @Parameters({
+      "65536, 137438953472, 137438953472",
+      "137438953472, 65536, 137438953472",
+      "137438953472, 137438953472, 65536",
+  })
+  public void testP2PMessagingWithKeyUpdate(
+      final long locatorEncryptedBytesLimit,
+      final long senderEncryptedBytesLimit,
+      final long receiverEncryptedBytesLimit)
+      throws GeneralSecurityException, IOException {
+
+    configureJVMsAndStartClusterMembers(locatorEncryptedBytesLimit, senderEncryptedBytesLimit,
+        receiverEncryptedBytesLimit);
 
     final InternalDistributedMember receiverMember =
         receiver.invoke(() -> {

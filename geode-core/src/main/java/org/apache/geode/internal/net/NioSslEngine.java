@@ -55,7 +55,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class NioSslEngine implements NioFilter {
   private static final ByteBuffer EMPTY_BYTE_BUFFER = ByteBuffer.wrap(new byte[0]);
   private static final Logger logger = LogService.getLogger();
-  private static final boolean CHOOSE_BUGGY_PATH = false;
+  private static final boolean CHOOSE_BUGGY_PATH = true;
 
   private final BufferPool bufferPool;
 
