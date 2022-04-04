@@ -281,12 +281,12 @@ public class NioSslEngine implements NioFilter {
   @NotNull
   private SSLEngineResult doWrap(final ByteBuffer appData, final ByteBuffer myNetData)
       throws SSLException {
-//    System.out.printf("BGB: pre-wrap appData: %s, myNetData: %s%n", appData, myNetData);
+    // System.out.printf("BGB: pre-wrap appData: %s, myNetData: %s%n", appData, myNetData);
     final int oldPosition = myNetData.position();
     SSLEngineResult wrapResult = engine.wrap(appData, myNetData);
-//    System.out.printf(
-//        "BGB: post-wrap appData: %s, myNetData: %s,%nBGB: status: %s, handshakeStatus: %s%n",
-//        appData, myNetData, wrapResult.getStatus(), wrapResult.getHandshakeStatus());
+    // System.out.printf(
+    // "BGB: post-wrap appData: %s, myNetData: %s,%nBGB: status: %s, handshakeStatus: %s%n",
+    // appData, myNetData, wrapResult.getStatus(), wrapResult.getHandshakeStatus());
     return wrapResult;
   }
 

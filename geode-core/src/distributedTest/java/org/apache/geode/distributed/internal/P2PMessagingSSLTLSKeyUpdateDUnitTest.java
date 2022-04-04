@@ -15,7 +15,6 @@
 
 package org.apache.geode.distributed.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -37,7 +36,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.LongAdder;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -113,13 +111,15 @@ public class P2PMessagingSSLTLSKeyUpdateDUnitTest {
     final Properties receiverConfiguration = geodeConfigurationProperties();
 
     final SerializableRunnableIF setSystemProperties = () -> {
-      Security.setProperty("jdk.tls.keyLimits", "AES/GCM/NoPadding KeyUpdate " + ENCRYPTED_BYTES_LIMIT);
+      Security.setProperty("jdk.tls.keyLimits",
+          "AES/GCM/NoPadding KeyUpdate " + ENCRYPTED_BYTES_LIMIT);
 
       final Class<?> sslCipher = Class.forName("sun.security.ssl.SSLCipher");
       final Field cipherLimits = sslCipher.getDeclaredField("cipherLimits");
       cipherLimits.setAccessible(true);
-      assertThat((Map<String, Long>) cipherLimits.get(null)).containsEntry("AES/GCM/NOPADDING:KEYUPDATE",
-          (long)ENCRYPTED_BYTES_LIMIT);
+      assertThat((Map<String, Long>) cipherLimits.get(null)).containsEntry(
+          "AES/GCM/NOPADDING:KEYUPDATE",
+          (long) ENCRYPTED_BYTES_LIMIT);
     };
 
     clusterStartupRule.getVM(0).invoke(setSystemProperties);
@@ -237,7 +237,7 @@ public class P2PMessagingSSLTLSKeyUpdateDUnitTest {
     private volatile int messageId;
 
     TestMessage(final InternalDistributedMember receiver,
-                final int messageId) {
+        final int messageId) {
       setRecipient(receiver);
       this.messageId = messageId;
     }
@@ -253,8 +253,7 @@ public class P2PMessagingSSLTLSKeyUpdateDUnitTest {
     }
 
     @Override
-    protected void process(final ClusterDistributionManager dm) {
-    }
+    protected void process(final ClusterDistributionManager dm) {}
 
     @Override
     public void toData(final DataOutput out, final SerializationContext context)
@@ -303,7 +302,8 @@ public class P2PMessagingSSLTLSKeyUpdateDUnitTest {
   }
 
   @NotNull
-  private static Properties geodeConfigurationProperties() throws GeneralSecurityException, IOException {
+  private static Properties geodeConfigurationProperties()
+      throws GeneralSecurityException, IOException {
     // subsequent calls must return the same value so members agree on credentials
     if (geodeConfigurationProperties == null) {
       final CertificateMaterial ca = new CertificateBuilder()

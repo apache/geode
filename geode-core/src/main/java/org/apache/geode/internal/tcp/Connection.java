@@ -1700,7 +1700,9 @@ public class Connection implements Runnable {
           return;
         } catch (IOException e) {
           if (!isIgnorableIOException(e, socket)) {
-            logger.error("{} io exception for {} acknowledgements to requests may have been forever lost", p2pReaderName(), this, e);
+            logger.error(
+                "{} io exception for {} acknowledgements to requests may have been forever lost",
+                p2pReaderName(), this, e);
           }
           if (logger.isDebugEnabled()) {
             if (e.getMessage().contains("interrupted by a call to WSACancelBlockingCall")) {
