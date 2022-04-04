@@ -68,6 +68,13 @@ public class RedisList extends AbstractRedisData {
     this.elementList = new SizeableByteArrayList();
   }
 
+  public RedisList(RedisList redisList) {
+    setExpirationTimestampNoDelta(redisList.getExpirationTimestamp());
+    setVersion(redisList.getVersion());
+    elementList = new SizeableByteArrayList();
+    elementList.addAll(redisList.elementList);
+  }
+
   public static List<byte[]> blpop(ExecutionHandlerContext context, Command command,
       List<RedisKey> keys, double timeoutSeconds) {
     RegionProvider regionProvider = context.getRegionProvider();
@@ -367,10 +374,25 @@ public class RedisList extends AbstractRedisData {
     RedisList sourceList = regionProvider.getTypedRedisData(REDIS_LIST, source, false);
     RedisList destinationList = regionProvider.getTypedRedisData(REDIS_LIST, destination, false);
     Region<RedisKey, RedisData> region = regionProvider.getDataRegion();
-    byte[] moved = sourceList.rpop(region, source);
-    if (moved != null) {
-      destinationList.lpush(context, Collections.singletonList(moved), destination, false);
+
+    if (!sourceList.exists()) {
+      return null;
     }
+
+    if (source.equals(destination)) {
+      RedisList newSourceList = new RedisList(sourceList);
+      byte[] moved = newSourceList.rpop(region, source);
+      newSourceList.lpush(context, Collections.singletonList(moved), destination, false);
+      return moved;
+    }
+
+    RedisList newSourceList = new RedisList(sourceList);
+    byte[] moved = newSourceList.rpop(region, source);
+    if (moved != null) {
+      RedisList newDestinationList = new RedisList(destinationList);
+      newDestinationList.lpush(context, Collections.singletonList(moved), destination, false);
+    }
+
     return moved;
   }
 

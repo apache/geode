@@ -74,6 +74,8 @@ public class RedisSet extends AbstractRedisData {
   }
 
   public RedisSet(RedisSet redisSet) {
+    setExpirationTimestampNoDelta(redisSet.getExpirationTimestamp());
+    setVersion(redisSet.getVersion());
     members = new MemberSet(redisSet.members.size());
     members.addAll(redisSet.members);
   }
@@ -91,7 +93,6 @@ public class RedisSet extends AbstractRedisData {
       RegionProvider regionProvider) {
     RedisSet source = regionProvider.getTypedRedisData(REDIS_SET, sourceKey, false);
     RedisSet destination = regionProvider.getTypedRedisData(REDIS_SET, destKey, false);
-
     if (!source.sismember(member)) {
       return 0;
     }
