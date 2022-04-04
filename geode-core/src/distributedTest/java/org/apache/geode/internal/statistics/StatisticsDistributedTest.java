@@ -490,6 +490,53 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
         combinedUpdateEvents == combinedPuts);
   }
 
+  @Test
+  public void testExistenceOfVMStats() {
+    String regionName = "region_1";
+    VM vm = getHost(0).getVM(0);
+
+    vm.invoke(() -> {
+      Properties props = new Properties();
+      props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
+      props.setProperty(STATISTIC_SAMPLE_RATE, "1000");
+
+      InternalDistributedSystem system = getSystem(props);
+
+      // assert that sampler is working as expected
+      GemFireStatSampler sampler = system.getStatSampler();
+      assertTrue(sampler.isSamplingEnabled());
+      assertTrue(sampler.isAlive());
+
+      await("awaiting SampleCollector to exist")
+          .until(() -> sampler.getSampleCollector() != null);
+
+      SampleCollector sampleCollector = sampler.getSampleCollector();
+      assertNotNull(sampleCollector);
+
+      StatisticsType VMStatsType = getSystem().findType("VMStats");
+      Statistics vmStats = getSystem().findStatisticsByType(VMStatsType)[0];
+
+      try {
+        vmStats.get("pendingFinalization");
+        vmStats.get("loadedClasses");
+        vmStats.get("unloadedClasses");
+        vmStats.get("daemonThreads");
+        vmStats.get("peakThreads");
+        vmStats.get("threads");
+        vmStats.get("threadStarts");
+        vmStats.get("cpus");
+        vmStats.get("freeMemory");
+        vmStats.get("totalMemory");
+        vmStats.get("maxMemory");
+        vmStats.get("processCpuTime");
+        vmStats.get("fdsOpen");
+        vmStats.get("fdLimit");
+      } catch (IllegalArgumentException e) {
+        fail("Stats do not exist: " + e.getMessage());
+      }
+    });
+  }
+
   static int readIntStat(final File archive, final String typeName, final String statName)
       throws IOException {
     MultipleArchiveReader reader = new MultipleArchiveReader(archive);
