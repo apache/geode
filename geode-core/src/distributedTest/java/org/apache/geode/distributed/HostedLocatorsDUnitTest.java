@@ -14,15 +14,14 @@
  */
 package org.apache.geode.distributed;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
-import static org.apache.geode.test.dunit.Assert.assertEquals;
-import static org.apache.geode.test.dunit.Assert.assertFalse;
-import static org.apache.geode.test.dunit.Assert.assertNotNull;
-import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Host.getHost;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -38,11 +37,9 @@ import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.internal.util.StopWatch;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
@@ -56,10 +53,9 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 @Category({ClientServerTest.class})
 public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
 
-  protected static final int TIMEOUT_MILLISECONDS = 5 * 60 * 1000; // 5 minutes
+  private static final int TIMEOUT_MILLISECONDS = (int) MINUTES.toMillis(5);
 
-  protected transient volatile int locatorPort;
-  protected transient volatile LocatorLauncher launcher;
+  private transient volatile LocatorLauncher launcher;
 
   @Override
   public final void postSetUp() throws Exception {
@@ -72,161 +68,46 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private String getUniqueLocatorName() {
-    String uniqueLocatorName = Host.getHost(0).getHostName() + "_"
-        + getUniqueName();
-    return uniqueLocatorName;
+    return getHost(0).getHostName() + "_" + getUniqueName();
   }
 
   @Test
   public void testGetAllHostedLocators() throws Exception {
     final InternalDistributedSystem system = getSystem();
     final String dunitLocator = system.getConfig().getLocators();
-    assertNotNull(dunitLocator);
-    assertFalse(dunitLocator.isEmpty());
+    assertThat(dunitLocator).isNotEmpty();
 
     final int[] ports = getRandomAvailableTCPPorts(4);
 
     final String uniqueName = getUniqueLocatorName();
-    for (int i = 0; i < 4; i++) {
-      final int whichvm = i;
-      getHost(0).getVM(whichvm).invoke(new SerializableCallable() {
-        @Override
-        public Object call() throws Exception {
-          final String name = uniqueName + "-" + whichvm;
-          final File subdir = new File(name);
-          if (subdir.exists()) {
-            FileUtils.deleteRecursively(subdir);
-          }
-          subdir.mkdir();
-          assertTrue(subdir.exists() && subdir.isDirectory());
-
-          final Builder builder = new Builder().setMemberName(name).setPort(ports[whichvm])
-              .set(LOCATORS, dunitLocator)
-              .setRedirectOutput(true).setWorkingDirectory(name);
-
-          launcher = builder.build();
-          assertEquals(Status.ONLINE, launcher.start().getStatus());
-          waitForLocatorToStart(launcher, TIMEOUT_MILLISECONDS, 10, true);
-          return null;
-        }
-      });
+    for (int whichVm = 0; whichVm < 4; whichVm++) {
+      getHost(0).getVM(whichVm)
+          .invoke(new LocatorStarter(uniqueName, whichVm, ports, dunitLocator));
     }
 
-    final String host = LocalHostUtil.getLocalHost().getHostAddress();
-
-    final Set<String> locators = new HashSet<>();
-    locators.add(host + "["
-        + dunitLocator.substring(dunitLocator.indexOf("[") + 1, dunitLocator.indexOf("]")) + "]");
-    for (int port : ports) {
-      locators.add(host + "[" + port + "]");
-    }
-
-    // validation within non-locator
-    final ClusterDistributionManager dm =
-        (ClusterDistributionManager) system.getDistributionManager();
-
-    final Set<InternalDistributedMember> locatorIds = dm.getLocatorDistributionManagerIds();
-    assertEquals(5, locatorIds.size());
-
-    final Map<InternalDistributedMember, Collection<String>> hostedLocators =
-        dm.getAllHostedLocators();
-    assertTrue(!hostedLocators.isEmpty());
-    assertEquals(5, hostedLocators.size());
-
-    for (InternalDistributedMember member : hostedLocators.keySet()) {
-      assertEquals(1, hostedLocators.get(member).size());
-      final String hostedLocator = hostedLocators.get(member).iterator().next();
-      assertTrue(locators + " does not contain " + hostedLocator, locators.contains(hostedLocator));
-    }
-
-    // validate fix for #46324
-    for (int whichvm = 0; whichvm < 4; whichvm++) {
-      getHost(0).getVM(whichvm).invoke(new SerializableRunnable() {
-        @Override
-        public void run() {
-          final ClusterDistributionManager dm =
-              (ClusterDistributionManager) InternalDistributedSystem.getAnyInstance()
-                  .getDistributionManager();
-          final InternalDistributedMember self = dm.getDistributionManagerId();
-
-          final Set<InternalDistributedMember> locatorIds = dm.getLocatorDistributionManagerIds();
-          assertTrue(locatorIds.contains(self));
-
-          final Map<InternalDistributedMember, Collection<String>> hostedLocators =
-              dm.getAllHostedLocators();
-          assertTrue(
-              "hit bug #46324: " + hostedLocators + " is missing "
-                  + InternalLocator.getLocatorStrings() + " for " + self,
-              hostedLocators.containsKey(self));
-        }
-      });
-    }
-
-    // validation with locators
-    for (int whichvm = 0; whichvm < 4; whichvm++) {
-      getHost(0).getVM(whichvm).invoke(new SerializableRunnable() {
-        @Override
-        public void run() {
-          final ClusterDistributionManager dm =
-              (ClusterDistributionManager) InternalDistributedSystem.getAnyInstance()
-                  .getDistributionManager();
-
-          final Set<InternalDistributedMember> locatorIds = dm.getLocatorDistributionManagerIds();
-          assertEquals(5, locatorIds.size());
-
-          final Map<InternalDistributedMember, Collection<String>> hostedLocators =
-              dm.getAllHostedLocators();
-          assertTrue(!hostedLocators.isEmpty());
-          assertEquals(5, hostedLocators.size());
-
-          for (InternalDistributedMember member : hostedLocators.keySet()) {
-            assertEquals(1, hostedLocators.get(member).size());
-            final String hostedLocator = hostedLocators.get(member).iterator().next();
-            assertTrue(locators + " does not contain " + hostedLocator,
-                locators.contains(hostedLocator));
-          }
-        }
-      });
-    }
+    validateLocators(dunitLocator, ports, system);
   }
 
   @Test
   public void testGetAllHostedLocatorsUsingPortZero() throws Exception {
     final InternalDistributedSystem system = getSystem();
     final String dunitLocator = system.getConfig().getLocators();
-    assertNotNull(dunitLocator);
-    assertFalse(dunitLocator.isEmpty());
+    assertThat(dunitLocator).isNotEmpty();
 
     // This will eventually contain the ports used by locators
     final int[] ports = new int[] {0, 0, 0, 0};
 
     final String uniqueName = getUniqueLocatorName();
-    for (int i = 0; i < 4; i++) {
-      final int whichvm = i;
-      Integer port = (Integer) Host.getHost(0).getVM(whichvm).invoke(new SerializableCallable() {
-        @Override
-        public Object call() throws Exception {
-          final String name = uniqueName + "-" + whichvm;
-          final File subdir = new File(name);
-          if (subdir.exists()) {
-            FileUtils.deleteRecursively(subdir);
-          }
-          subdir.mkdir();
-          assertTrue(subdir.exists() && subdir.isDirectory());
-
-          final Builder builder = new Builder().setMemberName(name).setPort(ports[whichvm])
-              .set(LOCATORS, dunitLocator)
-              .setRedirectOutput(true).setWorkingDirectory(name);
-
-          launcher = builder.build();
-          assertEquals(Status.ONLINE, launcher.start().getStatus());
-          waitForLocatorToStart(launcher, TIMEOUT_MILLISECONDS, 10, true);
-          return launcher.getPort();
-        }
-      });
-      ports[i] = port;
+    for (int whichVm = 0; whichVm < 4; whichVm++) {
+      ports[whichVm] = (Integer) getHost(0).getVM(whichVm).invoke(
+          new LocatorStarter(uniqueName, whichVm, ports, dunitLocator));
     }
 
+    validateLocators(dunitLocator, ports, system);
+  }
+
+  private void validateLocators(final String dunitLocator, final int[] ports,
+      final InternalDistributedSystem system) throws UnknownHostException {
     final String host = LocalHostUtil.getLocalHost().getHostAddress();
 
     final Set<String> locators = new HashSet<>();
@@ -240,23 +121,10 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
     final ClusterDistributionManager dm =
         (ClusterDistributionManager) system.getDistributionManager();
 
-    final Set<InternalDistributedMember> locatorIds = dm.getLocatorDistributionManagerIds();
-    assertEquals(5, locatorIds.size());
+    validateWithLocators(dm, locators);
 
-    final Map<InternalDistributedMember, Collection<String>> hostedLocators =
-        dm.getAllHostedLocators();
-    assertTrue(!hostedLocators.isEmpty());
-    assertEquals(5, hostedLocators.size());
-
-    for (InternalDistributedMember member : hostedLocators.keySet()) {
-      assertEquals(1, hostedLocators.get(member).size());
-      final String hostedLocator = hostedLocators.get(member).iterator().next();
-      assertTrue(locators + " does not contain " + hostedLocator, locators.contains(hostedLocator));
-    }
-
-    // validate fix for #46324
-    for (int whichvm = 0; whichvm < 4; whichvm++) {
-      Host.getHost(0).getVM(whichvm).invoke(new SerializableRunnable() {
+    for (int whichVm = 0; whichVm < 4; whichVm++) {
+      getHost(0).getVM(whichVm).invoke(new SerializableRunnable() {
         @Override
         public void run() {
           final ClusterDistributionManager dm =
@@ -265,48 +133,47 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
           final InternalDistributedMember self = dm.getDistributionManagerId();
 
           final Set<InternalDistributedMember> locatorIds = dm.getLocatorDistributionManagerIds();
-          assertTrue(locatorIds.contains(self));
+          assertThat(locatorIds).contains(self);
 
           final Map<InternalDistributedMember, Collection<String>> hostedLocators =
               dm.getAllHostedLocators();
-          assertTrue(
-              "hit bug #46324: " + hostedLocators + " is missing "
-                  + InternalLocator.getLocatorStrings() + " for " + self,
-              hostedLocators.containsKey(self));
+          assertThat(hostedLocators).containsKey(self);
         }
       });
     }
 
-    // validation with locators
-    for (int whichvm = 0; whichvm < 4; whichvm++) {
-      Host.getHost(0).getVM(whichvm).invoke(new SerializableRunnable() {
+    for (int whichVm = 0; whichVm < 4; whichVm++) {
+      getHost(0).getVM(whichVm).invoke(new SerializableRunnable() {
         @Override
         public void run() {
-          final ClusterDistributionManager dm =
+          final ClusterDistributionManager dm1 =
               (ClusterDistributionManager) InternalDistributedSystem.getAnyInstance()
                   .getDistributionManager();
 
-          final Set<InternalDistributedMember> locatorIds = dm.getLocatorDistributionManagerIds();
-          assertEquals(5, locatorIds.size());
-
-          final Map<InternalDistributedMember, Collection<String>> hostedLocators =
-              dm.getAllHostedLocators();
-          assertTrue(!hostedLocators.isEmpty());
-          assertEquals(5, hostedLocators.size());
-
-          for (InternalDistributedMember member : hostedLocators.keySet()) {
-            assertEquals(1, hostedLocators.get(member).size());
-            final String hostedLocator = hostedLocators.get(member).iterator().next();
-            assertTrue(locators + " does not contain " + hostedLocator,
-                locators.contains(hostedLocator));
-          }
+          validateWithLocators(dm1, locators);
         }
       });
     }
   }
 
-  protected void waitForLocatorToStart(final LocatorLauncher launcher, int timeout, int interval,
-      boolean throwOnTimeout) throws Exception {
+  private void validateWithLocators(final ClusterDistributionManager dm,
+      final Set<String> locators) {
+    final Set<InternalDistributedMember> locatorIds = dm.getLocatorDistributionManagerIds();
+    assertThat(locatorIds).hasSize(5);
+
+    final Map<InternalDistributedMember, Collection<String>> hostedLocators =
+        dm.getAllHostedLocators();
+    assertThat(hostedLocators).hasSize(5);
+
+    for (InternalDistributedMember member : hostedLocators.keySet()) {
+      final Collection<String> hostedLocator = hostedLocators.get(member);
+      assertThat(hostedLocator).hasSize(1);
+      assertThat(locators).containsAll(hostedLocator);
+    }
+  }
+
+  private void waitForLocatorToStart(final LocatorLauncher launcher, int timeout, int interval)
+      throws Exception {
     assertEventuallyTrue("waiting for process to start: " + launcher.status(),
         () -> {
           try {
@@ -318,13 +185,48 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
         }, timeout, interval);
   }
 
-  protected static void assertEventuallyTrue(final String message, final Callable<Boolean> callable,
+  private static void assertEventuallyTrue(final String message, final Callable<Boolean> callable,
       final int timeout, final int interval) throws Exception {
     boolean done = false;
     for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < timeout; done =
         (callable.call())) {
       Thread.sleep(interval);
     }
-    assertTrue(message, done);
+    assertThat(done).as(message).isTrue();
+  }
+
+  private class LocatorStarter extends SerializableCallable<Object> {
+    private final String uniqueName;
+    private final int whichVm;
+    private final int[] ports;
+    private final String dunitLocator;
+
+    public LocatorStarter(final String uniqueName, final int whichVm, final int[] ports,
+        final String dunitLocator) {
+      this.uniqueName = uniqueName;
+      this.whichVm = whichVm;
+      this.ports = ports;
+      this.dunitLocator = dunitLocator;
+    }
+
+    @Override
+    public Object call() throws Exception {
+      final String name = uniqueName + "-" + whichVm;
+      final File directory = new File(name);
+      if (directory.exists()) {
+        FileUtils.deleteRecursively(directory);
+      }
+      directory.mkdir();
+      assertThat(directory).exists().isDirectory();
+
+      final Builder builder = new Builder().setMemberName(name).setPort(ports[whichVm])
+          .set(LOCATORS, dunitLocator)
+          .setRedirectOutput(true).setWorkingDirectory(name);
+
+      launcher = builder.build();
+      assertThat(launcher.start().getStatus()).isSameAs(Status.ONLINE);
+      waitForLocatorToStart(launcher, TIMEOUT_MILLISECONDS, 10);
+      return launcher.getPort();
+    }
   }
 }

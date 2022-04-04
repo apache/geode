@@ -294,7 +294,7 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
   protected String checkStartLocator(String value) {
     if (value != null && value.trim().length() > 0) {
       // throws IllegalArgumentException if string is malformed
-      new DistributionLocatorId(value);
+      DistributionLocatorId.unmarshal(value);
     }
     return value;
   }

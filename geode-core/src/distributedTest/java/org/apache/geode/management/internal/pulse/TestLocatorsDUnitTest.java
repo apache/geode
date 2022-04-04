@@ -65,7 +65,7 @@ public class TestLocatorsDUnitTest extends ManagementTestBase {
   }
 
   @Test
-  public void testLocatorsDUnitTest() throws Exception {
+  public void testLocatorsDUnitTest() {
     initManagement(false);
     int locatorCount =
         ((Number) managingNode.invoke(TestLocatorsDUnitTest::getNumOfLocatorFromMBean))
@@ -74,13 +74,4 @@ public class TestLocatorsDUnitTest extends ManagementTestBase {
     assertEquals(1, locatorCount);
 
   }
-
-  public void verifyStatistics() {
-
-  }
-
-  public void invokeOperations() {
-
-  }
-
 }

@@ -31,7 +31,6 @@ import java.util.concurrent.ConcurrentMap;
 import org.junit.jupiter.api.Test;
 
 import org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListener;
-import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.inet.LocalHostUtil;
@@ -48,7 +47,7 @@ class LocatorHelperTest {
 
   @Test
   void addServerLocatorDoesNotAddSameLocatorWithSameDistributedSystemId() {
-    final DistributionLocatorId locator = new DistributionLocatorId("localhost[1234]");
+    final DistributionLocatorId locator = DistributionLocatorId.unmarshal("localhost[1234]");
 
     addServerLocator(1, locatorMembershipListener, locator);
     assertThat(locators).containsExactly(entry(1, singleton("localhost[1234]")));
@@ -59,8 +58,8 @@ class LocatorHelperTest {
 
   @Test
   void addServerLocatorDoesNotAddEqualLocatorWithSameDistributedSystemId() {
-    final DistributionLocatorId locator1 = new DistributionLocatorId("localhost[1234]");
-    final DistributionLocatorId locator2 = new DistributionLocatorId("localhost[1234]");
+    final DistributionLocatorId locator1 = DistributionLocatorId.unmarshal("localhost[1234]");
+    final DistributionLocatorId locator2 = DistributionLocatorId.unmarshal("localhost[1234]");
 
     addServerLocator(1, locatorMembershipListener, locator1);
     assertThat(locators).containsExactly(entry(1, singleton("localhost[1234]")));
@@ -71,8 +70,8 @@ class LocatorHelperTest {
 
   @Test
   void addServerLocatorAddsUniqueLocatorWithSameDistributedSystemId() {
-    final DistributionLocatorId locator1 = new DistributionLocatorId("localhost[1234]");
-    final DistributionLocatorId locator2 = new DistributionLocatorId("localhost[1235]");
+    final DistributionLocatorId locator1 = DistributionLocatorId.unmarshal("localhost[1234]");
+    final DistributionLocatorId locator2 = DistributionLocatorId.unmarshal("localhost[1235]");
 
     addServerLocator(1, locatorMembershipListener, locator1);
     addServerLocator(1, locatorMembershipListener, locator2);
@@ -83,8 +82,8 @@ class LocatorHelperTest {
 
   @Test
   void addServerLocatorDoesNotAddsLocatorWithDifferentDistributedSystemId() {
-    final DistributionLocatorId locator1 = new DistributionLocatorId("localhost[1234]");
-    final DistributionLocatorId locator2 = new DistributionLocatorId("localhost[1235]");
+    final DistributionLocatorId locator1 = DistributionLocatorId.unmarshal("localhost[1234]");
+    final DistributionLocatorId locator2 = DistributionLocatorId.unmarshal("localhost[1235]");
 
     addServerLocator(1, locatorMembershipListener, locator1);
     addServerLocator(2, locatorMembershipListener, locator2);
@@ -98,7 +97,7 @@ class LocatorHelperTest {
   void addServerLocatorUsesHostnameForClients() {
     final DistributionLocatorId locator =
         new DistributionLocatorId(1234, "bind-address.example.com",
-            "hostname-for-clients.example.com");
+            "hostname-for-clients.example.com", null);
 
     addServerLocator(1, locatorMembershipListener, locator);
     assertThat(locators)
@@ -108,7 +107,7 @@ class LocatorHelperTest {
   @Test
   void addServerLocatorUsesBindAddress() {
     final DistributionLocatorId locator =
-        new DistributionLocatorId(1234, "bind-address.example.com");
+        new DistributionLocatorId(1234, "bind-address.example.com", null, null);
 
     addServerLocator(1, locatorMembershipListener, locator);
     assertThat(locators).containsExactly(entry(1, singleton("bind-address.example.com[1234]")));
@@ -119,7 +118,7 @@ class LocatorHelperTest {
       throws UnknownHostException {
     final InetAddress localHost = LocalHostUtil.getLocalHost();
 
-    final Locator locator = mock(InternalLocator.class);
+    final InternalLocator locator = mock(InternalLocator.class);
     when(locator.getPort()).thenReturn(1234);
 
     final DistributionLocatorId locatorId = new DistributionLocatorId(localHost, locator);

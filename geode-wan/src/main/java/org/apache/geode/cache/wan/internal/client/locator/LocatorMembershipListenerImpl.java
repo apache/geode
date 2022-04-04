@@ -161,7 +161,7 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
       localLocatorId =
           new DistributionLocatorId(port, config.getBindAddress(), null, memberName);
     } else {
-      localLocatorId = new DistributionLocatorId(localLocator, memberName);
+      localLocatorId = DistributionLocatorId.unmarshal(localLocator, memberName);
     }
 
     // Make a local copy of the current list of known locators.

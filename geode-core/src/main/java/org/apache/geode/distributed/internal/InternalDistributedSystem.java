@@ -874,9 +874,7 @@ public class InternalDistributedSystem extends DistributedSystem
       throws InterruptedException {
 
     final String locatorString = originalConfig.getStartLocator();
-    final boolean shouldStartLocator = locatorString.length() > 0;
-
-    if (!shouldStartLocator) {
+    if (locatorString.isEmpty()) {
       membershipLocator = membershipLocatorArg;
       return;
     }
@@ -893,7 +891,7 @@ public class InternalDistributedSystem extends DistributedSystem
         logger.info("Quorum check passed - allowing location services to start early");
       }
     }
-    DistributionLocatorId locId = new DistributionLocatorId(locatorString);
+    DistributionLocatorId locId = DistributionLocatorId.unmarshal(locatorString);
     try {
       startedLocator =
           InternalLocator.createLocator(locId.getPort(), NullLoggingSession.create(), null,
@@ -1755,7 +1753,7 @@ public class InternalDistributedSystem extends DistributedSystem
     while (st.hasMoreTokens()) {
       String l = st.nextToken();
       StringBuilder canonical = new StringBuilder();
-      DistributionLocatorId locId = new DistributionLocatorId(l);
+      DistributionLocatorId locId = DistributionLocatorId.unmarshal(l);
       String addr = locId.getBindAddress();
       if (addr != null && addr.trim().length() > 0) {
         canonical.append(addr);

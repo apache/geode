@@ -279,6 +279,7 @@ public abstract class Locator {
    *
    * @deprecated as of 7.0 use {@link #getLocator} instead
    */
+  @Deprecated
   public static List<Locator> getLocators() {
     Locator result = getLocator();
     if (result == null) {

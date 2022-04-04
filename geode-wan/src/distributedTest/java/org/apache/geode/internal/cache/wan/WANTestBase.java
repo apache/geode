@@ -3236,7 +3236,7 @@ public class WANTestBase extends DistributedTestCase {
       for (Map.Entry<Integer, Set<String>> entry : dsVsPort.entrySet()) {
         Set<DistributionLocatorId> locators = allSiteMetaData.get(entry.getKey());
         for (String locatorInMetaData : entry.getValue()) {
-          DistributionLocatorId locatorId = new DistributionLocatorId(locatorInMetaData);
+          DistributionLocatorId locatorId = DistributionLocatorId.unmarshal(locatorInMetaData);
           if (!locators.contains(locatorId)) {
             completeFlag = false;
             break;

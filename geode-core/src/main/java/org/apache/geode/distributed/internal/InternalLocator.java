@@ -14,12 +14,12 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static java.util.Collections.singleton;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.internal.admin.remote.DistributionLocatorId.asDistributionLocatorIds;
 import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 
 import java.io.File;
@@ -44,6 +44,7 @@ import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.GemFireConfigException;
@@ -214,7 +215,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   // restart at a time
   private final Object servicesRestartLock = new Object();
 
-  public static InternalLocator getLocator() {
+  public static @Nullable InternalLocator getLocator() {
     synchronized (locatorLock) {
       return locator;
     }
@@ -1342,20 +1343,18 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    * Returns collection of locator strings representing every locator instance hosted by this
    * member.
    *
-   * @see #getLocators()
+   * @see #getLocator()
    */
-  public static Collection<String> getLocatorStrings() {
-    Collection<String> locatorStrings;
+  public static @Nullable Collection<String> getLocatorStrings() {
     try {
-      Collection<DistributionLocatorId> locatorIds = asDistributionLocatorIds(getLocators());
-      locatorStrings = DistributionLocatorId.asStrings(locatorIds);
+      final InternalLocator locator = getLocator();
+      if (null != locator) {
+        return singleton(
+            new DistributionLocatorId(LocalHostUtil.getLocalHost(), locator).marshal());
+      }
     } catch (UnknownHostException ignored) {
-      locatorStrings = null;
     }
-    if (locatorStrings == null || locatorStrings.isEmpty()) {
-      return null;
-    }
-    return locatorStrings;
+    return null;
   }
 
   private void startConfigurationPersistenceService() throws IOException {
