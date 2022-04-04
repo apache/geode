@@ -422,7 +422,7 @@ public class QueueManagerImpl implements QueueManager {
   private void initializeConnections() {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
-      logger.debug("SubscriptionManager - intitializing connections");
+      logger.debug("SubscriptionManager - initializing connections");
     }
 
     int queuesNeeded = redundancyLevel == -1 ? -1 : redundancyLevel + 1;
@@ -1048,7 +1048,7 @@ public class QueueManagerImpl implements QueueManager {
           }
         }
 
-        redundancySatisfierTask = new RedundancySatisfierTask(this);
+        redundancySatisfierTask = new RedundancySatisfierTask();
         try {
           ScheduledFuture<?> future =
               recoveryThread.schedule(redundancySatisfierTask, delay, TimeUnit.MILLISECONDS);
@@ -1424,11 +1424,6 @@ public class QueueManagerImpl implements QueueManager {
   protected class RedundancySatisfierTask extends PoolTask {
     private boolean isCancelled;
     private ScheduledFuture<?> future;
-    private QueueManagerImpl queueManager;
-
-    public RedundancySatisfierTask(QueueManagerImpl impl) {
-      queueManager = impl;
-    }
 
     public void setFuture(ScheduledFuture<?> future) {
       this.future = future;
@@ -1454,7 +1449,7 @@ public class QueueManagerImpl implements QueueManager {
             return;
           }
         }
-        Set<ServerLocation> excludedServers = queueManager.queueConnections.getAllLocations();
+        Set<ServerLocation> excludedServers = queueConnections.getAllLocations();
         excludedServers.addAll(denyList.getBadServers());
         excludedServers.addAll(factory.getDenyList().getBadServers());
         recoverPrimary(excludedServers);
@@ -1475,12 +1470,10 @@ public class QueueManagerImpl implements QueueManager {
         SystemFailure.checkFailure();
         synchronized (lock) {
           if (t instanceof GemFireSecurityException) {
-            queueManager.queueConnections =
-                queueManager.queueConnections
-                    .setPrimaryDiscoveryFailed((GemFireSecurityException) t);
+            queueConnections = queueConnections
+                .setPrimaryDiscoveryFailed((GemFireSecurityException) t);
           } else {
-            queueManager.queueConnections =
-                queueManager.queueConnections.setPrimaryDiscoveryFailed(null);
+            queueConnections = queueConnections.setPrimaryDiscoveryFailed(null);
           }
           lock.notifyAll();
           pool.getCancelCriterion().checkCancelInProgress(t);
