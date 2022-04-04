@@ -44,6 +44,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -190,9 +191,6 @@ public class Oplog implements CompactableOplog, Flushable {
    * The number of records in this oplog that contain the most recent value of the entry.
    */
   private final AtomicLong totalLiveCount = new AtomicLong(0);
-
-  private final ConcurrentMap<Long, DiskRegionInfo> regionMap =
-      new ConcurrentHashMap<>();
 
   /**
    * Set to true once compact is called on this oplog.
@@ -530,6 +528,11 @@ public class Oplog implements CompactableOplog, Flushable {
   private boolean doneAppending = false;
 
   /**
+   * Used to track all information's about live entries that region has in this oplog.
+   */
+  private final RegionMap regionMap = new RegionMap();
+
+  /**
    * Creates new {@code Oplog} for the given region.
    *
    * @param oplogId int identifying the new oplog
@@ -811,7 +814,7 @@ public class Oplog implements CompactableOplog, Flushable {
    * Return true if this oplog has a drf but does not have a crf
    */
   boolean isDrfOnly() {
-    return drf.f != null && crf.f == null;
+    return drf.f != null && (crf.f == null || !crf.f.exists());
   }
 
   /**
@@ -1302,17 +1305,19 @@ public class Oplog implements CompactableOplog, Flushable {
     // while a krf is being created can not close a region
     lockCompactor();
     try {
-      DiskRegionInfo dri = getDRI(dr);
-      if (dri != null) {
-        long clearCount = dri.clear(null);
-        if (clearCount != 0) {
-          totalLiveCount.addAndGet(-clearCount);
-          // no need to call handleNoLiveValues because we now have an
-          // unrecovered region.
+      if (!isDrfOnly()) {
+        DiskRegionInfo dri = getDRI(dr);
+        if (dri != null) {
+          long clearCount = dri.clear(null);
+          if (clearCount != 0) {
+            totalLiveCount.addAndGet(-clearCount);
+            // no need to call handleNoLiveValues because we now have an
+            // unrecovered region.
+          }
+          regionMap.get().remove(dr.getId(), dri);
         }
-        regionMap.remove(dr.getId(), dri);
+        addUnrecoveredRegion(dr.getId());
       }
-      addUnrecoveredRegion(dr.getId());
     } finally {
       unlockCompactor();
     }
@@ -1341,7 +1346,7 @@ public class Oplog implements CompactableOplog, Flushable {
           handleNoLiveValues();
         }
       }
-      regionMap.remove(dr.getId(), dri);
+      regionMap.get().remove(dr.getId(), dri);
     }
   }
 
@@ -4010,7 +4015,7 @@ public class Oplog implements CompactableOplog, Flushable {
             return;
           }
 
-          Collection<DiskRegionInfo> regions = regionMap.values();
+          Collection<DiskRegionInfo> regions = regionMap.get().values();
           List<KRFEntry> sortedLiveEntries = getSortedLiveEntries(regions);
           if (sortedLiveEntries == null) {
             // no need to create a krf if there are no live entries.
@@ -4670,7 +4675,7 @@ public class Oplog implements CompactableOplog, Flushable {
   }
 
   private DiskRegionInfo getDRI(long drId) {
-    return regionMap.get(drId);
+    return regionMap.get().get(drId);
   }
 
   private DiskRegionInfo getDRI(DiskRegionView dr) {
@@ -4683,7 +4688,7 @@ public class Oplog implements CompactableOplog, Flushable {
       dri = (isCompactionPossible() || couldHaveKrf())
           ? new DiskRegionInfoWithList(dr, couldHaveKrf(), krfCreated.get())
           : new DiskRegionInfoNoList(dr);
-      DiskRegionInfo oldDri = regionMap.putIfAbsent(dr.getId(), dri);
+      DiskRegionInfo oldDri = regionMap.get().putIfAbsent(dr.getId(), dri);
       if (oldDri != null) {
         dri = oldDri;
       }
@@ -4708,7 +4713,7 @@ public class Oplog implements CompactableOplog, Flushable {
       dri = (isCompactionPossible() || couldHaveKrf())
           ? new DiskRegionInfoWithList(null, couldHaveKrf(), krfCreated.get())
           : new DiskRegionInfoNoList(null);
-      DiskRegionInfo oldDri = regionMap.putIfAbsent(drId, dri);
+      DiskRegionInfo oldDri = regionMap.get().putIfAbsent(drId, dri);
       if (oldDri != null) {
         dri = oldDri;
       }
@@ -5714,6 +5719,7 @@ public class Oplog implements CompactableOplog, Flushable {
       cancelKrf();
       close();
       deleteFiles(getHasDeletes());
+      regionMap.close();
     } finally {
       unlockCompactor();
     }
@@ -5861,7 +5867,7 @@ public class Oplog implements CompactableOplog, Flushable {
                                  * getParent().getOwner().isDestroyed ||
                                  */!compactor.keepCompactorRunning();
         int totalCount = 0;
-        for (DiskRegionInfo dri : regionMap.values()) {
+        for (DiskRegionInfo dri : regionMap.get().values()) {
           final DiskRegionView dr = dri.getDiskRegion();
           if (dr == null) {
             continue;
@@ -5976,7 +5982,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
     List<KRFEntry> sortedLiveEntries;
 
-    HashMap<Long, DiskRegionInfo> targetRegions = new HashMap<>(regionMap);
+    HashMap<Long, DiskRegionInfo> targetRegions = new HashMap<>(regionMap.get());
     synchronized (diskRecoveryStores) {
       diskRecoveryStores.values()
           .removeIf(store -> isLruValueRecoveryDisabled(store) || store.lruLimitExceeded());
@@ -6269,6 +6275,10 @@ public class Oplog implements CompactableOplog, Flushable {
 
     // version changed so return that for VersionedDataStream
     return version;
+  }
+
+  public int getRegionMapSize() {
+    return regionMap.get().size();
   }
 
   public enum OPLOG_TYPE {
@@ -7642,4 +7652,23 @@ public class Oplog implements CompactableOplog, Flushable {
 
   }
 
+  /**
+   * Used to track all information's about live entries that region has in this oplog.
+   * That information is only needed until oplog is compacted. This is because compaction will
+   * clear all live entries from this oplog.
+   */
+  private static class RegionMap {
+
+    final AtomicReference<ConcurrentMap<Long, DiskRegionInfo>> regionMap =
+        new AtomicReference<>(new ConcurrentHashMap<>());
+
+    public void close() {
+      regionMap.set(null);
+    }
+
+    public ConcurrentMap<Long, DiskRegionInfo> get() {
+      ConcurrentMap<Long, DiskRegionInfo> regionConcurrentMap = regionMap.get();
+      return regionConcurrentMap != null ? regionConcurrentMap : new ConcurrentHashMap<>();
+    }
+  }
 }
