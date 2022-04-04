@@ -39,10 +39,10 @@ public class LInsertExecutor implements CommandExecutor {
     boolean before;
     byte[] referenceElement = commandElements.get(3);
     byte[] elementToInsert = commandElements.get(4);
-
-    if (Arrays.equals(direction, BEFORE)) {
+    String directionInUppercase = new String(direction).toUpperCase();
+    if (Arrays.equals(directionInUppercase.getBytes(), BEFORE)) {
       before = true;
-    } else if (Arrays.equals(direction, AFTER)) {
+    } else if (Arrays.equals(directionInUppercase.getBytes(), AFTER)) {
       before = false;
     } else {
       return RedisResponse.error(RedisConstants.ERROR_SYNTAX);

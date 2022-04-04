@@ -1362,13 +1362,13 @@ index b5bd48cb0..5b9a529c7 100644
                      r linsert key $where $otherele $ele
                  }
 diff --git a/tests/unit/type/list.tcl b/tests/unit/type/list.tcl
-index 1557082a2..5395920c7 100644
+index 1557082a2..3d6a3ace4 100644
 --- a/tests/unit/type/list.tcl
 +++ b/tests/unit/type/list.tcl
 @@ -85,130 +85,130 @@ start_server {
          assert_encoding quicklist $key
      }
- 
+
 -    foreach {type large} [array get largevalue] {
 -        test "BLPOP, BRPOP: single existing list - $type" {
 -            set rd [redis_deferring_client]
@@ -1551,12 +1551,12 @@ index 1557082a2..5395920c7 100644
 +  #      r lpush list b
 +  #      $rd read
 +  #  } {list b}
- 
+
      test "BLPOP with same key multiple times should work (issue #801)" {
          set rd [redis_deferring_client]
 -        r del list1 list2
 +        r del "{tag}list1" "{tag}list2"
- 
+
          # Data arriving after the BLPOP.
 -        $rd blpop list1 list2 list2 list1 0
 -        r lpush list1 a
@@ -1570,7 +1570,7 @@ index 1557082a2..5395920c7 100644
 +        $rd blpop "{tag}list1" "{tag}list2" "{tag}list2" "{tag}list1" 0
 +        r lpush "{tag}list2" b
 +        assert_equal [$rd read] {{{tag}list2} b}
- 
+
          # Data already there.
 -        r lpush list1 a
 -        r lpush list2 b
@@ -1610,13 +1610,13 @@ index 1557082a2..5395920c7 100644
 +  #      r exec
 +  #      $rd read
 +  #  } {list c}
- 
+
      test "BLPOP with variadic LPUSH" {
          set rd [redis_deferring_client]
 @@ -222,203 +222,204 @@ start_server {
          assert_equal foo [lindex [r lrange blist 0 -1] 0]
      }
- 
+
 -    test "BRPOPLPUSH with zero timeout should block indefinitely" {
 -        set rd [redis_deferring_client]
 -        r del blist target
@@ -2018,7 +2018,7 @@ index 1557082a2..5395920c7 100644
 @@ -434,11 +435,11 @@ start_server {
              assert_error "ERR*is negative*" {$rd read}
          }
- 
+
 -        test "$pop: with non-integer timeout" {
 -            set rd [redis_deferring_client]
 -            $rd $pop blist1 1.1
@@ -2029,11 +2029,11 @@ index 1557082a2..5395920c7 100644
 +    #        $rd $pop blist1 1.1
 +    #        assert_error "ERR*not an integer*" {$rd read}
 +    #    }
- 
+
          test "$pop: with zero timeout should block indefinitely" {
              # To test this, use a timeout of 0 and wait a second.
-@@ -452,83 +453,84 @@ start_server {
- 
+@@ -452,65 +453,66 @@ start_server {
+
          test "$pop: second argument is not a list" {
              set rd [redis_deferring_client]
 -            r del blist1 blist2
@@ -2044,7 +2044,7 @@ index 1557082a2..5395920c7 100644
 +            $rd $pop "{tag}blist1" "{tag}blist2" 1
              assert_error "WRONGTYPE*" {$rd read}
          }
- 
+
          test "$pop: timeout" {
              set rd [redis_deferring_client]
 -            r del blist1 blist2
@@ -2053,7 +2053,7 @@ index 1557082a2..5395920c7 100644
 +            $rd $pop "{tag}blist1" "{tag}blist2" 1
              assert_equal {} [$rd read]
          }
- 
+
          test "$pop: arguments are empty" {
              set rd [redis_deferring_client]
 -            r del blist1 blist2
@@ -2124,7 +2124,7 @@ index 1557082a2..5395920c7 100644
 +  #      assert_equal 0 [r rpushx xlist a]
 +  #      assert_equal 0 [r llen xlist]
 +  #  }
- 
+
      foreach {type large} [array get largevalue] {
 -        test "LPUSHX, RPUSHX - $type" {
 -            create_list xlist "$large c"
@@ -2133,24 +2133,6 @@ index 1557082a2..5395920c7 100644
 -            assert_equal 6 [r rpushx xlist 42 x]
 -            assert_equal 9 [r lpushx xlist y3 y2 y1]
 -            assert_equal "y1 y2 y3 a $large c d 42 x" [r lrange xlist 0 -1]
--        }
--
--        test "LINSERT - $type" {
--            create_list xlist "a $large c d"
--            assert_equal 5 [r linsert xlist before c zz] "before c"
--            assert_equal "a $large zz c d" [r lrange xlist 0 10] "lrangeA"
--            assert_equal 6 [r linsert xlist after c yy] "after c"
--            assert_equal "a $large zz c yy d" [r lrange xlist 0 10] "lrangeB"
--            assert_equal 7 [r linsert xlist after d dd] "after d"
--            assert_equal -1 [r linsert xlist after bad ddd] "after bad"
--            assert_equal "a $large zz c yy d dd" [r lrange xlist 0 10] "lrangeC"
--            assert_equal 8 [r linsert xlist before a aa] "before a"
--            assert_equal -1 [r linsert xlist before bad aaa] "before bad"
--            assert_equal "aa a $large zz c yy d dd" [r lrange xlist 0 10] "lrangeD"
--
--            # check inserting integer encoded value
--            assert_equal 9 [r linsert xlist before aa 42] "before aa"
--            assert_equal 42 [r lrange xlist 0 0] "lrangeE"
 -        }
 +     #   test "LPUSHX, RPUSHX - $type" {
 +     #       create_list xlist "$large c"
@@ -2161,27 +2143,9 @@ index 1557082a2..5395920c7 100644
 +     #       assert_equal "y1 y2 y3 a $large c d 42 x" [r lrange xlist 0 -1]
 +     #   }
 +
-+     # TODO: enable when GEODE-10198 is fixed
-+     #   test "LINSERT - $type" {
-+     #       create_list xlist "a $large c d"
-+     #       assert_equal 5 [r linsert xlist before c zz] "before c"
-+     #       assert_equal "a $large zz c d" [r lrange xlist 0 10] "lrangeA"
-+     #       assert_equal 6 [r linsert xlist after c yy] "after c"
-+     #       assert_equal "a $large zz c yy d" [r lrange xlist 0 10] "lrangeB"
-+     #       assert_equal 7 [r linsert xlist after d dd] "after d"
-+     #       assert_equal -1 [r linsert xlist after bad ddd] "after bad"
-+     #       assert_equal "a $large zz c yy d dd" [r lrange xlist 0 10] "lrangeC"
-+     #       assert_equal 8 [r linsert xlist before a aa] "before a"
-+     #       assert_equal -1 [r linsert xlist before bad aaa] "before bad"
-+     #       assert_equal "aa a $large zz c yy d dd" [r lrange xlist 0 10] "lrangeD"
-+     #
-+     #       # check inserting integer encoded value
-+     #       assert_equal 9 [r linsert xlist before aa 42] "before aa"
-+     #       assert_equal 42 [r lrange xlist 0 0] "lrangeE"
-+     #   }
-     }
- 
-     test {LINSERT raise error on bad syntax} {
+
+         test "LINSERT - $type" {
+             create_list xlist "a $large c d"
 @@ -568,12 +570,12 @@ start_server {
              check_random_access_consistency mylist
          }
