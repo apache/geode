@@ -25,6 +25,7 @@ import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -516,24 +517,20 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
       StatisticsType VMStatsType = getSystem().findType("VMStats");
       Statistics vmStats = getSystem().findStatisticsByType(VMStatsType)[0];
 
-      try {
-        vmStats.get("pendingFinalization");
-        vmStats.get("loadedClasses");
-        vmStats.get("unloadedClasses");
-        vmStats.get("daemonThreads");
-        vmStats.get("peakThreads");
-        vmStats.get("threads");
-        vmStats.get("threadStarts");
-        vmStats.get("cpus");
-        vmStats.get("freeMemory");
-        vmStats.get("totalMemory");
-        vmStats.get("maxMemory");
-        vmStats.get("processCpuTime");
-        vmStats.get("fdsOpen");
-        vmStats.get("fdLimit");
-      } catch (IllegalArgumentException e) {
-        fail("Stats do not exist: " + e.getMessage());
-      }
+      assertThatNoException().isThrownBy(() -> vmStats.get("pendingFinalization"));
+      assertThatNoException().isThrownBy(() -> vmStats.get("loadedClasses"));
+      assertThatNoException().isThrownBy(() -> vmStats.get("unloadedClasses"));
+      assertThatNoException().isThrownBy(() -> vmStats.get("daemonThreads"));
+      assertThatNoException().isThrownBy(() -> vmStats.get("peakThreads"));
+      assertThatNoException().isThrownBy(() -> vmStats.get("threads"));
+      assertThatNoException().isThrownBy(() -> vmStats.get("threadStarts"));
+      assertThatNoException().isThrownBy(() -> vmStats.get("cpus"));
+      assertThatNoException().isThrownBy(() -> vmStats.get("freeMemory"));
+      assertThatNoException().isThrownBy(() -> vmStats.get("totalMemory"));
+      assertThatNoException().isThrownBy(() -> vmStats.get("maxMemory"));
+      assertThatNoException().isThrownBy(() -> vmStats.get("processCpuTime"));
+      assertThatNoException().isThrownBy(() -> vmStats.get("fdsOpen"));
+      assertThatNoException().isThrownBy(() -> vmStats.get("fdLimit"));
     });
   }
 
