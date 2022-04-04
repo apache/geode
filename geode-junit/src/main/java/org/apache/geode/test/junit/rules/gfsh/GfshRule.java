@@ -18,10 +18,10 @@ import static java.io.File.pathSeparator;
 import static org.apache.geode.internal.process.ProcessType.LOCATOR;
 import static org.apache.geode.internal.process.ProcessType.SERVER;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder.When.ALWAYS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -29,10 +29,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestRule;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.version.VersionManager;
 
 /**
@@ -46,8 +49,10 @@ import org.apache.geode.test.version.VersionManager;
  * this will set the gfsh to be debuggable at port 30002, and the locator started to be debuggable
  * at port 30000, and the server to be debuggable at 30001
  */
-public class GfshRule extends ExternalResource {
-  private TemporaryFolder temporaryFolder = new TemporaryFolder();
+public class GfshRule implements TestRule {
+  private final SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder()
+      .when(ALWAYS)
+      .copyTo(new File("."));
   private List<GfshExecution> gfshExecutions;
   private Path gfsh;
   private String version;
@@ -59,19 +64,32 @@ public class GfshRule extends ExternalResource {
   }
 
   @Override
-  protected void before() throws IOException {
+  public Statement apply(Statement base, Description description) {
+    return new Statement() {
+      @Override
+      public void evaluate() throws Throwable {
+        before(description.getMethodName());
+        try {
+          base.evaluate();
+        } finally {
+          after();
+        }
+      }
+    };
+  }
+
+  protected void before(String methodName) throws Throwable {
     gfsh = findGfsh();
     assertThat(gfsh).exists();
 
     gfshExecutions = Collections.synchronizedList(new ArrayList<>());
-    temporaryFolder.create();
+    temporaryFolder.before(methodName);
   }
 
   /**
    * Attempts to stop any started servers/locators via pid file and tears down any remaining gfsh
    * JVMs.
    */
-  @Override
   protected void after() {
     // Copy the gfshExecutions list because stopMembers will add more executions
     // This would not include the "stopMemberQuietly" executions
@@ -82,7 +100,7 @@ public class GfshRule extends ExternalResource {
     try {
       gfshExecutions.forEach(GfshExecution::killProcess);
     } finally {
-      temporaryFolder.delete();
+      temporaryFolder.after();
     }
   }
 
