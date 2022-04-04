@@ -33,7 +33,7 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
   private int memberOverhead;
 
   /**
-   * @param toRemove element to remove from the list
+   * @param elementToRemove element to remove from the list
    * @param count number of elements that match object o to remove from the list.
    *        Count that is equal to 0 removes all matching elements from the list.
    * @return list of indexes that were removed in order.
@@ -81,6 +81,40 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
       index--;
     }
     return indexesRemoved;
+  }
+
+  public void clearSublist(int fromIndex, int toIndex) {
+    if (fromIndex < size() - toIndex) {
+      clearFromBeginning(fromIndex, toIndex);
+    } else {
+      clearFromEnd(fromIndex, toIndex);
+    }
+  }
+
+  private void clearFromBeginning(int fromIndex, int toIndex) {
+    ListIterator<byte[]> iterator = listIterator(fromIndex);
+    int removeCount = toIndex - fromIndex;
+    int count = 0;
+
+    while (iterator.hasNext() && count < removeCount) {
+      byte[] element = iterator.next();
+      iterator.remove();
+      count++;
+      memberOverhead -= calculateByteArrayOverhead(element);
+    }
+  }
+
+  private void clearFromEnd(int fromIndex, int toIndex) {
+    ListIterator<byte[]> descendingIterator = listIterator(toIndex);
+    int removeCount = toIndex - fromIndex;
+    int count = 0;
+
+    while (descendingIterator.hasPrevious() && count < removeCount) {
+      byte[] element = descendingIterator.previous();
+      descendingIterator.remove();
+      count++;
+      memberOverhead -= calculateByteArrayOverhead(element);
+    }
   }
 
   @Override

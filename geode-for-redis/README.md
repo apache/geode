@@ -183,7 +183,11 @@ Geode for Redis implements a subset of the full Redis command set.
 - INFO <sup>2</sup>  
 - KEYS  
 - LINDEX
+- LLEN
+- LPUSH
+- LPOP
 - LRANGE
+- LTRIM
 - LREM
 - MGET
 - MSET

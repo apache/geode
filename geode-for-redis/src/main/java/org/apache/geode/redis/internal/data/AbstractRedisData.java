@@ -31,6 +31,7 @@ import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_ARRAY_AT_OFFSET;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_ARRAY_DOUBLE_PAIRS;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_AT_OFFSET;
+import static org.apache.geode.redis.internal.data.delta.DeltaType.RETAIN_ELEMENTS_BY_INDEX_RANGE;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.SET_BYTE_ARRAY;
 import static org.apache.geode.redis.internal.data.delta.DeltaType.SET_BYTE_ARRAY_AND_TIMESTAMP;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.RADISH_DUMP_HEADER;
@@ -67,6 +68,7 @@ import org.apache.geode.redis.internal.data.delta.ReplaceByteArrayAtOffset;
 import org.apache.geode.redis.internal.data.delta.ReplaceByteArrayDoublePairs;
 import org.apache.geode.redis.internal.data.delta.ReplaceByteArrays;
 import org.apache.geode.redis.internal.data.delta.ReplaceByteAtOffset;
+import org.apache.geode.redis.internal.data.delta.RetainElementsByIndexRange;
 import org.apache.geode.redis.internal.data.delta.SetByteArray;
 import org.apache.geode.redis.internal.data.delta.SetByteArrayAndTimestamp;
 import org.apache.geode.redis.internal.data.delta.SetTimestamp;
@@ -309,6 +311,9 @@ public abstract class AbstractRedisData implements RedisData {
       case REMOVE_ELEMENTS_BY_INDEX:
         RemoveElementsByIndex.deserializeFrom(in, this);
         break;
+      case RETAIN_ELEMENTS_BY_INDEX_RANGE:
+        RetainElementsByIndexRange.deserializeFrom(in, this);
+        break;
     }
   }
 
@@ -371,6 +376,10 @@ public abstract class AbstractRedisData implements RedisData {
 
   public void applyRemoveElementsByIndex(List<Integer> indexes) {
     throw new IllegalStateException("unexpected " + REMOVE_ELEMENTS_BY_INDEX);
+  }
+
+  public void applyRetainElementsByIndexRange(int start, int end) {
+    throw new IllegalStateException("unexpected " + RETAIN_ELEMENTS_BY_INDEX_RANGE);
   }
 
   @Override

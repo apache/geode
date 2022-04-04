@@ -43,6 +43,7 @@ import org.apache.geode.redis.internal.data.delta.AddByteArraysTail;
 import org.apache.geode.redis.internal.data.delta.InsertByteArray;
 import org.apache.geode.redis.internal.data.delta.RemoveElementsByIndex;
 import org.apache.geode.redis.internal.data.delta.ReplaceByteArrayAtOffset;
+import org.apache.geode.redis.internal.data.delta.RetainElementsByIndexRange;
 import org.apache.geode.redis.internal.eventing.BlockingCommandListener;
 import org.apache.geode.redis.internal.eventing.NotificationEvent;
 import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
@@ -159,7 +160,7 @@ public class RedisList extends AbstractRedisData {
   /**
    * @param context the context of the executing command
    * @param elementsToAdd elements to add to this list
-   * @param key the name of the set to add to
+   * @param key the name of the list to add to
    * @param onlyIfExists if true then the elements should only be added if the key already exists
    *        and holds a list, otherwise no operation is performed.
    * @return the length of the list after the operation
@@ -225,7 +226,7 @@ public class RedisList extends AbstractRedisData {
    *        Negative count starts from the tail and moves to the head.
    * @param element element to remove
    * @param region the region this instance is stored in
-   * @param key the name of the set to add
+   * @param key the name of the list to add
    * @return amount of elements that were actually removed
    */
   public int lrem(int count, byte[] element, Region<RedisKey, RedisData> region, RedisKey key) {
@@ -260,6 +261,56 @@ public class RedisList extends AbstractRedisData {
 
     elementReplace(adjustedIndex, value);
     storeChanges(region, key, new ReplaceByteArrayAtOffset(index, value));
+  }
+
+  /**
+   * @param start the index of the first element to retain
+   * @param end the index of the last element to retain
+   * @param region the region this instance is stored in
+   * @param key the name of the list to pop from
+   */
+  public Void ltrim(int start, int end, Region<RedisKey, RedisData> region,
+      RedisKey key) {
+    int length = elementList.size();
+    int boundedStart = getBoundedStartIndex(start, length);
+    int boundedEnd = getBoundedEndIndex(end, length);
+
+    if (boundedStart > boundedEnd || boundedStart == length) {
+      // Remove everything
+      region.remove(key);
+      return null;
+    }
+
+    if (boundedStart == 0 && boundedEnd == length - 1) {
+      // No-op, return without modifying the list
+      return null;
+    }
+
+    RetainElementsByIndexRange retainElementsByRange;
+    synchronized (this) {
+      elementsRetainByIndexRange(boundedStart, boundedEnd);
+
+      retainElementsByRange =
+          new RetainElementsByIndexRange(incrementAndGetVersion(), boundedStart, boundedEnd);
+    }
+    storeChanges(region, key, retainElementsByRange);
+    return null;
+  }
+
+  private int getBoundedStartIndex(int index, int size) {
+    if (index >= 0L) {
+      return Math.min(index, size);
+    } else {
+      return Math.max(index + size, 0);
+    }
+  }
+
+  private int getBoundedEndIndex(int index, int size) {
+    if (index >= 0L) {
+      return Math.min(index, size - 1);
+    } else {
+      return Math.max(index + size, -1);
+    }
   }
 
   /**
@@ -374,12 +425,16 @@ public class RedisList extends AbstractRedisData {
     elementReplace(offset, newValue);
   }
 
+  @Override
+  public void applyRetainElementsByIndexRange(int start, int end) {
+    elementsRetainByIndexRange(start, end);
+  }
+
   /**
    * Since GII (getInitialImage) can come in and call toData while other threads are modifying this
    * object, the striped executor will not protect toData. So any methods that modify "elements"
    * needs to be thread safe with toData.
    */
-
   @Override
   public synchronized void toData(DataOutput out) throws IOException {
     super.toData(out);
@@ -439,8 +494,24 @@ public class RedisList extends AbstractRedisData {
     }
   }
 
+  public synchronized void elementsRemove(List<Integer> indexList) {
+    for (Integer element : indexList) {
+      elementList.remove(element.intValue());
+    }
+  }
+
   public synchronized void elementReplace(int index, byte[] newValue) {
     elementList.set(index, newValue);
+  }
+
+  public synchronized void elementsRetainByIndexRange(int start, int end) {
+    if (end < elementList.size()) {
+      elementList.clearSublist(end + 1, elementList.size());
+    }
+
+    if (start > 0) {
+      elementList.clearSublist(0, start);
+    }
   }
 
   protected synchronized void elementPushTail(byte[] element) {

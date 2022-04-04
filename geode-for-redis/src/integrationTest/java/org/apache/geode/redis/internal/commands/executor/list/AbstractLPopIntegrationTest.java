@@ -94,7 +94,7 @@ public abstract class AbstractLPopIntegrationTest implements RedisIntegrationTes
 
   @Test
   public void lpop_withConcurrentLPush_returnsCorrectValue() {
-    String[] valuesInitial = new String[] {"un", "deux", "troix"};
+    String[] valuesInitial = new String[] {"un", "deux", "trois"};
     String[] valuesToAdd = new String[] {"plum", "peach", "orange"};
     jedis.lpush(KEY, valuesInitial);
 
@@ -105,7 +105,7 @@ public abstract class AbstractLPopIntegrationTest implements RedisIntegrationTes
             .runWithAction(() -> {
               assertThat(lpopReference).satisfiesAnyOf(
                   lpopResult -> assertThat(lpopReference.get()).isEqualTo("orange"),
-                  lpopResult -> assertThat(lpopReference.get()).isEqualTo("troix"));
+                  lpopResult -> assertThat(lpopReference.get()).isEqualTo("trois"));
               jedis.del(KEY);
               jedis.lpush(KEY, valuesInitial);
             });

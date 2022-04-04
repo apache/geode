@@ -59,6 +59,20 @@ public class SizeableByteArrayListTest {
   }
 
   @Test
+  public void clearSublist_getSizeInBytesIsAccurate() {
+    // Create a list with an initial size and confirm that it correctly reports its size
+    SizeableByteArrayList list = createList();
+    assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+
+    // Remove subset of elements and assert that the size is correct
+    list.clearSublist(INITIAL_NUMBER_OF_ELEMENTS / 5, INITIAL_NUMBER_OF_ELEMENTS / 2);
+    assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+
+    list.clearSublist(0, list.size());
+    assertThat(list.size()).isEqualTo(0);
+  }
+
+  @Test
   public void removeObjects_getSizeInBytesIsAccurate() {
     // Create a list with an initial size and confirm that it correctly reports its size
     SizeableByteArrayList list = createList();
