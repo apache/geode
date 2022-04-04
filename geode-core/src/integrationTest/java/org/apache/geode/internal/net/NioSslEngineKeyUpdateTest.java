@@ -77,10 +77,10 @@ import org.apache.geode.distributed.internal.DMStats;
  * (which themselves have a lot of dependencies on other classes), this test
  * implements simplified logic for driving the sending and receiving of data,
  * i.e. calling NioSslEngine.wrap() and NioSslEngine.unwrap(). See
- * {@link #send(int, NioSslEngine, SocketChannel, int)} and
- * {@link #receive(int, NioSslEngine, SocketChannel, ByteBuffer)}.
+ * {@link #send(int, NioFilter, SocketChannel, int)} and
+ * {@link #receive(int, NioFilter, SocketChannel, ByteBuffer)}.
  *
- * The {@link #secureDataTransferTest()} arranges for the encrypted bytes limit
+ * The {@link #keyUpdateDuringSecureDataTransferTest()} arranges for the encrypted bytes limit
  * to be reached very quickly (see {@link #ENCRYPTED_BYTES_LIMIT}).
  * The test verifies data transfer continues correctly, after the limit is reached.
  * This indirectly verifies that the KeyUpdate protocol initiated by the sending
@@ -94,20 +94,7 @@ public class NioSslEngineKeyUpdateTest {
   // number of bytes the GCM cipher can encrypt before initiating a KeyUpdate
   private static final int ENCRYPTED_BYTES_LIMIT = 1;
 
-  /*
-   * KeyUpdate messages don't happen in the handshake, they happen afterward.
-   * This is the number of bytes we'll transfer after the TLS handshake.
-   */
-  private static final int BYTES_TO_TRANSFER_AFTER_HANDSHAKE = 2;
-
   {
-    assert IsPowerOfTwo(ENCRYPTED_BYTES_LIMIT) && ENCRYPTED_BYTES_LIMIT != 0;
-
-    // The bytes will be sent using two calls to wrap so the number must be even
-    assert BYTES_TO_TRANSFER_AFTER_HANDSHAKE % 2 == 0;
-
-    assert BYTES_TO_TRANSFER_AFTER_HANDSHAKE > ENCRYPTED_BYTES_LIMIT;
-
     Security.setProperty("jdk.tls.keyLimits",
         "AES/GCM/NoPadding KeyUpdate " + ENCRYPTED_BYTES_LIMIT);
   }
@@ -166,8 +153,15 @@ public class NioSslEngineKeyUpdateTest {
     serverEngine = createSSLEngine("client-host", false, sslContext);
   }
 
+  /*
+   * Verify initial handshake succeeds in the presence of KeyUpdate messages
+   * (i.e. updating send-side cryptographic keys).
+   *
+   * This test verifies, primarily, the behavior of
+   * NioSslEngine.handshake(SocketChannel, int, ByteBuffer)
+   */
   @Test
-  public void handshakeTest() {
+  public void keyUpdateDuringInitialHandshakeTest() {
     clientServerTest(
         (channel, filter, peerNetData) -> {
           handshakeTLS(channel, filter, peerNetData, "Client:");
@@ -180,24 +174,37 @@ public class NioSslEngineKeyUpdateTest {
         });
   }
 
+  /*
+   * Building on keyUpdateDuringInitialHandshakeTest(), this test verifies that
+   * after the handshake succeeds, subsequent data transfer succeeds in the presence
+   * of KeyUpdate messages (i.e. updating send-side cryptographic keys).
+   *
+   * This test verifies, primarily, the behavior of NioSslEngine#wrap(ByteBuffer).
+   */
   @Test
-  public void secureDataTransferTest() {
+  public void keyUpdateDuringSecureDataTransferTest() {
     clientServerTest(
         (final SocketChannel channel,
             final NioSslEngine filter,
             final ByteBuffer peerNetData) -> {
           handshakeTLS(channel, filter, peerNetData, "Client:");
           /*
-           * if we call send() only once like this:
+           * In order to verify that KeyUpdate is properly handled in NioSslEngine.wrap()
+           * we must arrange for the KeyUpdate (generation and processing) to occur after
+           * the initial handshake and before the handshaking during NioSslEngine.close().
            *
-           * send(BYTES_TO_TRANSFER_AFTER_HANDSHAKE, filter, channel);
+           * If we call send() only once, regardless of the number of bytes wrapped (even
+           * if it exceeds the encryption byte limit set in jdk.tls.keyLimits, the status
+           * result from SSLEngine.wrap() will be OK. We will fail to encounter the situation
+           * where it is e.g. BUFFER_OVERFLOW.
            *
-           * ...it seems that jdk.tls.keyLimits is not evaluated by wrap().
-           * Calling it twice fixes that.
+           * By calling send() with bytesToSend >= the limit, we can be sure that the
+           * subsequent call to send() will trigger the KeyUpdate and will require proper
+           * handling of that situation in NioSslEngine.wrap().
            */
-          send(BYTES_TO_TRANSFER_AFTER_HANDSHAKE / 2, filter, channel, 0);
-          send(BYTES_TO_TRANSFER_AFTER_HANDSHAKE / 2, filter, channel,
-              BYTES_TO_TRANSFER_AFTER_HANDSHAKE / 2);
+          send(ENCRYPTED_BYTES_LIMIT, filter, channel, 0);
+          send(ENCRYPTED_BYTES_LIMIT, filter, channel, ENCRYPTED_BYTES_LIMIT);
+
           return true;
         },
         (final SocketChannel channel,
@@ -210,13 +217,48 @@ public class NioSslEngineKeyUpdateTest {
            */
           for (int i = 0; i < 2; i++) {
             final byte[] received =
-                receive(BYTES_TO_TRANSFER_AFTER_HANDSHAKE / 2, filter, channel, peerNetData);
-            assertThat(received).hasSize(BYTES_TO_TRANSFER_AFTER_HANDSHAKE / 2);
-            for (int j = i * BYTES_TO_TRANSFER_AFTER_HANDSHAKE / 2; j < (i + 1)
-                * BYTES_TO_TRANSFER_AFTER_HANDSHAKE / 2; j++) {
+                receive(ENCRYPTED_BYTES_LIMIT, filter, channel, peerNetData);
+            assertThat(received).hasSize(ENCRYPTED_BYTES_LIMIT);
+            for (int j = i * ENCRYPTED_BYTES_LIMIT; j < (i + 1)
+                * ENCRYPTED_BYTES_LIMIT; j++) {
               assertThat(received[j % received.length]).isEqualTo((byte) j);
             }
           }
+          return true;
+        });
+  }
+
+  /*
+   * Building on keyUpdateDuringSecureDataTransferTest(), this test verifies that
+   * NioSslEngine.close() succeeds in the presence of KeyUpdate messages
+   * (i.e. updating send-side cryptographic keys). This test is important because
+   * NioSslEngine.close() involves some TLS handshaking.
+   *
+   * This test verifies, primarily, the behavior of NioSslEngine#close(SocketChannel).
+   */
+  @Test
+  public void keyUpdateDuringSocketCloseHandshakeTest() {
+    clientServerTest(
+        (final SocketChannel channel,
+            final NioSslEngine filter,
+            final ByteBuffer peerNetData) -> {
+          handshakeTLS(channel, filter, peerNetData, "Client:");
+          /*
+           * Leave send-side SSLEngine in a state where it will generate a KeyUpdate
+           * TLS message during (but not before) NioSslEngine.close().
+           */
+          send(ENCRYPTED_BYTES_LIMIT, filter, channel, 0);
+          return true;
+        },
+        (final SocketChannel channel,
+            final NioSslEngine filter,
+            final ByteBuffer peerNetData) -> {
+          handshakeTLS(channel, filter, peerNetData, "Server:");
+          receive(ENCRYPTED_BYTES_LIMIT, filter, channel, peerNetData);
+          /*
+           * No need to validate the received data since our purpose is only to verify that
+           * NioSslEngine.close() succeeds cleanly.
+           */
           return true;
         });
   }
@@ -350,8 +392,6 @@ public class NioSslEngineKeyUpdateTest {
    * @param filter is a newly constructed and intitialized object; it has not been used
    *        for handshakes previously.
    * @param peerNetData on entry: don't care about read/write state or contents
-   *        since all contents will be cleared by the filter's handshake();
-   *        on return: the buffer will be in write mode and may contain
    */
   private static boolean handshakeTLS(final SocketChannel channel,
       final NioSslEngine filter,
@@ -383,11 +423,10 @@ public class NioSslEngineKeyUpdateTest {
    * calls to unwrap().
    *
    * @param peerNetData will be in write mode on entry and may already contain content
-   *        read from the channel; will be in write mode on return and may contain unprocessed data.
    */
   private static byte[] receive(
       final int bytesToReceive,
-      final NioSslEngine filter,
+      final NioFilter filter,
       final SocketChannel channel,
       final ByteBuffer peerNetData) throws IOException {
     final byte[] received = new byte[bytesToReceive];
@@ -438,7 +477,7 @@ public class NioSslEngineKeyUpdateTest {
    */
   private static void send(
       final int bytesToSend,
-      final NioSslEngine filter,
+      final NioFilter filter,
       final SocketChannel channel,
       final int startingValue)
       throws IOException {
@@ -454,9 +493,5 @@ public class NioSslEngineKeyUpdateTest {
         channel.write(netData);
       }
     }
-  }
-
-  private static boolean IsPowerOfTwo(final int x) {
-    return ((x & (x - 1)) == 0);
   }
 }

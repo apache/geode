@@ -62,6 +62,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedBlackboard;
+import org.apache.geode.test.dunit.rules.DistributedErrorCollector;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 
@@ -95,6 +96,9 @@ public class ConnectionCloseSSLTLSDUnitTest implements Serializable {
   @Rule
   public DistributedRestoreSystemProperties restoreSystemProperties =
       new DistributedRestoreSystemProperties();
+
+  @Rule
+  public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
   private VM locator;
   private VM sender;
@@ -139,7 +143,7 @@ public class ConnectionCloseSSLTLSDUnitTest implements Serializable {
                           blackboard.signalGate(UPDATE_ENTERED_GATE);
                           blackboard.waitForGate(SUSPEND_UPDATE_GATE);
                         } catch (TimeoutException | InterruptedException e) {
-                          fail("message observus interruptus");
+                          errorCollector.addError(e);
                         }
                       });
                     }

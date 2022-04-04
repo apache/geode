@@ -53,7 +53,9 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * Its use should be confined to one thread or should be protected by external synchronization.
  */
 public class NioSslEngine implements NioFilter {
+  private static final ByteBuffer EMPTY_BYTE_BUFFER = ByteBuffer.wrap(new byte[0]);
   private static final Logger logger = LogService.getLogger();
+  private static final boolean CHOOSE_BUGGY_PATH = false;
 
   private final BufferPool bufferPool;
 
@@ -233,13 +235,15 @@ public class NioSslEngine implements NioFilter {
   @Override
   public ByteBufferSharing wrap(ByteBuffer appData)
       throws IOException {
-    System.out.println("BGB: entering wrap");
-    try {
-//      return wrapNew(appData);
-    return wrapOld(appData);
-    } finally {
-      System.out.println("BGB: leaving wrap");
-    }
+    // System.out.println("BGB: entering wrap");
+    // try {
+    if (CHOOSE_BUGGY_PATH)
+      return wrapOld(appData);
+    else
+      return wrapNew(appData);
+    // } finally {
+    // System.out.println("BGB: leaving wrap");
+    // }
   }
 
   public ByteBufferSharing wrapNew(ByteBuffer appData)
@@ -254,7 +258,8 @@ public class NioSslEngine implements NioFilter {
         final SSLEngineResult wrapResult = doWrap(appData, myNetData);
         switch (wrapResult.getStatus()) {
           case BUFFER_OVERFLOW:
-            final int newCapacity = myNetData.position() + engine.getSession().getPacketBufferSize();
+            final int newCapacity =
+                myNetData.position() + engine.getSession().getPacketBufferSize();
             myNetData = outputSharing.expandWriteBufferIfNeeded(newCapacity);
             break;
           case BUFFER_UNDERFLOW:
@@ -276,10 +281,12 @@ public class NioSslEngine implements NioFilter {
   @NotNull
   private SSLEngineResult doWrap(final ByteBuffer appData, final ByteBuffer myNetData)
       throws SSLException {
-    System.out.printf("BGB: pre-wrap appData: %s, myNetData: %s%n", appData, myNetData);
+//    System.out.printf("BGB: pre-wrap appData: %s, myNetData: %s%n", appData, myNetData);
+    final int oldPosition = myNetData.position();
     SSLEngineResult wrapResult = engine.wrap(appData, myNetData);
-    System.out.printf("BGB: post-wrap appData: %s, myNetData: %s,%nBGB: status: %s, handshakeStatus: %s%n",
-        appData, myNetData, wrapResult.getStatus(), wrapResult.getHandshakeStatus());
+//    System.out.printf(
+//        "BGB: post-wrap appData: %s, myNetData: %s,%nBGB: status: %s, handshakeStatus: %s%n",
+//        appData, myNetData, wrapResult.getStatus(), wrapResult.getHandshakeStatus());
     return wrapResult;
   }
 
@@ -315,19 +322,6 @@ public class NioSslEngine implements NioFilter {
 
       return outputBufferVendor.open();
     }
-  }
-
-
-  private void write(final SocketChannel channel, final ByteBuffer myNetData)
-      throws IOException {
-    myNetData.flip();
-    while (myNetData.hasRemaining()) {
-      final int bytesWritten = channel.write(myNetData);
-      if (bytesWritten < 1) {
-        Thread.yield();
-      }
-    }
-    myNetData.compact();
   }
 
   @Override
@@ -440,6 +434,18 @@ public class NioSslEngine implements NioFilter {
 
   @Override
   public synchronized void close(SocketChannel socketChannel) {
+    // System.out.println("BGB: entering close");
+    // try {
+    if (CHOOSE_BUGGY_PATH)
+      closeOld(socketChannel);
+    else
+      closeNew(socketChannel);
+    // } finally {
+    // System.out.println("BGB: leaving close");
+    // }
+  }
+
+  public synchronized void closeNew(SocketChannel socketChannel) {
 
     assert socketChannel.isBlocking();
 
@@ -456,13 +462,12 @@ public class NioSslEngine implements NioFilter {
       SSLEngineResult result = null;
 
       while (!engine.isOutboundDone()) {
-        final ByteBuffer empty = ByteBuffer.wrap(new byte[0]);
 
         // clear the buffer to receive a CLOSE message from the SSLEngine
         myNetData.clear();
 
         // Get close message
-        result = engine.wrap(empty, myNetData);
+        result = engine.wrap(EMPTY_BYTE_BUFFER, myNetData);
 
         /*
          * We would have liked to make this one of the while() conditions but
@@ -482,6 +487,50 @@ public class NioSslEngine implements NioFilter {
       if (result != null && result.getStatus() != CLOSED) {
         throw new SSLHandshakeException(
             "Error closing SSL session.  Status=" + result.getStatus());
+      }
+    } catch (ClosedChannelException e) {
+      // we can't send a close message if the channel is closed
+    } catch (IOException e) {
+      throw new GemFireIOException("exception closing SSL session", e);
+    } catch (final OpenAttemptTimedOut _unused) {
+      logger.info(String.format("Couldn't get output lock in time, eliding TLS close message"));
+      if (!engine.isOutboundDone()) {
+        engine.closeOutbound();
+      }
+    } finally {
+      outputBufferVendor.destruct();
+    }
+  }
+
+  public synchronized void closeOld(SocketChannel socketChannel) {
+    if (closed) {
+      return;
+    }
+    closed = true;
+    inputBufferVendor.destruct();
+    try (final ByteBufferSharing outputSharing = outputBufferVendor.open(1, TimeUnit.MINUTES)) {
+      final ByteBuffer myNetData = outputSharing.getBuffer();
+
+      if (!engine.isOutboundDone()) {
+        ByteBuffer empty = ByteBuffer.wrap(new byte[0]);
+        engine.closeOutbound();
+
+        // clear the buffer to receive a CLOSE message from the SSLEngine
+        myNetData.clear();
+
+        // Get close message
+        SSLEngineResult result = engine.wrap(empty, myNetData);
+
+        if (result.getStatus() != SSLEngineResult.Status.CLOSED) {
+          throw new SSLHandshakeException(
+              "Error closing SSL session.  Status=" + result.getStatus());
+        }
+
+        // Send close message to peer
+        myNetData.flip();
+        while (myNetData.hasRemaining()) {
+          socketChannel.write(myNetData);
+        }
       }
     } catch (ClosedChannelException e) {
       // we can't send a close message if the channel is closed
