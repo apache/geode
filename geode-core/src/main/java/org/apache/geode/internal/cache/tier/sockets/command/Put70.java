@@ -468,8 +468,7 @@ public class Put70 extends BaseCommand {
     if (region.getAttributes().getConcurrencyChecksEnabled()) {
       // recover the version tag from other servers
       clientEvent.setRegion(region);
-      boolean withPersistence = region.getAttributes().getDataPolicy().withPersistence();
-      if (!recoverVersionTagForRetriedOperation(clientEvent) && !withPersistence) {
+      if (!isRegionWithPersistence(region) && !recoverVersionTagForRetriedOperation(clientEvent)) {
         // For persistent region, it is possible that all persistent copies went offline.
         // Do not reset possible duplicate in this case, as persistent data
         // can be recovered during the retry after recover of version tag failed.
@@ -477,6 +476,20 @@ public class Put70 extends BaseCommand {
       }
     }
     return shouldSetPossibleDuplicate;
+  }
+
+  boolean isRegionWithPersistence(LocalRegion region) {
+    if (region.getAttributes().getDataPolicy().withPersistence()) {
+      return true;
+    }
+    if (region instanceof PartitionedRegion) {
+      PartitionedRegion partitionedRegion = (PartitionedRegion) region;
+      if (!partitionedRegion.isDataStore()) {
+        // if is accessor, find if region persist on other members.
+        return partitionedRegion.getRegionAdvisor().advisePersistentMembers().size() > 0;
+      }
+    }
+    return false;
   }
 
   protected void writeReply(Message origMsg, ServerConnection servConn, boolean sendOldValue,

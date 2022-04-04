@@ -25,10 +25,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import java.util.Collections;
+import java.util.HashMap;
+
 import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -39,10 +42,14 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.operations.PutOperationContext;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.EventIDHolder;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
+import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.Message;
@@ -57,7 +64,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category({ClientServerTest.class})
-public class Put70Test {
+class Put70Test {
 
   private static final String REGION_NAME = "region1";
   private static final String KEY = "key1";
@@ -108,14 +115,18 @@ public class Put70Test {
   private EventIDHolder clientEvent;
   @Mock
   private DataPolicy dataPolicy;
+  @Mock
+  private RegionAdvisor regionAdvisor;
+  @Mock
+  private PartitionedRegion partitionedRegion;
 
   @InjectMocks
   private Put70 put70;
 
   private AutoCloseable mockitoMocks;
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeEach
+  void setUp() throws Exception {
     put70 = (Put70) Put70.getCommand();
     mockitoMocks = MockitoAnnotations.openMocks(this);
 
@@ -173,15 +184,17 @@ public class Put70Test {
 
     when(localRegion.getAttributes()).thenReturn(attributes);
     when(attributes.getDataPolicy()).thenReturn(dataPolicy);
+
+    when(partitionedRegion.getAttributes()).thenReturn(attributes);
   }
 
-  @After
-  public void after() throws Exception {
+  @AfterEach
+  void after() throws Exception {
     mockitoMocks.close();
   }
 
   @Test
-  public void noSecurityShouldSucceed() throws Exception {
+  void noSecurityShouldSucceed() throws Exception {
     when(securityService.isClientSecurityRequired()).thenReturn(false);
 
     put70.cmdExecute(message, serverConnection, securityService, 0);
@@ -190,7 +203,7 @@ public class Put70Test {
   }
 
   @Test
-  public void noRegionNameShouldFail() throws Exception {
+  void noRegionNameShouldFail() throws Exception {
     when(securityService.isClientSecurityRequired()).thenReturn(false);
     when(regionNamePart.getCachedString()).thenReturn(null);
 
@@ -203,7 +216,7 @@ public class Put70Test {
   }
 
   @Test
-  public void noKeyShouldFail() throws Exception {
+  void noKeyShouldFail() throws Exception {
     when(securityService.isClientSecurityRequired()).thenReturn(false);
     when(keyPart.getStringOrObject()).thenReturn(null);
 
@@ -216,7 +229,7 @@ public class Put70Test {
   }
 
   @Test
-  public void integratedSecurityShouldSucceedIfAuthorized() throws Exception {
+  void integratedSecurityShouldSucceedIfAuthorized() throws Exception {
     when(securityService.isClientSecurityRequired()).thenReturn(true);
     when(securityService.isIntegratedSecurity()).thenReturn(true);
 
@@ -227,7 +240,7 @@ public class Put70Test {
   }
 
   @Test
-  public void integratedSecurityShouldFailIfNotAuthorized() throws Exception {
+  void integratedSecurityShouldFailIfNotAuthorized() throws Exception {
     when(securityService.isClientSecurityRequired()).thenReturn(true);
     when(securityService.isIntegratedSecurity()).thenReturn(true);
     doThrow(new NotAuthorizedException("")).when(securityService).authorize(Resource.DATA,
@@ -240,7 +253,7 @@ public class Put70Test {
   }
 
   @Test
-  public void oldSecurityShouldSucceedIfAuthorized() throws Exception {
+  void oldSecurityShouldSucceedIfAuthorized() throws Exception {
     when(securityService.isClientSecurityRequired()).thenReturn(true);
     when(securityService.isIntegratedSecurity()).thenReturn(false);
 
@@ -257,7 +270,7 @@ public class Put70Test {
   }
 
   @Test
-  public void oldSecurityShouldFailIfNotAuthorized() throws Exception {
+  void oldSecurityShouldFailIfNotAuthorized() throws Exception {
     when(securityService.isClientSecurityRequired()).thenReturn(true);
     when(securityService.isIntegratedSecurity()).thenReturn(false);
     doThrow(new NotAuthorizedException("")).when(authzRequest).putAuthorize(eq(REGION_NAME),
@@ -277,7 +290,7 @@ public class Put70Test {
   }
 
   @Test
-  public void shouldSetPossibleDuplicateReturnsTrueIfConcurrencyChecksNotEnabled() {
+  void shouldSetPossibleDuplicateReturnsTrueIfConcurrencyChecksNotEnabled() {
 
     when(attributes.getConcurrencyChecksEnabled()).thenReturn(false);
 
@@ -285,7 +298,7 @@ public class Put70Test {
   }
 
   @Test
-  public void shouldSetPossibleDuplicateReturnsTrueIfRecoveredVersionTagForRetriedOperation() {
+  void shouldSetPossibleDuplicateReturnsTrueIfRecoveredVersionTagForRetriedOperation() {
     Put70 spy = Mockito.spy(put70);
     when(attributes.getConcurrencyChecksEnabled()).thenReturn(true);
     doReturn(true).when(spy).recoverVersionTagForRetriedOperation(clientEvent);
@@ -294,23 +307,59 @@ public class Put70Test {
   }
 
   @Test
-  public void shouldSetPossibleDuplicateReturnsFalseIfNotRecoveredVersionTagAndNoPersistence() {
+  void shouldSetPossibleDuplicateReturnsFalseIfNotRecoveredVersionTagAndNoPersistence() {
     Put70 spy = Mockito.spy(put70);
     when(attributes.getConcurrencyChecksEnabled()).thenReturn(true);
-    when(dataPolicy.withPersistence()).thenReturn(false);
     doReturn(false).when(spy).recoverVersionTagForRetriedOperation(clientEvent);
+    doReturn(false).when(spy).isRegionWithPersistence(localRegion);
 
     assertThat(spy.shouldSetPossibleDuplicate(localRegion, clientEvent)).isFalse();
   }
 
   @Test
-  public void shouldSetPossibleDuplicateReturnsTrueIfNotRecoveredVersionTagAndWithPersistence() {
+  void shouldSetPossibleDuplicateReturnsTrueIfNotRecoveredVersionTagAndWithPersistence() {
     Put70 spy = Mockito.spy(put70);
     when(attributes.getConcurrencyChecksEnabled()).thenReturn(true);
-    when(dataPolicy.withPersistence()).thenReturn(true);
     doReturn(false).when(spy).recoverVersionTagForRetriedOperation(clientEvent);
+    doReturn(true).when(spy).isRegionWithPersistence(localRegion);
 
     assertThat(spy.shouldSetPossibleDuplicate(localRegion, clientEvent)).isTrue();
   }
 
+  @Test
+  void isRegionWithPersistenceReturnsTrueIfDataPolicyWithPersistence() {
+    when(dataPolicy.withPersistence()).thenReturn(true);
+
+    assertThat(put70.isRegionWithPersistence(localRegion)).isTrue();
+  }
+
+  @Test
+  void isRegionWithPersistenceReturnsTrueIfIsAccessorAndHavingPersistentMembers() {
+    when(dataPolicy.withPersistence()).thenReturn(false);
+    when(partitionedRegion.isDataStore()).thenReturn(false);
+    when(partitionedRegion.getRegionAdvisor()).thenReturn(regionAdvisor);
+    HashMap<InternalDistributedMember, PersistentMemberID> persistentMembers = new HashMap<>();
+    persistentMembers.put(mock(InternalDistributedMember.class), mock(PersistentMemberID.class));
+    when(regionAdvisor.advisePersistentMembers()).thenReturn(persistentMembers);
+
+    assertThat(put70.isRegionWithPersistence(partitionedRegion)).isTrue();
+  }
+
+  @Test
+  void isRegionWithPersistenceReturnsFalseIfIsAccessorAndHavingNoPersistentMembers() {
+    when(dataPolicy.withPersistence()).thenReturn(false);
+    when(partitionedRegion.isDataStore()).thenReturn(false);
+    when(partitionedRegion.getRegionAdvisor()).thenReturn(regionAdvisor);
+    when(regionAdvisor.advisePersistentMembers()).thenReturn(Collections.emptyMap());
+
+    assertThat(put70.isRegionWithPersistence(partitionedRegion)).isFalse();
+  }
+
+  @Test
+  void isRegionWithPersistenceReturnsFalseIfIsNotAccessor() {
+    when(dataPolicy.withPersistence()).thenReturn(false);
+    when(partitionedRegion.isDataStore()).thenReturn(true);
+
+    assertThat(put70.isRegionWithPersistence(partitionedRegion)).isFalse();
+  }
 }
