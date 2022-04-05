@@ -88,6 +88,26 @@ public abstract class AbstractSMoveIntegrationTest implements RedisIntegrationTe
   }
 
   @Test
+  public void smove_withNonExistentSourceAndWrongTypeDestination_returnsZero() {
+    jedis.set(DESTINATION_KEY, "not a RedisSet");
+
+    assertThat(jedis.smove(NON_EXISTENT_SET_KEY, DESTINATION_KEY, MOVED_MEMBER))
+        .isEqualTo(0);
+  }
+
+  @Test
+  public void smove_withNonExistentMemberInSourceAndDestinationNotASet_returnsWrongTypeError() {
+    String nonExistentMember = "foo";
+    jedis.sadd(SOURCE_KEY, SOURCE_MEMBERS);
+    jedis.set(DESTINATION_KEY, "not a set");
+
+    assertThat(jedis.smove(NON_EXISTENT_SET_KEY, DESTINATION_KEY, nonExistentMember))
+        .isEqualTo(0);
+    assertThatThrownBy(() -> jedis.sismember(DESTINATION_KEY, nonExistentMember))
+        .hasMessage(ERROR_WRONG_TYPE);
+  }
+
+  @Test
   public void smove_withNonExistentSource_returnsZero_sourceKeyDoesNotExist() {
     jedis.sadd(DESTINATION_KEY, DESTINATION_MEMBERS);
 

@@ -92,23 +92,30 @@ public class RedisSet extends AbstractRedisData {
   public static int smove(RedisKey sourceKey, RedisKey destKey, byte[] member,
       RegionProvider regionProvider) {
     RedisSet source = regionProvider.getTypedRedisData(REDIS_SET, sourceKey, false);
-    RedisSet destination = regionProvider.getTypedRedisData(REDIS_SET, destKey, false);
 
-    if (!source.sismember(member)) {
+    if (source.isNull()) {
       return 0;
     }
 
     if (sourceKey.equals(destKey)) {
-      return 1;
+      if (source.sismember(member)) {
+        return 1;
+      } else {
+        return 0;
+      }
     }
 
+    RedisSet destination = regionProvider.getTypedRedisData(REDIS_SET, destKey, false);
     List<byte[]> memberList = new ArrayList<>();
     memberList.add(member);
     RedisSet newSource = new RedisSet(source);
-    newSource.srem(memberList, regionProvider.getDataRegion(), sourceKey);
-    RedisSet newDestination = new RedisSet(destination);
-    newDestination.sadd(memberList, regionProvider.getDataRegion(), destKey);
-    return 1;
+    if (newSource.srem(memberList, regionProvider.getDataRegion(), sourceKey) == 0) {
+      return 0;
+    } else {
+      RedisSet newDestination = new RedisSet(destination);
+      newDestination.sadd(memberList, regionProvider.getDataRegion(), destKey);
+      return 1;
+    }
   }
 
   public static MemberSet sunion(RegionProvider regionProvider, List<RedisKey> keys,
