@@ -26,9 +26,9 @@ import static org.mockito.Mockito.when;
 
 import java.util.function.Function;
 
-import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
@@ -53,7 +53,7 @@ public class LocalRegionUpdateTest {
   @Rule
   public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
 
-  @Before
+  @BeforeEach
   public void setUp() {
     internalDataView = mock(InternalDataView.class);
 
