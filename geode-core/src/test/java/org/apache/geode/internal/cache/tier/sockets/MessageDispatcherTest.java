@@ -18,6 +18,7 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.internal.lang.SystemPropertyHelper.RE_AUTHENTICATE_WAIT_TIME;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -35,8 +36,8 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 
 import org.apache.shiro.subject.Subject;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -65,7 +66,7 @@ public class MessageDispatcherTest {
   private CacheClientProxyStats proxyStats;
   private EventID eventID;
 
-  @Before
+  @BeforeEach
   public void before() throws Exception {
     proxy = mock(CacheClientProxy.class);
     message = mock(ClientUpdateMessageImpl.class);
@@ -159,7 +160,7 @@ public class MessageDispatcherTest {
 
   @Test
   public void oldClientWillNotGetClientReAuthenticateMessage() throws Exception {
-    doReturn(false, false, false, true).when(dispatcher).isStopped();
+    doReturn(false, false, true).when(dispatcher).isStopped();
     // make sure wait time is short
     doReturn(1L).when(dispatcher).getSystemProperty(eq(RE_AUTHENTICATE_WAIT_TIME), anyLong());
 
@@ -171,6 +172,32 @@ public class MessageDispatcherTest {
     // we will eventually pauseOrUnregisterProxy
     verify(dispatcher).pauseOrUnregisterProxy(any(AuthenticationExpiredException.class));
     verify(dispatcher, never()).dispatchResidualMessages();
+  }
+
+
+  @Test
+  public void oldClientWillContinueToDeliverMessageIfNotified() throws Exception {
+    doReturn(false, false, true).when(dispatcher).isStopped();
+    // make sure wait time is short
+    doReturn(10000L).when(dispatcher).getSystemProperty(eq(RE_AUTHENTICATE_WAIT_TIME), anyLong());
+    doThrow(AuthenticationExpiredException.class).when(dispatcher).dispatchMessage(any());
+    when(messageQueue.peek()).thenReturn(message);
+    when(proxy.getVersion()).thenReturn(KnownVersion.GEODE_1_14_0);
+
+    Thread dispatcherThread = new Thread(() -> dispatcher.runDispatcher());
+    Thread notifyThread = new Thread(() -> dispatcher.notifyReAuthentication());
+
+    dispatcherThread.start();
+    await().until(() -> dispatcher.isWaitingForReAuthentication());
+    notifyThread.start();
+
+    dispatcherThread.join();
+    notifyThread.join();
+
+    verify(dispatcher, never()).sendMessageDirectly(any());
+    // dispatcher will dispatch message
+    verify(dispatcher, never()).pauseOrUnregisterProxy(any(AuthenticationExpiredException.class));
+    verify(dispatcher).dispatchResidualMessages();
   }
 
   @Test
