@@ -23,6 +23,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -115,12 +116,12 @@ public class DeltaClassesJUnitTest {
   }
 
   @Test
-  public void testAddByteArrayPairs() throws Exception {
-    String original = "0123456789";
-    String payload = "something amazing I guess";
+  public void testAddByteArrayPairsDelta() throws Exception {
+    byte[] original = "0123456789".getBytes();
+    byte[] payload = "something amazing I guess".getBytes();
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream dos = new DataOutputStream(baos);
-    AddByteArrayPairs source = new AddByteArrayPairs(original.getBytes(), payload.getBytes());
+    AddByteArrayPairs source = new AddByteArrayPairs(original, payload);
 
     source.serializeTo(dos);
 
@@ -130,17 +131,17 @@ public class DeltaClassesJUnitTest {
     redisHash.fromDelta(dis);
 
     assertThat(redisHash.hlen()).isEqualTo(4);
-    assertThat(redisHash.hget(original.getBytes())).isEqualTo(payload.getBytes());
+    assertThat(redisHash.hget(original)).isEqualTo(payload);
   }
 
   @Test
-  public void testAddByteArrayDoublePairs() throws Exception {
-    String original = "omega";
+  public void testAddByteArrayDoublePairsDelta() throws Exception {
+    byte[] original = "omega".getBytes();
     double score = 3.0;
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream dos = new DataOutputStream(baos);
     AddByteArrayDoublePairs source = new AddByteArrayDoublePairs(1);
-    source.add(original.getBytes(), score);
+    source.add(original, score);
 
     source.serializeTo(dos);
 
@@ -150,11 +151,11 @@ public class DeltaClassesJUnitTest {
     redisSortedSet.fromDelta(dis);
 
     assertThat(redisSortedSet.zcard()).isEqualTo(4);
-    assertThat(redisSortedSet.zrank(original.getBytes())).isEqualTo(2L);
+    assertThat(redisSortedSet.zrank(original)).isEqualTo(2L);
   }
 
   @Test
-  public void testAppendByteArray() throws Exception {
+  public void testAppendByteArrayDelta() throws Exception {
     String original = "0123456789";
     String payload = "something amazing I guess";
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -172,12 +173,14 @@ public class DeltaClassesJUnitTest {
   }
 
   @Test
-  public void testInsertByteArrayDelta() throws Exception {
+  @Parameters(method = "getInsertByteArrayIndexes")
+  @TestCaseName("{method}: index:{0}")
+  public void testInsertByteArrayDelta(int index) throws Exception {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream dos = new DataOutputStream(baos);
     RedisList redisList = makeRedisList();
     InsertByteArray source =
-        new InsertByteArray((byte) (redisList.getVersion() + 1), "newElement".getBytes(), 1);
+        new InsertByteArray((byte) (redisList.getVersion() + 1), "newElement".getBytes(), index);
 
     source.serializeTo(dos);
 
@@ -185,7 +188,7 @@ public class DeltaClassesJUnitTest {
     redisList.fromDelta(dis);
 
     assertThat(redisList.llen()).isEqualTo(4);
-    assertThat(redisList.lindex(1)).isEqualTo("newElement".getBytes());
+    assertThat(redisList.lindex(index)).isEqualTo("newElement".getBytes());
   }
 
   @Test
@@ -227,7 +230,7 @@ public class DeltaClassesJUnitTest {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream dos = new DataOutputStream(baos);
     RemoveByteArrays source =
-        new RemoveByteArrays(Arrays.asList("zero".getBytes()));
+        new RemoveByteArrays(Collections.singletonList("zero".getBytes()));
 
     source.serializeTo(dos);
 
@@ -279,13 +282,14 @@ public class DeltaClassesJUnitTest {
   }
 
   @Test
-  public void testReplaceByteAtOffsetDelta() throws Exception {
-    String original = "0123456789";
-    String expected = "012a456789";
+  @Parameters(method = "getReplaceByteAtOffsetValues")
+  @TestCaseName("{method}: original:{0}, offset:{1}, expected:{2}")
+  public void testReplaceByteAtOffsetDelta(String original, int offset, String expected)
+      throws Exception {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream dos = new DataOutputStream(baos);
 
-    ReplaceByteAtOffset source = new ReplaceByteAtOffset(3, "a".getBytes()[0]);
+    ReplaceByteAtOffset source = new ReplaceByteAtOffset(offset, "a".getBytes()[0]);
 
     source.serializeTo(dos);
 
@@ -297,7 +301,7 @@ public class DeltaClassesJUnitTest {
   }
 
   @Test
-  public void testReplaceByteArrayAtOffsetForRedisString() throws Exception {
+  public void testReplaceByteArrayAtOffsetDeltaForRedisString() throws Exception {
     String original = "0123456789";
     String payload = "something amazing I guess";
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -315,7 +319,7 @@ public class DeltaClassesJUnitTest {
   }
 
   @Test
-  public void testReplaceByteArrayAtOffsetForRedisList() throws Exception {
+  public void testReplaceByteArrayAtOffsetDeltaForRedisList() throws Exception {
     String payload = "something amazing I guess";
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream dos = new DataOutputStream(baos);
@@ -390,13 +394,14 @@ public class DeltaClassesJUnitTest {
   }
 
   @Test
-  public void testRemoveElementsByIndex() throws Exception {
+  public void testRemoveElementsByIndexDelta() throws Exception {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream dos = new DataOutputStream(baos);
+
+    RedisList redisList = makeRedisList();
     List<Integer> payload = new ArrayList<>();
     payload.add(0);
     payload.add(2);
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    DataOutputStream dos = new DataOutputStream(baos);
-    RedisList redisList = makeRedisList();
 
     RemoveElementsByIndex source =
         new RemoveElementsByIndex((byte) (redisList.getVersion() + 1), payload);
@@ -430,6 +435,16 @@ public class DeltaClassesJUnitTest {
   }
 
   @SuppressWarnings("unused")
+  private Object[] getInsertByteArrayIndexes() {
+    return new Object[] {
+        0,
+        1,
+        2,
+        3
+    };
+  }
+
+  @SuppressWarnings("unused")
   private Object[] getRetainElementsRanges() {
     // Values are start, end, expected result
     // For initial list of {"zero", "one", "two"}
@@ -439,6 +454,16 @@ public class DeltaClassesJUnitTest {
         new Object[] {0, 2, new byte[][] {"zero".getBytes(), "one".getBytes(), "two".getBytes()}},
         new Object[] {1, 2, new byte[][] {"one".getBytes(), "two".getBytes()}},
         new Object[] {2, 2, new byte[][] {"two".getBytes()}}
+    };
+  }
+
+  @SuppressWarnings("unused")
+  private Object[] getReplaceByteAtOffsetValues() {
+    // Values are original, offset, expected result
+    return new Object[] {
+        new Object[] {"01234567890", 0, "a1234567890"},
+        new Object[] {"01234567890", 3, "012a4567890"},
+        new Object[] {"01234567890", 10, "0123456789a"}
     };
   }
 
@@ -474,7 +499,6 @@ public class DeltaClassesJUnitTest {
     pairList.add("secondVal".getBytes());
     pairList.add("two".getBytes());
     pairList.add("thirdVal".getBytes());
-    RedisHash redisHash = new RedisHash(pairList);
-    return redisHash;
+    return new RedisHash(pairList);
   }
 }
