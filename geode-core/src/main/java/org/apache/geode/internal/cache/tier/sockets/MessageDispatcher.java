@@ -194,7 +194,7 @@ public class MessageDispatcher extends LoggingThread {
     return waitForReAuthenticationStartTime > 0;
   }
 
-  private volatile boolean subjectUpdated = false;
+  private boolean subjectUpdated = false;
 
   public void notifyReAuthentication() {
     synchronized (reAuthenticationLock) {
