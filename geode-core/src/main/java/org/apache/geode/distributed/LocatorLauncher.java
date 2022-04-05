@@ -59,6 +59,7 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusRequest;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusResponse;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.tcpserver.HostAddress;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
@@ -302,7 +303,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   public static LocatorStatusResponse statusLocator(int port, InetAddress bindAddress)
       throws IOException {
     return statusLocator(port, bindAddress == null ? null : bindAddress.getCanonicalHostName(),
-        new Properties());
+        new DistributionConfigImpl(new Properties()));
   }
 
   /**
@@ -310,10 +311,39 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * identification enabled the preferred method is statusForLocator(int, String), which
    * lets you specify the locator's name that the locator has stored in its TLS certificate
    */
-  public LocatorStatusResponse statusForLocator(int port, InetAddress bindAddress)
+  public LocatorStatusResponse statusForLocator(int port, InetAddress bindAddressArg)
       throws IOException {
-    return statusLocator(port, bindAddress == null ? null : bindAddress.getCanonicalHostName(),
-        getProperties());
+    final String bindAddress =
+        bindAddressArg == null ? null : bindAddressArg.getCanonicalHostName();
+    final SSLConfig sslConfig = getSSLConfigurations(getLocator());
+    return getLocatorStatusResponse(port, bindAddress, sslConfig);
+  }
+
+  private SSLConfig getSSLConfigurations(Locator locator) {
+    final SSLConfig sslConfig;
+    if (locator == null) {
+      /*
+       * Locator is null in the case when a LocatorLauncher is created
+       * using its Builder but start is never called, hence no locator exists.
+       * Instead, this LocatorLauncher is used to get the status of the
+       * locator using PID, working dir etc.
+       * This is done in StatusLocatorCommand in gfsh
+       */
+      sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(
+          getProperties(),
+          SecurableCommunicationChannel.LOCATOR);
+    } else {
+      /*
+       * If a locator is already present then the DistributedConfigImpl
+       * is not constructed again but rather taken from the locator properties.
+       * This will avoid reading the property files and possible old address
+       * verification error as those may not be valid anymore.
+       */
+      sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(
+          ((InternalLocator) locator).getConfig(),
+          SecurableCommunicationChannel.LOCATOR);
+    }
+    return sslConfig;
   }
 
   /**
@@ -321,28 +351,30 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    */
   public LocatorStatusResponse statusForLocator(int port, String hostname)
       throws IOException {
-    return statusLocator(port, hostname, getProperties());
+    final SSLConfig sslConfig = getSSLConfigurations(getLocator());
+    return getLocatorStatusResponse(port, hostname, sslConfig);
   }
 
   private static LocatorStatusResponse statusLocator(
-      final int port, String bindAddress,
-      final Properties properties)
+      final int port, String bindAddress, DistributionConfigImpl distributionConfig)
       throws IOException {
+    final SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(
+        distributionConfig,
+        SecurableCommunicationChannel.LOCATOR);
+    return getLocatorStatusResponse(port, bindAddress, sslConfig);
+  }
 
+  private static LocatorStatusResponse getLocatorStatusResponse(int port, String bindAddress,
+      SSLConfig sslConfig)
+      throws IOException {
     // final int timeout = (60 * 2 * 1000); // 2 minutes
     final int timeout = Integer.MAX_VALUE; // 2 minutes
-
     try {
-
-      final SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(
-          properties,
-          SecurableCommunicationChannel.LOCATOR);
       final TcpSocketCreator socketCreator = new SocketCreator(sslConfig);
       final TcpClient client = new TcpClient(socketCreator,
           InternalDataSerializer.getDSFIDSerializer().getObjectSerializer(),
           InternalDataSerializer.getDSFIDSerializer().getObjectDeserializer(),
           TcpSocketFactory.DEFAULT);
-
       return (LocatorStatusResponse) client.requestToServer(
           new HostAndPort(bindAddress == null ? HostUtils.getLocalHost() : bindAddress, port),
           new LocatorStatusRequest(), timeout, true);
