@@ -304,18 +304,34 @@ public class RegisterInterestTracker {
     return mapOfInterest.get(regionName);
   }
 
+  /**
+   * Iterate InterestTypes searching for any with the input interestResultPolicy
+   *
+   * @param regionName
+   * @param isDurable
+   * @param interestResultPolicy
+   * @return boolean based on the presence of the selected InterestResultPolicy
+   */
   public boolean hasInterestsWithResultPolicy(final @NotNull String regionName, boolean isDurable,
       final @NotNull InterestResultPolicy interestResultPolicy) {
-    // Iterate InterestTypes searching for any with the input interestResultPolicy
     return Stream.of(InterestType.values())
         .anyMatch(interestType -> hasInterestsWithResultPolicy(regionName, isDurable,
             interestResultPolicy, interestType));
   }
 
+  /**
+   * Check the RegionInterestEntries with receiveUpdatesAsInvalidates both true and false
+   *
+   * @param regionName
+   * @param isDurable
+   * @param interestResultPolicy
+   * @param interestType
+   * @return boolean based on the presence of the selected InterestResultPolicy
+   */
   public boolean hasInterestsWithResultPolicy(final @NotNull String regionName, boolean isDurable,
       final @NotNull InterestResultPolicy interestResultPolicy,
       final @NotNull InterestType interestType) {
-    // Check the RegionInterestEntries with receiveUpdatesAsInvalidates both true and false
+
     return Stream.of(true, false)
         .anyMatch(receiveUpdatesAsInvalidates -> hasInterestsWithResultPolicy(regionName, isDurable,
             interestResultPolicy, interestType, receiveUpdatesAsInvalidates));

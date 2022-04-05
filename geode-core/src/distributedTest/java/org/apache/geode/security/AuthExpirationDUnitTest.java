@@ -118,7 +118,7 @@ public class AuthExpirationDUnitTest {
   }
 
   @Test
-  public void registeredInterest_slowReAuth_policyDefault() throws Exception {
+  public void registeredInterestForKeysAndValidatedTheyWereAllReceived_slowReAuth_policyDefault() throws Exception {
     int serverPort = server.getPort();
     clientVM = cluster.startClientVM(0,
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
@@ -170,14 +170,13 @@ public class AuthExpirationDUnitTest {
   }
 
   @Test
-  public void registeredInterest_slowReAuth_policyNone_durableClient() throws Exception {
+  public void registeredInterestForKeysAndValidatedTheyWereAllReceived_slowReAuth_policyNone_durableClient() throws Exception {
     int serverPort = server.getPort();
     clientVM = cluster.startClientVM(0,
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
             .withProperty(DURABLE_CLIENT_ID, "123456")
             .withPoolSubscription(true)
             .withServerConnection(serverPort));
-
 
     clientVM.invoke(() -> {
       UpdatableUserAuthInitialize.setUser("user1");
@@ -213,7 +212,7 @@ public class AuthExpirationDUnitTest {
   private static KeysCacheListener myListener = new KeysCacheListener();
 
   @Test
-  public void registeredInterest_slowReAuth_policyNone_CacheListener_durableClient()
+  public void registeredInterestForKeysAndValidatedTheyWereAllReceived_slowReAuth_policyNone_CacheListener_durableClient()
       throws Exception {
     int serverPort = server.getPort();
     clientVM = cluster.startClientVM(0,
@@ -259,7 +258,7 @@ public class AuthExpirationDUnitTest {
 
 
   @Test
-  public void registeredInterest_slowReAuth_policyNone_nonDurableClient()
+  public void registeredInterestForKeysAndValidatedTheyWereAllReceived_slowReAuth_policyNone_nonDurableClient()
       throws Exception {
     int serverPort = server.getPort();
     clientVM = cluster.startClientVM(0,

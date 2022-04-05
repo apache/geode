@@ -701,11 +701,6 @@ public class QueueManagerImpl implements QueueManager {
               // because whoever killed the primary when this method started should
               // have scheduled a task to recover the primary.
               isFirstNewConnection = true;
-              // TODO - Actually, we need a better check than the above. There's
-              // still a chance that we haven't realized that the primary has died but it is
-              // already gone. We should get some information from the queue server about whether
-              // it was able to copy the queue from another server and decide if we need to recover
-              // our interest based on that information.
             }
           }
           boolean promotionFailed = false;
@@ -822,7 +817,7 @@ public class QueueManagerImpl implements QueueManager {
   }
 
   public void markQueueAsReadyForEvents(@NotNull QueueConnectionImpl primary) {
-    if (primary != null && sentClientReady && primary.sendClientReady()) {
+    if (sentClientReady && primary.sendClientReady()) {
       readyForEventsAfterFailover(primary);
     }
   }
