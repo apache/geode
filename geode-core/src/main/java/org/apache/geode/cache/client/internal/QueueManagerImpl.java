@@ -109,7 +109,6 @@ public class QueueManagerImpl implements QueueManager {
   private ScheduledExecutorService recoveryThread;
   private volatile boolean sentClientReady;
 
-  @VisibleForTesting
   void clearQueueConnections() {
     this.queueConnections = new ConnectionList();
   }
