@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.SystemUtils;
@@ -244,7 +246,8 @@ public class Tomcat8ClientServerRollingUpgradeTest {
     verifySessionReplication();
   }
 
-  private void createRegion(GfshRule gfsh) {
+  private void createRegion(GfshRule gfsh)
+      throws IOException, ExecutionException, InterruptedException, TimeoutException {
     CommandStringBuilder connect = new CommandStringBuilder(CliStrings.CONNECT)
         .addOption(CliStrings.CONNECT__LOCATOR, "localhost[" + locatorPort + "]");
 
