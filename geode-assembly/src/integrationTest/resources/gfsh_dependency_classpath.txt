@@ -24,7 +24,7 @@ rmiio-2.1.2.jar
 jackson-annotations-2.13.2.jar
 jackson-core-2.13.2.jar
 jackson-databind-2.13.2.2.jar
-swagger-annotations-1.6.2.jar
+swagger-annotations-1.6.6.jar
 jopt-simple-5.0.4.jar
 log4j-slf4j-impl-2.17.2.jar
 log4j-core-2.17.2.jar

@@ -52,7 +52,7 @@ geode-membership-0.0.0.jar
 jetty-webapp-9.4.45.v20220203.jar
 commons-lang3-3.12.0.jar
 jopt-simple-5.0.4.jar
-swagger-annotations-1.6.2.jar
+swagger-annotations-1.6.6.jar
 snappy-0.4.jar
 geode-wan-0.0.0.jar
 log4j-api-2.17.2.jar
