@@ -53,6 +53,7 @@ import org.apache.geode.test.version.VersionManager;
  * TODO:
  * - change top-level dir for saved test results to use test class name
  * - remove stopLocator/stopServer
+ * - kill any locator/server processes that are still alive
  */
 public class GfshRule implements TestRule {
   private final SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder()
@@ -85,7 +86,7 @@ public class GfshRule implements TestRule {
     };
   }
 
-  protected void before(String methodName) throws Throwable {
+  private void before(String methodName) throws Throwable {
     gfsh = findGfsh();
     assertThat(gfsh).exists();
 
@@ -97,10 +98,10 @@ public class GfshRule implements TestRule {
    * Attempts to stop any started servers/locators via pid file and tears down any remaining gfsh
    * JVMs.
    */
-  protected void after() {
+  private void after() {
     // Copy the gfshExecutions list because stopMembers will add more executions
     // This would not include the "stopMemberQuietly" executions
-    ArrayList<GfshExecution> executionsWithMembersToStop = new ArrayList<>(gfshExecutions);
+    Iterable<GfshExecution> executionsWithMembersToStop = new ArrayList<>(gfshExecutions);
     executionsWithMembersToStop.forEach(this::stopMembers);
 
     // This will include the "stopMemberQuietly" executions
@@ -141,6 +142,16 @@ public class GfshRule implements TestRule {
     }
   }
 
+  public GfshExecution execute(GfshScript gfshScript) {
+    try {
+      File workingDir = new File(temporaryFolder.getRoot(), gfshScript.getName());
+      workingDir.mkdirs();
+      return execute(gfshScript, workingDir);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   /**
    * this will allow you to specify a gfsh workingDir when executing the script
    * this is usually helpful if:
@@ -162,12 +173,6 @@ public class GfshRule implements TestRule {
     gfshExecutions.add(gfshExecution);
     gfshExecution.awaitTermination(gfshScript);
     return gfshExecution;
-  }
-
-  public GfshExecution execute(GfshScript gfshScript)
-      throws IOException, ExecutionException, InterruptedException, TimeoutException {
-    File workingDir = temporaryFolder.newFolder(gfshScript.getName());
-    return execute(gfshScript, workingDir);
   }
 
   private ProcessBuilder createProcessBuilder(GfshScript gfshScript, Path gfshPath, File workingDir,
