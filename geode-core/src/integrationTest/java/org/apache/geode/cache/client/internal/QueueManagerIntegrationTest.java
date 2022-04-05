@@ -73,7 +73,7 @@ import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.internal.logging.LocalLogWriter;
 
 @Tag("ClientServerTest")
-public class QueueManagerJUnitTest {
+public class QueueManagerIntegrationTest {
 
   private TestPool pool;
   private LocalLogWriter logger;
