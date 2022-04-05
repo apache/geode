@@ -18,13 +18,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARC
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.apache.geode.test.dunit.Assert.assertEquals;
-import static org.apache.geode.test.dunit.Assert.assertFalse;
-import static org.apache.geode.test.dunit.Assert.assertNotNull;
-import static org.apache.geode.test.dunit.Assert.assertTrue;
-import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
 import java.io.File;
@@ -153,19 +149,19 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
 
         // assert that sampler is working as expected
         GemFireStatSampler sampler = system.getStatSampler();
-        assertTrue(sampler.isSamplingEnabled());
-        assertTrue(sampler.isAlive());
-        assertEquals(new File(pubArchives[pubVM]), sampler.getArchiveFileName());
+        assertThat(sampler.isSamplingEnabled()).isTrue();
+        assertThat(sampler.isAlive()).isTrue();
+        assertThat(sampler.getArchiveFileName()).isEqualTo(new File(pubArchives[pubVM]));
 
         await("awaiting SampleCollector to exist")
             .until(() -> sampler.getSampleCollector() != null);
 
         SampleCollector sampleCollector = sampler.getSampleCollector();
-        assertNotNull(sampleCollector);
+        assertThat(sampleCollector).isNotNull();
 
         StatArchiveHandler archiveHandler = sampleCollector.getStatArchiveHandler();
-        assertNotNull(archiveHandler);
-        assertTrue(archiveHandler.isArchiving());
+        assertThat(archiveHandler).isNotNull();
+        assertThat(archiveHandler.isArchiving()).isTrue();
 
         // create cache and region
         Cache cache = getCache();
@@ -199,19 +195,19 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
 
       // assert that sampler is working as expected
       GemFireStatSampler sampler = system.getStatSampler();
-      assertTrue(sampler.isSamplingEnabled());
-      assertTrue(sampler.isAlive());
-      assertEquals(new File(subArchive), sampler.getArchiveFileName());
+      assertThat(sampler.isSamplingEnabled()).isTrue();
+      assertThat(sampler.isAlive()).isTrue();
+      assertThat(sampler.getArchiveFileName()).isEqualTo(new File(subArchive));
 
       await("awaiting SampleCollector to exist")
           .until(() -> sampler.getSampleCollector() != null);
 
       SampleCollector sampleCollector = sampler.getSampleCollector();
-      assertNotNull(sampleCollector);
+      assertThat(sampleCollector).isNotNull();
 
       StatArchiveHandler archiveHandler = sampleCollector.getStatArchiveHandler();
-      assertNotNull(archiveHandler);
-      assertTrue(archiveHandler.isArchiving());
+      assertThat(archiveHandler).isNotNull();
+      assertThat(archiveHandler.isArchiving()).isTrue();
 
       // create cache and region with UpdateListener
       Cache cache = getCache();
@@ -229,7 +225,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
         }
       }
 
-      assertEquals(0, statistics.getUpdateEvents());
+      assertThat(statistics.getUpdateEvents()).isZero();
       return system.getDistributedMember();
     });
 
@@ -247,13 +243,13 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
               Region<String, Number> region = getCache().getRegion(regionName);
 
               // assert that sub is in rml membership
-              assertNotNull(rml);
+              assertThat(rml).isNotNull();
 
               await("awaiting Membership to contain subMember")
                   .until(() -> rml.contains(subMember) && rml.size() == NUM_PUBS);
 
               // publish lots of puts cycling through the NUM_KEYS
-              assertEquals(0, statistics.getPuts());
+              assertThat(statistics.getPuts()).isZero();
 
               // cycle through the keys randomly
               if (RANDOMIZE_PUTS) {
@@ -279,12 +275,12 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
                   statistics.endPut(start);
                 }
               }
-              assertEquals(MAX_PUTS, statistics.getPuts());
+              assertThat(statistics.getPuts()).isEqualTo(MAX_PUTS);
 
               // wait for 2 samples to ensure all stats have been archived
               StatisticsType statSamplerType = getSystem().findType("StatSampler");
               Statistics[] statsArray = getSystem().findStatisticsByType(statSamplerType);
-              assertEquals(1, statsArray.length);
+              assertThat(statsArray.length).isOne();
 
               Statistics statSamplerStats = statsArray[0];
               int initialSampleCount = statSamplerStats.getInt(StatSamplerStats.SAMPLE_COUNT);
@@ -296,9 +292,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
 
       for (final AsyncInvocation publisher : publishers) {
         publisher.join();
-        if (publisher.exceptionOccurred()) {
-          fail("Test failed", publisher.getException());
-        }
+        assertThat(publisher.exceptionOccurred()).isFalse();
       }
     }
 
@@ -306,7 +300,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
       // wait for 2 samples to ensure all stats have been archived
       StatisticsType statSamplerType = getSystem().findType("StatSampler");
       Statistics[] statsArray = getSystem().findStatisticsByType(statSamplerType);
-      assertEquals(1, statsArray.length);
+      assertThat(statsArray.length).isOne();
 
       Statistics statSamplerStats = statsArray[0];
       int initialSampleCount = statSamplerStats.getInt(StatSamplerStats.SAMPLE_COUNT);
@@ -316,7 +310,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
 
       // now post total updateEvents to static
       PubSubStats statistics = subStatsRef.get();
-      assertNotNull(statistics);
+      assertThat(statistics).isNotNull();
       updateEvents.set(statistics.getUpdateEvents());
     });
 
@@ -328,28 +322,28 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
       final int pubIdx = i;
       pubs[pubIdx].invoke("pub-validation", () -> {
         // add up all the puts
-        assertEquals(NUM_PUB_THREADS, pubStatsRef.length());
+        assertThat(pubStatsRef.length()).isEqualTo(NUM_PUB_THREADS);
         int totalPuts = 0;
         for (int pubThreadIdx = 0; pubThreadIdx < NUM_PUB_THREADS; pubThreadIdx++) {
           PubSubStats statistics = pubStatsRef.get(pubThreadIdx);
-          assertNotNull(statistics);
+          assertThat(statistics).isNotNull();
           totalPuts += statistics.getPuts();
         }
 
         // assert that total puts adds up to max puts times num threads
-        assertEquals(MAX_PUTS * NUM_PUB_THREADS, totalPuts);
+        assertThat(totalPuts).isEqualTo(MAX_PUTS * NUM_PUB_THREADS);
 
         // assert that archive file contains same values as statistics
         File archive = new File(pubArchives[pubIdx]);
-        assertTrue(archive.exists());
+        assertThat(archive.exists()).isTrue();
 
         StatArchiveReader reader = new StatArchiveReader(new File[] {archive}, null, false);
 
         double combinedPuts = 0;
 
         List resources = reader.getResourceInstList();
-        assertNotNull(resources);
-        assertFalse(resources.isEmpty());
+        assertThat(resources).isNotNull();
+        assertThat(resources.isEmpty()).isFalse();
 
         for (ResourceInst ri : (Iterable<ResourceInst>) resources) {
           if (!ri.getType().getName().equals(PubSubStats.TYPE_NAME)) {
@@ -359,7 +353,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
           StatValue[] statValues = ri.getStatValues();
           for (int idx = 0; idx < statValues.length; idx++) {
             String statName = ri.getType().getStats()[idx].getName();
-            assertNotNull(statName);
+            assertThat(statName).isNotNull();
 
             if (statName.equals(PubSubStats.PUTS)) {
               StatValue sv = statValues[idx];
@@ -372,14 +366,14 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
               double mean = sv.getSnapshotsAverage();
               double stdDev = sv.getSnapshotsStandardDeviation();
 
-              assertEquals(mostRecent, max, 0f);
+              assertThat(mostRecent).isEqualTo(max);
 
               double summation = 0;
               double[] rawSnapshots = sv.getRawSnapshots();
               for (final double rawSnapshot : rawSnapshots) {
                 summation += rawSnapshot;
               }
-              assertEquals(mean, summation / sv.getSnapshotsSize(), 0);
+              assertThat(summation / sv.getSnapshotsSize()).isEqualTo(mean);
 
               combinedPuts += mostRecent;
             }
@@ -387,7 +381,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
         }
 
         // assert that sum of mostRecent values for all puts equals totalPuts
-        assertEquals(totalPuts, combinedPuts, 0);
+        assertThat(combinedPuts).isEqualTo(totalPuts);
         puts.getAndAdd(totalPuts);
       });
     }
@@ -397,25 +391,25 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
     for (int i = 0; i < NUM_PUBS; i++) {
       int pubIdx = i;
       int totalPuts = pubs[pubIdx].invoke(StatisticsDistributedTest::getPuts);
-      assertEquals(MAX_PUTS * NUM_PUB_THREADS, totalPuts);
+      assertThat(totalPuts).isEqualTo(MAX_PUTS * NUM_PUB_THREADS);
       totalCombinedPuts += totalPuts;
     }
-    assertEquals(totalCombinedPuts, totalUpdateEvents);
-    assertEquals(MAX_PUTS * NUM_PUB_THREADS * NUM_PUBS, totalCombinedPuts);
+    assertThat(totalUpdateEvents).isEqualTo(totalCombinedPuts);
+    assertThat(totalCombinedPuts).isEqualTo(MAX_PUTS * NUM_PUB_THREADS * NUM_PUBS);
 
     // validate sub values against sub statistics against sub archive
     final int totalPuts = totalCombinedPuts;
     sub.invoke("sub-validation", () -> {
       PubSubStats statistics = subStatsRef.get();
-      assertNotNull(statistics);
+      assertThat(statistics).isNotNull();
       int updateEvents = statistics.getUpdateEvents();
-      assertEquals(totalPuts, updateEvents);
-      assertEquals(totalUpdateEvents, updateEvents);
-      assertEquals(MAX_PUTS * NUM_PUB_THREADS * NUM_PUBS, updateEvents);
+      assertThat(updateEvents).isEqualTo(totalPuts);
+      assertThat(updateEvents).isEqualTo(totalUpdateEvents);
+      assertThat(updateEvents).isEqualTo(MAX_PUTS * NUM_PUB_THREADS * NUM_PUBS);
 
       // assert that archive file contains same values as statistics
       File archive = new File(subArchive);
-      assertTrue(archive.exists());
+      assertThat(archive.exists()).isTrue();
 
       StatArchiveReader reader = new StatArchiveReader(new File[] {archive}, null, false);
 
@@ -430,7 +424,7 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
         StatValue[] statValues = ri.getStatValues();
         for (int i = 0; i < statValues.length; i++) {
           String statName = ri.getType().getStats()[i].getName();
-          assertNotNull(statName);
+          assertThat(statName).isNotNull();
 
           if (statName.equals(PubSubStats.UPDATE_EVENTS)) {
             StatValue sv = statValues[i];
@@ -443,38 +437,38 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
             double mean = sv.getSnapshotsAverage();
             double stdDev = sv.getSnapshotsStandardDeviation();
 
-            assertEquals(mostRecent, max, 0);
+            assertThat(max).isEqualTo(mostRecent);
 
             double summation = 0;
             double[] rawSnapshots = sv.getRawSnapshots();
             for (final double rawSnapshot : rawSnapshots) {
               summation += rawSnapshot;
             }
-            assertEquals(mean, summation / sv.getSnapshotsSize(), 0);
+            assertThat(summation / sv.getSnapshotsSize()).isEqualTo(mean);
 
             combinedUpdateEvents += mostRecent;
           }
         }
       }
-      assertEquals(totalUpdateEvents, combinedUpdateEvents, 0);
+      assertThat(combinedUpdateEvents).isEqualTo(totalUpdateEvents);
     });
 
     int updateEvents =
         sub.invoke(() -> readIntStat(new File(subArchive), "PubSubStats", "updateEvents"));
-    assertTrue(updateEvents > 0);
-    assertEquals(MAX_PUTS * NUM_PUB_THREADS * NUM_PUBS, updateEvents);
+    assertThat(updateEvents).isGreaterThan(0);
+    assertThat(updateEvents).isEqualTo(MAX_PUTS * NUM_PUB_THREADS * NUM_PUBS);
 
     int puts = 0;
     for (int pubVM = 0; pubVM < NUM_PUBS; pubVM++) {
       int currentPubVM = pubVM;
       int vmPuts = pubs[pubVM]
           .invoke(() -> readIntStat(new File(pubArchives[currentPubVM]), "PubSubStats", "puts"));
-      assertTrue(vmPuts > 0);
-      assertEquals(MAX_PUTS * NUM_PUB_THREADS, vmPuts);
+      assertThat(vmPuts).isGreaterThan(0);
+      assertThat(vmPuts).isEqualTo(MAX_PUTS * NUM_PUB_THREADS);
       puts += vmPuts;
     }
-    assertTrue(puts > 0);
-    assertEquals(MAX_PUTS * NUM_PUB_THREADS * NUM_PUBS, puts);
+    assertThat(puts).isGreaterThan(0);
+    assertThat(puts).isEqualTo(MAX_PUTS * NUM_PUB_THREADS * NUM_PUBS);
 
     // use regex "testPubAndSubCustomStats"
 
@@ -482,13 +476,15 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
         new MultipleArchiveReader(directory, ".*" + getTestMethodName() + ".*\\.gfs");
 
     int combinedUpdateEvents = reader.readIntStat(PubSubStats.TYPE_NAME, PubSubStats.UPDATE_EVENTS);
-    assertTrue("Failed to read updateEvents stat values", combinedUpdateEvents > 0);
+    assertThat(combinedUpdateEvents)
+        .as("Failed to read updateEvents stat values").isGreaterThan(0);
 
     int combinedPuts = reader.readIntStat(PubSubStats.TYPE_NAME, PubSubStats.PUTS);
-    assertTrue("Failed to read puts stat values", combinedPuts > 0);
+    assertThat(combinedPuts).as("Failed to read puts stat values").isGreaterThan(0);
 
-    assertTrue("updateEvents is " + combinedUpdateEvents + " but puts is " + combinedPuts,
-        combinedUpdateEvents == combinedPuts);
+    assertThat(combinedUpdateEvents)
+        .as("updateEvents is " + combinedUpdateEvents + " but puts is " + combinedPuts)
+        .isEqualTo(combinedPuts);
   }
 
   @Test
@@ -505,14 +501,14 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
 
       // assert that sampler is working as expected
       GemFireStatSampler sampler = system.getStatSampler();
-      assertTrue(sampler.isSamplingEnabled());
-      assertTrue(sampler.isAlive());
+      assertThat(sampler.isSamplingEnabled()).isTrue();
+      assertThat(sampler.isAlive()).isTrue();
 
       await("awaiting SampleCollector to exist")
           .until(() -> sampler.getSampleCollector() != null);
 
       SampleCollector sampleCollector = sampler.getSampleCollector();
-      assertNotNull(sampleCollector);
+      assertThat(sampleCollector).isNotNull();
 
       StatisticsType VMStatsType = getSystem().findType("VMStats");
       Statistics vmStats = getSystem().findStatisticsByType(VMStatsType)[0];
@@ -571,8 +567,8 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
       final String statName = args[2];
 
       File archive = new File(archiveName).getAbsoluteFile();
-      assertTrue("File " + archive + " does not exist!", archive.exists());
-      assertTrue(archive + " exists but is not a file!", archive.isFile());
+      assertThat(archive.exists()).isTrue();
+      assertThat(archive.isFile()).isTrue();
 
       MultipleArchiveReader reader = new MultipleArchiveReader(archive);
       int value = reader.readIntStat(statType, statName);
@@ -588,10 +584,12 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
       int value1 = reader.readIntStat(statType1, statName1);
       int value2 = reader.readIntStat(statType2, statName2);
 
-      assertTrue(statType1 + "#" + statName1 + "=" + value1 + " does not equal " + statType2 + "#"
-          + statName2 + "=" + value2, value1 == value2);
+      assertThat(value1)
+          .as(statType1 + "#" + statName1 + "=" + value1 + " does not equal " + statType2 + "#"
+              + statName2 + "=" + value2)
+          .isEqualTo(value2);
     } else {
-      assertEquals("Minimum two args are required: statType statName", 2, args.length);
+      assertThat(args.length).as("Minimum two args are required: statType statName").isEqualTo(2);
     }
   }
 
@@ -793,24 +791,20 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
       if (dir.exists() && dir.isDirectory()) {
         List<File> archives = findFilesWithSuffix(dir, regex, ".gfs");
         return readIntStatFromArchives(archives, typeName, statName);
-
-        // one archive file
-      } else if (dir.exists() && dir.isFile()) {
-        List<File> archives = new ArrayList<>();
-        archives.add(dir);
-        return readIntStatFromArchives(archives, typeName, statName);
-
-        // failure
-      } else {
-        throw new IllegalStateException(dir + " does not exist!");
       }
+
+      assertThat(dir.exists() && dir.isFile()).as("archive file should exist").isTrue();
+
+      List<File> archives = new ArrayList<>();
+      archives.add(dir);
+      return readIntStatFromArchives(archives, typeName, statName);
     }
 
     private int readIntStatFromArchives(final List<File> archives, final String typeName,
         final String statName) throws IOException {
       StatValue[] statValues = readStatValues(archives, typeName, statName);
-      assertNotNull("statValues is null!", statValues);
-      assertTrue("statValues is empty!", statValues.length > 0);
+      assertThat(statValues).isNotNull();
+      assertThat(statValues.length).isGreaterThan(0);
 
       int value = 0;
       for (final StatValue statValue : statValues) {
