@@ -14,6 +14,7 @@
  */
 package org.apache.geode.redis.internal.commands.executor.list;
 
+import static org.apache.geode.redis.internal.netty.Coder.toUpperCaseBytes;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.AFTER;
 import static org.apache.geode.redis.internal.netty.StringBytesGlossary.BEFORE;
 
@@ -35,11 +36,10 @@ public class LInsertExecutor implements CommandExecutor {
   public RedisResponse executeCommand(Command command, ExecutionHandlerContext context) {
     List<byte[]> commandElements = command.getProcessedCommand();
 
-    byte[] direction = commandElements.get(2);
     boolean before;
     byte[] referenceElement = commandElements.get(3);
     byte[] elementToInsert = commandElements.get(4);
-
+    byte[] direction = toUpperCaseBytes(commandElements.get(2));
     if (Arrays.equals(direction, BEFORE)) {
       before = true;
     } else if (Arrays.equals(direction, AFTER)) {
