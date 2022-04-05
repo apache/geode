@@ -16,6 +16,7 @@
 package org.apache.geode.internal.admin.remote;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -137,5 +138,13 @@ class DistributionLocatorIdTest {
     final DistributionLocatorId locatorId = new DistributionLocatorId(localHost, locator);
 
     assertThat(locatorId.marshalForClients()).isEqualTo("hostname-for-clients.example.com[1234]");
+  }
+
+  @SuppressWarnings("ResultOfMethodCallIgnored")
+  @Test
+  void hashCodeDoesNotThrowWhenHostIsNull() {
+    final DistributionLocatorId locatorId =
+        DistributionLocatorId.unmarshal("unknown.invalid[1234]");
+    assertThatNoException().isThrownBy(locatorId::hashCode);
   }
 }
