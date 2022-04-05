@@ -30,7 +30,7 @@ plugins {
   id "org.nosphere.apache.rat" version "0.7.0" apply false
   id "org.sonarqube" version "3.3" apply false
   id "me.champeau.gradle.japicmp" apply false // Version defined in buildSrc/build.gradle
-  id 'me.champeau.gradle.jmh' version '0.5.3' apply false
+  id 'me.champeau.jmh' version '0.6.6' apply false
   id "de.undercouch.download" version "5.0.1" apply false
 }
 
