@@ -353,7 +353,9 @@ public class ClusterDistributionManager implements DistributionManager {
             }
           }
         }
-        distributionManager.addNewMember(id); // add ourselves
+        if (!system.getDistributionManager().getViewMembers().contains(id)) {
+          distributionManager.addNewMember(id); // add ourselves
+        }
       }
 
       // Send out a StartupMessage to the other members.
@@ -2345,7 +2347,9 @@ public class ClusterDistributionManager implements DistributionManager {
       // subsequent deadlock (#45566). Elder selection is now done when a view
       // is installed.
       try {
-        dm.addNewMember(member);
+        if (!dm.getViewMembers().contains(member)) {
+          dm.addNewMember(member);
+        }
       } catch (VirtualMachineError err) {
         // If this ever returns, rethrow the error. We're poisoned
         // now, so don't let this thread continue.
