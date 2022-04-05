@@ -232,8 +232,17 @@ public class MemberFunctionResultSender implements InternalResultSender {
   public void setException(Throwable exception) {
     ((LocalResultCollector) rc).setException(exception);
     // this.lastResult(exception);
-    logger.info("Unexpected exception during function execution local member",
-        exception);
+    if (AbstractExecution.SUPPRESS_FUNCTION_EXCEPTION_LOGGING
+        && exception instanceof FunctionException) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Unexpected exception during function execution local member",
+            exception);
+      }
+    } else {
+      logger.info("Unexpected exception during function execution local member",
+          exception);
+    }
+
     rc.endResults();
     localLastResultReceived = true;
   }

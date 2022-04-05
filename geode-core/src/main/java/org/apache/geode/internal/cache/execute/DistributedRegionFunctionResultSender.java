@@ -224,8 +224,18 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
     } else {
       ((LocalResultCollector) rc).setException(exception);
       // this.lastResult(exception);
-      logger.info("Unexpected exception during function execution on local node Distributed Region",
-          exception);
+      if (AbstractExecution.SUPPRESS_FUNCTION_EXCEPTION_LOGGING
+          && exception instanceof FunctionException) {
+        if (logger.isDebugEnabled()) {
+          logger.debug(
+              "Unexpected exception during function execution on local node Distributed Region",
+              exception);
+        }
+      } else {
+        logger.info(
+            "Unexpected exception during function execution on local node Distributed Region",
+            exception);
+      }
     }
     rc.endResults();
     localLastResultReceived = true;

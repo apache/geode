@@ -56,6 +56,10 @@ import org.apache.geode.util.internal.GeodeGlossary;
 public abstract class AbstractExecution implements InternalExecution {
   private static final Logger logger = LogService.getLogger();
 
+  /** Whether to suppress logging of FunctionException */
+  public static final boolean SUPPRESS_FUNCTION_EXCEPTION_LOGGING =
+      Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "logging.suppressFunctionExceptionLogging");
+
   public static final int DEFAULT_CLIENT_FUNCTION_TIMEOUT = 0;
   private static final String CLIENT_FUNCTION_TIMEOUT_SYSTEM_PROPERTY =
       GeodeGlossary.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT";
@@ -504,8 +508,16 @@ public abstract class AbstractExecution implements InternalExecution {
         ((InternalResultSender) sender).setException(functionException);
       }
     } else {
-      logger.warn("Exception occurred on local node while executing Function:",
-          functionException);
+      if (AbstractExecution.SUPPRESS_FUNCTION_EXCEPTION_LOGGING
+          && functionException instanceof FunctionException) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("Exception occurred on local node while executing Function:",
+              functionException);
+        }
+      } else {
+        logger.warn("Exception occurred on local node while executing Function:",
+            functionException);
+      }
     }
   }
 

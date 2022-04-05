@@ -321,9 +321,17 @@ public class ServerToClientFunctionResultSender implements ResultSender {
           }
           String exceptionMessage = exception.getMessage() != null ? exception.getMessage()
               : "Exception occurred during function execution";
-          logger.warn(String.format("Exception on server while executing function : %s",
-              fn),
-              exception);
+          if (AbstractExecution.SUPPRESS_FUNCTION_EXCEPTION_LOGGING
+              && exception instanceof FunctionException) {
+            if (logger.isDebugEnabled()) {
+              logger.debug(String.format("Exception on server while executing function : %s",
+                  fn), exception);
+            }
+          } else {
+            logger.warn(String.format("Exception on server while executing function : %s",
+                fn), exception);
+          }
+
           if (logger.isDebugEnabled()) {
             logger.debug("ServerToClientFunctionResultSender sending Function Exception : ");
           }

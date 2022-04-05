@@ -390,8 +390,18 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
       serverSender.setException(exception);
     } else {
       ((LocalResultCollector) rc).setException(exception);
-      logger.info("Unexpected exception during function execution on local node Partitioned Region",
-          exception);
+      if (AbstractExecution.SUPPRESS_FUNCTION_EXCEPTION_LOGGING
+          && exception instanceof FunctionException) {
+        if (logger.isDebugEnabled()) {
+          logger.debug(
+              "Unexpected exception during function execution on local node Partitioned Region",
+              exception);
+        }
+      } else {
+        logger.info(
+            "Unexpected exception during function execution on local node Partitioned Region",
+            exception);
+      }
     }
     rc.endResults();
     localLastResultReceived = true;
