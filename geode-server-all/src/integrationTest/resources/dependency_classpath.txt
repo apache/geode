@@ -72,7 +72,7 @@ jna-platform-5.10.0.jar
 log4j-jul-2.17.2.jar
 HdrHistogram-2.1.12.jar
 jackson-annotations-2.13.2.jar
-micrometer-core-1.8.3.jar
+micrometer-core-1.8.4.jar
 shiro-config-ogdl-1.8.0.jar
 geode-log4j-0.0.0.jar
 lucene-analyzers-phonetic-6.6.6.jar
