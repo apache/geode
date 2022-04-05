@@ -62,8 +62,8 @@ jetty-servlet-9.4.45.v20220203.jar
 jetty-security-9.4.45.v20220203.jar
 jetty-server-9.4.45.v20220203.jar
 javax.servlet-api-3.1.0.jar
-jna-platform-5.10.0.jar
-jna-5.10.0.jar
+jna-platform-5.11.0.jar
+jna-5.11.0.jar
 snappy-0.4.jar
 jgroups-3.6.14.Final.jar
 shiro-cache-1.8.0.jar

@@ -1024,8 +1024,8 @@ lib/jetty-webapp-9.4.45.v20220203.jar
 lib/jetty-xml-9.4.45.v20220203.jar
 lib/jgroups-3.6.14.Final.jar
 lib/jline-2.12.jar
-lib/jna-5.10.0.jar
-lib/jna-platform-5.10.0.jar
+lib/jna-5.11.0.jar
+lib/jna-platform-5.11.0.jar
 lib/jopt-simple-5.0.4.jar
 lib/log4j-api-2.17.2.jar
 lib/log4j-core-2.17.2.jar
