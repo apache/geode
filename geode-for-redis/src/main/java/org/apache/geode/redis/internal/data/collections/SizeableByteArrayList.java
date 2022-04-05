@@ -33,7 +33,7 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
   private int memberOverhead;
 
   /**
-   * @param toRemove element to remove from the list
+   * @param elementToRemove element to remove from the list
    * @param count number of elements that match object o to remove from the list.
    *        Count that is equal to 0 removes all matching elements from the list.
    * @return list of indexes that were removed in order.
