@@ -316,8 +316,12 @@ public class QueueManagerImpl implements QueueManager {
   }
 
 
+  /*
+   * This is for test only, it does bad stuff that one should only do in test,
+   * if ever.
+   */
   @TestOnly
-  public void setSendClientReady() {
+  public void setSendClientReadyInTestOnly() {
     synchronized (lock) {
       sentClientReady = true;
     }
@@ -818,7 +822,7 @@ public class QueueManagerImpl implements QueueManager {
     return primary;
   }
 
-  public void markQueueAsReadyForEvents(QueueConnectionImpl primary) {
+  public void markQueueAsReadyForEvents(@NotNull QueueConnectionImpl primary) {
     if (primary != null && sentClientReady && primary.sendClientReady()) {
       readyForEventsAfterFailover(primary);
     }

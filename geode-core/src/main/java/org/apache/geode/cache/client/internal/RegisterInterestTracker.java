@@ -30,8 +30,7 @@ import org.jetbrains.annotations.NotNull;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.InterestResultPolicy;
-import org.apache.geode.cache.query.CqQuery;
-import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
+import org.apache.geode.cache.query.internal.cq.ClientCQ;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.sockets.UnregisterAllInterest;
@@ -54,7 +53,7 @@ public class RegisterInterestTracker {
   private final FailoverInterestList[] failoverInterestLists = new FailoverInterestList[4];
 
   /** Manages CQs */
-  private final ConcurrentMap<CqQuery, Boolean> cqs = new ConcurrentHashMap<>();
+  private final ConcurrentMap<ClientCQ, Boolean> cqs = new ConcurrentHashMap<>();
 
   public RegisterInterestTracker() {
     failoverInterestLists[interestListIndex] = new FailoverInterestList();
@@ -149,15 +148,15 @@ public class RegisterInterestTracker {
     }
   }
 
-  public void addCq(InternalCqQuery cqi, boolean isDurable) {
+  public void addCq(ClientCQ cqi, boolean isDurable) {
     cqs.put(cqi, isDurable);
   }
 
-  public void removeCq(InternalCqQuery cqi) {
+  public void removeCq(ClientCQ cqi) {
     cqs.remove(cqi);
   }
 
-  Map<CqQuery, Boolean> getCqsMap() {
+  Map<ClientCQ, Boolean> getCqsMap() {
     return cqs;
   }
 
