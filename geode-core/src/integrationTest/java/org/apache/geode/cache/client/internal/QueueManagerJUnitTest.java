@@ -47,10 +47,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.DataPolicy;
@@ -71,23 +71,22 @@ import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.internal.logging.LocalLogWriter;
-import org.apache.geode.test.junit.categories.ClientServerTest;
 
-@Category(ClientServerTest.class)
+@Tag("ClientServerTest")
 public class QueueManagerJUnitTest {
 
-  private DummyPool pool;
+  private TestPool pool;
   private LocalLogWriter logger;
   private DistributedSystem ds;
   private EndpointManagerImpl endpoints;
-  private DummySource source;
-  private DummyFactory factory;
+  private TestConnectionSource source;
+  private TestConnectionFactory factory;
   private QueueManagerImpl manager;
   private ScheduledExecutorService background;
   private PoolStats stats;
   private List<Op> opList;
 
-  @Before
+  @BeforeEach
   public void setUp() {
     logger = new LocalLogWriter(FINEST.intLevel(), System.out);
 
@@ -98,17 +97,17 @@ public class QueueManagerJUnitTest {
     ds = DistributedSystem.connect(properties);
 
     stats = new PoolStats(ds, "QueueManagerJUnitTest");
-    pool = new DummyPool();
+    pool = new TestPool();
     endpoints = new EndpointManagerImpl("pool", ds, ds.getCancelCriterion(), pool.getStats());
-    source = new DummySource();
-    factory = new DummyFactory();
+    source = new TestConnectionSource();
+    factory = new TestConnectionFactory();
     background = Executors.newSingleThreadScheduledExecutor();
     opList = new LinkedList<>();
     addIgnoredException("Could not find any server to host primary client queue.");
     addIgnoredException("Could not find any server to host redundant client queue.");
   }
 
-  @After
+  @AfterEach
   public void tearDown() {
     background.shutdownNow();
     manager.close(false);
@@ -260,7 +259,7 @@ public class QueueManagerJUnitTest {
     String serverRefusedConnectionExceptionMessage =
         "Peer or client version with ordinal x not supported. Highest known version is x.x.x.";
     // Spy the factory so that the createClientToServerConnection method can be mocked
-    DummyFactory factorySpy = spy(factory);
+    TestConnectionFactory factorySpy = spy(factory);
     manager = new QueueManagerImpl(pool, endpoints, source, factorySpy, 2, 20, logger,
         ClientProxyMembershipID.getNewProxyMembership(ds));
     // Cause a ServerRefusedConnectionException to be thrown from createClientToServerConnection
@@ -279,8 +278,8 @@ public class QueueManagerJUnitTest {
 
   @Test
   public void testAddToConnectionListCallsCloseConnectionOpWithKeepAliveTrue2() {
-    // Create a DummyConnection
-    DummyConnection connection = factory.addConnection(0, 0, 1);
+    // Create a TestConnection
+    TestConnection connection = factory.addConnection(0, 0, 1);
     assertThat(connection.keepAlive).isFalse();
 
     // Get and close its Endpoint
@@ -308,7 +307,7 @@ public class QueueManagerJUnitTest {
 
     LocalRegion testRegion = mock(LocalRegion.class);
 
-    InternalPool pool = new RecoveryDummyPool();
+    InternalPool pool = new RecoveryTestPool();
     ServerRegionProxy serverRegionProxy = new ServerRegionProxy("region", pool);
 
     when(testRegion.getServerProxy()).thenReturn(serverRegionProxy);
@@ -378,7 +377,7 @@ public class QueueManagerJUnitTest {
     assertThat(actualPorts).isEqualTo(expectedPorts);
   }
 
-  private class RecoveryDummyPool extends DummyPool {
+  private class RecoveryTestPool extends TestPool {
     RegisterInterestTracker registerInterestTracker = mock(RegisterInterestTracker.class);
 
     @Override
@@ -393,7 +392,7 @@ public class QueueManagerJUnitTest {
     }
   }
 
-  private class DummyPool implements InternalPool {
+  private class TestPool implements InternalPool {
 
     @Override
     public String getPoolOrCacheCancelInProgress() {
@@ -688,16 +687,16 @@ public class QueueManagerJUnitTest {
    * out when the queue manager calls createClientToServerConnection. If an error was added, the
    * factory will return null instead.
    */
-  private class DummyFactory implements ConnectionFactory {
+  private class TestConnectionFactory implements ConnectionFactory {
 
-    private final LinkedList<DummyConnection> nextConnections = new LinkedList<>();
+    private final LinkedList<TestConnection> nextConnections = new LinkedList<>();
 
     private void addError() {
       nextConnections.add(null);
     }
 
-    private DummyConnection addConnection(int endpointType, int queueSize, int port) {
-      DummyConnection connection = new DummyConnection(endpointType, queueSize, port);
+    private TestConnection addConnection(int endpointType, int queueSize, int port) {
+      TestConnection connection = new TestConnection(endpointType, queueSize, port);
       nextConnections.add(connection);
       return connection;
     }
@@ -763,7 +762,7 @@ public class QueueManagerJUnitTest {
     }
   }
 
-  private class DummySource implements ConnectionSource {
+  private class TestConnectionSource implements ConnectionSource {
 
     private final AtomicInteger nextPort = new AtomicInteger();
 
@@ -815,14 +814,14 @@ public class QueueManagerJUnitTest {
     }
   }
 
-  private class DummyConnection implements Connection {
+  private class TestConnection implements Connection {
 
     private final ServerQueueStatus status;
     private final ServerLocation location;
     private final Endpoint endpoint;
     private boolean keepAlive;
 
-    private DummyConnection(int endpointType, int queueSize, int port) {
+    private TestConnection(int endpointType, int queueSize, int port) {
       InternalDistributedMember member = new InternalDistributedMember("localhost", 555);
       status = new ServerQueueStatus((byte) endpointType, queueSize, member, 0);
       location = new ServerLocation("localhost", port);
