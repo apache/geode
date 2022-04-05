@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache.rollingupgrade;
 
-import static org.apache.geode.test.junit.rules.gfsh.GfshRule.startLocatorCommand;
-import static org.apache.geode.test.junit.rules.gfsh.GfshRule.startServerCommand;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -124,5 +122,23 @@ public class RollingUpgradeWithGfshDUnitTest {
     String class1 = "DeployCommandsDUnitA";
     classBuilder.writeJarFromName(class1, jar1);
     return "deploy --dir=" + jarsDir.getAbsolutePath();
+  }
+
+  private static String startServerCommand(String name, int port, int connectedLocatorPort) {
+    return "start server --name=" + name
+        + " --server-port=" + port
+        + " --locators=localhost[" + connectedLocatorPort + "]";
+  }
+
+  private static String startLocatorCommand(String name, int port, int jmxPort, int httpPort,
+      int connectedLocatorPort) {
+    String command = "start locator --name=" + name
+        + " --port=" + port
+        + " --http-service-port=" + httpPort;
+    if (connectedLocatorPort > 0) {
+      command += " --locators=localhost[" + connectedLocatorPort + "]";
+    }
+    command += " --J=-Dgemfire.jmx-manager-port=" + jmxPort;
+    return command;
   }
 }

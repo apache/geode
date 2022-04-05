@@ -16,7 +16,6 @@
 package org.apache.geode.management;
 
 import static org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert.assertManagementListResult;
-import static org.apache.geode.test.junit.rules.gfsh.GfshRule.startLocatorCommand;
 
 import java.io.File;
 import java.io.IOException;
@@ -103,5 +102,17 @@ public class DeploymentManagementUpgradeTest {
         .build();
     assertManagementListResult(cms.list(new Deployment())).isSuccessful()
         .hasConfigurations().hasSize(1);
+  }
+
+  private static String startLocatorCommand(String name, int port, int jmxPort, int httpPort,
+      int connectedLocatorPort) {
+    String command = "start locator --name=" + name
+        + " --port=" + port
+        + " --http-service-port=" + httpPort;
+    if (connectedLocatorPort > 0) {
+      command += " --locators=localhost[" + connectedLocatorPort + "]";
+    }
+    command += " --J=-Dgemfire.jmx-manager-port=" + jmxPort;
+    return command;
   }
 }

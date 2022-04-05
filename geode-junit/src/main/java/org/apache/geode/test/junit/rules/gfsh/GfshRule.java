@@ -15,25 +15,26 @@
 package org.apache.geode.test.junit.rules.gfsh;
 
 import static java.io.File.pathSeparator;
-import static org.apache.geode.internal.process.ProcessType.LOCATOR;
-import static org.apache.geode.internal.process.ProcessType.SERVER;
-import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder.When.ALWAYS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
+import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.version.VersionManager;
@@ -48,6 +49,9 @@ import org.apache.geode.test.version.VersionManager;
  *
  * this will set the gfsh to be debuggable at port 30002, and the locator started to be debuggable
  * at port 30000, and the server to be debuggable at 30001
+ *
+ * TODO:
+ * - change top-level dir for saved test results to use test class name
  */
 public class GfshRule implements TestRule {
   private final SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder()
@@ -57,7 +61,9 @@ public class GfshRule implements TestRule {
   private Path gfsh;
   private String version;
 
-  public GfshRule() {}
+  public GfshRule() {
+    // nothing
+  }
 
   public GfshRule(String version) {
     this.version = version;
@@ -112,15 +118,10 @@ public class GfshRule implements TestRule {
       geodeHome = Paths.get(VersionManager.getInstance().getInstall(version));
     }
 
-    if (isWindows()) {
-      return geodeHome.resolve("bin/gfsh.bat");
-    } else {
-      return geodeHome.resolve("bin/gfsh");
+    if (SystemUtils.isWindows()) {
+      return geodeHome.resolve("bin").resolve("gfsh.bat");
     }
-  }
-
-  private boolean isWindows() {
-    return System.getProperty("os.name").toLowerCase().contains("win");
+    return geodeHome.resolve("bin").resolve("gfsh");
   }
 
   public TemporaryFolder getTemporaryFolder() {
@@ -132,11 +133,11 @@ public class GfshRule implements TestRule {
   }
 
   public GfshExecution execute(String... commands) {
-    return execute(GfshScript.of(commands));
-  }
-
-  public GfshExecution execute(File workingDir, String... commands) {
-    return execute(GfshScript.of(commands), workingDir);
+    try {
+      return execute(GfshScript.of(commands));
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
@@ -150,35 +151,29 @@ public class GfshRule implements TestRule {
    * This way, this workingDir will be managed by the gfshRule and stop all the processes that
    * exists in this working dir when tests finish
    */
-  public GfshExecution execute(GfshScript gfshScript, File workingDir) {
+  GfshExecution execute(GfshScript gfshScript, File workingDir)
+      throws ExecutionException, InterruptedException, TimeoutException, IOException {
     System.out.println("Executing " + gfshScript);
-    try {
-      int debugPort = gfshScript.getDebugPort();
-      Process process = toProcessBuilder(gfshScript, gfsh, workingDir, debugPort).start();
-      GfshExecution gfshExecution = new GfshExecution(process, workingDir);
-      gfshExecutions.add(gfshExecution);
-      gfshExecution.awaitTermination(gfshScript);
-      return gfshExecution;
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+
+    int debugPort = gfshScript.getDebugPort();
+    Process process = createProcessBuilder(gfshScript, gfsh, workingDir, debugPort).start();
+    GfshExecution gfshExecution = new GfshExecution(process, workingDir);
+    gfshExecutions.add(gfshExecution);
+    gfshExecution.awaitTermination(gfshScript);
+    return gfshExecution;
   }
 
-  public GfshExecution execute(GfshScript gfshScript) {
-    try {
-      File workingDir = new File(temporaryFolder.getRoot(), gfshScript.getName());
-      workingDir.mkdirs();
-      return execute(gfshScript, workingDir);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+  public GfshExecution execute(GfshScript gfshScript)
+      throws IOException, ExecutionException, InterruptedException, TimeoutException {
+    File workingDir = temporaryFolder.newFolder(gfshScript.getName());
+    return execute(gfshScript, workingDir);
   }
 
-  private ProcessBuilder toProcessBuilder(GfshScript gfshScript, Path gfshPath, File workingDir,
+  private ProcessBuilder createProcessBuilder(GfshScript gfshScript, Path gfshPath, File workingDir,
       int gfshDebugPort) {
     List<String> commandsToExecute = new ArrayList<>();
 
-    if (isWindows()) {
+    if (SystemUtils.isWindows()) {
       commandsToExecute.add("cmd.exe");
       commandsToExecute.add("/c");
     }
@@ -220,54 +215,38 @@ public class GfshRule implements TestRule {
    * this will stop the server that's been started in this gfsh execution
    */
   public void stopServer(GfshExecution execution, String serverName) {
-    Path serverWorkingDir =
-        execution.getWorkingDir().toPath().resolve(serverName).toAbsolutePath();
-    String command = "stop server --dir=" + serverWorkingDir;
-    execute(GfshScript.of(command).withName("Stop-server-" + serverName));
-
-    Path serverPidFile = serverWorkingDir.resolve(SERVER.getPidFileName());
-    assertThat(serverPidFile).doesNotExist();
-    await().untilAsserted(() -> assertThat(serverPidFile).doesNotExist());
+    String command = execution.getStopServerCommand(serverName);
+    try {
+      execute(GfshScript.of(command).withName("Stop-server-" + serverName));
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
-   * this will stop the lcoator that's been started in this gfsh execution
+   * this will stop the locator that's been started in this gfsh execution
    */
   public void stopLocator(GfshExecution execution, String locatorName) {
-    Path locatorWorkingDir =
-        execution.getWorkingDir().toPath().resolve(locatorName).toAbsolutePath();
-    String command = "stop locator --dir=" + locatorWorkingDir;
-    execute(GfshScript.of(command).withName("Stop-locator-" + locatorName));
-
-    Path locatorPidFile = locatorWorkingDir.resolve(LOCATOR.getPidFileName());
-    assertThat(locatorPidFile).doesNotExist();
-    await().untilAsserted(() -> assertThat(locatorPidFile).doesNotExist());
+    String command = execution.getStopLocatorCommand(locatorName);
+    try {
+      execute(GfshScript.of(command).withName("Stop-locator-" + locatorName));
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private void stopMembers(GfshExecution gfshExecution) {
+    // TODO: getLocatorPidFiles
+
     String[] stopMemberScripts = gfshExecution.getStopMemberCommands();
     if (stopMemberScripts.length == 0) {
       return;
     }
-    execute(GfshScript.of(stopMemberScripts).withName("Stop-Members"));
-  }
 
-  public static String startServerCommand(String name, int port, int connectedLocatorPort) {
-    String command = "start server --name=" + name
-        + " --server-port=" + port
-        + " --locators=localhost[" + connectedLocatorPort + "]";
-    return command;
-  }
-
-  public static String startLocatorCommand(String name, int port, int jmxPort, int httpPort,
-      int connectedLocatorPort) {
-    String command = "start locator --name=" + name
-        + " --port=" + port
-        + " --http-service-port=" + httpPort;
-    if (connectedLocatorPort > 0) {
-      command += " --locators=localhost[" + connectedLocatorPort + "]";
+    try {
+      execute(GfshScript.of(stopMemberScripts).withName("Stop-Members"));
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
-    command += " --J=-Dgemfire.jmx-manager-port=" + jmxPort;
-    return command;
   }
 }

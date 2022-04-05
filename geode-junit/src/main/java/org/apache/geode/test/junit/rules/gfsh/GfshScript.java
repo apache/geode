@@ -131,14 +131,22 @@ public class GfshScript {
   }
 
   public GfshExecution execute(GfshRule gfshRule) {
-    return gfshRule.execute(this);
+    try {
+      return gfshRule.execute(this);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
    * this will allow you to specify a gfsh workingDir when executing the script
    */
   public GfshExecution execute(GfshRule gfshRule, File workingDir) {
-    return gfshRule.execute(this, workingDir);
+    try {
+      return gfshRule.execute(this, workingDir);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public List<DebuggableCommand> getCommands() {

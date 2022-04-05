@@ -14,6 +14,9 @@
  */
 package org.apache.geode.test.junit.rules.gfsh;
 
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+import static org.apache.geode.internal.process.ProcessUtils.readPid;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.BufferedReader;
@@ -21,19 +24,19 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.google.common.base.Charsets;
-import com.google.common.collect.Streams;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
+import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.test.junit.rules.gfsh.internal.ProcessLogger;
 
 public class GfshExecution {
@@ -49,7 +52,7 @@ public class GfshExecution {
 
   protected GfshExecution(Process process, File workingDir) {
     this.process = process;
-    this.workingDir = workingDir;
+    this.workingDir = workingDir.getAbsoluteFile();
 
     processLogger = new ProcessLogger(process, workingDir.getName());
     processLogger.start();
@@ -78,7 +81,7 @@ public class GfshExecution {
         .anyMatch(filename -> filename.endsWith("server.pid"));
 
     return Arrays.stream(potentialMemberDirectories).filter(isServerDir)
-        .collect(Collectors.toList());
+        .collect(toList());
   }
 
   public List<File> getLocatorDirs() {
@@ -88,7 +91,15 @@ public class GfshExecution {
         .anyMatch(filename -> filename.endsWith("locator.pid"));
 
     return Arrays.stream(potentialMemberDirectories).filter(isLocatorDir)
-        .collect(Collectors.toList());
+        .collect(toList());
+  }
+
+  public Iterable<Path> getLocatorPidFiles(ProcessType processType) throws IOException {
+    return Files.list(workingDir.toPath())
+        .filter(Files::isDirectory)
+        .map(path -> path.resolve(processType.getPidFileName()))
+        .filter(Files::exists)
+        .collect(toSet());
   }
 
   public void printLogFiles() {
@@ -99,7 +110,7 @@ public class GfshExecution {
     for (File logFile : logFiles) {
       System.out.println("Contents of " + logFile.getAbsolutePath());
       try (BufferedReader br =
-          new BufferedReader(new InputStreamReader(new FileInputStream(logFile), Charsets.UTF_8))) {
+          new BufferedReader(new InputStreamReader(new FileInputStream(logFile)))) {
         String line;
         while ((line = br.readLine()) != null) {
           System.out.println(line);
@@ -115,7 +126,7 @@ public class GfshExecution {
     List<File> locators = getLocatorDirs();
 
     return Stream.concat(servers.stream(), locators.stream()).flatMap(this::findLogFiles)
-        .collect(Collectors.toList());
+        .collect(toList());
   }
 
   private Stream<File> findLogFiles(File memberDir) {
@@ -166,10 +177,31 @@ public class GfshExecution {
 
   String[] getStopMemberCommands() {
     Stream<String> stopServers =
-        getServerDirs().stream().map(f -> "stop server --dir=" + quoteArgument(f.toString()));
+        getServerDirs().stream().map(dir -> getStopServerCommand(dir.toString()));
     Stream<String> stopLocators =
-        getLocatorDirs().stream().map(f -> "stop locator --dir=" + quoteArgument(f.toString()));
-    return Streams.concat(stopServers, stopLocators).toArray(String[]::new);
+        getLocatorDirs().stream().map(dir -> getStopLocatorCommand(dir.toString()));
+    return Stream.concat(stopServers, stopLocators).toArray(String[]::new);
+  }
+
+  String getStopServerCommand(String serverName) {
+    return "stop server --dir=" + getSubDir(serverName);
+  }
+
+  String getStopLocatorCommand(String locatorName) {
+    return "stop locator --dir=" + getSubDir(locatorName);
+  }
+
+  Path getPidFilePath(String processName, ProcessType processType) {
+    return getSubDir(processName).resolve(processType.getPidFileName());
+  }
+
+  int getPid(String processName, ProcessType processType) throws IOException {
+    Path pidFilePath = getPidFilePath(processName, processType);
+    return readPid(pidFilePath.toFile());
+  }
+
+  private Path getSubDir(String subDirName) {
+    return getWorkingDir().toPath().resolve(subDirName);
   }
 
   private String quoteArgument(String argument) {
