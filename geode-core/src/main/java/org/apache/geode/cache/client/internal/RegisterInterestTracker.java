@@ -307,9 +307,6 @@ public class RegisterInterestTracker {
   /**
    * Iterate InterestTypes searching for any with the input interestResultPolicy
    *
-   * @param regionName
-   * @param isDurable
-   * @param interestResultPolicy
    * @return boolean based on the presence of the selected InterestResultPolicy
    */
   public boolean hasInterestsWithResultPolicy(final @NotNull String regionName, boolean isDurable,
@@ -322,10 +319,6 @@ public class RegisterInterestTracker {
   /**
    * Check the RegionInterestEntries with receiveUpdatesAsInvalidates both true and false
    *
-   * @param regionName
-   * @param isDurable
-   * @param interestResultPolicy
-   * @param interestType
    * @return boolean based on the presence of the selected InterestResultPolicy
    */
   public boolean hasInterestsWithResultPolicy(final @NotNull String regionName, boolean isDurable,

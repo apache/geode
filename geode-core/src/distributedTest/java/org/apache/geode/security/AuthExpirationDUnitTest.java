@@ -118,7 +118,8 @@ public class AuthExpirationDUnitTest {
   }
 
   @Test
-  public void registeredInterestForKeysAndValidatedTheyWereAllReceived_slowReAuth_policyDefault() throws Exception {
+  public void registeredInterestForKeysAndValidatedTheyWereAllReceived_slowReAuth_policyDefault()
+      throws Exception {
     int serverPort = server.getPort();
     clientVM = cluster.startClientVM(0,
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
@@ -170,7 +171,8 @@ public class AuthExpirationDUnitTest {
   }
 
   @Test
-  public void registeredInterestForKeysAndValidatedTheyWereAllReceived_slowReAuth_policyNone_durableClient() throws Exception {
+  public void registeredInterestForKeysAndValidatedTheyWereAllReceived_slowReAuth_policyNone_durableClient()
+      throws Exception {
     int serverPort = server.getPort();
     clientVM = cluster.startClientVM(0,
         c -> c.withProperty(SECURITY_CLIENT_AUTH_INIT, UpdatableUserAuthInitialize.class.getName())
