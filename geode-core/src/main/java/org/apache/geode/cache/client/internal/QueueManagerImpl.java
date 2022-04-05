@@ -35,7 +35,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.TestOnly;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.GemFireConfigException;
@@ -319,7 +318,7 @@ public class QueueManagerImpl implements QueueManager {
    * This is for test only, it does bad stuff that one should only do in test,
    * if ever.
    */
-  @TestOnly
+  @VisibleForTesting
   public void setSendClientReadyInTestOnly() {
     synchronized (lock) {
       sentClientReady = true;
@@ -735,7 +734,7 @@ public class QueueManagerImpl implements QueueManager {
   }
 
   @VisibleForTesting
-  QueueConnectionImpl promoteBackupToPrimary(List<Connection> backups) {
+  public QueueConnectionImpl promoteBackupToPrimary(List<Connection> backups) {
     QueueConnectionImpl primary = null;
     for (int i = 0; primary == null && i < backups.size(); i++) {
       QueueConnectionImpl lastConnection = (QueueConnectionImpl) backups.get(i);
@@ -859,7 +858,7 @@ public class QueueManagerImpl implements QueueManager {
    * to find a new server.
    */
   @VisibleForTesting
-  void recoverPrimary(Set<ServerLocation> excludedServers) {
+  public void recoverPrimary(Set<ServerLocation> excludedServers) {
     if (pool.getPoolOrCacheCancelInProgress() != null) {
       return;
     }
@@ -999,7 +998,7 @@ public class QueueManagerImpl implements QueueManager {
   // so before putting connection need to see if something(crash) happen we should be able to
   // recover from it
   @VisibleForTesting
-  boolean addToConnectionList(QueueConnectionImpl connection, boolean isPrimary) {
+  public boolean addToConnectionList(QueueConnectionImpl connection, boolean isPrimary) {
     boolean isBadConnection;
     synchronized (lock) {
       ClientUpdater cu = connection.getUpdater();
@@ -1042,7 +1041,7 @@ public class QueueManagerImpl implements QueueManager {
   }
 
   @VisibleForTesting
-  void scheduleRedundancySatisfierIfNeeded(long delay) {
+  public void scheduleRedundancySatisfierIfNeeded(long delay) {
     if (shuttingDown) {
       return;
     }

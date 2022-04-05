@@ -42,7 +42,7 @@ public class ReadyForEventsOp {
   }
 
   @VisibleForTesting
-  static class ReadyForEventsOpImpl extends AbstractOp {
+  public static class ReadyForEventsOpImpl extends AbstractOp {
     /**
      * @throws org.apache.geode.SerializationException if serialization fails
      */

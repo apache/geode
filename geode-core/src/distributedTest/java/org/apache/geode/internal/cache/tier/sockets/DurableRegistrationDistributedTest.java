@@ -76,7 +76,7 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
  * values for the ones not unregistered and the Unregistered Keys' Values should be null
  */
 @Category({ClientSubscriptionTest.class})
-public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
+public class DurableRegistrationDistributedTest extends JUnit4DistributedTestCase {
 
   private VM server1VM;
 
@@ -99,7 +99,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
 
   private static final String K4 = "KEY_STONE4";
 
-  public DurableRegistrationDUnitTest() {
+  public DurableRegistrationDistributedTest() {
     super();
   }
 
@@ -109,7 +109,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
     server2VM = VM.getVM(1);
     durableClientVM = VM.getVM(2);
     hostName = VM.getHostName();
-    regionName = DurableRegistrationDUnitTest.class.getName() + "_region";
+    regionName = DurableRegistrationDistributedTest.class.getName() + "_region";
     disableShufflingOfEndpoints();
   }
 
@@ -557,7 +557,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
     try {
       // Get the region
       Region<String, String> region = getCache()
-          .getRegion(DurableRegistrationDUnitTest.class.getName() + "_region");
+          .getRegion(DurableRegistrationDistributedTest.class.getName() + "_region");
 
       assertThat(region).isNotNull();
 
@@ -575,7 +575,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
 
   private String getValue(String key) {
     Region<String, String> r =
-        getCache().getRegion(DurableRegistrationDUnitTest.class.getName() + "_region");
+        getCache().getRegion(DurableRegistrationDistributedTest.class.getName() + "_region");
 
     assertThat(r).isNotNull();
 
@@ -592,7 +592,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
     try {
       // Get the region
       Region<String, String> region = getCache()
-          .getRegion(DurableRegistrationDUnitTest.class.getName() + "_region");
+          .getRegion(DurableRegistrationDistributedTest.class.getName() + "_region");
 
       assertThat(region).isNotNull();
       region.registerInterest(key, InterestResultPolicy.NONE, isDurable);
@@ -605,7 +605,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
     try {
       // Get the region
       Region<String, String> region = getCache()
-          .getRegion(DurableRegistrationDUnitTest.class.getName() + "_region");
+          .getRegion(DurableRegistrationDistributedTest.class.getName() + "_region");
 
       assertThat(region).isNotNull();
       region.unregisterInterest(key);
@@ -617,7 +617,7 @@ public class DurableRegistrationDUnitTest extends JUnit4DistributedTestCase {
   private void putValue(String key, String value) {
     try {
       Region<String, String> r = getCache()
-          .getRegion(DurableRegistrationDUnitTest.class.getName() + "_region");
+          .getRegion(DurableRegistrationDistributedTest.class.getName() + "_region");
 
       assertThat(r).isNotNull();
       if (r.getEntry(key) != null) {

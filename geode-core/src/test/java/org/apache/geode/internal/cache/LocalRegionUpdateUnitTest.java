@@ -45,7 +45,7 @@ import org.apache.geode.distributed.internal.DSClock;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.tier.InterestType;
 
-public class LocalRegionUpdateTest {
+public class LocalRegionUpdateUnitTest {
   private InternalDataView internalDataView;
   private LocalRegion region;
   private RegisterInterestTracker registerInterestTracker;

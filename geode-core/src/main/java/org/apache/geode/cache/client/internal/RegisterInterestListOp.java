@@ -107,7 +107,7 @@ public class RegisterInterestListOp {
   }
 
   @VisibleForTesting
-  static class RegisterInterestListOpImpl extends RegisterInterestOpImpl {
+  public static class RegisterInterestListOpImpl extends RegisterInterestOpImpl {
     /**
      * @throws org.apache.geode.SerializationException if serialization fails
      */

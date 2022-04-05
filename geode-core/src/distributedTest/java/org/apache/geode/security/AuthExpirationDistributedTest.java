@@ -49,7 +49,7 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category({SecurityTest.class})
-public class AuthExpirationDUnitTest {
+public class AuthExpirationDistributedTest {
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
 
