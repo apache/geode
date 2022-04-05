@@ -52,6 +52,7 @@ import org.apache.geode.test.version.VersionManager;
  *
  * TODO:
  * - change top-level dir for saved test results to use test class name
+ * - remove stopLocator/stopServer
  */
 public class GfshRule implements TestRule {
   private final SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder()
