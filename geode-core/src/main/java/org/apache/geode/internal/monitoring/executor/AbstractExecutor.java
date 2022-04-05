@@ -26,6 +26,7 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.internal.lang.SystemProperty;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public abstract class AbstractExecutor {
@@ -37,6 +38,8 @@ public abstract class AbstractExecutor {
   private final String groupName;
   private short numIterationsStuck;
   private volatile long startTime;
+  private int maxStuckTime = SystemProperty.getProductIntegerProperty(
+      "maxThreadStuckTime").orElse(-1);
 
   public AbstractExecutor(String groupName) {
     this(groupName, Thread.currentThread().getId());
@@ -51,9 +54,29 @@ public abstract class AbstractExecutor {
 
   public void handleExpiry(long stuckTime, Map<Long, ThreadInfo> threadInfoMap) {
     incNumIterationsStuck();
+    interruptThreadsStuckForLong(stuckTime, threadInfoMap);
     logger.warn(createThreadReport(stuckTime, threadInfoMap));
   }
 
+  private void interruptThreadsStuckForLong(long stuckTime, Map<Long, ThreadInfo> threadInfoMap) {
+    final ThreadInfo threadInfo = threadInfoMap.get(threadID);
+    if (threadInfo == null) {
+      return;
+    }
+    if (maxStuckTime < 0) {
+      return;
+    }
+    if (stuckTime > maxStuckTime) {
+      for (Thread thread : Thread.getAllStackTraces().keySet()) {
+        if (thread.getId() == threadInfo.getThreadId()) {
+          thread.interrupt();
+          logger.warn("interrupted thread {} that was stuck for longer than {}",
+              threadInfo.getThreadId(), maxStuckTime);
+          break;
+        }
+      }
+    }
+  }
 
   String createThreadReport(long stuckTime, Map<Long, ThreadInfo> threadInfoMap) {
 

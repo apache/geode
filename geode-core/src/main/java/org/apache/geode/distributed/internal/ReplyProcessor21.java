@@ -33,6 +33,7 @@ import org.apache.geode.distributed.internal.deadlock.MessageDependencyMonitor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
+import org.apache.geode.internal.lang.SystemProperty;
 import org.apache.geode.internal.serialization.DSFIDNotFoundException;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.Versioning;
@@ -82,6 +83,10 @@ public class ReplyProcessor21 implements MembershipListener {
 
   public static final boolean THROW_EXCEPTION_ON_TIMEOUT =
       Boolean.getBoolean("ack-threshold-exception");
+
+  private static final int MAX_WAIT_TIMEOUT =
+      SystemProperty.getProductIntegerProperty(
+          "maxWaitForRepliesTimeout").orElse(0);
 
   /**
    * the ratio by which ack-severe-alert-threshold is lowered when waiting for a BucketRegion
@@ -717,11 +722,27 @@ public class ReplyProcessor21 implements MembershipListener {
 
                 // for consistency, we must now wait indefinitely for a membership view
                 // that ejects the removed members
-                latch.await();
+                if (MAX_WAIT_TIMEOUT > 0) {
+                  if (!latch.await(MAX_WAIT_TIMEOUT)) {
+                    logger.warn("wait for replies timing out after {} seconds",
+                        MAX_WAIT_TIMEOUT / 1000);
+                    return false;
+                  }
+                } else {
+                  latch.await();
+                }
               }
             }
           } else {
-            latch.await();
+            if (MAX_WAIT_TIMEOUT > 0) {
+              if (!latch.await(MAX_WAIT_TIMEOUT)) {
+                logger.warn("wait for replies timing out after {} seconds",
+                    MAX_WAIT_TIMEOUT / 1000);
+                return false;
+              }
+            } else {
+              latch.await();
+            }
           }
           // Give an info message since timeout gave a warning.
           logger.info("{} wait for replies completed", shortName());
