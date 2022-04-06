@@ -235,7 +235,7 @@ public class P2pMessagingSslTlsKeyUpdateDistributedTest {
     // at this point, sender is done sending
     final long bytesSent = getByteCount(sender);
 
-    await().timeout(Duration.ofSeconds(10)).untilAsserted(
+    await().untilAsserted(
         () -> {
           assertThat(getRepliesGenerated()).isEqualTo(MESSAGES_PER_SENDER);
           assertThat(getRepliesReceived()).isEqualTo(MESSAGES_PER_SENDER);
