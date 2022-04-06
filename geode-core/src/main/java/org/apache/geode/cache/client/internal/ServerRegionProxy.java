@@ -83,7 +83,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * Used by tests to create proxies for "fake" regions. Also, used by ClientStatsManager for admin
    * region.
    */
-  public ServerRegionProxy(String regionName, PoolImpl pool) {
+  public ServerRegionProxy(String regionName, InternalPool pool) {
     super(pool);
     region = null;
     this.regionName = regionName;

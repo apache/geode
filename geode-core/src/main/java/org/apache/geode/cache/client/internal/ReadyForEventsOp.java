@@ -16,6 +16,7 @@ package org.apache.geode.cache.client.internal;
 
 import org.jetbrains.annotations.NotNull;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 
@@ -40,7 +41,8 @@ public class ReadyForEventsOp {
     // no instances allowed
   }
 
-  private static class ReadyForEventsOpImpl extends AbstractOp {
+  @VisibleForTesting
+  public static class ReadyForEventsOpImpl extends AbstractOp {
     /**
      * @throws org.apache.geode.SerializationException if serialization fails
      */

@@ -109,6 +109,10 @@ public class QueueManagerImpl implements QueueManager {
   private ScheduledExecutorService recoveryThread;
   private volatile boolean sentClientReady;
 
+  void clearQueueConnections() {
+    this.queueConnections = new ConnectionList();
+  }
+
   // queueConnections in maintained by using copy-on-write
   private volatile ConnectionList queueConnections = new ConnectionList();
   private volatile RedundancySatisfierTask redundancySatisfierTask = null;
@@ -309,6 +313,16 @@ public class QueueManagerImpl implements QueueManager {
   }
 
 
+  /*
+   * This is for test only, it does bad stuff that one should only do in test,
+   * if ever.
+   */
+  @VisibleForTesting
+  public void setSendClientReadyInTestOnly() {
+    synchronized (lock) {
+      sentClientReady = true;
+    }
+  }
 
   @Override
   public void readyForEvents(InternalDistributedSystem system) {
@@ -540,6 +554,9 @@ public class QueueManagerImpl implements QueueManager {
           // couldn't find a server to make primary
           break;
         }
+
+        markQueueAsReadyForEvents(primaryQueue);
+
         if (!addToConnectionList(primaryQueue, true)) {
           excludedServers.add(primaryQueue.getServer());
           primaryQueue = null;
@@ -678,21 +695,10 @@ public class QueueManagerImpl implements QueueManager {
             if (recoverInterest && queueConnections.getPrimary() == null
                 && queueConnections.getBackups().isEmpty()) {
               // we lost our queue at some point. We Need to recover
-              // interest. This server will be made primary after this method
-              // finishes
-              // because whoever killed the primary when this method started
-              // should
+              // interest. This server will be made primary after this method finishes
+              // because whoever killed the primary when this method started should
               // have scheduled a task to recover the primary.
               isFirstNewConnection = true;
-              // TODO - Actually, we need a better check than the above. There's
-              // still a chance
-              // that we haven't realized that the primary has died but it is
-              // already gone. We should
-              // get some information from the queue server about whether it was
-              // able to copy the
-              // queue from another server and decide if we need to recover our
-              // interest based on
-              // that information.
             }
           }
           boolean promotionFailed = false;
@@ -727,7 +733,7 @@ public class QueueManagerImpl implements QueueManager {
   }
 
   @VisibleForTesting
-  QueueConnectionImpl promoteBackupToPrimary(List<Connection> backups) {
+  public QueueConnectionImpl promoteBackupToPrimary(List<Connection> backups) {
     QueueConnectionImpl primary = null;
     for (int i = 0; primary == null && i < backups.size(); i++) {
       QueueConnectionImpl lastConnection = (QueueConnectionImpl) backups.get(i);
@@ -805,10 +811,13 @@ public class QueueManagerImpl implements QueueManager {
       excludedServers.addAll(servers);
     }
 
-    if (primary != null && sentClientReady && primary.sendClientReady()) {
+    return primary;
+  }
+
+  public void markQueueAsReadyForEvents(@NotNull QueueConnectionImpl primary) {
+    if (sentClientReady && primary.sendClientReady()) {
       readyForEventsAfterFailover(primary);
     }
-    return primary;
   }
 
   private List<ServerLocation> findQueueServers(Set<ServerLocation> excludedServers, int count,
@@ -848,7 +857,7 @@ public class QueueManagerImpl implements QueueManager {
    * to find a new server.
    */
   @VisibleForTesting
-  void recoverPrimary(Set<ServerLocation> excludedServers) {
+  public void recoverPrimary(Set<ServerLocation> excludedServers) {
     if (pool.getPoolOrCacheCancelInProgress() != null) {
       return;
     }
@@ -888,7 +897,6 @@ public class QueueManagerImpl implements QueueManager {
         }
         newPrimary = null;
       }
-
     }
 
     if (newPrimary != null) {
@@ -915,6 +923,7 @@ public class QueueManagerImpl implements QueueManager {
         // could not find a new primary to create
         break;
       }
+
       if (!addToConnectionList(newPrimary, true)) {
         excludedServers.add(newPrimary.getServer());
         newPrimary = null;
@@ -931,6 +940,9 @@ public class QueueManagerImpl implements QueueManager {
           excludedServers.add(newPrimary.getServer());
           newPrimary = null;
         }
+
+        markQueueAsReadyForEvents(newPrimary);
+
         // New primary queue was found from a non backup, alert the affected cqs
         cqsConnected();
       }
@@ -986,7 +998,7 @@ public class QueueManagerImpl implements QueueManager {
   // so before putting connection need to see if something(crash) happen we should be able to
   // recover from it
   @VisibleForTesting
-  boolean addToConnectionList(QueueConnectionImpl connection, boolean isPrimary) {
+  public boolean addToConnectionList(QueueConnectionImpl connection, boolean isPrimary) {
     boolean isBadConnection;
     synchronized (lock) {
       ClientUpdater cu = connection.getUpdater();
@@ -1029,7 +1041,7 @@ public class QueueManagerImpl implements QueueManager {
   }
 
   @VisibleForTesting
-  void scheduleRedundancySatisfierIfNeeded(long delay) {
+  public void scheduleRedundancySatisfierIfNeeded(long delay) {
     if (shuttingDown) {
       return;
     }
@@ -1111,10 +1123,9 @@ public class QueueManagerImpl implements QueueManager {
   }
 
   private void recoverCqs(Connection recoveredConnection, boolean isDurable) {
-    Map cqs = getPool().getRITracker().getCqsMap();
-    for (Object o : cqs.entrySet()) {
-      Map.Entry e = (Map.Entry) o;
-      ClientCQ cqi = (ClientCQ) e.getKey();
+    Map<ClientCQ, Boolean> cqs = getPool().getRITracker().getCqsMap();
+    for (Map.Entry<ClientCQ, Boolean> e : cqs.entrySet()) {
+      ClientCQ cqi = e.getKey();
       String name = cqi.getName();
       if (pool.getMultiuserAuthentication()) {
         UserAttributes.userAttributes

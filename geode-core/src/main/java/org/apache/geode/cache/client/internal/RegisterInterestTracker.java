@@ -22,14 +22,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.InterestResultPolicy;
-import org.apache.geode.cache.query.CqQuery;
-import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
+import org.apache.geode.cache.query.internal.cq.ClientCQ;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.sockets.UnregisterAllInterest;
@@ -52,7 +53,7 @@ public class RegisterInterestTracker {
   private final FailoverInterestList[] failoverInterestLists = new FailoverInterestList[4];
 
   /** Manages CQs */
-  private final ConcurrentMap<CqQuery, Boolean> cqs = new ConcurrentHashMap<>();
+  private final ConcurrentMap<ClientCQ, Boolean> cqs = new ConcurrentHashMap<>();
 
   public RegisterInterestTracker() {
     failoverInterestLists[interestListIndex] = new FailoverInterestList();
@@ -106,7 +107,8 @@ public class RegisterInterestTracker {
     return result;
   }
 
-  void addSingleInterest(final @NotNull LocalRegion r, final @NotNull Object key,
+  @VisibleForTesting
+  public void addSingleInterest(final @NotNull LocalRegion r, final @NotNull Object key,
       final @NotNull InterestType interestType,
       final @NotNull InterestResultPolicy pol, final boolean isDurable,
       boolean receiveUpdatesAsInvalidates) {
@@ -146,15 +148,15 @@ public class RegisterInterestTracker {
     }
   }
 
-  public void addCq(InternalCqQuery cqi, boolean isDurable) {
+  public void addCq(ClientCQ cqi, boolean isDurable) {
     cqs.put(cqi, isDurable);
   }
 
-  public void removeCq(InternalCqQuery cqi) {
+  public void removeCq(ClientCQ cqi) {
     cqs.remove(cqi);
   }
 
-  Map<CqQuery, Boolean> getCqsMap() {
+  Map<ClientCQ, Boolean> getCqsMap() {
     return cqs;
   }
 
@@ -300,6 +302,42 @@ public class RegisterInterestTracker {
     ConcurrentMap<String, RegionInterestEntry> mapOfInterest =
         getRegionToInterestsMap(interestType, isDurable, receiveUpdatesAsInvalidates);
     return mapOfInterest.get(regionName);
+  }
+
+  /**
+   * Iterate InterestTypes searching for any with the input interestResultPolicy
+   *
+   * @return boolean based on the presence of the selected InterestResultPolicy
+   */
+  public boolean hasInterestsWithResultPolicy(final @NotNull String regionName, boolean isDurable,
+      final @NotNull InterestResultPolicy interestResultPolicy) {
+    return Stream.of(InterestType.values())
+        .anyMatch(interestType -> hasInterestsWithResultPolicy(regionName, isDurable,
+            interestResultPolicy, interestType));
+  }
+
+  /**
+   * Check the RegionInterestEntries with receiveUpdatesAsInvalidates both true and false
+   *
+   * @return boolean based on the presence of the selected InterestResultPolicy
+   */
+  public boolean hasInterestsWithResultPolicy(final @NotNull String regionName, boolean isDurable,
+      final @NotNull InterestResultPolicy interestResultPolicy,
+      final @NotNull InterestType interestType) {
+
+    return Stream.of(true, false)
+        .anyMatch(receiveUpdatesAsInvalidates -> hasInterestsWithResultPolicy(regionName, isDurable,
+            interestResultPolicy, interestType, receiveUpdatesAsInvalidates));
+  }
+
+  private boolean hasInterestsWithResultPolicy(final @NotNull String regionName, boolean isDurable,
+      final @NotNull InterestResultPolicy interestResultPolicy,
+      final @NotNull InterestType interestType, boolean receiveUpdatesAsInvalidates) {
+    RegionInterestEntry regionInterestEntry =
+        readRegionInterests(regionName, interestType, isDurable, receiveUpdatesAsInvalidates);
+    return regionInterestEntry != null && regionInterestEntry.getInterests().values().stream()
+        .anyMatch(actualInterestResultPolicy -> actualInterestResultPolicy
+            .getOrdinal() == interestResultPolicy.getOrdinal());
   }
 
   /**
