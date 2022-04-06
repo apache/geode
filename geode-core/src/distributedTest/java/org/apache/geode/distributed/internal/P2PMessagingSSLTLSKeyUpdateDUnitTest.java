@@ -30,16 +30,12 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.LongAdder;
 
 import junitparams.Parameters;
 import org.jetbrains.annotations.NotNull;
 import org.junit.After;
-import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -55,7 +51,6 @@ import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
-import org.apache.geode.test.dunit.rules.DistributedExecutorServiceRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
@@ -67,15 +62,9 @@ import org.apache.geode.test.version.VersionManager;
  * KeyUpdate message is generated (by the SSLEngine). That message causes a new
  * key to be negotiated between the peer SSLEngines.
  *
- * This test arranges for a low encryption byte limit to be set in each of the
- * three members in turn: locator, sending member, receiving member. With the
- * low byte limit configured, the test sends P2P messages via TLS and verifies
- * that not only does one-way data transfer succeed, but also that no errors
- * are generated to the logs.
- *
- * The errors in the logs are the only way this test of one-way messaging can
- * detect a failure to handle KeyUpdate messages. That's because the Connection
- * framework transparently reconnects when connections are closed.
+ * This test arranges for a low encryption byte limit to be set for the sending member
+ * and then for the receiving member. With the low byte limit configured, the test
+ * sends P2P messages via TLS and verifies request-reply message processing.
  */
 @Category({MembershipTest.class})
 @RunWith(GeodeParamsRunner.class)
@@ -86,26 +75,27 @@ public class P2PMessagingSSLTLSKeyUpdateDUnitTest {
 
   private static final int ENCRYPTED_BYTES_LIMIT = 64 * 1024;
 
-  // number of concurrent (sending) tasks to run
-  private static final int SENDER_COUNT = 1;
-
   private static final int MESSAGE_SIZE = 1024;
 
-  // how many messages will each sender generate?
-  private static final int MESSAGES_PER_SENDER = 2 + ENCRYPTED_BYTES_LIMIT / MESSAGE_SIZE;
+  /*
+   * How many messages will be generated? We generate enough to cause KeyUpdate
+   * to be generated, and then we generate many more beyond that. Even with buggy
+   * wrap/unwrap logic, the retries in DirectChannel.sendToMany() and the transparent
+   * connection reestablishment in ConnectionTable can mask those bugs. So to reliably
+   * fail in the presence of bugs we need to generate lots of extra messages.
+   */
+  private static final int MESSAGES_PER_SENDER = ENCRYPTED_BYTES_LIMIT / MESSAGE_SIZE + 2000;
 
   {
     assertThat(MESSAGE_SIZE * MESSAGES_PER_SENDER > 10 * ENCRYPTED_BYTES_LIMIT);
   }
 
+  public static final int MAX_REPLY_WAIT_MILLIS = 1_000;
+
   private static Properties geodeConfigurationProperties;
 
   @Rule
   public final ClusterStartupRule clusterStartupRule = new ClusterStartupRule(3);
-
-  @ClassRule
-  public static final DistributedExecutorServiceRule senderExecutorServiceRule =
-      new DistributedExecutorServiceRule(SENDER_COUNT, 3);
 
   private MemberVM sender;
   private MemberVM receiver;
@@ -122,6 +112,13 @@ public class P2PMessagingSSLTLSKeyUpdateDUnitTest {
    * (not used in test JVM)
    */
   private static LongAdder bytesTransferredAdder;
+
+  // in receiver JVM only
+  private static LongAdder repliesGeneratedAdder;
+
+  // in sender JVM only
+  private static LongAdder repliesReceivedAdder;
+
 
   private void configureJVMsAndStartClusterMembers(
       final long locatorEncryptedBytesLimit,
@@ -165,7 +162,6 @@ public class P2PMessagingSSLTLSKeyUpdateDUnitTest {
 
   @Test
   @Parameters({
-      "65536, 137438953472, 137438953472",
       "137438953472, 65536, 137438953472",
       "137438953472, 137438953472, 65536",
   })
@@ -179,78 +175,82 @@ public class P2PMessagingSSLTLSKeyUpdateDUnitTest {
         receiverEncryptedBytesLimit);
 
     final InternalDistributedMember receiverMember =
-        receiver.invoke(() -> {
+        receiver.invoke("get receiving member id", () -> {
 
           bytesTransferredAdder = new LongAdder();
+          repliesGeneratedAdder = new LongAdder();
 
           final ClusterDistributionManager cdm = getCDM();
           final InternalDistributedMember localMember = cdm.getDistribution().getLocalMember();
           return localMember;
-
         });
 
-    sender.invoke(() -> {
+    // by returning a value from the invoked lambda we make invocation synchronous
+    final Boolean sendingComplete =
+        sender.invoke("message sending and reply counting", () -> {
 
-      bytesTransferredAdder = new LongAdder();
+          bytesTransferredAdder = new LongAdder();
+          repliesReceivedAdder = new LongAdder();
 
-      final ClusterDistributionManager cdm = getCDM();
-      final AtomicInteger nextSenderId = new AtomicInteger();
+          final ClusterDistributionManager cdm = getCDM();
 
-      /*
-       * When this comment was written DistributedExecutorServiceRule's
-       * getExecutorService had no option to specify the number of threads.
-       * If it had we might have liked to specify the number of CPU cores.
-       * In an ideal world we'd want only as many threads as CPUs here.
-       * OTOH the P2P messaging system at the time this comment was written,
-       * used blocking I/O, so we were not, as it turns out, living in that
-       * ideal world.
-       */
-      final ExecutorService executor = senderExecutorServiceRule.getExecutorService();
+          int failedRecipientCount = 0;
+          int droppedRepliesCount = 0;
 
-      final CountDownLatch startLatch = new CountDownLatch(SENDER_COUNT);
-      final CountDownLatch stopLatch = new CountDownLatch(SENDER_COUNT);
-      final LongAdder failedRecipientCount = new LongAdder();
+          final ReplyProcessor21[] replyProcessors = new ReplyProcessor21[MESSAGES_PER_SENDER];
 
-      final Runnable doSending = () -> {
-        final int senderId = nextSenderId.getAndIncrement();
-        try {
-          startLatch.countDown();
-          startLatch.await();
-        } catch (final InterruptedException e) {
-          throw new RuntimeException("doSending failed", e);
-        }
-        final int firstMessageId = senderId * SENDER_COUNT;
-        for (int messageId = firstMessageId; messageId < firstMessageId
-            + MESSAGES_PER_SENDER; messageId++) {
-          final TestMessage msg = new TestMessage(receiverMember, messageId);
+          // this loop sends request messages
+          for (int messageId = 0; messageId < MESSAGES_PER_SENDER; messageId++) {
 
-          /*
-           * HERE is the Geode API entrypoint we intend to test (putOutgoing()).
-           */
-          final Set<InternalDistributedMember> failedRecipients = cdm.putOutgoing(msg);
+            final ReplyProcessor21 replyProcessor = new ReplyProcessor21(cdm, receiverMember);
+            replyProcessors[messageId] = replyProcessor;
+            final TestMessage msg = new TestMessage(messageId, receiverMember,
+                replyProcessor.getProcessorId());
 
-          if (failedRecipients != null) {
-            failedRecipientCount.add(failedRecipients.size());
+            final Set<InternalDistributedMember> failedRecipients = cdm.putOutgoing(msg);
+            if (failedRecipients == null) {
+              bytesTransferredAdder.add(MESSAGE_SIZE);
+            } else {
+              failedRecipientCount += failedRecipients.size();
+            }
           }
-        }
-        stopLatch.countDown();
-      };
 
-      for (int i = 0; i < SENDER_COUNT; ++i) {
-        executor.submit(doSending);
-      }
+          // this loop counts reply arrivals
+          for (int messageId = 0; messageId < MESSAGES_PER_SENDER; messageId++) {
+            final ReplyProcessor21 replyProcessor = replyProcessors[messageId];
+            final boolean receivedReply =
+                replyProcessor.waitForRepliesUninterruptibly(MAX_REPLY_WAIT_MILLIS);
+            if (receivedReply) {
+              repliesReceivedAdder.increment();
+            } else {
+              droppedRepliesCount += 1;
+            }
+          }
 
-      stopLatch.await();
+          assertThat((long) failedRecipientCount).as("message delivery failed N times").isZero();
+          assertThat((long) droppedRepliesCount).as("some replies were dropped").isZero();
+          return true;
+        });
 
-      assertThat(failedRecipientCount.sum()).as("message delivery failed N times").isZero();
-    });
-
+    // at this point, sender is done sending
     final long bytesSent = getByteCount(sender);
 
     await().timeout(Duration.ofSeconds(10)).untilAsserted(
-        () -> assertThat(getByteCount(receiver))
-            .as("bytes received != bytes sent")
-            .isEqualTo(bytesSent));
+        () -> {
+          assertThat(getRepliesGenerated()).isEqualTo(MESSAGES_PER_SENDER);
+          assertThat(getRepliesReceived()).isEqualTo(MESSAGES_PER_SENDER);
+          assertThat(getByteCount(receiver))
+              .as("bytes received != bytes sent")
+              .isEqualTo(bytesSent);
+        });
+  }
+
+  private long getRepliesGenerated() {
+    return receiver.invoke(() -> repliesGeneratedAdder.sum());
+  }
+
+  private long getRepliesReceived() {
+    return sender.invoke(() -> repliesReceivedAdder.sum());
   }
 
   private long getByteCount(final MemberVM member) {
@@ -263,26 +263,22 @@ public class P2PMessagingSSLTLSKeyUpdateDUnitTest {
   }
 
   private static class TestMessage extends DistributionMessage {
-
-    /*
-     * When this comment was written, messageId wasn't used for anything.
-     * The field was added during a misguided attempt to add SHA-256
-     * digest verification on sender and receiver. Then I figured out
-     * that there's no way to parallelize that (for the sender) so
-     * I settled for merely validating the number of bytes transferred.
-     * Left the field here in case it comes in handy later.
-     */
     private volatile int messageId;
+    private volatile int replyProcessorId;
+    private volatile int length;
 
-    TestMessage(final InternalDistributedMember receiver,
-        final int messageId) {
+    TestMessage(final int messageId,
+        final InternalDistributedMember receiver,
+        final int replyProcessorId) {
       setRecipient(receiver);
       this.messageId = messageId;
+      this.replyProcessorId = replyProcessorId;
     }
 
     // necessary for deserialization
     public TestMessage() {
       messageId = 0;
+      replyProcessorId = 0;
     }
 
     @Override
@@ -291,7 +287,19 @@ public class P2PMessagingSSLTLSKeyUpdateDUnitTest {
     }
 
     @Override
-    protected void process(final ClusterDistributionManager dm) {}
+    protected void process(final ClusterDistributionManager dm) {
+
+      // In case bugs cause fromData to be called more times than this method,
+      // we don't count the bytes as "transferred" until we're in this method.
+      bytesTransferredAdder.add(length);
+
+      final ReplyMessage replyMsg = new ReplyMessage();
+      replyMsg.setRecipient(getSender());
+      replyMsg.setProcessorId(replyProcessorId);
+      replyMsg.setReturnValue("howdy!");
+      dm.putOutgoing(replyMsg);
+      repliesGeneratedAdder.increment();
+    }
 
     @Override
     public void toData(final DataOutput out, final SerializationContext context)
@@ -299,6 +307,7 @@ public class P2PMessagingSSLTLSKeyUpdateDUnitTest {
       super.toData(out, context);
 
       out.writeInt(messageId);
+      out.writeInt(replyProcessorId);
 
       final ThreadLocalRandom random = ThreadLocalRandom.current();
       final int length = MESSAGE_SIZE;
@@ -309,12 +318,6 @@ public class P2PMessagingSSLTLSKeyUpdateDUnitTest {
       random.nextBytes(payload);
 
       out.write(payload);
-
-      /*
-       * the LongAdder should ensure that we don't introduce any (much)
-       * synchronization with other concurrent tasks here
-       */
-      bytesTransferredAdder.add(length);
     }
 
     @Override
@@ -323,14 +326,13 @@ public class P2PMessagingSSLTLSKeyUpdateDUnitTest {
       super.fromData(in, context);
 
       messageId = in.readInt();
+      replyProcessorId = in.readInt();
 
-      final int length = in.readInt();
+      length = in.readInt();
 
       final byte[] payload = new byte[length];
 
       in.readFully(payload);
-
-      bytesTransferredAdder.add(length);
     }
 
     @Override

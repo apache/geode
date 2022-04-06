@@ -48,7 +48,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import javax.crypto.AEADBadTagException;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
@@ -1699,16 +1698,30 @@ public class Connection implements Runnable {
           }
           return;
         } catch (IOException e) {
-          if (!isIgnorableIOException(e, socket)) {
-            logger.error(
-                "{} io exception for {} acknowledgements to requests may have been forever lost",
-                p2pReaderName(), this, e);
+          // "Socket closed" check needed for Solaris jdk 1.4.2_08
+          if (!isSocketClosed() && !"Socket closed".equalsIgnoreCase(e.getMessage())) {
+            if (logger.isInfoEnabled() && !isIgnorableIOException(e)) {
+              logger.info("{} io exception for {}", p2pReaderName(), this, e);
+            }
+            if (logger.isDebugEnabled()) {
+              if (e.getMessage().contains("interrupted by a call to WSACancelBlockingCall")) {
+                logger.debug(
+                    "{} received unexpected WSACancelBlockingCall exception, which may result in a hang",
+                    p2pReaderName());
+              }
+            }
           }
-          if (logger.isDebugEnabled()) {
-            if (e.getMessage().contains("interrupted by a call to WSACancelBlockingCall")) {
-              logger.debug(
-                  "{} received unexpected WSACancelBlockingCall exception, which may result in a hang",
-                  p2pReaderName());
+          // "Socket closed" check needed for Solaris jdk 1.4.2_08
+          if (!isSocketClosed() && !"Socket closed".equalsIgnoreCase(e.getMessage())) {
+            if (logger.isInfoEnabled() && !isIgnorableIOException(e)) {
+              logger.info("{} io exception for {}", p2pReaderName(), this, e);
+            }
+            if (logger.isDebugEnabled()) {
+              if (e.getMessage().contains("interrupted by a call to WSACancelBlockingCall")) {
+                logger.debug(
+                    "{} received unexpected WSACancelBlockingCall exception, which may result in a hang",
+                    p2pReaderName());
+              }
             }
           }
           readerShuttingDown = true;
@@ -1850,16 +1863,7 @@ public class Connection implements Runnable {
    * checks to see if an exception should not be logged: i.e., "forcibly closed", "reset by peer",
    * or "connection reset"
    */
-  private static boolean isIgnorableIOException(final IOException e, final Socket socket) {
-    final Throwable cause = e.getCause();
-    if (cause != null && cause instanceof AEADBadTagException) {
-      return false;
-    }
-
-    if (isSocketClosed(socket)) {
-      return true;
-    }
-
+  private static boolean isIgnorableIOException(IOException e) {
     if (e instanceof ClosedChannelException) {
       return true;
     }
@@ -1870,11 +1874,6 @@ public class Connection implements Runnable {
     }
 
     msg = msg.toLowerCase();
-
-    // "socket closed" check needed for Solaris jdk 1.4.2_08
-    if ("socket closed".equals(msg)) {
-      return true;
-    }
 
     if (e instanceof SSLException && msg.contains("status = closed")) {
       return true; // engine has been closed - this is normal
@@ -2438,8 +2437,10 @@ public class Connection implements Runnable {
         }
       } catch (IOException ex) {
         String err = format("P2P pusher io exception for %s", this);
-        if (logger.isDebugEnabled() && !isIgnorableIOException(ex, socket)) {
-          logger.debug(err, ex);
+        if (!isSocketClosed()) {
+          if (logger.isDebugEnabled() && !isIgnorableIOException(ex)) {
+            logger.debug(err, ex);
+          }
         }
         try {
           requestClose(err + ": " + ex);
@@ -2776,8 +2777,10 @@ public class Connection implements Runnable {
     } catch (IOException e) {
       final String err =
           format("ack read io exception for %s", this);
-      if (logger.isDebugEnabled() && !isIgnorableIOException(e, socket)) {
-        logger.debug(err, e);
+      if (!isSocketClosed()) {
+        if (logger.isDebugEnabled() && !isIgnorableIOException(e)) {
+          logger.debug(err, e);
+        }
       }
       try {
         requestClose(err + ": " + e);
@@ -3365,10 +3368,6 @@ public class Connection implements Runnable {
   }
 
   boolean isSocketClosed() {
-    return isSocketClosed(socket);
-  }
-
-  private static boolean isSocketClosed(final Socket socket) {
     return socket.isClosed() || !socket.isConnected();
   }
 
