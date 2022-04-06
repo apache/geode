@@ -126,7 +126,7 @@ public class RedisList extends AbstractRedisData {
     int index;
 
     synchronized (this) {
-      index = elementInsert(elementToInsert, referenceElement, before);
+      index = elementList.insert(elementToInsert, referenceElement, before);
       if (index == -1) {
         return index;
       }
@@ -155,7 +155,7 @@ public class RedisList extends AbstractRedisData {
     RemoveElementsByIndex removed;
     synchronized (this) {
       newVersion = incrementAndGetVersion();
-      popped = removeElement(0);
+      popped = elementList.remove(0);
     }
     removed = new RemoveElementsByIndex(newVersion);
     removed.add(0);
@@ -176,7 +176,9 @@ public class RedisList extends AbstractRedisData {
     byte newVersion;
     synchronized (this) {
       newVersion = incrementAndGetVersion();
-      elementsPushHead(elementsToAdd);
+      for (byte[] element : elementsToAdd) {
+        elementPushHead(element);
+      }
     }
     storeChanges(context.getRegion(), key, new AddByteArrays(elementsToAdd, newVersion));
     context.fireEvent(NotificationEvent.LPUSH, key);
@@ -265,7 +267,7 @@ public class RedisList extends AbstractRedisData {
       throw new RedisException(ERROR_INDEX_OUT_OF_RANGE);
     }
 
-    elementReplace(adjustedIndex, value);
+    elementList.set(adjustedIndex, value);
     storeChanges(region, key, new ReplaceByteArrayAtOffset(index, value));
   }
 
@@ -352,7 +354,7 @@ public class RedisList extends AbstractRedisData {
     RemoveElementsByIndex removed;
     synchronized (this) {
       newVersion = incrementAndGetVersion();
-      popped = removeElement(index);
+      popped = elementList.remove(index);
     }
     removed = new RemoveElementsByIndex(newVersion);
     removed.add(index);
@@ -424,13 +426,13 @@ public class RedisList extends AbstractRedisData {
 
   @Override
   public void applyInsertByteArrayDelta(byte[] toInsert, int index) {
-    elementInsert(toInsert, index);
+    elementList.add(index, toInsert);
   }
 
   @Override
-  public synchronized void applyRemoveElementsByIndex(List<Integer> indexes) {
+  public void applyRemoveElementsByIndex(List<Integer> indexes) {
     if (indexes.size() == 1) {
-      removeElement(indexes.get(0));
+      elementList.remove((int) indexes.get(0));
     } else {
       elementList.removeIndexes(indexes);
     }
@@ -438,7 +440,7 @@ public class RedisList extends AbstractRedisData {
 
   @Override
   public void applyReplaceByteArrayAtOffsetDelta(int offset, byte[] newValue) {
-    elementReplace(offset, newValue);
+    elementList.set(offset, newValue);
   }
 
   @Override
@@ -470,40 +472,11 @@ public class RedisList extends AbstractRedisData {
     }
   }
 
-  public synchronized int elementInsert(byte[] elementToInsert, byte[] referenceElement,
-      boolean before) {
-    return elementList.insert(elementToInsert, referenceElement, before);
-  }
-
-  public synchronized void elementInsert(byte[] toInsert, int index) {
-    elementList.add(index, toInsert);
-  }
-
-  public synchronized byte[] removeElement(int index) {
-    return elementList.remove(index);
-  }
-
-  protected synchronized void elementPushHead(byte[] element) {
+  protected void elementPushHead(byte[] element) {
     elementList.addFirst(element);
   }
 
-  protected synchronized void elementsPushHead(List<byte[]> elementsToAdd) {
-    for (byte[] element : elementsToAdd) {
-      elementPushHead(element);
-    }
-  }
-
-  public synchronized void elementsRemove(List<Integer> indexList) {
-    for (Integer element : indexList) {
-      elementList.remove(element.intValue());
-    }
-  }
-
-  public synchronized void elementReplace(int index, byte[] newValue) {
-    elementList.set(index, newValue);
-  }
-
-  public synchronized void elementsRetainByIndexRange(int start, int end) {
+  private void elementsRetainByIndexRange(int start, int end) {
     if (end < elementList.size()) {
       elementList.clearSublist(end + 1, elementList.size());
     }
@@ -513,7 +486,7 @@ public class RedisList extends AbstractRedisData {
     }
   }
 
-  protected synchronized void elementPushTail(byte[] element) {
+  protected void elementPushTail(byte[] element) {
     elementList.addLast(element);
   }
 
