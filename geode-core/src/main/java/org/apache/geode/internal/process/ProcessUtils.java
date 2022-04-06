@@ -116,9 +116,6 @@ public class ProcessUtils {
   /**
    * Returns true if a process identified by the process id was running on this host machine and has
    * been terminated by this operation.
-   *
-   * @param pid process id
-   * @return true if the process was terminated by this operation
    */
   public static boolean killProcess(final int pid) {
     isTrue(pid > 0, "Invalid pid '" + pid + "' specified");

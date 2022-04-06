@@ -140,7 +140,7 @@ class LocalProcessLauncher {
     int otherPid = 0;
     try {
       otherPid = ProcessUtils.readPid(pidFile);
-    } catch (NumberFormatException | IOException ignore) {
+    } catch (NumberFormatException ignore) {
       // suppress
     }
     return otherPid;

@@ -18,6 +18,8 @@ import static java.io.File.pathSeparator;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.geode.internal.process.ProcessType.LOCATOR;
 import static org.apache.geode.internal.process.ProcessType.SERVER;
+import static org.apache.geode.internal.process.ProcessUtils.isProcessAlive;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder.When.FAILS;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -35,6 +37,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import org.awaitility.core.ConditionTimeoutException;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -233,7 +236,7 @@ public class GfshRule implements TestRule {
     return processBuilder;
   }
 
-  private Set<Integer> stopMembers(GfshExecution gfshExecution) throws UncheckedIOException {
+  private void stopMembers(GfshExecution gfshExecution) throws UncheckedIOException {
     Set<Integer> serverPids = getPidFilesUnchecked(gfshExecution, SERVER).stream()
         .map(pidFile -> ProcessUtils.readPid(pidFile.toFile()))
         .collect(toSet());
@@ -248,10 +251,43 @@ public class GfshRule implements TestRule {
     getPidFilesUnchecked(gfshExecution, LOCATOR)
         .forEach(pidFile -> stopProcessSoftly(LOCATOR, pidFile.getParent()));
 
-    Set<Integer> pids = new HashSet<>();
-    pids.addAll(serverPids);
-    pids.addAll(locatorPids);
-    return pids;
+    Set<Integer> runningServerPids = serverPids.stream()
+        .filter(this::awaitProcess)
+        .collect(toSet());
+
+    Set<Integer> runningLocatorPids = locatorPids.stream()
+        .filter(this::awaitProcess)
+        .collect(toSet());
+
+    // try to kill all running pids
+    Set<Integer> allRunningPids = new HashSet<>();
+    allRunningPids.addAll(runningServerPids);
+    allRunningPids.addAll(runningLocatorPids);
+
+    allRunningPids.forEach(this::killProcess);
+  }
+
+  /**
+   * Wits for the process to go away. Returns true if it fails to depart within the timeout.
+   */
+  private boolean awaitProcess(int pid) {
+    try {
+      await()
+          .alias("Awaiting termination of Process " + pid + ".")
+          .until(() -> !isProcessAlive(pid));
+    } catch (ConditionTimeoutException e) {
+      errors.add(e);
+    }
+    return isProcessAlive(pid);
+  }
+
+  private boolean killProcess(int pid) {
+    try {
+      return ProcessUtils.killProcess(pid);
+    } catch (Exception e) {
+      errors.add(e);
+    }
+    return false;
   }
 
   private Set<Path> getPidFilesUnchecked(GfshExecution gfshExecution, ProcessType processType)
