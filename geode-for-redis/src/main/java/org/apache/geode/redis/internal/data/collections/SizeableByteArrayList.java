@@ -136,20 +136,22 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
   }
 
   /**
-   * @param remove in order (smallest to largest) list of indexes to remove
+   * @param removalList in order (smallest to largest) list of indexes to remove
    */
-  public void removeIndexes(List<Integer> remove) {
-    int removeIndex = 0;
-    int firstIndexToRemove = remove.get(0);
+  public void removeIndexes(List<Integer> removalList) {
+    int removalListIndex = 0;
+    int firstIndexToRemove = removalList.get(0);
+    int lastIndexToRemove = removalList.get(removalList.size() - 1);
+
     ListIterator<byte[]> iterator = listIterator(firstIndexToRemove);
 
     // Iterates only through the indexes to remove
-    for (int i = firstIndexToRemove; i <= remove.get(remove.size() - 1); i++) {
+    for (int index = firstIndexToRemove; index <= lastIndexToRemove; index++) {
       byte[] element = iterator.next();
-      if (i == remove.get(removeIndex)) {
+      if (index == removalList.get(removalListIndex)) {
         iterator.remove();
         memberOverhead -= calculateByteArrayOverhead(element);
-        removeIndex++;
+        removalListIndex++;
       }
     }
   }
@@ -176,6 +178,25 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
   }
 
   @Override
+  public boolean removeLastOccurrence(Object o) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public byte[] set(int index, byte[] newElement) {
+    byte[] replacedElement = super.set(index, newElement);
+    memberOverhead -= calculateByteArrayOverhead(replacedElement);
+    memberOverhead += calculateByteArrayOverhead(newElement);
+    return replacedElement;
+  }
+
+  @Override
+  public void add(int index, byte[] element) {
+    memberOverhead += calculateByteArrayOverhead(element);
+    super.add(index, element);
+  }
+
+  @Override
   public void addFirst(byte[] element) {
     memberOverhead += calculateByteArrayOverhead(element);
     super.addFirst(element);
@@ -187,8 +208,27 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
     super.addLast(element);
   }
 
-  public boolean removeLastOccurrence(Object o) {
-    throw new UnsupportedOperationException();
+  public int insert(byte[] elementToInsert, byte[] referenceElement, boolean before) {
+    int i = 0;
+    ListIterator<byte[]> iterator = listIterator();
+
+    while (iterator.hasNext()) {
+      if (Arrays.equals(iterator.next(), referenceElement)) {
+        if (before) {
+          iterator.previous();
+          iterator.add(elementToInsert);
+          memberOverhead += calculateByteArrayOverhead(elementToInsert);
+          return i;
+        } else {
+          iterator.add(elementToInsert);
+          memberOverhead += calculateByteArrayOverhead(elementToInsert);
+          return i + 1;
+        }
+      }
+      i++;
+    }
+
+    return -1;
   }
 
   private int calculateByteArrayOverhead(byte[] element) {
