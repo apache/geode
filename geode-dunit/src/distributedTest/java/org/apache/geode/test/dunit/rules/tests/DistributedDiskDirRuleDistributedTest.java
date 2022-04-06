@@ -15,6 +15,7 @@
 package org.apache.geode.test.dunit.rules.tests;
 
 import static org.apache.geode.internal.lang.SystemPropertyHelper.DEFAULT_DISK_DIRS_PROPERTY;
+import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 import static org.apache.geode.test.dunit.VM.getAllVMs;
 import static org.apache.geode.test.dunit.VM.getController;
 import static org.apache.geode.test.dunit.VM.getVM;
@@ -29,7 +30,6 @@ import java.util.List;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.internal.lang.SystemProperty;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
@@ -50,8 +50,7 @@ public class DistributedDiskDirRuleDistributedTest implements Serializable {
   public void setsDefaultDiskDirsPropertyInEveryVm() {
     for (VM vm : toArray(getAllVMs(), getController())) {
       vm.invoke(() -> {
-        String propertyValue =
-            System.getProperty(SystemProperty.DEFAULT_PREFIX + DEFAULT_DISK_DIRS_PROPERTY);
+        String propertyValue = System.getProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY);
 
         assertThat(propertyValue)
             .isEqualTo(distributedDiskDirRule.getDiskDirFor(vm).getAbsolutePath());
@@ -65,8 +64,7 @@ public class DistributedDiskDirRuleDistributedTest implements Serializable {
 
     for (VM vm : toArray(getAllVMs(), getController())) {
       String propertyValue =
-          vm.invoke(
-              () -> System.getProperty(SystemProperty.DEFAULT_PREFIX + DEFAULT_DISK_DIRS_PROPERTY));
+          vm.invoke(() -> System.getProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY));
       assertThat(propertyValues).doesNotContain(propertyValue);
       propertyValues.add(propertyValue);
     }
@@ -79,8 +77,7 @@ public class DistributedDiskDirRuleDistributedTest implements Serializable {
     VM newVM = getVM(getVMCount());
 
     String propertyValue =
-        newVM.invoke(
-            () -> System.getProperty(SystemProperty.DEFAULT_PREFIX + DEFAULT_DISK_DIRS_PROPERTY));
+        newVM.invoke(() -> System.getProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY));
 
     assertThat(propertyValue).isNotNull();
   }
@@ -88,14 +85,12 @@ public class DistributedDiskDirRuleDistributedTest implements Serializable {
   @Test
   public void defaultDiskDirsPropertyIsKeptInBouncedVm() {
     String propertyValueBeforeBounce =
-        getVM(0).invoke(
-            () -> System.getProperty(SystemProperty.DEFAULT_PREFIX + DEFAULT_DISK_DIRS_PROPERTY));
+        getVM(0).invoke(() -> System.getProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY));
 
     getVM(0).bounce();
 
     String propertyValueAfterBounce =
-        getVM(0).invoke(
-            () -> System.getProperty(SystemProperty.DEFAULT_PREFIX + DEFAULT_DISK_DIRS_PROPERTY));
+        getVM(0).invoke(() -> System.getProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY));
     assertThat(propertyValueAfterBounce).isEqualTo(propertyValueBeforeBounce);
   }
 }
