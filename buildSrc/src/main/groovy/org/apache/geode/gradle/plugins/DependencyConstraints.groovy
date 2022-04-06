@@ -41,8 +41,8 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("javax.transaction-api.version", "1.3")
     deps.put("jgroups.version", "3.6.14.Final")
     deps.put("log4j.version", "2.17.2")
-    deps.put("micrometer.version", "1.8.3")
-    deps.put("shiro.version", "1.8.0")
+    deps.put("micrometer.version", "1.8.4")
+    deps.put("shiro.version", "1.9.0")
     deps.put("slf4j-api.version", "1.7.32")
     deps.put("jboss-modules.version", "1.11.0.Final")
     deps.put("jackson.version", "2.13.2")
@@ -58,11 +58,11 @@ class DependencyConstraints implements Plugin<Project> {
     deps.put("tomcat6.version", "6.0.37")
     deps.put("tomcat7.version", "7.0.109")
     deps.put("tomcat8.version", "8.5.66")
-    deps.put("tomcat9.version", "9.0.59")
+    deps.put("tomcat9.version", "9.0.62")
 
     // The jetty version is also hard-coded in geode-assembly:test
     // at o.a.g.sessions.tests.GenericAppServerInstall.java
-    deps.put("jetty.version", "9.4.45.v20220203")
+    deps.put("jetty.version", "9.4.46.v20220331")
 
     // These versions are referenced in test.gradle, which is aggressively injected into all projects.
     deps.put("junit.version", "4.13.2")
@@ -117,11 +117,11 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'commons-modeler', name: 'commons-modeler', version: '2.0.1')
         api(group: 'commons-validator', name: 'commons-validator', version: get('commons-validator.version'))
         // Careful when upgrading this dependency: see GEODE-7370 and GEODE-8150.
-        api(group: 'io.github.classgraph', name: 'classgraph', version: '4.8.141')
+        api(group: 'io.github.classgraph', name: 'classgraph', version: '4.8.143')
         api(group: 'io.github.resilience4j', name: 'resilience4j-retry', version: '1.7.1')
-        api(group: 'io.lettuce', name: 'lettuce-core', version: '6.1.6.RELEASE')
+        api(group: 'io.lettuce', name: 'lettuce-core', version: '6.1.8.RELEASE')
         api(group: 'io.micrometer', name: 'micrometer-core', version: get('micrometer.version'))
-        api(group: 'io.swagger', name: 'swagger-annotations', version: '1.6.2')
+        api(group: 'io.swagger', name: 'swagger-annotations', version: '1.6.6')
         api(group: 'it.unimi.dsi', name: 'fastutil', version: get('fastutil.version'))
         api(group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2')
         api(group: 'javax.annotation', name: 'jsr250-api', version: '1.0')
@@ -134,8 +134,8 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'junit', name: 'junit', version: get('junit.version'))
         api(group: 'mx4j', name: 'mx4j-tools', version: '3.0.1')
         api(group: 'mysql', name: 'mysql-connector-java', version: '5.1.46')
-        api(group: 'net.java.dev.jna', name: 'jna', version: '5.10.0')
-        api(group: 'net.java.dev.jna', name: 'jna-platform', version: '5.10.0')
+        api(group: 'net.java.dev.jna', name: 'jna', version: '5.11.0')
+        api(group: 'net.java.dev.jna', name: 'jna-platform', version: '5.11.0')
         api(group: 'net.minidev', name: 'json-smart', version: '2.4.7')
         api(group: 'net.openhft', name: 'compiler', version: '2.4.1')
         api(group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '5.0.4')
@@ -174,7 +174,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'redis.clients', name: 'jedis', version: '4.1.1')
         api(group: 'xerces', name: 'xercesImpl', version: '2.12.0')
         api(group: 'xml-apis', name: 'xml-apis', version: '1.4.01')
-        api(group: 'org.junit-pioneer', name: 'junit-pioneer', version: '1.6.1')
+        api(group: 'org.junit-pioneer', name: 'junit-pioneer', version: '1.6.2')
       }
     }
 
@@ -247,7 +247,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('junit-vintage-engine')
     }
 
-    dependencySet(group: 'io.netty', version: '4.1.74.Final') {
+    dependencySet(group: 'io.netty', version: '4.1.75.Final') {
       entry('netty-codec-redis')
       entry('netty-handler')
     }
@@ -283,7 +283,7 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-webmvc')
     }
 
-    dependencySet(group: 'org.springframework.boot', version: '2.6.5') {
+    dependencySet(group: 'org.springframework.boot', version: '2.6.6') {
       entry('spring-boot-starter')
       entry('spring-boot-starter-jetty')
       entry('spring-boot-starter-web')
