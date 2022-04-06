@@ -68,7 +68,7 @@ import org.apache.geode.test.version.VersionManager;
  */
 @Category({MembershipTest.class})
 @RunWith(GeodeParamsRunner.class)
-public class P2PMessagingSSLTLSKeyUpdateDUnitTest {
+public class P2pMessagingSslTlsKeyUpdateDistributedTest {
 
   private static final String TLS_PROTOCOL = "TLSv1.3";
   private static final String TLS_CIPHER_SUITE = "TLS_AES_256_GCM_SHA384";
@@ -341,8 +341,7 @@ public class P2PMessagingSSLTLSKeyUpdateDUnitTest {
     }
   }
 
-  @NotNull
-  private static Properties geodeConfigurationProperties()
+  private static @NotNull Properties geodeConfigurationProperties()
       throws GeneralSecurityException, IOException {
     // subsequent calls must return the same value so members agree on credentials
     if (geodeConfigurationProperties == null) {
