@@ -40,6 +40,7 @@ import javax.net.ssl.SSLSession;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireIOException;
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.net.BufferPool.BufferType;
 import org.apache.geode.internal.net.ByteBufferVendor.OpenAttemptTimedOut;
@@ -51,6 +52,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * Its use should be confined to one thread or should be protected by external synchronization.
  */
 public class NioSslEngine implements NioFilter {
+  @Immutable
   private static final ByteBuffer EMPTY_BYTE_BUFFER = ByteBuffer.wrap(new byte[0]);
   private static final Logger logger = LogService.getLogger();
 
@@ -429,12 +431,12 @@ public class NioSslEngine implements NioFilter {
   }
 
   @VisibleForTesting
-  public ByteBufferVendor getOutputBufferVendorForTestingOnly() throws IOException {
+  public ByteBufferVendor getOutputBufferVendorForTestingOnly() {
     return outputBufferVendor;
   }
 
   @VisibleForTesting
-  public ByteBufferVendor getInputBufferVendorForTestingOnly() throws IOException {
+  public ByteBufferVendor getInputBufferVendorForTestingOnly() {
     return inputBufferVendor;
   }
 }
