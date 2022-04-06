@@ -26,10 +26,10 @@ import java.io.Externalizable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InvalidClassException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.nio.file.Path;
 import java.rmi.RemoteException;
@@ -42,10 +42,8 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ErrorCollector;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializable;
@@ -66,8 +64,8 @@ import org.apache.geode.unsafe.internal.sun.reflect.ReflectionFactory;
  * InternalDataSerializer. It also performs initialization of the Geode TypeRegistry
  */
 @Category(SerializationTest.class)
-public abstract class AnalyzeSerializablesTestBase
-    extends AnalyzeDataSerializablesTestBase {
+public abstract class AnalyzeSerializablesJUnitTestBase
+    extends AnalyzeDataSerializablesJUnitTestBase {
 
   private static final String ACTUAL_SERIALIZABLES_DAT = "actualSerializables.dat";
 
@@ -75,9 +73,6 @@ public abstract class AnalyzeSerializablesTestBase
       "sanctioned-" + getModuleName() + "-serializables.txt";
 
   protected final List<ClassAndVariableDetails> expectedSerializables = new ArrayList<>();
-
-  @Rule
-  public ErrorCollector errorCollector = new ErrorCollector();
 
   @Before
   public void setUp() throws Exception {
@@ -207,19 +202,12 @@ public abstract class AnalyzeSerializablesTestBase
             isThrowable ? sanctionedClass.getDeclaredConstructor(String.class)
                 : sanctionedClass.getDeclaredConstructor((Class<?>[]) null);
         constructor.setAccessible(true);
-        if (isThrowable) {
-          sanctionedInstance = constructor.newInstance("test throwable");
-        } else {
-          sanctionedInstance = constructor.newInstance();
-        }
+        sanctionedInstance =
+            isThrowable ? constructor.newInstance("test throwable") : constructor.newInstance();
         serializeAndDeserializeSanctionedObject(sanctionedInstance);
         continue;
-      } catch (NoSuchMethodException | InstantiationException | IllegalAccessException
-          | NullPointerException | InvocationTargetException e) {
+      } catch (NoSuchMethodException | InstantiationException | IllegalAccessException e) {
         // fall through
-      } catch (Exception e) {
-        errorCollector.addError(e);
-        continue;
       }
       try {
         Class<?> superClass = sanctionedClass;
@@ -351,23 +339,22 @@ public abstract class AnalyzeSerializablesTestBase
 
   private void serializeAndDeserializeSanctionedObject(Object object) throws Exception {
     BufferDataOutputStream outputStream = new BufferDataOutputStream(Version.CURRENT);
-
     try {
       serializeObject(object, outputStream);
     } catch (RemoteException e) {
-      // java.rmi.server.RemoteObject which is not supported by AnalyzeSerializables
-    } catch (Exception e) {
-      errorCollector.addError(
-          new AssertionError("I was unable to serialize " + object.getClass().getName(), e));
+      fail(object.getClass().getName() +
+          " is a java.rmi.server.RemoteObject which is not supported by AnalyzeSerializables", e);
+    } catch (IOException e) {
+      // some classes, such as BackupLock, are Serializable because the extend something
+      // like ReentrantLock but we never serialize them & it doesn't work to try to do so
+      throw new AssertionError("Not Serializable: " + object.getClass().getName(), e);
     }
-
     try {
       deserializeObject(outputStream);
     } catch (CancelException e) {
       // PDX classes fish for a PDXRegistry and find that there is no cache
-    } catch (Exception e) {
-      errorCollector.addError(
-          new AssertionError("I was unable to deserialize " + object.getClass().getName(), e));
+    } catch (InvalidClassException e) {
+      fail("I was unable to deserialize " + object.getClass().getName(), e);
     }
   }
 

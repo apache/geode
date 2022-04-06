@@ -16,7 +16,6 @@ package org.apache.geode.codeAnalysis;
 
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertTrue;
 
@@ -37,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.junit.AfterClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -47,17 +47,18 @@ import org.apache.geode.codeAnalysis.decode.CompiledMethod;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.junit.categories.SerializationTest;
+import org.apache.geode.test.junit.rules.ClassAnalysisRule;
 
 /**
  * This abstract test class is the basis for all of our AnalyzeModuleNameSerializables tests.
  * Subclasses must provide serialization/deserialization methods.
  *
  * <p>
- * Most tests should subclass {@link AnalyzeSerializablesWithClassAnalysisRuleTestBase} instead of
- * this class because it ties into geode-core serialization and saves a lot of work.
+ * Most tests should subclass {@link AnalyzeSerializablesJUnitTestBase} instead of this
+ * class because it ties into geode-core serialization and saves a lot of work.
  */
 @Category({SerializationTest.class})
-public abstract class AnalyzeDataSerializablesTestBase {
+public abstract class AnalyzeDataSerializablesJUnitTestBase {
 
   private static final Path MODULE_ROOT = Paths.get("..", "..", "..").toAbsolutePath().normalize();
   private static final Path SOURCE_ROOT = MODULE_ROOT.resolve(Paths.get("src"));
@@ -99,6 +100,14 @@ public abstract class AnalyzeDataSerializablesTestBase {
   @Rule
   public TestName testName = new TestName();
 
+  @Rule
+  public ClassAnalysisRule classProvider = new ClassAnalysisRule(getModuleName());
+
+  @AfterClass
+  public static void afterClass() {
+    ClassAnalysisRule.clearCache();
+  }
+
   /**
    * implement this to return your module's name, such as "geode-core"
    */
@@ -138,10 +147,8 @@ public abstract class AnalyzeDataSerializablesTestBase {
     }
   }
 
-  protected abstract Map<String, CompiledClass> loadClasses();
-
   public void findClasses() throws Exception {
-    classes = loadClasses();
+    classes = classProvider.getClasses();
 
     List<String> excludedClasses = loadExcludedClasses(getResourceAsFile(EXCLUDED_CLASSES_TXT));
     List<String> openBugs = loadOpenBugs(getResourceAsFile(OPEN_BUGS_TXT));
@@ -202,11 +209,9 @@ public abstract class AnalyzeDataSerializablesTestBase {
         final Object excludedInstance;
         try {
           excludedInstance = excludedClass.newInstance();
-        } catch (IllegalAccessException | InstantiationException | NullPointerException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
           // okay - it's in the excludedClasses.txt file after all
-          // IllegalAccessException: thrown when non-private constructor does not exist
-          // InstantiationException: thrown when no-arg constructor does not exist
-          // NullPointerException: thrown by constructors that fetch RMI dependencies
+          // IllegalAccessException means that the constructor is private.
           continue;
         }
         serializeAndDeserializeObject(excludedInstance);
@@ -225,33 +230,17 @@ public abstract class AnalyzeDataSerializablesTestBase {
     BufferDataOutputStream outputStream = new BufferDataOutputStream(Version.CURRENT);
     try {
       serializeObject(object, outputStream);
-    } catch (IOException | NullPointerException e) {
+    } catch (IOException e) {
       // some classes, such as BackupLock, are Serializable because the extend something
       // like ReentrantLock but we never serialize them & it doesn't work to try to do so
       System.out.println("Not Serializable: " + object.getClass().getName());
-      return;
-    } catch (Exception e) {
-      /*
-       * NOTE:
-       * this block catches Exception instead of CacheClosedException so that modules without
-       * dependency on geode-core can be tested with Analyze Serializables.
-       *
-       * ex: geode-membership does not depend on geode-core, so it cannot load CacheClosedException
-       */
-      if ("org.apache.geode.cache.CacheClosedException".equals(e.getClass().getName())) {
-        System.out
-            .println("I was unable to serialize " + object.getClass().getName() + " due to " + e);
-        e.printStackTrace();
-        return;
-      }
-      throw e;
     }
-
-    Throwable thrown = catchThrowable(() -> deserializeObject(outputStream));
-
-    assertThat(thrown)
-        .withFailMessage("I was able to deserialize " + object.getClass().getName())
-        .isInstanceOf(InvalidClassException.class);
+    try {
+      deserializeObject(outputStream);
+      fail("I was able to deserialize " + object.getClass().getName());
+    } catch (InvalidClassException e) {
+      // expected
+    }
   }
 
   private String toBuildPathString(File file) {
@@ -349,13 +338,28 @@ public abstract class AnalyzeDataSerializablesTestBase {
   }
 
   File createEmptyFile(String fileName) throws IOException {
-    File file = new File(fileName);
+    final String workingDir = System.getProperty("user.dir");
+    final String filePath;
+    if (isIntelliJDir(workingDir)) {
+      String buildDir = workingDir.replace(getModuleName(), "");
+      buildDir =
+          Paths.get(buildDir, "out", "production", "geode." + getModuleName() + ".integrationTest")
+              .toString();
+      filePath = buildDir + File.separator + fileName;
+    } else {
+      filePath = fileName;
+    }
+    File file = new File(filePath);
     if (file.exists()) {
       assertThat(file.delete()).isTrue();
     }
     assertThat(file.createNewFile()).isTrue();
     assertThat(file).exists().canWrite();
     return file;
+  }
+
+  private boolean isIntelliJDir(final String workingDir) {
+    return !workingDir.contains("build");
   }
 
   /**
