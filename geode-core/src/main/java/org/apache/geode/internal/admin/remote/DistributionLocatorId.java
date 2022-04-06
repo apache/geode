@@ -16,6 +16,7 @@
 package org.apache.geode.internal.admin.remote;
 
 import static java.lang.String.format;
+import static java.util.Objects.hash;
 import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
 import static org.apache.commons.lang3.ObjectUtils.getIfNull;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -335,14 +336,7 @@ public class DistributionLocatorId implements java.io.Serializable {
 
   @Override
   public int hashCode() {
-    int result = 17;
-    final int mult = 37;
-
-    result = mult * result + host.hashCode();
-    result = mult * result + port;
-    result = mult * result + bindAddress.hashCode();
-
-    return result;
+    return hash(host, port, bindAddress);
   }
 
   /**
