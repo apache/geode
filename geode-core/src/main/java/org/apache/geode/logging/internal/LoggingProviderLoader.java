@@ -14,6 +14,8 @@
  */
 package org.apache.geode.logging.internal;
 
+import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
+
 import java.util.Collection;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -23,7 +25,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.lang.SystemProperty;
 import org.apache.geode.internal.util.CollectingServiceLoader;
 import org.apache.geode.internal.util.ListCollectingServiceLoader;
 import org.apache.geode.logging.internal.spi.LoggingProvider;
@@ -46,7 +47,7 @@ public class LoggingProviderLoader {
    */
   @VisibleForTesting
   public static final String LOGGING_PROVIDER_NAME_PROPERTY =
-      SystemProperty.DEFAULT_PREFIX + "LOGGING_PROVIDER_NAME";
+      GEODE_PREFIX + "LOGGING_PROVIDER_NAME";
 
   public LoggingProvider load() {
     // 1: use LOGGING_PROVIDER_NAME_PROPERTY if set

@@ -23,11 +23,6 @@ apply from: "${project.projectDir}/../gradle/warnings.gradle"
 dependencies {
   implementation(platform(project(':boms:geode-all-bom')))
   implementation('com.fasterxml.jackson.core:jackson-databind')
-
-  // test
-  testImplementation('com.github.stefanbirkner:system-rules') {
-    exclude module: 'junit-dep'
-  }
   testImplementation('junit:junit')
   testImplementation('org.apache.commons:commons-lang3')
   testImplementation('org.assertj:assertj-core')
