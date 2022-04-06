@@ -14,8 +14,11 @@
  */
 package org.apache.geode.test.junit.rules.gfsh;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.geode.internal.process.ProcessType.LOCATOR;
+import static org.apache.geode.internal.process.ProcessType.SERVER;
 import static org.apache.geode.internal.process.ProcessUtils.readPid;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,6 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -74,27 +78,29 @@ public class GfshExecution {
     return this.process;
   }
 
-  public List<File> getServerDirs() {
-    File[] potentialMemberDirectories = workingDir.listFiles(File::isDirectory);
+  public List<Path> getServerDirs() {
+    File[] subDirs = workingDir.listFiles(File::isDirectory);
 
-    Predicate<File> isServerDir = (File directory) -> Arrays.stream(directory.list())
+    Predicate<File> isServerDir = dir -> Arrays.stream(requireNonNull(dir.list()))
         .anyMatch(filename -> filename.endsWith("server.pid"));
 
-    return Arrays.stream(potentialMemberDirectories).filter(isServerDir)
+    return Arrays.stream(requireNonNull(subDirs)).filter(isServerDir)
+        .map(dir -> dir.toPath().toAbsolutePath())
         .collect(toList());
   }
 
-  public List<File> getLocatorDirs() {
-    File[] potentialMemberDirectories = workingDir.listFiles(File::isDirectory);
+  public List<Path> getLocatorDirs() {
+    File[] subDirs = workingDir.listFiles(File::isDirectory);
 
-    Predicate<File> isLocatorDir = (File directory) -> Arrays.stream(directory.list())
+    Predicate<File> isLocatorDir = dir -> Arrays.stream(requireNonNull(dir.list()))
         .anyMatch(filename -> filename.endsWith("locator.pid"));
 
-    return Arrays.stream(potentialMemberDirectories).filter(isLocatorDir)
+    return Arrays.stream(requireNonNull(subDirs)).filter(isLocatorDir)
+        .map(dir -> dir.toPath().toAbsolutePath())
         .collect(toList());
   }
 
-  public Iterable<Path> getLocatorPidFiles(ProcessType processType) throws IOException {
+  Set<Path> getPidFiles(ProcessType processType) throws IOException {
     return Files.list(workingDir.toPath())
         .filter(Files::isDirectory)
         .map(path -> path.resolve(processType.getPidFileName()))
@@ -102,7 +108,7 @@ public class GfshExecution {
         .collect(toSet());
   }
 
-  public void printLogFiles() {
+  private void printLogFiles() {
     System.out
         .println("Printing contents of all log files found in " + workingDir.getAbsolutePath());
     List<File> logFiles = findLogFiles();
@@ -115,22 +121,23 @@ public class GfshExecution {
         while ((line = br.readLine()) != null) {
           System.out.println(line);
         }
-      } catch (IOException ignored) {
-        System.out.println("Unable to print log due to: " + ExceptionUtils.getStackTrace(ignored));
+      } catch (IOException e) {
+        System.out.println("Unable to print log due to: " + ExceptionUtils.getStackTrace(e));
       }
     }
   }
 
   private List<File> findLogFiles() {
-    List<File> servers = getServerDirs();
-    List<File> locators = getLocatorDirs();
+    List<Path> servers = getServerDirs();
+    List<Path> locators = getLocatorDirs();
 
     return Stream.concat(servers.stream(), locators.stream()).flatMap(this::findLogFiles)
         .collect(toList());
   }
 
-  private Stream<File> findLogFiles(File memberDir) {
-    return Arrays.stream(memberDir.listFiles()).filter(File::isFile)
+  private Stream<File> findLogFiles(Path memberDir) {
+    return Arrays.stream(requireNonNull(memberDir.toFile().listFiles()))
+        .filter(File::isFile)
         .filter(file -> file.getName().toLowerCase().endsWith(".log"));
   }
 
@@ -175,21 +182,14 @@ public class GfshExecution {
     }
   }
 
-  String[] getStopMemberCommands() {
+  String[] getStopMemberCommands(GfshRule gfshRule) {
     Stream<String> stopServers =
-        getServerDirs().stream().map(dir -> getStopServerCommand(dir.toString()));
+        getServerDirs().stream().map(dir -> gfshRule.getStopProcessCommand(SERVER, dir));
     Stream<String> stopLocators =
-        getLocatorDirs().stream().map(dir -> getStopLocatorCommand(dir.toString()));
+        getLocatorDirs().stream().map(dir -> gfshRule.getStopProcessCommand(LOCATOR, dir));
     return Stream.concat(stopServers, stopLocators).toArray(String[]::new);
   }
 
-  String getStopServerCommand(String serverName) {
-    return "stop server --dir=" + getSubDir(serverName);
-  }
-
-  String getStopLocatorCommand(String locatorName) {
-    return "stop locator --dir=" + getSubDir(locatorName);
-  }
 
   Path getPidFilePath(String processName, ProcessType processType) {
     return getSubDir(processName).resolve(processType.getPidFileName());
@@ -200,7 +200,7 @@ public class GfshExecution {
     return readPid(pidFilePath.toFile());
   }
 
-  private Path getSubDir(String subDirName) {
+  Path getSubDir(String subDirName) {
     return getWorkingDir().toPath().resolve(subDirName);
   }
 

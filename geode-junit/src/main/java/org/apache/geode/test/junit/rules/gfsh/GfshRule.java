@@ -15,26 +15,35 @@
 package org.apache.geode.test.junit.rules.gfsh;
 
 import static java.io.File.pathSeparator;
-import static org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder.When.ALWAYS;
+import static java.util.stream.Collectors.toSet;
+import static org.apache.geode.internal.process.ProcessType.LOCATOR;
+import static org.apache.geode.internal.process.ProcessType.SERVER;
+import static org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder.When.FAILS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
+import org.junit.runners.model.MultipleFailureException;
 import org.junit.runners.model.Statement;
 
 import org.apache.geode.internal.lang.SystemUtils;
+import org.apache.geode.internal.process.ProcessType;
+import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.version.VersionManager;
@@ -57,8 +66,11 @@ import org.apache.geode.test.version.VersionManager;
  */
 public class GfshRule implements TestRule {
   private final SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder()
-      .when(ALWAYS)
+      .when(FAILS)
       .copyTo(new File("."));
+
+  private final List<Throwable> errors = new ArrayList<>();
+
   private List<GfshExecution> gfshExecutions;
   private Path gfsh;
   private String version;
@@ -79,9 +91,13 @@ public class GfshRule implements TestRule {
         before(description.getMethodName());
         try {
           base.evaluate();
+        } catch (Throwable e) {
+          errors.add(e);
         } finally {
           after();
         }
+
+        MultipleFailureException.assertEmpty(errors);
       }
     };
   }
@@ -110,20 +126,6 @@ public class GfshRule implements TestRule {
     } finally {
       temporaryFolder.after();
     }
-  }
-
-  private Path findGfsh() {
-    Path geodeHome;
-    if (version == null) {
-      geodeHome = new RequiresGeodeHome().getGeodeHome().toPath();
-    } else {
-      geodeHome = Paths.get(VersionManager.getInstance().getInstall(version));
-    }
-
-    if (SystemUtils.isWindows()) {
-      return geodeHome.resolve("bin").resolve("gfsh.bat");
-    }
-    return geodeHome.resolve("bin").resolve("gfsh");
   }
 
   public TemporaryFolder getTemporaryFolder() {
@@ -175,6 +177,20 @@ public class GfshRule implements TestRule {
     return gfshExecution;
   }
 
+  private Path findGfsh() {
+    Path geodeHome;
+    if (version == null) {
+      geodeHome = new RequiresGeodeHome().getGeodeHome().toPath();
+    } else {
+      geodeHome = Paths.get(VersionManager.getInstance().getInstall(version));
+    }
+
+    if (SystemUtils.isWindows()) {
+      return geodeHome.resolve("bin").resolve("gfsh.bat");
+    }
+    return geodeHome.resolve("bin").resolve("gfsh");
+  }
+
   private ProcessBuilder createProcessBuilder(GfshScript gfshScript, Path gfshPath, File workingDir,
       int gfshDebugPort) {
     List<String> commandsToExecute = new ArrayList<>();
@@ -217,11 +233,62 @@ public class GfshRule implements TestRule {
     return processBuilder;
   }
 
+  private Set<Integer> stopMembers(GfshExecution gfshExecution) throws UncheckedIOException {
+    Set<Integer> serverPids = getPidFilesUnchecked(gfshExecution, SERVER).stream()
+        .map(pidFile -> ProcessUtils.readPid(pidFile.toFile()))
+        .collect(toSet());
+
+    getPidFilesUnchecked(gfshExecution, SERVER)
+        .forEach(pidFile -> stopProcessSoftly(SERVER, pidFile.getParent()));
+
+    Set<Integer> locatorPids = getPidFilesUnchecked(gfshExecution, LOCATOR).stream()
+        .map(pidFile -> ProcessUtils.readPid(pidFile.toFile()))
+        .collect(toSet());
+
+    getPidFilesUnchecked(gfshExecution, LOCATOR)
+        .forEach(pidFile -> stopProcessSoftly(LOCATOR, pidFile.getParent()));
+
+    Set<Integer> pids = new HashSet<>();
+    pids.addAll(serverPids);
+    pids.addAll(locatorPids);
+    return pids;
+  }
+
+  private Set<Path> getPidFilesUnchecked(GfshExecution gfshExecution, ProcessType processType)
+      throws UncheckedIOException {
+    try {
+      return gfshExecution.getPidFiles(processType);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
+  private void stopProcessSoftly(ProcessType processType, Path directory) {
+    try {
+      execute(getStopProcessCommand(processType, directory));
+    } catch (Exception e) {
+      errors.add(e);
+    }
+  }
+
+  String getStopProcessCommand(ProcessType processType, Path directory) {
+    StringBuilder sb = new StringBuilder("stop ");
+    if (processType == SERVER) {
+      sb.append("server ");
+    } else {
+      sb.append("locator ");
+    }
+    sb.append("--dir=");
+    sb.append(directory.toFile());
+    return sb.toString();
+  }
+
   /**
    * this will stop the server that's been started in this gfsh execution
    */
   public void stopServer(GfshExecution execution, String serverName) {
-    String command = execution.getStopServerCommand(serverName);
+    String command = // execution.getStopServerCommand(serverName);
+        getStopProcessCommand(SERVER, execution.getSubDir(serverName));
     try {
       execute(GfshScript.of(command).withName("Stop-server-" + serverName));
     } catch (Exception e) {
@@ -233,24 +300,10 @@ public class GfshRule implements TestRule {
    * this will stop the locator that's been started in this gfsh execution
    */
   public void stopLocator(GfshExecution execution, String locatorName) {
-    String command = execution.getStopLocatorCommand(locatorName);
+    String command = // execution.getStopLocatorCommand(locatorName);
+        getStopProcessCommand(LOCATOR, execution.getSubDir(locatorName));
     try {
       execute(GfshScript.of(command).withName("Stop-locator-" + locatorName));
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private void stopMembers(GfshExecution gfshExecution) {
-    // TODO: getLocatorPidFiles
-
-    String[] stopMemberScripts = gfshExecution.getStopMemberCommands();
-    if (stopMemberScripts.length == 0) {
-      return;
-    }
-
-    try {
-      execute(GfshScript.of(stopMemberScripts).withName("Stop-Members"));
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
