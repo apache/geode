@@ -12,16 +12,22 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.gfsh.internal.management;
+package org.apache.geode.internal.serialization;
 
+import java.io.IOException;
 import java.net.URL;
+import java.util.Collection;
 
-import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
+@FunctionalInterface
+public interface SanctionedSerializablesService {
 
-public class GfshSanctionedSerializablesService implements SanctionedSerializablesService {
+  URL getSanctionedSerializablesURL();
 
-  @Override
-  public URL getSanctionedSerializablesURL() {
-    return getClass().getResource("sanctioned-geode-gfsh-serializables.txt");
+  default Class<?> getInterface() {
+    return getClass();
+  }
+
+  default Collection<String> getSerializationAcceptlist() throws IOException {
+    return SanctionedSerializables.loadClassNames(getSanctionedSerializablesURL());
   }
 }
