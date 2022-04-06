@@ -17,7 +17,8 @@ package org.apache.geode.test.junit.internal;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.codeAnalysis.SanctionedSerializablesServiceIntegrationTestBase;
-import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
+import org.apache.geode.internal.CoreSanctionedSerializablesService;
+import org.apache.geode.internal.serialization.SanctionedSerializablesService;
 import org.apache.geode.test.junit.categories.SanctionedSerializablesTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
@@ -25,7 +26,7 @@ import org.apache.geode.test.junit.categories.SerializationTest;
 public class JUnitSanctionedSerializablesServiceIntegrationTest
     extends SanctionedSerializablesServiceIntegrationTestBase {
 
-  private final SanctionedSerializablesService service = new JUnitSanctionedSerializablesService();
+  private final SanctionedSerializablesService service = new CoreSanctionedSerializablesService();
 
   @Override
   protected SanctionedSerializablesService getService() {
