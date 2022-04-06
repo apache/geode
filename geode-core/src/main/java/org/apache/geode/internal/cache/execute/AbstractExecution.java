@@ -59,7 +59,6 @@ public abstract class AbstractExecution implements InternalExecution {
   /** Whether to suppress logging of FunctionException */
   public static final boolean SUPPRESS_FUNCTION_EXCEPTION_LOGGING =
       Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "logging.suppressFunctionExceptionLogging");
-
   public static final int DEFAULT_CLIENT_FUNCTION_TIMEOUT = 0;
   private static final String CLIENT_FUNCTION_TIMEOUT_SYSTEM_PROPERTY =
       GeodeGlossary.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT";
