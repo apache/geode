@@ -1711,19 +1711,6 @@ public class Connection implements Runnable {
               }
             }
           }
-          // "Socket closed" check needed for Solaris jdk 1.4.2_08
-          if (!isSocketClosed() && !"Socket closed".equalsIgnoreCase(e.getMessage())) {
-            if (logger.isInfoEnabled() && !isIgnorableIOException(e)) {
-              logger.info("{} io exception for {}", p2pReaderName(), this, e);
-            }
-            if (logger.isDebugEnabled()) {
-              if (e.getMessage().contains("interrupted by a call to WSACancelBlockingCall")) {
-                logger.debug(
-                    "{} received unexpected WSACancelBlockingCall exception, which may result in a hang",
-                    p2pReaderName());
-              }
-            }
-          }
           readerShuttingDown = true;
           try {
             requestClose(format("IOException in channel read: %s", e));
