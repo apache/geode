@@ -71,7 +71,6 @@ import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.DefaultServerLauncherCacheProvider;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.DistributedSerializableObjectConfig;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.AbstractCacheServer;
 import org.apache.geode.internal.cache.CacheConfig;
@@ -95,7 +94,6 @@ import org.apache.geode.internal.process.ProcessControllerParameters;
 import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.UnableToControlProcessException;
-import org.apache.geode.internal.serialization.filter.SystemPropertyGlobalSerialFilterConfigurationFactory;
 import org.apache.geode.lang.AttachAPINotFoundException;
 import org.apache.geode.logging.internal.executors.LoggingThread;
 import org.apache.geode.logging.internal.log4j.api.LogService;
@@ -791,11 +789,6 @@ public class ServerLauncher extends AbstractLauncher<String> {
     if (isStartable()) {
       INSTANCE.compareAndSet(null, this);
 
-      boolean serializationFilterConfigured =
-          new SystemPropertyGlobalSerialFilterConfigurationFactory()
-              .create(new DistributedSerializableObjectConfig(getDistributedSystemProperties()))
-              .configure();
-
       try {
         process = getControllableProcess();
 
@@ -814,10 +807,6 @@ public class ServerLauncher extends AbstractLauncher<String> {
         try {
           final Properties gemfireProperties = getDistributedSystemProperties(getProperties());
           cache = createCache(gemfireProperties);
-
-          if (serializationFilterConfigured) {
-            log.info("Global serial filter is now configured.");
-          }
 
           // Set the resource manager options
           if (criticalHeapPercentage != null) {

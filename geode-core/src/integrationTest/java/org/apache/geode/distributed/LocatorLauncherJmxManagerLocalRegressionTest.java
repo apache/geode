@@ -35,7 +35,7 @@ import org.apache.geode.internal.process.ProcessType;
  * Regression tests for stopping a JMX Manager process launched with {@link LocatorLauncher}.
  *
  * <p>
- * Confirms fix for <strong>Locator not stopping correctly if jmx-manager-port=0</strong>
+ * Confirms fix for <bold>Locator not stopping correctly if jmx-manager-port=0</bold>
  *
  * <p>
  * Refactored from LocatorLauncherAssemblyIntegrationTest which used to be in geode-assembly.
@@ -86,26 +86,6 @@ public class LocatorLauncherJmxManagerLocalRegressionTest
 
   @Test
   public void locatorWithNonZeroJmxPortCleansUpWhenStopped() {
-    startLocator(newBuilder()
-        .setDeletePidFileOnStop(true)
-        .setMemberName(getUniqueName())
-        .setPort(defaultLocatorPort)
-        .setRedirectOutput(false)
-        .setWorkingDirectory(getWorkingDirectoryPath())
-        .set(ENABLE_CLUSTER_CONFIGURATION, "false")
-        .set(JMX_MANAGER, "true")
-        .set(JMX_MANAGER_START, "true")
-        .set(JMX_MANAGER_PORT, String.valueOf(jmxManagerPort))
-        .set(LOG_LEVEL, "config"));
-
-    stopLocator();
-
-    assertDeletionOf(getPidFile());
-    assertThatThreadsStopped();
-  }
-
-  @Test
-  public void startsLocatorWithJmxManager() {
     startLocator(newBuilder()
         .setDeletePidFileOnStop(true)
         .setMemberName(getUniqueName())
