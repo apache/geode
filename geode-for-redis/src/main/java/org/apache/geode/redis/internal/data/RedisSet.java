@@ -73,6 +73,13 @@ public class RedisSet extends AbstractRedisData {
     this.members = members;
   }
 
+  public RedisSet(RedisSet redisSet) {
+    setExpirationTimestampNoDelta(redisSet.getExpirationTimestamp());
+    setVersion(redisSet.getVersion());
+    members = new MemberSet(redisSet.members.size());
+    members.addAll(redisSet.members);
+  }
+
   public RedisSet(int expectedSize) {
     members = new MemberSet(expectedSize);
   }
@@ -85,14 +92,30 @@ public class RedisSet extends AbstractRedisData {
   public static int smove(RedisKey sourceKey, RedisKey destKey, byte[] member,
       RegionProvider regionProvider) {
     RedisSet source = regionProvider.getTypedRedisData(REDIS_SET, sourceKey, false);
+
+    if (source.isNull()) {
+      return 0;
+    }
+
+    if (sourceKey.equals(destKey)) {
+      if (source.sismember(member)) {
+        return 1;
+      } else {
+        return 0;
+      }
+    }
+
     RedisSet destination = regionProvider.getTypedRedisData(REDIS_SET, destKey, false);
     List<byte[]> memberList = new ArrayList<>();
     memberList.add(member);
-    if (source.srem(memberList, regionProvider.getDataRegion(), sourceKey) == 0) {
+    RedisSet newSource = new RedisSet(source);
+    if (newSource.srem(memberList, regionProvider.getDataRegion(), sourceKey) == 0) {
       return 0;
+    } else {
+      RedisSet newDestination = new RedisSet(destination);
+      newDestination.sadd(memberList, regionProvider.getDataRegion(), destKey);
+      return 1;
     }
-    destination.sadd(memberList, regionProvider.getDataRegion(), destKey);
-    return 1;
   }
 
   public static MemberSet sunion(RegionProvider regionProvider, List<RedisKey> keys,

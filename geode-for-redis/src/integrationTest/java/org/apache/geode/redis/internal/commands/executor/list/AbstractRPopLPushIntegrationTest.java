@@ -95,6 +95,12 @@ public abstract class AbstractRPopLPushIntegrationTest implements RedisIntegrati
   }
 
   @Test
+  public void rPopLPush_withNonexistentSourceKeyAndNonListDestinationKey_returnsNull() {
+    jedis.set(DESTINATION_KEY, "not_a_list");
+    assertThat(jedis.rpoplpush(SOURCE_KEY, DESTINATION_KEY)).isNull();
+  }
+
+  @Test
   public void rPopLPush_withNonexistentSourceKey_returnsNull() {
     assertThat(jedis.rpoplpush(SOURCE_KEY, DESTINATION_KEY)).isNull();
   }

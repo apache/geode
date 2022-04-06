@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.redis.internal.commands.executor.list;
+package org.apache.geode.redis.internal.commands.executor.set;
 
 import static org.apache.geode.redis.internal.RedisConstants.SERVER_ERROR_MESSAGE;
 import static org.apache.geode.redis.internal.services.RegionProvider.DEFAULT_REDIS_REGION_NAME;
@@ -28,10 +28,8 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
-import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -49,9 +47,8 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
-public class RPopLPushDUnitTest {
-  public static final String KEY_1 = "key1";
-  public static final String KEY_2 = "key2";
+public class SMoveDunitTest {
+
   public static final String THROWING_CACHE_WRITER_EXCEPTION = "to be ignored";
 
   @Rule
@@ -60,6 +57,8 @@ public class RPopLPushDUnitTest {
   @Rule
   public ExecutorServiceRule executor = new ExecutorServiceRule();
 
+  public static final String KEY_1 = "key1";
+  public static final String KEY_2 = "key2";
   private static JedisCluster jedis;
 
   @Before
@@ -73,10 +72,11 @@ public class RPopLPushDUnitTest {
     clusterStartUp.flushAll();
   }
 
-  @After
-  public void tearDown() {
+  @AfterClass
+  public static void tearDown() {
     jedis.close();
   }
+
 
   @Test
   public void shouldDistributeDataAmongCluster_andRetainDataAfterServerCrash() {
@@ -85,50 +85,49 @@ public class RPopLPushDUnitTest {
     final String sourceKey = tag + KEY_1;
     final String destinationKey = tag + KEY_2;
 
+
     final int elementsToMove = 5;
     final int initialElementCount = elementsToMove * 2;
 
-    List<String> initialElements = makeInitialElementsList(initialElementCount);
+    List<String> members = makeMemberList(initialElementCount, "member1-");
 
-    jedis.lpush(sourceKey, initialElements.toArray(new String[0]));
+    jedis.sadd(sourceKey, members.toArray(new String[] {}));
 
-    // Move half the elements from the source list to the destination
+    // Move half the elements from the source set to the destination
     for (int i = 0; i < elementsToMove; ++i) {
-      assertThat(jedis.rpoplpush(sourceKey, destinationKey)).isEqualTo(initialElements.get(i));
+      assertThat(jedis.smove(sourceKey, destinationKey, members.get(i))).isEqualTo(1);
     }
 
     clusterStartUp.crashVM(primaryVMIndex); // kill primary server
 
-    // For easier validation
-    List<String> reversedInitialElements = new ArrayList<>(initialElements);
-    Collections.reverse(reversedInitialElements);
-
-    assertThat(jedis.lrange(sourceKey, 0, -1))
-        .containsExactlyElementsOf(reversedInitialElements.subList(0, elementsToMove));
-    assertThat(jedis.lrange(destinationKey, 0, -1)).containsExactlyElementsOf(
-        reversedInitialElements.subList(elementsToMove, initialElementCount));
+    assertThat(jedis.smembers(sourceKey))
+        .containsExactlyInAnyOrderElementsOf(members.subList(elementsToMove, initialElementCount));
+    assertThat(jedis.smembers(destinationKey))
+        .containsExactlyInAnyOrderElementsOf(members.subList(0, elementsToMove));
   }
 
   @Test
-  public void givenBucketsMovedDuringRPopLPush_thenOperationsAreNotLostOrDuplicated()
+  public void givenBucketsMovedDuringSMove_thenOperationsAreNotLostOrDuplicated()
       throws InterruptedException, ExecutionException {
+
     final AtomicBoolean continueRunning = new AtomicBoolean(true);
     final List<String> hashTags = getHashTagsForEachServer();
-    final int initialElementCount = 1000;
 
-    List<String> initialElements = makeInitialElementsList(initialElementCount);
+    List<String> members1 = makeMemberList(10, "member1-");
+    List<String> members2 = makeMemberList(10, "member2-");
+    List<String> members3 = makeMemberList(10, "member3-");
 
-    for (String hashTag : hashTags) {
-      jedis.lpush(hashTag + KEY_1, initialElements.toArray(new String[0]));
-    }
+    jedis.sadd(hashTags.get(0) + KEY_1, members1.toArray(new String[] {}));
+    jedis.sadd(hashTags.get(1) + KEY_1, members2.toArray(new String[] {}));
+    jedis.sadd(hashTags.get(2) + KEY_1, members3.toArray(new String[] {}));
 
-    Future<Void> future1 = executor.runAsync(() -> repeatRPopLPush(hashTags.get(0),
-        initialElements, continueRunning));
-    Future<Void> future2 = executor.runAsync(() -> repeatRPopLPush(hashTags.get(1),
-        initialElements, continueRunning));
+    Future<Void> future1 = executor.runAsync(() -> repeatSMove(hashTags.get(0),
+        members1, continueRunning));
+    Future<Void> future2 = executor.runAsync(() -> repeatSMove(hashTags.get(1),
+        members2, continueRunning));
     Future<Void> future3 =
-        executor.runAsync(() -> repeatRPopLPushWithSameSourceAndDest(hashTags.get(2),
-            initialElements, continueRunning));
+        executor.runAsync(() -> repeatSMoveWithSameSourceAndDest(hashTags.get(2),
+            members3, continueRunning));
 
     for (int i = 0; i < 25 && continueRunning.get(); i++) {
       clusterStartUp.moveBucketForKey(hashTags.get(i % hashTags.size()));
@@ -143,7 +142,7 @@ public class RPopLPushDUnitTest {
   }
 
   @Test
-  public void rpoplpush_isTransactional() {
+  public void smove_isTransactional() {
     IgnoredException.addIgnoredException(THROWING_CACHE_WRITER_EXCEPTION);
 
     int primaryVMIndex = 1;
@@ -151,13 +150,13 @@ public class RPopLPushDUnitTest {
 
     final String sourceKey = tag + KEY_1;
     int sourceSize = 2;
-    List<String> initialElements = makeInitialElementsList(sourceSize);
-    jedis.lpush(sourceKey, initialElements.toArray(new String[0]));
+    List<String> members = makeMemberList(sourceSize, "member1-");
+    jedis.sadd(sourceKey, members.toArray(new String[] {}));
 
     String throwingKey = tag + "ThrowingRedisString";
     int destinationSize = 2;
-    List<String> elementsForThrowingKey = makeInitialElementsList(sourceSize);
-    jedis.lpush(throwingKey, elementsForThrowingKey.toArray(new String[0]));
+    List<String> membersForThrowingKey = makeMemberList(2, "ThrowingRedisStringValue");
+    jedis.sadd(throwingKey, membersForThrowingKey.toArray(new String[] {}));
 
     // Install a cache writer that will throw an exception if a key with a name equal to throwingKey
     // is updated or created
@@ -165,23 +164,19 @@ public class RPopLPushDUnitTest {
       RedisClusterStartupRule.getCache()
           .<RedisKey, RedisData>getRegion(DEFAULT_REDIS_REGION_NAME)
           .getAttributesMutator()
-          .setCacheWriter(new RPopLPushDUnitTest.ThrowingCacheWriter(throwingKey));
+          .setCacheWriter(new SMoveDunitTest.ThrowingCacheWriter(throwingKey));
     });
 
+    String memberToRemove = "member1-0";
+
     assertThatThrownBy(
-        () -> jedis.rpoplpush(sourceKey, throwingKey))
+        () -> jedis.smove(sourceKey, throwingKey, memberToRemove))
             .hasMessage(SERVER_ERROR_MESSAGE);
 
-    List<String> reversedInitialElements = new ArrayList<>(initialElements);
-    Collections.reverse(reversedInitialElements);
-
-    List<String> reversedElementsForThrowingKey = new ArrayList<>(elementsForThrowingKey);
-    Collections.reverse(reversedElementsForThrowingKey);
-
-    // Assert rpoplpush has not happened
-    assertThat(jedis.lrange(sourceKey, 0, -1)).containsExactlyElementsOf(reversedInitialElements);
-    assertThat(jedis.lrange(throwingKey, 0, -1))
-        .containsExactlyElementsOf(reversedElementsForThrowingKey);
+    // Assert smove has not happened
+    assertThat(jedis.smembers(sourceKey)).containsExactlyInAnyOrderElementsOf(members);
+    assertThat(jedis.smembers(throwingKey))
+        .containsExactlyInAnyOrderElementsOf(membersForThrowingKey);
 
     IgnoredException.removeAllExpectedExceptions();
   }
@@ -223,39 +218,21 @@ public class RPopLPushDUnitTest {
         throws CacheWriterException {}
   }
 
-  private List<String> getHashTagsForEachServer() {
-    List<String> hashTags = new ArrayList<>();
-    hashTags.add("{" + clusterStartUp.getKeyOnServer("tag", 1) + "}");
-    hashTags.add("{" + clusterStartUp.getKeyOnServer("tag", 2) + "}");
-    hashTags.add("{" + clusterStartUp.getKeyOnServer("tag", 3) + "}");
-    return hashTags;
-  }
-
-  private List<String> makeInitialElementsList(int size) {
-    return IntStream.range(0, size)
-        .mapToObj(String::valueOf)
-        .collect(Collectors.toList());
-  }
-
-  private void repeatRPopLPush(String hashTag, List<String> initialElements,
+  private void repeatSMove(String hashTag, List<String> initialElements,
       AtomicBoolean continueRunning) {
     String source = hashTag + KEY_1;
     String destination = hashTag + KEY_2;
 
-    // For easier validation
-    List<String> reversedInitialElements = new ArrayList<>(initialElements);
-    Collections.reverse(reversedInitialElements);
-
     while (continueRunning.get()) {
       for (int i = 0; i < initialElements.size(); i++) {
-        assertThat(jedis.rpoplpush(source, destination)).isEqualTo(initialElements.get(i));
+        int movedIndex = (initialElements.size() - 1) - i;
+        assertThat(jedis.smove(source, destination, initialElements.get(movedIndex))).isEqualTo(1);
 
-        int movedIndex = (reversedInitialElements.size() - 1) - i;
         // Confirm we moved the correct element
-        assertThat(jedis.lrange(destination, 0, -1)).containsExactlyElementsOf(
-            reversedInitialElements.subList(movedIndex, reversedInitialElements.size()));
-        assertThat(jedis.lrange(source, 0, -1)).containsExactlyElementsOf(
-            reversedInitialElements.subList(0, movedIndex));
+        assertThat(jedis.smembers(source))
+            .containsExactlyInAnyOrderElementsOf(initialElements.subList(0, movedIndex));
+        assertThat(jedis.smembers(destination)).containsExactlyInAnyOrderElementsOf(
+            initialElements.subList(movedIndex, initialElements.size()));
       }
 
       // All elements have been moved
@@ -268,20 +245,32 @@ public class RPopLPushDUnitTest {
     }
   }
 
-  private void repeatRPopLPushWithSameSourceAndDest(String hashTag, List<String> initialElements,
+  private void repeatSMoveWithSameSourceAndDest(String hashTag, List<String> initialElements,
       AtomicBoolean continueRunning) {
     String key = hashTag + KEY_1;
 
-    // For easier validation
-    List<String> expectedElements = new ArrayList<>(initialElements);
-    Collections.reverse(expectedElements);
-
     while (continueRunning.get()) {
       for (String element : initialElements) {
-        assertThat(jedis.rpoplpush(key, key)).isEqualTo(element);
-        Collections.rotate(expectedElements, 1);
-        assertThat(jedis.lrange(key, 0, -1)).containsExactlyElementsOf(expectedElements);
+        assertThat(jedis.smove(key, key, element)).isEqualTo(1);
+        Collections.rotate(initialElements, 1);
+        assertThat(jedis.smembers(key)).containsExactlyInAnyOrderElementsOf(initialElements);
       }
     }
+  }
+
+  private List<String> getHashTagsForEachServer() {
+    List<String> hashTags = new ArrayList<>();
+    hashTags.add("{" + clusterStartUp.getKeyOnServer("tag", 1) + "}");
+    hashTags.add("{" + clusterStartUp.getKeyOnServer("tag", 2) + "}");
+    hashTags.add("{" + clusterStartUp.getKeyOnServer("tag", 3) + "}");
+    return hashTags;
+  }
+
+  private List<String> makeMemberList(int setSize, String baseString) {
+    List<String> members = new ArrayList<>();
+    for (int i = 0; i < setSize; i++) {
+      members.add(baseString + i);
+    }
+    return members;
   }
 }

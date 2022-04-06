@@ -15,11 +15,16 @@
 
 package org.apache.geode.redis.internal.commands.executor.string;
 
+import static org.apache.geode.redis.internal.RedisConstants.SERVER_ERROR_MESSAGE;
 import static org.apache.geode.redis.internal.SystemPropertyBasedRedisConfiguration.GEODE_FOR_REDIS_PORT;
+import static org.apache.geode.redis.internal.services.RegionProvider.DEFAULT_REDIS_REGION_NAME;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -34,11 +39,18 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 
+import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.redis.ConcurrentLoopingThreads;
+import org.apache.geode.redis.internal.data.RedisData;
+import org.apache.geode.redis.internal.data.RedisKey;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.RedisClusterStartupRule;
@@ -53,6 +65,8 @@ public class MSetDUnitTest {
 
   @ClassRule
   public static ExecutorServiceRule executor = new ExecutorServiceRule();
+
+  public static final String THROWING_CACHE_WRITER_EXCEPTION = "to be ignored";
 
   private static final String HASHTAG = "{tag}";
   private static JedisCluster jedis;
@@ -166,6 +180,85 @@ public class MSetDUnitTest {
       running.set(false);
       future.get();
     }
+  }
+
+  @Test
+  public void mset_isTransactional() {
+    IgnoredException.addIgnoredException(THROWING_CACHE_WRITER_EXCEPTION);
+    String hashTag = "{" + clusterStartUp.getKeyOnServer("tag", 1) + "}";
+
+    String key1 = hashTag + "key1";
+    String value1 = "value1";
+    jedis.set(key1, value1);
+
+    String listKey = hashTag + "listKey";
+    jedis.lpush(listKey, "1", "2", "3");
+
+    String nonExistent = hashTag + "nonExistentKey";
+
+    String throwingKey = hashTag + "ThrowingRedisString";
+    String throwingKeyValue = "ThrowingRedisStringValue";
+
+    jedis.set(throwingKey, throwingKeyValue);
+
+    // Install a cache writer that will throw an exception if a key with a name equal to throwingKey
+    // is updated or created
+    clusterStartUp.getMember(1).invoke(() -> {
+      RedisClusterStartupRule.getCache()
+          .<RedisKey, RedisData>getRegion(DEFAULT_REDIS_REGION_NAME)
+          .getAttributesMutator()
+          .setCacheWriter(new ThrowingCacheWriter(throwingKey));
+    });
+
+    String newValue = "should_not_be_set";
+
+    assertThatThrownBy(
+        () -> jedis.mset(key1, newValue, nonExistent, newValue, throwingKey, newValue))
+            .hasMessage(SERVER_ERROR_MESSAGE);
+
+    assertThat(jedis.get(key1)).isEqualTo(value1);
+    assertThat(jedis.type(listKey)).isEqualTo("list");
+    assertThat(jedis.exists(nonExistent)).isFalse();
+    assertThat(jedis.get(throwingKey)).isEqualTo(throwingKeyValue);
+
+    IgnoredException.removeAllExpectedExceptions();
+  }
+
+  private static class ThrowingCacheWriter implements CacheWriter<RedisKey, RedisData> {
+    private final byte[] keyBytes;
+
+    ThrowingCacheWriter(String key) {
+      keyBytes = key.getBytes(StandardCharsets.UTF_8);
+    }
+
+    @Override
+    public void beforeUpdate(EntryEvent<RedisKey, RedisData> event) throws CacheWriterException {
+      if (Arrays.equals(event.getKey().toBytes(), keyBytes)) {
+        throw new CacheWriterException(THROWING_CACHE_WRITER_EXCEPTION);
+      }
+    }
+
+    @Override
+    public void beforeCreate(EntryEvent<RedisKey, RedisData> event) throws CacheWriterException {
+      if (Arrays.equals(event.getKey().toBytes(), keyBytes)) {
+        throw new CacheWriterException(THROWING_CACHE_WRITER_EXCEPTION);
+      }
+    }
+
+    @Override
+    public void beforeDestroy(EntryEvent<RedisKey, RedisData> event) throws CacheWriterException {
+
+    }
+
+    @Override
+    public void beforeRegionDestroy(RegionEvent<RedisKey, RedisData> event)
+        throws CacheWriterException {
+
+    }
+
+    @Override
+    public void beforeRegionClear(RegionEvent<RedisKey, RedisData> event)
+        throws CacheWriterException {}
   }
 
   private String[] makeKeysAndValues(String[] keys, String valueBase) {
