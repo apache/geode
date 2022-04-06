@@ -12,9 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.internal.net;
 
-
+import static org.apache.commons.lang3.ObjectUtils.getIfNull;
 import static org.apache.geode.internal.net.filewatch.FileWatchingX509ExtendedKeyManager.newFileWatchingKeyManager;
 import static org.apache.geode.internal.net.filewatch.FileWatchingX509ExtendedTrustManager.newFileWatchingTrustManager;
 
@@ -76,7 +77,6 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.net.SSLParameterExtension;
 import org.apache.geode.util.internal.GeodeGlossary;
 
-
 /**
  * SocketCreators are built using a SocketCreatorFactory using Geode distributed-system properties.
  * They know how to properly configure sockets for TLS (SSL) communications and perform
@@ -115,16 +115,15 @@ public class SocketCreator extends TcpSocketCreatorImpl {
    * Only print this SocketCreator's config once
    */
   private boolean configShown = false;
+
   /**
    * Only print hostname validation disabled log once
    */
   private boolean hostnameValidationDisabledLogShown = false;
 
-
   private SSLContext sslContext;
 
   private final SSLConfig sslConfig;
-
 
   private ClientSocketFactory clientSocketFactory;
 
@@ -135,10 +134,6 @@ public class SocketCreator extends TcpSocketCreatorImpl {
    */
   public static final boolean ENABLE_TCP_KEEP_ALIVE =
       AdvancedSocketCreatorImpl.ENABLE_TCP_KEEP_ALIVE;
-
-  // -------------------------------------------------------------------------
-  // Static instance accessors
-  // -------------------------------------------------------------------------
 
   /**
    * This method has migrated to LocalHostUtil but is kept in place here for
@@ -152,16 +147,15 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     return LocalHostUtil.getLocalHost();
   }
 
-
   /**
    * returns the host name for the given inet address, using a local cache of names to avoid dns
    * hits and duplicate strings
    */
-  public static String getHostName(InetAddress addr) {
-    String result = hostNames.get(addr);
+  public static String getHostName(InetAddress address) {
+    String result = hostNames.get(address);
     if (result == null) {
-      result = addr.getHostName();
-      hostNames.put(addr, result);
+      result = address.getHostName();
+      hostNames.put(address, result);
     }
     return result;
   }
@@ -172,11 +166,6 @@ public class SocketCreator extends TcpSocketCreatorImpl {
   public static void resetHostNameCache() {
     hostNames.clear();
   }
-
-
-  // -------------------------------------------------------------------------
-  // Constructor
-  // -------------------------------------------------------------------------
 
   /**
    * Constructs new SocketCreator instance.
@@ -194,14 +183,10 @@ public class SocketCreator extends TcpSocketCreatorImpl {
 
   /** returns the hostname or address for this client */
   public static String getClientHostName() throws UnknownHostException {
-    InetAddress hostAddr = LocalHostUtil.getLocalHost();
-    return SocketCreator.use_client_host_name ? hostAddr.getCanonicalHostName()
-        : hostAddr.getHostAddress();
+    InetAddress address = LocalHostUtil.getLocalHost();
+    return SocketCreator.use_client_host_name ? address.getCanonicalHostName()
+        : address.getHostAddress();
   }
-
-  // -------------------------------------------------------------------------
-  // Initializers (change SocketCreator state)
-  // -------------------------------------------------------------------------
 
   protected void initializeCreators() {
     clusterSocketCreator = new SCClusterSocketCreator(this);
@@ -348,10 +333,6 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     return sslConfig.isEnabled();
   }
 
-  // -------------------------------------------------------------------------
-  // Public methods
-  // -------------------------------------------------------------------------
-
   /**
    * Returns an SSLEngine that can be used to perform TLS handshakes and communication
    */
@@ -375,7 +356,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
       final int port, final boolean clientSocket) {
     if (sslConfig.doEndpointIdentification()) {
       // set server-names so that endpoint identification algorithms can find what's expected
-      setServerNames(parameters, new HostAndPort(hostName, port));
+      addServerNameIfNotSet(parameters, new HostAndPort(hostName, port));
     }
 
     if (clientSocket) {
@@ -384,16 +365,9 @@ public class SocketCreator extends TcpSocketCreatorImpl {
       parameters.setNeedClientAuth(sslConfig.isRequireAuth());
     }
 
-    final String[] protocols = clientSocket ? sslConfig.getClientProtocolsAsStringArray()
-        : sslConfig.getServerProtocolsAsStringArray();
-    if (!SSLConfig.isAnyProtocols(protocols)) {
-      parameters.setProtocols(protocols);
-    }
+    configureProtocols(clientSocket, parameters);
 
-    final String[] ciphers = sslConfig.getCiphersAsStringArray();
-    if (ciphers != null && !"any".equalsIgnoreCase(ciphers[0])) {
-      parameters.setCipherSuites(ciphers);
-    }
+    configureCipherSuites(parameters);
   }
 
   /**
@@ -404,7 +378,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
    * @param socketChannel the socket's NIO channel
    * @param engine the sslEngine (see createSSLEngine)
    * @param timeout handshake timeout in milliseconds. No timeout if <= 0
-   * @param peerNetBuffer the buffer to use in reading data fron socketChannel. This should also be
+   * @param peerNetBuffer the buffer to use in reading data from socketChannel. This should also be
    *        used in subsequent I/O operations
    * @return The SSLEngine to be used in processing data for sending/receiving from the channel
    */
@@ -452,13 +426,10 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     return nioSslEngine;
   }
 
-  /**
-   * @return true if the parameters have been modified by this method
-   */
-  private boolean checkAndEnableHostnameValidation(SSLParameters sslParameters) {
+  void checkAndEnableHostnameValidation(final SSLParameters sslParameters) {
     if (sslConfig.doEndpointIdentification()) {
       sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
-      return true;
+      return;
     }
     if (!hostnameValidationDisabledLogShown) {
       logger.info("Your SSL configuration disables hostname validation. "
@@ -466,7 +437,6 @@ public class SocketCreator extends TcpSocketCreatorImpl {
           + "Please refer to the Apache GEODE SSL Documentation for SSL Property: ssl‑endpoint‑identification‑enabled");
       hostnameValidationDisabledLogShown = true;
     }
-    return false;
   }
 
   /**
@@ -514,11 +484,11 @@ public class SocketCreator extends TcpSocketCreatorImpl {
    * client/server/advanced interfaces because it references WAN classes that aren't
    * available to them.
    */
-  public ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr,
+  public ServerSocket createServerSocket(int port, int backlog, InetAddress bindAddress,
       List<GatewayTransportFilter> transportFilters, int socketBufferSize) throws IOException {
     if (transportFilters.isEmpty()) {
       return ((SCClusterSocketCreator) forCluster())
-          .createServerSocket(nport, backlog, bindAddr, socketBufferSize, useSSL());
+          .createServerSocket(port, backlog, bindAddress, socketBufferSize, useSSL());
     } else {
       printConfig();
       ServerSocket result = new TransportFilterServerSocket(transportFilters);
@@ -528,10 +498,10 @@ public class SocketCreator extends TcpSocketCreatorImpl {
       // java.net.ServerSocket.setReceiverBufferSize javadocs)
       result.setReceiveBufferSize(socketBufferSize);
       try {
-        result.bind(new InetSocketAddress(bindAddr, nport), backlog);
+        result.bind(new InetSocketAddress(bindAddress, port), backlog);
       } catch (BindException e) {
         BindException throwMe = new BindException(
-            String.format("Failed to create server socket on %s[%s]", bindAddr, nport));
+            String.format("Failed to create server socket on %s[%s]", bindAddress, port));
         throwMe.initCause(e);
         throw throwMe;
       }
@@ -539,50 +509,24 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     }
   }
 
-
-  // -------------------------------------------------------------------------
-  // Private implementation methods
-  // -------------------------------------------------------------------------
-
-
   /**
    * When a socket is connected to a server socket, it should be passed to this method for SSL
    * configuration.
    */
-  void configureClientSSLSocket(Socket socket, HostAndPort addr, int timeout) throws IOException {
+  void configureClientSSLSocket(final Socket socket, final HostAndPort address, int timeout)
+      throws IOException {
     if (socket instanceof SSLSocket) {
-      SSLSocket sslSocket = (SSLSocket) socket;
+      final SSLSocket sslSocket = (SSLSocket) socket;
 
       sslSocket.setUseClientMode(true);
       sslSocket.setEnableSessionCreation(true);
 
-      SSLParameters parameters = sslSocket.getSSLParameters();
-      boolean updateSSLParameters =
-          checkAndEnableHostnameValidation(parameters);
-
-      if (setServerNames(parameters, addr)) {
-        updateSSLParameters = true;
-      }
-
-      SSLParameterExtension sslParameterExtension = sslConfig.getSSLParameterExtension();
-      if (sslParameterExtension != null) {
-        parameters =
-            sslParameterExtension.modifySSLClientSocketParameters(parameters);
-        updateSSLParameters = true;
-      }
-
-      if (updateSSLParameters) {
-        sslSocket.setSSLParameters(parameters);
-      }
-
-      String[] protocols = sslConfig.getClientProtocolsAsStringArray();
-      if (!SSLConfig.isAnyProtocols(protocols)) {
-        sslSocket.setEnabledProtocols(protocols);
-      }
-      String[] ciphers = sslConfig.getCiphersAsStringArray();
-      if (ciphers != null && !"any".equalsIgnoreCase(ciphers[0])) {
-        sslSocket.setEnabledCipherSuites(ciphers);
-      }
+      final SSLParameters parameters = sslSocket.getSSLParameters();
+      checkAndEnableHostnameValidation(parameters);
+      addServerNameIfNotSet(parameters, address);
+      configureProtocols(true, parameters);
+      configureCipherSuites(parameters);
+      sslSocket.setSSLParameters(applySSLParameterExtensions(parameters));
 
       try {
         if (timeout > 0) {
@@ -615,25 +559,43 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     }
   }
 
-  /**
-   * returns true if the SSLParameters are altered, false if not
-   */
-  private boolean setServerNames(SSLParameters modifiedParams, HostAndPort addr) {
-    List<SNIServerName> oldNames = modifiedParams.getServerNames();
-    oldNames = oldNames == null ? Collections.emptyList() : oldNames;
-    final List<SNIServerName> serverNames = new ArrayList<>(oldNames);
+  SSLParameters applySSLParameterExtensions(final SSLParameters parameters) {
+    final SSLParameterExtension sslParameterExtension = sslConfig.getSSLParameterExtension();
+    if (sslParameterExtension != null) {
+      return sslParameterExtension.modifySSLClientSocketParameters(parameters);
+    }
+    return parameters;
+  }
+
+  void configureProtocols(final boolean clientSocket, final SSLParameters parameters) {
+    final String[] protocols = clientSocket ? sslConfig.getClientProtocolsAsStringArray()
+        : sslConfig.getServerProtocolsAsStringArray();
+    if (!SSLConfig.isAnyProtocols(protocols)) {
+      parameters.setProtocols(protocols);
+    }
+  }
+
+  void configureCipherSuites(final SSLParameters parameters) {
+    final String[] ciphers = sslConfig.getCiphersAsStringArray();
+    if (!SSLConfig.isAnyCiphers(ciphers)) {
+      parameters.setCipherSuites(ciphers);
+    }
+  }
+
+  static void addServerNameIfNotSet(final SSLParameters parameters,
+      final HostAndPort address) {
+    final List<SNIServerName> serverNames =
+        new ArrayList<>(getIfNull(parameters.getServerNames(), Collections::emptyList));
 
     if (serverNames.stream()
         .mapToInt(SNIServerName::getType)
         .anyMatch(type -> type == StandardConstants.SNI_HOST_NAME)) {
       // we already have a SNI hostname set. Do nothing.
-      return false;
+      return;
     }
 
-    String hostName = addr.getHostName();
-    serverNames.add(new SNIHostName(hostName));
-    modifiedParams.setServerNames(serverNames);
-    return true;
+    serverNames.add(new SNIHostName(address.getHostName()));
+    parameters.setServerNames(serverNames);
   }
 
   /**
@@ -664,7 +626,7 @@ public class SocketCreator extends TcpSocketCreatorImpl {
     if (className != null) {
       Object o;
       try {
-        Class c = ClassPathLoader.getLatest().forName(className);
+        Class<?> c = ClassPathLoader.getLatest().forName(className);
         o = c.newInstance();
       } catch (Exception e) {
         // No cache exists yet, so this can't be logged.

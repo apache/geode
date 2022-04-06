@@ -16,6 +16,7 @@
 package org.apache.geode.internal.net;
 
 import static org.apache.geode.internal.net.SSLConfig.builder;
+import static org.apache.geode.internal.net.SSLConfig.isAnyCiphers;
 import static org.apache.geode.internal.net.SSLConfig.isAnyProtocols;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -69,6 +70,54 @@ class SSLConfigTest {
     assertThat(isAnyProtocols(new String[] {"other"})).isFalse();
     assertThat(isAnyProtocols("other", "something")).isFalse();
     assertThat(isAnyProtocols("other", "something", "any")).isFalse();
+  }
+
+  @Test
+  void isAnyCiphersReturnsTrueForNullString() {
+    assertThat(isAnyCiphers((String) null)).isTrue();
+  }
+
+  @Test
+  void isAnyCiphersReturnsTrueForEmptyString() {
+    assertThat(isAnyCiphers("")).isTrue();
+  }
+
+  @Test
+  void isAnyCiphersReturnsTrueForAnyString() {
+    assertThat(isAnyCiphers("any")).isTrue();
+    assertThat(isAnyCiphers("Any")).isTrue();
+    assertThat(isAnyCiphers("ANY")).isTrue();
+  }
+
+  @Test
+  void isAnyCiphersReturnsFalseForOtherString() {
+    assertThat(isAnyCiphers("other")).isFalse();
+  }
+
+  @Test
+  void testIsAnyCiphersForNullArray() {
+    assertThat(isAnyCiphers((String[]) null)).isTrue();
+  }
+
+  @SuppressWarnings("RedundantArrayCreation")
+  @Test
+  void isAnyCiphersReturnsTrueForEmptyArray() {
+    assertThat(isAnyCiphers(new String[0])).isTrue();
+  }
+
+  @Test
+  void isAnyCiphersReturnsTrueForAnyArray() {
+    assertThat(isAnyCiphers(new String[] {"any"})).isTrue();
+    assertThat(isAnyCiphers(new String[] {"Any"})).isTrue();
+    assertThat(isAnyCiphers(new String[] {"ANY"})).isTrue();
+    assertThat(isAnyCiphers("any", "other")).isTrue();
+  }
+
+  @Test
+  void isAnyCiphersReturnsFalseForOtherArray() {
+    assertThat(isAnyCiphers(new String[] {"other"})).isFalse();
+    assertThat(isAnyCiphers("other", "something")).isFalse();
+    assertThat(isAnyCiphers("other", "something", "any")).isFalse();
   }
 
   @Test
