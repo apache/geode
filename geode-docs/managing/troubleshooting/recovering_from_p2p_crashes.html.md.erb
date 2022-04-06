@@ -68,7 +68,7 @@ By default, <%=vars.product_name%> does not make new copies of the data until a 
 To recover, start a replacement member. The new member regenerates the lost copies and returns them to the configured redundancy level.
 
 **Note:**
-Make sure the replacement member has at least as much local memory as the old one— the `local-max-memory` configuration setting must be the same or larger. Otherwise, you can get into a situation where some entries have all their redundant copies but others don’t. In addition, until you have restarted a replacement member, any code that attempts to create or update data mapped to partition region bucket copies (primary and secondary) that have been lost can result in an exception. (New transactions unrelated to the lost data can fail as well simply because they happen to map to-- or "resolve" to-- a common bucketId).
+Make sure the replacement member has at least as much local memory as the old one— the `local-max-memory` configuration setting must be the same or larger. Otherwise, you can get into a situation where some entries have all their redundant copies but others don’t. In addition, until you have restarted a replacement member, any code that attempts to create or update data mapped to partition region bucket copies (primary and secondary) that have been lost can result in an exception. (New transactions unrelated to the lost data can fail as well simply because they happen to map to&#8209;&#8209; or "resolve" to&#8209;&#8209; a common bucketId).
 
 Even with high availability, you can lose data if too many applications and cache servers fail at the same time. Any lost data is replaced with new data created by the application as it returns to active work.
 

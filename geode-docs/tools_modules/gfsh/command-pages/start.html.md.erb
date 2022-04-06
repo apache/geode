@@ -66,8 +66,8 @@ start gateway-receiver [--groups=value(,value)*] [--members=value(,value)*]
 
 | Name          | Description                                                         |
 |---------------|---------------------------------------------------------------------|
-| \\-\\-members | Name or ID of the member(s) on which to start the Gateway Receiver. |
-| \\-\\-groups  | Group(s) of members on which to start the Gateway Receiver.         |
+| &#8209;&#8209;members | Name or ID of the member(s) on which to start the Gateway Receiver. |
+| &#8209;&#8209;groups  | Group(s) of members on which to start the Gateway Receiver.         |
 
 
 **Example Commands:**
@@ -118,10 +118,10 @@ start gateway-sender --id=value [--groups=value(,value)*] [--members=value(,valu
 
 | Name         | Description    | Default Value |
 |--------------|----------------|---------------|
-| \\-\\-id           | *Required.* ID of the GatewaySender.                      | |
-| \\-\\-groups       | Group(s) of members on which to start the Gateway Sender. | |
+| &#8209;&#8209;id           | *Required.* ID of the GatewaySender.                      | |
+| &#8209;&#8209;groups       | Group(s) of members on which to start the Gateway Sender. | |
 | &#8209;&#8209;members      | Member(s) on which to start the Gateway Sender. | |
-| \\-\\-clean-queues | Option to clean existing queue at start of the Gateway Sender. This option is only applicable for Gateway Senders with enabled persistence. | false |
+| &#8209;&#8209;clean-queues | Option to clean existing queue at start of the Gateway Sender. This option is only applicable for Gateway Senders with enabled persistence. | false |
 
 **Example Commands:**
 
@@ -176,11 +176,11 @@ start jconsole [--interval=<seconds>] [--notile] [--version]
 
 | Name             | Description    | Default Value |
 |------------------|----------------|---------------|
-| \\-\\-interval   | Set the update interval to n seconds (default is 4 seconds). (Equivalent to JConsole's `-interval=n`) | 4 |
-| \\-\\-notile     | Whether to initially tile windows for two or more connections. This parameter is passed as `-notile` to JConsole. | false |
+| &#8209;&#8209;interval   | Set the update interval to n seconds (default is 4 seconds). (Equivalent to JConsole's `-interval=n`) | 4 |
+| &#8209;&#8209;notile     | Whether to initially tile windows for two or more connections. This parameter is passed as `-notile` to JConsole. | false |
 | &#8209;&#8209;pluginpath | Directories or JAR files which are searched for JConsole plugins. The path should contain a provider-configuration file named:`META-INF/services/com.sun.tools.jconsole.JConsolePlugin` containing one line for each plugin specifying the fully qualified class name of the class implementing the `com.sun.tools.jconsole.JConsolePlugin` class. | |
-| \\-\\-version    | Display the JConsole version information. This parameter is passed as `-version` to JConsole. | false |
-| \\-\\-J          | Arguments passed to the JVM on which JConsole runs | |
+| &#8209;&#8209;version    | Display the JConsole version information. This parameter is passed as `-version` to JConsole. | false |
+| &#8209;&#8209;J          | Arguments passed to the JVM on which JConsole runs | |
 
 **Example Commands:**
 
@@ -237,7 +237,7 @@ start jvisualvm [--J=value(,value)*]
 
 | Name       | Description |
 |------------|-------------|
-| \\-\\-J    | VM-option passed to the spawned CacheServer VM.<br/>For example: `--J=-Dfoo.bar=true` for setting foo.bar to 'true'. |
+| &#8209;&#8209;J    | VM-option passed to the spawned CacheServer VM.<br/>For example: `--J=-Dfoo.bar=true` for setting foo.bar to 'true'. |
 
 **Example Commands:**
 
@@ -280,30 +280,30 @@ start locator --name=value [--bind-address=value] [--force(=value)]
 
 | Name         | Description    | Default Value |
 |--------------|----------------|---------------|
-| \\-\\-name                                | Name to be used for this <%=vars.product_name%> locator service. If not specified, gfsh generates a random name. | |
-| \\-\\-bind-address                        | IP address on which the locator will be bound. | bind to all addresses |
-| \\-\\-force                               | Whether to allow the PID file from a previous locator run to be overwritten. | false |
-| \\-\\-groups                              | Group(s) the locator will be a part of. | |
-| \\-\\-hostname-for-clients                | Host name or IP address that will be sent to clients so they can connect to this locator. | uses `bind-address` |
-| \\-\\-classpath                           | Application classes to be added to the locator's CLASSPATH after the core jar file. See <a href="../../../getting_started/setup_classpath.html">Setting Up the CLASSPATH</a> for details. | |
-| \\-\\-locators                            | List of locators used by this locator to join the appropriate <%=vars.product_name%> cluster. | |
-| \\-\\-log-level                           | Level of output logged to the locator log file. Possible values for log-level include: ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF. | |
-| \\-\\-mcast-address                       | IP address or hostname used to bind the UPD socket for multi-cast networking so the locator can locate other members in the <%=vars.product_name%> cluster. If mcast-port is zero, then mcast-address is ignored. | |
-| \\-\\-mcast-port                          | Port used for multi-cast networking so the locator can locate other members of the <%=vars.product_name%> cluster. A zero value disables mcast. | |
-| \\-\\-port                                | Port the locator will listen on. | 10334 |
-| \\-\\-dir                                 | Directory in which the Locator will be started and run. | `./&lt;locator-member-name&gt;` |
-| \\-\\-properties-file                     | Specify the `gemfire.properties` file for configuring the locator's cluster. The file's path should be absolute or relative to gfsh's working directory. | |
-| \\-\\-security-properties-file            | The `gfsecurity.properties` file for configuring the Locator's security configuration in the cluster. The file's path can be absolute or relative to gfsh's working directory. | |
-| \\-\\-initial-heap                        | Size has the same format as the `-Xmx`/`-Xms` JVM options. <p><b>Note:</b> If you use the `-J-Xms` and `-J-Xmx` JVM properties instead of `-initial-heap` and `-max-heap`, then <%=vars.product_name%> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.</p> | |
-| \\-\\-max-heap                            | Size has the same format as the `-Xmx`/`-Xms` JVM options. <p><b>Note:</b> If you use the `-J-Xms` and `-J-Xmx` JVM properties instead of `-initial-heap` and `-max-heap`, then <%=vars.product_name%> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.</p><p><b>Note:</b> The additional GC parameters introduced by the `-max-heap` option are not compatible with the usage of G1 garbage collector.</p> | |
-| \\-\\-connect                             | When connect is set to false, gfsh does not automatically connect to the locator which is started using this command. | true |
-| \\-\\-enable-cluster-configuration        | Enables cluster configuration behavior where locators maintain configurations for all members of the cluster.<br/>See <a href="../../../configuring/cluster_config/gfsh_persist.html">Overview of the Cluster Configuration Service</a>. | true |
-| \\-\\-load-cluster-configuration-from-dir | <b>Deprecated. Use `gfsh import cluster-configuration` for this functionality.</b><br/> Loads the cluster configuration from the `shared-config` directory. (When set to false, the configuration is loaded from the disk store of the internal, persistent region used by the locator to persist the configuration.) | false |
-| \\-\\-cluster-config-dir                  | Directory used by the cluster configuration service to store the cluster configuration on the filesystem | cluster-config |
-| \\-\\-redirect-output                     | When true, redirect standard output and standard error to the locator log file. If specified without a value, the value is set to true. | false |
-| \\-\\-http-service-port                   | Specifies the HTTP service port. | 7070 |
-| \\-\\-http-service-bind-address           | Specifies the IP address to which the HTTP service will be bound. | the local host machine's address |
-| \\-\\-J                                   | Argument passed to the JVM on which the Locator will run. For example, specifying `--J=-Dfoo.bar=true` sets property &quot;foo.bar&quot; to &quot;true&quot;.<p><b>Note:</b> If the argument you are passing contains spaces or commas, enclose the option in single quotes. For example:<br/>`start locator --name=locator1 --port=9009 --mcast-port=0 --J='-Dgemfire.remote-locators=192.0.2.0[9009],192.0.2.1[9009]'`</p> | none |
+| &#8209;&#8209;name                                | Name to be used for this <%=vars.product_name%> locator service. If not specified, gfsh generates a random name. | |
+| &#8209;&#8209;bind-address                        | IP address on which the locator will be bound. | bind to all addresses |
+| &#8209;&#8209;force                               | Whether to allow the PID file from a previous locator run to be overwritten. | false |
+| &#8209;&#8209;groups                              | Group(s) the locator will be a part of. | |
+| &#8209;&#8209;hostname-for-clients                | Host name or IP address that will be sent to clients so they can connect to this locator. | uses `bind-address` |
+| &#8209;&#8209;classpath                           | Application classes to be added to the locator's CLASSPATH after the core jar file. See <a href="../../../getting_started/setup_classpath.html">Setting Up the CLASSPATH</a> for details. | |
+| &#8209;&#8209;locators                            | List of locators used by this locator to join the appropriate <%=vars.product_name%> cluster. | |
+| &#8209;&#8209;log-level                           | Level of output logged to the locator log file. Possible values for log-level include: <code>ALL</code>, <code>TRACE</code>, <code>DEBUG</code>, <code>INFO</code>, <code>WARN</code>, <code>ERROR</code>, <code>FATAL</code>, <code>OFF</code>. | |
+| &#8209;&#8209;mcast-address                       | IP address or hostname used to bind the UPD socket for multi-cast networking so the locator can locate other members in the <%=vars.product_name%> cluster. If mcast-port is zero, then mcast-address is ignored. | |
+| &#8209;&#8209;mcast-port                          | Port used for multi-cast networking so the locator can locate other members of the <%=vars.product_name%> cluster. A zero value disables mcast. | |
+| &#8209;&#8209;port                                | Port the locator will listen on. | 10334 |
+| &#8209;&#8209;dir                                 | Directory in which the Locator will be started and run. | `./<locator-member-name>` |
+| &#8209;&#8209;properties-file                     | Specify the `gemfire.properties` file for configuring the locator's cluster. The file's path should be absolute or relative to gfsh's working directory. | |
+| &#8209;&#8209;security-properties-file            | The `gfsecurity.properties` file for configuring the Locator's security configuration in the cluster. The file's path can be absolute or relative to gfsh's working directory. | |
+| &#8209;&#8209;initial-heap                        | Size has the same format as the `-Xmx`/`-Xms` JVM options. <p><b>Note:</b> If you use the `-J-Xms` and `-J-Xmx` JVM properties instead of `-initial-heap` and `-max-heap`, then <%=vars.product_name%> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.</p> | |
+| &#8209;&#8209;max-heap                            | Size has the same format as the `-Xmx`/`-Xms` JVM options. <p><b>Note:</b> If you use the `-J-Xms` and `-J-Xmx` JVM properties instead of `-initial-heap` and `-max-heap`, then <%=vars.product_name%> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.</p><p><b>Note:</b> The additional GC parameters introduced by the `-max-heap` option are not compatible with the usage of G1 garbage collector.</p> | |
+| &#8209;&#8209;connect                             | When connect is set to false, gfsh does not automatically connect to the locator which is started using this command. | true |
+| &#8209;&#8209;enable-cluster-configuration        | Enables cluster configuration behavior where locators maintain configurations for all members of the cluster.<br/>See <a href="../../../configuring/cluster_config/gfsh_persist.html">Overview of the Cluster Configuration Service</a>. | true |
+| &#8209;&#8209;load-cluster-configuration-from-dir | <b>Deprecated. Use `gfsh import cluster-configuration` for this functionality.</b><br/> Loads the cluster configuration from the `shared-config` directory. (When set to false, the configuration is loaded from the disk store of the internal, persistent region used by the locator to persist the configuration.) | false |
+| &#8209;&#8209;cluster-config-dir                  | Directory used by the cluster configuration service to store the cluster configuration on the filesystem | cluster-config |
+| &#8209;&#8209;redirect-output                     | When true, redirect standard output and standard error to the locator log file. If specified without a value, the value is set to true. | false |
+| &#8209;&#8209;http-service-port                   | Specifies the HTTP service port. | 7070 |
+| &#8209;&#8209;http-service-bind-address           | Specifies the IP address to which the HTTP service will be bound. | the local host machine's address |
+| &#8209;&#8209;J                                   | Argument passed to the JVM on which the Locator will run. For example, specifying `--J=-Dfoo.bar=true` sets property &quot;foo.bar&quot; to &quot;true&quot;.<p><b>Note:</b> If the argument you are passing contains spaces or commas, enclose the option in single quotes. For example:<br/>`start locator --name=locator1 --port=9009 --mcast-port=0 --J='-Dgemfire.remote-locators=192.0.2.0[9009],192.0.2.1[9009]'`</p> | none |
 
 
 **Example Commands:**
@@ -330,7 +330,7 @@ start pulse [--url=value]
 
 | Name         | Description    | Default Value |
 |--------------|----------------|---------------|
-| \\-\\-url    | URL of the Pulse Web application | `http://localhost:7070/pulse` |
+| &#8209;&#8209;url    | URL of the Pulse Web application | `http://localhost:7070/pulse` |
 
 **Example Commands:**
 
@@ -384,54 +384,54 @@ start server --name=value [--assign-buckets(=value)] [--bind-address=value]
 
 | Name         | Description    | Default Value |
 |--------------|----------------|---------------|
-| \\-\\-name                            | Member name for this server. If not specified, gfsh generates a random name. | |
-| \\-\\-assign-buckets                  | Whether to assign buckets to the partitioned regions of the cache on server start. | false |
-| \\-\\-bind-address                    | The IP address on which the server will be bound. | binds to all local addresses |
-| \\-\\-cache-xml-file                  | Specifies the name of the XML file or resource to initialize the cache with when it is created. | |
-| \\-\\-classpath                       | Application classes to be added to the server's CLASSPATH after the core jar file.<br/>See <a href="../../../getting_started/setup_classpath.html">Setting Up the CLASSPATH</a> for details. | |
-| \\-\\-include-system-classpath        | When true, include the System CLASSPATH on the Server's CLASSPATH, as the System CLASSPATH is not included by default. If specified without a value, the value is set to true. | false |
-| \\-\\-disable-default-server          | Whether the cache server will be started by default. If the parameter is specified without a value, the value is set to true. If set to true, the cache server acts as a peer. | false |
-| \\-\\-disable-exit-when-out-of-memory | Prevents the JVM from exiting when an OutOfMemoryError occurs. | false |
-| \\-\\-enable-time-statistics          | Causes additional time-based statistics to be gathered for <%=vars.product_name%> operations. | true |
-| \\-\\-properties-file                 | The `gemfire.properties` file for configuring the server's cluster. The file's path can be absolute or relative to the gfsh working directory. | |
-| \\-\\-security-properties-file        | The `gfsecurity.properties` file for configuring the server's security configuration in the cluster. The file's path can be absolute or relative to gfsh directory. | |
-| \\-\\-groups                          | Group(s) the Cache Server will be a part of. | |
-| \\-\\-force                           | Whether to allow the PID file from a previous Cache Server run to be overwritten. | false |
-| \\-\\-locators                        | Sets the list of locators used by the Cache Server to join the appropriate <%=vars.product_name%> cluster. | |
-| \\-\\-locator-wait-time               | Sets the number of seconds the server will wait for a locator to become available during startup before giving up. | 0 |
-| \\-\\-log-level                       | Sets the level of output logged to the Cache Server log file. Possible values for log-level include: ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF. | |
-| \\-\\-mcast-address                   | The IP address or hostname used to bind the UDP socket for multi-cast networking so the Cache Server can locate other members in the <%=vars.product_name%> cluster. If mcast-port is zero, then mcast-address is ignored. | |
-| \\-\\-mcast-port                      | Sets the port used for multi-cast networking so the Cache Server can locate other members of the <%=vars.product_name%> cluster. A zero value disables mcast. | |
+| &#8209;&#8209;name                            | Member name for this server. If not specified, gfsh generates a random name. | |
+| &#8209;&#8209;assign-buckets                  | Whether to assign buckets to the partitioned regions of the cache on server start. | false |
+| &#8209;&#8209;bind-address                    | The IP address on which the server will be bound. | binds to all local addresses |
+| &#8209;&#8209;cache-xml-file                  | Specifies the name of the XML file or resource to initialize the cache with when it is created. | |
+| &#8209;&#8209;classpath                       | Application classes to be added to the server's CLASSPATH after the core jar file.<br/>See <a href="../../../getting_started/setup_classpath.html">Setting Up the CLASSPATH</a> for details. | |
+| &#8209;&#8209;include-system-classpath        | When true, include the System CLASSPATH on the Server's CLASSPATH, as the System CLASSPATH is not included by default. If specified without a value, the value is set to true. | false |
+| &#8209;&#8209;disable-default-server          | Whether the cache server will be started by default. If the parameter is specified without a value, the value is set to true. If set to true, the cache server acts as a peer. | false |
+| &#8209;&#8209;disable-exit-when-out-of-memory | Prevents the JVM from exiting when an OutOfMemoryError occurs. | false |
+| &#8209;&#8209;enable-time-statistics          | Causes additional time-based statistics to be gathered for <%=vars.product_name%> operations. | true |
+| &#8209;&#8209;properties-file                 | The `gemfire.properties` file for configuring the server's cluster. The file's path can be absolute or relative to the gfsh working directory. | |
+| &#8209;&#8209;security-properties-file        | The `gfsecurity.properties` file for configuring the server's security configuration in the cluster. The file's path can be absolute or relative to gfsh directory. | |
+| &#8209;&#8209;groups                          | Group(s) the Cache Server will be a part of. | |
+| &#8209;&#8209;force                           | Whether to allow the PID file from a previous Cache Server run to be overwritten. | false |
+| &#8209;&#8209;locators                        | Sets the list of locators used by the Cache Server to join the appropriate <%=vars.product_name%> cluster. | |
+| &#8209;&#8209;locator-wait-time               | Sets the number of seconds the server will wait for a locator to become available during startup before giving up. | 0 |
+| &#8209;&#8209;log-level                       | Sets the level of output logged to the Cache Server log file. Possible values for log-level include: <code>ALL</code>, <code>TRACE</code>, <code>DEBUG</code>, <code>INFO</code>, <code>WARN</code>, <code>ERROR</code>, <code>FATAL</code>, <code>OFF</code>. | |
+| &#8209;&#8209;mcast-address                   | The IP address or hostname used to bind the UDP socket for multi-cast networking so the Cache Server can locate other members in the <%=vars.product_name%> cluster. If mcast-port is zero, then mcast-address is ignored. | |
+| &#8209;&#8209;mcast-port                      | Sets the port used for multi-cast networking so the Cache Server can locate other members of the <%=vars.product_name%> cluster. A zero value disables mcast. | |
 | &#8209;&#8209;memcached-port                  | If specified and is non-zero, sets the port number for an embedded Gemcached server and starts the Gemcached server. | |
 | &#8209;&#8209;memcached-protocol              | Sets the protocol used by an embedded Gemcached server. Valid values are `BINARY` and `ASCII`. If you omit this property, the ASCII protocol is used. | |
-| \\-\\-server-bind-address             | Overrides the `bind-address` on which this server will listen for client connections. Set this option in a multi-homed server environment to distinguish communications from clients. Setting a value of the empty string (&quot;&quot;) uses the value of `bind-address`. | value of `bind-address` |
-| \\-\\-server-port                     | Port the Server will listen on for client connections. | 40404 |
-| \\-\\-spring-xml-location             | Specifies the location of a Spring XML configuration file(s) for bootstrapping and configuring a <%=vars.product_name%> Server. This configuration file can exist on the CLASSPATH (default) or any location supported by Spring's Resource(Loader) location specifiers (for example, classpath:, file:, etc).<br/>ResourceLoader is described in the <a href="http://docs.spring.io/spring/docs/4.0.9.RELEASE/spring-framework-reference/htmlsingle/#resources-resourceloader">Spring documentation</a>. | |
-| \\-\\-rebalance                       | Whether to initiate rebalancing across the <%=vars.product_name%> cluster. | false |
-| \\-\\-dir                             | Specify the directory in which the server will run in. This directory is written to the location where you started `gfsh`.| If not specified, the directory is named after the server. |
-| \\-\\-statistic-archive-file          | The file that statistic samples are written to. For example: &quot;StatisticsArchiveFile.gfs&quot;. Must be defined to store the archiving to a file. An empty string (default) disables statistic archival. | not set |
-| \\-\\-initial-heap                    | Initial size of the heap in the same format as the JVM -Xms parameter.<p><b>Note:</b> If you use the `--J=-Xms` and `--J=-Xmx` JVM properties instead of `--initial-heap` and `--max-heap`, then <%=vars.product_name%> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.</p> | |
-| \\-\\-max-heap                        | Maximum size of the heap in the same format as the JVM -Xmx parameter.<p><b>Note:</b> If you use the `--J=-Xms` and `--J=-Xmx` JVM properties instead of `--initial-heap` and `--max-heap`, then <%=vars.product_name%> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.</p><p><b>Note:</b> The additional GC parameters introduced by the `--max-heap` option are not compatible with the usage of G1 garbage collector.</p>| |
-| \\-\\-J                               | Argument passed to the JVM on which the Cache Server will run. For example, `--J=-Dfoo.bar=true` will set the property &quot;foo.bar&quot; to &quot;true&quot;.<p>If the argument you are passing contains spaces or commas, enclose the option in single quotes.</p> | |
-| \\-\\-use-cluster-configuration       | Specifies whether the server requests a cluster configuration from the locator.<p>See <a href="../../../configuring/cluster_config/gfsh_persist.html">Overview of the Cluster Configuration Service</a>.</p>| true |
-| \\-\\-critical-heap-percentage        | Set the percentage of heap at or above which the cache is considered in danger of becoming inoperable due to garbage collection pauses or out of memory exceptions. Past the threshold, operations that require heap space will throw a `LowMemoryException`. This feature requires additional VM flags to perform properly; you must set `--initial-heap` and `--max-heap` or the corresponding JVM properties to use this threshold. You must also set `--max-heap` and `--initial-heap` to the same value.</p>|0 (no critical heap threshold enforced)|
-| \\-\\-critical-off-heap-percentage    | The percentage of off-heap memory used at or above which the cache is considered in danger of becoming inoperable due to out of memory exceptions. Past the threshold, operations that require heap space will throw a `LowMemoryException`.|0 (no critical off-heap threshold enforced)|
-| \\-\\-eviction-heap-percentage        | Set the percentage of heap at or above which the eviction should begin on Regions configured for HeapLRU eviction. Changing this value may cause eviction to begin immediately. Only one change to this attribute or critical heap percentage will be allowed at any given time and its effect will be fully realized before the next change is allowed. This feature requires additional VM flags to perform properly; you must set `--initial-heap` and `--max-heap` or the corresponding JVM properties to use this threshold. You must also set `--max-heap` and `--initial-heap` to the same value.| <ul><li>0, if no region is configured with heap eviction</li><li>If `critical-heap-percentage` is set to a non-zero value, 5% less than that value.</li><li>80%, if `critical-heap-percentage` is not configured.</li></ul>|
-| \\-\\-eviction-off-heap-percentage    | The percentage of off-heap memory used at or above which the eviction should begin on regions configured for off-heap and HeapLRU eviction. Changing this value may cause eviction to begin immediately. Only one change to this attribute or critical off-heap percentage will be allowed at any given time, and its effect will be fully realized before the next change is allowed.|<ul><li>0, if no region is configured with heap eviction</li><li>If `critical-off-heap-percentage` is set to a non-zero value, 5% less than that value.</li><li>80%, if `critical-off-heap-percentage` is not configured.</li></ul>|
-| \\-\\-hostname-for-clients            | Sets the IP address or host name that a locator will provide to clients. Clients use the address to connect to a server. Set this value when clients use a different address to connect with the server than the `bind-address`, as those clients might with servers in a private cloud or multi-homed environment. Not specifying this option or setting this option to the empty string (&quot;&quot;) causes the `bind-address` to be given to clients.| |
-| \\-\\-max-connections                 | Sets the maximum number of client connections allowed. When the maximum is reached the cache server will stop accepting connections. | |
-| \\-\\-message-time-to-live            | Sets the time (in seconds ) after which a message in the client queue will expire. | |
-| \\-\\-max-message-count               | Sets maximum number of messages that can be enqueued in a client-queue.| |
-| \\-\\-max-threads                     | Sets the maximum number of threads allowed in this cache server to service client requests. The default of 0 causes the cache server to dedicate a thread for every client connection. When client-server TLS/SSL is configured, values other than the default are not supported. | |
-| \\-\\-socket-buffer-size              | Sets the buffer size in bytes of the socket connection for this CacheServer. The default is 32768 bytes.| |
-| \\-\\-lock-memory                     | (Linux only) When true, the member's heap and off-heap memory are locked in RAM, preventing them from being paged to disk. You must increase the related `ulimit` operating system resource to allow the OS to lock memory chunks of sufficient size.| false |
-| \\-\\-off-heap-memory-size            | The integer quantity of off-heap memory to be used for storing region values. Specified in Gigabytes with a 'g' suffix, or Megabytes with an 'm' suffix. For example, allocate a 2 Gigabyte off-heap space with `--off-heap-memory-size=2g`. The default value of 0 does not use any off-heap memory.| 0 |
-| \\-\\-start-rest-api                  | When true, starts the REST API service. | false |
-| \\-\\-redirect-output                 | When true, redirect standard output and standard error to the server log file. If specified without a value, the value is set to true. | false |
-| \\-\\-http-service-port               | Specifies the HTTP service port. | 7070 |
-| \\-\\-http-service-bind-address       | Specifies the IP address to which the HTTP service will be bound. | the local host machine's address |
-| \\-\\-username<br />\\-\\-user        | The user name of the credential to use in authenticating to the cluster. When specified, if the `--password` option is not also specified, then `gfsh` will prompt for the password.| |
-| \\-\\-password                        | The password portion of the credential to use in authenticating to the cluster. | |
+| &#8209;&#8209;server-bind-address             | Overrides the `bind-address` on which this server will listen for client connections. Set this option in a multi-homed server environment to distinguish communications from clients. Setting a value of the empty string (&quot;&quot;) uses the value of `bind-address`. | value of `bind-address` |
+| &#8209;&#8209;server-port                     | Port the Server will listen on for client connections. | 40404 |
+| &#8209;&#8209;spring-xml-location             | Specifies the location of a Spring XML configuration file(s) for bootstrapping and configuring a <%=vars.product_name%> Server. This configuration file can exist on the CLASSPATH (default) or any location supported by Spring's Resource(Loader) location specifiers (for example, classpath:, file:, etc).<br/>ResourceLoader is described in the <a href="http://docs.spring.io/spring/docs/4.0.9.RELEASE/spring-framework-reference/htmlsingle/#resources-resourceloader">Spring documentation</a>. | |
+| &#8209;&#8209;rebalance                       | Whether to initiate rebalancing across the <%=vars.product_name%> cluster. | false |
+| &#8209;&#8209;dir                             | Specify the directory in which the server will run in. This directory is written to the location where you started `gfsh`.| If not specified, the directory is named after the server. |
+| &#8209;&#8209;statistic-archive-file          | The file that statistic samples are written to. For example: &quot;StatisticsArchiveFile.gfs&quot;. Must be defined to store the archiving to a file. An empty string (default) disables statistic archival. | not set |
+| &#8209;&#8209;initial-heap                    | Initial size of the heap in the same format as the JVM -Xms parameter.<p><b>Note:</b> If you use the `--J=-Xms` and `--J=-Xmx` JVM properties instead of `--initial-heap` and `--max-heap`, then <%=vars.product_name%> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.</p> | |
+| &#8209;&#8209;max-heap                        | Maximum size of the heap in the same format as the JVM -Xmx parameter.<p><b>Note:</b> If you use the `--J=-Xms` and `--J=-Xmx` JVM properties instead of `--initial-heap` and `--max-heap`, then <%=vars.product_name%> does not use default JVM resource management properties. If you use the JVM properties, you must then specify all properties manually for eviction, garbage collection, heap percentage, and so forth.</p><p><b>Note:</b> The additional GC parameters introduced by the `--max-heap` option are not compatible with the usage of G1 garbage collector.</p>| |
+| &#8209;&#8209;J                               | Argument passed to the JVM on which the Cache Server will run. For example, `--J=-Dfoo.bar=true` will set the property &quot;foo.bar&quot; to &quot;true&quot;.<p>If the argument you are passing contains spaces or commas, enclose the option in single quotes.</p> | |
+| &#8209;&#8209;use-cluster-configuration       | Specifies whether the server requests a cluster configuration from the locator.<p>See <a href="../../../configuring/cluster_config/gfsh_persist.html">Overview of the Cluster Configuration Service</a>.</p>| true |
+| &#8209;&#8209;critical-heap-percentage        | Set the percentage of heap at or above which the cache is considered in danger of becoming inoperable due to garbage collection pauses or out of memory exceptions. Past the threshold, operations that require heap space will throw a `LowMemoryException`. This feature requires additional VM flags to perform properly; you must set `--initial-heap` and `--max-heap` or the corresponding JVM properties to use this threshold. You must also set `--max-heap` and `--initial-heap` to the same value.</p>|0 (no critical heap threshold enforced)|
+| &#8209;&#8209;critical-off-heap-percentage    | The percentage of off-heap memory used at or above which the cache is considered in danger of becoming inoperable due to out of memory exceptions. Past the threshold, operations that require heap space will throw a `LowMemoryException`.|0 (no critical off-heap threshold enforced)|
+| &#8209;&#8209;eviction-heap-percentage        | Set the percentage of heap at or above which the eviction should begin on Regions configured for HeapLRU eviction. Changing this value may cause eviction to begin immediately. Only one change to this attribute or critical heap percentage will be allowed at any given time and its effect will be fully realized before the next change is allowed. This feature requires additional VM flags to perform properly; you must set `--initial-heap` and `--max-heap` or the corresponding JVM properties to use this threshold. You must also set `--max-heap` and `--initial-heap` to the same value.| <ul><li>0, if no region is configured with heap eviction</li><li>If `critical-heap-percentage` is set to a non-zero value, 5% less than that value.</li><li>80%, if `critical-heap-percentage` is not configured.</li></ul>|
+| &#8209;&#8209;eviction-off-heap-percentage    | The percentage of off-heap memory used at or above which the eviction should begin on regions configured for off-heap and HeapLRU eviction. Changing this value may cause eviction to begin immediately. Only one change to this attribute or critical off-heap percentage will be allowed at any given time, and its effect will be fully realized before the next change is allowed.|<ul><li>0, if no region is configured with heap eviction</li><li>If `critical-off-heap-percentage` is set to a non-zero value, 5% less than that value.</li><li>80%, if `critical-off-heap-percentage` is not configured.</li></ul>|
+| &#8209;&#8209;hostname-for-clients            | Sets the IP address or host name that a locator will provide to clients. Clients use the address to connect to a server. Set this value when clients use a different address to connect with the server than the `bind-address`, as those clients might with servers in a private cloud or multi-homed environment. Not specifying this option or setting this option to the empty string (&quot;&quot;) causes the `bind-address` to be given to clients.| |
+| &#8209;&#8209;max-connections                 | Sets the maximum number of client connections allowed. When the maximum is reached the cache server will stop accepting connections. | |
+| &#8209;&#8209;message-time-to-live            | Sets the time (in seconds ) after which a message in the client queue will expire. | |
+| &#8209;&#8209;max-message-count               | Sets maximum number of messages that can be enqueued in a client-queue.| |
+| &#8209;&#8209;max-threads                     | Sets the maximum number of threads allowed in this cache server to service client requests. The default of 0 causes the cache server to dedicate a thread for every client connection. When client-server TLS/SSL is configured, values other than the default are not supported. | |
+| &#8209;&#8209;socket-buffer-size              | Sets the buffer size in bytes of the socket connection for this CacheServer. The default is 32768 bytes.| |
+| &#8209;&#8209;lock-memory                     | (Linux only) When true, the member's heap and off-heap memory are locked in RAM, preventing them from being paged to disk. You must increase the related `ulimit` operating system resource to allow the OS to lock memory chunks of sufficient size.| false |
+| &#8209;&#8209;off-heap-memory-size            | The integer quantity of off-heap memory to be used for storing region values. Specified in Gigabytes with a "g" suffix, or Megabytes with an "m" suffix. For example, allocate a 2 Gigabyte off-heap space with `--off-heap-memory-size=2g`. The default value of 0 does not use any off-heap memory.| 0 |
+| &#8209;&#8209;start-rest-api                  | When true, starts the REST API service. | false |
+| &#8209;&#8209;redirect-output                 | When true, redirect standard output and standard error to the server log file. If specified without a value, the value is set to true. | false |
+| &#8209;&#8209;http-service-port               | Specifies the HTTP service port. | 7070 |
+| &#8209;&#8209;http-service-bind-address       | Specifies the IP address to which the HTTP service will be bound. | the local host machine's address |
+| &#8209;&#8209;username<br />&#8209;&#8209;user        | The user name of the credential to use in authenticating to the cluster. When specified, if the `--password` option is not also specified, then `gfsh` will prompt for the password.| |
+| &#8209;&#8209;password                        | The password portion of the credential to use in authenticating to the cluster. | |
 
 
 ### <a id="topic_3764EE2DB18B4AE4A625E0354471738A__section_A50120613D3C4A848463236C4EFF18C7" class="no-quick-link"></a>Examples
