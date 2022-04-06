@@ -1051,7 +1051,9 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
       try {
         Thread.sleep(waitBetweenEntriesMs);
       } catch (InterruptedException e) {
-        e.printStackTrace();
+        context.getResultSender().sendException(e);
+        Thread.currentThread().interrupt();
+        return;
       }
       context.getResultSender().sendResult(i);
     }
@@ -1113,16 +1115,12 @@ public class TestFunction<T> implements Function<T>, Declarable2, DataSerializab
 
   @Override
   public boolean isHA() {
-
-    if (getId().equals(TEST_FUNCTION_SLOW)) {
-      return false;
-    }
-
     if (getId().equals(TEST_FUNCTION10)) {
       return true;
     }
     if (getId().equals(TEST_FUNCTION_NONHA_SERVER) || getId().equals(TEST_FUNCTION_NONHA_REGION)
-        || getId().equals(TEST_FUNCTION_NONHA_NOP) || getId().equals(TEST_FUNCTION_NONHA)) {
+        || getId().equals(TEST_FUNCTION_NONHA_NOP) || getId().equals(TEST_FUNCTION_NONHA)
+        || getId().equals(TEST_FUNCTION_SLOW)) {
       return false;
     }
     return Boolean.parseBoolean(props.getProperty(HAVE_RESULTS));

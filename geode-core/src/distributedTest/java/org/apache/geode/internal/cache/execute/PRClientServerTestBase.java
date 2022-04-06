@@ -385,13 +385,10 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
     try {
       PoolFactory factory = PoolManager.createFactory().addServer(host, port1)
           .addServer(host, port2).addServer(host, port3).setPingInterval(2000)
-          .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1).setReadTimeout(2000)
+          .setSubscriptionEnabled(true).setReadTimeout(2000)
           .setSocketBufferSize(1000).setRetryAttempts(0)
           .setSocketConnectTimeout(connectTimeout)
           .setPRSingleHopEnabled(false);
-      if (connectTimeout > 0) {
-        factory.setSocketConnectTimeout(connectTimeout);
-      }
 
       p = factory.create("PRClientServerTestBase");
     } finally {
