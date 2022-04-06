@@ -312,13 +312,13 @@ dependencies {
   //RMIIO is used for uploading jar files and copying them between locator an servers
   implementation('com.healthmarketscience.rmiio:rmiio')
 
-    //Geode-common has annotations and other pieces used geode-core
-    api(project(':geode-common'))
-    implementation(project(':geode-logging'))
-    implementation(project(':geode-membership'))
-    implementation(project(':geode-unsafe'))
-    api(project(':geode-serialization'))
-    implementation(project(':geode-tcp-server'))
+  //Geode-common has annotations and other pieces used geode-core
+  api(project(':geode-common'))
+  implementation(project(':geode-logging'))
+  implementation(project(':geode-membership'))
+  implementation(project(':geode-unsafe'))
+  implementation(project(':geode-serialization'))
+  implementation(project(':geode-tcp-server'))
 
   //geode-management currently has pieces of the public API
   //copied into it, so it is an API dependency

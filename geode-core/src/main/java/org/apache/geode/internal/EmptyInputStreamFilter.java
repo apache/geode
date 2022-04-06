@@ -12,24 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.serialization.filter;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyNoInteractions;
+package org.apache.geode.internal;
 
 import java.io.ObjectInputStream;
 
-import org.junit.Test;
-
-public class NullObjectInputFilterTest {
-
-  @Test
-  public void doesNothing() {
-    ObjectInputStream objectInputStream = mock(ObjectInputStream.class);
-    ObjectInputFilter filter = new NullObjectInputFilter();
-
-    filter.setFilterOn(objectInputStream);
-
-    verifyNoInteractions(objectInputStream);
+public class EmptyInputStreamFilter implements InputStreamFilter {
+  @Override
+  public void setFilterOn(ObjectInputStream ois) {
+    // Do nothing, this is the case where we don't filter.
   }
 }
