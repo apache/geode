@@ -44,6 +44,7 @@ public class ReflectiveObjectInputFilterApiSetFilterBlankIntegrationTest {
     if (isJavaVersionAtLeast(JAVA_9)) {
       apiPackage = JAVA_IO;
     }
+
   }
 
   @Test

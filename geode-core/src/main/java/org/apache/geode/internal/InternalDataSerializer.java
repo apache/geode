@@ -117,13 +117,12 @@ import org.apache.geode.internal.serialization.SerializationVersions;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataStream;
-import org.apache.geode.internal.serialization.filter.NullStreamSerialFilter;
-import org.apache.geode.internal.serialization.filter.ReflectiveFacadeStreamSerialFilterFactory;
+import org.apache.geode.internal.serialization.filter.NullObjectInputFilter;
+import org.apache.geode.internal.serialization.filter.ObjectInputFilter;
+import org.apache.geode.internal.serialization.filter.ObjectInputFilterFactory;
+import org.apache.geode.internal.serialization.filter.ReflectiveFacadeObjectInputFilterFactory;
 import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
 import org.apache.geode.internal.serialization.filter.SerializableObjectConfig;
-import org.apache.geode.internal.serialization.filter.StreamSerialFilter;
-import org.apache.geode.internal.serialization.filter.StreamSerialFilterFactory;
-import org.apache.geode.internal.serialization.filter.UnableToSetSerialFilterException;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.pdx.NonPortableClassException;
@@ -287,12 +286,12 @@ public abstract class InternalDataSerializer extends DataSerializer {
       "org.apache.geode.cache.query.internal.cq.ServerCQImpl";
 
   @Immutable
-  private static final StreamSerialFilter defaultSerializationFilter = new NullStreamSerialFilter();
+  private static final ObjectInputFilter defaultSerializationFilter = new NullObjectInputFilter();
   /**
    * A deserialization filter for ObjectInputStreams
    */
   @MakeNotStatic
-  private static StreamSerialFilter serializationFilter = defaultSerializationFilter;
+  private static ObjectInputFilter serializationFilter = defaultSerializationFilter;
   /**
    * support for old GemFire clients and WAN sites - needed to enable moving from GemFire to Geode
    */
@@ -419,13 +418,14 @@ public abstract class InternalDataSerializer extends DataSerializer {
       Collection<SanctionedSerializablesService> services) {
     logger.info("initializing InternalDataSerializer with {} services", services.size());
 
-    StreamSerialFilterFactory objectInputFilterFactory =
-        new ReflectiveFacadeStreamSerialFilterFactory();
+    ObjectInputFilterFactory objectInputFilterFactory =
+        new ReflectiveFacadeObjectInputFilterFactory();
 
     serializationFilter =
         objectInputFilterFactory.create(config, loadSanctionedClassNames(services));
   }
 
+  @VisibleForTesting
   static void clearSerializationFilter() {
     serializationFilter = defaultSerializationFilter;
   }
@@ -2682,14 +2682,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       }
 
       ObjectInput ois = new DSObjectInputStream(stream);
-
-      try {
-        serializationFilter.setFilterOn((ObjectInputStream) ois);
-      } catch (UnableToSetSerialFilterException e) {
-        // maintain existing behavior for validate-serializable-objects
-        throw new UnsupportedOperationException(e);
-      }
-
+      serializationFilter.setFilterOn((ObjectInputStream) ois);
       if (stream instanceof VersionedDataStream) {
         Version v = ((VersionedDataStream) stream).getVersion();
         if (Version.CURRENT != v && v != null) {

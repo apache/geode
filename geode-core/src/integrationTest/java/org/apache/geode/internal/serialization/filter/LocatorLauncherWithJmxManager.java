@@ -30,7 +30,7 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.junit.rules.CloseableReference;
 
-public abstract class LocatorLauncherWithJmxManager {
+abstract class LocatorLauncherWithJmxManager {
 
   static final String NAME = "locator";
   static final String JDK_PROPERTY = "jdk.serialFilter";

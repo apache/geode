@@ -22,7 +22,6 @@ import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
 import static org.apache.commons.lang3.JavaVersion.JAVA_9;
 import static org.apache.commons.lang3.SerializationUtils.serialize;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
-import static org.apache.geode.internal.serialization.filter.SerialFilterAssertions.assertThatSerialFilterIsNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
@@ -33,7 +32,6 @@ import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -48,11 +46,6 @@ public class ReflectiveObjectInputFilterApiTest {
     } else if (isJavaVersionAtLeast(JAVA_1_8)) {
       api = new ReflectiveObjectInputFilterApi(ApiPackage.SUN_MISC);
     }
-  }
-
-  @After
-  public void serialFilterIsNull() throws InvocationTargetException, IllegalAccessException {
-    assertThatSerialFilterIsNull();
   }
 
   @Test
@@ -96,7 +89,9 @@ public class ReflectiveObjectInputFilterApiTest {
 
     Object filter = api.getSerialFilter();
 
-    assertThat(filter).isNull();
+    assertThat(filter)
+        .as("ObjectInputFilter$Config.getSerialFilter()")
+        .isNull();
   }
 
   @Test

@@ -20,13 +20,10 @@ import java.io.ObjectInputStream;
  * Defines operation to set this serialization filter on an {@code ObjectInputStream}.
  */
 @FunctionalInterface
-public interface StreamSerialFilter {
+public interface ObjectInputFilter {
 
   /**
    * Sets this serialization filter on the specified {@code ObjectInputStream}.
-   *
-   * @throws FilterAlreadyConfiguredException if a non-null serialization filter already exists
-   * @throws UnableToSetSerialFilterException if there's any failure setting a serialization filter
    */
-  void setFilterOn(ObjectInputStream objectInputStream) throws UnableToSetSerialFilterException;
+  void setFilterOn(ObjectInputStream objectInputStream);
 }

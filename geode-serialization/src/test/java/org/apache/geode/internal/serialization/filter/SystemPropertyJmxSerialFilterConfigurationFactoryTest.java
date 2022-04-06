@@ -46,8 +46,7 @@ public class SystemPropertyJmxSerialFilterConfigurationFactoryTest {
   }
 
   @Test
-  public void returnsEnabledConfiguration_whenFilteringIsEnabled()
-      throws UnableToSetSerialFilterException {
+  public void returnsEnabledConfiguration_whenFilteringIsEnabled() {
     JmxSerialFilterConfigurationFactory factory =
         new SystemPropertyJmxSerialFilterConfigurationFactory(true, PATTERN);
 
@@ -57,8 +56,7 @@ public class SystemPropertyJmxSerialFilterConfigurationFactoryTest {
   }
 
   @Test
-  public void returnsDisabledConfiguration_whenFilteringIsDisabled()
-      throws UnableToSetSerialFilterException {
+  public void returnsDisabledConfiguration_whenFilteringIsDisabled() {
     JmxSerialFilterConfigurationFactory factory =
         new SystemPropertyJmxSerialFilterConfigurationFactory(false, PATTERN);
 
@@ -68,8 +66,7 @@ public class SystemPropertyJmxSerialFilterConfigurationFactoryTest {
   }
 
   @Test
-  public void enabledConfiguration_setsJmxSerialFilterProperty()
-      throws UnableToSetSerialFilterException {
+  public void enabledConfiguration_setsJmxSerialFilterProperty() {
     JmxSerialFilterConfigurationFactory factory =
         new SystemPropertyJmxSerialFilterConfigurationFactory(true, PATTERN);
     FilterConfiguration filterConfiguration = factory.create();
@@ -80,8 +77,7 @@ public class SystemPropertyJmxSerialFilterConfigurationFactoryTest {
   }
 
   @Test
-  public void disabledConfiguration_doesNotSetAnySystemProperties()
-      throws UnableToSetSerialFilterException {
+  public void disabledConfiguration_doesNotSetAnySystemProperties() {
     Map<?, ?> propertiesBefore = System.getProperties();
     JmxSerialFilterConfigurationFactory factory =
         new SystemPropertyJmxSerialFilterConfigurationFactory(true, PATTERN);
