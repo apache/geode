@@ -48,10 +48,10 @@ public class ReflectiveFacadeObjectInputFilterFactoryTest {
     assumeThat(isJavaVersionAtLeast(JAVA_9)).isTrue();
 
     // arrange
-    StreamSerialFilterFactory factory = new ReflectiveFacadeStreamSerialFilterFactory();
+    ObjectInputFilterFactory factory = new ReflectiveFacadeObjectInputFilterFactory();
 
     // act
-    StreamSerialFilter objectInputFilter = factory.create(config, SANCTIONED_CLASSES);
+    ObjectInputFilter objectInputFilter = factory.create(config, SANCTIONED_CLASSES);
 
     // assert
     assertThat(getApiPackage(getObjectInputFilterApi(objectInputFilter))).isEqualTo(JAVA_IO);
@@ -62,17 +62,17 @@ public class ReflectiveFacadeObjectInputFilterFactoryTest {
     assumeThat(isJavaVersionAtMost(JAVA_1_8)).isTrue();
 
     // arrange
-    StreamSerialFilterFactory factory = new ReflectiveFacadeStreamSerialFilterFactory();
+    ObjectInputFilterFactory factory = new ReflectiveFacadeObjectInputFilterFactory();
 
     // act
-    StreamSerialFilter objectInputFilter = factory.create(config, SANCTIONED_CLASSES);
+    ObjectInputFilter objectInputFilter = factory.create(config, SANCTIONED_CLASSES);
 
     // assert
     assertThat(getApiPackage(getObjectInputFilterApi(objectInputFilter))).isEqualTo(SUN_MISC);
   }
 
-  private static ObjectInputFilterApi getObjectInputFilterApi(StreamSerialFilter result) {
-    ReflectiveFacadeStreamSerialFilter impl = (ReflectiveFacadeStreamSerialFilter) result;
+  private static ObjectInputFilterApi getObjectInputFilterApi(ObjectInputFilter result) {
+    ReflectiveFacadeObjectInputFilter impl = (ReflectiveFacadeObjectInputFilter) result;
     ObjectInputFilterApi objectInputFilterApi = impl.getObjectInputFilterApi();
     assertThat(objectInputFilterApi).isInstanceOf(ReflectiveObjectInputFilterApi.class);
     return objectInputFilterApi;

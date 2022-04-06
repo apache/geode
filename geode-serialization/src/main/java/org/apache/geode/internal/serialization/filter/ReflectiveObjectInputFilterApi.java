@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -21,7 +22,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Collection;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * Implementation of {@code ObjectInputFilterApi} that uses reflection and a dynamic proxy to wrap
@@ -29,17 +33,19 @@ import org.apache.geode.annotations.VisibleForTesting;
  */
 public class ReflectiveObjectInputFilterApi implements ObjectInputFilterApi {
 
+  private static final Logger logger = LogService.getLogger();
+
   protected final ApiPackage apiPackage;
 
   // api.package.ObjectInputFilter
   protected final Class<?> ObjectInputFilter;
-  protected final Method ObjectInputFilter_checkInput;
-  protected final Object ObjectInputFilter_Status_ALLOWED;
-  protected final Object ObjectInputFilter_Status_REJECTED;
+  private final Method ObjectInputFilter_checkInput;
+  private final Object ObjectInputFilter_Status_ALLOWED;
+  private final Object ObjectInputFilter_Status_REJECTED;
 
   // api.package.ObjectInputFilter$Config
-  protected final Class<?> ObjectInputFilter_Config;
-  protected final Method ObjectInputFilter_Config_createFilter;
+  private final Class<?> ObjectInputFilter_Config;
+  private final Method ObjectInputFilter_Config_createFilter;
   private final Method ObjectInputFilter_Config_getObjectInputFilter;
   private final Method ObjectInputFilter_Config_setObjectInputFilter;
   private final Method ObjectInputFilter_Config_getSerialFilter;
@@ -47,7 +53,7 @@ public class ReflectiveObjectInputFilterApi implements ObjectInputFilterApi {
 
   // api.package.ObjectInputFilter$FilterInfo
   private final Class<?> ObjectInputFilter_FilterInfo;
-  protected final Method ObjectInputFilter_FilterInfo_serialClass;
+  private final Method ObjectInputFilter_FilterInfo_serialClass;
 
   /**
    * Use reflection to look up the classes and methods for the API.
@@ -138,18 +144,43 @@ public class ReflectiveObjectInputFilterApi implements ObjectInputFilterApi {
      * effectively override the call to widen the filter to include the User's addition to the set
      * of sanctioned serializables.
      */
-    InvocationHandler invocationHandler = new ObjectInputFilterInvocationHandler(
-        ObjectInputFilter_checkInput,
-        ObjectInputFilter_FilterInfo_serialClass,
-        ObjectInputFilter_Status_ALLOWED,
-        ObjectInputFilter_Status_REJECTED,
-        objectInputFilter,
-        sanctionedClasses);
+    InvocationHandler invocationHandler = (proxy, method, args) -> {
+      if (!"checkInput".equals(method.getName())) {
+        throw new UnsupportedOperationException(
+            "ObjectInputFilter." + method.getName() + " is not implemented");
+      }
+
+      // fetch the class of the serialized instance
+      Object objectInputFilter_filterInfo = args[0];
+      Class<?> serialClass =
+          (Class<?>) ObjectInputFilter_FilterInfo_serialClass.invoke(objectInputFilter_filterInfo);
+      if (serialClass == null) { // no class to check, so nothing to accept-list
+        return ObjectInputFilter_checkInput.invoke(objectInputFilter, objectInputFilter_filterInfo);
+      }
+
+      // check sanctionedClasses to determine if the name of the class is ALLOWED
+      String serialClassName = serialClass.getName();
+      if (serialClass.isArray()) {
+        serialClassName = serialClass.getComponentType().getName();
+      }
+      if (sanctionedClasses.contains(serialClassName)) {
+        return ObjectInputFilter_Status_ALLOWED;
+      }
+
+      // check the filter to determine if the class is ALLOWED
+      Object objectInputFilter_Status =
+          ObjectInputFilter_checkInput.invoke(objectInputFilter, objectInputFilter_filterInfo);
+      if (objectInputFilter_Status == ObjectInputFilter_Status_REJECTED) {
+        logger.fatal("Serialization filter is rejecting class {}", serialClassName,
+            new InvalidClassException(serialClassName));
+      }
+      return objectInputFilter_Status;
+    };
 
     // wrap the filter within a proxy to inject the above invocation handler
     return Proxy.newProxyInstance(
         ObjectInputFilter.getClassLoader(),
-        new Class<?>[] {ObjectInputFilter},
+        new Class[] {ObjectInputFilter},
         invocationHandler);
   }
 

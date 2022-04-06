@@ -24,9 +24,9 @@ import org.junit.Test;
 public class NullObjectInputFilterTest {
 
   @Test
-  public void doesNothing() throws UnableToSetSerialFilterException {
+  public void doesNothing() {
     ObjectInputStream objectInputStream = mock(ObjectInputStream.class);
-    StreamSerialFilter filter = new NullStreamSerialFilter();
+    ObjectInputFilter filter = new NullObjectInputFilter();
 
     filter.setFilterOn(objectInputStream);
 

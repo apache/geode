@@ -18,21 +18,12 @@ import static org.apache.commons.lang3.JavaVersion.JAVA_1_8;
 import static org.apache.commons.lang3.JavaVersion.JAVA_9;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtMost;
-import static org.apache.geode.internal.serialization.filter.SerialFilterAssertions.assertThatSerialFilterIsNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assumptions.assumeThat;
 
-import java.lang.reflect.InvocationTargetException;
-
-import org.junit.After;
 import org.junit.Test;
 
 public class ReflectiveObjectInputFilterApiFactoryTest {
-
-  @After
-  public void serialFilterIsNull() throws InvocationTargetException, IllegalAccessException {
-    assertThatSerialFilterIsNull();
-  }
 
   @Test
   public void createsInstanceOfReflectionObjectInputFilterApi() {

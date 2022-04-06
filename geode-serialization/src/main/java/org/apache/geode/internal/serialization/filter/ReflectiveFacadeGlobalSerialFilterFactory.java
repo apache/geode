@@ -14,8 +14,11 @@
  */
 package org.apache.geode.internal.serialization.filter;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.Collection;
-import java.util.function.Supplier;
+
+import org.apache.geode.annotations.VisibleForTesting;
 
 /**
  * Creates an instance of {@code GlobalSerialFilter} that delegates to {@code ObjectInputFilterApi}
@@ -23,24 +26,19 @@ import java.util.function.Supplier;
  */
 class ReflectiveFacadeGlobalSerialFilterFactory implements GlobalSerialFilterFactory {
 
-  private final Supplier<ObjectInputFilterApi> objectInputFilterApiSupplier;
+  private final ObjectInputFilterApi api;
 
   ReflectiveFacadeGlobalSerialFilterFactory() {
-    this(() -> new ReflectiveObjectInputFilterApiFactory().createObjectInputFilterApi());
+    this(new ReflectiveObjectInputFilterApiFactory().createObjectInputFilterApi());
   }
 
-  ReflectiveFacadeGlobalSerialFilterFactory(ObjectInputFilterApi objectInputFilterApi) {
-    this(() -> objectInputFilterApi);
-  }
-
-  ReflectiveFacadeGlobalSerialFilterFactory(
-      Supplier<ObjectInputFilterApi> objectInputFilterApiSupplier) {
-    this.objectInputFilterApiSupplier = objectInputFilterApiSupplier;
+  @VisibleForTesting
+  ReflectiveFacadeGlobalSerialFilterFactory(ObjectInputFilterApi api) {
+    this.api = requireNonNull(api, "ObjectInputFilterApi is required");
   }
 
   @Override
   public GlobalSerialFilter create(String pattern, Collection<String> sanctionedClasses) {
-    ObjectInputFilterApi api = objectInputFilterApiSupplier.get();
     return new ReflectiveFacadeGlobalSerialFilter(api, pattern, sanctionedClasses);
   }
 }
