@@ -602,7 +602,9 @@ public class NioSslEngineTest {
 
     @Override
     public SSLEngineResult wrap(ByteBuffer[] sources, int i, int i1, ByteBuffer destination) {
-      assert sources.length == 1;
+      assertThat(sources.length)
+          .as("test unexpectedly tried to wrap with multiple sources")
+          .isEqualTo(1);
       final ByteBuffer source = sources[0];
       final SSLEngineResult nextResult = nextResult();
       try {

@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.security.GeneralSecurityException;
 import java.security.Security;
-import java.time.Duration;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -145,8 +144,7 @@ public class P2pMessagingSslTlsKeyUpdateDistributedTest {
     receiver = clusterStartupRule.startServerVM(2, receiverConfiguration, locator.getPort());
   }
 
-  @NotNull
-  private SerializableRunnableIF setSecurityProperties(final long encryptedBytesLimit) {
+  private @NotNull SerializableRunnableIF setSecurityProperties(final long encryptedBytesLimit) {
     return () -> {
       Security.setProperty("jdk.tls.keyLimits",
           "AES/GCM/NoPadding KeyUpdate " + encryptedBytesLimit);
