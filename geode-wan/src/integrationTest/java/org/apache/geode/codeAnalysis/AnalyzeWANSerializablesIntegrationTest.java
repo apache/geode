@@ -23,8 +23,7 @@ import org.apache.geode.test.junit.categories.SerializationTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class, SerializationTest.class})
-public class AnalyzeWANSerializablesIntegrationTest
-    extends AnalyzeSerializablesWithClassAnalysisRuleTestBase {
+public class AnalyzeWANSerializablesIntegrationTest extends AnalyzeSerializablesJUnitTestBase {
 
   @Override
   protected String getModuleName() {

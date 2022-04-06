@@ -38,7 +38,7 @@ public abstract class SanctionedSerializablesServiceIntegrationTestBase {
   }
 
   @Test
-  public void serviceIsLoaded() {
+  public final void serviceIsLoaded() {
     Collection<SanctionedSerializablesService> services = loadSanctionedSerializablesServices();
     SanctionedSerializablesService service = getService();
 
@@ -56,7 +56,7 @@ public abstract class SanctionedSerializablesServiceIntegrationTestBase {
   }
 
   @Test
-  public void serviceResourceExists() {
+  public final void serviceResourceExists() {
     SanctionedSerializablesService service = getService();
 
     URL url = service.getSanctionedSerializablesURL();
@@ -72,7 +72,7 @@ public abstract class SanctionedSerializablesServiceIntegrationTestBase {
   }
 
   @Test
-  public void serviceResourceIsLoaded() throws IOException {
+  public final void serviceResourceIsLoaded() throws IOException {
     SanctionedSerializablesService service = getService();
 
     Collection<String> serializables = service.getSerializationAcceptlist();

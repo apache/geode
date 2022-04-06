@@ -28,8 +28,7 @@ import org.apache.geode.test.junit.categories.SerializationTest;
 import org.apache.geode.test.junit.internal.JUnitSanctionedSerializablesService;
 
 @Category(SerializationTest.class)
-public class AnalyzeJUnitSerializablesIntegrationTest
-    extends AnalyzeSerializablesWithClassAnalysisRuleTestBase {
+public class AnalyzeJUnitSerializablesIntegrationTest extends AnalyzeSerializablesJUnitTestBase {
 
   private static final Set<Class<?>> IGNORE_CLASSES = new HashSet<>(asList(
       PortfolioNoDS.class, PortfolioPdx.class));
