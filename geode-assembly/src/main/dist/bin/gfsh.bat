@@ -27,6 +27,7 @@ REM
 
 setlocal enableextensions
 set scriptdir=%~dp0
+REM Remove last 4 chars corresponding to bin\
 set gf=%scriptdir:~0,-4%
 REM echo %gf%
 REM echo %scriptdir%
