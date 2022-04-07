@@ -124,9 +124,12 @@ public class UpdateOperation extends AbstractUpdateOperation {
 
     private boolean sendDeltaWithFullValue = true;
 
+    protected boolean generateCallbacks = true;
+
     // extraFlags
     static final int HAS_EVENTID = getNextByteMask(DESERIALIZATION_POLICY_END);
     static final int HAS_DELTA_WITH_FULL_VALUE = getNextByteMask(HAS_EVENTID);
+    static final int DO_NOT_GENERATE_CALLBACKS = getNextByteMask(HAS_DELTA_WITH_FULL_VALUE);
 
     private Long tailKey = 0L;
 
@@ -297,7 +300,7 @@ public class UpdateOperation extends AbstractUpdateOperation {
     @Retained
     protected EntryEventImpl createEntryEvent(DistributedRegion rgn) {
       Object argNewValue = null;
-      final boolean originRemote = true, generateCallbacks = true;
+      final boolean originRemote = true;
       @Retained
       EntryEventImpl result = EntryEventImpl.create(rgn, getOperation(), key, argNewValue, // oldValue,
           callbackArg, originRemote, getSender(), generateCallbacks);
@@ -374,6 +377,9 @@ public class UpdateOperation extends AbstractUpdateOperation {
           deltaBytes = DataSerializer.readByteArray(in);
         }
       }
+      if ((extraFlags & DO_NOT_GENERATE_CALLBACKS) != 0) {
+        generateCallbacks = false;
+      }
     }
 
     @Override
@@ -390,6 +396,9 @@ public class UpdateOperation extends AbstractUpdateOperation {
       if (deserializationPolicy != DistributedCacheOperation.DESERIALIZATION_POLICY_NONE
           && sendDeltaWithFullValue && event.getDeltaBytes() != null) {
         extraFlags |= HAS_DELTA_WITH_FULL_VALUE;
+      }
+      if (!event.isGenerateCallbacks()) {
+        extraFlags |= DO_NOT_GENERATE_CALLBACKS;
       }
       out.writeByte(extraFlags);
 
@@ -505,7 +514,7 @@ public class UpdateOperation extends AbstractUpdateOperation {
       final Object argNewValue = null;
       // boolean localLoad = false, netLoad = false, netSearch = false,
       // distributed = true;
-      final boolean originRemote = true, generateCallbacks = true;
+      final boolean originRemote = true;
       @Retained
       EntryEventImpl ev = EntryEventImpl.create(rgn, getOperation(), key, argNewValue,
           callbackArg, originRemote, getSender(), generateCallbacks);
