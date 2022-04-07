@@ -318,11 +318,12 @@ public class DistributionLocatorId implements java.io.Serializable {
 
   @Override
   public String toString() {
+    // Intentionally excludes sslConfig to avoid logging security sensitive values.
+
     return "DistributionLocatorId{" +
         "host=" + host +
         ", port=" + port +
         ", bindAddress='" + bindAddress + '\'' +
-        ", sslConfig=" + sslConfig +
         ", hostnameForClients='" + hostnameForClients + '\'' +
         ", hostname='" + hostname + '\'' +
         ", memberName='" + memberName + '\'' +

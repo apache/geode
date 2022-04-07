@@ -57,6 +57,7 @@ public class LocatorDiscoveryTest {
     discoverer = mock(WanLocatorDiscoverer.class);
     locatorId = mock(DistributionLocatorId.class);
     request = mock(RemoteLocatorJoinRequest.class);
+    when(request.getLocator()).thenReturn(mock(DistributionLocatorId.class));
     LocatorMembershipListener listener = mock(LocatorMembershipListener.class);
     locatorClient = mock(TcpClient.class);
     locatorDiscovery =
