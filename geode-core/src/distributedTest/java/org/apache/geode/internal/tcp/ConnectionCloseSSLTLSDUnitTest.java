@@ -31,11 +31,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.test.dunit.VM.getVM;
-import static org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase.getBlackboard;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Fail.fail;
 
 import java.io.File;
 import java.io.Serializable;
@@ -63,6 +61,8 @@ import org.apache.geode.internal.cache.UpdateOperation.UpdateMessage;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.DistributedBlackboard;
+import org.apache.geode.test.dunit.rules.DistributedErrorCollector;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 
@@ -91,8 +91,14 @@ public class ConnectionCloseSSLTLSDUnitTest implements Serializable {
       DistributedRule.builder().withVMCount(3).build();
 
   @Rule
+  public DistributedBlackboard blackboard = new DistributedBlackboard();
+
+  @Rule
   public DistributedRestoreSystemProperties restoreSystemProperties =
       new DistributedRestoreSystemProperties();
+
+  @Rule
+  public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
   private VM locator;
   private VM sender;
@@ -116,7 +122,8 @@ public class ConnectionCloseSSLTLSDUnitTest implements Serializable {
   public void connectionWithHungReaderIsCloseableAndUnhangsReader()
       throws InterruptedException, TimeoutException {
 
-    getBlackboard().initBlackboard();
+    blackboard.clearGate(UPDATE_ENTERED_GATE);
+    blackboard.clearGate(SUSPEND_UPDATE_GATE);
 
     final int locatorPort = createLocator(locator);
     createCacheAndRegion(sender, locatorPort);
@@ -133,12 +140,11 @@ public class ConnectionCloseSSLTLSDUnitTest implements Serializable {
                         final DistributionMessage message) {
                       guardMessageProcessingHook(message, () -> {
                         try {
-                          getBlackboard().signalGate(UPDATE_ENTERED_GATE);
-                          getBlackboard().waitForGate(SUSPEND_UPDATE_GATE, 5, MINUTES);
+                          blackboard.signalGate(UPDATE_ENTERED_GATE);
+                          blackboard.waitForGate(SUSPEND_UPDATE_GATE);
                         } catch (TimeoutException | InterruptedException e) {
-                          fail("message observus interruptus");
+                          errorCollector.addError(e);
                         }
-                        logger.info("BGB: got before process message: " + message);
                       });
                     }
                   };
@@ -171,7 +177,7 @@ public class ConnectionCloseSSLTLSDUnitTest implements Serializable {
     putInvocation.get();
 
     // un-stick our message observer
-    getBlackboard().signalGate(SUSPEND_UPDATE_GATE);
+    blackboard.signalGate(SUSPEND_UPDATE_GATE);
   }
 
   private void guardMessageProcessingHook(final DistributionMessage message,
