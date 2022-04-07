@@ -23,7 +23,7 @@ import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category(SerializationTest.class)
 public class AnalyzeMemcachedSerializablesIntegrationTest
-    extends AnalyzeSerializablesWithClassAnalysisRuleTestBase {
+    extends AnalyzeSerializablesJUnitTestBase {
 
   @Override
   protected String getModuleName() {

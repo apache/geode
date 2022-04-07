@@ -21,8 +21,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category(SerializationTest.class)
-public class AnalyzePulseSerializablesIntegrationTest
-    extends AnalyzeSerializablesWithClassAnalysisRuleTestBase {
+public class AnalyzePulseSerializablesIntegrationTest extends AnalyzeSerializablesJUnitTestBase {
 
   @Override
   protected String getModuleName() {

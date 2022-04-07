@@ -18,12 +18,11 @@ import java.util.Optional;
 
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.gfsh.internal.management.GfshSanctionedSerializablesService;
+import org.apache.geode.management.internal.GfshSanctionedSerializablesService;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category(SerializationTest.class)
-public class AnalyzeGfshSerializablesIntegrationTest
-    extends AnalyzeSerializablesWithClassAnalysisRuleTestBase {
+public class AnalyzeGfshSerializablesIntegrationTest extends AnalyzeSerializablesJUnitTestBase {
 
   @Override
   protected String getModuleName() {
