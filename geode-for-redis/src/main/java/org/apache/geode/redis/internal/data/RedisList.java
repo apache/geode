@@ -71,8 +71,7 @@ public class RedisList extends AbstractRedisData {
   public RedisList(RedisList redisList) {
     setExpirationTimestampNoDelta(redisList.getExpirationTimestamp());
     setVersion(redisList.getVersion());
-    elementList = new SizeableByteArrayList();
-    elementList.addAll(redisList.elementList);
+    elementList = new SizeableByteArrayList(redisList.elementList);
   }
 
   public static List<byte[]> blpop(ExecutionHandlerContext context, Command command,

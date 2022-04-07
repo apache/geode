@@ -32,6 +32,16 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
       roundUpSize(getObjectHeaderSize() + 3 * getReferenceSize());
   private int memberOverhead;
 
+  public SizeableByteArrayList() {}
+
+  /**
+   * Constructor which creates a shallow clone of the original list.
+   */
+  public SizeableByteArrayList(SizeableByteArrayList original) {
+    addAll(original);
+    memberOverhead = original.memberOverhead;
+  }
+
   /**
    * @param elementToRemove element to remove from the list
    * @param count number of elements that match object o to remove from the list.

@@ -101,17 +101,18 @@ public abstract class AbstractRedisData implements RedisData {
     return version;
   }
 
-  public void setVersion(byte version) {
+  public final void setVersion(byte version) {
     this.version = version;
   }
 
   @Override
-  public void setExpirationTimestamp(Region<RedisKey, RedisData> region, RedisKey key, long value) {
+  public final void setExpirationTimestamp(Region<RedisKey, RedisData> region, RedisKey key,
+      long value) {
     expirationTimestamp = value;
     storeChanges(region, key, new SetTimestamp(value));
   }
 
-  public void setExpirationTimestampNoDelta(long value) {
+  public final void setExpirationTimestampNoDelta(long value) {
     expirationTimestamp = value;
   }
 
