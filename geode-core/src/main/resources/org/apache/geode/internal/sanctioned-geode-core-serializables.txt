@@ -448,7 +448,7 @@ org/apache/geode/management/internal/cli/functions/CacheRealizationFunction,true
 org/apache/geode/management/internal/cli/functions/RebalanceFunction,true,1
 org/apache/geode/management/internal/configuration/domain/SharedConfigurationStatus,false
 org/apache/geode/management/internal/configuration/functions/DownloadJarFunction,true,1
-org/apache/geode/management/internal/configuration/functions/GetClusterConfigurationFunction,false
+org/apache/geode/management/internal/configuration/functions/GetClusterConfigurationFunction,true,6332908511113951823
 org/apache/geode/management/internal/configuration/functions/GetRegionNamesFunction,false
 org/apache/geode/management/internal/configuration/functions/RecreateCacheFunction,false
 org/apache/geode/management/internal/configuration/messages/ClusterManagementServiceInfo,false,hostName:java/lang/String,httpPort:int,isSSL:boolean,isSecured:boolean

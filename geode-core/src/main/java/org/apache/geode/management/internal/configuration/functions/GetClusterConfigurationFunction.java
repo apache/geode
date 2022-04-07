@@ -27,6 +27,7 @@ import org.apache.geode.management.internal.configuration.messages.Configuration
 
 public class GetClusterConfigurationFunction implements InternalFunction {
   private static final Logger logger = LogService.getLogger();
+  private static final long serialVersionUID = 6332908511113951823L;
 
   @Override
   public void execute(FunctionContext context) {
