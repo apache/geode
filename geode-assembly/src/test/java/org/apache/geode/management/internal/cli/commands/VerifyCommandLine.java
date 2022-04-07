@@ -56,21 +56,24 @@ class VerifyCommandLine {
         .containsSequence(expectedMainClassSequence)
         .containsExactlyInAnyOrderElementsOf(allExpectedElements);
 
-    // All JVM options must be between the java command sequence and the start command sequence.
-    int startCommandSequenceIndex = commandLine.indexOf(expectedMainClassSequence.get(0));
+    // All JVM options must be between the java command sequence and the main class sequence.
+    String mainClassName = expectedMainClassSequence.get(0);
+    int mainClassSequenceIndex = commandLine.indexOf(mainClassName);
     int minJvmOptionIndex = expectedJavaCommandSequence.size();
     int maxJvmOptionIndex = minJvmOptionIndex + expectedJvmOptions.size() - 1;
     for (String option : expectedJvmOptions) {
-      assertThat(commandLine.indexOf(option)).as("position of JVM option " + option)
+      assertThat(commandLine.indexOf(option))
+          .as(() -> String.format("position of JVM option %s", option))
           .isBetween(minJvmOptionIndex, maxJvmOptionIndex);
     }
 
-    // All start options must be after the start command sequence.
-    int minStartCommandOptionIndex = +startCommandSequenceIndex + expectedMainClassSequence.size();
-    int maxStartCommandOptionIndex = commandLine.size() - 1;
+    // All main class options must be after the main class sequence.
+    int minMainClassOptionIndex = mainClassSequenceIndex + expectedMainClassSequence.size();
+    int maxMainClassOptionIndex = commandLine.size() - 1;
     for (String option : expectedMainClassOptions) {
-      assertThat(commandLine.indexOf(option)).as("position of start command option " + option)
-          .isBetween(minStartCommandOptionIndex, maxStartCommandOptionIndex);
+      assertThat(commandLine.indexOf(option))
+          .as(() -> String.format("position of %s option %s", mainClassName, option))
+          .isBetween(minMainClassOptionIndex, maxMainClassOptionIndex);
     }
   }
 }
