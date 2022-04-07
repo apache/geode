@@ -33,7 +33,6 @@ import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.internal.MakeNotSerializable;
-import org.apache.geode.annotations.internal.SerializableCompatibility;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
@@ -52,29 +51,18 @@ import org.apache.geode.internal.net.SocketCreator;
 public class DistributionLocatorId implements java.io.Serializable {
   private static final long serialVersionUID = 6587390186971937865L;
 
-  private final InetAddress host;
+  private InetAddress host;
   private final int port;
-  private final @NotNull String bindAddress;
-  /**
-   * Serialization: Since this is {@code transient} it must be initialized after deserialization,
-   * thus it can't be {@code final}.
-   */
-  private transient @NotNull SSLConfig sslConfig;
-  @Deprecated
-  @SerializableCompatibility("Required for upgrades from versions prior to Geode 1.0")
-  @SuppressWarnings("unused")
-  private final boolean peerLocator = false;
-  @Deprecated
-  @SerializableCompatibility("Required for upgrades from versions prior to Geode 1.0")
-  @SuppressWarnings("unused")
-  private final boolean serverLocator = false;
-  private final String hostnameForClients;
+  private final String bindAddress;
+  private transient SSLConfig sslConfig;
+  // the following two fields are not used but are retained for backward compatibility
+  // as this class is Serializable and is used in WAN locator information exchange
+  private final boolean peerLocator = true;
+  private final boolean serverLocator = true;
+  private String hostnameForClients;
   private String hostname;
-  /**
-   * Serialization: Not include in some older versions and may be {@code null} abd must be
-   * initialized after deserialization, thus it can't be {@code final}.
-   */
-  private @NotNull String memberName;
+  // added due to improvement for cloud native environment
+  private String membername;
   private final long timestamp;
 
   /**
@@ -116,7 +104,7 @@ public class DistributionLocatorId implements java.io.Serializable {
     this.bindAddress = bindAddressOrDefault(bindAddress);
     this.sslConfig = sslConfigOrDefault(sslConfig);
     this.hostnameForClients = hostnameForClients;
-    this.memberName = memberNameOrDefault(memberName);
+    this.membername = memberNameOrDefault(memberName);
     timestamp = System.currentTimeMillis();
   }
 
@@ -309,7 +297,7 @@ public class DistributionLocatorId implements java.io.Serializable {
   }
 
   public @NotNull String getMemberName() {
-    return memberName;
+    return membername;
   }
 
   public long getTimeStamp() {
@@ -325,7 +313,7 @@ public class DistributionLocatorId implements java.io.Serializable {
         ", sslConfig=" + sslConfig +
         ", hostnameForClients='" + hostnameForClients + '\'' +
         ", hostname='" + hostname + '\'' +
-        ", memberName='" + memberName + '\'' +
+        ", memberName='" + membername + '\'' +
         ", timestamp=" + timestamp +
         '}';
   }
@@ -386,7 +374,7 @@ public class DistributionLocatorId implements java.io.Serializable {
     in.defaultReadObject();
 
     sslConfig = sslConfigOrDefault(null);
-    memberName = memberNameOrDefault(memberName);
+    membername = memberNameOrDefault(membername);
   }
 
   private static @NotNull String bindAddressOrDefault(final @Nullable String bindAddress) {
