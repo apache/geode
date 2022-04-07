@@ -33,6 +33,7 @@ import org.jetbrains.annotations.Nullable;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.internal.MakeNotSerializable;
+import org.apache.geode.annotations.internal.SerializableCompatibility;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.tcpserver.HostAndPort;
@@ -59,6 +60,14 @@ public class DistributionLocatorId implements java.io.Serializable {
    * thus it can't be {@code final}.
    */
   private transient @NotNull SSLConfig sslConfig;
+  @Deprecated
+  @SerializableCompatibility("Required for upgrades from versions prior to Geode 1.0")
+  @SuppressWarnings("unused")
+  private final boolean peerLocator = false;
+  @Deprecated
+  @SerializableCompatibility("Required for upgrades from versions prior to Geode 1.0")
+  @SuppressWarnings("unused")
+  private final boolean serverLocator = false;
   private final String hostnameForClients;
   private String hostname;
   /**
