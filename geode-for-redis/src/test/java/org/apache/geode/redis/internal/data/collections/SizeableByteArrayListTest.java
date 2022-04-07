@@ -58,6 +58,14 @@ public class SizeableByteArrayListTest {
   }
 
   @Test
+  public void getSizeInBytesIsAccurate_ForCopiedList() {
+    SizeableByteArrayList original = createList();
+    SizeableByteArrayList copy = new SizeableByteArrayList(original);
+
+    assertThat(original.getSizeInBytes()).isEqualTo(copy.getSizeInBytes());
+  }
+
+  @Test
   public void clearSublist_getSizeInBytesIsAccurate() {
     // Create a list with an initial size and confirm that it correctly reports its size
     SizeableByteArrayList list = createList();

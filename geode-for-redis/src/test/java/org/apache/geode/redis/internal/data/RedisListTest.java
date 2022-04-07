@@ -153,6 +153,15 @@ public class RedisListTest {
   }
 
   @Test
+  public void copyingAListRetainsSizeAndOrder() {
+    RedisList original = createRedisListWithDuplicateElements();
+    RedisList copy = new RedisList(original);
+
+    assertThat(original.getSizeInBytes()).isEqualTo(copy.getSizeInBytes());
+    assertThat(original).isEqualTo(copy);
+  }
+
+  @Test
   public void versionDoesNotUpdateWhenLtrimDoesNotModifyOneElementList() {
     Region<RedisKey, RedisData> region = uncheckedCast(mock(PartitionedRegion.class));
     RedisList list = createRedisListWithOneElement();
