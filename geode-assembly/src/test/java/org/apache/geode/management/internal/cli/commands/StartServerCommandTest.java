@@ -43,6 +43,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
@@ -66,9 +67,9 @@ class StartServerCommandTest {
     private static final String IS_J9_VM = ".*" + IBM_J9_JVM_NAME + ".*";
     private static final String IS_ROCKIT_VM = ".*" + ORACLE_JROCKIT_JVM_NAME + ".*";
 
-    @Test
     @EnabledIfSystemProperty(named = "java.vm.name", matches = IS_HOTSPOT_VM)
     @EnabledOnOs(WINDOWS)
+    @Test
     void onWindowsHotSpotVM() {
       final List<String> jvmOptions = new ArrayList<>();
       addJvmOptionsForOutOfMemoryErrors(jvmOptions);
@@ -142,13 +143,22 @@ class StartServerCommandTest {
         "org.apache.geode.distributed.ServerLauncher";
 
     private final StartServerCommand serverCommands = new StartServerCommand();
+    private final Set<String> expectedJvmOptions = new HashSet<>();
+    private final List<String> expectedStartCommandSequence = new ArrayList<>();
+    private final Set<String> expectedStartCommandOptions = new HashSet<>();
+
+    @BeforeEach
+    void alwaysExpectUnconditionalOptions() {
+      expectedJvmOptions.addAll(START_COMMAND_UNCONDITIONAL_JVM_OPTIONS);
+    }
+
+    @BeforeEach
+    void alwaysExpectJreSpecificMemberJvmOptions() {
+      expectedJvmOptions.addAll(getMemberJvmOptions());
+    }
 
     @Test
     void withTypicalOptions() throws Exception {
-      Set<String> expectedJvmOptions = new HashSet<>();
-      List<String> expectedStartCommandSequence = new ArrayList<>();
-      Set<String> expectedStartCommandOptions = new HashSet<>();
-
       ServerLauncher.Builder serverLauncherBuilder = new ServerLauncher.Builder();
       serverLauncherBuilder.setCommand(START);
       expectedStartCommandSequence.add(SERVER_LAUNCHER_CLASS_NAME);
@@ -189,10 +199,6 @@ class StartServerCommandTest {
 
       ServerLauncher serverLauncher = serverLauncherBuilder.build();
 
-      expectedJvmOptions.addAll(START_COMMAND_UNCONDITIONAL_JVM_OPTIONS);
-      expectedJvmOptions.addAll(jdkSpecificJvmOptions());
-      expectedJvmOptions.addAll(getMemberJvmOptions());
-
       String expectedClasspath = String.join(
           File.pathSeparator,
           StartMemberUtils.getGemFireJarPath(),
@@ -204,8 +210,12 @@ class StartServerCommandTest {
           "-classpath",
           expectedClasspath);
 
+      boolean disableExitWhenOutOfMemory = false;
+      expectedJvmOptions.addAll(jdkSpecificOutOfMemoryOptions());
+
       String[] commandLineElements = serverCommands.createStartServerCommandLine(
-          serverLauncher, null, null, new Properties(), null, false, new String[0], false, null,
+          serverLauncher, null, null, new Properties(), null, false, new String[0],
+          disableExitWhenOutOfMemory, null,
           null);
 
       verifyCommandLine(commandLineElements, expectedJavaCommandSequence, expectedJvmOptions,
@@ -214,10 +224,6 @@ class StartServerCommandTest {
 
     @Test
     void withRestApiOptions() throws Exception {
-      Set<String> expectedJvmOptions = new HashSet<>();
-      List<String> expectedStartCommandSequence = new ArrayList<>();
-      Set<String> expectedStartCommandOptions = new HashSet<>();
-
       ServerLauncher.Builder serverLauncherBuilder = new ServerLauncher.Builder();
 
       expectedStartCommandSequence.add(SERVER_LAUNCHER_CLASS_NAME);
@@ -277,12 +283,12 @@ class StartServerCommandTest {
           "-classpath",
           expectedClasspath);
 
-      expectedJvmOptions.addAll(START_COMMAND_UNCONDITIONAL_JVM_OPTIONS);
-      expectedJvmOptions.addAll(jdkSpecificJvmOptions());
-      expectedJvmOptions.addAll(getMemberJvmOptions());
+      boolean disableExitWhenOutOfMemory = false;
+      expectedJvmOptions.addAll(jdkSpecificOutOfMemoryOptions());
 
       String[] commandLineElements = serverCommands.createStartServerCommandLine(
-          serverLauncher, null, null, gemfireProperties, null, false, new String[0], false, null,
+          serverLauncher, null, null, gemfireProperties, null, false, new String[0],
+          disableExitWhenOutOfMemory, null,
           null);
 
       verifyCommandLine(commandLineElements, expectedJavaCommandSequence, expectedJvmOptions,
@@ -291,10 +297,6 @@ class StartServerCommandTest {
 
     @Test
     void withAllOptions() throws Exception {
-      Set<String> expectedJvmOptions = new HashSet<>();
-      List<String> expectedStartCommandSequence = new ArrayList<>();
-      Set<String> expectedStartCommandOptions = new HashSet<>();
-
       ServerLauncher.Builder serverLauncherBuilder = new ServerLauncher.Builder();
       expectedStartCommandSequence.add(SERVER_LAUNCHER_CLASS_NAME);
 
@@ -398,21 +400,21 @@ class StartServerCommandTest {
           .thenReturn(securityPropertiesFilePath);
       expectedJvmOptions.add("-DgemfireSecurityPropertyFile=" + securityPropertiesFilePath);
 
-      final String customClasspath = "/temp/domain-1.0.0.jar";
       final String heapSize = "1024m";
       expectedJvmOptions.add("-Xms" + heapSize);
       expectedJvmOptions.add("-Xmx" + heapSize);
       expectedJvmOptions.add("-XX:+UseConcMarkSweepGC");
       expectedJvmOptions.add("-XX:CMSInitiatingOccupancyFraction=60");
 
-      final String[] customJvmArguments = {
+      final String[] customJvmOptions = {
           "-verbose:gc",
           "-Xloggc:member-gc.log",
           "-XX:+PrintGCDateStamps",
           "-XX:+PrintGCDetails",
       };
-      expectedJvmOptions.addAll(Arrays.asList(customJvmArguments));
+      expectedJvmOptions.addAll(Arrays.asList(customJvmOptions));
 
+      final String customClasspath = "/temp/domain-1.0.0.jar";
       final String expectedClasspath = String.join(
           File.pathSeparator,
           StartMemberUtils.getGemFireJarPath(),
@@ -425,20 +427,19 @@ class StartServerCommandTest {
           "-classpath",
           expectedClasspath);
 
-      expectedJvmOptions.addAll(START_COMMAND_UNCONDITIONAL_JVM_OPTIONS);
-      expectedJvmOptions.addAll(jdkSpecificJvmOptions());
-      expectedJvmOptions.addAll(getMemberJvmOptions());
+      boolean disableExitWhenOutOfMemory = false;
+      expectedJvmOptions.addAll(jdkSpecificOutOfMemoryOptions());
 
       String[] commandLineElements = serverCommands.createStartServerCommandLine(
           serverLauncher, gemfirePropertiesFile, gemfireSecurityPropertiesFile, gemfireProperties,
-          customClasspath, false, customJvmArguments, false, heapSize, heapSize);
+          customClasspath, false, customJvmOptions, disableExitWhenOutOfMemory, heapSize, heapSize);
 
       verifyCommandLine(commandLineElements, expectedJavaCommandSequence, expectedJvmOptions,
           expectedStartCommandSequence, expectedStartCommandOptions);
     }
   }
 
-  private static List<String> jdkSpecificJvmOptions() {
+  private static List<String> jdkSpecificOutOfMemoryOptions() {
     List<String> jdkSpecificOptions = new ArrayList<>();
     addJvmOptionsForOutOfMemoryErrors(jdkSpecificOptions);
     return jdkSpecificOptions;

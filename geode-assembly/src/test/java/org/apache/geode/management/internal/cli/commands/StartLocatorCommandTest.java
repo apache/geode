@@ -36,6 +36,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -73,12 +74,22 @@ class StartLocatorCommandTest {
     private static final String LOCATOR_LAUNCHER_CLASS_NAME =
         "org.apache.geode.distributed.LocatorLauncher";
 
+    private final Set<String> expectedJvmOptions = new HashSet<>();
+    private final List<String> expectedStartCommandSequence = new ArrayList<>();
+    private final Set<String> expectedStartCommandOptions = new HashSet<>();
+
+    @BeforeEach
+    void alwaysExpectUnconditionalOptions() {
+      expectedJvmOptions.addAll(START_COMMAND_UNCONDITIONAL_JVM_OPTIONS);
+    }
+
+    @BeforeEach
+    void alwaysExpectJreSpecificMemberJvmOptions() {
+      expectedJvmOptions.addAll(getMemberJvmOptions());
+    }
+
     @Test
     void withTypicalOptions() throws Exception {
-      Set<String> expectedJvmOptions = new HashSet<>();
-      List<String> expectedStartCommandSequence = new ArrayList<>();
-      Set<String> expectedStartCommandOptions = new HashSet<>();
-
       LocatorLauncher.Builder locatorLauncherBuilder = new LocatorLauncher.Builder();
 
       locatorLauncherBuilder.setCommand(START);
@@ -105,9 +116,6 @@ class StartLocatorCommandTest {
           "-classpath",
           expectedClasspath);
 
-      expectedJvmOptions.addAll(START_COMMAND_UNCONDITIONAL_JVM_OPTIONS);
-      expectedJvmOptions.addAll(getMemberJvmOptions());
-
       String[] commandLine =
           startLocatorCommand.createStartLocatorCommandLine(locatorLauncher,
               null, null, new Properties(), null, false, null, null, null);
@@ -119,9 +127,6 @@ class StartLocatorCommandTest {
     @Test
     void withRestApiOptions() throws Exception {
       LocatorLauncher.Builder locatorLauncherBuilder = new LocatorLauncher.Builder();
-      Set<String> expectedJvmOptions = new HashSet<>();
-      List<String> expectedStartCommandSequence = new ArrayList<>();
-      Set<String> expectedStartCommandOptions = new HashSet<>();
 
       locatorLauncherBuilder.setCommand(START);
       expectedStartCommandSequence.add(LOCATOR_LAUNCHER_CLASS_NAME);
@@ -150,9 +155,6 @@ class StartLocatorCommandTest {
       gemfireProperties.setProperty(HTTP_SERVICE_PORT, servicePort);
       expectedJvmOptions.add("-D" + GEMFIRE_PREFIX + HTTP_SERVICE_PORT + "=" + servicePort);
 
-      expectedJvmOptions.addAll(START_COMMAND_UNCONDITIONAL_JVM_OPTIONS);
-      expectedJvmOptions.addAll(getMemberJvmOptions());
-
       String expectedClasspath = String.join(
           File.pathSeparator,
           StartMemberUtils.getGemFireJarPath(),
@@ -174,10 +176,6 @@ class StartLocatorCommandTest {
 
     @Test
     void withAllOptions() throws Exception {
-      Set<String> expectedJvmOptions = new HashSet<>();
-      List<String> expectedStartCommandSequence = new ArrayList<>();
-      Set<String> expectedStartCommandOptions = new HashSet<>();
-
       LocatorLauncher.Builder locatorLauncherBuilder = new LocatorLauncher.Builder();
 
       final String memberName = "with-all-options";
@@ -256,9 +254,6 @@ class StartLocatorCommandTest {
       expectedJvmOptions.add("-Xmx" + heapSize);
       expectedJvmOptions.add("-XX:+UseConcMarkSweepGC");
       expectedJvmOptions.add("-XX:CMSInitiatingOccupancyFraction=60");
-
-      expectedJvmOptions.addAll(START_COMMAND_UNCONDITIONAL_JVM_OPTIONS);
-      expectedJvmOptions.addAll(getMemberJvmOptions());
 
       String[] commandLine =
           startLocatorCommand.createStartLocatorCommandLine(locatorLauncher,
