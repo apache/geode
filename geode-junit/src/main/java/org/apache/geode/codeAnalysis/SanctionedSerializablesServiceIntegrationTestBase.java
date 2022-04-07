@@ -14,7 +14,7 @@
  */
 package org.apache.geode.codeAnalysis;
 
-import static org.apache.geode.internal.serialization.filter.SanctionedSerializables.loadSanctionedSerializablesServices;
+import static org.apache.geode.internal.serialization.SanctionedSerializables.loadSanctionedSerializablesServices;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -23,7 +23,7 @@ import java.util.Collection;
 
 import org.junit.Test;
 
-import org.apache.geode.internal.serialization.filter.SanctionedSerializablesService;
+import org.apache.geode.internal.serialization.SanctionedSerializablesService;
 
 public abstract class SanctionedSerializablesServiceIntegrationTestBase {
 
@@ -38,7 +38,7 @@ public abstract class SanctionedSerializablesServiceIntegrationTestBase {
   }
 
   @Test
-  public void serviceIsLoaded() {
+  public final void serviceIsLoaded() {
     Collection<SanctionedSerializablesService> services = loadSanctionedSerializablesServices();
     SanctionedSerializablesService service = getService();
 
@@ -56,29 +56,23 @@ public abstract class SanctionedSerializablesServiceIntegrationTestBase {
   }
 
   @Test
-  public void serviceResourceExists() {
+  public final void serviceResourceExists() {
     SanctionedSerializablesService service = getService();
 
     URL url = service.getSanctionedSerializablesURL();
 
-    ServiceResourceExpectation expectation = getServiceResourceExpectation();
-    String description = "Sanctioned serializables URL " + url + " " + expectation;
-    switch (expectation) {
+    switch (getServiceResourceExpectation()) {
       case NULL:
-        assertThat(url)
-            .as(description)
-            .isNull();
+        assertThat(url).isNull();
         break;
       case EMPTY:
       case NON_EMPTY:
-        assertThat(url)
-            .as(description)
-            .isNotNull();
+        assertThat(url).isNotNull();
     }
   }
 
   @Test
-  public void serviceResourceIsLoaded() throws IOException {
+  public final void serviceResourceIsLoaded() throws IOException {
     SanctionedSerializablesService service = getService();
 
     Collection<String> serializables = service.getSerializationAcceptlist();

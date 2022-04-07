@@ -18,13 +18,12 @@ import java.util.Optional;
 
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.wan.internal.WANSanctionedSerializablesService;
+import org.apache.geode.internal.cache.wan.WANSanctionedSerializablesService;
 import org.apache.geode.test.junit.categories.SerializationTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class, SerializationTest.class})
-public class AnalyzeWANSerializablesIntegrationTest
-    extends AnalyzeSerializablesWithClassAnalysisRuleTestBase {
+public class AnalyzeWANSerializablesIntegrationTest extends AnalyzeSerializablesJUnitTestBase {
 
   @Override
   protected String getModuleName() {
