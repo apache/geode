@@ -51,7 +51,6 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 
 import org.apache.geode.distributed.ServerLauncher;
-import org.apache.geode.pdx.PdxSerializer;
 
 class StartServerCommandTest {
   // JVM options to use with every start command.
@@ -138,7 +137,7 @@ class StartServerCommandTest {
   }
 
   @Nested
-  class CreateServerCommandLine {
+  class CreateStartServerCommandLine {
     private static final String SERVER_LAUNCHER_CLASS_NAME =
         "org.apache.geode.distributed.ServerLauncher";
 
@@ -336,9 +335,6 @@ class StartServerCommandTest {
       serverLauncherBuilder.setForce(true);
       expectedStartCommandOptions.add("--force");
 
-      // TODO: How does this affect the command line?
-      serverLauncherBuilder.setDeletePidFileOnStop(true);
-
       final String hostNameForClients = "localhost";
       serverLauncherBuilder.setHostNameForClients(hostNameForClients);
       expectedStartCommandOptions.add("--hostname-for-clients=" + hostNameForClients);
@@ -358,13 +354,6 @@ class StartServerCommandTest {
       final int messageTimeToLive = 93;
       serverLauncherBuilder.setMessageTimeToLive(messageTimeToLive);
       expectedStartCommandOptions.add("--message-time-to-live=" + messageTimeToLive);
-
-      // TODO: How do these affect the command line?
-      serverLauncherBuilder.setPdxDiskStore("pdxDiskStore");
-      serverLauncherBuilder.setPdxIgnoreUnreadFields(true);
-      serverLauncherBuilder.setPdxPersistent(true);
-      serverLauncherBuilder.setPdxReadSerialized(true);
-      serverLauncherBuilder.setPdxSerializer(mock(PdxSerializer.class));
 
       serverLauncherBuilder.setRebalance(true);
       expectedStartCommandOptions.add("--rebalance");

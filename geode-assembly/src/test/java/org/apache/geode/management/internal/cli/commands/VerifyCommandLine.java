@@ -52,7 +52,8 @@ class VerifyCommandLine {
     allExpectedElements.addAll(expectedMainClassSequence);
     allExpectedElements.addAll(expectedMainClassOptions);
 
-    assertThat(commandLine).startsWith(expectedJavaCommandSequence.toArray(new String[] {}))
+    assertThat(commandLine)
+        .startsWith(expectedJavaCommandSequence.toArray(new String[] {}))
         .containsSequence(expectedMainClassSequence)
         .containsExactlyInAnyOrderElementsOf(allExpectedElements);
 

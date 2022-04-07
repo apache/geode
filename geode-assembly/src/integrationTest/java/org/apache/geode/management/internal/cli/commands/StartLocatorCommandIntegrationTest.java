@@ -26,6 +26,8 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import org.junit.Before;
@@ -40,6 +42,8 @@ import org.apache.geode.test.junit.rules.GfshParserRule;
 
 public class StartLocatorCommandIntegrationTest {
   private static final String FAKE_HOSTNAME = "someFakeHostname";
+  private static final String LOCATOR_LAUNCHER_CLASS_NAME =
+      "org.apache.geode.distributed.LocatorLauncher";
 
   @Rule
   public GfshParserRule commandRule = new GfshParserRule();
@@ -91,11 +95,14 @@ public class StartLocatorCommandIntegrationTest {
   public void startWithBindAddress() throws Exception {
     commandRule.executeAndAssertThat(spy, "start locator --bind-address=127.0.0.1");
 
-    ArgumentCaptor<String[]> commandLines = ArgumentCaptor.forClass(String[].class);
-    verify(spy).getProcess(any(), commandLines.capture());
+    ArgumentCaptor<String[]> commandLineCaptor = ArgumentCaptor.forClass(String[].class);
+    verify(spy).getProcess(any(), commandLineCaptor.capture());
 
-    String[] lines = commandLines.getValue();
-    assertThat(lines[12]).isEqualTo("--bind-address=127.0.0.1");
+    List<String> commandLine = Arrays.asList(commandLineCaptor.getValue());
+    String expectedBindAddressOption = "--bind-address=127.0.0.1";
+    assertThat(commandLine)
+        .containsOnlyOnce(LOCATOR_LAUNCHER_CLASS_NAME, expectedBindAddressOption)
+        .containsSubsequence(LOCATOR_LAUNCHER_CLASS_NAME, expectedBindAddressOption);
   }
 
   @Test
@@ -104,9 +111,13 @@ public class StartLocatorCommandIntegrationTest {
         .addOption("hostname-for-clients", FAKE_HOSTNAME).toString();
 
     commandRule.executeAndAssertThat(spy, startLocatorCommand);
-    ArgumentCaptor<String[]> commandLines = ArgumentCaptor.forClass(String[].class);
-    verify(spy).getProcess(any(), commandLines.capture());
-    String[] lines = commandLines.getValue();
-    assertThat(lines).containsOnlyOnce("--hostname-for-clients=" + FAKE_HOSTNAME);
+
+    ArgumentCaptor<String[]> commandLine = ArgumentCaptor.forClass(String[].class);
+    verify(spy).getProcess(any(), commandLine.capture());
+
+    String expectedHostNameOption = "--hostname-for-clients=" + FAKE_HOSTNAME;
+    assertThat(commandLine.getValue())
+        .containsOnlyOnce(LOCATOR_LAUNCHER_CLASS_NAME, expectedHostNameOption)
+        .containsSubsequence(LOCATOR_LAUNCHER_CLASS_NAME, expectedHostNameOption);
   }
 }

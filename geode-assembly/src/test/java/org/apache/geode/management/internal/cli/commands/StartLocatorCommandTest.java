@@ -69,7 +69,7 @@ class StartLocatorCommandTest {
   }
 
   @Nested
-  class GetLocatorCommandLine {
+  class CreateStartLocatorCommandLine {
     private static final String LOCATOR_LAUNCHER_CLASS_NAME =
         "org.apache.geode.distributed.LocatorLauncher";
 
@@ -189,9 +189,6 @@ class StartLocatorCommandTest {
 
       locatorLauncherBuilder.setDebug(true);
       expectedStartCommandOptions.add("--debug");
-
-      // TODO: How does this affect the command line?
-      locatorLauncherBuilder.setDeletePidFileOnStop(true);
 
       locatorLauncherBuilder.setForce(true);
       expectedStartCommandOptions.add("--force");
