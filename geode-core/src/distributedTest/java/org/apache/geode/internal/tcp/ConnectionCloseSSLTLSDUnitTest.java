@@ -33,7 +33,6 @@ import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Fail.fail;
 
 import java.io.File;
 import java.io.Serializable;
@@ -62,6 +61,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedBlackboard;
+import org.apache.geode.test.dunit.rules.DistributedErrorCollector;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 
@@ -95,6 +95,9 @@ public class ConnectionCloseSSLTLSDUnitTest implements Serializable {
   @Rule
   public DistributedRestoreSystemProperties restoreSystemProperties =
       new DistributedRestoreSystemProperties();
+
+  @Rule
+  public DistributedErrorCollector errorCollector = new DistributedErrorCollector();
 
   private VM locator;
   private VM sender;
@@ -139,9 +142,8 @@ public class ConnectionCloseSSLTLSDUnitTest implements Serializable {
                           blackboard.signalGate(UPDATE_ENTERED_GATE);
                           blackboard.waitForGate(SUSPEND_UPDATE_GATE);
                         } catch (TimeoutException | InterruptedException e) {
-                          fail("message observus interruptus");
+                          errorCollector.addError(e);
                         }
-                        logger.info("BGB: got before process message: " + message);
                       });
                     }
                   };
