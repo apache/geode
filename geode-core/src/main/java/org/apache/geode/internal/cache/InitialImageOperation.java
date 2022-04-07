@@ -956,13 +956,12 @@ public class InitialImageOperation {
             // null IDs in a version tag are meant to mean "this member", so
             // we need to change them to refer to the image provider.
             if (tag != null) {
-              try {
+              tag.replaceNullIDs(sender);
+              if (tag.getMemberID() == null) {
                 // It's possible that for persistent regions, a race condition between GII due to
-                // region creation and a region destroy on the remote member can result in
-                // DiskVersionTag.replaceNullIDs() throwing due to null memberID, so in that
-                // situation, return false to allow the GII to be retried.
-                tag.replaceNullIDs(sender);
-              } catch (IllegalStateException ex) {
+                // region creation and a region destroy on the remote member can result in a
+                // DiskVersionTag having a null memberID, so in that situation, return false to
+                // allow the GII to be retried.
                 if (isDebugEnabled) {
                   logger.debug("For Entry = {} with DiskVersionTag = {} from sender = {}, memberID"
                       + " was null; returning false from processChunk()", entry, tag, sender);

@@ -42,11 +42,7 @@ public class DiskVersionTag extends VersionTag<DiskStoreID> {
    * member id in later.
    */
   @Override
-  public void replaceNullIDs(VersionSource memberID) {
-    if (getMemberID() == null) {
-      throw new IllegalStateException("Member id should not be null for persistent version tags");
-    }
-  }
+  public void replaceNullIDs(VersionSource memberID) {}
 
   /*
    * (non-Javadoc)
