@@ -168,7 +168,8 @@ public class LocatorDiscovery {
           addExchangedLocators(response);
           logger.info(
               "Locator discovery task for locator {} exchanged locator information with {}: {}.",
-              request.getLocator(), locatorId, response.getLocators());
+              request.getLocator().marshalForClients(), locatorId.marshalForClients(),
+              response.getLocators());
           break;
         }
       } catch (IOException ioe) {
@@ -178,13 +179,15 @@ public class LocatorDiscovery {
                   + WAN_LOCATOR_CONNECTION_RETRY_ATTEMPT + " retry attempts", ioe);
           logger.fatal(
               "Locator discovery task for locator {} could not exchange locator information with {} after {} retry attempts.",
-              request.getLocator(), locatorId, retryAttempt, coe);
+              request.getLocator().marshalForClients(), locatorId.marshalForClients(), retryAttempt,
+              coe);
           break;
         }
         if (skipFailureLogging(locatorId)) {
           logger.warn(
               "Locator discovery task for locator {} could not exchange locator information with {} after {} retry attempts. Retrying in {} ms.",
-              request.getLocator(), locatorId, retryAttempt, WAN_LOCATOR_CONNECTION_INTERVAL);
+              request.getLocator().marshalForClients(), locatorId.marshalForClients(), retryAttempt,
+              WAN_LOCATOR_CONNECTION_INTERVAL);
         }
         try {
           if (!skipWaiting) {
@@ -211,7 +214,8 @@ public class LocatorDiscovery {
           addExchangedLocators(response);
           logger.info(
               "Locator discovery task for locator {} exchanged locator information with {}: {}.",
-              request.getLocator(), locatorId, response.getLocators());
+              request.getLocator().marshalForClients(), locatorId.marshalForClients(),
+              response.getLocators());
           RemoteLocatorPingRequest pingRequest = new RemoteLocatorPingRequest("");
           while (true) {
             if (!skipWaiting) {
@@ -230,14 +234,15 @@ public class LocatorDiscovery {
         if (retryAttempt == WAN_LOCATOR_CONNECTION_RETRY_ATTEMPT) {
           logger.fatal(
               "Locator discovery task for locator {} could not exchange locator information with {} after {} retry attempts.",
-              request.getLocator(), locatorId, retryAttempt, ioe);
+              request.getLocator().marshalForClients(), locatorId.marshalForClients(), retryAttempt,
+              ioe);
           break;
         }
         if (skipFailureLogging(locatorId)) {
           logger.warn(
               "Locator discovery task for locator {} could not exchange locator information with {} after {} retry attempts. Retrying in {} ms.",
-              new Object[] {request.getLocator(), locatorId, retryAttempt,
-                  WAN_LOCATOR_CONNECTION_INTERVAL});
+              request.getLocator().marshalForClients(), locatorId.marshalForClients(), retryAttempt,
+              WAN_LOCATOR_CONNECTION_INTERVAL);
         }
         try {
           if (!skipWaiting) {
