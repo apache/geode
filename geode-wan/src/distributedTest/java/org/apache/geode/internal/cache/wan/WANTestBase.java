@@ -42,13 +42,7 @@ import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -1035,7 +1029,7 @@ public class WANTestBase extends DistributedTestCase {
     } catch (IOException e) {
       org.apache.geode.test.dunit.Assert.fail("Failed to start the Server", e);
     }
-    assertTrue(server1.isRunning());
+    assertThat(server1.isRunning()).isTrue();
 
     return server1.getPort();
   }
@@ -1177,7 +1171,7 @@ public class WANTestBase extends DistributedTestCase {
 
       // double check after moved all primary buckets
       primaryBucketIds = prQ.getDataStore().getAllLocalPrimaryBucketIds();
-      assertTrue(primaryBucketIds.isEmpty());
+      assertThat(primaryBucketIds.isEmpty()).isTrue();
     }
   }
 
@@ -1187,7 +1181,7 @@ public class WANTestBase extends DistributedTestCase {
 
     BecomePrimaryBucketResponse response = BecomePrimaryBucketMessage
         .send((InternalDistributedMember) destination, region, bucketId, true);
-    assertTrue(response.waitForResponse());
+    assertThat(response.waitForResponse()).isTrue();
   }
 
   public static int getSecondaryQueueSizeInStats(String senderId) {
@@ -1200,9 +1194,10 @@ public class WANTestBase extends DistributedTestCase {
     AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(senderId);
     GatewaySenderStats statistics = sender.getStatistics();
     await()
-        .untilAsserted(() -> assertEquals("Expected queue size: " + expectedQueueSize
-            + " but actual size: " + statistics.getEventQueueSize(), expectedQueueSize,
-            statistics.getEventQueueSize()));
+        .untilAsserted(() -> assertThat(statistics.getEventQueueSize()).as(
+            "Expected queue size: " + expectedQueueSize
+                + " but actual size: " + statistics.getEventQueueSize())
+            .isEqualTo(expectedQueueSize));
   }
 
   public static void checkConnectionStats(String senderId) {
@@ -1210,7 +1205,7 @@ public class WANTestBase extends DistributedTestCase {
         (AbstractGatewaySender) CacheFactory.getAnyInstance().getGatewaySender(senderId);
 
     Collection statsCollection = sender.getProxy().getEndpointManager().getAllStats().values();
-    assertTrue(statsCollection.iterator().next() instanceof ConnectionStats);
+    assertThat(statsCollection.iterator().next() instanceof ConnectionStats).isTrue();
   }
 
   public static List<Integer> getSenderStats(String senderId, final int expectedQueueSize) {
@@ -1226,9 +1221,10 @@ public class WANTestBase extends DistributedTestCase {
             parallelGatewaySenderQueue.getRegions().toArray(new PartitionedRegion[1])[0];
       }
       await()
-          .untilAsserted(() -> assertEquals("Expected queue entries: " + expectedQueueSize
-              + " but actual entries: " + regionQueue.size(), expectedQueueSize,
-              regionQueue.size()));
+          .untilAsserted(() -> assertThat(regionQueue.size()).as(
+              "Expected queue entries: " + expectedQueueSize
+                  + " but actual entries: " + regionQueue.size())
+              .isEqualTo(expectedQueueSize));
     }
     ArrayList<Integer> stats = new ArrayList<>();
     stats.add(statistics.getEventQueueSize());
@@ -1275,19 +1271,10 @@ public class WANTestBase extends DistributedTestCase {
   public static void checkQueueStats(String senderId, final int queueSize, final int eventsReceived,
       final int eventsQueued, final int eventsDistributed) {
     GatewaySenderStats statistics = getGatewaySenderStats(senderId);
-    assertEquals(queueSize, statistics.getEventQueueSize());
-    assertEquals(eventsReceived, statistics.getEventsReceived());
-    assertEquals(eventsQueued, statistics.getEventsQueued());
+    assertThat(statistics.getEventQueueSize()).isEqualTo(queueSize);
+    assertThat(statistics.getEventsReceived()).isEqualTo(eventsReceived);
+    assertThat(statistics.getEventsQueued()).isEqualTo(eventsQueued);
     assert (statistics.getEventsDistributed() >= eventsDistributed);
-  }
-
-  public static void validateGatewaySenderQueueHasContent(String senderId, VM... targetVms) {
-    await()
-        .until(() -> Arrays.stream(targetVms).map(vm -> vm.invoke(() -> {
-          AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(senderId);
-          logger.info(displaySerialQueueContent(sender));
-          return sender.getEventQueueSize();
-        })).mapToInt(i -> i).sum(), greaterThan(0));
   }
 
   public static void checkGatewayReceiverStats(int processBatches, int eventsReceived,
@@ -1301,22 +1288,22 @@ public class WANTestBase extends DistributedTestCase {
     GatewayReceiver receiver = gatewayReceivers.iterator().next();
     CacheServerStats stats = ((CacheServerImpl) receiver.getServer()).getAcceptor().getStats();
 
-    assertTrue(stats instanceof GatewayReceiverStats);
+    assertThat(stats instanceof GatewayReceiverStats).isTrue();
     GatewayReceiverStats gatewayReceiverStats = (GatewayReceiverStats) stats;
     if (isExact) {
-      assertTrue(gatewayReceiverStats.getProcessBatchRequests() == processBatches);
+      assertThat(gatewayReceiverStats.getProcessBatchRequests() == processBatches).isTrue();
     } else {
-      assertTrue(gatewayReceiverStats.getProcessBatchRequests() >= processBatches);
+      assertThat(gatewayReceiverStats.getProcessBatchRequests() >= processBatches).isTrue();
     }
-    assertEquals(eventsReceived, gatewayReceiverStats.getEventsReceived());
-    assertEquals(creates, gatewayReceiverStats.getCreateRequest());
+    assertThat(gatewayReceiverStats.getEventsReceived()).isEqualTo(eventsReceived);
+    assertThat(gatewayReceiverStats.getCreateRequest()).isEqualTo(creates);
   }
 
   public static List<Long> getReceiverStats() {
     Set<GatewayReceiver> gatewayReceivers = cache.getGatewayReceivers();
     GatewayReceiver receiver = gatewayReceivers.iterator().next();
     CacheServerStats stats = ((CacheServerImpl) receiver.getServer()).getAcceptor().getStats();
-    assertTrue(stats instanceof GatewayReceiverStats);
+    assertThat(stats instanceof GatewayReceiverStats).isTrue();
     GatewayReceiverStats gatewayReceiverStats = (GatewayReceiverStats) stats;
     List<Long> statsList = new ArrayList<>();
     statsList.add(gatewayReceiverStats.getEventsReceived());
@@ -1334,10 +1321,10 @@ public class WANTestBase extends DistributedTestCase {
     GatewayReceiver receiver = gatewayReceivers.iterator().next();
     CacheServerStats stats = ((CacheServerImpl) receiver.getServer()).getAcceptor().getStats();
 
-    assertTrue(stats instanceof GatewayReceiverStats);
+    assertThat(stats instanceof GatewayReceiverStats).isTrue();
     GatewayReceiverStats gatewayReceiverStats = (GatewayReceiverStats) stats;
-    assertTrue(gatewayReceiverStats.getProcessBatchRequests() >= processBatches);
-    assertTrue(gatewayReceiverStats.getEventsReceived() >= eventsReceived);
+    assertThat(gatewayReceiverStats.getProcessBatchRequests() >= processBatches).isTrue();
+    assertThat(gatewayReceiverStats.getEventsReceived() >= eventsReceived).isTrue();
   }
 
   public static void checkExceptionStats(int exceptionsOccurred) {
@@ -1345,12 +1332,12 @@ public class WANTestBase extends DistributedTestCase {
     GatewayReceiver receiver = gatewayReceivers.iterator().next();
     CacheServerStats stats = ((CacheServerImpl) receiver.getServer()).getAcceptor().getStats();
 
-    assertTrue(stats instanceof GatewayReceiverStats);
+    assertThat(stats instanceof GatewayReceiverStats).isTrue();
     GatewayReceiverStats gatewayReceiverStats = (GatewayReceiverStats) stats;
     if (exceptionsOccurred == 0) {
-      assertEquals(exceptionsOccurred, gatewayReceiverStats.getExceptionsOccurred());
+      assertThat(gatewayReceiverStats.getExceptionsOccurred()).isEqualTo(exceptionsOccurred);
     } else {
-      assertTrue(gatewayReceiverStats.getExceptionsOccurred() >= exceptionsOccurred);
+      assertThat(gatewayReceiverStats.getExceptionsOccurred() >= exceptionsOccurred).isTrue();
     }
   }
 
@@ -1360,29 +1347,28 @@ public class WANTestBase extends DistributedTestCase {
     GatewayReceiver receiver = gatewayReceivers.iterator().next();
     CacheServerStats stats = ((CacheServerImpl) receiver.getServer()).getAcceptor().getStats();
 
-    assertTrue(stats instanceof GatewayReceiverStats);
+    assertThat(stats instanceof GatewayReceiverStats).isTrue();
     GatewayReceiverStats gatewayReceiverStats = (GatewayReceiverStats) stats;
-    assertTrue(gatewayReceiverStats.getProcessBatchRequests() >= processBatches);
-    assertTrue(gatewayReceiverStats.getEventsReceived() >= eventsReceived);
-    assertTrue(gatewayReceiverStats.getCreateRequest() >= creates);
+    assertThat(gatewayReceiverStats.getProcessBatchRequests() >= processBatches).isTrue();
+    assertThat(gatewayReceiverStats.getEventsReceived() >= eventsReceived).isTrue();
+    assertThat(gatewayReceiverStats.getCreateRequest() >= creates).isTrue();
   }
 
   public static void checkEventFilteredStats(String senderId, final int eventsFiltered) {
     GatewaySenderStats statistics = getGatewaySenderStats(senderId);
-    assertEquals(eventsFiltered, statistics.getEventsFiltered());
+    assertThat(statistics.getEventsFiltered()).isEqualTo(eventsFiltered);
   }
 
   public static void checkConflatedStats(String senderId, final int eventsConflated) {
     GatewaySenderStats statistics = getGatewaySenderStats(senderId);
-    assertEquals(eventsConflated, statistics.getEventsNotQueuedConflated());
+    assertThat(statistics.getEventsNotQueuedConflated()).isEqualTo(eventsConflated);
   }
 
   public static void checkStats_Failover(String senderId, final int eventsReceived) {
     GatewaySenderStats statistics = getGatewaySenderStats(senderId);
-    assertEquals(eventsReceived, statistics.getEventsReceived());
-    assertEquals(eventsReceived,
-        (statistics.getEventsQueued() + statistics.getUnprocessedTokensAddedByPrimary()
-            + statistics.getUnprocessedEventsRemovedByPrimary()));
+    assertThat(statistics.getEventsReceived()).isEqualTo(eventsReceived);
+    assertThat((statistics.getEventsQueued() + statistics.getUnprocessedTokensAddedByPrimary()
+        + statistics.getUnprocessedEventsRemovedByPrimary())).isEqualTo(eventsReceived);
   }
 
   public static void checkBatchStats(String senderId, final int batches) {
@@ -1396,7 +1382,7 @@ public class WANTestBase extends DistributedTestCase {
     } else {
       assert (statistics.getBatchesDistributed() >= batches);
     }
-    assertEquals(0, statistics.getBatchesRedistributed());
+    assertThat(statistics.getBatchesRedistributed()).isEqualTo(0);
   }
 
   public static void checkBatchStats(String senderId, final int batches,
@@ -1407,22 +1393,22 @@ public class WANTestBase extends DistributedTestCase {
     } else {
       assert (statistics.getBatchesDistributed() >= batches);
     }
-    assertEquals(batchesRedistributed, (statistics.getBatchesRedistributed() > 0));
+    assertThat((statistics.getBatchesRedistributed() > 0)).isEqualTo(batchesRedistributed);
   }
 
   public static void checkBatchStats(String senderId, final boolean batchesDistributed,
       final boolean batchesRedistributed) {
     GatewaySenderStats statistics = getGatewaySenderStats(senderId);
-    assertEquals(batchesDistributed, (statistics.getBatchesDistributed() > 0));
-    assertEquals(batchesRedistributed, (statistics.getBatchesRedistributed() > 0));
+    assertThat((statistics.getBatchesDistributed() > 0)).isEqualTo(batchesDistributed);
+    assertThat((statistics.getBatchesRedistributed() > 0)).isEqualTo(batchesRedistributed);
   }
 
   public static void checkUnProcessedStats(String senderId, int events) {
     GatewaySenderStats statistics = getGatewaySenderStats(senderId);
-    assertEquals(events, (statistics.getUnprocessedEventsAddedBySecondary()
-        + statistics.getUnprocessedTokensRemovedBySecondary()));
-    assertEquals(events, (statistics.getUnprocessedEventsRemovedByPrimary()
-        + statistics.getUnprocessedTokensAddedByPrimary()));
+    assertThat((statistics.getUnprocessedEventsAddedBySecondary()
+        + statistics.getUnprocessedTokensRemovedBySecondary())).isEqualTo(events);
+    assertThat((statistics.getUnprocessedEventsRemovedByPrimary()
+        + statistics.getUnprocessedTokensAddedByPrimary())).isEqualTo(events);
   }
 
   public static GatewaySenderStats getGatewaySenderStats(String senderId) {
@@ -1437,8 +1423,8 @@ public class WANTestBase extends DistributedTestCase {
       final GatewaySender sender = getGatewaySenderById(senders, senderId);
       await()
           .untilAsserted(
-              () -> assertEquals("Expected sender isRunning state to " + "be true but is false",
-                  true, (sender != null && sender.isRunning())));
+              () -> assertThat((sender != null && sender.isRunning())).as(
+                  "Expected sender isRunning state to " + "be true but is false").isEqualTo(true));
     } finally {
       exln.remove();
     }
@@ -1450,8 +1436,8 @@ public class WANTestBase extends DistributedTestCase {
       final GatewaySender sender = getGatewaySenderById(senders, senderId);
       await()
           .untilAsserted(
-              () -> assertEquals("Expected sender isRunning state to " + "be false but is true",
-                  true, (sender != null && !sender.isRunning())));
+              () -> assertThat((sender != null && !sender.isRunning())).as(
+                  "Expected sender isRunning state to " + "be false but is true").isEqualTo(true));
     }
   }
 
@@ -1460,8 +1446,8 @@ public class WANTestBase extends DistributedTestCase {
     final GatewaySender sender = getGatewaySenderById(senders, senderId);
     await()
         .untilAsserted(
-            () -> assertEquals("Expected sender primary state to " + "be true but is false",
-                true, (sender != null && ((AbstractGatewaySender) sender).isPrimary())));
+            () -> assertThat((sender != null && ((AbstractGatewaySender) sender).isPrimary())).as(
+                "Expected sender primary state to " + "be true but is false").isEqualTo(true));
   }
 
   private static GatewaySender getGatewaySenderById(Set<GatewaySender> senders, String senderId) {
@@ -1492,9 +1478,9 @@ public class WANTestBase extends DistributedTestCase {
       secondaryUpdatesMap.put("Create", listener1.createList);
       secondaryUpdatesMap.put("Update", listener1.updateList);
       secondaryUpdatesMap.put("Destroy", listener1.destroyList);
-      assertEquals(
-          "Expected secondary map to be " + primaryUpdatesMap + " but it is " + secondaryUpdatesMap,
-          true, secondaryUpdatesMap.equals(primaryUpdatesMap));
+      assertThat(secondaryUpdatesMap.equals(primaryUpdatesMap)).as(
+          "Expected secondary map to be " + primaryUpdatesMap + " but it is " + secondaryUpdatesMap)
+          .isEqualTo(true);
     });
   }
 
@@ -1699,7 +1685,7 @@ public class WANTestBase extends DistributedTestCase {
         queues = ((ConcurrentSerialGatewaySenderEventProcessor) eventProcessor).getQueues();
         for (RegionQueue queue : queues) {
           if (queue instanceof SerialGatewaySenderQueue) {
-            assertFalse(((SerialGatewaySenderQueue) queue).isRemovalThreadAlive());
+            assertThat(((SerialGatewaySenderQueue) queue).isRemovalThreadAlive()).isFalse();
           }
         }
       }
@@ -2237,7 +2223,7 @@ public class WANTestBase extends DistributedTestCase {
     InternalDistributedSystem ds = test.getSystem(props);
     cache = CacheFactory.create(ds);
 
-    assertNotNull(cache);
+    assertThat(cache).isNotNull();
     CacheServerTestUtil.disableShufflingOfEndpoints();
     Pool p;
     try {
@@ -2500,8 +2486,8 @@ public class WANTestBase extends DistributedTestCase {
       Customer customer = new Customer("name" + i, "Address" + i + valueSuffix);
       try {
         customerRegion.put(custid, customer);
-        assertTrue(customerRegion.containsKey(custid));
-        assertEquals(customer, customerRegion.get(custid));
+        assertThat(customerRegion.containsKey(custid)).isTrue();
+        assertThat(customerRegion.get(custid)).isEqualTo(customer);
         custKeyValues.put(custid, customer);
       } catch (Exception e) {
         org.apache.geode.test.dunit.Assert.fail(
@@ -2523,8 +2509,8 @@ public class WANTestBase extends DistributedTestCase {
       try {
         orderRegion.put(orderId, order);
         orderKeyValues.put(orderId, order);
-        assertTrue(orderRegion.containsKey(orderId));
-        assertEquals(order, orderRegion.get(orderId));
+        assertThat(orderRegion.containsKey(orderId)).isTrue();
+        assertThat(orderRegion.get(orderId)).isEqualTo(order);
 
       } catch (Exception e) {
         org.apache.geode.test.dunit.Assert.fail(
@@ -2544,8 +2530,8 @@ public class WANTestBase extends DistributedTestCase {
       try {
         orderRegion.put(custid, order);
         orderKeyValues.put(custid, order);
-        assertTrue(orderRegion.containsKey(custid));
-        assertEquals(order, orderRegion.get(custid));
+        assertThat(orderRegion.containsKey(custid)).isTrue();
+        assertThat(orderRegion.get(custid)).isEqualTo(order);
 
       } catch (Exception e) {
         org.apache.geode.test.dunit.Assert.fail(
@@ -2567,8 +2553,8 @@ public class WANTestBase extends DistributedTestCase {
       try {
         orderRegion.put(orderId, order);
         orderKeyValues.put(orderId, order);
-        assertTrue(orderRegion.containsKey(orderId));
-        assertEquals(order, orderRegion.get(orderId));
+        assertThat(orderRegion.containsKey(orderId)).isTrue();
+        assertThat(orderRegion.get(orderId)).isEqualTo(order);
 
       } catch (Exception e) {
         org.apache.geode.test.dunit.Assert.fail(
@@ -2587,8 +2573,8 @@ public class WANTestBase extends DistributedTestCase {
       Order order = new Order("ORDER" + i + "_update");
       try {
         orderRegion.put(custid, order);
-        assertTrue(orderRegion.containsKey(custid));
-        assertEquals(order, orderRegion.get(custid));
+        assertThat(orderRegion.containsKey(custid)).isTrue();
+        assertThat(orderRegion.get(custid)).isEqualTo(order);
         orderKeyValues.put(custid, order);
       } catch (Exception e) {
         org.apache.geode.test.dunit.Assert.fail(
@@ -2611,8 +2597,8 @@ public class WANTestBase extends DistributedTestCase {
       Shipment shipment = new Shipment("Shipment" + sid);
       try {
         shipmentRegion.put(shipmentId, shipment);
-        assertTrue(shipmentRegion.containsKey(shipmentId));
-        assertEquals(shipment, shipmentRegion.get(shipmentId));
+        assertThat(shipmentRegion.containsKey(shipmentId)).isTrue();
+        assertThat(shipmentRegion.get(shipmentId)).isEqualTo(shipment);
         shipmentKeyValue.put(shipmentId, shipment);
       } catch (Exception e) {
         org.apache.geode.test.dunit.Assert.fail(
@@ -2647,8 +2633,8 @@ public class WANTestBase extends DistributedTestCase {
       Shipment shipment = new Shipment("Shipment" + i);
       try {
         shipmentRegion.put(custid, shipment);
-        assertTrue(shipmentRegion.containsKey(custid));
-        assertEquals(shipment, shipmentRegion.get(custid));
+        assertThat(shipmentRegion.containsKey(custid)).isTrue();
+        assertThat(shipmentRegion.get(custid)).isEqualTo(shipment);
         shipmentKeyValue.put(custid, shipment);
       } catch (Exception e) {
         org.apache.geode.test.dunit.Assert.fail(
@@ -2671,8 +2657,8 @@ public class WANTestBase extends DistributedTestCase {
       Shipment shipment = new Shipment("Shipment" + sid + "_update");
       try {
         shipmentRegion.put(shipmentId, shipment);
-        assertTrue(shipmentRegion.containsKey(shipmentId));
-        assertEquals(shipment, shipmentRegion.get(shipmentId));
+        assertThat(shipmentRegion.containsKey(shipmentId)).isTrue();
+        assertThat(shipmentRegion.get(shipmentId)).isEqualTo(shipment);
         shipmentKeyValue.put(shipmentId, shipment);
       } catch (Exception e) {
         org.apache.geode.test.dunit.Assert.fail(
@@ -2691,8 +2677,8 @@ public class WANTestBase extends DistributedTestCase {
       Shipment shipment = new Shipment("Shipment" + i + "_update");
       try {
         shipmentRegion.put(custid, shipment);
-        assertTrue(shipmentRegion.containsKey(custid));
-        assertEquals(shipment, shipmentRegion.get(custid));
+        assertThat(shipmentRegion.containsKey(custid)).isTrue();
+        assertThat(shipmentRegion.get(custid)).isEqualTo(shipment);
         shipmentKeyValue.put(custid, shipment);
       } catch (Exception e) {
         org.apache.geode.test.dunit.Assert.fail(
@@ -2799,14 +2785,14 @@ public class WANTestBase extends DistributedTestCase {
         ConcurrentParallelGatewaySenderQueue prQ = (ConcurrentParallelGatewaySenderQueue) q;
         totalSize += prQ.size();
       }
-      assertEquals(numQueueEntries, totalSize);
+      assertThat(totalSize).isEqualTo(numQueueEntries);
     } else {
       Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
       int size = 0;
       for (RegionQueue q : queues) {
         size += q.size();
       }
-      assertEquals(numQueueEntries, size);
+      assertThat(size).isEqualTo(numQueueEntries);
     }
   }
 
@@ -2833,9 +2819,9 @@ public class WANTestBase extends DistributedTestCase {
           ConcurrentParallelGatewaySenderQueue prQ = (ConcurrentParallelGatewaySenderQueue) q;
           size += prQ.localSize();
         }
-        assertEquals(
-            " Expected local queue entries: " + numQueueEntries + " but actual entries: " + size,
-            numQueueEntries, size);
+        assertThat(size).as(
+            " Expected local queue entries: " + numQueueEntries + " but actual entries: " + size)
+            .isEqualTo(numQueueEntries);
       });
     }
   }
@@ -2907,10 +2893,10 @@ public class WANTestBase extends DistributedTestCase {
       final Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
       if (regionSize != r.keySet().size()) {
         await()
-            .untilAsserted(() -> assertEquals(
+            .untilAsserted(() -> assertThat(r.keySet().size()).as(
                 "Expected region entries: " + regionSize + " but actual entries: "
-                    + r.keySet().size() + " present region keyset " + r.keySet(),
-                regionSize, r.keySet().size()));
+                    + r.keySet().size() + " present region keyset " + r.keySet())
+                .isEqualTo(regionSize));
       }
     } finally {
       exp.remove();
@@ -2981,9 +2967,9 @@ public class WANTestBase extends DistributedTestCase {
 
     final Map eventsMap = ((MyAsyncEventListener) theListener).getEventsMap();
     await()
-        .untilAsserted(() -> assertEquals(
-            "Expected map entries: " + expectedSize + " but actual entries: " + eventsMap.size(),
-            expectedSize, eventsMap.size()));
+        .untilAsserted(() -> assertThat(eventsMap.size()).as(
+            "Expected map entries: " + expectedSize + " but actual entries: " + eventsMap.size())
+            .isEqualTo(expectedSize));
   }
 
   public static void waitForAsyncQueueToGetEmpty(String asyncQueueId) {
@@ -3005,7 +2991,8 @@ public class WANTestBase extends DistributedTestCase {
         for (RegionQueue q : queues) {
           size += q.size();
         }
-        assertEquals("Expected queue size to be : " + 0 + " but actual entries: " + size, 0, size);
+        assertThat(size).as("Expected queue size to be : " + 0 + " but actual entries: " + size)
+            .isEqualTo(0);
       });
     } else {
       await().untilAsserted(() -> {
@@ -3014,7 +3001,8 @@ public class WANTestBase extends DistributedTestCase {
         for (RegionQueue q : queues) {
           size += q.size();
         }
-        assertEquals("Expected queue size to be : " + 0 + " but actual entries: " + size, 0, size);
+        assertThat(size).as("Expected queue size to be : " + 0 + " but actual entries: " + size)
+            .isEqualTo(0);
       });
     }
   }
@@ -3037,18 +3025,19 @@ public class WANTestBase extends DistributedTestCase {
   public static void validateRegionSize_PDX(String regionName, final int regionSize) {
     final Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
     await().untilAsserted(() -> {
-      assertEquals("Expected region entries: " + regionSize + " but actual entries: "
-          + r.keySet().size() + " present region keyset " + r.keySet(), true,
-          (regionSize <= r.keySet().size()));
-      assertEquals("Expected region size: " + regionSize + " but actual size: " + r.size(), true,
-          (regionSize == r.size()));
+      assertThat((regionSize <= r.keySet().size())).as(
+          "Expected region entries: " + regionSize + " but actual entries: "
+              + r.keySet().size() + " present region keyset " + r.keySet())
+          .isEqualTo(true);
+      assertThat((regionSize == r.size())).as(
+          "Expected region size: " + regionSize + " but actual size: " + r.size()).isEqualTo(true);
     });
     for (int i = 0; i < regionSize; i++) {
       final int temp = i;
       await()
-          .untilAsserted(() -> assertEquals(
-              "keySet = " + r.keySet() + " values() = " + r.values() + "Region Size = " + r.size(),
-              new SimpleClass(temp, (byte) temp), r.get("Key_" + temp)));
+          .untilAsserted(() -> assertThat(r.get("Key_" + temp)).as(
+              "keySet = " + r.keySet() + " values() = " + r.values() + "Region Size = " + r.size())
+              .isEqualTo(new SimpleClass(temp, (byte) temp)));
     }
   }
 
@@ -3056,27 +3045,27 @@ public class WANTestBase extends DistributedTestCase {
     final Region<?, ?> r = cache.getRegion(SEPARATOR + regionName);
     await()
         .untilAsserted(
-            () -> assertEquals(
+            () -> assertThat((regionSize <= r.keySet().size())).as(
                 "Expected region entries: " + regionSize + " but actual entries: "
-                    + r.keySet().size() + " present region keyset " + r.keySet(),
-                true, (regionSize <= r.keySet().size())));
+                    + r.keySet().size() + " present region keyset " + r.keySet())
+                .isEqualTo(true));
   }
 
   public static void validateQueueSizeStat(String id, final int queueSize) {
     final AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(id);
     await()
-        .untilAsserted(() -> assertEquals(queueSize, sender.getEventQueueSize()));
-    assertEquals(queueSize, sender.getEventQueueSize());
+        .untilAsserted(() -> assertThat(sender.getEventQueueSize()).isEqualTo(queueSize));
+    assertThat(sender.getEventQueueSize()).isEqualTo(queueSize);
   }
 
   public static void validateSecondaryQueueSizeStat(String id, final int queueSize) {
     final AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(id);
     await()
-        .untilAsserted(() -> assertEquals(
+        .untilAsserted(() -> assertThat(sender.getStatistics().getUnprocessedEventMapSize()).as(
             "Expected unprocessedEventMap is drained but actual is "
-                + sender.getStatistics().getUnprocessedEventMapSize(),
-            queueSize, sender.getStatistics().getUnprocessedEventMapSize()));
-    assertEquals(queueSize, sender.getStatistics().getUnprocessedEventMapSize());
+                + sender.getStatistics().getUnprocessedEventMapSize())
+            .isEqualTo(queueSize));
+    assertThat(sender.getStatistics().getUnprocessedEventMapSize()).isEqualTo(queueSize);
   }
 
   /**
@@ -3140,7 +3129,7 @@ public class WANTestBase extends DistributedTestCase {
           matchFlag = false;
         }
       }
-      assertEquals("Expected region entries doesn't match", true, matchFlag);
+      assertThat(matchFlag).as("Expected region entries doesn't match").isEqualTo(true);
     });
   }
 
@@ -3211,7 +3200,7 @@ public class WANTestBase extends DistributedTestCase {
             .map(distributionLocatorId -> new InetSocketAddress(
                 distributionLocatorId.getHostnameForClients(), distributionLocatorId.getPort()))
             .collect(Collectors.toSet());
-        assertEquals(expectedLocators, foundLocators);
+        assertThat(foundLocators).isEqualTo(expectedLocators);
       }
     });
   }
@@ -3219,7 +3208,8 @@ public class WANTestBase extends DistributedTestCase {
   public static Long checkAllSiteMetaDataFor3Sites(final Map<Integer, Set<String>> dsVsPort) {
     await()
         .untilAsserted(
-            () -> assertEquals("System is not initialized", true, (getSystemStatic() != null)));
+            () -> assertThat((getSystemStatic() != null)).as("System is not initialized")
+                .isEqualTo(true));
     List<Locator> locatorsConfigured = Locator.getLocators();
     Locator locator = locatorsConfigured.get(0);
     LocatorMembershipListener listener = ((InternalLocator) locator).getLocatorMembershipListener();
@@ -3231,7 +3221,7 @@ public class WANTestBase extends DistributedTestCase {
     System.out.println("allSiteMetaData : " + allSiteMetaData);
 
     await().untilAsserted(() -> {
-      assertEquals(true, (dsVsPort.size() == allSiteMetaData.size()));
+      assertThat((dsVsPort.size() == allSiteMetaData.size())).isEqualTo(true);
       boolean completeFlag = true;
       for (Map.Entry<Integer, Set<String>> entry : dsVsPort.entrySet()) {
         Set<DistributionLocatorId> locators = allSiteMetaData.get(entry.getKey());
@@ -3246,9 +3236,9 @@ public class WANTestBase extends DistributedTestCase {
           break;
         }
       }
-      assertEquals(
-          "Expected site Metadata: " + dsVsPort + " but actual meta data: " + allSiteMetaData, true,
-          completeFlag);
+      assertThat(completeFlag).as(
+          "Expected site Metadata: " + dsVsPort + " but actual meta data: " + allSiteMetaData)
+          .isEqualTo(true);
     });
     return System.currentTimeMillis();
   }
@@ -3272,8 +3262,8 @@ public class WANTestBase extends DistributedTestCase {
         (MyLocatorCallback) ((AbstractGatewaySender) sender).getLocatorDiscoveryCallback();
 
     boolean discovered = callback.waitForDiscovery(locatorToWaitFor, MAX_WAIT);
-    assertTrue("Waited " + MAX_WAIT + " for " + locatorToWaitFor
-        + " to be discovered on client. List is now: " + callback.getDiscovered(), discovered);
+    assertThat(discovered).as("Waited " + MAX_WAIT + " for " + locatorToWaitFor
+        + " to be discovered on client. List is now: " + callback.getDiscovered()).isTrue();
   }
 
   public static void validateQueueContents(final String senderId, final int regionSize) {
@@ -3291,15 +3281,16 @@ public class WANTestBase extends DistributedTestCase {
           for (RegionQueue q : queues) {
             size += q.size();
           }
-          assertEquals("Expected queue entries: " + regionSize + " but actual entries: " + size,
-              regionSize, size);
+          assertThat(size).as(
+              "Expected queue entries: " + regionSize + " but actual entries: " + size)
+              .isEqualTo(regionSize);
         });
       } else if (sender.isParallel()) {
         final RegionQueue regionQueue;
         regionQueue = ((AbstractGatewaySender) sender).getQueues().toArray(new RegionQueue[1])[0];
-        await().untilAsserted(() -> assertEquals(
-            "Expected queue entries: " + regionSize + " but actual entries: " + regionQueue.size(),
-            regionSize, regionQueue.size()));
+        await().untilAsserted(() -> assertThat(regionQueue.size()).as(
+            "Expected queue entries: " + regionSize + " but actual entries: " + regionQueue.size())
+            .isEqualTo(regionSize));
       }
     } finally {
       exp1.remove();
@@ -3317,7 +3308,7 @@ public class WANTestBase extends DistributedTestCase {
     } else {
       regionQueue = null;
     }
-    assertEquals(null, regionQueue);
+    assertThat(regionQueue).isEqualTo(null);
   }
 
   public static void validateQueueContentsForConcurrentSerialGatewaySender(final String senderId,
@@ -3334,7 +3325,7 @@ public class WANTestBase extends DistributedTestCase {
       for (RegionQueue q : regionQueue) {
         size += q.size();
       }
-      assertEquals(true, regionSize == size);
+      assertThat(regionSize == size).isEqualTo(true);
     });
   }
 
@@ -3422,9 +3413,9 @@ public class WANTestBase extends DistributedTestCase {
     Set<BucketRegion> buckets = ((PartitionedRegion) regionQueue.getRegion()).getDataStore()
         .getAllLocalPrimaryBucketRegions();
     for (BucketRegion bucket : buckets) {
-      assertEquals(
-          "Expected bucket entries for bucket " + bucket.getId() + " is different than actual.",
-          bucketSize, bucket.keySet().size());
+      assertThat(bucket.keySet().size()).as(
+          "Expected bucket entries for bucket " + bucket.getId() + " is different than actual.")
+          .isEqualTo(bucketSize);
     }
   }
 
@@ -3438,19 +3429,23 @@ public class WANTestBase extends DistributedTestCase {
       final AbstractGatewaySender abstractSender = (AbstractGatewaySender) sender;
       RegionQueue queue = abstractSender.getEventProcessor().queue;
       await().untilAsserted(() -> {
-        assertEquals("Expected events in all primary queues are drained but actual is "
-            + abstractSender.getEventQueueSize() + ". Queue content is: "
-            + displayQueueContent(queue), 0, abstractSender.getEventQueueSize());
+        assertThat(abstractSender.getEventQueueSize()).as(
+            "Expected events in all primary queues are drained but actual is "
+                + abstractSender.getEventQueueSize() + ". Queue content is: "
+                + displayQueueContent(queue))
+            .isEqualTo(0);
       });
-      assertEquals("Expected events in all primary queues after drain is 0", 0,
-          abstractSender.getEventQueueSize());
+      assertThat(abstractSender.getEventQueueSize()).as(
+          "Expected events in all primary queues after drain is 0").isEqualTo(0);
       await().untilAsserted(() -> {
-        assertEquals("Expected events in all secondary queues are drained but actual is "
-            + abstractSender.getSecondaryEventQueueSize() + ". Queue content is: "
-            + displayQueueContent(queue), 0, abstractSender.getSecondaryEventQueueSize());
+        assertThat(abstractSender.getSecondaryEventQueueSize()).as(
+            "Expected events in all secondary queues are drained but actual is "
+                + abstractSender.getSecondaryEventQueueSize() + ". Queue content is: "
+                + displayQueueContent(queue))
+            .isEqualTo(0);
       });
-      assertEquals("Expected events in all secondary queues after drain is 0", 0,
-          abstractSender.getSecondaryEventQueueSize());
+      assertThat(abstractSender.getSecondaryEventQueueSize()).as(
+          "Expected events in all secondary queues after drain is 0").isEqualTo(0);
     } finally {
       exp.remove();
       exp1.remove();
@@ -3479,7 +3474,7 @@ public class WANTestBase extends DistributedTestCase {
     for (ParallelGatewaySenderEventProcessor lProc : cProc.getProcessors()) {
       totalDispatched += lProc.getNumEventsDispatched();
     }
-    assertTrue(totalDispatched > 0);
+    assertThat(totalDispatched > 0).isTrue();
     return totalDispatched;
   }
 
@@ -3523,8 +3518,10 @@ public class WANTestBase extends DistributedTestCase {
     GatewaySender sender = getGatewaySender(senderId);
 
     AbstractGatewaySender ags = (AbstractGatewaySender) sender;
-    await().untilAsserted(() -> assertEquals("Expected tmpDroppedEvents size: " + size
-        + " but actual size: " + ags.getTmpDroppedEventSize(), size, ags.getTmpDroppedEventSize()));
+    await().untilAsserted(() -> assertThat(ags.getTmpDroppedEventSize()).as(
+        "Expected tmpDroppedEvents size: " + size
+            + " but actual size: " + ags.getTmpDroppedEventSize())
+        .isEqualTo(size));
   }
 
   /**
@@ -3550,8 +3547,8 @@ public class WANTestBase extends DistributedTestCase {
     }
 
     final int finalSize = size;
-    assertEquals("Expected elements in TempQueueMap: " + 0
-        + " but actual size: " + finalSize, 0, finalSize);
+    assertThat(finalSize).as("Expected elements in TempQueueMap: " + 0
+        + " but actual size: " + finalSize).isEqualTo(0);
 
   }
 
@@ -3577,11 +3574,12 @@ public class WANTestBase extends DistributedTestCase {
         queueSize += q.size();
       }
 
-      assertEquals("verifyQueueSize failed for sender " + senderId, size, queueSize);
+      assertThat(queueSize).as("verifyQueueSize failed for sender " + senderId).isEqualTo(size);
     } else if (sender.isParallel()) {
       RegionQueue regionQueue =
           ((AbstractGatewaySender) sender).getQueues().toArray(new RegionQueue[1])[0];
-      assertEquals("verifyQueueSize failed for sender " + senderId, size, regionQueue.size());
+      assertThat(regionQueue.size()).as("verifyQueueSize failed for sender " + senderId)
+          .isEqualTo(size);
     }
   }
 
@@ -3594,12 +3592,12 @@ public class WANTestBase extends DistributedTestCase {
       for (RegionQueue q : queues) {
         queueSize += q.size();
       }
-      assertTrue(queues.size() > 0);
-      assertTrue(queueSize > 0);
+      assertThat(queues.size() > 0).isTrue();
+      assertThat(queueSize > 0).isTrue();
     } else if (sender.isParallel()) {
       RegionQueue regionQueue =
           ((AbstractGatewaySender) sender).getQueues().toArray(new RegionQueue[1])[0];
-      assertTrue(regionQueue.size() > 0);
+      assertThat(regionQueue.size() > 0).isTrue();
     }
   }
 
@@ -3611,7 +3609,7 @@ public class WANTestBase extends DistributedTestCase {
     await().untilAsserted(() -> {
       Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
       for (RegionQueue q : queues) {
-        assertEquals(0, q.size());
+        assertThat(q.size()).isEqualTo(0);
       }
     });
   }
@@ -3622,23 +3620,23 @@ public class WANTestBase extends DistributedTestCase {
    */
   public static void verifySenderPausedState(String senderId) {
     GatewaySender sender = cache.getGatewaySender(senderId);
-    assertTrue(sender.isPaused());
+    assertThat(sender.isPaused()).isTrue();
   }
 
   public static void verifySenderResumedState(String senderId) {
     GatewaySender sender = cache.getGatewaySender(senderId);
-    assertFalse(sender.isPaused());
-    assertTrue(sender.isRunning());
+    assertThat(sender.isPaused()).isFalse();
+    assertThat(sender.isRunning()).isTrue();
   }
 
   public static void verifySenderStoppedState(String senderId) {
     GatewaySender sender = cache.getGatewaySender(senderId);
-    assertFalse(sender.isRunning());
+    assertThat(sender.isRunning()).isFalse();
   }
 
   public static void verifySenderRunningState(String senderId) {
     GatewaySender sender = cache.getGatewaySender(senderId);
-    assertTrue(sender.isRunning());
+    assertThat(sender.isRunning()).isTrue();
   }
 
   public static void verifySenderConnectedState(String senderId, boolean shouldBeConnected) {
@@ -3655,9 +3653,9 @@ public class WANTestBase extends DistributedTestCase {
     AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(senderId);
     PoolImpl pool = sender.getProxy();
     if (poolShouldExist) {
-      assertEquals(expectedPoolLocatorsSize, pool.getLocators().size());
+      assertThat(pool.getLocators().size()).isEqualTo(expectedPoolLocatorsSize);
     } else {
-      assertNull(pool);
+      assertThat(pool).isNull();
     }
   }
 
@@ -3673,7 +3671,7 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void verifySenderDestroyed(String senderId, boolean isParallel) {
     AbstractGatewaySender sender = (AbstractGatewaySender) getGatewaySender(senderId);
-    assertNull(sender);
+    assertThat(sender).isNull();
 
     String queueRegionNameSuffix = null;
     if (isParallel) {
@@ -4015,9 +4013,9 @@ public class WANTestBase extends DistributedTestCase {
             ManagementService service = ManagementService.getManagementService(cache);
             AsyncEventQueueMXBean bean = service.getLocalAsyncEventQueueMXBean("pn");
             if (shouldExist) {
-              assertNotNull(bean);
+              assertThat(bean).isNotNull();
             } else {
-              assertNull(bean);
+              assertThat(bean).isNull();
             }
           }
         };
@@ -4041,7 +4039,7 @@ public class WANTestBase extends DistributedTestCase {
         } catch (Exception e) {
           fail("Could not obtain Sender Proxy in desired time " + e);
         }
-        assertNotNull(bean);
+        assertThat(bean).isNotNull();
         final ObjectName receiverMBeanName = service.getGatewayReceiverMBeanName(senderMember);
         try {
           MBeanUtil.printBeanDetails(receiverMBeanName);
@@ -4071,7 +4069,7 @@ public class WANTestBase extends DistributedTestCase {
         } catch (Exception e) {
           fail("Could not obtain Sender Proxy in desired time " + e);
         }
-        assertNotNull(bean);
+        assertThat(bean).isNotNull();
         final ObjectName senderMBeanName = service.getGatewaySenderMBeanName(senderMember, "pn");
         try {
           MBeanUtil.printBeanDetails(senderMBeanName);
@@ -4084,7 +4082,8 @@ public class WANTestBase extends DistributedTestCase {
           await().untilAsserted(() -> {
             Map<String, Boolean> dsMap = dsBean.viewRemoteClusterStatus();
             dsMap.entrySet().stream()
-                .forEach(entry -> assertTrue("Should be true " + entry.getKey(), entry.getValue()));
+                .forEach(entry -> assertThat(entry.getValue()).as(
+                    "Should be true " + entry.getKey()).isTrue());
           });
         }
 
@@ -4105,7 +4104,7 @@ public class WANTestBase extends DistributedTestCase {
       public void run() {
         ManagementService service = ManagementService.getManagementService(cache);
         GatewayReceiverMXBean bean = service.getLocalGatewayReceiverMXBean();
-        assertNotNull(bean);
+        assertThat(bean).isNotNull();
       }
     };
     vm.invoke(checkMBean);
@@ -4127,12 +4126,12 @@ public class WANTestBase extends DistributedTestCase {
                       () -> assertThat(bean.fetchGatewayReceiverObjectName(receiverMember.getId()))
                           .isNotNull());
               ObjectName actualName = bean.fetchGatewayReceiverObjectName(receiverMember.getId());
-              assertEquals(expectedName, actualName);
+              assertThat(actualName).isEqualTo(expectedName);
             } catch (Exception e) {
               fail("Receiver Navigation Failed " + e);
             }
 
-            assertEquals(1, bean.listGatewayReceiverObjectNames().length);
+            assertThat(bean.listGatewayReceiverObjectNames().length).isEqualTo(1);
 
           }
         };
@@ -4152,14 +4151,14 @@ public class WANTestBase extends DistributedTestCase {
         ManagementService service = ManagementService.getManagementService(cache);
 
         GatewaySenderMXBean bean = service.getLocalGatewaySenderMXBean("pn");
-        assertNotNull(bean);
+        assertThat(bean).isNotNull();
         await()
-            .untilAsserted(() -> assertEquals(connected, bean.isConnected()));
+            .untilAsserted(() -> assertThat(bean.isConnected()).isEqualTo(connected));
 
         ObjectName regionBeanName = service.getRegionMBeanName(
             cache.getDistributedSystem().getDistributedMember(), SEPARATOR + regionPath);
         RegionMXBean rBean = service.getMBeanInstance(regionBeanName, RegionMXBean.class);
-        assertTrue(rBean.isGatewayEnabled());
+        assertThat(rBean.isGatewayEnabled()).isTrue();
 
 
       }
@@ -4178,14 +4177,15 @@ public class WANTestBase extends DistributedTestCase {
             ObjectName expectedName = service.getGatewaySenderMBeanName(senderMember, "pn");
             try {
               ObjectName actualName = bean.fetchGatewaySenderObjectName(senderMember.getId(), "pn");
-              assertEquals(expectedName, actualName);
+              assertThat(actualName).isEqualTo(expectedName);
             } catch (Exception e) {
               fail("Sender Navigation Failed " + e);
             }
 
-            assertEquals(2, bean.listGatewaySenderObjectNames().length);
+            assertThat(bean.listGatewaySenderObjectNames().length).isEqualTo(2);
             try {
-              assertEquals(1, bean.listGatewaySenderObjectNames(senderMember.getId()).length);
+              assertThat(bean.listGatewaySenderObjectNames(senderMember.getId()).length).isEqualTo(
+                  1);
             } catch (Exception e) {
               fail("Sender Navigation Failed " + e);
             }
@@ -4208,7 +4208,7 @@ public class WANTestBase extends DistributedTestCase {
         ManagementService service = ManagementService.getManagementService(cache);
         GatewaySenderMXBean bean = service.getLocalGatewaySenderMXBean("pn");
         bean.start();
-        assertTrue(bean.isRunning());
+        assertThat(bean.isRunning()).isTrue();
       }
     };
     vm.invoke(stopGatewaySender);
@@ -4227,7 +4227,7 @@ public class WANTestBase extends DistributedTestCase {
         ManagementService service = ManagementService.getManagementService(cache);
         GatewaySenderMXBean bean = service.getLocalGatewaySenderMXBean("pn");
         bean.stop();
-        assertFalse(bean.isRunning());
+        assertThat(bean.isRunning()).isFalse();
       }
     };
     vm.invoke(stopGatewaySender);
@@ -4257,7 +4257,7 @@ public class WANTestBase extends DistributedTestCase {
               } catch (Exception e) {
                 fail("Could not obtain Sender Proxy in desired time " + e);
               }
-              assertNotNull(bean);
+              assertThat(bean).isNotNull();
 
               try {
                 MBeanUtil.printBeanDetails(queueMBeanName);
@@ -4267,7 +4267,7 @@ public class WANTestBase extends DistributedTestCase {
             } else {
               // Verify the MBean proxy doesn't exist
               bean = service.getMBeanProxy(queueMBeanName, AsyncEventQueueMXBean.class);
-              assertNull(bean);
+              assertThat(bean).isNull();
             }
           }
         };
@@ -4295,15 +4295,15 @@ public class WANTestBase extends DistributedTestCase {
         await().untilAsserted(() -> {
           final ManagementService service = ManagementService.getManagementService(cache);
           final DistributedSystemMXBean dsBean = service.getDistributedSystemMXBean();
-          assertEquals(
-              "Failed while waiting for getDistributedSystemMXBean to complete and get results",
-              true, dsBean != null);
+          assertThat(dsBean != null).as(
+              "Failed while waiting for getDistributedSystemMXBean to complete and get results")
+              .isEqualTo(true);
         });
         ManagementService service = ManagementService.getManagementService(cache);
         final DistributedSystemMXBean dsBean = service.getDistributedSystemMXBean();
         Map<String, Boolean> dsMap = dsBean.viewRemoteClusterStatus();
         logger.info("Ds Map is: " + dsMap.size());
-        assertEquals(true, dsMap.size() > 0);
+        assertThat(dsMap.size() > 0).isEqualTo(true);
       }
     };
     vm.invoke(checkProxySender);

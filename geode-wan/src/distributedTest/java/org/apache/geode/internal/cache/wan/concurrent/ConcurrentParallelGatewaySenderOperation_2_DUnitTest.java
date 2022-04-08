@@ -16,9 +16,8 @@ package org.apache.geode.internal.cache.wan.concurrent;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -115,8 +114,8 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
     vm3.invoke(() -> {
       await()
           .untilAsserted(
-              () -> assertTrue(WANTestBase.getQueueContentSize("ln2", true) + " was the size",
-                  WANTestBase.getQueueContentSize("ln2", true) == 0));
+              () -> assertThat(WANTestBase.getQueueContentSize("ln2", true) == 0).as(
+                  WANTestBase.getQueueContentSize("ln2", true) + " was the size").isTrue());
     });
   }
 
@@ -591,7 +590,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       try {
         vm5.invoke(() -> localDestroyRegion(customerRegionName));
       } catch (Exception ex) {
-        assertTrue(ex.getCause() instanceof UnsupportedOperationException);
+        assertThat(ex.getCause() instanceof UnsupportedOperationException).isTrue();
       }
 
       try {
@@ -633,7 +632,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       try {
         vm5.invoke(() -> WANTestBase.destroyRegion(customerRegionName));
       } catch (Exception ex) {
-        assertTrue(ex.getCause() instanceof IllegalStateException);
+        assertThat(ex.getCause() instanceof IllegalStateException).isTrue();
         return;
       }
       fail("Expected UnsupportedOperationException");
@@ -651,14 +650,14 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
 
   public static void closeRegion(String regionName) {
     Region r = cache.getRegion(SEPARATOR + regionName);
-    assertNotNull(r);
+    assertThat(r).isNotNull();
     r.close();
   }
 
   public static void validateRegionSizeWithinRange(String regionName, final int min,
       final int max) {
     final Region r = cache.getRegion(SEPARATOR + regionName);
-    assertNotNull(r);
+    assertThat(r).isNotNull();
     WaitCriterion wc = new WaitCriterion() {
       @Override
       public boolean done() {

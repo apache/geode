@@ -18,8 +18,7 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.Wait.pause;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -637,8 +636,8 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
         vm7.invokeAsync(() -> WANTestBase.doTxPutsWithRetryIfError(testName + "_RR", 2, 5000, 1));
 
     vm2.invoke(() -> await()
-        .untilAsserted(() -> assertEquals("Waiting for some batches to be received", true,
-            getRegionSize(testName + "_RR") > 40)));
+        .untilAsserted(() -> assertThat(getRegionSize(testName + "_RR") > 40).as(
+            "Waiting for some batches to be received").isEqualTo(true)));
 
     AsyncInvocation inv3 = vm4.invokeAsync(() -> WANTestBase.killSender("ln"));
     Boolean isKilled = Boolean.FALSE;
@@ -795,7 +794,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
       inv1.join();
     } catch (InterruptedException e) {
       e.printStackTrace();
-      fail();
+      fail(e.toString());
     }
 
     // assuming some events might have been dispatched before the remote region was destroyed,

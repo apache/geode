@@ -18,8 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -185,11 +184,11 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     ArrayList<Integer> v5List =
         (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", 1000));
     // secondary queue size stats in serial queue should be 0
-    assertEquals(0, v4List.get(10) + v5List.get(10));
+    assertThat(v4List.get(10) + v5List.get(10)).isEqualTo(0);
 
     HashMap primarySenderUpdates = vm4.invoke(WANTestBase::checkQueue);
     HashMap secondarySenderUpdates = vm5.invoke(WANTestBase::checkQueue);
-    assertEquals(primarySenderUpdates, secondarySenderUpdates);
+    assertThat(secondarySenderUpdates).isEqualTo(primarySenderUpdates);
 
     vm4.invoke(() -> WANTestBase.resumeSender("ln"));
     Wait.pause(2000);
@@ -212,15 +211,15 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     List destroyList = (List) primarySenderUpdates.get("Destroy");
     List createList = (List) receiverUpdates.get("Create");
     for (int i = 0; i < 1000; i++) {
-      assertEquals(destroyList.get(i), createList.get(i));
+      assertThat(createList.get(i)).isEqualTo(destroyList.get(i));
     }
-    assertEquals(primarySenderUpdates.get("Destroy"), receiverUpdates.get("Create"));
+    assertThat(receiverUpdates.get("Create")).isEqualTo(primarySenderUpdates.get("Destroy"));
 
     Wait.pause(5000);
     // We expect that after this much time secondary would have got batch removal message
     // removing all the keys.
     secondarySenderUpdates = vm5.invoke(WANTestBase::checkQueue);
-    assertEquals(secondarySenderUpdates.get("Destroy"), receiverUpdates.get("Create"));
+    assertThat(receiverUpdates.get("Create")).isEqualTo(secondarySenderUpdates.get("Destroy"));
 
     vm4.invoke(() -> WANTestBase.getSenderStats("ln", 0));
     vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
@@ -283,7 +282,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     Wait.pause(15000);
     primarySenderUpdates = vm4.invoke(WANTestBase::checkQueue);
     secondarySenderUpdates = vm5.invoke(WANTestBase::checkQueue);
-    assertEquals(primarySenderUpdates, secondarySenderUpdates);
+    assertThat(secondarySenderUpdates).isEqualTo(primarySenderUpdates);
 
     vm4.invoke(() -> WANTestBase.resumeSender("ln"));
     Wait.pause(5000);
@@ -339,12 +338,12 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
       regionFactory.addGatewaySenderId(sender1.getId());
       Region region = regionFactory.create("test_ValidateGatewaySenderAttributes");
       Set<GatewaySender> senders = cache.getGatewaySenders();
-      assertEquals(senders.size(), 1);
+      assertThat(1).isEqualTo(senders.size());
       GatewaySender gatewaySender = senders.iterator().next();
       Set<RegionQueue> regionQueues = ((AbstractGatewaySender) gatewaySender).getQueues();
-      assertEquals(regionQueues.size(), GatewaySender.DEFAULT_DISPATCHER_THREADS);
+      assertThat(GatewaySender.DEFAULT_DISPATCHER_THREADS).isEqualTo(regionQueues.size());
       RegionQueue regionQueue = regionQueues.iterator().next();
-      assertEquals(true, regionQueue.getRegion().getAttributes().isDiskSynchronous());
+      assertThat(regionQueue.getRegion().getAttributes().isDiskSynchronous()).isEqualTo(true);
     } finally {
       exTKSender.remove();
     }
@@ -389,13 +388,13 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
       regionFactory.addGatewaySenderId(sender1.getId());
       Region region = regionFactory.create("test_ValidateGatewaySenderAttributes");
       Set<GatewaySender> senders = cache.getGatewaySenders();
-      assertEquals(senders.size(), 1);
+      assertThat(1).isEqualTo(senders.size());
       GatewaySender gatewaySender = senders.iterator().next();
       Set<RegionQueue> regionQueues = ((AbstractGatewaySender) gatewaySender).getQueues();
-      assertEquals(regionQueues.size(), GatewaySender.DEFAULT_DISPATCHER_THREADS);
+      assertThat(GatewaySender.DEFAULT_DISPATCHER_THREADS).isEqualTo(regionQueues.size());
       RegionQueue regionQueue = regionQueues.iterator().next();
 
-      assertEquals(false, regionQueue.getRegion().getAttributes().isDiskSynchronous());
+      assertThat(regionQueue.getRegion().getAttributes().isDiskSynchronous()).isEqualTo(false);
     } finally {
       exp.remove();
     }
@@ -489,7 +488,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     vm2.invoke(() -> {
       long startTime = System.currentTimeMillis();
       while (System.currentTimeMillis() - startTime < batchIntervalTime - 1000) {
-        assertEquals(0, listener1.getNumEvents());
+        assertThat(listener1.getNumEvents()).isEqualTo(0);
       }
     });
 
