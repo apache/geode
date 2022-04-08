@@ -15,35 +15,36 @@
 
 package org.apache.geode.redis.internal.data.delta;
 
+import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_ARRAY_AT_OFFSET;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 
+import junitparams.Parameters;
+import junitparams.naming.TestCaseName;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisList;
 import org.apache.geode.redis.internal.data.RedisString;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @RunWith(GeodeParamsRunner.class)
-public class ReplaceByteArrayAtOffsetDeltaUnitTest {
+public class ReplaceByteArrayAtOffsetDeltaUnitTest extends AbstractRedisDeltaUnitTest {
+  private final String payload = "something amazing I guess";
+
   @Test
   public void testReplaceByteArrayAtOffsetDeltaForRedisString() throws Exception {
+    DataInputStream dis = getDataInputStream(3);
     String original = "0123456789";
-    String payload = "something amazing I guess";
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    DataOutputStream dos = new DataOutputStream(baos);
-    ReplaceByteArrayAtOffset source = new ReplaceByteArrayAtOffset(3, payload.getBytes());
-
-    source.serializeTo(dos);
-
     RedisString redisString = new RedisString(original.getBytes());
 
-    DataInputStream dis = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
     redisString.fromDelta(dis);
 
     assertThat(new String(redisString.get())).isEqualTo(original.substring(0, 3) + payload);
@@ -51,16 +52,9 @@ public class ReplaceByteArrayAtOffsetDeltaUnitTest {
 
   @Test
   public void testReplaceByteArrayAtOffsetDeltaForRedisList() throws Exception {
-    String payload = "something amazing I guess";
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    DataOutputStream dos = new DataOutputStream(baos);
-    ReplaceByteArrayAtOffset source = new ReplaceByteArrayAtOffset(1, payload.getBytes());
-
-    source.serializeTo(dos);
-
+    DataInputStream dis = getDataInputStream(1);
     RedisList redisList = makeRedisList();
 
-    DataInputStream dis = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
     redisList.fromDelta(dis);
 
     assertThat(redisList.llen()).isEqualTo(3);
@@ -69,11 +63,34 @@ public class ReplaceByteArrayAtOffsetDeltaUnitTest {
     assertThat(redisList.lindex(2)).isEqualTo("two".getBytes());
   }
 
-  private RedisList makeRedisList() {
-    RedisList redisList = new RedisList();
-    redisList.applyAddByteArrayTailDelta("zero".getBytes());
-    redisList.applyAddByteArrayTailDelta("one".getBytes());
-    redisList.applyAddByteArrayTailDelta("two".getBytes());
-    return redisList;
+  @Test
+  @Parameters(method = "getDataTypeInstances")
+  @TestCaseName("{method}: redisDataType:{0}")
+  public void unsupportedDataTypesThrowException(RedisData redisData)
+      throws IOException {
+    final DataInputStream dis = getDataInputStream(1);
+
+    assertThatThrownBy(() -> redisData.fromDelta(dis)).isInstanceOf(
+        IllegalStateException.class)
+        .hasMessageContaining("unexpected " + REPLACE_BYTE_ARRAY_AT_OFFSET);
+  }
+
+  private DataInputStream getDataInputStream(int offset) throws IOException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream dos = new DataOutputStream(baos);
+    ReplaceByteArrayAtOffset source = new ReplaceByteArrayAtOffset(offset, payload.getBytes());
+
+    source.serializeTo(dos);
+
+    return new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
+  }
+
+  @SuppressWarnings("unused")
+  private Object[] getDataTypeInstances() {
+    return new Object[] {
+        new Object[] {makeRedisHash()},
+        new Object[] {makeRedisSet()},
+        new Object[] {makeRedisSortedSet()}
+    };
   }
 }

@@ -15,38 +15,39 @@
 
 package org.apache.geode.redis.internal.data.delta;
 
+import static org.apache.geode.redis.internal.data.delta.DeltaType.REMOVE_BYTE_ARRAYS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
+import junitparams.Parameters;
+import junitparams.naming.TestCaseName;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisHash;
 import org.apache.geode.redis.internal.data.RedisSet;
 import org.apache.geode.redis.internal.data.RedisSortedSet;
+import org.apache.geode.redis.internal.data.RedisString;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @RunWith(GeodeParamsRunner.class)
-public class RemoveByteArraysDeltaUnitTest {
+public class RemoveByteArraysDeltaUnitTest extends AbstractRedisDeltaUnitTest {
   @Test
   public void testRemoveByteArraysDeltaForRedisSet() throws Exception {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    DataOutputStream dos = new DataOutputStream(baos);
     RemoveByteArrays source =
         new RemoveByteArrays(Arrays.asList("zero".getBytes(), "two".getBytes()));
-
-    source.serializeTo(dos);
-
-    DataInputStream dis = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
+    DataInputStream dis = getDataInputStream(source);
     RedisSet redisSet = makeRedisSet();
+
     redisSet.fromDelta(dis);
 
     assertThat(redisSet.scard()).isEqualTo(1);
@@ -55,15 +56,11 @@ public class RemoveByteArraysDeltaUnitTest {
 
   @Test
   public void testRemoveByteArraysDeltaForRedisSortedSet() throws Exception {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    DataOutputStream dos = new DataOutputStream(baos);
     RemoveByteArrays source =
         new RemoveByteArrays(Arrays.asList("alpha".getBytes(), "gamma".getBytes()));
-
-    source.serializeTo(dos);
-
-    DataInputStream dis = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
+    DataInputStream dis = getDataInputStream(source);
     RedisSortedSet redisSortedSet = makeRedisSortedSet();
+
     redisSortedSet.fromDelta(dis);
 
     assertThat(redisSortedSet.zcard()).isEqualTo(1);
@@ -72,45 +69,45 @@ public class RemoveByteArraysDeltaUnitTest {
 
   @Test
   public void testRemoveByteArraysDeltaForRedisHash() throws Exception {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    DataOutputStream dos = new DataOutputStream(baos);
     RemoveByteArrays source =
         new RemoveByteArrays(Collections.singletonList("zero".getBytes()));
-
-    source.serializeTo(dos);
-
-    DataInputStream dis = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
+    DataInputStream dis = getDataInputStream(source);
     RedisHash redisHash = makeRedisHash();
+
     redisHash.fromDelta(dis);
 
     assertThat(redisHash.hlen()).isEqualTo(2);
     assertThat(redisHash.hget("zero".getBytes())).isNull();
   }
 
-  private RedisSet makeRedisSet() {
-    RedisSet redisSet = new RedisSet(5);
-    redisSet.membersAdd("zero".getBytes());
-    redisSet.membersAdd("one".getBytes());
-    redisSet.membersAdd("two".getBytes());
-    return redisSet;
+  @Test
+  @Parameters(method = "getDataTypeInstances")
+  @TestCaseName("{method}: redisDataType:{0}")
+  public void unsupportedDataTypesThrowException(RedisData redisData)
+      throws IOException {
+    RemoveByteArrays source =
+        new RemoveByteArrays(Collections.singletonList("zero".getBytes()));
+    final DataInputStream dis = getDataInputStream(source);
+
+    assertThatThrownBy(() -> redisData.fromDelta(dis)).isInstanceOf(
+        IllegalStateException.class)
+        .hasMessageContaining("unexpected " + REMOVE_BYTE_ARRAYS);
   }
 
-  private RedisSortedSet makeRedisSortedSet() {
-    RedisSortedSet redisSortedSet = new RedisSortedSet(3);
-    redisSortedSet.memberAdd("alpha".getBytes(), 1.0d);
-    redisSortedSet.memberAdd("beta".getBytes(), 2.0d);
-    redisSortedSet.memberAdd("gamma".getBytes(), 4.0d);
-    return redisSortedSet;
+  private DataInputStream getDataInputStream(RemoveByteArrays source) throws IOException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream dos = new DataOutputStream(baos);
+
+    source.serializeTo(dos);
+
+    return new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
   }
 
-  private RedisHash makeRedisHash() {
-    List<byte[]> pairList = new ArrayList<>();
-    pairList.add("zero".getBytes());
-    pairList.add("firstVal".getBytes());
-    pairList.add("one".getBytes());
-    pairList.add("secondVal".getBytes());
-    pairList.add("two".getBytes());
-    pairList.add("thirdVal".getBytes());
-    return new RedisHash(pairList);
+  @SuppressWarnings("unused")
+  private Object[] getDataTypeInstances() {
+    return new Object[] {
+        new Object[] {makeRedisList()},
+        new Object[] {new RedisString()}
+    };
   }
 }

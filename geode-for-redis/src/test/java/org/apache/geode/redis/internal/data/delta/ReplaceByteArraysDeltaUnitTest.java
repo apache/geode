@@ -15,24 +15,52 @@
 
 package org.apache.geode.redis.internal.data.delta;
 
+import static org.apache.geode.redis.internal.data.delta.DeltaType.REPLACE_BYTE_ARRAYS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.Set;
 
+import junitparams.Parameters;
+import junitparams.naming.TestCaseName;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisSet;
+import org.apache.geode.redis.internal.data.RedisString;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @RunWith(GeodeParamsRunner.class)
-public class ReplaceByteArraysDeltaUnitTest {
+public class ReplaceByteArraysDeltaUnitTest extends AbstractRedisDeltaUnitTest {
   @Test
   public void testReplaceByteArraysDelta() throws Exception {
+    DataInputStream dis = getDataInputStream();
+    RedisSet redisSet = makeRedisSet();
+    redisSet.fromDelta(dis);
+
+    assertThat(redisSet.scard()).isEqualTo(1);
+    assertThat(redisSet.sismember("alpha".getBytes())).isTrue();
+  }
+
+  @Test
+  @Parameters(method = "getDataTypeInstances")
+  @TestCaseName("{method}: redisDataType:{0}")
+  public void unsupportedDataTypesThrowException(RedisData redisData)
+      throws IOException {
+    final DataInputStream dis = getDataInputStream();
+
+    assertThatThrownBy(() -> redisData.fromDelta(dis)).isInstanceOf(
+        IllegalStateException.class)
+        .hasMessageContaining("unexpected " + REPLACE_BYTE_ARRAYS);
+  }
+
+  private DataInputStream getDataInputStream() throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream dos = new DataOutputStream(baos);
     Set<byte[]> newSet = new RedisSet.MemberSet(1);
@@ -41,19 +69,16 @@ public class ReplaceByteArraysDeltaUnitTest {
 
     source.serializeTo(dos);
 
-    DataInputStream dis = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
-    RedisSet redisSet = makeRedisSet();
-    redisSet.fromDelta(dis);
-
-    assertThat(redisSet.scard()).isEqualTo(1);
-    assertThat(redisSet.sismember("alpha".getBytes())).isTrue();
+    return new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
   }
 
-  private RedisSet makeRedisSet() {
-    RedisSet redisSet = new RedisSet(5);
-    redisSet.membersAdd("zero".getBytes());
-    redisSet.membersAdd("one".getBytes());
-    redisSet.membersAdd("two".getBytes());
-    return redisSet;
+  @SuppressWarnings("unused")
+  private Object[] getDataTypeInstances() {
+    return new Object[] {
+        new Object[] {makeRedisHash()},
+        new Object[] {makeRedisList()},
+        new Object[] {makeRedisSortedSet()},
+        new Object[] {new RedisString()}
+    };
   }
 }

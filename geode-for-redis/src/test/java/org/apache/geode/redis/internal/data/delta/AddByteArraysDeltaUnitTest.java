@@ -15,37 +15,36 @@
 
 package org.apache.geode.redis.internal.data.delta;
 
+import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAYS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import junitparams.Parameters;
+import junitparams.naming.TestCaseName;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisList;
 import org.apache.geode.redis.internal.data.RedisSet;
+import org.apache.geode.redis.internal.data.RedisString;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @RunWith(GeodeParamsRunner.class)
-public class AddByteArraysDeltaUnitTest {
+public class AddByteArraysDeltaUnitTest extends AbstractRedisDeltaUnitTest {
   @Test
   public void testAddByteArraysDelta_forRedisList() throws Exception {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    DataOutputStream dos = new DataOutputStream(baos);
-    List<byte[]> deltaList = new ArrayList<>();
-    deltaList.add("secondNew".getBytes());
-    deltaList.add("firstNew".getBytes());
     RedisList redisList = makeRedisList();
-    AddByteArrays source = new AddByteArrays(deltaList, (byte) (redisList.getVersion() + 1));
+    DataInputStream dis = getDataInputStream(redisList.getVersion() + 1);
 
-    source.serializeTo(dos);
-
-    DataInputStream dis = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
     redisList.fromDelta(dis);
 
     assertThat(redisList.llen()).isEqualTo(5);
@@ -56,17 +55,8 @@ public class AddByteArraysDeltaUnitTest {
 
   @Test
   public void testAddByteArraysDelta_forRedisSet() throws Exception {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    DataOutputStream dos = new DataOutputStream(baos);
-    List<byte[]> deltaList = new ArrayList<>();
-    deltaList.add("secondNew".getBytes());
-    deltaList.add("firstNew".getBytes());
     RedisSet redisSet = makeRedisSet();
-    AddByteArrays source = new AddByteArrays(deltaList, (byte) (redisSet.getVersion() + 1));
-
-    source.serializeTo(dos);
-
-    DataInputStream dis = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
+    DataInputStream dis = getDataInputStream(redisSet.getVersion() + 1);
     redisSet.fromDelta(dis);
 
     assertThat(redisSet.scard()).isEqualTo(5);
@@ -74,19 +64,36 @@ public class AddByteArraysDeltaUnitTest {
     assertThat(redisSet.sismember("secondNew".getBytes())).isTrue();
   }
 
-  private RedisList makeRedisList() {
-    RedisList redisList = new RedisList();
-    redisList.applyAddByteArrayTailDelta("zero".getBytes());
-    redisList.applyAddByteArrayTailDelta("one".getBytes());
-    redisList.applyAddByteArrayTailDelta("two".getBytes());
-    return redisList;
+  @Test
+  @Parameters(method = "getDataTypeInstances")
+  @TestCaseName("{method}: redisDataType:{0}")
+  public void unsupportedDataTypesThrowException_forAddByteArraysDelta(RedisData redisData)
+      throws IOException {
+    final DataInputStream dis = getDataInputStream(1);
+
+    assertThatThrownBy(() -> redisData.fromDelta(dis)).isInstanceOf(
+        IllegalStateException.class)
+        .hasMessageContaining("unexpected " + ADD_BYTE_ARRAYS);
   }
 
-  private RedisSet makeRedisSet() {
-    RedisSet redisSet = new RedisSet(5);
-    redisSet.membersAdd("zero".getBytes());
-    redisSet.membersAdd("one".getBytes());
-    redisSet.membersAdd("two".getBytes());
-    return redisSet;
+  private DataInputStream getDataInputStream(int version) throws IOException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream dos = new DataOutputStream(baos);
+    List<byte[]> deltaList = new ArrayList<>();
+    deltaList.add("secondNew".getBytes());
+    deltaList.add("firstNew".getBytes());
+
+    AddByteArrays source = new AddByteArrays(deltaList, (byte) (version));
+    source.serializeTo(dos);
+    return new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
+  }
+
+  @SuppressWarnings("unused")
+  private Object[] getDataTypeInstances() {
+    return new Object[] {
+        new Object[] {makeRedisHash()},
+        new Object[] {makeRedisSortedSet()},
+        new Object[] {new RedisString()}
+    };
   }
 }

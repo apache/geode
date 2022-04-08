@@ -15,36 +15,68 @@
 
 package org.apache.geode.redis.internal.data.delta;
 
+import static org.apache.geode.redis.internal.data.delta.DeltaType.APPEND_BYTE_ARRAY;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 
+import junitparams.Parameters;
+import junitparams.naming.TestCaseName;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisString;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @RunWith(GeodeParamsRunner.class)
-public class AppendByteArrayDeltaUnitTest {
+public class AppendByteArrayDeltaUnitTest extends AbstractRedisDeltaUnitTest {
+  private final String payload = "something amazing I guess";
+
   @Test
   public void testAppendByteArrayDelta() throws Exception {
     String original = "0123456789";
-    String payload = "something amazing I guess";
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    DataOutputStream dos = new DataOutputStream(baos);
-    AppendByteArray source = new AppendByteArray((byte) 3, payload.getBytes());
-
-    source.serializeTo(dos);
-
     RedisString redisString = new RedisString(original.getBytes());
-
-    DataInputStream dis = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
+    DataInputStream dis = getDataInputStream(redisString.getVersion() + 1);
     redisString.fromDelta(dis);
 
     assertThat(new String(redisString.get())).isEqualTo(original + payload);
+  }
+
+  @Test
+  @Parameters(method = "getDataTypeInstances")
+  @TestCaseName("{method}: redisDataType:{0}")
+  public void unsupportedDataTypesThrowException(RedisData redisData)
+      throws IOException {
+    final DataInputStream dis = getDataInputStream(1);
+
+    assertThatThrownBy(() -> redisData.fromDelta(dis)).isInstanceOf(
+        IllegalStateException.class)
+        .hasMessageContaining("unexpected " + APPEND_BYTE_ARRAY);
+  }
+
+  private DataInputStream getDataInputStream(int version) throws IOException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream dos = new DataOutputStream(baos);
+    AppendByteArray source = new AppendByteArray((byte) version, payload.getBytes());
+
+    source.serializeTo(dos);
+
+    return new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
+  }
+
+  @SuppressWarnings("unused")
+  private Object[] getDataTypeInstances() {
+    return new Object[] {
+        new Object[] {makeRedisHash()},
+        new Object[] {makeRedisList()},
+        new Object[] {makeRedisSet()},
+        new Object[] {makeRedisSortedSet()}
+    };
   }
 }

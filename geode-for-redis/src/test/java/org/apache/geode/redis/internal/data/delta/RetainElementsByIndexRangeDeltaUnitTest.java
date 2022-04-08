@@ -15,40 +15,62 @@
 
 package org.apache.geode.redis.internal.data.delta;
 
+import static org.apache.geode.redis.internal.data.delta.DeltaType.RETAIN_ELEMENTS_BY_INDEX_RANGE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisList;
+import org.apache.geode.redis.internal.data.RedisString;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @RunWith(GeodeParamsRunner.class)
-public class RetainElementsByIndexRangeDeltaUnitTest {
+public class RetainElementsByIndexRangeDeltaUnitTest extends AbstractRedisDeltaUnitTest {
   @Test
   @Parameters(method = "getRetainElementsRanges")
   @TestCaseName("{method}: start:{0}, end:{1}, expected:{2}")
   public void testRetainElementsByIndexRangeDelta(int start, int end, byte[][] expected)
       throws Exception {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    DataOutputStream dos = new DataOutputStream(baos);
     RedisList redisList = makeRedisList();
-    RetainElementsByIndexRange source =
-        new RetainElementsByIndexRange((byte) (redisList.getVersion() + 1), start, end);
-
-    source.serializeTo(dos);
-
-    DataInputStream dis = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
+    DataInputStream dis = getDataInputStream(start, end, redisList.getVersion() + 1);
     redisList.fromDelta(dis);
 
     assertThat(redisList.lrange(0, -1)).containsExactly(expected);
+  }
+
+  @Test
+  @Parameters(method = "getDataTypeInstances")
+  @TestCaseName("{method}: redisDataType:{0}")
+  public void unsupportedDataTypesThrowException(RedisData redisData)
+      throws IOException {
+    final DataInputStream dis = getDataInputStream(1, 1, 1);
+
+    assertThatThrownBy(() -> redisData.fromDelta(dis)).isInstanceOf(
+        IllegalStateException.class)
+        .hasMessageContaining("unexpected " + RETAIN_ELEMENTS_BY_INDEX_RANGE);
+  }
+
+  private DataInputStream getDataInputStream(int start, int end, int version)
+      throws IOException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream dos = new DataOutputStream(baos);
+    RetainElementsByIndexRange source =
+        new RetainElementsByIndexRange((byte) version, start, end);
+
+    source.serializeTo(dos);
+
+    return new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
   }
 
   @SuppressWarnings("unused")
@@ -64,11 +86,13 @@ public class RetainElementsByIndexRangeDeltaUnitTest {
     };
   }
 
-  private RedisList makeRedisList() {
-    RedisList redisList = new RedisList();
-    redisList.applyAddByteArrayTailDelta("zero".getBytes());
-    redisList.applyAddByteArrayTailDelta("one".getBytes());
-    redisList.applyAddByteArrayTailDelta("two".getBytes());
-    return redisList;
+  @SuppressWarnings("unused")
+  private Object[] getDataTypeInstances() {
+    return new Object[] {
+        new Object[] {makeRedisHash()},
+        new Object[] {makeRedisSet()},
+        new Object[] {makeRedisSortedSet()},
+        new Object[] {new RedisString()}
+    };
   }
 }

@@ -15,51 +15,71 @@
 
 package org.apache.geode.redis.internal.data.delta;
 
+import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAY_PAIRS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
 
+import junitparams.Parameters;
+import junitparams.naming.TestCaseName;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisHash;
+import org.apache.geode.redis.internal.data.RedisString;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @RunWith(GeodeParamsRunner.class)
-public class AddByteArrayPairsDeltaUnitTest {
+public class AddByteArrayPairsDeltaUnitTest extends AbstractRedisDeltaUnitTest {
+  private final byte[] original = "0123456789".getBytes();
+  private final byte[] payload = "something amazing I guess".getBytes();
 
   @Test
   public void testAddByteArrayPairsDelta() throws Exception {
-    byte[] original = "0123456789".getBytes();
-    byte[] payload = "something amazing I guess".getBytes();
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    DataOutputStream dos = new DataOutputStream(baos);
-    AddByteArrayPairs source = new AddByteArrayPairs(original, payload);
-
-    source.serializeTo(dos);
-
+    DataInputStream dis = getDataInputStream();
     RedisHash redisHash = makeRedisHash();
-
-    DataInputStream dis = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
     redisHash.fromDelta(dis);
 
     assertThat(redisHash.hlen()).isEqualTo(4);
     assertThat(redisHash.hget(original)).isEqualTo(payload);
   }
 
-  private RedisHash makeRedisHash() {
-    List<byte[]> pairList = new ArrayList<>();
-    pairList.add("zero".getBytes());
-    pairList.add("firstVal".getBytes());
-    pairList.add("one".getBytes());
-    pairList.add("secondVal".getBytes());
-    pairList.add("two".getBytes());
-    pairList.add("thirdVal".getBytes());
-    return new RedisHash(pairList);
+  @Test
+  @Parameters(method = "getDataTypeInstances")
+  @TestCaseName("{method}: redisDataType:{0}")
+  public void unsupportedDataTypesThrowException_forAddByteArrayDoublePairsDelta(
+      RedisData redisData)
+      throws IOException {
+    final DataInputStream dis = getDataInputStream();
+
+    assertThatThrownBy(() -> redisData.fromDelta(dis)).isInstanceOf(
+        IllegalStateException.class)
+        .hasMessageContaining("unexpected " + ADD_BYTE_ARRAY_PAIRS);
+  }
+
+  private DataInputStream getDataInputStream() throws IOException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream dos = new DataOutputStream(baos);
+    AddByteArrayPairs source = new AddByteArrayPairs(original, payload);
+
+    source.serializeTo(dos);
+
+    return new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
+  }
+
+  @SuppressWarnings("unused")
+  private Object[] getDataTypeInstances() {
+    return new Object[] {
+        new Object[] {makeRedisList()},
+        new Object[] {makeRedisSet()},
+        new Object[] {makeRedisSortedSet()},
+        new Object[] {new RedisString()}
+    };
   }
 }

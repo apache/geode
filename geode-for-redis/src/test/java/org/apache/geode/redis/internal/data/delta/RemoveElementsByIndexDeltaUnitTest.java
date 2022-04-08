@@ -15,50 +15,76 @@
 
 package org.apache.geode.redis.internal.data.delta;
 
+import static org.apache.geode.redis.internal.data.delta.DeltaType.REMOVE_ELEMENTS_BY_INDEX;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import junitparams.Parameters;
+import junitparams.naming.TestCaseName;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisList;
+import org.apache.geode.redis.internal.data.RedisString;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @RunWith(GeodeParamsRunner.class)
-public class RemoveElementsByIndexDeltaUnitTest {
+public class RemoveElementsByIndexDeltaUnitTest extends AbstractRedisDeltaUnitTest {
   @Test
   public void testRemoveElementsByIndexDelta() throws Exception {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    DataOutputStream dos = new DataOutputStream(baos);
-
     RedisList redisList = makeRedisList();
-    List<Integer> payload = new ArrayList<>();
-    payload.add(0);
-    payload.add(2);
 
-    RemoveElementsByIndex source =
-        new RemoveElementsByIndex((byte) (redisList.getVersion() + 1), payload);
-
-    source.serializeTo(dos);
-
-    DataInputStream dis = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
+    DataInputStream dis = getDataInputStream(redisList.getVersion() + 1);
     redisList.fromDelta(dis);
 
     assertThat(redisList.llen()).isEqualTo(1);
     assertThat(redisList.lindex(0)).isEqualTo("one".getBytes());
   }
 
-  private RedisList makeRedisList() {
-    RedisList redisList = new RedisList();
-    redisList.applyAddByteArrayTailDelta("zero".getBytes());
-    redisList.applyAddByteArrayTailDelta("one".getBytes());
-    redisList.applyAddByteArrayTailDelta("two".getBytes());
-    return redisList;
+  @Test
+  @Parameters(method = "getDataTypeInstances")
+  @TestCaseName("{method}: redisDataType:{0}")
+  public void unsupportedDataTypesThrowException(RedisData redisData)
+      throws IOException {
+    final DataInputStream dis = getDataInputStream(1);
+
+    assertThatThrownBy(() -> redisData.fromDelta(dis)).isInstanceOf(
+        IllegalStateException.class)
+        .hasMessageContaining("unexpected " + REMOVE_ELEMENTS_BY_INDEX);
+  }
+
+  private DataInputStream getDataInputStream(int version) throws IOException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream dos = new DataOutputStream(baos);
+
+    List<Integer> payload = new ArrayList<>();
+    payload.add(0);
+    payload.add(2);
+
+    RemoveElementsByIndex source =
+        new RemoveElementsByIndex((byte) version, payload);
+
+    source.serializeTo(dos);
+
+    return new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
+  }
+
+  @SuppressWarnings("unused")
+  private Object[] getDataTypeInstances() {
+    return new Object[] {
+        new Object[] {makeRedisHash()},
+        new Object[] {makeRedisSet()},
+        new Object[] {makeRedisSortedSet()},
+        new Object[] {new RedisString()}
+    };
   }
 }

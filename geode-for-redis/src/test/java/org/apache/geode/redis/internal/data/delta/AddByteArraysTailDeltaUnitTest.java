@@ -15,37 +15,34 @@
 
 package org.apache.geode.redis.internal.data.delta;
 
+import static org.apache.geode.redis.internal.data.delta.DeltaType.ADD_BYTE_ARRAYS_TAIL;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import junitparams.Parameters;
+import junitparams.naming.TestCaseName;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisList;
+import org.apache.geode.redis.internal.data.RedisString;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @RunWith(GeodeParamsRunner.class)
-public class AddByteArraysTailDeltaUnitTest {
+public class AddByteArraysTailDeltaUnitTest extends AbstractRedisDeltaUnitTest {
   @Test
   public void testAddByteArraysTailDelta() throws Exception {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    DataOutputStream dos = new DataOutputStream(baos);
-    List<byte[]> deltaList = new ArrayList<>();
-    deltaList.add("firstNew".getBytes());
-    deltaList.add("secondNew".getBytes());
     RedisList redisList = makeRedisList();
-    AddByteArraysTail source =
-        new AddByteArraysTail((byte) (redisList.getVersion() + 1), deltaList);
-
-    source.serializeTo(dos);
-
-    DataInputStream dis = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
+    DataInputStream dis = getDataInputStream(redisList.getVersion() + 1);
     redisList.fromDelta(dis);
 
     assertThat(redisList.llen()).isEqualTo(5);
@@ -54,12 +51,39 @@ public class AddByteArraysTailDeltaUnitTest {
     assertThat(redisList.lindex(4)).isEqualTo("secondNew".getBytes());
   }
 
+  @Test
+  @Parameters(method = "getDataTypeInstances")
+  @TestCaseName("{method}: redisDataType:{0}")
+  public void unsupportedDataTypesThrowException(RedisData redisData)
+      throws IOException {
+    final DataInputStream dis = getDataInputStream(1);
 
-  private RedisList makeRedisList() {
-    RedisList redisList = new RedisList();
-    redisList.applyAddByteArrayTailDelta("zero".getBytes());
-    redisList.applyAddByteArrayTailDelta("one".getBytes());
-    redisList.applyAddByteArrayTailDelta("two".getBytes());
-    return redisList;
+    assertThatThrownBy(() -> redisData.fromDelta(dis)).isInstanceOf(
+        IllegalStateException.class)
+        .hasMessageContaining("unexpected " + ADD_BYTE_ARRAYS_TAIL);
+  }
+
+  private DataInputStream getDataInputStream(int version) throws IOException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream dos = new DataOutputStream(baos);
+    List<byte[]> deltaList = new ArrayList<>();
+    deltaList.add("firstNew".getBytes());
+    deltaList.add("secondNew".getBytes());
+    AddByteArraysTail source =
+        new AddByteArraysTail((byte) (version), deltaList);
+
+    source.serializeTo(dos);
+
+    return new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
+  }
+
+  @SuppressWarnings("unused")
+  private Object[] getDataTypeInstances() {
+    return new Object[] {
+        new Object[] {makeRedisHash()},
+        new Object[] {makeRedisSet()},
+        new Object[] {makeRedisSortedSet()},
+        new Object[] {new RedisString()}
+    };
   }
 }
