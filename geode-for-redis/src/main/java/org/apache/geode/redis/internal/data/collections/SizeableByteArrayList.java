@@ -48,7 +48,7 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
    *        Count that is equal to 0 removes all matching elements from the list.
    * @return list of indexes that were removed in order.
    */
-  public List<Integer> remove(byte[] elementToRemove, int count) {
+  public List<Integer> removeNElements(byte[] elementToRemove, int count) {
     if (0 <= count) {
       count = count == 0 ? this.size() : count;
       return removeObjectsStartingAtHead(elementToRemove, count);
@@ -94,6 +94,17 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
   }
 
   public void clearSublist(int fromIndex, int toIndex) {
+    if (fromIndex < 0) {
+      throw new IndexOutOfBoundsException("fromIndex = " + fromIndex);
+    }
+    if (toIndex > size()) {
+      throw new IndexOutOfBoundsException("toIndex = " + toIndex);
+    }
+    if (fromIndex > toIndex) {
+      throw new IllegalArgumentException("fromIndex(" + fromIndex +
+          ") > toIndex(" + toIndex + ")");
+    }
+
     if (fromIndex < size() - toIndex) {
       clearFromBeginning(fromIndex, toIndex);
     } else {
