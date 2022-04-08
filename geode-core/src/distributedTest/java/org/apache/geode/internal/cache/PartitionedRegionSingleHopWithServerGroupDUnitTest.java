@@ -44,6 +44,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.client.Pool;
@@ -770,8 +771,11 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
       int localMaxMemory) {
 
     PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<>();
+    @SuppressWarnings("unchecked")
+    final PartitionResolver<K, V> customerIDPartitionResolver =
+        (PartitionResolver<K, V>) new CustomerIDPartitionResolver("CustomerIDPartitionResolver");
     paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)
-        .setPartitionResolver(new CustomerIDPartitionResolver<>("CustomerIDPartitionResolver"));
+        .setPartitionResolver(customerIDPartitionResolver);
 
     if (colocatedRegionName != null) {
       paf.setColocatedWith(colocatedRegionName);

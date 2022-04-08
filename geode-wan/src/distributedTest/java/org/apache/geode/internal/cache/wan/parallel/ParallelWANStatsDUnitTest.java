@@ -438,7 +438,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
       final Map<Object, Object> custKeyValue = new HashMap<>();
       CustId custId = new CustId(intCustId);
       custKeyValue.put(custId, new Customer());
-      customerData.add(new HashMap());
+      customerData.add(new HashMap<>());
       vm4.invoke(() -> WANTestBase.putGivenKeyValue(customerRegionName, custKeyValue));
 
       for (int i = 0; i < transactions; i++) {

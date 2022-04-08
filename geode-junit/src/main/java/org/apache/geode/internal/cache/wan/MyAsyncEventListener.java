@@ -28,15 +28,11 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 public class MyAsyncEventListener implements AsyncEventListener, Declarable {
   private static final Logger logger = LogService.getLogger();
 
-  private final Map eventsMap;
-
-  public MyAsyncEventListener() {
-    eventsMap = new HashMap();
-  }
+  private final Map<Object, Object> eventsMap = new HashMap<>();
 
   @Override
-  public synchronized boolean processEvents(List<AsyncEvent> events) {
-    for (AsyncEvent event : events) {
+  public synchronized boolean processEvents(@SuppressWarnings("rawtypes") List<AsyncEvent> events) {
+    for (AsyncEvent<?, ?> event : events) {
       if (eventsMap.containsKey(event.getKey())) {
         logger.debug("This is a duplicate event --> {}", event.getKey());
       }
@@ -47,7 +43,8 @@ public class MyAsyncEventListener implements AsyncEventListener, Declarable {
     return true;
   }
 
-  public Map getEventsMap() {
-    return eventsMap;
+  @SuppressWarnings("unchecked")
+  public <K, V> Map<K, V> getEventsMap() {
+    return (Map<K, V>) eventsMap;
   }
 }

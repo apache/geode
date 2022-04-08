@@ -17,8 +17,8 @@ package org.apache.geode.internal.cache.wan.parallel;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -75,13 +75,13 @@ public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.pauseSender("ln"));
     vm5.invoke(() -> WANTestBase.pauseSender("ln"));
 
-    AsyncInvocation async1 =
+    AsyncInvocation<?> async1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 700));
-    AsyncInvocation async2 =
+    AsyncInvocation<?> async2 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
-    AsyncInvocation async3 =
+    AsyncInvocation<?> async3 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 800));
-    AsyncInvocation async4 =
+    AsyncInvocation<?> async4 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
 
     async1.join();
@@ -134,13 +134,13 @@ public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
     vm5.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
 
-    AsyncInvocation async1 =
+    AsyncInvocation<?> async1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 700));
-    AsyncInvocation async2 =
+    AsyncInvocation<?> async2 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
-    AsyncInvocation async3 =
+    AsyncInvocation<?> async3 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 800));
-    AsyncInvocation async4 =
+    AsyncInvocation<?> async4 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
 
     async1.join();
@@ -152,7 +152,7 @@ public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testParallelQueueDrainInOrder_PR() throws Exception {
+  public void testParallelQueueDrainInOrder_PR() {
     Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
@@ -207,24 +207,24 @@ public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
 
     vm6.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1000));
 
-    HashMap vm4BRUpdates =
+    Map<String, List<Object>> vm4BRUpdates =
         vm4.invoke(() -> WANTestBase.checkBR(getTestMethodName() + "_PR", 4));
-    HashMap vm5BRUpdates =
+    Map<String, List<Object>> vm5BRUpdates =
         vm5.invoke(() -> WANTestBase.checkBR(getTestMethodName() + "_PR", 4));
-    HashMap vm6BRUpdates =
+    Map<String, List<Object>> vm6BRUpdates =
         vm6.invoke(() -> WANTestBase.checkBR(getTestMethodName() + "_PR", 4));
-    HashMap vm7BRUpdates =
+    Map<String, List<Object>> vm7BRUpdates =
         vm7.invoke(() -> WANTestBase.checkBR(getTestMethodName() + "_PR", 4));
 
-    List b0SenderUpdates = (List) vm4BRUpdates.get("Create0");
-    List b1SenderUpdates = (List) vm4BRUpdates.get("Create1");
-    List b2SenderUpdates = (List) vm4BRUpdates.get("Create2");
-    List b3SenderUpdates = (List) vm4BRUpdates.get("Create3");
+    List<Object> b0SenderUpdates = vm4BRUpdates.get("Create0");
+    List<Object> b1SenderUpdates = vm4BRUpdates.get("Create1");
+    List<Object> b2SenderUpdates = vm4BRUpdates.get("Create2");
+    List<Object> b3SenderUpdates = vm4BRUpdates.get("Create3");
 
-    HashMap vm4QueueBRUpdates = vm4.invoke(() -> WANTestBase.checkQueue_BR("ln", 4));
-    HashMap vm5QueueBRUpdates = vm5.invoke(() -> WANTestBase.checkQueue_BR("ln", 4));
-    HashMap vm6QueueBRUpdates = vm6.invoke(() -> WANTestBase.checkQueue_BR("ln", 4));
-    HashMap vm7QueueBRUpdates = vm7.invoke(() -> WANTestBase.checkQueue_BR("ln", 4));
+    Map<?, ?> vm4QueueBRUpdates = vm4.invoke(() -> WANTestBase.checkQueue_BR("ln", 4));
+    Map<?, ?> vm5QueueBRUpdates = vm5.invoke(() -> WANTestBase.checkQueue_BR("ln", 4));
+    Map<?, ?> vm6QueueBRUpdates = vm6.invoke(() -> WANTestBase.checkQueue_BR("ln", 4));
+    Map<?, ?> vm7QueueBRUpdates = vm7.invoke(() -> WANTestBase.checkQueue_BR("ln", 4));
 
     assertEquals(vm4QueueBRUpdates, vm5QueueBRUpdates);
     assertEquals(vm4QueueBRUpdates, vm6QueueBRUpdates);
@@ -235,9 +235,9 @@ public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
     vm6.invoke(() -> WANTestBase.resumeSender("ln"));
     vm7.invoke(() -> WANTestBase.resumeSender("ln"));
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_PR", 1000));
-    HashMap receiverUpdates =
+    Map<String, List<Long>> receiverUpdates =
         vm2.invoke(() -> WANTestBase.checkPR(getTestMethodName() + "_PR"));
-    List<Long> createList = (List) receiverUpdates.get("Create");
+    List<Long> createList = receiverUpdates.get("Create");
     ArrayList<Long> b0ReceiverUpdates = new ArrayList<>();
     ArrayList<Long> b1ReceiverUpdates = new ArrayList<>();
     ArrayList<Long> b2ReceiverUpdates = new ArrayList<>();

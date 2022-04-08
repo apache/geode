@@ -266,11 +266,11 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
       CacheServerTestUtil.enableShufflingOfEndpoints();
     }
 
-    RegionFactory factory = cache.createRegionFactory(RegionShortcut.LOCAL)
+    RegionFactory<?, ?> factory = cache.createRegionFactory(RegionShortcut.LOCAL)
         .setScope(Scope.DISTRIBUTED_NO_ACK)
         .setPoolName(p.getName());
     region = factory.create(regionName);
-    region.registerInterest("ALL_KEYS");
+    region.registerInterestForAllKeys();
     assertNotNull(region);
     if (isDurable) {
       cache.readyForEvents();
