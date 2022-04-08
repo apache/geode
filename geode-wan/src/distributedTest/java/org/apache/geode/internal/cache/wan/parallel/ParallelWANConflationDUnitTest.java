@@ -15,8 +15,7 @@
 package org.apache.geode.internal.cache.wan.parallel;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -123,8 +122,8 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
         (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStats("ln", 100));
     ArrayList<Integer> v7List =
         (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", 100));
-    assertTrue("Event in secondary queue should be 100",
-        (v4List.get(10) + v5List.get(10) + v6List.get(10) + v7List.get(10)) == 100);
+    assertThat((v4List.get(10) + v5List.get(10) + v6List.get(10) + v7List.get(10)) == 100).as(
+        "Event in secondary queue should be 100").isTrue();
 
     resumeSenders();
 
@@ -133,8 +132,8 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
     v6List = (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStats("ln", 0));
     v7List = (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
 
-    assertTrue("No events conflated in batch",
-        (v4List.get(8) + v5List.get(8) + v6List.get(8) + v7List.get(8)) > 0);
+    assertThat((v4List.get(8) + v5List.get(8) + v6List.get(8) + v7List.get(8)) > 0).as(
+        "No events conflated in batch").isTrue();
 
     verifySecondaryEventQueuesDrained("ln");
     vm2.invoke(() -> validateRegionSize(getTestMethodName(), 10));
@@ -148,10 +147,10 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
       int vm6SecondarySize = vm6.invoke(() -> getSecondaryQueueSizeInStats("ln"));
       int vm7SecondarySize = vm7.invoke(() -> getSecondaryQueueSizeInStats("ln"));
 
-      assertEquals(
+      assertThat(vm4SecondarySize + vm5SecondarySize + vm6SecondarySize + vm7SecondarySize).as(
           "Event in secondary queue should be 0 after dispatched, but actual is " + vm4SecondarySize
-              + ":" + vm5SecondarySize + ":" + vm6SecondarySize + ":" + vm7SecondarySize,
-          0, vm4SecondarySize + vm5SecondarySize + vm6SecondarySize + vm7SecondarySize);
+              + ":" + vm5SecondarySize + ":" + vm6SecondarySize + ":" + vm7SecondarySize)
+          .isEqualTo(0);
     });
   }
 
@@ -220,11 +219,12 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
         (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStats("ln", expectedNum));
     ArrayList<Integer> vm7List =
         (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", expectedNum));
-    assertTrue(
-        "Event in secondary queue should be " + (expectedNum * redundancy) + ", but is "
-            + (vm4List.get(10) + vm5List.get(10) + vm6List.get(10) + vm7List.get(10)),
+    assertThat(
         (vm4List.get(10) + vm5List.get(10) + vm6List.get(10) + vm7List.get(10)) == expectedNum
-            * redundancy);
+            * redundancy).as(
+                "Event in secondary queue should be " + (expectedNum * redundancy) + ", but is "
+                    + (vm4List.get(10) + vm5List.get(10) + vm6List.get(10) + vm7List.get(10)))
+                .isTrue();
   }
 
   private void validateEventsProcessedByPQRM(int expectedNum, int redundancy) {
@@ -236,11 +236,13 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
         (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStats("ln", 0));
     ArrayList<Integer> vm7List =
         (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
-    assertTrue(
-        "Event processed by queue removal message should be " + (expectedNum * redundancy)
-            + ", but is " + (vm4List.get(11) + vm5List.get(11) + vm6List.get(11) + vm7List.get(11)),
+    assertThat(
         (vm4List.get(11) + vm5List.get(11) + vm6List.get(11) + vm7List.get(11)) == expectedNum
-            * redundancy);
+            * redundancy).as(
+                "Event processed by queue removal message should be " + (expectedNum * redundancy)
+                    + ", but is "
+                    + (vm4List.get(11) + vm5List.get(11) + vm6List.get(11) + vm7List.get(11)))
+                .isTrue();
   }
 
   @Test

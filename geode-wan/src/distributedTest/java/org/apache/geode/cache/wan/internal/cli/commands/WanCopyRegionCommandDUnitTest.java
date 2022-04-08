@@ -34,7 +34,6 @@ import static org.apache.geode.management.internal.cli.functions.WanCopyRegionFu
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotNull;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -1359,13 +1358,13 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
   public static void removeEntry(String regionName, long key) {
     Region<?, ?> region = cache.getRegion(SEPARATOR + regionName);
-    assertNotNull(region);
+    assertThat(region).isNotNull();
     region.remove(key);
   }
 
   public void sendRandomOpsFromClient(String regionName, Set<Long> keySet, int iterations) {
     Region<Long, Integer> region = cache.getRegion(SEPARATOR + regionName);
-    assertNotNull(region);
+    assertThat(region).isNotNull();
     int min = 0;
     int max = 1000;
     for (int i = 0; i < iterations; i++) {

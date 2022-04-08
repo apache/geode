@@ -23,7 +23,7 @@ import static org.apache.geode.test.dunit.DistributedTestUtils.getAllDistributed
 import static org.apache.geode.test.dunit.DistributedTestUtils.unregisterInstantiatorsInThisVM;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.apache.geode.test.dunit.Invoke.invokeInLocator;
-import static org.junit.Assert.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.Serializable;
@@ -349,7 +349,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
    * name of the method.
    */
   public final String getUniqueName() {
-    assertNotNull(getName());
+    assertThat(getName()).isNotNull();
     return getTestClass().getSimpleName() + "_" + getName();
   }
 
@@ -428,8 +428,8 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
   }
 
   private static void setUpVM(final String methodName, final String defaultDiskStoreName) {
-    assertNotNull("methodName must not be null", methodName);
-    assertNotNull("defaultDiskStoreName must not be null", defaultDiskStoreName);
+    assertThat(methodName).as("methodName must not be null").isNotNull();
+    assertThat(defaultDiskStoreName).as("defaultDiskStoreName must not be null").isNotNull();
     setTestMethodName(methodName);
     GemFireCacheImpl.setDefaultDiskStoreName(defaultDiskStoreName);
     setUpCreationStackGenerator();
