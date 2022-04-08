@@ -14,7 +14,7 @@
  */
 package org.apache.geode.redis.internal.commands.executor.sortedset;
 
-import static org.apache.geode.redis.internal.SystemPropertyBasedRedisConfiguration.GEODE_FOR_REDIS_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_PORT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
@@ -70,13 +70,13 @@ public class ZRemRangeByRankDUnitTest {
     int[] serverPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
 
     MemberVM server1 = clusterStartUp.startRedisVM(1, x -> x
-        .withSystemProperty(GEODE_FOR_REDIS_PORT, Integer.toString(serverPorts[0]))
+        .withProperty(GEODE_FOR_REDIS_PORT, Integer.toString(serverPorts[0]))
         .withConnectionToLocator(locatorPort));
     MemberVM server2 = clusterStartUp.startRedisVM(2, x -> x
-        .withSystemProperty(GEODE_FOR_REDIS_PORT, Integer.toString(serverPorts[1]))
+        .withProperty(GEODE_FOR_REDIS_PORT, Integer.toString(serverPorts[1]))
         .withConnectionToLocator(locatorPort));
     MemberVM server3 = clusterStartUp.startRedisVM(3, x -> x
-        .withSystemProperty(GEODE_FOR_REDIS_PORT, Integer.toString(serverPorts[2]))
+        .withProperty(GEODE_FOR_REDIS_PORT, Integer.toString(serverPorts[2]))
         .withConnectionToLocator(locatorPort));
 
     servers = new ArrayList<>();

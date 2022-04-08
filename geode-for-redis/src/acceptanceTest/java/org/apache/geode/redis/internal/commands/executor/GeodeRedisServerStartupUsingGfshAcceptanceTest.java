@@ -15,25 +15,20 @@
 
 package org.apache.geode.redis.internal.commands.executor;
 
-import static org.apache.geode.redis.internal.RedisConfiguration.DEFAULT_REDIS_PORT;
-import static org.apache.geode.redis.internal.SystemPropertyBasedRedisConfiguration.GEODE_FOR_REDIS_BIND_ADDRESS;
-import static org.apache.geode.redis.internal.SystemPropertyBasedRedisConfiguration.GEODE_FOR_REDIS_ENABLED;
-import static org.apache.geode.redis.internal.SystemPropertyBasedRedisConfiguration.GEODE_FOR_REDIS_PORT;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
-import java.util.Set;
 
 import org.junit.Rule;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.inet.LocalHostUtil;
 import org.apache.geode.test.dunit.rules.RequiresRedisHome;
@@ -58,8 +53,9 @@ public class GeodeRedisServerStartupUsingGfshAcceptanceTest {
         "start server",
         "--server-port", "0",
         "--name", "same-port-and-address-server",
-        "--J=-D" + GEODE_FOR_REDIS_BIND_ADDRESS + "=localhost",
-        "--J=-D" + GEODE_FOR_REDIS_PORT + "=" + port,
+        "--J=-Dgemfire.geode-for-redis-enabled=true",
+        "--J=-Dgemfire.geode-for-redis-bind-address=localhost",
+        "--J=-Dgemfire.geode-for-redis-port=" + port,
         "--classpath=" + redisHome.getGeodeForRedisHome() + "/lib/*");
     GfshExecution execution;
 
@@ -82,8 +78,8 @@ public class GeodeRedisServerStartupUsingGfshAcceptanceTest {
         "start server",
         "--server-port", "0",
         "--name", "same-port-all-addresses-server",
-        "--J=-D" + GEODE_FOR_REDIS_BIND_ADDRESS + "=0.0.0.0",
-        "--J=-D" + GEODE_FOR_REDIS_PORT + "=" + port,
+        "--J=-Dgemfire.geode-for-redis-enabled=true",
+        "--J=-Dgemfire.geode-for-redis-port=" + port,
         "--classpath=" + redisHome.getGeodeForRedisHome() + "/lib/*");
     GfshExecution execution;
 
@@ -104,7 +100,8 @@ public class GeodeRedisServerStartupUsingGfshAcceptanceTest {
         "start server",
         "--server-port", "0",
         "--name", "invalid-bind-server",
-        "--J=-D" + GEODE_FOR_REDIS_BIND_ADDRESS + "=1.1.1.1",
+        "--J=-Dgemfire.geode-for-redis-enabled=true",
+        "--J=-Dgemfire.geode-for-redis-bind-address=1.1.1.1",
         "--classpath=" + redisHome.getGeodeForRedisHome() + "/lib/*");
     GfshExecution execution;
 
@@ -119,11 +116,11 @@ public class GeodeRedisServerStartupUsingGfshAcceptanceTest {
   @Test
   public void gfshStartsRedisServer_whenRedisEnabled() {
     String command = "start server --server-port=0 "
-        + "--J=-D" + GEODE_FOR_REDIS_ENABLED + "=true"
+        + "--J=-Dgemfire." + ConfigurationProperties.GEODE_FOR_REDIS_ENABLED + "=true"
         + " --classpath=" + redisHome.getGeodeForRedisHome() + "/lib/*";
     gfshRule.execute(command);
 
-    try (Jedis jedis = new Jedis(BIND_ADDRESS, DEFAULT_REDIS_PORT)) {
+    try (Jedis jedis = new Jedis(BIND_ADDRESS, 6379)) {
       assertThat(jedis.ping()).isEqualTo("PONG");
     }
   }
@@ -132,7 +129,8 @@ public class GeodeRedisServerStartupUsingGfshAcceptanceTest {
   public void gfshStartsRedisServer_whenCustomPort() {
     int port = AvailablePortHelper.getRandomAvailableTCPPort();
     String command = "start server --server-port=0 "
-        + " --J=-D" + GEODE_FOR_REDIS_PORT + "=" + port
+        + "--J=-Dgemfire." + ConfigurationProperties.GEODE_FOR_REDIS_ENABLED + "=true"
+        + " --J=-Dgemfire." + ConfigurationProperties.GEODE_FOR_REDIS_PORT + "=" + port
         + " --classpath=" + redisHome.getGeodeForRedisHome() + "/lib/*";
 
     gfshRule.execute(command);
@@ -145,12 +143,12 @@ public class GeodeRedisServerStartupUsingGfshAcceptanceTest {
   @Test
   public void gfshStartsRedisServer_whenCustomPortAndBindAddress() {
     int port = AvailablePortHelper.getRandomAvailableTCPPort();
-    Set<InetAddress> myAddresses = LocalHostUtil.getMyAddresses();
-    String anyLocal = myAddresses.stream().findFirst().get().getHostAddress();
-
+    String anyLocal = LocalHostUtil.getAnyLocalAddress().getHostAddress();
     String command = "start server --server-port=0 "
-        + " --J=-D" + GEODE_FOR_REDIS_PORT + "=" + port
-        + " --J=-D" + GEODE_FOR_REDIS_BIND_ADDRESS + "=" + anyLocal
+        + "--J=-Dgemfire." + ConfigurationProperties.GEODE_FOR_REDIS_ENABLED + "=true"
+        + " --J=-Dgemfire." + ConfigurationProperties.GEODE_FOR_REDIS_PORT + "=" + port
+        + " --J=-Dgemfire." + ConfigurationProperties.GEODE_FOR_REDIS_BIND_ADDRESS + "="
+        + anyLocal
         + " --classpath=" + redisHome.getGeodeForRedisHome() + "/lib/*";
 
     gfshRule.execute(command);
@@ -161,27 +159,13 @@ public class GeodeRedisServerStartupUsingGfshAcceptanceTest {
   }
 
   @Test
-  public void gfshStartsRedisServer_withAnyLocalBindAddress() {
+  public void gfshDoesNotStartRedisServer_whenNotRedisEnabled() {
     int port = AvailablePortHelper.getRandomAvailableTCPPort();
     String anyLocal = LocalHostUtil.getAnyLocalAddress().getHostAddress();
-
     String command = "start server --server-port=0 "
-        + " --J=-D" + GEODE_FOR_REDIS_PORT + "=" + port
-        + " --J=-D" + GEODE_FOR_REDIS_BIND_ADDRESS + "=" + anyLocal
-        + " --classpath=" + redisHome.getGeodeForRedisHome() + "/lib/*";
-
-    gfshRule.execute(command);
-
-    try (Jedis jedis = new Jedis(BIND_ADDRESS, port)) {
-      assertThat(jedis.ping()).isEqualTo("PONG");
-    }
-  }
-
-  @Test
-  public void gfshDoesNotStartRedisServer_whenRedisDisabled() {
-    int port = AvailablePortHelper.getRandomAvailableTCPPort();
-    String command = "start server --server-port=0 "
-        + "--J=-D" + GEODE_FOR_REDIS_ENABLED + "=false"
+        + "--J=-Dgemfire." + ConfigurationProperties.GEODE_FOR_REDIS_PORT + "=" + port
+        + " --J=-Dgemfire." + ConfigurationProperties.GEODE_FOR_REDIS_BIND_ADDRESS + "="
+        + anyLocal
         + " --classpath=" + redisHome.getGeodeForRedisHome() + "/lib/*";
 
     gfshRule.execute(command);
