@@ -409,7 +409,7 @@ public class RedisSet extends AbstractRedisData {
   }
 
   @VisibleForTesting
-  synchronized boolean membersAdd(byte[] memberToAdd) {
+  public synchronized boolean membersAdd(byte[] memberToAdd) {
     return members.add(memberToAdd);
   }
 

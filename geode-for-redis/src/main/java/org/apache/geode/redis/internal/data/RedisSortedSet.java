@@ -178,7 +178,8 @@ public class RedisSortedSet extends AbstractRedisData {
     });
   }
 
-  protected synchronized MemberAddResult memberAdd(byte[] memberToAdd, double scoreToAdd) {
+  @VisibleForTesting
+  public synchronized MemberAddResult memberAdd(byte[] memberToAdd, double scoreToAdd) {
     OrderedSetEntry entry = members.get(memberToAdd);
     if (entry == null) {
       OrderedSetEntry newEntry = new OrderedSetEntry(memberToAdd, scoreToAdd);
