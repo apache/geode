@@ -36,6 +36,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionFactory;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -44,7 +45,6 @@ import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
-import org.apache.geode.redis.internal.RedisConfiguration;
 import org.apache.geode.redis.internal.RedisException;
 import org.apache.geode.redis.internal.commands.executor.cluster.RedisPartitionResolver;
 import org.apache.geode.redis.internal.data.RedisCrossSlotException;
@@ -82,9 +82,8 @@ public class RegionProvider {
   private final CacheTransactionManager txManager;
   private final String redisRegionName;
 
-  public RegionProvider(InternalCache cache, RedisConfiguration configuration,
-      StripedCoordinator stripedCoordinator, RedisStats redisStats,
-      PartitionListener partitionListener) {
+  public RegionProvider(InternalCache cache, StripedCoordinator stripedCoordinator,
+      RedisStats redisStats, PartitionListener partitionListener) {
     this.stripedCoordinator = stripedCoordinator;
     this.redisStats = redisStats;
 
@@ -93,7 +92,8 @@ public class RegionProvider {
 
     PartitionAttributesFactory<RedisKey, RedisData> attributesFactory =
         new PartitionAttributesFactory<>();
-    attributesFactory.setRedundantCopies(configuration.getRedundantCopies());
+    DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
+    attributesFactory.setRedundantCopies(config.getRedisRedundantCopies());
     attributesFactory.setPartitionResolver(new RedisPartitionResolver());
     attributesFactory.setTotalNumBuckets(REDIS_REGION_BUCKETS);
     attributesFactory.addPartitionListener(partitionListener);

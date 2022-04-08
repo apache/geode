@@ -489,6 +489,22 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
    */
   private boolean distributedTransactions = DEFAULT_DISTRIBUTED_TRANSACTIONS;
 
+  /**
+   * Bind address for GeodeRedisServer
+   */
+  private String redisBindAddress = DEFAULT_REDIS_BIND_ADDRESS;
+
+  private Boolean redisEnabled = DEFAULT_REDIS_ENABLED;
+
+  private String redisUsername = DEFAULT_REDIS_USERNAME;
+
+  /**
+   * port on which GeodeRedisServer is started
+   */
+  private int redisPort = DEFAULT_REDIS_PORT;
+  private int redisRedundantCopies = DEFAULT_REDIS_REDUNDANT_COPIES;
+
+
   private boolean jmxManager =
       Boolean.getBoolean(InternalLocator.FORCE_LOCATOR_DM_TYPE) || DEFAULT_JMX_MANAGER;
   private boolean jmxManagerStart = DEFAULT_JMX_MANAGER_START;
@@ -778,6 +794,11 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     memcachedPort = other.getMemcachedPort();
     memcachedProtocol = other.getMemcachedProtocol();
     memcachedBindAddress = other.getMemcachedBindAddress();
+    redisPort = other.getRedisPort();
+    redisBindAddress = other.getRedisBindAddress();
+    redisUsername = other.getRedisUsername();
+    redisEnabled = other.getRedisEnabled();
+    redisRedundantCopies = other.getRedisRedundantCopies();
     userCommandPackages = other.getUserCommandPackages();
 
     // following added for 8.0
@@ -3305,6 +3326,11 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(httpServiceBindAddress, that.httpServiceBindAddress)
         .append(memcachedProtocol, that.memcachedProtocol)
         .append(memcachedBindAddress, that.memcachedBindAddress)
+        .append(redisBindAddress, that.redisBindAddress)
+        .append(redisUsername, that.redisUsername)
+        .append(redisPort, that.redisPort)
+        .append(redisRedundantCopies, that.redisRedundantCopies)
+        .append(redisEnabled, that.redisEnabled)
         .append(jmxManagerBindAddress, that.jmxManagerBindAddress)
         .append(jmxManagerHostnameForClients, that.jmxManagerHostnameForClients)
         .append(jmxManagerPasswordFile, that.jmxManagerPasswordFile)
@@ -3400,7 +3426,9 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
         .append(loadSharedConfigurationFromDir).append(clusterConfigDir).append(httpServicePort)
         .append(httpServiceBindAddress).append(startDevRestApi).append(memcachedPort)
         .append(memcachedProtocol).append(memcachedBindAddress).append(distributedTransactions)
-        .append(jmxManager)
+        .append(redisPort).append(redisBindAddress).append(redisUsername).append(
+            redisRedundantCopies)
+        .append(redisEnabled).append(jmxManager)
         .append(jmxManagerStart).append(jmxManagerPort).append(jmxManagerBindAddress)
         .append(jmxManagerHostnameForClients).append(jmxManagerPasswordFile)
         .append(jmxManagerAccessFile).append(jmxManagerHttpPort).append(jmxManagerUpdateRate)
@@ -3499,6 +3527,56 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   @Override
   public void setMemcachedProtocol(String protocol) {
     memcachedProtocol = protocol;
+  }
+
+  @Override
+  public int getRedisPort() {
+    return redisPort;
+  }
+
+  @Override
+  public void setRedisPort(int value) {
+    redisPort = value;
+  }
+
+  @Override
+  public int getRedisRedundantCopies() {
+    return redisRedundantCopies;
+  }
+
+  @Override
+  public void setRedisRedundantCopies(int value) {
+    redisRedundantCopies = value;
+  }
+
+  @Override
+  public String getRedisBindAddress() {
+    return redisBindAddress;
+  }
+
+  @Override
+  public void setRedisBindAddress(String bindAddress) {
+    redisBindAddress = bindAddress;
+  }
+
+  @Override
+  public String getRedisUsername() {
+    return redisUsername;
+  }
+
+  @Override
+  public void setRedisUsername(String username) {
+    redisUsername = username;
+  }
+
+  @Override
+  public boolean getRedisEnabled() {
+    return redisEnabled;
+  }
+
+  @Override
+  public void setRedisEnabled(boolean redisServiceEnabled) {
+    redisEnabled = redisServiceEnabled;
   }
 
   @Override

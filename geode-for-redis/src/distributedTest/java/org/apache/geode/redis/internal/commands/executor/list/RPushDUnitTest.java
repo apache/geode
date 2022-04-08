@@ -15,7 +15,7 @@
 
 package org.apache.geode.redis.internal.commands.executor.list;
 
-import static org.apache.geode.redis.internal.SystemPropertyBasedRedisConfiguration.GEODE_FOR_REDIS_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_PORT;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -161,7 +161,7 @@ public class RPushDUnitTest {
           Thread.sleep(1000);
           clusterStartUp.crashVM(3);
           clusterStartUp.startRedisVM(3, x -> x
-              .withSystemProperty(GEODE_FOR_REDIS_PORT, Integer.toString(finalRedisPort))
+              .withProperty(GEODE_FOR_REDIS_PORT, Integer.toString(finalRedisPort))
               .withConnectionToLocator(finalLocatorPort));
           clusterStartUp.rebalanceAllRegions();
         }

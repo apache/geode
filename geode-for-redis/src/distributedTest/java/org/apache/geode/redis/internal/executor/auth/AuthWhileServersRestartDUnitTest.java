@@ -15,7 +15,7 @@
 
 package org.apache.geode.redis.internal.executor.auth;
 
-import static org.apache.geode.redis.internal.SystemPropertyBasedRedisConfiguration.GEODE_FOR_REDIS_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_PORT;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.REDIS_CLIENT_TIMEOUT;
 import static redis.clients.jedis.JedisCluster.DEFAULT_MAX_ATTEMPTS;
@@ -72,7 +72,7 @@ public class AuthWhileServersRestartDUnitTest {
     String finalRedisPort = Integer.toString(server3Port);
 
     operatorForVM3 = serverOperator.compose(o -> o
-        .withSystemProperty(GEODE_FOR_REDIS_PORT, finalRedisPort)
+        .withProperty(GEODE_FOR_REDIS_PORT, finalRedisPort)
         .withConnectionToLocator(locatorPort));
 
     clusterStartUp.startRedisVM(3, operatorForVM3);

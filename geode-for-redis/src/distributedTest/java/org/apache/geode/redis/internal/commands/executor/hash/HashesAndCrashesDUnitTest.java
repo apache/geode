@@ -16,7 +16,7 @@
 
 package org.apache.geode.redis.internal.commands.executor.hash;
 
-import static org.apache.geode.redis.internal.SystemPropertyBasedRedisConfiguration.GEODE_FOR_REDIS_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
@@ -72,13 +72,13 @@ public class HashesAndCrashesDUnitTest {
 
     int redisPort2 = AvailablePortHelper.getRandomAvailableTCPPort();
     serverOperator2 = s -> s
-        .withSystemProperty(GEODE_FOR_REDIS_PORT, redisPort2 + "")
+        .withProperty(GEODE_FOR_REDIS_PORT, redisPort2 + "")
         .withConnectionToLocator(locatorPort);
     clusterStartUp.startRedisVM(2, serverOperator2);
 
     int redisPort3 = AvailablePortHelper.getRandomAvailableTCPPort();
     serverOperator3 = s -> s
-        .withSystemProperty(GEODE_FOR_REDIS_PORT, redisPort3 + "")
+        .withProperty(GEODE_FOR_REDIS_PORT, redisPort3 + "")
         .withConnectionToLocator(locatorPort);
     clusterStartUp.startRedisVM(3, serverOperator3);
 
