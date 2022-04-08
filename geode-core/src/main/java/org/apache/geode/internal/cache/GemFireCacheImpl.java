@@ -247,6 +247,7 @@ import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.jta.TransactionManagerImpl;
 import org.apache.geode.internal.lang.ThrowableUtils;
 import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.monitoring.AdditionalHealthMonitoringImpl;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.security.SecurityService;
@@ -398,6 +399,22 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    */
   private final boolean queryMonitorDisabledForLowMem =
       Boolean.getBoolean(GEMFIRE_PREFIX + "Cache.DISABLE_QUERY_MONITOR_FOR_LOW_MEMORY");
+
+
+  /**
+   * System property to enable health monitoring
+   */
+  private final boolean healthMonitoringEnabled =
+      Boolean.getBoolean(GEMFIRE_PREFIX + "Cache.HEALTH_MONITOR_ENABLED");
+
+  private static final int MAX_ASYNC_WRITER_EXECUTION_TIME =
+      Integer.getInteger(GEMFIRE_PREFIX + "Cache.MAX_ASYNC_WRITER_EXECUTION_TIME", 15000);
+
+  private static final int HEALT_MONITOR_SCAN_INTERVAL =
+      Integer.getInteger(GEMFIRE_PREFIX + "Cache.HEALT_MONITOR_SCAN_INTERVAL", 30000);
+
+  private final AdditionalHealthMonitoringImpl ahmi;
+
 
   private final InternalDistributedSystem system;
 
@@ -1083,6 +1100,13 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
       addRegionEntrySynchronizationListener(gatewaySenderQueueEntrySynchronizationListener.get());
       backupService = backupServiceFactory.apply(this);
+
+      if (healthMonitoringEnabled) {
+        ahmi = new AdditionalHealthMonitoringImpl(this, MAX_ASYNC_WRITER_EXECUTION_TIME,
+            HEALT_MONITOR_SCAN_INTERVAL, getThreadMonitorObj());
+      } else {
+        ahmi = null;
+      }
     }
 
     clientMetadataService = clientMetadataServiceFactory.apply(this);
@@ -2180,6 +2204,10 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       // static synchronization is necessary due to static resources
       if (waitIfClosing(skipAwait)) {
         return false;
+      }
+
+      if (ahmi != null) {
+        ahmi.close();
       }
 
       CLOSING_THREAD.set(Thread.currentThread());

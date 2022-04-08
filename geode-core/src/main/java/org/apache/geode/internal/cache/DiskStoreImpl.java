@@ -1446,6 +1446,20 @@ public class DiskStoreImpl implements DiskStore {
     }
   }
 
+  private volatile long asyncWriterStartTime;
+
+  void updateAsyncWriterTime(long time) {
+    asyncWriterStartTime = time;
+  }
+
+  public long getAsyncWriterTime() {
+    return asyncWriterStartTime;
+  }
+
+  public int getAsyncQueueSize() {
+    return asyncQueue.size();
+  }
+
   private Thread flusherThread;
   /**
    * How many threads are waiting to do a put on asyncQueue?
@@ -1718,6 +1732,7 @@ public class DiskStoreImpl implements DiskStore {
       boolean doingFlush = false;
       try {
         while (waitUntilFlushIsReady()) {
+          diskStore.updateAsyncWriterTime(System.currentTimeMillis());
           int drainCount = diskStore.fillDrainList();
           if (drainCount > 0) {
             Iterator<Object> it = diskStore.getDrainList().iterator();
@@ -2265,7 +2280,7 @@ public class DiskStoreImpl implements DiskStore {
   private volatile boolean closing = false;
   private volatile boolean closed = false;
 
-  boolean isClosing() {
+  public boolean isClosing() {
     return closing;
   }
 
@@ -3600,7 +3615,7 @@ public class DiskStoreImpl implements DiskStore {
 
   private final boolean offline;
 
-  boolean isOffline() {
+  public boolean isOffline() {
     return offline;
   }
 
