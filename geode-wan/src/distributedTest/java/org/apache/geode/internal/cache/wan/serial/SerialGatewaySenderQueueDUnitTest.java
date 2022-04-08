@@ -21,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -177,12 +176,13 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     vm4.invoke(() -> WANTestBase.pauseSender("ln"));
 
     vm6.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
-    ArrayList<Integer> v4List =
-        (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", 1000));
-    ArrayList<Integer> v5List =
-        (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", 1000));
-    // secondary queue size stats in serial queue should be 0
-    assertThat(v4List.get(10) + v5List.get(10)).isEqualTo(0);
+
+    await().untilAsserted(() -> {
+      List<Integer> v4List = vm4.invoke(() -> WANTestBase.getSenderStats("ln", 1000));
+      List<Integer> v5List = vm5.invoke(() -> WANTestBase.getSenderStats("ln", 1000));
+      // secondary queue size stats in serial queue should be 0
+      assertThat(v4List.get(10) + v5List.get(10)).isEqualTo(0);
+    });
 
     Map<String, List<?>> primarySenderUpdates = vm4.invoke(WANTestBase::checkQueue);
     Map<String, List<?>> secondarySenderUpdates = vm5.invoke(WANTestBase::checkQueue);

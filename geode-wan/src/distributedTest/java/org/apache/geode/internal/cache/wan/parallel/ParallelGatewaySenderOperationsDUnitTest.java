@@ -479,14 +479,10 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
       startSenderInVMsAsync("ln", vm4, vm5, vm6, vm7);
 
       async.join();
-      ArrayList<Integer> vm4List =
-          (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStatsForDroppedEvents("ln"));
-      ArrayList<Integer> vm5List =
-          (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStatsForDroppedEvents("ln"));
-      ArrayList<Integer> vm6List =
-          (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStatsForDroppedEvents("ln"));
-      ArrayList<Integer> vm7List =
-          (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStatsForDroppedEvents("ln"));
+      List<Integer> vm4List = vm4.invoke(() -> WANTestBase.getSenderStatsForDroppedEvents("ln"));
+      List<Integer> vm5List = vm5.invoke(() -> WANTestBase.getSenderStatsForDroppedEvents("ln"));
+      List<Integer> vm6List = vm6.invoke(() -> WANTestBase.getSenderStatsForDroppedEvents("ln"));
+      List<Integer> vm7List = vm7.invoke(() -> WANTestBase.getSenderStatsForDroppedEvents("ln"));
       if (vm4List.get(0) + vm5List.get(0) + vm6List.get(0) + vm7List.get(0) > 0) {
         foundEventsDroppedDueToPrimarySenderNotRunning = true;
       }
@@ -1258,12 +1254,10 @@ public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
             .isEqualTo(100);
 
     await().untilAsserted(() -> {
-      int vm4SecondarySize = vm4.invoke(() -> getSecondaryQueueSizeInStats("ln"));
-      int vm5SecondarySize = vm5.invoke(() -> getSecondaryQueueSizeInStats("ln"));
-      int vm6SecondarySize = vm6.invoke(() -> getSecondaryQueueSizeInStats("ln"));
-      int vm7SecondarySize = vm7.invoke(() -> getSecondaryQueueSizeInStats("ln"));
-      assertThat(vm4SecondarySize + vm5SecondarySize + vm6SecondarySize + vm7SecondarySize)
-          .isEqualTo(0);
+      assertThat(vm4.invoke(() -> getSecondaryQueueSizeInStats("ln"))).isZero();
+      assertThat(vm5.invoke(() -> getSecondaryQueueSizeInStats("ln"))).isZero();
+      assertThat(vm6.invoke(() -> getSecondaryQueueSizeInStats("ln"))).isZero();
+      assertThat(vm7.invoke(() -> getSecondaryQueueSizeInStats("ln"))).isZero();
     });
 
   }
