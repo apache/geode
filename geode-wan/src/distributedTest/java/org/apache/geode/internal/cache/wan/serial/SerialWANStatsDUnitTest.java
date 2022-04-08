@@ -921,28 +921,26 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
   private void checkQueuesAreEmptyAndOnlyCompleteTransactionsAreReplicated(
       boolean isBatchesRedistributed) {
-    // Wait for sender queues to be empty
-    List<Integer> v4List =
-        vm4.invoke(() -> WANTestBase.getSenderStats("ln", 0));
-    List<Integer> v5List =
-        vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
-    List<Integer> v6List =
-        vm6.invoke(() -> WANTestBase.getSenderStats("ln", 0));
-    List<Integer> v7List =
-        vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    await().untilAsserted(() -> {
+      // Wait for sender queues to be empty
+      List<Integer> v4List = vm4.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+      List<Integer> v5List = vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+      List<Integer> v6List = vm6.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+      List<Integer> v7List = vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
 
-    // queue size must be 0
-    assertThat(v4List.get(0) + v5List.get(0) + v6List.get(0) + v7List.get(0)).isEqualTo(0);
+      // queue size must be 0
+      assertThat(v4List.get(0) + v5List.get(0) + v6List.get(0) + v7List.get(0)).isEqualTo(0);
 
-    // batches redistributed:
-    int batchesRedistributed = v4List.get(5) + v5List.get(5) + v6List.get(5) + v7List.get(5);
-    if (isBatchesRedistributed) {
-      assertThat(batchesRedistributed).isGreaterThan(0);
-    } else {
-      assertThat(batchesRedistributed).isEqualTo(0);
-    }
+      // batches redistributed:
+      int batchesRedistributed = v4List.get(5) + v5List.get(5) + v6List.get(5) + v7List.get(5);
+      if (isBatchesRedistributed) {
+        assertThat(batchesRedistributed).isGreaterThan(0);
+      } else {
+        assertThat(batchesRedistributed).isEqualTo(0);
+      }
 
-    // batches with incomplete transactions must be 0
-    assertThat(v4List.get(13) + v5List.get(13) + v6List.get(13) + v7List.get(13)).isEqualTo(0);
+      // batches with incomplete transactions must be 0
+      assertThat(v4List.get(13) + v5List.get(13) + v6List.get(13) + v7List.get(13)).isEqualTo(0);
+    });
   }
 }

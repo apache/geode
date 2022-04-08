@@ -1159,11 +1159,8 @@ public class WANTestBase extends DistributedTestCase {
   public static void checkQueueSizeInStats(String senderId, final int expectedQueueSize) {
     AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(senderId);
     GatewaySenderStats statistics = sender.getStatistics();
-    await()
-        .untilAsserted(() -> assertThat(statistics.getEventQueueSize()).as(
-            "Expected queue size: " + expectedQueueSize
-                + " but actual size: " + statistics.getEventQueueSize())
-            .isEqualTo(expectedQueueSize));
+    await().untilAsserted(() -> assertThat(statistics.getEventQueueSize())
+        .isEqualTo(expectedQueueSize));
   }
 
   public static void checkConnectionStats(String senderId) {
@@ -1186,11 +1183,7 @@ public class WANTestBase extends DistributedTestCase {
             (ConcurrentParallelGatewaySenderQueue) regionQueue;
         parallelGatewaySenderQueue.getRegions();
       }
-      await()
-          .untilAsserted(() -> assertThat(regionQueue.size()).as(
-              "Expected queue entries: " + expectedQueueSize
-                  + " but actual entries: " + regionQueue.size())
-              .isEqualTo(expectedQueueSize));
+      await().untilAsserted(() -> assertThat(regionQueue.size()).isEqualTo(expectedQueueSize));
     }
     ArrayList<Integer> stats = new ArrayList<>();
     stats.add(statistics.getEventQueueSize());
@@ -1237,10 +1230,12 @@ public class WANTestBase extends DistributedTestCase {
   public static void checkQueueStats(String senderId, final int queueSize, final int eventsReceived,
       final int eventsQueued, final int eventsDistributed) {
     GatewaySenderStats statistics = getGatewaySenderStats(senderId);
-    assertThat(statistics.getEventQueueSize()).isEqualTo(queueSize);
-    assertThat(statistics.getEventsReceived()).isEqualTo(eventsReceived);
-    assertThat(statistics.getEventsQueued()).isEqualTo(eventsQueued);
-    assert (statistics.getEventsDistributed() >= eventsDistributed);
+    await().untilAsserted(() -> {
+      assertThat(statistics.getEventQueueSize()).isEqualTo(queueSize);
+      assertThat(statistics.getEventsReceived()).isEqualTo(eventsReceived);
+      assertThat(statistics.getEventsQueued()).isEqualTo(eventsQueued);
+      assertThat(statistics.getEventsDistributed()).isGreaterThanOrEqualTo(eventsDistributed);
+    });
   }
 
   public static void checkGatewayReceiverStats(int processBatches, int eventsReceived,
@@ -1322,19 +1317,23 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void checkEventFilteredStats(String senderId, final int eventsFiltered) {
     GatewaySenderStats statistics = getGatewaySenderStats(senderId);
-    assertThat(statistics.getEventsFiltered()).isEqualTo(eventsFiltered);
+    await()
+        .untilAsserted(() -> assertThat(statistics.getEventsFiltered()).isEqualTo(eventsFiltered));
   }
 
   public static void checkConflatedStats(String senderId, final int eventsConflated) {
     GatewaySenderStats statistics = getGatewaySenderStats(senderId);
-    assertThat(statistics.getEventsNotQueuedConflated()).isEqualTo(eventsConflated);
+    await().untilAsserted(
+        () -> assertThat(statistics.getEventsNotQueuedConflated()).isEqualTo(eventsConflated));
   }
 
   public static void checkStats_Failover(String senderId, final int eventsReceived) {
     GatewaySenderStats statistics = getGatewaySenderStats(senderId);
-    assertThat(statistics.getEventsReceived()).isEqualTo(eventsReceived);
-    assertThat((statistics.getEventsQueued() + statistics.getUnprocessedTokensAddedByPrimary()
-        + statistics.getUnprocessedEventsRemovedByPrimary())).isEqualTo(eventsReceived);
+    await().untilAsserted(() -> {
+      assertThat(statistics.getEventsReceived()).isEqualTo(eventsReceived);
+      assertThat((statistics.getEventsQueued() + statistics.getUnprocessedTokensAddedByPrimary()
+          + statistics.getUnprocessedEventsRemovedByPrimary())).isEqualTo(eventsReceived);
+    });
   }
 
   public static void checkBatchStats(String senderId, final int batches) {
@@ -1343,38 +1342,46 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void checkBatchStats(String senderId, final int batches, boolean isExact) {
     GatewaySenderStats statistics = getGatewaySenderStats(senderId);
-    if (isExact) {
-      assert (statistics.getBatchesDistributed() == batches);
-    } else {
-      assert (statistics.getBatchesDistributed() >= batches);
-    }
-    assertThat(statistics.getBatchesRedistributed()).isEqualTo(0);
+    await().untilAsserted(() -> {
+      if (isExact) {
+        assertThat(statistics.getBatchesDistributed()).isEqualTo(batches);
+      } else {
+        assertThat(statistics.getBatchesDistributed()).isGreaterThanOrEqualTo(batches);
+      }
+      assertThat(statistics.getBatchesRedistributed()).isEqualTo(0);
+    });
   }
 
   public static void checkBatchStats(String senderId, final int batches,
       boolean isExact, final boolean batchesRedistributed) {
     GatewaySenderStats statistics = getGatewaySenderStats(senderId);
-    if (isExact) {
-      assert (statistics.getBatchesDistributed() == batches);
-    } else {
-      assert (statistics.getBatchesDistributed() >= batches);
-    }
-    assertThat((statistics.getBatchesRedistributed() > 0)).isEqualTo(batchesRedistributed);
+    await().untilAsserted(() -> {
+      if (isExact) {
+        assertThat(statistics.getBatchesDistributed()).isEqualTo(batches);
+      } else {
+        assertThat(statistics.getBatchesDistributed()).isGreaterThanOrEqualTo(batches);
+      }
+      assertThat((statistics.getBatchesRedistributed() > 0)).isEqualTo(batchesRedistributed);
+    });
   }
 
   public static void checkBatchStats(String senderId, final boolean batchesDistributed,
       final boolean batchesRedistributed) {
     GatewaySenderStats statistics = getGatewaySenderStats(senderId);
-    assertThat((statistics.getBatchesDistributed() > 0)).isEqualTo(batchesDistributed);
-    assertThat((statistics.getBatchesRedistributed() > 0)).isEqualTo(batchesRedistributed);
+    await().untilAsserted(() -> {
+      assertThat((statistics.getBatchesDistributed() > 0)).isEqualTo(batchesDistributed);
+      assertThat((statistics.getBatchesRedistributed() > 0)).isEqualTo(batchesRedistributed);
+    });
   }
 
   public static void checkUnProcessedStats(String senderId, int events) {
     GatewaySenderStats statistics = getGatewaySenderStats(senderId);
-    assertThat((statistics.getUnprocessedEventsAddedBySecondary()
-        + statistics.getUnprocessedTokensRemovedBySecondary())).isEqualTo(events);
-    assertThat((statistics.getUnprocessedEventsRemovedByPrimary()
-        + statistics.getUnprocessedTokensAddedByPrimary())).isEqualTo(events);
+    await().untilAsserted(() -> {
+      assertThat((statistics.getUnprocessedEventsAddedBySecondary()
+          + statistics.getUnprocessedTokensRemovedBySecondary())).isEqualTo(events);
+      assertThat((statistics.getUnprocessedEventsRemovedByPrimary()
+          + statistics.getUnprocessedTokensAddedByPrimary())).isEqualTo(events);
+    });
   }
 
   public static GatewaySenderStats getGatewaySenderStats(String senderId) {
