@@ -673,10 +673,10 @@ public class LocatorLoadSnapshotJUnitTest {
     loadSnapshot.updateConnectionLoadMap(serverLocation, uniqueId, expectedLoadHolder.getLoad(),
         expectedLoadHolder.getLoadPerConnection());
 
-    Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder> serverLoadMap =
+    Map<ServerLocationAndMemberId, ServerLoad> serverLoadMap =
         loadSnapshot.getGatewayReceiverLoadMap();
     assertThat(expectedLoadHolder.getLoad())
-        .isEqualTo(serverLoadMap.get(servLocAndMemberId).getLoad());
+        .isEqualTo(serverLoadMap.get(servLocAndMemberId).getConnectionLoad());
     assertThat(expectedLoadHolder.getLoadPerConnection())
         .isEqualTo(serverLoadMap.get(servLocAndMemberId).getLoadPerConnection());
   }
@@ -708,10 +708,10 @@ public class LocatorLoadSnapshotJUnitTest {
     loadSnapshot.updateConnectionLoadMap(gatewayReceiverLocation, uniqueId,
         expectedGatewayLoad.getLoad(), expectedGatewayLoad.getLoadPerConnection());
 
-    Map<ServerLocationAndMemberId, LocatorLoadSnapshot.LoadHolder> gatewayReceiverLoadMap =
+    Map<ServerLocationAndMemberId, ServerLoad> gatewayReceiverLoadMap =
         loadSnapshot.getGatewayReceiverLoadMap();
     assertThat(expectedGatewayLoad.getLoad())
-        .isEqualTo(gatewayReceiverLoadMap.get(servLocAndMemberId).getLoad());
+        .isEqualTo(gatewayReceiverLoadMap.get(servLocAndMemberId).getConnectionLoad());
     assertThat(expectedGatewayLoad.getLoadPerConnection())
         .isEqualTo(gatewayReceiverLoadMap.get(servLocAndMemberId).getLoadPerConnection());
 

@@ -419,14 +419,19 @@ public class LocatorLoadSnapshot {
   }
 
   @TestOnly
-  synchronized Map<ServerLocationAndMemberId, LoadHolder> getGatewayReceiverLoadMap() {
+  public synchronized Map<ServerLocationAndMemberId, ServerLoad> getGatewayReceiverLoadMap() {
     Map<ServerLocationAndMemberId, LoadHolder> connectionMap =
         connectionLoadMap.get(GatewayReceiver.RECEIVER_GROUP);
-    Map<ServerLocationAndMemberId, LoadHolder> result = new HashMap<>();
+    Map<ServerLocationAndMemberId, ServerLoad> result = new HashMap<>();
+    if (connectionMap == null) {
+      return result;
+    }
     for (Entry<ServerLocationAndMemberId, LoadHolder> entry : connectionMap.entrySet()) {
       ServerLocationAndMemberId member = new ServerLocationAndMemberId(entry.getKey()
           .getServerLocation(), entry.getKey().getMemberId());
-      result.put(member, entry.getValue());
+      ServerLoad serverLoad =
+          new ServerLoad(entry.getValue().getLoad(), entry.getValue().getLoadPerConnection(), 0, 0);
+      result.put(member, serverLoad);
     }
     return result;
   }

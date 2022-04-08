@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
-import static org.apache.geode.cache.server.CacheServer.DEFAULT_LOAD_POLL_INTERVAL;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.getMember;
@@ -26,9 +25,9 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,12 +35,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.wan.GatewayReceiver;
-import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
+import org.apache.geode.cache.server.ServerLoad;
+import org.apache.geode.distributed.internal.ServerLocationAndMemberId;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.i18n.CliStrings;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -72,8 +69,6 @@ public class ParallelGatewaySenderConnectionLoadBalanceDistributedTest implement
   private static final String DISTRIBUTED_SYSTEM_ID_SITE2 = "2";
   private static final String REGION_NAME = "test1";
   private static final int NUMBER_OF_DISPATCHER_THREADS = 21;
-  private static final int NUM_CONNECTION_PER_SERVER_OFFSET = 4;
-  private static final int LOAD_POLL_INTERVAL_OFFSET = 2000;
 
   @Before
   public void setupMultiSite() throws Exception {
@@ -162,82 +157,73 @@ public class ParallelGatewaySenderConnectionLoadBalanceDistributedTest implement
   }
 
   @Test
-  public void testGatewayConnectionCorrectlyLoadBalancedAtStartup() throws Exception {
+  public void testGatewayConnectionLoadUpdatedOnBothLocators() throws Exception {
     // Do put operations to initialize gateway-sender connections
     startClientSite2(locator1Site2.getPort());
     doPutsClientSite2(0, 500);
 
-    checkConnectionLoadBalancedOnServers(server1Site1, server2Site1, server3Site1);
+    checkGatewayReceiverLoadUpdatedOnLocators(BigDecimal.valueOf(0.06));
   }
 
   @Test
-  public void testGatewayConnLoadBalancedAfterCoordinatorLocatorShutdown() throws Exception {
+  public void testGatewayConnectionLoadUpdatedLocatorsStopAndStartGatewaySenders()
+      throws Exception {
     // Do put operations to initialize gateway-sender connections
     startClientSite2(locator1Site2.getPort());
     doPutsClientSite2(0, 400);
-    checkConnectionLoadBalancedOnServers(server1Site1, server2Site1, server3Site1);
+    checkGatewayReceiverLoadUpdatedOnLocators(BigDecimal.valueOf(0.06));
 
     executeGatewaySenderActionCommandAndValidateStateSite2(CliStrings.STOP_GATEWAYSENDER, null);
-
-    locator1Site1.stop(true);
-
-    // Wait for default load-poll-interval plus offset to expire, so that all servers send load
-    // to locator before continuing with the test
-    GeodeAwaitility.await().atLeast(DEFAULT_LOAD_POLL_INTERVAL + LOAD_POLL_INTERVAL_OFFSET,
-        TimeUnit.MILLISECONDS);
+    checkGatewayReceiverLoadUpdatedOnLocators(BigDecimal.valueOf(0));
 
     executeGatewaySenderActionCommandAndValidateStateSite2(CliStrings.START_GATEWAYSENDER, null);
 
     doPutsClientSite2(400, 800);
-
-    checkConnectionLoadBalancedOnServers(server1Site1, server2Site1, server3Site1);
+    checkGatewayReceiverLoadUpdatedOnLocators(BigDecimal.valueOf(0.06));
   }
 
   @Test
-  public void testGatewayConnLoadBalancedAfterCoordinatorLocatorShutdownAndGatewayReceiverStopped()
+  public void testGatewayConnectionLoadUpdatedLocatorsStopAndStartOneGatewaySender()
       throws Exception {
     // Do put operations to initialize gateway-sender connections
     startClientSite2(locator1Site2.getPort());
     doPutsClientSite2(0, 400);
-    checkConnectionLoadBalancedOnServers(server1Site1, server2Site1, server3Site1);
+    checkGatewayReceiverLoadUpdatedOnLocators(BigDecimal.valueOf(0.06));
 
-    executeGatewayReceiverActionCommandAndValidateStateSite1(CliStrings.STOP_GATEWAYRECEIVER,
-        server1Site1);
     executeGatewaySenderActionCommandAndValidateStateSite2(CliStrings.STOP_GATEWAYSENDER,
         server1Site2);
-    locator1Site1.stop(true);
+    checkGatewayReceiverLoadUpdatedOnLocators(BigDecimal.valueOf(0.03));
 
-    // Wait for default load-poll-interval plus offset to expire, so that all servers send load
-    // to locator before continuing with the test
-    GeodeAwaitility.await().atLeast(DEFAULT_LOAD_POLL_INTERVAL + LOAD_POLL_INTERVAL_OFFSET,
-        TimeUnit.MILLISECONDS);
-
-    executeGatewayReceiverActionCommandAndValidateStateSite1(CliStrings.START_GATEWAYRECEIVER,
-        server1Site1);
     executeGatewaySenderActionCommandAndValidateStateSite2(CliStrings.START_GATEWAYSENDER,
         server1Site2);
-    doPutsClientSite2(400, 800);
 
-    checkConnectionLoadBalancedOnServers(server1Site1, server2Site1, server3Site1);
+    doPutsClientSite2(400, 800);
+    checkGatewayReceiverLoadUpdatedOnLocators(BigDecimal.valueOf(0.06));
   }
 
-  void executeGatewayReceiverActionCommandAndValidateStateSite1(String cliString, MemberVM memberVM)
-      throws Exception {
-    connectGfshToSite(locator2Site1);
-    String command = new CommandStringBuilder(cliString)
-        .addOption(CliStrings.MEMBERS, getMember(memberVM.getVM()).toString())
-        .getCommandString();
-    gfsh.executeAndAssertThat(command).statusIsSuccess();
+  void checkGatewayReceiverLoadUpdatedOnLocators(BigDecimal expectedConnectionLoad) {
+    locator1Site1.invoke(
+        () -> await().untilAsserted(() -> {
+          assertThat(getTotalGatewayReceiverConnectionLoad().compareTo(expectedConnectionLoad))
+              .isEqualTo(0);
+        }));
+    locator2Site1.invoke(
+        () -> await().untilAsserted(() -> {
+          assertThat(getTotalGatewayReceiverConnectionLoad().compareTo(expectedConnectionLoad))
+              .isEqualTo(0);
+        }));
+  }
 
-    if (cliString.equals(CliStrings.STOP_GATEWAYRECEIVER)) {
-      memberVM.invoke(() -> verifyReceiverState(false));
-      locator2Site1.invoke(
-          () -> validateGatewayReceiverMXBeanProxy(getMember(memberVM.getVM()), false));
-    } else if (cliString.equals(CliStrings.START_GATEWAYRECEIVER)) {
-      memberVM.invoke(() -> verifyReceiverState(true));
-      locator2Site1.invoke(
-          () -> validateGatewayReceiverMXBeanProxy(getMember(memberVM.getVM()), true));
+  BigDecimal getTotalGatewayReceiverConnectionLoad() {
+    Map<ServerLocationAndMemberId, ServerLoad> servers =
+        ClusterStartupRule.getLocator().getServerLocatorAdvisee().getLoadSnapshot()
+            .getGatewayReceiverLoadMap();
+    BigDecimal totalLoadOnLocator = new BigDecimal(0);
+    for (ServerLoad load : servers.values()) {
+      BigDecimal serverLoad = new BigDecimal(String.valueOf(load.getConnectionLoad()));
+      totalLoadOnLocator = totalLoadOnLocator.add(serverLoad);
     }
+    return totalLoadOnLocator;
   }
 
   void executeGatewaySenderActionCommandAndValidateStateSite2(String cliString, MemberVM memberVM)
@@ -270,24 +256,6 @@ public class ParallelGatewaySenderConnectionLoadBalanceDistributedTest implement
     locator1Site2.invoke(
         () -> validateGatewaySenderMXBeanProxy(getMember(memberVM.getVM()), "ln", isRunning,
             false));
-  }
-
-  int getGatewayReceiverStats() {
-    Set<GatewayReceiver> gatewayReceivers = ClusterStartupRule.getCache().getGatewayReceivers();
-    GatewayReceiver receiver = gatewayReceivers.iterator().next();
-    CacheServerStats stats = ((CacheServerImpl) receiver.getServer()).getAcceptor().getStats();
-    return stats.getCurrentClientConnections();
-  }
-
-  void checkConnectionLoadBalancedOnServers(MemberVM... members) {
-    int numberOfConnections = members[0].invoke(this::getGatewayReceiverStats);
-
-    for (MemberVM memberVM : members) {
-      await().untilAsserted(() -> assertThat(memberVM.invoke(this::getGatewayReceiverStats))
-          .isLessThan(numberOfConnections + NUM_CONNECTION_PER_SERVER_OFFSET));
-      await().untilAsserted(() -> assertThat(memberVM.invoke(this::getGatewayReceiverStats))
-          .isGreaterThan(numberOfConnections - NUM_CONNECTION_PER_SERVER_OFFSET));
-    }
   }
 
   void startClientSite2(int locatorPort) throws Exception {
