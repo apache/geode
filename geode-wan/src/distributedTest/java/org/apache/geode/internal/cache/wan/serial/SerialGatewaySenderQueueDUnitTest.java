@@ -22,8 +22,8 @@ import static org.assertj.core.api.Assertions.fail;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -31,9 +31,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.wan.GatewayEventFilter;
@@ -99,9 +97,9 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
         () -> WANTestBase.createReplicatedProxyRegion(getTestMethodName() + "_RR", "ln",
             isOffHeap()));
 
-    AsyncInvocation a1 =
+    AsyncInvocation<Void> a1 =
         vm6.invokeAsync(() -> WANTestBase.doPutsSameKey(getTestMethodName() + "_RR", 2000, "DA"));
-    AsyncInvocation a2 =
+    AsyncInvocation<Void> a2 =
         vm7.invokeAsync(() -> WANTestBase.doPutsSameKey(getTestMethodName() + "_RR", 2000, "DA"));
 
     a1.await();
@@ -133,7 +131,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
 
 
   @Test
-  public void testPrimarySecondaryQueueDrainInOrder_RR() throws Exception {
+  public void testPrimarySecondaryQueueDrainInOrder_RR() {
     Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
@@ -186,8 +184,8 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     // secondary queue size stats in serial queue should be 0
     assertThat(v4List.get(10) + v5List.get(10)).isEqualTo(0);
 
-    HashMap primarySenderUpdates = vm4.invoke(WANTestBase::checkQueue);
-    HashMap secondarySenderUpdates = vm5.invoke(WANTestBase::checkQueue);
+    Map<String, List<?>> primarySenderUpdates = vm4.invoke(WANTestBase::checkQueue);
+    Map<String, List<?>> secondarySenderUpdates = vm5.invoke(WANTestBase::checkQueue);
     assertThat(secondarySenderUpdates).isEqualTo(primarySenderUpdates);
 
     vm4.invoke(() -> WANTestBase.resumeSender("ln"));
@@ -206,10 +204,10 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     Wait.pause(5000);
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 1000));
     primarySenderUpdates = vm4.invoke(WANTestBase::checkQueue);
-    HashMap receiverUpdates = vm2.invoke(WANTestBase::checkQueue);
+    Map<String, List<?>> receiverUpdates = vm2.invoke(WANTestBase::checkQueue);
 
-    List destroyList = (List) primarySenderUpdates.get("Destroy");
-    List createList = (List) receiverUpdates.get("Create");
+    List<?> destroyList = primarySenderUpdates.get("Destroy");
+    List<?> createList = receiverUpdates.get("Create");
     for (int i = 0; i < 1000; i++) {
       assertThat(createList.get(i)).isEqualTo(destroyList.get(i));
     }
@@ -226,12 +224,12 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
   }
 
 
-  protected void checkPrimarySenderUpdatesOnVM5(HashMap primarySenderUpdates) {
+  protected void checkPrimarySenderUpdatesOnVM5(Map<String, List<?>> primarySenderUpdates) {
     vm5.invoke(() -> WANTestBase.checkQueueOnSecondary(primarySenderUpdates));
   }
 
   @Test
-  public void testPrimarySecondaryQueueDrainInOrder_PR() throws Exception {
+  public void testPrimarySecondaryQueueDrainInOrder_PR() {
     Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
@@ -272,8 +270,8 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
 
     vm6.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
     Wait.pause(5000);
-    HashMap primarySenderUpdates = vm4.invoke(WANTestBase::checkQueue);
-    HashMap secondarySenderUpdates = vm5.invoke(WANTestBase::checkQueue);
+    Map<String, List<?>> primarySenderUpdates = vm4.invoke(WANTestBase::checkQueue);
+    Map<String, List<?>> secondarySenderUpdates = vm5.invoke(WANTestBase::checkQueue);
     checkPrimarySenderUpdatesOnVM5(primarySenderUpdates);
 
     vm4.invoke(() -> WANTestBase.resumeSender("ln"));
@@ -297,8 +295,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
   public void test_ValidateSerialGatewaySenderQueueAttributes_1() {
     Integer localLocPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
-    Integer remoteLocPort =
-        vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, localLocPort));
+    vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, localLocPort));
 
     WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
@@ -313,7 +310,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     File[] dirs1 = new File[] {directory};
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
     dsf.setDiskDirs(dirs1);
-    DiskStore diskStore = dsf.create("FORNY");
+    dsf.create("FORNY");
 
     GatewaySenderFactory fact = cache.createGatewaySenderFactory();
     fact.setBatchConflationEnabled(true);
@@ -334,9 +331,9 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     try {
       GatewaySender sender1 = fact.create("TKSender", 2);
 
-      RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
+      RegionFactory<?, ?> regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
       regionFactory.addGatewaySenderId(sender1.getId());
-      Region region = regionFactory.create("test_ValidateGatewaySenderAttributes");
+      regionFactory.create("test_ValidateGatewaySenderAttributes");
       Set<GatewaySender> senders = cache.getGatewaySenders();
       assertThat(1).isEqualTo(senders.size());
       GatewaySender gatewaySender = senders.iterator().next();
@@ -357,8 +354,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
   public void test_ValidateSerialGatewaySenderQueueAttributes_2() {
     Integer localLocPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
-    Integer remoteLocPort =
-        vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, localLocPort));
+    vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, localLocPort));
 
     WANTestBase test = new WANTestBase();
     Properties props = test.getDistributedSystemProperties();
@@ -384,9 +380,9 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     final IgnoredException exp = IgnoredException.addIgnoredException("Could not connect");
     try {
       GatewaySender sender1 = fact.create("TKSender", 2);
-      RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
+      RegionFactory<?, ?> regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
       regionFactory.addGatewaySenderId(sender1.getId());
-      Region region = regionFactory.create("test_ValidateGatewaySenderAttributes");
+      regionFactory.create("test_ValidateGatewaySenderAttributes");
       Set<GatewaySender> senders = cache.getGatewaySenders();
       assertThat(1).isEqualTo(senders.size());
       GatewaySender gatewaySender = senders.iterator().next();
@@ -458,8 +454,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
 
     // Create sender with batchSize disabled
     vm4.invoke(() -> WANTestBase.createCache(lnPort));
-    String senderId = "ln";
-    final String builder = String.valueOf(senderId);
+    final String senderId = "ln";
     vm4.invoke(() -> {
       InternalGatewaySenderFactory gateway =
           (InternalGatewaySenderFactory) cache.createGatewaySenderFactory();
@@ -475,7 +470,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
 
     // Create region with the sender ids
     vm4.invoke(() -> WANTestBase.createReplicatedRegion(getTestMethodName() + "_RR",
-        builder, isOffHeap()));
+        senderId, isOffHeap()));
 
     // Do puts
     int numPuts = 100;

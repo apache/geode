@@ -37,7 +37,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -257,6 +256,10 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     }
   }
 
+  /**
+   * Used by {@link #testSenderOrReceiverGoesDownDuringExecution} in annotation.
+   */
+  @SuppressWarnings("unused")
   private Object[] parametersToTestSenderOrReceiverGoesDownDuringExecution() {
     return new Object[] {
         new Object[] {true, true, Gateway.SENDER, false},
@@ -673,7 +676,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     // Check that no entries are left in the queue from B to C
     for (VM serverInB : serversInB) {
-      List<Integer> stats1 = serverInB.invoke(() -> getSenderStats(senderIdInB, 0));
+      serverInB.invoke(() -> getSenderStats(senderIdInB, 0));
     }
 
     // Check that the region's data is the same in sites "A" and "B"
@@ -1390,8 +1393,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Member")
         .hasSize(members);
-    String[] oksList =
-        (String[]) (new ArrayList(Collections.nCopies(members, "OK"))).toArray(new String[0]);
+    String[] oksList = Collections.nCopies(members, "OK").toArray(new String[0]);
     command
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Status")
@@ -1417,8 +1419,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Message")
         .hasSize(members);
-    String[] errorsList =
-        (String[]) (new ArrayList(Collections.nCopies(members, "ERROR"))).toArray(new String[0]);
+    String[] errorsList = Collections.nCopies(members, "ERROR").toArray(new String[0]);
     command
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Status")
@@ -1488,7 +1489,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
   }
 
   private void waitForWanCopyRegionCommandToStart(boolean useParallel, boolean usePartitionedRegion,
-      List<VM> servers) throws InterruptedException {
+      List<VM> servers) {
     // Wait for the command execution to be registered in the service
     final int executionsExpected = useParallel && usePartitionedRegion ? servers.size() : 1;
     await().untilAsserted(
