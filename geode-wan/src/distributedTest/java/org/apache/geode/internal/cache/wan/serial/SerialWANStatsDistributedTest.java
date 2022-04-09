@@ -35,13 +35,13 @@ import org.apache.geode.test.junit.categories.WanTest;
 
 @SuppressWarnings("deprecation")
 @Category({WanTest.class})
-public class SerialWANStatsDUnitTest extends WANTestBase {
+public class SerialWANStatsDistributedTest extends WANTestBase {
 
   private static final long serialVersionUID = 1L;
 
   private String testName;
 
-  public SerialWANStatsDUnitTest() {
+  public SerialWANStatsDistributedTest() {
     super();
   }
 

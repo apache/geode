@@ -16,16 +16,21 @@ package org.apache.geode.internal.cache.wan.offheap;
 
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderOperationsDUnitTest;
+import org.apache.geode.internal.cache.wan.parallel.ParallelWANConflationDistributedTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
-@Category({WanTest.class})
 @SuppressWarnings("serial")
-public class ParallelGatewaySenderOperationsOffHeapDUnitTest
-    extends ParallelGatewaySenderOperationsDUnitTest {
+@Category({WanTest.class})
+public class ParallelWANConflationOffHeapDistributedTest
+    extends ParallelWANConflationDistributedTest {
+
+  public ParallelWANConflationOffHeapDistributedTest() {
+    super();
+  }
 
   @Override
   public boolean isOffHeap() {
     return true;
   }
+
 }

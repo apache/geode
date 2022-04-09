@@ -54,7 +54,7 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
-public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
+public class SerialGatewaySenderQueueDistributedTest extends WANTestBase {
 
   @Test
   public void unprocessedTokensMapShouldDrainCompletely() throws Exception {
@@ -516,7 +516,7 @@ public class SerialGatewaySenderQueueDUnitTest extends WANTestBase {
     }
 
     // Attempt to create one more sender
-    vm4.invoke(SerialGatewaySenderQueueDUnitTest::attemptToCreateGatewaySenderOverLimit);
+    vm4.invoke(SerialGatewaySenderQueueDistributedTest::attemptToCreateGatewaySenderOverLimit);
   }
 
   private static void attemptToCreateGatewaySenderOverLimit() {

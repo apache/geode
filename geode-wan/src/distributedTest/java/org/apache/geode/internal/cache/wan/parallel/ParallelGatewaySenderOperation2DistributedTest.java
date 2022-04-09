@@ -16,17 +16,17 @@ package org.apache.geode.internal.cache.wan.parallel;
 
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.cache.wan.concurrent.ConcurrentParallelGatewaySenderOperation_2_DUnitTest;
+import org.apache.geode.internal.cache.wan.concurrent.ConcurrentParallelGatewaySenderOperation2DistributedTest;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
-public class ParallelGatewaySenderOperation_2_DUnitTest
-    extends ConcurrentParallelGatewaySenderOperation_2_DUnitTest {
+public class ParallelGatewaySenderOperation2DistributedTest
+    extends ConcurrentParallelGatewaySenderOperation2DistributedTest {
 
   private static final long serialVersionUID = 1L;
 
-  public ParallelGatewaySenderOperation_2_DUnitTest() {
+  public ParallelGatewaySenderOperation2DistributedTest() {
     super();
   }
 

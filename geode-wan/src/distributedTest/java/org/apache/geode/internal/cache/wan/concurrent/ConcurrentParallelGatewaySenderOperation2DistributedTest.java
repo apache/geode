@@ -38,11 +38,11 @@ import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
-public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTestBase {
+public class ConcurrentParallelGatewaySenderOperation2DistributedTest extends WANTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  public ConcurrentParallelGatewaySenderOperation_2_DUnitTest() {
+  public ConcurrentParallelGatewaySenderOperation2DistributedTest() {
     super();
   }
 
@@ -290,7 +290,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       vm2.invoke(() -> validateRegionSizeWithinRange(getTestMethodName() + "_PR", 20, 101));
     } finally {
       vm4.invoke(
-          ConcurrentParallelGatewaySenderOperation_2_DUnitTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
+          ConcurrentParallelGatewaySenderOperation2DistributedTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
     }
   }
 
@@ -330,11 +330,11 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       vm2.invoke(() -> validateRegionSize(getTestMethodName() + "_PR", 10));
     } finally {
       vm4.invoke(
-          ConcurrentParallelGatewaySenderOperation_2_DUnitTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
+          ConcurrentParallelGatewaySenderOperation2DistributedTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
       vm5.invoke(
-          ConcurrentParallelGatewaySenderOperation_2_DUnitTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
+          ConcurrentParallelGatewaySenderOperation2DistributedTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
       vm6.invoke(
-          ConcurrentParallelGatewaySenderOperation_2_DUnitTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
+          ConcurrentParallelGatewaySenderOperation2DistributedTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
     }
 
   }
@@ -369,7 +369,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       AsyncInvocation<Void> putAsync =
           vm4.invokeAsync(() -> WANTestBase.doPutsFrom(getTestMethodName() + "_PR", 10, 2000));
       AsyncInvocation<Void> localDestroyAsync =
-          vm4.invokeAsync(() -> ConcurrentParallelGatewaySenderOperation_2_DUnitTest
+          vm4.invokeAsync(() -> ConcurrentParallelGatewaySenderOperation2DistributedTest
               .closeRegion(getTestMethodName() + "_PR"));
       try {
         putAsync.join();
@@ -449,7 +449,7 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       validateRegionSizes(regionName, 20, vm4, vm5, vm6);
     } finally {
       vm7.invoke(
-          ConcurrentParallelGatewaySenderOperation_2_DUnitTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
+          ConcurrentParallelGatewaySenderOperation2DistributedTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
     }
   }
 
@@ -490,9 +490,9 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       validateRegionSizes(regionName, 20, vm4, vm2);
     } finally {
       vm4.invoke(
-          ConcurrentParallelGatewaySenderOperation_2_DUnitTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
+          ConcurrentParallelGatewaySenderOperation2DistributedTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
       vm5.invoke(
-          ConcurrentParallelGatewaySenderOperation_2_DUnitTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
+          ConcurrentParallelGatewaySenderOperation2DistributedTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
     }
   }
 
@@ -538,9 +538,9 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       validateRegionSizes(regionName, 20, vm4, vm6, vm7);
     } finally {
       vm4.invoke(
-          ConcurrentParallelGatewaySenderOperation_2_DUnitTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
+          ConcurrentParallelGatewaySenderOperation2DistributedTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
       vm5.invoke(
-          ConcurrentParallelGatewaySenderOperation_2_DUnitTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
+          ConcurrentParallelGatewaySenderOperation2DistributedTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
     }
   }
 
@@ -580,9 +580,9 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       validateRegionSizes(customerRegionName, 10, vm4, vm5, vm2);
     } finally {
       vm4.invoke(
-          ConcurrentParallelGatewaySenderOperation_2_DUnitTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
+          ConcurrentParallelGatewaySenderOperation2DistributedTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
       vm5.invoke(
-          ConcurrentParallelGatewaySenderOperation_2_DUnitTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
+          ConcurrentParallelGatewaySenderOperation2DistributedTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
     }
   }
 
@@ -616,9 +616,9 @@ public class ConcurrentParallelGatewaySenderOperation_2_DUnitTest extends WANTes
       fail("Expected UnsupportedOperationException");
     } finally {
       vm4.invoke(
-          ConcurrentParallelGatewaySenderOperation_2_DUnitTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
+          ConcurrentParallelGatewaySenderOperation2DistributedTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
       vm5.invoke(
-          ConcurrentParallelGatewaySenderOperation_2_DUnitTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
+          ConcurrentParallelGatewaySenderOperation2DistributedTest::clear_INFINITE_MAXIMUM_SHUTDOWN_WAIT_TIME);
     }
   }
 

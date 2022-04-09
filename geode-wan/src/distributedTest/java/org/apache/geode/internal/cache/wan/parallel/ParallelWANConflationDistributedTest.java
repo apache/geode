@@ -36,10 +36,10 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
-public class ParallelWANConflationDUnitTest extends WANTestBase {
+public class ParallelWANConflationDistributedTest extends WANTestBase {
   private static final long serialVersionUID = 1L;
 
-  public ParallelWANConflationDUnitTest() {
+  public ParallelWANConflationDistributedTest() {
     super();
   }
 

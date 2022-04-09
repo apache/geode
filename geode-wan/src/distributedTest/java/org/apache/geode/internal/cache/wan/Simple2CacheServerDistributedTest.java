@@ -39,12 +39,12 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
-public class Simple2CacheServerDUnitTest extends WANTestBase {
+public class Simple2CacheServerDistributedTest extends WANTestBase {
   private static final int NUM_KEYS = 10;
   static int afterPrimaryCount = 0;
   static int afterProxyReinitialized = 0;
 
-  public Simple2CacheServerDUnitTest() {
+  public Simple2CacheServerDistributedTest() {
     super();
   }
 
@@ -63,11 +63,11 @@ public class Simple2CacheServerDUnitTest extends WANTestBase {
     int serverPort2 = vm2.invoke(WANTestBase::createCacheServer);
 
     if (durable) {
-      vm2.invoke(Simple2CacheServerDUnitTest::setCacheClientProxyTestHook);
+      vm2.invoke(Simple2CacheServerDistributedTest::setCacheClientProxyTestHook);
     } else {
-      vm3.invoke(Simple2CacheServerDUnitTest::setClientServerObserver);
+      vm3.invoke(Simple2CacheServerDistributedTest::setClientServerObserver);
     }
-    vm3.invoke(() -> CacheClientNotifierDUnitTest.createClientWithLocator(lnPort, "localhost",
+    vm3.invoke(() -> CacheClientNotifierDistributedTest.createClientWithLocator(lnPort, "localhost",
         getTestMethodName() + "_PR", "123", durable));
 
     vm0.invoke(() -> WANTestBase.createCache(lnPort));
@@ -76,24 +76,25 @@ public class Simple2CacheServerDUnitTest extends WANTestBase {
     int serverPort3 = vm0.invoke(WANTestBase::createCacheServer);
 
     if (durable) {
-      vm2.invoke(Simple2CacheServerDUnitTest::checkResultAndUnsetCacheClientProxyTestHook);
+      vm2.invoke(Simple2CacheServerDistributedTest::checkResultAndUnsetCacheClientProxyTestHook);
     } else {
-      vm3.invoke(Simple2CacheServerDUnitTest::checkResultAndUnsetClientServerObserver);
+      vm3.invoke(Simple2CacheServerDistributedTest::checkResultAndUnsetClientServerObserver);
     }
     await().until(() -> {
       return checkProxyIsPrimary(vm0) || checkProxyIsPrimary(vm2);
     });
 
     // close the current primary cache server, then re-test
-    int serverPortAtVM1 = vm2.invoke(Simple2CacheServerDUnitTest::findCacheServerForPrimaryProxy);
+    int serverPortAtVM1 =
+        vm2.invoke(Simple2CacheServerDistributedTest::findCacheServerForPrimaryProxy);
     if (serverPortAtVM1 != 0) {
-      vm2.invoke(() -> CacheClientNotifierDUnitTest.closeACacheServer(serverPortAtVM1));
+      vm2.invoke(() -> CacheClientNotifierDistributedTest.closeACacheServer(serverPortAtVM1));
       LogService.getLogger().info("Closed cache server on vm2:" + serverPortAtVM1);
       await().until(() -> {
         return checkProxyIsPrimary(vm0) || checkProxyIsPrimary(vm2);
       });
     } else {
-      vm0.invoke(() -> CacheClientNotifierDUnitTest.closeACacheServer(serverPort3));
+      vm0.invoke(() -> CacheClientNotifierDistributedTest.closeACacheServer(serverPort3));
       LogService.getLogger().info("Closed cache server on vm0:" + serverPort3);
       assertTrue(checkProxyIsPrimary(vm2));
     }

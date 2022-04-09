@@ -84,7 +84,7 @@ import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @RunWith(GeodeParamsRunner.class)
 @Category({WanTest.class})
-public class WanCopyRegionCommandDUnitTest extends WANTestBase {
+public class WanCopyRegionCommandDistributedTest extends WANTestBase {
 
   protected static VM vm8;
   protected static VM vm9;

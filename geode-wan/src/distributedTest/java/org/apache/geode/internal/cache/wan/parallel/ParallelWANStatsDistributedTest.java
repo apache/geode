@@ -44,14 +44,14 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
-public class ParallelWANStatsDUnitTest extends WANTestBase {
+public class ParallelWANStatsDistributedTest extends WANTestBase {
 
   private static final int NUM_PUTS = 100;
   private static final long serialVersionUID = 1L;
 
   private String testName;
 
-  public ParallelWANStatsDUnitTest() {
+  public ParallelWANStatsDistributedTest() {
     super();
   }
 

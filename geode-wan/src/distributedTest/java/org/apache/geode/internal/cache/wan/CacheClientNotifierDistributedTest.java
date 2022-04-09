@@ -57,7 +57,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
-public class CacheClientNotifierDUnitTest extends WANTestBase {
+public class CacheClientNotifierDistributedTest extends WANTestBase {
 
   private static final int NUM_KEYS = 10;
 

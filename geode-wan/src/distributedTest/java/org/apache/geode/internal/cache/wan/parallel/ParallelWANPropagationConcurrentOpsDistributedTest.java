@@ -28,11 +28,11 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
-public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
+public class ParallelWANPropagationConcurrentOpsDistributedTest extends WANTestBase {
 
   private static final long serialVersionUID = 1L;
 
-  public ParallelWANPropagationConcurrentOpsDUnitTest() {
+  public ParallelWANPropagationConcurrentOpsDistributedTest() {
     super();
   }
 

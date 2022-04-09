@@ -55,7 +55,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 
-public class SerialWANConflationDUnitTest extends WANTestBase {
+public class SerialWANConflationDistributedTest extends WANTestBase {
 
   @Rule
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
