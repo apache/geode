@@ -37,9 +37,9 @@ import org.apache.geode.test.junit.categories.WanTest;
  *
  */
 @Category({WanTest.class})
-public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
+public class ConcurrentParallelGatewaySenderDistributedTest extends WANTestBase {
 
-  public ConcurrentParallelGatewaySenderDUnitTest() {
+  public ConcurrentParallelGatewaySenderDistributedTest() {
     super();
   }
 

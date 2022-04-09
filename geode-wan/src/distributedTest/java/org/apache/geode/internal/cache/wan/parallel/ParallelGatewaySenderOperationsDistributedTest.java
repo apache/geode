@@ -85,7 +85,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * DUnit test for operations on ParallelGatewaySender
  */
 @Category(WanTest.class)
-public class ParallelGatewaySenderOperationsDUnitTest extends WANTestBase {
+public class ParallelGatewaySenderOperationsDistributedTest extends WANTestBase {
 
   @Rule
   public SerializableTestName testName = new SerializableTestName();

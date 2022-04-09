@@ -33,7 +33,7 @@ import org.apache.geode.test.junit.categories.WanTest;
  * DUnit for ParallelSenderQueue alert threshold.
  */
 @Category({WanTest.class})
-public class ParallelGatewaySenderAlertThresholdDUnitTest extends WANTestBase {
+public class ParallelGatewaySenderAlertThresholdDistributedTest extends WANTestBase {
 
   @Test
   public void testParallelSenderQueueEventsAlertThreshold() {
@@ -98,13 +98,13 @@ public class ParallelGatewaySenderAlertThresholdDUnitTest extends WANTestBase {
     });
 
     int v4alert = vm4.invoke(
-        ParallelGatewaySenderAlertThresholdDUnitTest::checkSenderMBeanAlertThreshold);
+        ParallelGatewaySenderAlertThresholdDistributedTest::checkSenderMBeanAlertThreshold);
     int v5alert = vm5.invoke(
-        ParallelGatewaySenderAlertThresholdDUnitTest::checkSenderMBeanAlertThreshold);
+        ParallelGatewaySenderAlertThresholdDistributedTest::checkSenderMBeanAlertThreshold);
     int v6alert = vm6.invoke(
-        ParallelGatewaySenderAlertThresholdDUnitTest::checkSenderMBeanAlertThreshold);
+        ParallelGatewaySenderAlertThresholdDistributedTest::checkSenderMBeanAlertThreshold);
     int v7alert = vm7.invoke(
-        ParallelGatewaySenderAlertThresholdDUnitTest::checkSenderMBeanAlertThreshold);
+        ParallelGatewaySenderAlertThresholdDistributedTest::checkSenderMBeanAlertThreshold);
 
     assertThat((v4alert + v5alert + v6alert + v7alert) > 0).as(
         "GatewaySenders MBean should contain number of EventsExceedingAlertThreshold > 0").isTrue();
@@ -172,13 +172,13 @@ public class ParallelGatewaySenderAlertThresholdDUnitTest extends WANTestBase {
     });
 
     int v4alert = vm4.invoke(
-        ParallelGatewaySenderAlertThresholdDUnitTest::checkSenderMBeanAlertThreshold);
+        ParallelGatewaySenderAlertThresholdDistributedTest::checkSenderMBeanAlertThreshold);
     int v5alert = vm5.invoke(
-        ParallelGatewaySenderAlertThresholdDUnitTest::checkSenderMBeanAlertThreshold);
+        ParallelGatewaySenderAlertThresholdDistributedTest::checkSenderMBeanAlertThreshold);
     int v6alert = vm6.invoke(
-        ParallelGatewaySenderAlertThresholdDUnitTest::checkSenderMBeanAlertThreshold);
+        ParallelGatewaySenderAlertThresholdDistributedTest::checkSenderMBeanAlertThreshold);
     int v7alert = vm7.invoke(
-        ParallelGatewaySenderAlertThresholdDUnitTest::checkSenderMBeanAlertThreshold);
+        ParallelGatewaySenderAlertThresholdDistributedTest::checkSenderMBeanAlertThreshold);
 
     assertThat(0).as(
         "GatewaySenders MBean should contain number of EventsExceedingAlertThreshold = 0")
