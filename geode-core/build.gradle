@@ -385,7 +385,6 @@ dependencies {
   }
   distributedTestImplementation('pl.pragmatists:JUnitParams')
   distributedTestImplementation('com.jayway.jsonpath:json-path-assert')
-  distributedTestImplementation('net.openhft:compiler')
 
   distributedTestRuntimeOnly('org.apache.derby:derby')
 
