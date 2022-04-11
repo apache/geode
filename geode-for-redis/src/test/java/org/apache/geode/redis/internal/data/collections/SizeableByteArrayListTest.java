@@ -509,11 +509,6 @@ public class SizeableByteArrayListTest {
       list.addLast(String.valueOf(i).getBytes());
     }
     list.addLast(bytes);
-
-    String[] expectedContents =
-        {repeatedElement, "0", repeatedElement, "1", repeatedElement, "2", repeatedElement, "3",
-            repeatedElement, "4",
-            repeatedElement, "5", repeatedElement};
     return list;
   }
 
