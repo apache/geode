@@ -37,6 +37,7 @@ import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -62,65 +63,53 @@ public class ConnectionTransmissionTest {
    * Create a sender connection and a receiver connection and pass data from
    * one to the other.
    *
-   * This test uses a real socket, but attempts to mock all other collaborators
+   * This test uses a real socket, but mocks all other collaborators
    * of connection, such as the InternalDistributedSystem.
    */
   @Test
   public void testDataTransmittedBetweenSenderAndReceiverIfMembershipCheckPassed()
       throws Exception {
-    final DMStats stats = mock(DMStats.class);
-    final BufferPool bufferPool = new BufferPool(stats);
-
-    final ServerSocketChannel acceptorSocket = createReceiverSocket();
-    final int serverSocketPort = acceptorSocket.socket().getLocalPort();
-
-    final CompletableFuture<Connection> readerFuture = createReaderFuture(acceptorSocket, true);
-
-    // Create a sender that connects to the server socket, which should trigger the
-    // reader to be created
-    final Connection sender = createWriter(serverSocketPort, false);
-    // Get the reader from the future
-    final Connection reader = readerFuture.get();
-
-    final ReplyMessage msg = createRelyMessage(sender);
-
-    final List<Connection> connections = new ArrayList<>();
-    connections.add(sender);
-
-    final BaseMsgStreamer streamer = MsgStreamer.create(connections, msg, false, stats, bufferPool);
-    streamer.writeMessage();
+    final Connection reader = createConnectionsAndWriteMessage(true, false, false);
 
     await().untilAsserted(() -> verify(reader, times(1)).readMessage(any(), any()));
-
     assertThat(reader.isClosing()).isFalse();
-    verify(reader, times(1)).readHandshakeForReceiver(any());
+    verify(reader).readHandshakeForReceiver(any());
+    verify(reader).readMessage(any(), any());
     verify(reader, times(0)).requestClose(any());
   }
 
   @Test
   public void testReceiverClosesConnectionIfMembershipCheckFailed() throws Exception {
+    final Connection reader = createConnectionsAndWriteMessage(false, true, true);
+
+    await().untilAsserted(() -> assertThat(assertThat(reader.isClosing()).isTrue()));
+    verify(reader).readHandshakeForReceiver(any());
+    verify(reader).requestClose("timed out during a membership check");
+  }
+
+  private Connection createConnectionsAndWriteMessage(final boolean isSenderInView,
+      final boolean isCancelInProgress, final boolean waitUntilReaderExits)
+      throws IOException, InterruptedException, ExecutionException {
     final DMStats stats = mock(DMStats.class);
     final BufferPool bufferPool = new BufferPool(stats);
     final ServerSocketChannel acceptorSocket = createReceiverSocket();
 
     final int serverSocketPort = acceptorSocket.socket().getLocalPort();
-    final CompletableFuture<Connection> readerFuture = createReaderFuture(acceptorSocket, false);
+    final CompletableFuture<Connection> readerFuture =
+        createReaderFuture(acceptorSocket, isSenderInView);
 
-    final Connection sender = createWriter(serverSocketPort, true);
+    final Connection sender =
+        createWriter(serverSocketPort, isCancelInProgress, waitUntilReaderExits);
 
     final Connection reader = readerFuture.get();
-    final ReplyMessage msg = createRelyMessage(sender);
+    final ReplyMessage msg = createReplyMessage(sender);
 
     final List<Connection> connections = new ArrayList<>();
     connections.add(sender);
 
     final BaseMsgStreamer streamer = MsgStreamer.create(connections, msg, false, stats, bufferPool);
     streamer.writeMessage();
-
-    await().untilAsserted(() -> assertThat(assertThat(reader.isClosing()).isTrue()));
-
-    verify(reader, times(1)).readHandshakeForReceiver(any());
-    verify(reader, times(1)).requestClose("timed out during a membership check");
+    return reader;
   }
 
   /**
@@ -128,8 +117,8 @@ public class ConnectionTransmissionTest {
    * When the sender connects, this runnable will create a receiver connection and
    * return it to the future.
    */
-  private CompletableFuture<Connection> createReaderFuture(ServerSocketChannel acceptorSocket,
-      boolean isSenderInView) {
+  private CompletableFuture<Connection> createReaderFuture(final ServerSocketChannel acceptorSocket,
+      final boolean isSenderInView) {
     return CompletableFuture.supplyAsync(
         () -> createReceiverConnectionOnFirstAccept(acceptorSocket, isSenderInView));
   }
@@ -146,7 +135,7 @@ public class ConnectionTransmissionTest {
   /**
    * Creates a dummy reply message.
    */
-  private ReplyMessage createRelyMessage(Connection sender) {
+  private ReplyMessage createReplyMessage(final Connection sender) {
     final ReplyMessage msg = new ReplyMessage();
     msg.setProcessorId(1);
     msg.setRecipient(sender.getRemoteAddress());
@@ -156,35 +145,37 @@ public class ConnectionTransmissionTest {
   /**
    * Create a sender that connects to the server socket.
    */
-  private Connection createWriter(final int serverSocketPort, boolean isCancelInProgress)
+  private Connection createWriter(final int serverSocketPort, final boolean isCancelInProgress,
+      boolean waitUntilReaderExits)
       throws IOException {
-    final ConnectionTable writerTable = mockConnectionTable();
+    final ConnectionTable writerTable = mockConnectionTable(waitUntilReaderExits);
 
     final Membership<InternalDistributedMember> membership = mock(Membership.class);
     final TCPConduit conduit = writerTable.getConduit();
+    final InternalDistributedMember remoteAddr =
+        new InternalDistributedMember(InetAddress.getLocalHost(), 0, true, true);
+    final InternalDistributedMember senderAddr =
+        new InternalDistributedMember(InetAddress.getLocalHost(), 1, true, true);
 
     when(conduit.getCancelCriterion().isCancelInProgress()).thenReturn(isCancelInProgress);
     when(conduit.getMembership()).thenReturn(membership);
-    when(membership.memberExists(any())).thenReturn(true);
-    final InternalDistributedMember remoteAddr =
-        new InternalDistributedMember(InetAddress.getLocalHost(), 0, true, true);
-    remoteAddr.setDirectChannelPort(serverSocketPort);
-    final InternalDistributedMember senderAddr =
-        new InternalDistributedMember(InetAddress.getLocalHost(), 1, true, true);
     when(conduit.getDM().getCanonicalId(remoteAddr)).thenReturn(remoteAddr);
     when(conduit.getDM().getCanonicalId(senderAddr)).thenReturn(senderAddr);
-    senderAddr.setDirectChannelPort(conduit.getPort());
     when(conduit.getMemberId()).thenReturn(senderAddr);
+    when(membership.memberExists(any())).thenReturn(true);
+
+    remoteAddr.setDirectChannelPort(serverSocketPort);
+    senderAddr.setDirectChannelPort(conduit.getPort());
 
     return spy(Connection.createSender(membership, writerTable, true, remoteAddr, true,
         System.currentTimeMillis(), 1000, 1000));
   }
 
   private Connection createReceiverConnectionOnFirstAccept(final ServerSocketChannel acceptorSocket,
-      boolean isSenderInView) {
+      final boolean isSenderInView) {
     try {
       final SocketChannel readerSocket = acceptorSocket.accept();
-      final ConnectionTable readerTable = mockConnectionTable();
+      final ConnectionTable readerTable = mockConnectionTable(false);
       if (isSenderInView) {
         when(readerTable.getConduit().waitForMembershipCheck(any())).thenReturn(true);
       }
@@ -205,7 +196,12 @@ public class ConnectionTransmissionTest {
     }
   }
 
-  private ConnectionTable mockConnectionTable() throws UnknownHostException {
+  /**
+   * @param waitUntilReaderExits if true, start reader thread and wait until it exits,
+   *        otherwise run it asynchronously.
+   */
+  private ConnectionTable mockConnectionTable(final boolean waitUntilReaderExits)
+      throws UnknownHostException {
     final ConnectionTable connectionTable = mock(ConnectionTable.class);
     final Distribution distribution = mock(Distribution.class);
     final DistributionManager distributionManager = mock(DistributionManager.class);
@@ -218,41 +214,44 @@ public class ConnectionTransmissionTest {
     final DistributionConfig config = mock(DistributionConfig.class);
 
     System.setProperty(SECURITY_SYSTEM_PREFIX + SECURITY_PEER_AUTH_INIT, "true");
+    tcpConduit.tcpBufferSize = DEFAULT_SOCKET_BUFFER_SIZE;
+
     when(connectionTable.getBufferPool()).thenReturn(new BufferPool(dmStats));
     when(connectionTable.getConduit()).thenReturn(tcpConduit);
     when(connectionTable.getDM()).thenReturn(distributionManager);
-    when(distributionManager.getConfig()).thenReturn(config);
     when(connectionTable.getSocketCloser()).thenReturn(socketCloser);
+
+    when(distributionManager.getConfig()).thenReturn(config);
     when(distributionManager.getDistribution()).thenReturn(distribution);
-    when(stopper.cancelInProgress()).thenReturn(null);
-    when(tcpConduit.getCancelCriterion()).thenReturn(stopper);
+    when(distributionManager.getThreadMonitoring()).thenReturn(threadMonitoring);
+
     when(tcpConduit.getDM()).thenReturn(distributionManager);
+    when(tcpConduit.getCancelCriterion()).thenReturn(stopper);
     when(tcpConduit.getSocketId()).thenReturn(new InetSocketAddress(getLocalHost(), 10337));
     when(tcpConduit.getStats()).thenReturn(dmStats);
-    when(distributionManager.getThreadMonitoring()).thenReturn(threadMonitoring);
-    when(threadMonitoring.createAbstractExecutor(any())).thenReturn(threadMonitoringExecutor);
     when(tcpConduit.getConfig()).thenReturn(config);
-    tcpConduit.tcpBufferSize = DEFAULT_SOCKET_BUFFER_SIZE;
+
+    when(stopper.cancelInProgress()).thenReturn(null);
+    when(threadMonitoring.createAbstractExecutor(any())).thenReturn(threadMonitoringExecutor);
 
     doAnswer(invocationOnMock -> {
       final Runnable runnable = (invocationOnMock.getArgument(0));
-      CompletableFuture.runAsync(() -> {
-        try {
-          runnable.run();
-
-        } catch (final Exception e) {
-          e.printStackTrace();
-          throw e;
-        }
-      });
-      try {
-        Thread.sleep(1000);
-      } catch (final InterruptedException ex) {
-        ex.printStackTrace();
-        throw ex;
+      if (waitUntilReaderExits) {
+        startReader(runnable);
+      } else {
+        CompletableFuture.runAsync(() -> startReader(runnable));
       }
       return null;
     }).when(connectionTable).executeCommand(any());
     return connectionTable;
+  }
+
+  private void startReader(Runnable runnable) {
+    try {
+      runnable.run();
+    } catch (final Exception e) {
+      e.printStackTrace();
+      throw e;
+    }
   }
 }
