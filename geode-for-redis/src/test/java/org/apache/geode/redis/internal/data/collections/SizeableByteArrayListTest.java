@@ -17,7 +17,9 @@ package org.apache.geode.redis.internal.data.collections;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,7 +40,7 @@ public class SizeableByteArrayListTest {
   private final int INITIAL_NUMBER_OF_ELEMENTS = 20;
 
   @Test
-  public void remove_removesElementsFromHeadWhenCountIsPositive() {
+  public void removeNElements_removesElementsFromHeadWhenCountIsPositive() {
     String repeatedElement = "anElement";
     SizeableByteArrayList list = setupListWithDuplicateValues(repeatedElement);
 
@@ -55,7 +57,7 @@ public class SizeableByteArrayListTest {
   }
 
   @Test
-  public void remove_removesElementsFromTailWhenCountIsNegative() {
+  public void removeNElements_removesElementsFromTailWhenCountIsNegative() {
     String repeatedElement = "anElement";
     SizeableByteArrayList list = setupListWithDuplicateValues(repeatedElement);
 
@@ -73,7 +75,7 @@ public class SizeableByteArrayListTest {
   }
 
   @Test
-  public void remove_removesAllElementsWhenCountIsZero() {
+  public void removeNElements_removesAllElementsWhenCountIsZero() {
     String repeatedElement = "anElement";
     SizeableByteArrayList list = setupListWithDuplicateValues(repeatedElement);
 
@@ -88,7 +90,7 @@ public class SizeableByteArrayListTest {
   }
 
   @Test
-  public void remove_removesAllElementsWhenCountIsGreaterThanSize() {
+  public void removeNElements_removesAllElementsWhenCountIsGreaterThanSize() {
     String repeatedElement = "anElement";
     SizeableByteArrayList list = setupListWithDuplicateValues(repeatedElement);
 
@@ -103,7 +105,7 @@ public class SizeableByteArrayListTest {
   }
 
   @Test
-  public void remove_removesAllElementsWhenCountIsGreaterThanSizeWithNegativeCount() {
+  public void removeNElements_removesAllElementsWhenCountIsGreaterThanSizeWithNegativeCount() {
     String repeatedElement = "anElement";
     SizeableByteArrayList list = setupListWithDuplicateValues(repeatedElement);
 
@@ -161,7 +163,7 @@ public class SizeableByteArrayListTest {
   @Test
   public void indexOf_returnsIndexOfElementWhenElementExist() {
     SizeableByteArrayList list = setupList(INITIAL_NUMBER_OF_ELEMENTS);
-    for (int i = 0; i > INITIAL_NUMBER_OF_ELEMENTS; i++) {
+    for (int i = 0; i < INITIAL_NUMBER_OF_ELEMENTS; i++) {
       assertThat(list.indexOf(list.get(i))).isEqualTo(i);
     }
   }
@@ -169,7 +171,6 @@ public class SizeableByteArrayListTest {
   @Test
   public void indexOf_returnsNegativeOneWhenElementDoesNotExist() {
     SizeableByteArrayList list = setupList(2);
-    assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
     Object nonExisting = "nonExisting".getBytes();
     assertThat(list.indexOf(nonExisting)).isEqualTo(-1);
   }
@@ -211,10 +212,20 @@ public class SizeableByteArrayListTest {
     SizeableByteArrayList list = setupList(size);
     assertThatThrownBy(() -> list.removeIndexes(Arrays.asList(-1))).isInstanceOf(
         IndexOutOfBoundsException.class);
-    assertThatThrownBy(() -> list.removeIndexes(Arrays.asList(1, 5))).isInstanceOf(
+    assertThat(list.size()).isEqualTo(size);
+    assertThatThrownBy(() -> list.removeIndexes(Arrays.asList(1, size))).isInstanceOf(
         IndexOutOfBoundsException.class);
+    assertThat(list.size()).isEqualTo(size);
     assertThatThrownBy(() -> list.removeIndexes(Arrays.asList(-1, 2, 3, 4))).isInstanceOf(
         IndexOutOfBoundsException.class);
+    assertThat(list.size()).isEqualTo(size);
+    assertThatThrownBy(() -> list.removeIndexes(Collections.singletonList(size))).isInstanceOf(
+        IndexOutOfBoundsException.class);
+    assertThat(list.size()).isEqualTo(size);
+    assertThatThrownBy(() -> list.removeIndexes(Arrays.asList(2, 3, 4, size))).isInstanceOf(
+        IndexOutOfBoundsException.class);
+    assertThat(list.size()).isEqualTo(size);
+
   }
 
   @Test
@@ -228,7 +239,7 @@ public class SizeableByteArrayListTest {
   }
 
   @Test
-  public void remove_WithElement_removesGivenElementIfElementToRemoveDoesExists() {
+  public void remove_WithElement_removesGivenElementIfElementToRemoveExists() {
     int size = 5;
     SizeableByteArrayList list = setupList(size);
     byte[] elementToRemove = list.get(2);
@@ -263,7 +274,7 @@ public class SizeableByteArrayListTest {
   }
 
   @Test
-  public void remove_WithIndex_removesGivenIndexElementIsValid() {
+  public void remove_WithIndex_removesIndexWhenGivenIndexToRemoveIsValid() {
     int size = 5;
     int elementToRemove = 1;
     SizeableByteArrayList list = setupList(size);
@@ -280,7 +291,7 @@ public class SizeableByteArrayListTest {
   }
 
   @Test
-  public void remove_WithIndex_throwsIndexOutOfBoundsExceptionIfIndexElementIsInvalid() {
+  public void remove_WithIndex_throwsIndexOutOfBoundsExceptionIfIndexIsInvalid() {
     int size = 5;
     SizeableByteArrayList list = setupList(size);
     assertThatThrownBy(() -> list.remove(size)).isInstanceOf(
@@ -297,7 +308,7 @@ public class SizeableByteArrayListTest {
   }
 
   @Test
-  public void set_setsNewElementAtGivenIndexIsValid() {
+  public void set_setsNewElementAtIndex_withValidIndex() {
     int size = 5;
     SizeableByteArrayList list = setupList(size);
 
@@ -316,7 +327,7 @@ public class SizeableByteArrayListTest {
   }
 
   @Test
-  public void set_throwsIndexOutOfBoundsExceptionIfIndexElementIsInvalid() {
+  public void set_throwsIndexOutOfBoundsExceptionIfIndexIsInvalid() {
     int size = 5;
     byte[] newElement = "new Element".getBytes();
     SizeableByteArrayList list = setupList(size);
@@ -327,7 +338,8 @@ public class SizeableByteArrayListTest {
   }
 
   @Test
-  public void add_addsNewElementAtGivenIndexIsValid() {
+  @Parameters({"0", "2", "5"})
+  public void add_addsNewElementAtIndex_withValidIndex(int indexToAdd) {
     int size = 5;
     SizeableByteArrayList list = setupList(size);
 
@@ -337,10 +349,9 @@ public class SizeableByteArrayListTest {
     assertThat(list).containsExactlyElementsOf(expectedList);
 
     byte[] newElement = "new Element".getBytes();
-    int indexToBeSet = 5;
 
-    list.add(indexToBeSet, newElement);
-    expectedList.add(indexToBeSet, newElement);
+    list.add(indexToAdd, newElement);
+    expectedList.add(indexToAdd, newElement);
     assertThat(list).containsExactlyElementsOf(expectedList);
   }
 
@@ -487,6 +498,267 @@ public class SizeableByteArrayListTest {
 
   }
 
+  @Test
+  public void getSizeInBytesIsAccurate_ForEmptySizeableByteArrayList() {
+    SizeableByteArrayList list = new SizeableByteArrayList();
+    assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+  }
+
+  @Test
+  public void getSizeInBytesIsAccurate_ForSizeableByteArrayListElements() {
+    int elementsToAdd = 100;
+
+    // Create a list with an initial size and confirm that it correctly reports its size
+    SizeableByteArrayList list = createList();
+    assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+
+    // Add elements and assert that the size is correct after each add
+    for (int i = INITIAL_NUMBER_OF_ELEMENTS; i < INITIAL_NUMBER_OF_ELEMENTS + elementsToAdd; ++i) {
+      list.addFirst(makeByteArrayOfSpecifiedLength(i));
+      assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+    }
+    assertThat(list.size()).isEqualTo(INITIAL_NUMBER_OF_ELEMENTS + elementsToAdd);
+
+    // Remove all the elements and assert that the size is correct after each remove
+    for (int i = 0; i < INITIAL_NUMBER_OF_ELEMENTS + elementsToAdd; ++i) {
+      list.remove(0);
+      assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+    }
+    assertThat(list.size()).isEqualTo(0);
+  }
+
+  @Test
+  public void getSizeInBytesIsAccurate_ForCopiedList() {
+    SizeableByteArrayList original = createList();
+    SizeableByteArrayList copy = new SizeableByteArrayList(original);
+
+    assertThat(original.getSizeInBytes()).isEqualTo(copy.getSizeInBytes());
+  }
+
+  @Test
+  public void clearSublist_getSizeInBytesIsAccurate() {
+    // Create a list with an initial size and confirm that it correctly reports its size
+    SizeableByteArrayList list = createList();
+    assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+
+    // Remove subset of elements and assert that the size is correct
+    list.clearSublist(INITIAL_NUMBER_OF_ELEMENTS / 5, INITIAL_NUMBER_OF_ELEMENTS / 2);
+    assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+
+    list.clearSublist(0, list.size());
+    assertThat(list.size()).isEqualTo(0);
+  }
+
+  @Test
+  public void removeObjects_getSizeInBytesIsAccurate() {
+    // Create a list with only duplicate elements and confirm that it correctly reports its size
+    SizeableByteArrayList list = new SizeableByteArrayList();
+    byte[] bytes = "anElement".getBytes();
+    for (int i = 0; i < INITIAL_NUMBER_OF_ELEMENTS; ++i) {
+      // Clone the byte array because otherwise we end up with the list containing multiple
+      // references to the same object in memory rather than references to multiple different
+      // objects
+      list.addFirst(bytes.clone());
+    }
+    assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+
+    // Remove elements from the head
+    list.removeNElements(bytes, INITIAL_NUMBER_OF_ELEMENTS / 4);
+    assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+
+    // Remove elements from the tail
+    list.removeNElements(bytes, INITIAL_NUMBER_OF_ELEMENTS / 4);
+    assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+
+    // Remove all of the remaining elements
+    list.removeNElements(bytes, 0);
+    assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+    assertThat(list).isEmpty();
+  }
+
+  @Test
+  public void removeObject_getSizeInBytesIsAccurate() {
+    // Create a list with an initial size and confirm that it correctly reports its size
+    SizeableByteArrayList list = createList();
+    assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+
+    // Remove all the elements and assert that the size is correct after each remove
+    for (int i = 0; i < INITIAL_NUMBER_OF_ELEMENTS; ++i) {
+      list.remove(makeByteArrayOfSpecifiedLength(i + 1));
+      assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+    }
+    assertThat(list.size()).isEqualTo(0);
+  }
+
+  @Test
+  public void removeIndexes_getSizeInBytesIsAccurate() {
+    // Create a list with an initial size and confirm that it correctly reports its size
+    SizeableByteArrayList list = createList();
+    assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+
+    // Remove all the elements and assert that the size is correct after each remove
+    for (int i = INITIAL_NUMBER_OF_ELEMENTS - 1; 0 <= i;) {
+      // Remove in batches of 5
+      List<Integer> indexesToRemove = new ArrayList<>(5);
+      for (int j = 0; j < 5 && i >= 0; j++) {
+        indexesToRemove.add(0, i--);
+      }
+      list.removeIndexes(indexesToRemove);
+      assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+    }
+    assertThat(list.size()).isEqualTo(0);
+  }
+
+  @Test
+  public void removeIndex_getSizeInBytesIsAccurate() {
+    // Create a list with an initial size and confirm that it correctly reports its size
+    SizeableByteArrayList list = createList();
+    assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+
+    // Remove all the elements and assert that the size is correct after each remove
+    for (int i = INITIAL_NUMBER_OF_ELEMENTS - 1; 0 <= i; --i) {
+      list.remove(i);
+      assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+    }
+    assertThat(list.size()).isEqualTo(0);
+  }
+
+  @Test
+  public void set_getSizeInBytesIsAccurate() {
+    // Create a list with one initial element and confirm that it correctly reports its size
+    SizeableByteArrayList list = new SizeableByteArrayList();
+    byte[] element = "element name".getBytes();
+    list.addFirst(element);
+    long initialSize = list.getSizeInBytes();
+    assertThat(initialSize).isEqualTo(sizer.sizeof(list));
+
+    // Set the list's element to a larger element and ensure the size is correct
+    byte[] largerElement = "a larger updated element name".getBytes();
+    list.set(0, largerElement);
+    assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+
+    // Revert the list's element to the original value and ensure size is consistent
+    list.set(0, element);
+    assertThat(list.getSizeInBytes()).isEqualTo(initialSize);
+  }
+
+  @Test
+  public void addElementAtIndex_getSizeInBytesIsAccurate() {
+    // Create a new list and confirm that it correctly reports its size
+    SizeableByteArrayList list = createList();
+    assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+
+    // Add an element by index and assert size is updated
+    byte[] element = "element name".getBytes();
+    list.add(1, element);
+    long sizeAfterAddingElement = list.getSizeInBytes();
+    assertThat(sizeAfterAddingElement).isEqualTo(sizer.sizeof(list));
+  }
+
+  @Test
+  public void addFirst_getSizeInBytesIsAccurate() {
+    // Create a new list and confirm that it correctly reports its size
+    SizeableByteArrayList list = createList();
+    assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+
+    // Add an element and assert size is updated
+    byte[] element = "element name".getBytes();
+    list.addFirst(element);
+    long sizeAfterAddingElement = list.getSizeInBytes();
+    assertThat(sizeAfterAddingElement).isEqualTo(sizer.sizeof(list));
+  }
+
+  @Test
+  public void addLast_getSizeInBytesIsAccurate() {
+    // Create a new list and confirm that it correctly reports its size
+    SizeableByteArrayList list = createList();
+    assertThat(list.getSizeInBytes()).isEqualTo(sizer.sizeof(list));
+
+    // Add an element and assert size is updated
+    byte[] element = "element name".getBytes();
+    list.addLast(element);
+    long sizeAfterAddingElement = list.getSizeInBytes();
+    assertThat(sizeAfterAddingElement).isEqualTo(sizer.sizeof(list));
+  }
+
+  @Test
+  public void insertElementBeforeReferenceElement_getSizeInBytesIsAccurate() {
+    // Create a new list and confirm that it correctly reports its size
+    SizeableByteArrayList list = new SizeableByteArrayList();
+    byte[] referenceElement = "element".getBytes();
+    list.addFirst(referenceElement);
+    long initialSize = list.getSizeInBytes();
+    assertThat(initialSize).isEqualTo(sizer.sizeof(list));
+
+    // Insert an element by reference and assert size is updated
+    byte[] beforeElement = "before".getBytes();
+    list.insert(beforeElement, referenceElement, true);
+
+    long sizeAfterAddingElement = list.getSizeInBytes();
+    assertThat(sizeAfterAddingElement).isEqualTo(sizer.sizeof(list));
+  }
+
+  @Test
+  public void insertElementAfterReferenceElement_getSizeInBytesIsAccurate() {
+    // Create a new list and confirm that it correctly reports its size
+    SizeableByteArrayList list = new SizeableByteArrayList();
+    byte[] referenceElement = "element".getBytes();
+    list.addFirst(referenceElement);
+    long initialSize = list.getSizeInBytes();
+    assertThat(initialSize).isEqualTo(sizer.sizeof(list));
+
+    // Insert an element by reference and assert size is updated
+    byte[] beforeElement = "after".getBytes();
+    list.insert(beforeElement, referenceElement, false);
+
+    long sizeAfterAddingElement = list.getSizeInBytes();
+    assertThat(sizeAfterAddingElement).isEqualTo(sizer.sizeof(list));
+  }
+
+  @Test
+  public void insertElementBeforeReferenceElement_placesElementCorrectly() {
+    // Create a new list with a single element
+    SizeableByteArrayList list = new SizeableByteArrayList();
+    byte[] referenceElement = "element".getBytes();
+    list.addFirst(referenceElement);
+
+    // Insert new element before reference element
+    byte[] beforeElement = "before".getBytes();
+    list.insert(beforeElement, referenceElement, true);
+
+    // Assert list contains exactly the elements in the expected order
+    assertThat(list).containsExactly(beforeElement, referenceElement);
+  }
+
+  @Test
+  public void insertElementAfterReferenceElement_placesElementCorrectly() {
+    // Create a new list with a single element
+    SizeableByteArrayList list = new SizeableByteArrayList();
+    byte[] referenceElement = "element".getBytes();
+    list.addFirst(referenceElement);
+
+    // Insert new element after reference element
+    byte[] afterElement = "after".getBytes();
+    list.insert(afterElement, referenceElement, false);
+
+    // Assert list contains exactly the elements in the expected order
+    assertThat(list).containsExactly(referenceElement, afterElement);
+  }
+
+  @Test
+  public void insertElementAfterNonexistentReferenceElement_doesNotPlaceElement() {
+    // Create a new list with a single element
+    SizeableByteArrayList list = new SizeableByteArrayList();
+    byte[] nonExistentElement = "non-existent-element".getBytes();
+
+    // Attempt to insert an element after a non-existent reference element
+    byte[] afterElement = "after".getBytes();
+    list.insert(afterElement, nonExistentElement, false);
+
+    // Assert that no elements were added to the list
+    assertThat(list).isEmpty();
+  }
+
   private SizeableByteArrayList setupList(int size) {
     SizeableByteArrayList list = new SizeableByteArrayList();
     for (int i = 0; i < size; i++) {
@@ -494,6 +766,8 @@ public class SizeableByteArrayListTest {
     }
     return list;
   }
+
+
 
   private SizeableByteArrayList setupListWithDuplicateValues(String repeatedElement) {
     SizeableByteArrayList list = new SizeableByteArrayList();
@@ -503,6 +777,14 @@ public class SizeableByteArrayListTest {
       list.addLast(String.valueOf(i).getBytes());
     }
     list.addLast(bytes);
+    return list;
+  }
+
+  private SizeableByteArrayList createList() {
+    SizeableByteArrayList list = new SizeableByteArrayList();
+    for (int i = 0; i < INITIAL_NUMBER_OF_ELEMENTS; ++i) {
+      list.addFirst(makeByteArrayOfSpecifiedLength(i + 1));
+    }
     return list;
   }
 
