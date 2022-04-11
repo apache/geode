@@ -113,6 +113,7 @@ public class MessageDispatcher extends LoggingThread {
   private volatile boolean _isStopped = true;
 
   private volatile long waitForReAuthenticationStartTime = -1;
+  private final Object reAuthenticationLock = new Object();
 
   /**
    * A lock object used to control pausing this dispatcher
@@ -191,6 +192,15 @@ public class MessageDispatcher extends LoggingThread {
 
   public boolean isWaitingForReAuthentication() {
     return waitForReAuthenticationStartTime > 0;
+  }
+
+  private boolean subjectUpdated = false;
+
+  public void notifyReAuthentication() {
+    synchronized (reAuthenticationLock) {
+      subjectUpdated = true;
+      reAuthenticationLock.notifyAll();
+    }
   }
 
   private CacheClientProxy getProxy() {
@@ -361,9 +371,6 @@ public class MessageDispatcher extends LoggingThread {
       logger.debug("{}: Beginning to process events", this);
     }
 
-    long reAuthenticateWaitTime =
-        getSystemProperty(RE_AUTHENTICATE_WAIT_TIME, DEFAULT_RE_AUTHENTICATE_WAIT_TIME);
-
     ClientMessage clientMessage = null;
 
     while (!isStopped()) {
@@ -432,34 +439,8 @@ public class MessageDispatcher extends LoggingThread {
           _messageQueue.remove();
           clientMessage = null;
         } catch (AuthenticationExpiredException expired) {
-          if (waitForReAuthenticationStartTime == -1) {
-            waitForReAuthenticationStartTime = System.currentTimeMillis();
-            // only send the message to clients who can handle the message
-            if (getProxy().getVersion().isNewerThanOrEqualTo(RE_AUTHENTICATION_START_VERSION)) {
-              EventID eventId = createEventId();
-              sendMessageDirectly(new ClientReAuthenticateMessage(eventId));
-            }
-            // We wait for all versions of clients to re-authenticate. For older clients we still
-            // wait, just in case client will perform some operations to
-            // trigger credential refresh on its own.
-            Thread.sleep(200);
-          } else {
-            long elapsedTime = System.currentTimeMillis() - waitForReAuthenticationStartTime;
-            if (elapsedTime > reAuthenticateWaitTime) {
-              // reset the timer here since we are no longer waiting for re-auth to happen anymore
-              waitForReAuthenticationStartTime = -1;
-              synchronized (_stopDispatchingLock) {
-                logger.warn("Client did not re-authenticate back successfully in " + elapsedTime
-                    + "ms. Unregister this client proxy.");
-                pauseOrUnregisterProxy(expired);
-              }
-              exceptionOccurred = true;
-            } else {
-              Thread.sleep(200);
-            }
-          }
+          exceptionOccurred = handleAuthenticationExpiredException(expired);
         }
-
       } catch (MessageTooLargeException e) {
         logger.warn("Message too large to send to client: {}, {}", clientMessage, e.getMessage());
       } catch (IOException e) {
@@ -546,6 +527,48 @@ public class MessageDispatcher extends LoggingThread {
     if (logger.isTraceEnabled()) {
       logger.trace("{}: Dispatcher thread is ending", this);
     }
+  }
+
+  private boolean handleAuthenticationExpiredException(AuthenticationExpiredException expired)
+      throws InterruptedException {
+    long reAuthenticateWaitTime =
+        getSystemProperty(RE_AUTHENTICATE_WAIT_TIME, DEFAULT_RE_AUTHENTICATE_WAIT_TIME);
+    synchronized (reAuthenticationLock) {
+      // turn on the "isWaitingForReAuthentication" flag before we send the re-auth message
+      // if we do it the other way around, the re-auth might be finished before we turn on the
+      // flag for the notification to happen.
+      waitForReAuthenticationStartTime = System.currentTimeMillis();
+      subjectUpdated = false;
+      // only send the message to clients who can handle the message
+      if (getProxy().getVersion().isNewerThanOrEqualTo(RE_AUTHENTICATION_START_VERSION)) {
+        EventID eventId = createEventId();
+        sendMessageDirectly(new ClientReAuthenticateMessage(eventId));
+      }
+
+      // We wait for all versions of clients to re-authenticate. For older clients we still
+      // wait, just in case client will perform some operations to
+      // trigger credential refresh on its own.
+      long waitFinishTime = waitForReAuthenticationStartTime + reAuthenticateWaitTime;
+      long remainingWaitTime = waitFinishTime - System.currentTimeMillis();
+      while (!subjectUpdated && remainingWaitTime > 0) {
+        reAuthenticationLock.wait(remainingWaitTime);
+        remainingWaitTime = waitFinishTime - System.currentTimeMillis();
+      }
+    }
+    // the above wait timed out
+    if (!subjectUpdated) {
+      long elapsedTime = System.currentTimeMillis() - waitForReAuthenticationStartTime;
+      // reset the timer here since we are no longer waiting for re-auth to happen anymore
+      waitForReAuthenticationStartTime = -1;
+      synchronized (_stopDispatchingLock) {
+        logger.warn(
+            "Client did not re-authenticate back successfully in {} ms. Unregister this client proxy.",
+            elapsedTime);
+        pauseOrUnregisterProxy(expired);
+        return true;
+      }
+    }
+    return false;
   }
 
   @VisibleForTesting
