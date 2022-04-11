@@ -37,7 +37,6 @@ import java.util.stream.Collectors;
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
 import com.healthmarketscience.rmiio.exporter.RemoteStreamExporter;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -370,9 +369,74 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult update(
-      T config) {
-    throw new NotImplementedException("Not implemented");
+  public <T extends AbstractConfiguration<?>> ClusterManagementRealizationResult update(T config) {
+    // validate that user used the correct config object type
+    CacheConfigurationManager configurationManager =
+        (CacheConfigurationManager) getConfigurationManager(config);
+
+    if (persistenceService == null) {
+      return assertSuccessful(new ClusterManagementRealizationResult(StatusCode.ERROR,
+          "Cluster configuration service needs to be enabled."));
+    }
+
+    lockCMS();
+    try {
+      try {
+        // first validate common attributes of all configuration object
+        commonValidator.validate(CacheElementOperation.UPDATE, config);
+
+        ConfigurationValidator validator = validators.get(config.getClass());
+        if (validator != null) {
+          validator.validate(CacheElementOperation.UPDATE, config);
+        }
+      } catch (IllegalArgumentException e) {
+        raise(StatusCode.ILLEGAL_ARGUMENT, e);
+      }
+
+      String[] groupsWithThisElement =
+          memberValidator.findGroupsWithThisElement(config, configurationManager);
+      if (groupsWithThisElement.length == 0) {
+        raise(StatusCode.ENTITY_NOT_FOUND,
+            config.getClass().getSimpleName() + " '" + config.getId() + "' does not exist.");
+      }
+
+      // execute function on all targeted members
+      ClusterManagementRealizationResult result = new ClusterManagementRealizationResult();
+      List<RealizationResult> functionResults = executeCacheRealizationFunction(config,
+          CacheElementOperation.UPDATE, memberValidator.findServers(groupsWithThisElement));
+      for (RealizationResult funcResult : functionResults) {
+        result.addMemberStatus(funcResult);
+      }
+
+      // if any false result is added to the member list
+      if (result.getStatusCode() != StatusCode.OK) {
+        result.setStatus(StatusCode.ERROR, "Failed to update on all members.");
+        return result;
+      }
+
+      // persist configuration in cache config
+      List<String> updatedGroups = new ArrayList<>();
+      List<String> failedGroups = new ArrayList<>();
+      for (String groupName : groupsWithThisElement) {
+        try {
+          configurationManager.update(config, groupName);
+          updatedGroups.add(groupName);
+        } catch (Exception e) {
+          logger.error(e.getMessage(), e);
+          failedGroups.add(groupName);
+        }
+      }
+
+      setResultStatus(result, updatedGroups, failedGroups);
+
+      // add the config object which includes the HATEOAS information of the element updated
+      if (result.isSuccessful()) {
+        result.setLinks(config.getLinks());
+      }
+      return assertSuccessful(result);
+    } finally {
+      unlockCMS();
+    }
   }
 
   @Override

@@ -17,6 +17,7 @@
 
 package org.apache.geode.management.internal.configuration.validators;
 
+import static org.apache.geode.management.internal.CacheElementOperation.UPDATE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -25,6 +26,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -284,5 +286,12 @@ public class RegionConfigValidatorTest {
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("ObjectSizer must not be set for: ENTRY_COUNT");
+  }
+
+  @Test
+  public void validateUpdateThrowsNotImplementedException() {
+    assertThatThrownBy(() -> validator.validate(UPDATE, config))
+        .isInstanceOf(NotImplementedException.class)
+        .hasMessageContaining("Not implemented");
   }
 }

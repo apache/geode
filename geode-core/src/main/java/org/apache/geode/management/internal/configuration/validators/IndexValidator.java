@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.internal.configuration.validators;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.IndexType;
 import org.apache.geode.management.internal.CacheElementOperation;
@@ -24,6 +26,8 @@ public class IndexValidator implements ConfigurationValidator<Index> {
   public void validate(CacheElementOperation operation, Index config)
       throws IllegalArgumentException {
     switch (operation) {
+      case UPDATE:
+        throw new NotImplementedException("Not implemented");
       case CREATE:
         if (config.getName() == null) {
           throw new IllegalArgumentException("Name is required.");

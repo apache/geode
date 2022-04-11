@@ -49,6 +49,7 @@ import org.junit.Test;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
+import org.apache.geode.cache.configuration.PdxType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.distributed.DistributedLockService;
@@ -71,16 +72,19 @@ import org.apache.geode.management.api.EntityInfo;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.Member;
+import org.apache.geode.management.configuration.Pdx;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.configuration.mutators.CacheConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.GatewayReceiverConfigManager;
+import org.apache.geode.management.internal.configuration.mutators.PdxManager;
 import org.apache.geode.management.internal.configuration.mutators.RegionConfigManager;
 import org.apache.geode.management.internal.configuration.validators.CommonConfigurationValidator;
 import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
 import org.apache.geode.management.internal.configuration.validators.MemberValidator;
+import org.apache.geode.management.internal.configuration.validators.PdxValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.management.internal.operation.OperationManager;
 import org.apache.geode.management.internal.operation.OperationState;
@@ -92,7 +96,6 @@ import org.apache.geode.management.runtime.RebalanceResult;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
 
 public class LocatorClusterManagementServiceTest {
-
   private LocatorClusterManagementService service;
   private InternalCache cache;
   private InternalDistributedMember member;
@@ -130,7 +133,9 @@ public class LocatorClusterManagementServiceTest {
     regionManager = spy(new RegionConfigManager(persistenceService));
     cacheElementValidator = spy(CommonConfigurationValidator.class);
     validators.put(Region.class, regionValidator);
+    validators.put(Pdx.class, mock(PdxValidator.class));
     managers.put(Region.class, regionManager);
+    managers.put(Pdx.class, new PdxManager(persistenceService));
     managers.put(GatewayReceiverConfig.class, new GatewayReceiverConfigManager(null));
 
     memberValidator = mock(MemberValidator.class);
@@ -167,6 +172,17 @@ public class LocatorClusterManagementServiceTest {
   }
 
   @Test
+  public void lockAndUnlockCalledAtUpdateWithException() {
+    try {
+      service.update(regionConfig);
+    } catch (Exception ignore) {
+    }
+
+    verify(dLockService).lock(LocatorClusterManagementService.CMS_DLOCK_SERVICE_NAME, -1, -1);
+    verify(dLockService).unlock(LocatorClusterManagementService.CMS_DLOCK_SERVICE_NAME);
+  }
+
+  @Test
   public void lockAndUnlockCalledAtDeleteWithException() {
     try {
       service.delete(regionConfig);
@@ -188,6 +204,14 @@ public class LocatorClusterManagementServiceTest {
   }
 
   @Test
+  public void updateThrowsExceptionWhenPersistenceServiceIsNull() {
+    when(cache.getRegion(any())).thenReturn(mock(org.apache.geode.cache.Region.class));
+    service = new LocatorClusterManagementService(cache, null);
+    assertThatThrownBy(() -> service.update(new Pdx()))
+        .hasMessageContaining("Cluster configuration service needs to be enabled");
+  }
+
+  @Test
   public void create_validatorIsCalledCorrectly() {
     doReturn(Collections.emptySet()).when(memberValidator).findMembers(eq(false), anyString());
     doNothing().when(persistenceService).updateCacheConfig(any(), any());
@@ -195,6 +219,18 @@ public class LocatorClusterManagementServiceTest {
     verify(cacheElementValidator).validate(CacheElementOperation.CREATE, regionConfig);
     verify(regionValidator).validate(CacheElementOperation.CREATE, regionConfig);
     verify(memberValidator).validateCreate(regionConfig, regionManager);
+  }
+
+  @Test
+  public void validatorIsCalledCorrectlyOnUpdate() {
+    doReturn(Collections.emptySet()).when(memberValidator).findMembers(eq(false), anyString());
+    doReturn(new String[] {"cluster"}).when(memberValidator).findGroupsWithThisElement(
+        regionConfig,
+        regionManager);
+    doNothing().when(persistenceService).updateCacheConfig(any(), any());
+    service.update(regionConfig);
+    verify(cacheElementValidator).validate(CacheElementOperation.UPDATE, regionConfig);
+    verify(regionValidator).validate(CacheElementOperation.UPDATE, regionConfig);
   }
 
   @Test
@@ -362,6 +398,35 @@ public class LocatorClusterManagementServiceTest {
   }
 
   @Test
+  public void updateFailsWhenOperationFailsOnSomeMembers() {
+    List<RealizationResult> functionResults = new ArrayList<>();
+    functionResults.add(new RealizationResult().setMemberName("member1"));
+    functionResults.add(
+        new RealizationResult().setMemberName("member2").setSuccess(false).setMessage("failed"));
+    doReturn(functionResults).when(service).executeCacheRealizationFunction(any(), any(), any());
+
+    doReturn(new String[] {"cluster"}).when(memberValidator).findGroupsWithThisElement(any(),
+        any());
+    doReturn(Collections.singleton(mock(DistributedMember.class))).when(memberValidator);
+    memberValidator.findServers();
+
+    CacheConfig config = new CacheConfig();
+    RegionConfig regionConfig = new RegionConfig();
+    regionConfig.setName("test");
+    config.getRegions().add(regionConfig);
+    doReturn(config).when(persistenceService).getCacheConfig(eq("cluster"), anyBoolean());
+
+    Region region = new Region();
+    region.setName("test");
+    result = service.update(region);
+    assertThat(result.isSuccessful()).isFalse();
+    assertThat(result.getStatusMessage())
+        .contains("Failed to update on all members.");
+
+    assertThat(config.getRegions()).hasSize(1);
+  }
+
+  @Test
   public void delete_succeedsOnAllMembers() {
     List<RealizationResult> functionResults = new ArrayList<>();
     functionResults.add(new RealizationResult().setMemberName("member1"));
@@ -389,6 +454,38 @@ public class LocatorClusterManagementServiceTest {
     assertThat(result.isSuccessful()).isTrue();
 
     assertThat(config.getRegions()).isEmpty();
+    verify(dLockService).lock(LocatorClusterManagementService.CMS_DLOCK_SERVICE_NAME, -1, -1);
+    verify(dLockService).unlock(LocatorClusterManagementService.CMS_DLOCK_SERVICE_NAME);
+  }
+
+  @Test
+  public void updateSucceedsWhenOperationSucceedsOnAllMembers() {
+    List<RealizationResult> functionResults = new ArrayList<>();
+    functionResults.add(new RealizationResult().setMemberName("member1"));
+    functionResults.add(new RealizationResult().setMemberName("member2"));
+    doReturn(functionResults).when(service).executeCacheRealizationFunction(any(), any(), any());
+
+    doReturn(new String[] {"cluster"}).when(memberValidator).findGroupsWithThisElement(any(),
+        any());
+    doReturn(Collections.singleton(mock(DistributedMember.class))).when(memberValidator);
+    memberValidator.findServers();
+
+    CacheConfig config = new CacheConfig();
+    PdxType pdxType = new PdxType();
+    pdxType.setReadSerialized(true);
+    config.setPdx(pdxType);
+    doReturn(config).when(persistenceService).getCacheConfig(eq("cluster"), anyBoolean());
+    doReturn(null).when(persistenceService).getConfiguration(any());
+    org.apache.geode.cache.Region<String, Object> mockRegion =
+        mock(org.apache.geode.cache.Region.class);
+    doReturn(mockRegion).when(persistenceService).getConfigurationRegion();
+
+    Pdx pdxConfig = new Pdx();
+    pdxConfig.setReadSerialized(false);
+    result = service.update(pdxConfig);
+    assertThat(result.isSuccessful()).isTrue();
+
+    assertThat(config.getPdx().isReadSerialized()).isFalse();
     verify(dLockService).lock(LocatorClusterManagementService.CMS_DLOCK_SERVICE_NAME, -1, -1);
     verify(dLockService).unlock(LocatorClusterManagementService.CMS_DLOCK_SERVICE_NAME);
   }
@@ -603,7 +700,7 @@ public class LocatorClusterManagementServiceTest {
   }
 
   @Test
-  public void cleanResultsShouldCleanOutExceptionsAndNull() throws Exception {
+  public void cleanResultsShouldCleanOutExceptionsAndNull() {
     List functionResults = new ArrayList<>();
     MemberInformation memberInfo = new MemberInformation();
     memberInfo.setId("server-1");

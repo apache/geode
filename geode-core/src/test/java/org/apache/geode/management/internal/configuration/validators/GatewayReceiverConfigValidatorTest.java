@@ -15,8 +15,10 @@
 
 package org.apache.geode.management.internal.configuration.validators;
 
+import static org.apache.geode.management.internal.CacheElementOperation.UPDATE;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,7 +37,7 @@ public class GatewayReceiverConfigValidatorTest {
   }
 
   @Test
-  public void startPort() throws Exception {
+  public void startPort() {
     receiver.setStartPort(6000);
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, receiver))
         .isInstanceOf(IllegalArgumentException.class)
@@ -43,7 +45,7 @@ public class GatewayReceiverConfigValidatorTest {
   }
 
   @Test
-  public void endPort() throws Exception {
+  public void endPort() {
     receiver.setEndPort(4000);
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, receiver))
         .isInstanceOf(IllegalArgumentException.class)
@@ -51,11 +53,18 @@ public class GatewayReceiverConfigValidatorTest {
   }
 
   @Test
-  public void startPortEndPort() throws Exception {
+  public void startPortEndPort() {
     receiver.setStartPort(2000);
     receiver.setEndPort(1900);
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, receiver))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Start port 2000 must be less than the end port 1900");
+  }
+
+  @Test
+  public void validateUpdateThrowsNotImplementedException() {
+    assertThatThrownBy(() -> validator.validate(UPDATE, receiver))
+        .isInstanceOf(NotImplementedException.class)
+        .hasMessageContaining("Not implemented");
   }
 }
