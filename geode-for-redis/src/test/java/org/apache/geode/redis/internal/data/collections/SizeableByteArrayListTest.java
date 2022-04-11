@@ -514,10 +514,6 @@ public class SizeableByteArrayListTest {
         {repeatedElement, "0", repeatedElement, "1", repeatedElement, "2", repeatedElement, "3",
             repeatedElement, "4",
             repeatedElement, "5", repeatedElement};
-    List<byte[]> expectedListContents =
-        Arrays.stream(expectedContents).map(String::getBytes).collect(
-            Collectors.toList());
-    assertThat(list).containsExactlyElementsOf(expectedListContents);
     return list;
   }
 
