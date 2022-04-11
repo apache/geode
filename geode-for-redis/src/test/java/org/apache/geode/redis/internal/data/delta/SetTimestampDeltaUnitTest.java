@@ -23,15 +23,12 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.apache.geode.redis.internal.data.RedisString;
-import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
-@RunWith(GeodeParamsRunner.class)
 public class SetTimestampDeltaUnitTest {
   @Test
-  public void testSetTimestampDelta() throws Exception {
+  public void testSetTimestampDelta_forRedisString() throws Exception {
     String original = "0123456789";
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream dos = new DataOutputStream(baos);

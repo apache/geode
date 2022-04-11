@@ -37,45 +37,58 @@ import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @RunWith(GeodeParamsRunner.class)
 public class ReplaceByteArrayAtOffsetDeltaUnitTest extends AbstractRedisDeltaUnitTest {
-  private final String payload = "something amazing I guess";
+  private final String largePayload = "something amazing I guess";
 
   @Test
-  public void testReplaceByteArrayAtOffsetDeltaForRedisString() throws Exception {
-    DataInputStream dis = getDataInputStream(3);
+  public void testReplaceByteArrayAtOffsetDelta_forRedisString() throws Exception {
+    DataInputStream dis = getDataInputStream(3, largePayload);
     String original = "0123456789";
     RedisString redisString = new RedisString(original.getBytes());
 
     redisString.fromDelta(dis);
 
-    assertThat(new String(redisString.get())).isEqualTo(original.substring(0, 3) + payload);
+    assertThat(new String(redisString.get())).isEqualTo(original.substring(0, 3) + largePayload);
   }
 
   @Test
-  public void testReplaceByteArrayAtOffsetDeltaForRedisList() throws Exception {
-    DataInputStream dis = getDataInputStream(1);
+  public void testReplaceByteArrayAtOffsetDelta_forRedisString_withSmallByteArray()
+      throws Exception {
+    String smallPayload = "small";
+    DataInputStream dis = getDataInputStream(3, smallPayload);
+    String original = "0123456789";
+    RedisString redisString = new RedisString(original.getBytes());
+
+    redisString.fromDelta(dis);
+
+    assertThat(new String(redisString.get())).isEqualTo("012small89");
+  }
+
+  @Test
+  public void testReplaceByteArrayAtOffsetDelta_forRedisList() throws Exception {
+    DataInputStream dis = getDataInputStream(1, largePayload);
     RedisList redisList = makeRedisList();
 
     redisList.fromDelta(dis);
 
     assertThat(redisList.llen()).isEqualTo(3);
     assertThat(redisList.lindex(0)).isEqualTo("zero".getBytes());
-    assertThat(redisList.lindex(1)).isEqualTo(payload.getBytes());
+    assertThat(redisList.lindex(1)).isEqualTo(largePayload.getBytes());
     assertThat(redisList.lindex(2)).isEqualTo("two".getBytes());
   }
 
   @Test
-  @Parameters(method = "getDataTypeInstances")
+  @Parameters(method = "getUnsupportedDataTypeInstancesForDelta")
   @TestCaseName("{method}: redisDataType:{0}")
   public void unsupportedDataTypesThrowException(RedisData redisData)
       throws IOException {
-    final DataInputStream dis = getDataInputStream(1);
+    final DataInputStream dis = getDataInputStream(1, largePayload);
 
     assertThatThrownBy(() -> redisData.fromDelta(dis)).isInstanceOf(
         IllegalStateException.class)
-        .hasMessageContaining("unexpected " + REPLACE_BYTE_ARRAY_AT_OFFSET);
+        .hasMessage("unexpected " + REPLACE_BYTE_ARRAY_AT_OFFSET);
   }
 
-  private DataInputStream getDataInputStream(int offset) throws IOException {
+  private DataInputStream getDataInputStream(int offset, String payload) throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream dos = new DataOutputStream(baos);
     ReplaceByteArrayAtOffset source = new ReplaceByteArrayAtOffset(offset, payload.getBytes());
@@ -86,7 +99,7 @@ public class ReplaceByteArrayAtOffsetDeltaUnitTest extends AbstractRedisDeltaUni
   }
 
   @SuppressWarnings("unused")
-  private Object[] getDataTypeInstances() {
+  private Object[] getUnsupportedDataTypeInstancesForDelta() {
     return new Object[] {
         new Object[] {makeRedisHash()},
         new Object[] {makeRedisSet()},

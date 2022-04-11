@@ -36,13 +36,12 @@ import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisHash;
 import org.apache.geode.redis.internal.data.RedisSet;
 import org.apache.geode.redis.internal.data.RedisSortedSet;
-import org.apache.geode.redis.internal.data.RedisString;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @RunWith(GeodeParamsRunner.class)
 public class RemoveByteArraysDeltaUnitTest extends AbstractRedisDeltaUnitTest {
   @Test
-  public void testRemoveByteArraysDeltaForRedisSet() throws Exception {
+  public void testRemoveByteArraysDelta_forRedisSet() throws Exception {
     RemoveByteArrays source =
         new RemoveByteArrays(Arrays.asList("zero".getBytes(), "two".getBytes()));
     DataInputStream dis = getDataInputStream(source);
@@ -55,7 +54,7 @@ public class RemoveByteArraysDeltaUnitTest extends AbstractRedisDeltaUnitTest {
   }
 
   @Test
-  public void testRemoveByteArraysDeltaForRedisSortedSet() throws Exception {
+  public void testRemoveByteArraysDelta_forRedisSortedSet() throws Exception {
     RemoveByteArrays source =
         new RemoveByteArrays(Arrays.asList("alpha".getBytes(), "gamma".getBytes()));
     DataInputStream dis = getDataInputStream(source);
@@ -68,7 +67,7 @@ public class RemoveByteArraysDeltaUnitTest extends AbstractRedisDeltaUnitTest {
   }
 
   @Test
-  public void testRemoveByteArraysDeltaForRedisHash() throws Exception {
+  public void testRemoveByteArraysDelta_forRedisHash() throws Exception {
     RemoveByteArrays source =
         new RemoveByteArrays(Collections.singletonList("zero".getBytes()));
     DataInputStream dis = getDataInputStream(source);
@@ -78,10 +77,12 @@ public class RemoveByteArraysDeltaUnitTest extends AbstractRedisDeltaUnitTest {
 
     assertThat(redisHash.hlen()).isEqualTo(2);
     assertThat(redisHash.hget("zero".getBytes())).isNull();
+    assertThat(redisHash.hget("one".getBytes())).isEqualTo("secondVal".getBytes());
+    assertThat(redisHash.hget("two".getBytes())).isEqualTo("thirdVal".getBytes());
   }
 
   @Test
-  @Parameters(method = "getDataTypeInstances")
+  @Parameters(method = "getUnsupportedDataTypeInstancesForDelta")
   @TestCaseName("{method}: redisDataType:{0}")
   public void unsupportedDataTypesThrowException(RedisData redisData)
       throws IOException {
@@ -91,7 +92,7 @@ public class RemoveByteArraysDeltaUnitTest extends AbstractRedisDeltaUnitTest {
 
     assertThatThrownBy(() -> redisData.fromDelta(dis)).isInstanceOf(
         IllegalStateException.class)
-        .hasMessageContaining("unexpected " + REMOVE_BYTE_ARRAYS);
+        .hasMessage("unexpected " + REMOVE_BYTE_ARRAYS);
   }
 
   private DataInputStream getDataInputStream(RemoveByteArrays source) throws IOException {
@@ -104,10 +105,10 @@ public class RemoveByteArraysDeltaUnitTest extends AbstractRedisDeltaUnitTest {
   }
 
   @SuppressWarnings("unused")
-  private Object[] getDataTypeInstances() {
+  private Object[] getUnsupportedDataTypeInstancesForDelta() {
     return new Object[] {
         new Object[] {makeRedisList()},
-        new Object[] {new RedisString()}
+        new Object[] {makeRedisString()}
     };
   }
 }

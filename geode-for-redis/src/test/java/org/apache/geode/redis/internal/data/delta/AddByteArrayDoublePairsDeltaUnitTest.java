@@ -32,55 +32,56 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisSortedSet;
-import org.apache.geode.redis.internal.data.RedisString;
+import org.apache.geode.redis.internal.netty.Coder;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @RunWith(GeodeParamsRunner.class)
 public class AddByteArrayDoublePairsDeltaUnitTest extends AbstractRedisDeltaUnitTest {
-  private final byte[] original = "omega".getBytes();
+  private final byte[] memberToAdd = "omega".getBytes();
+  private final double score = 3.0;
 
   @Test
-  public void testAddByteArrayDoublePairsDelta() throws Exception {
+  public void testAddByteArrayDoublePairsDelta_forRedisSortedSet() throws Exception {
     DataInputStream dis = getDataInputStream();
     RedisSortedSet redisSortedSet = makeRedisSortedSet();
     redisSortedSet.fromDelta(dis);
 
     assertThat(redisSortedSet.zcard()).isEqualTo(4);
-    assertThat(redisSortedSet.zrank(original)).isEqualTo(2L);
+    assertThat(redisSortedSet.zrank(memberToAdd)).isEqualTo(2L);
+    byte[] scoreBytes = redisSortedSet.zscore(memberToAdd);
+    assertThat(Coder.bytesToDouble(scoreBytes)).isEqualTo(score);
   }
 
   @Test
-  @Parameters(method = "getDataTypeInstances")
+  @Parameters(method = "getUnsupportedDataTypeInstancesForDelta")
   @TestCaseName("{method}: redisDataType:{0}")
-  public void unsupportedDataTypesThrowException_forAddByteArrayDoublePairsDelta(
+  public void unsupportedDataTypesThrowException(
       RedisData redisData)
       throws IOException {
     final DataInputStream dis = getDataInputStream();
 
     assertThatThrownBy(() -> redisData.fromDelta(dis)).isInstanceOf(
         IllegalStateException.class)
-        .hasMessageContaining("unexpected " + ADD_BYTE_ARRAY_DOUBLE_PAIRS);
+        .hasMessage("unexpected " + ADD_BYTE_ARRAY_DOUBLE_PAIRS);
   }
 
   private DataInputStream getDataInputStream() throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream dos = new DataOutputStream(baos);
     AddByteArrayDoublePairs source = new AddByteArrayDoublePairs(1);
-    double score = 3.0;
-    source.add(original, score);
+    source.add(memberToAdd, score);
     source.serializeTo(dos);
 
     return new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
   }
 
   @SuppressWarnings("unused")
-  private Object[] getDataTypeInstances() {
-    // Values are original, offset, expected result
+  private Object[] getUnsupportedDataTypeInstancesForDelta() {
     return new Object[] {
         new Object[] {makeRedisHash()},
         new Object[] {makeRedisList()},
         new Object[] {makeRedisSet()},
-        new Object[] {new RedisString()}
+        new Object[] {makeRedisString()}
     };
   }
 }

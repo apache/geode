@@ -32,41 +32,40 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisHash;
-import org.apache.geode.redis.internal.data.RedisString;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @RunWith(GeodeParamsRunner.class)
 public class AddByteArrayPairsDeltaUnitTest extends AbstractRedisDeltaUnitTest {
-  private final byte[] original = "0123456789".getBytes();
-  private final byte[] payload = "something amazing I guess".getBytes();
+  private final byte[] fieldToAdd = "0123456789".getBytes();
+  private final byte[] fieldValue = "something amazing I guess".getBytes();
 
   @Test
-  public void testAddByteArrayPairsDelta() throws Exception {
+  public void testAddByteArrayPairsDelta_forRedisHash() throws Exception {
     DataInputStream dis = getDataInputStream();
     RedisHash redisHash = makeRedisHash();
     redisHash.fromDelta(dis);
 
     assertThat(redisHash.hlen()).isEqualTo(4);
-    assertThat(redisHash.hget(original)).isEqualTo(payload);
+    assertThat(redisHash.hget(fieldToAdd)).isEqualTo(fieldValue);
   }
 
   @Test
-  @Parameters(method = "getDataTypeInstances")
+  @Parameters(method = "getUnsupportedDataTypeInstancesForDelta")
   @TestCaseName("{method}: redisDataType:{0}")
-  public void unsupportedDataTypesThrowException_forAddByteArrayDoublePairsDelta(
+  public void unsupportedDataTypesThrowException(
       RedisData redisData)
       throws IOException {
     final DataInputStream dis = getDataInputStream();
 
     assertThatThrownBy(() -> redisData.fromDelta(dis)).isInstanceOf(
         IllegalStateException.class)
-        .hasMessageContaining("unexpected " + ADD_BYTE_ARRAY_PAIRS);
+        .hasMessage("unexpected " + ADD_BYTE_ARRAY_PAIRS);
   }
 
   private DataInputStream getDataInputStream() throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream dos = new DataOutputStream(baos);
-    AddByteArrayPairs source = new AddByteArrayPairs(original, payload);
+    AddByteArrayPairs source = new AddByteArrayPairs(fieldToAdd, fieldValue);
 
     source.serializeTo(dos);
 
@@ -74,12 +73,12 @@ public class AddByteArrayPairsDeltaUnitTest extends AbstractRedisDeltaUnitTest {
   }
 
   @SuppressWarnings("unused")
-  private Object[] getDataTypeInstances() {
+  private Object[] getUnsupportedDataTypeInstancesForDelta() {
     return new Object[] {
         new Object[] {makeRedisList()},
         new Object[] {makeRedisSet()},
         new Object[] {makeRedisSortedSet()},
-        new Object[] {new RedisString()}
+        new Object[] {makeRedisString()}
     };
   }
 }

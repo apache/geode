@@ -39,7 +39,7 @@ public class SetByteArrayDeltaUnitTest extends AbstractRedisDeltaUnitTest {
   private final String payload = "something amazing I guess";
 
   @Test
-  public void testSetByteArrayDelta() throws Exception {
+  public void testSetByteArrayDelta_forRedisString() throws Exception {
     String original = "0123456789";
     DataInputStream dis = getDataInputStream();
     RedisString redisString = new RedisString(original.getBytes());
@@ -50,7 +50,7 @@ public class SetByteArrayDeltaUnitTest extends AbstractRedisDeltaUnitTest {
   }
 
   @Test
-  @Parameters(method = "getDataTypeInstances")
+  @Parameters(method = "getUnsupportedDataTypeInstancesForDelta")
   @TestCaseName("{method}: redisDataType:{0}")
   public void unsupportedDataTypesThrowException(RedisData redisData)
       throws IOException {
@@ -58,7 +58,7 @@ public class SetByteArrayDeltaUnitTest extends AbstractRedisDeltaUnitTest {
 
     assertThatThrownBy(() -> redisData.fromDelta(dis)).isInstanceOf(
         IllegalStateException.class)
-        .hasMessageContaining("unexpected " + SET_BYTE_ARRAY);
+        .hasMessage("unexpected " + SET_BYTE_ARRAY);
   }
 
   private DataInputStream getDataInputStream() throws IOException {
@@ -70,7 +70,7 @@ public class SetByteArrayDeltaUnitTest extends AbstractRedisDeltaUnitTest {
   }
 
   @SuppressWarnings("unused")
-  private Object[] getDataTypeInstances() {
+  private Object[] getUnsupportedDataTypeInstancesForDelta() {
     return new Object[] {
         new Object[] {makeRedisHash()},
         new Object[] {makeRedisList()},

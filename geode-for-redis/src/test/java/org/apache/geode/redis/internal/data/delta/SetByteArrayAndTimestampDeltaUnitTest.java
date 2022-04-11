@@ -37,9 +37,10 @@ import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 @RunWith(GeodeParamsRunner.class)
 public class SetByteArrayAndTimestampDeltaUnitTest extends AbstractRedisDeltaUnitTest {
   private final String payload = "something amazing I guess";
+  private final int EXPECTED_TIMESTAMP = 2;
 
   @Test
-  public void testSetByteArrayAndTimestampDelta() throws Exception {
+  public void testSetByteArrayAndTimestampDelta_forRedisString() throws Exception {
     DataInputStream dis = getDataInputStream();
     String original = "0123456789";
     RedisString redisString = new RedisString(original.getBytes());
@@ -47,11 +48,11 @@ public class SetByteArrayAndTimestampDeltaUnitTest extends AbstractRedisDeltaUni
     redisString.fromDelta(dis);
 
     assertThat(new String(redisString.get())).isEqualTo(payload);
-    assertThat(redisString.getExpirationTimestamp()).isEqualTo(2);
+    assertThat(redisString.getExpirationTimestamp()).isEqualTo(EXPECTED_TIMESTAMP);
   }
 
   @Test
-  @Parameters(method = "getDataTypeInstances")
+  @Parameters(method = "getUnsupportedDataTypeInstancesForDelta")
   @TestCaseName("{method}: redisDataType:{0}")
   public void unsupportedDataTypesThrowException(RedisData redisData)
       throws IOException {
@@ -59,19 +60,20 @@ public class SetByteArrayAndTimestampDeltaUnitTest extends AbstractRedisDeltaUni
 
     assertThatThrownBy(() -> redisData.fromDelta(dis)).isInstanceOf(
         IllegalStateException.class)
-        .hasMessageContaining("unexpected " + SET_BYTE_ARRAY_AND_TIMESTAMP);
+        .hasMessage("unexpected " + SET_BYTE_ARRAY_AND_TIMESTAMP);
   }
 
   private DataInputStream getDataInputStream() throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream dos = new DataOutputStream(baos);
-    SetByteArrayAndTimestamp source = new SetByteArrayAndTimestamp(payload.getBytes(), 2);
+    SetByteArrayAndTimestamp source = new SetByteArrayAndTimestamp(payload.getBytes(),
+        EXPECTED_TIMESTAMP);
     source.serializeTo(dos);
     return new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
   }
 
   @SuppressWarnings("unused")
-  private Object[] getDataTypeInstances() {
+  private Object[] getUnsupportedDataTypeInstancesForDelta() {
     return new Object[] {
         new Object[] {makeRedisHash()},
         new Object[] {makeRedisList()},

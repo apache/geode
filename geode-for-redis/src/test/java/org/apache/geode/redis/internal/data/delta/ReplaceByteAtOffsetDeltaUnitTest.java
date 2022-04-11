@@ -41,7 +41,8 @@ public class ReplaceByteAtOffsetDeltaUnitTest extends AbstractRedisDeltaUnitTest
   @Test
   @Parameters(method = "getReplaceByteAtOffsetValues")
   @TestCaseName("{method}: original:{0}, offset:{1}, expected:{2}")
-  public void testReplaceByteAtOffsetDelta(String original, int offset, String expected)
+  public void testReplaceByteAtOffsetDelta_forRedisString(String original, int offset,
+      String expected)
       throws Exception {
     DataInputStream dis = getDataInputStream(offset);
     RedisString redisString = new RedisString(original.getBytes());
@@ -51,7 +52,7 @@ public class ReplaceByteAtOffsetDeltaUnitTest extends AbstractRedisDeltaUnitTest
   }
 
   @Test
-  @Parameters(method = "getDataTypeInstances")
+  @Parameters(method = "getUnsupportedDataTypeInstancesForDelta")
   @TestCaseName("{method}: redisDataType:{0}")
   public void unsupportedDataTypesThrowException(RedisData redisData)
       throws IOException {
@@ -59,7 +60,7 @@ public class ReplaceByteAtOffsetDeltaUnitTest extends AbstractRedisDeltaUnitTest
 
     assertThatThrownBy(() -> redisData.fromDelta(dis)).isInstanceOf(
         IllegalStateException.class)
-        .hasMessageContaining("unexpected " + REPLACE_BYTE_AT_OFFSET);
+        .hasMessage("unexpected " + REPLACE_BYTE_AT_OFFSET);
   }
 
   private DataInputStream getDataInputStream(int offset) throws IOException {
@@ -84,7 +85,7 @@ public class ReplaceByteAtOffsetDeltaUnitTest extends AbstractRedisDeltaUnitTest
   }
 
   @SuppressWarnings("unused")
-  private Object[] getDataTypeInstances() {
+  private Object[] getUnsupportedDataTypeInstancesForDelta() {
     return new Object[] {
         new Object[] {makeRedisHash()},
         new Object[] {makeRedisList()},

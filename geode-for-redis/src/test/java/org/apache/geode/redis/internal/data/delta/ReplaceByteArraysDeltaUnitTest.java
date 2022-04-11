@@ -33,13 +33,12 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisSet;
-import org.apache.geode.redis.internal.data.RedisString;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @RunWith(GeodeParamsRunner.class)
 public class ReplaceByteArraysDeltaUnitTest extends AbstractRedisDeltaUnitTest {
   @Test
-  public void testReplaceByteArraysDelta() throws Exception {
+  public void testReplaceByteArraysDelta_forRedisSet() throws Exception {
     DataInputStream dis = getDataInputStream();
     RedisSet redisSet = makeRedisSet();
     redisSet.fromDelta(dis);
@@ -49,7 +48,7 @@ public class ReplaceByteArraysDeltaUnitTest extends AbstractRedisDeltaUnitTest {
   }
 
   @Test
-  @Parameters(method = "getDataTypeInstances")
+  @Parameters(method = "getUnsupportedDataTypeInstancesForDelta")
   @TestCaseName("{method}: redisDataType:{0}")
   public void unsupportedDataTypesThrowException(RedisData redisData)
       throws IOException {
@@ -57,7 +56,7 @@ public class ReplaceByteArraysDeltaUnitTest extends AbstractRedisDeltaUnitTest {
 
     assertThatThrownBy(() -> redisData.fromDelta(dis)).isInstanceOf(
         IllegalStateException.class)
-        .hasMessageContaining("unexpected " + REPLACE_BYTE_ARRAYS);
+        .hasMessage("unexpected " + REPLACE_BYTE_ARRAYS);
   }
 
   private DataInputStream getDataInputStream() throws IOException {
@@ -73,12 +72,12 @@ public class ReplaceByteArraysDeltaUnitTest extends AbstractRedisDeltaUnitTest {
   }
 
   @SuppressWarnings("unused")
-  private Object[] getDataTypeInstances() {
+  private Object[] getUnsupportedDataTypeInstancesForDelta() {
     return new Object[] {
         new Object[] {makeRedisHash()},
         new Object[] {makeRedisList()},
         new Object[] {makeRedisSortedSet()},
-        new Object[] {new RedisString()}
+        new Object[] {makeRedisString()}
     };
   }
 }

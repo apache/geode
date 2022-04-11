@@ -32,7 +32,6 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisList;
-import org.apache.geode.redis.internal.data.RedisString;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @RunWith(GeodeParamsRunner.class)
@@ -40,17 +39,20 @@ public class RetainElementsByIndexRangeDeltaUnitTest extends AbstractRedisDeltaU
   @Test
   @Parameters(method = "getRetainElementsRanges")
   @TestCaseName("{method}: start:{0}, end:{1}, expected:{2}")
-  public void testRetainElementsByIndexRangeDelta(int start, int end, byte[][] expected)
+  public void testRetainElementsByIndexRangeDelta_forRedisList(int start, int end,
+      byte[][] expected)
       throws Exception {
     RedisList redisList = makeRedisList();
-    DataInputStream dis = getDataInputStream(start, end, redisList.getVersion() + 1);
+    int newVersion = redisList.getVersion() + 1;
+    DataInputStream dis = getDataInputStream(start, end, newVersion);
     redisList.fromDelta(dis);
 
     assertThat(redisList.lrange(0, -1)).containsExactly(expected);
+    assertThat(redisList.getVersion()).isEqualTo((byte) newVersion);
   }
 
   @Test
-  @Parameters(method = "getDataTypeInstances")
+  @Parameters(method = "getUnsupportedDataTypeInstancesForDelta")
   @TestCaseName("{method}: redisDataType:{0}")
   public void unsupportedDataTypesThrowException(RedisData redisData)
       throws IOException {
@@ -58,7 +60,7 @@ public class RetainElementsByIndexRangeDeltaUnitTest extends AbstractRedisDeltaU
 
     assertThatThrownBy(() -> redisData.fromDelta(dis)).isInstanceOf(
         IllegalStateException.class)
-        .hasMessageContaining("unexpected " + RETAIN_ELEMENTS_BY_INDEX_RANGE);
+        .hasMessage("unexpected " + RETAIN_ELEMENTS_BY_INDEX_RANGE);
   }
 
   private DataInputStream getDataInputStream(int start, int end, int version)
@@ -87,12 +89,12 @@ public class RetainElementsByIndexRangeDeltaUnitTest extends AbstractRedisDeltaU
   }
 
   @SuppressWarnings("unused")
-  private Object[] getDataTypeInstances() {
+  private Object[] getUnsupportedDataTypeInstancesForDelta() {
     return new Object[] {
         new Object[] {makeRedisHash()},
         new Object[] {makeRedisSet()},
         new Object[] {makeRedisSortedSet()},
-        new Object[] {new RedisString()}
+        new Object[] {makeRedisString()}
     };
   }
 }

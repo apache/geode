@@ -408,12 +408,10 @@ public class RedisSet extends AbstractRedisData {
     }
   }
 
-  @VisibleForTesting
-  public synchronized boolean membersAdd(byte[] memberToAdd) {
+  synchronized boolean membersAdd(byte[] memberToAdd) {
     return members.add(memberToAdd);
   }
 
-  @VisibleForTesting
   synchronized boolean membersRemove(byte[] memberToRemove) {
     return members.remove(memberToRemove);
   }

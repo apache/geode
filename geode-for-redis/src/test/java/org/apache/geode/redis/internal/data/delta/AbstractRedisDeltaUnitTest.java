@@ -1,12 +1,16 @@
 package org.apache.geode.redis.internal.data.delta;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.geode.redis.internal.data.RedisHash;
 import org.apache.geode.redis.internal.data.RedisList;
 import org.apache.geode.redis.internal.data.RedisSet;
 import org.apache.geode.redis.internal.data.RedisSortedSet;
+import org.apache.geode.redis.internal.data.RedisString;
 
 public abstract class AbstractRedisDeltaUnitTest {
   protected RedisHash makeRedisHash() {
@@ -29,18 +33,20 @@ public abstract class AbstractRedisDeltaUnitTest {
   }
 
   protected RedisSet makeRedisSet() {
-    RedisSet redisSet = new RedisSet(5);
-    redisSet.membersAdd("zero".getBytes());
-    redisSet.membersAdd("one".getBytes());
-    redisSet.membersAdd("two".getBytes());
-    return redisSet;
+    Set<byte[]> bytes = new HashSet<>();
+    bytes.add("zero".getBytes());
+    bytes.add("one".getBytes());
+    bytes.add("two".getBytes());
+    return new RedisSet(bytes);
   }
 
   protected RedisSortedSet makeRedisSortedSet() {
-    RedisSortedSet redisSortedSet = new RedisSortedSet(3);
-    redisSortedSet.memberAdd("alpha".getBytes(), 1.0d);
-    redisSortedSet.memberAdd("beta".getBytes(), 2.0d);
-    redisSortedSet.memberAdd("gamma".getBytes(), 4.0d);
-    return redisSortedSet;
+    List<byte[]> members = Arrays.asList("alpha".getBytes(), "beta".getBytes(), "gamma".getBytes());
+    double[] scores = {1.0d, 2.0d, 4.0d};
+    return new RedisSortedSet(members, scores);
+  }
+
+  protected RedisString makeRedisString() {
+    return new RedisString("radish".getBytes());
   }
 }

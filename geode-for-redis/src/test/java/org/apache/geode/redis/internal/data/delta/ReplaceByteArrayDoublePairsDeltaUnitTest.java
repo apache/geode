@@ -32,15 +32,15 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisSortedSet;
-import org.apache.geode.redis.internal.data.RedisString;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @RunWith(GeodeParamsRunner.class)
 public class ReplaceByteArrayDoublePairsDeltaUnitTest extends AbstractRedisDeltaUnitTest {
   private final byte[] deltaBytes = "delta".getBytes();
+  private final double expectedScore = 2.2;
 
   @Test
-  public void testReplaceByteArrayDoublePairsDelta() throws Exception {
+  public void testReplaceByteArrayDoublePairsDelta_forRedisSortedSet() throws Exception {
     DataInputStream dis = getDataInputStream();
     RedisSortedSet redisSortedSet = makeRedisSortedSet();
 
@@ -48,10 +48,12 @@ public class ReplaceByteArrayDoublePairsDeltaUnitTest extends AbstractRedisDelta
 
     assertThat(redisSortedSet.zcard()).isEqualTo(1);
     assertThat(redisSortedSet.zrank(deltaBytes)).isEqualTo(0L);
+    assertThat(redisSortedSet.zscore("delta".getBytes()))
+        .isEqualTo(String.valueOf(expectedScore).getBytes());
   }
 
   @Test
-  @Parameters(method = "getDataTypeInstances")
+  @Parameters(method = "getUnsupportedDataTypeInstancesForDelta")
   @TestCaseName("{method}: redisDataType:{0}")
   public void unsupportedDataTypesThrowException(RedisData redisData)
       throws IOException {
@@ -59,7 +61,7 @@ public class ReplaceByteArrayDoublePairsDeltaUnitTest extends AbstractRedisDelta
 
     assertThatThrownBy(() -> redisData.fromDelta(dis)).isInstanceOf(
         IllegalStateException.class)
-        .hasMessageContaining("unexpected " + REPLACE_BYTE_ARRAY_DOUBLE_PAIRS);
+        .hasMessage("unexpected " + REPLACE_BYTE_ARRAY_DOUBLE_PAIRS);
   }
 
   private DataInputStream getDataInputStream() throws IOException {
@@ -67,7 +69,8 @@ public class ReplaceByteArrayDoublePairsDeltaUnitTest extends AbstractRedisDelta
     DataOutputStream dos = new DataOutputStream(baos);
 
     RedisSortedSet.MemberMap newMemberMap = new RedisSortedSet.MemberMap(1);
-    RedisSortedSet.OrderedSetEntry entry = new RedisSortedSet.OrderedSetEntry(deltaBytes, 2.0);
+    RedisSortedSet.OrderedSetEntry entry = new RedisSortedSet.OrderedSetEntry(deltaBytes,
+        expectedScore);
     newMemberMap.put(deltaBytes, entry);
     ReplaceByteArrayDoublePairs source = new ReplaceByteArrayDoublePairs(newMemberMap);
 
@@ -77,12 +80,12 @@ public class ReplaceByteArrayDoublePairsDeltaUnitTest extends AbstractRedisDelta
   }
 
   @SuppressWarnings("unused")
-  private Object[] getDataTypeInstances() {
+  private Object[] getUnsupportedDataTypeInstancesForDelta() {
     return new Object[] {
         new Object[] {makeRedisHash()},
         new Object[] {makeRedisList()},
         new Object[] {makeRedisSet()},
-        new Object[] {new RedisString()}
+        new Object[] {makeRedisString()}
     };
   }
 }

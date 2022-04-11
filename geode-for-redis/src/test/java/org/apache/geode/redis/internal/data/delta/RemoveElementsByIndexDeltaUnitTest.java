@@ -34,24 +34,25 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.redis.internal.data.RedisData;
 import org.apache.geode.redis.internal.data.RedisList;
-import org.apache.geode.redis.internal.data.RedisString;
 import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @RunWith(GeodeParamsRunner.class)
 public class RemoveElementsByIndexDeltaUnitTest extends AbstractRedisDeltaUnitTest {
   @Test
-  public void testRemoveElementsByIndexDelta() throws Exception {
+  public void testRemoveElementsByIndexDelta_forRedisList() throws Exception {
     RedisList redisList = makeRedisList();
 
-    DataInputStream dis = getDataInputStream(redisList.getVersion() + 1);
+    int newVersion = redisList.getVersion() + 1;
+    DataInputStream dis = getDataInputStream(newVersion);
     redisList.fromDelta(dis);
 
     assertThat(redisList.llen()).isEqualTo(1);
     assertThat(redisList.lindex(0)).isEqualTo("one".getBytes());
+    assertThat(redisList.getVersion()).isEqualTo((byte) newVersion);
   }
 
   @Test
-  @Parameters(method = "getDataTypeInstances")
+  @Parameters(method = "getUnsupportedDataTypeInstancesForDelta")
   @TestCaseName("{method}: redisDataType:{0}")
   public void unsupportedDataTypesThrowException(RedisData redisData)
       throws IOException {
@@ -59,7 +60,7 @@ public class RemoveElementsByIndexDeltaUnitTest extends AbstractRedisDeltaUnitTe
 
     assertThatThrownBy(() -> redisData.fromDelta(dis)).isInstanceOf(
         IllegalStateException.class)
-        .hasMessageContaining("unexpected " + REMOVE_ELEMENTS_BY_INDEX);
+        .hasMessage("unexpected " + REMOVE_ELEMENTS_BY_INDEX);
   }
 
   private DataInputStream getDataInputStream(int version) throws IOException {
@@ -79,12 +80,12 @@ public class RemoveElementsByIndexDeltaUnitTest extends AbstractRedisDeltaUnitTe
   }
 
   @SuppressWarnings("unused")
-  private Object[] getDataTypeInstances() {
+  private Object[] getUnsupportedDataTypeInstancesForDelta() {
     return new Object[] {
         new Object[] {makeRedisHash()},
         new Object[] {makeRedisSet()},
         new Object[] {makeRedisSortedSet()},
-        new Object[] {new RedisString()}
+        new Object[] {makeRedisString()}
     };
   }
 }

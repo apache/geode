@@ -39,17 +39,19 @@ public class AppendByteArrayDeltaUnitTest extends AbstractRedisDeltaUnitTest {
   private final String payload = "something amazing I guess";
 
   @Test
-  public void testAppendByteArrayDelta() throws Exception {
+  public void testAppendByteArrayDelta_forRedisString() throws Exception {
     String original = "0123456789";
     RedisString redisString = new RedisString(original.getBytes());
-    DataInputStream dis = getDataInputStream(redisString.getVersion() + 1);
+    int newVersion = redisString.getVersion() + 1;
+    DataInputStream dis = getDataInputStream(newVersion);
     redisString.fromDelta(dis);
 
     assertThat(new String(redisString.get())).isEqualTo(original + payload);
+    assertThat(redisString.getVersion()).isEqualTo((byte) newVersion);
   }
 
   @Test
-  @Parameters(method = "getDataTypeInstances")
+  @Parameters(method = "getUnsupportedDataTypeInstancesForDelta")
   @TestCaseName("{method}: redisDataType:{0}")
   public void unsupportedDataTypesThrowException(RedisData redisData)
       throws IOException {
@@ -57,7 +59,7 @@ public class AppendByteArrayDeltaUnitTest extends AbstractRedisDeltaUnitTest {
 
     assertThatThrownBy(() -> redisData.fromDelta(dis)).isInstanceOf(
         IllegalStateException.class)
-        .hasMessageContaining("unexpected " + APPEND_BYTE_ARRAY);
+        .hasMessage("unexpected " + APPEND_BYTE_ARRAY);
   }
 
   private DataInputStream getDataInputStream(int version) throws IOException {
@@ -71,7 +73,7 @@ public class AppendByteArrayDeltaUnitTest extends AbstractRedisDeltaUnitTest {
   }
 
   @SuppressWarnings("unused")
-  private Object[] getDataTypeInstances() {
+  private Object[] getUnsupportedDataTypeInstancesForDelta() {
     return new Object[] {
         new Object[] {makeRedisHash()},
         new Object[] {makeRedisList()},

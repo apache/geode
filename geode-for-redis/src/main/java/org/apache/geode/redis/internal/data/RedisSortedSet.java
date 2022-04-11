@@ -84,7 +84,7 @@ public class RedisSortedSet extends AbstractRedisData {
     return REDIS_SORTED_SET_OVERHEAD + members.getSizeInBytes() + scoreSet.getSizeInBytes();
   }
 
-  RedisSortedSet(List<byte[]> members, double[] scores) {
+  public RedisSortedSet(List<byte[]> members, double[] scores) {
     this.members = new MemberMap(members.size());
 
     for (int i = 0; i < members.size(); i++) {
@@ -178,8 +178,7 @@ public class RedisSortedSet extends AbstractRedisData {
     });
   }
 
-  @VisibleForTesting
-  public synchronized MemberAddResult memberAdd(byte[] memberToAdd, double scoreToAdd) {
+  synchronized MemberAddResult memberAdd(byte[] memberToAdd, double scoreToAdd) {
     OrderedSetEntry entry = members.get(memberToAdd);
     if (entry == null) {
       OrderedSetEntry newEntry = new OrderedSetEntry(memberToAdd, scoreToAdd);
