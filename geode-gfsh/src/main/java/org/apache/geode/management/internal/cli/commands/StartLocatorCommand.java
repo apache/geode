@@ -458,6 +458,7 @@ public class StartLocatorCommand extends OfflineGfshCommand {
     commandLine.add("-classpath");
     commandLine
         .add(getLocatorClasspath(Boolean.TRUE.equals(includeSystemClasspath), userClasspath));
+    commandLine.addAll(MemberJvmOptions.getMemberJvmOptions());
 
     StartMemberUtils.addCurrentLocators(this, commandLine, gemfireProperties);
     StartMemberUtils.addGemFirePropertyFile(commandLine, gemfirePropertiesFile);

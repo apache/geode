@@ -36,6 +36,8 @@ import org.apache.geode.test.junit.rules.GfshParserRule;
 
 public class StartServerCommandIntegrationTest {
   private static final String FAKE_HOSTNAME = "someFakeHostname";
+  private static final String SERVER_LAUNCHER_CLASS_NAME =
+      "org.apache.geode.distributed.ServerLauncher";
 
   @Rule
   public GfshParserRule commandRule = new GfshParserRule();
@@ -83,9 +85,12 @@ public class StartServerCommandIntegrationTest {
         .addOption("hostname-for-clients", FAKE_HOSTNAME).toString();
 
     commandRule.executeAndAssertThat(spy, startServerCommand);
-    ArgumentCaptor<String[]> commandLines = ArgumentCaptor.forClass(String[].class);
-    verify(spy).getProcess(any(), commandLines.capture());
-    String[] lines = commandLines.getValue();
-    assertThat(lines).containsOnlyOnce("--hostname-for-clients=" + FAKE_HOSTNAME);
+    ArgumentCaptor<String[]> commandLine = ArgumentCaptor.forClass(String[].class);
+    verify(spy).getProcess(any(), commandLine.capture());
+
+    String expectedHostNameOption = "--hostname-for-clients=" + FAKE_HOSTNAME;
+    assertThat(commandLine.getValue())
+        .containsOnlyOnce(SERVER_LAUNCHER_CLASS_NAME, expectedHostNameOption)
+        .containsSubsequence(SERVER_LAUNCHER_CLASS_NAME, expectedHostNameOption);
   }
 }
