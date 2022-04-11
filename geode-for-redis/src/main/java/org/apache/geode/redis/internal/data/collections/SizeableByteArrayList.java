@@ -160,6 +160,8 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
    * @param removalList in order (smallest to largest) list of indexes to remove
    */
   public void removeIndexes(List<Integer> removalList) {
+    checkIndexesAreValidAndInOrder(removalList);
+
     int removalListIndex = 0;
     int firstIndexToRemove = removalList.get(0);
     int lastIndexToRemove = removalList.get(removalList.size() - 1);
@@ -174,6 +176,19 @@ public class SizeableByteArrayList extends LinkedList<byte[]> implements Sizeabl
         memberOverhead -= calculateByteArrayOverhead(element);
         removalListIndex++;
       }
+    }
+  }
+
+  private void checkIndexesAreValidAndInOrder(List<Integer> removalList) {
+    int previousIndex = -1;
+    for (Integer index : removalList) {
+      if (index < 0 || index >= size()) {
+        throw new IndexOutOfBoundsException();
+      }
+      if (index <= previousIndex) {
+        throw new IllegalArgumentException("Indexes are not sorted smallest to largest");
+      }
+      previousIndex = index;
     }
   }
 

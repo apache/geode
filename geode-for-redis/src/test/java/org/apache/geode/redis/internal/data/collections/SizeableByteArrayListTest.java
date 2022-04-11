@@ -197,24 +197,11 @@ public class SizeableByteArrayListTest {
     // Values are removalList, expected
     // For initial list of size 5
     return new Object[] {
-        new Object[] {Arrays.asList(0, 0),
-            new byte[][] {"1".getBytes(), "2".getBytes(), "3".getBytes(), "4".getBytes()}},
-        new Object[] {Arrays.asList(4, 0),
-            new byte[][] {"0".getBytes(), "1".getBytes(), "2".getBytes(), "3".getBytes(),
-                "4".getBytes()}},
-        new Object[] {Arrays.asList(2, 2),
-            new byte[][] {"0".getBytes(), "1".getBytes(), "3".getBytes(), "4".getBytes()}},
-        new Object[] {Arrays.asList(5, 1),
-            new byte[][] {"0".getBytes(), "1".getBytes(), "2".getBytes(), "3".getBytes(),
-                "4".getBytes()}},
         new Object[] {Arrays.asList(0, 4),
             new byte[][] {"1".getBytes(), "2".getBytes(), "3".getBytes()}},
         new Object[] {Arrays.asList(1, 2, 3, 4), new byte[][] {"0".getBytes()}},
         new Object[] {Arrays.asList(2, 3),
-            new byte[][] {"0".getBytes(), "1".getBytes(), "4".getBytes()}},
-        new Object[] {Arrays.asList(1, 2, -1),
-            new byte[][] {"0".getBytes(), "1".getBytes(), "2".getBytes(), "3".getBytes(),
-                "4".getBytes()}},
+            new byte[][] {"0".getBytes(), "1".getBytes(), "4".getBytes()}}
     };
   }
 
@@ -224,8 +211,20 @@ public class SizeableByteArrayListTest {
     SizeableByteArrayList list = setupList(size);
     assertThatThrownBy(() -> list.removeIndexes(Arrays.asList(-1))).isInstanceOf(
         IndexOutOfBoundsException.class);
+    assertThatThrownBy(() -> list.removeIndexes(Arrays.asList(1, 5))).isInstanceOf(
+        IndexOutOfBoundsException.class);
     assertThatThrownBy(() -> list.removeIndexes(Arrays.asList(-1, 2, 3, 4))).isInstanceOf(
         IndexOutOfBoundsException.class);
+  }
+
+  @Test
+  public void removeIndexes_throwsIllegalArgumentExceptionForUnsortedIndexList() {
+    int size = 5;
+    SizeableByteArrayList list = setupList(size);
+    assertThatThrownBy(() -> list.removeIndexes(Arrays.asList(0, 0))).isInstanceOf(
+        IllegalArgumentException.class);
+    assertThatThrownBy(() -> list.removeIndexes(Arrays.asList(1, 3, 2, 4))).isInstanceOf(
+        IllegalArgumentException.class);
   }
 
   @Test
@@ -392,62 +391,57 @@ public class SizeableByteArrayListTest {
 
   @Test
   @Parameters(method = "getValidArgumentsForInsert")
-  @TestCaseName("{method}: elementToInsert:{0}, referenceElement:{1}, before{2}, expectedList{3}, expectedIndex{4}")
+  @TestCaseName("{method}: referenceElement:{1}, before:{2}")
   public void insert_insertsGivenElementForValidInputs(byte[] elementToInsert,
-      byte[] referenceElement,
+      String referenceElement,
       boolean before,
-      byte[][] expectedList,
-      int expectedIndex) {
+      int expectedIndex,
+      byte[][] expectedList) {
     int size = 5;
     SizeableByteArrayList list = setupList(size);
-    int insertedIndex = list.insert(elementToInsert, referenceElement, before);
+    int insertedIndex = list.insert(elementToInsert, referenceElement.getBytes(), before);
     assertThat(insertedIndex).isEqualTo(expectedIndex);
     assertThat(list).containsExactly(expectedList);
   }
 
   @SuppressWarnings("unused")
   private Object[] getValidArgumentsForInsert() {
-    // Values are elementToInsert,referenceElement,before, expectedList, expectedIndex
+    // Values are elementToInsert, referenceElement, before, expectedIndex, expectedList
     // For initial list of size 5
     byte[] newElement = "newElement".getBytes();
     return new Object[] {
-        new Object[] {newElement, "2".getBytes(), true,
-            new byte[][] {"0".getBytes(), "1".getBytes(), newElement, "2".getBytes(),
-                "3".getBytes(),
-                "4".getBytes()},
-            2},
-        new Object[] {newElement, "3".getBytes(), false,
-            new byte[][] {"0".getBytes(), "1".getBytes(), "2".getBytes(), "3".getBytes(),
-                newElement,
-                "4".getBytes()},
-            4},
-        new Object[] {newElement, "0".getBytes(), true,
+        // Before first element
+        new Object[] {newElement, "0", true, 0,
             new byte[][] {newElement, "0".getBytes(), "1".getBytes(), "2".getBytes(),
-                "3".getBytes(),
-                "4".getBytes()},
-            0},
-        new Object[] {newElement, "4".getBytes(), true,
-            new byte[][] {"0".getBytes(), "1".getBytes(), "2".getBytes(), "3".getBytes(),
-                newElement,
-                "4".getBytes()},
-            4},
-        new Object[] {newElement, "0".getBytes(), false,
+                "3".getBytes(), "4".getBytes()}},
+        // After first element
+        new Object[] {newElement, "0", false, 1,
             new byte[][] {"0".getBytes(), newElement, "1".getBytes(), "2".getBytes(),
-                "3".getBytes(),
-                "4".getBytes()},
-            1},
-        new Object[] {newElement, "4".getBytes(), false,
+                "3".getBytes(), "4".getBytes()}},
+        // Before last element
+        new Object[] {newElement, "4", true, 4,
             new byte[][] {"0".getBytes(), "1".getBytes(), "2".getBytes(), "3".getBytes(),
-                "4".getBytes(), newElement},
-            5},
-        new Object[] {newElement, "5".getBytes(), true,
+                newElement, "4".getBytes()}},
+        // After last element
+        new Object[] {newElement, "4", false, 5,
             new byte[][] {"0".getBytes(), "1".getBytes(), "2".getBytes(), "3".getBytes(),
-                "4".getBytes()},
-            -1},
-        new Object[] {newElement, "-1".getBytes(), true,
+                "4".getBytes(), newElement}},
+        // Before middle element
+        new Object[] {newElement, "2", true, 2,
+            new byte[][] {"0".getBytes(), "1".getBytes(), newElement, "2".getBytes(),
+                "3".getBytes(), "4".getBytes()}},
+        // After middle element
+        new Object[] {newElement, "2", false, 3,
+            new byte[][] {"0".getBytes(), "1".getBytes(), "2".getBytes(), newElement,
+                "3".getBytes(), "4".getBytes()}},
+        // Before nonexistent element
+        new Object[] {newElement, "non-existent", true, -1,
             new byte[][] {"0".getBytes(), "1".getBytes(), "2".getBytes(), "3".getBytes(),
-                "4".getBytes()},
-            -1}
+                "4".getBytes()}},
+        // After nonexistent element
+        new Object[] {newElement, "non-existent", false, -1,
+            new byte[][] {"0".getBytes(), "1".getBytes(), "2".getBytes(), "3".getBytes(),
+                "4".getBytes()}}
     };
   }
 
