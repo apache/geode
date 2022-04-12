@@ -99,7 +99,7 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
     startClient(publisherClientVM, server1Port, regionName);
 
     // Publish some entries
-    publishEntries(regionName, 10);
+    publishEntries(publisherClientVM, regionName, 10);
 
     server1VM.invoke(new CacheSerializableRunnable("Close cq for durable client") {
       @Override
@@ -213,7 +213,7 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
     startClient(publisherClientVM, primaryPort, regionName);
 
     // Publish some entries
-    publishEntries(regionName, 10);
+    publishEntries(publisherClientVM, regionName, 10);
 
     // Restart the durable client
     CacheServerTestUtil.createCacheClient(
@@ -285,7 +285,7 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
     startClient(publisherClientVM, server1Port, regionName);
 
     // Publish some entries
-    publishEntries(regionName, 10);
+    publishEntries(publisherClientVM, regionName, 10);
 
     closeCQsforDurableClient(durableClientId);
 
@@ -359,7 +359,7 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
     startClient(publisherClientVM, server1Port, regionName);
 
     // Publish some entries
-    publishEntries(regionName, 10);
+    publishEntries(publisherClientVM, regionName, 10);
 
     closeCQsforDurableClient(durableClientId);
 
@@ -395,7 +395,7 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
     checkHAQueueSize(server1VM, durableClientId, 0, 1);
 
     // continue to publish and make sure we get the events
-    publishEntries(regionName, 10);
+    publishEntries(publisherClientVM, regionName, 10);
     checkCqListenerEvents(durableClientVM, "GreaterThan5", 4 /* numEventsExpected */,
         /* numEventsToWaitFor */ 10/* secondsToWait */);
     checkCqListenerEvents(durableClientVM, "LessThan5", 5 /* numEventsExpected */,
@@ -495,7 +495,7 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
     startClient(publisherClientVM, server1Port, regionName);
 
     // Publish some entries
-    publishEntries(regionName, 10);
+    publishEntries(publisherClientVM, regionName, 10);
 
     server1VM.invoke(new CacheSerializableRunnable("Close cq for durable client 1") {
       @Override
@@ -611,7 +611,7 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
       startClient(publisherClientVM, server1Port, regionName);
 
       // Publish some entries
-      publishEntries(regionName, 10);
+      publishEntries(publisherClientVM, regionName, 10);
 
       server1VM.invoke(new CacheSerializableRunnable("Set test hook") {
         @Override
@@ -729,7 +729,7 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
       startClient(publisherClientVM, server1Port, regionName);
 
       // Publish some entries
-      publishEntries(regionName, 10);
+      publishEntries(publisherClientVM, regionName, 10);
 
       AsyncInvocation async =
           server1VM.invokeAsync(new CacheSerializableRunnable("Close cq for durable client") {
@@ -836,7 +836,7 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
     startClient(publisherClientVM, server1Port, regionName);
 
     // Publish some entries
-    publishEntries(regionName, 10);
+    publishEntries(publisherClientVM, regionName, 10);
 
     // Attempt to close a cq even though the client is running
     server1VM.invoke(new CacheSerializableRunnable("Close cq for durable client") {
@@ -1001,7 +1001,7 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
 
       // Publish some entries
       final int numberOfEntries = 10;
-      publishEntries(0, numberOfEntries);
+      publishEntries(publisherClientVM, 0, numberOfEntries);
 
       // Verify the durable client received the updates
       checkCqListenerEvents(durableClientVM, cqName, numberOfEntries,
@@ -1017,7 +1017,7 @@ public class DurableClientCQDUnitTest extends DurableClientTestBase {
           server1VM);
 
       // Publish some more entries
-      publishEntries(10, numberOfEntries);
+      publishEntries(publisherClientVM, 10, numberOfEntries);
 
       publisherClientVM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
 

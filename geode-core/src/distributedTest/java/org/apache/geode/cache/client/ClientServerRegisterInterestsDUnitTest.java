@@ -19,10 +19,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIEN
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -45,10 +44,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.SerializableCallable;
-import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
@@ -83,74 +79,62 @@ public class ClientServerRegisterInterestsDUnitTest extends JUnit4DistributedTes
   public final void preTearDown() throws Exception {
     serverPort.set(0);
     entryEvents.clear();
-    gemfireServerVm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        CacheFactory.getAnyInstance().close();
-      }
-    });
+    gemfireServerVm.invoke(() -> CacheFactory.getAnyInstance().close());
     gemfireServerVm = null;
   }
 
   private void setupGemFireCacheServer() {
-    Host localhost = Host.getHost(0);
 
-    gemfireServerVm = localhost.getVM(0);
+
+    gemfireServerVm = VM.getVM(0);
     serverPort.set(AvailablePortHelper.getRandomAvailableTCPPort());
 
-    gemfireServerVm.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        try {
-          Cache cache = new CacheFactory()
-              .set("name", "ClientServerRegisterInterestsTestGemFireServer").set(MCAST_PORT, "0")
-              .set(LOG_FILE, "clientServerRegisterInterestsTest.log").set(LOG_LEVEL, "config")
-              // .set("jmx-manager", "true")
-              // .set("jmx-manager-http-port", "0")
-              // .set("jmx-manager-port", "1199")
-              // .set("jmx-manager-start", "true")
-              .create();
+    gemfireServerVm.invoke(() -> {
+      try {
+        Cache cache = new CacheFactory()
+            .set("name", "ClientServerRegisterInterestsTestGemFireServer").set(MCAST_PORT, "0")
+            .set(LOG_FILE, "clientServerRegisterInterestsTest.log").set(LOG_LEVEL, "config")
+            .create();
 
-          RegionFactory<String, String> regionFactory = cache.createRegionFactory();
+        RegionFactory<String, String> regionFactory = cache.createRegionFactory();
 
-          regionFactory.setDataPolicy(DataPolicy.REPLICATE);
-          regionFactory.setKeyConstraint(String.class);
-          regionFactory.setValueConstraint(String.class);
+        regionFactory.setDataPolicy(DataPolicy.REPLICATE);
+        regionFactory.setKeyConstraint(String.class);
+        regionFactory.setValueConstraint(String.class);
 
-          Region<String, String> example = regionFactory.create("Example");
+        Region<String, String> example = regionFactory.create("Example");
 
-          assertNotNull("The 'Example' Region was not properly configured and initialized!",
-              example);
-          assertEquals(SEPARATOR + "Example", example.getFullPath());
-          assertEquals("Example", example.getName());
-          assertTrue(example.isEmpty());
+        assertNotNull("The 'Example' Region was not properly configured and initialized!",
+            example);
+        assertThat(example.getFullPath()).isEqualTo(SEPARATOR + "Example");
+        assertThat(example.getName()).isEqualTo("Example");
+        assertTrue(example.isEmpty());
 
-          example.put("1", "ONE");
+        example.put("1", "ONE");
 
-          assertFalse(example.isEmpty());
-          assertEquals(1, example.size());
+        assertFalse(example.isEmpty());
+        assertThat(example.size()).isEqualTo(1);
 
-          CacheServer cacheServer = cache.addCacheServer();
+        CacheServer cacheServer = cache.addCacheServer();
 
-          cacheServer.setPort(serverPort.get());
-          cacheServer.setMaxConnections(10);
+        cacheServer.setPort(serverPort.get());
+        cacheServer.setMaxConnections(10);
 
-          ClientSubscriptionConfig clientSubscriptionConfig =
-              cacheServer.getClientSubscriptionConfig();
+        ClientSubscriptionConfig clientSubscriptionConfig =
+            cacheServer.getClientSubscriptionConfig();
 
-          clientSubscriptionConfig.setCapacity(100);
-          clientSubscriptionConfig.setEvictionPolicy("entry");
+        clientSubscriptionConfig.setCapacity(100);
+        clientSubscriptionConfig.setEvictionPolicy("entry");
 
-          cacheServer.start();
+        cacheServer.start();
 
-          assertTrue("Cache Server is not running!", cacheServer.isRunning());
-        } catch (UnknownHostException e) {
-          throw new RuntimeException(e);
-        } catch (IOException e) {
-          throw new RuntimeException(String.format(
-              "Failed to start the GemFire Cache Server listening on port (%1$d) due to IO error!",
-              serverPort.get()), e);
-        }
+        assertTrue("Cache Server is not running!", cacheServer.isRunning());
+      } catch (UnknownHostException e) {
+        throw new RuntimeException(e);
+      } catch (IOException e) {
+        throw new RuntimeException(String.format(
+            "Failed to start the GemFire Cache Server listening on port (%1$d) due to IO error!",
+            serverPort.get()), e);
       }
     });
   }
@@ -193,13 +177,10 @@ public class ClientServerRegisterInterestsDUnitTest extends JUnit4DistributedTes
 
   @SuppressWarnings("unchecked")
   protected <K, V> V put(final String regionName, final K key, final V value) {
-    return (V) gemfireServerVm.invoke(new SerializableCallable() {
-      @Override
-      public Object call() throws Exception {
-        Cache cache = CacheFactory.getAnyInstance();
-        cache.getRegion(regionName).put(key, value);
-        return cache.getRegion(regionName).get(key);
-      }
+    return (V) gemfireServerVm.invoke(() -> {
+      Cache cache = CacheFactory.getAnyInstance();
+      cache.getRegion(regionName).put(key, value);
+      return cache.getRegion(regionName).get(key);
     });
   }
 
@@ -224,14 +205,14 @@ public class ClientServerRegisterInterestsDUnitTest extends JUnit4DistributedTes
       Region<String, String> example = clientCache.getRegion(SEPARATOR + "Example");
 
       assertNotNull("'Example' Region in Client Cache was not found!", example);
-      assertEquals(1, example.size());
+      assertThat(example.size()).isEqualTo(1);
       assertTrue(example.containsKey("1"));
-      assertEquals("ONE", example.get("1"));
+      assertThat(example.get("1")).isEqualTo("ONE");
       assertTrue(entryEvents.empty());
 
       String value = put(SEPARATOR + "Example", "2", "TWO");
 
-      assertEquals("TWO", value);
+      assertThat(value).isEqualTo("TWO");
 
       waitOnEvent(WAIT_TIME_MILLISECONDS);
 
@@ -239,12 +220,12 @@ public class ClientServerRegisterInterestsDUnitTest extends JUnit4DistributedTes
 
       EntryEvent entryEvent = (EntryEvent) entryEvents.pop();
 
-      assertEquals("2", entryEvent.getKey());
-      assertEquals("TWO", entryEvent.getNewValue());
-      assertNull(entryEvent.getOldValue());
-      assertEquals(2, example.size());
+      assertThat(entryEvent.getKey()).isEqualTo("2");
+      assertThat(entryEvent.getNewValue()).isEqualTo("TWO");
+      assertThat(entryEvent.getOldValue()).isNull();
+      assertThat(example.size()).isEqualTo(2);
       assertTrue(example.containsKey("2"));
-      assertEquals("TWO", example.get("2"));
+      assertThat(example.get("2")).isEqualTo("TWO");
     } finally {
       clientCache.close();
     }

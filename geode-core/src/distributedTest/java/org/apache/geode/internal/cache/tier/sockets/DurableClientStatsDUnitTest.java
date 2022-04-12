@@ -18,9 +18,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIEN
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.test.dunit.Assert.assertEquals;
-import static org.apache.geode.test.dunit.Assert.assertNotNull;
-import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil.getCache;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.Properties;
@@ -40,8 +40,6 @@ import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.tier.Acceptor;
-import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
@@ -73,9 +71,8 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
 
   @Override
   public final void postSetUp() throws Exception {
-    Host host = Host.getHost(0);
-    server1VM = host.getVM(0);
-    durableClientVM = host.getVM(1);
+    server1VM = VM.getVM(0);
+    durableClientVM = VM.getVM(1);
     regionName = DurableClientStatsDUnitTest.class.getName() + "_region";
     CacheServerTestUtil.disableShufflingOfEndpoints();
   }
@@ -185,16 +182,16 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
             getDurableClientDistributedSystemProperties(durableClientId, durableClientTimeout),
             Boolean.TRUE));
 
-    // Send clientReady message
-    durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
-      @Override
-      public void run2() throws CacheException {
-        CacheServerTestUtil.getCache().readyForEvents();
-      }
-    });
-
     durableClientVM
         .invoke(() -> DurableClientStatsDUnitTest.registerKey(K1, Boolean.TRUE));
+
+    // Send clientReady message
+    durableClientVM.invoke("Send clientReady", new CacheSerializableRunnable() {
+      @Override
+      public void run2() throws CacheException {
+        getCache().readyForEvents();
+      }
+    });
 
     durableClientVM.invoke(DurableClientStatsDUnitTest::closeCache);
   }
@@ -209,14 +206,6 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
             regionName,
             getNonDurableClientDistributedSystemProperties(durableClientId, durableClientTimeout),
             Boolean.TRUE));
-
-    // Send clientReady message
-    // this.durableClientVM.invoke(new CacheSerializableRunnable(
-    // "Send clientReady") {
-    // public void run2() throws CacheException {
-    // CacheServerTestUtil.getCache().readyForEvents();
-    // }
-    // });
 
     durableClientVM
         .invoke(() -> DurableClientStatsDUnitTest.registerKey(K1, Boolean.FALSE));
@@ -237,7 +226,7 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
             Boolean.TRUE));
 
     // Send clientReady message
-    durableClientVM.invoke(new CacheSerializableRunnable("Send clientReady") {
+    durableClientVM.invoke("Send clientReady", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
         CacheServerTestUtil.getCache().readyForEvents();
@@ -252,21 +241,12 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
 
     final String durableClientId = getName() + "_client";
 
-    durableClientVM
-        .invoke(() -> CacheServerTestUtil.createCacheClient(
-            getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, true,
-                0),
-            regionName,
-            getNonDurableClientDistributedSystemProperties(durableClientId, durableClientTimeout),
-            Boolean.TRUE));
-
-    // Send clientReady message
-    // this.durableClientVM.invoke(new CacheSerializableRunnable(
-    // "Send clientReady") {
-    // public void run2() throws CacheException {
-    // CacheServerTestUtil.getCache().readyForEvents();
-    // }
-    // });
+    durableClientVM.invoke(() -> CacheServerTestUtil.createCacheClient(
+        getClientPool(NetworkUtils.getServerHostName(durableClientVM.getHost()), PORT1, true,
+            0),
+        regionName,
+        getNonDurableClientDistributedSystemProperties(durableClientId, durableClientTimeout),
+        Boolean.TRUE));
 
     durableClientVM.invoke(DurableClientStatsDUnitTest::closeCache);
 
@@ -302,9 +282,9 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
       logger.info("Stats:" + "\nDurableReconnectionCount:" + stats.get_durableReconnectionCount()
           + "\nQueueDroppedCount" + stats.get_queueDroppedCount()
           + "\nEventsEnqueuedWhileClientAwayCount" + stats.get_eventEnqueuedWhileClientAwayCount());
-      assertEquals(reconnectionCount, stats.get_durableReconnectionCount());
-      assertEquals(queueDropCount, stats.get_queueDroppedCount());
-      assertEquals(enqueueCount, stats.get_eventEnqueuedWhileClientAwayCount());
+      assertThat(stats.get_durableReconnectionCount()).isEqualTo(reconnectionCount);
+      assertThat(stats.get_queueDroppedCount()).isEqualTo(queueDropCount);
+      assertThat(stats.get_eventEnqueuedWhileClientAwayCount()).isEqualTo(enqueueCount);
     } catch (Exception e) {
       fail("Exception thrown while executing checkStatisticsWithExpectedValues()", e);
     }
@@ -328,10 +308,10 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
           .getRegion(DurableClientStatsDUnitTest.class.getName() + "_region");
       // Region region =
       // CacheServerTestUtil.getCache().getRegion(regionName);
-      assertNotNull(region);
+      assertThat(region).isNotNull();
       region.registerInterest(key, InterestResultPolicy.NONE, isDurable);
     } catch (Exception ex) {
-      Assert.fail("failed while registering interest in registerKey function", ex);
+      fail("failed while registering interest in registerKey function", ex);
     }
   }
 
@@ -340,13 +320,13 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
       Region r = CacheServerTestUtil.getCache()
           .getRegion(DurableClientStatsDUnitTest.class.getName() + "_region");
       // Region r = CacheServerTestUtil.getCache().getRegion(regionName);
-      assertNotNull(r);
+      assertThat(r).isNotNull();
       if (r.getEntry(key) != null) {
         r.put(key, value);
       } else {
         r.create(key, value);
       }
-      assertEquals(value, r.getEntry(key).getValue());
+      assertThat(r.getEntry(key).getValue()).isEqualTo(value);
     } catch (Exception e) {
       fail("Put in Server has some fight", e);
     }

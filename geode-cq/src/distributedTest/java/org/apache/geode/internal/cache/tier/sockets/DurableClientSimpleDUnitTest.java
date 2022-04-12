@@ -17,6 +17,8 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Thread.sleep;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache.InterestResultPolicy.NONE;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.cache.client.PoolManager.createFactory;
@@ -29,6 +31,7 @@ import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 import static org.apache.geode.test.dunit.Wait.pause;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -86,7 +89,7 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
 
     // Publish some entries
     final int numberOfEntries = 10;
-    publishEntries(0, 10);
+    publishEntries(publisherClientVM, 0, 10);
 
     // Verify the durable client received the updates
     checkListenerEvents(numberOfEntries, 1, -1, durableClientVM);
@@ -224,7 +227,7 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
 
     // Publish some entries
     final int numberOfEntries = 10;
-    publishEntries(0, numberOfEntries);
+    publishEntries(publisherClientVM, 0, numberOfEntries);
 
     // Verify the durable client received the updates
     checkListenerEvents(numberOfEntries, 1, -1, durableClientVM);
@@ -344,7 +347,7 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
 
     // Publish some entries
     final int numberOfEntries = 10;
-    publishEntries(0, numberOfEntries);
+    publishEntries(publisherClientVM, 0, numberOfEntries);
 
     // Verify the durable client received the updates
     checkListenerEvents(numberOfEntries, 1, -1, durableClientVM);
@@ -365,7 +368,7 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
     });
 
     // Publish some more entries
-    publishEntries(10, numberOfEntries);
+    publishEntries(publisherClientVM, 10, numberOfEntries);
 
     // Re-start the durable client
     durableClientVM.invoke(() -> createCacheClient(
@@ -439,7 +442,7 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
 
     // Publish some entries
     final int numberOfEntries = 10;
-    publishEntries(0, numberOfEntries);
+    publishEntries(publisherClientVM, 0, numberOfEntries);
 
     // Verify durable client 1 received the updates
     checkListenerEvents(numberOfEntries, 1, -1, durableClientVM);
@@ -458,7 +461,7 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
     verifyMultupleDurableClients(durableClientId, durableClientTimeout, durableClientId2);
 
     // Publish some more entries
-    publishEntries(10, numberOfEntries);
+    publishEntries(publisherClientVM, 10, numberOfEntries);
 
     sleep(1000);
 
@@ -619,7 +622,7 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
 
     // Publish some entries
     final int numberOfEntries = 10;
-    publishEntries(0, numberOfEntries);
+    publishEntries(publisherClientVM, 0, numberOfEntries);
 
     sleep(1000);
 
@@ -781,7 +784,7 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
 
     // Publish some entries
     final int numberOfEntries = 10;
-    publishEntries(0, numberOfEntries);
+    publishEntries(publisherClientVM, 0, numberOfEntries);
 
     // Verify the durable client received the updates
     checkListenerEvents(numberOfEntries, 1, -1, durableClientVM);
@@ -874,7 +877,7 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
     startClient(publisherClientVM, server1Port, regionName);
 
     // Publish some entries
-    publishEntries(regionName, 10);
+    publishEntries(publisherClientVM, regionName, 10);
 
     // verify cq stats are correct
     checkNumDurableCqs(server1VM, durableClientId, 3);
@@ -1026,14 +1029,23 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
             server1Port, server2Port, false), regionName));
 
     // Create an entry
-    publishEntries(0, 1);
+    publishEntries(publisherClientVM, 0, 1);
 
     // Start a durable client with the ControlListener
     durableClientId = getName() + "_client";
-    startupDurableClient(VERY_LONG_DURABLE_TIMEOUT_SECONDS,
-        getClientPool(getServerHostName(), server1Port, server2Port,
-            true),
-        Boolean.TRUE);
+    durableClientVM.invoke(() -> createCacheClient(
+        getClientPool(getServerHostName(), server1Port, server2Port, true), regionName,
+        getClientDistributedSystemProperties(durableClientId, VERY_LONG_DURABLE_TIMEOUT_SECONDS),
+        Boolean.TRUE));
+
+    durableClientVM.invoke(() -> {
+      await().atMost(1 * HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, MINUTES)
+          .pollInterval(100, MILLISECONDS)
+          .until(CacheServerTestUtil::getCache, notNullValue());
+    });
+
+    // Send clientReady message
+    sendClientReady(durableClientVM);
 
     // Use ClientSession on the server to ` in entry key on behalf of durable client
     boolean server1IsPrimary = false;
@@ -1063,6 +1075,8 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestBase {
     restartDurableClient(VERY_LONG_DURABLE_TIMEOUT_SECONDS,
         getClientPool(getServerHostName(), server1Port, server2Port, true), Boolean.TRUE);
 
+    // Send clientReady message
+    sendClientReady(durableClientVM);
     // Verify durable client does not receive create event
     checkListenerEvents(0, 1, TYPE_CREATE, durableClientVM);
 

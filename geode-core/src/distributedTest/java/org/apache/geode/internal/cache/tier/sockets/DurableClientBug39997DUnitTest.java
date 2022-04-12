@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -25,22 +25,18 @@ import java.util.Properties;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.NoSubscriptionServersAvailableException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.NetworkUtils;
-import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
@@ -50,81 +46,63 @@ public class DurableClientBug39997DUnitTest extends JUnit4CacheTestCase {
 
   @Override
   public final void postTearDownCacheTestCase() {
-    Host.getHost(0).getVM(0).invoke(JUnit4DistributedTestCase::disconnectFromDS);
+    VM.getVM(0).invoke(JUnit4DistributedTestCase::disconnectFromDS);
   }
 
   @Test
   public void testNoServerAvailableOnStartup() {
     Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+    VM vm0 = VM.getVM(0);
+    VM vm1 = VM.getVM(1);
 
-    final String hostName = NetworkUtils.getServerHostName(host);
+    final String hostName = VM.getHostName();
     final int port = AvailablePortHelper.getRandomAvailableTCPPort();
-    vm0.invoke(new SerializableRunnable("create cache") {
-      @Override
-      public void run() {
-        getSystem(getClientProperties());
-        PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(hostName, port)
-            .setSubscriptionEnabled(true).setSubscriptionRedundancy(0)
-            .create("DurableClientReconnectDUnitTestPool");
-        AttributesFactory factory = new AttributesFactory();
-        factory.setScope(Scope.LOCAL);
-        factory.setPoolName(p.getName());
-        Cache cache = getCache();
-        Region region1 = cache.createRegion("region", factory.create());
-        cache.readyForEvents();
+    vm0.invoke("create cache", () -> {
+      getSystem(getClientProperties());
+      PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(hostName, port)
+          .setSubscriptionEnabled(true).setSubscriptionRedundancy(0)
+          .create("DurableClientReconnectDUnitTestPool");
+      Cache cache = getCache();
+      RegionFactory regionFactory = cache.createRegionFactory();
+      regionFactory.setScope(Scope.LOCAL);
+      regionFactory.setPoolName(p.getName());
+      Region region1 = regionFactory.create("region");
 
-        try {
-          region1.registerInterest("ALL_KEYS");
-          fail("Should have received an exception trying to register interest");
-        } catch (NoSubscriptionServersAvailableException expected) {
-          // this is expected
-        }
+      try {
+        region1.registerInterestForAllKeys();
+        fail("Should have received an exception trying to register interest");
+      } catch (NoSubscriptionServersAvailableException expected) {
+        // this is expected
+      }
+      cache.readyForEvents();
+
+    });
+
+    vm1.invoke(() -> {
+      Cache cache = getCache();
+      RegionFactory regionFactory = cache.createRegionFactory();
+      regionFactory.setScope(Scope.DISTRIBUTED_ACK);
+      regionFactory.create("region");
+      CacheServer server = cache.addCacheServer();
+      server.setPort(port);
+      try {
+        server.start();
+      } catch (IOException e) {
+        fail("couldn't start server", e);
       }
     });
 
-    vm1.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        AttributesFactory factory = new AttributesFactory();
-        factory.setScope(Scope.DISTRIBUTED_ACK);
-        cache.createRegion("region", factory.create());
-        CacheServer server = cache.addCacheServer();
-        server.setPort(port);
+    vm0.invoke(() -> {
+      Cache cache = getCache();
+      final Region region = cache.getRegion("region");
+      GeodeAwaitility.await("Wait for register interest to succeed").until(() -> {
         try {
-          server.start();
-        } catch (IOException e) {
-          Assert.fail("couldn't start server", e);
+          region.registerInterestForAllKeys();
+        } catch (NoSubscriptionServersAvailableException e) {
+          return false;
         }
-      }
-    });
-
-    vm0.invoke(new SerializableRunnable() {
-      @Override
-      public void run() {
-        Cache cache = getCache();
-        final Region region = cache.getRegion("region");
-        GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
-
-          @Override
-          public String description() {
-            return "Wait for register interest to succeed";
-          }
-
-          @Override
-          public boolean done() {
-            try {
-              region.registerInterest("ALL_KEYS");
-            } catch (NoSubscriptionServersAvailableException e) {
-              return false;
-            }
-            return true;
-          }
-
-        });
-      }
+        return true;
+      });
     });
   }
 

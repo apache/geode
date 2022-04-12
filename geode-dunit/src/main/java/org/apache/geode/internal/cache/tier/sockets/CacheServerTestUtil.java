@@ -140,7 +140,7 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     PoolFactoryImpl pf = (PoolFactoryImpl) PoolManager.createFactory();
     pf.init(poolAttr);
     PoolImpl p = (PoolImpl) pf.create("CacheServerTestUtil");
-    AttributesFactory factory = new AttributesFactory();
+    AttributesFactory factory = new AttributesFactory<>();
     factory.setScope(Scope.LOCAL);
     factory.setPoolName(p.getName());
 
@@ -170,7 +170,7 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     PoolFactoryImpl pf = (PoolFactoryImpl) PoolManager.createFactory();
     pf.init(poolAttr);
     PoolImpl p = (PoolImpl) pf.create("CacheServerTestUtil");
-    AttributesFactory factory = new AttributesFactory();
+    AttributesFactory factory = new AttributesFactory<>();
     factory.setScope(Scope.LOCAL);
     factory.setPoolName(p.getName());
     if (addControlListener) {
@@ -198,7 +198,7 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     PoolFactoryImpl pf = (PoolFactoryImpl) PoolManager.createFactory();
     pf.init(poolAttr);
     PoolImpl p = (PoolImpl) pf.create("CacheServerTestUtil");
-    AttributesFactory factory = new AttributesFactory();
+    AttributesFactory factory = new AttributesFactory<>();
     factory.setScope(Scope.LOCAL);
     factory.setPoolName(p.getName());
     RegionAttributes attrs = factory.create();
@@ -290,14 +290,14 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     PoolFactoryImpl pf = (PoolFactoryImpl) PoolManager.createFactory();
     pf.init(poolAttr);
     Pool p = pf.create("CacheServerTestUtil1");
-    AttributesFactory factory1 = new AttributesFactory();
+    AttributesFactory factory1 = new AttributesFactory<>();
     factory1.setScope(Scope.LOCAL);
     factory1.setPoolName(p.getName());
     cache.createRegion(regionName1, factory1.create());
 
     // Initialize region2
     p = pf.create("CacheServerTestUtil2");
-    AttributesFactory factory2 = new AttributesFactory();
+    AttributesFactory factory2 = new AttributesFactory<>();
     factory2.setScope(Scope.LOCAL);
     factory2.setPoolName(p.getName());
     cache.createRegion(regionName2, factory2.create());
@@ -337,7 +337,7 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
     new CacheServerTestUtil().createCache(props);
-    AttributesFactory factory = new AttributesFactory();
+    AttributesFactory factory = new AttributesFactory<>();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setEnableBridgeConflation(true);
     factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -352,7 +352,7 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
   public static Integer createCacheServer(String regionName1, String regionName2,
       Boolean notifyBySubscription) throws Exception {
     new CacheServerTestUtil().createCache(new Properties());
-    AttributesFactory factory = new AttributesFactory();
+    AttributesFactory factory = new AttributesFactory<>();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setEnableBridgeConflation(true);
     factory.setDataPolicy(DataPolicy.REPLICATE);
@@ -508,6 +508,11 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
       return waitWhileNotEnoughEvents(sleepMs, eventCount, getEvents(eventType));
     }
 
+
+    /**
+     * This method is not implemented to test event count matches the eventsToCheck.size() which is
+     * confusing. It will wait and return if it got something in the eventsToCheck or not.
+     */
     public boolean waitWhileNotEnoughEvents(long sleepMs, int eventCount, List eventsToCheck) {
       long maxMillis = System.currentTimeMillis() + sleepMs;
       synchronized (CONTROL_LOCK) {
