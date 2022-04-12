@@ -576,8 +576,9 @@ class StartServerCommandTest {
 
       final String expectedClasspath = String.join(
           File.pathSeparator,
-          IOUtils.appendToPath(geodeHome, "lib",
-              "geode-jboss-extensions-" + GemFireVersion.getGemFireVersion() + ".jar"),
+          Paths.get(geodeHome, "lib",
+              "geode-jboss-extensions-" + GemFireVersion.getGemFireVersion() + ".jar")
+              .normalize().toString(),
           resolveJBossJarFile(geodeHome));
 
       List<String> expectedJavaCommandSequence = Arrays.asList(

@@ -93,7 +93,7 @@ public class ModularJarDeploymentService implements JarDeploymentService {
         logger.debug("Deployment: {} is identical to existing deployment. Nothing to deploy",
             deployment.getId());
       }
-      return Success.of(null);
+      return Success.of(deployment);
     }
 
     // if no application is specified, assume the default
@@ -143,10 +143,10 @@ public class ModularJarDeploymentService implements JarDeploymentService {
         moduleName);
 
     if (moduleRegistered) {
-      // Deployment deploymentCopy = new Deployment(deployment, deployment.getFile());
-      // deploymentCopy.setDeployedTime(Instant.now().toString());
-      deployments.put(moduleName, deployment);
-      return registerFunctions(deployment);
+      Deployment deploymentCopy = new Deployment(deployment, deployment.getFile());
+      deploymentCopy.setDeployedTime(Instant.now().toString());
+      deployments.put(moduleName, deploymentCopy);
+      return registerFunctions(deploymentCopy);
     } else {
       return Failure.of("Module could not be registered");
     }

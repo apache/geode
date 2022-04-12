@@ -362,7 +362,7 @@ public class StartServerCommand extends OfflineGfshCommand {
 
     ProcessStreamReader stderrReader = new ProcessStreamReader.Builder(serverProcess)
         .inputStream(serverProcess.getErrorStream()).inputListener(inputListener)
-        .readingMode(readingMode).continueReadingMillis(2 * 1000).build().start();
+        .readingMode(readingMode).continueReadingMillis(2000).build().start();
 
     ServerLauncher.ServerState serverState;
 
