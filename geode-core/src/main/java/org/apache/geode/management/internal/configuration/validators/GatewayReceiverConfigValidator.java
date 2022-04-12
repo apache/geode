@@ -18,6 +18,8 @@ package org.apache.geode.management.internal.configuration.validators;
 import static org.apache.geode.cache.wan.GatewayReceiver.DEFAULT_END_PORT;
 import static org.apache.geode.cache.wan.GatewayReceiver.DEFAULT_START_PORT;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import org.apache.geode.management.configuration.GatewayReceiver;
 import org.apache.geode.management.internal.CacheElementOperation;
 
@@ -27,19 +29,25 @@ public class GatewayReceiverConfigValidator
   public void validate(CacheElementOperation operation, GatewayReceiver config)
       throws IllegalArgumentException {
 
-    if (operation == CacheElementOperation.CREATE) {
-      if (config.getStartPort() == null) {
-        config.setStartPort(DEFAULT_START_PORT);
-      }
+    switch (operation) {
+      case CREATE:
+        if (config.getStartPort() == null) {
+          config.setStartPort(DEFAULT_START_PORT);
+        }
 
-      if (config.getEndPort() == null) {
-        config.setEndPort(DEFAULT_END_PORT);
-      }
+        if (config.getEndPort() == null) {
+          config.setEndPort(DEFAULT_END_PORT);
+        }
 
-      if (config.getStartPort() > config.getEndPort()) {
-        throw new IllegalArgumentException("Start port " + config.getStartPort()
-            + " must be less than the end port " + config.getEndPort() + ".");
-      }
+        if (config.getStartPort() > config.getEndPort()) {
+          throw new IllegalArgumentException("Start port " + config.getStartPort()
+              + " must be less than the end port " + config.getEndPort() + ".");
+        }
+        break;
+      case UPDATE:
+        throw new NotImplementedException("Not implemented");
+      case DELETE:
+      default:
     }
   }
 }

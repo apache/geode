@@ -24,8 +24,10 @@ import io.swagger.annotations.ApiResponses;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -57,5 +59,24 @@ public class PdxManagementController extends AbstractManagementController {
   @GetMapping(PDX_ENDPOINT)
   public ClusterManagementGetResult<Pdx, PdxInfo> getPDX() {
     return clusterManagementService.get(new Pdx());
+  }
+
+  @ApiOperation(value = "update pdx")
+  @ApiResponses({
+      @ApiResponse(code = 400, message = "Bad request."),
+      @ApiResponse(code = 500, message = "Internal error.")})
+  @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE')")
+  @PutMapping(PDX_ENDPOINT)
+  public ResponseEntity<ClusterManagementResult> updatePdx(@RequestBody Pdx pdxType) {
+    ClusterManagementResult result = clusterManagementService.update(pdxType);
+
+    return new ResponseEntity<>(result, HttpStatus.CREATED);
+  }
+
+  @ApiOperation(value = "delete pdx")
+  @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE')")
+  @DeleteMapping(PDX_ENDPOINT)
+  public ClusterManagementResult deletePDX() {
+    return clusterManagementService.delete(new Pdx());
   }
 }

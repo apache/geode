@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.internal.cache.InternalCache;
@@ -42,6 +43,7 @@ public class RegionConfigValidator implements ConfigurationValidator<Region> {
       throws IllegalArgumentException {
     switch (operation) {
       case UPDATE:
+        throw new NotImplementedException("Not implemented");
       case CREATE:
         validateCreate(config);
         break;

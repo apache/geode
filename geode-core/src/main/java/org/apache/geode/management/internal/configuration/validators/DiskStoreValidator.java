@@ -24,6 +24,7 @@ import static org.apache.geode.internal.cache.DiskStoreAttributes.checkQueueSize
 import static org.apache.geode.internal.cache.DiskStoreAttributes.checkWriteBufferSize;
 import static org.apache.geode.internal.cache.DiskStoreAttributes.verifyNonNegativeDirSize;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.internal.cache.DiskStoreMonitor;
@@ -36,8 +37,9 @@ public class DiskStoreValidator implements ConfigurationValidator<DiskStore> {
   public void validate(CacheElementOperation operation, DiskStore config)
       throws IllegalArgumentException {
     switch (operation) {
-      case CREATE:
       case UPDATE:
+        throw new NotImplementedException("Not implemented");
+      case CREATE:
         checkRequiredItems(config);
         checkValueRanges(config);
         break;

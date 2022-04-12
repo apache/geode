@@ -18,7 +18,10 @@ package org.apache.geode.management.internal.rest;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -58,63 +61,118 @@ public class PdxIntegrationTest {
   }
 
   @Test
-  public void success() throws Exception {
+  public void canCreatePdxConfigurationWithCustomSerializer() throws Exception {
     Pdx pdx = new Pdx();
     pdx.setReadSerialized(true);
     pdx.setIgnoreUnreadFields(true);
     pdx.setDiskStoreName("diskStoreName");
     pdx.setPdxSerializer(new ClassName("className"));
-    try {
-      context.perform(post("/v1/configurations/pdx")
-          .with(httpBasic("clusterManage", "clusterManage"))
-          .content(mapper.writeValueAsString(pdx)))
-          .andExpect(status().isCreated())
-          .andExpect(jsonPath("$.memberStatuses").doesNotExist())
-          .andExpect(
-              jsonPath("$.statusMessage",
-                  containsString("Successfully updated configuration for cluster.")))
-          .andExpect(jsonPath("$.statusCode", is("OK")))
-          .andExpect(
-              jsonPath("$.links.self", is("http://localhost/v1/configurations/pdx")));
-    }
-    // this is a hack to make StressNewTest pass, rework this once "delete pdx" end point is
-    // implemented.
-    catch (AssertionError e) {
-      context.perform(post("/v1/configurations/pdx")
-          .with(httpBasic("clusterManage", "clusterManage"))
-          .content(mapper.writeValueAsString(pdx)))
-          .andExpect(status().isConflict());
-    }
+
+    context.perform(post("/v1/configurations/pdx")
+        .with(httpBasic("clusterManage", "clusterManage"))
+        .content(mapper.writeValueAsString(pdx)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.memberStatuses").doesNotExist())
+        .andExpect(
+            jsonPath("$.statusMessage",
+                containsString("Successfully updated configuration for cluster.")))
+        .andExpect(jsonPath("$.statusCode", is("OK")))
+        .andExpect(
+            jsonPath("$.links.self", is("http://localhost/v1/configurations/pdx")));
+
+    // Clean Up
+    context
+        .perform(delete("/v1/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
+        .andExpect(status().isOk());
   }
 
   @Test
-  public void postPdxWithAutoSerializer() throws Exception {
+  public void canCreatePdxConfigurationWithAutoSerializer() throws Exception {
     Pdx pdx = new Pdx();
     pdx.setReadSerialized(true);
     pdx.setIgnoreUnreadFields(true);
     pdx.setDiskStoreName("diskStoreName");
     pdx.setAutoSerializer(new AutoSerializer("pat1", "pat2"));
-    try {
-      context.perform(post("/v1/configurations/pdx")
-          .with(httpBasic("clusterManage", "clusterManage"))
-          .content(mapper.writeValueAsString(pdx)))
-          .andExpect(status().isCreated())
-          .andExpect(jsonPath("$.memberStatuses").doesNotExist())
-          .andExpect(
-              jsonPath("$.statusMessage",
-                  containsString("Successfully updated configuration for cluster.")))
-          .andExpect(jsonPath("$.statusCode", is("OK")))
-          .andExpect(
-              jsonPath("$.links.self", is("http://localhost/v1/configurations/pdx")));
-    }
-    // this is a hack to make StressNewTest pass, rework this once "delete pdx" end point is
-    // implemented.
-    catch (AssertionError e) {
-      context.perform(post("/v1/configurations/pdx")
-          .with(httpBasic("clusterManage", "clusterManage"))
-          .content(mapper.writeValueAsString(pdx)))
-          .andExpect(status().isConflict());
-    }
+
+    context.perform(post("/v1/configurations/pdx")
+        .with(httpBasic("clusterManage", "clusterManage"))
+        .content(mapper.writeValueAsString(pdx)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.memberStatuses").doesNotExist())
+        .andExpect(
+            jsonPath("$.statusMessage",
+                containsString("Successfully updated configuration for cluster.")))
+        .andExpect(jsonPath("$.statusCode", is("OK")))
+        .andExpect(
+            jsonPath("$.links.self", is("http://localhost/v1/configurations/pdx")));
+
+    // Clean Up
+    context
+        .perform(delete("/v1/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  public void canUpdatePdxConfiguration() throws Exception {
+    Pdx pdx = new Pdx();
+    pdx.setReadSerialized(true);
+    pdx.setIgnoreUnreadFields(true);
+    pdx.setAutoSerializer(new AutoSerializer("org.company.Class1#identity=myValue"));
+
+    // Create
+    context.perform(post("/v1/configurations/pdx").with(httpBasic("clusterManage", "clusterManage"))
+        .content(mapper.writeValueAsString(pdx))).andExpect(status().isCreated());
+    context.perform(get("/v1/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.result.groups[0].configuration.readSerialized", is(true)))
+        .andExpect(jsonPath("$.result.groups[0].configuration.ignoreUnreadFields", is(true)))
+        .andExpect(jsonPath("$.result.groups[0].configuration.autoSerializer.patterns[0]",
+            is("org.company.Class1#identity=myValue")));
+
+    // Update
+    pdx.setReadSerialized(false);
+    pdx.setIgnoreUnreadFields(false);
+    pdx.setAutoSerializer(
+        new AutoSerializer("org.company.MyClass2", "org.company.Class1#identity=myValue"));
+    context.perform(put("/v1/configurations/pdx").with(httpBasic("clusterManage", "clusterManage"))
+        .content(mapper.writeValueAsString(pdx))).andExpect(status().isCreated());
+    context.perform(get("/v1/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.result.groups[0].configuration.readSerialized", is(false)))
+        .andExpect(jsonPath("$.result.groups[0].configuration.ignoreUnreadFields", is(false)))
+        .andExpect(jsonPath("$.result.groups[0].configuration.autoSerializer.patterns[0]",
+            is("org.company.MyClass2")))
+        .andExpect(jsonPath("$.result.groups[0].configuration.autoSerializer.patterns[1]",
+            is("org.company.Class1#identity=myValue")));
+
+    // Clean Up
+    context.perform(
+        delete("/v1/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
+        .andExpect(status().isOk());
+    context.perform(get("/v1/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
+  public void canDeletePdxConfiguration() throws Exception {
+    Pdx pdx = new Pdx();
+    pdx.setReadSerialized(true);
+    pdx.setIgnoreUnreadFields(true);
+
+    // Create
+    context.perform(get("/v1/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
+        .andExpect(status().isNotFound());
+    context.perform(post("/v1/configurations/pdx").with(httpBasic("clusterManage", "clusterManage"))
+        .content(mapper.writeValueAsString(pdx))).andExpect(status().isCreated());
+    context.perform(get("/v1/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
+        .andExpect(status().isOk());
+
+    // Delete
+    context.perform(
+        delete("/v1/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
+        .andExpect(status().isOk());
+    context.perform(get("/v1/configurations/pdx").with(httpBasic("clusterManage", "clusterManage")))
+        .andExpect(status().isNotFound());
   }
 
   @Test

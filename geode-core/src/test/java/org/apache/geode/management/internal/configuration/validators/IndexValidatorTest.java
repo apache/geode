@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.configuration.validators;
 
+import static org.apache.geode.management.internal.CacheElementOperation.UPDATE;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.mockito.ArgumentMatchers.any;
@@ -23,6 +24,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -103,6 +105,12 @@ public class IndexValidatorTest {
       softly.assertThatThrownBy(() -> indexValidator.validate(CacheElementOperation.DELETE, index))
           .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("Name is required");
     });
+  }
 
+  @Test
+  public void validateUpdateThrowsNotImplementedException() {
+    assertThatThrownBy(() -> indexValidator.validate(UPDATE, index))
+        .isInstanceOf(NotImplementedException.class)
+        .hasMessageContaining("Not implemented");
   }
 }

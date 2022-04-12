@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -73,9 +74,10 @@ public class DeploymentValidatorTest {
   }
 
   @Test
-  public void validateUpdateIsNotImplemented() {
-    assertThatCode(() -> deploymentValidator.validate(UPDATE, deployment))
-        .doesNotThrowAnyException();
+  public void validateUpdateThrowsNotImplementedException() {
+    assertThatThrownBy(() -> deploymentValidator.validate(UPDATE, deployment))
+        .isInstanceOf(NotImplementedException.class)
+        .hasMessageContaining("Not implemented");
   }
 
   @Test
