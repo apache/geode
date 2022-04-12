@@ -37,6 +37,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.io.FilenameFilter;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -54,6 +56,8 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 
 import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.util.IOUtils;
 
 class StartServerCommandTest {
   // JVM options to use with every start command.
@@ -218,7 +222,7 @@ class StartServerCommandTest {
       String[] commandLineElements = serverCommands.createStartServerCommandLine(
           serverLauncher, null, null, new Properties(), null, false, new String[0],
           disableExitWhenOutOfMemory, null,
-          null);
+          null, false);
 
       verifyCommandLine(commandLineElements, expectedJavaCommandSequence, expectedJvmOptions,
           expectedStartCommandSequence, expectedStartCommandOptions);
@@ -291,7 +295,7 @@ class StartServerCommandTest {
       String[] commandLineElements = serverCommands.createStartServerCommandLine(
           serverLauncher, null, null, gemfireProperties, null, false, new String[0],
           disableExitWhenOutOfMemory, null,
-          null);
+          null, false);
 
       verifyCommandLine(commandLineElements, expectedJavaCommandSequence, expectedJvmOptions,
           expectedStartCommandSequence, expectedStartCommandOptions);
@@ -433,11 +437,177 @@ class StartServerCommandTest {
 
       String[] commandLineElements = serverCommands.createStartServerCommandLine(
           serverLauncher, gemfirePropertiesFile, gemfireSecurityPropertiesFile, gemfireProperties,
-          customClasspath, false, customJvmOptions, disableExitWhenOutOfMemory, heapSize, heapSize);
+          customClasspath, false, customJvmOptions, disableExitWhenOutOfMemory, heapSize, heapSize,
+          false);
 
       verifyCommandLine(commandLineElements, expectedJavaCommandSequence, expectedJvmOptions,
           expectedStartCommandSequence, expectedStartCommandOptions);
     }
+
+    @Test
+    void withClassloaderIsolation() throws Exception {
+      String geodeHome = System.getenv("GEODE_HOME");
+      ServerLauncher.Builder serverLauncherBuilder = new ServerLauncher.Builder();
+      expectedStartCommandSequence.add("org.jboss.modules.Main");
+      expectedStartCommandSequence.add("-mp");
+      expectedStartCommandSequence
+          .add(IOUtils.appendToPath(geodeHome, "moduleDescriptors") + File.pathSeparator +
+              Paths.get(geodeHome).resolve("../../test").resolve("deployments").normalize()
+                  .toAbsolutePath());
+      expectedStartCommandSequence.add("geode");
+
+      serverLauncherBuilder.setCommand(START);
+      expectedStartCommandSequence.add(START.getName());
+
+      final String memberName = "fullServer";
+      serverLauncherBuilder.setMemberName(memberName);
+      expectedStartCommandSequence.add(memberName);
+
+      serverLauncherBuilder.setAssignBuckets(true);
+      expectedStartCommandOptions.add("--assign-buckets");
+
+      final float criticalHeapPercentage = 95.5f;
+      serverLauncherBuilder.setCriticalHeapPercentage(criticalHeapPercentage);
+      expectedStartCommandOptions.add("--critical-heap-percentage=" + criticalHeapPercentage);
+
+      final float criticalOffHeapPercentage = 95.5f;
+      serverLauncherBuilder.setCriticalOffHeapPercentage(criticalOffHeapPercentage);
+      expectedStartCommandOptions.add(
+          "--critical-off-heap-percentage=" + criticalOffHeapPercentage);
+
+      serverLauncherBuilder.setDebug(true);
+      expectedStartCommandOptions.add("--debug");
+
+      serverLauncherBuilder.setDisableDefaultServer(true);
+      expectedStartCommandOptions.add("--disable-default-server");
+
+      final float evictionHeapPercentage = 85.0f;
+      serverLauncherBuilder.setEvictionHeapPercentage(evictionHeapPercentage);
+      expectedStartCommandOptions.add("--eviction-heap-percentage=" + evictionHeapPercentage);
+
+      final float evictionOffHeapPercentage = 85.0f;
+      serverLauncherBuilder.setEvictionOffHeapPercentage(evictionOffHeapPercentage);
+      expectedStartCommandOptions.add(
+          "--eviction-off-heap-percentage=" + evictionOffHeapPercentage);
+
+      serverLauncherBuilder.setForce(true);
+      expectedStartCommandOptions.add("--force");
+
+      final String hostNameForClients = "localhost";
+      serverLauncherBuilder.setHostNameForClients(hostNameForClients);
+      expectedStartCommandOptions.add("--hostname-for-clients=" + hostNameForClients);
+
+      final int maxConnections = 800;
+      serverLauncherBuilder.setMaxConnections(maxConnections);
+      expectedStartCommandOptions.add("--max-connections=" + maxConnections);
+
+      final int maxMessageCount = 500;
+      serverLauncherBuilder.setMaxMessageCount(maxMessageCount);
+      expectedStartCommandOptions.add("--max-message-count=" + maxMessageCount);
+
+      final int maxThreads = 100;
+      serverLauncherBuilder.setMaxThreads(maxThreads);
+      expectedStartCommandOptions.add("--max-threads=" + maxThreads);
+
+      final int messageTimeToLive = 93;
+      serverLauncherBuilder.setMessageTimeToLive(messageTimeToLive);
+      expectedStartCommandOptions.add("--message-time-to-live=" + messageTimeToLive);
+
+      serverLauncherBuilder.setRebalance(true);
+      expectedStartCommandOptions.add("--rebalance");
+
+      serverLauncherBuilder.setRedirectOutput(true);
+      expectedStartCommandOptions.add("--redirect-output");
+      expectedJvmOptions.add("-Dgemfire.OSProcess.DISABLE_REDIRECTION_CONFIGURATION=true");
+
+      final int serverPort = 41214;
+      serverLauncherBuilder.setServerPort(serverPort);
+      expectedStartCommandOptions.add("--server-port=" + serverPort);
+
+      final int socketBufferSize = 1024 * 1024;
+      serverLauncherBuilder.setSocketBufferSize(socketBufferSize);
+      expectedStartCommandOptions.add("--socket-buffer-size=" + socketBufferSize);
+
+      final String springXmlLocation = "/config/spring-server.xml";
+      serverLauncherBuilder.setSpringXmlLocation(springXmlLocation);
+      expectedStartCommandOptions.add("--spring-xml-location=" + springXmlLocation);
+
+      ServerLauncher serverLauncher = serverLauncherBuilder.build();
+
+      Properties gemfireProperties = new Properties();
+
+      final String disableAutoReconnect = "true";
+      gemfireProperties.setProperty(DISABLE_AUTO_RECONNECT, disableAutoReconnect);
+      expectedJvmOptions.add("-Dgemfire.disable-auto-reconnect=" + disableAutoReconnect);
+
+      final String statisticSampleRate = "1500";
+      gemfireProperties.setProperty(STATISTIC_SAMPLE_RATE, statisticSampleRate);
+      expectedJvmOptions.add("-Dgemfire.statistic-sample-rate=" + statisticSampleRate);
+
+      final String propertiesFilePath = "/config/customGemfire.properties";
+      File gemfirePropertiesFile = mock(File.class);
+      when(gemfirePropertiesFile.getAbsolutePath())
+          .thenReturn(propertiesFilePath);
+      expectedJvmOptions.add("-DgemfirePropertyFile=" + propertiesFilePath);
+
+      final String securityPropertiesFilePath = "/config/customGemfireSecurity.properties";
+      File gemfireSecurityPropertiesFile = mock(File.class);
+      when(gemfireSecurityPropertiesFile.getAbsolutePath())
+          .thenReturn(securityPropertiesFilePath);
+      expectedJvmOptions.add("-DgemfireSecurityPropertyFile=" + securityPropertiesFilePath);
+
+      final String heapSize = "1024m";
+      expectedJvmOptions.add("-Xms" + heapSize);
+      expectedJvmOptions.add("-Xmx" + heapSize);
+      expectedJvmOptions.add("-XX:+UseConcMarkSweepGC");
+      expectedJvmOptions.add("-XX:CMSInitiatingOccupancyFraction=60");
+
+      final String[] customJvmOptions = {
+          "-verbose:gc",
+          "-Xloggc:member-gc.log",
+          "-XX:+PrintGCDateStamps",
+          "-XX:+PrintGCDetails",
+      };
+      expectedJvmOptions.addAll(Arrays.asList(customJvmOptions));
+
+      expectedJvmOptions.add("-Djboss.modules.system.pkgs=javax.management,java.lang.management");
+      expectedJvmOptions.add(
+          "-Dboot.module.loader=org.apache.geode.deployment.internal.modules.loader.GeodeModuleLoader");
+
+      final String expectedClasspath = String.join(
+          File.pathSeparator,
+          IOUtils.appendToPath(geodeHome, "lib",
+              "geode-jboss-extensions-" + GemFireVersion.getGemFireVersion() + ".jar"),
+          resolveJBossJarFile(geodeHome));
+
+      List<String> expectedJavaCommandSequence = Arrays.asList(
+          StartMemberUtils.getJavaPath(),
+          "-server",
+          "-classpath",
+          expectedClasspath);
+
+      boolean disableExitWhenOutOfMemory = false;
+      expectedJvmOptions.addAll(jdkSpecificOutOfMemoryOptions());
+
+      String[] commandLineElements = serverCommands.createStartServerCommandLine(
+          serverLauncher, gemfirePropertiesFile, gemfireSecurityPropertiesFile, gemfireProperties,
+          null, false, customJvmOptions, disableExitWhenOutOfMemory, heapSize, heapSize,
+          true);
+
+      verifyCommandLine(commandLineElements, expectedJavaCommandSequence, expectedJvmOptions,
+          expectedStartCommandSequence, expectedStartCommandOptions);
+    }
+  }
+
+  private String resolveJBossJarFile(String geodeHome) {
+    File[] files = Paths.get(geodeHome, "lib").toFile().listFiles(new FilenameFilter() {
+      @Override
+      public boolean accept(File dir, String name) {
+        return name.startsWith("jboss-modules-");
+      }
+    });
+    assertThat(files.length).isEqualTo(1);
+    return files[0].toPath().toString();
   }
 
   private static List<String> jdkSpecificOutOfMemoryOptions() {

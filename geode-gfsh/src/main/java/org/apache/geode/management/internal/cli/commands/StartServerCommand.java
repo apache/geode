@@ -447,10 +447,13 @@ public class StartServerCommand extends OfflineGfshCommand {
 
     commandLine.add(StartMemberUtils.getJavaPath());
     commandLine.add("-server");
+    commandLine.add("-classpath");
     if (!classloaderIsolated) {
-      commandLine.add("-classpath");
-      commandLine.add(getServerClasspath(Boolean.TRUE.equals(includeSystemClasspath), userClasspath));
+      commandLine
+          .add(getServerClasspath(Boolean.TRUE.equals(includeSystemClasspath), userClasspath));
       commandLine.addAll(MemberJvmOptions.getMemberJvmOptions());
+    } else {
+      commandLine.add(resolveJBossClassPath());
     }
     StartMemberUtils.addCurrentLocators(this, commandLine, gemfireProperties);
     StartMemberUtils.addGemFirePropertyFile(commandLine, gemfirePropertiesFile);
@@ -469,7 +472,7 @@ public class StartServerCommand extends OfflineGfshCommand {
     StartMemberUtils.addMaxHeap(commandLine, maxHeap);
 
     if (classloaderIsolated) {
-      commandLine.add("-Djboss.modules.system.pkgs=javax.management,java.lang.management,j,c");
+      commandLine.add("-Djboss.modules.system.pkgs=javax.management,java.lang.management");
     }
     commandLine.add(
         "-D".concat(AbstractLauncher.SIGNAL_HANDLER_REGISTRATION_SYSTEM_PROPERTY.concat("=true")));
@@ -581,21 +584,20 @@ public class StartServerCommand extends OfflineGfshCommand {
 
   private List<String> resolveLauncherCommand(boolean classloaderIsolated, String classpath,
       String workingDirectory) {
-    final String GEODE_HOME = System.getenv("GEODE_HOME");
+    final String geodeHome = System.getenv("GEODE_HOME");
     List<String> commandLine = new LinkedList<>();
     if (classloaderIsolated) {
       commandLine
           .add(
               "-Dboot.module.loader=org.apache.geode.deployment.internal.modules.loader.GeodeModuleLoader");
-      addJBossClassPath(GEODE_HOME, commandLine);
       commandLine.add("org.jboss.modules.Main");
       commandLine.add("-mp");
       String modulePath;
       if (!Strings.isNullOrEmpty(classpath)) {
         // modify temp descriptor
-        modulePath = createTempModuleWithClasspath(classpath.split(File.pathSeparator), GEODE_HOME);
+        modulePath = createTempModuleWithClasspath(classpath.split(File.pathSeparator), geodeHome);
       } else {
-        modulePath = getJBossModulePath(GEODE_HOME);
+        modulePath = getJBossModulePath(geodeHome);
       }
       modulePath += File.pathSeparator + getJDeploymentsModulePath(workingDirectory);
       commandLine.add(modulePath);
@@ -688,12 +690,12 @@ public class StartServerCommand extends OfflineGfshCommand {
     return Paths.get(moduleBase).resolve("deployments").toString();
   }
 
-  private void addJBossClassPath(String GEODE_HOME, List<String> commandLine) {
-    commandLine.add("-classpath");
-    String libPath = GEODE_HOME + File.separator + "lib";
+  private String resolveJBossClassPath() {
+    String geodeHome = System.getenv("GEODE_HOME");
+    String libPath = geodeHome + File.separator + "lib";
     File jbossJar = findJarByArtifactIdAtPath("jboss-modules", libPath).orElseThrow(
         () -> new GemFireConfigException(
-            "jboss-modules jar not found in " + GEODE_HOME + File.separator + "lib"));
+            "jboss-modules jar not found in " + geodeHome + File.separator + "lib"));
     File jbossExtensionsJar = findJarByArtifactIdAtPath("geode-jboss-extensions",
         libPath).orElseThrow(
             () -> new GemFireConfigException(
@@ -702,7 +704,7 @@ public class StartServerCommand extends OfflineGfshCommand {
     String jbossClasspath =
         jbossExtensionsJar.getAbsolutePath() + File.pathSeparator + jbossJar.getAbsolutePath();
 
-    commandLine.add(jbossClasspath);
+    return jbossClasspath;
   }
 
   private Optional<File> findJarByArtifactIdAtPath(String artifactId, String path) {
