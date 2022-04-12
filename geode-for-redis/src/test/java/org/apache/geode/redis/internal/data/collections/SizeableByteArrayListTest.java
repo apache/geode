@@ -486,7 +486,7 @@ public class SizeableByteArrayListTest {
   }
 
   @Test
-  public void equals_returnsTrueIfBothListsAreEqual() {
+  public void equals_returnsCorrectly() {
     int size = 5;
     SizeableByteArrayList list1 = setupList(size);
     SizeableByteArrayList list2 = setupList(size);
@@ -494,6 +494,10 @@ public class SizeableByteArrayListTest {
     assertThat(list1.equals(list2)).isTrue();
     byte[] someElement = "dummy".getBytes();
     list2.addLast(someElement);
+    assertThat(list1.equals(list2)).isFalse();
+
+    byte[] anotherElement = "anotherDummy".getBytes();
+    list1.addLast(anotherElement);
     assertThat(list1.equals(list2)).isFalse();
 
   }
@@ -550,7 +554,7 @@ public class SizeableByteArrayListTest {
   }
 
   @Test
-  public void removeObjects_getSizeInBytesIsAccurate() {
+  public void removeNElements_getSizeInBytesIsAccurate() {
     // Create a list with only duplicate elements and confirm that it correctly reports its size
     SizeableByteArrayList list = new SizeableByteArrayList();
     byte[] bytes = "anElement".getBytes();
@@ -715,50 +719,6 @@ public class SizeableByteArrayListTest {
     assertThat(sizeAfterAddingElement).isEqualTo(sizer.sizeof(list));
   }
 
-  @Test
-  public void insertElementBeforeReferenceElement_placesElementCorrectly() {
-    // Create a new list with a single element
-    SizeableByteArrayList list = new SizeableByteArrayList();
-    byte[] referenceElement = "element".getBytes();
-    list.addFirst(referenceElement);
-
-    // Insert new element before reference element
-    byte[] beforeElement = "before".getBytes();
-    list.insert(beforeElement, referenceElement, true);
-
-    // Assert list contains exactly the elements in the expected order
-    assertThat(list).containsExactly(beforeElement, referenceElement);
-  }
-
-  @Test
-  public void insertElementAfterReferenceElement_placesElementCorrectly() {
-    // Create a new list with a single element
-    SizeableByteArrayList list = new SizeableByteArrayList();
-    byte[] referenceElement = "element".getBytes();
-    list.addFirst(referenceElement);
-
-    // Insert new element after reference element
-    byte[] afterElement = "after".getBytes();
-    list.insert(afterElement, referenceElement, false);
-
-    // Assert list contains exactly the elements in the expected order
-    assertThat(list).containsExactly(referenceElement, afterElement);
-  }
-
-  @Test
-  public void insertElementAfterNonexistentReferenceElement_doesNotPlaceElement() {
-    // Create a new list with a single element
-    SizeableByteArrayList list = new SizeableByteArrayList();
-    byte[] nonExistentElement = "non-existent-element".getBytes();
-
-    // Attempt to insert an element after a non-existent reference element
-    byte[] afterElement = "after".getBytes();
-    list.insert(afterElement, nonExistentElement, false);
-
-    // Assert that no elements were added to the list
-    assertThat(list).isEmpty();
-  }
-
   private SizeableByteArrayList setupList(int size) {
     SizeableByteArrayList list = new SizeableByteArrayList();
     for (int i = 0; i < size; i++) {
@@ -766,8 +726,6 @@ public class SizeableByteArrayListTest {
     }
     return list;
   }
-
-
 
   private SizeableByteArrayList setupListWithDuplicateValues(String repeatedElement) {
     SizeableByteArrayList list = new SizeableByteArrayList();
