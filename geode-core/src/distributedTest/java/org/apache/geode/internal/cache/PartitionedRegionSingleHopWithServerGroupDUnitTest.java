@@ -44,7 +44,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.PartitionAttributesFactory;
-import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.client.Pool;
@@ -764,18 +763,15 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
   }
 
 
-  private static <K, V> Region<K, V> createColocatedRegion(String regionName,
+  private static Region<Object, Object> createColocatedRegion(String regionName,
       String colocatedRegionName,
       int redundantCopies,
       int totalNoofBuckets,
       int localMaxMemory) {
 
-    PartitionAttributesFactory<K, V> paf = new PartitionAttributesFactory<>();
-    @SuppressWarnings("unchecked")
-    final PartitionResolver<K, V> customerIDPartitionResolver =
-        (PartitionResolver<K, V>) new CustomerIDPartitionResolver("CustomerIDPartitionResolver");
+    PartitionAttributesFactory<Object, Object> paf = new PartitionAttributesFactory<>();
     paf.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNoofBuckets)
-        .setPartitionResolver(customerIDPartitionResolver);
+        .setPartitionResolver(new CustomerIDPartitionResolver("CustomerIDPartitionResolver"));
 
     if (colocatedRegionName != null) {
       paf.setColocatedWith(colocatedRegionName);
@@ -785,10 +781,10 @@ public class PartitionedRegionSingleHopWithServerGroupDUnitTest extends JUnit4Ca
       paf.setLocalMaxMemory(localMaxMemory);
     }
 
-    RegionFactory<K, V> regionFactory = cache.createRegionFactory();
+    RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
     regionFactory.setPartitionAttributes(paf.create());
     regionFactory.setConcurrencyChecksEnabled(true);
-    Region<K, V> region = regionFactory.create(regionName);
+    Region<Object, Object> region = regionFactory.create(regionName);
     assertThat(region).isNotNull();
     logger.info("Partitioned Region " + regionName + " created Successfully :" + region);
     return region;
