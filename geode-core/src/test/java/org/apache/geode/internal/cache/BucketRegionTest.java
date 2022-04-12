@@ -691,4 +691,28 @@ public class BucketRegionTest {
     verify(partitionedRegion).invokePutCallbacks(EnumListenerEvent.AFTER_CREATE, event,
         true, false);
   }
+
+  @Test
+  public void txHandleWANEventCallsHandleWANEventIfParallelWanEnabled() {
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs, disabledClock()));
+    when(partitionedRegion.isParallelWanEnabled()).thenReturn(true);
+
+    bucketRegion.txHandleWANEvent(event);
+
+    verify(bucketRegion).handleWANEvent(event);
+  }
+
+  @Test
+  public void txHandleWANEventDoesNotCallHandleWANEventIfParallelWanNotEnabled() {
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs, disabledClock()));
+    when(partitionedRegion.isParallelWanEnabled()).thenReturn(false);
+
+    bucketRegion.txHandleWANEvent(event);
+
+    verify(bucketRegion, never()).handleWANEvent(event);
+  }
 }
