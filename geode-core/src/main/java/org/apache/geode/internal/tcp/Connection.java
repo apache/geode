@@ -2913,7 +2913,6 @@ public class Connection implements Runnable {
   /**
    * Returns true if handshake was read successfully, false otherwise.
    */
-  @VisibleForTesting
   boolean readHandshakeForReceiver(final DataInput dis) {
     try {
       checkHandshakeInitialByte(dis);
@@ -3042,7 +3041,6 @@ public class Connection implements Runnable {
     return false;
   }
 
-  @VisibleForTesting
   void readMessage(ByteBuffer peerDataBuffer, AbstractExecutor threadMonitorExecutor) {
     if (messageType == NORMAL_MSG_TYPE) {
       owner.getConduit().getStats().incMessagesBeingReceived(true, messageLength);
