@@ -108,8 +108,7 @@ public class ConcurrentParallelGatewaySenderOperation2DistributedTest extends WA
 
     vm3.invoke(() -> await()
         .untilAsserted(
-            () -> assertThat(WANTestBase.getQueueContentSize("ln2", true) == 0).as(
-                WANTestBase.getQueueContentSize("ln2", true) + " was the size").isTrue()));
+            () -> assertThat(WANTestBase.getQueueContentSize("ln2", true)).isZero()));
   }
 
 
@@ -568,7 +567,7 @@ public class ConcurrentParallelGatewaySenderOperation2DistributedTest extends WA
       try {
         vm5.invoke(() -> localDestroyRegion(customerRegionName));
       } catch (Exception ex) {
-        assertThat(ex.getCause() instanceof UnsupportedOperationException).isTrue();
+        assertThat(ex).hasCauseInstanceOf(UnsupportedOperationException.class);
       }
 
       try {
@@ -610,7 +609,7 @@ public class ConcurrentParallelGatewaySenderOperation2DistributedTest extends WA
       try {
         vm5.invoke(() -> WANTestBase.destroyRegion(customerRegionName));
       } catch (Exception ex) {
-        assertThat(ex.getCause() instanceof IllegalStateException).isTrue();
+        assertThat(ex).hasCauseInstanceOf(IllegalStateException.class);
         return;
       }
       fail("Expected UnsupportedOperationException");

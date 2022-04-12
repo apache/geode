@@ -208,8 +208,8 @@ public class SerialWANConflationDistributedTest extends WANTestBase {
       List<Integer> v6List = vm6.invoke(() -> WANTestBase.getSenderStats("ln", 0));
       List<Integer> v7List = vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
 
-      assertThat((v4List.get(8) + v5List.get(8) + v6List.get(8) + v7List.get(8)) > 0).as(
-          "No events conflated in batch").isTrue();
+      assertThat(v4List.get(8) + v5List.get(8) + v6List.get(8) + v7List.get(8)).as(
+          "No events conflated in batch").isGreaterThan(0);
     });
   }
 

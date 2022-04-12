@@ -125,8 +125,8 @@ public class ParallelWANConflationDistributedTest extends WANTestBase {
       List<Integer> v5List = vm5.invoke(() -> WANTestBase.getSenderStats("ln", 100));
       List<Integer> v6List = vm6.invoke(() -> WANTestBase.getSenderStats("ln", 100));
       List<Integer> v7List = vm7.invoke(() -> WANTestBase.getSenderStats("ln", 100));
-      assertThat((v4List.get(10) + v5List.get(10) + v6List.get(10) + v7List.get(10)) == 100).as(
-          "Event in secondary queue should be 100").isTrue();
+      assertThat(v4List.get(10) + v5List.get(10) + v6List.get(10) + v7List.get(10)).as(
+          "Event in secondary queue").isEqualTo(100);
     });
 
     resumeSenders();
@@ -137,8 +137,8 @@ public class ParallelWANConflationDistributedTest extends WANTestBase {
       List<Integer> v6List = vm6.invoke(() -> WANTestBase.getSenderStats("ln", 0));
       List<Integer> v7List = vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
 
-      assertThat((v4List.get(8) + v5List.get(8) + v6List.get(8) + v7List.get(8)) > 0).as(
-          "No events conflated in batch").isTrue();
+      assertThat(v4List.get(8) + v5List.get(8) + v6List.get(8) + v7List.get(8)).as(
+          "No events conflated in batch").isGreaterThan(0);
     });
 
     verifySecondaryEventQueuesDrained();
@@ -217,12 +217,9 @@ public class ParallelWANConflationDistributedTest extends WANTestBase {
       List<Integer> vm5List = vm5.invoke(() -> WANTestBase.getSenderStats("ln", expectedNum));
       List<Integer> vm6List = vm6.invoke(() -> WANTestBase.getSenderStats("ln", expectedNum));
       List<Integer> vm7List = vm7.invoke(() -> WANTestBase.getSenderStats("ln", expectedNum));
-      assertThat(
-          (vm4List.get(10) + vm5List.get(10) + vm6List.get(10) + vm7List.get(10)) == expectedNum
-              * redundancy).as(
-                  "Event in secondary queue should be " + (expectedNum * redundancy) + ", but is "
-                      + (vm4List.get(10) + vm5List.get(10) + vm6List.get(10) + vm7List.get(10)))
-                  .isTrue();
+      assertThat(vm4List.get(10) + vm5List.get(10) + vm6List.get(10) + vm7List.get(10))
+          .as("Event in secondary queue")
+          .isEqualTo(expectedNum * redundancy);
     });
   }
 
@@ -232,13 +229,9 @@ public class ParallelWANConflationDistributedTest extends WANTestBase {
       List<Integer> vm5List = vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
       List<Integer> vm6List = vm6.invoke(() -> WANTestBase.getSenderStats("ln", 0));
       List<Integer> vm7List = vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
-      assertThat(
-          (vm4List.get(11) + vm5List.get(11) + vm6List.get(11) + vm7List.get(11)) == expectedNum
-              * redundancy).as(
-                  "Event processed by queue removal message should be " + (expectedNum * redundancy)
-                      + ", but is "
-                      + (vm4List.get(11) + vm5List.get(11) + vm6List.get(11) + vm7List.get(11)))
-                  .isTrue();
+      assertThat(vm4List.get(11) + vm5List.get(11) + vm6List.get(11) + vm7List.get(11))
+          .as("Event processed by queue removal message")
+          .isEqualTo(expectedNum * redundancy);
     });
   }
 

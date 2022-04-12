@@ -92,9 +92,9 @@ public class ParallelGatewaySenderAlertThresholdDistributedTest extends WANTestB
       List<Integer> v6List = vm6.invoke(() -> WANTestBase.getSenderStats("ln", -1));
       List<Integer> v7List = vm7.invoke(() -> WANTestBase.getSenderStats("ln", -1));
 
-      assertThat((v4List.get(12) + v5List.get(12) + v6List.get(12) + v7List.get(12)) > 0).as(
-          "GatewaySenders Stats should contain number of EventsExceedingAlertThreshold > 0")
-          .isTrue();
+      assertThat(v4List.get(12) + v5List.get(12) + v6List.get(12) + v7List.get(12)).as(
+          "GatewaySenders Stats EventsExceedingAlertThreshold")
+          .isGreaterThan(0);
     });
 
     int v4alert = vm4.invoke(
@@ -106,8 +106,9 @@ public class ParallelGatewaySenderAlertThresholdDistributedTest extends WANTestB
     int v7alert = vm7.invoke(
         ParallelGatewaySenderAlertThresholdDistributedTest::checkSenderMBeanAlertThreshold);
 
-    assertThat((v4alert + v5alert + v6alert + v7alert) > 0).as(
-        "GatewaySenders MBean should contain number of EventsExceedingAlertThreshold > 0").isTrue();
+    assertThat(v4alert + v5alert + v6alert + v7alert).as(
+        "GatewaySenders MBean EventsExceedingAlertThreshold")
+        .isGreaterThan(0);
 
   }
 
@@ -166,24 +167,24 @@ public class ParallelGatewaySenderAlertThresholdDistributedTest extends WANTestB
       List<Integer> v6List = vm6.invoke(() -> WANTestBase.getSenderStats("ln", -1));
       List<Integer> v7List = vm7.invoke(() -> WANTestBase.getSenderStats("ln", -1));
 
-      assertThat(0).as(
-          "GatewaySenders Stats should contain number of EventsExceedingAlertThreshold = 0")
-          .isEqualTo((v4List.get(12) + v5List.get(12) + v6List.get(12) + v7List.get(12)));
+      assertThat(v4List.get(12)).isZero();
+      assertThat(v5List.get(12)).isZero();
+      assertThat(v6List.get(12)).isZero();
+      assertThat(v7List.get(12)).isZero();
     });
 
-    int v4alert = vm4.invoke(
-        ParallelGatewaySenderAlertThresholdDistributedTest::checkSenderMBeanAlertThreshold);
-    int v5alert = vm5.invoke(
-        ParallelGatewaySenderAlertThresholdDistributedTest::checkSenderMBeanAlertThreshold);
-    int v6alert = vm6.invoke(
-        ParallelGatewaySenderAlertThresholdDistributedTest::checkSenderMBeanAlertThreshold);
-    int v7alert = vm7.invoke(
-        ParallelGatewaySenderAlertThresholdDistributedTest::checkSenderMBeanAlertThreshold);
-
-    assertThat(0).as(
-        "GatewaySenders MBean should contain number of EventsExceedingAlertThreshold = 0")
-        .isEqualTo((v4alert + v5alert + v6alert + v7alert));
-
+    assertThat(vm4.invoke(
+        ParallelGatewaySenderAlertThresholdDistributedTest::checkSenderMBeanAlertThreshold))
+            .isZero();
+    assertThat(vm5.invoke(
+        ParallelGatewaySenderAlertThresholdDistributedTest::checkSenderMBeanAlertThreshold))
+            .isZero();
+    assertThat(vm6.invoke(
+        ParallelGatewaySenderAlertThresholdDistributedTest::checkSenderMBeanAlertThreshold))
+            .isZero();
+    assertThat(vm7.invoke(
+        ParallelGatewaySenderAlertThresholdDistributedTest::checkSenderMBeanAlertThreshold))
+            .isZero();
   }
 
 }
