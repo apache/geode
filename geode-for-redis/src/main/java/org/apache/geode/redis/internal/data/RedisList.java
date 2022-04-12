@@ -239,7 +239,7 @@ public class RedisList extends AbstractRedisData {
     List<Integer> removedIndexes;
     byte newVersion;
     synchronized (this) {
-      removedIndexes = elementList.remove(element, count);
+      removedIndexes = elementList.removeNElements(element, count);
       if (removedIndexes.isEmpty()) {
         return 0;
       }
