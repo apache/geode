@@ -16,11 +16,16 @@ package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -29,6 +34,7 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.versions.DiskVersionTag;
 import org.apache.geode.internal.cache.versions.VersionSource;
 
 public class InitialImageOperationTest {
@@ -94,5 +100,29 @@ public class InitialImageOperationTest {
 
     verify(distributedRegion, never()).scheduleSynchronizeForLostMember(lostMember, versionSource,
         0);
+  }
+
+  @Test
+  public void processChunkDoesNotThrowIfDiskVersionTagMemberIDIsNull()
+      throws IOException, ClassNotFoundException {
+    ImageState imgState = mock(ImageState.class);
+    when(distributedRegion.getImageState()).thenReturn(imgState);
+    CachePerfStats stats = mock(CachePerfStats.class);
+    when(distributedRegion.getCachePerfStats()).thenReturn(stats);
+    RegionMap regionMap = mock(RegionMap.class);
+    InitialImageOperation operation = spy(new InitialImageOperation(distributedRegion, regionMap));
+
+    DiskVersionTag versionTag = spy(new DiskVersionTag());
+    doReturn(null).when(versionTag).getMemberID();
+
+    InitialImageOperation.Entry entry = mock(InitialImageOperation.Entry.class);
+    when(entry.getVersionTag()).thenReturn(versionTag);
+    List<InitialImageOperation.Entry> entries = new ArrayList<>();
+    entries.add(entry);
+
+    InternalDistributedMember member = mock(InternalDistributedMember.class);
+    assertThat(operation.processChunk(entries, member)).isFalse();
+
+    verify(versionTag).replaceNullIDs(member);
   }
 }
