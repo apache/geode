@@ -20,7 +20,10 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.Marker;
+import org.apache.logging.log4j.MarkerManager;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.ResultSender;
@@ -37,6 +40,9 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 
 public class ServerToClientFunctionResultSender implements ResultSender {
   private static final Logger logger = LogService.getLogger();
+  @Immutable
+  private static final Marker functionExceptionMarker =
+      MarkerManager.getMarker("FUNCTION_EXCEPTION_MARKER");
 
   protected ChunkedMessage msg = null;
 
@@ -321,9 +327,9 @@ public class ServerToClientFunctionResultSender implements ResultSender {
           }
           String exceptionMessage = exception.getMessage() != null ? exception.getMessage()
               : "Exception occurred during function execution";
-          logger.warn(String.format("Exception on server while executing function : %s",
-              fn),
-              exception);
+          logger.warn(exception instanceof FunctionException ? functionExceptionMarker : null,
+              "Exception on server while executing function : {}", fn, exception);
+
           if (logger.isDebugEnabled()) {
             logger.debug("ServerToClientFunctionResultSender sending Function Exception : ");
           }
