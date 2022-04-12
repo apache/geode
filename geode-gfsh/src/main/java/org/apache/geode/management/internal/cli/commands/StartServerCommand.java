@@ -451,10 +451,11 @@ public class StartServerCommand extends OfflineGfshCommand {
     if (!classloaderIsolated) {
       commandLine
           .add(getServerClasspath(Boolean.TRUE.equals(includeSystemClasspath), userClasspath));
-      commandLine.addAll(MemberJvmOptions.getMemberJvmOptions());
     } else {
       commandLine.add(resolveJBossClassPath());
     }
+    commandLine.addAll(MemberJvmOptions.getMemberJvmOptions());
+
     StartMemberUtils.addCurrentLocators(this, commandLine, gemfireProperties);
     StartMemberUtils.addGemFirePropertyFile(commandLine, gemfirePropertiesFile);
     StartMemberUtils.addGemFireSecurityPropertyFile(commandLine, gemfireSecurityPropertiesFile);
