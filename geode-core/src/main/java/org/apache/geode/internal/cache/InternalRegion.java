@@ -428,6 +428,10 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
     // do nothing;
   }
 
+  default void txHandleWANEvent(EntryEventImpl event) {
+    // do nothing;
+  }
+
   MemoryThresholdInfo getAtomicThresholdInfo();
 
   InternalCache getInternalCache();
