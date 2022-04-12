@@ -318,7 +318,7 @@ public abstract class AbstractRedisData implements RedisData {
     }
   }
 
-  public void applySetTimestampDelta(long timestamp) {
+  public final void applySetTimestampDelta(long timestamp) {
     expirationTimestamp = timestamp;
   }
 
