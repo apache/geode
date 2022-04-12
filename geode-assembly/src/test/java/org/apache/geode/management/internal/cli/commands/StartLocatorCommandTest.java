@@ -14,12 +14,14 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
 import static org.apache.geode.distributed.LocatorLauncher.Command.START;
+import static org.apache.geode.management.internal.cli.commands.MemberJvmOptions.getGcJvmOptions;
 import static org.apache.geode.management.internal.cli.commands.MemberJvmOptions.getMemberJvmOptions;
 import static org.apache.geode.management.internal.cli.commands.VerifyCommandLine.verifyCommandLine;
 import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
@@ -252,8 +254,7 @@ class StartLocatorCommandTest {
       final String heapSize = "1024m";
       expectedJvmOptions.add("-Xms" + heapSize);
       expectedJvmOptions.add("-Xmx" + heapSize);
-      expectedJvmOptions.add("-XX:+UseConcMarkSweepGC");
-      expectedJvmOptions.add("-XX:CMSInitiatingOccupancyFraction=60");
+      expectedJvmOptions.addAll(getGcJvmOptions(emptyList()));
 
       String[] commandLine =
           startLocatorCommand.createStartLocatorCommandLine(locatorLauncher,

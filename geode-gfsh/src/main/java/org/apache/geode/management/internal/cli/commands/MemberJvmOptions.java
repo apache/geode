@@ -17,13 +17,17 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.commons.lang3.JavaVersion.JAVA_11;
+import static org.apache.commons.lang3.JavaVersion.JAVA_13;
 import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
+import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtMost;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 public class MemberJvmOptions {
+  static final int CMS_INITIAL_OCCUPANCY_FRACTION = 60;
   private static final List<String> JAVA_11_OPTIONS = Arrays.asList(
       "--add-exports=java.base/sun.nio.ch=ALL-UNNAMED",
       "--add-exports=java.management/com.sun.jmx.remote.security=ALL-UNNAMED");
@@ -33,5 +37,23 @@ public class MemberJvmOptions {
       return JAVA_11_OPTIONS;
     }
     return Collections.emptyList();
+  }
+
+  public static List<String> getGcJvmOptions(List<String> commandLine) {
+    if (isJavaVersionAtMost(JAVA_13)) {
+      List<String> cmsOptions = new ArrayList<>();
+      String collectorKey = "-XX:+UseConcMarkSweepGC";
+      if (!commandLine.contains(collectorKey)) {
+        cmsOptions.add(collectorKey);
+      }
+      String occupancyFractionKey = "-XX:CMSInitiatingOccupancyFraction=";
+      if (commandLine.stream().noneMatch(s -> s.contains(occupancyFractionKey))) {
+        cmsOptions.add(occupancyFractionKey + CMS_INITIAL_OCCUPANCY_FRACTION);
+      }
+      return cmsOptions;
+    } else {
+      // TODO: configure ZGC?
+      return Collections.emptyList();
+    }
   }
 }

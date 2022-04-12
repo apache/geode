@@ -50,7 +50,6 @@ class StartMemberUtils {
   static final String GEODE_HOME = System.getenv("GEODE_HOME");
 
   private static final String JAVA_HOME = System.getProperty("java.home");
-  static final int CMS_INITIAL_OCCUPANCY_FRACTION = 60;
   @Immutable
   private static final ThreePhraseGenerator nameGenerator = new ThreePhraseGenerator();
 
@@ -135,28 +134,10 @@ class StartMemberUtils {
     }
   }
 
-  private static int getJavaMajorVersion() {
-    String version = System.getProperty("java.specification.version");
-    return Integer.parseInt(version.substring(version.indexOf('.') + 1));
-  }
-
   static void addMaxHeap(final List<String> commandLine, final String maxHeap) {
     if (StringUtils.isNotBlank(maxHeap)) {
       commandLine.add("-Xmx" + maxHeap);
-
-      if (getJavaMajorVersion() < 14) {
-        String collectorKey = "-XX:+UseConcMarkSweepGC";
-        if (!commandLine.contains(collectorKey)) {
-          commandLine.add(collectorKey);
-        }
-
-        String occupancyFractionKey = "-XX:CMSInitiatingOccupancyFraction=";
-        if (commandLine.stream().noneMatch(s -> s.contains(occupancyFractionKey))) {
-          commandLine.add(occupancyFractionKey + CMS_INITIAL_OCCUPANCY_FRACTION);
-        }
-      } else {
-        // TODO: configure ZGC?
-      }
+      commandLine.addAll(MemberJvmOptions.getGcJvmOptions(commandLine));
     }
   }
 

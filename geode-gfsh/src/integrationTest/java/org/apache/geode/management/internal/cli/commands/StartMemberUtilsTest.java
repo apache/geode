@@ -19,6 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.condition.JRE.JAVA_13;
+import static org.junit.jupiter.api.condition.JRE.JAVA_14;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -26,6 +28,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -34,17 +37,20 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.migrationsupport.rules.EnableRuleMigrationSupport;
 
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.util.IOUtils;
 
+@EnableRuleMigrationSupport
 public class StartMemberUtilsTest {
 
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  @TempDir
+  private File temporaryFolder;
 
   @Rule
   public RestoreSystemProperties restorer = new RestoreSystemProperties();
@@ -69,7 +75,7 @@ public class StartMemberUtilsTest {
 
   @Test
   public void workingDirGetsCreatedIfNecessary() throws Exception {
-    File workingDir = temporaryFolder.newFolder("foo");
+    File workingDir = new File(temporaryFolder, "foo");
     FileUtils.deleteQuietly(workingDir);
     String workingDirString = workingDir.getAbsolutePath();
     String resolvedWorkingDir =
@@ -90,8 +96,7 @@ public class StartMemberUtilsTest {
   @Test
   public void testReadPid() throws IOException {
     final int expectedPid = 12345;
-    File folder = temporaryFolder.newFolder();
-    File pidFile = new File(folder, "my.pid");
+    File pidFile = new File(temporaryFolder, "my.pid");
 
     assertTrue(pidFile.createNewFile());
 
@@ -151,7 +156,8 @@ public class StartMemberUtilsTest {
     assertThat(gemfireClasspath).doesNotContain("extensions");
 
     // when there is a `test.jar` in `extensions` directory
-    File folder = temporaryFolder.newFolder("extensions");
+    File folder = new File(temporaryFolder, "extensions");
+    Files.createDirectories(folder.toPath());
     File jarFile = new File(folder, "test.jar");
     jarFile.createNewFile();
     gemfireClasspath = StartMemberUtils.toClasspath(true, new String[] {jarFile.getAbsolutePath()});
@@ -159,13 +165,9 @@ public class StartMemberUtilsTest {
 
   }
 
-  private static int getJavaMajorVersion() {
-    String version = System.getProperty("java.specification.version");
-    return Integer.parseInt(version.substring(version.indexOf('.') + 1));
-  }
-
+  @EnabledForJreRange(max = JAVA_13)
   @Test
-  public void testAddMaxHeap() {
+  public void testAddMaxHeapWithCMS() {
     List<String> baseCommandLine = new ArrayList<>();
 
     // Empty Max Heap Option
@@ -177,14 +179,9 @@ public class StartMemberUtilsTest {
 
     // Only Max Heap Option Set
     StartMemberUtils.addMaxHeap(baseCommandLine, "32g");
-    if (getJavaMajorVersion() < 14) {
-      assertThat(baseCommandLine.size()).isEqualTo(3);
-      assertThat(baseCommandLine).containsExactly("-Xmx32g", "-XX:+UseConcMarkSweepGC",
-          "-XX:CMSInitiatingOccupancyFraction=" + StartMemberUtils.CMS_INITIAL_OCCUPANCY_FRACTION);
-    } else {
-      assertThat(baseCommandLine.size()).isEqualTo(1);
-      assertThat(baseCommandLine).containsExactly("-Xmx32g");
-    }
+    assertThat(baseCommandLine.size()).isEqualTo(3);
+    assertThat(baseCommandLine).containsExactly("-Xmx32g", "-XX:+UseConcMarkSweepGC",
+        "-XX:CMSInitiatingOccupancyFraction=" + MemberJvmOptions.CMS_INITIAL_OCCUPANCY_FRACTION);
 
     // All Options Set
     List<String> customCommandLine = new ArrayList<>(
@@ -193,6 +190,24 @@ public class StartMemberUtilsTest {
     assertThat(customCommandLine.size()).isEqualTo(3);
     assertThat(customCommandLine).containsExactly("-XX:+UseConcMarkSweepGC",
         "-XX:CMSInitiatingOccupancyFraction=30", "-Xmx16g");
+  }
+
+  @EnabledForJreRange(min = JAVA_14)
+  @Test
+  public void testAddMaxHeapWithoutCMS() {
+    List<String> baseCommandLine = new ArrayList<>();
+
+    // Empty Max Heap Option
+    StartMemberUtils.addMaxHeap(baseCommandLine, null);
+    assertThat(baseCommandLine.size()).isEqualTo(0);
+
+    StartMemberUtils.addMaxHeap(baseCommandLine, "");
+    assertThat(baseCommandLine.size()).isEqualTo(0);
+
+    // Only Max Heap Option Set
+    StartMemberUtils.addMaxHeap(baseCommandLine, "32g");
+    assertThat(baseCommandLine.size()).isEqualTo(1);
+    assertThat(baseCommandLine).containsExactly("-Xmx32g");
   }
 
   private void writePid(final File pidFile, final int pid) throws IOException {
