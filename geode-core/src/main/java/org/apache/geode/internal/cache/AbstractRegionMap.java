@@ -2056,7 +2056,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
     commitPut.put();
   }
 
-  void txHandleWANEvent(final LocalRegion owner, EntryEventImpl callbackEvent,
+  private void txHandleWANEvent(final LocalRegion owner, EntryEventImpl callbackEvent,
       TXEntryState txEntryState) {
     owner.txHandleWANEvent(callbackEvent);
     if (txEntryState != null && callbackEvent.getTailKey() != -1) {
