@@ -46,8 +46,19 @@ public class GradleBuildWithGeodeCoreAcceptanceTest {
     assertThat(projectDir).isNotNull();
 
     String projectGroup = System.getProperty("projectGroup");
-    assertThat(projectGroup).as("'projectGroup' is not available as a system property")
+    assertThat(projectGroup)
+        .as("'projectGroup' system property")
         .isNotBlank();
+
+    String gradleJvm = System.getenv("GRADLE_JVM");
+    assertThat(gradleJvm)
+        .as("'GRADLE_JVM' environment variable")
+        .isNotBlank();
+
+    File gradleJvmFile = new File(gradleJvm);
+    assertThat(gradleJvmFile)
+        .as("'GRADLE_JVM' directory")
+        .isDirectory();
 
     String geodeVersion = GemFireVersion.getGemFireVersion();
 
@@ -60,6 +71,7 @@ public class GradleBuildWithGeodeCoreAcceptanceTest {
 
     ProjectConnection connection = connector.connect();
     BuildLauncher build = connection.newBuild();
+    build.setJavaHome(gradleJvmFile);
 
     build.setStandardError(System.err);
     build.setStandardOutput(System.out);
