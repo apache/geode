@@ -1326,7 +1326,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
   protected abstract void enqueueEvent(GatewayQueueEvent<?, ?> event);
 
   private void notifyPossibleDuplicate(int reason, List<?> events) {
-    Map<String, Map<Integer, List<Object>>> regionToDispatchedKeysMap = new ConcurrentHashMap<>();
+    Map<String, Map<Integer, List<Object>>> regionToDispatchedKeysMap = new HashMap<>();
     boolean pgwsender = (getSender().isParallel()
         && !(getDispatcher() instanceof GatewaySenderEventCallbackDispatcher));
 
@@ -1366,7 +1366,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
         if (queueRegion.isSentGatewaySenderStoppedMessage()) {
           return;
         }
-        Map<Integer, List<Object>> bucketIdToDispatchedKeys = new ConcurrentHashMap<>();
+        Map<Integer, List<Object>> bucketIdToDispatchedKeys = new HashMap<>();
         for (Integer bId : buckets) {
           bucketIdToDispatchedKeys.put(bId, Collections.emptyList());
         }

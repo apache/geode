@@ -234,9 +234,6 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
           Map<String, Map<Integer, List<Object>>> regionToDuplicateEventsMap =
               new ConcurrentHashMap<>();
           try {
-            boolean notifyDuplicate =
-                !(this.getPartitionedRegion().getParallelGatewaySender().getEventProcessor()
-                    .getDispatcher() instanceof GatewaySenderEventCallbackDispatcher);
             // ParallelQueueRemovalMessage checks for the key in BucketRegionQueue
             // and if not found there, it removes it from tempQueue. When tempQueue
             // is getting loaded in BucketRegionQueue, it may not find the key in both.
@@ -248,7 +245,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
               try {
                 event.setPossibleDuplicate(true);
                 if (addToQueue(event.getShadowKey(), event)) {
-                  if (notifyDuplicate) {
+                  if (notifyDuplicateSupported()) {
                     addDuplicateEvent(regionToDuplicateEventsMap, event);
                   }
                   event = null;
@@ -273,40 +270,50 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
             }
             getInitializationLock().writeLock().unlock();
           }
-          if (regionToDuplicateEventsMap.size() > 0
-              && getPartitionedRegion().getRegionAdvisor() != null) {
-            Set<InternalDistributedMember> recipients =
-                getPartitionedRegion().getRegionAdvisor().adviseDataStore();
-
-            if (recipients.isEmpty()) {
-              return;
-            }
-
-            InternalDistributedSystem ids = getCache().getInternalDistributedSystem();
-            DistributionManager dm = ids.getDistributionManager();
-            dm.retainMembersWithSameOrNewerVersion(recipients, KnownVersion.GEODE_1_15_0);
-
-            if (!recipients.isEmpty()) {
-              ParallelQueueSetPossibleDuplicateMessage possibleDuplicateMessage =
-                  new ParallelQueueSetPossibleDuplicateMessage(LOAD_FROM_TEMP_QUEUE,
-                      regionToDuplicateEventsMap);
-              possibleDuplicateMessage.setRecipients(recipients);
-              dm.putOutgoing(possibleDuplicateMessage);
-            }
-          }
+          notifyDuplicateEvents(regionToDuplicateEventsMap);
         }
       }
     }
   }
 
-  private void addDuplicateEvent(Map<String, Map<Integer, List<Object>>> regionToDispatchedKeysMap,
-      GatewaySenderEventImpl event) {
-    Map<Integer, List<Object>> bucketIdToDispatchedKeys =
-        regionToDispatchedKeysMap.get(getPartitionedRegion().getFullPath());
-    if (bucketIdToDispatchedKeys == null) {
-      bucketIdToDispatchedKeys = new ConcurrentHashMap<>();
-      regionToDispatchedKeysMap.put(getPartitionedRegion().getFullPath(), bucketIdToDispatchedKeys);
+  private boolean notifyDuplicateSupported() {
+    return !(this.getPartitionedRegion().getParallelGatewaySender().getEventProcessor()
+        .getDispatcher() instanceof GatewaySenderEventCallbackDispatcher);
+  }
+
+  private void notifyDuplicateEvents(
+      Map<String, Map<Integer, List<Object>>> regionToDuplicateEventsMap) {
+    if (regionToDuplicateEventsMap.isEmpty()) {
+      return;
     }
+    if (getPartitionedRegion().getRegionAdvisor() == null) {
+      return;
+    }
+
+    Set<InternalDistributedMember> recipients =
+        getPartitionedRegion().getRegionAdvisor().adviseDataStore();
+
+    if (recipients.isEmpty()) {
+      return;
+    }
+
+    InternalDistributedSystem ids = getCache().getInternalDistributedSystem();
+    DistributionManager dm = ids.getDistributionManager();
+    dm.retainMembersWithSameOrNewerVersion(recipients, KnownVersion.GEODE_1_15_0);
+
+    if (!recipients.isEmpty()) {
+      ParallelQueueSetPossibleDuplicateMessage possibleDuplicateMessage =
+          new ParallelQueueSetPossibleDuplicateMessage(LOAD_FROM_TEMP_QUEUE,
+              regionToDuplicateEventsMap);
+      possibleDuplicateMessage.setRecipients(recipients);
+      dm.putOutgoing(possibleDuplicateMessage);
+    }
+  }
+
+  private void addDuplicateEvent(Map<String, Map<Integer, List<Object>>> regionToDuplicateEventsMap,
+      GatewaySenderEventImpl event) {
+    Map<Integer, List<Object>> bucketIdToDispatchedKeys = regionToDuplicateEventsMap
+        .computeIfAbsent(getPartitionedRegion().getFullPath(), k -> new ConcurrentHashMap<>());
 
     List<Object> dispatchedKeys =
         bucketIdToDispatchedKeys.computeIfAbsent(getId(), k -> new ArrayList<>());

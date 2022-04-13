@@ -1303,11 +1303,12 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   public boolean markAsDuplicateInTempQueueEvents(Object tailKey) {
     synchronized (queuedEventsSync) {
+      final boolean isDebugEnabled = logger.isDebugEnabled();
       Iterator<TmpQueueEvent> itr = tmpQueuedEvents.iterator();
       while (itr.hasNext()) {
         TmpQueueEvent event = itr.next();
         if (tailKey.equals(event.getEvent().getTailKey())) {
-          if (logger.isDebugEnabled()) {
+          if (isDebugEnabled) {
             logger.debug(
                 "shadowKey {} is found in tmpQueueEvents at AbstractGatewaySender level. Marking it..",
                 tailKey);

@@ -49,7 +49,7 @@ public class ParallelQueueSetPossibleDuplicateMessage extends PooledDistribution
   private static final Logger logger = LogService.getLogger();
 
   private int reason;
-  private Map regionToDispatchedKeysMap;
+  private Map<String, Map<Integer, List<Object>>> regionToDuplicateEventsMap;
 
   public static final int UNSUCCESSFULLY_DISPATCHED = 0;
   public static final int RESET_BATCH = 1;
@@ -59,9 +59,10 @@ public class ParallelQueueSetPossibleDuplicateMessage extends PooledDistribution
 
   public ParallelQueueSetPossibleDuplicateMessage() {}
 
-  public ParallelQueueSetPossibleDuplicateMessage(int reason, Map rgnToDispatchedKeysMap) {
+  public ParallelQueueSetPossibleDuplicateMessage(int reason,
+      Map<String, Map<Integer, List<Object>>> regionToDuplicateEventsMap) {
     this.reason = reason;
-    this.regionToDispatchedKeysMap = rgnToDispatchedKeysMap;
+    this.regionToDuplicateEventsMap = regionToDuplicateEventsMap;
   }
 
   @Override
@@ -74,7 +75,7 @@ public class ParallelQueueSetPossibleDuplicateMessage extends PooledDistribution
     String cname = getShortClassName();
     final StringBuilder sb = new StringBuilder(cname);
     sb.append("reason=" + reason);
-    sb.append(" regionToDispatchedKeysMap=" + regionToDispatchedKeysMap);
+    sb.append(" regionToDispatchedKeysMap=" + regionToDuplicateEventsMap);
     sb.append(" sender=").append(getSender());
     return sb.toString();
   }
@@ -84,68 +85,69 @@ public class ParallelQueueSetPossibleDuplicateMessage extends PooledDistribution
     final boolean isDebugEnabled = logger.isDebugEnabled();
     final InternalCache cache = dm.getCache();
 
-    if (cache != null) {
-      final InitializationLevel oldLevel =
-          LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
-      try {
-        for (Object name : regionToDispatchedKeysMap.keySet()) {
-          final String regionName = (String) name;
-          final PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
-          if (region == null) {
-            continue;
-          } else {
-            AbstractGatewaySender abstractSender = region.getParallelGatewaySender();
-            // Find the map: bucketId to dispatchedKeys
-            // Find the bucket
-            // Destroy the keys
-            Map bucketIdToDispatchedKeys = (Map) this.regionToDispatchedKeysMap.get(regionName);
-            for (Object bId : bucketIdToDispatchedKeys.keySet()) {
-              final String bucketFullPath =
-                  SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME + SEPARATOR
-                      + region.getBucketName((Integer) bId);
-              BucketRegionQueue brq =
-                  (BucketRegionQueue) cache.getInternalRegionByPath(bucketFullPath);
+    if (cache == null) {
+      return;
+    }
+    final InitializationLevel oldLevel =
+        LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
+    try {
+      for (String name : regionToDuplicateEventsMap.keySet()) {
+        final PartitionedRegion region = (PartitionedRegion) cache.getRegion(name);
+        if (region == null) {
+          continue;
+        }
+
+        AbstractGatewaySender abstractSender = region.getParallelGatewaySender();
+        // Find the map: bucketId to dispatchedKeys
+        // Find the bucket
+        // Destroy the keys
+        Map<Integer, List<Object>> bucketIdToDispatchedKeys =
+            this.regionToDuplicateEventsMap.get(name);
+        for (Integer bId : bucketIdToDispatchedKeys.keySet()) {
+          final String bucketFullPath =
+              SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME + SEPARATOR
+                  + region.getBucketName(bId);
+          BucketRegionQueue brq =
+              (BucketRegionQueue) cache.getInternalRegionByPath(bucketFullPath);
+
+          if (brq != null) {
+            if (reason == STOPPED_GATEWAY_SENDER) {
+              brq.setReceivedGatewaySenderStoppedMessage(true);
+            }
+          }
+
+          if (isDebugEnabled) {
+            logger.debug(
+                "ParallelQueueSetPossibleDuplicateMessage : The bucket in the cache is bucketRegionName : {} bucket: {}",
+                bucketFullPath, brq);
+          }
+
+          List<Object> dispatchedKeys = bucketIdToDispatchedKeys.get(bId);
+          if (dispatchedKeys != null && !dispatchedKeys.isEmpty()) {
+            for (Object key : dispatchedKeys) {
+              // First, clear the Event from tempQueueEvents at AbstractGatewaySender level, if
+              // exists
+              // synchronize on AbstractGatewaySender.queuedEventsSync while doing so
+              abstractSender.markAsDuplicateInTempQueueEvents(key);
 
               if (brq != null) {
-                if (reason == STOPPED_GATEWAY_SENDER) {
-                  brq.setReceivedGatewaySenderStoppedMessage(true);
+                if (isDebugEnabled) {
+                  logger.debug(
+                      "ParallelQueueSetPossibleDuplicateMessage : The bucket {} key {}.",
+                      brq, key);
                 }
-              }
 
-              if (isDebugEnabled) {
-                logger.debug(
-                    "ParallelQueueSetPossibleDuplicateMessage : The bucket in the cache is bucketRegionName : {} bucket: {}",
-                    bucketFullPath, brq);
-              }
-
-              List dispatchedKeys = (List) bucketIdToDispatchedKeys.get((Integer) bId);
-              if (dispatchedKeys != null && !dispatchedKeys.isEmpty()) {
-                for (Object key : dispatchedKeys) {
-                  // First, clear the Event from tempQueueEvents at AbstractGatewaySender level, if
-                  // exists
-                  // synchronize on AbstractGatewaySender.queuedEventsSync while doing so
-                  abstractSender.markAsDuplicateInTempQueueEvents(key);
-
-                  if (brq != null) {
-                    if (isDebugEnabled) {
-                      logger.debug(
-                          "ParallelQueueSetPossibleDuplicateMessage : The bucket {} key {}.",
-                          brq, key);
-                    }
-
-                    if (brq.checkIfQueueContainsKey(key)) {
-                      brq.setAsPossibleDuplicate(key);
-                    }
-                  }
+                if (brq.checkIfQueueContainsKey(key)) {
+                  brq.setAsPossibleDuplicate(key);
                 }
               }
             }
           }
-        } //
-      } finally {
-        LocalRegion.setThreadInitLevelRequirement(oldLevel);
-      }
-    } // cache != null
+        }
+      } //
+    } finally {
+      LocalRegion.setThreadInitLevelRequirement(oldLevel);
+    }
   }
 
   @Override
@@ -153,7 +155,7 @@ public class ParallelQueueSetPossibleDuplicateMessage extends PooledDistribution
       SerializationContext context) throws IOException {
     super.toData(out, context);
     DataSerializer.writeInteger(this.reason, out);
-    DataSerializer.writeHashMap(this.regionToDispatchedKeysMap, out);
+    DataSerializer.writeHashMap(this.regionToDuplicateEventsMap, out);
   }
 
   @Override
@@ -161,6 +163,6 @@ public class ParallelQueueSetPossibleDuplicateMessage extends PooledDistribution
       DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.reason = DataSerializer.readInteger(in);
-    this.regionToDispatchedKeysMap = DataSerializer.readHashMap(in);
+    this.regionToDuplicateEventsMap = DataSerializer.readHashMap(in);
   }
 }
