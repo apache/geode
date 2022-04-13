@@ -15,12 +15,11 @@
 
 package org.apache.geode.gradle.plugins
 
-import org.gradle.api.Plugin
 import org.gradle.api.Project
 
-class DependencyConstraints implements Plugin<Project> {
-  /** By necessity, the version of those plugins used in the build-scripts are defined in the
-   * buildscript {} configuration in the root project's build.gradle. */
+class DependencyConstraints {
+/** By necessity, the version of those plugins used in the build-scripts are defined in the
+ * buildscript {} configuration in the root project's build.gradle. */
   static Map<String,String> disparateDependencies = initExternalDependencies()
 
   static String get(String name) {
@@ -75,7 +74,6 @@ class DependencyConstraints implements Plugin<Project> {
     return deps
   }
 
-  @Override
   void apply(Project project) {
     def dependencySet = { Map<String, String> group_and_version, Closure closure ->
       DependencySetHandler delegate =

@@ -32,6 +32,8 @@ plugins {
   id "me.champeau.gradle.japicmp" apply false // Version defined in buildSrc/build.gradle
   id 'me.champeau.gradle.jmh' version '0.5.3' apply false
   id "de.undercouch.download" version "5.0.1" apply false
+
+  id 'org.apache.geode.gradle.geode-dependency-constraints' apply false
 }
 
 

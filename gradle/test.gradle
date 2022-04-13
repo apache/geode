@@ -1,5 +1,4 @@
 import org.apache.geode.gradle.TestPropertiesWriter
-import org.apache.geode.gradle.plugins.DependencyConstraints
 import org.apache.geode.gradle.testing.repeat.RepeatTest
 
 /*
