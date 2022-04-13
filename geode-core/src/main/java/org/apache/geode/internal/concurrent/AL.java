@@ -20,6 +20,7 @@ package org.apache.geode.internal.concurrent;
  *
  * @deprecated used AtomicLong instead
  */
+@Deprecated
 public interface AL {
   /**
    * Gets the current value.

@@ -2288,6 +2288,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
    *
    * @deprecated use {@link #revokePersistentMember(UUID)} instead
    */
+  @Deprecated
   public static void revokePersistentMember(DistributionManager dm, InetAddress host,
       String directory) {
 

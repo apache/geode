@@ -116,6 +116,7 @@ import org.apache.geode.test.version.VersionManager;
  * @deprecated Please use {@link DistributedRule} and Geode User APIs or {@link ClusterStartupRule}
  *             instead.
  */
+@Deprecated
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTestCase {

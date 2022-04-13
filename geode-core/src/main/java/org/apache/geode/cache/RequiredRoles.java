@@ -36,6 +36,7 @@ import org.apache.geode.internal.cache.InternalRegion;
  * @deprecated this feature is scheduled to be removed
  * @see org.apache.geode.distributed.Role
  */
+@Deprecated
 public class RequiredRoles {
 
   /**

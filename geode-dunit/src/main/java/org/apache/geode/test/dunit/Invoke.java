@@ -87,6 +87,7 @@ public class Invoke {
    * @deprecated Please use {@link #invokeInEveryVM(SerializableRunnableIF)} or another
    *             non-deprecated method in <code>Invoke</code> instead.
    */
+  @Deprecated
   public static void invokeInEveryVM(final Class<?> targetClass, final String targetMethod,
       final Object[] methodArgs) {
     for (int hostIndex = 0; hostIndex < Host.getHostCount(); hostIndex++) {

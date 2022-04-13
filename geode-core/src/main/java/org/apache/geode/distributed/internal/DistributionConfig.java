@@ -2827,6 +2827,7 @@ public interface DistributionConfig
    * @since GemFire 8.0
    * @deprecated Geode 1.0 use {@link #getClusterSSLProperties()}
    */
+  @Deprecated
   Properties getJmxSSLProperties();
 
   /**
@@ -3209,6 +3210,7 @@ public interface DistributionConfig
    * @deprecated Geode 1.0 use
    *             {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String JMX_MANAGER_SSL_KEYSTORE_TYPE_NAME = JMX_MANAGER_SSL_KEYSTORE_TYPE;
 
@@ -3290,6 +3292,7 @@ public interface DistributionConfig
    * @deprecated Geode 1.0 use
    *             {@link ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String JMX_MANAGER_SSL_TRUSTSTORE_NAME = JMX_MANAGER_SSL_TRUSTSTORE;
 
@@ -3384,6 +3387,7 @@ public interface DistributionConfig
    *
    * @deprecated as of 8.0 use {@link #getHttpServicePort()} instead.
    */
+  @Deprecated
   @ConfigAttributeGetter(name = JMX_MANAGER_HTTP_PORT)
   int getJmxManagerHttpPort();
 
@@ -3397,6 +3401,7 @@ public interface DistributionConfig
    *
    * @deprecated as of 8.0 use {@link #setHttpServicePort(int)} instead.
    */
+  @Deprecated
   @ConfigAttributeSetter(name = JMX_MANAGER_HTTP_PORT)
   void setJmxManagerHttpPort(int value);
 
@@ -3408,6 +3413,7 @@ public interface DistributionConfig
    *
    * @deprecated as of 8.0 use {{@link #HTTP_SERVICE_PORT_NAME} instead.
    */
+  @Deprecated
   @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
   String JMX_MANAGER_HTTP_PORT_NAME = JMX_MANAGER_HTTP_PORT;
 
@@ -3417,6 +3423,7 @@ public interface DistributionConfig
    *
    * @deprecated as of 8.0 use {@link #DEFAULT_HTTP_SERVICE_PORT} instead.
    */
+  @Deprecated
   int DEFAULT_JMX_MANAGER_HTTP_PORT = 7070;
 
   @ConfigAttributeGetter(name = JMX_MANAGER_UPDATE_RATE)
@@ -3933,6 +3940,7 @@ public interface DistributionConfig
    *
    * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStoreType(String)}
    */
+  @Deprecated
   @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_KEYSTORE_TYPE)
   void setHttpServiceSSLKeyStoreType(String keyStoreType);
 
@@ -4427,6 +4435,7 @@ public interface DistributionConfig
    *
    * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_TRUSTSTORE}
    */
+  @Deprecated
   String DEFAULT_SERVER_SSL_TRUSTSTORE = "";
 
   /**
@@ -4545,6 +4554,7 @@ public interface DistributionConfig
    *
    * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_PROTOCOLS}
    */
+  @Deprecated
   String DEFAULT_GATEWAY_SSL_PROTOCOLS = "any";
   /**
    * The name of the {@link ConfigurationProperties#GATEWAY_SSL_PROTOCOLS} property The name of the
@@ -4582,6 +4592,7 @@ public interface DistributionConfig
    *
    * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_CIPHERS} 
    */
+  @Deprecated
   String DEFAULT_GATEWAY_SSL_CIPHERS = "any";
   /**
    * The name of the {@link ConfigurationProperties#GATEWAY_SSL_CIPHERS} property The name of the

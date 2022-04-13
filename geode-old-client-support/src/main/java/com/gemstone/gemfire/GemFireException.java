@@ -31,6 +31,7 @@ package com.gemstone.gemfire;
 // to have more specific exception types. We want to avoid using
 // GemFireException to describe an arbitrary error condition (think
 // GsError).
+@Deprecated
 public abstract class GemFireException extends RuntimeException {
   public static final long serialVersionUID = -6972360779789402295L;
 

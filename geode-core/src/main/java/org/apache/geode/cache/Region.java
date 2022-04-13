@@ -386,6 +386,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    *
    * @deprecated as of 7.0 use {@link #getSnapshotService()}
    */
+  @Deprecated
   void saveSnapshot(OutputStream outputStream) throws IOException;
 
   /**
@@ -434,6 +435,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    *
    * @deprecated as of 7.0 use {@link #getSnapshotService()}
    */
+  @Deprecated
   void loadSnapshot(InputStream inputStream)
       throws IOException, ClassNotFoundException, CacheWriterException, TimeoutException;
 
@@ -481,6 +483,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @deprecated as of 7.0 use {@link RegionFactory#createSubregion(Region, String)} or
    *             {@link ClientRegionFactory#createSubregion(Region, String)}.
    */
+  @Deprecated
   <SK, SV> Region<SK, SV> createSubregion(String subregionName,
       RegionAttributes<SK, SV> aRegionAttributes) throws RegionExistsException, TimeoutException;
 

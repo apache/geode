@@ -387,6 +387,7 @@ public interface MemberMXBean {
    *
    * @deprecated Please use {@link #getUsedMemory()} instead.
    */
+  @Deprecated
   long getCurrentHeapSize();
 
   /**
@@ -394,6 +395,7 @@ public interface MemberMXBean {
    *
    * @deprecated Please use {@link #getMaxMemory()} instead.
    */
+  @Deprecated
   long getMaximumHeapSize();
 
   /**
@@ -401,6 +403,7 @@ public interface MemberMXBean {
    *
    * @deprecated Please use {@link #getFreeMemory()} instead.
    */
+  @Deprecated
   long getFreeHeapSize();
 
   /**

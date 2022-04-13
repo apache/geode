@@ -79,6 +79,7 @@ public @interface CliMetaData {
    * @deprecated since 1.2, Command methods may override both the delimiter and the escape through
    *             spring shell's {@code splittingRegex} option context
    */
+  @Deprecated
   String valueSeparator() default org.apache.geode.management.cli.CliMetaData.ANNOTATION_NULL_VALUE;
 
   /**
@@ -89,6 +90,7 @@ public @interface CliMetaData {
    *
    * @deprecated since Geode1.2, not used at all
    */
+  @Deprecated
   @Retention(RetentionPolicy.RUNTIME)
   @Target({ElementType.METHOD})
   @interface AvailabilityMetadata {

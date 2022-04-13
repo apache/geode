@@ -70,6 +70,7 @@ public class CommandResultAssert
    *
    * @deprecated use hasDataSection methods to verify the table contents
    */
+  @Deprecated
   public CommandResultAssert containsKeyValuePair(String key, String value) {
     assertThat(commandOutput).containsPattern("\\Q" + key + "\\E\\s+: \\Q" + value + "\\E");
 
@@ -138,6 +139,7 @@ public class CommandResultAssert
    *
    * @deprecated use hasTableSection methods to verify the table contents
    */
+  @Deprecated
   public CommandResultAssert tableHasColumnWithExactValuesInAnyOrder(String header,
       String... expectedValues) {
     hasTableSection().hasColumn(header).containsExactlyInAnyOrder(expectedValues);
@@ -147,6 +149,7 @@ public class CommandResultAssert
   /**
    * @deprecated use hasTableSection methods to verify the table contents
    */
+  @Deprecated
   public CommandResultAssert tableHasRowWithValues(String... headersThenValues) {
     assertThat(headersThenValues.length % 2)
         .describedAs("You need to pass even number of parameters.").isEqualTo(0);
@@ -200,6 +203,7 @@ public class CommandResultAssert
    *
    * @deprecated use hasTableSection methods to verify the table contents
    */
+  @Deprecated
   public CommandResultAssert tableHasColumnWithValuesContaining(String header,
       String... expectedValues) {
     TabularResultModel actual = hasTableSection().getActual();
@@ -225,6 +229,7 @@ public class CommandResultAssert
    *
    * @deprecated use hasTableSection methods to verify the table contents
    */
+  @Deprecated
   public CommandResultAssert tableHasColumnOnlyWithValues(String header, String... expectedValues) {
     hasTableSection().hasColumn(header).containsOnly(expectedValues);
 

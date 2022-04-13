@@ -57,6 +57,7 @@ public interface AuthInitialize extends CacheCallback {
    * @deprecated in Geode 1.5. Never called by the product. Use {@link #init(LogWriter systemLogger,
    *             LogWriter securityLogger)}
    */
+  @Deprecated
   default void init() {}
 
   /**
@@ -95,6 +96,7 @@ public interface AuthInitialize extends CacheCallback {
    * @deprecated in Geode 1.3. Never called by the product. Use {@link #getCredentials(Properties
    *             securityProps, DistributedMember server, boolean isPeer)}
    */
+  @Deprecated
   default Properties getCredentials(Properties securityProps) {
     return getCredentials(securityProps, null, true);
   }

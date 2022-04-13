@@ -23,6 +23,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
  *
  * @deprecated Use {@link GeodeAwaitility} instead.
  */
+@Deprecated
 public interface StoppableWaitCriterion extends WaitCriterion {
 
   /**

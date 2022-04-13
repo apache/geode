@@ -95,6 +95,7 @@ public interface DistributedRegionMXBean {
    *
    * @deprecated this API is scheduled to be removed
    */
+  @Deprecated
   MembershipAttributesData listMembershipAttributes();
 
   /**
@@ -207,6 +208,7 @@ public interface DistributedRegionMXBean {
    *
    * @deprecated
    */
+  @Deprecated
   long getDiskTaskWaiting();
 
   /**

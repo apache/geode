@@ -100,6 +100,7 @@ import org.apache.geode.test.version.VersionManager;
  * @deprecated Please use {@link DistributedRule} and Geode User APIs or {@link ClusterStartupRule}
  *             instead.
  */
+@Deprecated
 public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestCase {
 
   private static final int PAUSE = 5 * 1000;

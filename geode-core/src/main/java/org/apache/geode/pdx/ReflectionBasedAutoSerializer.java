@@ -112,6 +112,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    *        they should be serialized
    * @deprecated as of 6.6.2 use ReflectionBasedAutoSerializer(String...) instead.
    */
+  @Deprecated
   public ReflectionBasedAutoSerializer(List<String> classes) {
     this(listToArray(classes));
   }
@@ -248,6 +249,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * @param patterns the list of definitions to apply
    * @deprecated as of 6.6.2 use {@link #reconfigure(String...)} instead.
    */
+  @Deprecated
   public void setSerializableClasses(List<String> patterns) {
     reconfigure(listToArray(patterns));
   }
@@ -373,6 +375,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * @param props properties used to configure the auto serializer
    * @deprecated as of Geode 1.5 use initialize instead
    */
+  @Deprecated
   @Override
   public void init(Properties props) {
     manager.init(props);

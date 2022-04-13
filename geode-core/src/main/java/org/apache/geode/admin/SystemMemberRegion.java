@@ -304,6 +304,7 @@ public interface SystemMemberRegion {
    *
    * @deprecated this API is scheduled to be removed
    */
+  @Deprecated
   MembershipAttributes getMembershipAttributes();
 
   /**

@@ -23,6 +23,7 @@ package org.apache.geode.cache.operations;
  * @since GemFire 7.0
  * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
+@Deprecated
 public class GetDurableCQsOperationContext extends OperationContext {
 
   /**

@@ -285,6 +285,7 @@ public interface RegionAttributes<K, V> {
    *
    * @deprecated this API is scheduled to be removed
    */
+  @Deprecated
   MembershipAttributes getMembershipAttributes();
 
   /**
@@ -325,6 +326,7 @@ public interface RegionAttributes<K, V> {
    * @since GemFire 4.2.3
    * @deprecated as of 6.5
    */
+  @Deprecated
   boolean getPublisher();
 
   /**
@@ -389,6 +391,7 @@ public interface RegionAttributes<K, V> {
    * @return int[] sizes of the disk directories
    * @deprecated as of 6.5 use {@link DiskStore#getDiskDirSizes} instead.
    */
+  @Deprecated
   int[] getDiskDirSizes();
 
 

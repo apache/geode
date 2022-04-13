@@ -56,6 +56,7 @@ import org.apache.geode.distributed.internal.membership.InternalRole;
  *
  * @deprecated this feature is scheduled to be removed
  */
+@Deprecated
 public class MembershipAttributes implements DataSerializable, Externalizable {
 
   /**

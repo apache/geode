@@ -47,6 +47,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
  *
  * @deprecated this feature is scheduled to be removed
  */
+@Deprecated
 public class InternalRole implements Role {
 
   /** The name of this role */

@@ -136,6 +136,7 @@ public abstract class Host implements Serializable {
    * @throws IllegalArgumentException {@code n} is more than the number of VMs
    * @deprecated use the static methods in VM instead
    */
+  @Deprecated
   public VM getVM(int n) {
     int size = vms.size();
     if (n >= size) {

@@ -267,6 +267,7 @@ public class DataPolicy implements java.io.Serializable {
    * @return true if this policy is {@link #EMPTY}.
    * @deprecated from version 6.5 forward please use withStorage()
    */
+  @Deprecated
   public boolean isEmpty() {
     return this == EMPTY;
   }
@@ -277,6 +278,7 @@ public class DataPolicy implements java.io.Serializable {
    * @return true if this policy is {@link #NORMAL}.
    * @deprecated from version 6.5 forward please use an identity comparison instead of this method
    */
+  @Deprecated
   public boolean isNormal() {
     return this == NORMAL;
   }
@@ -287,6 +289,7 @@ public class DataPolicy implements java.io.Serializable {
    * @return true if this policy is {@link #PRELOADED}
    * @deprecated from version 6.5 forward please use withPreloaded()
    */
+  @Deprecated
   public boolean isPreloaded() {
     return this == PRELOADED;
   }
@@ -297,6 +300,7 @@ public class DataPolicy implements java.io.Serializable {
    * @return true if this policy is the default.
    * @deprecated from version 6.5 forward please use an identity comparison instead of this method
    */
+  @Deprecated
   public boolean isDefault() {
     return this == DEFAULT;
   }
@@ -307,6 +311,7 @@ public class DataPolicy implements java.io.Serializable {
    * @return true if this policy is {@link #REPLICATE}.
    * @deprecated from version 6.5 forward please use withReplication()
    */
+  @Deprecated
   public boolean isReplicate() {
     return this == REPLICATE;
   }
@@ -317,6 +322,7 @@ public class DataPolicy implements java.io.Serializable {
    * @return true if this policy is {@link #PERSISTENT_REPLICATE}.
    * @deprecated from version 6.5 forward please use withPersistence() and withReplication()
    */
+  @Deprecated
   public boolean isPersistentReplicate() {
     return this == PERSISTENT_REPLICATE;
   }
@@ -327,6 +333,7 @@ public class DataPolicy implements java.io.Serializable {
    * @return true if this policy is {@link #PARTITION}
    * @deprecated from version 6.5 forward please use withPartitioning()
    */
+  @Deprecated
   public boolean isPartition() {
     return this == PARTITION;
   }

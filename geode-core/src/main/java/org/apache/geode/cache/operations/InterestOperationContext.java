@@ -22,6 +22,7 @@ package org.apache.geode.cache.operations;
  * @since GemFire 5.5
  * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
+@Deprecated
 public abstract class InterestOperationContext extends OperationContext {
 
   /** The key or list of keys being registered/unregistered. */

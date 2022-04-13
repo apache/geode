@@ -25,6 +25,7 @@ import java.util.Map;
  *
  * @deprecated since Geode 1.3. simply use commandProcessor to process the command
  */
+@Deprecated
 public interface CommandStatement {
 
   /**

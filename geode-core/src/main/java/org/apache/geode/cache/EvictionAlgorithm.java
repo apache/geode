@@ -63,6 +63,7 @@ public final class EvictionAlgorithm extends EnumSyntax implements Serializable 
    *
    * @deprecated For internal use only.
    */
+  @Deprecated
   @Immutable
   public static final EvictionAlgorithm LIFO_ENTRY = new EvictionAlgorithm(4);
 
@@ -72,6 +73,7 @@ public final class EvictionAlgorithm extends EnumSyntax implements Serializable 
    *
    * @deprecated For internal use only.
    */
+  @Deprecated
   @Immutable
   public static final EvictionAlgorithm LIFO_MEMORY = new EvictionAlgorithm(5);
 
@@ -149,6 +151,7 @@ public final class EvictionAlgorithm extends EnumSyntax implements Serializable 
   /**
    * @deprecated For internal use only.
    */
+  @Deprecated
   public boolean isLIFO() {
     return this == LIFO_ENTRY || this == LIFO_MEMORY;
   }

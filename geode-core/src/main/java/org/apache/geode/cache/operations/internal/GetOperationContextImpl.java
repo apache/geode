@@ -26,6 +26,7 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
  *
  * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
+@Deprecated
 public class GetOperationContextImpl extends GetOperationContext implements Releasable {
 
   private boolean released;

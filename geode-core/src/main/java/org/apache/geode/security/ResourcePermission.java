@@ -45,10 +45,12 @@ public class ResourcePermission extends WildcardPermission {
   /**
    * @deprecated use ALL
    */
+  @Deprecated
   public static final String ALL_REGIONS = "*";
   /**
    * @deprecated use All
    */
+  @Deprecated
   public static final String ALL_KEYS = "*";
 
   public enum Resource {
@@ -212,6 +214,7 @@ public class ResourcePermission extends WildcardPermission {
   /**
    * @deprecated use getTarget()
    */
+  @Deprecated
   public String getRegionName() {
     return getTarget();
   }

@@ -21,6 +21,7 @@ import org.apache.catalina.util.LifecycleSupport;
  * @deprecated Tomcat 6 has reached its end of life and support for Tomcat 6 will be removed
  *             from a future Geode release.
  */
+@Deprecated
 public class Tomcat6DeltaSessionManager extends DeltaSessionManager<Tomcat6CommitSessionValve> {
 
   /**

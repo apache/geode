@@ -57,6 +57,7 @@ public class LogWriterUtils {
    *
    * @deprecated Please use a {@code Logger} from {@link LogService#getLogger()} instead.
    */
+  @Deprecated
   public static LogWriter getLogWriter() {
     return oldLogger;
   }

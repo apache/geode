@@ -269,6 +269,7 @@ public class GfshCommandRule extends DescribedExternalResource {
    *             to do assertion, you can use hasTable().getActual() or hasData().getActual
    *             after that method call.
    */
+  @Deprecated
   public CommandResult executeCommand(String command) {
     String moduleArgs = "";
     if (command.matches("^start +server.*") || command.matches("^start +locator.*")) {

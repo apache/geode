@@ -90,6 +90,7 @@ public interface RegionMXBean {
    *
    * @deprecated this API is scheduled to be removed
    */
+  @Deprecated
   MembershipAttributesData listMembershipAttributes();
 
   /**
@@ -200,6 +201,7 @@ public interface RegionMXBean {
    *
    * @deprecated See corresponding DiskStores latency to get the latency.
    */
+  @Deprecated
   long getDiskReadsAverageLatency();
 
   /**
@@ -207,6 +209,7 @@ public interface RegionMXBean {
    *
    * @deprecated See corresponding DiskStores latency to get the latency.
    */
+  @Deprecated
   long getDiskWritesAverageLatency();
 
   /**
@@ -225,6 +228,7 @@ public interface RegionMXBean {
    *
    * @deprecated
    */
+  @Deprecated
   long getDiskTaskWaiting();
 
   /**
@@ -288,6 +292,7 @@ public interface RegionMXBean {
    *
    * @deprecated This attribute is removed from 8.0 for being incorrect and impacting performance.
    */
+  @Deprecated
   int getAvgBucketSize();
 
 

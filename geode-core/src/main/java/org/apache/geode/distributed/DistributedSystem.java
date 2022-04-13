@@ -155,6 +155,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    *             instead.
    *
    */
+  @Deprecated
   public static DistributedSystem connect(Properties config) {
     return InternalDistributedSystem.connectInternal(config, null,
         new InternalDistributedSystemMetricsService.Builder());
@@ -337,6 +338,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    *
    * @deprecated as of 6.5 use {@link Cache#close} or {@link ClientCache#close} instead.
    */
+  @Deprecated
   public abstract void disconnect();
 
   /**
@@ -486,6 +488,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * @since GemFire 5.0
    * @deprecated As of 9.0, please use {@link #getPropertiesFile()} instead.
    */
+  @Deprecated
   public static final String PROPERTY_FILE = getPropertiesFile();
 
   /**
@@ -555,6 +558,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * @since GemFire 6.6.2
    * @deprecated As of 9.0, please use {@link #getSecurityPropertiesFile()} instead.
    */
+  @Deprecated
   public static final String SECURITY_PROPERTY_FILE = getSecurityPropertiesFile();
 
   /**

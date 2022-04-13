@@ -25,6 +25,7 @@ import org.apache.geode.cache.operations.KeyOperationContext;
  * @since GemFire 5.5
  * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
+@Deprecated
 public class ContainsKeyOperationContext extends KeyOperationContext {
 
   /**

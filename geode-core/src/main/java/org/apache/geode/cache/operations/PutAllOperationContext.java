@@ -26,6 +26,7 @@ import org.apache.geode.cache.operations.internal.UpdateOnlyMap;
  * @since GemFire 5.7
  * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
+@Deprecated
 public class PutAllOperationContext extends OperationContext {
 
   /** The set of keys for the operation */
@@ -87,6 +88,7 @@ public class PutAllOperationContext extends OperationContext {
    *         the original keys.
    * @deprecated use getMap() instead and modify the values in the map it returns
    */
+  @Deprecated
   public void setMap(Map map) {
     if (map == this.map) {
       return;

@@ -77,6 +77,7 @@ public interface Execution<IN, OUT, AGG> {
    * @deprecated use {@link #setArguments(Object)} instead
    *
    */
+  @Deprecated
   Execution<IN, OUT, AGG> withArgs(IN args);
 
   /**

@@ -25,6 +25,7 @@ import org.apache.geode.cache.InterestResultPolicy;
  * @since GemFire 5.5
  * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
+@Deprecated
 public class RegisterInterestOperationContext extends InterestOperationContext {
 
   /** The <code>InterestResultPolicy</code> for this list of keys. */

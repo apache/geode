@@ -64,6 +64,7 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
  * @deprecated Please use {@link DistributedRule} and Geode User APIs or {@link ClusterStartupRule}
  *             instead.
  */
+@Deprecated
 public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     implements CacheTestFixture {
 
