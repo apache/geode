@@ -22,11 +22,17 @@ import static org.mockito.Mockito.mock;
 import java.nio.ByteBuffer;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 
 import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.util.internal.GeodeGlossary;
 
 public class BufferPoolTest {
+
+  @Rule
+  public final RestoreSystemProperties restorer = new RestoreSystemProperties();
 
   private BufferPool bufferPool;
 
@@ -36,26 +42,26 @@ public class BufferPoolTest {
   }
 
   @Test
-  public void expandBuffer() throws Exception {
+  public void expandBuffer() {
     ByteBuffer buffer = ByteBuffer.allocate(256);
     buffer.clear();
     for (int i = 0; i < 256; i++) {
       byte b = (byte) (i & 0xff);
       buffer.put(b);
     }
-    createAndVerifyNewWriteBuffer(buffer, false);
+    createAndVerifyNewWriteBuffer(buffer);
 
-    createAndVerifyNewWriteBuffer(buffer, true);
+    createAndVerifyNewWriteBuffer(buffer);
 
 
-    createAndVerifyNewReadBuffer(buffer, false);
+    createAndVerifyNewReadBuffer(buffer);
 
-    createAndVerifyNewReadBuffer(buffer, true);
+    createAndVerifyNewReadBuffer(buffer);
 
 
   }
 
-  private void createAndVerifyNewWriteBuffer(ByteBuffer buffer, boolean useDirectBuffer) {
+  private void createAndVerifyNewWriteBuffer(ByteBuffer buffer) {
     buffer.position(buffer.capacity());
     ByteBuffer newBuffer =
         bufferPool.expandWriteBufferIfNeeded(BufferPool.BufferType.UNTRACKED, buffer, 500);
@@ -69,7 +75,7 @@ public class BufferPoolTest {
     }
   }
 
-  private void createAndVerifyNewReadBuffer(ByteBuffer buffer, boolean useDirectBuffer) {
+  private void createAndVerifyNewReadBuffer(ByteBuffer buffer) {
     buffer.position(0);
     buffer.limit(256);
     ByteBuffer newBuffer =
@@ -86,7 +92,7 @@ public class BufferPoolTest {
 
   // the fixed numbers in this test came from a distributed unit test failure
   @Test
-  public void bufferPositionAndLimitForReadAreCorrectAfterExpansion() throws Exception {
+  public void bufferPositionAndLimitForReadAreCorrectAfterExpansion() {
     ByteBuffer buffer = ByteBuffer.allocate(33842);
     buffer.position(7);
     buffer.limit(16384);
@@ -101,7 +107,7 @@ public class BufferPoolTest {
 
 
   @Test
-  public void bufferPositionAndLimitForWriteAreCorrectAfterExpansion() throws Exception {
+  public void bufferPositionAndLimitForWriteAreCorrectAfterExpansion() {
     ByteBuffer buffer = ByteBuffer.allocate(33842);
     buffer.position(16384);
     buffer.limit(buffer.capacity());
@@ -116,7 +122,7 @@ public class BufferPoolTest {
 
 
   @Test
-  public void checkBufferSizeAfterAllocation() throws Exception {
+  public void checkBufferSizeAfterAllocation() {
     ByteBuffer buffer = bufferPool.acquireDirectReceiveBuffer(100);
 
     ByteBuffer newBuffer =
@@ -134,7 +140,7 @@ public class BufferPoolTest {
   }
 
   @Test
-  public void checkBufferSizeAfterAcquire() throws Exception {
+  public void checkBufferSizeAfterAcquire() {
     ByteBuffer buffer = bufferPool.acquireDirectReceiveBuffer(100);
 
     ByteBuffer newBuffer =
@@ -173,6 +179,41 @@ public class BufferPoolTest {
     assertThat(buffer.limit()).isEqualTo(1000);
     assertThat(newBuffer.position()).isEqualTo(0);
     assertThat(newBuffer.limit()).isEqualTo(15000);
+  }
+
+  @Test
+  public void verifyDirectBuffersUsedByDefault() {
+    System.clearProperty("p2p.nodirectBuffers");
+    System.clearProperty(GeodeGlossary.GEMFIRE_PREFIX + "BufferPool.useHeapBuffers");
+    assertThat(BufferPool.computeUseDirectBuffers()).isTrue();
+  }
+
+  @Test
+  public void verifyDirectBuffersUsedIfBothPropsFalse() {
+    System.setProperty("p2p.nodirectBuffers", "false");
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "BufferPool.useHeapBuffers", "false");
+    assertThat(BufferPool.computeUseDirectBuffers()).isTrue();
+  }
+
+  @Test
+  public void verifyDirectBuffersUnusedIfnodirectBuffersTrue() {
+    System.setProperty("p2p.nodirectBuffers", "true");
+    System.clearProperty(GeodeGlossary.GEMFIRE_PREFIX + "BufferPool.useHeapBuffers");
+    assertThat(BufferPool.computeUseDirectBuffers()).isFalse();
+  }
+
+  @Test
+  public void verifyDirectBuffersUnusedIfuseHeapBuffersTrue() {
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "BufferPool.useHeapBuffers", "true");
+    System.clearProperty("p2p.nodirectBuffers");
+    assertThat(BufferPool.computeUseDirectBuffers()).isFalse();
+  }
+
+  @Test
+  public void verifyDirectBuffersUnusedIfBothPropsTrue() {
+    System.setProperty("p2p.nodirectBuffers", "true");
+    System.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "BufferPool.useHeapBuffers", "true");
+    assertThat(BufferPool.computeUseDirectBuffers()).isFalse();
   }
 
 }
