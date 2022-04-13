@@ -82,10 +82,7 @@ public class BufferPool {
     if (Boolean.getBoolean("p2p.nodirectBuffers")) {
       return false;
     }
-    if (Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "BufferPool.useHeapBuffers")) {
-      return false;
-    }
-    return true;
+    return !Boolean.getBoolean(GeodeGlossary.GEMFIRE_PREFIX + "BufferPool.useHeapBuffers");
   }
 
   /**
