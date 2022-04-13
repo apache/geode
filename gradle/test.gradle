@@ -1,5 +1,4 @@
 import org.apache.geode.gradle.TestPropertiesWriter
-import org.apache.geode.gradle.testing.repeat.RepeatTest
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -95,6 +94,8 @@ if (project.hasProperty("forceTest")) {
   }
 }
 
+apply plugin: 'org.apache.geode.gradle.geode-repeat-test'
+
 task repeatDistributedTest(type: RepeatTest) {
   dependsOn { distributedTest.taskDependencies }
   classpath = project.sourceSets.distributedTest.runtimeClasspath
@@ -125,7 +126,8 @@ task repeatUnitTest(type: RepeatTest) {
 }
 
 configure([test, integrationTest, distributedTest, performanceTest, acceptanceTest, uiTest, upgradeTest,
-           repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repeatUnitTest, repeatAcceptanceTest]) {
+           repeatDistributedTest, repeatIntegrationTest, repeatUpgradeTest, repeatUnitTest, repeatAcceptanceTest
+]) {
   useJUnitPlatform()
 }
 

@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+plugins {
+  id 'org.apache.geode.gradle.geode-repeat-test'
+}
+
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${rootDir}/${scriptDir}/warnings.gradle"
 
@@ -605,4 +609,12 @@ acceptanceTest {
   if (!Os.isFamily(Os.FAMILY_WINDOWS)) {
     dependsOn(tasks.docker)
   }
+}
+
+import org.apache.geode.gradle.testing.repeat.RepeatTest
+
+tasks.register('repeatDistributedTest', RepeatTest) {
+  dependsOn { distributedTest.taskDependencies }
+  classpath = project.sourceSets.distributedTest.runtimeClasspath
+  testClassesDirs = project.sourceSets.distributedTest.output.classesDirs
 }

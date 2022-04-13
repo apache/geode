@@ -35,6 +35,7 @@ plugins {
 
   id 'org.apache.geode.gradle.geode-dependency-constraints' apply false
   id 'org.apache.geode.gradle.geode-japicmp' apply false
+  id 'org.apache.geode.gradle.geode-repeat-test' apply false
 }
 
 

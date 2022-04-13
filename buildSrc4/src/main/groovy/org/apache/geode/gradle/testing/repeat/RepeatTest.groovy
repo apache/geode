@@ -21,40 +21,51 @@ import org.gradle.api.internal.tasks.testing.JvmTestExecutionSpec
 import org.gradle.api.internal.tasks.testing.TestExecuter
 import org.gradle.api.internal.tasks.testing.filter.DefaultTestFilter
 import org.gradle.api.tasks.testing.Test
+import org.gradle.api.tasks.Input
 import org.gradle.internal.time.Clock
 import org.gradle.internal.work.WorkerLeaseRegistry
 
-class RepeatTest extends Test {
-    int times = 1
+public class RepeatTest extends Test {
 
-    /**
-     * Submit each test class for processing multiple times.
-     */
-    @Override
-    FileTree getCandidateClassFiles() {
-        FileTree candidates = super.getCandidateClassFiles()
-        int additionalRuns = times - 1
-        for (int i = 0; i < additionalRuns; i++) {
-            candidates = candidates.plus(super.getCandidateClassFiles())
-        }
+  @Input
+  private int times
 
-        return candidates
+  /**
+   * Submit each test class for processing multiple times.
+   */
+  @Override
+  public FileTree getCandidateClassFiles() {
+    FileTree candidates = super.getCandidateClassFiles()
+    int additionalRuns = times - 1
+    for (int i = 0; i < additionalRuns; i++) {
+      candidates = candidates.plus(super.getCandidateClassFiles())
     }
 
-    /**
-     * Use a custom {@link TestExecuter} that processes each test class as many times as submitted.
-     */
-    @Override
-    protected TestExecuter<JvmTestExecutionSpec> createTestExecuter() {
-        return new RepeatTestExecuter(
-                super.createTestExecuter().workerFactory,
-                getActorFactory(),
-                getModuleRegistry(),
-                getServices().get(WorkerLeaseRegistry.class),
-                getServices().get(StartParameter.class).getMaxWorkerCount(),
-                getServices().get(Clock.class),
-                getServices().get(DocumentationRegistry.class),
-                (DefaultTestFilter) getFilter(),
-                times)
-    }
+    return candidates
+  }
+
+  /**
+   * Use a custom {@link TestExecuter} that processes each test class as many times as submitted.
+   */
+  @Override
+  protected TestExecuter<JvmTestExecutionSpec> createTestExecuter() {
+    return new RepeatTestExecuter(
+            super.createTestExecuter().workerFactory,
+            getActorFactory(),
+            getModuleRegistry(),
+            getServices().get(WorkerLeaseRegistry.class),
+            getServices().get(StartParameter.class).getMaxWorkerCount(),
+            getServices().get(Clock.class),
+            getServices().get(DocumentationRegistry.class),
+            (DefaultTestFilter) getFilter(),
+            times)
+  }
+
+  int getTimes() {
+    return times
+  }
+
+  void setTimes(int times) {
+    this.times = times
+  }
 }

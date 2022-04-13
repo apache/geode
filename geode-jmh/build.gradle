@@ -15,8 +15,12 @@
  * limitations under the License.
  */
 
-apply plugin: 'java-library'
 
+plugins {
+  id 'org.apache.geode.gradle.geode-repeat-test'
+}
+
+apply plugin: 'java-library'
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 apply from: "${project.projectDir}/../gradle/publish-java.gradle"
