@@ -1511,6 +1511,7 @@ public class DiskStoreImpl implements DiskStore {
 
   @Override
   public void flush() {
+    logger.info("JC debug: DiskStoreImpl.flush() asyncQueue.size(): {}", getAsyncQueue().size());
     forceFlush();
   }
 
@@ -1719,6 +1720,7 @@ public class DiskStoreImpl implements DiskStore {
       try {
         while (waitUntilFlushIsReady()) {
           int drainCount = diskStore.fillDrainList();
+          logger.info("JC debug: FlusherThread.doAsyncFlush() drainCount: {}", drainCount);
           if (drainCount > 0) {
             Iterator<Object> it = diskStore.getDrainList().iterator();
             while (it.hasNext()) {
@@ -1734,6 +1736,9 @@ public class DiskStoreImpl implements DiskStore {
                 ((FlushNotifier) o).doFlush();
               } else {
                 try {
+                  logger.info(
+                      "JC debug: disk store {} FlusherThread.doAsyncFlush() AsyncDiskEntry: {}",
+                      diskStore.getName(), o);
                   AsyncDiskEntry ade = (AsyncDiskEntry) o;
                   InternalRegion region = ade.region;
                   VersionTag tag = ade.tag;
@@ -3472,11 +3477,9 @@ public class DiskStoreImpl implements DiskStore {
       StringBuilder sb = new StringBuilder();
       sb.append("dr=").append(region.getDiskRegion().getId());
       sb.append(" versionOnly=").append(versionOnly);
-      if (versionOnly) {
-        sb.append(" versionTag=").append(tag);
-      }
+      sb.append(" versionTag=").append(tag);
       if (de != null) {
-        sb.append(" key=").append(de.getKey());
+        sb.append(" key=").append(de.getKey()).append(" value=").append(de.getValue());
       } else {
         sb.append(" <END CLEAR>");
       }

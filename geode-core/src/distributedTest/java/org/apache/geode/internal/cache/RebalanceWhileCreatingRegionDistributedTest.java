@@ -31,6 +31,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -57,11 +58,12 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedBlackboard;
+import org.apache.geode.test.dunit.rules.DistributedExecutorServiceRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
+@Ignore
 public class RebalanceWhileCreatingRegionDistributedTest implements Serializable {
 
   public static final String DISK_STORE_NAME = "diskStore1";
@@ -79,7 +81,8 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
   @Rule
-  public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule(50);
+  public DistributedExecutorServiceRule distributedExecutorServiceRule =
+      new DistributedExecutorServiceRule(50, 5);
 
   private static final Logger logger = LogService.getLogger();
 
@@ -99,7 +102,7 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
     MemberVM server1 = cluster.startServerVM(1, locatorPort);
     MemberVM server2 = cluster.startServerVM(2, locatorPort);
     MemberVM server3 = cluster.startServerVM(3, locatorPort);
-    MemberVM server4 = cluster.startServerVM(3, locatorPort);
+    MemberVM server4 = cluster.startServerVM(4, locatorPort);
 
     String regionName = testName.getMethodName();
 
@@ -118,7 +121,7 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
     asyncInvocation2.get();
     asyncInvocation3.get();
     BackupStatus backupStatus = (BackupStatus) asyncInvocation4.get();
-    assertThat(backupStatus.getBackedUpDiskStores()).hasSize(4);
+    assertThat(backupStatus.getBackedUpDiskStores()).hasSize(5); // locator ???
     assertThat(backupStatus.getOfflineDiskStores()).isEmpty();
     validateBackupComplete();
 
@@ -132,7 +135,7 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
     cluster.startServerVM(1, locatorPort);
     cluster.startServerVM(2, locatorPort);
     cluster.startServerVM(3, locatorPort);
-    server4 = cluster.startServerVM(3, locatorPort);
+    server4 = cluster.startServerVM(4, locatorPort);
 
     server4.invoke(() -> {
       Region region = getCache().getRegion(regionName);
@@ -148,7 +151,7 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
   }
 
   private void doConcurrentEntryOperations() {
-    executorServiceRule.submit(() -> {
+    distributedExecutorServiceRule.submit(() -> {
       long threadId = Thread.currentThread().getId();
       int opId = (int) threadId % 2;
       switch (opId) {
@@ -558,8 +561,8 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
     diskStoreAttributes.queueSize = 20;
     DiskStoreFactory diskStoreFactory =
         getCache().createDiskStoreFactory(diskStoreAttributes);
-    diskStoreFactory.setDiskDirs(
-        new File[] {temporaryFolder.newFolder(DISK_STORE_NAME)});
+    // diskStoreFactory.setDiskDirs(
+    // new File[] {temporaryFolder.newFolder(DISK_STORE_NAME)});
     diskStoreFactory.create(DISK_STORE_NAME);
     PartitionAttributesFactory<Integer, Integer> partitionAttributesFactory =
         new PartitionAttributesFactory<>();

@@ -14,12 +14,16 @@
  */
 package org.apache.geode.internal.cache.backup;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.logging.internal.log4j.api.LogService;
 
 class FlushToDisk {
 
   private final InternalCache cache;
+  private static final Logger logger = LogService.getLogger();
 
   FlushToDisk(InternalCache cache) {
     this.cache = cache;
@@ -27,6 +31,7 @@ class FlushToDisk {
 
   void run() {
     if (cache != null) {
+      logger.info("JC debug: FlushToDisk.run()");
       cache.listDiskStoresIncludingRegionOwned().forEach(DiskStore::flush);
     }
   }
