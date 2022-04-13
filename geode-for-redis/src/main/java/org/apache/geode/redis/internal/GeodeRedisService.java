@@ -18,23 +18,26 @@ package org.apache.geode.redis.internal;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.ResourceEventsListener;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.logging.internal.log4j.api.LogService;
+import org.apache.geode.management.ManagementException;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 
 public class GeodeRedisService implements CacheService, ResourceEventsListener {
   private static final Logger logger = LogService.getLogger();
   private GeodeRedisServer redisServer;
   private InternalCache cache;
+  private SystemPropertyBasedRedisConfiguration configuration;
 
   @Override
   public boolean init(Cache cache) {
     this.cache = (InternalCache) cache;
-    if (!this.cache.getInternalDistributedSystem().getConfig().getRedisEnabled()) {
+    configuration = new SystemPropertyBasedRedisConfiguration(
+        ((InternalCache) cache).getInternalDistributedSystem().getConfig());
+    if (!configuration.isEnabled()) {
       return false;
     }
 
@@ -56,18 +59,12 @@ public class GeodeRedisService implements CacheService, ResourceEventsListener {
   }
 
   private void startRedisServer(InternalCache cache) {
-    InternalDistributedSystem system = cache.getInternalDistributedSystem();
-
-    if (system.getConfig().getRedisEnabled()) {
-      int port = system.getConfig().getRedisPort();
-      String bindAddress = system.getConfig().getRedisBindAddress();
-      assert bindAddress != null;
-
-      logger.info(
-          String.format("Starting GeodeRedisServer on bind address %s on port %s",
-              bindAddress, port));
-
-      redisServer = new GeodeRedisServer(bindAddress, port, cache);
+    if (configuration.isEnabled()) {
+      try {
+        redisServer = new GeodeRedisServer(configuration, cache);
+      } catch (IllegalArgumentException ex) {
+        throw new ManagementException(ex);
+      }
     }
   }
 
