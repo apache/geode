@@ -93,8 +93,9 @@ public class ModularJarDeploymentService implements JarDeploymentService {
         logger.debug("Deployment: {} is identical to existing deployment. Nothing to deploy",
             deployment.getId());
       }
-      return Success.of(deployment);
+      return Success.of(null);
     }
+
 
     // if no application is specified, assume the default
     String applicationName = deployment.getApplicationName() != null

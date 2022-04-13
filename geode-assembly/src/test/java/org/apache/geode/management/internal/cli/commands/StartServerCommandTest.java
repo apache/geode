@@ -37,7 +37,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
-import java.io.FilenameFilter;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -57,7 +57,6 @@ import org.junit.jupiter.api.condition.EnabledOnOs;
 
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.util.IOUtils;
 
 class StartServerCommandTest {
   // JVM options to use with every start command.
@@ -450,9 +449,11 @@ class StartServerCommandTest {
       ServerLauncher.Builder serverLauncherBuilder = new ServerLauncher.Builder();
       expectedStartCommandSequence.add("org.jboss.modules.Main");
       expectedStartCommandSequence.add("-mp");
+      Path geodeHomePath = Paths.get(geodeHome);
       expectedStartCommandSequence
-          .add(IOUtils.appendToPath(geodeHome, "moduleDescriptors") + File.pathSeparator +
-              Paths.get(geodeHome).resolve("../../test").resolve("deployments").normalize()
+          .add(geodeHomePath.resolve("moduleDescriptors").normalize().toAbsolutePath()
+              + File.pathSeparator +
+              geodeHomePath.resolve("../../test").resolve("deployments").normalize()
                   .toAbsolutePath());
       expectedStartCommandSequence.add("geode");
 
@@ -601,12 +602,9 @@ class StartServerCommandTest {
   }
 
   private String resolveJBossJarFile(String geodeHome) {
-    File[] files = Paths.get(geodeHome, "lib").toFile().listFiles(new FilenameFilter() {
-      @Override
-      public boolean accept(File dir, String name) {
-        return name.startsWith("jboss-modules-");
-      }
-    });
+    File[] files = Paths.get(geodeHome, "lib").toFile()
+        .listFiles((dir, name) -> name.startsWith("jboss-modules-"));
+    assertThat(files).isNotNull();
     assertThat(files.length).isEqualTo(1);
     return files[0].toPath().toString();
   }
