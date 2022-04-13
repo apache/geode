@@ -23,6 +23,9 @@ import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 
+/**
+ * In-memory file manager used by an {@link InMemoryJavaCompiler}.
+ */
 public class InMemoryFileManager extends ForwardingJavaFileManager<JavaFileManager> {
   List<InMemoryClassFile> compiledClassFiles = new ArrayList<>();
 
