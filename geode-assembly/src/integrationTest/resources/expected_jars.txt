@@ -70,6 +70,7 @@ lucene-core
 lucene-queries
 lucene-queryparser
 mapstruct
+micrometer-commons
 micrometer-core
 mx4j
 mx4j-remote
