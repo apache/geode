@@ -19,6 +19,7 @@ import org.gradle.util.GradleVersion
 
 pluginManagement {
   includeBuild("buildSrc2")
+  includeBuild("buildSrc3")
 }
 
 rootProject.name = 'geode'

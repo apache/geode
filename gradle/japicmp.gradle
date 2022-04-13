@@ -19,11 +19,7 @@ import japicmp.model.JApiChangeStatus
 import org.apache.maven.artifact.versioning.ComparableVersion
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 
-import org.apache.geode.gradle.japicmp.AllowMajorBreakingChanges
-import org.apache.geode.gradle.japicmp.ParentIsExperimental
-import org.apache.geode.gradle.japicmp.GeodeApiRegressionRule
-import org.apache.geode.gradle.japicmp.GeodeSpiRegressionRule
-
+apply plugin: 'org.apache.geode.gradle.geode-japicmp'
 
 def mostRecentReleaseProj = project(':geode-old-versions').subprojects.max(){ v -> new ComparableVersion(v.name)}
 def newest = mostRecentReleaseProj.name
@@ -83,12 +79,12 @@ tasks.register('japicmp', me.champeau.gradle.japicmp.JapicmpTask) {
     }
 
     if (allowMajorBreaking) {
-      addRule(AllowMajorBreakingChanges)
+      addRule(AllowMajorBreakingChanges.get())
     } else {
-      addRule(JApiChangeStatus.REMOVED, ParentIsExperimental)
-      addRule(JApiChangeStatus.MODIFIED, ParentIsExperimental)
-      addRule(GeodeApiRegressionRule)
-      addRule(GeodeSpiRegressionRule)
+      addRule(JApiChangeStatus.REMOVED, ParentIsExperimental.get())
+      addRule(JApiChangeStatus.MODIFIED, ParentIsExperimental.get())
+      addRule(GeodeApiRegressionRule.get())
+      addRule(GeodeSpiRegressionRule.get())
     }
     addDefaultRules = true
   }

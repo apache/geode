@@ -34,6 +34,7 @@ plugins {
   id "de.undercouch.download" version "5.0.1" apply false
 
   id 'org.apache.geode.gradle.geode-dependency-constraints' apply false
+  id 'org.apache.geode.gradle.geode-japicmp' apply false
 }
 
 
