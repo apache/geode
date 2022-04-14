@@ -24,16 +24,13 @@ import java.util.Map;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
 
 
 public class ObjectTraverser {
-  @MakeNotStatic
-  private static final Map<Class<?>, Field[]> FIELD_CACHE =
+  private final Map<Class<?>, Field[]> FIELD_CACHE =
       new CopyOnWriteWeakHashMap<>();
-  @MakeNotStatic
-  private static final Map<Class<?>, Field[]> STATIC_FIELD_CACHE =
+  private final Map<Class<?>, Field[]> STATIC_FIELD_CACHE =
       new CopyOnWriteWeakHashMap<>();
   @Immutable
   private static final Field[] NON_PRIMITIVE_ARRAY = new Field[0];
@@ -49,7 +46,7 @@ public class ObjectTraverser {
    * @param includeStatics if true, then first time we see a new object type, all of its static
    *        fields will be visited.
    */
-  public static void breadthFirstSearch(Object root, Visitor visitor, boolean includeStatics)
+  public void breadthFirstSearch(Object root, Visitor visitor, boolean includeStatics)
       throws IllegalArgumentException, IllegalAccessException {
     VisitStack stack = new VisitStack(visitor, includeStatics);
 
@@ -61,7 +58,7 @@ public class ObjectTraverser {
 
   }
 
-  private static void doSearch(Object root, VisitStack stack)
+  private void doSearch(Object root, VisitStack stack)
       throws IllegalArgumentException, IllegalAccessException {
     Class<?> clazz = root.getClass();
     boolean includeStatics = stack.shouldIncludeStatics(clazz);
@@ -89,7 +86,7 @@ public class ObjectTraverser {
     }
   }
 
-  private static Field[] getNonPrimitiveFields(Class<?> clazz, boolean includeStatics) {
+  private Field[] getNonPrimitiveFields(Class<?> clazz, boolean includeStatics) {
     Field[] result = FIELD_CACHE.get(clazz);
     if (result == null) {
       cacheFields(clazz, includeStatics);
@@ -98,7 +95,7 @@ public class ObjectTraverser {
     return result;
   }
 
-  private static Field[] getStaticFields(Class<?> clazz) {
+  private Field[] getStaticFields(Class<?> clazz) {
     Field[] result = STATIC_FIELD_CACHE.get(clazz);
     if (result == null) {
       cacheFields(clazz, true);
@@ -107,7 +104,7 @@ public class ObjectTraverser {
     return result;
   }
 
-  private static void cacheFields(final Class<?> clazz, boolean includeStatics) {
+  private void cacheFields(final Class<?> clazz, boolean includeStatics) {
     if (clazz != null && clazz.isArray()) {
       Class<?> componentType = clazz.getComponentType();
       if (componentType.isPrimitive()) {
@@ -148,6 +145,10 @@ public class ObjectTraverser {
     if (includeStatics) {
       STATIC_FIELD_CACHE.put(clazz, staticFields.toArray(new Field[0]));
     }
+  }
+
+  Map<Class<?>, Field[]> getStaticFieldCache() {
+    return STATIC_FIELD_CACHE;
   }
 
   public interface Visitor {
@@ -205,6 +206,4 @@ public class ObjectTraverser {
       return !keyExists;
     }
   }
-
-  private ObjectTraverser() {}
 }
