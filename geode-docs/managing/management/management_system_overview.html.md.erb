@@ -38,11 +38,11 @@ Each member of a cluster is a managed node. Any node that is not currently also 
 
 ## <a id="concept_1BAE2CE1146B4347ABD61F50B9F9781F__section_8604838507194C8B86F1420FBA46894C" class="no-quick-link"></a>JMX Manager Node
 
-A JMX Manager node is a member that can manage other <%=vars.product_name%> members-- that is, other managed nodes -- as well as itself. A JMX Manager node can manage all other members in the cluster.
+A JMX Manager node is a member that can manage other <%=vars.product_name%> members---that is, other managed nodes---as well as itself. A JMX Manager node can manage all other members in the cluster.
 
 To convert a managed node to a JMX Manager node, you configure the <%=vars.product_name%> property `jmx-manager=true`, in the `gemfire.properties` file, and start the member as a JMX Manager node.
 
-You start the member as a JMX Manager node when you provide`                     --J=-Dgemfire.jmx-manager=true` as an argument to either the`                     start server` or `start locator` command. See [Starting a JMX Manager](jmx_manager_operations.html#topic_686158E9AFBD47518BE1B4BEB232C190) for more information.
+You start the member as a JMX Manager node when you provide `--J=-Dgemfire.jmx-manager=true` as an argument to either the `start server` or `start locator` command. See [Starting a JMX Manager](jmx_manager_operations.html#topic_686158E9AFBD47518BE1B4BEB232C190) for more information.
 
 The JMX Manager node has the following extra resources allocated so that it can answer JMX queries:
 
