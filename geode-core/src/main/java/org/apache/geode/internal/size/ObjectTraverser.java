@@ -30,13 +30,15 @@ import org.apache.geode.internal.util.concurrent.CopyOnWriteWeakHashMap;
 
 public class ObjectTraverser {
   @MakeNotStatic
-  private static final Map<Class, FieldSet> FIELD_CACHE =
+  private static final Map<Class<?>, Field[]> FIELD_CACHE =
       new CopyOnWriteWeakHashMap<>();
   @MakeNotStatic
-  private static final Map<Class, FieldSet> STATIC_FIELD_CACHE =
+  private static final Map<Class<?>, Field[]> STATIC_FIELD_CACHE =
       new CopyOnWriteWeakHashMap<>();
   @Immutable
-  private static final FieldSet NON_PRIMATIVE_ARRAY = new FieldSet(null, null);
+  private static final Field[] NON_PRIMITIVE_ARRAY = new Field[0];
+  @Immutable
+  private static final Field[] PRIMITIVE_ARRAY = new Field[0];
 
   /**
    * Visit all objects reachable from a given root object, using a breadth first search. Using this
@@ -44,8 +46,8 @@ public class ObjectTraverser {
    *
    * @param root object to traverse from
    * @param visitor a visitor to visit each node
-   * @param includeStatics if true, the first time we see a new object type, we will visit all of
-   *        the static fields.
+   * @param includeStatics if true, then first time we see a new object type, all of its static
+   *        fields will be visited.
    */
   public static void breadthFirstSearch(Object root, Visitor visitor, boolean includeStatics)
       throws IllegalArgumentException, IllegalAccessException {
@@ -61,15 +63,11 @@ public class ObjectTraverser {
 
   private static void doSearch(Object root, VisitStack stack)
       throws IllegalArgumentException, IllegalAccessException {
-    Class clazz = root.getClass();
+    Class<?> clazz = root.getClass();
     boolean includeStatics = stack.shouldIncludeStatics(clazz);
-    FieldSet set = getCachedFieldSet(clazz, includeStatics);
-    if (set == null) {
-      set = cacheFieldSet(clazz, includeStatics);
-    }
+    Field[] nonPrimitiveFields = getNonPrimitiveFields(clazz, includeStatics);
 
-    if (set == NON_PRIMATIVE_ARRAY) {
-      Class componentType = clazz.getComponentType();
+    if (nonPrimitiveFields == NON_PRIMITIVE_ARRAY) {
       int length = Array.getLength(root);
       for (int i = 0; i < length; i++) {
         Object value = Array.get(root, i);
@@ -79,52 +77,57 @@ public class ObjectTraverser {
     }
 
     if (includeStatics) {
-      for (Field field : set.getStaticFields()) {
+      for (Field field : getStaticFields(clazz)) {
         Object value = field.get(root);
         stack.add(root, value);
       }
     }
 
-    for (Field field : set.getNonPrimativeFields()) {
+    for (Field field : nonPrimitiveFields) {
       Object value = field.get(root);
       stack.add(root, value);
     }
   }
 
-  private static FieldSet getCachedFieldSet(Class clazz, boolean includeStatics) {
-    if (includeStatics) {
-      return STATIC_FIELD_CACHE.get(clazz);
+  private static Field[] getNonPrimitiveFields(Class<?> clazz, boolean includeStatics) {
+    Field[] result = FIELD_CACHE.get(clazz);
+    if (result == null) {
+      cacheFields(clazz, includeStatics);
+      result = FIELD_CACHE.get(clazz);
     }
-    return FIELD_CACHE.get(clazz);
+    return result;
   }
 
-  private static FieldSet cacheFieldSet(Class clazz, boolean includeStatics) {
-    FieldSet set = buildFieldSet(clazz, includeStatics);
-    if (includeStatics) {
-      STATIC_FIELD_CACHE.put(clazz, set);
-    } else {
-      FIELD_CACHE.put(clazz, set);
+  private static Field[] getStaticFields(Class<?> clazz) {
+    Field[] result = STATIC_FIELD_CACHE.get(clazz);
+    if (result == null) {
+      cacheFields(clazz, true);
+      result = STATIC_FIELD_CACHE.get(clazz);
     }
-    return set;
+    return result;
   }
 
-  private static FieldSet buildFieldSet(Class clazz, boolean includeStatics) {
-    ArrayList<Field> staticFields = new ArrayList<>();
-    ArrayList<Field> nonPrimativeFields = new ArrayList<>();
-
-    while (clazz != null) {
-      if (clazz.isArray()) {
-        Class componentType = clazz.getComponentType();
-        if (!componentType.isPrimitive()) {
-          return NON_PRIMATIVE_ARRAY;
-        } else {
-          return new FieldSet(new Field[0], new Field[0]);
-        }
+  private static void cacheFields(final Class<?> clazz, boolean includeStatics) {
+    if (clazz != null && clazz.isArray()) {
+      Class<?> componentType = clazz.getComponentType();
+      if (componentType.isPrimitive()) {
+        FIELD_CACHE.put(clazz, PRIMITIVE_ARRAY);
+        STATIC_FIELD_CACHE.put(clazz, PRIMITIVE_ARRAY);
+      } else {
+        FIELD_CACHE.put(clazz, NON_PRIMITIVE_ARRAY);
+        STATIC_FIELD_CACHE.put(clazz, NON_PRIMITIVE_ARRAY);
       }
+      return;
+    }
 
-      Field[] fields = clazz.getDeclaredFields();
+    ArrayList<Field> staticFields = new ArrayList<>();
+    ArrayList<Field> nonPrimitiveFields = new ArrayList<>();
+
+    Class<?> currentClass = clazz;
+    while (currentClass != null) {
+      Field[] fields = currentClass.getDeclaredFields();
       for (Field field : fields) {
-        Class fieldType = field.getType();
+        Class<?> fieldType = field.getType();
         if (!fieldType.isPrimitive()) {
           if (Modifier.isStatic(field.getModifiers())) {
             if (includeStatics) {
@@ -133,16 +136,18 @@ public class ObjectTraverser {
             }
           } else {
             field.setAccessible(true);
-            nonPrimativeFields.add(field);
+            nonPrimitiveFields.add(field);
           }
         }
       }
 
-      clazz = clazz.getSuperclass();
+      currentClass = currentClass.getSuperclass();
     }
 
-    return new FieldSet(staticFields.toArray(new Field[0]),
-        nonPrimativeFields.toArray(new Field[0]));
+    FIELD_CACHE.put(clazz, nonPrimitiveFields.toArray(new Field[0]));
+    if (includeStatics) {
+      STATIC_FIELD_CACHE.put(clazz, staticFields.toArray(new Field[0]));
+    }
   }
 
   public interface Visitor {
@@ -159,8 +164,8 @@ public class ObjectTraverser {
 
 
   private static class VisitStack {
-    private final ReferenceOpenHashSet seen = new ReferenceOpenHashSet();
-    private final LinkedList stack = new LinkedList();
+    private final ReferenceOpenHashSet<Object> seen = new ReferenceOpenHashSet<>();
+    private final LinkedList<Object> stack = new LinkedList<>();
     private final Visitor visitor;
     private final boolean includeStatics;
 
@@ -191,7 +196,7 @@ public class ObjectTraverser {
       return stack.isEmpty();
     }
 
-    public boolean shouldIncludeStatics(Class clazz) {
+    public boolean shouldIncludeStatics(Class<?> clazz) {
       if (!includeStatics) {
         return false;
       }
@@ -201,27 +206,5 @@ public class ObjectTraverser {
     }
   }
 
-  private ObjectTraverser() {
-
-  }
-
-  private static class FieldSet {
-    private final Field[] staticFields;
-    private final Field[] nonPrimativeFields;
-
-    public FieldSet(Field[] staticFields, Field[] nonPrimativeFields) {
-      this.staticFields = staticFields;
-      this.nonPrimativeFields = nonPrimativeFields;
-    }
-
-    public Field[] getStaticFields() {
-      return staticFields;
-    }
-
-    public Field[] getNonPrimativeFields() {
-      return nonPrimativeFields;
-    }
-
-
-  }
+  private ObjectTraverser() {}
 }
