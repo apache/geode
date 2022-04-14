@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-evaluationDependsOn(':geode-core')
 
 plugins {
   id 'standard-subproject-configuration'
@@ -23,6 +22,8 @@ plugins {
   id 'geode-publish-war'
   id 'warnings'
 }
+
+evaluationDependsOn(':geode-core')
 
 jar.enabled = true
 

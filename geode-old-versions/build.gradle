@@ -24,9 +24,7 @@ plugins {
 project.ext.installs = new Properties()
 
 subprojects {
-  plugins {
-    id 'base'
-  }
+  it.apply plugin: 'base'
 
   def oldGeodeVersion = project.name
 

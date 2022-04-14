@@ -34,7 +34,14 @@ plugins {
   id "de.undercouch.download" version "5.0.1" apply false
 
   id 'org.apache.geode.gradle.geode-dependency-constraints' apply false
-  id 'org.apache.geode.gradle.geode-japicmp' apply false
+
+//  id 'geode-japicmp' apply false
+
+
+
+  id 'geode-repeat-test' apply false
+
+
 
   id 'geode-publish-artifacts' apply false
   id 'geode-publish-common' apply false
@@ -42,7 +49,7 @@ plugins {
   id 'geode-publish-war' apply false
 //  id 'lint'
   id 'resolve-dependencies'
-//  id 'geode-sonar'
+  id 'geode-sonar'
 //  id 'geode-rat'
 }
 

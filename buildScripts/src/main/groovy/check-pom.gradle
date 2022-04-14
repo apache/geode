@@ -19,11 +19,13 @@ import java.nio.file.Paths
 
 def expectedPomFile = Paths.get(projectDir.toString(), 'src', 'test', 'resources', 'expected-pom.xml')
 
-task('checkPom') {
+tasks.register('checkPom') {
   // The XmlParser used below has a strange tendency to return lists of fields rather than the field
   // you actually want. Be careful with that, future developer.
   group 'verification'
-  dependsOn('generatePomFileForMavenPublication')
+  inputs.files {
+    tasks.named('generatePomFileForMavenPublication')
+  }
   description 'Checks the generated POM against an expected POM for dependency changes.' +
     '  Ignores versions of Apache Geode dependencies.'
 
@@ -78,7 +80,6 @@ task('checkPom') {
   }
 
   doLast {
-    if (tasks.getByName("generatePomFileForMavenPublication").enabled) {
       if (null == expectedPomFile) {
         throw new RuntimeException("expected-pom.xml not found.")
       }
@@ -131,17 +132,17 @@ Alternatively, run './gradlew ${project.path}:updateExpectedPom' to replace the 
 """
         thisOutput.write(message)
         throw new RuntimeException(message)
-      }
     }
   }
 }
 check.dependsOn('checkPom')
 
-task updateExpectedPom(dependsOn: generatePomFileForMavenPublication, type: Copy) {
+tasks.register('updateExpectedPom', Copy) {
+  dependsOn tasks.named('generatePomFileForMavenPublication')
   description 'After having verified changes with checkPom, this task will perform the copy.'
 
   def expectedPomDir = expectedPomFile.parent
-  def actualPomFile = generatePomFileForMavenPublication.outputs.files.first()
+  def actualPomFile = tasks.named('generatePomFileForMavenPublication').get().outputs.files.first()
   inputs.files {
     [actualPomFile,
      expectedPomFile]
@@ -149,7 +150,7 @@ task updateExpectedPom(dependsOn: generatePomFileForMavenPublication, type: Copy
   outputs.files {
     expectedPomFile
   }
-  if (tasks.getByName("generatePomFileForMavenPublication").enabled) {
+  if (tasks.named("generatePomFileForMavenPublication").get().enabled) {
     from actualPomFile
     into expectedPomDir
     rename '.*.xml', "expected-pom.xml"

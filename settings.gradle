@@ -19,8 +19,17 @@ import org.gradle.util.GradleVersion
 
 pluginManagement {
   includeBuild("buildSrc2")
-  includeBuild("buildSrc3")
+  includeBuild("buildSrc3") {
+    dependencySubstitution {
+      substitute module('org.apache.geode.gradle:geode-japicmp') using project(':')
+    }
+  }
   includeBuild('buildScripts')
+  includeBuild("buildSrc4") {
+    dependencySubstitution {
+      substitute module('org.apache.geode.gradle:geode-repeat-test') using project(':')
+    }
+  }
 }
 
 rootProject.name = 'geode'

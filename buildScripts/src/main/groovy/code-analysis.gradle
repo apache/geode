@@ -17,7 +17,7 @@
 
 plugins {
   id 'checkstyle'
-  id 'findbugs'
+//  id 'com.github.spotbugs'
   id 'jacoco'
 }
 
@@ -30,32 +30,32 @@ if (project.hasProperty("staticAnalysis")) {
     }
   }
 
-  //Findbugs configuration
-
-  // Switch default Findbugs report to HTML for developers
-  def findbugsXmlEnabled = false
-  def findbugsHtmlEnabled = true
-
-  // Provide ability to change report type to XML for ingesting into other ap
-  if (project.hasProperty("findbugsXmlReport")) {
-    findbugsXmlEnabled = true
-    findbugsHtmlEnabled = false
-  }
-
-  configurations.findbugs {
-    dependencies.all { dep ->
-      dep.transitive = true
-    }
-    findbugs.effort = 'max'
-    findbugs.reportLevel = 'low'
-  }
-
-  tasks.withType(FindBugs) {
-    reports {
-      xml.enabled = findbugsXmlEnabled
-      html.enabled = findbugsHtmlEnabled
-    }
-  }
+//  //Findbugs configuration
+//
+//  // Switch default Findbugs report to HTML for developers
+//  def findbugsXmlEnabled = false
+//  def findbugsHtmlEnabled = true
+//
+//  // Provide ability to change report type to XML for ingesting into other ap
+//  if (project.hasProperty("findbugsXmlReport")) {
+//    findbugsXmlEnabled = true
+//    findbugsHtmlEnabled = false
+//  }
+//
+//  configurations.findbugs {
+//    dependencies.all { dep ->
+//      dep.transitive = true
+//    }
+//    findbugs.effort = 'max'
+//    findbugs.reportLevel = 'low'
+//  }
+//
+//  tasks.withType(FindBugs) {
+//    reports {
+//      xml.enabled = findbugsXmlEnabled
+//      html.enabled = findbugsHtmlEnabled
+//    }
+//  }
 }
 
 // JaCoCo configuration

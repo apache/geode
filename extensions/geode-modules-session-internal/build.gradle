@@ -15,8 +15,7 @@
  * limitations under the License.
  */
 
-plugins {2y
-
+plugins {
   id 'standard-subproject-configuration'
 }
 

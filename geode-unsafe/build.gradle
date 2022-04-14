@@ -19,7 +19,7 @@ plugins {
   id 'java-library' ; // TODO
   id 'standard-subproject-configuration'
   id 'geode-publish-java'
-  id 'japicmp'
+  //  id 'japicmp'
 }
 
 dependencies {

@@ -3,6 +3,7 @@ plugins {
 }
 
 repositories {
+  mavenLocal()
   mavenCentral()
   gradlePluginPortal()
 }
@@ -12,4 +13,6 @@ dependencies {
   implementation('com.github.ben-manes:gradle-versions-plugin:0.42.0')
   implementation("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:3.3")
 
+  implementation('org.apache.geode.gradle:geode-repeat-test:1.0')
+  implementation('org.apache.geode.gradle:geode-japicmp:1.0')
 }

@@ -18,6 +18,7 @@
 plugins {
   id 'geode-publish-common'
   id 'geode-publish-artifacts'
+  id 'check-pom'
 }
 
 publishing {

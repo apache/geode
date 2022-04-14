@@ -19,7 +19,8 @@ plugins {
   id 'java-library'
   id 'standard-subproject-configuration'
   id 'geode-publish-java'
-  id 'japicmp'
+  id 'geode-japicmp'
+  //  id 'japicmp'
 }
 
 configurations {

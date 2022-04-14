@@ -18,7 +18,6 @@
 plugins {
   id 'maven-publish'
   id 'signing'
-  id 'check-pom'
 }
 
 // The published bom will constrain versions within geode of any subproject with this property set.
