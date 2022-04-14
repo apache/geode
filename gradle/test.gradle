@@ -253,6 +253,9 @@ gradle.taskGraph.whenReady({ graph ->
         if(testJVMVer.toInteger() >= 17) {
           jvmArgs += "--add-exports=java.base/jdk.internal.util.random=ALL-UNNAMED"
         }
+        if(testJVMVer.toInteger() < 17) {
+          jvmArgs += "--illegal-access=warn"
+        }
       }
       if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
         executable = "${testJVM}/bin/java"
