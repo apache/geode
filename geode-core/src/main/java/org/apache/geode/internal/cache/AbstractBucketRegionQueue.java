@@ -18,6 +18,7 @@ import static org.apache.geode.internal.cache.wan.parallel.ParallelQueueSetPossi
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -232,7 +233,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
       if (tempQueue != null && !tempQueue.isEmpty()) {
         synchronized (tempQueue) {
           Map<String, Map<Integer, List<Object>>> regionToDuplicateEventsMap =
-              new ConcurrentHashMap<>();
+              new HashMap<>();
           try {
             // ParallelQueueRemovalMessage checks for the key in BucketRegionQueue
             // and if not found there, it removes it from tempQueue. When tempQueue
@@ -313,7 +314,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
   private void addDuplicateEvent(Map<String, Map<Integer, List<Object>>> regionToDuplicateEventsMap,
       GatewaySenderEventImpl event) {
     Map<Integer, List<Object>> bucketIdToDispatchedKeys = regionToDuplicateEventsMap
-        .computeIfAbsent(getPartitionedRegion().getFullPath(), k -> new ConcurrentHashMap<>());
+        .computeIfAbsent(getPartitionedRegion().getFullPath(), k -> new HashMap<>());
 
     List<Object> dispatchedKeys =
         bucketIdToDispatchedKeys.computeIfAbsent(getId(), k -> new ArrayList<>());
