@@ -3474,11 +3474,13 @@ public class DiskStoreImpl implements DiskStore {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append("dr=").append(region.getDiskRegion().getId());
+      StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+      sb.append('@').append(Integer.toHexString(System.identityHashCode(this)));
+      sb.append(" dr=").append(region.getDiskRegion().getId());
       sb.append(" versionOnly=").append(versionOnly);
       sb.append(" versionTag=").append(tag);
       if (de != null) {
+        sb.append(" de=").append(de.getClass().getSimpleName()).append('@').append(Integer.toHexString(System.identityHashCode(de)));
         sb.append(" key=").append(de.getKey()).append(" value=").append(de.getValue());
       } else {
         sb.append(" <END CLEAR>");
