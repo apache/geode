@@ -39,7 +39,7 @@ plugins {
 
 
 
-  id 'geode-repeat-test' apply false
+  id 'geode-repeat-test'
 
 
 

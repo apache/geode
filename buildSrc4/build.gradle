@@ -17,6 +17,7 @@
  */
 
 plugins {
+  id 'java'
   id 'java-gradle-plugin'
   id 'groovy-gradle-plugin'
   id 'maven-publish'
@@ -32,17 +33,19 @@ dependencies {
   implementation(gradleApi())
   implementation('com.google.guava:guava:31.1-jre')
 
-  testImplementation('junit:junit:4.12')
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+test {
+  useJUnitPlatform()
 }
 
 group = 'org.apache.geode.gradle'
 version = 1.0
 gradlePlugin {
-  plugins {
-    geodeRepeatTest {
-      id = 'geode-repeat-test'
-      implementationClass = 'org.apache.geode.gradle.testing.repeat.RepeatTestPlugin'
-    }
+  plugins.register('geodeRepeatTest') {
+    id = 'geode-repeat-test'
+    implementationClass = 'org.apache.geode.gradle.testing.repeat.RepeatTestPlugin'
   }
 }
-

@@ -1,0 +1,13 @@
+println("ROOT IS ${rootDir}")
+
+includeBuild("${rootDir}/../buildSrc2")
+includeBuild("${rootDir}/../buildSrc3") {
+  dependencySubstitution {
+    substitute module('org.apache.geode.gradle:geode-japicmp') using project(':')
+  }
+}
+includeBuild("${rootDir}/../buildSrc4") {
+  dependencySubstitution {
+    substitute module('org.apache.geode.gradle:geode-repeat-test') using project(':')
+  }
+}
