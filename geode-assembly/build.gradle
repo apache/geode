@@ -15,11 +15,15 @@
  * limitations under the License.
  */
 
-apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-apply from: "${rootDir}/${scriptDir}/warnings.gradle"
+plugins {
+  id 'standard-subproject-configuration'
+  id 'warnings'
+  id 'distribution'
+  id 'com.palantir.docker'
+  id 'geode-publish-common'
+}
 
 import org.apache.tools.ant.taskdefs.condition.Os
-
 import java.nio.file.Paths
 
 // This project aggressively reaches into many other projects and must wait for those configurations
@@ -30,10 +34,6 @@ rootProject.subprojects.each {neighborProject ->
     project.evaluationDependsOn(neighborProject.path)
   }
 }
-
-apply plugin: 'distribution'
-apply plugin: 'com.palantir.docker'
-apply from: "${rootDir}/${scriptDir}/publish-common.gradle"
 
 
 // This subproject's 'publication' is not a jar and should not be constrained to match versions

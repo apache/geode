@@ -1,5 +1,3 @@
-import org.apache.geode.gradle.TestPropertiesWriter
-import org.apache.geode.gradle.testing.repeat.RepeatTest
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -17,7 +15,12 @@ import org.apache.geode.gradle.testing.repeat.RepeatTest
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+plugins {
+  id 'nebula.facet'
+//  id 'org.apache.geode.gradle.testing.repeat.geode-repeat-test'
+  id 'geode-repeat-test'
+}
+//import org.apache.geode.gradle.testing.repeat.RepeatTest
 // This configuration might be safely removed once the CategoryWithParameterizedRunnerFactory
 // and associated classes are themselves removed, per GEODE-5606
 configurations {
@@ -40,7 +43,6 @@ test {
 }
 
 
-apply plugin: 'nebula.facet'
 facets {
   integrationTest {
     includeInCheckLifecycle = false

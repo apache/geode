@@ -15,16 +15,18 @@
  * limitations under the License.
  */
 
-plugins {2y
-
-  id 'standard-subproject-configuration'
+plugins {
+  id 'geode-publish-common'
+  id 'geode-publish-artifacts'
 }
 
-dependencies {
-  // main
-  implementation(platform(project(':boms:geode-all-bom')))
-  implementation(project(':extensions:geode-modules'))
-
-  compileOnly(platform(project(':boms:geode-all-bom')))
-  compileOnly('javax.servlet:javax.servlet-api')
+publishing {
+  publications {
+    maven(MavenPublication) {
+      from components.web
+      // use the (possibly empty) Jar tasks above for sources and javadoc
+      artifact sourcesJar
+      artifact javadocJar
+    }
+  }
 }

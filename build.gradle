@@ -35,13 +35,18 @@ plugins {
 
   id 'org.apache.geode.gradle.geode-dependency-constraints' apply false
   id 'org.apache.geode.gradle.geode-japicmp' apply false
+
+  id 'geode-publish-artifacts' apply false
+  id 'geode-publish-common' apply false
+  id 'geode-publish-java' apply false
+  id 'geode-publish-war' apply false
+//  id 'lint'
+  id 'resolve-dependencies'
+//  id 'geode-sonar'
+//  id 'geode-rat'
 }
 
 
-apply from: "${scriptDir}/lint.gradle"
-apply from: "${scriptDir}/resolve-dependencies.gradle"
-apply from: "${scriptDir}/sonar.gradle"
-apply from: "${scriptDir}/rat.gradle"
 
 wrapper {
   gradleVersion = minimumGradleVersion

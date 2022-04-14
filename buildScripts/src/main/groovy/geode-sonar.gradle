@@ -15,16 +15,19 @@
  * limitations under the License.
  */
 
-apply from: "${rootDir}/gradle/publish-common.gradle"
-apply from: "${rootDir}/gradle/publish-artifacts.gradle"
+plugins {
+  id 'org.sonarqube'
+}
 
-publishing {
-  publications {
-    maven(MavenPublication) {
-      from components.java
-      // use the (possibly empty) Jar tasks above for sources and javadoc
-      artifact sourcesJar
-      artifact javadocJar
-    }
+sonarqube {
+  properties {
+    property "sonar.host.url", "https://analysis.apache.org"
+    property "sonar.projectKey", "org.apache:geode"
+    property "sonar.sourceEncoding", "UTF-8"
+    property "sonar.jdbc.driverClassName", "com.mysql.jdbc.Driver"
+    property "sonar.scm.provider", "git"
+    property "sonar.projectName", "Apache Geode"
+    property "sonar.projectVersion", version
+    property "sonar.projectDescription", "Apache Geode"
   }
 }

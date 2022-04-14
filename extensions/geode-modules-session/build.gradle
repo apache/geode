@@ -17,7 +17,9 @@ import org.apache.geode.gradle.plugins.DependencyConstraints
  * limitations under the License.
  */
 
-apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+plugins {
+  id 'standard-subproject-configuration'
+}
 
 evaluationDependsOn(":geode-core")
 

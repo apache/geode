@@ -15,11 +15,13 @@
  * limitations under the License.
  */
 
-import japicmp.model.JApiChangeStatus
+plugins {
+  id 'geode-japicmp'
+}
+//import japicmp.model.JApiChangeStatus
 import org.apache.maven.artifact.versioning.ComparableVersion
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 
-apply plugin: 'org.apache.geode.gradle.geode-japicmp'
 
 def mostRecentReleaseProj = project(':geode-old-versions').subprojects.max(){ v -> new ComparableVersion(v.name)}
 def newest = mostRecentReleaseProj.name

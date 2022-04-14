@@ -15,12 +15,14 @@
  * limitations under the License.
  */
 
-apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-apply from: "${project.projectDir}/../gradle/warnings.gradle"
+plugins {
+  id 'standard-subproject-configuration'
+  id 'geode-publish-java'
+  id 'warnings'
+}
 
 evaluationDependsOn(":geode-core")
 
-apply from: "${project.projectDir}/../gradle/publish-java.gradle"
 
 configurations {
   //Configuration used to download mysql jar

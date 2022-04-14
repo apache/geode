@@ -15,9 +15,10 @@
  * limitations under the License.
  */
 
-apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
-apply plugin: 'war'
+plugins {
+  id 'standard-subproject-configuration'
+  id 'war'
+}
 
 
 

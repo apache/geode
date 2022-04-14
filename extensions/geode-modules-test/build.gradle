@@ -17,7 +17,9 @@
 
 import org.apache.geode.gradle.plugins.DependencyConstraints
 
-apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
+plugins {
+  id 'standard-subproject-configuration'
+}
 
 dependencies {
   // main

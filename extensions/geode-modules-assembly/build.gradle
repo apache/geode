@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 
+plugins {
+  id 'standard-subproject-configuration'
+  id 'maven-publish'
+}
 evaluationDependsOn(':extensions:geode-modules')
 evaluationDependsOn(':extensions:geode-modules-tomcat7')
 evaluationDependsOn(':extensions:geode-modules-tomcat8')
@@ -22,11 +26,9 @@ evaluationDependsOn(':extensions:geode-modules-tomcat9')
 evaluationDependsOn(':extensions:geode-modules-session')
 evaluationDependsOn(':extensions:geode-modules-session-internal')
 
-apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 import org.apache.geode.gradle.plugins.DependencyConstraints
 import org.apache.tools.ant.filters.ReplaceTokens
-apply plugin: 'maven-publish'
 
 configurations {
   slf4jDeps

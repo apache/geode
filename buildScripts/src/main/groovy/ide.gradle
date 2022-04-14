@@ -16,8 +16,10 @@
  */
 import org.gradle.plugins.ide.eclipse.model.Container
 
-apply plugin: 'idea'
-apply plugin: 'eclipse'
+plugins {
+  id 'idea'
+  id 'eclipse'
+}
 
 eclipse {
   classpath {

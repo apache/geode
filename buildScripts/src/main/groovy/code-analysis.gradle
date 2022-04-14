@@ -15,8 +15,13 @@
  * limitations under the License.
  */
 
+plugins {
+  id 'checkstyle'
+  id 'findbugs'
+  id 'jacoco'
+}
+
 if (project.hasProperty("staticAnalysis")) {
-  apply plugin: 'checkstyle'
 
   //Checkstyle configuration
   configurations.checkstyle {
@@ -26,7 +31,6 @@ if (project.hasProperty("staticAnalysis")) {
   }
 
   //Findbugs configuration
-  apply plugin: 'findbugs'
 
   // Switch default Findbugs report to HTML for developers
   def findbugsXmlEnabled = false
@@ -56,7 +60,6 @@ if (project.hasProperty("staticAnalysis")) {
 
 // JaCoCo configuration
 if (project.hasProperty("codeCoverage")) {
-  apply plugin: 'jacoco'
 
   task mergeIntegrationTestCoverage(type: JacocoMerge) {
     description 'Merges Distributed and Integration test coverage results'

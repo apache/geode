@@ -15,7 +15,10 @@
  * limitations under the License.
  */
 
-apply plugin: 'me.champeau.gradle.jmh'
+plugins {
+  id 'me.champeau.gradle.jmh'
+  id 'nebula.facet'
+}
 
 configurations {
   javaagent {
@@ -51,7 +54,6 @@ jmhJar {
   exclude('*.jar')
 }
 
-apply plugin: 'nebula.facet'
 facets {
   jmhTest {
     parentSourceSet = 'jmh'

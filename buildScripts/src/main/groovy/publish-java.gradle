@@ -15,15 +15,18 @@
  * limitations under the License.
  */
 
-allprojects {
-  apply plugin: 'nebula.lint'
-  gradleLint.rules = []
-  gradleLint.rules += 'overridden-dependency-version'
-  gradleLint.rules += 'unused-dependency'
-  gradleLint.rules += 'unused-exclude-by-dep'
-  gradleLint.rules += 'unused-exclude-by-conf'
+plugins {
+  id 'geode-publish-common'
+  id 'geode-publish-artifacts'
+}
 
-  gradleLint.alwaysRun = false
-  fixGradleLint.mustRunAfter(':combineReports')
-  lintGradle.mustRunAfter(':combineReports')
+publishing {
+  publications {
+    maven(MavenPublication) {
+      from components.java
+      // use the (possibly empty) Jar tasks above for sources and javadoc
+      artifact sourcesJar
+      artifact javadocJar
+    }
+  }
 }

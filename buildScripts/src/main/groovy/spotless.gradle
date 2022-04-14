@@ -15,6 +15,9 @@
  * limitations under the License.
  */
 
+plugins {
+  id 'com.diffplug.gradle.spotless'
+}
 
 // When a custom step changes, we need to bump the value passed to the method
 //   bumpThisNumberIfACustomStepChanges
@@ -29,7 +32,6 @@ logger.debug("Using partial md5 (${thisFileIntegerHash}) of file ${thisFile} as 
 project.ext.set("spotless-file-hash", thisFileIntegerHash)
 
 
-apply plugin: "com.diffplug.spotless"
 spotless {
   lineEndings = 'unix'
   java {

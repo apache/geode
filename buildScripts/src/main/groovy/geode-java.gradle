@@ -15,15 +15,11 @@
  * limitations under the License.
  */
 
-if (project.name.endsWith("geode-all-bom")) {
-  // This anti-pattern is a workaround -- java-platform must be applied before java or java-library
-  // to avoid conflicts over redefining certain configurations.
-  // Evaluation as to whether java-platform should be applied at all is left to GEODE-6611.
-  apply plugin: 'java-platform'
-}
-apply plugin: 'java-library'
+plugins {
+  id 'java-library'
+  id 'org.apache.geode.gradle.geode-dependency-constraints'
 
-apply plugin: 'org.apache.geode.gradle.geode-dependency-constraints'
+}
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8

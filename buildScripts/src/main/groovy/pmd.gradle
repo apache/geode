@@ -15,16 +15,21 @@
  * limitations under the License.
  */
 
-plugins {2y
-
-  id 'standard-subproject-configuration'
+plugins {
+  id 'pmd'
 }
 
+pmd {
+  sourceSets = []
+  ruleSetFiles = files("${project.projectDir}/../static-analysis/pmd-rules/src/main/resources/geodepmd.xml")
+  ruleSets = []
+  consoleOutput = true
+}
 dependencies {
-  // main
-  implementation(platform(project(':boms:geode-all-bom')))
-  implementation(project(':extensions:geode-modules'))
+  pmd  project(":static-analysis:pmd-rules")
+}
 
-  compileOnly(platform(project(':boms:geode-all-bom')))
-  compileOnly('javax.servlet:javax.servlet-api')
+pmdMain {
+  //Exclude generated OQL classes
+  exclude '**/org/apache/geode/cache/query/internal/parse/**'
 }

@@ -33,39 +33,42 @@
  *                       also applies this property to unit test tasks, with different defaults.)
  */
 
-import org.apache.geode.gradle.testing.Executers
-import org.apache.geode.gradle.testing.isolation.WorkingDirectoryIsolator
-
-def multiProcessTestTasks = [acceptanceTest, repeatAcceptanceTest,
-                             distributedTest, repeatDistributedTest,
-                             integrationTest, repeatIntegrationTest,
-                             upgradeTest, repeatUpgradeTest,
-                             uiTest, repeatUnitTest]
-
-if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
-  for (task in multiProcessTestTasks) {
-    task.environment "JAVA_HOME", "${project.testJVM}"
-  }
+//import Executers
+plugins {
+  id 'geode-isolated-test'
 }
 
-if (project.hasProperty('parallelDunit')) {
-  def parallelForks = project.hasProperty('testMaxParallelForks')
-    ? Integer.parseUnsignedInt(project.testMaxParallelForks)
-    : Runtime.runtime.availableProcessors().intdiv(4) ?: 1
-  for (task in multiProcessTestTasks) {
-    task.maxParallelForks = parallelForks
-    task.ext {
-      isolatedTest = true
-    }
-  }
-  apply plugin: 'geode-isolated-test'
-} else {
-  for (task in multiProcessTestTasks) {
-    if (project.hasProperty('testMaxParallelForks')) {
-      task.maxParallelForks = Integer.parseUnsignedInt(project.testMaxParallelForks)
-    }
-    task.doFirst {
-      testExecuter = Executers.withAdjustment(it, new WorkingDirectoryIsolator())
-    }
-  }
-}
+//import WorkingDirectoryIsolator
+//
+//def multiProcessTestTasks = [acceptanceTest, repeatAcceptanceTest,
+//                             distributedTest, repeatDistributedTest,
+//                             integrationTest, repeatIntegrationTest,
+//                             upgradeTest, repeatUpgradeTest,
+//                             uiTest, repeatUnitTest]
+//
+//if (project.hasProperty('testJVM') && !testJVM.trim().isEmpty()) {
+//  for (task in multiProcessTestTasks) {
+//    task.environment "JAVA_HOME", "${project.testJVM}"
+//  }
+//}
+//
+//if (project.hasProperty('parallelDunit')) {
+//  def parallelForks = project.hasProperty('testMaxParallelForks')
+//    ? Integer.parseUnsignedInt(project.testMaxParallelForks)
+//    : Runtime.runtime.availableProcessors().intdiv(4) ?: 1
+//  for (task in multiProcessTestTasks) {
+//    task.maxParallelForks = parallelForks
+//    task.ext {
+//      isolatedTest = true
+//    }
+//  }
+//} else {
+//  for (task in multiProcessTestTasks) {
+//    if (project.hasProperty('testMaxParallelForks')) {
+//      task.maxParallelForks = Integer.parseUnsignedInt(project.testMaxParallelForks)
+//    }
+//    task.doFirst {
+//      testExecuter = Executers.withAdjustment(it, new WorkingDirectoryIsolator())
+//    }
+//  }
+//}

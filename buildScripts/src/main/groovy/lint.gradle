@@ -15,16 +15,17 @@
  * limitations under the License.
  */
 
-apply from: "${rootDir}/gradle/publish-common.gradle"
-apply from: "${rootDir}/gradle/publish-artifacts.gradle"
-
-publishing {
-  publications {
-    maven(MavenPublication) {
-      from components.web
-      // use the (possibly empty) Jar tasks above for sources and javadoc
-      artifact sourcesJar
-      artifact javadocJar
-    }
+allprojects {
+  plugins {
+    id 'nebula.lint'
   }
+  gradleLint.rules = []
+  gradleLint.rules += 'overridden-dependency-version'
+  gradleLint.rules += 'unused-dependency'
+  gradleLint.rules += 'unused-exclude-by-dep'
+  gradleLint.rules += 'unused-exclude-by-conf'
+
+  gradleLint.alwaysRun = false
+  fixGradleLint.mustRunAfter(':combineReports')
+  lintGradle.mustRunAfter(':combineReports')
 }

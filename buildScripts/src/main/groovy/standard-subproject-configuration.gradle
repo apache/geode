@@ -14,18 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-apply plugin: 'pmd'
-pmd {
-  sourceSets = []
-  ruleSetFiles = files("${project.projectDir}/../static-analysis/pmd-rules/src/main/resources/geodepmd.xml")
-  ruleSets = []
-  consoleOutput = true
-}
-dependencies {
-  pmd  project(":static-analysis:pmd-rules")
+
+plugins {
+  id 'geode-java'
+  id 'dependency-resolution'
+  id 'geode-test'
+  id 'code-analysis'
+  id 'spotless'
+  id 'ide'
+  id "com.github.ben-manes.versions"
 }
 
-pmdMain {
-  //Exclude generated OQL classes
-  exclude '**/org/apache/geode/cache/query/internal/parse/**'
+// Within the configure block, 'project' refers to the task-owning project, in this case rootProject
+def thisProjectScoped = project
+
+['clean', 'assemble', 'check', 'test'].each { taskName ->
+  rootProject.tasks.named(taskName).configure {
+    dependsOn thisProjectScoped.tasks.named(taskName)
+  }
 }
+
+

@@ -13,16 +13,16 @@
  * the License.
  */
 
-apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
-apply plugin: 'war'
-
-apply from: "${project.projectDir}/../gradle/publish-war.gradle"
-apply from: "${project.projectDir}/../gradle/warnings.gradle"
+plugins {
+  id 'standard-subproject-configuration'
+  id 'war'
+  id 'geode-publish-war'
+  id 'warnings'
+  id 'nebula.facet'
+}
 
 jar.enabled = false
 
-apply plugin: 'nebula.facet'
 facets {
   commonTest {
     testTaskName = 'commonTest'

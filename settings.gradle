@@ -20,6 +20,7 @@ import org.gradle.util.GradleVersion
 pluginManagement {
   includeBuild("buildSrc2")
   includeBuild("buildSrc3")
+  includeBuild('buildScripts')
 }
 
 rootProject.name = 'geode'
@@ -107,3 +108,4 @@ buildCache {
     enabled = true
   }
 }
+

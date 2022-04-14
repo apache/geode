@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
-
-apply plugin: 'antlr'
-
-apply from: "${project.projectDir}/../gradle/publish-java.gradle"
-apply from: "${project.projectDir}/../gradle/pmd.gradle"
-apply from: "${project.projectDir}/../gradle/jmh.gradle"
-apply from: "${project.projectDir}/../gradle/javaVersions.gradle"
+plugins {
+  id 'standard-subproject-configuration'
+  id 'antlr'
+  id 'geode-publish-java'
+  id 'pmd'
+  id 'jmh'
+  id 'javaVersions'
+}
 
 sourceSets {
   jca {

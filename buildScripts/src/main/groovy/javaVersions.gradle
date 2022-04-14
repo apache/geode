@@ -15,9 +15,11 @@
  * limitations under the License.
  */
 
-import org.apache.tools.ant.taskdefs.condition.Os
+plugins {
+  id 'de.undercouch.download'
+}
 
-apply plugin: 'de.undercouch.download'
+import org.apache.tools.ant.taskdefs.condition.Os
 
 static def getPlatformInfo() {
   if (Os.isFamily(Os.FAMILY_MAC)) {
