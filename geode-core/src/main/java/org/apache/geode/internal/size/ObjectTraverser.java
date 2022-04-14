@@ -32,6 +32,9 @@ public class ObjectTraverser {
   @MakeNotStatic
   private static final Map<Class, FieldSet> FIELD_CACHE =
       new CopyOnWriteWeakHashMap<>();
+  @MakeNotStatic
+  private static final Map<Class, FieldSet> STATIC_FIELD_CACHE =
+      new CopyOnWriteWeakHashMap<>();
   @Immutable
   private static final FieldSet NON_PRIMATIVE_ARRAY = new FieldSet(null, null);
 
@@ -60,9 +63,9 @@ public class ObjectTraverser {
       throws IllegalArgumentException, IllegalAccessException {
     Class clazz = root.getClass();
     boolean includeStatics = stack.shouldIncludeStatics(clazz);
-    FieldSet set = FIELD_CACHE.get(clazz);
+    FieldSet set = getCachedFieldSet(clazz, includeStatics);
     if (set == null) {
-      set = cacheFieldSet(clazz);
+      set = cacheFieldSet(clazz, includeStatics);
     }
 
     if (set == NON_PRIMATIVE_ARRAY) {
@@ -88,13 +91,24 @@ public class ObjectTraverser {
     }
   }
 
-  private static FieldSet cacheFieldSet(Class clazz) {
-    FieldSet set = buildFieldSet(clazz);
-    FIELD_CACHE.put(clazz, set);
+  private static FieldSet getCachedFieldSet(Class clazz, boolean includeStatics) {
+    if (includeStatics) {
+      return STATIC_FIELD_CACHE.get(clazz);
+    }
+    return FIELD_CACHE.get(clazz);
+  }
+
+  private static FieldSet cacheFieldSet(Class clazz, boolean includeStatics) {
+    FieldSet set = buildFieldSet(clazz, includeStatics);
+    if (includeStatics) {
+      STATIC_FIELD_CACHE.put(clazz, set);
+    } else {
+      FIELD_CACHE.put(clazz, set);
+    }
     return set;
   }
 
-  private static FieldSet buildFieldSet(Class clazz) {
+  private static FieldSet buildFieldSet(Class clazz, boolean includeStatics) {
     ArrayList<Field> staticFields = new ArrayList<>();
     ArrayList<Field> nonPrimativeFields = new ArrayList<>();
 
@@ -111,12 +125,14 @@ public class ObjectTraverser {
       Field[] fields = clazz.getDeclaredFields();
       for (Field field : fields) {
         Class fieldType = field.getType();
-        // skip static fields if we've already counted them once
         if (!fieldType.isPrimitive()) {
-          field.setAccessible(true);
           if (Modifier.isStatic(field.getModifiers())) {
-            staticFields.add(field);
+            if (includeStatics) {
+              field.setAccessible(true);
+              staticFields.add(field);
+            }
           } else {
+            field.setAccessible(true);
             nonPrimativeFields.add(field);
           }
         }
