@@ -55,7 +55,7 @@ stop gateway-receiver [--groups=value(,value)*] [--members=value(,value)*]
 
 | Name                                            | Description                                                                                                       |
 |-------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members on which to stop the Gateway Receiver. Use a comma-separated list for multiple member groups. |
+| <span class="keyword parmname">&#8209;&#8209;groups</span>  | Group(s) of members on which to stop the Gateway Receiver. Use a comma-separated list for multiple member groups. |
 | <span class="keyword parmname">&#8209;&#8209;members </span> | Name/Id of the member(s) on which to stop the Gateway Receiver.                                                      |
 
 <span class="tablecap">Table 1. Stop Gateway-Receiver Parameters</span>
@@ -108,9 +108,9 @@ stop gateway-sender --id=value [--groups=value(,value)*] [--members=value(,value
 
 | Name                                            | Description                                                |
 |-------------------------------------------------|------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-id </span>    | *Required.* ID of the Gateway Sender.                      |
-| <span class="keyword parmname">\\-\\-groups</span>  | Group(s) of members on which to stop the Gateway Sender.   |
-| <span class="keyword parmname">\\-\\-members</span> | Name/Id of the member(s) on which to stop the Gateway Sender. |
+| <span class="keyword parmname">&#8209;&#8209;id </span>    | *Required.* ID of the Gateway Sender.                      |
+| <span class="keyword parmname">&#8209;&#8209;groups</span>  | Group(s) of members on which to stop the Gateway Sender.   |
+| <span class="keyword parmname">&#8209;&#8209;members</span> | Name/Id of the member(s) on which to stop the Gateway Sender. |
 
 <span class="tablecap">Table 2. Stop Gateway-Sender Parameters</span>
 
@@ -163,7 +163,7 @@ stop locator --name=value | --dir=value
 | Name                                         | Description                                                                                                                                                                                                                                                                                                                                                                                                                                     | Default Value     |
 |----------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------|
 | <span class="keyword parmname">&#8209;&#8209;name</span> | The <%=vars.product_name%> member name of the locator to stop. You must be connected to the JMX Manager to use this option. Can be used to stop remote locators. See [Using gfsh to Manage a Remote Cluster Over HTTP or HTTPS](../../../configuring/cluster_config/gfsh_remote.html). | |
-| <span class="keyword parmname">\\-\\-dir</span>  | Directory in which the locator was started. | current directory |
+| <span class="keyword parmname">&#8209;&#8209;dir</span>  | Directory in which the locator was started. | current directory |
 
 <span class="tablecap">Table 3. Stop Locator Parameters</span>
 
@@ -210,7 +210,7 @@ stop server [--name=value] [--dir=value]
 | Name                                          | Description                                                                                                                                                                                                                                                                                                                                                                                                                           | Default Value     |
 |-----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------|
 | <span class="keyword parmname">&#8209;&#8209;name </span> | Name/Id of the <%=vars.product_name%> Cache Server to stop. You must be connected to the JMX Manager to use this option. Can be used to stop remote servers. See [Using gfsh to Manage a Remote Cluster Over HTTP or HTTPS](../../../configuring/cluster_config/gfsh_remote.html). |                   |
-| <span class="keyword parmname">\\-\\-dir </span>  | Directory in which the <%=vars.product_name%> Cache Server was started.                                                                                                                                                                                                                                                                                                                                                   | current directory |
+| <span class="keyword parmname">&#8209;&#8209;dir </span>  | Directory in which the <%=vars.product_name%> Cache Server was started.                                                                                                                                                                                                                                                                                                                                                   | current directory |
 
 <span class="tablecap">Table 4. Stop Server Parameters</span>
 
