@@ -14,7 +14,7 @@
  */
 package org.apache.geode.redis.internal.commands.executor.sortedset;
 
-import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_PORT;
+import static org.apache.geode.redis.internal.SystemPropertyBasedRedisConfiguration.GEODE_FOR_REDIS_PORT;
 import static org.apache.geode.test.dunit.rules.RedisClusterStartupRule.BIND_ADDRESS;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -88,7 +88,7 @@ public class ZRemDUnitTest {
       int locatorPort) {
     int redisPort = AvailablePortHelper.getRandomAvailableTCPPort();
     SerializableFunction<ServerStarterRule> serverOperator = s -> s
-        .withProperty(GEODE_FOR_REDIS_PORT, redisPort + "")
+        .withSystemProperty(GEODE_FOR_REDIS_PORT, redisPort + "")
         .withConnectionToLocator(locatorPort);
     MemberVM server = clusterStartUp.startRedisVM(vmId, serverOperator);
 
