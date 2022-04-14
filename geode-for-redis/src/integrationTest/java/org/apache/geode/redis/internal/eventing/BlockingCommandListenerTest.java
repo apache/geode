@@ -58,7 +58,7 @@ public class BlockingCommandListenerTest {
     verify(context, times(1)).resubmitCommand(argumentCaptor.capture());
 
     double timeout = Coder.bytesToDouble(argumentCaptor.getValue().getCommandArguments().get(0));
-    assertThat(timeout).isLessThan(1.0D);
+    await().untilAsserted(() -> assertThat(timeout).isLessThan(1.0D));
   }
 
   @Test
