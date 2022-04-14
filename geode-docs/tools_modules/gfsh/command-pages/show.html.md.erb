@@ -59,7 +59,7 @@ show dead-locks --file=value
 
 | Name                                         | Description                                                                         |
 |----------------------------------------------|-------------------------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-file</span> | *Required.* Name of the file to which dependencies between members will be written. |
+| <span class="keyword parmname">&#8209;&#8209;file</span> | *Required.* Name of the file to which dependencies between members will be written. |
 
 <span class="tablecap">Table 1. Show Dead-Locks Parameters</span>
 
@@ -94,8 +94,8 @@ show log --member=value [--lines=value]
 
 | Name                                                       | Description                                | Default Value                                 |
 |------------------------------------------------------------|--------------------------------------------|---------------------------------|
-| <span class="keyword parmname">\\-\\-member</span> |          *Required.* Name/ID of the member whose log file will be displayed. |  |
-| <span class="keyword parmname">\\-\\-lines </span>   | Number of lines from the log file to display. The maximum is 100.          | 0  |
+| <span class="keyword parmname">&#8209;&#8209;member</span> |          *Required.* Name/ID of the member whose log file will be displayed. |  |
+| <span class="keyword parmname">&#8209;&#8209;lines </span>   | Number of lines from the log file to display. The maximum is 100.          | 0  |
 
 
 **Example Commands:**
@@ -152,23 +152,23 @@ show metrics [--member=value] [--region=value] [--file=value]
 </thead>
 <tbody>
 <tr>
-<td><span class="keyword parmname">\-\-member</span></td>
+<td><span class="keyword parmname">&#8209;&#8209;member</span></td>
 <td>Name/ID of the member whose metrics will be displayed/exported.</td>
 </tr>
 <tr>
-<td><span class="keyword parmname">\-\-region</span></td>
+<td><span class="keyword parmname">&#8209;&#8209;region</span></td>
 <td>Name/Path of the region whose metrics will be displayed/exported.</td>
 </tr>
 <tr>
-<td><span class="keyword parmname">\-\-file</span></td>
+<td><span class="keyword parmname">&#8209;&#8209;file</span></td>
 <td>Name of the file to which metrics will be written.</td>
 </tr>
 <tr>
-<td><span class="keyword parmname">\-\-port</span></td>
+<td><span class="keyword parmname">&#8209;&#8209;port</span></td>
 <td>Port number of the Cache Server whose metrics are to be displayed/exported. This can only be used along with the <code class="ph codeph">--member</code> parameter.</td>
 </tr>
 <tr>
-<td><span class="keyword parmname">\-\-categories</span></td>
+<td><span class="keyword parmname">&#8209;&#8209;categories</span></td>
 <td>Categories available based upon the parameters specified (listed above) are:
 <ul>
 <li><strong>region specified</strong>: cluster, region, partition, diskstore, callback, eviction</li>
@@ -269,10 +269,10 @@ show subscription-queue-size --durable-client-Id=value
 
 | Name                                                       | Description                                                                  |
 |------------------------------------------------------------|------------------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-durable-client-id </span> | *Required.* The ID used to identify the durable client.                      |
-| <span class="keyword parmname">\\-\\-durable-cq-name </span>   | The name that identifies the CQ.                                             |
-| <span class="keyword parmname">\\-\\-members </span>            | Name/Id of the member(s) for which subscription queue events are to be counted. |
-| <span class="keyword parmname">\\-\\-groups</span>             | Group(s) of members for which subscription queue events are to be counted.   |
+| <span class="keyword parmname">&#8209;&#8209;durable-client-id </span> | *Required.* The ID used to identify the durable client.                      |
+| <span class="keyword parmname">&#8209;&#8209;durable-cq-name </span>   | The name that identifies the CQ.                                             |
+| <span class="keyword parmname">&#8209;&#8209;members </span>            | Name/Id of the member(s) for which subscription queue events are to be counted. |
+| <span class="keyword parmname">&#8209;&#8209;groups</span>             | Group(s) of members for which subscription queue events are to be counted.   |
 
 <span class="tablecap">Table 4. Show Subscription-Queue-Size Parameters</span>
 

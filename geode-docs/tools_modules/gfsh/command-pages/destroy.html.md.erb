@@ -74,7 +74,7 @@ destroy async-event-queue --id=value [--groups=value(,value)*] [--if-exists=valu
 
 | Name                                          | Description                                                                                       |
 |-----------------------------------------------|---------------------------------------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-id</span>  | *Required.* ID of the async event queue to be deleted.                                          |
+| <span class="keyword parmname">&#8209;&#8209;id</span>  | *Required.* ID of the async event queue to be deleted.                                          |
 | <span class="keyword parmname">&#8209;&#8209;groups</span> | Group(s) of members on which the async event queue will be destroyed. If no group is specified, the queue is destroyed on all members. |
 | &#8209;&#8209;if&#8209;exists | If the specified async event queue does not exist, gfsh responds with a message to that effect. If this parameter is true, the response is prefixed with the label "Skipping: ". Useful for scripted tests. Default (if the parameter is not specified): false. Default (if the parameter is specified without value): true.     |
 
@@ -101,7 +101,7 @@ destroy disk-store --name=value [--groups=value(,value)*] [--if-exists=value]
 
 | Name                                          | Description                                                                                                                          |
 |-----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-name</span>  | *Required.* Name of the disk store to be deleted.                                                                                    |
+| <span class="keyword parmname">&#8209;&#8209;name</span>  | *Required.* Name of the disk store to be deleted.                                                                                    |
 | <span class="keyword parmname">&#8209;&#8209;groups</span> | Group(s) of members on which the disk store will be destroyed. If no group is specified, the disk store is destroyed on all members. |
 | &#8209;&#8209;if&#8209;exists | If the specified disk store does not exist, gfsh responds with a message to that effect. If this parameter is true, the response is prefixed with the label "Skipping: ". Useful for scripted tests. Default (if the parameter is not specified): false. Default (if the parameter is specified without value): true.     |
 
@@ -139,8 +139,8 @@ destroy function --id=value [--groups=value(,value)*] [--member=value]
 
 | Name                                           | Description                                                                                |
 |------------------------------------------------|--------------------------------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-id</span>     | *Required.* Unique function identifier. Use the `list functions` command to obtain the ID. |
-| <span class="keyword parmname">\\-\\-groups</span> | One or more groups of members from which this function will be unregistered.               |
+| <span class="keyword parmname">&#8209;&#8209;id</span>     | *Required.* Unique function identifier. Use the `list functions` command to obtain the ID. |
+| <span class="keyword parmname">&#8209;&#8209;groups</span> | One or more groups of members from which this function will be unregistered.               |
 | <span class="keyword parmname">&#8209;&#8209;member</span> | Name or ID of the member from which this function will be unregistered.                    |
 
 
@@ -170,7 +170,7 @@ destroy gateway-receiver [--group=value(,value)*]
 
 | Name                                           | Description                                                                                |
 |------------------------------------------------|--------------------------------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-group</span> | One or more groups of members on which the gateway receiver will be destroyed.       |
+| <span class="keyword parmname">&#8209;&#8209;group</span> | One or more groups of members on which the gateway receiver will be destroyed.       |
 | <span class="keyword parmname">&#8209;&#8209;members</span> | Name or ID of each member on which the gateway receiver will be destroyed.   |
 | &#8209;&#8209;if&#8209;exists | If this option is true and the gateway receiver does not exist, gfsh responds with a message prefixed with the label "Skipping: ". If this option is false and the gateway receiver does not exist, an error message is output. Default (if this option is not specified): false. Default (if this option is specified without a value): true.     |
 
@@ -214,8 +214,8 @@ destroy gateway-sender --id=value [--groups=value(,value)*]
 
 | Name                                           | Description                                                                                |
 |------------------------------------------------|--------------------------------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-id</span>     | *Required.* Unique gateway sender identifier. Use the `list gateways` command to obtain the ID. |
-| <span class="keyword parmname">\\-\\-groups</span> | One or more groups of members from which this gateway sender will be destroyed.       |
+| <span class="keyword parmname">&#8209;&#8209;id</span>     | *Required.* Unique gateway sender identifier. Use the `list gateways` command to obtain the ID. |
+| <span class="keyword parmname">&#8209;&#8209;groups</span> | One or more groups of members from which this gateway sender will be destroyed.       |
 | <span class="keyword parmname">&#8209;&#8209;members</span> | Name or ID of the member(s) from which this gateway sender will be destroyed.   |
 | &#8209;&#8209;if&#8209;exists | If the specified gateway sender does not exist, gfsh responds with a message to that effect. If this parameter is true, the response is prefixed with the label "Skipping: ". Useful for scripted tests. Default (if the parameter is not specified): false. Default (if the parameter is specified without value): true.     |
 
@@ -245,10 +245,10 @@ You must specify at least one of the parameter options. If you enter `destroy in
 
 | Name                                           | Description                                                                  |
 |------------------------------------------------|------------------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-name</span>   | Name of the index to be removed.                                            |
+| <span class="keyword parmname">&#8209;&#8209;name</span>   | Name of the index to be removed.                                            |
 | &#8209;&#8209;members | Id of the member(s) on which index is to be removed.                            |
-| <span class="keyword parmname">\\-\\-region</span> | Name of the region from which an index or all indexes are to be destroyed. |
-| <span class="keyword parmname">\\-\\-groups</span>  | The index will be removed on all the members in the group(s).           |
+| <span class="keyword parmname">&#8209;&#8209;region</span> | Name of the region from which an index or all indexes are to be destroyed. |
+| <span class="keyword parmname">&#8209;&#8209;groups</span>  | The index will be removed on all the members in the group(s).           |
 | &#8209;&#8209;if&#8209;exists | If the specified index does not exist, gfsh responds with a message to that effect. If this parameter is true, the response is prefixed with the label "Skipping: ". Useful for scripted tests. Default (if the parameter is not specified): false. Default (if the parameter is specified without value): true.     |
 
 
@@ -276,7 +276,7 @@ destroy jndi-binding --name=value [--if-exists=value]
 
 | Name                                         | Description                                            |
 |----------------------------------------------|--------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-name</span> | *Required.* Name of the JNDI binding to be destroyed. |
+| <span class="keyword parmname">&#8209;&#8209;name</span> | *Required.* Name of the JNDI binding to be destroyed. |
 | &#8209;&#8209;if&#8209;exists | Skip the destroy operation when the specified JNDI binding does not exist. Without this option, an error results from the specification of a JNDI binding that does not exist. Default (if the parameter is not specified): false. Default (if the parameter is specified without value): true.     |
 
 **Example Command:**
@@ -330,7 +330,7 @@ destroy region --name=value [--if-exists=value]
 
 | Name                                         | Description                                            |
 |----------------------------------------------|--------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-name</span> | *Required.* Name and path of the region to be removed. |
+| <span class="keyword parmname">&#8209;&#8209;name</span> | *Required.* Name and path of the region to be removed. |
 | &#8209;&#8209;if&#8209;exists | If the specified region does not exist, gfsh responds with a message to that effect. If this parameter is true, the response is prefixed with the label "Skipping: ". Useful for scripted tests. Default (if the parameter is not specified): false. Default (if the parameter is specified without value): true.     |
 
 

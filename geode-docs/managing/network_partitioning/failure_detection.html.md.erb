@@ -51,10 +51,10 @@ ent(8788)<v7>:24136/53525]
 The components of the membership view are as follows:
 
 -   The first part of the view (`[ent(5767)<v0>:8700|16]` in the example above) corresponds to the view ID. It identifies:
-    -   the address and processId of the membership coordinator-- `ent(5767)` in example above.
-    -   the view-number (`<vXX>`) of the membership view that the member first appeared in-- `<v0>` in example above.
-    -   membership-port of the membership coordinator-- `8700` in the example above.
-    -   view-number-- `16` in the example above
+    -   the address and processId of the membership coordinator: `ent(5767)` in example above.
+    -   the view-number (`<vXX>`) of the membership view that the member first appeared in: `<v0>` in example above.
+    -   membership-port of the membership coordinator: `8700` in the example above.
+    -   view-number: `16` in the example above
 -   The second part of the view lists all of the member processes in the current view. `[ent(5767)<v0>:8700/44876,                             ent(5829)<v1>:48034/55334, ent(5875)<v2>:4738/54595,                             ent(5822)<v5>:49380/39564,                             ent(8788)<v7>:24136/53525]` in the example above.
 -   The overall format of each listed member is:`Address(processId)<vXX>:membership-port/distribution                             port`. The membership coordinator is almost always the first member in the view and the rest are ordered by age.
 -   The membership-port is the JGroups TCP UDP port that it uses to send datagrams. The distribution-port is the TCP/IP port that is used for cache messaging.

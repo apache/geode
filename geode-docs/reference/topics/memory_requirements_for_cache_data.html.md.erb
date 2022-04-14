@@ -218,7 +218,7 @@ If you do want to estimate memory usage for PDX serialized data, the following t
 | String        | String.length + 3 bytes                                                                                                                            |
 | Domain Object | 9 bytes (for PDX header) + object serialization length (total all member fields) + 1 to 4 extra bytes (depends on the total size of Domain object) |
 
-A note of caution-- if the domain object contains many domain objects as member fields, then the memory overhead of PDX serialization can be considerably more than other types of serialization.
+A note of caution: If the domain object contains many domain objects as member fields, then the memory overhead of PDX serialization can be considerably more than other types of serialization.
 
 ## <a id="topic_d3g_c5z_j4" class="no-quick-link"></a>Calculating Socket Memory Requirements
 
