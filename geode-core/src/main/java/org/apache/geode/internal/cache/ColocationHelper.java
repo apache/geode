@@ -30,6 +30,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.DiskStore;
@@ -377,6 +378,26 @@ public class ColocationHelper {
    */
   public static List<PartitionedRegion> getColocatedChildRegions(
       PartitionedRegion partitionedRegion) {
+    List<PartitionedRegion> colocatedChildRegions =
+        getColocatedChildRegions(partitionedRegion, true, false);
+
+    // Fix for 44484 - Make the list of colocated child regions
+    // is always in the same order on all nodes.
+    Collections.sort(colocatedChildRegions, (o1, o2) -> {
+      if (o1.isShadowPR() == o2.isShadowPR()) {
+        return o1.getFullPath().compareTo(o2.getFullPath());
+      }
+      if (o1.isShadowPR()) {
+        return 1;
+      }
+      return -1;
+    });
+    return colocatedChildRegions;
+  }
+
+  @NotNull
+  private static List<PartitionedRegion> getColocatedChildRegions(
+      PartitionedRegion partitionedRegion, boolean withShadowRegion, boolean getFirstChildOnly) {
     List<PartitionedRegion> colocatedChildRegions = new ArrayList<>();
     Region prRoot = PartitionedRegionHelper.getPRRoot(partitionedRegion.getCache());
     PartitionRegionConfig prConf = null;
@@ -409,7 +430,13 @@ public class ColocationHelper {
               // only regions directly colocatedWith partitionedRegion are
               // added to the list...
               prRegion.waitOnBucketMetadataInitialization();
+              if (!withShadowRegion && prRegion.isShadowPR()) {
+                continue;
+              }
               colocatedChildRegions.add(prRegion);
+              if (getFirstChildOnly) {
+                return colocatedChildRegions;
+              }
             }
           }
         }
@@ -424,19 +451,17 @@ public class ColocationHelper {
         }
       }
     }
-
-    // Fix for 44484 - Make the list of colocated child regions
-    // is always in the same order on all nodes.
-    Collections.sort(colocatedChildRegions, (o1, o2) -> {
-      if (o1.isShadowPR() == o2.isShadowPR()) {
-        return o1.getFullPath().compareTo(o2.getFullPath());
-      }
-      if (o1.isShadowPR()) {
-        return 1;
-      }
-      return -1;
-    });
     return colocatedChildRegions;
+  }
+
+  public static List<PartitionedRegion> getColocatedNonShadowChildRegions(
+      PartitionedRegion partitionedRegion) {
+    return getColocatedChildRegions(partitionedRegion, false, false);
+  }
+
+  public static List<PartitionedRegion> getFirstColocatedNonShadowChildRegions(
+      PartitionedRegion partitionedRegion) {
+    return getColocatedChildRegions(partitionedRegion, false, true);
   }
 
   // TODO why do we have this method here?

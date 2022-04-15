@@ -43,6 +43,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
@@ -2761,5 +2762,45 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   public boolean isShadowBucketDestroyed(String shadowBucketPath) {
     return destroyedShadowBuckets.getOrDefault(shadowBucketPath, false);
+  }
+
+  boolean checkIfAllColocatedChildBucketsBecomePrimary() {
+    List<PartitionedRegion> colocatedChildPRs = getColocateNonShadowChildRegions();
+    if (colocatedChildPRs.size() > 0) {
+      for (PartitionedRegion partitionedRegion : colocatedChildPRs) {
+        Bucket bucket = partitionedRegion.getRegionAdvisor().getBucket(getBucket().getId());
+        if (bucket != null) {
+          BucketAdvisor bucketAdvisor = bucket.getBucketAdvisor();
+          if (!bucketAdvisor.checkIfAllColocatedChildBucketsBecomePrimary()) {
+            return false;
+          } else {
+            if (!checkIfBecomesPrimary()) {
+              return false;
+            }
+          }
+        }
+      }
+      return true;
+    }
+    return checkIfBecomesPrimary();
+  }
+
+  @NotNull
+  List<PartitionedRegion> getColocateNonShadowChildRegions() {
+    return ColocationHelper.getColocatedNonShadowChildRegions(pRegion);
+  }
+
+  private boolean checkIfBecomesPrimary() {
+    synchronized (this) {
+      try {
+        if (!isPrimary()) {
+          wait(10);
+        }
+        return isPrimary();
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        return false;
+      }
+    }
   }
 }

@@ -25,6 +25,8 @@ import java.util.Random;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.cache.ColocationHelper;
+import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.cache.execute.data.Customer;
 import org.apache.geode.internal.cache.execute.data.Order;
@@ -508,4 +510,76 @@ public class ParallelWANConflationDistributedTest extends WANTestBase {
     vm7.invoke(() -> createSender("ln", 2, true, 100, 2, true, false, null, true));
   }
 
+  @Test
+  public void getColocatedChildRegionsOnlyReturnsDirectlyColocatedChildRegions() {
+    initialSetUp();
+    createSendersWithConflation();
+    startPausedSenders();
+    vm4.invoke(() -> {
+      createCustomerOrderShipmentPartitionedRegion("ln", 0, 8, isOffHeap());
+      putCustomerPartitionedRegion(1);
+    });
+
+    vm4.invoke(this::verifyChildRegionsUsingColocationHelperMethods);
+  }
+
+  private void verifyChildRegionsUsingColocationHelperMethods() {
+    verifyCustomerRegionHasShadowPR();
+    verifyGetColocatedNonShadowChildRegionsDoesNotReturnShadowRegion();
+  }
+
+  private void verifyCustomerRegionHasShadowPR() {
+    List<PartitionedRegion> regions = ColocationHelper.getColocatedChildRegions(customerRegion);
+    assertThat(regions.size()).isEqualTo(2);
+    for (PartitionedRegion region : regions) {
+      if (!region.getName().equals(orderRegionName)) {
+        assertThat(region.isShadowPR()).isTrue();
+      }
+    }
+  }
+
+  private void verifyGetColocatedNonShadowChildRegionsDoesNotReturnShadowRegion() {
+    List<PartitionedRegion> regions =
+        ColocationHelper.getColocatedNonShadowChildRegions(customerRegion);
+    assertThat(regions.size()).isEqualTo(1);
+    for (PartitionedRegion region : regions) {
+      assertThat(region.isShadowPR()).isFalse();
+    }
+  }
+
+  @Test
+  public void getColocatedNonShadowChildRegionsReturnsChildRegionsCorrectly() {
+    initialSetUp();
+    createSendersWithConflation();
+    vm4.invoke(() -> WANTestBase.createColocatedPartitionedRegions(getTestMethodName(), "ln", 1,
+        100, isOffHeap()));
+    startPausedSenders();
+    vm4.invoke(this::verifyNonShadowRegionsUsingColocationHelperMethods);
+  }
+
+  private void verifyNonShadowRegionsUsingColocationHelperMethods() {
+    PartitionedRegion partitionedRegion = (PartitionedRegion) cache.getRegion(getTestMethodName());
+    verifyGetFirstColocatedNonShadowChildRegionsDoesNotReturnShadowRegion(partitionedRegion);
+    verifyAllColocatedNonShadowChildRegionsAreReturned(partitionedRegion);
+  }
+
+  private void verifyGetFirstColocatedNonShadowChildRegionsDoesNotReturnShadowRegion(
+      PartitionedRegion partitionedRegion) {
+    List<PartitionedRegion> regions =
+        ColocationHelper.getFirstColocatedNonShadowChildRegions(partitionedRegion);
+    assertThat(regions.size()).isEqualTo(1);
+    for (PartitionedRegion region : regions) {
+      assertThat(region.isShadowPR()).isFalse();
+    }
+  }
+
+  private void verifyAllColocatedNonShadowChildRegionsAreReturned(
+      PartitionedRegion partitionedRegion) {
+    List<PartitionedRegion> regions =
+        ColocationHelper.getColocatedNonShadowChildRegions(partitionedRegion);
+    assertThat(regions.size()).isEqualTo(2);
+    for (PartitionedRegion region : regions) {
+      assertThat(region.isShadowPR()).isFalse();
+    }
+  }
 }

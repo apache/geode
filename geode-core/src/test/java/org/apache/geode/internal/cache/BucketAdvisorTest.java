@@ -19,7 +19,6 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.internal.cache.CacheServerImpl.CACHE_SERVER_BIND_ADDRESS_NOT_AVAILABLE_EXCEPTION_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
@@ -30,11 +29,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.server.CacheServer;
@@ -43,10 +49,58 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 
-public class BucketAdvisorTest {
+class BucketAdvisorTest {
+  @Mock
+  private PartitionedRegion parent;
+  @Mock
+  private PartitionedRegion child1;
+  @Mock
+  private PartitionedRegion child2;
+  @Mock
+  private PartitionedRegion grandChild1_1;
+  @Mock
+  private PartitionedRegion grandChild1_2;
+  @Mock
+  private PartitionedRegion grandChild2_1;
+  @Mock
+  private RegionAdvisor parentRegionAdvisor;
+  @Mock
+  private RegionAdvisor child1RegionAdvisor;
+  @Mock
+  private RegionAdvisor child2RegionAdvisor;
+  @Mock
+  private RegionAdvisor grandChild1_1RegionAdvisor;
+  @Mock
+  private RegionAdvisor grandChild1_2RegionAdvisor;
+  @Mock
+  private RegionAdvisor grandChild2_1RegionAdvisor;
+  @Mock
+  private Bucket parentBucket;
+  @Mock
+  private Bucket child1Bucket;
+  @Mock
+  private Bucket child2Bucket;
+  @Mock
+  private Bucket grandChild1_1Bucket;
+  @Mock
+  private Bucket grandChild1_2Bucket;
+  @Mock
+  private Bucket grandChild2_1Bucket;
+
+  private BucketAdvisor parentBucketAdvisor;
+  private BucketAdvisor child1BucketAdvisor;
+  private BucketAdvisor child2BucketAdvisor;
+  private BucketAdvisor grandChild1_1BucketAdvisor;
+  private BucketAdvisor grandChild1_2BucketAdvisor;
+  private BucketAdvisor grandChild2_1BucketAdvisor;
+  private AutoCloseable closeable;
+
+  private final List<PartitionedRegion> parentColocatedRegions = new ArrayList<>();
+  private final List<PartitionedRegion> child1ColocatedRegions = new ArrayList<>();
+  private final List<PartitionedRegion> child2ColocatedRegions = new ArrayList<>();
 
   @Test
-  public void shouldBeMockable() throws Exception {
+  void shouldBeMockable() throws Exception {
     BucketAdvisor mockBucketAdvisor = mock(BucketAdvisor.class);
     InternalDistributedMember mockInternalDistributedMember = mock(InternalDistributedMember.class);
 
@@ -58,7 +112,7 @@ public class BucketAdvisorTest {
   }
 
   @Test
-  public void whenServerStopsAfterTheFirstIsRunningCheckThenItShouldNotBeAddedToLocations() {
+  void whenServerStopsAfterTheFirstIsRunningCheckThenItShouldNotBeAddedToLocations() {
     InternalCache mockCache = mock(InternalCache.class);
     ProxyBucketRegion mockBucket = mock(ProxyBucketRegion.class);
     RegionAdvisor mockRegionAdvisor = mock(RegionAdvisor.class);
@@ -86,7 +140,7 @@ public class BucketAdvisorTest {
   }
 
   @Test
-  public void whenServerThrowsIllegalStateExceptionWithoutBindAddressMsgThenExceptionMustBeThrown() {
+  void whenServerThrowsIllegalStateExceptionWithoutBindAddressMsgThenExceptionMustBeThrown() {
     InternalCache mockCache = mock(InternalCache.class);
     ProxyBucketRegion mockBucket = mock(ProxyBucketRegion.class);
     RegionAdvisor mockRegionAdvisor = mock(RegionAdvisor.class);
@@ -114,7 +168,7 @@ public class BucketAdvisorTest {
   }
 
   @Test
-  public void volunteerForPrimaryIgnoresMissingPrimaryElector() {
+  void volunteerForPrimaryIgnoresMissingPrimaryElector() {
     DistributionManager distributionManager = mock(DistributionManager.class);
     when(distributionManager.getId()).thenReturn(new InternalDistributedMember("localhost", 321));
 
@@ -153,12 +207,13 @@ public class BucketAdvisorTest {
         mock(BucketAdvisor.VolunteeringDelegate.class);
     advisorSpy.setVolunteeringDelegate(volunteeringDelegate);
     advisorSpy.initializePrimaryElector(missingElectorId);
-    assertEquals(missingElectorId, advisorSpy.getPrimaryElector());
+    Assertions.assertEquals(missingElectorId, advisorSpy.getPrimaryElector());
     advisorSpy.volunteerForPrimary();
     verify(volunteeringDelegate).volunteerForPrimary();
   }
 
-  BucketAdvisor mockBucketAdvisorWithShadowBucketsDestroyedMap(Map<String, Boolean> shadowBuckets) {
+  private BucketAdvisor mockBucketAdvisorWithShadowBucketsDestroyedMap(
+      Map<String, Boolean> shadowBuckets) {
     DistributionManager distributionManager = mock(DistributionManager.class);
     when(distributionManager.getId()).thenReturn(new InternalDistributedMember("localhost", 321));
 
@@ -180,7 +235,7 @@ public class BucketAdvisorTest {
   }
 
   @Test
-  public void markAllShadowBucketsAsNonDestroyedShouldClearTheShadowBucketsDestroyedMap() {
+  void markAllShadowBucketsAsNonDestroyedShouldClearTheShadowBucketsDestroyedMap() {
     Map<String, Boolean> buckets = of(SEPARATOR + "b1", false, SEPARATOR + "b2", true);
     BucketAdvisor bucketAdvisor = mockBucketAdvisorWithShadowBucketsDestroyedMap(buckets);
 
@@ -190,7 +245,7 @@ public class BucketAdvisorTest {
   }
 
   @Test
-  public void markAllShadowBucketsAsDestroyedShouldSetTheFlagAsTrueForEveryKnownShadowBucket() {
+  void markAllShadowBucketsAsDestroyedShouldSetTheFlagAsTrueForEveryKnownShadowBucket() {
     Map<String, Boolean> buckets =
         of(SEPARATOR + "b1", false, SEPARATOR + "b2", false, SEPARATOR + "b3", false);
     BucketAdvisor bucketAdvisor = mockBucketAdvisorWithShadowBucketsDestroyedMap(buckets);
@@ -201,7 +256,7 @@ public class BucketAdvisorTest {
   }
 
   @Test
-  public void markShadowBucketAsDestroyedShouldSetTheFlagAsTrueOnlyForTheSpecificBucket() {
+  void markShadowBucketAsDestroyedShouldSetTheFlagAsTrueOnlyForTheSpecificBucket() {
     Map<String, Boolean> buckets = of(SEPARATOR + "b1", false);
     BucketAdvisor bucketAdvisor = mockBucketAdvisorWithShadowBucketsDestroyedMap(buckets);
 
@@ -217,7 +272,7 @@ public class BucketAdvisorTest {
   }
 
   @Test
-  public void isShadowBucketDestroyedShouldReturnCorrectly() {
+  void isShadowBucketDestroyedShouldReturnCorrectly() {
     Map<String, Boolean> buckets = of(SEPARATOR + "b1", true, SEPARATOR + "b2", false);
     BucketAdvisor bucketAdvisor = mockBucketAdvisorWithShadowBucketsDestroyedMap(buckets);
 
@@ -230,7 +285,7 @@ public class BucketAdvisorTest {
   }
 
   @Test
-  public void testGetAllHostingMembersReturnsNoMembersWhenBucketAdvisorHasNoProfiles() {
+  void testGetAllHostingMembersReturnsNoMembersWhenBucketAdvisorHasNoProfiles() {
     DistributionManager distributionManager = mock(DistributionManager.class);
     when(distributionManager.getId()).thenReturn(new InternalDistributedMember("localhost", 321));
 
@@ -252,7 +307,7 @@ public class BucketAdvisorTest {
   }
 
   @Test
-  public void testGetAllHostingMembersReturnsMemberWhenBucketAdvisorHasOneProfileWithHostingBucket() {
+  void testGetAllHostingMembersReturnsMemberWhenBucketAdvisorHasOneProfileWithHostingBucket() {
     DistributionManager distributionManager = mock(DistributionManager.class);
     InternalDistributedMember memberId = new InternalDistributedMember("localhost", 321);
 
@@ -282,7 +337,7 @@ public class BucketAdvisorTest {
   }
 
   @Test
-  public void testGetAllHostingMembersReturnsMemberWhenBucketAdvisorHasTwoProfilesAndOneIsHostingBucket() {
+  void testGetAllHostingMembersReturnsMemberWhenBucketAdvisorHasTwoProfilesAndOneIsHostingBucket() {
     DistributionManager distributionManager = mock(DistributionManager.class);
     InternalDistributedMember memberId = new InternalDistributedMember("localhost", 321);
     InternalDistributedMember memberId2 = new InternalDistributedMember("localhost", 323);
@@ -317,4 +372,163 @@ public class BucketAdvisorTest {
 
     assertThat(bucketAdvisor.adviseInitialized().size()).isEqualTo(1);
   }
+
+  @Test
+  void checkIfAllColocatedChildBucketsBecomePrimaryRetrunsTrueIfAllChildBucketsArePrimary() {
+    initSetup();
+
+    boolean allChildBucketsBecomesPrimary =
+        parentBucketAdvisor.checkIfAllColocatedChildBucketsBecomePrimary();
+    assertThat(allChildBucketsBecomesPrimary).isTrue();
+  }
+
+  @Test
+  void checkIfAllColocatedChildBucketsBecomePrimaryReturnsFalseIfChild1BucketIsNotPrimary() {
+    initSetup();
+    doReturn(false).when(child1BucketAdvisor).isPrimary();
+
+    boolean allChildBucketsBecomesPrimary =
+        parentBucketAdvisor.checkIfAllColocatedChildBucketsBecomePrimary();
+    assertThat(allChildBucketsBecomesPrimary).isFalse();
+  }
+
+  @Test
+  void checkIfAllColocatedChildBucketsBecomePrimaryReturnsFalseIfChild2BucketIsNotPrimary() {
+    initSetup();
+    doReturn(false).when(child2BucketAdvisor).isPrimary();
+
+    boolean allChildBucketsBecomesPrimary =
+        parentBucketAdvisor.checkIfAllColocatedChildBucketsBecomePrimary();
+    assertThat(allChildBucketsBecomesPrimary).isFalse();
+  }
+
+  @Test
+  void checkIfAllColocatedChildBucketsBecomePrimaryReturnsFalseIfGrandChild1_1BucketIsNotPrimary() {
+    initSetup();
+    doReturn(false).when(grandChild1_1BucketAdvisor).isPrimary();
+
+    boolean allChildBucketsBecomesPrimary =
+        parentBucketAdvisor.checkIfAllColocatedChildBucketsBecomePrimary();
+    assertThat(allChildBucketsBecomesPrimary).isFalse();
+  }
+
+  @Test
+  void checkIfAllColocatedChildBucketsBecomePrimaryReturnsFalseIfGrandChild1_2BucketIsNotPrimary() {
+    initSetup();
+    doReturn(false).when(grandChild1_2BucketAdvisor).isPrimary();
+
+    boolean allChildBucketsBecomesPrimary =
+        parentBucketAdvisor.checkIfAllColocatedChildBucketsBecomePrimary();
+    assertThat(allChildBucketsBecomesPrimary).isFalse();
+  }
+
+  @Test
+  void checkIfAllColocatedChildBucketsBecomePrimaryReturnsFalseIfGrandChild2_1BucketIsNotPrimary() {
+    initSetup();
+    doReturn(false).when(grandChild2_1BucketAdvisor).isPrimary();
+
+    boolean allChildBucketsBecomesPrimary =
+        parentBucketAdvisor.checkIfAllColocatedChildBucketsBecomePrimary();
+    assertThat(allChildBucketsBecomesPrimary).isFalse();
+  }
+
+  @Test
+  void checkIfAllColocatedChildBucketsBecomePrimaryReturnsFalseIfParentIsNotPrimary() {
+    initSetup();
+    doReturn(false).when(parentBucketAdvisor).isPrimary();
+
+    boolean allChildBucketsBecomesPrimary =
+        parentBucketAdvisor.checkIfAllColocatedChildBucketsBecomePrimary();
+    assertThat(allChildBucketsBecomesPrimary).isFalse();
+  }
+
+  private void initSetup() {
+    parentColocatedRegions.add(child1);
+    parentColocatedRegions.add(child2);
+    child1ColocatedRegions.add(grandChild1_1);
+    child1ColocatedRegions.add(grandChild1_2);
+    child2ColocatedRegions.add(grandChild2_1);
+
+    when(parentRegionAdvisor.getPartitionedRegion()).thenReturn(parent);
+    when(child1RegionAdvisor.getPartitionedRegion()).thenReturn(child1);
+    when(child2RegionAdvisor.getPartitionedRegion()).thenReturn(child2);
+    when(grandChild1_1RegionAdvisor.getPartitionedRegion()).thenReturn(grandChild1_1);
+    when(grandChild1_2RegionAdvisor.getPartitionedRegion()).thenReturn(grandChild1_2);
+    when(grandChild2_1RegionAdvisor.getPartitionedRegion()).thenReturn(grandChild2_1);
+
+    when(parentRegionAdvisor.getBucket(any(Integer.class))).thenReturn(parentBucket);
+    when(child1RegionAdvisor.getBucket(any(Integer.class))).thenReturn(child1Bucket);
+    when(child2RegionAdvisor.getBucket(any(Integer.class))).thenReturn(child2Bucket);
+    when(grandChild1_1RegionAdvisor.getBucket(any(Integer.class))).thenReturn(grandChild1_1Bucket);
+    when(grandChild1_2RegionAdvisor.getBucket(any(Integer.class))).thenReturn(grandChild1_2Bucket);
+    when(grandChild2_1RegionAdvisor.getBucket(any(Integer.class))).thenReturn(grandChild2_1Bucket);
+
+    List<PartitionedRegion> regions =
+        Arrays.asList(parent, child1, child2, grandChild1_1, grandChild1_2, grandChild2_1);
+    for (PartitionedRegion partitionedRegion : regions) {
+      when(partitionedRegion.getPartitionAttributes()).thenReturn(new PartitionAttributesImpl());
+    }
+    List<Bucket> buckets = Arrays.asList(parentBucket, child1Bucket, child2Bucket,
+        grandChild1_1Bucket, grandChild1_2Bucket, grandChild2_1Bucket);
+    DistributionManager distributionManager = mock(DistributionManager.class);
+    for (Bucket bucket : buckets) {
+      when(bucket.getDistributionManager()).thenReturn(distributionManager);
+    }
+
+    when(parent.getRegionAdvisor()).thenReturn(parentRegionAdvisor);
+    when(child1.getRegionAdvisor()).thenReturn(child1RegionAdvisor);
+    when(child2.getRegionAdvisor()).thenReturn(child2RegionAdvisor);
+    when(grandChild1_1.getRegionAdvisor()).thenReturn(grandChild1_1RegionAdvisor);
+    when(grandChild1_2.getRegionAdvisor()).thenReturn(grandChild1_2RegionAdvisor);
+    when(grandChild2_1.getRegionAdvisor()).thenReturn(grandChild2_1RegionAdvisor);
+
+    List<BucketAdvisor> bucketAdvisors = new ArrayList<>();
+    parentBucketAdvisor = spy(BucketAdvisor.createBucketAdvisor(parentBucket, parentRegionAdvisor));
+    bucketAdvisors.add(parentBucketAdvisor);
+    child1BucketAdvisor = spy(BucketAdvisor.createBucketAdvisor(child1Bucket, child1RegionAdvisor));
+    bucketAdvisors.add(child1BucketAdvisor);
+    child2BucketAdvisor = spy(BucketAdvisor.createBucketAdvisor(child2Bucket, child2RegionAdvisor));
+    bucketAdvisors.add(child2BucketAdvisor);
+    grandChild1_1BucketAdvisor =
+        spy(BucketAdvisor.createBucketAdvisor(grandChild1_1Bucket, grandChild1_1RegionAdvisor));
+    bucketAdvisors.add(grandChild1_1BucketAdvisor);
+    grandChild1_2BucketAdvisor =
+        spy(BucketAdvisor.createBucketAdvisor(grandChild1_2Bucket, grandChild1_2RegionAdvisor));
+    bucketAdvisors.add(grandChild1_2BucketAdvisor);
+    grandChild2_1BucketAdvisor =
+        spy(BucketAdvisor.createBucketAdvisor(grandChild2_1Bucket, grandChild2_1RegionAdvisor));
+    bucketAdvisors.add(grandChild2_1BucketAdvisor);
+
+    doReturn(parentColocatedRegions).when(parentBucketAdvisor).getColocateNonShadowChildRegions();
+    doReturn(child1ColocatedRegions).when(child1BucketAdvisor).getColocateNonShadowChildRegions();
+    doReturn(child2ColocatedRegions).when(child2BucketAdvisor).getColocateNonShadowChildRegions();
+    doReturn(Collections.EMPTY_LIST).when(grandChild1_1BucketAdvisor)
+        .getColocateNonShadowChildRegions();
+    doReturn(Collections.EMPTY_LIST).when(grandChild1_2BucketAdvisor)
+        .getColocateNonShadowChildRegions();
+    doReturn(Collections.EMPTY_LIST).when(grandChild2_1BucketAdvisor)
+        .getColocateNonShadowChildRegions();
+
+    when(parentBucket.getBucketAdvisor()).thenReturn(parentBucketAdvisor);
+    when(child1Bucket.getBucketAdvisor()).thenReturn(child1BucketAdvisor);
+    when(child2Bucket.getBucketAdvisor()).thenReturn(child2BucketAdvisor);
+    when(grandChild1_1Bucket.getBucketAdvisor()).thenReturn(grandChild1_1BucketAdvisor);
+    when(grandChild1_2Bucket.getBucketAdvisor()).thenReturn(grandChild1_2BucketAdvisor);
+    when(grandChild2_1Bucket.getBucketAdvisor()).thenReturn(grandChild2_1BucketAdvisor);
+
+    for (BucketAdvisor bucketAdvisor : bucketAdvisors) {
+      doReturn(true).when(bucketAdvisor).isPrimary();
+    }
+  }
+
+  @BeforeEach
+  void init() {
+    closeable = MockitoAnnotations.openMocks(this);
+  }
+
+  @AfterEach
+  void close() throws Exception {
+    closeable.close();
+  }
+
 }

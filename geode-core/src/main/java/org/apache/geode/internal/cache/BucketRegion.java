@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 
@@ -97,6 +98,7 @@ import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.logging.internal.executors.LoggingExecutors;
 import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.util.internal.GeodeGlossary;
 
@@ -234,6 +236,12 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   AtomicLong5 getEventSeqNum() {
     return eventSeqNum;
   }
+
+  boolean notPrimary = true;
+  volatile boolean allChildBucketsBecomePrimary = false;
+  private Object allChildBucketsBecomePrimaryLock = new Object();
+  volatile boolean alreadyInWaitForAllChildBucketsToBecomePrimary = false;
+  private ExecutorService waitForAllChildBucketsToBecomePrimaryExecutor;
 
   public BucketRegion(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
       InternalCache cache, InternalRegionArguments internalRegionArgs,
@@ -571,7 +579,6 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     }
   }
 
-
   long generateTailKey() {
     long key = eventSeqNum.addAndGet(partitionedRegion.getTotalNumberOfBuckets());
     if (key < 0 || key % getPartitionedRegion().getTotalNumberOfBuckets() != getId()) {
@@ -604,6 +611,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
 
     if (!(this instanceof AbstractBucketRegionQueue)) {
       if (getBucketAdvisor().isPrimary()) {
+        if (notPrimary && needToWaitForColocatedBucketsBecomePrimary()) {
+          waitForAllChildColocatedBucketsBecomePrimary();
+        }
         long key = eventSeqNum.addAndGet(partitionedRegion.getTotalNumberOfBuckets());
         if (key < 0 || key % getPartitionedRegion().getTotalNumberOfBuckets() != getId()) {
           logger.error("ERROR! The sequence number {} generated for the bucket {} is incorrect.",
@@ -611,10 +621,13 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         }
         event.setTailKey(key);
         if (logger.isDebugEnabled()) {
-          logger.debug("WAN: On primary bucket {}, setting the seq number as {}", getId(),
-              eventSeqNum.get());
+          logger.debug("WAN: On primary bucket {}, setting the seq number as {}", getId(), key);
         }
       } else {
+        if (!notPrimary) {
+          setNotPrimaryIfNecessary();
+        }
+
         // Can there be a race here? Like one thread has done put in primary but
         // its update comes later
         // in that case its possible that a tail key is missed.
@@ -625,6 +638,76 @@ public class BucketRegion extends DistributedRegion implements Bucket {
           logger.debug("WAN: On secondary bucket {}, setting the seq number as {}", getId(),
               event.getTailKey());
         }
+      }
+    }
+  }
+
+  boolean needToWaitForColocatedBucketsBecomePrimary() {
+    if (hasChildRegion()) {
+      synchronized (this) {
+        return notPrimary;
+      }
+    }
+    return false;
+  }
+
+  boolean hasChildRegion() {
+    return ColocationHelper.getFirstColocatedNonShadowChildRegions(partitionedRegion).size() > 0;
+  }
+
+  void waitForAllChildColocatedBucketsBecomePrimary() {
+    synchronized (allChildBucketsBecomePrimaryLock) {
+      if (!alreadyInWaitForAllChildBucketsToBecomePrimary) {
+        alreadyInWaitForAllChildBucketsToBecomePrimary = true;
+        executeCheckIfAllChildBucketsBecomePrimary();
+      }
+      while (!allChildBucketsBecomePrimary && getBucketAdvisor().isPrimary()) {
+        // if no longer primary, no need to wait as the operation should fail
+        // with PrimaryBucketException later.
+        try {
+          allChildBucketsBecomePrimaryLock.wait(10);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          getCache().getCancelCriterion().checkCancelInProgress(e);
+        }
+      }
+    }
+  }
+
+  void executeCheckIfAllChildBucketsBecomePrimary() {
+    if (waitForAllChildBucketsToBecomePrimaryExecutor == null) {
+      waitForAllChildBucketsToBecomePrimaryExecutor =
+          LoggingExecutors.newSingleThreadExecutor("CheckPrimaryForColocation", true);
+    }
+    waitForAllChildBucketsToBecomePrimaryExecutor
+        .execute(this::checkIfAllChildBucketsBecomePrimary);
+  }
+
+  void checkIfAllChildBucketsBecomePrimary() {
+    try {
+      while (!getBucketAdvisor().checkIfAllColocatedChildBucketsBecomePrimary()) {
+        if (!getBucketAdvisor().isPrimary()) {
+          // This parent bucket is no longer a primary, no need to wait.
+          return;
+        }
+      }
+      synchronized (allChildBucketsBecomePrimaryLock) {
+        allChildBucketsBecomePrimary = true;
+        notPrimary = false;
+      }
+    } finally {
+      synchronized (allChildBucketsBecomePrimaryLock) {
+        allChildBucketsBecomePrimaryLock.notifyAll();
+        alreadyInWaitForAllChildBucketsToBecomePrimary = false;
+      }
+    }
+  }
+
+  void setNotPrimaryIfNecessary() {
+    synchronized (allChildBucketsBecomePrimaryLock) {
+      if (!notPrimary) {
+        notPrimary = true;
+        allChildBucketsBecomePrimary = false;
       }
     }
   }
