@@ -3480,7 +3480,8 @@ public class DiskStoreImpl implements DiskStore {
       sb.append(" versionOnly=").append(versionOnly);
       sb.append(" versionTag=").append(tag);
       if (de != null) {
-        sb.append(" de=").append(de.getClass().getSimpleName()).append('@').append(Integer.toHexString(System.identityHashCode(de)));
+        sb.append(" de=").append(de.getClass().getSimpleName()).append('@')
+            .append(Integer.toHexString(System.identityHashCode(de)));
         sb.append(" key=").append(de.getKey()).append(" value=").append(de.getValue());
       } else {
         sb.append(" <END CLEAR>");
