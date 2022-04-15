@@ -55,6 +55,8 @@ public interface Result {
 
     /**
      * Returns the code associated with this state.
+     *
+     * @return the code associated with this state
      */
     public int getCode() {
       return code;
@@ -63,6 +65,8 @@ public interface Result {
 
   /**
    * Returns the status of a processed command.
+   *
+   * @return the status of a processed command
    */
   Status getStatus();
 
@@ -80,6 +84,8 @@ public interface Result {
 
   /**
    * Returns the next line of information from the Result.
+   *
+   * @return the next line of information from the Result
    *
    * @throws IndexOutOfBoundsException if this method is called more times than there are lines of
    *         information.

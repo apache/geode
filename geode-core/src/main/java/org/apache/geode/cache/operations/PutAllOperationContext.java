@@ -40,6 +40,7 @@ public class PutAllOperationContext extends OperationContext {
   /**
    * Constructor for the operation.
    *
+   * @param map the map of keys and values to put
    */
   public PutAllOperationContext(Map map) {
     this.map = new UpdateOnlyMap(map);
@@ -76,6 +77,10 @@ public class PutAllOperationContext extends OperationContext {
    * operation that is not supported will throw an UnsupportedOperationException. If the returned
    * map is modified and this is a pre-operation authorization then the modified map is what will be
    * used by the operation.
+   *
+   * @param <K> the type of keys in the map
+   * @param <V> the type of values in the map
+   * @return the map whose keys and values will be put
    */
   public <K, V> Map<K, V> getMap() {
     return map;
@@ -84,6 +89,7 @@ public class PutAllOperationContext extends OperationContext {
   /**
    * Set the authorized map.
    *
+   * @param map the authorized map to set
    * @throws IllegalArgumentException if the given map is null or if its keys are not the same as
    *         the original keys.
    * @deprecated use getMap() instead and modify the values in the map it returns

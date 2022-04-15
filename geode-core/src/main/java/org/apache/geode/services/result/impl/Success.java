@@ -23,8 +23,7 @@ import org.apache.geode.services.result.ServiceResult;
 
 /**
  * This type of {@link ServiceResult} represents a successful operation. It contains the
- * return value
- * of type <SuccessType>
+ * return value of type {@link SuccessType}
  *
  * @param <SuccessType> the result type for a successful operation.
  *
@@ -47,8 +46,9 @@ public class Success<SuccessType> implements ServiceResult<SuccessType> {
   /**
    * Creates a {@link Success} object containing the errorMessage
    *
+   * @param <T> the type of the result
    * @param result the return value of the successful operation
-   * @return an {@link Success} instance containing the return value
+   * @return a {@link Success} instance containing the return value
    */
   public static <T> Success<T> of(T result) {
     return new Success<>(result);

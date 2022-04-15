@@ -262,7 +262,7 @@ public class GfshCommandRule extends DescribedExternalResource {
   }
 
   /**
-   *
+   * @param command the String command to execute
    * @return Command result object
    *
    * @deprecated use executeAndAssertThat(command). if you really need to get the result object

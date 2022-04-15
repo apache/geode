@@ -294,7 +294,12 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Returns the status of the locator on the given host & port
+   * Returns the status of the locator on the given host and port
+   *
+   * @param port the port that the locator is listening on
+   * @param bindAddress the IP address to which the locator's socket binds
+   * @return a {@link LocatorStatusResponse} representing the status of the locator
+   * @throws IOException if there is a problem interacting with the locator
    *
    * @deprecated in Geode 1.12. Use statusForLocator() instance method instead.
    *             This static method does not use the properties set via the Builder.
@@ -307,9 +312,14 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Returns the status of the locator on the given host & port. If you have endpoint
+   * Returns the status of the locator on the given host and port. If you have endpoint
    * identification enabled the preferred method is statusForLocator(int, String), which
    * lets you specify the locator's name that the locator has stored in its TLS certificate
+   *
+   * @param port the port that the locator is listening on
+   * @param bindAddressArg the IP address to which the locator's socket binds
+   * @return a {@link LocatorStatusResponse} representing the status of the locator
+   * @throws IOException if there is a problem interacting with the locator
    */
   public LocatorStatusResponse statusForLocator(int port, InetAddress bindAddressArg)
       throws IOException {
@@ -347,7 +357,12 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   }
 
   /**
-   * Returns the status of the locator on the given host & port
+   * Returns the status of the locator on the given host and port
+   *
+   * @param port the port that the locator is listening on
+   * @param hostname the host name or ip address that the locator is listening on.
+   * @return a {@link LocatorStatusResponse} representing the status of the locator
+   * @throws IOException if there is a problem interacting with the locator
    */
   public LocatorStatusResponse statusForLocator(int port, String hostname)
       throws IOException {
@@ -2118,6 +2133,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
     /**
      * Unmarshals a LocatorState instance from the JSON String.
      *
+     * @param json a JSON String
      * @return a LocatorState value unmarshalled from the JSON String.
      */
     public static LocatorState fromJson(final String json) {

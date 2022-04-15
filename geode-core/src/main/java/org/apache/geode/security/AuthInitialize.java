@@ -90,7 +90,9 @@ public interface AuthInitialize extends CacheCallback {
       throws AuthenticationFailedException;
 
   /**
-   *
+   * @param securityProps the security properties obtained using a call to
+   *        {@link DistributedSystem#getSecurityProperties} that will be used for obtaining the
+   *        credentials
    * @return the credentials to be used. It needs to contain "security-username" and
    *         "security-password"
    * @deprecated in Geode 1.3. Never called by the product. Use {@link #getCredentials(Properties

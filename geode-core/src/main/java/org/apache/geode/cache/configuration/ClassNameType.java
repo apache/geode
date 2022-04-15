@@ -31,15 +31,15 @@ import javax.xml.bind.annotation.XmlType;
  * The following schema fragment specifies the expected content contained within this class.
  *
  * <pre>
- * &lt;complexType>
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  *
  *
@@ -64,6 +64,7 @@ public class ClassNameType implements Serializable {
    * possible object is
    * {@link String }
    *
+   * @return the class name.
    */
   public String getClassName() {
     return className;
@@ -75,6 +76,7 @@ public class ClassNameType implements Serializable {
    * allowed object is
    * {@link String }
    *
+   * @param value the class name.
    */
   public void setClassName(String value) {
     className = value;

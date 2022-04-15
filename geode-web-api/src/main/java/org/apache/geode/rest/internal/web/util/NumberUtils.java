@@ -21,7 +21,7 @@ import org.apache.geode.internal.lang.utils.ClassUtils;
 
 /**
  * The NumberUtils class is a utility class for working with numbers.
- * <p/>
+ * <p>
  *
  * @see java.lang.Number
  * @since GemFire 8.0

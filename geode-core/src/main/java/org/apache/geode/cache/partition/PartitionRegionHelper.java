@@ -118,6 +118,7 @@ public final class PartitionRegionHelper {
   /**
    * Test a Region to see if it is a partitioned Region
    *
+   * @param r the region
    * @return true if it is a partitioned Region
    * @since GemFire 6.0
    */
@@ -246,8 +247,10 @@ public final class PartitionRegionHelper {
    * remains the primary owner, or that the member is still alive.
    * <p>
    * This method is not a substitute for {@link Region#containsKey(Object)}.
-   * </p>
+   * <p>
    *
+   * @param <K> The key type of the region
+   * @param <V> The value type of the region
    * @param r a PartitionedRegion
    * @param key the key to evaluate
    * @throws IllegalStateException if the provided region is something other than a
@@ -267,15 +270,16 @@ public final class PartitionRegionHelper {
    *
    * <p>
    * This method is not a substitute for {@link Region#containsKey(Object)}.
-   * </p>
    * <p>
    * This method is equivalent to: <code>
    *  DistributedMember primary = getPrimaryMemberForKey(r, key);
-   *  Set<? extends DistributedMember> allMembers = getAllMembersForKey(r, key);
+   *  Set&lt;? extends DistributedMember&gt; allMembers = getAllMembersForKey(r, key);
    *  allMembers.remove(primary);
    * </code>
-   * </p>
+   * <p>
    *
+   * @param <K> The key type of the region
+   * @param <V> The value type of the region
    * @param r a PartitionedRegion
    * @param key the key to evaluate
    * @throws IllegalStateException if the provided region is something other than a
@@ -299,6 +303,8 @@ public final class PartitionRegionHelper {
    * <p>
    * This method is not a substitute for {@link Region#containsKey(Object)}.
    *
+   * @param <K> The key type of the region
+   * @param <V> The value type of the region
    * @param r PartitionedRegion
    * @param key the key to evaluate
    * @throws IllegalStateException if the provided region is something other than a
@@ -351,6 +357,8 @@ public final class PartitionRegionHelper {
    * <p>
    * Writes using this Region have no constraints and behave the same as a partitioned Region.
    *
+   * @param <K> The key type of the region
+   * @param <V> The value type of the region
    * @param c a functions context
    * @throws IllegalStateException if {@link RegionFunctionContext#getDataSet()} returns something
    *         other than a {@linkplain DataPolicy#PARTITION partitioned Region}
@@ -368,6 +376,8 @@ public final class PartitionRegionHelper {
    * Given a partitioned Region return a Region providing read access limited to the local heap,
    * writes using this Region have no constraints and behave the same as a partitioned Region.<br>
    *
+   * @param <K> The key type of the region
+   * @param <V> The value type of the region
    * @param r a partitioned region
    * @throws IllegalStateException if the provided region is something other than a
    *         {@linkplain DataPolicy#PARTITION partitioned Region}
@@ -398,6 +408,8 @@ public final class PartitionRegionHelper {
    * which is limited to the local heap, writes using this Region have no constraints and behave the
    * same as a partitioned Region.<br>
    *
+   * @param <K> The key type of the region
+   * @param <V> The value type of the region
    * @param r a partitioned region
    * @throws IllegalStateException if the provided region is something other than a
    *         {@linkplain DataPolicy#PARTITION partitioned Region}
@@ -435,6 +447,7 @@ public final class PartitionRegionHelper {
    * This method allows direct control of what data to move. To automatically balance buckets, see
    * {@link ResourceManager#createRebalanceFactory()}
    *
+   * @param <K> The key type of the region
    * @param region The region in which to move the bucket. Data in regions colocated with this
    *        region will also be moved.
    * @param source A member that is currently hosting this bucket. The bucket is moved off of this

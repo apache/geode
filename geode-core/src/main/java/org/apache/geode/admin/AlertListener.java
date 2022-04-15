@@ -26,6 +26,8 @@ public interface AlertListener extends java.util.EventListener {
 
   /**
    * Invoked when an <code>Alert</code> is received.
+   *
+   * @param alert the triggering <code>Alert</code>
    */
   void alert(Alert alert);
 }

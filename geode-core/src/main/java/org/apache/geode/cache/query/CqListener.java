@@ -36,6 +36,8 @@ public interface CqListener extends CacheCallback {
    * region operation. Its up to the application to synchronize between the region operation and CQ
    * registration to avoid duplicate event being delivered.
    *
+   * @param aCqEvent the {@link CqEvent} that triggered the listener
+   *
    * @see org.apache.geode.cache.query.CqQuery#executeWithInitialResults
    */
   void onEvent(CqEvent aCqEvent);
@@ -45,6 +47,8 @@ public interface CqListener extends CacheCallback {
    * applying query condition on the event. e.g if the event doesn't has attributes as specified in
    * the CQ query. This event does contain an error. The newValue may or may not be available, and
    * will be null if not available.
+   *
+   * @param aCqEvent the {@link CqEvent} which encountered the error
    */
   void onError(CqEvent aCqEvent);
 }

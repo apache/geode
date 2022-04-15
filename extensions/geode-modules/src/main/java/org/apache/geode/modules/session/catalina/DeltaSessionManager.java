@@ -631,7 +631,6 @@ public abstract class DeltaSessionManager<CommitSessionValveT extends AbstractCo
    * session timeout value specified in the web.xml.
    * <p>
    * The precedence order for setting the session timeout value is:
-   * <p>
    * <ol>
    * <li>the max inactive interval is set based on the Manager defined in the context.xml
    * <li>the max inactive interval is then overwritten by the value of the Context's session timeout

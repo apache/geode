@@ -31,31 +31,44 @@ public interface ManagedEntityConfig extends Cloneable {
 
   /**
    * Returns the name of the host on which the managed entity runs or will run.
+   *
+   * @return the name of the host on which the managed entity runs or will run
    */
   String getHost();
 
   /**
    * Sets the name of the host on which the managed entity will run.
+   *
+   * @param host the name of the host on which the managed entity will run
    */
   void setHost(String host);
 
   /**
    * Returns the name of the working directory in which the managed entity runs or will run.
+   *
+   * @return the name of the working directory in which the managed entity runs or will run.
    */
   String getWorkingDirectory();
 
   /**
    * Sets the name of the working directory in which the managed entity will run.
+   *
+   * @param dir the name of the working directory in which the managed entity will run
    */
   void setWorkingDirectory(String dir);
 
   /**
    * Returns the name of the GemFire product directory to use when administering the managed entity.
+   *
+   * @return the name of the GemFire product directory to use when administering the managed entity
    */
   String getProductDirectory();
 
   /**
    * Sets the name of the GemFire product directory to use when administering the managed entity.
+   *
+   * @param dir the name of the GemFire product directory to use when administering the managed
+   *        entity
    */
   void setProductDirectory(String dir);
 
@@ -64,11 +77,17 @@ public interface ManagedEntityConfig extends Cloneable {
    * machine. If the remote command is <code>null</code> (the default value), then the remote
    * command associated with the {@linkplain AdminDistributedSystem#getRemoteCommand() distributed
    * system} will be used.
+   *
+   * @return the command prefix used to administer a managed entity that is hosted on a remote
+   *         machine
    */
   String getRemoteCommand();
 
   /**
    * Sets the command prefix used to administer a managed entity that is hosted on a remote machine.
+   *
+   * @param remoteCommand the command prefix used to administer a managed entity that is hosted on a
+   *        remote machine
    */
   void setRemoteCommand(String remoteCommand);
 
@@ -83,6 +102,11 @@ public interface ManagedEntityConfig extends Cloneable {
   /**
    * Returns a new <code>ManagedEntityConfig</code> with the same configuration as this
    * <code>ManagedEntityConfig</code>.
+   *
+   * @return a new <code>ManagedEntityConfig</code> with the same configuration as this
+   *         <code>ManagedEntityConfig</code>
+   * @throws CloneNotSupportedException if the object's class does not support the Cloneable
+   *         interface
    */
   Object clone() throws CloneNotSupportedException;
 

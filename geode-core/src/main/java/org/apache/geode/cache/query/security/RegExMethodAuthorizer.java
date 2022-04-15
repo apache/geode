@@ -29,18 +29,18 @@ import org.apache.geode.cache.Region;
 /**
  * An immutable and thread-safe {@link MethodInvocationAuthorizer} that only allows the execution of
  * those methods matching the configured regular expression.
- * <p/>
+ * <p>
  *
  * Some known dangerous methods, like {@link Object#getClass()}, are also rejected by this
  * authorizer implementation, no matter whether the method matches the configured regular
  * expressions
  * or not (see {@link RestrictedMethodAuthorizer#isPermanentlyForbiddenMethod(Method, Object)}).
- * <p/>
+ * <p>
  *
  * When correctly configured, this authorizer implementation addresses the four known security
  * risks: {@code Java Reflection}, {@code Cache Modification}, {@code Region Modification} and
  * {@code Region Entry Modification}.
- * <p/>
+ * <p>
  *
  * For the above statement to remain true, however, the regular expressions used must be
  * exhaustively studied and configured so no mutator methods match. If the regular expressions are
@@ -48,13 +48,12 @@ import org.apache.geode.cache.Region;
  * with the {@code DATA:READ:RegionName} privileges will be able to execute methods (even those
  * modifying the entry) on the objects stored within the region and on instances used as bind
  * parameters of the query, so this authorizer must be used with extreme care.
- * <p/>
+ * <p>
  *
  * Usage of this authorizer implementation is only recommended for scenarios on which the user or
  * operator knows exactly what code is deployed to the cluster, how and when; allowing a correct
  * configuration of the regular expressions. It might also be used on clusters on which the entries
  * stored are immutable.
- * <p/>
  *
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.query.security.MethodInvocationAuthorizer
@@ -92,7 +91,7 @@ public final class RegExMethodAuthorizer implements MethodInvocationAuthorizer {
   /**
    * Creates a {@code RegExMethodAuthorizer} object and initializes it so it can be safely used
    * in a multi-threaded environment.
-   * <p/>
+   * <p>
    *
    * Applications can use this constructor as part of the initialization for custom authorizers
    * (see {@link Declarable#initialize(Cache, Properties)}, when using a declarative approach.
@@ -114,7 +113,7 @@ public final class RegExMethodAuthorizer implements MethodInvocationAuthorizer {
   /**
    * Creates a {@code RegExMethodAuthorizer} object and initializes it so it can be safely used
    * in a multi-threaded environment.
-   * <p/>
+   * <p>
    *
    * @param restrictedMethodAuthorizer the default {@code RestrictedMethodAuthorizer} to use.
    * @param allowedPatterns the regular expressions that will be used to determine whether a method
@@ -135,7 +134,7 @@ public final class RegExMethodAuthorizer implements MethodInvocationAuthorizer {
    * executed on the {@code target} object instance.
    * If the {@code target} object is an instance of {@link Region}, this methods also ensures that
    * the user has the {@code DATA:READ} permission granted for the target {@link Region}.
-   * <p/>
+   * <p>
    *
    * @param method the {@link Method} that should be authorized.
    * @param target the {@link Object} on which the {@link Method} will be executed.

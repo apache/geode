@@ -19,7 +19,6 @@ import org.apache.geode.cache.CacheCallback;
 /**
  * Callback for users to filter out events before dispatching to remote distributed system
  *
- *
  * @since GemFire 7.0
  */
 public interface GatewayEventFilter extends CacheCallback {
@@ -29,6 +28,7 @@ public interface GatewayEventFilter extends CacheCallback {
    * This callback is synchronous with the thread which is enqueuing the event into GatewaySender's
    * queue.
    *
+   * @param event the triggering {@link GatewayQueueEvent}
    * @return true if event should be enqueued otherwise return false.
    */
   boolean beforeEnqueue(GatewayQueueEvent event);
@@ -40,6 +40,7 @@ public interface GatewayEventFilter extends CacheCallback {
    * This callback will always be called from the thread which is dispatching events to remote
    * distributed systems
    *
+   * @param event the triggering {@link GatewayQueueEvent}
    * @return true if event should be dispatched otherwise return false.
    */
   boolean beforeTransmit(GatewayQueueEvent event);
@@ -49,6 +50,7 @@ public interface GatewayEventFilter extends CacheCallback {
    * This callback will always be called from the thread which is dispatching events to remote
    * distributed systems
    *
+   * @param event the triggering {@link GatewayQueueEvent}
    */
   void afterAcknowledgement(GatewayQueueEvent event);
 

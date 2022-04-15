@@ -70,7 +70,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  */
 public class Fakes {
 
-  /**
+  /*
    * A fake cache, which contains a fake distributed system, distribution manager, etc.
    */
   public static GemFireCacheImpl cache() {
@@ -144,14 +144,14 @@ public class Fakes {
     return cache;
   }
 
-  /**
+  /*
    * A fake distributed system, which contains a fake distribution manager.
    */
   public static InternalDistributedSystem distributedSystem() {
     return cache().getInternalDistributedSystem();
   }
 
-  /**
+  /*
    * A fake region, which contains a fake cache and some other fake attributes
    */
   public static Region region(String name, Cache cache) {

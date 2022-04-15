@@ -31,20 +31,19 @@ import org.apache.geode.annotations.Experimental;
  *
  * <p>
  * The following schema fragment specifies the expected content contained within this class.
- * <p>
  *
  * <pre>
- * &lt;simpleType name="region-attributesData-policy">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="empty"/>
- *     &lt;enumeration value="normal"/>
- *     &lt;enumeration value="partition"/>
- *     &lt;enumeration value="persistent-replicate"/>
- *     &lt;enumeration value="preloaded"/>
- *     &lt;enumeration value="replicate"/>
- *     &lt;enumeration value="persistent-partition"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="region-attributesData-policy"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string"&gt;
+ *     &lt;enumeration value="empty"/&gt;
+ *     &lt;enumeration value="normal"/&gt;
+ *     &lt;enumeration value="partition"/&gt;
+ *     &lt;enumeration value="persistent-replicate"/&gt;
+ *     &lt;enumeration value="preloaded"/&gt;
+ *     &lt;enumeration value="replicate"/&gt;
+ *     &lt;enumeration value="persistent-partition"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  *
  */

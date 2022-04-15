@@ -25,6 +25,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.wan.GatewayTransportFilter;
 
 /**
  * <p>
@@ -34,22 +35,22 @@ import org.apache.geode.annotations.Experimental;
  * The following schema fragment specifies the expected content contained within this class.
  *
  * <pre>
- * &lt;complexType>
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="gateway-transport-filter" type="{http://geode.apache.org/schema/cache}class-with-parameters-type" maxOccurs="unbounded" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="start-port" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="end-port" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="bind-address" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="maximum-time-between-pings" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="socket-buffer-size" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="hostname-for-senders" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="manual-start" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="gateway-transport-filter" type="{http://geode.apache.org/schema/cache}class-with-parameters-type" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="start-port" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="end-port" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="bind-address" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="maximum-time-between-pings" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="socket-buffer-size" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="hostname-for-senders" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="manual-start" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  *
  *
@@ -97,7 +98,7 @@ public class GatewayReceiverConfig implements Serializable {
    * Objects of the following type(s) are allowed in the list
    * {@link DeclarableType }
    *
-   *
+   * @return the {@link List} of {@link GatewayTransportFilter} types.
    */
   public List<DeclarableType> getGatewayTransportFilters() {
     if (gatewayTransportFilters == null) {
@@ -112,6 +113,7 @@ public class GatewayReceiverConfig implements Serializable {
    * possible object is
    * {@link String }
    *
+   * @return the start port.
    */
   public String getStartPort() {
     return startPort;
@@ -123,6 +125,7 @@ public class GatewayReceiverConfig implements Serializable {
    * allowed object is
    * {@link String }
    *
+   * @param value the start port.
    */
   public void setStartPort(String value) {
     startPort = value;
@@ -134,6 +137,7 @@ public class GatewayReceiverConfig implements Serializable {
    * possible object is
    * {@link String }
    *
+   * @return the end port.
    */
   public String getEndPort() {
     return endPort;
@@ -145,6 +149,7 @@ public class GatewayReceiverConfig implements Serializable {
    * allowed object is
    * {@link String }
    *
+   * @param value the end port.
    */
   public void setEndPort(String value) {
     endPort = value;
@@ -156,6 +161,7 @@ public class GatewayReceiverConfig implements Serializable {
    * possible object is
    * {@link String }
    *
+   * @return the bind address.
    */
   public String getBindAddress() {
     return bindAddress;
@@ -167,6 +173,7 @@ public class GatewayReceiverConfig implements Serializable {
    * allowed object is
    * {@link String }
    *
+   * @param value the bind address.
    */
   public void setBindAddress(String value) {
     bindAddress = value;
@@ -178,6 +185,7 @@ public class GatewayReceiverConfig implements Serializable {
    * possible object is
    * {@link String }
    *
+   * @return the maximum time between pings.
    */
   public String getMaximumTimeBetweenPings() {
     return maximumTimeBetweenPings;
@@ -189,6 +197,7 @@ public class GatewayReceiverConfig implements Serializable {
    * allowed object is
    * {@link String }
    *
+   * @param value the maximum time between pings.
    */
   public void setMaximumTimeBetweenPings(String value) {
     maximumTimeBetweenPings = value;
@@ -200,6 +209,7 @@ public class GatewayReceiverConfig implements Serializable {
    * possible object is
    * {@link String }
    *
+   * @return the socket buffer size.
    */
   public String getSocketBufferSize() {
     return socketBufferSize;
@@ -211,6 +221,7 @@ public class GatewayReceiverConfig implements Serializable {
    * allowed object is
    * {@link String }
    *
+   * @param value the socket buffer size.
    */
   public void setSocketBufferSize(String value) {
     socketBufferSize = value;
@@ -222,6 +233,7 @@ public class GatewayReceiverConfig implements Serializable {
    * possible object is
    * {@link String }
    *
+   * @return the hostname for sender.
    */
   public String getHostnameForSenders() {
     return hostnameForSenders;
@@ -233,6 +245,7 @@ public class GatewayReceiverConfig implements Serializable {
    * allowed object is
    * {@link String }
    *
+   * @param value the hostname for sender.
    */
   public void setHostnameForSenders(String value) {
     hostnameForSenders = value;
@@ -244,6 +257,7 @@ public class GatewayReceiverConfig implements Serializable {
    * possible object is
    * {@link Boolean }
    *
+   * @return true if manual start is enabled, false otherwise.
    */
   public Boolean isManualStart() {
     return manualStart;
@@ -255,6 +269,7 @@ public class GatewayReceiverConfig implements Serializable {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value enables or disabled manual start.
    */
   public void setManualStart(Boolean value) {
     manualStart = value;

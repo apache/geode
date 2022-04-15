@@ -28,7 +28,7 @@ import org.apache.geode.management.internal.cli.domain.IndexDetails;
 /**
  * The ListIndexFunction class is a GemFire function used to collect all the index information on
  * all Regions across the entire GemFire Cache (distributed system).
- * </p>
+ * <p>
  *
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.execute.Function

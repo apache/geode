@@ -38,6 +38,7 @@ public abstract class CacheSerializableRunnable extends SerializableRunnable {
   /**
    * Creates a new {@code CacheSerializableRunnable} with the given name.
    *
+   * @param name the name of the {@code Runnable}, which will be logged in DUnit output
    * @deprecated Please pass name as the first argument to {@link VM} invoke or asyncInvoke.
    */
   @Deprecated

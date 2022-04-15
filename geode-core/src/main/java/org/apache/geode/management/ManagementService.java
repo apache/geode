@@ -36,6 +36,7 @@ public abstract class ManagementService {
    * Returns a newly created or the existing instance of the management service for a cache.
    *
    * @param cache Cache for which to get the management service.
+   * @return a newly created or the existing instance of the management service for a cache
    */
   public static ManagementService getManagementService(Cache cache) {
     return BaseManagementService
@@ -101,6 +102,7 @@ public abstract class ManagementService {
    * service.federate(gemfireBeanName, CustomMXBean.class, true);</code>
    * </pre>
    *
+   * @param <T> the type of MBean
    * @param objectName Object name of the MBean.
    * @param interfaceClass Interface which this MBean exposes.
    * @param notificationEmitter True if the MBean is a notification emitter.
@@ -111,6 +113,8 @@ public abstract class ManagementService {
 
   /**
    * Returns the MemberMXBean for managing and monitoring the local member.
+   *
+   * @return the MemberMXBean for managing and monitoring the local member
    */
   public abstract MemberMXBean getMemberMXBean();
 
@@ -214,11 +218,15 @@ public abstract class ManagementService {
    * Returns the object names for all MBeans associated with a member.
    *
    * @param member Member for which to find MBeans.
+   * @return the object names for all MBeans associated with a member
    */
   public abstract Set<ObjectName> queryMBeanNames(DistributedMember member);
 
   /**
    * Returns the ids of the async event queues on this member
+   *
+   * @param member Member for which to find MBeans.
+   * @return the ids of the async event queues on this member
    */
   public abstract Set<ObjectName> getAsyncEventQueueMBeanNames(DistributedMember member);
 
@@ -226,8 +234,10 @@ public abstract class ManagementService {
    * Returns an instance of an MBean. This is a reference to the MBean instance and not a
    * {@link ObjectInstance}.
    *
+   * @param <T> the type of MBean
    * @param objectName Object name of the MBean.
    * @param interfaceClass Interface which this MBean exposes.
+   * @return an instance of an MBean
    * @throws ClassCastException if the MBean does not implement the given interface.
    */
   public abstract <T> T getMBeanInstance(ObjectName objectName, Class<T> interfaceClass);
@@ -246,6 +256,7 @@ public abstract class ManagementService {
    * method for generating an object name and it does not register an MBean.
    *
    * @param member Distributed member used to generate the object name.
+   * @return the object name of the MemberMBean representing a distributed member
    */
   public abstract ObjectName getMemberMBeanName(DistributedMember member);
 
@@ -255,6 +266,7 @@ public abstract class ManagementService {
    *
    * @param member Distributed member used to generate the object name.
    * @param regionPath Path of the region.
+   * @return the object name of the RegionMBean representing a region
    */
   public abstract ObjectName getRegionMBeanName(DistributedMember member, String regionPath);
 
@@ -264,6 +276,7 @@ public abstract class ManagementService {
    *
    * @param member Distributed member used to generate the object name.
    * @param diskName Name of the disk store.
+   * @return the object name of the DiskStoreMBean representing a disk store
    */
   public abstract ObjectName getDiskStoreMBeanName(DistributedMember member, String diskName);
 
@@ -273,6 +286,7 @@ public abstract class ManagementService {
    *
    * @param member Distributed member used to generate the object name.
    * @param serverPort Port on which the cache server is listening.
+   * @return the object name of the CacheServerMBean representing a cache server
    */
   public abstract ObjectName getCacheServerMBeanName(int serverPort, DistributedMember member);
 
@@ -282,15 +296,18 @@ public abstract class ManagementService {
    *
    * @param member Distributed member used to generate the object name.
    * @param lockServiceName Name of the lock service.
+   *
+   * @return the object name of the LockServiceMBean representing a lock service
    */
   public abstract ObjectName getLockServiceMBeanName(DistributedMember member,
       String lockServiceName);
 
   /**
-   * Returns the object name of the GatewayReciverMBean representing a gateway receiver. This is a
+   * Returns the object name of the GatewayReceiverMBean representing a gateway receiver. This is a
    * utility method for generating an object name and it does not register an MBean.
    *
    * @param member Distributed member used to generate the object name.
+   * @return the object name of the GatewayReceiverMBean representing a gateway receiver
    */
   public abstract ObjectName getGatewayReceiverMBeanName(DistributedMember member);
 
@@ -300,16 +317,18 @@ public abstract class ManagementService {
    *
    * @param member Distributed member used to generate the object name.
    * @param gatwaySenderId ID of the gateway sender.
+   * @return the object name of the GatewaySenderMBean representing a gateway sender
    */
   public abstract ObjectName getGatewaySenderMBeanName(DistributedMember member,
       String gatwaySenderId);
 
   /**
-   * Returns the object name of the AsyncEventQueueMBean representing a asynchronous queue. This is
+   * Returns the object name of the AsyncEventQueueMBean representing an asynchronous queue. This is
    * a utility method for generating an object name and it does not register an MBean.
    *
    * @param member Distributed member used to generate the object name.
    * @param queueId ID of the asynchronous queue.
+   * @return the object name of the AsyncEventQueueMBean representing an asynchronous queue
    */
   public abstract ObjectName getAsyncEventQueueMBeanName(DistributedMember member, String queueId);
 
@@ -318,6 +337,7 @@ public abstract class ManagementService {
    * method for generating an object name and it does not register an MBean.
    *
    * @param regionName Name of the region.
+   * @return the object name of the DistributedRegionMBean representing a region
    */
   public abstract ObjectName getDistributedRegionMBeanName(String regionName);
 
@@ -326,18 +346,23 @@ public abstract class ManagementService {
    * a utility method for generating an object name and it does not register an MBean.
    *
    * @param lockService Name of the lock service.
+   * @return the object name of the DistributedLockServiceMBean representing a lock service
    */
   public abstract ObjectName getDistributedLockServiceMBeanName(String lockService);
 
   /**
-   * Returns the object name of the getDistributedSystemMBeanName representing a distributed system.
+   * Returns the object name of the DistributedSystemMBean representing a distributed system.
    * This is a utility method for generating an object name and it does not register an MBean.
+   *
+   * @return the object name of the DistributedSystemMBean representing a distributed system
    */
   public abstract ObjectName getDistributedSystemMBeanName();
 
   /**
    * Returns the object name of the ManagerMBean representing a manager. This is a utility method
    * for generating an object name and it does not register an MBean.
+   *
+   * @return the object name of the ManagerMBean representing a manager
    */
   public abstract ObjectName getManagerMBeanName();
 
@@ -346,6 +371,7 @@ public abstract class ManagementService {
    * for generating an object name and it does not register an MBean.
    *
    * @param member Distributed member used to generate the object name.
+   * @return the object name of the LocatorMBean representing a locator
    */
   public abstract ObjectName getLocatorMBeanName(DistributedMember member);
 
@@ -353,12 +379,15 @@ public abstract class ManagementService {
   /**
    * Registers a listener that receives call backs when a member joins or leaves the distributed
    * system.
+   *
+   * @param listener the membership listener to register
    */
   public abstract void addMembershipListener(MembershipListener listener);
 
   /**
    * Unregisters a membership listener
    *
+   * @param listener the membership listener to unregister
    * @see #addMembershipListener
    */
   public abstract void removeMembershipListener(MembershipListener listener);

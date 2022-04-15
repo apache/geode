@@ -63,6 +63,8 @@ public abstract class GfshCommand implements CommandMarker {
   /**
    * For those commands that could possibly change the cluster configuration, they need to
    * override this method to return true.
+   *
+   * @return whether the command may change the cluster configuration
    */
   public boolean affectsClusterConfiguration() {
     return false;
@@ -121,6 +123,9 @@ public abstract class GfshCommand implements CommandMarker {
 
   /**
    * this either returns a non-null member or throw an exception if member is not found.
+   *
+   * @param memberName the member name of the member to find
+   * @return the member
    */
   public DistributedMember getMember(final String memberName) {
     DistributedMember member = findMember(memberName);
@@ -134,6 +139,9 @@ public abstract class GfshCommand implements CommandMarker {
 
   /**
    * this will return the member found or null if no member with that name
+   *
+   * @param memberName the member name of the member to find
+   * @return the member found or null if no member with that name exists
    */
   public DistributedMember findMember(final String memberName) {
     return ManagementUtils.getDistributedMemberByNameOrId(memberName, (InternalCache) getCache());
@@ -141,6 +149,8 @@ public abstract class GfshCommand implements CommandMarker {
 
   /**
    * Gets all members in the GemFire distributed system/cache, including locators
+   *
+   * @return a set of all members
    */
   public Set<DistributedMember> getAllMembers() {
     return ManagementUtils.getAllMembers(cache);
@@ -148,13 +158,18 @@ public abstract class GfshCommand implements CommandMarker {
 
   /**
    * Get All members, excluding locators
+   *
+   * @return a set of all non-locator members
    */
   public Set<DistributedMember> getAllNormalMembers() {
     return ManagementUtils.getAllNormalMembers(cache);
   }
 
   /**
-   * Get All members >= a specific version, excluding locators
+   * Get All members &gt;= a specific version, excluding locators
+   *
+   * @param version a {@link KnownVersion} to compare with the version of members
+   * @return a set of non-locator members with version equal to or newer than the given version
    */
   public Set<DistributedMember> getNormalMembersWithSameOrNewerVersion(KnownVersion version) {
     return ManagementUtils.getNormalMembersWithSameOrNewerVersion(cache, version);
@@ -167,6 +182,10 @@ public abstract class GfshCommand implements CommandMarker {
 
   /**
    * if no members matches these names, an empty set would return, this does not include locators
+   *
+   * @param groups names of groups to which returned members belong
+   * @param members member names or IDs which returned members match
+   * @return a set of matching members
    */
   public Set<DistributedMember> findMembers(String[] groups, String[] members) {
     return ManagementUtils.findMembers(groups, members, cache);
@@ -185,6 +204,10 @@ public abstract class GfshCommand implements CommandMarker {
 
   /**
    * if no members matches these names, a UserErrorException will be thrown
+   *
+   * @param groups names of groups to which returned members belong
+   * @param members member names or IDs which returned members match
+   * @return a set of matching members
    */
   public Set<DistributedMember> getMembers(String[] groups, String[] members) {
     Set<DistributedMember> matchingMembers = findMembers(groups, members);
@@ -196,6 +219,10 @@ public abstract class GfshCommand implements CommandMarker {
 
   /**
    * if no members matches these names, an empty set would return
+   *
+   * @param groups names of groups to which returned members belong
+   * @param members member names or IDs which returned members match
+   * @return a set of matching members
    */
   public Set<DistributedMember> findMembersIncludingLocators(String[] groups, String[] members) {
     return ManagementUtils.findMembersIncludingLocators(groups, members,
@@ -204,6 +231,10 @@ public abstract class GfshCommand implements CommandMarker {
 
   /**
    * if no members matches these names, a UserErrorException will be thrown
+   *
+   * @param groups names of groups to which returned members belong
+   * @param members member names or IDs which returned members match
+   * @return a set of matching members
    */
   public Set<DistributedMember> getMembersIncludingLocators(String[] groups, String[] members) {
     Set<DistributedMember> matchingMembers = findMembersIncludingLocators(groups, members);
@@ -250,6 +281,8 @@ public abstract class GfshCommand implements CommandMarker {
    * function that may have an unbounded runtime. The timeout is very coarse and will not account
    * for the function overrunning the given time.
    *
+   * @param timeout the maximum amount of time to wait for the function to return
+   * @param unit the {@link TimeUnit} for the timeout
    * @param function a {@link Supplier Supplier&lt;Boolean&gt;} function that will poll for the
    *        condition
    * @return true if the function returns true within the timeout period; false otherwise

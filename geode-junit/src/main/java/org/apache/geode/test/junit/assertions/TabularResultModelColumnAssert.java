@@ -25,7 +25,7 @@ public class TabularResultModelColumnAssert<T> extends TabularResultModelSliceAs
     super(tabularResultModelAssert, valuesInColumn);
   }
 
-  /**
+  /*
    * Verifies that the selected column contains the given values only once.
    */
   @SafeVarargs
@@ -34,9 +34,9 @@ public class TabularResultModelColumnAssert<T> extends TabularResultModelSliceAs
     return parent;
   }
 
-  /**
-   * Verifies that the selected column contains exactly the given values and nothing else, <b>in any
-   * order</b>.
+  /*
+   * Verifies that the selected column contains exactly the given values and nothing else, in any
+   * order.
    */
   @SafeVarargs
   public final TabularResultModelAssert containsExactlyInAnyOrder(T... values) {
@@ -44,7 +44,7 @@ public class TabularResultModelColumnAssert<T> extends TabularResultModelSliceAs
     return parent;
   }
 
-  /**
+  /*
    * verifies the expected number of values in the column
    */
   public final TabularResultModelColumnAssert<T> hasSize(int expected) {

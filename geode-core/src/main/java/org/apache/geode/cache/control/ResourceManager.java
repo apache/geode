@@ -145,7 +145,8 @@ public interface ResourceManager {
    * thresholds are crossed.
    *
    * @param heapPercentage a percentage of the maximum tenured heap for the VM
-   * @throws IllegalStateException if the heapPercentage value is not >= 0 or <= 100 or when less
+   * @throws IllegalStateException if the heapPercentage value is not &gt;= 0 or &lt;= 100 or when
+   *         less
    *         than the current eviction heap percentage
    * @see #getCriticalHeapPercentage()
    * @see #getEvictionHeapPercentage()
@@ -186,7 +187,8 @@ public interface ResourceManager {
    * given time and its effect will be fully realized before the next change is allowed.
    *
    * @param offHeapPercentage a percentage of the maximum off-heap memory available
-   * @throws IllegalStateException if the ofHeapPercentage value is not >= 0 or <= 100 or when less
+   * @throws IllegalStateException if the ofHeapPercentage value is not &gt;= 0 or &lt;= 100 or when
+   *         less
    *         than the current eviction off-heap percentage
    * @see #getCriticalOffHeapPercentage()
    * @see #getEvictionOffHeapPercentage()
@@ -220,7 +222,8 @@ public interface ResourceManager {
    * details.}
    *
    * @param heapPercentage a percentage of the maximum tenured heap for the VM
-   * @throws IllegalStateException if the heapPercentage value is not >= 0 or <= 100 or when greater
+   * @throws IllegalStateException if the heapPercentage value is not &gt;= 0 or &lt;= 100 or when
+   *         greater
    *         than the current critical heap percentage.
    * @see #getEvictionHeapPercentage()
    * @see #getCriticalHeapPercentage()
@@ -250,7 +253,8 @@ public interface ResourceManager {
    * time and its effect will be fully realized before the next change is allowed.
    *
    * @param offHeapPercentage a percentage of the maximum off-heap memory available
-   * @throws IllegalStateException if the offHeapPercentage value is not >= 0 or <= 100 or when
+   * @throws IllegalStateException if the offHeapPercentage value is not &gt;= 0 or &lt;= 100 or
+   *         when
    *         greater than the current critical off-heap percentage.
    * @see #getEvictionOffHeapPercentage()
    * @see #getCriticalOffHeapPercentage()

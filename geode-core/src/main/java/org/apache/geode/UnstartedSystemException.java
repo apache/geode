@@ -34,6 +34,8 @@ public class UnstartedSystemException extends NoSystemException {
 
   /**
    * Creates a new <code>UnstartedSystemException</code>.
+   *
+   * @param message the detail message
    */
   public UnstartedSystemException(String message) {
     super(message);
@@ -41,6 +43,9 @@ public class UnstartedSystemException extends NoSystemException {
 
   /**
    * Creates a new <code>UnstartedSystemException</code> with the given message and cause.
+   *
+   * @param message the detail message
+   * @param cause the cause
    */
   public UnstartedSystemException(String message, Throwable cause) {
     super(message, cause);

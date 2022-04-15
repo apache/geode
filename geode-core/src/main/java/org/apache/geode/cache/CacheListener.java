@@ -17,14 +17,11 @@ package org.apache.geode.cache;
 /**
  * <p>
  * A listener to handle region or entry related events.
- * </p>
- *
  * <p>
  * Instead of implementing this interface it is recommended that you extend the
  * {@link org.apache.geode.cache.util.CacheListenerAdapter} class.
- * </p>
  *
- * <h4>Avoiding the risk of deadlock</h4>
+ * <h3>Avoiding the risk of deadlock</h3>
  * <p>
  * The methods on a <code>CacheListener</code> are invoked while holding a lock on the entry
  * described by the {@link EntryEvent}, as a result if the listener method takes a long time to
@@ -38,25 +35,21 @@ package org.apache.geode.cache;
  * "A". Deadlocks may be either java-level or distributed multi-VM dead locks depending on Region
  * configuration. To be assured of no deadlocks, listener code should cause some other thread to
  * access the region and must not wait for that thread to complete the task.
- * </p>
- *
  * <p>
  * WARNING: To avoid risk of deadlock, do not invoke CacheFactory.getAnyInstance() from within any
  * callback methods. Instead use EntryEvent.getRegion().getCache() or
  * RegionEvent.getRegion().getCache().
- * </p>
  *
- * <h4>Concurrency</h4>
+ * <h3>Concurrency</h3>
  * <p>
  * Multiple events, on different entries, can cause concurrent invocation of
  * <code>CacheListener</code> methods. Any exceptions thrown by the listener are caught by GemFire
  * and logged.
- * </p>
  *
- * <h4>Declaring instances in Cache XML files</h4>
+ * <h3>Declaring instances in Cache XML files</h3>
  * <p>
  * To declare a CacheListener in a Cache XML file, it must also implement {@link Declarable}
- * </p>
+ * <p>
  *
  * @see AttributesFactory#addCacheListener
  * @see AttributesFactory#initCacheListeners

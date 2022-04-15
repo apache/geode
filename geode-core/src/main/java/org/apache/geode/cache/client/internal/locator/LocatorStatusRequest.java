@@ -19,7 +19,7 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * The LocatorStatusRequest class...
- * </p>
+ * <p>
  *
  * @see org.apache.geode.cache.client.internal.locator.ServerLocationRequest
  * @see DataSerializableFixedID

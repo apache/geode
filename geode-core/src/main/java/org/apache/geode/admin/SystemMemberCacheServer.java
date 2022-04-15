@@ -32,11 +32,15 @@ public interface SystemMemberCacheServer {
 
   /**
    * Returns the port on which this cache server listens for clients to connect.
+   *
+   * @return the port on which this cache server listens for clients to connect
    */
   int getPort();
 
   /**
    * Sets the port on which this cache server listens for clients to connect.
+   *
+   * @param port the port on which this cache server listens for clients to connect
    *
    * @throws AdminException If this cache server is running
    */
@@ -51,12 +55,16 @@ public interface SystemMemberCacheServer {
 
   /**
    * Returns whether or not this cache server is running
+   *
+   * @return whether this cache server is running
    */
   boolean isRunning();
 
   /**
    * Stops this cache server. Note that the <code>CacheServer</code> can be reconfigured and
    * restarted if desired.
+   *
+   * @throws AdminException if an exception is encountered when stopping the cache server
    */
   void stop() throws AdminException;
 
@@ -132,6 +140,7 @@ public interface SystemMemberCacheServer {
    * In addition, the actual value is pushed to the client. The client does not need to request the
    * new value from the cache server.
    *
+   * @param b whether this cache server should notify clients based on key subscription
    * @throws AdminException if this cache server is running
    * @since GemFire 5.7
    */
@@ -140,6 +149,7 @@ public interface SystemMemberCacheServer {
   /**
    * Answers whether or not this cache server should notify clients based on key subscription.
    *
+   * @return whether this cache server should notify clients based on key subscription
    * @since GemFire 5.7
    */
   boolean getNotifyBySubscription();
@@ -187,6 +197,7 @@ public interface SystemMemberCacheServer {
   /**
    * Returns the maximum allowed client connections
    *
+   * @return the maximum number of client connections allowed
    * @since GemFire 5.7
    */
   int getMaxConnections();
@@ -195,6 +206,7 @@ public interface SystemMemberCacheServer {
    * Sets the maximum number of client connections allowed. When the maximum is reached the server
    * will stop accepting connections.
    *
+   * @param maxCons the maximum number of client connections allowed
    * @throws AdminException if this cache server is running
    * @since GemFire 5.7
    */
@@ -204,6 +216,7 @@ public interface SystemMemberCacheServer {
    * Returns the maximum number of threads allowed in this server to service client requests. The
    * default of <code>0</code> causes the server to dedicate a thread for every client connection.
    *
+   * @return the maximum number of threads allowed in this server to service client requests
    * @since GemFire 5.7
    */
   int getMaxThreads();
@@ -211,6 +224,9 @@ public interface SystemMemberCacheServer {
   /**
    * Sets the maximum number of threads allowed in this server to service client requests. The
    * default of <code>0</code> causes the server to dedicate a thread for every client connection.
+   *
+   * @param maxThreads the maximum number of threads allowed in this server to service client
+   *        requests
    *
    * @throws AdminException if this cache server is running
    * @since GemFire 5.7
@@ -220,12 +236,15 @@ public interface SystemMemberCacheServer {
   /**
    * Returns the maximum number of messages that can be enqueued in a client-queue.
    *
+   * @return maximum number of messages that can be enqueued in a client-queue.
    * @since GemFire 5.7
    */
   int getMaximumMessageCount();
 
   /**
    * Sets maximum number of messages that can be enqueued in a client-queue.
+   *
+   * @param maxMessageCount maximum number of messages that can be enqueued in a client-queue.
    *
    * @throws AdminException if this cache server is running
    * @since GemFire 5.7
@@ -235,13 +254,17 @@ public interface SystemMemberCacheServer {
   /**
    * Returns the time (in seconds ) after which a message in the client queue will expire.
    *
+   * @return the time (in seconds) after which a message in the client queue will expire
+   *
    * @since GemFire 5.7
    */
   int getMessageTimeToLive();
 
   /**
-   * Sets the time (in seconds ) after which a message in the client queue will expire.
+   * Sets the time (in seconds) after which a message in the client queue will expire.
    *
+   * @param messageTimeToLive the time (in seconds) after which a message in the client queue will
+   *        expire
    * @throws AdminException if this cache server is running
    * @since GemFire 5.7
    */

@@ -76,6 +76,8 @@ public interface Cache extends GemFireCache {
   /**
    * Creates a VM region using the specified RegionAttributes.
    *
+   * @param <K> the type of keys in the region
+   * @param <V> the type of values in the region
    * @param name the name of the region to create
    * @param aRegionAttributes the attributes of the root region
    * @return the region object
@@ -95,6 +97,8 @@ public interface Cache extends GemFireCache {
   /**
    * Creates a region using the specified RegionAttributes.
    *
+   * @param <K> the type of keys in the region
+   * @param <V> the type of values in the region
    * @param name the name of the region to create
    * @param aRegionAttributes the attributes of the root region
    * @return the region object
@@ -116,6 +120,11 @@ public interface Cache extends GemFireCache {
    * Creates a {@link RegionFactory} which can be used to specify additional attributes for
    * {@link Region} creation.
    *
+   * @param <K> the type of keys in the region
+   * @param <V> the type of values in the region
+   * @return a {@link RegionFactory} which can be used to specify additional attributes for
+   *         {@link Region} creation
+   *
    * @see #createRegionFactory(RegionShortcut)
    * @since GemFire 6.5
    */
@@ -125,6 +134,10 @@ public interface Cache extends GemFireCache {
    * Creates a {@link RegionFactory} for the most commonly used {@link Region} types defined by
    * {@link RegionShortcut}
    *
+   * @param <K> the type of keys in the region
+   * @param <V> the type of values in the region
+   * @param shortcut the region type as defined by {@link RegionShortcut}
+   * @return a {@link RegionFactory}
    * @since GemFire 6.5
    */
   <K, V> RegionFactory<K, V> createRegionFactory(RegionShortcut shortcut);
@@ -133,7 +146,10 @@ public interface Cache extends GemFireCache {
    * Creates a {@link RegionFactory} for creating a {@link Region} from {@link RegionAttributes}
    * mapped to this regionAttributesId
    *
+   * @param <K> the type of keys in the region
+   * @param <V> the type of values in the region
    * @param regionAttributesId the Id of RegionAttributes to be used
+   * @return a {@link RegionFactory}
    * @see #setRegionAttributes(String, RegionAttributes)
    * @since GemFire 6.5
    */
@@ -142,7 +158,10 @@ public interface Cache extends GemFireCache {
   /**
    * Creates a {@link RegionFactory} for creating a {@link Region} from the given regionAttributes
    *
+   * @param <K> the type of keys in the region
+   * @param <V> the type of values in the region
    * @param regionAttributes regionAttributes for the new region
+   * @return a {@link RegionFactory}
    * @see #createRegionFactory(RegionShortcut)
    * @since GemFire 6.5
    */
@@ -174,12 +193,17 @@ public interface Cache extends GemFireCache {
   /**
    * Gets the number of seconds a cache operation will wait to obtain a distributed lock lease. This
    * method does not throw {@code CacheClosedException} if the cache is closed.
+   *
+   * @return the number of seconds a cache operation will wait to obtain a distributed lock lease
    */
   int getLockTimeout();
 
   /**
    * Sets the number of seconds a cache operation may wait to obtain a distributed lock lease before
    * timing out.
+   *
+   * @param seconds the number of seconds a cache operation may wait to obtain a distributed lock
+   *        lease before timing out
    *
    * @throws IllegalArgumentException if {@code seconds} is less than zero
    */
@@ -207,11 +231,15 @@ public interface Cache extends GemFireCache {
   /**
    * Gets the length, in seconds, of distributed lock leases obtained by this cache. This method
    * does not throw {@code CacheClosedException} if the cache is closed.
+   *
+   * @return the length, in seconds, of distributed lock leases obtained by this cache
    */
   int getLockLease();
 
   /**
    * Sets the length, in seconds, of distributed lock leases obtained by this cache.
+   *
+   * @param seconds the length, in seconds, of distributed lock leases obtained by this cache
    *
    * @throws IllegalArgumentException if {@code seconds} is less than zero.
    */
@@ -222,11 +250,16 @@ public interface Cache extends GemFireCache {
    * operation can spend searching for a value before it times out. The search includes any time
    * spent loading the object. When the search times out it causes the get to fail by throwing an
    * exception. This method does not throw {@code CacheClosedException} if the cache is closed.
+   *
+   * @return the number of seconds a cache {@link Region#get(Object) get} operation can spend
+   *         searching for a value before it times out
    */
   int getSearchTimeout();
 
   /**
    * Sets the number of seconds a cache get operation can spend searching for a value.
+   *
+   * @param seconds the number of seconds a cache get operation can spend searching for a value
    *
    * @throws IllegalArgumentException if {@code seconds} is less than zero
    */
@@ -240,6 +273,8 @@ public interface Cache extends GemFireCache {
    * For the default configuration see the constants in
    * {@link CacheServer}.
    *
+   * @return the newly created {@link CacheServer}
+   *
    * @see CacheServer
    *
    * @since GemFire 5.7
@@ -249,6 +284,8 @@ public interface Cache extends GemFireCache {
   /**
    * Returns a collection of all of the {@code CacheServer}s that can serve the contents of this
    * {@code Cache} to clients.
+   *
+   * @return a collection of all of the {@code CacheServer}s
    *
    * @see #addCacheServer
    *
@@ -272,6 +309,8 @@ public interface Cache extends GemFireCache {
   /**
    * Returns the current gateway event conflict resolver
    *
+   * @return the current gateway event conflict resolver
+   *
    * @since GemFire 7.0
    */
   GatewayConflictResolver getGatewayConflictResolver();
@@ -282,12 +321,16 @@ public interface Cache extends GemFireCache {
    * {@linkplain AdminDistributedSystem#addCacheServer administration API} or
    * the {@code cacheserver} command line utility.
    *
+   * @param isServer whether this {@code Cache} resides in a long-running "cache server" VM
+   *
    * @since GemFire 4.0
    */
   void setIsServer(boolean isServer);
 
   /**
    * Returns whether or not this cache resides in a "cache server" VM.
+   *
+   * @return whether this cache resides in a "cache server" VM
    *
    * @see #setIsServer
    *
@@ -316,6 +359,8 @@ public interface Cache extends GemFireCache {
   /**
    * Creates {@link GatewaySenderFactory} for creating a SerialGatewaySender
    *
+   * @return a {@link GatewaySenderFactory}
+   *
    * @since GemFire 7.0
    */
   @Override
@@ -324,12 +369,16 @@ public interface Cache extends GemFireCache {
   /**
    * Creates {@link AsyncEventQueueFactory} for creating a AsyncEventQueue
    *
+   * @return a {@link AsyncEventQueueFactory}
+   *
    * @since GemFire 7.0
    */
   AsyncEventQueueFactory createAsyncEventQueueFactory();
 
   /**
    * Creates {@link GatewayReceiverFactory} for creating a GatewayReceiver
+   *
+   * @return a {@link GatewayReceiverFactory}
    *
    * @since GemFire 7.0
    */
@@ -346,6 +395,7 @@ public interface Cache extends GemFireCache {
   /**
    * Returns the {@link GatewaySender} with the given id added to this Cache.
    *
+   * @param id the id of the {@link GatewaySender}
    * @return GatewaySender with id
    * @since GemFire 7.0
    */
@@ -370,6 +420,7 @@ public interface Cache extends GemFireCache {
   /**
    * Returns the {@link AsyncEventQueue} with the given id added to this Cache.
    *
+   * @param id the id of the {@link AsyncEventQueue}
    * @return AsyncEventQueue with id
    * @since GemFire 7.0
    */
@@ -378,12 +429,16 @@ public interface Cache extends GemFireCache {
   /**
    * Returns a set of the other non-administrative members in the distributed system.
    *
+   * @return a set of the other non-administrative members in the distributed system
+   *
    * @since GemFire 6.6
    */
   Set<DistributedMember> getMembers();
 
   /**
    * Returns a set of the administrative members in the distributed system.
+   *
+   * @return a set of the administrative members in the distributed system
    *
    * @since GemFire 6.6
    */
@@ -394,6 +449,7 @@ public interface Cache extends GemFireCache {
    * with local scope an empty set is returned.
    *
    * @param region a Region in the cache
+   * @return a set of the members in the distributed system that have the given region
    * @since GemFire 6.6
    */
   Set<DistributedMember> getMembers(Region region);
@@ -439,6 +495,8 @@ public interface Cache extends GemFireCache {
 
   /**
    * Returns the new Cache if there was an auto-reconnect and the cache was recreated.
+   *
+   * @return the new Cache if there was an auto-reconnect and the cache was recreated
    */
   Cache getReconnectedCache();
 }

@@ -43,7 +43,7 @@ public class Quote implements Serializable {
   // later added by Prafulla
   public Set restrict = new HashSet();
 
-  /** Creates a new instance of Quote */
+  /* Creates a new instance of Quote */
   public Quote(int i) {
     cusip = 1000000000 - i;
     quoteId = i;

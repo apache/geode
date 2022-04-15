@@ -52,6 +52,7 @@ public interface TransactionEvent {
   /**
    * Gets the <code>TransactionId</code> associated this TransactionEvent.
    *
+   * @return the <code>TransactionId</code> associated this TransactionEvent
    */
   TransactionId getTransactionId();
 

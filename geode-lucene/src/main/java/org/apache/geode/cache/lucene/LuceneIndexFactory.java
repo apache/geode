@@ -35,6 +35,7 @@ public interface LuceneIndexFactory {
    *        java fields on the object otherwise. The special field name
    *        {@link LuceneService#REGION_VALUE_FIELD} indicates that the entire value should be
    *        stored as a single field in the index.
+   * @return this factory
    */
   LuceneIndexFactory addField(String name);
 
@@ -46,6 +47,7 @@ public interface LuceneIndexFactory {
    *        java fields on the object otherwise. The special field name
    *        {@link LuceneService#REGION_VALUE_FIELD} indicates that the entire value should be
    *        stored as a single field in the index.
+   * @return this factory
    */
   LuceneIndexFactory setFields(String... fields);
 
@@ -59,6 +61,7 @@ public interface LuceneIndexFactory {
    *        stored as a single field in the index.
    * @param analyzer The analyzer to use for this this field. Analyzers are used by Lucene to
    *        tokenize your field into individual words.
+   * @return this factory
    */
   LuceneIndexFactory addField(String name, Analyzer analyzer);
 
@@ -70,6 +73,7 @@ public interface LuceneIndexFactory {
    *        if the object is serialized with PDX, or to java fields on the object otherwise. The
    *        special field name {@link LuceneService#REGION_VALUE_FIELD} indicates that the entire
    *        value should be stored as a single field in the index.
+   * @return this factory
    */
   LuceneIndexFactory setFields(Map<String, Analyzer> fieldMap);
 
@@ -86,6 +90,7 @@ public interface LuceneIndexFactory {
    *
    * @param luceneSerializer A callback which converts a region value to a lucene document or
    *        documents to be stored in the index.
+   * @return this factory
    *
    * @since Geode 1.4
    */

@@ -24,7 +24,7 @@ import org.apache.geode.pdx.PdxWriter;
 
 /**
  * The Order class is an abstraction modeling a order.
- * <p/>
+ * <p>
  *
  * @since GemFire 8.0
  */

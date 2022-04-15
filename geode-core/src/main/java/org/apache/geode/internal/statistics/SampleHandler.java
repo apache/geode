@@ -26,7 +26,7 @@ public interface SampleHandler {
 
   /**
    * Notification that a statistics sample has occurred.
-   * <p/>
+   * <p>
    * The timeStamp is an arbitrary nanoseconds time stamp only used for archiving to stats files.
    * The initial time in system milliseconds and the first NanoTimer timeStamp are both written to
    * the archive file. Thereafter only the NanoTimer timeStamp is written to the archive file for

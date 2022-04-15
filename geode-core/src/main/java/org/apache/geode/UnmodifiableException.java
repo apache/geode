@@ -26,6 +26,8 @@ public class UnmodifiableException extends GemFireException {
 
   /**
    * Creates a new <code>UnmodifiableException</code>.
+   *
+   * @param message the detail message
    */
   public UnmodifiableException(String message) {
     super(message);

@@ -100,6 +100,8 @@ public final class ServerLoad implements DataSerializable {
 
   /**
    * Set the load due to client to server connections.
+   *
+   * @param connectionLoad the load due to client to server connections
    */
   public void setConnectionLoad(float connectionLoad) {
     this.connectionLoad = connectionLoad;
@@ -107,6 +109,8 @@ public final class ServerLoad implements DataSerializable {
 
   /**
    * Set the load due to client subscriptions.
+   *
+   * @param subscriberLoad he load due to client subscriptions
    */
   public void setSubscriptionConnectionLoad(float subscriberLoad) {
     this.subscriberLoad = subscriberLoad;
@@ -114,6 +118,8 @@ public final class ServerLoad implements DataSerializable {
 
   /**
    * Set the estimated load per connection.
+   *
+   * @param loadPerConnection the estimated load per connection
    */
   public void setLoadPerConnection(float loadPerConnection) {
     this.loadPerConnection = loadPerConnection;
@@ -121,6 +127,8 @@ public final class ServerLoad implements DataSerializable {
 
   /**
    * Set the estimated load per subscription connection.
+   *
+   * @param loadPerSubscriber the estimated load per subscription connection
    */
   public void setLoadPerSubscriptionConnection(float loadPerSubscriber) {
     this.loadPerSubscriber = loadPerSubscriber;

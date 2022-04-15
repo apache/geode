@@ -54,11 +54,11 @@ import org.apache.geode.security.NotAuthorizedException;
  * An implementation of the {@link AccessControl} interface that allows authorization using the
  * permissions as specified in the given XML file.
  *
- * The format of the XML file is specified in <a href="authz5_5.dtd"/>. It implements a role-based
- * authorization at the operation level for each region. Each principal name may be associated with
- * a set of roles. The name of the principal is obtained using the {@link Principal#getName()}
- * method and no other information of the principal is utilized. Each role can be provided
- * permissions to execute operations for each region.
+ * The format of the XML file is specified in <a href="authz5_5.dtd">authz5_5.dtd</a>. It implements
+ * a role-based authorization at the operation level for each region. Each principal name may be
+ * associated with a set of roles. The name of the principal is obtained using the
+ * {@link Principal#getName()} method and no other information of the principal is utilized. Each
+ * role can be provided permissions to execute operations for each region.
  *
  * The top-level element in the XML is "acl" tag that contains the "role" and "permission" tags. The
  * "role" tag contains the list of users that have been given that role. The name of the role is
@@ -152,7 +152,7 @@ public class XmlAuthorization implements AccessControl {
     XmlAuthorization.xmlLoadFailure = null;
   }
 
-  /**
+  /*
    * Change the region name to a standard format having single '/' as separator and starting with a
    * '/' as in standard POSIX paths
    */

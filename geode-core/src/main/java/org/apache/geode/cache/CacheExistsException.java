@@ -38,6 +38,7 @@ public class CacheExistsException extends CacheException {
   /**
    * Constructs an instance of <code>CacheExistsException</code> with the specified detail message.
    *
+   * @param cache the <code>Cache</code> that already exists
    * @param msg the detail message
    */
   public CacheExistsException(Cache cache, String msg) {
@@ -49,6 +50,7 @@ public class CacheExistsException extends CacheException {
    * Constructs an instance of <code>CacheExistsException</code> with the specified detail message
    * and cause.
    *
+   * @param cache the <code>Cache</code> that already exists
    * @param msg the detail message
    * @param cause the causal Throwable
    */
@@ -62,6 +64,7 @@ public class CacheExistsException extends CacheException {
   /**
    * Returns the <code>Cache</code> that already exists.
    *
+   * @return the <code>Cache</code> that already exists
    * @since GemFire 4.0
    */
   public Cache getCache() {

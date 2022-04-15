@@ -31,6 +31,8 @@ public class NoSystemException extends GemFireException {
 
   /**
    * Creates a new <code>NoSystemException</code>.
+   *
+   * @param message the detail message
    */
   public NoSystemException(String message) {
     super(message);
@@ -38,6 +40,9 @@ public class NoSystemException extends GemFireException {
 
   /**
    * Creates a new <code>NoSystemException</code> with the given message and cause.
+   *
+   * @param message the detail message
+   * @param cause the cause
    */
   public NoSystemException(String message, Throwable cause) {
     super(message, cause);

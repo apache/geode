@@ -416,6 +416,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
    * <p>
    * Note that this test does not make sense for regions that are {@link Scope#DISTRIBUTED_NO_ACK}
    * for which we do not guarantee the ordering of updates for a single producer/single consumer.
+   *
+   * @throws Exception if the test fails
    */
   @Test
   public void testOrderedUpdates() throws Exception {
@@ -505,6 +507,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   /**
    * Tests that doing a {@link Region#put put} on a distributed region in one VM does not effect a
    * region in a different VM that does not have that key defined.
+   *
+   * @throws Exception if the test fails
    */
   @Test
   public void testDistributedPutNoUpdate() throws Exception {
@@ -691,6 +695,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   /**
    * Tests that a {@linkplain Region#localDestroy} does not effect other VMs that define that
    * entry.
+   *
+   * @throws Exception if the test fails
    */
   @Test
   public void testLocalDestroy() throws Exception {
@@ -745,6 +751,8 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   /**
    * Tests that a {@link Region#localDestroyRegion} is not propagated to other VMs that define that
    * region.
+   *
+   * @throws Exception if the test fails
    */
   @Test
   public void testLocalRegionDestroy() throws Exception {
@@ -2971,7 +2979,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     });
   }
 
-  /**
+  /*
    * Tests that an entry in a distributed region expires with a local destroy after a given time to
    * live.
    */
@@ -3189,7 +3197,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   private static final int NB1_NUM_ENTRIES = 1000;
   private static final int NB1_VALUE_SIZE = NB1_CHUNK_SIZE * 10 / NB1_NUM_ENTRIES;
 
-  /**
+  /*
    * Tests that distributed ack operations do not block while another cache is doing a
    * getInitialImage.
    */
@@ -5725,7 +5733,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   // M E T H O D S F O R V E R S I O N I N G F O L L O W
   //////////////////////////////////////////////////////////////////////////////////////
 
-  /**
+  /*
    * return the region attributes for the given type of region. See
    * GemFireCache.getRegionAttributes(String).
    * Subclasses are expected to reimplement this method. See
@@ -5821,7 +5829,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     }
   }
 
-  /**
+  /*
    * This tests the concurrency versioning system to ensure that event conflation happens correctly
    * and that the statistic is being updated properly
    */
@@ -6678,7 +6686,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     return false;
   }
 
-  /**
+  /*
    * The number of milliseconds to try repeating validation code in the event that AssertionError is
    * thrown. For ACK scopes, no repeat should be necessary.
    */

@@ -66,11 +66,6 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
       "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
           .getBytes();
 
-  /**
-   * Creates a new CompressionStatsDUnitTest.
-   *
-   * @param name test name.
-   */
   public CompressionStatsDUnitTest() {
     super();
   }

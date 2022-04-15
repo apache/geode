@@ -46,9 +46,10 @@ public class MBeanUtil {
   /**
    * Utility Method to obtain MemberMXBean proxy reference for a particular Member
    *
+   * @param member the member
    * @return a reference to MemberMXBean
    */
-  public static MemberMXBean getMemberMbeanProxy(DistributedMember member) throws Exception {
+  public static MemberMXBean getMemberMbeanProxy(DistributedMember member) {
     MemberMXBean bean = null;
     final SystemManagementService service =
         (SystemManagementService) ManagementTestBase.getManagementService();
@@ -86,10 +87,11 @@ public class MBeanUtil {
   /**
    * Utility Method to obtain CacheServerMXBean proxy reference for a particular Member
    *
+   * @param member the member
+   * @param port the port on which the cache server is listening
    * @return a reference to CacheServerMXBean
    */
-  public static CacheServerMXBean getCacheServerMbeanProxy(DistributedMember member, int port)
-      throws Exception {
+  public static CacheServerMXBean getCacheServerMbeanProxy(DistributedMember member, int port) {
     CacheServerMXBean bean = null;
     final SystemManagementService service =
         (SystemManagementService) ManagementTestBase.getManagementService();
@@ -132,10 +134,12 @@ public class MBeanUtil {
    * Utility Method to obtain LockServiceMXBean proxy reference for a particular lock service on a
    * Member
    *
+   * @param member the member
+   * @param lockServiceName the name of the lock service
    * @return a reference to LockServiceMXBean
    */
   public static LockServiceMXBean getLockServiceMbeanProxy(DistributedMember member,
-      String lockServiceName) throws Exception {
+      String lockServiceName) {
     LockServiceMXBean bean = null;
     final SystemManagementService service =
         (SystemManagementService) ManagementTestBase.getManagementService();
@@ -177,10 +181,11 @@ public class MBeanUtil {
   /**
    * Utility Method to obtain RegionMXBean proxy reference for a particular region on a member
    *
+   * @param member the member
+   * @param regionPath the full path of the region
    * @return a reference to RegionMXBean
    */
-  public static RegionMXBean getRegionMbeanProxy(DistributedMember member, String regionPath)
-      throws Exception {
+  public static RegionMXBean getRegionMbeanProxy(DistributedMember member, String regionPath) {
 
     final SystemManagementService service =
         (SystemManagementService) ManagementTestBase.getManagementService();
@@ -230,7 +235,7 @@ public class MBeanUtil {
    * @return a reference to GatewaySenderMXBean
    */
   public static GatewaySenderMXBean getGatewaySenderMbeanProxy(DistributedMember member,
-      String gatwaySenderId) throws Exception {
+      String gatwaySenderId) {
 
     final SystemManagementService service =
         (SystemManagementService) ManagementTestBase.getManagementService();
@@ -279,7 +284,7 @@ public class MBeanUtil {
    * @return a reference to AsyncEventQueueMXBean
    */
   public static AsyncEventQueueMXBean getAsyncEventQueueMBeanProxy(DistributedMember member,
-      String queueId) throws Exception {
+      String queueId) {
 
     final SystemManagementService service =
         (SystemManagementService) ManagementTestBase.getManagementService();
@@ -325,8 +330,7 @@ public class MBeanUtil {
    * @param member distributed member
    * @return a reference to GatewayReceiverMXBean
    */
-  public static GatewayReceiverMXBean getGatewayReceiverMbeanProxy(DistributedMember member)
-      throws Exception {
+  public static GatewayReceiverMXBean getGatewayReceiverMbeanProxy(DistributedMember member) {
 
     final SystemManagementService service =
         (SystemManagementService) ManagementTestBase.getManagementService();
@@ -370,10 +374,11 @@ public class MBeanUtil {
    * Utility Method to obtain DistributedRegionMXBean proxy reference for a particular region
    *
    * @param regionName name of the region
+   * @param expectedMembers the number of members expected to be hosting the region
    * @return a reference to DistributedRegionMXBean
    */
   public static DistributedRegionMXBean getDistributedRegionMbean(final String regionName,
-      final int expectedMembers) throws Exception {
+      final int expectedMembers) {
     DistributedRegionMXBean bean = null;
 
     final ManagementService service = ManagementTestBase.getManagementService();
@@ -407,10 +412,11 @@ public class MBeanUtil {
    * Utility Method to obtain DistributedRegionMXBean proxy reference for a particular region
    *
    * @param lockServiceName name of the lock service
+   * @param expectedMembers the number of members expected to be using the lock service
    * @return a reference to DistributedLockServiceMXBean
    */
   public static DistributedLockServiceMXBean getDistributedLockMbean(final String lockServiceName,
-      final int expectedMembers) throws Exception {
+      final int expectedMembers) {
     DistributedLockServiceMXBean bean = null;
 
     final ManagementService service = ManagementTestBase.getManagementService();
@@ -444,7 +450,7 @@ public class MBeanUtil {
    * @param member distributed member
    * @return a reference to GatewayReceiverMXBean
    */
-  public static LocatorMXBean getLocatorMbeanProxy(DistributedMember member) throws Exception {
+  public static LocatorMXBean getLocatorMbeanProxy(DistributedMember member) {
 
     final SystemManagementService service =
         (SystemManagementService) ManagementTestBase.getManagementService();

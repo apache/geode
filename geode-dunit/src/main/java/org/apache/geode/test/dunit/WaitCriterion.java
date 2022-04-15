@@ -33,7 +33,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
  *
  * @see Wait
  * @see GeodeAwaitility
- * @see org.awaitility.Duration
+ * @see org.awaitility.Durations
  * @see org.awaitility.core.ConditionFactory
  */
 @Deprecated

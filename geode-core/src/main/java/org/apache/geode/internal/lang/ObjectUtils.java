@@ -18,7 +18,7 @@ package org.apache.geode.internal.lang;
 /**
  * The ObjectUtils class is an abstract utility class for working with and invoking methods on
  * Objects.
- * <p/>
+ * <p>
  *
  * @see java.lang.Object
  * @since GemFire 6.8
@@ -29,7 +29,7 @@ public abstract class ObjectUtils {
   /**
    * Determines whether 2 Objects are equal in value. The Objects are equal if and only if neither
    * are null and are equal according to the equals method of the Object's class type.
-   * <p/>
+   * <p>
    *
    * @param obj1 the first Object in the equality comparison.
    * @param obj2 the second Object in the equality comparison.
@@ -44,7 +44,7 @@ public abstract class ObjectUtils {
    * Determines whether 2 Objects are equal in value by ignoring nulls. If both Object references
    * are null, then they are considered equal, or neither must be null and the Objects must be equal
    * in value as determined by their equals method.
-   * <p/>
+   * <p>
    *
    * @param obj1 the first Object in the equality comparison.
    * @param obj2 the second Object in the equality comparison.
@@ -60,7 +60,7 @@ public abstract class ObjectUtils {
    * A null-safe computation of the specified Object's hash value. If the Object reference is null,
    * then this method returns 0 and will be consistent with the equalsIgnoreNull equality
    * comparison.
-   * <p/>
+   * <p>
    *
    * @param obj the Object who's hash value will be computed.
    * @return an integer signifying the hash value of the Object or 0 if the Object reference is
@@ -73,7 +73,7 @@ public abstract class ObjectUtils {
 
   /**
    * Null-safe implementation of the Object.toString method.
-   * </p>
+   * <p>
    *
    * @param obj the Object on which to call toString.
    * @return the String representation of the specified Object or null if the Object reference is

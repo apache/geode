@@ -49,15 +49,15 @@ public abstract class Host implements Serializable {
 
   private final transient VMEventNotifier vmEventNotifier;
 
-  /**
+  /*
    * Returns the number of known hosts
    */
   public static int getHostCount() {
     return hosts.size();
   }
 
-  /**
-   * Makes note of a new {@code Host}
+  /*
+   * Makes note of a new Host
    */
   protected static void addHost(Host host) {
     hosts.add(host);
@@ -67,6 +67,7 @@ public abstract class Host implements Serializable {
    * Returns a given host
    *
    * @param whichHost A zero-based identifier of the host
+   * @return the Host
    *
    * @throws IllegalArgumentException {@code n} is more than the number of hosts
    */
@@ -102,6 +103,9 @@ public abstract class Host implements Serializable {
 
   /**
    * Creates a new {@code Host} with the given name
+   *
+   * @param hostName the name of the Host
+   * @param vmEventNotifier the notifier to use for the Host
    */
   protected Host(String hostName, VMEventNotifier vmEventNotifier) {
     if (hostName == null) {
@@ -114,14 +118,14 @@ public abstract class Host implements Serializable {
     this.vmEventNotifier = vmEventNotifier;
   }
 
-  /**
+  /*
    * Returns the machine name of this host
    */
   public String getHostName() {
     return hostName;
   }
 
-  /**
+  /*
    * Returns the number of VMs that run on this host
    */
   public int getVMCount() {
@@ -132,6 +136,7 @@ public abstract class Host implements Serializable {
    * Returns a VM that runs on this host
    *
    * @param n A zero-based identifier of the VM
+   * @return a VM that runs on this host
    *
    * @throws IllegalArgumentException {@code n} is more than the number of VMs
    * @deprecated use the static methods in VM instead
@@ -150,14 +155,14 @@ public abstract class Host implements Serializable {
     }
   }
 
-  /**
+  /*
    * return a collection of all VMs
    */
   public List<VM> getAllVMs() {
     return new ArrayList<>(vms);
   }
 
-  /**
+  /*
    * Returns the nth VM of the given version. Optional operation currently supported only in
    * distributedTests.
    */
@@ -165,8 +170,8 @@ public abstract class Host implements Serializable {
     throw new UnsupportedOperationException("Not supported in this implementation of Host");
   }
 
-  /**
-   * Adds a VM to this {@code Host} with the given process id and client record.
+  /*
+   * Adds a VM to this Host with the given process id and client record.
    */
   protected void addVM(int vmid, final String version, RemoteDUnitVMIF client,
       ProcessHolder processHolder,

@@ -28,6 +28,9 @@ public class GemFireIOException extends GemFireException {
 
   /**
    * Creates a new <code>GemFireIOException</code>.
+   *
+   * @param message the detail message
+   * @param cause the cause
    */
   public GemFireIOException(String message, Throwable cause) {
     super(message, cause);

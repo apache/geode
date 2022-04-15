@@ -229,10 +229,10 @@ public interface PdxWriter {
    * <li>double[]: System.Double[]
    * <li>String[]: System.String[]
    * <li>byte[][]: System.Byte[][]
-   * <li>Object[]: System.Collections.Generic.List<Object>
-   * <li>java.util.HashMap: System.Collections.Generics.IDictionary<Object, Object>
+   * <li>Object[]: System.Collections.Generic.List&lt;Object&gt;
+   * <li>java.util.HashMap: System.Collections.Generics.IDictionary&lt;Object, Object&gt;
    * <li>java.util.Hashtable: System.Collections.Hashtable
-   * <li>java.util.ArrayList: System.Collections.Generic.IList<Object>
+   * <li>java.util.ArrayList: System.Collections.Generic.IList&lt;Object&gt;
    * <li>java.util.Vector: System.Collections.ArrayList
    * <li>java.util.HashSet: CacheableHashSet
    * <li>java.util.LinkedHashSet: CacheableLinkedHashSet
@@ -381,7 +381,8 @@ public interface PdxWriter {
    * Writes the named field with the given value to the serialized form. The fields type is
    * <code>Object[]</code>.
    * <p>
-   * Java Object[] is mapped to .NET System.Collections.Generic.List<Object>. For how each element
+   * Java Object[] is mapped to .NET {@code System.Collections.Generic.List<Object>}. For how each
+   * element
    * of the array is a mapped to .NET see {@link #writeObject(String, Object, boolean) writeObject}.
    * Note that this call may serialize elements that are not compatible with non-java languages. To
    * ensure that only portable objects are serialized use
@@ -399,7 +400,8 @@ public interface PdxWriter {
    * Writes the named field with the given value to the serialized form. The fields type is
    * <code>Object[]</code>.
    * <p>
-   * Java Object[] is mapped to .NET System.Collections.Generic.List<Object>. For how each element
+   * Java Object[] is mapped to .NET System.Collections.Generic.List&lt;Object&gt;. For how each
+   * element
    * of the array is a mapped to .NET see {@link #writeObject(String, Object, boolean) writeObject}.
    * Note that this call may serialize elements that are not compatible with non-java languages. To
    * ensure that only portable objects are serialized use this method
@@ -466,6 +468,8 @@ public interface PdxWriter {
    * Note that the object form of primitives, for example Integer.class and Long.class, map to
    * {@link #writeObject(String, Object) writeObject}.
    *
+   * @param <CT> the type associated with the class of the field to write
+   * @param <VT> the type associated with the value of the field to write
    * @param fieldName the name of the field to write
    * @param fieldValue the value of the field to write; this parameter's class must extend the
    *        <code>fieldType</code>
@@ -511,6 +515,8 @@ public interface PdxWriter {
    * Note that the object form of primitives, for example Integer.class and Long.class, map to
    * {@link #writeObject(String, Object, boolean) writeObject}.
    *
+   * @param <CT> the type associated with the class of the field to write
+   * @param <VT> the type associated with the value of the field to write
    * @param fieldName the name of the field to write
    * @param fieldValue the value of the field to write; this parameter's class must extend the
    *        <code>fieldType</code>

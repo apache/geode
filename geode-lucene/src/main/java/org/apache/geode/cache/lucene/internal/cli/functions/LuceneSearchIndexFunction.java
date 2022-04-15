@@ -38,7 +38,7 @@ import org.apache.geode.internal.cache.execute.InternalFunction;
 /**
  * The LuceneSearchIndexFunction class is a function used to collect the information on a particular
  * lucene index.
- * </p>
+ * <p>
  *
  * @see Cache
  * @see org.apache.geode.cache.execute.Function

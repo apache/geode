@@ -128,7 +128,7 @@ public class MessageJUnitTest {
    * problems. This test ensures that the method Message.receiveWithHeaderReadTimeout correctly
    * times out when trying to read a message header.
    *
-   * @See ClientServerMiscDUnitTest#testClientReceivesPingIntervalSetting
+   * See ClientServerMiscDUnitTest#testClientReceivesPingIntervalSetting
    */
   @Test(expected = SocketTimeoutException.class)
   public void messageWillTimeoutDuringRecvOnInactiveSocket() throws Exception {

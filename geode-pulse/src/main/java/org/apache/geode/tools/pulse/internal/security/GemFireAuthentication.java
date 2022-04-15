@@ -38,7 +38,6 @@ import org.apache.geode.tools.pulse.internal.data.PulseConstants;
  * 1. Authentication : 1.a GemFire profile creates JMX connection with given credentials at the
  * login time. 1.b Successful connect is considered as Successful Authentication for Pulse WebApp
  * <p>
- * <p>
  * 2. Authorization : 2.a Using newly created authenticated connection AccessControlMXBean is called
  * to get authentication levels. See @See {@link #populateAuthorities(JMXConnector)}. This sets
  * Spring Security Authorities 2.b DataBrowser end-points are required to be authorized against

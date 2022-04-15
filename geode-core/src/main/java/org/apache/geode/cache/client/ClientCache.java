@@ -64,12 +64,17 @@ public interface ClientCache extends GemFireCache {
   /**
    * Return the QueryService for the named pool. The query operations performed using this
    * QueryService will be executed on the servers that are associated with this pool.
+   *
+   * @param poolName the name of the pool
+   * @return the QueryService for the named pool
    */
   QueryService getQueryService(String poolName);
 
   /**
    * Return a QueryService that queries the local state in the client cache. These queries will not
    * be sent to a server.
+   *
+   * @return a QueryService that queries the local state in the client cache
    */
   QueryService getLocalQueryService();
 
@@ -88,6 +93,8 @@ public interface ClientCache extends GemFireCache {
    * Create and return a client region factory that is initialized to create a region using the
    * given predefined region attributes.
    *
+   * @param <K> the type of keys in the region
+   * @param <V> the type of values in the region
    * @param shortcut the predefined region attributes to initialize the factory with.
    * @return a factory that will produce a client region.
    */
@@ -101,6 +108,8 @@ public interface ClientCache extends GemFireCache {
    * Named region attributes are defined in cache.xml by setting the name as the value of the
    * {@code id} attribute on a {@code region-attributes} element.
    *
+   * @param <K> the type of keys in the region
+   * @param <V> the type of values in the region
    * @param regionAttributesId the named region attributes to initialize the factory with.
    * @throws IllegalStateException if named region attributes has not been defined.
    * @return a factory that will produce a client region.
@@ -165,6 +174,7 @@ public interface ClientCache extends GemFireCache {
   /**
    * Returns a set of the servers to which this client is currently connected.
    *
+   * @return a set of the servers to which this client is currently connected
    * @since GemFire 6.6
    */
   Set<InetSocketAddress> getCurrentServers();
@@ -173,6 +183,7 @@ public interface ClientCache extends GemFireCache {
    * Returns the default server pool. If one or more non-default pools were configured, this may
    * return null.
    *
+   * @return the default server pool
    * @since GemFire 7.0
    * @see Pool
    */

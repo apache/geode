@@ -37,13 +37,13 @@ import org.apache.geode.annotations.Experimental;
  * The following schema fragment specifies the expected content contained within this class.
  *
  * <pre>
- * &lt;complexType name="disk-dir-type">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute name="dir-size" type="{http://www.w3.org/2001/XMLSchema}string" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="disk-dir-type"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;attribute name="dir-size" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  *
  *
@@ -67,6 +67,7 @@ public class DiskDirType {
    * possible object is
    * {@link String }
    *
+   * @return the content.
    */
   public String getContent() {
     return content;
@@ -78,6 +79,7 @@ public class DiskDirType {
    * allowed object is
    * {@link String }
    *
+   * @param value the content.
    */
   public void setContent(String value) {
     content = value;
@@ -89,6 +91,7 @@ public class DiskDirType {
    * possible object is
    * {@link String }
    *
+   * @return the directory size.
    */
   public String getDirSize() {
     return dirSize;
@@ -100,6 +103,7 @@ public class DiskDirType {
    * allowed object is
    * {@link String }
    *
+   * @param value the directory size.
    */
   public void setDirSize(String value) {
     dirSize = value;

@@ -91,8 +91,8 @@ public class PartitionedRegionCreationJUnitTest {
   /*
    * 1)Create 10 thread each. Each thread will try to create PartionedRegion total of 5 partitioned
    * region will be created. 5 threads should throw RegionExistException. 2) Tests for PR scope =
-   * GLOBAL and PR scope = LOCAL </p> 3) Test for redundancy < 0 </p> 4) Test for redundancy > 3
-   * </p> 5) Test for localMaxMemory < 0 </p>
+   * GLOBAL and PR scope = LOCAL <p> 3) Test for redundancy < 0 <p> 4) Test for redundancy > 3
+   * <p> 5) Test for localMaxMemory < 0 <p>
    */
   @Test
   public void testPartitionedRegionCreate() {

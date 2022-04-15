@@ -25,7 +25,7 @@ import java.util.OptionalLong;
  * The relationship between successive sequences is defined by the implementation. When a typical
  * implementation exhausts a sequence, it will attempt to produce subsequent IDs in a different
  * sequence.
- * </p>
+ * <p>
  */
 public interface SubjectIdGenerator {
   /**
@@ -36,7 +36,7 @@ public interface SubjectIdGenerator {
    * If {@code generateId()} returns an empty {@code OptionalLong}, the caller should handle the
    * ID exhaustion before requesting the next ID. For example, the caller might invalidate all
    * uses of previously generated IDs.
-   * </p>
+   * <p>
    *
    * @return an {@code OptionalLong} describing the next unique ID in the current sequence, or an
    *         empty {@code OptionalLong} if there are no further unique IDs in the sequence.

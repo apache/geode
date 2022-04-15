@@ -31,7 +31,7 @@ import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
  * The ListDiskStoresFunction class is an implementation of GemFire Function interface used to
  * determine all the disk stores that exist for the entire cache, distributed across the GemFire
  * distributed system.
- * </p>
+ * <p>
  *
  * @see org.apache.geode.cache.DiskStore
  * @see org.apache.geode.cache.execute.Function

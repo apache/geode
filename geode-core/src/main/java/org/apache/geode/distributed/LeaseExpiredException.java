@@ -27,6 +27,8 @@ public class LeaseExpiredException extends GemFireException {
 
   /**
    * Creates a new <code>LeaseExpiredException</code>
+   *
+   * @param s the detail message
    */
   public LeaseExpiredException(String s) {
     super(s);

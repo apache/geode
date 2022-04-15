@@ -24,7 +24,7 @@ package org.apache.geode.cache.query.data;
 public class Vehicle {
   public String[] arr;
 
-  /** Creates a new instance of Vehicle */
+  /* Creates a new instance of Vehicle */
   public Vehicle(String[] arr) {
     this.arr = arr;
 

@@ -52,25 +52,21 @@ public abstract class EvictionAttributes {
    * Creates and returns {@linkplain EvictionAlgorithm#LRU_ENTRY entry LRU} eviction attributes with
    * default {@linkplain EvictionAction#DEFAULT_EVICTION_ACTION action} and default
    * {@linkplain #DEFAULT_ENTRIES_MAXIMUM maximum}.
-   * <p/>
+   * <p>
    * {@link EvictionAttributes} cause regions to evict the least recently used (LRU) entry once the
    * region reaches a maximum capacity. The entry is either locally destroyed or its value overflows
    * to disk when evicted.
-   * <p/>
-   * <p/>
+   * <p>
    * This is not supported when replication is enabled.
-   * <p/>
-   * <p/>
+   * <p>
    * For a region with {@link DataPolicy#PARTITION}, the EvictionAttribute <code>maximum</code>,
    * indicates the number of entries allowed in the region, collectively for its primary buckets and
    * redundant copies for this JVM. Once there are <code>maximum</code> entries in the region's
    * primary buckets and redundant copies for this JVM, the least recently used entry will be
    * evicted from the bucket in which the subsequent put takes place.
-   * <p/>
-   * <p/>
+   * <p>
    * If you are using a <code>cache.xml</code> file to create a Cache Region declaratively, you can
    * include the following to configure a region for eviction
-   * <p/>
    *
    * <pre>
    *         &lt;region-attributes&gt;
@@ -140,21 +136,20 @@ public abstract class EvictionAttributes {
    * Creates and returns {@linkplain EvictionAlgorithm#LRU_HEAP heap LRU} eviction attributes with
    * default {@linkplain EvictionAction#DEFAULT_EVICTION_ACTION action} and default
    * {@linkplain ObjectSizer#DEFAULT sizer}.
-   * <p/>
+   * <p>
    * Heap LRU EvictionAttributes evict the least recently used {@link Region.Entry} when heap usage
    * exceeds the {@link ResourceManager} eviction heap threshold. If the eviction heap threshold is
    * exceeded the least recently used {@link Region.Entry}s are evicted.
-   * <p/>
-   * <p/>
+   * <p>
    * With other LRU-based eviction controllers, only cache actions (such as
    * {@link Region#put(Object, Object) puts} and {@link Region#get(Object) gets}) cause the LRU
    * entry to be evicted. However, with heap LRU, because the JVM's heap may be effected by more
    * than just the GemFire cache operations, a daemon thread will perform the eviction if no
    * operations are being done on the region.
-   * <p/>
+   * <p>
    * The eviction attribute's {@linkplain ObjectSizer sizer} is used to estimate how much the heap
    * will be reduced by an eviction.
-   * <p/>
+   * <p>
    * When using Heap LRU, the JVM must be launched with the <code>-Xmx</code> and <code>-Xms</code>
    * switches set to the same values. Many virtual machine implementations have additional JVM
    * switches to control the behavior of the garbage collector. We suggest that you investigate
@@ -164,22 +159,21 @@ public abstract class EvictionAttributes {
    * <code>-XX:+UseConcMarkSweepGC</code> flag needs to be set, and
    * <code>-XX:CMSInitiatingOccupancyFraction=N</code> should be set with N being a percentage that
    * is less than the {@link ResourceManager} eviction heap threshold.
-   * <p/>
+   * <p>
    * The JRockit JVM has similar flags, <code>-Xgc:gencon</code> and <code>-XXgcTrigger:N</code>,
    * which are required if using this LRU algorithm. Please Note: the JRockit gcTrigger flag is
    * based on heap free, not heap in use like the GemFire parameter. This means you need to set
    * gcTrigger to 100-N. for example, if your eviction threshold is 30 percent, you will need to set
    * gcTrigger to 70 percent.
-   * <p/>
+   * <p>
    * On the IBM JVM, the flag to get a similar collector is <code>-Xgcpolicy:gencon</code>, but
    * there is no corollary to the gcTrigger/CMSInitiatingOccupancyFraction flags, so when using this
    * feature with an IBM JVM, the heap usage statistics might lag the true memory usage of the JVM,
    * and thresholds may need to be set sufficiently high that the JVM will initiate GC before the
    * thresholds are crossed.
-   * <p/>
+   * <p>
    * If you are using a <code>cache.xml</code> file to create a Cache Region declaratively, you can
    * include the following to create an LRU heap eviction controller:
-   * <p/>
    *
    * <pre>
    *         &lt;region-attributes&gt;
@@ -188,7 +182,7 @@ public abstract class EvictionAttributes {
    *            &lt;/eviction-attributes&gt;
    *         &lt;/region-attributes&gt;
    * </pre>
-   * <p/>
+   * <p>
    *
    * @return {@linkplain EvictionAlgorithm#LRU_HEAP heap LRU} eviction attributes with default
    *         {@linkplain EvictionAction#DEFAULT_EVICTION_ACTION action} and default
@@ -236,7 +230,7 @@ public abstract class EvictionAttributes {
    * with default {@linkplain EvictionAction#DEFAULT_EVICTION_ACTION action}, default
    * {@linkplain ObjectSizer#DEFAULT sizer}, and default {@linkplain #DEFAULT_MEMORY_MAXIMUM
    * maximum}.
-   * <p/>
+   * <p>
    * Creates EvictionAttributes for an eviction controller that will remove the least recently used
    * (LRU) entry from a region once the region reaches a certain byte capacity. Capacity is
    * determined by monitoring the size of entries added and evicted. Capacity is specified in terms
@@ -244,17 +238,15 @@ public abstract class EvictionAttributes {
    * entry occupies in the JVM. However, this algorithm may not yield optimal results for all kinds
    * of data. The user may provide their own algorithm for determining the size of objects by
    * implementing an {@link ObjectSizer}.
-   * <p/>
-   * <p/>
+   * <p>
    * For a region with {@link DataPolicy#PARTITION}, the EvictionAttribute <code>maximum</code>, is
    * always equal to {@link PartitionAttributesFactory#setLocalMaxMemory(int) " local max memory "}
    * specified for the {@link PartitionAttributes}. It signifies the amount of memory allowed in the
    * region, collectively for its primary buckets and redundant copies for this JVM. It can be
    * different for the same region in different JVMs.
-   * <p/>
+   * <p>
    * If you are using a <code>cache.xml</code> file to create a Cache Region declaratively, you can
    * include the following to create an LRU memory eviction controller:
-   * <p/>
    *
    * <pre>
    *          &lt;region-attributes&gt;
@@ -284,13 +276,12 @@ public abstract class EvictionAttributes {
    * Creates and returns {@linkplain EvictionAlgorithm#LRU_MEMORY memory LRU} eviction attributes
    * with default {@linkplain EvictionAction#DEFAULT_EVICTION_ACTION action}, default
    * {@linkplain ObjectSizer#DEFAULT sizer}, and given <code>maximumMegabytes</code>.
-   * <p/>
-   * <p/>
+   * <p>
    * For a region with {@link DataPolicy#PARTITION}, even if maximumMegabytes are supplied, the
    * EvictionAttribute <code>maximum</code>, is always set to
    * {@link PartitionAttributesFactory#setLocalMaxMemory(int) " local max memory "} specified for
    * the {@link PartitionAttributes}.
-   * <p/>
+   * <p>
    *
    * @param maximumMegabytes the maximum allowed bytes in the Region
    * @return {@linkplain EvictionAlgorithm#LRU_MEMORY memory LRU} eviction attributes with default
@@ -308,7 +299,6 @@ public abstract class EvictionAttributes {
    * Creates and returns {@linkplain EvictionAlgorithm#LRU_MEMORY memory LRU} eviction attributes
    * with default {@linkplain EvictionAction#DEFAULT_EVICTION_ACTION action}, given
    * <code>sizer</code>, and given <code>maximumMegabytes</code>.
-   * <p/>
    * <p>
    * For a region with {@link DataPolicy#PARTITION}, even if maximumMegabytes are supplied, the
    * EvictionAttribute <code>maximum</code>, is always set to
@@ -333,7 +323,6 @@ public abstract class EvictionAttributes {
    * Creates and returns {@linkplain EvictionAlgorithm#LRU_MEMORY memory LRU} eviction attributes
    * with the given <code>evictionAction</code>, given <code>sizer</code>, and given
    * <code>maximumMegabytes</code>.
-   * <p/>
    * <p>
    * For a region with {@link DataPolicy#PARTITION}, even if maximumMegabytes are supplied, the
    * EvictionAttribute <code>maximum</code>, is always set to
@@ -358,7 +347,6 @@ public abstract class EvictionAttributes {
    * Creates and returns {@linkplain EvictionAlgorithm#LRU_MEMORY memory LRU} eviction attributes
    * with default {@linkplain EvictionAction#DEFAULT_EVICTION_ACTION action}, given
    * <code>sizer</code>, and default {@linkplain #DEFAULT_MEMORY_MAXIMUM maximum}.
-   * <p/>
    * <p>
    * For a region with {@link DataPolicy#PARTITION}, even if maximumMegabytes are supplied, the
    * EvictionAttribute <code>maximum</code>, is always set to
@@ -382,7 +370,6 @@ public abstract class EvictionAttributes {
    * Creates and returns {@linkplain EvictionAlgorithm#LRU_MEMORY memory LRU} eviction attributes
    * with given <code>evictionAction</code>, given <code>sizer</code>, and default
    * {@linkplain #DEFAULT_MEMORY_MAXIMUM maximum}.
-   * <p/>
    * <p>
    * For a region with {@link DataPolicy#PARTITION}, even if maximumMegabytes are supplied, the
    * EvictionAttribute <code>maximum</code>, is always set to
@@ -483,6 +470,8 @@ public abstract class EvictionAttributes {
   }
 
   /**
+   * @param maximumEntries the number of entries to keep in the Region
+   * @param evictionAction the action to perform when evicting an entry
    * @return an EvictionAttributes for the LIFOCapacityController
    * @since GemFire 5.7
    * @deprecated For internal use only.
@@ -495,6 +484,8 @@ public abstract class EvictionAttributes {
   }
 
   /**
+   * @param maximumMegabytes the maximum allowed bytes in the Region
+   * @param evictionAction the action to perform when evicting an entry
    * @return an EvictionAttributes for the MemLIFOCapacityController
    * @since GemFire 5.7
    * @deprecated For internal use only.

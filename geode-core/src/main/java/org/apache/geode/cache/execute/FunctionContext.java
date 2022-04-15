@@ -27,7 +27,6 @@ import org.apache.geode.internal.security.LegacySecurityService;
  * <p>
  * A context can be data dependent or data independent. For data dependent functions refer to
  * {@link RegionFunctionContext}
- * </p>
  * <p>
  * This interface is implemented by GemFire. Instances of it will be passed in to
  * {@link Function#execute(FunctionContext)}.
@@ -64,6 +63,8 @@ public interface FunctionContext<T1> {
    * The returned ResultSender is only valid for the duration of the function call. If the Function
    * needs to return a result, the result should be sent before the function exits.
    *
+   * @param <T2> the type handled by the returned {@link ResultSender}
+   * @return the {@link ResultSender} associated with this {@link FunctionContext}
    * @since GemFire 6.0
    */
 

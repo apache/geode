@@ -24,6 +24,8 @@ public interface CollectionType extends ObjectType {
 
   /**
    * Return the type of the elements of this collection type.
+   *
+   * @return the type of the elements of this collection type
    */
   ObjectType getElementType();
 

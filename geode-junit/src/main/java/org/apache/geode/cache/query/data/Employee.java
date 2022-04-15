@@ -47,7 +47,7 @@ public class Employee implements Serializable {
     return salary;
   }
 
-  /** Creates a new instance of Employee */
+  /* Creates a new instance of Employee */
   public Employee(String name, int age, int empId, String title, int salary, Set addresses) {
     this.name = name;
     this.age = age;

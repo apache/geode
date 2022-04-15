@@ -46,7 +46,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  * <h1>Failure WatchDog</h1> When {@link #startThreads()} is called, a "watchdog" {@link Thread} is
  * started that periodically checks to see if system corruption has been reported. When system
  * corruption is detected, this thread proceeds to:
- * <p>
+ *
  * <ol>
  * <li><em>Close GemFire</em> -- Group communication is ceased (this cache member recuses itself
  * from the distributed system) and the cache is further poisoned (it is pointless to try to cleanly
@@ -75,7 +75,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  * <p>
  * It bears repeating that you should be very cautious of any Runnables you ask this class to run.
  * By definition the JVM is <em>very sick</em> when failure has been signalled.
- * <p>
+ *
  * <h1>Failure Proctor</h1> In addition to the failure watchdog, {@link #startThreads()} creates a
  * second thread (the "proctor") that monitors free memory. It does this by examining
  * {@link Runtime#freeMemory() free memory}, {@link Runtime#totalMemory() total memory} and
@@ -97,7 +97,6 @@ import org.apache.geode.util.internal.GeodeGlossary;
  * <h2>Catch and Handle VirtualMachineError</h2> If you feel obliged to catch <em>either</em>
  * {@link Error}, or {@link Throwable}, you <em>must</em>also check for {@link VirtualMachineError}
  * like so:
- * <p>
  *
  * <pre>
         catch (VirtualMachineError err) {
@@ -115,7 +114,6 @@ import org.apache.geode.util.internal.GeodeGlossary;
  * <p>
  * A job processing loop is a good candidate, for instance, in
  * org.apache.org.jgroups.protocols.UDP#run(), which implements {@link Thread#run}:
- * <p>
  *
  * <pre>
          for (;;)  {
@@ -125,12 +123,10 @@ import org.apache.geode.util.internal.GeodeGlossary;
           ...
  * </pre>
  *
- * <p>
  * <h2>Catches of Error and Throwable Should Check for Failure</h2> Keep in mind that peculiar or
  * flat-out<em>impossible</em> exceptions may ensue after a VirtualMachineError has been thrown
  * <em>anywhere</em> in your virtual machine. Whenever you catch {@link Error} or {@link Throwable},
  * you should also make sure that you aren't dealing with a corrupted JVM:
- * <p>
  *
  * <pre>
        catch (Throwable t) {
@@ -228,6 +224,9 @@ public final class SystemFailure {
   /**
    * Returns true if the given Error is a fatal to the JVM and it should be shut down. Code should
    * call {@link #initiateFailure(Error)} or {@link #setFailure(Error)} if this returns true.
+   *
+   * @param err an Error
+   * @return whether the given error is fatal to the JVM
    */
   public static boolean isJVMFailureError(Error err) {
     return err instanceof OutOfMemoryError || err instanceof UnknownError;
@@ -903,6 +902,7 @@ public final class SystemFailure {
    * Logging can require allocation of objects, so we wrap the logger so that failures are silently
    * ignored.
    *
+   * @param name the name of the logger
    * @param s string to print
    * @param t the call stack, if any
    * @return true if the warning got printed
@@ -915,6 +915,7 @@ public final class SystemFailure {
    * Logging can require allocation of objects, so we wrap the logger so that failures are silently
    * ignored.
    *
+   * @param name the name of the logger
    * @param s string to print
    */
   protected static void logInfo(String name, String s) {
@@ -925,6 +926,7 @@ public final class SystemFailure {
    * Logging can require allocation of objects, so we wrap the logger so that failures are silently
    * ignored.
    *
+   * @param name the name of the logger
    * @param s string to print
    */
   protected static void logFine(String name, String s) {

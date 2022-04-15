@@ -85,6 +85,7 @@ public interface Execution<IN, OUT, AGG> {
    * executed. Collector will receive results as they are sent from the
    * {@link Function#execute(FunctionContext)} using {@link ResultSender}.
    *
+   * @param rc The {@link ResultCollector} that will receive the results
    * @return an Execution with a collector
    * @throws IllegalArgumentException if {@link ResultCollector} is null
    * @see ResultCollector

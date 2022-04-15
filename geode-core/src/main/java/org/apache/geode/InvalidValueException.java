@@ -26,6 +26,8 @@ public class InvalidValueException extends GemFireException {
 
   /**
    * Creates a new <code>InvalidValueException</code>.
+   *
+   * @param message the detail message
    */
   public InvalidValueException(String message) {
     super(message);
@@ -33,6 +35,9 @@ public class InvalidValueException extends GemFireException {
 
   /**
    * Creates a new <code>InvalidValueException</code>.
+   *
+   * @param message the detail message
+   * @param ex the cause
    */
   public InvalidValueException(String message, Throwable ex) {
     super(message, ex);

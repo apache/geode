@@ -22,7 +22,7 @@ import java.lang.management.ManagementFactory;
 import java.util.List;
 
 public class JavaModuleHelper {
-  /**
+  /*
    * Returns the list of --add-opens and --add-exports options passed to this JVM.
    */
   public static List<String> getJvmModuleOptions() {

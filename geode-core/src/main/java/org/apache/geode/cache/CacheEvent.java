@@ -68,6 +68,7 @@ public interface CacheEvent<K, V> {
    * {@link #getCallbackArgument} will return <code>null</code> when this method returns
    * <code>false</code>.
    *
+   * @return whether the callback argument is "available"
    * @since GemFire 6.0
    */
   boolean isCallbackArgumentAvailable();

@@ -109,10 +109,12 @@ public abstract class CommandService {
   /* **************************** factory methods *************************** */
   /**
    * Returns a newly created or existing instance of the
-   * <code>CommandService<code> associated with the
+   * <code>CommandService</code> associated with the
    * specified <code>Cache</code>.
    *
    * @param cache Underlying <code>Cache</code> instance to be used to create a Command Service.
+   * @return a newly created or existing instance of the <code>CommandService</code> associated with
+   *         the specified <code>Cache</code>
    * @throws CommandServiceException If command service could not be initialized.
    */
   public static CommandService createLocalCommandService(Cache cache)
@@ -142,7 +144,7 @@ public abstract class CommandService {
   }
 
   /**
-   * Returns an existing 'usable' <code>CommandService></code>. A <code>CommandService</code> is
+   * Returns an existing 'usable' <code>CommandService</code>. A <code>CommandService</code> is
    * considered usable if at has an underlying <code>Cache</code> which is not closed.
    *
    * @return A usable <code>CommandService</code> or null if one cannot be found.

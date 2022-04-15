@@ -37,13 +37,23 @@ public interface ObjectType extends DataSerializable {
    * Return true if this is a CollectionType. Note that MapTypes, Region types, and array types are
    * also considered CollectionTypes in the context of the query language and therefore return true
    * to this method.
+   *
+   * @return whether this is a CollectionType
    */
   boolean isCollectionType();
 
-  /** Return true if this is a MapType */
+  /**
+   * Return true if this is a MapType
+   *
+   * @return whether this is a MapType
+   **/
   boolean isMapType();
 
-  /** Return true if this is a StructType */
+  /**
+   * Return true if this is a StructType
+   *
+   * @return whether this is a StructType
+   */
   boolean isStructType();
 
   /**

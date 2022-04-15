@@ -26,7 +26,7 @@ public class Village implements Serializable {
   public String name;
   public int zip;
 
-  /** Creates a new instance of Village */
+  /* Creates a new instance of Village */
   public Village(String name, int zip) {
     this.name = name;
     this.zip = zip;

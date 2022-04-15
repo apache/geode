@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Starts the stdout and stderr reader threads for a running process. Provides a mechanism to
  * waitFor the process to terminate.
- * </p>
+ * <p>
  * Extracted from ProcessWrapper.
  *
  */

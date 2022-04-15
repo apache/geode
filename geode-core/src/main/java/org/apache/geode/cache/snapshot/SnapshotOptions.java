@@ -70,7 +70,7 @@ public interface SnapshotOptions<K, V> extends Serializable {
   /**
    * Sets whether to invoke callbacks when loading a snapshot. The default is false.
    *
-   *
+   * @param invokeCallbacks whether to invoke callbacks when loading a snapshot
    * @return the snapshot options
    */
   SnapshotOptions<K, V> invokeCallbacks(boolean invokeCallbacks);

@@ -40,11 +40,11 @@ import org.apache.geode.security.ResourcePermission;
  * The default, immutable and thread-safe {@link MethodInvocationAuthorizer} used by Geode to
  * determine whether a {@link java.lang.reflect.Method} is allowed to be executed on a specific
  * {@link java.lang.Object} instance.
- * <p/>
+ * <p>
  *
  * This authorizer addresses the four known security risks: {@code Java Reflection},
  * {@code Cache Modification}, {@code Region Modification} and {@code Region Entry Modification}.
- * <p/>
+ * <p>
  *
  * Custom applications can delegate to this class and use it as the starting point for providing
  * use case specific authorizers.
@@ -242,7 +242,7 @@ public final class RestrictedMethodAuthorizer implements MethodInvocationAuthori
   /**
    * Creates a {@code RestrictedMethodAuthorizer} object and initializes it so it can be safely
    * used in a multi-threaded environment.
-   * <p/>
+   * <p>
    *
    * If the {@link Cache} instance passed as parameter was previously created by Geode, the
    * authorizer will use the security service already configured in order to determine whether a
@@ -250,7 +250,7 @@ public final class RestrictedMethodAuthorizer implements MethodInvocationAuthori
    * If the {@link Cache} instance passed as parameter is a wrapper created by external frameworks,
    * the authorizer will create a new instance of the security service using the configuration
    * properties used to initialize the cache.
-   * <p/>
+   * <p>
    *
    * Applications can also use this constructor as part of the initialization for custom authorizers
    * (see {@link Declarable#initialize(Cache, Properties)}), when using a declarative approach.
@@ -309,7 +309,7 @@ public final class RestrictedMethodAuthorizer implements MethodInvocationAuthori
    * to be safe according to Geode security rules.
    * If the {@code target} object is an instance of {@link Region}, this methods also ensures that
    * the user has the {@code DATA:READ} permission granted for the target {@link Region}.
-   * <p/>
+   * <p>
    *
    * @param method the {@link Method} that should be verified.
    * @param target the {@link Object} on which the {@link Method} will be executed.
@@ -342,11 +342,10 @@ public final class RestrictedMethodAuthorizer implements MethodInvocationAuthori
   /**
    * Executes the verification logic to determine whether the {@code method} on the {@code target}
    * object instance is considered to be non safe according to Geode security rules.
-   * <p/>
+   * <p>
    *
    * The following methods are currently considered non safe, no matter what the {@code target}
    * object is:
-   * <p>
    * <ul>
    * <li>{@code getClass}
    * <li>{@code readObject}
@@ -372,7 +371,7 @@ public final class RestrictedMethodAuthorizer implements MethodInvocationAuthori
    * executed on the {@code target} object instance.
    * If the {@code target} object is an instance of {@link Region}, this methods also ensures that
    * the user has the {@code DATA:READ} permission granted for the target {@link Region}.
-   * <p/>
+   * <p>
    *
    * @param method the {@link Method} that should be authorized.
    * @param target the {@link Object} on which the {@link Method} will be executed.

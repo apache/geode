@@ -45,7 +45,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils.XPathContext;
 
 /**
- * Unit tests for {@link XmlUtils}. See Also {@link XmlUtilsAddNewNodeJUnitTest} for tests related
+ * Unit tests for {@link XmlUtils}. See Also XmlUtilsAddNewNodeJUnitTest for tests related
  * to {@link XmlUtils#addNewNode(Document, XmlEntity)}
  *
  * @since GemFire 8.1

@@ -30,11 +30,15 @@ public interface RebalanceOperation {
 
   /**
    * Returns true if this operation was cancelled before it completed.
+   *
+   * @return whether this operation was cancelled before it completed
    */
   boolean isCancelled();
 
   /**
    * Returns true if this operation completed.
+   *
+   * @return whether this operation completed
    */
   boolean isDone();
 

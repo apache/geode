@@ -27,7 +27,7 @@ public class City implements Serializable {
   public String name;
   public int zip;
 
-  /** Creates a new instance of City */
+  /* Creates a new instance of City */
   public City(String name, int zip) {
     this.name = name;
     this.zip = zip;

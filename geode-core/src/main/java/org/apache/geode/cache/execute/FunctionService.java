@@ -34,7 +34,7 @@ import org.apache.geode.internal.cache.execute.InternalFunctionExecutionServiceI
  * <p>
  * Function execution provides a means to route application behaviour to {@linkplain Region data} or
  * more generically to peers in a {@link DistributedSystem} or servers in a {@link Pool}.
- * </p>
+ * <p>
  *
  * @since GemFire 6.0
  */
@@ -46,7 +46,7 @@ public class FunctionService {
 
   private final FunctionExecutionService functionExecutionService;
 
-  /**
+  /*
    * Protected visibility to allow InternalFunctionService to extend FunctionService.
    */
   protected FunctionService(FunctionExecutionService functionExecutionService) {
@@ -69,6 +69,9 @@ public class FunctionService {
    * with DataPolicy.PARTITION, it executes on members where the data resides as specified by the
    * filter.
    *
+   * @param region the {@link Region} on which the returned {@link Execution} will execute functions
+   * @return an {@link Execution} object that can be used to execute a data dependent function on
+   *         the specified {@link Region}
    * @throws FunctionException if the region passed in is null
    * @since GemFire 6.0
    */
@@ -84,6 +87,8 @@ public class FunctionService {
    * thrown.
    *
    * @param pool from which to chose a server for execution
+   * @return an {@link Execution} object that can be used to execute a data independent function on
+   *         a server in the provided {@link Pool}
    * @throws FunctionException if Pool instance passed in is null
    * @since GemFire 6.0
    */
@@ -97,6 +102,8 @@ public class FunctionService {
    * or executing the function on the server, an Exception will be thrown.
    *
    * @param pool the set of servers to execute the function
+   * @return an {@link Execution} object that can be used to execute a data independent function on
+   *         all the servers in the provided {@link Pool}
    * @throws FunctionException if Pool instance passed in is null
    * @since GemFire 6.0
    */
@@ -113,6 +120,8 @@ public class FunctionService {
    *
    * @param regionService obtained from {@link ClientCacheFactory#create} or
    *        {@link ClientCache#createAuthenticatedView(Properties)}.
+   * @return an {@link Execution} object that can be used to execute a data independent function on
+   *         a server that the given cache is connected to
    * @throws FunctionException if cache is null, is not on a client, or it does not have a default
    *         pool
    * @since GemFire 6.5
@@ -128,6 +137,8 @@ public class FunctionService {
    *
    * @param regionService obtained from {@link ClientCacheFactory#create} or
    *        {@link ClientCache#createAuthenticatedView(Properties)}.
+   * @return an {@link Execution} object that can be used to execute a data independent function on
+   *         all the servers that the given cache is connected to
    * @throws FunctionException if cache is null, is not on a client, or it does not have a default
    *         pool
    * @since GemFire 6.5
@@ -143,6 +154,8 @@ public class FunctionService {
    * an Exception will be thrown.
    *
    * @param distributedMember defines a member in the distributed system
+   * @return an {@link Execution} object that can be used to execute a data independent function on
+   *         a {@link DistributedMember}
    * @throws FunctionException if distributedMember is null
    * @since GemFire 7.0
    */
@@ -161,6 +174,8 @@ public class FunctionService {
    * @param groups optional list of GemFire configuration property "groups" (see
    *        <a href="../../distributed/DistributedSystem.html#groups"> <code>groups</code></a>) on
    *        which to execute the function. Function will be executed on all members of each group
+   * @return an {@link Execution} object that can be used to execute a data independent function on
+   *         all peer members
    *
    * @throws FunctionException if no members are found belonging to the provided groups
    * @since GemFire 7.0
@@ -175,6 +190,8 @@ public class FunctionService {
    * executing the function, an Exception will be thrown.
    *
    * @param distributedMembers set of distributed members on which {@link Function} to be executed
+   * @return an {@link Execution} object that can be used to execute a data independent function on
+   *         the set of {@link DistributedMember}s provided
    * @throws FunctionException if distributedMembers is null
    * @since GemFire 7.0
    */
@@ -189,6 +206,8 @@ public class FunctionService {
    * @param groups list of GemFire configuration property "groups" (see
    *        <a href="../../distributed/DistributedSystem.html#groups"> <code>groups</code></a>) on
    *        which to execute the function. Function will be executed on one member of each group
+   * @return an {@link Execution} object that can be used to execute a data independent function on
+   *         one member of each group provided
    *
    * @throws FunctionException if no members are found belonging to the provided groups
    * @since GemFire 7.0
@@ -200,6 +219,10 @@ public class FunctionService {
   /**
    * Returns the {@link Function} defined by the functionId, returns null if no function is found
    * for the specified functionId
+   *
+   * @param functionId a functionId
+   * @return the {@link Function} defined by the functionId or null if no function is found for the
+   *         specified functionId
    *
    * @throws FunctionException if functionID passed is null
    * @since GemFire 6.0
@@ -215,7 +238,9 @@ public class FunctionService {
    * Registering a function allows execution of the function using
    * {@link Execution#execute(String)}. Every member that could execute a function using its
    * {@link Function#getId()} should register the function.
-   * </p>
+   * <p>
+   *
+   * @param function the {@link Function} to register
    *
    * @throws FunctionException if function instance passed is null or Function.getId() returns null
    * @since GemFire 6.0
@@ -229,6 +254,8 @@ public class FunctionService {
    * {@link Function#getId()}.
    * <p>
    *
+   * @param functionId the ID of the function
+   *
    * @throws FunctionException if function instance passed is null or Function.getId() returns null
    * @since GemFire 6.0
    */
@@ -238,6 +265,9 @@ public class FunctionService {
 
   /**
    * Returns true if the function is registered to FunctionService
+   *
+   * @param functionId the ID of the function
+   * @return whether the function is registered to FunctionService
    *
    * @throws FunctionException if function instance passed is null or Function.getId() returns null
    * @since GemFire 6.0

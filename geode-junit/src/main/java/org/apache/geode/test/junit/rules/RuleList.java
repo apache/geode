@@ -88,6 +88,8 @@ public class RuleList implements TestRule {
 
   /**
    * Returns a reference to the actual list of {@code TestRule}s. For use by subclasses and tests.
+   *
+   * @return a reference to the actual list of {@code TestRule}s
    */
   protected List<TestRule> rules() {
     return rules;

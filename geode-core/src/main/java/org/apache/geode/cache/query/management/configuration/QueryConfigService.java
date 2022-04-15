@@ -37,34 +37,34 @@ import org.apache.geode.cache.configuration.XSDRootElement;
  * The following schema fragment specifies the expected content contained within this class.
  *
  * <pre>
- * &lt;complexType>
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;all>
- *         &lt;element name="method-authorizer" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="parameter" maxOccurs="unbounded" minOccurs="0">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;attribute name="parameter-value" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
- *                 &lt;/sequence>
- *                 &lt;attribute name="class-name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *       &lt;/all>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;all&gt;
+ *         &lt;element name="method-authorizer" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;sequence&gt;
+ *                   &lt;element name="parameter" maxOccurs="unbounded" minOccurs="0"&gt;
+ *                     &lt;complexType&gt;
+ *                       &lt;complexContent&gt;
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                           &lt;attribute name="parameter-value" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                         &lt;/restriction&gt;
+ *                       &lt;/complexContent&gt;
+ *                     &lt;/complexType&gt;
+ *                   &lt;/element&gt;
+ *                 &lt;/sequence&gt;
+ *                 &lt;attribute name="class-name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *       &lt;/all&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  *
  *
@@ -93,6 +93,7 @@ public class QueryConfigService extends CacheElement {
    * possible object is
    * {@link QueryConfigService.MethodAuthorizer }
    *
+   * @return the value of the methodAuthorizer property
    */
   public QueryConfigService.MethodAuthorizer getMethodAuthorizer() {
     return methodAuthorizer;
@@ -104,6 +105,7 @@ public class QueryConfigService extends CacheElement {
    * allowed object is
    * {@link QueryConfigService.MethodAuthorizer }
    *
+   * @param value the value of the methodAuthorizer property
    */
   public void setMethodAuthorizer(QueryConfigService.MethodAuthorizer value) {
     methodAuthorizer = value;
@@ -123,24 +125,24 @@ public class QueryConfigService extends CacheElement {
    * The following schema fragment specifies the expected content contained within this class.
    *
    * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;sequence>
-   *         &lt;element name="parameter" maxOccurs="unbounded" minOccurs="0">
-   *           &lt;complexType>
-   *             &lt;complexContent>
-   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *                 &lt;attribute name="parameter-value" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *               &lt;/restriction>
-   *             &lt;/complexContent>
-   *           &lt;/complexType>
-   *         &lt;/element>
-   *       &lt;/sequence>
-   *       &lt;attribute name="class-name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
+   * &lt;complexType&gt;
+   *   &lt;complexContent&gt;
+   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *       &lt;sequence&gt;
+   *         &lt;element name="parameter" maxOccurs="unbounded" minOccurs="0"&gt;
+   *           &lt;complexType&gt;
+   *             &lt;complexContent&gt;
+   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *                 &lt;attribute name="parameter-value" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *               &lt;/restriction&gt;
+   *             &lt;/complexContent&gt;
+   *           &lt;/complexType&gt;
+   *         &lt;/element&gt;
+   *       &lt;/sequence&gt;
+   *       &lt;attribute name="class-name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *     &lt;/restriction&gt;
+   *   &lt;/complexContent&gt;
+   * &lt;/complexType&gt;
    * </pre>
    *
    *
@@ -178,7 +180,7 @@ public class QueryConfigService extends CacheElement {
      * Objects of the following type(s) are allowed in the list
      * {@link QueryConfigService.MethodAuthorizer.Parameter }
      *
-     *
+     * @return the value of the parameter property
      */
     public List<QueryConfigService.MethodAuthorizer.Parameter> getParameters() {
       if (parameter == null) {
@@ -194,9 +196,9 @@ public class QueryConfigService extends CacheElement {
      * Objects of the following type(s) are allowed in the list
      * {@link QueryConfigService.MethodAuthorizer.Parameter }
      *
+     * @param parameters the value of the parameter property
      */
-    public void setParameters(
-        List<QueryConfigService.MethodAuthorizer.Parameter> parameters) {
+    public void setParameters(List<QueryConfigService.MethodAuthorizer.Parameter> parameters) {
       parameter = parameters;
     }
 
@@ -206,6 +208,7 @@ public class QueryConfigService extends CacheElement {
      * possible object is
      * {@link String }
      *
+     * @return the value of the className property
      */
     public String getClassName() {
       return className;
@@ -217,6 +220,7 @@ public class QueryConfigService extends CacheElement {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the className property
      */
     public void setClassName(String value) {
       className = value;
@@ -230,13 +234,13 @@ public class QueryConfigService extends CacheElement {
      * The following schema fragment specifies the expected content contained within this class.
      *
      * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;attribute name="parameter-value" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
+     * &lt;complexType&gt;
+     *   &lt;complexContent&gt;
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+     *       &lt;attribute name="parameter-value" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+     *     &lt;/restriction&gt;
+     *   &lt;/complexContent&gt;
+     * &lt;/complexType&gt;
      * </pre>
      *
      *
@@ -256,6 +260,7 @@ public class QueryConfigService extends CacheElement {
        * possible object is
        * {@link String }
        *
+       * @return the value of the parameter-value property
        */
       public String getParameterValue() {
         return parameterValue;
@@ -267,6 +272,7 @@ public class QueryConfigService extends CacheElement {
        * allowed object is
        * {@link String }
        *
+       * @param value the value of the parameter-value property
        */
       public void setParameterValue(String value) {
         parameterValue = value;

@@ -65,17 +65,15 @@ public abstract class GoldenTestCase {
     subTearDown();
   }
 
-  /**
+  /*
    * Override this for additional set up.
-   *
    */
   public void subSetUp() throws Exception {
     // override me
   }
 
-  /**
+  /*
    * Override this for additional tear down after destroying all processes and printing output.
-   *
    */
   public void subTearDown() throws Exception {
     // override me
@@ -89,7 +87,7 @@ public abstract class GoldenTestCase {
     return processWrapper;
   }
 
-  /**
+  /*
    * Creates and returns a new GoldenComparator instance. Default implementation is
    * RegexGoldenComparator. Override if you need a different implementation such as
    * StringGoldenComparator.
@@ -98,7 +96,7 @@ public abstract class GoldenTestCase {
     return new RegexGoldenComparator(expectedProblemLines());
   }
 
-  /**
+  /*
    * Returns an array of expected problem strings. Without overriding this, any line with warning,
    * error or severe will cause the test to fail. By default, null is returned.
    *
@@ -128,7 +126,7 @@ public abstract class GoldenTestCase {
     return editProperties(properties);
   }
 
-  /**
+  /*
    * Override this to modify the properties that were created by createProperties().
    */
   protected Properties editProperties(final Properties properties) {

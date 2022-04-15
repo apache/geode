@@ -19,7 +19,7 @@ import org.apache.geode.GemFireException;
 
 /**
  * Indicates that error encountered while processing REST request.
- * <p/>
+ * <p>
  *
  * @since GemFire 8.0
  */

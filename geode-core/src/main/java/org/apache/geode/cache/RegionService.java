@@ -55,6 +55,8 @@ public interface RegionService extends AutoCloseable {
    * Return the existing region (or subregion) with the specified path. Whether or not the path
    * starts with a forward slash it is interpreted as a full path starting at a root.
    *
+   * @param <K> the type of keys in the region
+   * @param <V> the type of values in the region
    * @param path the path to the region
    * @return the Region or null if not found
    * @throws IllegalArgumentException if path is null, the empty string, or "/"
@@ -99,6 +101,8 @@ public interface RegionService extends AutoCloseable {
    * Return the QueryService for this region service. For a region service in a client the returned
    * QueryService will execute queries on the server. For a region service not in a client the
    * returned QueryService will execute queries on the local and peer regions.
+   *
+   * @return the QueryService for this region service
    */
   QueryService getQueryService();
 
@@ -106,6 +110,7 @@ public interface RegionService extends AutoCloseable {
    * Returns the JSONFormatter. In the multi-user case, this will return a JSONFormatter
    * that has the knowledge of the user associated with this region service.
    *
+   * @return the JSONFormatter
    */
   JSONFormatter getJsonFormatter();
 

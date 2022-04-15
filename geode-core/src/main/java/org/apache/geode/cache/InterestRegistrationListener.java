@@ -35,11 +35,11 @@ package org.apache.geode.cache;
  *
  *   public void afterRegisterInterest(InterestRegistrationEvent event) {
  *     System.out.println(
- *         "afterRegisterInterest: " + event.getRegionName() + " -> " + event.getKeysOfInterest());
+ *         "afterRegisterInterest: " + event.getRegionName() + " -&gt; " + event.getKeysOfInterest());
  *   }
  *
  *   public void afterUnregisterInterest(InterestRegistrationEvent event) {
- *     System.out.println("afterUnregisterInterest: " + event.getRegionName() + " -> "
+ *     System.out.println("afterUnregisterInterest: " + event.getRegionName() + " -&gt; "
  *         + event.getKeysOfInterest());
  *   }
  *

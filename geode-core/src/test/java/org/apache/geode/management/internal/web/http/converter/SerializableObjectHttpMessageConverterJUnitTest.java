@@ -36,7 +36,7 @@ import org.apache.geode.internal.util.IOUtils;
 /**
  * The SerializableObjectHttpMessageConverterJUnitTest class is a test suite of test cases testing
  * the contract and functionality of the SerializableObjectHttpMessageConverter class.
- * <p/>
+ * <p>
  *
  * @see org.apache.geode.management.internal.web.http.converter.SerializableObjectHttpMessageConverter
  * @see org.junit.Test

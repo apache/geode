@@ -17,7 +17,7 @@ package org.apache.geode.rest.internal.web.exception;
 
 /**
  * Indicates that Region does not found while trying to do some REST operation on that region.
- * <p/>
+ * <p>
  *
  * @since GemFire 8.0
  */

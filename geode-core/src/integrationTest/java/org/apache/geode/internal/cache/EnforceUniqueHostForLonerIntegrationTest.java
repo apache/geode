@@ -34,7 +34,7 @@ import org.apache.geode.cache.CacheFactory;
  * UnsupportedOperationException
  *
  * <p>
- * Extracted from {@link PartitionedRegionBucketCreationDistributionDUnitTest}.
+ * Extracted from PartitionedRegionBucketCreationDistributionDUnitTest.
  */
 
 public class EnforceUniqueHostForLonerIntegrationTest {

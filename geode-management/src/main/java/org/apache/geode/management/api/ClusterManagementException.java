@@ -23,8 +23,10 @@ public class ClusterManagementException extends RuntimeException {
 
   /**
    * for internal use only
+   *
+   * @param statusCode the {@link ClusterManagementResult.StatusCode} of the result
+   * @param message the status message to set
    */
-
   public ClusterManagementException(ClusterManagementResult.StatusCode statusCode, String message) {
     super(statusCode.name() + ": " + message);
     result = new ClusterManagementResult(statusCode, message);
@@ -37,6 +39,9 @@ public class ClusterManagementException extends RuntimeException {
 
   /**
    * for internal use only
+   *
+   * @param result the result to set
+   * @param cause the cause of this exception
    */
   public ClusterManagementException(ClusterManagementResult result, Throwable cause) {
     super(result.toString(), cause);
@@ -45,6 +50,8 @@ public class ClusterManagementException extends RuntimeException {
 
   /**
    * for internal use only
+   *
+   * @return the {@link ClusterManagementResult} associated with this exception
    */
   public ClusterManagementResult getResult() {
     return result;
@@ -52,6 +59,9 @@ public class ClusterManagementException extends RuntimeException {
 
   /**
    * get the status code of the unsuccessful result
+   *
+   * @return the {@link ClusterManagementResult.StatusCode} of the result associated with this
+   *         exception
    */
   public ClusterManagementResult.StatusCode getStatusCode() {
     return result.getStatusCode();
@@ -59,6 +69,8 @@ public class ClusterManagementException extends RuntimeException {
 
   /**
    * get the status message of the unsuccessful result, if available
+   *
+   * @return the status message of the result associated with this exception
    */
   public String getStatusMessage() {
     return result.getStatusMessage();

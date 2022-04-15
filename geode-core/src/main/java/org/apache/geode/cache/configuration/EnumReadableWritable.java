@@ -29,15 +29,14 @@ import org.apache.geode.annotations.Experimental;
  *
  * <p>
  * The following schema fragment specifies the expected content contained within this class.
- * <p>
  *
  * <pre>
- * &lt;simpleType name="enum-readable-writable">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="readable"/>
- *     &lt;enumeration value="writable"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="enum-readable-writable"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string"&gt;
+ *     &lt;enumeration value="readable"/&gt;
+ *     &lt;enumeration value="writable"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  *
  */

@@ -109,6 +109,8 @@ public class DiskWriteAttributesFactory implements java.io.Serializable {
    * which case the compact can simply remove the oplog file. A threshold of 50 causes an oplog to
    * become compactable when half of its live records become dead.
    *
+   * @param compactionThreshold the threshold at which an oplog will become compactable
+   *
    * @deprecated as of 6.5 use {@link DiskStoreFactory#setCompactionThreshold} instead
    */
   @Deprecated

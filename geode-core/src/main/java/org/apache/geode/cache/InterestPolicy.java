@@ -106,7 +106,12 @@ public class InterestPolicy implements java.io.Serializable {
     VALUES[this.ordinal] = this;
   }
 
-  /** Return the InterestPolicy represented by specified ordinal */
+  /**
+   * Return the InterestPolicy represented by specified ordinal
+   *
+   * @param ordinal the ordinal representation of an InterestPolicy
+   * @return the InterestPolicy represented by specified ordinal
+   */
   public static InterestPolicy fromOrdinal(byte ordinal) {
     return VALUES[ordinal];
   }

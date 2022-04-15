@@ -38,17 +38,17 @@ import org.apache.geode.annotations.Experimental;
  * The following schema fragment specifies the expected content contained within this class.
  *
  * <pre>
- * &lt;complexType name="parameter-type">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;choice>
- *         &lt;element name="string" type="{http://geode.apache.org/schema/cache}string-type"/>
- *         &lt;element name="declarable" type="{http://geode.apache.org/schema/cache}declarable-type"/>
- *       &lt;/choice>
- *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="parameter-type"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;choice&gt;
+ *         &lt;element name="string" type="{http://geode.apache.org/schema/cache}string-type"/&gt;
+ *         &lt;element name="declarable" type="{http://geode.apache.org/schema/cache}declarable-type"/&gt;
+ *       &lt;/choice&gt;
+ *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  *
  * This represents a key/value pair, name is the key, another string or object is the value
@@ -84,6 +84,7 @@ public class ParameterType extends ObjectType {
    * possible object is
    * {@link String }
    *
+   * @return the name.
    */
   public String getName() {
     return name;
@@ -95,6 +96,7 @@ public class ParameterType extends ObjectType {
    * allowed object is
    * {@link String }
    *
+   * @param value the name.
    */
   public void setName(String value) {
     name = value;

@@ -22,7 +22,7 @@ public class PhoneNo implements Serializable {
   public int phoneNo3;
   public int mobile;
 
-  /** Creates a new instance of PhoneNo */
+  /* Creates a new instance of PhoneNo */
   public PhoneNo(int i, int j, int k, int m) {
     phoneNo1 = i;
     phoneNo2 = j;

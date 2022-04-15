@@ -183,7 +183,8 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
    * Constructs a new Agent using the specified configuration.
    *
    * @param agentConfig instance of configuration for Agent
-   * @throws org.apache.geode.admin.AdminException TODO-javadocs
+   * @throws org.apache.geode.admin.AdminException if the generated mbeanName does not have the
+   *         correct format
    * @throws IllegalArgumentException if agentConfig is null
    */
   public AgentImpl(AgentConfigImpl agentConfig) throws AdminException, IllegalArgumentException {

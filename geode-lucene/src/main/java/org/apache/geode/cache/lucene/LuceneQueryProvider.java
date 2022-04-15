@@ -28,7 +28,7 @@ import org.apache.geode.DataSerializer;
  * A factory for {@link Query} objects. An implementation of this interface is required by
  * {@link LuceneQueryFactory#create(String, String, LuceneQueryProvider)} so that a query can be
  * serialized and distributed to multiple nodes.
- * </p>
+ * <p>
  * Instances of this interface are serialized using the standard
  * {@link DataSerializer#writeObject(Object, DataOutput)},
  */

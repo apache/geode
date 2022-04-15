@@ -61,7 +61,7 @@ import org.apache.geode.test.dunit.VM;
  *   configProperties.setProperty(LOCATORS, DistributedRule.getLocators());
  *
  *   for (VM vm : toArray(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
- *     vm.invoke(() -> {
+ *     vm.invoke(() -&gt; {
  *       server.set(new ServerLauncher.Builder()
  *           .setMemberName("server" + getVMId())
  *           .setDisableDefaultServer(true)
@@ -76,7 +76,7 @@ import org.apache.geode.test.dunit.VM;
  * {@literal @}Test
  * public void eachVmHasItsOwnServerCache() {
  *   for (VM vm : toArray(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
- *     vm.invoke(() -> {
+ *     vm.invoke(() -&gt; {
  *       assertThat(server.get().getCache()).isNotNull();
  *     });
  * }
@@ -96,7 +96,7 @@ import org.apache.geode.test.dunit.VM;
  *   configProperties.setProperty(LOCATORS, DistributedRule.getLocators());
  *
  *   for (VM vm : toArray(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
- *     vm.invoke(() -> {
+ *     vm.invoke(() -&gt; {
  *       cache.set(new CacheFactory(configProperties).create());
  *     });
  *   }
@@ -105,7 +105,7 @@ import org.apache.geode.test.dunit.VM;
  * {@literal @}Test
  * public void eachVmHasItsOwnCache() {
  *   for (VM vm : toArray(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
- *     vm.invoke(() -> {
+ *     vm.invoke(() -&gt; {
  *       assertThat(cache.get()).isNotNull();
  *     });
  *   }
@@ -126,7 +126,7 @@ import org.apache.geode.test.dunit.VM;
  *   configProperties.setProperty(LOCATORS, DistributedRule.getLocators());
  *
  *   for (VM vm : toArray(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
- *     vm.invoke(() -> {
+ *     vm.invoke(() -&gt; {
  *       system.set(DistributedSystem.connect(configProperties));
  *     });
  *   }
@@ -135,7 +135,7 @@ import org.apache.geode.test.dunit.VM;
  * {@literal @}Test
  * public void eachVmHasItsOwnDistributedSystemConnection() {
  *   for (VM vm : toArray(getVM(0), getVM(1), getVM(2), getVM(3), getController())) {
- *     vm.invoke(() -> {
+ *     vm.invoke(() -&gt; {
  *       assertThat(system.get()).isNotNull();
  *     });
  *   }
@@ -173,7 +173,7 @@ public class DistributedReference<V> extends AbstractDistributedRule {
     identity = hashCode();
   }
 
-  /**
+  /*
    * Set false to disable autoClose during tearDown. Default is true.
    */
   public DistributedReference<V> autoClose(boolean value) {
@@ -194,6 +194,7 @@ public class DistributedReference<V> extends AbstractDistributedRule {
    * Sets to the given value.
    *
    * @param newValue the new value
+   * @return a reference to this DistributedReference
    */
   public DistributedReference<V> set(V newValue) {
     REFERENCE.get().put(identity, newValue);

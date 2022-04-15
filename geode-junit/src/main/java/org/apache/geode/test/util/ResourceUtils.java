@@ -39,7 +39,9 @@ public class ResourceUtils {
   /**
    * Returns the class identified by {@code depth} element of the call stack.
    *
-   * @throws ClassNotFoundException wrapped in RuntimeException if the class cannot be located
+   * @param depth the depth of the call stack to check
+   * @return the class
+   * @throws RuntimeException wrapping a ClassNotFoundException if the class cannot be located
    */
   public static Class<?> getCallerClass(final int depth) {
     try {
@@ -51,6 +53,9 @@ public class ResourceUtils {
 
   /**
    * Returns the name of the class identified by {@code depth} element of the call stack.
+   *
+   * @param depth the depth of the call stack to check
+   * @return the name of the class
    */
   public static String getCallerClassName(final int depth) {
     return new Throwable().getStackTrace()[depth].getClassName();
@@ -59,11 +64,12 @@ public class ResourceUtils {
   /**
    * Finds {@code resourceName} using the {@code ClassLoader} of the caller class.
    *
+   * @param resourceName the resource to find
    * @return the URL of the resource
    *
    * @throws AssertionError if the resource cannot be located
    *
-   * @throws ClassNotFoundException wrapped in RuntimeException if the class cannot be located
+   * @throws RuntimeException wrapping a ClassNotFoundException if the class cannot be located
    */
   public static URL getResource(final String resourceName) {
     URL resource = getCallerClass(2).getResource(resourceName);
@@ -76,6 +82,9 @@ public class ResourceUtils {
   /**
    * Finds {@code resourceName} using the {@code ClassLoader} of {@code classInSamePackage}.
    *
+   * @param classInSamePackage a class sharing the {@code ClassLoader} from which to retrieve the
+   *        resource
+   * @param resourceName the resource to find
    * @return the URL of the resource
    *
    * @throws AssertionError if the resource cannot be located
@@ -92,6 +101,8 @@ public class ResourceUtils {
   /**
    * Finds {@code resourceName} using the specified {@code ClassLoader}.
    *
+   * @param classLoader the {@code ClassLoader} from which to retrieve the resource
+   * @param resourceName the resource to find
    * @return the URL of the resource
    *
    * @throws AssertionError if the resource cannot be located
@@ -107,6 +118,9 @@ public class ResourceUtils {
   /**
    * Copies a {@code resource} to a {@code file} in {@code targetFolder}.
    *
+   * @param resource the resource to copy
+   * @param targetFolder the folder in which to create the file
+   * @param fileName the name of the file to create
    * @return the newly created file
    *
    * @throws AssertionError if the resource cannot be located
@@ -130,6 +144,10 @@ public class ResourceUtils {
    * Copies a {@code resourceName} using the specified {@code ClassLoader} to a {@code file} in
    * {@code targetFolder}.
    *
+   * @param classLoader the {@code ClassLoader} from which to retrieve the resource
+   * @param resourceName the resource to copy
+   * @param targetFolder the folder in which to create the file
+   * @param fileName the name of the file to create
    * @return the newly created file
    *
    * @throws AssertionError if the resource cannot be located
@@ -147,6 +165,8 @@ public class ResourceUtils {
   /**
    * Copies a {@code resource} to a {@code file} in {@code targetFolder}.
    *
+   * @param resource the resource to copy
+   * @param fileName the name of the file to create
    * @return the newly created file
    *
    * @throws AssertionError if the resource cannot be located
@@ -170,6 +190,10 @@ public class ResourceUtils {
    * Copies a {@code resourceName} using the {@code ClassLoader} of {@code classInSamePackage} to a
    * {@code file} in the temporary-file directory.
    *
+   * @param classInSamePackage a class sharing the {@code ClassLoader} from which to retrieve the
+   *        resource
+   * @param resourceName the resource to copy
+   * @param fileName the name of the file to create
    * @return the newly created file
    *
    * @throws AssertionError if the resource cannot be located
@@ -188,6 +212,9 @@ public class ResourceUtils {
    * Copies a {@code resourceName} using the specified {@code ClassLoader} to a {@code file} in
    * the temporary-file directory.
    *
+   * @param classLoader the {@code ClassLoader} from which to retrieve the resource
+   * @param resourceName the resource to copy
+   * @param fileName the name of the file to create
    * @return the newly created file
    *
    * @throws AssertionError if the resource cannot be located
@@ -206,6 +233,9 @@ public class ResourceUtils {
    * Copies a {@code resourceName} using the {@code ClassLoader} of {@code classInSamePackage} to a
    * {@code file} in the temporary-file directory.
    *
+   * @param classInSamePackage a class sharing the {@code ClassLoader} from which to retrieve the
+   *        resource
+   * @param resourceName the resource to copy
    * @return the newly created file
    *
    * @throws AssertionError if the resource cannot be located
@@ -225,6 +255,8 @@ public class ResourceUtils {
    * Copies a {@code resourceName} using the specified {@code ClassLoader} to a {@code file} in
    * the temporary-file directory.
    *
+   * @param classLoader the {@code ClassLoader} from which to retrieve the resource
+   * @param resourceName the resource to copy
    * @return the newly created file
    *
    * @throws AssertionError if the resource cannot be located

@@ -28,7 +28,7 @@ public class CpClass extends Cp {
     name_index = source.readUnsignedShort();
   }
 
-  /**
+  /*
    * find and form the class name - remembering that '[' chars may come before the class name to
    * denote arrays of the given class. Max of 255 array specs
    */

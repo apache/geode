@@ -92,7 +92,12 @@ public class Scope implements Serializable {
     this.ordinal = ordinal;
   }
 
-  /** Return the Scope represented by specified ordinal */
+  /**
+   * Return the Scope represented by specified ordinal
+   *
+   * @param ordinal the ordinal representation of a Scope
+   * @return the Scope represented by specified ordinal
+   */
   public static Scope fromOrdinal(int ordinal) {
     return VALUES[ordinal];
   }

@@ -20,13 +20,12 @@ package org.apache.geode.cache.execute;
  *
  * <p>
  * This implementation provides the following defaults
- * </p>
  * <ol>
  * <li>{@link Function#hasResult()} returns true</li>
  * <li>{@link Function#optimizeForWrite()} returns false</li>
  * <li>{@link Function#isHA()} returns true</li>
  * </ol>
- * </p>
+ * <p>
  *
  * @since GemFire 6.0
  * @see Function

@@ -52,7 +52,7 @@ public class OldClientSupportProvider implements OldClientSupportService {
   private final Map<String, String> oldClassNamesToNew = new ConcurrentHashMap<>();
   private final Map<String, String> newClassNamesToOld = new ConcurrentHashMap<>();
 
-  /** returns the cache's OldClientSupportService */
+  /* returns the cache's OldClientSupportService */
   public static OldClientSupportService getService(Cache cache) {
     return ((InternalCache) cache)
         .getService(OldClientSupportService.class);

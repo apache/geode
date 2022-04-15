@@ -27,7 +27,6 @@ import org.apache.geode.distributed.internal.locks.DLockService;
  * name, no more than one thread is permitted to own the lock on a given name in that instance at
  * any point in time. Additionally, a thread can lock the entire service, preventing any other
  * threads in the system from locking the service or any names in the service.
- * </p>
  */
 public abstract class DistributedLockService {
 
@@ -41,6 +40,7 @@ public abstract class DistributedLockService {
    *
    * @param ds the <code>DistributedSystem</code> for the new service instance to use for
    *        distributed lock messaging.
+   * @return the newly created DistributedLockService
    *
    * @throws IllegalArgumentException if serviceName is an illegal name or this process has already
    *         created a DistributedLockService with the given <code>serviceName</code>.
@@ -97,7 +97,6 @@ public abstract class DistributedLockService {
    * and returning <code>false</code>. If the lock is acquired, it is held until
    * <code>unlock(Object name)</code> is invoked, or until <code>leaseTimeMillis</code> milliseconds
    * have passed since the lock was granted - whichever comes first.
-   * </p>
    *
    * <p>
    * Locks are reentrant. If a thread invokes this method n times on the same instance, specifying
@@ -106,7 +105,7 @@ public abstract class DistributedLockService {
    * lock is released (unless the lease expires). When this method is invoked for a lock that is
    * already acquired, the lease time will be set to the maximum of the remaining least time from
    * the previous invocation, or <code>leaseTimeMillis</code>
-   * </p>
+   * <p>
    *
    * @param name the name of the lock to acquire in this service. This object must conform to the
    *        general contract of <code>equals(Object)</code> and <code>hashCode()</code> as described
@@ -138,7 +137,6 @@ public abstract class DistributedLockService {
    * and returning <code>false</code>. If the lock is acquired, it is held until
    * <code>unlock(Object name)</code> is invoked, or until <code>leaseTimeMillis</code> milliseconds
    * have passed since the lock was granted - whichever comes first.
-   * </p>
    *
    * <p>
    * Locks are reentrant. If a thread invokes this method n times on the same instance, specifying
@@ -147,7 +145,7 @@ public abstract class DistributedLockService {
    * lock is released (unless the lease expires). When this method is invoked for a lock that is
    * already acquired, the lease time will be set to the maximum of the remaining least time from
    * the previous invocation, or <code>leaseTimeMillis</code>
-   * </p>
+   * <p>
    *
    * @param name the name of the lock to acquire in this service. This object must conform to the
    *        general contract of <code>equals(Object)</code> and <code>hashCode()</code> as described
@@ -193,6 +191,7 @@ public abstract class DistributedLockService {
   /**
    * Determine whether the current thread owns the lock on the given object.
    *
+   * @param name the name of the lock object
    * @return true if the current thread owns the lock for <code>name</code>.
    *
    * @throws LockServiceDestroyedException if this service has been destroyed
@@ -278,6 +277,7 @@ public abstract class DistributedLockService {
    * memory use, but may also prohibit performance optimizations if <code>name</code> is
    * subsequently locked in this VM.
    *
+   * @param name the name of the lock object
    * @throws LockServiceDestroyedException if this service has been destroyed
    */
   public abstract void freeResources(Object name);
@@ -306,7 +306,7 @@ public abstract class DistributedLockService {
    *
    * @param serviceName the name of the locking service
    *
-   * @throws IllegalArgumentException if <code>serviceName<code> does not refer to any registered
+   * @throws IllegalArgumentException if <code>serviceName</code> does not refer to any registered
    *         locking service in this process
    *
    * @see org.apache.geode.distributed.DistributedLockService#becomeLockGrantor()
@@ -336,7 +336,7 @@ public abstract class DistributedLockService {
    *
    * @return true if this member is the grantor for this service
    *
-   * @throws IllegalArgumentException if <code>serviceName<code> does not refer to any registered
+   * @throws IllegalArgumentException if <code>serviceName</code> does not refer to any registered
    *         locking service in this process
    *
    * @see org.apache.geode.distributed.DistributedLockService#isLockGrantor()

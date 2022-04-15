@@ -27,18 +27,20 @@ import org.apache.geode.management.runtime.RestoreRedundancyResults;
 public interface RestoreRedundancyOperation {
   /**
    * Specify which regions to include in the restore redundancy operation. The default,
-   * <code>null<code>, means all regions should be included. Includes take precedence over
+   * <code>null</code>, means all regions should be included. Includes take precedence over
    * excludes.
    *
    * @param regions A set containing the names of regions to include.
+   * @return this {@link RestoreRedundancyOperation}
    */
   RestoreRedundancyOperation includeRegions(Set<String> regions);
 
   /**
    * Exclude specific regions from the restore redundancy operation. The default,
-   * <code>null<code>, means don't exclude any regions.
+   * <code>null</code>, means don't exclude any regions.
    *
    * @param regions A set containing the names of regions to exclude.
+   * @return this {@link RestoreRedundancyOperation}
    */
   RestoreRedundancyOperation excludeRegions(Set<String> regions);
 
@@ -49,6 +51,7 @@ public interface RestoreRedundancyOperation {
    *
    * @param shouldReassign A boolean indicating whether or not the operation created by this
    *        class should reassign primary bucket hosts.
+   * @return this {@link RestoreRedundancyOperation}
    */
   RestoreRedundancyOperation shouldReassignPrimaries(boolean shouldReassign);
 

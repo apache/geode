@@ -25,7 +25,7 @@ import java.net.InetSocketAddress;
  * This class preserves the hostName string passed in to its constructor that takes a
  * hostName string and will respond with that string when asked for a hostName.
  *
- * @See HostAndPort which can hold both a host name and a port
+ * @see HostAndPort which can hold both a host name and a port
  */
 public class HostAddress extends InetSocketWrapper {
 

@@ -1111,7 +1111,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   /**
    * Filter all agent configuration attributes out of the given <code>Properties</code> object.
-   * <p/>
+   * <p>
    *
    * @param props the <code>Properties</code> object of filter agent configuration attributes out
    *        of.
@@ -1138,7 +1138,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
   /**
    * Appends the log-file property to the Properties object if set of properties does not already
    * define the log-file property or the gemfire.agent.log-file property.
-   * <p/>
+   * <p>
    *
    * @param props the <code>Properties</code> to append the log-file property to if the property
    *        does not exist.

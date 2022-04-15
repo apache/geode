@@ -171,6 +171,8 @@ public class ResourcePermission extends WildcardPermission {
 
   /**
    * Returns the resource, could be either ALL, NULL, DATA or CLUSTER
+   *
+   * @return the resource as a {@link Resource}
    */
   public Resource getResource() {
     if (ALL.equals(resource)) {
@@ -181,6 +183,8 @@ public class ResourcePermission extends WildcardPermission {
 
   /**
    * Returns the operation, could be either ALL, NULL, MANAGE, WRITE or READ
+   *
+   * @return the operation as an {@link Operation}
    */
   public Operation getOperation() {
     if (ALL.equals(operation)) {
@@ -192,6 +196,8 @@ public class ResourcePermission extends WildcardPermission {
 
   /**
    * could be either "*", "NULL", "DATA", "CLUSTER"
+   *
+   * @return the resource as a String
    */
   public String getResourceString() {
     return resource;
@@ -199,6 +205,8 @@ public class ResourcePermission extends WildcardPermission {
 
   /**
    * Returns the operation, could be either "*", "NULL", "MANAGE", "WRITE" or "READ"
+   *
+   * @return the operation as a String
    */
   public String getOperationString() {
     return operation;
@@ -206,12 +214,16 @@ public class ResourcePermission extends WildcardPermission {
 
   /**
    * returns the regionName, or cluster target, could be "*", meaning all regions or all targets
+   *
+   * @return the regionName, or cluster target
    */
   public String getTarget() {
     return target;
   }
 
   /**
+   * @return the regionName, or cluster target
+   *
    * @deprecated use getTarget()
    */
   @Deprecated
@@ -221,6 +233,8 @@ public class ResourcePermission extends WildcardPermission {
 
   /**
    * returns the key, could be "*" meaning all keys.
+   *
+   * @return the key
    */
   public String getKey() {
     return key;

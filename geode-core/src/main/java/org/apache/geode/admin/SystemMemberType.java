@@ -67,13 +67,18 @@ public class SystemMemberType implements java.io.Serializable {
     return VALUES[ordinal]; // Canonicalize
   }
 
-  /** Creates a new instance of SystemMemberType. */
+  /* Creates a new instance of SystemMemberType. */
   private SystemMemberType(String name, int ordinal) {
     this.name = name;
     this.ordinal = ordinal;
   }
 
-  /** Return the SystemMemberType represented by specified ordinal */
+  /**
+   * Return the SystemMemberType represented by specified ordinal
+   *
+   * @param ordinal the ordinal representation of a SystemMemberType
+   * @return the SystemMemberType represented by specified ordinal
+   */
   public static SystemMemberType fromOrdinal(int ordinal) {
     return VALUES[ordinal];
   }
@@ -82,18 +87,28 @@ public class SystemMemberType implements java.io.Serializable {
     return name;
   }
 
-  /** Return whether this is <code>MANAGER</code>. */
+  /**
+   * Return whether this is <code>MANAGER</code>.
+   *
+   * @return whether this is <code>MANAGER</code>
+   */
   public boolean isManager() {
     return equals(MANAGER);
   }
 
-  /** Return whether this is <code>APPLICATION</code>. */
+  /**
+   * Return whether this is <code>APPLICATION</code>.
+   *
+   * @return whether this is <code>APPLICATION</code>
+   */
   public boolean isApplication() {
     return equals(APPLICATION);
   }
 
   /**
    * Return whether this is <code>CACHE_SERVER</code>.
+   *
+   * @return whether this is <code>CACHE_SERVER</code>
    *
    * @deprecated as of 5.7 use {@link #isCacheVm} instead.
    */
@@ -104,6 +119,8 @@ public class SystemMemberType implements java.io.Serializable {
 
   /**
    * Return whether this is <code>CACHE_VM</code>.
+   *
+   * @return whether this is <code>CACHE_VM</code>
    */
   public boolean isCacheVm() {
     return equals(CACHE_VM);

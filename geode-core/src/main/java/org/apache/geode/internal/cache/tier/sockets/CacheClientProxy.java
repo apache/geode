@@ -1868,7 +1868,7 @@ public class CacheClientProxy implements ClientSession {
 
         /*
          * Setting the expiration task to null again and cancelling existing one, if any.
-         * <p/>
+         * <p>
          * The message dispatcher may again set the expiry task in below path: <code>
          * org.apache.geode.internal.cache.tier.sockets.CacheClientProxy.
          * scheduleDurableExpirationTask(CacheClientProxy.java:2020)
@@ -1879,7 +1879,7 @@ public class CacheClientProxy implements ClientSession {
          * org.apache.geode.internal.cache.tier.sockets.CacheClientProxy$MessageDispatcher.run(
          * CacheClientProxy.java:2692)
          * </code>
-         * <p/>
+         * <p>
          * This is because message dispatcher may get an IOException with "Proxy closing due to
          * socket being closed locally" during/after terminateDispatching(false) above.
          */

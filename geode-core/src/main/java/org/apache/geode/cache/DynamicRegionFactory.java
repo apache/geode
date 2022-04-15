@@ -55,7 +55,6 @@ import org.apache.geode.security.GemFireSecurityException;
  * GemFire DistributedSystem that has created an instance of this class will automatically
  * instantiate regions created through the factory from anywhere else in the DistributedSystem.
  * <p>
- * <p>
  * Instructions for Use:<br>
  * <ul>
  * <li>If your application is a client in a client/server installation, either specify the pool name
@@ -112,7 +111,6 @@ import org.apache.geode.security.GemFireSecurityException;
  * register interest in server keys or not. You will generally want this to be turned on so that
  * clients will see updates made to servers. In server processes, DynamicRegionFactory forces use of
  * NotifyBySubscription.
- * </ul>
  * <p>
  * Notes:
  * <ul>
@@ -192,6 +190,8 @@ public abstract class DynamicRegionFactory {
 
   /**
    * Returns true if dynamic region factory is open; false if closed.
+   *
+   * @return whether this dynamic region factory is open
    */
   public boolean isOpen() {
     return getConfig() != null;
@@ -200,6 +200,8 @@ public abstract class DynamicRegionFactory {
   /**
    * Returns true if this factory is open and can produce dynamic regions. Factories are only active
    * after their cache has been created.
+   *
+   * @return whether this factory is open and can produce dynamic regions
    */
   public boolean isActive() {
     return isOpen() && cache != null;
@@ -207,6 +209,8 @@ public abstract class DynamicRegionFactory {
 
   /**
    * Returns true if dynamic region factory is closed.
+   *
+   * @return whether the dynamic region factory is closed
    */
   public boolean isClosed() {
     return !isOpen();
@@ -214,6 +218,8 @@ public abstract class DynamicRegionFactory {
 
   /**
    * Returns the configuration for this factory. Returns null if the factory is closed;
+   *
+   * @return the configuration for this factory
    */
   public Config getConfig() {
     if (config == null) {
@@ -716,6 +722,9 @@ public abstract class DynamicRegionFactory {
 
     /**
      * Creates a configuration with defaults and the given diskDir and poolName.
+     *
+     * @param diskDir the directory to which the region's data is written
+     * @param poolName the name of the connection pool to use
      */
     public Config(File diskDir, String poolName) {
       this(diskDir, poolName, !DISABLE_PERSIST_BACKUP, !DISABLE_REGISTER_INTEREST);
@@ -723,6 +732,12 @@ public abstract class DynamicRegionFactory {
 
     /**
      * Creates a configuration with the given attributes
+     *
+     * @param diskDir the directory to which the region's data is written
+     * @param poolName the name of the connection pool to use
+     * @param persistBackup boolean specifying if a persistent backup should be made of the region
+     * @param registerInterest whether regions created by the factory will register interest in all
+     *        keys in a corresponding server cache region
      */
     public Config(File diskDir, String poolName, boolean persistBackup, boolean registerInterest) {
       this.registerInterest = registerInterest;
@@ -776,6 +791,8 @@ public abstract class DynamicRegionFactory {
 
     /**
      * Returns true if the factory is persisted to disk; false if not.
+     *
+     * @return whether the factory is persisted to disk
      */
     public boolean getPersistBackup() {
       return persistBackup;
@@ -784,6 +801,9 @@ public abstract class DynamicRegionFactory {
     /**
      * Returns true if the region will register interest in all keys of a corresponding server cache
      * region
+     *
+     * @return whether the region will register interest in all keys of a corresponding server cache
+     *         region
      */
     public boolean getRegisterInterest() {
       return registerInterest;
@@ -793,6 +813,8 @@ public abstract class DynamicRegionFactory {
      * Returns the disk directory that the dynamic region factory data will be written to. Returns
      * null if no directory has been specified. The diskDir is only used if {@code persistBackup} is
      * true.
+     *
+     * @return the disk directory that the dynamic region factory data will be written to
      */
     public File getDiskDir() {
       return diskDir;
@@ -802,6 +824,8 @@ public abstract class DynamicRegionFactory {
     /**
      * Returns the name of the {@link Pool} associated with the dynamic region factory. Returns null
      * if there is no connection pool for dynamic regions.
+     *
+     * @return the name of the {@link Pool} associated with the dynamic region factory
      */
     public String getPoolName() {
       return poolName;

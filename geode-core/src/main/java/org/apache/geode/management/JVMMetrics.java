@@ -65,6 +65,14 @@ public class JVMMetrics implements Serializable {
   /**
    * This constructor is to be used by internal JMX framework only. User should not try to create an
    * instance of this class.
+   *
+   * @param gcCount the number of times garbage collection has occurred
+   * @param gcTimeMillis the amount of time (in milliseconds) spent on garbage collection
+   * @param initMemory the initial number of megabytes of memory requested from the operating system
+   * @param committedMemory the current number of megabytes of memory allocated
+   * @param usedMemory the current number of megabytes of memory being used
+   * @param maxMemory the maximum number of megabytes of memory available from the operating system
+   * @param totalThreads he number of threads in use
    */
   @ConstructorProperties({"gcCount", "gcTimeMillis", "initMemory", "committedMemory", "usedMemory",
       "maxMemory", "totalThreads"})
@@ -81,6 +89,8 @@ public class JVMMetrics implements Serializable {
 
   /**
    * Returns the number of times garbage collection has occurred.
+   *
+   * @return the number of times garbage collection has occurred
    */
   public long getGcCount() {
     return gcCount;
@@ -88,6 +98,8 @@ public class JVMMetrics implements Serializable {
 
   /**
    * Returns the amount of time (in milliseconds) spent on garbage collection.
+   *
+   * @return the amount of time (in milliseconds) spent on garbage collection
    */
   public long getGcTimeMillis() {
     return gcTimeMillis;
@@ -95,6 +107,8 @@ public class JVMMetrics implements Serializable {
 
   /**
    * Returns the initial number of megabytes of memory requested from the operating system.
+   *
+   * @return the initial number of megabytes of memory requested from the operating system
    */
   public long getInitMemory() {
     return initMemory;
@@ -102,6 +116,8 @@ public class JVMMetrics implements Serializable {
 
   /**
    * Returns the current number of megabytes of memory allocated.
+   *
+   * @return the current number of megabytes of memory allocated
    */
   public long getCommittedMemory() {
     return committedMemory;
@@ -109,6 +125,8 @@ public class JVMMetrics implements Serializable {
 
   /**
    * Returns the current number of megabytes of memory being used.
+   *
+   * @return the current number of megabytes of memory being used
    */
   public long getUsedMemory() {
     return usedMemory;
@@ -116,6 +134,8 @@ public class JVMMetrics implements Serializable {
 
   /**
    * Returns the maximum number of megabytes of memory available from the operating system.
+   *
+   * @return the maximum number of megabytes of memory available from the operating system
    */
   public long getMaxMemory() {
     return maxMemory;
@@ -123,6 +143,8 @@ public class JVMMetrics implements Serializable {
 
   /**
    * Returns the number of threads in use.
+   *
+   * @return the number of threads in use
    */
   public int getTotalThreads() {
     return totalThreads;

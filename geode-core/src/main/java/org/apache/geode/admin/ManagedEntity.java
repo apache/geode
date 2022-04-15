@@ -81,6 +81,8 @@ public interface ManagedEntity {
    * Returns whether or not this managed entity is running. Note that this operation may attempt to
    * contact the managed entity.
    *
+   * @return whether his managed entity is running
+   *
    * @throws IllegalStateException If this managed entity resides on a remote machine and a
    *         <code>null</code> or empty (<code>""</code>)
    *         {@linkplain ManagedEntityConfig#getRemoteCommand remote command} has been specified.
@@ -90,6 +92,8 @@ public interface ManagedEntity {
   /**
    * Returns the tail of this manage entity's log file. Note that not all managed entities implement
    * this functionality.
+   *
+   * @return the tail of this manage entity's log file
    *
    * @throws AdminException If a problem is encountered while getting the log of this managed
    *         entity.

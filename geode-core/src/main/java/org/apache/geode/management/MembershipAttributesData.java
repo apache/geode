@@ -66,6 +66,8 @@ public class MembershipAttributesData {
 
   /**
    * Returns the set of {@linkplain Role}s that are required for the reliability of this region.
+   *
+   * @return the set of {@linkplain Role}s that are required for the reliability of this region
    */
   public Set<String> getRequiredRoles() {
     return requiredRoles;
@@ -73,6 +75,8 @@ public class MembershipAttributesData {
 
   /**
    * Returns the policy that describes the action to take if any required roles are missing.
+   *
+   * @return the policy that describes the action to take if any required roles are missing
    */
   public String getLossAction() {
     return lossAction;
@@ -80,6 +84,8 @@ public class MembershipAttributesData {
 
   /**
    * Returns the policy that describes the action to take when resuming from missing roles.
+   *
+   * @return the policy that describes the action to take when resuming from missing roles
    */
   public String getResumptionAction() {
     return resumptionAction;

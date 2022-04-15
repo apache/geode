@@ -61,6 +61,10 @@ public abstract class AbstractConfiguration<R extends RuntimeInfo>
    * Returns true if the given "groupName" represents the predefined "cluster" group.
    * This is true if "groupName" is a case-insensitive match for {@link #CLUSTER},
    * is <code>null</code>, or is an empty string.
+   *
+   * @param groupName the group name to be checked
+   * @return true if groupName is a case-insensitive match for {@link #CLUSTER}, is
+   *         <code>null</code>, or is an empty string
    */
   public static boolean isCluster(String groupName) {
     return isBlank(groupName) || groupName.equalsIgnoreCase(CLUSTER);
@@ -81,7 +85,7 @@ public abstract class AbstractConfiguration<R extends RuntimeInfo>
   @Override
   public abstract String getId();
 
-  /**
+  /*
    * for internal usage only
    */
   @JsonIgnore
@@ -90,6 +94,8 @@ public abstract class AbstractConfiguration<R extends RuntimeInfo>
   /**
    * Returns true if the RuntimeInfo will be the same on all members;
    * false if each member can have different RuntimeInfo.
+   *
+   * @return true if the RuntimeInfo will be the same on all members
    */
   @JsonIgnore
   public boolean isGlobalRuntime() {

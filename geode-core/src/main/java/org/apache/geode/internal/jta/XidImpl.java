@@ -20,7 +20,7 @@ import javax.transaction.xa.Xid;
 /**
  * <p>
  * XidImpl: A JTA compatible implementation of Xid
- * </p>
+ * <p>
  *
  * @since GemFire 4.0
  *

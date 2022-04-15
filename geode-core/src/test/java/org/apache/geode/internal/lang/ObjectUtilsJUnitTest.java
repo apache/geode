@@ -25,7 +25,7 @@ import org.junit.Test;
 /**
  * The ObjectUtilsJUnitTest class is a test suite of test cases for testing the contract and
  * functionality of the ObjectUtils class.
- * <p/>
+ * <p>
  *
  * @see org.apache.geode.internal.lang.ObjectUtils
  * @see org.junit.Assert

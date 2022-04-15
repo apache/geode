@@ -31,6 +31,10 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE, ElementType.CONSTRUCTOR, ElementType.METHOD, ElementType.FIELD})
 public @interface VisibleForTesting {
 
-  /** Optional description */
+  /**
+   * Optional description
+   *
+   * @return the description for this annotation
+   */
   String value() default "";
 }

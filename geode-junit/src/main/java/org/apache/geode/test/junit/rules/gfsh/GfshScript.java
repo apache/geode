@@ -129,6 +129,9 @@ public class GfshScript {
    * Will cause the thread that executes to wait, if necessary, until the subprocess executing this
    * Gfsh script has terminated, or the specified waiting time elapses.
    *
+   * @param timeout the maximum amount of time to wait
+   * @param timeUnit the units of {@code timeout}
+   * @return a reference to this GfshScript
    * @throws RuntimeException if the current thread is interrupted while waiting.
    * @throws AssertionError if the specified waiting time elapses before the process exits.
    */
@@ -153,7 +156,7 @@ public class GfshScript {
     return gfshRule.execute(this);
   }
 
-  /**
+  /*
    * this will allow you to specify a gfsh workingDir when executing the script
    */
   public GfshExecution execute(GfshRule gfshRule, File workingDir) {

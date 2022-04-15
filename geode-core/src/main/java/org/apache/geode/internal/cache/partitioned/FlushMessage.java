@@ -40,13 +40,11 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * <p>
  * Currently this message does not support conserve-sockets=false, that is it only flushes the
  * shared communication channels.
- * </p>
- *
  * <p>
  * This messages implementation is unique in that it uses another instance of itself as the reply.
  * This was to leverage the fact that the message is a
  * {@link org.apache.geode.distributed.internal.SerialDistributionMessage}.
- * </p>
+ * <p>
  *
  * @since GemFire 5.1
  */

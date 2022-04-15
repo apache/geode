@@ -85,7 +85,7 @@ public class RegionDistributionException extends RegionRoleException {
     return failedRoles;
   }
 
-  /**
+  /*
    * Override writeObject which is used in serialization. Customize serialization of this exception
    * to avoid escape of InternalRole which is not Serializable.
    */
@@ -104,7 +104,7 @@ public class RegionDistributionException extends RegionRoleException {
     out.writeObject(roleNames);
   }
 
-  /**
+  /*
    * Override readObject which is used in serialization. Customize serialization of this exception
    * to avoid escape of InternalRole which is not Serializable.
    */

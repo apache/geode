@@ -26,7 +26,7 @@ import org.apache.geode.GemFireException;
  * <pre>
  *     VM vm0 = host0.getVM(0);
  *     try {
- *       vm.invoke(() -> this.getUnknownObject());
+ *       vm.invoke(() -&gt; this.getUnknownObject());
  *
  *     } catch (RMIException ex) {
  *       assertIndexDetailsEquals(ex.getCause() instanceof ObjectException);
@@ -57,8 +57,8 @@ public class RMIException extends GemFireException {
   /** The VM in which the method was executing */
   private final VM vm;
 
-  /**
-   * Creates a new {@code RMIException} that was caused by a given {@code Throwable} while
+  /*
+   * Creates a new RMIException that was caused by a given Throwable while
    * invoking a given method.
    */
   public RMIException(VM vm, String className, String methodName, Throwable cause) {
@@ -89,7 +89,7 @@ public class RMIException extends GemFireException {
     this.methodName = methodName;
   }
 
-  /**
+  /*
    * Returns the cause of this exception. Note that this is not necessarily the exception that gets
    * printed out with the stack trace.
    */
@@ -98,7 +98,7 @@ public class RMIException extends GemFireException {
     return cause;
   }
 
-  /**
+  /*
    * Returns the VM in which the remote method was invoked
    */
   public VM getVM() {

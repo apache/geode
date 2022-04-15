@@ -27,6 +27,8 @@ public class NetworkMetrics {
 
   /**
    * Returns the average number of bytes per second received.
+   *
+   * @return the average number of bytes per second received
    */
   public float getBytesReceivedRate() {
     return bytesReceivedRate;
@@ -34,6 +36,8 @@ public class NetworkMetrics {
 
   /**
    * Returns the average number of bytes per second sent.
+   *
+   * @return the average number of bytes per second sent
    */
   public float getBytesSentRate() {
     return bytesSentRate;
@@ -41,6 +45,8 @@ public class NetworkMetrics {
 
   /**
    * Sets the average number of bytes per second received.
+   *
+   * @param bytesReceivedRate the average number of bytes per second received
    */
   public void setBytesReceivedRate(float bytesReceivedRate) {
     this.bytesReceivedRate = bytesReceivedRate;
@@ -48,6 +54,8 @@ public class NetworkMetrics {
 
   /**
    * Sets the average number of bytes per second sent.
+   *
+   * @param bytesSentRate the average number of bytes per second sent
    */
   public void setBytesSentRate(float bytesSentRate) {
     this.bytesSentRate = bytesSentRate;

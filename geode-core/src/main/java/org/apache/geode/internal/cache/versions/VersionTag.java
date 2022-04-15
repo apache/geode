@@ -36,10 +36,10 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 
 /**
  * VersionTags are sent with distribution messages and carry version info for the operation.
- * <p/>
+ * <p>
  * Note that on the receiving end the membership IDs in a version tag will not be references to
  * canonical IDs and should be made so before storing them for any length of time.
- * <p/>
+ * <p>
  * This class implements java.io.Serializable for dunit testing. It should not otherwise be
  * serialized with that mechanism.
  *

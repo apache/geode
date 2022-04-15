@@ -53,6 +53,7 @@ public interface ResultSender<T> {
    * Sends a result back to the FunctionService calling thread and invokes
    * {@link ResultCollector#addResult(org.apache.geode.distributed.DistributedMember, Object)}.
    *
+   * @param oneResult the result to be sent
    */
   void sendResult(T oneResult);
 
@@ -62,6 +63,8 @@ public interface ResultSender<T> {
    * then {@link ResultCollector#endResults()} if it is the last instance of the Function to report
    * results. The ResultCollector will keep waiting for results until it receives last result.
    * Therefore, it is very important to use this method to indicate end of function execution.
+   *
+   * @param lastResult the result to be sent
    *
    * @throws IllegalStateException if called more than once
    *
@@ -75,6 +78,7 @@ public interface ResultSender<T> {
    * will not throw exception but will have exception as a part of results received. Calling
    * sendException will act as a lastResult.
    *
+   * @param t the {@link Throwable} to be sent
    *
    * @see #lastResult(Object)
    * @since GemFire 6.3

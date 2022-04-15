@@ -164,11 +164,6 @@ public class CompressionCacheListenerDUnitTest extends JUnit4CacheTestCase {
         }
       };
 
-  /**
-   * Creates a new CompressionCacheListenerDUnitTest.
-   *
-   * @param name a test name.
-   */
   public CompressionCacheListenerDUnitTest() {
     super();
   }

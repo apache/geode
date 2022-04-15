@@ -43,7 +43,7 @@ import org.apache.geode.test.dunit.VM;
  *
  * {@literal @}Test
  * public void createClientCache() {
- *   vm0.invoke(() -> clientCacheRule.createClientCache(new ClientCacheFactory().setPoolRetryAttempts(1));
+ *   vm0.invoke(() -&gt; clientCacheRule.createClientCache(new ClientCacheFactory().setPoolRetryAttempts(1));
  * }
  * </pre>
  *
@@ -183,7 +183,7 @@ public class ClientCacheRule extends AbstractDistributedRule {
       // nothing
     }
 
-    /**
+    /*
      * Create ClientCache in specified VM. Default is none.
      */
     public Builder createClientCacheIn(final VM vm) {
@@ -193,7 +193,7 @@ public class ClientCacheRule extends AbstractDistributedRule {
       return this;
     }
 
-    /**
+    /*
      * Create Cache in local JVM (controller). Default is false.
      */
     public Builder createClientCacheInLocal() {
@@ -201,7 +201,7 @@ public class ClientCacheRule extends AbstractDistributedRule {
       return this;
     }
 
-    /**
+    /*
      * Disconnect from DistributedSystem in all VMs after each test. ClientCache is always closed
      * regardless. Default is false.
      */

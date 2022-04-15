@@ -33,12 +33,11 @@ import org.apache.geode.cache.query.types.ObjectType;
  * Otherwise, a <code>SELECT</code> expression over a collection of domain objects results in
  * <code>SelectResults</code> that contain domain objects, i.e. instances of domain classes such as
  * {@link String} or <code>Address</code>.
- * <p>
  *
  * <pre>
  * QueryService qs = cacheView.getQueryService();
  *
- * String select = "SELECT DISTINCT * FROM /root/employees " + "WHERE salary > 50000";
+ * String select = "SELECT DISTINCT * FROM /root/employees " + "WHERE salary &gt; 50000";
  * Query query = qs.newQuery(select);
  * SelectResults results = query.execute();
  *
@@ -47,7 +46,7 @@ import org.apache.geode.cache.query.types.ObjectType;
  *   System.out.println("Highly compensated: " + emp);
  * }
  *
- * select = "SELECT DISTINCT age, address.zipCode FROM /root/employees " + "WHERE salary > 50000";
+ * select = "SELECT DISTINCT age, address.zipCode FROM /root/employees " + "WHERE salary &gt; 50000";
  * query = qs.newQuery(select);
  * results = query.execute();
  *
@@ -55,7 +54,7 @@ import org.apache.geode.cache.query.types.ObjectType;
  *   Struct struct = (Struct) iter.next();
  *   int age = ((Integer) struct.get("age")).intValue();
  *   String zipCode = (String) struct.get("zipCode");
- *   System.out.println(age + " -> " + zipCode);
+ *   System.out.println(age + " -&gt; " + zipCode);
  * }
  *
  * </pre>
@@ -76,7 +75,7 @@ public interface SelectResults<E> extends Collection<E> {
 
   /**
    * Return the number of times element occurs in this collection, that is the number of duplicates
-   * <code>element</code> has in this collection as defined by the <code>equals></code> method. If
+   * <code>element</code> has in this collection as defined by the <code>equals</code> method. If
    * <code>element</code> is not present in this collection, then 0 is returned.
    *
    * @param element the element

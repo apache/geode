@@ -47,12 +47,12 @@ import org.apache.geode.test.dunit.VM;
  *
  * {@literal @}Before
  * public void setUp() {
- *   getVM(0).invoke(() -> cacheRule.createCache(new CacheFactory().setPdxDiskStore(myDiskStore))));
+ *   getVM(0).invoke(() -&gt; cacheRule.createCache(new CacheFactory().setPdxDiskStore(myDiskStore))));
  * }
  *
  * {@literal @}Test
  * public void createRegionWithRegionFactory() {
- *   getVM(0).invoke(() -> {
+ *   getVM(0).invoke(() -&gt; {
  *     RegionFactory regionFactory = cacheRule.getCache().createRegionFactory();
  *     Region region = regionFactory.create("RegionName");
  *     assertThat(region).isNotNull();
@@ -78,7 +78,7 @@ import org.apache.geode.test.dunit.VM;
  * {@literal @}Test
  * public void remoteVmsCreatedCache() {
  *   for (VM vm : Host.getHost(0).getAllVMs()) {
- *     vm.invoke(() -> assertThat(cacheRule.getCache()).isNotNull());
+ *     vm.invoke(() -&gt; assertThat(cacheRule.getCache()).isNotNull());
  *   }
  * }
  * </pre>
@@ -99,6 +99,8 @@ public class CacheRule extends AbstractDistributedRule {
 
   /**
    * Use {@code Builder} for more options in constructing {@code CacheRule}.
+   *
+   * @return a new {@code Builder}
    */
   public static Builder builder() {
     return new Builder();
@@ -283,7 +285,7 @@ public class CacheRule extends AbstractDistributedRule {
       // nothing
     }
 
-    /**
+    /*
      * Create Cache in every VM including controller and all DUnit VMs. Default is false.
      */
     public Builder createCacheInAll() {
@@ -291,7 +293,7 @@ public class CacheRule extends AbstractDistributedRule {
       return this;
     }
 
-    /**
+    /*
      * Create Cache in specified VM. Default is none.
      */
     public Builder createCacheIn(final VM vm) {
@@ -301,7 +303,7 @@ public class CacheRule extends AbstractDistributedRule {
       return this;
     }
 
-    /**
+    /*
      * Create Cache in local JVM (controller). Default is false.
      */
     public Builder createCacheInLocal() {
@@ -309,7 +311,7 @@ public class CacheRule extends AbstractDistributedRule {
       return this;
     }
 
-    /**
+    /*
      * Disconnect all VMs from DistributedSystem after each test. Cache is always closed regardless.
      * Default is false.
      */
@@ -318,7 +320,7 @@ public class CacheRule extends AbstractDistributedRule {
       return this;
     }
 
-    /**
+    /*
      * Destroy all Regions before closing the Cache. This will cleanup the presence of each Region
      * in DiskStores, but this is not needed if the disk files are on a TemporaryFolder. Default is
      * false.

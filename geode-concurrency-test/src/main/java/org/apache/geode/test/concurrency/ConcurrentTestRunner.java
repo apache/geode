@@ -55,8 +55,8 @@ import org.apache.geode.test.concurrency.loop.LoopRunner;
  *   &#64;Test
  *   public void someTestMethod(ParallelExecutor executor) {
  *     AtomicInteger atomicInteger = new AtomicInteger();
- *     executor.inParallel(() -> atomicInteger.incrementAndGet());
- *     executor.inParallel(() -> atomicInteger.incrementAndGet());
+ *     executor.inParallel(() -&gt; atomicInteger.incrementAndGet());
+ *     executor.inParallel(() -&gt; atomicInteger.incrementAndGet());
  *     executor.execute();
  *     assertEquals(2, atomicInteger.get());
  *   }

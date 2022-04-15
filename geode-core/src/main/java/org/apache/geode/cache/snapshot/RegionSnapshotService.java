@@ -57,12 +57,12 @@ import org.apache.geode.pdx.PdxSerializer;
  * <pre>
  * RegionSnapshotService snapshot = region.getSnapshotService();
  * SnapshotFilter filter = new SnapshotFilter() {
- *   public boolean accept(Entry<K, V> entry) {
+ *   public boolean accept(Entry$lt;K, V$gt; entry) {
  *     return true;
  *   }
  * };
  *
- * SnapshotOptions<Object, Object> options = snapshot.createOptions();
+ * SnapshotOptions$lt;Object, Object$gt; options = snapshot.createOptions();
  * options.setFilter(filter);
  *
  * snapshot.save(new File("snapshot.gfd"), SnapshotFormat.GEMFIRE, options);

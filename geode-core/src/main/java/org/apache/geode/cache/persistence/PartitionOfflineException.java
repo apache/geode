@@ -66,6 +66,9 @@ public class PartitionOfflineException extends GemFireException {
   /**
    * Retrieve the set of disk directories which are known to hold data for the missing buckets, but
    * are not online.
+   *
+   * @return the set of disk directories which are known to hold data for the missing buckets, but
+   *         are not online
    */
   public Set<PersistentID> getOfflineMembers() {
     return offlineMembers;

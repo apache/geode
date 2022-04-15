@@ -33,7 +33,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
  * <code> UserTransactionImpl </code> is an implementation of UserTransaction interface. It is
  * hard-coded to <code> TransactionManagerImpl
  * </code>.
- * </p>
+ * <p>
  *
  *
  * @since GemFire 4.0

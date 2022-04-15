@@ -48,6 +48,7 @@ public abstract class DescribedExternalResource implements TestRule {
   /**
    * Override to set up your specific external resource.
    *
+   * @param description A Description of the test implemented in base
    * @throws Throwable if setup fails (which will prevent the invocation of {@code after})
    */
   protected void before(Description description) throws Throwable {
@@ -57,6 +58,9 @@ public abstract class DescribedExternalResource implements TestRule {
   /**
    * Override to tear down your specific external resource. Note: ExternalResource after
    * does not include {@code throws Throwable}.
+   *
+   * @param description A Description of the test implemented in base
+   * @throws Throwable if teardown fails
    */
   protected void after(Description description) throws Throwable {
     // do nothing

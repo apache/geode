@@ -43,7 +43,7 @@ import org.apache.geode.metrics.MetricsPublishingService;
  * meter registries, and metrics publishing services.
  * <p>
  * Each meter added to this metrics service's meter registry gains these common tags:
- * </p>
+ * <p>
  * <ul>
  * <li><em>member</em>: The name of the system.</li>
  * <li><em>host</em>: The name of the host on which the system is running.</li>

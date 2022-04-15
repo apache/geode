@@ -46,7 +46,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 /**
  * <p>
  * TransactionManager: A JTA compatible Transaction Manager.
- * </p>
+ * <p>
  *
  * @since GemFire 4.1.1
  *

@@ -114,6 +114,10 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   /**
    * Returns a region with the given name and the attributes for this test.
    *
+   * @param <K> the type of keys in the region
+   * @param <V> the type of values in the region
+   * @param name the name of the region
+   * @return the region
    * @see #getRegionAttributes
    */
   protected <K, V> Region<K, V> createRegion(String name) throws CacheException {
@@ -125,7 +129,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     return createRootRegion(getRegionAttributes());
   }
 
-  /**
+  /*
    * Returns the attributes of a region to be tested by this test. Note that the decision as to
    * which attributes are used is left up to the concrete subclass.
    */
@@ -136,7 +140,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
   protected void pauseIfNecessary(int ms) {}
 
-  /**
+  /*
    * Make sure all messages done on region r have been processed on the remote side.
    */
   protected void flushIfNecessary(Region r) {
@@ -240,6 +244,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   /**
    * Indicate whether subregions are supported
    *
+   * @return whether subregions are supported
    */
   protected boolean supportsSubregions() {
     return true;
@@ -2887,10 +2892,10 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
   static class CountExpiry<K, V> implements CustomExpiry<K, V>, Declarable {
 
-    /**
+    /*
      * Object --> CountExpiry
      *
-     * @guarded.By CountExpiry.class
+     * Guarded by CountExpiry.class
      */
     static final HashMap<Object, Object> invokeCounts = new HashMap<>();
 

@@ -29,6 +29,8 @@ public interface RoleEvent<K, V> extends RegionEvent<K, V> {
 
   /**
    * Returns the required roles that were lost or gained because of this event.
+   *
+   * @return the required roles that were lost or gained because of this event
    */
   Set<String> getRequiredRoles();
 

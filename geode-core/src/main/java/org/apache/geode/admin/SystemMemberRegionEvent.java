@@ -27,6 +27,8 @@ package org.apache.geode.admin;
 public interface SystemMemberRegionEvent extends SystemMemberCacheEvent {
   /**
    * Returns the full path of the region the event was done on.
+   *
+   * @return the full path of the region the event was done on
    */
   String getRegionPath();
 }

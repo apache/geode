@@ -29,7 +29,7 @@ import org.skyscreamer.jsonassert.JSONCompareResult;
  * Matcher which tests equivalence between json documents. The comparison does not consider array
  * ordering. An example might be:
  *
- * <p/>
+ * <p>
  *
  * <pre>
  * mockMvc.perform(get("/v1/customers?limit=10"))

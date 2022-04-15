@@ -20,8 +20,8 @@ import org.junit.runners.parameterized.ParametersRunnerFactory;
 import org.junit.runners.parameterized.TestWithParameters;
 
 /**
- * This class provides an early fix for JUnit issue <a
- * href="https://github.com/junit-team/junit4/issues/751>751</a>.
+ * This class provides an early fix for JUnit issue
+ * <a href="https://github.com/junit-team/junit4/issues/751">751</a>.
  *
  * Once JUnit 4.13 is released, this class can be removed.
  *

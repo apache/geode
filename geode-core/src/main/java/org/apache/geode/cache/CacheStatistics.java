@@ -54,7 +54,7 @@ public interface CacheStatistics {
    * For an entry, returns the last time it was accessed via <code>Region.get</code>; for a region,
    * the last time any of its entries or the entries of its subregions were accessed with
    * <code>Region.get</code>. Any modifications will also update the lastAccessedTime, so
-   * <code>lastAccessedTime</code> is always <code>>= lastModifiedTime</code>. The
+   * <code>lastAccessedTime</code> is always <code>&gt;= lastModifiedTime</code>. The
    * <code>lastAccessedTime</code> on a region is propagated upward to parent regions, transitively,
    * to the the root region.
    * <p>

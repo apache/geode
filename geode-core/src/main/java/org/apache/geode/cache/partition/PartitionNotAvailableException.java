@@ -17,7 +17,8 @@ package org.apache.geode.cache.partition;
 import org.apache.geode.GemFireException;
 
 /**
- * This exception is thrown when for the given fixed partition, datastore (local-max-memory > 0) is
+ * This exception is thrown when for the given fixed partition, datastore (local-max-memory &gt; 0)
+ * is
  * not available.
  *
  * @since GemFire 6.6
@@ -37,6 +38,8 @@ public class PartitionNotAvailableException extends GemFireException {
 
   /**
    * Creates a new <code>PartitionNotAvailableException</code> with the given detail message.
+   *
+   * @param message the detail message
    */
   public PartitionNotAvailableException(String message) {
     super(message);
@@ -45,6 +48,8 @@ public class PartitionNotAvailableException extends GemFireException {
   /**
    * Creates a new <code>PartitionNotAvailableException</code> with the given cause and no detail
    * message
+   *
+   * @param cause the cause
    */
   public PartitionNotAvailableException(Throwable cause) {
     super(cause);
@@ -53,6 +58,9 @@ public class PartitionNotAvailableException extends GemFireException {
   /**
    * Creates a new <code>PartitionNotAvailableException</code> with the given detail message and
    * cause.
+   *
+   * @param message the detail message
+   * @param cause the cause
    */
   public PartitionNotAvailableException(String message, Throwable cause) {
     super(message, cause);

@@ -61,6 +61,8 @@ public interface Statistics {
   /**
    * Returns the id of the statistic with the given name in this statistics instance.
    *
+   * @param name the name of the statistic
+   * @return the id of the statistic
    * @throws IllegalArgumentException No statistic named <code>name</code> exists in this statistics
    *         instance.
    *
@@ -72,6 +74,8 @@ public interface Statistics {
   /**
    * Returns the descriptor of the statistic with the given name in this statistics instance.
    *
+   * @param name the name of the statistic
+   * @return the {@link StatisticDescriptor descriptor} of the statistic
    * @throws IllegalArgumentException No statistic named <code>name</code> exists in this statistics
    *         instance.
    *
@@ -81,21 +85,29 @@ public interface Statistics {
 
   /**
    * Gets a value that uniquely identifies this statistics.
+   *
+   * @return a value that uniquely identifies this statistics
    */
   long getUniqueId();
 
   /**
    * Gets the {@link StatisticsType} of this instance.
+   *
+   * @return the {@link StatisticsType} of this instance
    */
   StatisticsType getType();
 
   /**
    * Gets the text associated with this instance that helps identify it.
+   *
+   * @return the text associated with this instance that helps identify it
    */
   String getTextId();
 
   /**
    * Gets the number associated with this instance that helps identify it.
+   *
+   * @return the number associated with this instance that helps identify it
    */
   long getNumericId();
 
@@ -105,11 +117,15 @@ public interface Statistics {
    * <p>
    * Returns false if modifications are not atomic. This means that modifications to this instance
    * are cheaper but not thread safe.
+   *
+   * @return whether modifications are atomic
    */
   boolean isAtomic();
 
   /**
    * Returns true if the instance has been {@link #close closed}.
+   *
+   * @return whether the instance has been {@link #close closed}.
    */
   boolean isClosed();
 
@@ -119,6 +135,7 @@ public interface Statistics {
    * Sets the value of a statistic with the given <code>id</code> whose type is <code>int</code>.
    *
    * @param id a statistic id obtained with {@link #nameToId} or {@link StatisticsType#nameToId}.
+   * @param value the value to set the statistic to
    *
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
    * @deprecated as of Geode 1.10, use {@link #setLong(int, long)} instead
@@ -129,6 +146,8 @@ public interface Statistics {
   /**
    * Sets the value of a named statistic of type <code>int</code>
    *
+   * @param name the name of the statistic
+   * @param value the value to set the statistic to
    * @throws IllegalArgumentException If no statistic exists named <code>name</code> or if the
    *         statistic with name <code>name</code> is not of type <code>int</code>.
    * @deprecated as of Geode 1.10, use {@link #setLong(String, long)} instead
@@ -139,6 +158,9 @@ public interface Statistics {
   /**
    * Sets the value of a described statistic of type <code>int</code>
    *
+   * @param descriptor a statistic descriptor obtained with {@link #nameToDescriptor} or
+   *        {@link StatisticsType#nameToDescriptor}.
+   * @param value the value to set the statistic to
    * @throws IllegalArgumentException If no statistic exists for the given <code>descriptor</code>
    *         or if the described statistic is not of type <code>int</code>.
    * @deprecated as of Geode 1.10, use {@link #setLong(StatisticDescriptor, long)} instead
@@ -150,6 +172,7 @@ public interface Statistics {
    * Sets the value of a statistic with the given <code>id</code> whose type is <code>long</code>.
    *
    * @param id a statistic id obtained with {@link #nameToId} or {@link StatisticsType#nameToId}.
+   * @param value the value to set the statistic to
    *
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
    */
@@ -158,6 +181,9 @@ public interface Statistics {
   /**
    * Sets the value of a described statistic of type <code>long</code>
    *
+   * @param descriptor a statistic descriptor obtained with {@link #nameToDescriptor} or
+   *        {@link StatisticsType#nameToDescriptor}.
+   * @param value the value to set the statistic to
    * @throws IllegalArgumentException If no statistic exists for the given <code>descriptor</code>
    *         or if the described statistic is not of type <code>long</code>.
    */
@@ -166,6 +192,8 @@ public interface Statistics {
   /**
    * Sets the value of a named statistic of type <code>long</code>.
    *
+   * @param name the name of the statistic
+   * @param value the value to set the statistic to
    * @throws IllegalArgumentException If no statistic exists named <code>name</code> or if the
    *         statistic with name <code>name</code> is not of type <code>long</code>.
    */
@@ -175,6 +203,7 @@ public interface Statistics {
    * Sets the value of a statistic with the given <code>id</code> whose type is <code>double</code>.
    *
    * @param id a statistic id obtained with {@link #nameToId} or {@link StatisticsType#nameToId}.
+   * @param value the value to set the statistic to
    *
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
    */
@@ -183,6 +212,9 @@ public interface Statistics {
   /**
    * Sets the value of a described statistic of type <code>double</code>
    *
+   * @param descriptor a statistic descriptor obtained with {@link #nameToDescriptor} or
+   *        {@link StatisticsType#nameToDescriptor}.
+   * @param value the value to set the statistic to
    * @throws IllegalArgumentException If no statistic exists for the given <code>descriptor</code>
    *         or if the described statistic is not of type <code>double</code>.
    */
@@ -191,6 +223,8 @@ public interface Statistics {
   /**
    * Sets the value of a named statistic of type <code>double</code>.
    *
+   * @param name the name of the statistic
+   * @param value the value to set the statistic to
    * @throws IllegalArgumentException If no statistic exists named <code>name</code> or if the
    *         statistic with name <code>name</code> is not of type <code>double</code>.
    */
@@ -202,6 +236,7 @@ public interface Statistics {
    * Returns the value of the identified statistic of type <code>int</code>.
    *
    * @param id a statistic id obtained with {@link #nameToId} or {@link StatisticsType#nameToId}.
+   * @return the value of the statistic
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
    * @deprecated as of Geode 1.10, use {@link #getLong(int)} instead
    */
@@ -211,6 +246,9 @@ public interface Statistics {
   /**
    * Returns the value of the described statistic of type <code>int</code>.
    *
+   * @param descriptor a statistic descriptor obtained with {@link #nameToDescriptor} or
+   *        {@link StatisticsType#nameToDescriptor}.
+   * @return the value of the statistic
    * @throws IllegalArgumentException If no statistic exists with the specified
    *         <code>descriptor</code> or if the described statistic is not of type <code>int</code>.
    * @deprecated as of Geode 1.10, use {@link #getLong(StatisticDescriptor)} instead
@@ -221,6 +259,8 @@ public interface Statistics {
   /**
    * Returns the value of the statistic of type <code>int</code> at the given name.
    *
+   * @param name the name of the statistic
+   * @return the value of the statistic
    * @throws IllegalArgumentException If no statistic exists with name <code>name</code> or if the
    *         statistic named <code>name</code> is not of type <code>int</code>.
    * @deprecated as of Geode 1.10, use {@link #getLong(String)} instead
@@ -232,6 +272,7 @@ public interface Statistics {
    * Returns the value of the identified statistic of type <code>long</code>.
    *
    * @param id a statistic id obtained with {@link #nameToId} or {@link StatisticsType#nameToId}.
+   * @return the value of the statistic
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
    */
   long getLong(int id);
@@ -240,6 +281,9 @@ public interface Statistics {
   /**
    * Returns the value of the described statistic of type <code>long</code>.
    *
+   * @param descriptor a statistic descriptor obtained with {@link #nameToDescriptor} or
+   *        {@link StatisticsType#nameToDescriptor}.
+   * @return the value of the statistic
    * @throws IllegalArgumentException If no statistic exists with the specified
    *         <code>descriptor</code> or if the described statistic is not of type <code>long</code>.
    */
@@ -248,6 +292,8 @@ public interface Statistics {
   /**
    * Returns the value of the statistic of type <code>long</code> at the given name.
    *
+   * @param name the name of the statistic
+   * @return the value of the statistic
    * @throws IllegalArgumentException If no statistic exists with name <code>name</code> or if the
    *         statistic named <code>name</code> is not of type <code>long</code>.
    */
@@ -257,6 +303,7 @@ public interface Statistics {
    * Returns the value of the identified statistic of type <code>double</code>.
    *
    * @param id a statistic id obtained with {@link #nameToId} or {@link StatisticsType#nameToId}.
+   * @return the value of the statistic
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
    */
   double getDouble(int id);
@@ -264,6 +311,9 @@ public interface Statistics {
   /**
    * Returns the value of the described statistic of type <code>double</code>.
    *
+   * @param descriptor a statistic descriptor obtained with {@link #nameToDescriptor} or
+   *        {@link StatisticsType#nameToDescriptor}.
+   * @return the value of the statistic
    * @throws IllegalArgumentException If no statistic exists with the specified
    *         <code>descriptor</code> or if the described statistic is not of type
    *         <code>double</code>.
@@ -273,6 +323,8 @@ public interface Statistics {
   /**
    * Returns the value of the statistic of type <code>double</code> at the given name.
    *
+   * @param name the name of the statistic
+   * @return the value of the statistic
    * @throws IllegalArgumentException If no statistic exists with name <code>name</code> or if the
    *         statistic named <code>name</code> is not of type <code>double</code>.
    */
@@ -283,6 +335,7 @@ public interface Statistics {
    *
    * @param descriptor a statistic descriptor obtained with {@link #nameToDescriptor} or
    *        {@link StatisticsType#nameToDescriptor}.
+   * @return the value of the statistic
    * @throws IllegalArgumentException If the described statistic does not exist
    */
   Number get(StatisticDescriptor descriptor);
@@ -290,6 +343,8 @@ public interface Statistics {
   /**
    * Returns the value of the named statistic.
    *
+   * @param name the name of the statistic
+   * @return the value of the statistic
    * @throws IllegalArgumentException If the named statistic does not exist
    */
   Number get(String name);
@@ -299,6 +354,7 @@ public interface Statistics {
    *
    * @param descriptor a statistic descriptor obtained with {@link #nameToDescriptor} or
    *        {@link StatisticsType#nameToDescriptor}.
+   * @return the bits that represent the raw value of the named statistic
    * @throws IllegalArgumentException If the described statistic does not exist
    */
   long getRawBits(StatisticDescriptor descriptor);
@@ -306,6 +362,8 @@ public interface Statistics {
   /**
    * Returns the bits that represent the raw value of the named statistic.
    *
+   * @param name the name of the statistic
+   * @return the bits that represent the raw value of the named statistic
    * @throws IllegalArgumentException If the named statistic does not exist
    */
   long getRawBits(String name);
@@ -316,6 +374,7 @@ public interface Statistics {
    * Increments the value of the identified statistic of type <code>int</code> by the given amount.
    *
    * @param id a statistic id obtained with {@link #nameToId} or {@link StatisticsType#nameToId}.
+   * @param delta the amount by which to increment the statistic value
    *
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
    * @deprecated as of Geode 1.10, use {@link #incLong(int, long)} instead
@@ -326,6 +385,8 @@ public interface Statistics {
   /**
    * Increments the value of the described statistic of type <code>int</code> by the given amount.
    *
+   * @param descriptor the descriptor for the statistic to increment
+   * @param delta the amount by which to increment the statistic value
    * @throws IllegalArgumentException If no statistic exists with the given <code>descriptor</code>
    *         or if the described statistic is not of type <code>int</code>.
    * @deprecated as of Geode 1.10, use {@link #incLong(StatisticDescriptor, long)} instead
@@ -337,6 +398,8 @@ public interface Statistics {
    * Increments the value of the statistic of type <code>int</code> with the given name by a given
    * amount.
    *
+   * @param name the name of the statistic to increment
+   * @param delta the amount by which to increment the statistic value
    * @throws IllegalArgumentException If no statistic exists with name <code>name</code> or if the
    *         statistic named <code>name</code> is not of type <code>int</code>.
    * @deprecated as of Geode 1.10, use {@link #incLong(String, long)} instead
@@ -348,6 +411,7 @@ public interface Statistics {
    * Increments the value of the identified statistic of type <code>long</code> by the given amount.
    *
    * @param id a statistic id obtained with {@link #nameToId} or {@link StatisticsType#nameToId}.
+   * @param delta the amount by which to increment the statistic value
    *
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
    */
@@ -356,6 +420,8 @@ public interface Statistics {
   /**
    * Increments the value of the described statistic of type <code>long</code> by the given amount.
    *
+   * @param descriptor the descriptor for the statistic to increment
+   * @param delta the amount by which to increment the statistic value
    * @throws IllegalArgumentException If no statistic exists with the given <code>descriptor</code>
    *         or if the described statistic is not of type <code>long</code>.
    */
@@ -365,6 +431,8 @@ public interface Statistics {
    * Increments the value of the statistic of type <code>long</code> with the given name by a given
    * amount.
    *
+   * @param name the name of the statistic to increment
+   * @param delta the amount by which to increment the statistic value
    * @throws IllegalArgumentException If no statistic exists with name <code>name</code> or if the
    *         statistic named <code>name</code> is not of type <code>long</code>.
    */
@@ -375,6 +443,7 @@ public interface Statistics {
    * amount.
    *
    * @param id a statistic id obtained with {@link #nameToId} or {@link StatisticsType#nameToId}.
+   * @param delta the amount by which to increment the statistic value
    *
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
    */
@@ -384,6 +453,9 @@ public interface Statistics {
    * Increments the value of the described statistic of type <code>double</code> by the given
    * amount.
    *
+   * @param descriptor the descriptor for the statistic to increment
+   * @param delta the amount by which to increment the statistic value
+   *
    * @throws IllegalArgumentException If no statistic exists with the given <code>descriptor</code>
    *         or if the described statistic is not of type <code>double</code>.
    */
@@ -392,6 +464,9 @@ public interface Statistics {
   /**
    * Increments the value of the statistic of type <code>double</code> with the given name by a
    * given amount.
+   *
+   * @param name the name of the statistic to increment
+   * @param delta the amount by which to increment the statistic value
    *
    * @throws IllegalArgumentException If no statistic exists with name <code>name</code> or if the
    *         statistic named <code>name</code> is not of type <code>double</code>.

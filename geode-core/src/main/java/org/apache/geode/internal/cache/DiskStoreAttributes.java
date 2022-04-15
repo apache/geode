@@ -26,7 +26,7 @@ import org.apache.geode.internal.cache.persistence.DefaultDiskDirs;
 
 /**
  * Creates an attribute object for DiskStore.
- * </p>
+ * <p>
  *
  * @since GemFire prPersistSprint2
  */

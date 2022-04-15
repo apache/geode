@@ -46,7 +46,7 @@ import org.apache.geode.management.internal.util.ManagementUtils;
 
 /**
  * The LuceneCreateIndexFunction class is a function used to create Lucene indexes.
- * </p>
+ * <p>
  *
  * @see Cache
  * @see org.apache.geode.cache.execute.Function

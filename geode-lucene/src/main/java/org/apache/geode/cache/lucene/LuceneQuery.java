@@ -28,18 +28,14 @@ import org.apache.geode.cache.persistence.PartitionOfflineException;
  * A query on a Lucene index. Instances of this interface are created using
  * {@link LuceneQueryFactory#create}. Once this query is constructed, use one of the find methods to
  * find region entries that match this query.
- * </p>
  * <p>
  * Instances obtained from {@link LuceneQueryFactory} are immutable, so they are safe for reuse and
  * can be shared by multiple threads.
- * </p>
  * <p>
  * Because Lucene indexes are maintained asynchronously, results returned from the find methods may
  * not reflect the most recent updates to the region.
- * </p>
  * <p>
  * Results are returned in order of their score with respect to this query.
- * </p>
  */
 public interface LuceneQuery<K, V> {
   /**

@@ -24,6 +24,10 @@ public interface GatewayConflictHelper {
   /** disallow the event */
   void disallowEvent();
 
-  /** modify the value stored in the cache */
+  /**
+   * Modify the value stored in the cache
+   *
+   * @param value the new value to be stored in the cache
+   */
   void changeEventValue(Object value);
 }

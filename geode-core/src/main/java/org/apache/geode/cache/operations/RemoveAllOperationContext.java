@@ -39,6 +39,7 @@ public class RemoveAllOperationContext extends OperationContext {
   /**
    * Constructor for the operation.
    *
+   * @param keys the keys to remove
    */
   public RemoveAllOperationContext(Collection<?> keys) {
     this.keys = keys;
@@ -71,6 +72,8 @@ public class RemoveAllOperationContext extends OperationContext {
 
   /**
    * Returns the keys for this removeAll in an unmodifiable collection.
+   *
+   * @return the keys for this removeAll in an unmodifiable collection
    */
   public Collection<?> getKeys() {
     return Collections.unmodifiableCollection(keys);

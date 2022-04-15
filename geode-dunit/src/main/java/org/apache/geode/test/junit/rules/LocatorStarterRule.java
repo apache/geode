@@ -49,8 +49,6 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
  * run faster if your test does not need them.
  *
  * http service can be started when needed in your test.
- * </p>
- *
  * <p>
  * If you need a rule to start a server/locator in different VMs for Distributed tests, You should
  * use {@code ClusterStartupRule}.

@@ -16,6 +16,8 @@ package org.apache.geode.management.api;
 
 import java.util.List;
 
+import org.apache.geode.management.configuration.AbstractConfiguration;
+
 /**
  * Thrown by {@link ClusterManagementService#create(AbstractConfiguration)}, update, and delete
  * operations
@@ -26,6 +28,8 @@ public class ClusterManagementRealizationException extends ClusterManagementExce
 
   /**
    * for internal use only
+   *
+   * @param result the {@link ClusterManagementRealizationResult} to set
    */
   public ClusterManagementRealizationException(ClusterManagementRealizationResult result) {
     super(result);
@@ -36,6 +40,8 @@ public class ClusterManagementRealizationException extends ClusterManagementExce
    * A {@link ClusterManagementService#create(AbstractConfiguration)} operation may fail on all
    * members or
    * only some. This will return the per-member status.
+   *
+   * @return a list of {@link RealizationResult}s
    */
   public List<RealizationResult> getMemberStatuses() {
     return result.getMemberStatuses();

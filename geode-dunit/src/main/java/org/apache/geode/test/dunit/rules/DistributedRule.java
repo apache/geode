@@ -119,6 +119,8 @@ public class DistributedRule extends AbstractDistributedRule {
 
   /**
    * Use {@code Builder} for more options in constructing {@code DistributedRule}.
+   *
+   * @return a {@code Builder}
    */
   public static Builder builder() {
     return new Builder();

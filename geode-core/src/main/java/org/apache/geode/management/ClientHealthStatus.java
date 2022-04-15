@@ -112,12 +112,14 @@ public class ClientHealthStatus {
 
 
   /**
-   * Represents stats for a poolName .
+   * Represents stats for a poolName.
    **/
   private Map<String, String> clientPoolStatsMap = new HashMap<>();
 
   /**
    * Returns the number of times a successful get operation has occurred.
+   *
+   * @return the number of times a successful get operation has occurred
    */
   public int getNumOfGets() {
     return numOfGets;
@@ -128,6 +130,9 @@ public class ClientHealthStatus {
    * operation. Operations counted include puts, creates, and gets which result in loading, net
    * searching, or net loading a value. The count only includes operations done explicitly on this
    * cache, not those that are pushed from other caches.
+   *
+   * @return the number of times an entry was added or replaced in this cache as a result of a local
+   *         operation
    */
   public int getNumOfPuts() {
     return numOfPuts;
@@ -135,6 +140,8 @@ public class ClientHealthStatus {
 
   /**
    * Returns the number of times a cache miss has occurred.
+   *
+   * @return the number of times a cache miss has occurred
    */
   public int getNumOfMisses() {
     return numOfMisses;
@@ -142,6 +149,8 @@ public class ClientHealthStatus {
 
   /**
    * Returns the number of times a cache listener call has completed.
+   *
+   * @return the number of times a cache listener call has completed
    */
   public int getNumOfCacheListenerCalls() {
     return numOfCacheListenerCalls;
@@ -149,6 +158,8 @@ public class ClientHealthStatus {
 
   /**
    * Returns the number of threads currently in use.
+   *
+   * @return the number of threads currently in use
    */
   public int getNumOfThreads() {
     return numOfThreads;
@@ -156,6 +167,8 @@ public class ClientHealthStatus {
 
   /**
    * Returns the amount of time (in nanoseconds) used by the client process.
+   *
+   * @return the amount of time (in nanoseconds) used by the client process
    */
   public long getProcessCpuTime() {
     return processCpuTime;
@@ -163,6 +176,8 @@ public class ClientHealthStatus {
 
   /**
    * Returns the number of CPUs available to the client.
+   *
+   * @return the number of CPUs available to the client
    */
   public int getCpus() {
     return cpus;
@@ -170,6 +185,8 @@ public class ClientHealthStatus {
 
   /**
    * Returns the amount of time (in seconds) that the client has been running.
+   *
+   * @return the amount of time (in seconds) that the client has been running
    */
   public long getUpTime() {
     return upTime;
@@ -177,6 +194,8 @@ public class ClientHealthStatus {
 
   /**
    * Returns the ID of the client.
+   *
+   * @return the ID of the client
    */
   public String getClientId() {
     return clientId;
@@ -184,6 +203,8 @@ public class ClientHealthStatus {
 
   /**
    * Sets the number of times a successful get operation has occurred.
+   *
+   * @param numOfGets the number of times a successful get operation has occurred
    */
   public void setNumOfGets(int numOfGets) {
     this.numOfGets = numOfGets;
@@ -192,6 +213,9 @@ public class ClientHealthStatus {
   /**
    * Set the number of times an entry was added or replaced in this cache as a result of a local
    * operation.
+   *
+   * @param numOfPuts the number of times an entry was added or replaced in this cache as a result
+   *        of a local operation
    */
   public void setNumOfPuts(int numOfPuts) {
     this.numOfPuts = numOfPuts;
@@ -199,6 +223,8 @@ public class ClientHealthStatus {
 
   /**
    * Sets the number of times a cache miss has occurred.
+   *
+   * @param numOfMisses the number of times a cache miss has occurred
    */
   public void setNumOfMisses(int numOfMisses) {
     this.numOfMisses = numOfMisses;
@@ -206,6 +232,8 @@ public class ClientHealthStatus {
 
   /**
    * Sets the number of times a cache listener call has completed.
+   *
+   * @param numOfCacheListenerCalls the number of times a cache listener call has completed
    */
   public void setNumOfCacheListenerCalls(int numOfCacheListenerCalls) {
     this.numOfCacheListenerCalls = numOfCacheListenerCalls;
@@ -213,6 +241,8 @@ public class ClientHealthStatus {
 
   /**
    * Sets the number of threads currently in use.
+   *
+   * @param numOfThreads the number of threads currently in use
    */
   public void setNumOfThreads(int numOfThreads) {
     this.numOfThreads = numOfThreads;
@@ -220,6 +250,8 @@ public class ClientHealthStatus {
 
   /**
    * Sets the amount of time (in nanoseconds) used by the client process.
+   *
+   * @param processCpuTime the amount of time (in nanoseconds) used by the client process
    */
   public void setProcessCpuTime(long processCpuTime) {
     this.processCpuTime = processCpuTime;
@@ -227,6 +259,8 @@ public class ClientHealthStatus {
 
   /**
    * Sets the number of CPUs available to the client.
+   *
+   * @param cpus the number of CPUs available to the client
    */
   public void setCpus(int cpus) {
     this.cpus = cpus;
@@ -234,6 +268,8 @@ public class ClientHealthStatus {
 
   /**
    * Sets the amount of time (in seconds) that the client has been running.
+   *
+   * @param upTime the amount of time (in seconds) that the client has been running
    */
   public void setUpTime(long upTime) {
     this.upTime = upTime;
@@ -241,6 +277,8 @@ public class ClientHealthStatus {
 
   /**
    * Sets the client queue size.
+   *
+   * @param queueSize the client queue size
    */
   public void setQueueSize(int queueSize) {
     this.queueSize = queueSize;
@@ -248,6 +286,8 @@ public class ClientHealthStatus {
 
   /**
    * Sets the ID of the client.
+   *
+   * @param clientId the ID of the client
    */
   public void setClientId(String clientId) {
     this.clientId = clientId;
@@ -255,6 +295,8 @@ public class ClientHealthStatus {
 
   /**
    * Returns the client queue size.
+   *
+   * @return the client queue size
    */
   public int getQueueSize() {
     return queueSize;
@@ -262,6 +304,8 @@ public class ClientHealthStatus {
 
   /**
    * Returns the name of the client.
+   *
+   * @return the name of the client
    */
   public String getName() {
     return name;
@@ -269,6 +313,8 @@ public class ClientHealthStatus {
 
   /**
    * Returns the name of the host on which the client is running.
+   *
+   * @return the name of the host on which the client is running
    */
   public String getHostName() {
     return hostName;
@@ -276,6 +322,8 @@ public class ClientHealthStatus {
 
   /**
    * Sets the name of the client.
+   *
+   * @param name the name of the client
    */
   public void setName(String name) {
     this.name = name;
@@ -283,6 +331,8 @@ public class ClientHealthStatus {
 
   /**
    * Sets the name of the host on which the client is running.
+   *
+   * @param hostName the name of the host on which the client is running
    */
   public void setHostName(String hostName) {
     this.hostName = hostName;

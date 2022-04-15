@@ -49,6 +49,8 @@ public class EntityGroupInfo<T extends AbstractConfiguration<R>, R extends Runti
 
   /**
    * for internal use only
+   *
+   * @param configuration the configuration to use
    */
   public EntityGroupInfo(T configuration) {
     this(configuration, emptyList());
@@ -61,6 +63,8 @@ public class EntityGroupInfo<T extends AbstractConfiguration<R>, R extends Runti
 
   /**
    * Returns the static portion of the configuration
+   *
+   * @return the static portion of the configuration
    */
   public T getConfiguration() {
     return configuration;
@@ -68,6 +72,8 @@ public class EntityGroupInfo<T extends AbstractConfiguration<R>, R extends Runti
 
   /**
    * for internal use only
+   *
+   * @param configuration the configuration to set
    */
   public void setConfiguration(T configuration) {
     this.configuration = configuration;
@@ -75,6 +81,8 @@ public class EntityGroupInfo<T extends AbstractConfiguration<R>, R extends Runti
 
   /**
    * Returns the non-static information
+   *
+   * @return a list of {@link RuntimeInfo} representing the non-static portion of the configuration
    */
   public List<R> getRuntimeInfo() {
     return runtimeInfo;
@@ -82,6 +90,8 @@ public class EntityGroupInfo<T extends AbstractConfiguration<R>, R extends Runti
 
   /**
    * for internal use only
+   *
+   * @param runtimeInfo a list of {@link RuntimeInfo} to set
    */
   public void setRuntimeInfo(List<R> runtimeInfo) {
     this.runtimeInfo = runtimeInfo;

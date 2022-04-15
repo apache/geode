@@ -212,12 +212,16 @@ public abstract class Instantiator {
    * Creates a new "empty" instance of a {@code DataSerializable} class whose state will be filled
    * in by invoking its {@link DataSerializable#fromData fromData} method.
    *
+   * @return a new "empty" instance of a {@code DataSerializable} class
+   *
    * @see DataSerializer#readObject
    */
   public abstract DataSerializable newInstance();
 
   /**
    * Returns the {@code DataSerializable} class that is instantiated by this {@code Instantiator}.
+   *
+   * @return the {@code DataSerializable} class that is instantiated by this {@code Instantiator}
    */
   public Class<? extends DataSerializable> getInstantiatedClass() {
     return clazz;
@@ -225,6 +229,8 @@ public abstract class Instantiator {
 
   /**
    * Returns the unique {@code id} of this {@code Instantiator}.
+   *
+   * @return the unique {@code id} of this {@code Instantiator}
    */
   public int getId() {
     return id;
@@ -232,6 +238,8 @@ public abstract class Instantiator {
 
   /**
    * sets the unique {@code eventId} of this {@code Instantiator}. For internal use only.
+   *
+   * @param eventId the unique {@code eventId} of this {@code Instantiator}
    */
   public void setEventId(Object/* EventID */ eventId) {
     this.eventId = (EventID) eventId;
@@ -239,6 +247,8 @@ public abstract class Instantiator {
 
   /**
    * Returns the unique {@code eventId} of this {@code Instantiator}. For internal use only.
+   *
+   * @return the unique {@code eventId} of this {@code Instantiator}
    */
   public Object/* EventID */ getEventId() {
     return eventId;
@@ -246,6 +256,8 @@ public abstract class Instantiator {
 
   /**
    * sets the context of this {@code Instantiator}. For internal use only.
+   *
+   * @param context the context of this {@code Instantiator}
    */
   public void setContext(Object/* ClientProxyMembershipID */ context) {
     this.context = (ClientProxyMembershipID) context;
@@ -253,6 +265,8 @@ public abstract class Instantiator {
 
   /**
    * Returns the context of this {@code Instantiator}. For internal use only.
+   *
+   * @return the context of this {@code Instantiator}
    */
   public Object/* ClientProxyMembershipID */ getContext() {
     return context;

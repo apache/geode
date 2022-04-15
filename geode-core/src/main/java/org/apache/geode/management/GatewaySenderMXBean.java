@@ -32,43 +32,61 @@ public interface GatewaySenderMXBean {
 
   /**
    * Returns the ID of the GatewaySender.
+   *
+   * @return the ID of the GatewaySender
    */
   String getSenderId();
 
   /**
    * Returns the id of the remote <code>GatewayReceiver</code>'s DistributedSystem.
+   *
+   * @return the id of the remote <code>GatewayReceiver</code>'s DistributedSystem
    */
   int getRemoteDSId();
 
   /**
    * Returns the configured buffer size of the socket connection between this GatewaySender and its
    * receiving <code>GatewayReceiver</code>.
+   *
+   * @return the configured buffer size of the socket connection between this GatewaySender and its
+   *         receiving <code>GatewayReceiver</code>
    */
   int getSocketBufferSize();
 
   /**
    * Returns the amount of time (in milliseconds) that a socket read between a sending GatewaySender
    * and its receiving <code>GatewayReceiver</code> is allowed to block.
+   *
+   * @return the amount of time (in milliseconds) that a socket read between a sending GatewaySender
+   *         and its receiving <code>GatewayReceiver</code> is allowed to block
    */
   long getSocketReadTimeout();
 
   /**
    * Returns the name of the disk store that is used for persistence.
+   *
+   * @return the name of the disk store that is used for persistence
    */
   String getOverflowDiskStoreName();
 
   /**
    * Returns the maximum memory after which the data needs to be overflowed to disk.
+   *
+   * @return the maximum memory after which the data needs to be overflowed to disk
    */
   int getMaximumQueueMemory();
 
   /**
    * Returns the size of a batch that gets delivered by the GatewaySender.
+   *
+   * @return the size of a batch that gets delivered by the GatewaySender
    */
   int getBatchSize();
 
   /**
    * Returns the interval between transmissions by the GatewaySender.
+   *
+   * @return the interval between transmissions by the GatewaySender
    */
   long getBatchTimeInterval();
 
@@ -88,18 +106,24 @@ public interface GatewaySenderMXBean {
   boolean isPersistenceEnabled();
 
   /**
-   * Returns the alert threshold for entries in a GatewaySender's queue.The default value is 0
+   * Returns the alert threshold for entries in a GatewaySender's queue. The default value is 0
    * milliseconds in which case no alert will be logged if events are delayed in Queue.
+   *
+   * @return the alert threshold for entries in a GatewaySender's queue
    */
   int getAlertThreshold();
 
   /**
    * Returns a list of <code>GatewayEventFilter</code>s added to this GatewaySender.
+   *
+   * @return an array of <code>GatewayEventFilter</code>s added to this GatewaySender
    */
   String[] getGatewayEventFilters();
 
   /**
    * Returns a list of <code>GatewayTransportFilter</code>s added to this GatewaySender.
+   *
+   * @return an array of <code>GatewayTransportFilter</code>s added to this GatewaySender
    */
   String[] getGatewayTransportFilters();
 
@@ -126,69 +150,96 @@ public interface GatewaySenderMXBean {
 
   /**
    * Returns the rate of events received per second by this Sender.
+   *
+   * @return the rate of events received per second by this Sender
    */
   float getEventsReceivedRate();
 
   /**
    * Returns the rate of events being queued.
+   *
+   * @return the rate of events being queued
    */
   float getEventsQueuedRate();
 
   /**
    * Returns the rate of LRU evictions per second by this Sender.
+   *
+   * @return the rate of LRU evictions per second by this Sender
    */
   float getLRUEvictionsRate();
 
   /**
    * Returns the number of entries overflowed to disk for this Sender.
+   *
+   * @return the number of entries overflowed to disk for this Sender
    */
   long getEntriesOverflowedToDisk();
 
   /**
    * Returns the number of bytes overflowed to disk for this Sender.
+   *
+   * @return the number of bytes overflowed to disk for this Sender
    */
   long getBytesOverflowedToDisk();
 
   /**
    * Returns the current size of the event queue.
+   *
+   * @return the current size of the event queue
    */
   int getEventQueueSize();
 
   /**
    * Returns the number of events received, but not added to the event queue, because the queue
    * already contains an event with the same key.
+   *
+   * @return the number of events received, but not added to the event queue, because the queue
+   *         already contains an event with the same key
    */
   int getTotalEventsConflated();
 
 
   /**
    * Returns the average number of batches sent per second.
+   *
+   * @return the average number of batches sent per second
    */
   float getBatchesDispatchedRate();
 
   /**
    * Returns the average time taken to send a batch of events.
+   *
+   * @return the average time taken to send a batch of events
    */
   long getAverageDistributionTimePerBatch();
 
   /**
    * Returns the total number of batches of events that were resent.
+   *
+   * @return the total number of batches of events that were resent
    */
   int getTotalBatchesDistributed();
 
   /**
    * Returns the total number of batches of events that were resent.
+   *
+   * @return the total number of batches of events that were resent
    */
   int getTotalBatchesRedistributed();
 
   /**
    * Returns the total number of batches sent with incomplete transactions.
    * Only relevant if group-transaction-events is enabled.
+   *
+   * @return the total number of batches sent with incomplete transactions
    */
   int getTotalBatchesWithIncompleteTransactions();
 
   /**
    * Returns the total number of bytes in heap occupied by the event queue.
+   *
+   * @return the total number of bytes in heap occupied by the event queue
    */
   long getTotalQueueSizeBytesInUse();
 
@@ -247,14 +298,17 @@ public interface GatewaySenderMXBean {
 
   /**
    * Returns the number of dispatcher threads working for this <code>GatewaySender</code>.
+   *
+   * @return the number of dispatcher threads working for this <code>GatewaySender</code>
    */
   int getDispatcherThreads();
 
   /**
    * Returns the order policy followed while dispatching the events to remote distributed system.
    * Order policy is only relevant when the number of dispatcher threads is greater than one.
+   *
+   * @return the order policy followed while dispatching the events to remote distributed system
    */
-
   String getOrderPolicy();
 
   /**
@@ -276,16 +330,23 @@ public interface GatewaySenderMXBean {
   /**
    * Returns the host and port information of GatewayReceiver to which this gateway sender is
    * connected.
+   *
+   * @return the host and port information of GatewayReceiver to which this gateway sender is
+   *         connected
    */
   String getGatewayReceiver();
 
   /**
    * Returns whether this GatewaySender is connected and sending data to a GatewayReceiver.
+   *
+   * @return whether this GatewaySender is connected and sending data to a GatewayReceiver
    */
   boolean isConnected();
 
   /**
    * Returns number of events which have exceeded the configured alert threshold.
+   *
+   * @return the number of events which have exceeded the configured alert threshold
    */
   int getEventsExceedingAlertThreshold();
 

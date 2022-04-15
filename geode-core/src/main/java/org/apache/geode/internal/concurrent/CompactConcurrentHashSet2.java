@@ -54,7 +54,7 @@ import org.apache.geode.unsafe.internal.sun.misc.Unsafe;
  * <p>
  * This is the original javadoc describing ConcurrentHashMap. This class is actually a Set based on
  * Doug Lea's CHM implementation (see the source file for full attribution).
- * </p>
+ * <p>
  * A hash map supporting full concurrency of retrievals and high expected concurrency for updates.
  * This class obeys the same functional specification as {@link java.util.HashMap}, and includes
  * versions of methods corresponding to each method of {@code HashMap}. However, even though all

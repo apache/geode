@@ -32,7 +32,7 @@ public class RemoteApplicationVM extends RemoteGemFireVM implements ApplicationV
   /**
    * Creates a <code>RemoteApplicationVM</code> in a given distributed system (<code>agent</code>)
    * with the given <code>id</code>.
-   * <p/>
+   * <p>
    * You MUST invoke {@link RemoteGemFireVM#startStatDispatcher()} immediately after constructing an
    * instance.
    *

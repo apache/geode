@@ -19,6 +19,8 @@ package org.apache.geode.cache.configuration;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.resource.spi.ManagedConnectionFactory;
+import javax.sql.ConnectionPoolDataSource;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -41,61 +43,61 @@ import org.apache.geode.annotations.Experimental;
  * The following schema fragment specifies the expected content contained within this class.
  *
  * <pre>
- * &lt;complexType name="jndi-bindings-type">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="jndi-binding" maxOccurs="unbounded" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="config-property" maxOccurs="unbounded" minOccurs="0">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;sequence>
- *                             &lt;element name="config-property-name" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *                             &lt;element name="config-property-type" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *                             &lt;element name="config-property-value" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *                           &lt;/sequence>
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
- *                 &lt;/sequence>
- *                 &lt;attribute name="blocking-timeout-seconds" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="conn-pooled-datasource-class" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="connection-url" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="idle-timeout-seconds" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="init-pool-size" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="jdbc-driver-class" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="jndi-name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="login-timeout-seconds" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="managed-conn-factory-class" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="max-pool-size" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="password" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="transaction-type" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="type" use="required">
- *                   &lt;simpleType>
- *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *                       &lt;enumeration value="ManagedDataSource"/>
- *                       &lt;enumeration value="SimpleDataSource"/>
- *                       &lt;enumeration value="PooledDataSource"/>
- *                       &lt;enumeration value="XAPooledDataSource"/>
- *                     &lt;/restriction>
- *                   &lt;/simpleType>
- *                 &lt;/attribute>
- *                 &lt;attribute name="user-name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="xa-datasource-class" type="{http://www.w3.org/2001/XMLSchema}string" />
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="jndi-bindings-type"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="jndi-binding" maxOccurs="unbounded" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;sequence&gt;
+ *                   &lt;element name="config-property" maxOccurs="unbounded" minOccurs="0"&gt;
+ *                     &lt;complexType&gt;
+ *                       &lt;complexContent&gt;
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                           &lt;sequence&gt;
+ *                             &lt;element name="config-property-name" type="{http://www.w3.org/2001/XMLSchema}string"/&gt;
+ *                             &lt;element name="config-property-type" type="{http://www.w3.org/2001/XMLSchema}string"/&gt;
+ *                             &lt;element name="config-property-value" type="{http://www.w3.org/2001/XMLSchema}string"/&gt;
+ *                           &lt;/sequence&gt;
+ *                         &lt;/restriction&gt;
+ *                       &lt;/complexContent&gt;
+ *                     &lt;/complexType&gt;
+ *                   &lt;/element&gt;
+ *                 &lt;/sequence&gt;
+ *                 &lt;attribute name="blocking-timeout-seconds" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="conn-pooled-datasource-class" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="connection-url" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="idle-timeout-seconds" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="init-pool-size" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="jdbc-driver-class" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="jndi-name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="login-timeout-seconds" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="managed-conn-factory-class" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="max-pool-size" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="password" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="transaction-type" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="type" use="required"&gt;
+ *                   &lt;simpleType&gt;
+ *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string"&gt;
+ *                       &lt;enumeration value="ManagedDataSource"/&gt;
+ *                       &lt;enumeration value="SimpleDataSource"/&gt;
+ *                       &lt;enumeration value="PooledDataSource"/&gt;
+ *                       &lt;enumeration value="XAPooledDataSource"/&gt;
+ *                     &lt;/restriction&gt;
+ *                   &lt;/simpleType&gt;
+ *                 &lt;/attribute&gt;
+ *                 &lt;attribute name="user-name" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="xa-datasource-class" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  *
  *
@@ -130,7 +132,7 @@ public class JndiBindingsType {
    * Objects of the following type(s) are allowed in the list
    * {@link JndiBindingsType.JndiBinding }
    *
-   *
+   * @return the {@link List} of {@link JndiBinding}s.
    */
   public List<JndiBinding> getJndiBindings() {
     if (jndiBindings == null) {
@@ -148,51 +150,51 @@ public class JndiBindingsType {
    * The following schema fragment specifies the expected content contained within this class.
    *
    * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;sequence>
-   *         &lt;element name="config-property" maxOccurs="unbounded" minOccurs="0">
-   *           &lt;complexType>
-   *             &lt;complexContent>
-   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *                 &lt;sequence>
-   *                   &lt;element name="config-property-name" type="{http://www.w3.org/2001/XMLSchema}string"/>
-   *                   &lt;element name="config-property-type" type="{http://www.w3.org/2001/XMLSchema}string"/>
-   *                   &lt;element name="config-property-value" type="{http://www.w3.org/2001/XMLSchema}string"/>
-   *                 &lt;/sequence>
-   *               &lt;/restriction>
-   *             &lt;/complexContent>
-   *           &lt;/complexType>
-   *         &lt;/element>
-   *       &lt;/sequence>
-   *       &lt;attribute name="blocking-timeout-seconds" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="conn-pooled-datasource-class" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="connection-url" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="idle-timeout-seconds" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="init-pool-size" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="jdbc-driver-class" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="jndi-name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="login-timeout-seconds" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="managed-conn-factory-class" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="max-pool-size" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="password" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="transaction-type" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="type" use="required">
-   *         &lt;simpleType>
-   *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
-   *             &lt;enumeration value="ManagedDataSource"/>
-   *             &lt;enumeration value="SimpleDataSource"/>
-   *             &lt;enumeration value="PooledDataSource"/>
-   *             &lt;enumeration value="XAPooledDataSource"/>
-   *           &lt;/restriction>
-   *         &lt;/simpleType>
-   *       &lt;/attribute>
-   *       &lt;attribute name="user-name" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="xa-datasource-class" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
+   * &lt;complexType&gt;
+   *   &lt;complexContent&gt;
+   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *       &lt;sequence&gt;
+   *         &lt;element name="config-property" maxOccurs="unbounded" minOccurs="0"&gt;
+   *           &lt;complexType&gt;
+   *             &lt;complexContent&gt;
+   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *                 &lt;sequence&gt;
+   *                   &lt;element name="config-property-name" type="{http://www.w3.org/2001/XMLSchema}string"/&gt;
+   *                   &lt;element name="config-property-type" type="{http://www.w3.org/2001/XMLSchema}string"/&gt;
+   *                   &lt;element name="config-property-value" type="{http://www.w3.org/2001/XMLSchema}string"/&gt;
+   *                 &lt;/sequence&gt;
+   *               &lt;/restriction&gt;
+   *             &lt;/complexContent&gt;
+   *           &lt;/complexType&gt;
+   *         &lt;/element&gt;
+   *       &lt;/sequence&gt;
+   *       &lt;attribute name="blocking-timeout-seconds" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="conn-pooled-datasource-class" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="connection-url" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="idle-timeout-seconds" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="init-pool-size" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="jdbc-driver-class" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="jndi-name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="login-timeout-seconds" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="managed-conn-factory-class" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="max-pool-size" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="password" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="transaction-type" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="type" use="required"&gt;
+   *         &lt;simpleType&gt;
+   *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string"&gt;
+   *             &lt;enumeration value="ManagedDataSource"/&gt;
+   *             &lt;enumeration value="SimpleDataSource"/&gt;
+   *             &lt;enumeration value="PooledDataSource"/&gt;
+   *             &lt;enumeration value="XAPooledDataSource"/&gt;
+   *           &lt;/restriction&gt;
+   *         &lt;/simpleType&gt;
+   *       &lt;/attribute&gt;
+   *       &lt;attribute name="user-name" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="xa-datasource-class" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *     &lt;/restriction&gt;
+   *   &lt;/complexContent&gt;
+   * &lt;/complexType&gt;
    * </pre>
    *
    *
@@ -256,7 +258,7 @@ public class JndiBindingsType {
      * Objects of the following type(s) are allowed in the list
      * {@link JndiBindingsType.JndiBinding.ConfigProperty }
      *
-     *
+     * @return the {@link List} of configuration properties.
      */
     public List<ConfigProperty> getConfigProperties() {
       if (configProperties == null) {
@@ -271,6 +273,7 @@ public class JndiBindingsType {
      * possible object is
      * {@link String }
      *
+     * @return the blocking timeout in seconds.
      */
     public String getBlockingTimeoutSeconds() {
       return blockingTimeoutSeconds;
@@ -282,6 +285,7 @@ public class JndiBindingsType {
      * allowed object is
      * {@link String }
      *
+     * @param value the blocking timeout in seconds.
      */
     public void setBlockingTimeoutSeconds(String value) {
       blockingTimeoutSeconds = value;
@@ -293,6 +297,7 @@ public class JndiBindingsType {
      * possible object is
      * {@link String }
      *
+     * @return the {@link ConnectionPoolDataSource} type.
      */
     public String getConnPooledDatasourceClass() {
       return connPooledDatasourceClass;
@@ -304,6 +309,7 @@ public class JndiBindingsType {
      * allowed object is
      * {@link String }
      *
+     * @param value {@link ConnectionPoolDataSource} type.
      */
     public void setConnPooledDatasourceClass(String value) {
       connPooledDatasourceClass = value;
@@ -315,6 +321,7 @@ public class JndiBindingsType {
      * possible object is
      * {@link String }
      *
+     * @return the connection URL.
      */
     public String getConnectionUrl() {
       return connectionUrl;
@@ -326,6 +333,7 @@ public class JndiBindingsType {
      * allowed object is
      * {@link String }
      *
+     * @param value the connection URL.
      */
     public void setConnectionUrl(String value) {
       connectionUrl = value;
@@ -337,6 +345,7 @@ public class JndiBindingsType {
      * possible object is
      * {@link String }
      *
+     * @return the idle timeout in seconds.
      */
     public String getIdleTimeoutSeconds() {
       return idleTimeoutSeconds;
@@ -348,6 +357,7 @@ public class JndiBindingsType {
      * allowed object is
      * {@link String }
      *
+     * @param value the idle timeout in seconds.
      */
     public void setIdleTimeoutSeconds(String value) {
       idleTimeoutSeconds = value;
@@ -359,6 +369,7 @@ public class JndiBindingsType {
      * possible object is
      * {@link String }
      *
+     * @return the initial pool size.
      */
     public String getInitPoolSize() {
       return initPoolSize;
@@ -370,6 +381,7 @@ public class JndiBindingsType {
      * allowed object is
      * {@link String }
      *
+     * @param value the initial pool size.
      */
     public void setInitPoolSize(String value) {
       initPoolSize = value;
@@ -381,6 +393,7 @@ public class JndiBindingsType {
      * possible object is
      * {@link String }
      *
+     * @return the JDBC driver class.
      */
     public String getJdbcDriverClass() {
       return jdbcDriverClass;
@@ -392,6 +405,7 @@ public class JndiBindingsType {
      * allowed object is
      * {@link String }
      *
+     * @param value the JDBC driver class.
      */
     public void setJdbcDriverClass(String value) {
       jdbcDriverClass = value;
@@ -403,6 +417,7 @@ public class JndiBindingsType {
      * possible object is
      * {@link String }
      *
+     * @return the JNDI name.
      */
     public String getJndiName() {
       return jndiName;
@@ -414,6 +429,7 @@ public class JndiBindingsType {
      * allowed object is
      * {@link String }
      *
+     * @param value the JNDI name.
      */
     public void setJndiName(String value) {
       jndiName = value;
@@ -425,6 +441,7 @@ public class JndiBindingsType {
      * possible object is
      * {@link String }
      *
+     * @return the login timeout in seconds.
      */
     public String getLoginTimeoutSeconds() {
       return loginTimeoutSeconds;
@@ -436,6 +453,7 @@ public class JndiBindingsType {
      * allowed object is
      * {@link String }
      *
+     * @param value the login timeout in seconds.
      */
     public void setLoginTimeoutSeconds(String value) {
       loginTimeoutSeconds = value;
@@ -447,6 +465,7 @@ public class JndiBindingsType {
      * possible object is
      * {@link String }
      *
+     * @return the name of the {@link ManagedConnectionFactory} type.
      */
     public String getManagedConnFactoryClass() {
       return managedConnFactoryClass;
@@ -458,6 +477,7 @@ public class JndiBindingsType {
      * allowed object is
      * {@link String }
      *
+     * @param value the {@link ManagedConnectionFactory} class name.
      */
     public void setManagedConnFactoryClass(String value) {
       managedConnFactoryClass = value;
@@ -469,6 +489,7 @@ public class JndiBindingsType {
      * possible object is
      * {@link String }
      *
+     * @return the maximum pool size.
      */
     public String getMaxPoolSize() {
       return maxPoolSize;
@@ -480,6 +501,7 @@ public class JndiBindingsType {
      * allowed object is
      * {@link String }
      *
+     * @param value the maximum pool size.
      */
     public void setMaxPoolSize(String value) {
       maxPoolSize = value;
@@ -491,6 +513,7 @@ public class JndiBindingsType {
      * possible object is
      * {@link String }
      *
+     * @return the password.
      */
     public String getPassword() {
       return password;
@@ -502,6 +525,7 @@ public class JndiBindingsType {
      * allowed object is
      * {@link String }
      *
+     * @param value the password.
      */
     public void setPassword(String value) {
       password = value;
@@ -513,6 +537,7 @@ public class JndiBindingsType {
      * possible object is
      * {@link String }
      *
+     * @return the transaction type.
      */
     public String getTransactionType() {
       return transactionType;
@@ -524,6 +549,7 @@ public class JndiBindingsType {
      * allowed object is
      * {@link String }
      *
+     * @param value the transaction type.
      */
     public void setTransactionType(String value) {
       transactionType = value;
@@ -535,6 +561,7 @@ public class JndiBindingsType {
      * possible object is
      * {@link String }
      *
+     * @return the type.
      */
     public String getType() {
       return type;
@@ -546,6 +573,7 @@ public class JndiBindingsType {
      * allowed object is
      * {@link String }
      *
+     * @param value the type.
      */
     public void setType(String value) {
       type = value;
@@ -557,6 +585,7 @@ public class JndiBindingsType {
      * possible object is
      * {@link String }
      *
+     * @return the username.
      */
     public String getUserName() {
       return userName;
@@ -568,6 +597,7 @@ public class JndiBindingsType {
      * allowed object is
      * {@link String }
      *
+     * @param value the username.
      */
     public void setUserName(String value) {
       userName = value;
@@ -579,6 +609,7 @@ public class JndiBindingsType {
      * possible object is
      * {@link String }
      *
+     * @return the XA datasource class.
      */
     public String getXaDatasourceClass() {
       return xaDatasourceClass;
@@ -590,6 +621,7 @@ public class JndiBindingsType {
      * allowed object is
      * {@link String }
      *
+     * @param value the XA datasource class.
      */
     public void setXaDatasourceClass(String value) {
       xaDatasourceClass = value;
@@ -608,17 +640,17 @@ public class JndiBindingsType {
      * The following schema fragment specifies the expected content contained within this class.
      *
      * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence>
-     *         &lt;element name="config-property-name" type="{http://www.w3.org/2001/XMLSchema}string"/>
-     *         &lt;element name="config-property-type" type="{http://www.w3.org/2001/XMLSchema}string"/>
-     *         &lt;element name="config-property-value" type="{http://www.w3.org/2001/XMLSchema}string"/>
-     *       &lt;/sequence>
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
+     * &lt;complexType&gt;
+     *   &lt;complexContent&gt;
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+     *       &lt;sequence&gt;
+     *         &lt;element name="config-property-name" type="{http://www.w3.org/2001/XMLSchema}string"/&gt;
+     *         &lt;element name="config-property-type" type="{http://www.w3.org/2001/XMLSchema}string"/&gt;
+     *         &lt;element name="config-property-value" type="{http://www.w3.org/2001/XMLSchema}string"/&gt;
+     *       &lt;/sequence&gt;
+     *     &lt;/restriction&gt;
+     *   &lt;/complexContent&gt;
+     * &lt;/complexType&gt;
      * </pre>
      *
      *
@@ -667,6 +699,7 @@ public class JndiBindingsType {
        * possible object is
        * {@link String }
        *
+       * @return the name.
        */
       public String getName() {
         return configPropertyName;
@@ -678,6 +711,7 @@ public class JndiBindingsType {
        * allowed object is
        * {@link String }
        *
+       * @param value the name.
        */
       public void setName(String value) {
         configPropertyName = value;
@@ -689,6 +723,7 @@ public class JndiBindingsType {
        * possible object is
        * {@link String }
        *
+       * @return the type.
        */
       public String getType() {
         return configPropertyType;
@@ -700,6 +735,7 @@ public class JndiBindingsType {
        * allowed object is
        * {@link String }
        *
+       * @param value the type.
        */
       public void setType(String value) {
         configPropertyType = value;
@@ -711,6 +747,7 @@ public class JndiBindingsType {
        * possible object is
        * {@link String }
        *
+       * @return the value.
        */
       public String getValue() {
         return configPropertyValue;
@@ -722,6 +759,7 @@ public class JndiBindingsType {
        * allowed object is
        * {@link String }
        *
+       * @param value the value.
        */
       public void setValue(String value) {
         configPropertyValue = value;

@@ -32,7 +32,7 @@ public class Numbers implements Serializable {
   public double range;
   public long l;
 
-  /** Creates a new instance of Numbers */
+  /* Creates a new instance of Numbers */
   public Numbers(int i) {
     id = i;
     id1 = -1 * id;

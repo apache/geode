@@ -103,6 +103,8 @@ public interface GatewayReceiver {
 
   /**
    * Returns whether or not this receiver is running
+   *
+   * @return whether this receiver is running
    */
   boolean isRunning();
 
@@ -124,18 +126,26 @@ public interface GatewayReceiver {
 
   /**
    * Returns the port on which this {@code GatewayReceiver} listens for clients.
+   *
+   * @return the port on which this {@code GatewayReceiver} listens for clients
    */
   int getPort();
 
   /**
    * Returns start value of the port range from which the {@code GatewayReceiver}'s port will
    * be chosen.
+   *
+   * @return the start value of the port range from which the {@code GatewayReceiver}'s port will be
+   *         chosen
    */
   int getStartPort();
 
   /**
    * Returns end value of the port range from which the {@code GatewayReceiver}'s port will be
    * chosen.
+   *
+   * @return the end value of the port range from which the {@code GatewayReceiver}'s port will be
+   *         chosen
    */
   int getEndPort();
 
@@ -149,6 +159,8 @@ public interface GatewayReceiver {
 
   /**
    * Returns the hostname configured by {@link GatewayReceiverFactory#setHostnameForSenders(String)}
+   *
+   * @return the hostname configured by {@link GatewayReceiverFactory#setHostnameForSenders(String)}
    */
   String getHostnameForSenders();
 
@@ -174,12 +186,13 @@ public interface GatewayReceiver {
    * GatewayReceiver will not automatically start once created.
    *
    * @return the manual start boolean property for this GatewayReceiver
-   *
    */
   boolean isManualStart();
 
   /**
    * Return the underlying Cacheserver
+   *
+   * @return the underlying Cacheserver
    */
   CacheServer getServer();
 }

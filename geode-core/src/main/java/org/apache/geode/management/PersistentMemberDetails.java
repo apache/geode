@@ -30,9 +30,12 @@ public class PersistentMemberDetails {
   private final String diskStoreId;
 
   /**
-   *
    * This constructor is to be used by internal JMX framework only. User should not try to create an
    * instance of this class.
+   *
+   * @param host the name or IP address of the host on which the member is running
+   * @param directory the directory in which the <code>DiskStore</code> is saved
+   * @param diskStoreId the ID of the <code>DiskStore</code>
    */
   @ConstructorProperties({"host", "directory", "diskStoreId"})
   public PersistentMemberDetails(final String host, final String directory,
@@ -44,6 +47,8 @@ public class PersistentMemberDetails {
 
   /**
    * Returns the name or IP address of the host on which the member is running.
+   *
+   * @return the name or IP address of the host on which the member is running
    */
   public String getHost() {
     return host;
@@ -51,6 +56,8 @@ public class PersistentMemberDetails {
 
   /**
    * Returns the directory in which the <code>DiskStore</code> is saved.
+   *
+   * @return the directory in which the <code>DiskStore</code> is saved
    */
   public String getDirectory() {
     return directory;
@@ -58,6 +65,8 @@ public class PersistentMemberDetails {
 
   /**
    * Returns the ID of the <code>DiskStore</code>.
+   *
+   * @return the ID of the <code>DiskStore</code>
    */
   public String getDiskStoreId() {
     return diskStoreId;

@@ -22,6 +22,7 @@ public interface VMEventListener {
   /**
    * Invoked after creating a new dunit VM.
    *
+   * @param vm the VM that was created
    * @see VM#getVM(int)
    */
   default void afterCreateVM(VM vm) {
@@ -31,6 +32,7 @@ public interface VMEventListener {
   /**
    * Invoked before bouncing a dunit VM.
    *
+   * @param vm the VM that will be bounced
    * @see VM#bounce()
    * @see VM#bounceForcibly()
    */
@@ -41,6 +43,7 @@ public interface VMEventListener {
   /**
    * Invoked after bouncing a dunit VM.
    *
+   * @param vm the VM that was bounced
    * @see VM#bounce()
    * @see VM#bounceForcibly()
    */

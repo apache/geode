@@ -1350,22 +1350,24 @@ public abstract class ClientAuthorizationTestCase extends JUnit4DistributedTestC
    */
   protected interface TestCredentialGenerator {
 
-    /**
+    /*
      * Get allowed credentials for the given set of operations in the given regions and indices of
-     * KEYS in the <code>KEYS</code> array
+     * KEYS in the KEYS array
      */
     Properties getAllowedCredentials(OperationCode[] opCodes, String[] regionNames,
         int[] keyIndices, int num);
 
-    /**
+    /*
      * Get disallowed credentials for the given set of operations in the given regions and indices
-     * of KEYS in the <code>KEYS</code> array
+     * of KEYS in the KEYS array
      */
     Properties getDisallowedCredentials(OperationCode[] opCodes, String[] regionNames,
         int[] keyIndices, int num);
 
     /**
      * Get the {@link CredentialGenerator} if any.
+     *
+     * @return the {@link CredentialGenerator} if any
      */
     CredentialGenerator getCredentialGenerator();
   }

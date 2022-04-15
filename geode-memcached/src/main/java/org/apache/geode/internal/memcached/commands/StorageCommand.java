@@ -33,11 +33,11 @@ import org.apache.geode.logging.internal.executors.LoggingThreadFactory;
 import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 
 /**
- * general format of the command is:<br/>
+ * general format of the command is:<br>
  * <code>
  * &lt;command name&gt; &lt;key&gt; &lt;flags&gt; &lt;exptime&gt; &lt;bytes&gt; [noreply]\r\n
- * </code><br/>
- * After this line, the client sends the data block:<br/>
+ * </code><br>
+ * After this line, the client sends the data block:<br>
  * <code>
  * &lt;data block&gt;\r\n
  * </code>

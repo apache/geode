@@ -55,7 +55,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * Test for Partitioned Region operations on a single node. Following tests are included:
  * <P>
  * (1) testPut() - Tests the put() functionality for the partitioned region.
- * </P>
+ * <p>
  *
  *
  */
@@ -85,14 +85,12 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
    * This isa test for PartitionedRegion put() operation.
    * <p>
    * Following functionalities are tested:
-   * </p>
    * <p>
    * 1) put() on PR with localMaxMemory = 0. PartitionedRegionException expected.
-   * </p>
    * <p>
    * 2)test the put() operation and validate that old values are returned in case of PR with scope
    * D_ACK.
-   * </p>
+   * <p>
    *
    *
    */

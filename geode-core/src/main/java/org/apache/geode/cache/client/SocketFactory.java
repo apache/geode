@@ -53,6 +53,7 @@ public interface SocketFactory {
    * Create an unconnected tcp socket for establishing a client.
    *
    * @return an unconnected socket
+   * @throws IOException if the socket cannot be created
    */
   Socket createSocket() throws IOException;
 }

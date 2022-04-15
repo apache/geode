@@ -48,6 +48,8 @@ public class DistributedExecutorServiceRule extends AbstractDistributedRule {
 
   /**
    * Returns a {@code Builder} to configure a new {@code ExecutorServiceRule}.
+   *
+   * @return a {@code Builder} to configure a new {@code ExecutorServiceRule}
    */
   public static Builder builder() {
     return new Builder();
@@ -65,7 +67,7 @@ public class DistributedExecutorServiceRule extends AbstractDistributedRule {
    * Constructs a {@code DistributedExecutorServiceRule} which performs {@code shutdownNow} and
    * thread dump of its threads if any were left running during {@code tearDown}.
    *
-   * @param threadCount The number of threads in the pool. Creates fixed thread pool if > 0; else
+   * @param threadCount The number of threads in the pool. Creates fixed thread pool if &gt; 0; else
    *        creates cached thread pool.
    * @param vmCount specified number of VMs
    */
@@ -191,6 +193,9 @@ public class DistributedExecutorServiceRule extends AbstractDistributedRule {
   /**
    * Returns the {@code Thread}s that are directly in the {@code ExecutorService}'s
    * {@code ThreadGroup} excluding subgroups.
+   *
+   * @return the {@code Thread}s that are directly in the {@code ExecutorService}'s
+   *         {@code ThreadGroup} excluding subgroups
    */
   public Set<Thread> getThreads() {
     return delegate.get().getThreads();
@@ -200,6 +205,9 @@ public class DistributedExecutorServiceRule extends AbstractDistributedRule {
    * Returns an array of {@code Thread Ids} that are directly in the {@code ExecutorService}'s
    * {@code ThreadGroup} excluding subgroups. {@code long[]} is returned to facilitate using JDK
    * APIs such as {@code ThreadMXBean#getThreadInfo(long[], int)}.
+   *
+   * @return an array of {@code Thread Ids} that are directly in the {@code ExecutorService}'s
+   *         {@code ThreadGroup} excluding subgroups
    */
   public long[] getThreadIds() {
     return delegate.get().getThreadIds();
@@ -208,6 +216,9 @@ public class DistributedExecutorServiceRule extends AbstractDistributedRule {
   /**
    * Returns thread dumps for the {@code Thread}s that are in the {@code ExecutorService}'s
    * {@code ThreadGroup} excluding subgroups.
+   *
+   * @return thread dumps for the {@code Thread}s that are in the {@code ExecutorService}'s
+   *         {@code ThreadGroup} excluding subgroups
    */
   public String dumpThreads() {
     return delegate.get().dumpThreads();
@@ -271,6 +282,7 @@ public class DistributedExecutorServiceRule extends AbstractDistributedRule {
      *
      * @param timeout the maximum time to wait
      * @param unit the time unit of the timeout argument
+     * @return a reference to this Builder
      */
     public Builder awaitTermination(long timeout, TimeUnit unit) {
       enableAwaitTermination = true;
@@ -281,6 +293,8 @@ public class DistributedExecutorServiceRule extends AbstractDistributedRule {
 
     /**
      * Enables invocation of {@code shutdown} during {@code tearDown}. Default is disabled.
+     *
+     * @return a reference to this Builder
      */
     public Builder useShutdown() {
       useShutdown = true;
@@ -290,6 +304,8 @@ public class DistributedExecutorServiceRule extends AbstractDistributedRule {
 
     /**
      * Enables invocation of {@code shutdownNow} during {@code tearDown}. Default is enabled.
+     *
+     * @return a reference to this Builder
      */
     public Builder useShutdownNow() {
       useShutdown = false;
@@ -300,6 +316,8 @@ public class DistributedExecutorServiceRule extends AbstractDistributedRule {
     /**
      * Specifies invocation of {@code awaitTermination} before {@code shutdown} or
      * {@code shutdownNow}.
+     *
+     * @return a reference to this Builder
      */
     public Builder awaitTerminationBeforeShutdown() {
       awaitTerminationBeforeShutdown = true;
@@ -309,6 +327,8 @@ public class DistributedExecutorServiceRule extends AbstractDistributedRule {
     /**
      * Specifies invocation of {@code awaitTermination} after {@code shutdown} or
      * {@code shutdownNow}.
+     *
+     * @return a reference to this Builder
      */
     public Builder awaitTerminationAfterShutdown() {
       awaitTerminationBeforeShutdown = false;
@@ -316,10 +336,12 @@ public class DistributedExecutorServiceRule extends AbstractDistributedRule {
     }
 
     /**
-     * Specifies the number of threads in the pool. Creates fixed thread pool if > 0. Default is 0
+     * Specifies the number of threads in the pool. Creates fixed thread pool if &gt; 0. Default is
+     * 0
      * which means (non-fixed) cached thread pool.
      *
      * @param threadCount the number of threads in the pool
+     * @return a reference to this Builder
      */
     public Builder threadCount(int threadCount) {
       this.threadCount = threadCount;
@@ -330,6 +352,7 @@ public class DistributedExecutorServiceRule extends AbstractDistributedRule {
      * Specifies the number of DUnit VMs to startup.
      *
      * @param vmCount the number of DUnit VMs to startup
+     * @return a reference to this Builder
      */
     public Builder vmCount(int vmCount) {
       this.vmCount = vmCount;
@@ -338,6 +361,8 @@ public class DistributedExecutorServiceRule extends AbstractDistributedRule {
 
     /**
      * Builds the instance of {@code ExecutorServiceRule}.
+     *
+     * @return an instance of {@code ExecutorServiceRule}
      */
     public DistributedExecutorServiceRule build() {
       return new DistributedExecutorServiceRule(this);

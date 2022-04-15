@@ -54,7 +54,11 @@ public class ExecuteCQOperationContext extends QueryOperationContext {
     return OperationCode.EXECUTE_CQ;
   }
 
-  /** Return the name of the continuous query. */
+  /**
+   * Return the name of the continuous query.
+   *
+   * @return the name of the continuous query
+   */
   public String getName() {
     return cqName;
   }

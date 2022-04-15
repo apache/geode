@@ -20,7 +20,7 @@ public class Manager extends Employee {
 
   public int manager_id;
 
-  /** Creates a new instance of Manager */
+  /* Creates a new instance of Manager */
   public Manager(String name, int age, int empId, String title, int salary, Set addresses,
       int mgrId) {
     super(name, age, empId, title, salary, addresses);

@@ -22,7 +22,7 @@ import javax.management.QueryExp;
 /**
  * The QueryParameterSource class encapsulates details in order to perform a query on an JMX MBean
  * server.
- * <p/>
+ * <p>
  *
  * @see java.io.Serializable
  * @see javax.management.ObjectName

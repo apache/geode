@@ -36,7 +36,7 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 /**
  * The LocatorStatusResponseJUnitTest class is a test suite of test cases testing the contract and
  * functionality of the LocatorStatusResponse class.
- * </p>
+ * <p>
  *
  * @see org.apache.geode.cache.client.internal.locator.LocatorStatusResponse
  * @see org.junit.Assert

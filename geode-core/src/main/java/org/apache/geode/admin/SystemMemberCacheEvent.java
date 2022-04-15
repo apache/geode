@@ -29,6 +29,8 @@ import org.apache.geode.cache.Operation;
 public interface SystemMemberCacheEvent extends SystemMembershipEvent {
   /**
    * Returns the actual operation that caused this event.
+   *
+   * @return the actual operation that caused this event
    */
   Operation getOperation();
 }

@@ -30,7 +30,7 @@ import org.apache.geode.unsafe.internal.sun.misc.SignalHandler;
 /**
  * This class externalizes signal handling in order to make the GemFire build process a bit cleaner
  * - for example we have to have exceptions for sun.misc classes when building javadocs.
- * </p>
+ * <p>
  *
  * @see org.apache.geode.internal.process.signal.AbstractSignalNotificationHandler
  * @see org.apache.geode.internal.process.signal.Signal

@@ -73,6 +73,7 @@ public interface GemFireHealth {
   /**
    * Returns an indicator of the overall health of the GemFire components.
    *
+   * @return an indicator of the overall health of the GemFire components
    * @see #GOOD_HEALTH
    * @see #OKAY_HEALTH
    * @see #POOR_HEALTH
@@ -88,16 +89,22 @@ public interface GemFireHealth {
 
   /**
    * Returns a message that provides a description of the cause of a component's ill health.
+   *
+   * @return a message that provides a description of the cause of a component's ill health
    */
   String getDiagnosis();
 
   /**
    * Returns the configuration for determining the health of the distributed system itself.
+   *
+   * @return the configuration for determining the health of the distributed system itself
    */
   DistributedSystemHealthConfig getDistributedSystemHealthConfig();
 
   /**
    * Sets the configuration for determining the health of the distributed system itself.
+   *
+   * @param config the configuration for determining the health of the distributed system itself
    */
   void setDistributedSystemHealthConfig(DistributedSystemHealthConfig config);
 
@@ -106,12 +113,18 @@ public interface GemFireHealth {
    * not overridden on a per-host basis. Note that changes made to the returned
    * <code>GemFireHealthConfig</code> will not take effect until
    * {@link #setDefaultGemFireHealthConfig} is invoked.
+   *
+   * @return the <code>GemFireHealthConfig</code> for GemFire components whose configurations are
+   *         not overridden on a per-host basis
    */
   GemFireHealthConfig getDefaultGemFireHealthConfig();
 
   /**
    * Sets the <code>GemFireHealthConfig</code> for GemFire components whose configurations are not
    * overridden on a per-host basis.
+   *
+   * @param config the <code>GemFireHealthConfig</code> for GemFire components whose configurations
+   *        are not overridden on a per-host basis
    *
    * @throws IllegalArgumentException If <code>config</code> specifies the config for a host
    */
@@ -124,6 +137,8 @@ public interface GemFireHealth {
    *
    * @param hostName The {@linkplain java.net.InetAddress#getCanonicalHostName canonical} name of
    *        the host.
+   * @return the <code>GemFireHealthConfig</code> for GemFire components that reside on a given
+   *         host
    */
   GemFireHealthConfig getGemFireHealthConfig(String hostName);
 
@@ -135,6 +150,7 @@ public interface GemFireHealth {
    *
    * @param hostName The {@linkplain java.net.InetAddress#getCanonicalHostName canonical} name of
    *        the host.
+   * @param config the <code>GemFireHealthConfig</code> to set
    *
    * @throws IllegalArgumentException If host <code>hostName</code> does not exist or if there are
    *         no GemFire components running on that host or if <code>config</code> does not configure
@@ -149,6 +165,8 @@ public interface GemFireHealth {
 
   /**
    * Returns whether or not this <code>GemFireHealth</code> is {@linkplain #close closed}.
+   *
+   * @return whether this <code>GemFireHealth</code> is {@linkplain #close closed}.
    */
   boolean isClosed();
 
@@ -178,6 +196,8 @@ public interface GemFireHealth {
 
     /**
      * Creates a new <code>Health</code> with the given string
+     *
+     * @param healthString the string with which to create the new <code>Health</code>
      */
     protected Health(String healthString) {
       this.healthString = healthString;
@@ -187,6 +207,8 @@ public interface GemFireHealth {
 
     /**
      * Returns the appropriate canonical instance of <code>Health</code>.
+     *
+     * @return the appropriate canonical instance of <code>Health</code>
      */
     public Object readResolve() {
       if (healthString == null) {

@@ -18,7 +18,7 @@ package org.apache.geode.rest.internal.web.exception;
 
 /**
  * Indicates that resource (key, value etc) does not found while trying to do REST operation.
- * <p/>
+ * <p>
  *
  * @since GemFire 8.0
  */

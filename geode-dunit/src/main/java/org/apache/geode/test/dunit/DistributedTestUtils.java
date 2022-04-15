@@ -50,12 +50,11 @@ public class DistributedTestUtils {
     // nothing
   }
 
-  /**
+  /*
    * Crash the cache in the given VM in such a way that it immediately stops communicating with
    * peers. This forces the VM's membership manager to throw a ForcedDisconnectException by forcibly
    * terminating the JGroups protocol stack with a fake EXIT event.
    *
-   * <p>
    * NOTE: if you use this method be sure that you clean up the VM before the end of your test with
    * disconnectFromDS() or disconnectAllFromDS().
    */
@@ -63,12 +62,11 @@ public class DistributedTestUtils {
     MembershipManagerHelper.crashDistributedSystem(system);
   }
 
-  /**
+  /*
    * Crash the cache in the given VM in such a way that it immediately stops communicating with
    * peers. This forces the VM's membership manager to throw a ForcedDisconnectException by forcibly
    * terminating the JGroups protocol stack with a fake EXIT event.
    *
-   * <p>
    * NOTE: if you use this method be sure that you clean up the VM before the end of your test with
    * disconnectFromDS() or disconnectAllFromDS().
    */
@@ -81,7 +79,7 @@ public class DistributedTestUtils {
     }
   }
 
-  /**
+  /*
    * Delete locator state files. Use this after getting a random port to ensure that an old locator
    * state file isn't picked up by the new locator you're starting.
    */
@@ -112,6 +110,7 @@ public class DistributedTestUtils {
   }
 
   /**
+   * @return the locator port
    * @deprecated Please use {@link DistributedRule#getLocatorPort()} instead.
    */
   @Deprecated
@@ -120,6 +119,7 @@ public class DistributedTestUtils {
   }
 
   /**
+   * @return the locator port
    * @deprecated Please use {@link DistributedRule#getLocatorPort()} instead.
    */
   @Deprecated
@@ -128,6 +128,7 @@ public class DistributedTestUtils {
   }
 
   /**
+   * @return a description of the locator in *host*[*port*] format
    * @deprecated Please use {@link DistributedRule#getLocators()} instead.
    */
   @Deprecated

@@ -636,7 +636,12 @@ public class Operation implements java.io.Serializable {
     VALUES[this.ordinal] = this;
   }
 
-  /** Return the Operation represented by specified ordinal */
+  /**
+   * Return the Operation represented by specified ordinal
+   *
+   * @param ordinal the ordinal representation of an Operation
+   * @return the Operation represented by specified ordinal
+   */
   public static Operation fromOrdinal(byte ordinal) {
     return VALUES[ordinal];
   }
@@ -644,6 +649,8 @@ public class Operation implements java.io.Serializable {
 
   /**
    * Returns true if this operation created a new entry.
+   *
+   * @return whether this operation created a new entry
    */
   public boolean isCreate() {
     return opType == OP_TYPE_CREATE && isEntry();
@@ -651,6 +658,8 @@ public class Operation implements java.io.Serializable {
 
   /**
    * Returns true if this operation updated an existing entry.
+   *
+   * @return whether this operation updated an existing entry
    */
   public boolean isUpdate() {
     return opType == OP_TYPE_UPDATE && isEntry();
@@ -658,6 +667,8 @@ public class Operation implements java.io.Serializable {
 
   /**
    * Returns true if this operation gets the value for given key.
+   *
+   * @return whether this operation gets the value for given key
    */
   public boolean isGet() {
     return opType == OP_TYPE_GET;
@@ -665,6 +676,8 @@ public class Operation implements java.io.Serializable {
 
   /**
    * Returns true if this operation checks whether given key is present in region.
+   *
+   * @return whether this operation checks whether given key is present in region
    */
   public boolean isContainsKey() {
     return opType == OP_TYPE_CONTAINS_KEY;
@@ -672,6 +685,8 @@ public class Operation implements java.io.Serializable {
 
   /**
    * Returns true if this operation checks whether given value is present in region.
+   *
+   * @return whether this operation checks whether given value is present in region
    */
   public boolean isContainsValue() {
     return opType == OP_TYPE_CONTAINS_VALUE;
@@ -679,6 +694,8 @@ public class Operation implements java.io.Serializable {
 
   /**
    * Returns true if this operation checks whether value is present for the given key.
+   *
+   * @return whether this operation checks whether value is present for the given key
    */
   public boolean isContainsValueForKey() {
     return opType == OP_TYPE_CONTAINS_VALUE_FOR_KEY;
@@ -686,6 +703,8 @@ public class Operation implements java.io.Serializable {
 
   /**
    * Returns true if this operation is function execution operation.
+   *
+   * @return whether this operation is function execution operation
    */
   public boolean isFunctionExecution() {
     return opType == OP_TYPE_FUNCTION_EXECUTION;
@@ -693,6 +712,8 @@ public class Operation implements java.io.Serializable {
 
   /**
    * Returns true if this operation gets the entry for given key.
+   *
+   * @return whether this operation gets the entry for given key
    */
   public boolean isGetEntry() {
     return opType == OP_TYPE_GET_ENTRY;
@@ -700,6 +721,8 @@ public class Operation implements java.io.Serializable {
 
   /**
    * Returns true if this operation is a get for register interest.
+   *
+   * @return whether this operation is a get for register interest
    */
   public boolean isGetForRegisterInterest() {
     return opType == OP_TYPE_GET_FOR_REGISTER_INTEREST;
@@ -707,6 +730,8 @@ public class Operation implements java.io.Serializable {
 
   /**
    * Returns true if the operation invalidated an entry.
+   *
+   * @return whether the operation invalidated an entry
    */
   public boolean isInvalidate() {
     return opType == OP_TYPE_INVALIDATE && isEntry();
@@ -714,6 +739,8 @@ public class Operation implements java.io.Serializable {
 
   /**
    * Returns true if the operation destroyed an entry.
+   *
+   * @return whether the operation destroyed an entry
    */
   public boolean isDestroy() {
     return opType == OP_TYPE_DESTROY && isEntry();
@@ -721,6 +748,8 @@ public class Operation implements java.io.Serializable {
 
   /**
    * Returns true if the operation cleared the region.
+   *
+   * @return whether the operation cleared the region
    */
   public boolean isClear() {
     return opType == OP_TYPE_CLEAR;
@@ -728,6 +757,8 @@ public class Operation implements java.io.Serializable {
 
   /**
    * Returns true if the operation closed the cache or a region.
+   *
+   * @return whether the operation closed the cache or a region
    */
   public boolean isClose() {
     return (this == REGION_CLOSE) || (this == CACHE_CLOSE) || (this == CACHE_RECONNECT)
@@ -736,6 +767,8 @@ public class Operation implements java.io.Serializable {
 
   /**
    * Returns true if this operation was initiated by a putAll.
+   *
+   * @return whether this operation was initiated by a putAll
    */
   public boolean isPutAll() {
     return (opDetails & OP_DETAILS_PUTALL) != 0;
@@ -743,6 +776,8 @@ public class Operation implements java.io.Serializable {
 
   /**
    * Returns true if this operation was initiated by a removeAll.
+   *
+   * @return whether this operation was initiated by a removeAll
    *
    * @see Region#removeAll(java.util.Collection)
    * @since GemFire 8.1
@@ -753,6 +788,8 @@ public class Operation implements java.io.Serializable {
 
   /**
    * Returns true if the operation invalidated a region.
+   *
+   * @return whether the operation invalidated a region
    */
   public boolean isRegionInvalidate() {
     return opType == OP_TYPE_INVALIDATE && isRegion();
@@ -760,6 +797,8 @@ public class Operation implements java.io.Serializable {
 
   /**
    * Returns true if the operation destroyed a region.
+   *
+   * @return whether the operation destroyed a region
    */
   public boolean isRegionDestroy() {
     return opType == OP_TYPE_DESTROY && isRegion();
@@ -767,6 +806,8 @@ public class Operation implements java.io.Serializable {
 
   /**
    * Returns true if the operation applies to the entire region.
+   *
+   * @return whether the operation applies to the entire region
    */
   public boolean isRegion() {
     return isRegion;
@@ -774,6 +815,8 @@ public class Operation implements java.io.Serializable {
 
   /**
    * Returns true if the operation is limited to the local cache.
+   *
+   * @return whether the operation is limited to the local cache
    */
   public boolean isLocal() {
     return isLocal;
@@ -781,6 +824,8 @@ public class Operation implements java.io.Serializable {
 
   /**
    * Returns true if the operation may be distributed.
+   *
+   * @return whether the operation may be distributed
    */
   public boolean isDistributed() {
     return !isLocal();
@@ -788,6 +833,8 @@ public class Operation implements java.io.Serializable {
 
   /**
    * Returns true if the operation applies to a single entry.
+   *
+   * @return whether the operation applies to a single entry
    */
   public boolean isEntry() {
     return !isRegion();
@@ -882,6 +929,8 @@ public class Operation implements java.io.Serializable {
   /**
    * Returns the update operation that corresponds to this operation. For a create operation the
    * corresponding update op is returned. For all other operations <code>this</code> is returned.
+   *
+   * @return the update operation that corresponds to this operation
    */
   public Operation getCorrespondingUpdateOp() {
     if (isCreate()) {
@@ -905,6 +954,8 @@ public class Operation implements java.io.Serializable {
   /**
    * Returns the create operation that corresponds to this operation. For an update operation the
    * corresponding create op is returned. For all other operations <code>this</code> is returned.
+   *
+   * @return the create operation that corresponds to this operation
    */
   public Operation getCorrespondingCreateOp() {
     if (isUpdate()) {

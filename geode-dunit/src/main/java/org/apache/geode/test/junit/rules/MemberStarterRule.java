@@ -181,7 +181,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     return (T) this;
   }
 
-  /**
+  /*
    * All the logs are written in the logfile instead on the console. this is usually used with
    * withWorkingDir so that logs are accessible and will be cleaned up afterwards.
    */
@@ -279,7 +279,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     return (T) this;
   }
 
-  /**
+  /*
    * be able to start JMX manager and admin rest on default ports
    */
   public T withJMXManager(boolean useProductDefaultPorts) {
@@ -313,7 +313,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     this.cleanWorkingDir = cleanWorkingDir;
   }
 
-  /**
+  /*
    * start the jmx manager and admin rest on a random ports
    */
   public T withJMXManager() {
@@ -405,14 +405,19 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     await().until(() -> bean.getClientIds().length == clientCount);
   }
 
-  /**
+  /*
    * Invoked in serverVM
    */
 
   /**
    * convenience method to create a region with customized regionFactory
    *
+   * @param <K> the type of keys in the region
+   * @param <V> the ype of values in the region
+   * @param type the {@link RegionShortcut} to use to create the region
+   * @param name the name of the region to create
    * @param regionFactoryConsumer a lamda that allows you to customize the regionFactory
+   * @return the newly created region
    */
   public <K, V> Region<K, V> createRegion(RegionShortcut type, String name,
       Consumer<RegionFactory<K, V>> regionFactoryConsumer) {
@@ -430,9 +435,11 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
    * convenience method to create a partition region with customized regionFactory and a customized
    * PartitionAttributeFactory
    *
+   * @param name the name of the region to create
    * @param regionFactoryConsumer a lamda that allows you to customize the regionFactory
    * @param attributesFactoryConsumer a lamda that allows you to customize the
    *        partitionAttributeFactory
+   * @return a Partitioned Region
    */
   public Region createPartitionRegion(String name, Consumer<RegionFactory> regionFactoryConsumer,
       Consumer<PartitionAttributesFactory> attributesFactoryConsumer) {
@@ -515,6 +522,8 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
    * This method wraps an {@link GeodeAwaitility#await()} call for more meaningful error
    * reporting.
    *
+   * @param <K> the type of results supplied by {@code supplier}
+   * @param <J> the type of results returned by {@code examiner}
    * @param supplier Method to retrieve the result to be tested, e.g.,
    *        get a list of visible region mbeans
    * @param examiner Method to evaluate the result provided by {@code provider}, e.g.,
@@ -553,6 +562,26 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
   /**
    * Convenience alias for {@link #waitUntilSatisfied},
    * requiring equality rather than a generic assertion.
+   *
+   * @param <K> the type of results supplied by {@code provider}
+   * @param <J> the type of results returned by {@code examiner}
+   * @param provider Method to retrieve the result to be tested, e.g.,
+   *        get a list of visible region mbeans
+   * @param examiner Method to evaluate the result provided by {@code provider}, e.g.,
+   *        get the length of the provided list.
+   *        Use {@link java.util.function.Function#identity()} if {@code assertionConsumer}
+   *        directly tests the value provided by {@code supplier}.
+   * @param expectation assertThat styled condition on the output of {@code examiner} against
+   *        which
+   *        the {@code await().untilAsserted(...)} will be called. E.g.,
+   *        {@code beanCount -> assertThat(beanCount, is(5))}
+   * @param expectationDesription A description of the {@code assertionConsumer} method,
+   *        for additional failure information should this call time out.
+   *        E.g., "Visible region mbean count should be 5"
+   * @param timeout With {@code unit}, the maximum time to wait before raising an exception.
+   * @param unit With {@code timeout}, the maximum time to wait before raising an exception.
+   * @throws org.awaitility.core.ConditionTimeoutException The timeout has been reached
+   * @throws Exception Any exception produced by {@code provider.call()}
    */
   public <K, J> void waitUntilEqual(Supplier<K> provider,
       Function<K, J> examiner,

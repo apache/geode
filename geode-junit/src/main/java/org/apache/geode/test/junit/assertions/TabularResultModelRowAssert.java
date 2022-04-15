@@ -25,7 +25,7 @@ public class TabularResultModelRowAssert<T> extends TabularResultModelSliceAsser
     super(tabularResultModelAssert, valuesInRow);
   }
 
-  /**
+  /*
    * verifies the expected number of values in the row
    */
   public final TabularResultModelRowAssert<T> hasSize(int expected) {

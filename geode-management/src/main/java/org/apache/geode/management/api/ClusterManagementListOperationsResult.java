@@ -38,6 +38,8 @@ public class ClusterManagementListOperationsResult<A extends ClusterManagementOp
 
   /**
    * for internal use only
+   *
+   * @param result the result to set
    */
   @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
   public ClusterManagementListOperationsResult(
@@ -48,6 +50,8 @@ public class ClusterManagementListOperationsResult<A extends ClusterManagementOp
 
   /**
    * Returns the payload of the list call
+   *
+   * @return the payload of the list call
    */
   public List<ClusterManagementOperationResult<A, V>> getResult() {
     return result;

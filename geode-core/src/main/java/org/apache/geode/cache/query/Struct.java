@@ -48,6 +48,8 @@ public interface Struct {
 
   /**
    * Returns the <code>StructType</code> that describes the fields of this <code>Struct</code>.
+   *
+   * @return the <code>StructType</code> that describes the fields of this <code>Struct</code>
    */
   StructType getStructType();
 }

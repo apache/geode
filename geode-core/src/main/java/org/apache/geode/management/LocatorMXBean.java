@@ -29,17 +29,24 @@ public interface LocatorMXBean {
 
   /**
    * Returns the port on which this Locator listens for connections.
+   *
+   * @return the port on which this Locator listens for connections
    */
   int getPort();
 
   /**
    * Returns a string representing the IP address or host name that this Locator will listen on.
+   *
+   * @return a string representing the IP address or host name that this Locator will listen on
    */
   String getBindAddress();
 
   /**
    * Returns the name or IP address to pass to the client as the location where the Locator is
    * listening.
+   *
+   * @return the name or IP address to pass to the client as the location where the Locator is
+   *         listening
    */
   String getHostnameForClients();
 
@@ -59,17 +66,24 @@ public interface LocatorMXBean {
 
   /**
    * Returns the most recent log entries for the Locator.
+   *
+   * @return the most recent log entries for the Locator
    */
   String viewLog();
 
   /**
    * Returns a list of servers on which the manager service may be started either by a Locator or
    * users.
+   *
+   * @return an array of servers on which the manager service may be started either by a Locator or
+   *         users
    */
   String[] listPotentialManagers();
 
   /**
    * Returns the list of current managers.
+   *
+   * @return an array of current managers
    */
   String[] listManagers();
 }

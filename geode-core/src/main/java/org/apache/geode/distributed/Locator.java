@@ -94,6 +94,7 @@ public abstract class Locator {
    * @param logFile The file to which the locator logs information. The directory that contains the
    *        log file is used as the output directory of the locator (see <code>-dir</code> option to
    *        the <code>gemfire</code> command).
+   * @return the newly started locator
    *
    * @throws IllegalArgumentException If <code>port</code> is not in the range 0 to 65536
    * @throws org.apache.geode.SystemIsRunningException If another locator is already running in
@@ -130,6 +131,7 @@ public abstract class Locator {
    *        system. If there are multiple locators in the system, this should note them in the
    *        "locators" setting. If The distributed system is using multicast, the "mcast-port"
    *        should also be set.
+   * @return the newly started locator
    *
    * @throws IllegalArgumentException If <code>port</code> is not in the range 0 to 65536
    * @throws org.apache.geode.SystemIsRunningException If another locator is already running in
@@ -159,6 +161,7 @@ public abstract class Locator {
    *        log file is used as the output directory of the locator (see <code>-dir</code> option to
    *        the <code>gemfire</code> command).
    * @param bindAddress The IP address to which the locator's socket binds
+   * @return the newly started locator
    *
    * @throws IllegalArgumentException If <code>port</code> is not in the range 0 to 65536
    * @throws org.apache.geode.SystemIsRunningException If another locator is already running in
@@ -195,6 +198,7 @@ public abstract class Locator {
    * @param dsProperties The properties used to configure the locator's DistributedSystem. If there
    *        are multiple locators, the "locators" property should be set. If multicast is being
    *        used, the "mcast-port" property should be set.
+   * @return the newly started locator
    *
    * @throws IllegalArgumentException If <code>port</code> is not in the range 0 to 65536
    * @throws org.apache.geode.SystemIsRunningException If another locator is already running in
@@ -234,6 +238,7 @@ public abstract class Locator {
    * @param serverLocator True if the locator should provide information about cache servers to
    *        clients connecting to the distributed system.
    * @param hostnameForClients the name to give to clients for connecting to this locator
+   * @return the newly started locator
    *
    * @throws IllegalArgumentException If <code>port</code> is not in the range 0 to 65536 or
    *         <code>peerLocator</code> and <code> serverLocator</code> are both false.
@@ -281,6 +286,8 @@ public abstract class Locator {
    * Returns an unmodifiable <code>List</code> of all of the <code>Locator</code>s that are hosted
    * by this VM.
    *
+   * @return an unmodifiable <code>List</code> of all of the <code>Locator</code>s that are hosted
+   *         by this VM
    * @deprecated as of 7.0 use {@link #getLocator} instead
    */
   @Deprecated
@@ -327,17 +334,22 @@ public abstract class Locator {
 
   /**
    * Returns the port on which this locator runs
+   *
+   * @return the port on which this locator runs
    */
   public abstract Integer getPort();
 
   /**
    * Returns the distributed system started by this locator, if any
+   *
+   * @return the distributed system started by this locator, if any
    */
   public abstract DistributedSystem getDistributedSystem();
 
-
   /**
    * Returns the log file to which this locator's output is written
+   *
+   * @return the log file to which this locator's output is written
    */
   public File getLogFile() {
     return logFile;
@@ -345,6 +357,8 @@ public abstract class Locator {
 
   /**
    * Returns the IP address to which this locator's listening socket is bound.
+   *
+   * @return the IP address to which this locator's listening socket is bound
    */
   public InetAddress getBindAddress() {
     return bindAddress;
@@ -354,6 +368,7 @@ public abstract class Locator {
    * Returns the hostname that will be given to clients so that they can connect to this locator.
    * Returns <code>null</code> if clients should use the bind address.
    *
+   * @return the hostname that will be given to clients so that they can connect to this locator
    * @since GemFire 5.7
    */
   public String getHostnameForClients() {
@@ -386,6 +401,8 @@ public abstract class Locator {
 
   /**
    * Returns a brief description of this <code>Locator</code>
+   *
+   * @return a brief description of this <code>Locator</code>
    */
   @Override
   public String toString() {
@@ -395,6 +412,8 @@ public abstract class Locator {
 
   /**
    * Get the string representation of this <code>Locator</code> in host[port] format.
+   *
+   * @return the string representation of this <code>Locator</code> in host[port] format
    */
   public String asString() {
     String bindAddressString = null;
@@ -445,6 +464,8 @@ public abstract class Locator {
    * <p>
    * hostname-for-clients - the ip address or host name that clients will be told to use to connect
    * to this locator. If unspecified, defaults to the bind-address.
+   *
+   * @param args the arguments to start the locator with
    *
    * @deprecated as of Geode 1.4 use {@link org.apache.geode.distributed.LocatorLauncher
    *             "LocatorLauncher" to start a locator}

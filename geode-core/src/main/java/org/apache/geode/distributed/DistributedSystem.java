@@ -136,6 +136,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    *
    * @param config The <a href="#configuration">configuration properties</a> used when connecting to
    *        the distributed system
+   * @return a connection to the distributed system that is appropriate for administration
    *
    * @throws IllegalArgumentException If <code>config</code> contains an unknown configuration
    *         property or a configuration property does not have an allowed value. Note that the
@@ -222,6 +223,9 @@ public abstract class DistributedSystem implements StatisticsFactory {
   /**
    * Returns an existing connection to the distributed system described by the given properties.
    *
+   * @param config the properties used when creating a connection to the distributed system
+   * @return a connection to the distributed system that is appropriate for administration
+   *
    * @since GemFire 4.0
    */
   protected static DistributedSystem getConnection(Properties config) {
@@ -242,6 +246,9 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * Returns a connection to the distributed system that is appropriate for administration. This
    * method is for internal use only by the admin API.
    *
+   * @param props the properties used when creating a connection to the distributed system
+   * @return a connection to the distributed system that is appropriate for administration
+   *
    * @since GemFire 4.0
    */
   protected static DistributedSystem connectForAdmin(Properties props) {
@@ -258,6 +265,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
   /**
    * see {@link org.apache.geode.admin.AdminDistributedSystemFactory}
    *
+   * @param adminOnly whether this VM is dedicated to administration
    * @since GemFire 5.7
    */
   protected static void setEnableAdministrationOnly(boolean adminOnly) {
@@ -287,6 +295,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * Returns the <code>LogWriter</code> used for logging information. See
    * <A href="#logFile">logFile</A>.
    *
+   * @return the <code>LogWriter</code> used for logging information
    * @throws IllegalStateException This VM has {@linkplain #disconnect() disconnected} from the
    *         distributed system.
    */
@@ -297,6 +306,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * Returns the <code>LogWriter</code> used for logging security related information. See
    * <A href="#logFile">logFile</A>.
    *
+   * @return the <code>LogWriter</code> used for logging security related information
    * @throws IllegalStateException This VM has {@linkplain #disconnect() disconnected} from the
    *         distributed system.
    * @since GemFire 5.5
@@ -345,12 +355,16 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * Returns whether or not this <code>DistributedSystem</code> is connected to the distributed
    * system.
    *
+   * @return whether this <code>DistributedSystem</code> is connected to the distributed system
+   *
    * @see #disconnect()
    */
   public abstract boolean isConnected();
 
   /**
    * Returns the id of this connection to the distributed system.
+   *
+   * @return the id of this connection to the distributed system
    *
    * @deprecated {@link #getDistributedMember} provides an identity for this connection that is
    *             unique across the entire distributed system.
@@ -361,6 +375,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
   /**
    * Returns a string that uniquely identifies this connection to the distributed system.
    *
+   * @return a string that uniquely identifies this connection to the distributed system
    * @see org.apache.geode.admin.SystemMembershipEvent#getMemberId
    *
    * @since GemFire 4.0
@@ -387,9 +402,10 @@ public abstract class DistributedSystem implements StatisticsFactory {
   public abstract Set<DistributedMember> getAllOtherMembers();
 
   /**
-   * Returns a set of all the members in the given group. Members join a group be setting the
+   * Returns a set of all the members in the given group. Members join a group by setting the
    * "groups" gemfire property.
    *
+   * @param group the group to which the distributed members to find belong
    * @return returns a set of all the member in a group.
    * @since GemFire 7.0
    */
@@ -399,6 +415,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
   /**
    * Find the set of distributed members running on a given address
    *
+   * @param address the address of the distributed members to find
    * @return a set of all DistributedMembers that have any interfaces that match the given IP
    *         address. May be empty if there are no members.
    *
@@ -409,6 +426,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
   /**
    * Find the distributed member with the given name
    *
+   * @param name the name of the distributed member to find
    * @return the distributed member that has the given name, or null if no member is currently
    *         running with the given name.
    *
@@ -418,6 +436,8 @@ public abstract class DistributedSystem implements StatisticsFactory {
 
   /**
    * Returns the <a href="#name">name</a> of this connection to the distributed system.
+   *
+   * @return the name of this connection to the distributed system
    */
   public abstract String getName();
 
@@ -459,6 +479,9 @@ public abstract class DistributedSystem implements StatisticsFactory {
   /**
    * Returns the current value of {@link #PROPERTIES_FILE_PROPERTY} system property if set or the
    * default value {@link #PROPERTIES_FILE_DEFAULT}.
+   *
+   * @return the current value of {@link #PROPERTIES_FILE_PROPERTY} system property if set or the
+   *         default value {@link #PROPERTIES_FILE_DEFAULT}
    *
    * @see #PROPERTIES_FILE_PROPERTY
    * @see #PROPERTIES_FILE_DEFAULT
@@ -528,6 +551,9 @@ public abstract class DistributedSystem implements StatisticsFactory {
   /**
    * Returns the current value of {@link #SECURITY_PROPERTIES_FILE_PROPERTY} system property if set
    * or the default value {@link #SECURITY_PROPERTIES_FILE_DEFAULT}.
+   *
+   * @return the current value of {@link #SECURITY_PROPERTIES_FILE_PROPERTY} system property if set
+   *         or the default value {@link #SECURITY_PROPERTIES_FILE_DEFAULT}
    *
    * @see #SECURITY_PROPERTIES_FILE_PROPERTY
    * @see #SECURITY_PROPERTIES_FILE_DEFAULT
@@ -656,6 +682,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * will detail what went wrong.
    *
    * @param time amount of time to wait, or -1 to wait forever
+   * @param units the units associated with the time
    * @return true if the system was reconnected
    * @throws InterruptedException if the thread is interrupted while waiting
    */
@@ -665,12 +692,13 @@ public abstract class DistributedSystem implements StatisticsFactory {
   /**
    * Force the DistributedSystem to stop reconnecting. If the DistributedSystem is currently
    * connected this will disconnect it and close the cache.
-   *
    */
   public abstract void stopReconnecting();
 
   /**
    * Returns the new DistributedSystem if there was an auto-reconnect
+   *
+   * @return the new DistributedSystem if there was an auto-reconnect
    */
   public abstract DistributedSystem getReconnectedSystem();
 }

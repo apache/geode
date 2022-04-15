@@ -40,7 +40,7 @@ import org.apache.geode.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
 
 /**
  * The JsonWriter class is an utility to write various java types as a JSON string.
- * <p/>
+ * <p>
  *
  * @since GemFire 8.0
  */

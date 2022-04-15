@@ -87,16 +87,16 @@ public class GenericAppServerContainer extends ServerContainer {
   }
 
   /**
-   * Builds the command needed to run the {@link #modifyWarScript}
+   * Builds the command needed to run the {@link GenericAppServerContainer#modifyWarScript}
    *
    * The command is built as an array list of strings with each element representing a string
    * separated by a space on the command line. For example, the list {'-t', 'geode'} would represent
    * 'modify_war -t geode' on the command line.
    *
-   * The command built points towards the {@link ContainerInstall#getWarFilePath()} as the starting
-   * file and the {@link #warFile} as the output file. Cache and system properties are specified
-   * when modifying the WAR, so the elements contained within the {@link #cacheProperties} and
-   * {@link #systemProperties} maps are also added to the command built.
+   * The command built points towards {@link ContainerInstall#getWarFilePath()} as the starting file
+   * and {@link ServerContainer#getWarFile()} as the output file. Cache and system properties are
+   * specified when modifying the WAR, so the elements contained within the {@link #cacheProperties}
+   * and {@link #systemProperties} maps are also added to the command built.
    */
   private List<String> buildCommand() throws IOException {
     ContainerInstall install = getInstall();
@@ -133,7 +133,7 @@ public class GenericAppServerContainer extends ServerContainer {
    * command line execution of the modify_war_file script using the commands built from
    * {@link #buildCommand()}
    *
-   * The modified WAR file is sent to {@link #warFile}.
+   * The modified WAR file is sent to {@link #getWarFile()}.
    *
    * @throws IOException If the command executed returns with a non-zero exit code.
    */

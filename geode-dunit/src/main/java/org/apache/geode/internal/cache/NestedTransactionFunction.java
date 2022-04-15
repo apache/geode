@@ -34,12 +34,12 @@ import org.apache.geode.cache.execute.FunctionService;
 /**
  * This function is used by {@link CommitFunction} to commit existing transaction. A
  * {@link TransactionId} corresponding to the transaction to be committed must be provided as an
- * argument while invoking this function.<br />
+ * argument while invoking this function.<br>
  *
- * When executed this function commits a transaction if it exists locally.<br />
+ * When executed this function commits a transaction if it exists locally.<br>
  *
  * This function returns a single Boolean as result, whose value is <code>Boolean.TRUE</code> if the
- * transaction committed successfully otherwise the return value is <code>Boolean.FALSE</code><br />
+ * transaction committed successfully otherwise the return value is <code>Boolean.FALSE</code><br>
  *
  * This function is <b>not</b> registered on the cache servers by default, and it is the user's
  * responsibility to register this function. see {@link FunctionService#registerFunction(Function)}

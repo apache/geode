@@ -146,7 +146,7 @@ import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
  * {@link RegionAttributes#getPublisher}</dd>
  * <dt>isCloningEnabled [<em>default:</em> {@code false}]</dt>
  * <dd>Whether or not value is cloned before appling {@code Delta}s If {@code false}, value will not
- * be cloned {@link #setCloningEnabled} {@link RegionAttributes#getCloningEnabled()}</dd></dt>
+ * be cloned {@link #setCloningEnabled} {@link RegionAttributes#getCloningEnabled()}</dd>
  * </dl>
  * <h4>Storage (see also <a href="package-summary.html#storage">package summary </a>)</h4>
  * <dl>
@@ -264,13 +264,13 @@ import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
  * <dd>How access to the region is affected when one or more required roles are missing from the
  * region membership. <br>
  * {@link #setMembershipAttributes} {@link RegionAttributes#getMembershipAttributes}</dd>
- * <dd><em>Deprecated</em>, this API is scheduled to be removed</dd></dt>
+ * <dd><em>Deprecated</em>, this API is scheduled to be removed</dd>
  * </dl>
  *
  * <h4>Locking</h4>
  * <dl>
  * <dt>LockGrantor [<em>default:</em> {@code false}]</dt>
- * <dd>Should this process become lock grantor for the region?</dd><br>
+ * <dd>Should this process become lock grantor for the region?</dd>
  * {@link #setLockGrantor} {@link RegionAttributes#isLockGrantor} {@link Region#becomeLockGrantor}
  * </dl>
  *
@@ -278,20 +278,20 @@ import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
  * <dl>
  * <dt>IndexMaintenanceSynchronous [<em>default:</em> {@code false}]</dt>
  * <dd>Are indexes built over in this region updated synchronously when the underlying data is
- * modified?</dd><br>
+ * modified?</dd>
  * {@link #setIndexMaintenanceSynchronous} {@link RegionAttributes#getIndexMaintenanceSynchronous}
  * </dl>
  *
  * <p>
  * Note that the RegionAttributes are not distributed with the region.
  *
- * <a name="compatibility">
+ * <a name="compatibility"></a>
  * <h3>Compatibility Rules</h3>
  * <h4>RegionAttributes Creation Constraints</h4> If any of the following compatibility rules are
  * violated when {@link #create}} is called then an {@link IllegalStateException} is thrown. See
  * {@link #validateAttributes}.
  *
- * <a name="creationConstraints">
+ * <a name="creationConstraints"></a>
  * <h3>Creation Constraints</h3>
  * <h4>Region Creation Constraints on RegionAttributes</h4>
  *
@@ -805,6 +805,8 @@ public class AttributesFactory<K, V> {
   /**
    * Sets whether or not a persistent backup should be made of the region.
    *
+   * @param persistBackup boolean specifying if a persistent backup should be made of the region
+   *
    * @since GemFire 3.2
    * @deprecated as of GemFire 5.0, use {@link DataPolicy#PERSISTENT_REPLICATE} instead
    */
@@ -833,6 +835,8 @@ public class AttributesFactory<K, V> {
   /**
    * Sets whether or not acks are sent after an operation is processed.
    *
+   * @param earlyAck boolean specifying if acks are sent after an operation is processed
+   *
    * @since GemFire 4.1
    * @deprecated This setting no longer has any effect.
    */
@@ -845,6 +849,8 @@ public class AttributesFactory<K, V> {
   /**
    * Sets whether or not this region should be considered a publisher.
    *
+   * @param v boolean specifying if this region should be considered a publisher
+   *
    * @since GemFire 4.2.3
    * @deprecated as of 6.5
    */
@@ -854,6 +860,9 @@ public class AttributesFactory<K, V> {
   /**
    * Sets whether or not conflation is enabled for sending messages to async peers. Default value is
    * false.
+   *
+   * @param enableAsyncConflation boolean specifying if conflation is enabled for sending messages
+   *        to async peers
    *
    * @since GemFire 4.2.3
    */
@@ -867,6 +876,9 @@ public class AttributesFactory<K, V> {
    * Sets whether or not conflation is enabled for sending messages from a cache server to its
    * clients. Default is false.
    *
+   * @param enableSubscriptionConflation boolean specifying if conflation is enabled for sending
+   *        messages from a cache server to its clients
+   *
    * @since GemFire 5.0
    */
   public void setEnableSubscriptionConflation(boolean enableSubscriptionConflation) {
@@ -876,6 +888,8 @@ public class AttributesFactory<K, V> {
 
   /**
    * adds a gateway sender to the end of list of gateway senders on this factory
+   *
+   * @param gatewaySenderId the ID of the gateway sender to be added
    *
    * @throws IllegalArgumentException if {@code gatewaySender} is null
    * @since GemFire 7.0
@@ -892,6 +906,8 @@ public class AttributesFactory<K, V> {
 
   /**
    * Adds a AsyncEventQueue to the end of list of async event queues on this factory
+   *
+   * @param asyncEventQueueId the ID of the async event queue to be added
    *
    * @throws IllegalArgumentException if {@code gatewaySender} is null
    * @since GemFire 7.0
@@ -910,6 +926,9 @@ public class AttributesFactory<K, V> {
    * Sets whether or not conflation is enabled for sending messages from a cache server to its
    * clients.
    *
+   * @param enableBridgeConflation boolean specifying if conflation is enabled for sending messages
+   *        from a cache server to its clients
+   *
    * @since GemFire 5.0
    * @deprecated as of 5.7 use {@link #setEnableSubscriptionConflation} instead.
    */
@@ -922,6 +941,9 @@ public class AttributesFactory<K, V> {
    * Sets whether or not conflation is enabled for sending messages from a cache server to its
    * clients.
    *
+   * @param enableBridgeConflation boolean specifying if conflation is enabled for sending messages
+   *        from a cache server to its clients
+   *
    * @deprecated as of GemFire 5.0, use {@link #setEnableSubscriptionConflation}
    */
   @Deprecated
@@ -930,7 +952,9 @@ public class AttributesFactory<K, V> {
   }
 
   /**
-   * Returns whether or not disk writes are asynchronous.
+   * Sets the {@link DiskWriteAttributes} for this factory
+   *
+   * @param attrs the {@link DiskWriteAttributes} to be set for this factory
    *
    * @see Region#writeToDisk
    *
@@ -954,6 +978,8 @@ public class AttributesFactory<K, V> {
 
   /**
    * Sets the directories with the default size of 10240 MB to which the region's data is written
+   *
+   * @param diskDirs the directories to which the region's data is written
    *
    * @throws GemFireIOException if a directory does not exist
    *
@@ -1027,8 +1053,10 @@ public class AttributesFactory<K, V> {
    * Sets the directories to which the region's data is written and also set their sizes in
    * megabytes
    *
+   * @param diskDirs the directories to which the region's data is written
+   * @param diskSizes the size in megabytes for each directory
    * @throws IllegalArgumentException if a dir does not exist or the length of the size array does
-   *         not match to the length of the dir array or the given length is not a valid positive
+   *         not match to the length of the dir array or the given size is not a valid positive
    *         number
    *
    * @since GemFire 5.1
@@ -1065,6 +1093,9 @@ public class AttributesFactory<K, V> {
    * Sets the {@code PartitionAttributes} that describe how the region is partitioned among members
    * of the distributed system. This also establishes a data policy of {@link DataPolicy#PARTITION
    * PARTITION}, if the data policy has not already been set.
+   *
+   * @param partition the {@code PartitionAttributes} that describe how the region is partitioned
+   *        among members of the distributed system
    *
    * @since GemFire 5.0
    */
@@ -1109,6 +1140,9 @@ public class AttributesFactory<K, V> {
    * Sets the {@code MembershipAttributes} that describe the membership roles required for reliable
    * access to the region.
    *
+   * @param membership the {@code MembershipAttributes} that describe the membership roles required
+   *        for reliable access to the region
+   *
    * @deprecated this API is scheduled to be removed
    */
   @Deprecated
@@ -1121,6 +1155,9 @@ public class AttributesFactory<K, V> {
    * Sets the {@code SubscriptionAttributes} that describe how the region will subscribe to other
    * distributed cache instances of the region.
    *
+   * @param subscription the {@code SubscriptionAttributes} that describe how the region will
+   *        subscribe to other distributed cache instances of the region
+   *
    * @since GemFire 5.0
    */
   public void setSubscriptionAttributes(SubscriptionAttributes subscription) {
@@ -1131,6 +1168,9 @@ public class AttributesFactory<K, V> {
   /**
    * Set how indexes on the region should be maintained. It will be either synchronous or
    * asynchronous. Default is true.
+   *
+   * @param synchronous boolean specifying if index maintenance on the region should be synchronous
+   *        (true) or asynchronous (false)
    */
   public void setIndexMaintenanceSynchronous(boolean synchronous) {
     regionAttributes.indexMaintenanceSynchronous = synchronous;
@@ -1151,6 +1191,8 @@ public class AttributesFactory<K, V> {
   /**
    * Sets the flag telling a region to ignore JTA transactions. Default is false.
    *
+   * @param flag boolean specifying if the region should ignore JTA transactions
+   *
    * @since GemFire 5.0
    */
   public void setIgnoreJTA(boolean flag) {
@@ -1170,8 +1212,12 @@ public class AttributesFactory<K, V> {
 
   /**
    * Sets whether distributed operations on this region should attempt to use multicast. Multicast
-   * must also be enabled in the cache's DistributedSystem (see <a
-   * href=../distributed/DistributedSystem.html#mcast-port">"mcast-port"</a>). Default is false.
+   * must also be enabled in the cache's DistributedSystem
+   * (see <a href="../distributed/DistributedSystem.html#mcast-port">"mcast-port"</a>).
+   * Default is false.
+   *
+   * @param value boolean specifying if distributed operations on this region should attempt to use
+   *        multicast
    *
    * @since GemFire 5.0
    * @see RegionAttributes#getMulticastEnabled
@@ -1184,6 +1230,8 @@ public class AttributesFactory<K, V> {
   /**
    * Sets cloning on region. Default is false. Note: off-heap regions always behave as if cloning is
    * enabled.
+   *
+   * @param cloningEnable boolean specifying if cloning is enabled on the region
    *
    * @since GemFire 6.1
    * @see RegionAttributes#getCloningEnabled()
@@ -1328,8 +1376,8 @@ public class AttributesFactory<K, V> {
    * <li>If the data policy {@link DataPolicy#withReplication uses replication} and the scope is
    * {@link Scope#isDistributed distributed} then the following are incompatible:
    * <ul>
-   * <li>ExpirationAction.LOCAL_INVALIDATE on the region</li<li>ExpirationAction.LOCAL_DESTROY on
-   * the entries</li>
+   * <li>ExpirationAction.LOCAL_INVALIDATE on the region</li>
+   * <li>ExpirationAction.LOCAL_DESTROY on the entries</li>
    * <li>ExpirationAction.LOCAL_INVALIDATE on the entries</li>
    * <li>An LRU with local destroy eviction action</li>
    * </ul>

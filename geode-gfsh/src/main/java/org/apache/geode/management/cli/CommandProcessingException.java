@@ -34,7 +34,7 @@ public class CommandProcessingException extends RuntimeException {
   public static final int COMMAND_NAME_AMBIGUOUS = 2;
   /**
    * Error Type indicating an unknown or unavailable command. GemFire CLI Commands are context
-   * sensitive & might not be always available.
+   * sensitive &amp; might not be always available.
    */
   public static final int COMMAND_INVALID_OR_UNAVAILABLE = 3;
   /** Error Type indicating an invalid named parameter of a command. */
@@ -90,6 +90,8 @@ public class CommandProcessingException extends RuntimeException {
 
   /**
    * Returns the Error Type.
+   *
+   * @return the Error Type
    */
   public int getErrorType() {
     return errorType;
@@ -97,13 +99,15 @@ public class CommandProcessingException extends RuntimeException {
 
   /**
    * Returns the error data.
+   *
+   * @return the error data
    */
   public Object getErrorData() {
     return errorData;
   }
 
   /**
-   * Returns the String representation of this <code>CommandProcessingException<code>
+   * Returns the String representation of this <code>CommandProcessingException</code>
    */
   @Override
   public String toString() {

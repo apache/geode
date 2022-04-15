@@ -59,7 +59,7 @@ import org.apache.geode.redis.internal.data.RedisKey;
 public class Coder {
 
   /**
-   * The charset being used by this coder, {@value #CHARSET}.
+   * The charset being used by this coder
    */
   public static final String CHARSET = "UTF-8";
 

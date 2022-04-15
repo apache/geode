@@ -50,18 +50,18 @@ import org.apache.geode.annotations.Experimental;
  * The following schema fragment specifies the expected content contained within this class.
  *
  * <pre>
- * &lt;complexType name="dynamic-region-factory-type">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="disk-dir" type="{http://geode.apache.org/schema/cache}disk-dir-type" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="disable-persist-backup" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="disable-register-interest" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="pool-name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="dynamic-region-factory-type"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="disk-dir" type="{http://geode.apache.org/schema/cache}disk-dir-type" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="disable-persist-backup" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="disable-register-interest" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="pool-name" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  *
  *
@@ -87,6 +87,7 @@ public class DynamicRegionFactoryType {
    * possible object is
    * {@link DiskDirType }
    *
+   * @return the {@link DiskDirType}.
    */
   public DiskDirType getDiskDir() {
     return diskDir;
@@ -98,6 +99,7 @@ public class DynamicRegionFactoryType {
    * allowed object is
    * {@link DiskDirType }
    *
+   * @param value the {@link DiskDirType}.
    */
   public void setDiskDir(DiskDirType value) {
     diskDir = value;
@@ -109,6 +111,7 @@ public class DynamicRegionFactoryType {
    * possible object is
    * {@link Boolean }
    *
+   * @return true if persistent backup is disabled, false otherwise.
    */
   public Boolean isDisablePersistBackup() {
     return disablePersistBackup;
@@ -120,6 +123,7 @@ public class DynamicRegionFactoryType {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value true to disable persist backup, false to enable it.
    */
   public void setDisablePersistBackup(Boolean value) {
     disablePersistBackup = value;
@@ -131,6 +135,7 @@ public class DynamicRegionFactoryType {
    * possible object is
    * {@link Boolean }
    *
+   * @return true if register interest is disabled.
    */
   public Boolean isDisableRegisterInterest() {
     return disableRegisterInterest;
@@ -142,6 +147,7 @@ public class DynamicRegionFactoryType {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value true to enable register interest, false to enable it.
    */
   public void setDisableRegisterInterest(Boolean value) {
     disableRegisterInterest = value;
@@ -153,6 +159,7 @@ public class DynamicRegionFactoryType {
    * possible object is
    * {@link String }
    *
+   * @return the pool name.
    */
   public String getPoolName() {
     return poolName;
@@ -164,6 +171,7 @@ public class DynamicRegionFactoryType {
    * allowed object is
    * {@link String }
    *
+   * @param value the pool name.
    */
   public void setPoolName(String value) {
     poolName = value;

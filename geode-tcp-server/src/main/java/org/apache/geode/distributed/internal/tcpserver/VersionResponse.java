@@ -26,7 +26,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
 /**
  * An internal message sent back to TcpClient from a TcpServer to respond to a
  *
- * @{link VersionRequest}
+ * {@link VersionRequest}
  */
 public class VersionResponse implements BasicSerializable {
   private short versionOrdinal = KnownVersion.TOKEN.ordinal();

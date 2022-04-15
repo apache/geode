@@ -19,7 +19,7 @@ import java.util.Date;
 
 /**
  * This class defines the Alert sent by the AlertManager to the Alert Aggregator. This class
- * includes the information about the <code>AlertDefinition<code> for which this alert being raised
+ * includes the information about the <code>AlertDefinition</code> for which this alert being raised
  * & the value of the statistic.
  *
  */

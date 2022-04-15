@@ -25,8 +25,6 @@ package org.apache.geode.cache;
  * </pre>
  *
  * A new data store must be added to the partitioned region for future bucket creation.
- * </p>
- *
  * <p>
  * When a <code>PartitionedRegionStorageException</code> message contains the string:
  *
@@ -42,8 +40,6 @@ package org.apache.geode.cache;
  * <li>The cache on that distributed member has been closed.</li>
  * <li>The distributed system on that member has been disconnected.</li>
  * </ol>
- * </p>
- *
  * <p>
  * When a <code>PartitionedRegionStorageException</code> message contains the string:
  *
@@ -55,7 +51,7 @@ package org.apache.geode.cache;
  * GemFire support providing all logs and statistics files from all members containing the
  * partitioned region. Otherwise, shutdown and then restart one or more of the data stores, given
  * that it is safe to do so, for example when redundantCopies is greater than 0.
- * </p>
+ * <p>
  *
  *
  * @see org.apache.geode.cache.PartitionAttributesFactory

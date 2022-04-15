@@ -248,6 +248,7 @@ public interface ClientRegionFactory<K, V> {
   /**
    * Sets cloning on region Note: off-heap regions always behave as if cloning is enabled.
    *
+   * @param cloningEnable whether cloning is enabled on the region
    * @return a reference to this ClientRegionFactory object
    * @see AttributesFactory#setCloningEnabled
    */

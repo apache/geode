@@ -21,7 +21,7 @@ import java.util.List;
  * Code that actually runs a single concurrent test method.
  */
 public interface Runner {
-  /**
+  /*
    * Run a test method in a concurrency testing framework and return a list of errors encountered.
    */
   List<Throwable> runTestMethod(Method child);

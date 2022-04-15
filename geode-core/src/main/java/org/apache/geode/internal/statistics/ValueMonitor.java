@@ -24,7 +24,7 @@ import org.apache.geode.internal.CopyOnWriteHashSet;
 
 /**
  * Adds coarser-grained monitoring of entire Statistics instances.
- * <p/>
+ * <p>
  * The following code is an example of how to find an existing Statistics instance and define a
  * ValueMonitor listener for notifications of any stat sample containing updates to any stats in the
  * instance being monitored:

@@ -31,19 +31,30 @@ public abstract class CacheException extends GemFireException {
     super();
   }
 
-  /** Constructs a new {@code CacheException} with a message string. */
+  /**
+   * Constructs a new {@code CacheException} with a message string.
+   *
+   * @param s the detail message
+   */
   public CacheException(String s) {
     super(s);
   }
 
   /**
    * Constructs a {@code CacheException} with a message string and a base exception
+   *
+   * @param s the detail message
+   * @param cause the cause
    */
   public CacheException(String s, Throwable cause) {
     super(s, cause);
   }
 
-  /** Constructs a {@code CacheException} with a cause */
+  /**
+   * Constructs a {@code CacheException} with a cause
+   *
+   * @param cause the cause
+   */
   public CacheException(Throwable cause) {
     super(cause);
   }

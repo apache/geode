@@ -31,6 +31,8 @@ package org.apache.geode.admin;
 public interface CacheVm extends SystemMember, ManagedEntity {
   /**
    * Returns the configuration of this cache vm
+   *
+   * @return the configuration of this cache vm
    */
   CacheVmConfig getVmConfig();
 }

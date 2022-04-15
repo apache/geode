@@ -475,7 +475,7 @@ public class ProcessWrapper implements Consumer<String> {
     return process;
   }
 
-  /**
+  /*
    * Method to create a manifest jar from a list of jars or directories. The provided entries are
    * first converted to absolute paths and then converted to relative paths, relative to the
    * location provided. This is to support the Manifest's requirement that class-paths only be
@@ -484,7 +484,7 @@ public class ProcessWrapper implements Consumer<String> {
    * - the manifest jar will be created as /tmp/app/manifest.jar
    * - the class-path attribute will be ../../a/b/c/foo.jar
    *
-   * @return the path to the created manifest jar
+   * Returns the path to the created manifest jar
    */
   public static String createManifestJar(List<String> entries, String location) throws IOException {
     // Must use the canonical path so that symbolic links are resolved correctly

@@ -19,7 +19,7 @@ import org.apache.geode.pdx.JSONFormatterException;
 
 /**
  * Indicates that incorrect JSON document encountered while processing it.
- * <p/>
+ * <p>
  *
  * @since GemFire 8.0
  */

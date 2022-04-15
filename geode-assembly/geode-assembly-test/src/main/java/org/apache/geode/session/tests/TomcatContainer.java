@@ -43,7 +43,7 @@ public class TomcatContainer extends ServerContainer {
       DEFAULT_TOMCAT_CONFIG_XML_DIR + "Catalina/localhost/";
   public static final String DEFAULT_TOMCAT_CONTEXT_XML_REPLACEMENT_NAME = "context.xml.default";
 
-  /**
+  /*
    * Setup the Tomcat container
    *
    * Sets up a configuration for the container using the specified installation and configuration
@@ -86,6 +86,8 @@ public class TomcatContainer extends ServerContainer {
   /**
    * Get the AJP port of this container using {@link #getPort()} with the argument
    * {@link TomcatPropertySet#AJP_PORT}
+   *
+   * @return the AJP port of this container
    */
   public String getAJPPort() {
     return getPort(TomcatPropertySet.AJP_PORT);

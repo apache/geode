@@ -175,7 +175,7 @@ public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
   /**
    * Handles an AccessDenied Exception thrown by a REST API web service endpoint, HTTP request
    * handler method.
-   * <p/>
+   * <p>
    *
    * @param cause the Exception causing the error.
    * @return a ResponseEntity with an appropriate HTTP status code (403 - Forbidden)

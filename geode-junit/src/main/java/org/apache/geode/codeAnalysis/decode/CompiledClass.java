@@ -72,7 +72,7 @@ public class CompiledClass implements Comparable {
     return instance;
   }
 
-  /**
+  /*
    * read a ClassFile structure from the given input source (usually a file)
    */
   public CompiledClass(DataInputStream source) throws IOException {

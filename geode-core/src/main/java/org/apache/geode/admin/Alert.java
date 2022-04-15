@@ -27,28 +27,49 @@ package org.apache.geode.admin;
 @Deprecated
 public interface Alert {
 
-  /** The level at which this alert is issued */
+  /**
+   * The level at which this alert is issued
+   *
+   * @return the level at which this alert is issued
+   */
   AlertLevel getLevel();
 
   /**
    * The member of the distributed system that issued the alert, or null if the issuer is no longer
    * a member of the distributed system.
+   *
+   * @return the member of the distributed system that issued the alert
    */
   SystemMember getSystemMember();
 
   /**
    * The name of the {@linkplain org.apache.geode.distributed.DistributedSystem#getName distributed
    * system}) through which the alert was issued.
+   *
+   * @return the name of the {@linkplain org.apache.geode.distributed.DistributedSystem#getName
+   *         distributed system}) through which the alert was issued
    */
   String getConnectionName();
 
-  /** The id of the source of the alert (such as a thread in a VM) */
+  /**
+   * The id of the source of the alert (such as a thread in a VM)
+   *
+   * @return the id of the source of the alert (such as a thread in a VM)
+   */
   String getSourceId();
 
-  /** The alert's message */
+  /**
+   * The alert's message
+   *
+   * @return the alert's message
+   */
   String getMessage();
 
-  /** The time at which the alert was issued */
+  /**
+   * The time at which the alert was issued
+   *
+   * @return the time at which the alert was issued
+   */
   java.util.Date getDate();
 
 }

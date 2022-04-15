@@ -41,6 +41,8 @@ public interface ManagerMXBean {
    * Starts the manager service.
    *
    * @return True if the manager service was successfully started, false otherwise.
+   *
+   * @throws JMException if an exception is encountered when starting the manager service
    */
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   boolean start() throws JMException;
@@ -49,12 +51,16 @@ public interface ManagerMXBean {
    * Stops the manager service.
    *
    * @return True if the manager service was successfully stopped, false otherwise.
+   *
+   * @throws JMException if an exception is encountered when stopping the manager service
    */
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   boolean stop() throws JMException;
 
   /**
    * Returns the URL for connecting to the Pulse application.
+   *
+   * @return the URL for connecting to the Pulse application
    */
   String getPulseURL();
 
@@ -70,6 +76,8 @@ public interface ManagerMXBean {
    * Returns the last set status message. Generally, a subcomponent will call setStatusMessage to
    * save the result of its execution. For example, if the embedded HTTP server failed to start, the
    * reason for that failure will be saved here.
+   *
+   * @return the last set status message
    */
   String getStatusMessage();
 
