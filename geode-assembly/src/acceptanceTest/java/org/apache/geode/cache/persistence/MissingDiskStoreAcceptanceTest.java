@@ -87,7 +87,7 @@ public class MissingDiskStoreAcceptanceTest {
         "--dir=" + locatorFolder,
         "--port=" + locatorPort,
         "--http-service-port=" + httpPort1,
-        "--J=-Dgemfire.JMX_MANAGER_PORT=" + jmxPort1,
+        "--J=-Dgemfire.jmx-manager-port=" + jmxPort1,
         "--locators=localhost[" + locatorPort + "]");
 
     startServer1Command = String.join(" ",
@@ -96,7 +96,7 @@ public class MissingDiskStoreAcceptanceTest {
         "--dir=" + server1Folder,
         "--locators=localhost[" + locatorPort + "]",
         "--http-service-port=" + httpPort2,
-        "--J=-Dgemfire.JMX_MANAGER_PORT=" + jmxPort2,
+        "--J=-Dgemfire.jmx-manager-port=" + jmxPort2,
         "--server-port=" + server1Port);
 
     startServer2Command = String.join(" ",
@@ -105,7 +105,7 @@ public class MissingDiskStoreAcceptanceTest {
         "--dir=" + server2Folder,
         "--locators=localhost[" + locatorPort + "]",
         "--http-service-port=" + httpPort3,
-        "--J=-Dgemfire.JMX_MANAGER_PORT=" + jmxPort3,
+        "--J=-Dgemfire.jmx-manager-port=" + jmxPort3,
         "--server-port=" + server2Port);
 
     String createRegionCommand = String.join(" ",
