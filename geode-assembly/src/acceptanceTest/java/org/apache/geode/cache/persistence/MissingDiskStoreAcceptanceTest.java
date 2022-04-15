@@ -70,19 +70,24 @@ public class MissingDiskStoreAcceptanceTest {
     server1Folder = temporaryFolder.newFolder(SERVER_1_NAME).toPath().toAbsolutePath();
     server2Folder = temporaryFolder.newFolder(SERVER_2_NAME).toPath().toAbsolutePath();
 
-    int[] ports = getRandomAvailableTCPPorts(6);
+    int[] ports = getRandomAvailableTCPPorts(9);
     locatorPort = ports[0];
     int server1Port = ports[1];
     int server2Port = ports[2];
     int httpPort1 = ports[3];
     int httpPort2 = ports[4];
     int httpPort3 = ports[5];
+    int jmxPort1 = ports[6];
+    int jmxPort2 = ports[7];
+    int jmxPort3 = ports[8];
+
     String startLocatorCommand = String.join(" ",
         "start locator",
         "--name=" + LOCATOR_NAME,
         "--dir=" + locatorFolder,
         "--port=" + locatorPort,
         "--http-service-port=" + httpPort1,
+        "--J=-Dgemfire.JMX_MANAGER_PORT=" + jmxPort1,
         "--locators=localhost[" + locatorPort + "]");
 
     startServer1Command = String.join(" ",
@@ -91,6 +96,7 @@ public class MissingDiskStoreAcceptanceTest {
         "--dir=" + server1Folder,
         "--locators=localhost[" + locatorPort + "]",
         "--http-service-port=" + httpPort2,
+        "--J=-Dgemfire.JMX_MANAGER_PORT=" + jmxPort2,
         "--server-port=" + server1Port);
 
     startServer2Command = String.join(" ",
@@ -99,6 +105,7 @@ public class MissingDiskStoreAcceptanceTest {
         "--dir=" + server2Folder,
         "--locators=localhost[" + locatorPort + "]",
         "--http-service-port=" + httpPort3,
+        "--J=-Dgemfire.JMX_MANAGER_PORT=" + jmxPort3,
         "--server-port=" + server2Port);
 
     String createRegionCommand = String.join(" ",
@@ -117,7 +124,6 @@ public class MissingDiskStoreAcceptanceTest {
         "put --key=\"key1\" --value=\"value1\" --region=\"" + REGION_NAME + "\"");
     gfshRule.execute("connect --locator=localhost[" + locatorPort + "]",
         "get --key=\"key1\" --region=\"" + REGION_NAME + "\"");
-
     clientCache = new ClientCacheFactory()
         .addPoolLocator("localhost", locatorPort)
         .create();
