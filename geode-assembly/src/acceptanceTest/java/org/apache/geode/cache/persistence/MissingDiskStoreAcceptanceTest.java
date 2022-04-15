@@ -101,8 +101,17 @@ public class MissingDiskStoreAcceptanceTest {
         "--name=" + REGION_NAME,
         "--type=REPLICATE_PERSISTENT");
 
-    gfshRule.execute(startLocatorCommand, startServer1Command, startServer2Command,
-        createRegionCommand);
+    gfshRule.execute(startLocatorCommand);
+
+    gfshRule.execute(startServer1Command, startServer2Command);
+    Thread.sleep(10000);
+
+    gfshRule.execute("connect --locator=localhost[" + locatorPort + "]", createRegionCommand);
+
+    gfshRule.execute("connect --locator=localhost[" + locatorPort + "]",
+        "put --key=\"key1\" --value=\"value1\" --region=\"" + REGION_NAME + "\"");
+    gfshRule.execute("connect --locator=localhost[" + locatorPort + "]",
+        "get --key=\"key1\" --region=\"" + REGION_NAME + "\"");
 
     clientCache = new ClientCacheFactory()
         .addPoolLocator("localhost", locatorPort)
