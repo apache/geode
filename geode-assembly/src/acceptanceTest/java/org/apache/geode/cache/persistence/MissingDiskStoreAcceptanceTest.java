@@ -70,16 +70,19 @@ public class MissingDiskStoreAcceptanceTest {
     server1Folder = temporaryFolder.newFolder(SERVER_1_NAME).toPath().toAbsolutePath();
     server2Folder = temporaryFolder.newFolder(SERVER_2_NAME).toPath().toAbsolutePath();
 
-    int[] ports = getRandomAvailableTCPPorts(3);
+    int[] ports = getRandomAvailableTCPPorts(6);
     locatorPort = ports[0];
     int server1Port = ports[1];
     int server2Port = ports[2];
-
+    int httpPort1 = ports[3];
+    int httpPort2 = ports[4];
+    int httpPort3 = ports[5];
     String startLocatorCommand = String.join(" ",
         "start locator",
         "--name=" + LOCATOR_NAME,
         "--dir=" + locatorFolder,
         "--port=" + locatorPort,
+        "--http-service-port=" + httpPort1,
         "--locators=localhost[" + locatorPort + "]");
 
     startServer1Command = String.join(" ",
@@ -87,6 +90,7 @@ public class MissingDiskStoreAcceptanceTest {
         "--name=" + SERVER_1_NAME,
         "--dir=" + server1Folder,
         "--locators=localhost[" + locatorPort + "]",
+        "--http-service-port=" + httpPort2,
         "--server-port=" + server1Port);
 
     startServer2Command = String.join(" ",
@@ -94,6 +98,7 @@ public class MissingDiskStoreAcceptanceTest {
         "--name=" + SERVER_2_NAME,
         "--dir=" + server2Folder,
         "--locators=localhost[" + locatorPort + "]",
+        "--http-service-port=" + httpPort3,
         "--server-port=" + server2Port);
 
     String createRegionCommand = String.join(" ",
