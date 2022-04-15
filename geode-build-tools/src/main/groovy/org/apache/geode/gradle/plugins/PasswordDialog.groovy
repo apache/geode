@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.geode.gradle
+package org.apache.geode.gradle.plugins
 
 import groovy.swing.SwingBuilder
 

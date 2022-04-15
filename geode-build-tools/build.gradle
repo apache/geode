@@ -31,7 +31,6 @@ repositories {
 
 dependencies {
   implementation(gradleApi())
-  implementation('com.google.guava:guava:31.1-jre')
 
   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
@@ -41,12 +40,23 @@ test {
   useJUnitPlatform()
 }
 
+//sourceSets {
+//  main {
+//    java {
+//      srcDirs = []
+//    }
+//    groovy {
+//      srcDirs += ['src/main/java']
+//    }
+//  }
+//}
+
 group = 'org.apache.geode.gradle'
 version = 1.0
 
 gradlePlugin {
-  plugins.register('geodeRepeatTest') {
-    id = 'org.apache.geode.gradle.geode-repeat-test'
-    implementationClass = 'org.apache.geode.gradle.testing.repeat.RepeatTestPlugin'
+  plugins.register('geode-build-tools') {
+    id = 'org.apache.geode.gradle.geode-build-tools'
+    implementationClass = 'org.apache.geode.gradle.plugins.BuildToolsPlugin'
   }
 }

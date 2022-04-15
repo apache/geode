@@ -34,14 +34,9 @@ plugins {
   id "de.undercouch.download" version "5.0.1" apply false
 
   id 'org.apache.geode.gradle.geode-dependency-constraints' apply false
+//  id 'org.apache.geode.gradle.geode-build-tools'
 
 //  id 'geode-japicmp' apply false
-
-
-
-  id 'geode-repeat-test'
-
-
 
   id 'geode-publish-artifacts' apply false
   id 'geode-publish-common' apply false
@@ -53,6 +48,7 @@ plugins {
 //  id 'geode-rat'
 }
 
+import org.apache.geode.gradle.plugins.PasswordDialog
 
 
 wrapper {

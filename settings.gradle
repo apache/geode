@@ -21,20 +21,20 @@ pluginManagement {
   includeBuild("buildSrc2")
   includeBuild("buildSrc3") {
     dependencySubstitution {
-      substitute module('org.apache.geode.gradle:geode-japicmp') using project(':')
+      substitute module('org.apache.geode.gradle:org.apache.geode.gradle.geode-japicmp') using project(':')
+    }
+  }
+  includeBuild("buildSrc4") {
+    dependencySubstitution {
+      substitute module('org.apache.geode.gradle:org.apache.geode.gradle.geode-repeat-test') using project(':')
+    }
+  }
+  includeBuild("geode-build-tools") {
+    dependencySubstitution {
+      substitute module('org.apache.geode.gradle:org.apache.geode.gradle.geode-build-tools') using project(':')
     }
   }
   includeBuild('buildScripts')
-  includeBuild("buildSrc4") {
-    dependencySubstitution {
-      substitute module('org.apache.geode.gradle:geode-repeat-test') using project(':')
-    }
-  }
-  includeBuild("buildSrc5") {
-    dependencySubstitution {
-      substitute module('org.apache.geode.gradle:geode-build-tools') using project(':')
-    }
-  }
 }
 
 rootProject.name = 'geode'

@@ -11,20 +11,14 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-package org.apache.geode.gradle.testing.repeat
+package org.apache.geode.gradle.plugins;
 
-import org.gradle.api.Plugin
-import org.gradle.api.Project
+import org.gradle.api.Plugin;
+import org.gradle.api.Project;
 
-/**
- * Configures repeat test tasks
- */
-class RepeatTestPlugin implements Plugin<Project> {
-
-    @Override
-    void apply(Project project) {
-      // plugin loader to get access to test classes
-    }
+public class BuildToolsPlugin implements Plugin<Project> {
+  public void apply(Project project) {
+    // this plugin doesn't create any task by default
+  }
 }
