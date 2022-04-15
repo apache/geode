@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.size;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
@@ -32,17 +33,17 @@ public class ObjectTraverserJUnitTest {
 
   @Test
   public void testBasic() throws Exception {
-    Set testData = new HashSet();
+    Set<Object> testData = new HashSet<>();
     Object one = new Object();
     testData.add(one);
     Object[] two = new Object[2];
     testData.add(two);
-    ArrayList three = new ArrayList();
+    ArrayList<Object> three = new ArrayList<>();
     two[0] = three;
     three.add(testData);
 
     TestVisitor visitor = new TestVisitor();
-    ObjectTraverser.breadthFirstSearch(testData, visitor, false);
+    new ObjectTraverser().breadthFirstSearch(testData, visitor, false);
 
     assertNotNull(visitor.visited.remove(testData));
     assertNotNull(visitor.visited.remove(one));
@@ -50,6 +51,7 @@ public class ObjectTraverserJUnitTest {
     assertNotNull(visitor.visited.remove(three));
   }
 
+  @SuppressWarnings("InstantiationOfUtilityClass")
   @Test
   public void testStatics() throws Exception {
     final Object staticObject = new Object();
@@ -57,24 +59,27 @@ public class ObjectTraverserJUnitTest {
     TestObject1 test1 = new TestObject1();
 
     TestVisitor visitor = new TestVisitor();
-    ObjectTraverser.breadthFirstSearch(test1, visitor, false);
-    assertNull(visitor.visited.get(staticObject));
+    ObjectTraverser nonStaticTraverser = new ObjectTraverser();
+    nonStaticTraverser.breadthFirstSearch(test1, visitor, false);
+    assertThat(visitor.visited.get(staticObject)).isNull();
+    assertThat(nonStaticTraverser.getStaticFieldCache().get(test1.getClass())).isNull();
 
     visitor = new TestVisitor();
-    ObjectTraverser.breadthFirstSearch(test1, visitor, true);
-    assertNotNull(visitor.visited.get(staticObject));
+    ObjectTraverser staticTraverser = new ObjectTraverser();
+    staticTraverser.breadthFirstSearch(test1, visitor, true);
+    assertThat(visitor.visited.get(staticObject)).isNotNull();
+    assertThat(staticTraverser.getStaticFieldCache().get(test1.getClass())).isNotNull();
   }
 
   @Test
   public void testStop() throws Exception {
-    Set set1 = new HashSet();
-    final Set set2 = new HashSet();
+    Set<Object> set1 = new HashSet<>();
+    final Set<Object> set2 = new HashSet<>();
     Object object3 = new Object();
     set1.add(set2);
     set2.add(object3);
 
-    TestVisitor visitor = new TestVisitor();
-    visitor = new TestVisitor() {
+    TestVisitor visitor = new TestVisitor() {
       @Override
       public boolean visit(Object parent, Object object) {
         super.visit(parent, object);
@@ -82,7 +87,7 @@ public class ObjectTraverserJUnitTest {
       }
     };
 
-    ObjectTraverser.breadthFirstSearch(set1, visitor, true);
+    new ObjectTraverser().breadthFirstSearch(set1, visitor, true);
 
     assertNotNull(visitor.visited.get(set1));
     assertNotNull(visitor.visited.get(set2));
@@ -93,8 +98,8 @@ public class ObjectTraverserJUnitTest {
   @Ignore("commented out because it needs to be verified manually")
   @Test
   public void testHistogram() throws Exception {
-    Set set1 = new HashSet();
-    final Set set2 = new HashSet();
+    Set<Object> set1 = new HashSet<>();
+    final Set<Object> set2 = new HashSet<>();
     Object object3 = new Object();
     set1.add(set2);
     set2.add(object3);
@@ -107,7 +112,7 @@ public class ObjectTraverserJUnitTest {
   private static class TestVisitor implements ObjectTraverser.Visitor {
     private static final Object VALUE = new Object();
 
-    public Map visited = new IdentityHashMap();
+    public Map<Object, Object> visited = new IdentityHashMap<>();
 
     @Override
     public boolean visit(Object parent, Object object) {
