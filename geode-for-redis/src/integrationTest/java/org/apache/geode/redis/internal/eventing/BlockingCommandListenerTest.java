@@ -15,6 +15,7 @@
 
 package org.apache.geode.redis.internal.eventing;
 
+import static java.lang.Thread.sleep;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -45,13 +46,13 @@ import org.apache.geode.redis.internal.netty.ExecutionHandlerContext;
 public class BlockingCommandListenerTest {
 
   @Test
-  public void testTimeoutIsAdjusted() {
+  public void testTimeoutIsAdjusted() throws InterruptedException {
     ExecutionHandlerContext context = mock(ExecutionHandlerContext.class);
     List<byte[]> commandArgs = Arrays.asList("KEY".getBytes(), "0".getBytes());
     Command command = new Command(RedisCommandType.BLPOP, commandArgs);
     BlockingCommandListener listener =
         new BlockingCommandListener(context, command, Collections.emptyList(), 1.0D);
-
+    sleep(100);
     listener.resubmitCommand();
 
     ArgumentCaptor<Command> argumentCaptor = ArgumentCaptor.forClass(Command.class);
