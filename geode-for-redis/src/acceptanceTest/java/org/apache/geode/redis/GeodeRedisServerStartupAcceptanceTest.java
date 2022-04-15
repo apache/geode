@@ -210,7 +210,7 @@ public class GeodeRedisServerStartupAcceptanceTest {
     String hostname = LocalHostUtil.getLocalHostName();
     try (Jedis jedis = new Jedis(hostname, port)) {
       assertThatThrownBy(jedis::ping)
-          .hasStackTraceContaining("Connection refused ");
+          .hasStackTraceContaining("Connection refused");
     }
   }
 
