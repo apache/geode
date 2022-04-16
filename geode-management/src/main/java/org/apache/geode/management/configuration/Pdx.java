@@ -57,6 +57,7 @@ public class Pdx extends AbstractConfiguration<PdxInfo> {
   }
 
   /**
+   * @param autoSerializer the {@link AutoSerializer} to use
    * @throws IllegalArgumentException if a pdxSerializer has already been set
    */
   public void setAutoSerializer(AutoSerializer autoSerializer) {
@@ -72,9 +73,12 @@ public class Pdx extends AbstractConfiguration<PdxInfo> {
   }
 
   /**
-   * Setting readSerialized to true causes any pdx deserialization to produce
-   * instances of org.apache.geode.pdx.PdxInstance interface in the geode-core module
-   * instead of a domain class instance.
+   * Setting readSerialized to true causes any pdx deserialization to produce instances of
+   * org.apache.geode.pdx.PdxInstance interface in the geode-core module instead of a domain class
+   * instance.
+   *
+   * @param readSerialized a Boolean specifying whether Pdx deserialization should produce only
+   *        instances of org.apache.geode.pdx.PdxInstance
    */
   public void setReadSerialized(Boolean readSerialized) {
     this.readSerialized = readSerialized;
@@ -103,10 +107,11 @@ public class Pdx extends AbstractConfiguration<PdxInfo> {
 
   /**
    * Setting ignoreUnreadFields to true can save memory during pdx deserialization but if the
-   * deserialized
-   * object is reserialized then the unread field data will be lost. Unread fields will only exist
-   * if a class
-   * serialized with pdx has multiple versions.
+   * deserialized object is reserialized then the unread field data will be lost. Unread fields will
+   * only exist if a class serialized with pdx has multiple versions.
+   *
+   * @param ignoreUnreadFields a Boolean specifying if unread fields should be ignored when
+   *        deserializing
    */
   public void setIgnoreUnreadFields(Boolean ignoreUnreadFields) {
     this.ignoreUnreadFields = ignoreUnreadFields;
@@ -117,10 +122,11 @@ public class Pdx extends AbstractConfiguration<PdxInfo> {
   }
 
   /**
-   * Setting a non-null diskStoreName causes the Pdx information
-   * to be persisted to the named disk store.
-   * To configure Pdx to use the default disk store, set
-   * the diskStoreName to "DEFAULT".
+   * Setting a non-null diskStoreName causes the Pdx information to be persisted to the named disk
+   * store.
+   * To configure Pdx to use the default disk store, set the diskStoreName to "DEFAULT".
+   *
+   * @param diskStoreName the name of the disk store to persist Pdx information to
    */
   public void setDiskStoreName(String diskStoreName) {
     this.diskStoreName = diskStoreName;

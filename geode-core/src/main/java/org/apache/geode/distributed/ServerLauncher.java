@@ -783,6 +783,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * this method will cause the JVM to block upon server start, providing the calling Thread is a
    * non-daemon Thread.
    *
+   * @return a {@link ServerState} representing the state of the server following the attempt to
+   *         start
    * @see #run()
    */
   public ServerState start() {
@@ -1131,6 +1133,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
   /**
    * Invokes the 'status' command and operation to check the status of a Geode server (a cache
    * server).
+   *
+   * @return a {@link ServerState} representing the status of the server
    */
   public ServerState status() {
     final ServerLauncher launcher = getInstance();
@@ -1239,6 +1243,9 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
   /**
    * Invokes the 'stop' command and operation to stop a Geode server (a cache server).
+   *
+   * @return a {@link ServerState} representing the state of the server following the attempt to
+   *         stop
    */
   public ServerState stop() {
     final ServerLauncher launcher = getInstance();
@@ -2771,6 +2778,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     /**
      * Unmarshals a ServerState instance from the JSON String.
      *
+     * @param json a JSON String
      * @return a ServerState value unmarshalled from the JSON String.
      */
     public static ServerState fromJson(final String json) {

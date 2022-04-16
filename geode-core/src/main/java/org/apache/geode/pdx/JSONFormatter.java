@@ -41,21 +41,20 @@ import org.apache.geode.util.internal.GeodeGlossary;
  * JSONFormatter has a static method {@link JSONFormatter#fromJSON(String, String...)} to convert a
  * JSON document into a {@link PdxInstance} and a static method
  * {@link JSONFormatter#toJSON(PdxInstance)} to convert a {@link PdxInstance} into a JSON Document.
- * </p>
  * <p>
  * Using these methods an applications may convert a JSON document into a PdxInstance for storing in
  * the cache. Indexes can then be defined on the PdxInstances so that queries can be performed using
  * OQL. Queries will return PdxInstances and these can be turned back back into JSON documents using
  * JSONFormatter.
- * </p>
  * <p>
  * JSONFormatter treats values in a json document as number(byte, short, int, long..), string,
  * array, object, 'true', 'false' or 'null'. These correspond to the following java types:
- * </p>
  *
- * <table>
+ * <table summary="">
+ * <tr>
  * <th>JSON</th>
  * <th>Java</th>
+ * </tr>
  * <tr>
  * <td>object</td>
  * <td>{@link PdxInstance}</td>

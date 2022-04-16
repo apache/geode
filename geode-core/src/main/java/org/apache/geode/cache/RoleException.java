@@ -21,6 +21,7 @@ package org.apache.geode.cache;
  *
  * @deprecated this feature is scheduled to be removed
  */
+@Deprecated
 public abstract class RoleException extends CacheRuntimeException {
   private static final long serialVersionUID = -7521056108445887394L;
 

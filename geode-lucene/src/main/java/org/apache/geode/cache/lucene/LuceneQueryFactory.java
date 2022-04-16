@@ -44,6 +44,9 @@ public interface LuceneQueryFactory {
   /**
    * Set page size for a query result. The default page size is 0 which means no pagination.
    *
+   * @param pageSize the page size for a query result
+   * @return this factory
+   *
    * @throws IllegalArgumentException if the value is less than 0
    */
   LuceneQueryFactory setPageSize(int pageSize);
@@ -51,6 +54,9 @@ public interface LuceneQueryFactory {
   /**
    * Set maximum number of results for a query. By default, the limit is set to
    * {@link #DEFAULT_LIMIT} which is 100.
+   *
+   * @param limit the maximum number of results for a query
+   * @return this factory
    *
    * @throws IllegalArgumentException if the value is less than or equal to zero.
    */
@@ -77,16 +83,13 @@ public interface LuceneQueryFactory {
    * <p>
    * Create a query based on a programmatically constructed Lucene {@link Query}. This can be used
    * for queries that are not covered by {@link StandardQueryParser}, such as range queries.
-   * </p>
    * <p>
    * Because Geode may execute the Lucene query on multiple nodes in parallel and {@link Query} is
    * not serializable, this method requires a serializable {@link LuceneQueryProvider} that can
    * create a {@link Query} on the nodes hosting the Lucene index.
-   * </p>
    * <p>
    * Here's an example of using this method to create a range query on an integer field called
    * "age."
-   * </p>
    *
    * <pre>
    * {@code

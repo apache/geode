@@ -34,7 +34,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * <p>
  * Note: {@link WatchService} is not used here because it has problems with container file systems
  * and remote file systems.
- * </p>
+ * <p>
  */
 public final class PollingFileWatcher {
   public static final long PERIOD_SECONDS = 10;

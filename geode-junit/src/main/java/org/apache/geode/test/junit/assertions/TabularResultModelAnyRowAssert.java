@@ -26,7 +26,7 @@ public class TabularResultModelAnyRowAssert<T extends String> {
     parent = tabularResultModelAssert;
   }
 
-  /**
+  /*
    * Verifies that any row contains the given values, in any order.
    */
   @SafeVarargs
@@ -42,7 +42,7 @@ public class TabularResultModelAnyRowAssert<T extends String> {
     return parent;
   }
 
-  /**
+  /*
    * Verifies that any row contains only the given values and nothing else, in any order and
    * ignoring duplicates (i.e. once a value is found, its duplicates are also considered found).
    */
@@ -59,7 +59,7 @@ public class TabularResultModelAnyRowAssert<T extends String> {
     return parent;
   }
 
-  /**
+  /*
    * Verifies that any row contains exactly the given values and nothing else, <b>in order</b>.
    */
   @SafeVarargs
@@ -75,7 +75,7 @@ public class TabularResultModelAnyRowAssert<T extends String> {
     return parent;
   }
 
-  /**
+  /*
    * Verifies that any row contains at least one of the given values.
    */
   @SafeVarargs

@@ -472,6 +472,8 @@ public interface PdxInstanceFactory {
    * Note that the object form of primitives, for example Integer.class and Long.class, map to
    * {@link #writeObject(String, Object) writeObject}.
    *
+   * @param <CT> the type associated with the class of the field to write
+   * @param <VT> the type associated with the value of the field to write
    * @param fieldName the name of the field to write
    * @param fieldValue the value of the field to write; this parameter's class must extend the
    *        {@code fieldType}
@@ -517,6 +519,8 @@ public interface PdxInstanceFactory {
    * Note that the object form of primitives, for example Integer.class and Long.class, map to
    * {@link #writeObject(String, Object, boolean) writeObject}.
    *
+   * @param <CT> the type associated with the class of the field to write
+   * @param <VT> the type associated with the value of the field to write
    * @param fieldName the name of the field to write
    * @param fieldValue the value of the field to write; this parameter's class must extend the
    *        {@code fieldType}

@@ -47,8 +47,9 @@ public interface ClusterManagementServiceTransport {
    * Submit a message with a specific command which returns a list result. This supports the
    * {@link ClusterManagementService#list(AbstractConfiguration)} command.
    *
-   * @param configMessage configuration object
    * @param <T> configuration object which extends {@link AbstractConfiguration}
+   * @param <R> the type of the corresponding runtime information
+   * @param configMessage configuration object
    * @return {@link ClusterManagementListResult}
    */
   <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> submitMessageForList(
@@ -58,8 +59,9 @@ public interface ClusterManagementServiceTransport {
    * Submit a message with a specific command which returns a single result. This supports the
    * {@link ClusterManagementService#get} command.
    *
-   * @param configMessage configuration object
    * @param <T> configuration object which extends {@link AbstractConfiguration}
+   * @param <R> the type of the corresponding runtime information
+   * @param configMessage configuration object
    * @return {@link ClusterManagementGetResult}
    */
   <T extends AbstractConfiguration<R>, R extends RuntimeInfo> ClusterManagementGetResult<T, R> submitMessageForGet(
@@ -70,6 +72,8 @@ public interface ClusterManagementServiceTransport {
    * This supports the {@link ClusterManagementService#list(ClusterManagementOperation)} command.
    *
    * @param <A> operation of type {@link ClusterManagementOperation}
+   * @param <V> result of type {@link OperationResult}
+   * @param opType the operation for which a message should be submitted
    * @return {@link ClusterManagementListResult}
    */
   <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementListOperationsResult<A, V> submitMessageForListOperation(
@@ -80,6 +84,8 @@ public interface ClusterManagementServiceTransport {
    * This supports the {@link ClusterManagementService#get(AbstractConfiguration)} command.
    *
    * @param <A> operation of type {@link ClusterManagementOperation}
+   * @param <V> result of type {@link OperationResult}
+   * @param opType the operation for which a message should be submitted
    * @param operationId the identifier of the operation
    * @return {@link ClusterManagementListResult}
    */
@@ -91,6 +97,8 @@ public interface ClusterManagementServiceTransport {
    * {@link ClusterManagementService#start(ClusterManagementOperation)} command.
    *
    * @param <A> operation of type {@link ClusterManagementOperation}
+   * @param <V> result of type {@link OperationResult}
+   * @param op the operation for which a message should be submitted
    * @return {@link ClusterManagementListResult}
    */
   <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<A, V> submitMessageForStart(

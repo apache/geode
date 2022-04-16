@@ -53,13 +53,9 @@ public class Utils {
     return sb.toString();
   }
 
-  /**
-   * This function <br>
-   * 1. The Creates an array of PortfolioData objects
-   *
-   * @return PortFolioData Objects
+  /*
+   * This function creates an array of PortfolioData objects
    */
-
   public static PortfolioData[] createPortfolioData(final int cnt, final int cntDest) {
     PortfolioData[] portfolio = new PortfolioData[cntDest];
     for (int k = cnt; k < cntDest; k++) {

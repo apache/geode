@@ -23,7 +23,7 @@ import org.apache.geode.pdx.PdxWriter;
 
 /**
  * The Person class is an abstraction modeling a person.
- * <p/>
+ * <p>
  *
  * @since GemFire 8.0
  */

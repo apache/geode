@@ -60,7 +60,7 @@ public class ClassAndVariableDetails implements Comparable {
     }
   }
 
-  /**
+  /*
    * returns a string that can be parsed by ClassAndVariableDetails(String)
    */
   public String valuesAsString() {
@@ -72,7 +72,7 @@ public class ClassAndVariableDetails implements Comparable {
     return sb.toString();
   }
 
-  /**
+  /*
    * convert a ClassAndMethods into a string that can then be used to instantiate a
    * ClassAndVariableDetails
    */

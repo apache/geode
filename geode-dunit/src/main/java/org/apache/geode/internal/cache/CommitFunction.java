@@ -40,18 +40,18 @@ import org.apache.geode.distributed.DistributedMember;
 /**
  * This function can be used by GemFire clients and peers to commit an existing transaction. A
  * {@link TransactionId} corresponding to the transaction to be committed must be provided as an
- * argument while invoking this function.<br />
+ * argument while invoking this function.<br>
  *
  * This function should execute only on one server. If the transaction is not hosted on the server
  * where the function is invoked then this function decides to invoke a nested
- * {@link NestedTransactionFunction} which executes on the member where transaction is hosted.<br />
+ * {@link NestedTransactionFunction} which executes on the member where transaction is hosted.<br>
  *
  * This function returns a single Boolean as result, whose value is <code>Boolean.TRUE</code> if the
  * transaction committed successfully otherwise the return value is
- * <code>Boolean.FALSE</code>.<br />
+ * <code>Boolean.FALSE</code>.<br>
  *
  * To execute this function, it is recommended to use the {@link Execution} obtained by using
- * TransactionFunctionService. <br />
+ * TransactionFunctionService. <br>
  *
  * To summarize, this function should be used as follows:
  *

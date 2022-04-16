@@ -38,6 +38,8 @@ public abstract class GemFireCheckedException extends Exception {
 
   /**
    * Creates a new <code>GemFireCheckedException</code> with the given detail message.
+   *
+   * @param message the detail message
    */
   public GemFireCheckedException(String message) {
     super(message);
@@ -45,6 +47,9 @@ public abstract class GemFireCheckedException extends Exception {
 
   /**
    * Creates a new <code>GemFireException</code> with the given detail message and cause.
+   *
+   * @param message the detail message
+   * @param cause the cause
    */
   public GemFireCheckedException(String message, Throwable cause) {
     super(message);
@@ -53,6 +58,8 @@ public abstract class GemFireCheckedException extends Exception {
 
   /**
    * Creates a new <code>GemFireCheckedException</code> with the given cause and no detail message
+   *
+   * @param cause the cause
    */
   public GemFireCheckedException(Throwable cause) {
     super();
@@ -64,6 +71,8 @@ public abstract class GemFireCheckedException extends Exception {
   /**
    * Returns the root cause of this <code>GemFireCheckedException</code> or <code>null</code> if the
    * cause is nonexistent or unknown.
+   *
+   * @return the root cause of this <code>GemFireCheckedException</code>
    */
   public Throwable getRootCause() {
     if (getCause() == null) {

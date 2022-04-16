@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.classloader.ClassPathLoader;
 import org.apache.geode.internal.size.ObjectTraverser.Visitor;
 import org.apache.geode.util.internal.GeodeGlossary;
@@ -36,9 +37,11 @@ public class ObjectGraphSizer {
   static final SingleObjectSizer SIZE_OF_UTIL;
   @Immutable
   private static final ObjectFilter NULL_FILTER = (parent, object) -> true;
+  @MakeNotStatic
+  private static final ObjectTraverser objectTraverser = new ObjectTraverser();
 
   static {
-    Class sizeOfClass;
+    Class<?> sizeOfClass;
     try {
       sizeOfClass = ClassPathLoader.getLatest().forName(SIZE_OF_CLASS_NAME);
       SIZE_OF_UTIL = new CachingSingleObjectSizer((SingleObjectSizer) sizeOfClass.newInstance());
@@ -84,7 +87,7 @@ public class ObjectGraphSizer {
    *
    * @param root the object to size
    * @param filter that can exclude objects from being counted in the results. If an object is not
-   *        accepted, it's size will not be included and it's children will not be visited unless
+   *        accepted, it's size will not be included, and it's children will not be visited unless
    *        they are reachable by some other path.
    * @param includeStatics if set to true, static members of a class will be traversed the first
    *        time that a class is encountered.
@@ -93,7 +96,7 @@ public class ObjectGraphSizer {
   public static long size(Object root, ObjectFilter filter, boolean includeStatics)
       throws IllegalArgumentException, IllegalAccessException {
     SizeVisitor visitor = new SizeVisitor(filter);
-    ObjectTraverser.breadthFirstSearch(root, visitor, includeStatics);
+    objectTraverser.breadthFirstSearch(root, visitor, includeStatics);
 
     return visitor.getTotalSize();
   }
@@ -105,19 +108,19 @@ public class ObjectGraphSizer {
 
   public static String histogram(Object root, ObjectFilter filter, boolean includeStatics)
       throws IllegalArgumentException, IllegalAccessException {
-    HistogramVistor visitor = new HistogramVistor(filter);
-    ObjectTraverser.breadthFirstSearch(root, visitor, includeStatics);
+    HistogramVisitor visitor = new HistogramVisitor(filter);
+    objectTraverser.breadthFirstSearch(root, visitor, includeStatics);
 
     return visitor.dump();
 
   }
 
-  private static class HistogramVistor implements ObjectTraverser.Visitor {
-    private final Map<Class, Integer> countHisto = new HashMap<>();
-    private final Map<Class, Long> sizeHisto = new HashMap<>();
+  private static class HistogramVisitor implements ObjectTraverser.Visitor {
+    private final Map<Class<?>, Integer> countHisto = new HashMap<>();
+    private final Map<Class<?>, Long> sizeHisto = new HashMap<>();
     private final ObjectFilter filter;
 
-    public HistogramVistor(ObjectFilter filter) {
+    public HistogramVisitor(ObjectFilter filter) {
       this.filter = filter;
     }
 
@@ -158,18 +161,18 @@ public class ObjectGraphSizer {
       result.append("clazz\tsize\tcount\n");
       Set<HistogramEntry> orderedSize = getOrderedSet();
       for (HistogramEntry entry : orderedSize) {
-        Class clazz = entry.clazz;
+        Class<?> clazz = entry.clazz;
         Integer count = entry.count;
         Long size = entry.size;
-        result.append(clazz + "\t" + size + "\t" + count + "\n");
+        result.append(clazz).append("\t").append(size).append("\t").append(count).append("\n");
       }
       return result.toString();
     }
 
     public Set<HistogramEntry> getOrderedSet() {
       TreeSet<HistogramEntry> result = new TreeSet<>();
-      for (Map.Entry<Class, Long> entry : sizeHisto.entrySet()) {
-        Class clazz = entry.getKey();
+      for (Map.Entry<Class<?>, Long> entry : sizeHisto.entrySet()) {
+        Class<?> clazz = entry.getKey();
         Long size = entry.getValue();
         Integer count = countHisto.get(clazz);
         result.add(new HistogramEntry(clazz, count, size));
@@ -178,11 +181,11 @@ public class ObjectGraphSizer {
     }
 
     private static class HistogramEntry implements Comparable<HistogramEntry> {
-      private final Class clazz;
+      private final Class<?> clazz;
       private final Integer count;
       private final Long size;
 
-      public HistogramEntry(Class clazz, Integer count, Long size) {
+      public HistogramEntry(Class<?> clazz, Integer count, Long size) {
         this.size = size;
         this.clazz = clazz;
         this.count = count;

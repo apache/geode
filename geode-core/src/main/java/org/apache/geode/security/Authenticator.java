@@ -40,6 +40,7 @@ import org.apache.geode.distributed.DistributedSystem;
  *
  * @deprecated since Geode 1.0, use {@link SecurityManager} instead
  */
+@Deprecated
 public interface Authenticator extends CacheCallback {
 
   /**

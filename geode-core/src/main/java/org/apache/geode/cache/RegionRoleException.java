@@ -20,6 +20,7 @@ package org.apache.geode.cache;
  *
  * @deprecated this feature is scheduled to be removed
  */
+@Deprecated
 public abstract class RegionRoleException extends RoleException {
   private static final long serialVersionUID = 202660222740132890L;
 

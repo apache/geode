@@ -27,6 +27,8 @@ public class ForcedDisconnectException extends CancelException {
 
   /**
    * Creates a new <code>SystemConnectException</code>.
+   *
+   * @param message the detail message
    */
   public ForcedDisconnectException(String message) {
     super(message);

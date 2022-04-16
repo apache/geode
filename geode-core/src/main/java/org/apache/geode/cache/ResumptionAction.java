@@ -29,6 +29,7 @@ import org.apache.geode.annotations.Immutable;
  *
  * @deprecated this API is scheduled to be removed
  */
+@Deprecated
 @Immutable
 public class ResumptionAction implements java.io.Serializable {
   private static final long serialVersionUID = 6632254151314915610L;
@@ -70,12 +71,22 @@ public class ResumptionAction implements java.io.Serializable {
     this.ordinal = (byte) ordinal;
   }
 
-  /** Return the ResumptionAction represented by specified ordinal */
+  /**
+   * Return the ResumptionAction represented by specified ordinal
+   *
+   * @param ordinal the ordinal representation of a ResumptionAction
+   * @return the ResumptionAction specified by name
+   */
   public static ResumptionAction fromOrdinal(byte ordinal) {
     return PRIVATE_VALUES[ordinal];
   }
 
-  /** Return the ResumptionAction specified by name */
+  /**
+   * Return the ResumptionAction specified by name
+   *
+   * @param name the name of the action
+   * @return the ResumptionAction specified by name
+   */
   public static ResumptionAction fromName(String name) {
     if (name == null || name.length() == 0) {
       throw new IllegalArgumentException(
@@ -91,12 +102,20 @@ public class ResumptionAction implements java.io.Serializable {
         String.format("Invalid ResumptionAction name: %s", name));
   }
 
-  /** Returns true if this is <code>NONE</code>. */
+  /**
+   * Returns true if this is <code>NONE</code>.
+   *
+   * @return whether this is <code>NONE</code>
+   */
   public boolean isNone() {
     return this == NONE;
   }
 
-  /** Returns true if this is <code>REINITIALIZE</code>. */
+  /**
+   * Returns true if this is <code>REINITIALIZE</code>.
+   *
+   * @return whether this is <code>REINITIALIZE</code>
+   */
   public boolean isReinitialize() {
     return this == REINITIALIZE;
   }

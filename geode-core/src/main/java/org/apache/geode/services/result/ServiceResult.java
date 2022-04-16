@@ -45,8 +45,7 @@ public interface ServiceResult<SuccessType> extends Result<SuccessType, String> 
    * @param consumer the {@link Consumer} to be executed on success.
    * @return this {@link ServiceResult}
    */
-  default ServiceResult<SuccessType> ifSuccessful(
-      Consumer<? super SuccessType> consumer) {
+  default ServiceResult<SuccessType> ifSuccessful(Consumer<? super SuccessType> consumer) {
     return this;
   }
 
@@ -55,11 +54,11 @@ public interface ServiceResult<SuccessType> extends Result<SuccessType, String> 
    * otherwise do nothing.
    *
    * @param consumer block to be executed if a value is present
+   * @return this {@link ServiceResult}
    * @throws NullPointerException if value is present and {@code consumer} is
    *         null
    */
-  default ServiceResult<SuccessType> ifFailure(
-      Consumer<? super String> consumer) {
+  default ServiceResult<SuccessType> ifFailure(Consumer<? super String> consumer) {
     return this;
   }
 

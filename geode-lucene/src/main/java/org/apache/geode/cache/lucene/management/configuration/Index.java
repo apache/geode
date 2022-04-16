@@ -39,26 +39,26 @@ import org.apache.geode.cache.configuration.XSDRootElement;
  * The following schema fragment specifies the expected content contained within this class.
  *
  * <pre>
- * &lt;complexType>
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="field" maxOccurs="unbounded">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="analyzer" type="{http://www.w3.org/2001/XMLSchema}string" />
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="serializer" type="{http://geode.apache.org/schema/cache}declarable-type" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="field" maxOccurs="unbounded"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="analyzer" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *         &lt;element name="serializer" type="{http://geode.apache.org/schema/cache}declarable-type" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  *
  *
@@ -100,7 +100,7 @@ public class Index extends CacheElement {
    * Objects of the following type(s) are allowed in the list
    * {@link Index.Field }
    *
-   *
+   * @return the value of the field property.
    */
   public List<Index.Field> getField() {
     if (field == null) {
@@ -115,6 +115,7 @@ public class Index extends CacheElement {
    * possible object is
    * {@link DeclarableType }
    *
+   * @return the value of the serializer property
    */
   public DeclarableType getSerializer() {
     return serializer;
@@ -126,6 +127,7 @@ public class Index extends CacheElement {
    * allowed object is
    * {@link DeclarableType }
    *
+   * @param value the value of the serializer property to set
    */
   public void setSerializer(DeclarableType value) {
     serializer = value;
@@ -137,6 +139,7 @@ public class Index extends CacheElement {
    * possible object is
    * {@link String }
    *
+   * @return the value of the name property
    */
   public String getName() {
     return name;
@@ -148,6 +151,7 @@ public class Index extends CacheElement {
    * allowed object is
    * {@link String }
    *
+   * @param value the value of the name property to set
    */
   public void setName(String value) {
     name = value;
@@ -167,14 +171,14 @@ public class Index extends CacheElement {
    * The following schema fragment specifies the expected content contained within this class.
    *
    * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="analyzer" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
+   * &lt;complexType&gt;
+   *   &lt;complexContent&gt;
+   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="analyzer" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *     &lt;/restriction&gt;
+   *   &lt;/complexContent&gt;
+   * &lt;/complexType&gt;
    * </pre>
    *
    *
@@ -194,6 +198,7 @@ public class Index extends CacheElement {
      * possible object is
      * {@link String }
      *
+     * @return the value of the name property
      */
     public String getName() {
       return name;
@@ -205,6 +210,7 @@ public class Index extends CacheElement {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the name property to set
      */
     public void setName(String value) {
       name = value;
@@ -216,6 +222,7 @@ public class Index extends CacheElement {
      * possible object is
      * {@link String }
      *
+     * @return the value of the analyzer property
      */
     public String getAnalyzer() {
       return analyzer;
@@ -227,6 +234,7 @@ public class Index extends CacheElement {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the analyzer property to set
      */
     public void setAnalyzer(String value) {
       analyzer = value;

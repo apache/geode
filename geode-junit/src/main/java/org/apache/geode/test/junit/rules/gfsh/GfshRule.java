@@ -133,7 +133,7 @@ public class GfshRule extends ExternalResource {
     return execute(GfshScript.of(commands), workingDir);
   }
 
-  /**
+  /*
    * this will allow you to specify a gfsh workingDir when executing the script
    * this is usually helpful if:
    * 1. you would start a different gfsh session but would
@@ -211,7 +211,7 @@ public class GfshRule extends ExternalResource {
     return processBuilder;
   }
 
-  /**
+  /*
    * this will stop the server that's been started in this gfsh execution
    */
   public void stopServer(GfshExecution execution, String serverName) {
@@ -220,7 +220,7 @@ public class GfshRule extends ExternalResource {
     execute(GfshScript.of(command).withName("Stop-server-" + serverName));
   }
 
-  /**
+  /*
    * this will stop the locator that's been started in this gfsh execution
    */
   public void stopLocator(GfshExecution execution, String locatorName) {

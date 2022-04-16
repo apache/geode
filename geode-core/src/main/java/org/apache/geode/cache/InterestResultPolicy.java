@@ -65,20 +65,29 @@ public class InterestResultPolicy implements Serializable {
   }
 
 
-  /** should only be called from InterestResultPolicyImpl */
+  /*
+   * should only be called from InterestResultPolicyImpl
+   */
   protected InterestResultPolicy(String name, int ordinal) {
     this.name = name;
     this.ordinal = (byte) ordinal;
     VALUES[this.ordinal] = this;
   }
 
-  /** Returns the <code>InterestResultPolicy</code> represented by specified ordinal */
+  /**
+   * Returns the <code>InterestResultPolicy</code> represented by specified ordinal
+   *
+   * @param ordinal the ordinal representation of an <code>InterestResultPolicy</code>
+   * @return the <code>InterestResultPolicy</code> represented by specified ordinal
+   */
   public static InterestResultPolicy fromOrdinal(byte ordinal) {
     return VALUES[ordinal];
   }
 
   /**
    * Returns the ordinal value.
+   *
+   * @return the ordinal value
    *
    * @since GemFire 5.0
    */

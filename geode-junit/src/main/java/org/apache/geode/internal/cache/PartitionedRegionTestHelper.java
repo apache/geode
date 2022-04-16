@@ -145,11 +145,11 @@ public class PartitionedRegionTestHelper
 
   /**
    * This is a function to create partitioned region with following paramaters:
-   * </p>
+   * <p>
    * 1) name
-   * </p>
+   * <p>
    * 2) local max memory
-   * </p>
+   * <p>
    * 3) redundancy and scope.
    *
    * The cache created is a loner, so this is only suitable for single VM tests.

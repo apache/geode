@@ -176,6 +176,8 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * <p>
    * Does not throw a <code>CacheClosedException</code> or a <code>RegionDestroyedException</code>.
    *
+   * @param <PK> the type of keys in the parent region
+   * @param <PV> the type of values in the parent region
    * @return the parent region which contains this region; null, if this region is the root region
    * @see Region#createSubregion(String, RegionAttributes) createSubregion
    */
@@ -386,6 +388,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    *
    * @deprecated as of 7.0 use {@link #getSnapshotService()}
    */
+  @Deprecated
   void saveSnapshot(OutputStream outputStream) throws IOException;
 
   /**
@@ -434,6 +437,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    *
    * @deprecated as of 7.0 use {@link #getSnapshotService()}
    */
+  @Deprecated
   void loadSnapshot(InputStream inputStream)
       throws IOException, ClassNotFoundException, CacheWriterException, TimeoutException;
 
@@ -442,6 +446,8 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * this region, so it can be either a simple region name or a relative region path. If
    * <code>regionName</code> is the empty string, then this region itself is returned.
    *
+   * @param <SK> the type of keys in the subregion
+   * @param <SV> the type of values in the subregion
    * @param path the path to the subregion
    * @return a subregion with the specified relative path from this region, or null if it doesn't
    *         exist
@@ -462,6 +468,8 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * Updates the {@link CacheStatistics#getLastAccessedTime} and
    * {@link CacheStatistics#getLastModifiedTime} for this region.
    *
+   * @param <SK> the type of keys in the subregion
+   * @param <SV> the type of values in the subregion
    * @param subregionName the subregion name
    * @param aRegionAttributes the RegionAttributes to be used for the subregion
    * @return a subregion with the specified name
@@ -481,6 +489,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @deprecated as of 7.0 use {@link RegionFactory#createSubregion(Region, String)} or
    *             {@link ClientRegionFactory#createSubregion(Region, String)}.
    */
+  @Deprecated
   <SK, SV> Region<SK, SV> createSubregion(String subregionName,
       RegionAttributes<SK, SV> aRegionAttributes) throws RegionExistsException, TimeoutException;
 
@@ -1076,7 +1085,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    *
    * <pre>
    * Entry e = getEntry(key);
-   * return e != null && e.getValue() != null;
+   * return e != null &amp;&amp; e.getValue() != null;
    * </pre>
    *
    * @param key the key to check for a valid value
@@ -1154,6 +1163,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * lock on an entry: <code>create</code>, <code>put</code>, <code>destroy</code>,
    * <code>invalidate</code>, and <code>get</code> that causes a loader to be invoked.
    *
+   * @param key the key on which to get a <em>distributed</em> lock
    * @return a <code>Lock</code> used for acquiring a distributed lock on an entry
    * @throws IllegalStateException if the scope of this region is not global
    * @throws NullPointerException if key is null
@@ -1187,6 +1197,11 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    *         <code>false</code>.
    *
    * @throws QueryInvalidException If predicate does not correspond to valid query language syntax.
+   * @throws FunctionDomainException If more than one element evaluates to true.
+   * @throws TypeMismatchException If a bound parameter is not of the expected type
+   * @throws NameResolutionException If a name in the query cannot be resolved.
+   * @throws QueryInvocationTargetException If the data referenced in from clause is not available
+   *         for querying
    *
    * @see QueryService
    *
@@ -1206,12 +1221,18 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @see Pool#getQueryService
    * @see Cache#getQueryService()
    *
+   * @param <E> the type of elements in the <code>SelectResults</code>
    * @param queryPredicate A query language boolean query predicate.
    *
    * @return A <code>SelectResults</code> containing the values of this <code>Region</code> that
    *         match the <code>predicate</code>.
    *
    * @throws QueryInvalidException If exception occurs during query compilation or processing.
+   * @throws FunctionDomainException If more than one element evaluates to true.
+   * @throws TypeMismatchException If a bound parameter is not of the expected type
+   * @throws NameResolutionException If a name in the query cannot be resolved.
+   * @throws QueryInvocationTargetException If the data referenced in from clause is not available
+   *         for querying
    *
    * @see QueryService
    *
@@ -1234,6 +1255,10 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    *
    * @throws QueryInvalidException If predicate does not correspond to valid query language syntax.
    * @throws FunctionDomainException If more than one element evaluates to true.
+   * @throws TypeMismatchException If a bound parameter is not of the expected type
+   * @throws NameResolutionException If a name in the query cannot be resolved.
+   * @throws QueryInvocationTargetException If the data referenced in from clause is not available
+   *         for querying
    *
    * @see QueryService
    * @since GemFire 4.0
@@ -1579,42 +1604,36 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    *
    *        <p>
    *        ###Deprecated behavior###
-   *        </p>
    *        <p>
    *        The following <code>List</code> and
    *        'ALL_KEYS' behavior is now deprecated. As an alternative, please use
-   *        </p>
    *        <p>
    *        {@link #registerInterestForKeys(Iterable, InterestResultPolicy)}
-   *        </p>
    *        <p>
    *        {@link #registerInterestForAllKeys(InterestResultPolicy)}
-   *        </p>
    *
    *        <p>
    *        If the key is a <code>List</code>, then all the keys in the
    *        <code>List</code> will be registered. The key can also be the special token 'ALL_KEYS',
    *        which will register interest in all keys in the region. In effect, this will cause an
    *        update to any key in this region in the CacheServer to be pushed to the client.
-   *        </p>
    *
    *        <p>
    *        <i>Using 'ALL_KEYS' is the same as calling {@link #registerInterestRegex(String)} with
    *        ".*" as the argument. This means that all keys of any type are pushed to the client and
    *        inserted into the local cache.</i>
-   *        </p>
+   *        <p>
    *        ###End of deprecation###
    *
    *        <p>
    *        This method uses the default <code>InterestResultPolicy</code>.
-   *        </p>
    *
    *        <p>
    *        If you locally-destroy a key and your region has concurrency-checks-enabled turned off
    *        you will not receive invalidation events from your interest subscription for that key.
    *        When concurrency-checks-enabled is turned on GemFire will accept invalidation and
    *        deliver these events to your client cache.
-   *        </p>
+   *        <p>
    *
    * @see InterestResultPolicy
    *
@@ -1639,36 +1658,31 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * not receive invalidation events from your interest subscription for that key. When
    * concurrency-checks-enabled is turned on GemFire will accept invalidation and deliver these
    * events to your client cache.
-   * </p>
+   * <p>
    *
    * @param key The key on which to register interest.
    *
    *        <p>
    *        ###Deprecated behavior###
-   *        </p>
    *        <p>
    *        The following <code>List</code> and
    *        'ALL_KEYS' behavior is now deprecated. As an alternative, please use
-   *        </p>
    *        <p>
    *        {@link #registerInterestForKeys(Iterable, InterestResultPolicy)}
-   *        </p>
    *        <p>
    *        {@link #registerInterestForAllKeys(InterestResultPolicy)}
-   *        </p>
    *
    *        <p>
    *        If the key is a <code>List</code>, then all the keys in the
    *        <code>List</code> will be registered. The key can also be the special token 'ALL_KEYS',
    *        which will register interest in all keys in the region. In effect, this will cause an
    *        update to any key in this region in the CacheServer to be pushed to the client.
-   *        </p>
    *
    *        <p>
    *        <i>Using 'ALL_KEYS' is the same as calling {@link #registerInterestRegex(String)} with
    *        ".*" as the argument. This means that all keys of any type are pushed to the client and
    *        inserted into the local cache.</i>
-   *        </p>
+   *        <p>
    *        ###End of deprecation###
    *
    * @param policy The interest result policy. This can be one of:
@@ -1722,7 +1736,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * not receive invalidation events from your interest subscription for that key. When
    * concurrency-checks-enabled is turned on GemFire will accept invalidation and deliver these
    * events to your client cache.
-   * </p>
+   * <p>
    *
    * @param policy The interest result policy. This can be one of:
    *        <ul>
@@ -1787,7 +1801,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * not receive invalidation events from your interest subscription for that key. When
    * concurrency-checks-enabled is turned on GemFire will accept invalidation and deliver these
    * events to your client cache.
-   * </p>
+   * <p>
    *
    * @param policy The interest result policy. This can be one of:
    *        <ul>
@@ -1826,7 +1840,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * not receive invalidation events from your interest subscription for that key. When
    * concurrency-checks-enabled is turned on GemFire will accept invalidation and deliver these
    * events to your client cache.
-   * </p>
+   * <p>
    *
    * @param iterable The <code>Iterable</code> of keys on which to register interest.
    * @throws UnsupportedOperationException if the region is not configured with a pool name.
@@ -1852,7 +1866,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * not receive invalidation events from your interest subscription for that key. When
    * concurrency-checks-enabled is turned on GemFire will accept invalidation and deliver these
    * events to your client cache.
-   * </p>
+   * <p>
    *
    * @param iterable The <code>Iterable</code> of keys on which to register interest.
    * @param policy The interest result policy. This can be one of:
@@ -1888,7 +1902,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * not receive invalidation events from your interest subscription for that key. When
    * concurrency-checks-enabled is turned on GemFire will accept invalidation and deliver these
    * events to your client cache.
-   * </p>
+   * <p>
    *
    * @param iterable The <code>Iterable</code> of keys on which to register interest.
    * @param policy The interest result policy. This can be one of:
@@ -1926,7 +1940,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * not receive invalidation events from your interest subscription for that key. When
    * concurrency-checks-enabled is turned on GemFire will accept invalidation and deliver these
    * events to your client cache.
-   * </p>
+   * <p>
    *
    * @param iterable The <code>Iterable</code> of keys on which to register interest.
    * @param policy The interest result policy. This can be one of:
@@ -1968,18 +1982,16 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * pushed to the client.
    * <p>
    * This method uses the default <code>InterestResultPolicy</code>.
-   * </p>
    *
    * <p>
    * The regular expression string is compiled using the {@link java.util.regex.Pattern} class.
-   * </p>
    *
    * <p>
    * If you locally-destroy a key and your region has concurrency-checks-enabled turned off you will
    * not receive invalidation events from your interest subscription for that key. When
    * concurrency-checks-enabled is turned on GemFire will accept invalidation and deliver these
    * events to your client cache.
-   * </p>
+   * <p>
    *
    * @param regex The regular expression on which to register interest.
    *
@@ -2004,14 +2016,13 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    *
    * <p>
    * The regular expression string is compiled using the {@link java.util.regex.Pattern} class.
-   * </p>
    *
    * <p>
    * If you locally-destroy a key and your region has concurrency-checks-enabled turned off you will
    * not receive invalidation events from your interest subscription for that key. When
    * concurrency-checks-enabled is turned on GemFire will accept invalidation and deliver these
    * events to your client cache.
-   * </p>
+   * <p>
    *
    * @param regex The regular expression on which to register interest.
    * @param policy The interest result policy. This can be one of:
@@ -2083,42 +2094,36 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    *
    *        <p>
    *        ###Deprecated behavior###
-   *        </p>
    *        <p>
    *        The following <code>List</code> and
    *        'ALL_KEYS' behavior is now deprecated. As an alternative, please use
-   *        </p>
    *        <p>
    *        {@link #registerInterestForKeys(Iterable, InterestResultPolicy)}
-   *        </p>
    *        <p>
    *        {@link #registerInterestForAllKeys(InterestResultPolicy)}
-   *        </p>
    *
    *        <p>
    *        If the key is a <code>List</code>, then all the keys in the
    *        <code>List</code> will be registered. The key can also be the special token 'ALL_KEYS',
    *        which will register interest in all keys in the region. In effect, this will cause an
    *        update to any key in this region in the CacheServer to be pushed to the client.
-   *        </p>
    *
    *        <p>
    *        <i>Using 'ALL_KEYS' is the same as calling {@link #registerInterestRegex(String)} with
    *        ".*" as the argument. This means that all keys of any type are pushed to the client and
    *        inserted into the local cache.</i>
-   *        </p>
+   *        <p>
    *        ###End of deprecation###
    *
    *        <p>
    *        This method uses the default <code>InterestResultPolicy</code>.
-   *        </p>
    *
    *        <p>
    *        If you locally-destroy a key and your region has concurrency-checks-enabled turned off
    *        you will not receive invalidation events from your interest subscription for that key.
    *        When concurrency-checks-enabled is turned on GemFire will accept invalidation and
    *        deliver these events to your client cache.
-   *        </p>
+   *        <p>
    *
    * @param isDurable true if the register interest is durable
    *
@@ -2145,41 +2150,36 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * not receive invalidation events from your interest subscription for that key. When
    * concurrency-checks-enabled is turned on GemFire will accept invalidation and deliver these
    * events to your client cache.
-   * </p>
+   * <p>
    *
    * @param key The key on which to register interest.
    *
    *        <p>
    *        ###Deprecated behavior###
-   *        </p>
    *        <p>
    *        The following <code>List</code> and
    *        'ALL_KEYS' behavior is now deprecated. As an alternative, please use
-   *        </p>
    *        <p>
    *        {@link #registerInterestForKeys(Iterable, InterestResultPolicy)}
-   *        </p>
    *        <p>
    *        {@link #registerInterestForAllKeys(InterestResultPolicy)}
-   *        </p>
    *
    *        <p>
    *        If the key is a <code>List</code>, then all the keys in the
    *        <code>List</code> will be registered. The key can also be the special token 'ALL_KEYS',
    *        which will register interest in all keys in the region. In effect, this will cause an
    *        update to any key in this region in the CacheServer to be pushed to the client.
-   *        </p>
    *
    *        <p>
    *        <i>Using 'ALL_KEYS' is the same as calling {@link #registerInterestRegex(String)} with
    *        ".*" as the argument. This means that all keys of any type are pushed to the client and
    *        inserted into the local cache.</i>
-   *        </p>
+   *        <p>
    *        ###End of deprecation###
    *
    *        <p>
    *        This method uses the default <code>InterestResultPolicy</code>.
-   *        </p>
+   *        <p>
    * @param isDurable true if the register interest is durable
    *
    * @param receiveValues defaults to true. set to false to receive create or update events as
@@ -2208,36 +2208,31 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * not receive invalidation events from your interest subscription for that key. When
    * concurrency-checks-enabled is turned on GemFire will accept invalidation and deliver these
    * events to your client cache.
-   * </p>
+   * <p>
    *
    * @param key The key on which to register interest.
    *
    *        <p>
    *        ###Deprecated behavior###
-   *        </p>
    *        <p>
    *        The following <code>List</code> and
    *        'ALL_KEYS' behavior is now deprecated. As an alternative, please use
-   *        </p>
    *        <p>
    *        {@link #registerInterestForKeys(Iterable, InterestResultPolicy)}
-   *        </p>
    *        <p>
    *        {@link #registerInterestForAllKeys(InterestResultPolicy)}
-   *        </p>
    *
    *        <p>
    *        If the key is a <code>List</code>, then all the keys in the
    *        <code>List</code> will be registered. The key can also be the special token 'ALL_KEYS',
    *        which will register interest in all keys in the region. In effect, this will cause an
    *        update to any key in this region in the CacheServer to be pushed to the client.
-   *        </p>
    *
    *        <p>
    *        <i>Using 'ALL_KEYS' is the same as calling {@link #registerInterestRegex(String)} with
    *        ".*" as the argument. This means that all keys of any type are pushed to the client and
    *        inserted into the local cache.</i>
-   *        </p>
+   *        <p>
    *        ###End of deprecation###
    *
    * @param policy The interest result policy. This can be one of:
@@ -2274,30 +2269,25 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    *
    *        <p>
    *        ###Deprecated behavior###
-   *        </p>
    *        <p>
    *        The following <code>List</code> and
    *        'ALL_KEYS' behavior is now deprecated. As an alternative, please use
-   *        </p>
    *        <p>
    *        {@link #registerInterestForKeys(Iterable, InterestResultPolicy)}
-   *        </p>
    *        <p>
    *        {@link #registerInterestForAllKeys(InterestResultPolicy)}
-   *        </p>
    *
    *        <p>
    *        If the key is a <code>List</code>, then all the keys in the
    *        <code>List</code> will be registered. The key can also be the special token 'ALL_KEYS',
    *        which will register interest in all keys in the region. In effect, this will cause an
    *        update to any key in this region in the CacheServer to be pushed to the client.
-   *        </p>
    *
    *        <p>
    *        <i>Using 'ALL_KEYS' is the same as calling {@link #registerInterestRegex(String)} with
    *        ".*" as the argument. This means that all keys of any type are pushed to the client and
    *        inserted into the local cache.</i>
-   *        </p>
+   *        <p>
    *        ###End of deprecation###
    *
    *        <p>
@@ -2305,7 +2295,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    *        you will not receive invalidation events from your interest subscription for that key.
    *        When concurrency-checks-enabled is turned on GemFire will accept invalidation and
    *        deliver these events to your client cache.
-   *        </p>
+   *        <p>
    *
    * @param policy The interest result policy. This can be one of:
    *        <ul>
@@ -2340,18 +2330,16 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * not receive invalidation events from your interest subscription for that key. When
    * concurrency-checks-enabled is turned on GemFire will accept invalidation and deliver these
    * events to your client cache.
-   * </p>
    *
    * <p>
    * Note that if the <code>regex</code> is <code>".*"</code> then all keys of any type will be
    * pushed to the client.
    * <p>
    * This method uses the default <code>InterestResultPolicy</code>.
-   * </p>
    *
    * <p>
    * The regular expression string is compiled using the {@link java.util.regex.Pattern} class.
-   * </p>
+   * <p>
    *
    * @param regex The regular expression on which to register interest.
    *
@@ -2380,18 +2368,16 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * pushed to the client.
    * <p>
    * This method uses the default <code>InterestResultPolicy</code>.
-   * </p>
    *
    * <p>
    * The regular expression string is compiled using the {@link java.util.regex.Pattern} class.
-   * </p>
    *
    * <p>
    * If you locally-destroy a key and your region has concurrency-checks-enabled turned off you will
    * not receive invalidation events from your interest subscription for that key. When
    * concurrency-checks-enabled is turned on GemFire will accept invalidation and deliver these
    * events to your client cache.
-   * </p>
+   * <p>
    *
    * @param regex The regular expression on which to register interest.
    *
@@ -2419,14 +2405,13 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    *
    * <p>
    * The regular expression string is compiled using the {@link java.util.regex.Pattern} class.
-   * </p>
    *
    * <p>
    * If you locally-destroy a key and your region has concurrency-checks-enabled turned off you will
    * not receive invalidation events from your interest subscription for that key. When
    * concurrency-checks-enabled is turned on GemFire will accept invalidation and deliver these
    * events to your client cache.
-   * </p>
+   * <p>
    *
    * @param regex The regular expression on which to register interest.
    * @param policy The interest result policy. This can be one of:
@@ -2460,14 +2445,13 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    *
    * <p>
    * The regular expression string is compiled using the {@link java.util.regex.Pattern} class.
-   * </p>
    *
    * <p>
    * If you locally-destroy a key and your region has concurrency-checks-enabled turned off you will
    * not receive invalidation events from your interest subscription for that key. When
    * concurrency-checks-enabled is turned on GemFire will accept invalidation and deliver these
    * events to your client cache.
-   * </p>
+   * <p>
    *
    * @param regex The regular expression on which to register interest.
    * @param policy The interest result policy. This can be one of:
@@ -2564,13 +2548,11 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * <p>
    * ConcurrentMap operations are supported on partitioned and replicated regions and in client
    * caches. They are also supported on non-empty local regions.
-   * </p>
    * <p>
    * Please read the notes on ConcurrentMap operations in the javadoc for Region.
-   * </p>
    * <p>
    * Region allows the value parameter to be null, which will create an invalid entry.
-   * </p>
+   * <p>
    *
    * @param key key with which the specified value is to be associated
    * @param value value to be associated with the specified key
@@ -2617,12 +2599,10 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * ConcurrentMap operations are supported on partitioned and replicated regions and in client
    * caches. They are also supported on non-empty local regions.
    * <p>
-   * <p>
    * Please read the notes on ConcurrentMap operations in the javadoc for Region.
-   * </p>
    * <p>
    * Region allows the value parameter to be null, which will match an invalid entry.
-   * </p>
+   * <p>
    *
    * @param key key with which the specified value is associated
    * @param value value expected to be associated with the specified key
@@ -2663,13 +2643,11 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * <p>
    * ConcurrentMap operations are supported on partitioned and replicated regions and in client
    * caches. They are also supported on non-empty local regions.
-   * </p>
    * <p>
    * Please read the notes on ConcurrentMap operations in the javadoc for Region.
-   * </p>
    * <p>
    * Region allows the oldValue parameter to be null, which will match an invalid entry.
-   * </p>
+   * <p>
    *
    * @param key key with which the specified value is associated
    * @param oldValue value expected to be associated with the specified key
@@ -2708,10 +2686,9 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * <p>
    * ConcurrentMap operations are supported on partitioned and replicated regions and in client
    * caches. They are also supported on non-empty local regions.
-   * </p>
    * <p>
    * Please read the notes on ConcurrentMap operations in the javadoc for Region.
-   * </p>
+   * <p>
    *
    * @param key key with which the specified value is associated
    * @param value value to be associated with the specified key
@@ -2780,6 +2757,8 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
      * result of getValue() will not change, even though the cache may have been updated for the
      * corresponding key. To see an updated snapshot of a non-local Entry, you must fetch the entry
      * from the Region again.
+     *
+     * @return whether the entry is in the in-process cache, or is in another process
      */
     boolean isLocal();
 

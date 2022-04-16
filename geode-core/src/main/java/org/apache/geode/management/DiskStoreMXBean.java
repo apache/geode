@@ -32,6 +32,8 @@ public interface DiskStoreMXBean {
 
   /**
    * Returns the name of the DiskStore.
+   *
+   * @return the name of the DiskStore
    */
   String getName();
 
@@ -45,6 +47,8 @@ public interface DiskStoreMXBean {
   /**
    * Returns the threshold at which an op-log may be compacted. Until it reaches this threshold the
    * op-log will not be compacted. The threshold is a percentage in the range 0..100.
+   *
+   * @return the threshold at which an op-log may be compacted
    */
   int getCompactionThreshold();
 
@@ -57,32 +61,44 @@ public interface DiskStoreMXBean {
 
   /**
    * Returns the maximum size (in megabytes) that a single op-log can grow to.
+   *
+   * @return the maximum size (in megabytes) that a single op-log can grow to
    */
   long getMaxOpLogSize();
 
   /**
    * Returns the time (in milliseconds) that can elapse before unwritten data is saved to disk.
+   *
+   * @return the time (in milliseconds) that can elapse before unwritten data is saved to disk
    */
   long getTimeInterval();
 
   /**
    * Returns the size of the write buffer that this DiskStore will use when writing data to disk.
+   *
+   * @return the size of the write buffer that this DiskStore will use when writing data to disk
    */
   int getWriteBufferSize();
 
   /**
    * Returns the path of the directories to which the region's data will be written.
+   *
+   * @return the path of the directories to which the region's data will be written
    */
   String[] getDiskDirectories();
 
   /**
    * Returns the maximum number of operations that can be asynchronously queued for saving to disk.
    * When this limit is reached operations will block until they can be put in the queue.
+   *
+   * @return the maximum number of operations that can be asynchronously queued for saving to disk
    */
   int getQueueSize();
 
   /**
    * Returns the total number of bytes of space this DiskStore has used.
+   *
+   * @return the total number of bytes of space this DiskStore has used
    */
   long getTotalBytesOnDisk();
 
@@ -93,6 +109,8 @@ public interface DiskStoreMXBean {
    * Each entry in region has some overhead in terms of number of extra bytes while persisting data.
    * So this rate won't match the number of bytes put in all regions.This is rate of actual bytes
    * system is persisting.
+   *
+   * @return the average latency of disk reads in nanoseconds
    */
   float getDiskReadsRate();
 
@@ -103,43 +121,59 @@ public interface DiskStoreMXBean {
    * Each entry in region has some overhead in terms of number of extra bytes while persisting data.
    * So this rate won't match the number of bytes put in all regions. This is rate of actual bytes
    * system is persisting.
+   *
+   * @return the average latency of disk writes in nanoseconds
    */
   float getDiskWritesRate();
 
   /**
    * Returns the disk reads average latency in nanoseconds. It depicts average time needed to read
    * one byte of data from disk.
+   *
+   * @return the disk reads average latency in nanoseconds
    */
   long getDiskReadsAvgLatency();
 
   /**
    * Returns the disk writes average latency in nanoseconds. It depicts average time needed to write
    * one byte of data to disk.
+   *
+   * @return the disk writes average latency in nanoseconds
    */
   long getDiskWritesAvgLatency();
 
   /**
    * Returns the flush time average latency.
+   *
+   * @return the flush time average latency
    */
   long getFlushTimeAvgLatency();
 
   /**
    * Returns the number of entries in the asynchronous queue waiting to be written to disk.
+   *
+   * @return the number of entries in the asynchronous queue waiting to be written to disk
    */
   int getTotalQueueSize();
 
   /**
    * Returns the number of backups currently in progress on this DiskStore.
+   *
+   * @return the number of backups currently in progress on this DiskStore
    */
   int getTotalBackupInProgress();
 
   /**
    * Returns the number of backups of this DiskStore that have been completed.
+   *
+   * @return the number of backups of this DiskStore that have been completed
    */
   int getTotalBackupCompleted();
 
   /**
    * Returns the number of persistent regions currently being recovered from disk.
+   *
+   * @return the number of persistent regions currently being recovered from disk
    */
   int getTotalRecoveriesInProgress();
 
@@ -195,6 +229,7 @@ public interface DiskStoreMXBean {
   /**
    * Returns the usage percentage of this disk storage if directories where created with max size.
    *
+   * @return the usage percentage of this disk storage if directories where created with max size
    * @since Geode 1.10
    */
   default float getDiskUsagePercentage() {
@@ -204,7 +239,8 @@ public interface DiskStoreMXBean {
   /**
    * Returns the free percentage of this disk storage if directories where created with max size.
    *
-   * * @since Geode 1.11
+   * @return the free percentage of this disk storage if directories where created with max size
+   * @since Geode 1.11
    */
   default float getDiskFreePercentage() {
     return ManagementConstants.NOT_AVAILABLE_FLOAT;

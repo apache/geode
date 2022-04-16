@@ -72,7 +72,7 @@ public class SizeMessage extends PartitionMessage {
    * Entries in each of their buckets
    *
    * @param recipients members to receive the message
-   * @param regionId the <code>PartitionedRegion<code> regionId
+   * @param regionId the <code>PartitionedRegion</code> regionId
    * @param processor the reply processor used to wait on the response
    * @param bucketIds the list of bucketIds to get the size for or null for all buckets
    */

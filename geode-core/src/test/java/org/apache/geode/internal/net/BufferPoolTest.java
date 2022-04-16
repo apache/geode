@@ -15,14 +15,16 @@
 
 package org.apache.geode.internal.net;
 
+import static org.apache.geode.util.internal.GeodeGlossary.GEMFIRE_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
 import java.nio.ByteBuffer;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ClearSystemProperty;
+import org.junitpioneer.jupiter.SetSystemProperty;
 
 import org.apache.geode.distributed.internal.DMStats;
 
@@ -30,63 +32,63 @@ public class BufferPoolTest {
 
   private BufferPool bufferPool;
 
-  @Before
+  @BeforeEach
   public void setup() {
     bufferPool = new BufferPool(mock(DMStats.class));
   }
 
   @Test
-  public void expandBuffer() throws Exception {
+  public void expandBuffer() {
     ByteBuffer buffer = ByteBuffer.allocate(256);
     buffer.clear();
     for (int i = 0; i < 256; i++) {
       byte b = (byte) (i & 0xff);
       buffer.put(b);
     }
-    createAndVerifyNewWriteBuffer(buffer, false);
+    createAndVerifyNewWriteBuffer(buffer);
 
-    createAndVerifyNewWriteBuffer(buffer, true);
+    createAndVerifyNewWriteBuffer(buffer);
 
 
-    createAndVerifyNewReadBuffer(buffer, false);
+    createAndVerifyNewReadBuffer(buffer);
 
-    createAndVerifyNewReadBuffer(buffer, true);
+    createAndVerifyNewReadBuffer(buffer);
 
 
   }
 
-  private void createAndVerifyNewWriteBuffer(ByteBuffer buffer, boolean useDirectBuffer) {
+  private void createAndVerifyNewWriteBuffer(ByteBuffer buffer) {
     buffer.position(buffer.capacity());
     ByteBuffer newBuffer =
         bufferPool.expandWriteBufferIfNeeded(BufferPool.BufferType.UNTRACKED, buffer, 500);
-    assertEquals(buffer.position(), newBuffer.position());
-    assertEquals(500, newBuffer.capacity());
+    assertThat(newBuffer.position()).isEqualTo(buffer.position());
+    assertThat(newBuffer.capacity()).isEqualTo(500);
     newBuffer.flip();
     for (int i = 0; i < 256; i++) {
       byte expected = (byte) (i & 0xff);
       byte actual = (byte) (newBuffer.get() & 0xff);
-      assertEquals(expected, actual);
+      assertThat(actual).isEqualTo(expected);
     }
   }
 
-  private void createAndVerifyNewReadBuffer(ByteBuffer buffer, boolean useDirectBuffer) {
+  private void createAndVerifyNewReadBuffer(ByteBuffer buffer) {
     buffer.position(0);
     buffer.limit(256);
     ByteBuffer newBuffer =
         bufferPool.expandReadBufferIfNeeded(BufferPool.BufferType.UNTRACKED, buffer, 500);
-    assertEquals(0, newBuffer.position());
-    assertEquals(500, newBuffer.capacity());
+    assertThat(newBuffer.position()).isZero();
+    assertThat(newBuffer.capacity()).isEqualTo(500);
     for (int i = 0; i < 256; i++) {
       byte expected = (byte) (i & 0xff);
       byte actual = (byte) (newBuffer.get() & 0xff);
-      assertEquals(expected, actual);
+      assertThat(actual).isEqualTo(expected);
     }
   }
 
 
   // the fixed numbers in this test came from a distributed unit test failure
   @Test
-  public void bufferPositionAndLimitForReadAreCorrectAfterExpansion() throws Exception {
+  public void bufferPositionAndLimitForReadAreCorrectAfterExpansion() {
     ByteBuffer buffer = ByteBuffer.allocate(33842);
     buffer.position(7);
     buffer.limit(16384);
@@ -101,7 +103,7 @@ public class BufferPoolTest {
 
 
   @Test
-  public void bufferPositionAndLimitForWriteAreCorrectAfterExpansion() throws Exception {
+  public void bufferPositionAndLimitForWriteAreCorrectAfterExpansion() {
     ByteBuffer buffer = ByteBuffer.allocate(33842);
     buffer.position(16384);
     buffer.limit(buffer.capacity());
@@ -116,7 +118,7 @@ public class BufferPoolTest {
 
 
   @Test
-  public void checkBufferSizeAfterAllocation() throws Exception {
+  public void checkBufferSizeAfterAllocation() {
     ByteBuffer buffer = bufferPool.acquireDirectReceiveBuffer(100);
 
     ByteBuffer newBuffer =
@@ -134,7 +136,7 @@ public class BufferPoolTest {
   }
 
   @Test
-  public void checkBufferSizeAfterAcquire() throws Exception {
+  public void checkBufferSizeAfterAcquire() {
     ByteBuffer buffer = bufferPool.acquireDirectReceiveBuffer(100);
 
     ByteBuffer newBuffer =
@@ -173,6 +175,44 @@ public class BufferPoolTest {
     assertThat(buffer.limit()).isEqualTo(1000);
     assertThat(newBuffer.position()).isEqualTo(0);
     assertThat(newBuffer.limit()).isEqualTo(15000);
+  }
+
+  private static final String P2P_NO_DIRECT_BUFFERS = "p2p.nodirectBuffers";
+  private static final String USE_HEAP_BUFFERS = GEMFIRE_PREFIX + "BufferPool.useHeapBuffers";
+
+  @Test
+  @ClearSystemProperty(key = P2P_NO_DIRECT_BUFFERS)
+  @ClearSystemProperty(key = USE_HEAP_BUFFERS)
+  public void verifyDirectBuffersUsedByDefault() {
+    assertThat(BufferPool.computeUseDirectBuffers()).isTrue();
+  }
+
+  @Test
+  @SetSystemProperty(key = P2P_NO_DIRECT_BUFFERS, value = "false")
+  @SetSystemProperty(key = USE_HEAP_BUFFERS, value = "false")
+  public void verifyDirectBuffersUsedIfBothPropsFalse() {
+    assertThat(BufferPool.computeUseDirectBuffers()).isTrue();
+  }
+
+  @Test
+  @SetSystemProperty(key = P2P_NO_DIRECT_BUFFERS, value = "true")
+  @ClearSystemProperty(key = USE_HEAP_BUFFERS)
+  public void verifyDirectBuffersUnusedIfnodirectBuffersTrue() {
+    assertThat(BufferPool.computeUseDirectBuffers()).isFalse();
+  }
+
+  @Test
+  @SetSystemProperty(key = USE_HEAP_BUFFERS, value = "true")
+  @ClearSystemProperty(key = P2P_NO_DIRECT_BUFFERS)
+  public void verifyDirectBuffersUnusedIfuseHeapBuffersTrue() {
+    assertThat(BufferPool.computeUseDirectBuffers()).isFalse();
+  }
+
+  @Test
+  @SetSystemProperty(key = P2P_NO_DIRECT_BUFFERS, value = "true")
+  @SetSystemProperty(key = USE_HEAP_BUFFERS, value = "true")
+  public void verifyDirectBuffersUnusedIfBothPropsTrue() {
+    assertThat(BufferPool.computeUseDirectBuffers()).isFalse();
   }
 
 }

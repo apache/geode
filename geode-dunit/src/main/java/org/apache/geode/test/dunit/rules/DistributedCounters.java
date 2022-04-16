@@ -48,7 +48,7 @@ import org.apache.geode.test.dunit.VM;
  * public void incrementCounterInEveryVm() {
  *   distributedCounters.initialize("counter");
  *   for (VM vm : getAllVMs()) {
- *     vm.invoke(() -> {
+ *     vm.invoke(() -&gt; {
  *       distributedCounters.increment("counter");
  *     });
  *   }
@@ -69,7 +69,7 @@ import org.apache.geode.test.dunit.VM;
  * {@literal @}Test
  * public void incrementCounterInEveryVm() {
  *   for (VM vm : getAllVMs()) {
- *     vm.invoke(() -> {
+ *     vm.invoke(() -&gt; {
  *       distributedCounters.increment("counter");
  *     });
  *   }
@@ -155,6 +155,9 @@ public class DistributedCounters extends AbstractDistributedRule {
   /**
    * Initialize an {@code AtomicInteger} with value of zero identified by {@code id} in every
    * {@code VM}.
+   *
+   * @param id the id of the {@code AtomicInteger}
+   * @return a reference to this DistributedCounters
    */
   public DistributedCounters initialize(final Serializable id) {
     invoker().invokeInEveryVMAndController(() -> counters.putIfAbsent(id, new AtomicInteger()));
@@ -163,6 +166,9 @@ public class DistributedCounters extends AbstractDistributedRule {
 
   /**
    * Returns the {@code AtomicInteger} identified by the specified {@code id}.
+   *
+   * @param id the id of the {@code AtomicInteger}
+   * @return the {@code AtomicInteger}
    */
   public AtomicInteger reference(final Serializable id) {
     return counters.get(id);
@@ -170,6 +176,9 @@ public class DistributedCounters extends AbstractDistributedRule {
 
   /**
    * Increments the {@code AtomicInteger} identified by the specified {@code id}.
+   *
+   * @param id the id of the {@code AtomicInteger}
+   * @return a reference to this DistributedCounters
    */
   public DistributedCounters increment(final Serializable id) {
     counters.get(id).incrementAndGet();
@@ -179,6 +188,10 @@ public class DistributedCounters extends AbstractDistributedRule {
   /**
    * Increments the {@code AtomicInteger} by the specified {@code delta} which may be a positive or
    * negative integer.
+   *
+   * @param id the id of the {@code AtomicInteger}
+   * @param delta the amount by which to increment the {@code AtomicInteger}
+   * @return a reference to this DistributedCounters
    */
   public DistributedCounters increment(final Serializable id, final int delta) {
     counters.get(id).addAndGet(delta);
@@ -186,7 +199,10 @@ public class DistributedCounters extends AbstractDistributedRule {
   }
 
   /**
-   * Increments the {@code AtomicInteger} identified by the specified {@code id}.
+   * Decrements the {@code AtomicInteger} identified by the specified {@code id}.
+   *
+   * @param id the id of the {@code AtomicInteger}
+   * @return a reference to this DistributedCounters
    */
   public DistributedCounters decrement(final Serializable id) {
     counters.get(id).decrementAndGet();
@@ -195,6 +211,10 @@ public class DistributedCounters extends AbstractDistributedRule {
 
   /**
    * Decrements the {@code AtomicInteger} by the specified {@code delta}.
+   *
+   * @param id the id of the {@code AtomicInteger}
+   * @param delta the amount by which to decrement the {@code AtomicInteger}
+   * @return a reference to this DistributedCounters
    */
   public DistributedCounters decrement(final Serializable id, final int delta) {
     counters.get(id).addAndGet(-delta);
@@ -203,6 +223,9 @@ public class DistributedCounters extends AbstractDistributedRule {
 
   /**
    * Returns the total value of the {@code AtomicInteger} combined across every VM.
+   *
+   * @param id the id of the {@code AtomicInteger}
+   * @return the total value of the {@code AtomicInteger}
    */
   public int getTotal(final Serializable id) {
     int total = counters.get(id).get();
@@ -214,6 +237,9 @@ public class DistributedCounters extends AbstractDistributedRule {
 
   /**
    * Returns the local value of the {@code AtomicInteger} identified by the specified {@code id}.
+   *
+   * @param id the id of the {@code AtomicInteger}
+   * @return the local value of the {@code AtomicInteger}
    */
   public int getLocal(final Serializable id) {
     return counters.get(id).get();
@@ -232,6 +258,9 @@ public class DistributedCounters extends AbstractDistributedRule {
 
     /**
      * Initialize specified id when {@code DistributedCounters} is built.
+     *
+     * @param id the id
+     * @return a reference to this Builder
      */
     public Builder withId(final Serializable id) {
       ids.add(id);

@@ -40,7 +40,7 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
  * membership id part of event-id is not need to be sent with each event. Also, the threadId and
  * sequenceId need not be sent as long if their value is small. This is a junit test for testing the
  * methods written in <code>EventID</code> class for the above optimization. For distributed testing
- * for the same , please refer {@link EventIdOptimizationDUnitTest}.
+ * for the same , please see EventIdOptimizationDUnitTest.
  */
 @Category({ClientServerTest.class})
 public class EventIdOptimizationJUnitTest {

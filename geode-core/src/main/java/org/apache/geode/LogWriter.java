@@ -80,147 +80,210 @@ public interface LogWriter {
   /**
    * Returns true if "severe" log messages are enabled. Returns false if "severe" log messages are
    * disabled.
+   *
+   * @return whether "severe" log messages are enabled
    */
   boolean severeEnabled();
 
   /**
    * Writes both a message and exception to this writer. The message level is "severe".
+   *
+   * @param message the message to log
+   * @param throwable the throwable to log
    */
   void severe(String message, Throwable throwable);
 
   /**
    * Writes a message to this writer. The message level is "severe".
+   *
+   * @param message the message to log
    */
   void severe(String message);
 
   /**
    * Writes an exception to this writer. The exception level is "severe".
+   *
+   * @param throwable the throwable to log
    */
   void severe(Throwable throwable);
 
   /**
    * Returns true if "error" log messages are enabled. Returns false if "error" log messages are
    * disabled.
+   *
+   * @return whether "error" log messages are enabled
    */
   boolean errorEnabled();
 
   /**
    * Writes both a message and exception to this writer. The message level is "error".
+   *
+   * @param message the message to log
+   * @param throwable the throwable to log
    */
   void error(String message, Throwable throwable);
 
   /**
    * Writes a message to this writer. The message level is "error".
+   *
+   * @param message the message to log
    */
   void error(String message);
 
   /**
    * Writes an exception to this writer. The exception level is "error".
+   *
+   * @param throwable the throwable to log
    */
   void error(Throwable throwable);
 
   /**
    * Returns true if "warning" log messages are enabled. Returns false if "warning" log messages are
    * disabled.
+   *
+   * @return whether "warning" log messages are enabled
    */
   boolean warningEnabled();
 
   /**
    * Writes both a message and exception to this writer. The message level is "warning".
+   *
+   * @param message the message to log
+   * @param throwable the throwable to log
    */
   void warning(String message, Throwable throwable);
 
   /**
    * Writes a message to this writer. The message level is "warning".
+   *
+   * @param message the message to log
    */
   void warning(String message);
 
   /**
    * Writes an exception to this writer. The exception level is "warning".
+   *
+   * @param throwable the throwable to log
    */
   void warning(Throwable throwable);
 
   /**
    * Returns true if "info" log messages are enabled. Returns false if "info" log messages are
    * disabled.
+   *
+   * @return whether "info" log messages are enabled
    */
   boolean infoEnabled();
 
   /**
    * Writes both a message and exception to this writer. The message level is "information".
+   *
+   * @param message the message to log
+   * @param throwable the throwable to log
    */
   void info(String message, Throwable throwable);
 
   /**
    * Writes a message to this writer. The message level is "information".
+   *
+   * @param message the message to log
    */
   void info(String message);
 
   /**
    * Writes an exception to this writer. The exception level is "information".
+   *
+   * @param throwable the throwable to log
    */
   void info(Throwable throwable);
 
   /**
    * Returns true if "config" log messages are enabled. Returns false if "config" log messages are
    * disabled.
+   *
+   * @return whether "config" log messages are enabled
    */
   boolean configEnabled();
 
   /**
    * Writes both a message and exception to this writer. The message level is "config".
+   *
+   * @param message the message to log
+   * @param throwable the throwable to log
    */
   void config(String message, Throwable throwable);
 
   /**
    * Writes a message to this writer. The message level is "config".
+   *
+   * @param message the message to log
    */
   void config(String message);
 
   /**
    * Writes an exception to this writer. The exception level is "config".
+   *
+   * @param throwable the throwable to log
    */
   void config(Throwable throwable);
 
   /**
    * Returns true if "fine" log messages are enabled. Returns false if "fine" log messages are
    * disabled.
+   *
+   * @return whether "fine" log message are enabled
    */
   boolean fineEnabled();
 
   /**
    * Writes both a message and exception to this writer. The message level is "fine".
+   *
+   * @param message the message to log
+   * @param throwable the throwable to log
    */
   void fine(String message, Throwable throwable);
 
   /**
    * Writes a message to this writer. The message level is "fine".
+   *
+   * @param message the message to log
    */
   void fine(String message);
 
   /**
    * Writes an exception to this writer. The exception level is "fine".
+   *
+   * @param throwable the throwable to log
    */
   void fine(Throwable throwable);
 
   /**
    * Returns true if "finer" log messages are enabled. Returns false if "finer" log messages are
    * disabled.
+   *
+   * @return whether "finer" log messages are enabled
    */
   boolean finerEnabled();
 
   /**
    * Writes both a message and exception to this writer. The message level is "finer".
+   *
+   * @param message the message to log
+   * @param throwable the throwable to log
    */
   void finer(String message, Throwable throwable);
 
   /**
    * Writes a message to this writer. The message level is "finer".
+   *
+   * @param message the message to log
    */
   void finer(String message);
 
   /**
    * Writes an exception to this writer. The exception level is "finer".
+   *
+   * @param throwable the throwable to log
    */
   void finer(Throwable throwable);
 
@@ -265,21 +328,30 @@ public interface LogWriter {
   /**
    * Returns true if "finest" log messages are enabled. Returns false if "finest" log messages are
    * disabled.
+   *
+   * @return whether "finest" leg messages are enabled
    */
   boolean finestEnabled();
 
   /**
    * Writes both a message and exception to this writer. The message level is "finest".
+   *
+   * @param message the message to log
+   * @param throwable the throwable to log
    */
   void finest(String message, Throwable throwable);
 
   /**
    * Writes a message to this writer. The message level is "finest".
+   *
+   * @param message the message to log
    */
   void finest(String message);
 
   /**
    * Writes an exception to this writer. The exception level is "finest".
+   *
+   * @param throwable the throwable to log
    */
   void finest(Throwable throwable);
 
@@ -287,11 +359,15 @@ public interface LogWriter {
    * Returns a 1.4 logging handler that can be used to direct application output to this GemFire
    * logger using the standard JDK logger APIs. Each time this method is called it creates a new
    * instance of a Handler so care should be taken to not call this method too often.
+   *
+   * @return a 1.4 logging handler
    */
   Handler getHandler();
 
   /**
    * A mechanism for accessing the abstraction layer used for internationalization.
+   *
+   * @return a {@link LogWriterI18n}
    */
   LogWriterI18n convertToLogWriterI18n();
 }

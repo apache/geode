@@ -31,6 +31,7 @@ import org.apache.geode.annotations.Immutable;
  *
  * @deprecated this feature is scheduled to be removed
  */
+@Deprecated
 @Immutable
 public class LossAction implements Serializable {
   private static final long serialVersionUID = -832035480397447797L;
@@ -96,12 +97,22 @@ public class LossAction implements Serializable {
     this.ordinal = (byte) ordinal;
   }
 
-  /** Return the LossAction represented by specified ordinal */
+  /**
+   * Return the LossAction represented by specified ordinal
+   *
+   * @param ordinal the ordinal representation of a LossAction
+   * @return the LossAction represented by specified ordinal
+   */
   public static LossAction fromOrdinal(byte ordinal) {
     return PRIVATE_VALUES[ordinal];
   }
 
-  /** Return the LossAction specified by name */
+  /**
+   * Return the LossAction specified by name
+   *
+   * @param name the name of a LossAction
+   * @return the LossAction specified by name
+   */
   public static LossAction fromName(String name) {
     if (name == null || name.length() == 0) {
       throw new IllegalArgumentException(
@@ -116,22 +127,38 @@ public class LossAction implements Serializable {
         String.format("Invalid LossAction name: %s", name));
   }
 
-  /** Returns true if this is <code>NO_ACCESS</code>. */
+  /**
+   * Returns true if this is <code>NO_ACCESS</code>.
+   *
+   * @return whether this is <code>NO_ACCESS</code>
+   */
   public boolean isNoAccess() {
     return this == NO_ACCESS;
   }
 
-  /** Returns true if this is <code>LIMITED_ACCESS</code>. */
+  /**
+   * Returns true if this is <code>LIMITED_ACCESS</code>.
+   *
+   * @return whether this is <code>LIMITED_ACCESS</code>
+   */
   public boolean isLimitedAccess() {
     return this == LIMITED_ACCESS;
   }
 
-  /** Returns true if this is <code>FULL_ACCESS</code>. */
+  /**
+   * Returns true if this is <code>FULL_ACCESS</code>.
+   *
+   * @return whether this is <code>FULL_ACCESS</code>
+   */
   public boolean isAllAccess() {
     return this == FULL_ACCESS;
   }
 
-  /** Returns true if this is <code>RECONNECT</code>. */
+  /**
+   * Returns true if this is <code>RECONNECT</code>.
+   *
+   * @return whether this is <code>RECONNECT</code>
+   */
   public boolean isReconnect() {
     return this == RECONNECT;
   }

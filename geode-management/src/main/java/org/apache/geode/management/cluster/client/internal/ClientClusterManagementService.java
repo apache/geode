@@ -38,7 +38,7 @@ import org.apache.geode.management.runtime.RuntimeInfo;
 /**
  * Implementation of {@link ClusterManagementService} interface which represents the cluster
  * management service as used by a Java client.
- * <p/>
+ * <p>
  * In order to manipulate Geode components (Regions, etc.) clients can construct instances of {@link
  * AbstractConfiguration}s and call the corresponding
  * {@link ClientClusterManagementService#create(AbstractConfiguration)},
@@ -47,7 +47,7 @@ import org.apache.geode.management.runtime.RuntimeInfo;
  * ClusterManagementResult} will contain all necessary information about the outcome of the call.
  * This will include the result of persisting the config as part of the cluster configuration as
  * well as creating the actual component in the cluster.
- * <p/>
+ * <p>
  * All create calls are idempotent and will not return an error if the desired component already
  * exists.
  */

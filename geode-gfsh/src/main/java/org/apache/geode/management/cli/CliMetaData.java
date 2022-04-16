@@ -41,6 +41,8 @@ public @interface CliMetaData {
   /**
    * Indicates that the command will only run in the gfsh shell Gfsh ExecutionStrategy will use this
    * flag to determine whether to invoke remote call or not.
+   *
+   * @return whether the command will only run in the gfsh shell
    **/
   boolean shellOnly() default false;
 
@@ -49,36 +51,53 @@ public @interface CliMetaData {
    * is set to true, the RestHttpOperationInvoker will use an extractor to extract the inputstream
    * in the response to a temporary file and it's up to your command's interceptor's postExecution
    * to use that temp file to fit your need.
+   *
+   * @return whether this command downloads files from the member over http
    **/
   boolean isFileDownloadOverHttp() default false;
 
   /**
    * Indicates whether this command would require fileData to be sent from the client. If this is
    * true, the preExecution of the interceptor needs to return a FileResult
+   *
+   * @return whether this command would require fileData to be sent from the client
    */
   boolean isFileUploaded() default false;
 
   /**
    * Indicates that the effect of the command is persisted or the commands affects the persistent
    * configuration
+   *
+   * @return whether the effect of the command is persisted or the commands affects the persistent
+   *         configuration
    */
   boolean isPersisted() default false;
 
-  /** In help, topics that are related to this command **/
+  /**
+   * In help, topics that are related to this command
+   *
+   * @return topics that are related to this command
+   */
   String[] relatedTopic() default CliStrings.DEFAULT_TOPIC_GEODE;
 
   /**
    * The fully qualified name of a class which implements the {@link CliAroundInterceptor} interface
    * in order to provide additional pre- and post-execution functionality for a command.
+   *
+   * @return the fully qualified name of a class which implements the {@link CliAroundInterceptor}
+   *         interface
    */
   String interceptor() default org.apache.geode.management.cli.CliMetaData.ANNOTATION_NULL_VALUE;
 
   /**
    * String used as a separator when multiple values for a command are specified
    *
+   * @return the String used as a separator when multiple values for a command are specified
+   *
    * @deprecated since 1.2, Command methods may override both the delimiter and the escape through
    *             spring shell's {@code splittingRegex} option context
    */
+  @Deprecated
   String valueSeparator() default org.apache.geode.management.cli.CliMetaData.ANNOTATION_NULL_VALUE;
 
   /**
@@ -89,11 +108,12 @@ public @interface CliMetaData {
    *
    * @deprecated since Geode1.2, not used at all
    */
+  @Deprecated
   @Retention(RetentionPolicy.RUNTIME)
   @Target({ElementType.METHOD})
   @interface AvailabilityMetadata {
     /**
-     * String describing the availability condition.
+     * @return a String describing the availability condition.
      */
     String availabilityDescription() default org.apache.geode.management.cli.CliMetaData.ANNOTATION_NULL_VALUE;
   }

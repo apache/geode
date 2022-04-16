@@ -34,12 +34,12 @@ import org.apache.geode.datasource.PooledDataSourceFactory;
  * <br>
  * The following data-source parameters will be will be passed to Hikari as the following:
  * <br>
- * connection-url --> jdbcUrl<br>
- * jdbc-driver-class --> driverClassName<br>
- * user-name --> username<br>
- * password --> password<br>
- * max-pool-size --> maximumPoolSize<br>
- * idle-timeout-seconds --> idleTimeout<br>
+ * connection-url --&gt; jdbcUrl<br>
+ * jdbc-driver-class --&gt; driverClassName<br>
+ * user-name --&gt; username<br>
+ * password --&gt; password<br>
+ * max-pool-size --&gt; maximumPoolSize<br>
+ * idle-timeout-seconds --&gt; idleTimeout<br>
  * <p>
  * Additional Hikari configuration parameters may be passed to configure the Hikari pool
  * by specifying them using the --pool-properties of the "gfsh create data-source" command.

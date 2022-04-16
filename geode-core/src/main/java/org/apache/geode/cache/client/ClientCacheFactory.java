@@ -97,15 +97,15 @@ import org.apache.geode.security.AuthenticationRequiredException;
  * <PRE>
  * &lt;!DOCTYPE client-cache PUBLIC
  * "-//GemStone Systems, Inc.//GemFire Declarative Caching 6.5//EN"
- * "http://www.gemstone.com/dtd/cache8_0.dtd">
- * &lt;client-cache>
- * &lt;pool name="myPool">
- * &lt;locator host="hostName" port="10334"/>
- * &lt;/pool>
- * &lt;region name="myRegion" refid="PROXY"/>
+ * "http://www.gemstone.com/dtd/cache8_0.dtd"&gt;
+ * &lt;client-cache&gt;
+ * &lt;pool name="myPool"&gt;
+ * &lt;locator host="hostName" port="10334"/&gt;
+ * &lt;/pool&gt;
+ * &lt;region name="myRegion" refid="PROXY"/&gt;
  * &lt;!-- you can override or add to the PROXY attributes by adding
- * a region-attributes sub element here -->
- * &lt;/client-cache>
+ * a region-attributes sub element here --&gt;
+ * &lt;/client-cache&gt;
  * </PRE>
  *
  * Now, create the cache telling it to read your cache.xml file:
@@ -114,7 +114,6 @@ import org.apache.geode.security.AuthenticationRequiredException;
  * ClientCache c = new ClientCacheFactory().set("cache-xml-file", "myCache.xml").create();
  * Region r = c.getRegion("myRegion");
  * </PRE>
- * <p>
  * <p>
  * For a complete list of all client region shortcuts see {@link ClientRegionShortcut}. Applications
  * that need to explicitly control the individual region attributes can do this declaratively in XML
@@ -127,14 +126,14 @@ import org.apache.geode.security.AuthenticationRequiredException;
  * <PRE>
  * &lt;!DOCTYPE client-cache PUBLIC
  * "-//GemStone Systems, Inc.//GemFire Declarative Caching 8.0//EN"
- * "http://www.gemstone.com/dtd/cache8_0.dtd">
- * &lt;client-cache>
+ * "http://www.gemstone.com/dtd/cache8_0.dtd"&gt;
+ * &lt;client-cache&gt;
  * &lt;!-- now create a named region attributes that uses the CACHING_PROXY shortcut
- * and adds a memory LRU limited to 900 megabytes -->
- * &lt;region-attributes id="MYAPP_CACHING_PROXY_MEM_LRU" refid="CACHING_PROXY" >
- * &lt;lru-memory-size maximum="900"/>
- * &lt;/region-attributes>
- * &lt;/client-cache>
+ * and adds a memory LRU limited to 900 megabytes --&gt;
+ * &lt;region-attributes id="MYAPP_CACHING_PROXY_MEM_LRU" refid="CACHING_PROXY" &gt;
+ * &lt;lru-memory-size maximum="900"/&gt;
+ * &lt;/region-attributes&gt;
+ * &lt;/client-cache&gt;
  * </PRE>
  *
  * Now, create the data region in the client cache using this new attributes ID.
@@ -557,6 +556,7 @@ public class ClientCacheFactory {
    * enabled. If set to <code>false</code> then all <code>Subscription*</code> attributes are
    * ignored at create time.
    *
+   * @param enabled whether the created pool will have server-to-client subscriptions enabled
    * @return a reference to <code>this</code>
    */
   public ClientCacheFactory setPoolSubscriptionEnabled(boolean enabled) {
@@ -594,6 +594,9 @@ public class ClientCacheFactory {
    * <p>
    * The resulting timeout will be multiplied by 1.25 in order to avoid race conditions with the
    * server sending its "ping" message.
+   *
+   * @param multiplier the subscription timeout multiplier to set
+   * @return a reference to <code>this</code>
    */
   public ClientCacheFactory setPoolSubscriptionTimeoutMultiplier(int multiplier) {
     getPoolFactory().setSubscriptionTimeoutMultiplier(multiplier);
@@ -672,6 +675,7 @@ public class ClientCacheFactory {
    * local-max-memory} equal to zero, no cache operations mentioned above will be routed to those
    * servers as they do not host any partitions.
    *
+   * @param enabled whether Partition Region single hop is enabled
    * @return the newly created pool.
    */
   public ClientCacheFactory setPoolPRSingleHopEnabled(boolean enabled) {
@@ -685,6 +689,7 @@ public class ClientCacheFactory {
    * Note: If set to true, all the client side regions must be {@link ClientRegionShortcut#PROXY
    * proxies}. No client side storage is allowed.
    *
+   * @param enabled whether the created pool can be used by multiple users
    * @return a reference to <code>this</code>
    */
   public ClientCacheFactory setPoolMultiuserAuthentication(boolean enabled) {
@@ -704,6 +709,9 @@ public class ClientCacheFactory {
   /**
    * Gets an arbitrary open instance of {@link ClientCache} produced by an earlier call to
    * {@link #create}.
+   *
+   * @return an arbitrary open instance of {@link ClientCache} produced by an earlier call to
+   *         {@link #create}
    *
    * @throws CacheClosedException if a cache has not been created or the only created one is
    *         {@link ClientCache#isClosed closed}

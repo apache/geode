@@ -586,6 +586,13 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
+  public void txHandleWANEvent(EntryEventImpl event) {
+    if (partitionedRegion.isParallelWanEnabled()) {
+      handleWANEvent(event);
+    }
+  }
+
+  @Override
   public void handleWANEvent(EntryEventImpl event) {
     if (eventSeqNum == null) {
       if (logger.isDebugEnabled()) {

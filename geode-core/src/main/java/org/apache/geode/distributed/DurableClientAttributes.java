@@ -90,6 +90,8 @@ public class DurableClientAttributes {
 
   /**
    * Used to update the timeout when a durable client comes back to a server
+   *
+   * @param newValue the new timeout value
    */
   public void updateTimeout(int newValue) {
     timeout = newValue;

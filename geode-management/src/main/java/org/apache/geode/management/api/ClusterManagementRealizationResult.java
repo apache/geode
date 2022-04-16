@@ -34,6 +34,9 @@ public class ClusterManagementRealizationResult extends ClusterManagementResult 
 
   /**
    * for internal use only
+   *
+   * @param statusCode the {@link StatusCode} to set
+   * @param message the status message to set
    */
   public ClusterManagementRealizationResult(StatusCode statusCode, String message) {
     super(statusCode, message);
@@ -41,6 +44,8 @@ public class ClusterManagementRealizationResult extends ClusterManagementResult 
 
   /**
    * for internal use only
+   *
+   * @param result the result to add
    */
   public void addMemberStatus(RealizationResult result) {
     memberStatuses.add(result);
@@ -52,8 +57,9 @@ public class ClusterManagementRealizationResult extends ClusterManagementResult 
 
   /**
    * For a {@link ClusterManagementService#create(AbstractConfiguration)} operation, this will
-   * return
-   * per-member status of the create.
+   * return per-member status of the create.
+   *
+   * @return a list of {@link RealizationResult}s
    */
   public List<RealizationResult> getMemberStatuses() {
     return memberStatuses;

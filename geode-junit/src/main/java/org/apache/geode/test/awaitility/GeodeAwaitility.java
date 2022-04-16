@@ -77,11 +77,11 @@ public class GeodeAwaitility {
    * {@literal @}Test
    * public void test() {
    * ...
-   * ArgumentCaptor<AlertDetails> alertDetailsCaptor = ArgumentCaptor.forClass(AlertDetails.class);
+   * ArgumentCaptor&lt;AlertDetails&gt; alertDetailsCaptor = ArgumentCaptor.forClass(AlertDetails.class);
    * verify(messageListener, timeout(TIMEOUT)).created(alertDetailsCaptor.capture());
    * }
    *
-   * <pre>
+   * </pre>
    *
    * @return the current timeout value as a {@code Duration}
    */

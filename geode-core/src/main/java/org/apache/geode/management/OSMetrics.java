@@ -79,9 +79,25 @@ public class OSMetrics implements Serializable {
   private final double systemLoadAverage;
 
   /**
-   *
    * This constructor is to be used by internal JMX framework only. User should not try to create an
    * instance of this class.
+   *
+   * @param maxFileDescriptorCount the maximum number of open file descriptors allowed by the
+   *        operating system
+   * @param openFileDescriptorCount the current number of open file descriptors
+   * @param processCpuTime the amount of time (in nanoseconds) used by the member's process
+   * @param committedVirtualMemorySize the current number of megabytes of memory allocated
+   * @param totalPhysicalMemorySize the number of megabytes of free memory available to the
+   *        operating system
+   * @param freePhysicalMemorySize the number of megabytes of free memory available to the operating
+   *        system
+   * @param totalSwapSpaceSize the number of megabytes of swap space allocated
+   * @param freeSwapSpaceSize the number of megabytes of free swap space
+   * @param name the name of the operating system
+   * @param version the version of the operating system
+   * @param arch the hardware architecture
+   * @param availableProcessors the number of available processors
+   * @param systemLoadAverage the system load average
    */
   @ConstructorProperties({"maxFileDescriptorCount", "openFileDescriptorCount", "processCpuTime",
       "committedVirtualMemorySize", "totalPhysicalMemorySize", "freePhysicalMemorySize",
@@ -111,13 +127,17 @@ public class OSMetrics implements Serializable {
 
   /**
    * Returns the maximum number of open file descriptors allowed by the operating system.
+   *
+   * @return the maximum number of open file descriptors allowed by the operating system
    */
   public long getMaxFileDescriptorCount() {
     return maxFileDescriptorCount;
   }
 
   /**
-   * Returns the current number of open file descriptors..
+   * Returns the current number of open file descriptors.
+   *
+   * @return the current number of open file descriptors
    */
   public long getOpenFileDescriptorCount() {
     return openFileDescriptorCount;
@@ -125,6 +145,8 @@ public class OSMetrics implements Serializable {
 
   /**
    * Returns the amount of time (in nanoseconds) used by the member's process.
+   *
+   * @return the amount of time (in nanoseconds) used by the member's process
    */
   public long getProcessCpuTime() {
     return processCpuTime;
@@ -132,6 +154,8 @@ public class OSMetrics implements Serializable {
 
   /**
    * Returns the current number of megabytes of memory allocated.
+   *
+   * @return the current number of megabytes of memory allocated
    */
   public long getCommittedVirtualMemorySize() {
     return committedVirtualMemorySize;
@@ -139,6 +163,8 @@ public class OSMetrics implements Serializable {
 
   /**
    * Returns the number of megabytes of memory available to the operating system.
+   *
+   * @return the number of megabytes of free memory available to the operating system
    */
   public long getTotalPhysicalMemorySize() {
     return totalPhysicalMemorySize;
@@ -146,6 +172,8 @@ public class OSMetrics implements Serializable {
 
   /**
    * Returns the number of megabytes of free memory available to the operating system.
+   *
+   * @return the number of megabytes of free memory available to the operating system
    */
   public long getFreePhysicalMemorySize() {
     return freePhysicalMemorySize;
@@ -153,6 +181,8 @@ public class OSMetrics implements Serializable {
 
   /**
    * Returns the number of megabytes of swap space allocated.
+   *
+   * @return the number of megabytes of swap space allocated
    */
   public long getTotalSwapSpaceSize() {
     return totalSwapSpaceSize;
@@ -160,6 +190,8 @@ public class OSMetrics implements Serializable {
 
   /**
    * Returns the number of megabytes of free swap space.
+   *
+   * @return the number of megabytes of free swap space
    */
   public long getFreeSwapSpaceSize() {
     return freeSwapSpaceSize;
@@ -167,6 +199,8 @@ public class OSMetrics implements Serializable {
 
   /**
    * Returns the name of the operating system.
+   *
+   * @return the name of the operating system
    */
   public String getName() {
     return name;
@@ -174,6 +208,8 @@ public class OSMetrics implements Serializable {
 
   /**
    * Returns the version of the operating system.
+   *
+   * @return the version of the operating system
    */
   public String getVersion() {
     return version;
@@ -181,6 +217,8 @@ public class OSMetrics implements Serializable {
 
   /**
    * Returns the hardware architecture.
+   *
+   * @return the hardware architecture
    */
   public String getArch() {
     return arch;
@@ -188,6 +226,8 @@ public class OSMetrics implements Serializable {
 
   /**
    * Returns the number of available processors.
+   *
+   * @return the number of available processors
    */
   public int getAvailableProcessors() {
     return availableProcessors;
@@ -195,6 +235,8 @@ public class OSMetrics implements Serializable {
 
   /**
    * Returns the system load average.
+   *
+   * @return the system load average
    */
   public double getSystemLoadAverage() {
     return systemLoadAverage;

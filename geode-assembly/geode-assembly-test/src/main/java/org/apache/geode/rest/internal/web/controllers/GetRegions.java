@@ -26,7 +26,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 
 /**
  * The GetRegions class is an gemfire function that gives data about available regions.
- * <p/>
+ * <p>
  *
  * @since GemFire 8.0
  */

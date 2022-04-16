@@ -113,7 +113,7 @@ public abstract class AbstractSessionsTest {
     return req;
   }
 
-  /**
+  /*
    * Check that the basics are working
    */
   @Test
@@ -127,7 +127,7 @@ public abstract class AbstractSessionsTest {
     assertEquals("JSESSIONID", response.getNewCookieNames()[0]);
   }
 
-  /**
+  /*
    * Test callback functionality. This is here really just as an example. Callbacks are useful to
    * implement per test actions which can be defined within the actual test method instead of in a
    * separate servlet class.
@@ -144,7 +144,7 @@ public abstract class AbstractSessionsTest {
     assertEquals(helloWorld, response.getText());
   }
 
-  /**
+  /*
    * Test that calling session.isNew() works for the initial as well as subsequent requests.
    */
   @Test
@@ -168,7 +168,7 @@ public abstract class AbstractSessionsTest {
     assertEquals("false", response.getText());
   }
 
-  /**
+  /*
    * Check that our session persists. The values we pass in as query params are used to set
    * attributes on the session.
    */
@@ -193,7 +193,7 @@ public abstract class AbstractSessionsTest {
     assertEquals(value, response.getText());
   }
 
-  /**
+  /*
    * Test that invalidating a session makes it's attributes inaccessible.
    */
   @Test
@@ -219,7 +219,7 @@ public abstract class AbstractSessionsTest {
     assertEquals("", response.getText());
   }
 
-  /**
+  /*
    * Test setting the session expiration
    */
   @Test
@@ -259,7 +259,7 @@ public abstract class AbstractSessionsTest {
     assertEquals(60, sessionManager.getMaxInactiveInterval());
   }
 
-  /**
+  /*
    * Test expiration of a session by the tomcat container, rather than gemfire expiration
    */
   @Test
@@ -288,7 +288,7 @@ public abstract class AbstractSessionsTest {
     assertEquals("", response.getText());
   }
 
-  /**
+  /*
    * Test that removing a session attribute also removes it from the region
    */
   @Test
@@ -314,7 +314,7 @@ public abstract class AbstractSessionsTest {
     assertNull(region.get(sessionId).getAttribute(key));
   }
 
-  /**
+  /*
    * Test that a session attribute gets set into the region too.
    */
   @Test
@@ -330,7 +330,7 @@ public abstract class AbstractSessionsTest {
     assertEquals(value, region.get(sessionId).getAttribute(key));
   }
 
-  /**
+  /*
    * Test that a session attribute gets removed from the region when the session is invalidated.
    */
   @Test
@@ -352,7 +352,7 @@ public abstract class AbstractSessionsTest {
     assertNull("The region should not have an entry for this session", region.get(sessionId));
   }
 
-  /**
+  /*
    * Test that multiple attribute updates, within the same request result in only the latest one
    * being effective.
    */
@@ -386,7 +386,7 @@ public abstract class AbstractSessionsTest {
     assertEquals("done", response.getText());
   }
 
-  /**
+  /*
    * Test for issue #45 Sessions are being created for every request
    */
   @Test
@@ -401,7 +401,7 @@ public abstract class AbstractSessionsTest {
     assertEquals("The region should be empty", 0, region.size());
   }
 
-  /**
+  /*
    * Test for issue #46 lastAccessedTime is not updated at the start of the request, but only at the
    * end.
    */

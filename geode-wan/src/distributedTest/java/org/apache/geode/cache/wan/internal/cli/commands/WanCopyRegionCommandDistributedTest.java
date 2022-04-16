@@ -34,11 +34,9 @@ import static org.apache.geode.management.internal.cli.functions.WanCopyRegionFu
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotNull;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -86,7 +84,7 @@ import org.apache.geode.test.junit.runners.GeodeParamsRunner;
 
 @RunWith(GeodeParamsRunner.class)
 @Category({WanTest.class})
-public class WanCopyRegionCommandDUnitTest extends WANTestBase {
+public class WanCopyRegionCommandDistributedTest extends WANTestBase {
 
   protected static VM vm8;
   protected static VM vm9;
@@ -258,6 +256,10 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
     }
   }
 
+  /**
+   * Used by {@link #testSenderOrReceiverGoesDownDuringExecution} in annotation.
+   */
+  @SuppressWarnings("unused")
   private Object[] parametersToTestSenderOrReceiverGoesDownDuringExecution() {
     return new Object[] {
         new Object[] {true, true, Gateway.SENDER, false},
@@ -674,7 +676,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
     // Check that no entries are left in the queue from B to C
     for (VM serverInB : serversInB) {
-      List<Integer> stats1 = serverInB.invoke(() -> getSenderStats(senderIdInB, 0));
+      serverInB.invoke(() -> getSenderStats(senderIdInB, 0));
     }
 
     // Check that the region's data is the same in sites "A" and "B"
@@ -1359,13 +1361,13 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
 
   public static void removeEntry(String regionName, long key) {
     Region<?, ?> region = cache.getRegion(SEPARATOR + regionName);
-    assertNotNull(region);
+    assertThat(region).isNotNull();
     region.remove(key);
   }
 
   public void sendRandomOpsFromClient(String regionName, Set<Long> keySet, int iterations) {
     Region<Long, Integer> region = cache.getRegion(SEPARATOR + regionName);
-    assertNotNull(region);
+    assertThat(region).isNotNull();
     int min = 0;
     int max = 1000;
     for (int i = 0; i < iterations; i++) {
@@ -1391,8 +1393,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Member")
         .hasSize(members);
-    String[] oksList =
-        (String[]) (new ArrayList(Collections.nCopies(members, "OK"))).toArray(new String[0]);
+    String[] oksList = Collections.nCopies(members, "OK").toArray(new String[0]);
     command
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Status")
@@ -1418,8 +1419,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Message")
         .hasSize(members);
-    String[] errorsList =
-        (String[]) (new ArrayList(Collections.nCopies(members, "ERROR"))).toArray(new String[0]);
+    String[] errorsList = Collections.nCopies(members, "ERROR").toArray(new String[0]);
     command
         .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
         .hasColumn("Status")
@@ -1489,7 +1489,7 @@ public class WanCopyRegionCommandDUnitTest extends WANTestBase {
   }
 
   private void waitForWanCopyRegionCommandToStart(boolean useParallel, boolean usePartitionedRegion,
-      List<VM> servers) throws InterruptedException {
+      List<VM> servers) {
     // Wait for the command execution to be registered in the service
     final int executionsExpected = useParallel && usePartitionedRegion ? servers.size() : 1;
     await().untilAsserted(

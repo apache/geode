@@ -32,6 +32,9 @@ public abstract class AbstractCacheLifecycleListener implements LifecycleListene
 
   /**
    * This is called by Tomcat to set properties on the Listener.
+   *
+   * @param name the name of the property to set
+   * @param value the value to set the property to
    */
   public void setProperty(String name, String value) {
     cache.setProperty(name, value);

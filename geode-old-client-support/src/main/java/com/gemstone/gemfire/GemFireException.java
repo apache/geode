@@ -31,6 +31,7 @@ package com.gemstone.gemfire;
 // to have more specific exception types. We want to avoid using
 // GemFireException to describe an arbitrary error condition (think
 // GsError).
+@Deprecated
 public abstract class GemFireException extends RuntimeException {
   public static final long serialVersionUID = -6972360779789402295L;
 
@@ -48,6 +49,8 @@ public abstract class GemFireException extends RuntimeException {
 
   /**
    * Creates a new <code>GemFireException</code> with the given detail message.
+   *
+   * @param message the detail message
    */
   public GemFireException(String message) {
     super(message);
@@ -55,6 +58,9 @@ public abstract class GemFireException extends RuntimeException {
 
   /**
    * Creates a new <code>GemFireException</code> with the given detail message and cause.
+   *
+   * @param message the detail message
+   * @param cause the cause
    */
   public GemFireException(String message, Throwable cause) {
     super(message, cause);
@@ -63,6 +69,8 @@ public abstract class GemFireException extends RuntimeException {
 
   /**
    * Creates a new <code>GemFireException</code> with the given cause and no detail message
+   *
+   * @param cause the cause
    */
   public GemFireException(Throwable cause) {
     super(cause);
@@ -82,6 +90,8 @@ public abstract class GemFireException extends RuntimeException {
   /**
    * Returns the root cause of this <code>GemFireException</code> or <code>null</code> if the cause
    * is nonexistent or unknown.
+   *
+   * @return the root cause of this <code>GemFireException</code>
    */
   public Throwable getRootCause() {
     if (getCause() == null) {

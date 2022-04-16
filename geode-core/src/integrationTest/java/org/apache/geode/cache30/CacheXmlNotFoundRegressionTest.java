@@ -32,7 +32,7 @@ public class CacheXmlNotFoundRegressionTest {
   /**
    * unit test for <a href="https://issues.apache.org/jira/browse/GEODE-3038">GEODE-3038</a> Tests
    * that an error about missing cache-xml file is indeed printed in the text log file. The test
-   * {@link CacheXml66DUnitTest#testNonExistentFile()} is supposed to test the same, but is not
+   * CacheXml66DUnitTest#testNonExistentFile() is supposed to test the same, but is not
    * enough. It only checks for an CacheXmlException exception to be thrown. Also in that test a log
    * is printed into STDOUT, and we do see our error there, but that is not the case when we work
    * with the real text log, specified via "log-file" param.

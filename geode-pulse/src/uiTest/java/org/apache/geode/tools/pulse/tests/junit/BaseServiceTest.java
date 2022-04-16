@@ -114,7 +114,7 @@ public abstract class BaseServiceTest {
 
   /**
    *
-   * @throws java.lang.Exception
+   * @throws java.lang.Exception If the logout fails
    */
   @Before
   public void setUp() throws Exception {
@@ -124,7 +124,7 @@ public abstract class BaseServiceTest {
 
   /**
    *
-   * @throws java.lang.Exception
+   * @throws java.lang.Exception if the login fails
    */
   @After
   public void tearDown() throws Exception {

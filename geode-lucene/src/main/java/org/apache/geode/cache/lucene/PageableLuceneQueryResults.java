@@ -22,7 +22,7 @@ import java.util.List;
  * <p>
  * This interface allows you to retrieve a page of query results at a time, using the
  * {@link #hasNext()} and {@link #next()} methods.
- * </p>
+ * <p>
  *
  * {@link PageableLuceneQueryResults} can be serialized and sent to other members.
  *

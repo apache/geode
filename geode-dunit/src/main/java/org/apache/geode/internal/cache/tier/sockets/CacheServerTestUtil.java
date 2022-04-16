@@ -68,6 +68,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  * @deprecated Please use {@link DistributedRule} and Geode User APIs or {@link ClusterStartupRule}
  *             instead.
  */
+@Deprecated
 public class CacheServerTestUtil extends JUnit4DistributedTestCase {
 
   private static Cache cache = null;

@@ -26,57 +26,79 @@ import org.apache.geode.management.api.JsonSerializable;
 public interface RebalanceRegionResult extends JsonSerializable, Serializable {
   /**
    * Returns the name of this region
+   *
+   * @return the name of the region
    */
   String getRegionName();
 
   /**
    * Returns the size, in bytes, of all of the buckets that were created as part of the rebalance
    * operation for this region
+   *
+   * @return the size, in bytes, of all the buckets that were created
    */
   long getBucketCreateBytes();
 
   /**
    * Returns the time, in milliseconds, taken to create buckets for this region
+   *
+   * @return the time, in milliseconds, taken to create buckets
    */
   long getBucketCreateTimeInMilliseconds();
 
   /**
    * Returns the number of buckets created during the rebalance operation
+   *
+   * @return the number of buckets created during the rebalance operation
    */
   int getBucketCreatesCompleted();
 
   /**
    * Returns the size, in bytes, of buckets that were transferred for this region.
+   *
+   * @return the size, in bytes, of buckets that were transferred
    */
   long getBucketTransferBytes();
 
   /**
    * Returns the amount of time, in milliseconds, it took to transfer buckets for this region.
+   *
+   * @return the amount of time, in milliseconds, it took to transfer buckets
    */
   long getBucketTransferTimeInMilliseconds();
 
   /**
    * Returns the number of buckets transferred for this region.
+   *
+   * @return the number of buckets transferred
    */
   int getBucketTransfersCompleted();
 
   /**
    * Returns the time, in milliseconds, spent transferring primaries for this region.
+   *
+   * @return the time, in milliseconds, spent transferring primaries
    */
   long getPrimaryTransferTimeInMilliseconds();
 
   /**
    * Returns the number of primaries that were transferred for this region.
+   *
+   * @return the number of primaries that were transferred
    */
   int getPrimaryTransfersCompleted();
 
   /**
    * Returns the time, in milliseconds, that the rebalance operation took for this region.
+   *
+   * @return the time, in milliseconds, that the rebalance operation took
    */
   long getTimeInMilliseconds();
 
   /**
    * Returns the number of members on which rebalance operation is executed.
+   *
+   * @return the number of members on which rebalance operation was executed
    */
   int getNumOfMembers();
 }

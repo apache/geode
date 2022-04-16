@@ -29,15 +29,14 @@ import org.apache.geode.annotations.Experimental;
  *
  * <p>
  * The following schema fragment specifies the expected content contained within this class.
- * <p>
  *
  * <pre>
- * &lt;simpleType name="enum-action-destroy-overflow">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="local-destroy"/>
- *     &lt;enumeration value="overflow-to-disk"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="enum-action-destroy-overflow"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string"&gt;
+ *     &lt;enumeration value="local-destroy"/&gt;
+ *     &lt;enumeration value="overflow-to-disk"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  *
  */

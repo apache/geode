@@ -39,11 +39,11 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
  * import static org.awaitility.Duration.*; // optional
  * import static java.util.concurrent.TimeUnit.*; // optional
  *
- * await().until(() -> isDone());
+ * await().until(() -&gt; isDone());
  *
- * Host.getHost(0).getVM(0).invoke(() -> await().until(() -> isDone()));
+ * Host.getHost(0).getVM(0).invoke(() -&gt; await().until(() -&gt; isDone()));
  *
- * Host.getHost(0).getVM(0).invoke(() -> await("waiting for 4 members").until(() -> getMemberCount(), is(4)));
+ * Host.getHost(0).getVM(0).invoke(() -&gt; await("waiting for 4 members").until(() -&gt; getMemberCount(), is(4)));
  *
  * await().untilCall(getValue(), equalTo(5));
  *
@@ -64,7 +64,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
  * @deprecated Use {@link GeodeAwaitility} instead.
  *
  * @see GeodeAwaitility
- * @see org.awaitility.Duration
+ * @see org.awaitility.Durations
  * @see org.awaitility.core.ConditionFactory
  */
 @Deprecated
@@ -79,6 +79,7 @@ public class Wait {
    *
    * @deprecated Please use {@link GeodeAwaitility} instead.
    */
+  @Deprecated
   public static void pause() {
     pause(250);
   }
@@ -87,8 +88,11 @@ public class Wait {
    * Pause for the specified milliseconds. Make sure system clock has advanced by the specified
    * number of millis before returning.
    *
+   * @param milliseconds the number of milliseconds to pause
+   *
    * @deprecated Please use {@link GeodeAwaitility} instead.
    */
+  @Deprecated
   public static void pause(final int milliseconds) {
     if (milliseconds >= 1000 || logger.isDebugEnabled()) { // check for debug but log at info
       logger.info("Pausing for {} ms...", milliseconds);
@@ -165,6 +169,7 @@ public class Wait {
    * @return the last time stamp observed
    * @deprecated Please use {@link GeodeAwaitility} instead.
    */
+  @Deprecated
   public static long waitForExpiryClockToChange(final LocalRegion cacheTimeMillisSource) {
     return waitForExpiryClockToChange(cacheTimeMillisSource,
         cacheTimeMillisSource.cacheTimeMillis());
@@ -178,6 +183,7 @@ public class Wait {
    * @return the last time stamp observed
    * @deprecated Please use {@link GeodeAwaitility} instead.
    */
+  @Deprecated
   public static long waitForExpiryClockToChange(final LocalRegion cacheTimeMillisSource,
       final long baseTime) {
     long nowTime;

@@ -73,15 +73,15 @@ public enum FieldType {
   }
 
   /**
-   * Returns true if the type is "fixed-width"; false if it is "variable-width".
+   * @return true if the type is "fixed-width"; false if it is "variable-width".
    */
   public boolean isFixedWidth() {
     return isFixedWidth;
   }
 
   /**
-   * Returns the number of bytes used to serialize fixed-width fields; -1 is returned for
-   * variable-width fields.
+   * @return the number of bytes used to serialize fixed-width fields; -1 is returned for
+   *         variable-width fields.
    */
   public int getWidth() {
     return width;
@@ -93,7 +93,7 @@ public enum FieldType {
   }
 
   /**
-   * Returns a ByteBuffer that contains the serialized encoding of this type's default value.
+   * @return a ByteBuffer that contains the serialized encoding of this type's default value.
    */
   public ByteBuffer getDefaultBytes() {
     return defaultSerializedValue;
@@ -101,6 +101,9 @@ public enum FieldType {
 
   /**
    * Given a Class return the corresponding FieldType.
+   *
+   * @param c a {@link Class}
+   * @return the {@link FieldType} corresponding to the given {@link Class}
    */
   public static FieldType get(Class<?> c) {
     if (c.equals(boolean.class)) {

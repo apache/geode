@@ -29,6 +29,9 @@ public class CacheXmlException extends CacheRuntimeException {
 
   /**
    * Creates a new <code>CacheXmlException</code> with the given description and cause.
+   *
+   * @param message the detail message
+   * @param cause the cause
    */
   public CacheXmlException(String message, Throwable cause) {
     super(message, cause);
@@ -36,6 +39,8 @@ public class CacheXmlException extends CacheRuntimeException {
 
   /**
    * Creates a new <code>CacheXmlException</code> with the given description.
+   *
+   * @param message the detail message
    */
   public CacheXmlException(String message) {
     super(message);

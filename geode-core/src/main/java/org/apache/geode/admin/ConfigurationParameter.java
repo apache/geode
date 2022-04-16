@@ -27,37 +27,81 @@ package org.apache.geode.admin;
 @Deprecated
 public interface ConfigurationParameter {
 
-  /** Gets the identifying name of this configuration parameter. */
+  /**
+   * Gets the identifying name of this configuration parameter.
+   *
+   * @return the identifying name of this configuration parameter
+   */
   String getName();
 
-  /** Gets the full description of this configuration parameter */
+  /**
+   * Gets the full description of this configuration parameter
+   *
+   * @return the full description of this configuration parameter
+   */
   String getDescription();
 
-  /** Gets the current value */
+  /**
+   * Gets the current value
+   *
+   * @return the current value
+   */
   Object getValue();
 
-  /** Gets the current value as a string */
+  /**
+   * Gets the current value as a string
+   *
+   * @return the current value as a string
+   */
   String getValueAsString();
 
-  /** Gets the class type of the value */
+  /**
+   * Gets the class type of the value
+   *
+   * @return the class type of the value
+   */
   Class getValueType();
 
-  /** True if this is modifiable; false if read-only */
+  /**
+   * True if this is modifiable; false if read-only
+   *
+   * @return whether this is modifiable
+   */
   boolean isModifiable();
 
-  /** Returns true if this config parameter uses a string array for value. */
+  /**
+   * Returns true if this config parameter uses a string array for value.
+   *
+   * @return whether this config parameter uses a string array for value
+   */
   boolean isArray();
 
-  /** Returns true if this config parameter represents an InetAddress value. */
+  /**
+   * Returns true if this config parameter represents an InetAddress value.
+   *
+   * @return whether this config parameter represents an InetAddress value
+   */
   boolean isInetAddress();
 
-  /** Returns true if this config parameter represents a File value. */
+  /**
+   * Returns true if this config parameter represents a File value.
+   *
+   * @return whether this config parameter represents a File value
+   */
   boolean isFile();
 
-  /** Returns true if this config parameter represents an octal value. */
+  /**
+   * Returns true if this config parameter represents an octal value.
+   *
+   * @return whether this config parameter represents an octal value
+   */
   boolean isOctal();
 
-  /** Returns true if this config parameter represents a string value. */
+  /**
+   * Returns true if this config parameter represents a string value
+   *
+   * @return whether this config parameter represents a string value
+   */
   boolean isString();
 
   /**

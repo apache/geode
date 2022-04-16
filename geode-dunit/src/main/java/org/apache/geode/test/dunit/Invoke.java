@@ -14,6 +14,7 @@
  */
 package org.apache.geode.test.dunit;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,6 +43,7 @@ public class Invoke {
    * <p>
    * Note: this does NOT include the controller VM or locator VM.
    *
+   * @param runnable the <code>SerializableRunnable</code> to invoke
    * @see VM#invoke(SerializableRunnableIF)
    */
   public static void invokeInEveryVM(final SerializableRunnableIF runnable) {
@@ -65,6 +67,8 @@ public class Invoke {
   /**
    * Invokes a method in every remote VM that DUnit knows about.
    *
+   * @param targetClass The class on which to invoke the method
+   * @param targetMethod The name of the method to invoke
    * @see VM#invoke(Class, String)
    * @deprecated Please use {@link #invokeInEveryVM(SerializableRunnableIF)} or another
    *             non-deprecated method in <code>Invoke</code> instead.
@@ -83,10 +87,14 @@ public class Invoke {
   /**
    * Invokes a method in every remote VM that DUnit knows about.
    *
+   * @param targetClass The class on which to invoke the method
+   * @param targetMethod The name of the method to invoke
+   * @param methodArgs Arguments passed to the method call (must be {@link Serializable}).
    * @see VM#invoke(Class, String)
    * @deprecated Please use {@link #invokeInEveryVM(SerializableRunnableIF)} or another
    *             non-deprecated method in <code>Invoke</code> instead.
    */
+  @Deprecated
   public static void invokeInEveryVM(final Class<?> targetClass, final String targetMethod,
       final Object[] methodArgs) {
     for (int hostIndex = 0; hostIndex < Host.getHostCount(); hostIndex++) {
@@ -102,6 +110,8 @@ public class Invoke {
   /**
    * Invokes a <code>SerializableCallable</code> in every VM that DUnit knows about.
    *
+   * @param <T> the type returned by the <code>SerializableCallable</code>
+   * @param callable the <code>SerializableCallable</code>
    * @return a Map of results, where the key is the VM and the value is the result for that VM
    * @see VM#invoke(SerializableCallableIF)
    */

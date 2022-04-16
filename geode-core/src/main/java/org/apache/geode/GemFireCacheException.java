@@ -27,6 +27,9 @@ public class GemFireCacheException extends GemFireException {
 
   /**
    * Creates a new <code>GemFireCacheException</code>.
+   *
+   * @param message the detail message
+   * @param ex the cause
    */
   public GemFireCacheException(String message, CacheException ex) {
     super(message, ex);
@@ -34,6 +37,8 @@ public class GemFireCacheException extends GemFireException {
 
   /**
    * Creates a new <code>GemFireCacheException</code>.
+   *
+   * @param ex the cause
    */
   public GemFireCacheException(CacheException ex) {
     super(ex);
@@ -41,6 +46,8 @@ public class GemFireCacheException extends GemFireException {
 
   /**
    * Gets the wrapped {@link CacheException}
+   *
+   * @return the wrapped {@link CacheException}
    */
   public CacheException getCacheException() {
     return (CacheException) getCause();

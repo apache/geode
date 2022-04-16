@@ -66,6 +66,7 @@ public interface Declarable {
    *         illegal or malformed.
    * @deprecated as of Geode 1.5 implement initialize instead.
    */
+  @Deprecated
   default void init(Properties props) {}
 
   /**

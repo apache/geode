@@ -30,14 +30,14 @@ public class RemoteInvoker implements Serializable {
 
   private static final long serialVersionUID = -1759722991299584649L;
 
-  /**
+  /*
    * Invokes in these VMs: controller VM and dunit VMs but not the dunit locator VM
    */
   public void invokeInEveryVM(final SerializableRunnableIF runnable) {
     Invoke.invokeInEveryVM(runnable);
   }
 
-  /**
+  /*
    * Invokes in these VMs: controller VM and dunit VMs but not the dunit locator VM
    */
   public void invokeInEveryVMAndController(final SerializableRunnableIF runnable) {
@@ -49,7 +49,7 @@ public class RemoteInvoker implements Serializable {
     Invoke.invokeInEveryVM(runnable);
   }
 
-  /**
+  /*
    * Invokes in all VMs: controller VM, dunit VMs, and the dunit locator VM
    */
   public void invokeInEveryVMAndLocator(final SerializableRunnableIF runnable) {
@@ -57,14 +57,14 @@ public class RemoteInvoker implements Serializable {
     invokeInLocator(runnable);
   }
 
-  /**
+  /*
    * Invokes in specified VM
    */
   public void invoke(final SerializableRunnableIF runnable, final VM vm) {
     vm.invoke(runnable);
   }
 
-  /**
+  /*
    * Invokes in local VM (controller VM)
    */
   public void invoke(final SerializableRunnableIF runnable) {

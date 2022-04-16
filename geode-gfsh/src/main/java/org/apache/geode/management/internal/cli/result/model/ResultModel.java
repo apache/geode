@@ -34,7 +34,7 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
 
 /**
  * This class is the primary container for results returned from a {@link GfshCommand}.
- * <br/>
+ * <br>
  * The following different types of 'models' (or sections in the older terminology) can be added to
  * an instance of {@code ResultModel}.
  * <ul>
@@ -47,14 +47,14 @@ import org.apache.geode.management.internal.functions.CliFunctionResult;
  * </ul>
  * The order in which models are added is maintained and will be presented to the user in the same
  * order.
- * <br/>
+ * <br>
  * Errors should just be added as {@code InfoResultModel}s and then the status should be set
  * appropriately to indicate an error. Once a {@code ResultModel}s status has been set to ERROR, it
  * cannot be reset to OK.
- * <br/>
+ * <br>
  * Each added section should be given a descriptive name. This name will eventually become part of
  * the API when the JSON results are displayable via gfsh. So pick carefully :).
- * <br/>
+ * <br>
  * A few common and generic names are already defined:
  * <ul>
  * <li>{@code INFO_SECTION}</li>

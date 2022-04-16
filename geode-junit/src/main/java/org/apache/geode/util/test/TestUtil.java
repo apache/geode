@@ -44,6 +44,7 @@ public class TestUtil {
    *
    * @param clazz the class to look relative too
    * @param name the name of the resource, eg "cache.xml"
+   * @return the path to a named resource
    *
    * @deprecated Please use {@link ResourceUtils} instead.
    */
@@ -72,6 +73,7 @@ public class TestUtil {
    *
    * @param classLoader the ClassLoader to look up resource in
    * @param name the name of the resource, eg "cache.xml"
+   * @return the path to a named resource
    *
    * @deprecated Please use {@link ResourceUtils} instead.
    */

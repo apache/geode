@@ -37,6 +37,8 @@ public class DiskMetrics {
 
   /**
    * Returns the average number of disk reads per second.
+   *
+   * @return the average number of disk reads per second
    */
   public float getDiskReadsRate() {
     return diskReadsRate;
@@ -44,6 +46,8 @@ public class DiskMetrics {
 
   /**
    * Returns the average number of disk writes per second.
+   *
+   * @return the average number of disk writes per second
    */
   public float getDiskWritesRate() {
     return diskWritesRate;
@@ -51,6 +55,8 @@ public class DiskMetrics {
 
   /**
    * Returns the number of backups currently in progress on this DiskStore.
+   *
+   * @return the number of backups currently in progress on this DiskStore
    */
   public int getTotalBackupInProgress() {
     return totalBackupInProgress;
@@ -58,6 +64,8 @@ public class DiskMetrics {
 
   /**
    * Returns the number of backups of this DiskStore that have been completed.
+   *
+   * @return the number of backups of this DiskStore that have been completed
    */
   public int getTotalBackupCompleted() {
     return totalBackupCompleted;
@@ -65,6 +73,8 @@ public class DiskMetrics {
 
   /**
    * Returns the total number of bytes of space that have been used.
+   *
+   * @return the total number of bytes of space that have been used
    */
   public long getTotalBytesOnDisk() {
     return totalBytesOnDisk;
@@ -72,6 +82,8 @@ public class DiskMetrics {
 
   /**
    * Returns the flush time average latency.
+   *
+   * @return the flush time average latency
    */
   public long getDiskFlushAvgLatency() {
     return diskFlushAvgLatency;
@@ -79,6 +91,8 @@ public class DiskMetrics {
 
   /**
    * Sets the average number of disk reads per second.
+   *
+   * @param diskReadsRate the average number of disk reads per second
    */
   public void setDiskReadsRate(float diskReadsRate) {
     this.diskReadsRate = diskReadsRate;
@@ -86,6 +100,8 @@ public class DiskMetrics {
 
   /**
    * Sets the average number of disk writes per second.
+   *
+   * @param diskWritesRate the average number of disk writes per second
    */
   public void setDiskWritesRate(float diskWritesRate) {
     this.diskWritesRate = diskWritesRate;
@@ -93,6 +109,8 @@ public class DiskMetrics {
 
   /**
    * Sets the number of backups currently in progress on this DiskStore.
+   *
+   * @param totalBackupInProgress the number of backups currently in progress on this DiskStore
    */
   public void setTotalBackupInProgress(int totalBackupInProgress) {
     this.totalBackupInProgress = totalBackupInProgress;
@@ -100,6 +118,8 @@ public class DiskMetrics {
 
   /**
    * Sets the number of backups of this DiskStore that have been completed.
+   *
+   * @param totalBackupCompleted the number of backups of this DiskStore that have been completed
    */
   public void setTotalBackupCompleted(int totalBackupCompleted) {
     this.totalBackupCompleted = totalBackupCompleted;
@@ -107,6 +127,8 @@ public class DiskMetrics {
 
   /**
    * Sets the total number of bytes of space that have been used.
+   *
+   * @param totalBytesOnDisk the total number of bytes of space that have been used
    */
   public void setTotalBytesOnDisk(long totalBytesOnDisk) {
     this.totalBytesOnDisk = totalBytesOnDisk;
@@ -114,6 +136,8 @@ public class DiskMetrics {
 
   /**
    * Sets the flush time average latency.
+   *
+   * @param diskFlushAvgLatency the flush time average latency
    */
   public void setDiskFlushAvgLatency(long diskFlushAvgLatency) {
     this.diskFlushAvgLatency = diskFlushAvgLatency;

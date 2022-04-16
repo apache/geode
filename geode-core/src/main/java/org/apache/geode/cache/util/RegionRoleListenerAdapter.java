@@ -24,6 +24,7 @@ import org.apache.geode.cache.RoleEvent;
  *
  * @deprecated this feature is scheduled to be removed
  */
+@Deprecated
 public abstract class RegionRoleListenerAdapter<K, V> extends RegionMembershipListenerAdapter<K, V>
     implements RegionRoleListener<K, V> {
 

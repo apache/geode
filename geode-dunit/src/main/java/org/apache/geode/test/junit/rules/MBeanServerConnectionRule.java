@@ -89,37 +89,31 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
     disconnect();
   }
 
-  /**
-   * Retrieve a new proxy MXBean
-   *
-   * @return A new proxy MXBean of the same type with which the class was constructed
+  /*
+   * Retrieve a new proxy MXBean of the same type with which the class was constructed
    */
   public <T> T getProxyMXBean(Class<T> proxyClass)
       throws MalformedObjectNameException, IOException {
     return getProxyMXBean(proxyClass, null);
   }
 
-  /**
-   * Retrieve a new proxy MXBean
-   *
-   * @return A new proxy MXBean of the same type with which the class was constructed
+  /*
+   * Retrieve a new proxy MXBean of the same type with which the class was constructed
    */
   public <T> T getProxyMXBean(Class<T> proxyClass, String beanQueryName)
       throws MalformedObjectNameException, IOException {
     return JMX.newMXBeanProxy(con, getObjectName(proxyClass, beanQueryName), proxyClass);
   }
 
-  /**
-   * Retrieve a new proxy MBean
-   *
-   * @return A new proxy MBean of the same type with which the class was constructed
+  /*
+   * Retrieve a new proxy MBean of the same type with which the class was constructed
    */
   public <T> T getProxyMBean(Class<T> proxyClass, String beanQueryName)
       throws IOException, MalformedObjectNameException {
     return JMX.newMBeanProxy(con, getObjectName(proxyClass, beanQueryName), proxyClass);
   }
 
-  /**
+  /*
    * Returns a list of remote MBeans from the given member. The MBeans are filtered to exclude the
    * member's local MBeans. The resulting list includes only MBeans that all locators in the system
    * should have.
@@ -137,10 +131,8 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
         .collect(toList());
   }
 
-  /**
-   * Retrieve a new proxy MBean
-   *
-   * @return A new proxy MBean of the same type with which the class was constructed
+  /*
+   * Retrieve a new proxy MBean of the same type with which the class was constructed
    */
   public <T> T getProxyMBean(Class<T> proxyClass) throws MalformedObjectNameException, IOException {
     return getProxyMBean(proxyClass, null);

@@ -37,6 +37,8 @@ public abstract class TestCacheCallback implements CacheCallback {
   /**
    * Returns whether or not one of this <code>CacheListener</code> methods was invoked. Before
    * returning, the <code>invoked</code> flag is cleared.
+   *
+   * @return whether one of this <code>CacheListener</code> methods was invoked
    */
   public boolean wasInvoked() {
     checkForError();
@@ -47,7 +49,7 @@ public abstract class TestCacheCallback implements CacheCallback {
     return value;
   }
 
-  /**
+  /*
    * Waits up to timeoutMs milliseconds for the listener to be invoked. Calls wasInvoked and returns
    * its value
    */

@@ -173,7 +173,7 @@ public interface FunctionExecutionService {
    * Registering a function allows execution of the function using
    * {@link Execution#execute(String)}. Every member that could execute a function using its
    * {@link Function#getId()} should register the function.
-   * </p>
+   * <p>
    *
    * @throws FunctionException if function instance passed is null or Function.getId() returns null
    * @since GemFire 6.0

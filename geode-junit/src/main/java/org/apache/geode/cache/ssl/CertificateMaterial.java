@@ -24,7 +24,7 @@ import java.util.Optional;
 /**
  * Class which encapsulates a {@link X509Certificate} as well as the associated
  * {@link KeyPair}. If the certificate is not self-signed it will also hold an issuer.
- * <p/>
+ * <p>
  * {@code CertificateMaterial} is produced by {@link CertificateBuilder}s.
  *
  * @see CertificateBuilder

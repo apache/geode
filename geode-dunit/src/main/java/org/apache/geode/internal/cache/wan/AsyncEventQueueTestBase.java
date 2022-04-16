@@ -116,6 +116,7 @@ import org.apache.geode.test.dunit.rules.DistributedRule;
  * @deprecated Please use {@link DistributedRule} and Geode User APIs or {@link ClusterStartupRule}
  *             instead.
  */
+@Deprecated
 public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
 
   protected static Cache cache;

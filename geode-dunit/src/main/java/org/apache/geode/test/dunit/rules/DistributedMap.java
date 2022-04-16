@@ -45,7 +45,7 @@ import org.apache.geode.test.dunit.VM;
  *   distributedMap.put("key", "value);
  *
  *   for (VM vm : getAllVMs()) {
- *     vm.invoke(() -> {
+ *     vm.invoke(() -&gt; {
  *       assertThat(distributedMap.get("key")).isEqualTo("value");
  *     });
  *   }
@@ -204,6 +204,10 @@ public class DistributedMap<K, V> extends AbstractDistributedRule implements Map
 
     /**
      * Initialize with specified entry when {@code DistributedMap} is built.
+     *
+     * @param key the key to add
+     * @param value the value to add
+     * @return a reference to this Builder
      */
     public Builder<K, V> put(K key, V value) {
       initialEntries.put(key, value);
@@ -212,6 +216,9 @@ public class DistributedMap<K, V> extends AbstractDistributedRule implements Map
 
     /**
      * Initialize with specified entries when {@code DistributedMap} is built.
+     *
+     * @param m the map of entries to add
+     * @return a reference to this Builder
      */
     public Builder<K, V> putAll(Map<? extends K, ? extends V> m) {
       initialEntries.putAll(m);
@@ -220,6 +227,8 @@ public class DistributedMap<K, V> extends AbstractDistributedRule implements Map
 
     /**
      * Build an instance of {@code DistributedMap}.
+     *
+     * @return an instance of {@code DistributedMap}
      */
     public DistributedMap<K, V> build() {
       return new DistributedMap<>(this);

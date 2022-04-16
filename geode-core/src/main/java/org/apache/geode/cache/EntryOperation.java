@@ -41,6 +41,7 @@ public interface EntryOperation<K, V> {
    * @since GemFire 6.0
    * @deprecated
    */
+  @Deprecated
   Operation getOperation();
 
   /**
@@ -69,6 +70,8 @@ public interface EntryOperation<K, V> {
    * {@link #getCallbackArgument} will return <code>null</code> when this method returns
    * <code>false</code>.
    *
+   * @return the callback argument is available
+   *
    * @since GemFire 6.0
    */
   boolean isCallbackArgumentAvailable();
@@ -81,5 +84,6 @@ public interface EntryOperation<K, V> {
    * @return the value.
    * @deprecated
    */
+  @Deprecated
   V getNewValue();
 }

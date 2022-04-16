@@ -20,6 +20,9 @@ import java.net.URI;
 
 import javax.tools.SimpleJavaFileObject;
 
+/**
+ * In-memory representation of the name and bytecode of a Java class.
+ */
 public class InMemoryClassFile extends SimpleJavaFileObject {
   private final String name;
   private ByteArrayOutputStream out;

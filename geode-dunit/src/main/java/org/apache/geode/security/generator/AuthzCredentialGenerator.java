@@ -101,6 +101,8 @@ public abstract class AuthzCredentialGenerator {
 
   /**
    * Get the {@link CredentialGenerator} being used by this instance.
+   *
+   * @return the {@link CredentialGenerator} being used by this instance
    */
   public CredentialGenerator getCredentialGenerator() {
     return generator;
@@ -334,6 +336,9 @@ public abstract class AuthzCredentialGenerator {
 
     /**
      * Returns the {@code ClassCode} represented by specified ordinal.
+     *
+     * @param ordinal the ordinal representation of a {@code ClassCode}
+     * @return the {@code ClassCode} represented by specified ordinal.
      */
     public static ClassCode fromOrdinal(final byte ordinal) {
       return VALUES[ordinal];
@@ -341,12 +346,15 @@ public abstract class AuthzCredentialGenerator {
 
     /**
      * Returns the {@code ClassCode} represented by specified string.
+     *
+     * @param operationName the operation name associated with a {@code ClassCode}
+     * @return the {@code ClassCode} represented by specified string
      */
     public static ClassCode parse(final String operationName) {
       return (ClassCode) CODE_NAME_MAP.get(operationName);
     }
 
-    /**
+    /*
      * Returns all the possible values.
      */
     public static List getAll() {
@@ -396,6 +404,7 @@ public abstract class AuthzCredentialGenerator {
     /**
      * Indicates whether other {@code ClassCode} is same as this one.
      *
+     * @param opCode the {@code ClassCode} to check
      * @return true if other {@code ClassCode} is same as this one.
      */
     public boolean equals(final ClassCode opCode) {

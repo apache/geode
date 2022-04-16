@@ -79,12 +79,14 @@ public class IndexRepositorySpy extends IndexRepositoryFactory {
   /**
    * Add a callback that runs before a call to {@link IndexRepository#create(Object, Object)},
    * {@link IndexRepository#update(Object, Object)} or {@link IndexRepository#delete(Object)}
+   *
+   * @param action the callback to run
    */
   public void beforeWriteIndexRepository(Consumer<Object> action) {
     beforeWrite = action;
   }
 
-  /**
+  /*
    * Return a consumer that will invoke the passed in consumer only once
    */
   public static <T> Consumer<T> doOnce(Consumer<T> consumer) {
@@ -101,7 +103,7 @@ public class IndexRepositorySpy extends IndexRepositoryFactory {
     };
   }
 
-  /**
+  /*
    * Return a consumer that will invoke the passed in consumer only after it has been called exactly
    * N times.
    */

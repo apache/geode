@@ -34,32 +34,44 @@ public interface DistributedRegionMXBean {
 
   /**
    * Returns the name of the Region.
+   *
+   * @return the name of the Region
    */
   String getName();
 
   /**
    * Returns the number of members hosting/using the Region.
+   *
+   * @return the number of members hosting/using the Region
    */
   int getMemberCount();
 
   /**
    * Returns a list of names/IDs of the members hosting the Region.
+   *
+   * @return an array of names/IDs of the members hosting the Region
    */
   String[] getMembers();
 
   /**
    * Returns the type (data policy) of the Region.
    * CreateRegionCommand will use this attribute
+   *
+   * @return the type (data policy) of the Region
    */
   String getRegionType();
 
   /**
    * Returns the full path of the Region.
+   *
+   * @return the full path of the Region
    */
   String getFullPath();
 
   /**
    * Returns the name of the parent Region.
+   *
+   * @return the name of the parent Region
    */
   String getParentRegion();
 
@@ -67,63 +79,85 @@ public interface DistributedRegionMXBean {
    * Returns a list of the names of the subregions.
    *
    * @param recursive <code>true</code> to recursively traverse and find sub-regions.
+   * @return an array of the names of the subregions
    */
   String[] listSubRegionPaths(boolean recursive);
 
   /**
    * Returns the attributes of the Region.
+   *
+   * @return the attributes of the Region
    */
   RegionAttributesData listRegionAttributes();
 
   /**
    * Returns the partition attributes of the Region.
+   *
+   * @return the partition attributes of the Region
    */
   PartitionAttributesData listPartitionAttributes();
 
   /**
    * Returns the fixed partition attributes of the Region.
+   *
+   * @return the fixed partition attributes of the Region
    */
   FixedPartitionAttributesData[] listFixedPartitionAttributesData();
 
   /**
    * Returns the eviction attributes of the Region.
+   *
+   * @return the eviction attributes of the Region
    */
   EvictionAttributesData listEvictionAttributes();
 
   /**
    * Returns the membership attributes of the Region.
    *
+   * @return the membership attributes of the Region
+   *
    * @deprecated this API is scheduled to be removed
    */
+  @Deprecated
   MembershipAttributesData listMembershipAttributes();
 
   /**
    * Returns the time of the most recent modification. For partitioned region it will be -1. This
    * feature is not supported for partitioned regions.
+   *
+   * @return the time of the most recent modification
    */
   long getLastModifiedTime();
 
   /**
    * Returns the time of the most recent access. For partitioned region it will be -1. This feature
    * is not supported for partitioned regions.
+   *
+   * @return the time of the most recent access
    */
   long getLastAccessedTime();
 
   /**
    * Returns the number of times that a cache miss occurred. For partitioned region it will be -1.
    * This feature is not supported for partitioned regions.
+   *
+   * @return the number of times that a cache miss occurred
    */
   long getMissCount();
 
   /**
    * Returns the number of times that a hit occurred. For partitioned region it will be -1. This
    * feature is not supported for partitioned regions.
+   *
+   * @return the number of times that a hit occurred
    */
   long getHitCount();
 
   /**
    * Returns the hit to miss ratio. For partitioned region it will be -1. This feature is not
    * supported for partitioned regions.
+   *
+   * @return the hit to miss ratio
    */
   float getHitRatio();
 
@@ -131,51 +165,70 @@ public interface DistributedRegionMXBean {
   /**
    * Returns the number of entries in the Region.
    *
+   * @return the number of entries in the Region
    */
   long getSystemRegionEntryCount();
 
   /**
    * Returns the number of gets per second.
+   *
+   * @return the number of gets per second
    */
   float getGetsRate();
 
   /**
    * Returns the number of puts per second.
+   *
+   * @return the number of puts per second
    */
   float getPutsRate();
 
   /**
    * Returns the number of creates per second.
+   *
+   * @return the number of creates per second
    */
   float getCreatesRate();
 
   /**
    * Returns the number of destroys per second.
+   *
+   * @return the number of destroys per second
    */
   float getDestroyRate();
 
   /**
    * Returns the number of putAlls per second.
+   *
+   * @return the number of putAlls per second
    */
   float getPutAllRate();
 
   /**
    * Returns the number of local puts per second.
+   *
+   * @return the number of local puts per second
    */
   float getPutLocalRate();
 
   /**
    * Returns the number of remote puts per second.
+   *
+   * @return the number of remote puts per second
    */
   float getPutRemoteRate();
 
   /**
    * Returns the latency for the most recent remote put.
+   *
+   * @return the latency for the most recent remote put
    */
   long getPutRemoteLatency();
 
   /**
    * Returns the average latency for remote puts.
+   *
+   * @return the average latency for remote puts
    */
   long getPutRemoteAvgLatency();
 
@@ -183,21 +236,29 @@ public interface DistributedRegionMXBean {
    * Returns the current number of entries whose values are only on disk (not in memory). Entries
    * may not exist in memory if they have been overflowed to disk or not yet been faulted in after a
    * recovery.
+   *
+   * @return the current number of entries whose values are only on disk
    */
   long getTotalEntriesOnlyOnDisk();
 
   /**
    * Returns the current number of entries held in memory.
+   *
+   * @return the current number of entries held in memory
    */
   long getTotalDiskEntriesInVM();
 
   /**
    * Returns the number of entries per second for all disks.
+   *
+   * @return the number of entries per second for all disks
    */
   float getDiskReadsRate();
 
   /**
    * Returns the number of entries per second for all disks.
+   *
+   * @return the number of entries per second for all disks
    */
   float getDiskWritesRate();
 
@@ -205,73 +266,102 @@ public interface DistributedRegionMXBean {
    * Returns the current number of disk tasks (op-log compaction, asynchronous recoveries, etc) that
    * are waiting for a thread to run.
    *
+   * @return the current number of disk tasks that are waiting for a thread to run
+   *
    * @deprecated
    */
+  @Deprecated
   long getDiskTaskWaiting();
 
   /**
    * Returns the current number of disk writes in progress.
+   *
+   * @return the current number of disk writes in progress
    */
   long getTotalDiskWritesProgress();
 
   /**
    * Returns the average latency of a call to a {@link CacheWriter}.
+   *
+   * @return the average latency of a call to a {@link CacheWriter}
    */
   long getCacheWriterCallsAvgLatency();
 
   /**
    * Returns the average latency of a call to a {@link CacheListener}.
+   *
+   * @return the average latency of a call to a {@link CacheListener}
    */
   long getCacheListenerCallsAvgLatency();
 
   /**
    * Returns the entry eviction rate as triggered by the LRU policy.
+   *
+   * @return the entry eviction rate as triggered by the LRU policy
    */
 
   float getLruEvictionRate();
 
   /**
    * Returns the rate of entries destroyed either by destroy cache operations or eviction.
+   *
+   * @return the rate of entries destroyed either by destroy cache operations or eviction
    */
   float getLruDestroyRate();
 
   /**
    * Returns the number of buckets on this member. Only applicable for partitioned regions.
+   *
+   * @return the number of buckets on this member. Only applicable for partitioned regions
    */
   int getBucketCount();
 
   /**
    * Returns the number of primary buckets on this member. Only applicable for partitioned regions.
+   *
+   * @return the number of primary buckets on this member. Only applicable for partitioned regions
    */
   int getPrimaryBucketCount();
 
   /**
    * Returns the number of buckets without full redundancy. Only applicable for partitioned regions.
+   *
+   * @return the number of buckets without full redundancy. Only applicable for partitioned regions
    */
   int getNumBucketsWithoutRedundancy();
 
   /**
    * Returns the total number of entries in all buckets. Only applicable for partitioned regions.
+   *
+   * @return the total number of entries in all buckets. Only applicable for partitioned regions
    */
   int getTotalBucketSize();
 
   /**
    * Returns the average number of entries in bucket. Only applicable for partitioned regions.
+   *
+   * @return the average number of entries in bucket. Only applicable for partitioned regions
    */
   int getAvgBucketSize();
 
   /**
    * Returns the total number of bytes used by all disks.
+   *
+   * @return the total number of bytes used by all disks
    */
   long getDiskUsage();
 
   /**
    * Returns the average number of read requests per second.
+   *
+   * @return the average number of read requests per second
    */
   float getAverageReads();
 
   /**
    * Returns the average number of write requests per second.
+   *
+   * @return the average number of write requests per second
    */
   float getAverageWrites();
 
@@ -300,11 +390,15 @@ public interface DistributedRegionMXBean {
    * All partitioned regions can report entry size, but the value also includes
    * redundant entries and also counts the size of all the secondary entries in
    * the node.
+   *
+   * @return the aggregate entry size (in bytes) of all entries
    */
   long getEntrySize();
 
   /**
    * Returns the number of members whose entry count is 0.
+   *
+   * @return the number of members whose entry count is 0
    */
   int getEmptyNodes();
 }

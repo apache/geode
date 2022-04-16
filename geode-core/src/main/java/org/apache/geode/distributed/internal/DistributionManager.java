@@ -212,6 +212,7 @@ public interface DistributionManager extends ReplySender {
    *
    * @deprecated admin members are deprecated
    */
+  @Deprecated
   void addAdminConsole(InternalDistributedMember id);
 
   DMStats getStats();

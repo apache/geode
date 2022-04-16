@@ -58,11 +58,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_P
 import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_TRUSTSTORE_PASSWORD;
-import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_BIND_ADDRESS;
-import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_ENABLED;
-import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_REDUNDANT_COPIES;
-import static org.apache.geode.distributed.ConfigurationProperties.GEODE_FOR_REDIS_USERNAME;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
@@ -2688,8 +2683,8 @@ public interface DistributionConfig
 
   /**
    * The static String definition of the cluster ssl prefix <i>"cluster-ssl"</i> used in conjunction
-   * with other <i>cluster-ssl-*</i> properties property <a name="cluster-ssl"/a>
-   * </p>
+   * with other <i>cluster-ssl-*</i> properties property <a name="cluster-ssl"></a>
+   * <p>
    * <U>Description</U>: The cluster-ssl property prefix
    */
   @Deprecated
@@ -2827,6 +2822,7 @@ public interface DistributionConfig
    * @since GemFire 8.0
    * @deprecated Geode 1.0 use {@link #getClusterSSLProperties()}
    */
+  @Deprecated
   Properties getJmxSSLProperties();
 
   /**
@@ -3209,6 +3205,7 @@ public interface DistributionConfig
    * @deprecated Geode 1.0 use
    *             {@link ConfigurationProperties#CLUSTER_SSL_KEYSTORE_TYPE}
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String JMX_MANAGER_SSL_KEYSTORE_TYPE_NAME = JMX_MANAGER_SSL_KEYSTORE_TYPE;
 
@@ -3290,6 +3287,7 @@ public interface DistributionConfig
    * @deprecated Geode 1.0 use
    *             {@link ConfigurationProperties#CLUSTER_SSL_TRUSTSTORE}
    */
+  @Deprecated
   @ConfigAttribute(type = String.class)
   String JMX_MANAGER_SSL_TRUSTSTORE_NAME = JMX_MANAGER_SSL_TRUSTSTORE;
 
@@ -3384,6 +3382,7 @@ public interface DistributionConfig
    *
    * @deprecated as of 8.0 use {@link #getHttpServicePort()} instead.
    */
+  @Deprecated
   @ConfigAttributeGetter(name = JMX_MANAGER_HTTP_PORT)
   int getJmxManagerHttpPort();
 
@@ -3397,6 +3396,7 @@ public interface DistributionConfig
    *
    * @deprecated as of 8.0 use {@link #setHttpServicePort(int)} instead.
    */
+  @Deprecated
   @ConfigAttributeSetter(name = JMX_MANAGER_HTTP_PORT)
   void setJmxManagerHttpPort(int value);
 
@@ -3408,6 +3408,7 @@ public interface DistributionConfig
    *
    * @deprecated as of 8.0 use {{@link #HTTP_SERVICE_PORT_NAME} instead.
    */
+  @Deprecated
   @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
   String JMX_MANAGER_HTTP_PORT_NAME = JMX_MANAGER_HTTP_PORT;
 
@@ -3417,6 +3418,7 @@ public interface DistributionConfig
    *
    * @deprecated as of 8.0 use {@link #DEFAULT_HTTP_SERVICE_PORT} instead.
    */
+  @Deprecated
   int DEFAULT_JMX_MANAGER_HTTP_PORT = 7070;
 
   @ConfigAttributeGetter(name = JMX_MANAGER_UPDATE_RATE)
@@ -3491,95 +3493,6 @@ public interface DistributionConfig
   @ConfigAttribute(type = String.class)
   String MEMCACHED_BIND_ADDRESS_NAME = MEMCACHED_BIND_ADDRESS;
   String DEFAULT_MEMCACHED_BIND_ADDRESS = "";
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#GEODE_FOR_REDIS_BIND_ADDRESS} property
-   * <p>
-   * Returns the value of the
-   * {@link ConfigurationProperties#GEODE_FOR_REDIS_BIND_ADDRESS} property
-   *
-   * @return the bind address for GeodeRedisServer
-   *
-   * @since GemFire 8.0
-   */
-  @ConfigAttributeGetter(name = GEODE_FOR_REDIS_BIND_ADDRESS)
-  String getRedisBindAddress();
-
-  @ConfigAttributeSetter(name = GEODE_FOR_REDIS_BIND_ADDRESS)
-  void setRedisBindAddress(String bindAddress);
-
-  @ConfigAttribute(type = String.class)
-  String REDIS_BIND_ADDRESS_NAME = GEODE_FOR_REDIS_BIND_ADDRESS;
-  String DEFAULT_REDIS_BIND_ADDRESS = "";
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#GEODE_FOR_REDIS_ENABLED} property
-   * <p>
-   * Returns the value of the
-   * {@link ConfigurationProperties#GEODE_FOR_REDIS_ENABLED} property
-   *
-   * @return boolean value indicating whether or not a Redis API for Geode Server should be started
-   */
-  @ConfigAttributeGetter(name = GEODE_FOR_REDIS_ENABLED)
-  boolean getRedisEnabled();
-
-  @ConfigAttributeSetter(name = GEODE_FOR_REDIS_ENABLED)
-  void setRedisEnabled(boolean redisEnabled);
-
-
-  @ConfigAttribute(type = Boolean.class)
-  String REDIS_ENABLED_NAME = GEODE_FOR_REDIS_ENABLED;
-  boolean DEFAULT_REDIS_ENABLED = false;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#GEODE_FOR_REDIS_USERNAME} property
-   * <p>
-   * Returns the value of the
-   * {@link ConfigurationProperties#GEODE_FOR_REDIS_USERNAME} property
-   *
-   * @return the authentication username for GeodeRedisServer
-   */
-  @ConfigAttributeGetter(name = GEODE_FOR_REDIS_USERNAME)
-  String getRedisUsername();
-
-  @ConfigAttributeSetter(name = GEODE_FOR_REDIS_USERNAME)
-  void setRedisUsername(String username);
-
-  @ConfigAttribute(type = String.class)
-  String REDIS_USERNAME_NAME = GEODE_FOR_REDIS_USERNAME;
-  String DEFAULT_REDIS_USERNAME = "default";
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#GEODE_FOR_REDIS_PORT} property
-   *
-   * @return the port on which GeodeRedisServer should be started
-   */
-  @ConfigAttributeGetter(name = GEODE_FOR_REDIS_PORT)
-  int getRedisPort();
-
-  @ConfigAttributeSetter(name = GEODE_FOR_REDIS_PORT)
-  void setRedisPort(int value);
-
-  @ConfigAttribute(type = Integer.class, min = 0, max = 65535)
-  String REDIS_PORT_NAME = GEODE_FOR_REDIS_PORT;
-  int DEFAULT_REDIS_PORT = 6379;
-
-  /**
-   * Returns the value of the {@link ConfigurationProperties#GEODE_FOR_REDIS_REDUNDANT_COPIES}
-   * property
-   *
-   * @return the Geode for Redis redundant copies
-   *
-   */
-  @ConfigAttributeGetter(name = GEODE_FOR_REDIS_REDUNDANT_COPIES)
-  int getRedisRedundantCopies();
-
-  @ConfigAttributeSetter(name = GEODE_FOR_REDIS_REDUNDANT_COPIES)
-  void setRedisRedundantCopies(int value);
-
-  @ConfigAttribute(type = Integer.class, min = 0, max = 3)
-  String REDIS_REDUNDANT_COPIES_NAME = GEODE_FOR_REDIS_REDUNDANT_COPIES;
-  int DEFAULT_REDIS_REDUNDANT_COPIES = 1;
 
   // Added for the HTTP service
 
@@ -3933,6 +3846,7 @@ public interface DistributionConfig
    *
    * @deprecated Geode 1.0 use {@link #setClusterSSLKeyStoreType(String)}
    */
+  @Deprecated
   @ConfigAttributeSetter(name = HTTP_SERVICE_SSL_KEYSTORE_TYPE)
   void setHttpServiceSSLKeyStoreType(String keyStoreType);
 
@@ -4427,6 +4341,7 @@ public interface DistributionConfig
    *
    * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_TRUSTSTORE}
    */
+  @Deprecated
   String DEFAULT_SERVER_SSL_TRUSTSTORE = "";
 
   /**
@@ -4545,6 +4460,7 @@ public interface DistributionConfig
    *
    * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_PROTOCOLS}
    */
+  @Deprecated
   String DEFAULT_GATEWAY_SSL_PROTOCOLS = "any";
   /**
    * The name of the {@link ConfigurationProperties#GATEWAY_SSL_PROTOCOLS} property The name of the
@@ -4582,6 +4498,7 @@ public interface DistributionConfig
    *
    * @deprecated Geode 1.0 use {@link #DEFAULT_SSL_CIPHERS} 
    */
+  @Deprecated
   String DEFAULT_GATEWAY_SSL_CIPHERS = "any";
   /**
    * The name of the {@link ConfigurationProperties#GATEWAY_SSL_CIPHERS} property The name of the

@@ -38,16 +38,22 @@ public interface PersistentID extends DataSerializable {
 
   /**
    * The host on which the persistent data was last residing
+   *
+   * @return the host on which the persistent data was last residing
    */
   InetAddress getHost();
 
   /**
    * The directory which the persistent data was last residing in.
+   *
+   * @return the directory which the persistent data was last residing in
    */
   String getDirectory();
 
   /**
    * The unique identifier for the persistent data.
+   *
+   * @return the unique identifier for the persistent data
    *
    * @since GemFire 7.0
    */

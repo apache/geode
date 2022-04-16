@@ -35,7 +35,7 @@ import org.apache.geode.internal.offheap.StoredObject;
  * <p>
  * ByteBufferInputStream is an input stream for ByteBuffer objects. It's incredible that the jdk
  * doesn't have one of these already.
- * </p>
+ * <p>
  *
  * The methods in this class throw BufferUnderflowException, not EOFException, if the end of the
  * buffer is reached before we read the full amount. That breaks the contract for InputStream and
@@ -161,7 +161,7 @@ public class ByteBufferInputStream extends InputStream
      * Because byte source hash codes are content-dependent, it is inadvisable to use byte sources
      * as keys in hash maps or similar data structures unless it is known that their contents will
      * not change.
-     * </p>
+     * <p>
      *
      * @return The current hash code of this byte source
      */
@@ -407,7 +407,7 @@ public class ByteBufferInputStream extends InputStream
      * Because byte source hash codes are content-dependent, it is inadvisable to use byte sources
      * as keys in hash maps or similar data structures unless it is known that their contents will
      * not change.
-     * </p>
+     * <p>
      *
      * @return The current hash code of this byte source
      */

@@ -98,18 +98,21 @@ public interface DiskStore {
    * Returns the directories to which the region's data are written. If multiple directories are
    * used, GemFire will attempt to distribute the data evenly amongst them.
    *
+   * @return the directories to which the region's data are written
    */
   File[] getDiskDirs();
 
   /**
    * Returns the sizes of the disk directories in megabytes
+   *
+   * @return the sizes of the disk directories in megabytes
    */
   int[] getDiskDirSizes();
 
   /**
    * Returns the universally unique identifier for the Disk Store across the GemFire distributed
    * system.
-   * </p>
+   * <p>
    *
    * @return a UUID uniquely identifying this Disk Store in the GemFire distributed system.
    * @see java.util.UUID

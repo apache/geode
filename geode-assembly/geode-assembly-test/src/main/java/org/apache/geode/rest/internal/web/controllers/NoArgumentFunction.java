@@ -33,11 +33,10 @@ public class NoArgumentFunction implements Function {
    * <p>
    * If {@link Function#hasResult()} returns false, {@link ResultCollector#getResult()} throws
    * {@link FunctionException}.
-   * </p>
    * <p>
    * If {@link Function#hasResult()} returns true, {@link ResultCollector#getResult()} blocks and
    * waits for the result of function execution
-   * </p>
+   * <p>
    *
    * @return whether this function returns a Result back to the caller.
    *
@@ -81,18 +80,18 @@ public class NoArgumentFunction implements Function {
    * Return true to indicate to GemFire the method requires optimization for writing the targeted
    * {@link FunctionService#onRegion(Region)} and any associated
    * {@linkplain Execution#withFilter(Set) routing objects}.
-   * </p>
+   * <p>
    *
    * <p>
    * Returning false will optimize for read behavior on the targeted
    * {@link FunctionService#onRegion(Region)} and any associated
    * {@linkplain Execution#withFilter(Set) routing objects}.
-   * </p>
+   * <p>
    *
    * <p>
    * This method is only consulted when Region passed to
    * FunctionService#onRegion(org.apache.geode.cache.Region) is a partitioned region
-   * </p>
+   * <p>
    *
    * @return false if the function is read only, otherwise returns true
    *

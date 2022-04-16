@@ -25,7 +25,7 @@ import org.apache.geode.cache.execute.FunctionService;
  *
  * <p>
  * The exception string provides details on the cause of failure.
- * </p>
+ * <p>
  *
  *
  * @since GemFire 6.6

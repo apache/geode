@@ -25,7 +25,7 @@ import org.springframework.util.ObjectUtils;
 
 /**
  * The IdentifierUtils class is a utility class for working with Objects having identifiers
- * <p/>
+ * <p>
  *
  * @since GemFire 8.0
  */

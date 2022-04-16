@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.pdx.PdxSerializer;
 
 
 /**
@@ -38,30 +39,30 @@ import org.apache.geode.annotations.Experimental;
  * The following schema fragment specifies the expected content contained within this class.
  *
  * <pre>
- * &lt;complexType name="pdx-type">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="pdx-serializer" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
- *                   &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *       &lt;/sequence>
- *       &lt;attribute name="read-serialized" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="ignore-unread-fields" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="persistent" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="disk-store-name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="pdx-type"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="pdx-serializer" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;sequence&gt;
+ *                   &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/&gt;
+ *                   &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *                 &lt;/sequence&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="read-serialized" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="ignore-unread-fields" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="persistent" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="disk-store-name" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  *
  *
@@ -88,6 +89,7 @@ public class PdxType {
    * possible object is
    * {@link DeclarableType }
    *
+   * @return the type of the {@link PdxSerializer}.
    */
   public DeclarableType getPdxSerializer() {
     return pdxSerializer;
@@ -99,6 +101,7 @@ public class PdxType {
    * allowed object is
    * {@link DeclarableType }
    *
+   * @param value the type of {@link PdxSerializer} to use.
    */
   public void setPdxSerializer(DeclarableType value) {
     pdxSerializer = value;
@@ -110,6 +113,7 @@ public class PdxType {
    * possible object is
    * {@link Boolean }
    *
+   * @return true if read serialized is enabled, false otherwise.
    */
   public Boolean isReadSerialized() {
     return readSerialized;
@@ -121,6 +125,7 @@ public class PdxType {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value enables or disables read serialized.
    */
   public void setReadSerialized(Boolean value) {
     readSerialized = value;
@@ -132,6 +137,7 @@ public class PdxType {
    * possible object is
    * {@link Boolean }
    *
+   * @return true if unread fields are ignored, false otherwise.
    */
   public Boolean isIgnoreUnreadFields() {
     return ignoreUnreadFields;
@@ -143,6 +149,7 @@ public class PdxType {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value determine whether to ignore unread fields.
    */
   public void setIgnoreUnreadFields(Boolean value) {
     ignoreUnreadFields = value;
@@ -154,6 +161,7 @@ public class PdxType {
    * possible object is
    * {@link Boolean }
    *
+   * @return true if persistence is enabled, false otherwise.
    */
   public Boolean isPersistent() {
     return persistent;
@@ -165,6 +173,7 @@ public class PdxType {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value enables or disables persistence.
    */
   public void setPersistent(Boolean value) {
     persistent = value;
@@ -176,6 +185,7 @@ public class PdxType {
    * possible object is
    * {@link String }
    *
+   * @return the disk store name.
    */
   public String getDiskStoreName() {
     return diskStoreName;
@@ -187,6 +197,7 @@ public class PdxType {
    * allowed object is
    * {@link String }
    *
+   * @param value the disk store name.
    */
   public void setDiskStoreName(String value) {
     diskStoreName = value;

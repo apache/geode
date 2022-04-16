@@ -94,6 +94,8 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> implement
 
   /**
    * For internal use only
+   *
+   * @param deployedTime the deployed time value
    */
   public void setDeployedTime(String deployedTime) {
     this.deployedTime = deployedTime;
@@ -105,6 +107,8 @@ public class Deployment extends GroupableConfiguration<DeploymentInfo> implement
 
   /**
    * For internal use only
+   *
+   * @param deployedBy the deployed by value
    */
   public void setDeployedBy(String deployedBy) {
     this.deployedBy = deployedBy;

@@ -27,12 +27,12 @@ import java.util.concurrent.Future;
  */
 public interface ParallelExecutor {
 
-  /**
+  /*
    * Add a task to run in parallel
    */
   <T> Future<T> inParallel(Callable<T> callable);
 
-  /**
+  /*
    * Add a task to run in parallel
    */
   default <T> Future<T> inParallel(RunnableWithException runnable) {
@@ -50,7 +50,7 @@ public interface ParallelExecutor {
     return futures;
   }
 
-  /**
+  /*
    * Execute all tasks in parallel, wait for them to complete and throw an exception if any of the
    * tasks throw an exception.
    */

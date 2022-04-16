@@ -62,6 +62,8 @@ public class Index extends AbstractConfiguration<IndexInfo> implements RegionSco
    * 5. /regionName.fieldName.entrySet() alias
    * <P>
    * Note: only the regionName portion of the path is used when filtering.
+   *
+   * @param regionPath the region path to set
    */
   public void setRegionPath(String regionPath) {
     this.regionPath = regionPath;

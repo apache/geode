@@ -18,8 +18,7 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.Wait.pause;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,14 +33,15 @@ import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.junit.categories.WanTest;
 
+@SuppressWarnings("deprecation")
 @Category({WanTest.class})
-public class SerialWANStatsDUnitTest extends WANTestBase {
+public class SerialWANStatsDistributedTest extends WANTestBase {
 
   private static final long serialVersionUID = 1L;
 
   private String testName;
 
-  public SerialWANStatsDUnitTest() {
+  public SerialWANStatsDistributedTest() {
     super();
   }
 
@@ -123,7 +123,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     vm6.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", "ln", isOffHeap()));
     vm7.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", "ln", isOffHeap()));
 
-    final Map keyValues = new HashMap();
+    final Map<Integer, String> keyValues = new HashMap<>();
     int entries = 12;
     for (int i = 0; i < entries; i++) {
       keyValues.put(i, i + "_Value");
@@ -180,7 +180,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     vm6.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", "ln", isOffHeap()));
     vm7.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", "ln", isOffHeap()));
 
-    final Map keyValues = new HashMap();
+    final Map<Integer, String> keyValues = new HashMap<>();
     int entries = 12;
     for (int i = 0; i < entries; i++) {
       keyValues.put(i, i + "_Value");
@@ -280,17 +280,17 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
     int entries = entriesPerInvocation * clients;
 
-    List<AsyncInvocation> invocations = new ArrayList<>(clients);
+    List<AsyncInvocation<?>> invocations = new ArrayList<>(clients);
     for (int i = 0; i < clients; i++) {
       final int index = i;
-      AsyncInvocation asyncInvocation =
+      AsyncInvocation<?> asyncInvocation =
           vm4.invokeAsync(() -> WANTestBase.doPutsInsideTransactions(regionName, data.get(index),
               eventsPerTransaction));
       invocations.add(asyncInvocation);
     }
 
     try {
-      for (AsyncInvocation invocation : invocations) {
+      for (AsyncInvocation<?> invocation : invocations) {
         invocation.await();
       }
     } catch (InterruptedException e) {
@@ -341,7 +341,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     vm6.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", "ln", isOffHeap()));
     vm7.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", "ln", isOffHeap()));
 
-    final Map keyValues = new HashMap();
+    final Map<Integer, String> keyValues = new HashMap<>();
     int entries = 24;
     for (int i = 0; i < entries; i++) {
       keyValues.put(i, i + "_Value");
@@ -372,8 +372,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testReplicatedSerialPropagationWithBatchRedistWithGroupTransactionEventsSendsBatchesWithCompleteTransactions()
-      throws Exception {
+  public void testReplicatedSerialPropagationWithBatchRedistWithGroupTransactionEventsSendsBatchesWithCompleteTransactions() {
     Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
@@ -405,7 +404,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     vm6.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", "ln", isOffHeap()));
     vm7.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", "ln", isOffHeap()));
 
-    final Map keyValues = new HashMap();
+    final Map<Integer, String> keyValues = new HashMap<>();
     int entries = 24;
     for (int i = 0; i < entries; i++) {
       keyValues.put(i, i + "_Value");
@@ -446,7 +445,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testReplicatedSerialPropagationWithMultipleDispatchers() throws Exception {
+  public void testReplicatedSerialPropagationWithMultipleDispatchers() {
     Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
@@ -485,7 +484,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testWANStatsTwoWanSites() throws Exception {
+  public void testWANStatsTwoWanSites() {
 
     Integer lnPort = createFirstLocatorWithDSId(1);
     Integer nyPort = vm0.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
@@ -569,18 +568,17 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     vm6.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", "ln", isOffHeap()));
     vm7.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", "ln", isOffHeap()));
 
-    AsyncInvocation inv1 = vm5.invokeAsync(() -> WANTestBase.doPuts(testName + "_RR", 10000));
+    AsyncInvocation<?> inv1 = vm5.invokeAsync(() -> WANTestBase.doPuts(testName + "_RR", 10000));
     pause(2000);
-    AsyncInvocation inv2 = vm4.invokeAsync(() -> WANTestBase.killSender("ln"));
+    AsyncInvocation<Boolean> inv2 = vm4.invokeAsync(() -> WANTestBase.killSender("ln"));
     Boolean isKilled = Boolean.FALSE;
     try {
-      isKilled = (Boolean) inv2.getResult();
+      isKilled = inv2.getResult();
     } catch (Throwable e) {
       fail("Unexpected exception while killing a sender");
     }
-    AsyncInvocation inv3 = null;
     if (!isKilled) {
-      inv3 = vm5.invokeAsync(() -> WANTestBase.killSender("ln"));
+      AsyncInvocation<?> inv3 = vm5.invokeAsync(() -> WANTestBase.killSender("ln"));
       inv3.join();
     }
     inv1.join();
@@ -631,25 +629,24 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     vm6.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", "ln", isOffHeap()));
     vm7.invoke(() -> WANTestBase.createReplicatedRegion(testName + "_RR", "ln", isOffHeap()));
 
-    AsyncInvocation inv1 =
+    AsyncInvocation<?> inv1 =
         vm6.invokeAsync(() -> WANTestBase.doTxPutsWithRetryIfError(testName + "_RR", 2, 5000, 0));
-    AsyncInvocation inv2 =
+    AsyncInvocation<?> inv2 =
         vm7.invokeAsync(() -> WANTestBase.doTxPutsWithRetryIfError(testName + "_RR", 2, 5000, 1));
 
     vm2.invoke(() -> await()
-        .untilAsserted(() -> assertEquals("Waiting for some batches to be received", true,
-            getRegionSize(testName + "_RR") > 40)));
+        .untilAsserted(() -> assertThat(getRegionSize(testName + "_RR") > 40).as(
+            "Waiting for some batches to be received").isEqualTo(true)));
 
-    AsyncInvocation inv3 = vm4.invokeAsync(() -> WANTestBase.killSender("ln"));
-    Boolean isKilled = Boolean.FALSE;
+    AsyncInvocation<Boolean> inv3 = vm4.invokeAsync(() -> WANTestBase.killSender("ln"));
+    boolean isKilled = false;
     try {
-      isKilled = (Boolean) inv3.getResult();
+      isKilled = inv3.getResult();
     } catch (Throwable e) {
       fail("Unexpected exception while killing a sender");
     }
-    AsyncInvocation inv4;
     if (!isKilled) {
-      inv4 = vm5.invokeAsync(() -> WANTestBase.killSender("ln"));
+      AsyncInvocation<?> inv4 = vm5.invokeAsync(() -> WANTestBase.killSender("ln"));
       inv4.join();
     }
     inv1.join();
@@ -748,7 +745,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
    *
    */
   @Test
-  public void testReplicatedSerialPropagationWithRemoteRegionDestroy() throws Exception {
+  public void testReplicatedSerialPropagationWithRemoteRegionDestroy() {
     int numEntries = 2000;
     Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
@@ -786,7 +783,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     startSenderInVMs("ln", vm4, vm5);
 
     // start puts in RR_1 in another thread
-    AsyncInvocation inv1 =
+    AsyncInvocation<?> inv1 =
         vm4.invokeAsync(() -> WANTestBase.doPuts(testName + "_RR_1", numEntries));
     // destroy RR_1 in remote site
     vm2.invoke(() -> WANTestBase.destroyRegion(testName + "_RR_1", 5));
@@ -795,7 +792,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
       inv1.join();
     } catch (InterruptedException e) {
       e.printStackTrace();
-      fail();
+      fail(e.toString());
     }
 
     // assuming some events might have been dispatched before the remote region was destroyed,
@@ -862,7 +859,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testSerialPropagationConflation() throws Exception {
+  public void testSerialPropagationConflation() {
     Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
@@ -885,8 +882,8 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
     vm2.invoke(() -> WANTestBase.createPartitionedRegion(testName, null, 1, 100, isOffHeap()));
     vm3.invoke(() -> WANTestBase.createPartitionedRegion(testName, null, 1, 100, isOffHeap()));
 
-    final Map keyValues = new HashMap();
-    final Map updateKeyValues = new HashMap();
+    final Map<Integer, Object> keyValues = new HashMap<>();
+    final Map<Integer, String> updateKeyValues = new HashMap<>();
     for (int i = 0; i < 1000; i++) {
       keyValues.put(i, i);
     }
@@ -924,28 +921,26 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
 
   private void checkQueuesAreEmptyAndOnlyCompleteTransactionsAreReplicated(
       boolean isBatchesRedistributed) {
-    // Wait for sender queues to be empty
-    List<Integer> v4List =
-        vm4.invoke(() -> WANTestBase.getSenderStats("ln", 0));
-    List<Integer> v5List =
-        vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
-    List<Integer> v6List =
-        vm6.invoke(() -> WANTestBase.getSenderStats("ln", 0));
-    List<Integer> v7List =
-        vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    await().untilAsserted(() -> {
+      // Wait for sender queues to be empty
+      List<Integer> v4List = vm4.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+      List<Integer> v5List = vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+      List<Integer> v6List = vm6.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+      List<Integer> v7List = vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
 
-    // queue size must be 0
-    assertThat(v4List.get(0) + v5List.get(0) + v6List.get(0) + v7List.get(0)).isEqualTo(0);
+      // queue size must be 0
+      assertThat(v4List.get(0) + v5List.get(0) + v6List.get(0) + v7List.get(0)).isEqualTo(0);
 
-    // batches redistributed:
-    int batchesRedistributed = v4List.get(5) + v5List.get(5) + v6List.get(5) + v7List.get(5);
-    if (isBatchesRedistributed) {
-      assertThat(batchesRedistributed).isGreaterThan(0);
-    } else {
-      assertThat(batchesRedistributed).isEqualTo(0);
-    }
+      // batches redistributed:
+      int batchesRedistributed = v4List.get(5) + v5List.get(5) + v6List.get(5) + v7List.get(5);
+      if (isBatchesRedistributed) {
+        assertThat(batchesRedistributed).isGreaterThan(0);
+      } else {
+        assertThat(batchesRedistributed).isEqualTo(0);
+      }
 
-    // batches with incomplete transactions must be 0
-    assertThat(v4List.get(13) + v5List.get(13) + v6List.get(13) + v7List.get(13)).isEqualTo(0);
+      // batches with incomplete transactions must be 0
+      assertThat(v4List.get(13) + v5List.get(13) + v6List.get(13) + v7List.get(13)).isEqualTo(0);
+    });
   }
 }

@@ -34,7 +34,7 @@ public class MXBeanProvider {
   /**
    * Gets a proxy to the DistributedSystemMXBean from the GemFire Manager's MBeanServer, or null if
    * unable to find the DistributedSystemMXBean.
-   * </p>
+   * <p>
    *
    * @return a proxy to the DistributedSystemMXBean from the GemFire Manager's MBeanServer, or null
    *         if unable to find the DistributedSystemMXBean.
@@ -49,7 +49,7 @@ public class MXBeanProvider {
   /**
    * Gets a proxy to the MemberMXBean for the GemFire member specified by member name or ID from the
    * GemFire Manager's MBeanServer.
-   * </p>
+   * <p>
    *
    * @param member a String indicating the GemFire member's name or ID.
    * @return a proxy to the MemberMXBean having the specified GemFire member's name or ID from the

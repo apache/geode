@@ -20,7 +20,7 @@ public class Street implements Serializable {
   public String street;
   public String lane;
 
-  /** Creates a new instance of Street */
+  /* Creates a new instance of Street */
   public Street(String street, String lane) {
     this.street = street;
     this.lane = lane;

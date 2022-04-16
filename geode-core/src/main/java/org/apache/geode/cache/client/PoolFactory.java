@@ -451,6 +451,7 @@ public interface PoolFactory {
    * enabled. If set to <code>false</code> then all <code>Subscription*</code> attributes are
    * ignored at create time.
    *
+   * @param enabled whether the created pool will have server-to-client subscriptions enabled
    * @return a reference to <code>this</code>
    */
   PoolFactory setSubscriptionEnabled(boolean enabled);
@@ -482,7 +483,7 @@ public interface PoolFactory {
 
   /**
    * A server has an inactivity monitor that ensures a message is sent to a client at least once a
-   * minute (60,000 milliseconds). If a subscription timeout multipler is set in the client it
+   * minute (60,000 milliseconds). If a subscription timeout multiplier is set in the client it
    * enables timing out of the subscription feed with failover to another server.
    * <p>
    * The client will time out it's subscription connection after a number of seconds equal to this
@@ -495,6 +496,9 @@ public interface PoolFactory {
    * <p>
    * The resulting timeout will be multiplied by 1.25 in order to avoid race conditions with the
    * server sending its "ping" message.
+   *
+   * @param multiplier the subscription timeout multiplier to set
+   * @return a reference to <code>this</code>
    */
   PoolFactory setSubscriptionTimeoutMultiplier(int multiplier);
 
@@ -545,6 +549,7 @@ public interface PoolFactory {
    * local-max-memory} equal to zero, no cache operations mentioned above will be routed to those
    * servers as they do not host any partitions.
    *
+   * @param enabled whether Partitioned Region single hop is enabled
    * @return a reference to <code>this</code>
    * @since GemFire 6.5
    */
@@ -560,6 +565,7 @@ public interface PoolFactory {
    * <br>
    * Note: If set to true, all the client side regions must have their data-policy set to empty.
    *
+   * @param enabled whether the created pool can be used by multiple authenticated users
    * @return a reference to <code>this</code>
    * @see ClientCache#createAuthenticatedView(java.util.Properties)
    * @since GemFire 6.5

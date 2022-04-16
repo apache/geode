@@ -112,7 +112,7 @@ public class AgentLauncher {
    * Instantiates an AgentLauncher for execution and control of the GemFire JMX Agent process. This
    * constructor is package private to prevent direct instantiation or subclassing by classes
    * outside this package, but does allow the class to be tested as needed.
-   * <p/>
+   * <p>
    *
    * @param basename base name for the application to be launched
    */
@@ -567,7 +567,7 @@ public class AgentLauncher {
    * Determines if the Status.state is one of the specified states in the given array of states.
    * Note, the status of the Agent, as indicated in the .agent.ser status file, should never have a
    * written value of UNKNOWN.
-   * <p/>
+   * <p>
    *
    * @param states an array of possible acceptable states satisfying the condition of the Agent's
    *        status.
@@ -597,7 +597,7 @@ public class AgentLauncher {
   /**
    * Reads the GemFire JMX Agent's status from the status file (.agent.ser) in it's working
    * directory.
-   * <p/>
+   * <p>
    *
    * @return a Status object containing the state persisted to the .agent.ser file in the working
    *         directory and representing the status of the Agent
@@ -629,7 +629,7 @@ public class AgentLauncher {
   /**
    * Reads the JMX Agent's status from the .agent.ser status file. If the status file cannot be read
    * due to I/O problems, the method will keep attempting to read the file for up to 20 seconds.
-   * <p/>
+   * <p>
    *
    * @return the Status of the GemFire JMX Agent as determined by the .agent.ser status file, or
    *         natively based on the presence/absence of the Agent process.
@@ -662,7 +662,7 @@ public class AgentLauncher {
   /**
    * Sets the status of the GemFire JMX Agent by serializing a <code>Status</code> object to a
    * status file in the Agent's working directory.
-   * <p/>
+   * <p>
    *
    * @param status the Status object representing the state of the Agent process to persist to disk.
    * @return the written Status object.
@@ -739,7 +739,7 @@ public class AgentLauncher {
 
   /**
    * Prints usage information for the AgentLauncher to the command line.
-   * <p/>
+   * <p>
    *
    * @param message a String to output to the command line indicating the user error.
    */
@@ -829,7 +829,7 @@ public class AgentLauncher {
    * A class representing the current state of the GemFire JMX Agent process. Instances of this
    * class are serialized to a {@linkplain #statusFileName file} on disk in the specified working
    * directory {@linkplain #workingDirectory}.
-   * <p/>
+   * <p>
    *
    * @see #SHUTDOWN
    * @see #STARTING

@@ -140,7 +140,7 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     return this;
   }
 
-  /**
+  /*
    * If your only needs a cache and does not need a server for clients to connect
    */
   public ServerStarterRule withNoCacheServer() {

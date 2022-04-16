@@ -194,7 +194,7 @@ public class GenerateMBeanHTML extends DefaultHandler {
     pw.println("");
     pw.println("<P>This document describes the attributes, operations,");
     pw.println("and notifications of the GemFire Administration");
-    pw.println("Management Beans (MBeans).</P>");
+    pw.println("Management Beans (MBeans).<p>");
     pw.println("");
   }
 
@@ -230,7 +230,7 @@ public class GenerateMBeanHTML extends DefaultHandler {
     pw.println("</table>");
     pw.println("");
 
-    pw.println("<P></P>");
+    pw.println("<P><p>");
     pw.println("");
   }
 

@@ -56,6 +56,8 @@ public class TomcatInstall extends ContainerInstall {
 
     /**
      * Converts the version to an integer
+     *
+     * @return the version as an integer
      */
     public int toInteger() {
       return getVersion();
@@ -139,6 +141,18 @@ public class TomcatInstall extends ContainerInstall {
    * geode session into Tomcat, {@link #setupDefaultSettings()} to modify the context and server XML
    * files within the installation's 'conf' folder, and {@link #updateProperties()} to set the jar
    * skipping properties needed to speedup container startup.
+   *
+   *
+   * @param name used to name install directory
+   * @param version the version of Tomcat to use
+   * @param connType Enum representing the connection type of this installation (either client
+   *        server or peer to peer)
+   * @param modulesJarLocation the path to the module jars
+   * @param extraJarsPath the path to the extra jars
+   * @param portSupplier the port supplier
+   * @param commitValve the commit valve
+   *
+   * @throws Exception if an exception is encountered
    */
   public TomcatInstall(String name, TomcatVersion version, ConnectionType connType,
       String modulesJarLocation, String extraJarsPath, IntSupplier portSupplier,
@@ -185,7 +199,9 @@ public class TomcatInstall extends ContainerInstall {
    * Get the server life cycle class that should be used
    *
    * Generates the class based on whether the installation's connection type {@link
-   * ContainerInstall#connType} is client server or peer to peer.
+   * ContainerInstall#getConnectionType()} is client server or peer to peer.
+   *
+   * @return the server life cycle class that should be used
    */
   public String getServerLifeCycleListenerClass() {
     String className = "org.apache.geode.modules.session.catalina.";
@@ -208,6 +224,8 @@ public class TomcatInstall extends ContainerInstall {
 
   /**
    * Location of the context XML file in the installation's 'conf' directory
+   *
+   * @return the location of the context XML file in the installation's 'conf' directory
    */
   public File getDefaultContextXMLFile() {
     return new File(getHome() + "/conf/context.xml");
@@ -215,6 +233,8 @@ public class TomcatInstall extends ContainerInstall {
 
   /**
    * Location of the server XML file in the installation's 'conf' directory
+   *
+   * @return the location of the server XML file in the installation's 'conf' directory
    */
   public File getDefaultServerXMLFile() {
     return new File(getHome() + "/conf/server.xml");

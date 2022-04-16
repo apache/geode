@@ -182,7 +182,7 @@ artifacts {
 
 javadoc {
   destinationDir = file("$buildDir/javadoc")
-  options.addStringOption('Xdoclint:none', '-quiet')
+  options.addStringOption('Xwerror', '-quiet')
   options.encoding = 'UTF-8'
   exclude "**/internal/**"
 

@@ -61,9 +61,45 @@ public class RegionAttributesData {
   private final Set<String> gatewaySenderIds;
 
   /**
-   *
    * This constructor is to be used by internal JMX framework only. User should not try to create an
    * instance of this class.
+   *
+   * @param cacheLoaderClassName the Class of cache loader associated with this region
+   * @param cacheWriterClassName the Class of cache writer associated with this region
+   * @param keyConstraintClassName the Class that the keys in this region are constrained to
+   * @param valueConstraintClassName the Class that the values in this region are constrained to
+   * @param regionTimeToLive the time to live expiration for the Region
+   * @param regionIdleTimeout the idle timeout expiration for the Region
+   * @param entryTimeToLive the time to live expiration for entries in the Region
+   * @param entryIdleTimeout the idle timeout expiration for entries in the Region
+   * @param customEntryTimeToLive the custom time to live expiration for entries in the Region
+   * @param customEntryIdleTimeout the custom idle timeout expiration for entries in the Region
+   * @param ignoreJTA whether JTA transactions are being ignored
+   * @param dataPolicy the data policy of the Region
+   * @param scope the scope of the Region
+   * @param initialCapacity the initial capacity of entries in the Region
+   * @param loadFactor the load factor of entries in the Region
+   * @param lockGrantor whether this member is configured to become the lock granter when the Region
+   *        is created
+   * @param multicastEnabled whether multicast communication is enabled for the Region
+   * @param concurrencyLevel the concurrency level for entries in the Region
+   * @param indexMaintenanceSynchronous whether query service index maintenance will be done
+   *        synchronously
+   * @param statisticsEnabled whether statistic collection is enabled for the Region and its entries
+   * @param subscriptionConflationEnabled whether conflation is enabled for sending messages from a
+   *        cache server to its clients
+   * @param asyncConflationEnabled whether asynchronous conflation is enabled for sending messages
+   *        to peers
+   * @param poolName the name of the Pool that this Region will use to communicate with servers
+   * @param cloningEnabled whether cloning is enabled
+   * @param diskStoreName the name of the DiskStore associated with the Region
+   * @param interestPolicy the subscriber's interest policy
+   * @param diskSynchronous whether disk writes are synchronous
+   * @param cacheListeners an array of CacheListeners for the Region
+   * @param compressorClassName the compressor class name used by the region.
+   * @param offHeap whether the region uses off-heap memory
+   * @param asyncEventQueueIds the set of async event queue IDs
+   * @param gatewaySenderIds the set of gateway sender IDs
    */
   @ConstructorProperties({"cacheLoaderClassName", "cacheWriterClassName", "keyConstraintClassName",
       "valueConstraintClassName", "regionTimeToLive", "regionIdleTimeout", "entryTimeToLive",
@@ -123,6 +159,8 @@ public class RegionAttributesData {
 
   /**
    * Returns the Class of cache loader associated with this region.
+   *
+   * @return the Class of cache loader associated with this region
    */
   public String getCacheLoaderClassName() {
     return cacheLoaderClassName;
@@ -130,6 +168,8 @@ public class RegionAttributesData {
 
   /**
    * Returns the Class of the cache writer associated with this region.
+   *
+   * @return the Class of the cache writer associated with this region
    */
   public String getCacheWriterClassName() {
     return cacheWriterClassName;
@@ -137,6 +177,8 @@ public class RegionAttributesData {
 
   /**
    * Returns the Class that the keys in this region are constrained to (must be an instance of).
+   *
+   * @return the Class that the keys in this region are constrained to
    */
   public String getKeyConstraintClassName() {
     return keyConstraintClassName;
@@ -144,6 +186,8 @@ public class RegionAttributesData {
 
   /**
    * Returns the Class that the values in this region are constrained to (must be an instance of).
+   *
+   * @return the Class that the values in this region are constrained to
    */
   public String getValueConstraintClassName() {
     return valueConstraintClassName;
@@ -151,6 +195,8 @@ public class RegionAttributesData {
 
   /**
    * Returns the time to live expiration for the Region.
+   *
+   * @return the time to live expiration for the Region
    */
   public int getRegionTimeToLive() {
     return regionTimeToLive;
@@ -158,6 +204,8 @@ public class RegionAttributesData {
 
   /**
    * Returns the idle timeout expiration for the Region.
+   *
+   * @return the idle timeout expiration for the Region
    */
   public int getRegionIdleTimeout() {
     return regionIdleTimeout;
@@ -165,6 +213,8 @@ public class RegionAttributesData {
 
   /**
    * Returns the time to live expiration for entries in the Region.
+   *
+   * @return the time to live expiration for entries in the Region
    */
   public int getEntryTimeToLive() {
     return entryTimeToLive;
@@ -172,6 +222,8 @@ public class RegionAttributesData {
 
   /**
    * Returns the idle timeout expiration for entries in the Region.
+   *
+   * @return the idle timeout expiration for entries in the Region
    */
   public int getEntryIdleTimeout() {
     return entryIdleTimeout;
@@ -179,6 +231,8 @@ public class RegionAttributesData {
 
   /**
    * Returns the custom time to live expiration for entries in the Region, if one exists.
+   *
+   * @return the custom time to live expiration for entries in the Region
    */
   public String getCustomEntryTimeToLive() {
     return customEntryTimeToLive;
@@ -186,6 +240,8 @@ public class RegionAttributesData {
 
   /**
    * Returns the custom idle timeout expiration for entries in the Region, if one exists.
+   *
+   * @return the custom idle timeout expiration for entries in the Region
    */
   public String getCustomEntryIdleTimeout() {
     return customEntryIdleTimeout;
@@ -201,14 +257,18 @@ public class RegionAttributesData {
   }
 
   /**
-   * Returns the data policy.
+   * Returns the data policy of the Region.
+   *
+   * @return the data policy of the Region
    */
   public String getDataPolicy() {
     return dataPolicy;
   }
 
   /**
-   * Returns the scope.
+   * Returns the scope of the Region.
+   *
+   * @return the scope of the Region
    */
   public String getScope() {
     return scope;
@@ -216,6 +276,8 @@ public class RegionAttributesData {
 
   /**
    * Returns the initial capacity of entries in the Region.
+   *
+   * @return the initial capacity of entries in the Region
    */
   public int getInitialCapacity() {
     return initialCapacity;
@@ -223,6 +285,8 @@ public class RegionAttributesData {
 
   /**
    * Returns the load factor of entries in the Region.
+   *
+   * @return the load factor of entries in the Region
    */
   public float getLoadFactor() {
     return loadFactor;
@@ -251,6 +315,8 @@ public class RegionAttributesData {
 
   /**
    * Returns the concurrency level for entries in the Region.
+   *
+   * @return the concurrency level for entries in the Region
    */
   public int getConcurrencyLevel() {
     return concurrencyLevel;
@@ -316,6 +382,8 @@ public class RegionAttributesData {
 
   /**
    * Returns the name of the DiskStore associated with the Region.
+   *
+   * @return the name of the DiskStore associated with the Region
    */
   public String getDiskStoreName() {
     return diskStoreName;
@@ -323,6 +391,8 @@ public class RegionAttributesData {
 
   /**
    * Returns the subscriber's interest policy.
+   *
+   * @return the subscriber's interest policy
    */
   public String getInterestPolicy() {
     return interestPolicy;
@@ -339,6 +409,8 @@ public class RegionAttributesData {
 
   /**
    * Returns a list of CacheListeners for the Region. An empty array if no listener is specified.
+   *
+   * @return an array of CacheListeners for the Region
    */
   public String[] getCacheListeners() {
     return cacheListeners;

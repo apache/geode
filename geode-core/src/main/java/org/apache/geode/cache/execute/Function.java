@@ -31,7 +31,7 @@ import org.apache.geode.security.ResourcePermission;
  * not registered. For best performance it is recommended that you implement {@link #getId()} to
  * return a non-null identifier and register your function using {@link
  * FunctionService#registerFunction(Function)} or the cache.xml <code>function</code> element.
- * </p>
+ * <p>
  *
  * @since GemFire 6.0
  */
@@ -44,11 +44,10 @@ public interface Function<T> extends Identifiable<String> {
    * <p>
    * If this method returns false, {@link ResultCollector#getResult()} throws
    * {@link FunctionException}.
-   * </p>
    * <p>
    * If this method returns true, {@link ResultCollector#getResult()} blocks and
    * waits for the result of function execution
-   * </p>
+   * <p>
    *
    * @return whether this function returns a Result back to the caller.
    * @since GemFire 6.0
@@ -91,19 +90,17 @@ public interface Function<T> extends Identifiable<String> {
    * Return true to indicate to GemFire the method requires optimization for writing the targeted
    * {@link FunctionService#onRegion(org.apache.geode.cache.Region)} and any associated {@linkplain
    * Execution#withFilter(java.util.Set) routing objects}.
-   * </p>
    *
    * <p>
    * Returning false will optimize for read behavior on the targeted {@link
    * FunctionService#onRegion(org.apache.geode.cache.Region)} and any associated {@linkplain
    * Execution#withFilter(java.util.Set) routing objects}.
-   * </p>
    *
    * <p>
    * This method is only consulted when Region passed to
    * FunctionService#onRegion(org.apache.geode.cache.Region)
    * is a partitioned region
-   * </p>
+   * <p>
    *
    * @return false if the function is read only, otherwise returns true
    * @see FunctionService
@@ -129,17 +126,15 @@ public interface Function<T> extends Identifiable<String> {
    * <p>
    * By default, functions require DATA:WRITE permission. If your function requires other
    * permissions, you will need to override this method.
-   * </p>
    * <p>
    * Please be as specific as possible when you set the required permissions for your function e.g.
    * if your function reads from a region, it would be good to include the region name in your
    * permission. It's better to return "DATA:READ:regionName" as the required permission other than
    * "DATA:READ", because the latter means only users with read permission on ALL regions can
    * execute your function.
-   * </p>
    * <p>
    * All the permissions returned from this method will be ANDed together.
-   * </p>
+   * <p>
    *
    * @param regionName the region this function will be executed on. The regionName is optional and
    *        will only be present when the function is executed by an onRegion() executor. In other
@@ -159,17 +154,15 @@ public interface Function<T> extends Identifiable<String> {
    * <p>
    * By default, functions require DATA:WRITE permission. If your function requires other
    * permissions, you will need to override this method.
-   * </p>
    * <p>
    * Please be as specific as possible when you set the required permissions for your function e.g.
    * if your function reads from a region, it would be good to include the region name in your
    * permission. It's better to return "DATA:READ:regionName" as the required permission other than
    * "DATA:READ", because the latter means only users with read permission on ALL regions can
    * execute your function.
-   * </p>
    * <p>
    * All the permissions returned from this method will be ANDed together.
-   * </p>
+   * <p>
    *
    * @param regionName the region this function will be executed on. The regionName is optional and
    *        will only be present when the function is executed by an onRegion() executor. In other

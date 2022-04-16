@@ -22,59 +22,41 @@ import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.RegionEvent;
 
-public class QueueListener implements CacheListener {
-  public List createList = Collections.synchronizedList(new ArrayList());
-  public List destroyList = Collections.synchronizedList(new ArrayList());
-  public List updateList = Collections.synchronizedList(new ArrayList());
+public class QueueListener<K, V> implements CacheListener<K, V> {
+  public List<K> createList = Collections.synchronizedList(new ArrayList<>());
+  public List<K> destroyList = Collections.synchronizedList(new ArrayList<>());
+  public List<K> updateList = Collections.synchronizedList(new ArrayList<>());
 
   @Override
-  public void afterCreate(EntryEvent event) {
+  public void afterCreate(EntryEvent<K, V> event) {
     createList.add(event.getKey());
   }
 
   @Override
-  public void afterDestroy(EntryEvent event) {
+  public void afterDestroy(EntryEvent<K, V> event) {
     destroyList.add(event.getKey());
   }
 
   @Override
-  public void afterInvalidate(EntryEvent event) {
-    // TODO Auto-generated method stub
-
-  }
+  public void afterInvalidate(EntryEvent<K, V> event) {}
 
   @Override
-  public void afterRegionClear(RegionEvent event) {
-    // TODO Auto-generated method stub
-
-  }
+  public void afterRegionClear(RegionEvent<K, V> event) {}
 
   @Override
-  public void afterRegionCreate(RegionEvent event) {
-    // TODO Auto-generated method stub
-
-  }
+  public void afterRegionCreate(RegionEvent<K, V> event) {}
 
   @Override
-  public void afterRegionDestroy(RegionEvent event) {
-    // TODO Auto-generated method stub
-
-  }
+  public void afterRegionDestroy(RegionEvent<K, V> event) {}
 
   @Override
-  public void afterRegionInvalidate(RegionEvent event) {
-    // TODO Auto-generated method stub
-
-  }
+  public void afterRegionInvalidate(RegionEvent<K, V> event) {}
 
   @Override
-  public void afterRegionLive(RegionEvent event) {
-    // TODO Auto-generated method stub
-
-  }
+  public void afterRegionLive(RegionEvent<K, V> event) {}
 
   @Override
-  public void afterUpdate(EntryEvent event) {
+  public void afterUpdate(EntryEvent<K, V> event) {
     updateList.add(event.getKey());
   }
 
@@ -83,9 +65,5 @@ public class QueueListener implements CacheListener {
   }
 
   @Override
-  public void close() {
-    // TODO Auto-generated method stub
-
-  }
-
+  public void close() {}
 }

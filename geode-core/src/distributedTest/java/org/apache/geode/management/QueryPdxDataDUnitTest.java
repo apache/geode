@@ -18,12 +18,15 @@ import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.util.List;
 
-import net.openhft.compiler.CompilerUtils;
+import org.jetbrains.annotations.NotNull;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -34,6 +37,9 @@ import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.pdx.internal.AutoSerializableManager;
+import org.apache.geode.test.compiler.InMemoryClassFile;
+import org.apache.geode.test.compiler.InMemoryClassFileLoader;
+import org.apache.geode.test.compiler.InMemoryJavaCompiler;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -63,7 +69,8 @@ public class QueryPdxDataDUnitTest {
     locator = cluster.startLocatorVM(0);
     gfsh.connectAndVerify(locator);
     gfsh.executeAndAssertThat(
-        "configure pdx --read-serialized=true --auto-serializable-classes=org.apache.geode.management.*")
+        "configure pdx --read-serialized=true --auto-serializable-classes=org.apache.geode"
+            + ".management.*")
         .statusIsSuccess();
 
     server1 = cluster.startServerVM(1, locator.getPort());
@@ -83,12 +90,13 @@ public class QueryPdxDataDUnitTest {
           ClusterStartupRule.getClientCache().createClientRegionFactory(ClientRegionShortcut.PROXY);
       Region<Object, Object> region = factory.create("BOZ");
 
-      buildClass("org.apache.geode.management.Address",
-          "/org/apache/geode/management/Address.java");
-      Class<?> customerClass =
-          buildClass("org.apache.geode.management.Customer",
-              "/org/apache/geode/management/Customer.java");
-
+      InMemoryJavaCompiler compiler = new InMemoryJavaCompiler();
+      List<InMemoryClassFile> classFiles = compiler.compile(
+          contentOfResource("/org/apache/geode/management/Address.java"),
+          contentOfResource("/org/apache/geode/management/Customer.java"));
+      InMemoryClassFileLoader classLoader = new InMemoryClassFileLoader();
+      List<Class<?>> classes = classLoader.defineClasses(classFiles);
+      Class<?> customerClass = classes.get(1);
       Constructor<?> constructor =
           customerClass.getConstructor(String.class, String.class, String.class);
       for (int i = 0; i < 100; i++) {
@@ -98,14 +106,13 @@ public class QueryPdxDataDUnitTest {
     });
   }
 
-  private static Class<?> buildClass(String className, String javaResourceName) throws Exception {
+  @NotNull
+  private static String contentOfResource(String javaResourceName)
+      throws URISyntaxException, IOException {
     URL resourceFileURL = QueryPdxDataDUnitTest.class.getResource(javaResourceName);
     assertThat(resourceFileURL).isNotNull();
-
     URI resourceUri = resourceFileURL.toURI();
-    String javaCode = new String(Files.readAllBytes(new File(resourceUri).toPath()));
-
-    return CompilerUtils.CACHED_COMPILER.loadFromJava(className, javaCode);
+    return new String(Files.readAllBytes(new File(resourceUri).toPath()));
   }
 
   @Test
@@ -113,5 +120,4 @@ public class QueryPdxDataDUnitTest {
     gfsh.executeAndAssertThat("query --query=\"select * from " + SEPARATOR + "BOZ.values\"")
         .statusIsSuccess();
   }
-
 }

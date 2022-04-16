@@ -2058,8 +2058,8 @@ public abstract class AbstractRegionMap extends BaseRegionMap
 
   private void txHandleWANEvent(final LocalRegion owner, EntryEventImpl callbackEvent,
       TXEntryState txEntryState) {
-    owner.handleWANEvent(callbackEvent);
-    if (txEntryState != null) {
+    owner.txHandleWANEvent(callbackEvent);
+    if (txEntryState != null && callbackEvent.getTailKey() != -1) {
       txEntryState.setTailKey(callbackEvent.getTailKey());
     }
   }

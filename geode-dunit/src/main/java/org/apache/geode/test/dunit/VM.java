@@ -81,12 +81,15 @@ public class VM implements Serializable {
   /**
    * Returns the {@code VM} identity. For {@link StandAloneDUnitEnv} the number returned is a
    * zero-based sequence representing the order in with the DUnit {@code VM}s were launched.
+   *
+   * @return the id of the VM
    */
   public static int getVMId() {
     return DUnitEnv.get().getId();
   }
 
   /**
+   * @return the id of the VM
    * @deprecated Please use {@link #getVMId()} instead.
    */
   @Deprecated
@@ -94,14 +97,14 @@ public class VM implements Serializable {
     return DUnitEnv.get().getId();
   }
 
-  /**
+  /*
    * Returns true if executed from the main JUnit VM.
    */
   public static boolean isControllerVM() {
     return getCurrentVMNum() == CONTROLLER_VM;
   }
 
-  /**
+  /*
    * Returns true if executed from a DUnit VM. Returns false if executed from the main JUnit VM.
    */
   public static boolean isVM() {
@@ -112,6 +115,7 @@ public class VM implements Serializable {
    * Returns a VM that runs in this DistributedTest.
    *
    * @param whichVM A zero-based identifier of the VM
+   * @return a VM that runs in this DistributedTest.
    */
   public static VM getVM(int whichVM) {
     return Host.getHost(0).getVM(whichVM);
@@ -122,47 +126,48 @@ public class VM implements Serializable {
    *
    * @param version String specifying the Geode version
    * @param whichVM A zero-based identifier of the VM
+   * @return a VM running the specified Geode version in this DistributedTest
    */
   public static VM getVM(String version, int whichVM) {
     return Host.getHost(0).getVM(version, whichVM);
   }
 
-  /**
+  /*
    * Returns a collection of all DistributedTest VMs.
    */
   public static List<VM> getAllVMs() {
     return Host.getHost(0).getAllVMs();
   }
 
-  /**
+  /*
    * Returns the number of VMs that run in this DistributedTest.
    */
   public static int getVMCount() {
     return Host.getHost(0).getVMCount();
   }
 
-  /**
+  /*
    * Returns the DistributedTest Locator VM.
    */
   public static VM getLocator() {
     return Host.getLocator();
   }
 
-  /**
+  /*
    * Returns the DistributedTest Locator VM.
    */
   public static VM getController() {
     return getVM(CONTROLLER_VM);
   }
 
-  /**
+  /*
    * Returns the machine name hosting this DistributedTest.
    */
   public static String getHostName() {
     return Host.getHost(0).getHostName();
   }
 
-  /**
+  /*
    * Returns the name of a VM for use in the RMI naming service or working directory on disk
    */
   public static String getVMName(final String version, final int pid) {
@@ -176,28 +181,28 @@ public class VM implements Serializable {
     }
   }
 
-  /**
+  /*
    * Returns an array of all provided VMs.
    */
   public static VM[] toArray(VM... vms) {
     return vms;
   }
 
-  /**
+  /*
    * Returns an array of all provided VMs.
    */
   public static VM[] toArray(List<VM> vmList) {
     return vmList.toArray(new VM[0]);
   }
 
-  /**
+  /*
    * Returns an array of all provided VMs.
    */
   public static VM[] toArray(List<VM> vmList, VM... vms) {
     return ArrayUtils.addAll(vmList.toArray(new VM[0]), vms);
   }
 
-  /**
+  /*
    * Returns an array of all provided VMs.
    */
   public static VM[] toArray(VM[] vmArray, VM... vms) {
@@ -206,6 +211,8 @@ public class VM implements Serializable {
 
   /**
    * Registers a {@link VMEventListener}.
+   *
+   * @param listener the {@link VMEventListener} to register
    */
   public static void addVMEventListener(final VMEventListener listener) {
     getVMEventNotifier().addVMEventListener(listener);
@@ -213,6 +220,8 @@ public class VM implements Serializable {
 
   /**
    * Deregisters a {@link VMEventListener}.
+   *
+   * @param listener the {@link VMEventListener} to deregister
    */
   public static void removeVMEventListener(final VMEventListener listener) {
     getVMEventNotifier().removeVMEventListener(listener);
@@ -247,6 +256,8 @@ public class VM implements Serializable {
 
   /**
    * Returns the {@code Host} on which this {@code VM} is running.
+   *
+   * @return the {@code Host} on which this {@code VM} is running.
    */
   public Host getHost() {
     return host;
@@ -254,6 +265,8 @@ public class VM implements Serializable {
 
   /**
    * Returns the version of Geode used in this VM.
+   *
+   * @return the version of Geode used in this VM
    *
    * @see VersionManager#CURRENT_VERSION
    * @see Host#getVM(String, int)
@@ -264,6 +277,8 @@ public class VM implements Serializable {
 
   /**
    * Returns the VM id of this {@code VM}.
+   *
+   * @return the VM id of this {@code VM}.
    */
   public int getId() {
     return id;
@@ -271,6 +286,8 @@ public class VM implements Serializable {
 
   /**
    * Returns the process id of this {@code VM}.
+   *
+   * @return the process id of this {@code VM}
    */
   public int getPid() {
     return invoke(() -> ProcessUtils.identifyPid());
@@ -280,8 +297,10 @@ public class VM implements Serializable {
    * Invokes a static zero-arg method with an {@link Object} or {@code void} return type in this
    * {@code VM}. If the return type of the method is {@code void}, {@code null} is returned.
    *
+   * @param <V> the type returned by the method
    * @param targetClass The class on which to invoke the method
    * @param methodName The name of the method to invoke
+   * @return the object returned by the method
    *
    * @throws RMIException Wraps any underlying exception thrown while invoking the method in this VM
    *
@@ -297,8 +316,10 @@ public class VM implements Serializable {
    * Asynchronously invokes a static zero-arg method with an {@code Object} or {@code void} return
    * type in this VM. If the return type of the method is {@code void}, {@code null} is returned.
    *
+   * @param <V> the type returned by the method
    * @param targetClass The class on which to invoke the method
    * @param methodName The name of the method to invoke
+   * @return an {@link AsyncInvocation}
    *
    * @deprecated Please use {@link #invokeAsync(SerializableCallableIF)} instead
    */
@@ -311,9 +332,11 @@ public class VM implements Serializable {
    * Invokes a static method with an {@link Object} or {@code void} return type in this VM. If the
    * return type of the method is {@code void}, {@code null} is returned.
    *
+   * @param <V> the type returned by the method
    * @param targetClass The class on which to invoke the method
    * @param methodName The name of the method to invoke
    * @param args Arguments passed to the method call (must be {@link Serializable}).
+   * @return the object returned by the method
    *
    * @throws RMIException Wraps any underlying exception thrown while invoking the method in this
    *         {@code VM}
@@ -330,9 +353,11 @@ public class VM implements Serializable {
    * Asynchronously invokes an instance method with an {@link Object} or {@code void} return type in
    * this {@code VM}. If the return type of the method is {@code void}, {@code null} is returned.
    *
+   * @param <V> the type returned by the method
    * @param targetObject The object on which to invoke the method
    * @param methodName The name of the method to invoke
    * @param args Arguments passed to the method call (must be {@link Serializable}).
+   * @return an {@link AsyncInvocation}
    *
    * @deprecated Please use {@link #invoke(SerializableCallableIF)} instead
    */
@@ -348,9 +373,11 @@ public class VM implements Serializable {
    * Asynchronously invokes an instance method with an {@link Object} or {@code void} return type in
    * this {@code VM}. If the return type of the method is {@code void}, {@code null} is returned.
    *
+   * @param <V> the type returned by the method
    * @param targetClass The class on which to invoke the method
    * @param methodName The name of the method to invoke
    * @param args Arguments passed to the method call (must be {@link Serializable}).
+   * @return an {@link AsyncInvocation}
    *
    * @deprecated Please use {@link #invoke(SerializableCallableIF)} instead
    */
@@ -366,7 +393,9 @@ public class VM implements Serializable {
    * Invokes the {@code run} method of a {@link Runnable} in this VM. Recall that {@code run} takes
    * no arguments and has no return value.
    *
+   * @param <V> the type returned by the AsyncInvocation
    * @param runnable The {@code Runnable} to be run
+   * @return an {@link AsyncInvocation}
    *
    * @see SerializableRunnable
    */
@@ -381,8 +410,10 @@ public class VM implements Serializable {
    * no arguments and has no return value. The {@code Runnable} is wrapped in a
    * {@link IdentifiableRunnable} having the given name so it shows up in DUnit logs.
    *
+   * @param <V> the type returned by the AsyncInvocation
    * @param runnable The {@code Runnable} to be run
    * @param name The name of the {@code Runnable}, which will be logged in DUnit output
+   * @return an {@link AsyncInvocation}
    *
    * @see SerializableRunnable
    */
@@ -396,8 +427,10 @@ public class VM implements Serializable {
   /**
    * Invokes the {@code call} method of a {@link Callable} in this {@code VM}.
    *
+   * @param <V> the type returned by the callable
    * @param callable The {@code Callable} to be run
    * @param name The name of the {@code Callable}, which will be logged in dunit output
+   * @return an {@link AsyncInvocation}
    *
    * @see SerializableCallable
    */
@@ -411,7 +444,9 @@ public class VM implements Serializable {
   /**
    * Invokes the {@code call} method of a {@link Callable} in this {@code VM}.
    *
+   * @param <V> the type returned by the callable
    * @param callable The {@code Callable} to be run
+   * @return an {@link AsyncInvocation}
    *
    * @see SerializableCallable
    */
@@ -451,8 +486,10 @@ public class VM implements Serializable {
   /**
    * Invokes the {@code call} method of a {@link Callable} in this {@code VM}.
    *
+   * @param <V> the type returned by the callable
    * @param callable The {@code Callable} to be run
    * @param name The name of the {@code Callable}, which will be logged in DUnit output
+   * @return the object returned by the callable
    *
    * @see SerializableCallable
    */
@@ -464,7 +501,9 @@ public class VM implements Serializable {
   /**
    * Invokes the {@code call} method of a {@link Callable} in this {@code VM}.
    *
+   * @param <V> the type returned by the callable
    * @param callable The {@code Callable} to be run
+   * @return the object returned by the callable
    *
    * @see SerializableCallable
    */
@@ -478,8 +517,10 @@ public class VM implements Serializable {
    * {@code VM}. The return type of the method can be either {@link Object} or {@code void}. If the
    * return type of the method is {@code void}, {@code null} is returned.
    *
+   * @param <V> the type returned by the method
    * @param targetObject The receiver of the method invocation
    * @param methodName The name of the method to invoke
+   * @return the object returned by the method
    *
    * @throws RMIException Wraps any underlying exception thrown while invoking the method in this
    *         {@code VM}
@@ -497,9 +538,11 @@ public class VM implements Serializable {
    * type of the method can be either {@link Object} or {@code void}. If the return type of the
    * method is {@code void}, {@code null} is returned.
    *
+   * @param <V> the type returned by the method
    * @param targetObject The receiver of the method invocation
    * @param methodName The name of the method to invoke
    * @param args Arguments passed to the method call (must be {@link Serializable}).
+   * @return the object returned by the method
    *
    * @throws RMIException Wraps any underlying exception thrown while invoking the method in this
    *         {@code VM}
@@ -532,6 +575,7 @@ public class VM implements Serializable {
    *
    * Note: bounce invokes shutdown hooks.
    *
+   * @return this VM
    * @throws RMIException if an exception occurs while bouncing this {@code VM}
    */
   public VM bounce() {
@@ -550,6 +594,7 @@ public class VM implements Serializable {
    *
    * Note: Forced bounce does not invoke shutdown hooks.
    *
+   * @return this VM
    * @throws RMIException if an exception occurs while bouncing this {@code VM}
    */
   public VM bounceForcibly() {

@@ -30,19 +30,30 @@ public abstract class VersionException extends GemFireCheckedException {
     super();
   }
 
-  /** Constructs a new <code>VersionException</code> with a message string. */
+  /**
+   * Constructs a new <code>VersionException</code> with a message string.
+   *
+   * @param s the detail message
+   */
   public VersionException(String s) {
     super(s);
   }
 
   /**
    * Constructs a <code>VersionException</code> with a message string and a base exception
+   *
+   * @param s the detail message
+   * @param cause the cause
    */
   public VersionException(String s, Throwable cause) {
     super(s, cause);
   }
 
-  /** Constructs a <code>VersionException</code> with a cause */
+  /**
+   * Constructs a <code>VersionException</code> with a cause
+   *
+   * @param cause the cause
+   */
   public VersionException(Throwable cause) {
     super(cause);
   }

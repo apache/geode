@@ -77,6 +77,9 @@ public class ClusterManagementResult {
 
   /**
    * for internal use only
+   *
+   * @param statusCode the {@link StatusCode} to set
+   * @param message the status message to set
    */
   public ClusterManagementResult(StatusCode statusCode, String message) {
     setStatus(statusCode, message);
@@ -84,6 +87,8 @@ public class ClusterManagementResult {
 
   /**
    * for internal use only
+   *
+   * @param copyFrom the {@link ClusterManagementResult} to copy from
    */
   public ClusterManagementResult(ClusterManagementResult copyFrom) {
     statusCode = copyFrom.statusCode;
@@ -93,13 +98,16 @@ public class ClusterManagementResult {
 
   /**
    * for internal use only
+   *
+   * @param statusCode the {@link StatusCode} to set
+   * @param message the status message to set
    */
   public void setStatus(StatusCode statusCode, String message) {
     this.statusCode = statusCode;
     statusMessage = formatErrorMessage(message);
   }
 
-  /**
+  /*
    * Capitalized the first letter and adds a period, if needed.
    * This helps the CMS API give a consistent format to error messages, even when they sometimes
    * come from parts of the system beyond our control.
@@ -127,6 +135,8 @@ public class ClusterManagementResult {
 
   /**
    * Returns an optional message to accompany {@link #getStatusCode()}
+   *
+   * @return an optional message to accompany {@link #getStatusCode()}
    */
   public String getStatusMessage() {
     return statusMessage;
@@ -134,6 +144,8 @@ public class ClusterManagementResult {
 
   /**
    * for internal use only
+   *
+   * @param links the {@link Links} to set
    */
   public void setLinks(Links links) {
     this.links = links;
@@ -141,6 +153,8 @@ public class ClusterManagementResult {
 
   /**
    * Returns true if {@link #getStatusCode()} has a non-error value
+   *
+   * @return true if {@link #getStatusCode()} has a non-error value
    */
   @JsonIgnore
   public boolean isSuccessful() {
@@ -150,6 +164,8 @@ public class ClusterManagementResult {
 
   /**
    * Returns the {@link StatusCode} for this request, such as ERROR or OK.
+   *
+   * @return the {@link StatusCode} for this request
    */
   public StatusCode getStatusCode() {
     return statusCode;
@@ -157,6 +173,8 @@ public class ClusterManagementResult {
 
   /**
    * Returns the status code and message
+   *
+   * @return the status code and message as a String
    */
   @Override
   public String toString() {

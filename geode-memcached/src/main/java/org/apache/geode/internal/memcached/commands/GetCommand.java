@@ -34,15 +34,15 @@ import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 
 /**
  *
- * The retrieval commands "get" and "gets" operates like this:<br/>
+ * The retrieval commands "get" and "gets" operates like this:<br>
  * <code>
- * get &lt;key&gt;*\r\n<br/>
+ * get &lt;key&gt;*\r\n<br>
  * gets &lt;key&gt;*\r\n
  * </code>
  * <p>
- * Each item sent by the server looks like this:<br/>
+ * Each item sent by the server looks like this:<br>
  * <code>
- * VALUE &lt;key&gt; &lt;flags&gt; &lt;bytes&gt; [&lt;cas unique&gt;]\r\n<br/>
+ * VALUE &lt;key&gt; &lt;flags&gt; &lt;bytes&gt; [&lt;cas unique&gt;]\r\n<br>
  * &lt;data block&gt;\r\n
  * </code>
  *

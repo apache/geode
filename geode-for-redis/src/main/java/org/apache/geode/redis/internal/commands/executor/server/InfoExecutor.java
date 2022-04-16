@@ -131,13 +131,13 @@ public class InfoExecutor implements CommandExecutor {
    * the ratio of physical memory being used vs. the amount of virtual memory the process
    * requires. So, effectively an indication of memory pressure. If this number goes below 1.0 it
    * would indicate that the process has started to swap memory which is bad.
-   * <p/>
+   * <p>
    * In a similar sense, the calculation for fragmentation here is a ratio of the maximum amount
    * of memory available to the JVM (Java heap) vs. the amount of memory used by the JVM. This
    * ratio can only approach 1.0 and cannot go lower. However, the closer to 1.0, the greater the
    * likelihood of incurring GC pauses. This is analogous to swapping and will have a very
    * similar effect in that it will adversely impact performance.
-   * <p/>
+   * <p>
    * Used memory is derived from {@link Runtime} memory and is calculated as
    * {@code totalMemory() - freeMemory()}.
    */

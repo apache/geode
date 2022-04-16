@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.runner.Description;
@@ -189,7 +190,7 @@ public class RandomRule extends SecureRandom implements GsRandom, SerializableTe
   /**
    * Returns the next pseudorandom, uniformly distributed {@code int} value from this random number
    * generator's sequence within a range from 0 to max (inclusive -- which is different from
-   * {@link Random#nextInt}).
+   * {@link Random#nextInt(int)}).
    *
    * @param max the maximum range (inclusive) for the pseudorandom.
    * @return the next pseudorandom, uniformly distributed {@code int} value from this random number
@@ -211,7 +212,7 @@ public class RandomRule extends SecureRandom implements GsRandom, SerializableTe
 
   /**
    * Returns the next pseudorandom, uniformly distributed {@code int} value from this random number
-   * generator's sequence within a range from min to max. If max < min, returns 0.
+   * generator's sequence within a range from min to max. If max &lt; min, returns 0.
    *
    * @param min the minimum range (inclusive) for the pseudorandom.
    * @param max the maximum range (inclusive) for the pseudorandom.
@@ -231,6 +232,7 @@ public class RandomRule extends SecureRandom implements GsRandom, SerializableTe
    * Returns the next pseudorandom, uniformly distributed element from the specified iterable as
    * indexed by this random number generator's sequence.
    *
+   * @param <T> the type of the elements
    * @param iterable the range of values (inclusive) for the pseudorandom.
    * @return the next pseudorandom, uniformly distributed element from the specified iterable as
    *         indexed by this random number generator's sequence.
@@ -247,6 +249,7 @@ public class RandomRule extends SecureRandom implements GsRandom, SerializableTe
    * Returns the next pseudorandom, uniformly distributed element from the specified values as
    * indexed by this random number generator's sequence.
    *
+   * @param <T> the type of the elements
    * @param values the range of values (inclusive) for the pseudorandom.
    * @return the next pseudorandom, uniformly distributed element from the specified values as
    *         indexed by this random number generator's sequence.

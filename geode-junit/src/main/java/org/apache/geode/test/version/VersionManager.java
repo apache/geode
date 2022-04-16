@@ -82,7 +82,7 @@ public class VersionManager {
     return result;
   }
 
-  /**
+  /*
    * Returns true if the version is equal to the CURRENT_VERSION constant
    */
   public static boolean isCurrentVersion(String version) {
@@ -102,6 +102,8 @@ public class VersionManager {
   /**
    * Returns the ordinal of the version of Geode used in this JVM. Use this instead of
    * {@code Version.CURRENT} or {@code Version.CURRENT_ORDINAL} in test code.
+   *
+   * @return the ordinal of the version of Geode used in this JVM
    */
   public short getCurrentVersionOrdinal() {
     return geodeCurrentVersionOrdinal;
@@ -111,6 +113,9 @@ public class VersionManager {
    * Check to see if a version string is known to VersionManager. Versions are either
    * {@link #CURRENT_VERSION} or one of the versions returned by
    * {@link VersionManager#getVersions()}.
+   *
+   * @param version the version to check
+   * @return whether a version string is known to VersionManager
    */
   public boolean isValidVersion(String version) {
     return version.equals(CURRENT_VERSION) || classPaths.containsKey(version);
@@ -119,6 +124,9 @@ public class VersionManager {
   /**
    * Returns the classpath for the given version, or null if the version is not valid. Use
    * {@link #CURRENT_VERSION} for the version in development.
+   *
+   * @param version the version for which to return the classpath
+   * @return the classpath for the given version
    */
   public String getClasspath(String version) {
     return classPaths.get(version);
@@ -137,6 +145,8 @@ public class VersionManager {
    * <p>
    * Note: if you need to compare version strings use {@link TestVersion#compare(String, String)} or
    * {@link TestVersion#equals(TestVersion)}.
+   *
+   * @return a list of older versions available for testing, sorted from oldest to newest
    */
   public List<String> getVersions() {
     checkForLoadFailure();
@@ -157,6 +167,8 @@ public class VersionManager {
    * <p>
    * Note: if you need to compare version strings use {@link TestVersion#compare(String, String)} or
    * {@link TestVersion#equals(TestVersion)}.
+   *
+   * @return a list of testable versions sorted from oldest to newest
    */
   public List<String> getVersionsWithoutCurrent() {
     checkForLoadFailure();

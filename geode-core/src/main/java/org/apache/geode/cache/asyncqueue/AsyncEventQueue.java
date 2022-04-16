@@ -36,12 +36,14 @@ public interface AsyncEventQueue {
   /**
    * The Disk store that is required for overflow and persistence
    *
+   * @return the name of the disk store
    */
   String getDiskStoreName();// for overflow and persistence
 
   /**
    * The maximum memory after which the data needs to be overflowed to disk. Default is 100 MB.
    *
+   * @return the maximum memory after which the data needs to be overflowed to disk
    */
   int getMaximumQueueMemory();// for overflow
 
@@ -49,6 +51,7 @@ public interface AsyncEventQueue {
    * Represents the size of a batch that gets delivered over the AsyncEventQueue. Default batchSize
    * is 100.
    *
+   * @return the size of a batch that gets delivered over the AsyncEventQueue
    */
   int getBatchSize();
 
@@ -56,6 +59,8 @@ public interface AsyncEventQueue {
    * Represents the maximum time interval that can elapse before a batch is sent from
    * <code>AsyncEventQueue</code>. Default batchTimeInterval is 5 ms.
    *
+   * @return the maximum time interval that can elapse before a batch is sent from
+   *         <code>AsyncEventQueue</code>
    */
   int getBatchTimeInterval();
 
@@ -63,6 +68,7 @@ public interface AsyncEventQueue {
    * Represents whether batch conflation is enabled for batches sent from
    * <code>AsyncEventQueue</code>. Default is false.
    *
+   * @return whether batch conflation is enabled
    */
   boolean isBatchConflationEnabled();
 
@@ -70,12 +76,14 @@ public interface AsyncEventQueue {
    * Represents whether the AsyncEventQueue is configured to be persistent or non-persistent.
    * Default is false.
    *
+   * @return whether the AsyncEventQueue is configured to be persistent
    */
   boolean isPersistent();
 
   /**
    * Represents whether writing to disk is synchronous or not. Default is true.
    *
+   * @return whether writing to disk is synchronous
    */
   boolean isDiskSynchronous();
 
@@ -84,6 +92,7 @@ public interface AsyncEventQueue {
    * queue. If the primary queue goes down then the secondary queue first becomes primary and then
    * starts delivering the events.
    *
+   * @return whether the queue is primary
    */
   boolean isPrimary();
 
@@ -112,7 +121,7 @@ public interface AsyncEventQueue {
 
   /**
    * Returns the order policy followed while dispatching the events to AsyncEventListener. Order
-   * policy is set only when dispatcher threads are > 1. Default order policy is KEY.
+   * policy is set only when dispatcher threads are &gt; 1. Default order policy is KEY.
    *
    * @return the order policy followed while dispatching the events to AsyncEventListener.
    */
@@ -154,6 +163,8 @@ public interface AsyncEventQueue {
 
   /**
    * Returns whether the queue is processing queued events or is paused
+   *
+   * @return whether the queue is paused
    */
   boolean isDispatchingPaused();
 

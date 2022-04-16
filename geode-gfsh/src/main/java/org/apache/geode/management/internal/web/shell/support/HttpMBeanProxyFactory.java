@@ -22,7 +22,7 @@ import org.apache.geode.management.internal.web.shell.HttpOperationInvoker;
 
 /**
  * The HttpMBeanProxyFactory class is an abstract factory for creating
- * <p/>
+ * <p>
  *
  * @see java.lang.reflect.Proxy
  * @see org.apache.geode.management.internal.web.shell.HttpOperationInvoker

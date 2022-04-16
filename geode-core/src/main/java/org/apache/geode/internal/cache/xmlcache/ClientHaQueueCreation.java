@@ -53,6 +53,7 @@ public class ClientHaQueueCreation {
   /**
    * @deprecated as of prPersistSprint2
    */
+  @Deprecated
   public String getOverflowDirectory() {
     if (getDiskStoreName() != null) {
       throw new IllegalStateException(
@@ -65,6 +66,7 @@ public class ClientHaQueueCreation {
   /**
    * @deprecated as of prPersistSprint2
    */
+  @Deprecated
   public void setOverflowDirectory(String overflowDirectory) {
     if (getDiskStoreName() != null) {
       throw new IllegalStateException(

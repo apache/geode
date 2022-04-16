@@ -30,7 +30,7 @@ public class State implements Serializable {
   public String zone;
   public Set districts;
 
-  /** Creates a new instance of State */
+  /* Creates a new instance of State */
   public State(String name, String zone, Set districts) {
     this.name = name;
     this.zone = zone;

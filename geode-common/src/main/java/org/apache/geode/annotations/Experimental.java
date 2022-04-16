@@ -43,7 +43,11 @@ import java.lang.annotation.Target;
     ElementType.METHOD, ElementType.PACKAGE, ElementType.TYPE})
 public @interface Experimental {
 
-  /** Optional description */
+  /**
+   * Optional description
+   *
+   * @return the description for this annotation
+   */
   String value() default "";
 
 }

@@ -68,6 +68,7 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * <OL>
  * <LI>{@link AutoBalancer#SCHEDULE}
  * <LI>TBD THRESHOLDS
+ * </OL>
  */
 @Experimental("The autobalancer may be removed or the API may change in future releases")
 public class AutoBalancer implements Declarable {
@@ -83,6 +84,7 @@ public class AutoBalancer implements Declarable {
    * <LI>Month
    * <LI>Day-of-Week
    * <LI>Year (optional field)
+   * </OL>
    *
    * <P>
    * For. e.g. {@code 0 0 * * * ?} for auditing the system every hour
@@ -159,6 +161,7 @@ public class AutoBalancer implements Declarable {
   /**
    * @deprecated as of Geode 1.5 use initialize instead.
    */
+  @Deprecated
   @Override
   public void init(Properties props) {
     internalInitialize(props);

@@ -83,12 +83,15 @@ public interface PartitionAttributes<K, V> {
   /**
    * This method returns the maximum amount of local memory that can be used by the Region. By
    * default, a PartitionedRegion can contribute 90% of the maximum memory allocated to a VM.
+   *
+   * @return the maximum amount of local memory that can be used by the Region
    */
   int getLocalMaxMemory();
 
   /**
-   * Returns name of the colocated PartitionedRegion's name
+   * Returns the colocated PartitionedRegion's name
    *
+   * @return the colocated PartitionedRegion's name
    * @since GemFire 6.0
    */
   String getColocatedWith();
@@ -97,6 +100,7 @@ public interface PartitionAttributes<K, V> {
    * This method returns local properties. There are currently no local properties defined that are
    * not also deprecated.
    *
+   * @return local properties
    * @deprecated use {@link #getLocalMaxMemory()} in GemFire 5.1 and later releases
    */
   @Deprecated
@@ -106,6 +110,7 @@ public interface PartitionAttributes<K, V> {
    * This method returns global properties. There are currently no global properties defined that
    * are not also deprecated.
    *
+   * @return global properties
    * @deprecated use {@link #getTotalMaxMemory()} and {@link #getTotalNumBuckets()} in GemFire 5.1
    *             and later releases
    */
@@ -125,6 +130,8 @@ public interface PartitionAttributes<K, V> {
    * after another member crashes. Default value of recoveryDelay is -1 which indicates that
    * redundancy won't be recovered if a member crashes.
    *
+   * @return the delay in milliseconds that existing members will wait before satisfying redundancy
+   *         after another member crashes
    * @since GemFire 6.0
    */
   long getRecoveryDelay();
@@ -134,6 +141,8 @@ public interface PartitionAttributes<K, V> {
    * redundancy of data hosted on other members. Default value is 0 which is to recover redundancy
    * immediately when a new member is added.
    *
+   * @return the delay in milliseconds that a new member will wait before trying to satisfy
+   *         redundancy of data hosted on other members
    * @since GemFire 6.0
    */
   long getStartupRecoveryDelay();
@@ -151,6 +160,8 @@ public interface PartitionAttributes<K, V> {
    * Returns <code>FixedPartitionAttributes</code>'s list of local partitions defined on this
    * Partitioned Region
    *
+   * @return <code>FixedPartitionAttributes</code>'s list of local partitions defined on this
+   *         Partitioned Region
    * @since GemFire 6.6
    */
   List<FixedPartitionAttributes> getFixedPartitionAttributes();

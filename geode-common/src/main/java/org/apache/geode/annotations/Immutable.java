@@ -33,6 +33,10 @@ import java.util.List;
 @Target({ElementType.TYPE, ElementType.FIELD})
 public @interface Immutable {
 
-  /** Optional description */
+  /**
+   * Optional description
+   *
+   * @return the description for this annotation
+   */
   String value() default "";
 }

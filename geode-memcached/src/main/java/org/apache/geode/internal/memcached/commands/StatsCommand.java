@@ -22,7 +22,7 @@ import org.apache.geode.internal.memcached.RequestReader;
 import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 
 /**
- * This command is currently no-op.<br/>
+ * This command is currently no-op.<br>
  *
  * The command "stats" is used to query the server about statistics it maintains and other internal
  * data. It has two forms. Without arguments:

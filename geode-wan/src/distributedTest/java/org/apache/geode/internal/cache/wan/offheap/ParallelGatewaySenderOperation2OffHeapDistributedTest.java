@@ -16,14 +16,14 @@ package org.apache.geode.internal.cache.wan.offheap;
 
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderQueueDUnitTest;
+import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderOperation2DistributedTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
-@SuppressWarnings("serial")
 @Category({WanTest.class})
-public class SerialGatewaySenderQueueOffHeapDUnitTest extends SerialGatewaySenderQueueDUnitTest {
+public class ParallelGatewaySenderOperation2OffHeapDistributedTest
+    extends ParallelGatewaySenderOperation2DistributedTest {
 
-  public SerialGatewaySenderQueueOffHeapDUnitTest() {
+  public ParallelGatewaySenderOperation2OffHeapDistributedTest() {
     super();
   }
 
@@ -31,5 +31,4 @@ public class SerialGatewaySenderQueueOffHeapDUnitTest extends SerialGatewaySende
   public boolean isOffHeap() {
     return true;
   }
-
 }

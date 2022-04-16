@@ -44,6 +44,8 @@ public interface SystemMemberRegion {
   /**
    * Returns the name that identifies this region in its cache.
    *
+   * @return the name that identifies this region in its cache
+   *
    * @see org.apache.geode.cache.Region#getName
    */
   String getName();
@@ -51,18 +53,24 @@ public interface SystemMemberRegion {
   /**
    * Returns the full path name that identifies this region in its cache.
    *
+   * @return the full path name that identifies this region in its cache
+   *
    * @see org.apache.geode.cache.Region#getFullPath
    */
   String getFullPath();
 
   /**
    * Returns the names of all the subregions of this region.
+   *
+   * @return the names of all the subregions of this region
    */
   java.util.Set getSubregionNames();
 
   /**
    * Returns the full path of each of the subregions of this region. These paths are suitable for
    * use with {@link SystemMemberCache#getRegion}.
+   *
+   * @return the full path of each of the subregions of this region
    */
   java.util.Set getSubregionFullPaths();
 
@@ -70,22 +78,31 @@ public interface SystemMemberRegion {
    * Returns a description of any user attribute associated with this region. The description
    * includes the classname of the user attribute object as well as its <code>toString</code>
    * representation.
+   *
+   * @return a description of any user attribute associated with this region
    */
   String getUserAttribute();
 
   /**
    * Returns a description of any CacheLoader associated with this region.
+   *
+   * @return a description of any CacheLoader associated with this region
    */
   String getCacheLoader();
 
   /**
    * Returns a description of any CacheWriter associated with this region.
+   *
+   * @return a description of any CacheWriter associated with this region
    */
   String getCacheWriter();
 
   /**
-   * Returns the <code>EvictionAttributes</code> that configure how entries in the the region are
+   * Returns the <code>EvictionAttributes</code> that configure how entries in the region are
    * evicted
+   *
+   * @return the <code>EvictionAttributes</code> that configure how entries in the region are
+   *         evicted
    */
   EvictionAttributes getEvictionAttributes();
 
@@ -93,6 +110,8 @@ public interface SystemMemberRegion {
    * Returns a description of the CacheListener in this region's attributes. If there is more than 1
    * CacheListener defined for a region this method will return the description of the 1st
    * CacheListener returned from {@link #getCacheListeners}
+   *
+   * @return a description of the CacheListener in this region's attributes
    *
    * @deprecated as of 6.0 use getCacheListeners() instead
    */
@@ -111,31 +130,43 @@ public interface SystemMemberRegion {
 
   /**
    * Returns the KeyConstraint in this region's attributes.
+   *
+   * @return the KeyConstraint in this region's attributes
    */
   String getKeyConstraint();
 
   /**
    * Returns the ValueConstraint in this region's attributes.
+   *
+   * @return the ValueConstraint in this region's attributes
    */
   String getValueConstraint();
 
   /**
    * Returns the RegionTimeToLive time limit in this region's attributes.
+   *
+   * @return the RegionTimeToLive time limit in this region's attributes
    */
   int getRegionTimeToLiveTimeLimit();
 
   /**
    * Returns the RegionTimeToLive action in this region's attributes.
+   *
+   * @return the RegionTimeToLive action in this region's attributes
    */
   ExpirationAction getRegionTimeToLiveAction();
 
   /**
    * Returns the EntryTimeToLive time limit in this region's attributes.
+   *
+   * @return the EntryTimeToLive time limit in this region's attributes
    */
   int getEntryTimeToLiveTimeLimit();
 
   /**
    * Returns the EntryTimeToLive action in this region's attributes.
+   *
+   * @return the EntryTimeToLive action in this region's attributes
    */
   ExpirationAction getEntryTimeToLiveAction();
 
@@ -148,21 +179,29 @@ public interface SystemMemberRegion {
 
   /**
    * Returns the RegionIdleTimeout time limit in this region's attributes.
+   *
+   * @return the RegionIdleTimeout time limit in this region's attributes
    */
   int getRegionIdleTimeoutTimeLimit();
 
   /**
    * Returns the RegionIdleTimeout action in this region's attributes.
+   *
+   * @return the RegionIdleTimeout action in this region's attributes
    */
   ExpirationAction getRegionIdleTimeoutAction();
 
   /**
    * Returns the EntryIdleTimeout time limit in this region's attributes.
+   *
+   * @return the EntryIdleTimeout time limit in this region's attributes
    */
   int getEntryIdleTimeoutTimeLimit();
 
   /**
    * Returns the EntryIdleTimeout action in this region's attributes.
+   *
+   * @return the EntryIdleTimeout action in this region's attributes
    */
   ExpirationAction getEntryIdleTimeoutAction();
 
@@ -176,6 +215,8 @@ public interface SystemMemberRegion {
   /**
    * Returns the MirrorType in this region's attributes.
    *
+   * @return the MirrorType in this region's attributes
+   *
    * @deprecated as of 5.0, you should use getDataPolicy instead
    */
   @Deprecated
@@ -183,89 +224,122 @@ public interface SystemMemberRegion {
 
   /**
    * Returns the DataPolicy in this region's attributes.
+   *
+   * @return the DataPolicy in this region's attributes
    */
   DataPolicy getDataPolicy();
 
   /**
+   * Returns the Scope in this region's attributes.
    *
-   * /** Returns the Scope in this region's attributes.
+   * @return the Scope in this region's attributes
    */
   Scope getScope();
 
   /**
    * Returns the InitialCapacity in this region's attributes.
+   *
+   * @return the InitialCapacity in this region's attributes
    */
   int getInitialCapacity();
 
   /**
    * Returns the LoadFactor in this region's attributes.
+   *
+   * @return the LoadFactor in this region's attributes
    */
   float getLoadFactor();
 
   /**
    * Returns the ConcurrencyLevel in this region's attributes.
+   *
+   * @return the ConcurrencyLevel in this region's attributes
    */
   int getConcurrencyLevel();
 
   /**
    * Returns whether or not conflicting concurrent operations on this region are prevented
+   *
+   * @return whether conflicting concurrent operations on this region are prevented
    */
   boolean getConcurrencyChecksEnabled();
 
   /**
    * Returns the StatisticsEnabled in this region's attributes.
+   *
+   * @return the StatisticsEnabled in this region's attributes
    */
   boolean getStatisticsEnabled();
 
   /**
    * Returns whether or not a persistent backup should be made of the region (as opposed to just
    * writing the overflow data to disk).
+   *
+   * @return whether a persistent backup should be made of the region
    */
   boolean getPersistBackup();
 
   /**
    * Returns the <code>DiskWriteAttributes</code> that configure how the region is written to disk.
+   *
+   * @return the <code>DiskWriteAttributes</code> that configure how the region is written to disk
    */
   DiskWriteAttributes getDiskWriteAttributes();
 
   /**
    * Returns the directories to which the region's data are written. If multiple directories are
    * used, GemFire will attempt to distribute the data evenly amongst them.
+   *
+   * @return the directories to which the region's data are written
    */
   File[] getDiskDirs();
 
   /**
    * Returns the number of entries currently in this region.
+   *
+   * @return the number of entries currently in this region
    */
   int getEntryCount();
 
   /**
    * Returns the number of subregions currently in this region.
+   *
+   * @return the number of subregions currently in this region
    */
   int getSubregionCount();
 
   /**
    * Returns the LastModifiedTime obtained from this region's statistics.
+   *
+   * @return the LastModifiedTime obtained from this region's statistics
    */
   long getLastModifiedTime();
 
   /**
    * Returns the LastAccessedTime obtained from this region's statistics.
+   *
+   * @return the LastAccessedTime obtained from this region's statistics
    */
   long getLastAccessedTime();
 
   /**
    * Returns the HitCount obtained from this region's statistics.
+   *
+   * @return the HitCount obtained from this region's statistics
    */
   long getHitCount();
 
   /**
    * Returns the MissCount obtained from this region's statistics.
+   *
+   * @return the MissCount obtained from this region's statistics
    */
   long getMissCount();
 
   /**
    * Returns the HitRatio obtained from this region's statistics.
+   *
+   * @return the HitRatio obtained from this region's statistics
    */
   float getHitRatio();
 
@@ -291,6 +365,7 @@ public interface SystemMemberRegion {
    *
    * @param name The name of the region to create
    * @param attrs The attributes of the root region
+   * @return the created subregion
    *
    * @throws AdminException If the region cannot be created
    *
@@ -302,12 +377,18 @@ public interface SystemMemberRegion {
    * Returns the <code>MembershipAttributes</code> that configure required roles for reliable access
    * to the region.
    *
+   * @return the <code>MembershipAttributes</code> that configure required roles for reliable access
+   *         to the region
+   *
    * @deprecated this API is scheduled to be removed
    */
+  @Deprecated
   MembershipAttributes getMembershipAttributes();
 
   /**
    * Returns the <code>SubscriptionAttributes</code> for the region.
+   *
+   * @return the <code>SubscriptionAttributes</code> for the region
    *
    * @since GemFire 5.0
    */
@@ -315,6 +396,8 @@ public interface SystemMemberRegion {
 
   /**
    * Returns the <code>PartitionAttributes</code> for the region.
+   *
+   * @return the <code>PartitionAttributes</code> for the region
    *
    * @since GemFire 5.7
    */

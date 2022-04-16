@@ -29,17 +29,16 @@ import org.apache.geode.annotations.Experimental;
  *
  * <p>
  * The following schema fragment specifies the expected content contained within this class.
- * <p>
  *
  * <pre>
- * &lt;simpleType name="region-attributesScope">
- *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *     &lt;enumeration value="distributed-ack"/>
- *     &lt;enumeration value="distributed-no-ack"/>
- *     &lt;enumeration value="global"/>
- *     &lt;enumeration value="local"/>
- *   &lt;/restriction>
- * &lt;/simpleType>
+ * &lt;simpleType name="region-attributesScope"&gt;
+ *   &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string"&gt;
+ *     &lt;enumeration value="distributed-ack"/&gt;
+ *     &lt;enumeration value="distributed-no-ack"/&gt;
+ *     &lt;enumeration value="global"/&gt;
+ *     &lt;enumeration value="local"/&gt;
+ *   &lt;/restriction&gt;
+ * &lt;/simpleType&gt;
  * </pre>
  *
  */

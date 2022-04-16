@@ -33,7 +33,7 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 /**
  * The SocketUtilsJUnitTest class is a test suite of test cases testing the contract and
  * functionality of the SocketUtils utility class.
- * <p/>
+ * <p>
  *
  * @see org.apache.geode.internal.net.SocketUtils
  * @see org.junit.Test

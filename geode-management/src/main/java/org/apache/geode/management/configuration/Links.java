@@ -72,6 +72,9 @@ public class Links {
 
   /**
    * adds the additional HATEOAS links
+   *
+   * @param key the key at which to add the URL
+   * @param url the URL to be added
    */
   public void addLink(String key, String url) {
     links.put(key, qualifyUrl(url));

@@ -107,7 +107,7 @@ public class JSR166TestCase { // TODO: reformat
   public static Class<?> MAP_CLASS =
       org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.class;
 
-  /**
+  /*
    * Return the shortest timed delay. This could be reimplmented to use for example a Property.
    */
   protected long getShortDelay() {
@@ -130,7 +130,7 @@ public class JSR166TestCase { // TODO: reformat
    */
   volatile boolean threadFailed;
 
-  /**
+  /*
    * Initialize test to indicate that no thread assertions have failed
    */
   @Before
@@ -139,7 +139,7 @@ public class JSR166TestCase { // TODO: reformat
     threadFailed = false;
   }
 
-  /**
+  /*
    * Trigger test case failure if any thread assertions have failed
    */
   @After
@@ -147,7 +147,7 @@ public class JSR166TestCase { // TODO: reformat
     assertFalse(threadFailed);
   }
 
-  /**
+  /*
    * Fail, also setting status to indicate current testcase should fail
    */
   public void threadFail(String reason) {
@@ -155,7 +155,7 @@ public class JSR166TestCase { // TODO: reformat
     fail(reason);
   }
 
-  /**
+  /*
    * If expression not true, set status to indicate current testcase should fail
    */
   public void threadAssertTrue(boolean b) {
@@ -165,7 +165,7 @@ public class JSR166TestCase { // TODO: reformat
     }
   }
 
-  /**
+  /*
    * If expression not false, set status to indicate current testcase should fail
    */
   public void threadAssertFalse(boolean b) {
@@ -175,7 +175,7 @@ public class JSR166TestCase { // TODO: reformat
     }
   }
 
-  /**
+  /*
    * If argument not null, set status to indicate current testcase should fail
    */
   public void threadAssertNull(Object x) {
@@ -185,7 +185,7 @@ public class JSR166TestCase { // TODO: reformat
     }
   }
 
-  /**
+  /*
    * If arguments not equal, set status to indicate current testcase should fail
    */
   public void threadAssertEquals(long x, long y) {
@@ -195,7 +195,7 @@ public class JSR166TestCase { // TODO: reformat
     }
   }
 
-  /**
+  /*
    * If arguments not equal, set status to indicate current testcase should fail
    */
   public void threadAssertEquals(Object x, Object y) {

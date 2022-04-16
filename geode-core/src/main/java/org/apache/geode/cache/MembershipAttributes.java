@@ -39,23 +39,18 @@ import org.apache.geode.distributed.internal.membership.InternalRole;
  * require one or more membership roles to be present in the system for reliable access to the
  * <code>Region</code>. Each {@link Role} is a user defined string name, such as Producer or Backup
  * or FooProducer.
- * </p>
- *
  * <p>
  * The {@link LossAction} defines the behavior when one or more required roles are missing.
- * </p>
- *
  * <p>
  * The {@link ResumptionAction} specifies the action to be taken when reliability resumes.
- * </p>
- *
  * <p>
  * <code>MembershipAttributes</code> have no effect unless one or more required roles are specified.
  * These attributes are immutable after the <code>Region</code> has been created.
- * </p>
+ * <p>
  *
  * @deprecated this feature is scheduled to be removed
  */
+@Deprecated
 public class MembershipAttributes implements DataSerializable, Externalizable {
 
   /**
@@ -122,6 +117,9 @@ public class MembershipAttributes implements DataSerializable, Externalizable {
   /**
    * Returns the set of {@linkplain org.apache.geode.distributed.Role Role}s that are required for
    * the reliability of this region.
+   *
+   * @return the set of {@linkplain org.apache.geode.distributed.Role Role}s that are required for
+   *         the reliability of this region
    */
   public Set<Role> getRequiredRoles() {
     return Collections.unmodifiableSet(requiredRoles);
@@ -129,6 +127,8 @@ public class MembershipAttributes implements DataSerializable, Externalizable {
 
   /**
    * Returns true if there are one or more required roles specified.
+   *
+   * @return whether there are one or more required roles specified
    */
   public boolean hasRequiredRoles() {
     return !requiredRoles.isEmpty();
@@ -136,13 +136,19 @@ public class MembershipAttributes implements DataSerializable, Externalizable {
 
   /**
    * Returns the reliability policy that describes behavior if any required roles are missing.
+   *
+   * @return the reliability policy that describes behavior if any required roles are missing
    */
   public LossAction getLossAction() {
     return lossAction;
   }
 
   /**
-   * Returns the resumption action that describes behavior when
+   * Returns the resumption action that describes behavior when missing required roles return to the
+   * system
+   *
+   * @return the resumption action that describes behavior when missing required roles return to the
+   *         system
    */
   public ResumptionAction getResumptionAction() {
     return resumptionAction;

@@ -28,13 +28,14 @@ public class DuplicatePrimaryPartitionException extends GemFireException {
   /**
    * Creates a new <code>DuplicatePrimaryPartitionException</code> with no detailed message.
    */
-
   public DuplicatePrimaryPartitionException() {
     super();
   }
 
   /**
    * Creates a new <code>DuplicatePrimaryPartitionException</code> with the given detail message.
+   *
+   * @param message the detail message
    */
   public DuplicatePrimaryPartitionException(String message) {
     super(message);
@@ -43,6 +44,8 @@ public class DuplicatePrimaryPartitionException extends GemFireException {
   /**
    * Creates a new <code>DuplicatePrimaryPartitionException</code> with the given cause and no
    * detail message
+   *
+   * @param cause the cause
    */
   public DuplicatePrimaryPartitionException(Throwable cause) {
     super(cause);
@@ -51,6 +54,9 @@ public class DuplicatePrimaryPartitionException extends GemFireException {
   /**
    * Creates a new <code>DuplicatePrimaryPartitionException</code> with the given detail message and
    * cause.
+   *
+   * @param message the detail message
+   * @param cause the cause
    */
   public DuplicatePrimaryPartitionException(String message, Throwable cause) {
     super(message, cause);

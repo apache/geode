@@ -76,7 +76,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
   @Mock
   private TXEntryState txEntryState;
   private VersionTag versionTag;
-  private final long tailKey = 223L;
+  private long tailKey = 223L;
 
   @Mock
   private InternalDistributedMember myId;
@@ -161,8 +161,8 @@ public class AbstractRegionMapTxApplyDestroyTest {
 
     doTxApplyDestroy();
 
-    verify(owner, times(1)).handleWANEvent(any());
-    verify(txEntryState, times(1)).setTailKey(tailKey);
+    verify(owner).txHandleWANEvent(any());
+    verify(txEntryState).setTailKey(tailKey);
 
     assertThat(pendingCallbacks).hasSize(1);
     EntryEventImpl callbackEvent = pendingCallbacks.get(0);
@@ -189,7 +189,7 @@ public class AbstractRegionMapTxApplyDestroyTest {
     givenNoRegionEntry();
     givenNotInTokenMode();
     givenNoConcurrencyChecks();
-    doThrow(RuntimeException.class).when(owner).handleWANEvent(any());
+    doThrow(RuntimeException.class).when(owner).txHandleWANEvent(any());
 
     assertThatThrownBy(this::doTxApplyDestroy).isInstanceOf(RuntimeException.class);
 
@@ -602,14 +602,26 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyCallsHandleWanEvent_givenExistingRegionEntryWithPartitionedRegion() {
+  public void txApplyDestroyCallsTxHandleWanEvent_givenExistingRegionEntryWithPartitionedRegion() {
     givenBucketRegion();
     givenExistingRegionEntry();
 
     doTxApplyDestroy();
 
-    verify(owner, times(1)).handleWANEvent(any());
-    verify(txEntryState, times(1)).setTailKey(tailKey);
+    verify(owner).txHandleWANEvent(any());
+    verify(txEntryState).setTailKey(tailKey);
+  }
+
+  @Test
+  public void txApplyDestroyDoesNotSetTailKey_givenTailKeyIsNegativeOne() {
+    givenBucketRegion();
+    givenExistingRegionEntry();
+    tailKey = -1;
+
+    doTxApplyDestroy();
+
+    verify(owner).txHandleWANEvent(any());
+    verify(txEntryState, never()).setTailKey(tailKey);
   }
 
   @Test
@@ -913,15 +925,15 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyCallsHandleWanEvent_givenFactoryRegionEntryWithPartitionedRegion() {
+  public void txApplyDestroyCallsTxHandleWanEvent_givenFactoryRegionEntryWithPartitionedRegion() {
     givenBucketRegion();
     givenConcurrencyChecks();
     givenFactoryRegionEntry();
 
     doTxApplyDestroy();
 
-    verify(owner, times(1)).handleWANEvent(any());
-    verify(txEntryState, times(1)).setTailKey(tailKey);
+    verify(owner).txHandleWANEvent(any());
+    verify(txEntryState).setTailKey(tailKey);
   }
 
   @Test
@@ -1270,15 +1282,15 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   @Test
-  public void txApplyDestroyCallsHandleWanEvent_givenOldRegionEntryWithPartitionedRegion() {
+  public void txApplyDestroyCallsTxHandleWanEvent_givenOldRegionEntryWithPartitionedRegion() {
     givenBucketRegion();
     givenConcurrencyChecks();
     givenOldRegionEntry();
 
     doTxApplyDestroy();
 
-    verify(owner, times(1)).handleWANEvent(any());
-    verify(txEntryState, times(1)).setTailKey(tailKey);
+    verify(owner).txHandleWANEvent(any());
+    verify(txEntryState).setTailKey(tailKey);
   }
 
   @Test

@@ -52,7 +52,7 @@ public abstract class PassWithExpectedProblemTestCase extends GoldenTestCase
 
   abstract void outputProblemInProcess(String message);
 
-  /**
+  /*
    * Process output has an expected warning/error/severe message and should pass
    */
   @Test

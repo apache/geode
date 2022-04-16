@@ -34,12 +34,10 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexCreationInProgressExcep
  * <p>
  * To obtain an instance of LuceneService, use
  * {@link LuceneServiceProvider#get(GemFireCache cache)}.
- * </p>
  * <p>
  * Lucene indexes can be created using gfsh, xml, or the java API. Below is an example of creating a
  * Lucene index with the java API. The Lucene index should be created on each member that has the
  * region that is being indexed.
- * </p>
  *
  * <pre>
  * {
@@ -55,7 +53,7 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexCreationInProgressExcep
  * You can also specify what {@link Analyzer} to use for each field. In the example above, email is
  * being tokenized with the KeywordAnalyzer so it is treated as a single word. The default analyzer
  * if none is specified is the {@link StandardAnalyzer}.
- * </p>
+ * <p>
  *
  *
  * Indexes should be created on all peers that host the region being indexed. Clients do not need to
@@ -64,7 +62,6 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexCreationInProgressExcep
  * <p>
  * Queries on this service can return either the region keys, values, or both that match a Lucene
  * query expression. To execute a query, start with the {@link #createLuceneQueryFactory()} method.
- * </p>
  *
  * <pre>
  * {
@@ -80,19 +77,15 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexCreationInProgressExcep
  * data will be partitioned, copied, or persisted using the same configuration options you provide
  * for the region that is indexed. Queries will automatically be distributed in parallel to cover
  * all partitions of a partitioned region.
- * </p>
  * <p>
  * Indexes are maintained asynchronously, so changes to regions may not be immediately reflected in
  * the index. This means that queries executed using this service may return stale results. Use the
  * {@link #waitUntilFlushed(String, String, long, TimeUnit)} method if you need to wait for your
  * changes to be indexed before executing a query, however this method should be used sparingly
  * because it is an expensive operation.
- * </p>
- *
  * <p>
  * Currently, only partitioned regions are supported. Creating an index on a region with
  * {@link DataPolicy#REPLICATE} will fail.
- * </p>
  *
  */
 public interface LuceneService {
@@ -106,6 +99,8 @@ public interface LuceneService {
 
   /**
    * Get a factory for creating a Lucene index on this member.
+   *
+   * @return a factory for creating a Lucene index on this member
    */
   LuceneIndexFactory createIndexFactory();
 
@@ -142,12 +137,15 @@ public interface LuceneService {
 
   /**
    * Create a factory for building a Lucene query.
+   *
+   * @return a factory for building a Lucene query
    */
   LuceneQueryFactory createLuceneQueryFactory();
 
   /**
    * returns the cache to which the LuceneService belongs
    *
+   * @return the cache to which the LuceneService belongs
    */
   Cache getCache();
 
@@ -162,14 +160,11 @@ public interface LuceneService {
    * This method is an expensive operation, so using it before every query is highly discouraged.
    *
    * @param indexName index name
-   *
    * @param regionPath region name
-   *
    * @param timeout max wait time
-   *
    * @param unit Time unit associated with the max wait time
-   *
    * @return true if entries are flushed within timeout, false if the timeout has elapsed
+   * @throws InterruptedException if the thread is interrupted
    */
   boolean waitUntilFlushed(String indexName, String regionPath, long timeout, TimeUnit unit)
       throws InterruptedException;
@@ -182,9 +177,7 @@ public interface LuceneService {
    * {@link LuceneIndexCreationInProgressException}
    *
    * @param indexName index name
-   *
    * @param regionPath region name
-   *
    * @return true if the indexing operation is in progress otherwise false.
    */
   boolean isIndexingInProgress(String indexName, String regionPath);

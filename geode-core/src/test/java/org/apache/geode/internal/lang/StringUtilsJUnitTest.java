@@ -32,7 +32,7 @@ import org.apache.geode.internal.cache.CachedDeserializableFactory;
 /**
  * The StringUtilsJUnitTest is a test suite containing test cases for testing the contract and
  * functionality of the StringUtils class.
- * <p/>
+ * <p>
  *
  * @see org.apache.geode.internal.lang.StringUtils
  * @see org.junit.Assert

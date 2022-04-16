@@ -27,6 +27,8 @@ import org.apache.geode.management.operation.RebalanceOperation;
 public interface RebalanceResult extends OperationResult {
   /**
    * Return summary of work performed for each region
+   *
+   * @return a list of {@link RebalanceRegionResult}s
    */
   List<RebalanceRegionResult> getRebalanceRegionResults();
 }

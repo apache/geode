@@ -51,7 +51,7 @@ public class ContainerManager {
     }
   }
 
-  /**
+  /*
    * Add a new container to manage using the specified installation
    *
    * The container will not be running until one of the start methods is called.
@@ -60,7 +60,7 @@ public class ContainerManager {
     return addContainer(install, containers.size());
   }
 
-  /**
+  /*
    * Add multiple containers to manage using the specified installation.
    *
    * The containers will not be running until one of the start methods is called.
@@ -71,7 +71,7 @@ public class ContainerManager {
     }
   }
 
-  /**
+  /*
    * Start the given container
    */
   public void startContainer(int index) {
@@ -85,7 +85,7 @@ public class ContainerManager {
     logger.info("Started container " + getContainerDescription(index));
   }
 
-  /**
+  /*
    * Start all containers specified by the given indexes
    */
   public void startContainers(ArrayList<Integer> indexes) {
@@ -101,7 +101,7 @@ public class ContainerManager {
     startContainers(getInactiveContainerIndexes());
   }
 
-  /**
+  /*
    * Stop the given container
    */
   public void stopContainer(int index) {
@@ -110,7 +110,7 @@ public class ContainerManager {
     logger.info("Stopped container " + getContainerDescription(index));
   }
 
-  /**
+  /*
    * Stop all containers specified by the given indexes
    */
   public void stopContainers(ArrayList<Integer> indexes) {
@@ -132,7 +132,7 @@ public class ContainerManager {
     }
   }
 
-  /**
+  /*
    * Set the name of the current test
    *
    * Used for debugging so that log files can be easily identified.
@@ -146,6 +146,7 @@ public class ContainerManager {
    *
    * @param state A string representing the Cargo state a container is in. The possible states can
    *        be found in as static variables in the {@link State} class.
+   * @return the positions of the containers with the given container state
    */
   public ArrayList<Integer> getContainerIndexesWithState(String state) {
     if (!(state.equals(State.STARTED.toString()) || state.equals(State.STOPPED.toString())
@@ -165,7 +166,7 @@ public class ContainerManager {
     return indexes;
   }
 
-  /**
+  /*
    * Return the cargo container of all of the containers in the given state
    */
   public ArrayList<ServerContainer> getContainersWithState(String state) {
@@ -176,14 +177,14 @@ public class ContainerManager {
     return statedContainers;
   }
 
-  /**
+  /*
    * Get the port of the container at the given index
    */
   public String getContainerPort(int index) {
     return getContainer(index).getPort();
   }
 
-  /**
+  /*
    * Get the container at the given index
    */
   public ServerContainer getContainer(int index) {
@@ -193,12 +194,15 @@ public class ContainerManager {
   /**
    * Get a human readable unique description for the container (calls
    * {@link ServerContainer#toString()})
+   *
+   * @param index the index of the container
+   * @return a human readable unique description for the container
    */
   public String getContainerDescription(int index) {
     return getContainer(index).toString();
   }
 
-  /**
+  /*
    * Create a container to manage, given an installation.
    */
   private ServerContainer addContainer(ContainerInstall install, int index) throws IOException {
@@ -210,14 +214,14 @@ public class ContainerManager {
     return container;
   }
 
-  /**
+  /*
    * Remove the container in the given index from the list
    */
   public ServerContainer removeContainer(int index) {
     return containers.remove(index);
   }
 
-  /**
+  /*
    * Remove the given container
    */
   public boolean removeContainer(ServerContainer container) {

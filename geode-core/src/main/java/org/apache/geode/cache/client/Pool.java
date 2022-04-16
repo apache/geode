@@ -55,6 +55,7 @@ public interface Pool {
   /**
    * Get the name of the connection pool
    *
+   *
    * @return the name of the pool
    * @see PoolFactory#create
    */
@@ -63,12 +64,16 @@ public interface Pool {
   /**
    * Returns the socket connect timeout of this pool.
    *
+   * @return the socket connect timeout of this pool
+   *
    * @see PoolFactory#setSocketConnectTimeout(int)
    */
   int getSocketConnectTimeout();
 
   /**
    * Returns the connection timeout of this pool.
+   *
+   * @return the connection timeout of this pool
    *
    * @see PoolFactory#setFreeConnectionTimeout
    */
@@ -77,12 +82,16 @@ public interface Pool {
   /**
    * Returns the server connection timeout of this pool.
    *
+   * @return the server connection timeout of this pool
+   *
    * @see PoolFactory#setServerConnectionTimeout
    */
   int getServerConnectionTimeout();
 
   /**
    * Returns the load conditioning interval of this pool.
+   *
+   * @return the load conditioning interval of this pool
    *
    * @see PoolFactory#setLoadConditioningInterval
    */
@@ -91,12 +100,16 @@ public interface Pool {
   /**
    * Returns the socket buffer size of this pool.
    *
+   * @return the socket buffer size of this pool
+   *
    * @see PoolFactory#setSocketBufferSize
    */
   int getSocketBufferSize();
 
   /**
    * Returns the read timeout of this pool.
+   *
+   * @return the read timeout of this pool
    *
    * @see PoolFactory#setReadTimeout
    */
@@ -105,6 +118,8 @@ public interface Pool {
   /**
    * Get the minimum connections for this pool.
    *
+   * @return the minimum connections for this pool
+   *
    * @see PoolFactory#setMinConnections(int)
    */
   int getMinConnections();
@@ -112,12 +127,16 @@ public interface Pool {
   /**
    * Get the maximum connections for this pool.
    *
+   * @return the maximum connections for this pool
+   *
    * @see PoolFactory#setMaxConnections(int)
    */
   int getMaxConnections();
 
   /**
-   * Get the maximum connections for this pool.
+   * Get the idle timeout for this pool.
+   *
+   * @return the idle timeout for this pool
    *
    * @see PoolFactory#setIdleTimeout(long)
    */
@@ -126,12 +145,16 @@ public interface Pool {
   /**
    * Get the ping interval for this pool.
    *
+   * @return the ping interval for this pool
+   *
    * @see PoolFactory#setPingInterval(long)
    */
   long getPingInterval();
 
   /**
    * Get the statistic interval for this pool.
+   *
+   * @return the statistic interval for this pool
    *
    * @see PoolFactory#setStatisticInterval(int)
    */
@@ -140,12 +163,16 @@ public interface Pool {
   /**
    * Get the retry attempts for this pool.
    *
+   * @return the retry attempts for this pool
+   *
    * @see PoolFactory#setRetryAttempts(int)
    */
   int getRetryAttempts();
 
   /**
    * Returns <code>true</code> if thread local connections are enabled on this pool.
+   *
+   * @return whether thread local connections are enabled on this pool
    *
    * @see PoolFactory#setThreadLocalConnections
    * @deprecated Since Geode 1.10.0. Thread local connections are ignored. Will be removed in future
@@ -157,7 +184,9 @@ public interface Pool {
   }
 
   /**
-   * Returns the true if a server-to-client subscriptions are enabled on this pool.
+   * Returns the true if server-to-client subscriptions are enabled on this pool.
+   *
+   * @return whether server-to-client subscriptions are enabled on this pool
    *
    * @see PoolFactory#setSubscriptionEnabled
    */
@@ -165,6 +194,8 @@ public interface Pool {
 
   /**
    * Returns true if single-hop optimisation is enabled on this pool.
+   *
+   * @return whether single-hop optimisation is enabled on this pool
    *
    * @see PoolFactory#setPRSingleHopEnabled
    * @since GemFire 6.5
@@ -174,12 +205,16 @@ public interface Pool {
   /**
    * Returns the subscription redundancy level of this pool.
    *
+   * @return the subscription redundancy level of this pool
+   *
    * @see PoolFactory#setSubscriptionRedundancy
    */
   int getSubscriptionRedundancy();
 
   /**
    * Returns the subscription message tracking timeout of this pool.
+   *
+   * @return the subscription message tracking timeout of this pool
    *
    * @see PoolFactory#setSubscriptionMessageTrackingTimeout
    */
@@ -188,12 +223,16 @@ public interface Pool {
   /**
    * Returns the subscription ack interval of this pool.
    *
+   * @return the subscription ack interval of this pool
+   *
    * @see PoolFactory#setSubscriptionAckInterval(int)
    */
   int getSubscriptionAckInterval();
 
   /**
    * Returns the server group of this pool.
+   *
+   * @return the server group of this pool
    *
    * @see PoolFactory#setServerGroup
    */
@@ -202,6 +241,7 @@ public interface Pool {
   /**
    * Returns true if multiuser mode is enabled on this pool.
    *
+   * @return whether multiuser mode is enabled on this pool
    * @see PoolFactory#setMultiuserAuthentication(boolean)
    * @since GemFire 6.5
    */
@@ -214,6 +254,9 @@ public interface Pool {
    * was created.
    * <p>
    * If a pool has no locators then it can not discover servers or locators at runtime.
+   *
+   * @return an unmodifiable list of {@link java.net.InetSocketAddress} of the locators this pool is
+   *         using
    */
   java.util.List<InetSocketAddress> getLocators();
 
@@ -224,6 +267,9 @@ public interface Pool {
    * <p>
    * The returned locator list may be slightly old information. If the locator does not exist, an
    * empty list is returned.
+   *
+   * @return an unmodifiable list of {@link java.net.InetSocketAddress} of the locators this pool is
+   *         using
    */
   java.util.List<InetSocketAddress> getOnlineLocators();
 
@@ -231,6 +277,9 @@ public interface Pool {
    * Returns an unmodifiable list of {@link java.net.InetSocketAddress} of the servers this pool is
    * using. These servers where either {@link PoolFactory#addServer added explicitly} when the pool
    * was created or were discovered using this pools {@link #getLocators locators}.
+   *
+   * @return an unmodifiable list of {@link java.net.InetSocketAddress} of the servers this pool is
+   *         using
    */
   java.util.List<InetSocketAddress> getServers();
 
@@ -322,6 +371,8 @@ public interface Pool {
   /**
    * The socket factory used by this pool to create socket connections to servers and locators.
    *
+   * @return the socket factory used by this pool to create socket connections to servers and
+   *         locators
    * @see PoolFactory#setSocketFactory(SocketFactory)
    */
   SocketFactory getSocketFactory();

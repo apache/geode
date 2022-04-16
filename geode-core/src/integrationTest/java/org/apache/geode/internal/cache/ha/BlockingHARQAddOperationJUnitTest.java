@@ -71,7 +71,7 @@ public class BlockingHARQAddOperationJUnitTest extends HARQAddOperationJUnitTest
   }
 
   /**
-   * Tests the take() functionality of <code>BlockingHARegionQueue<code> with conflation disabled.
+   * Tests the take() functionality of <code>BlockingHARegionQueue</code> with conflation disabled.
    *
    */
   @Test
@@ -83,7 +83,7 @@ public class BlockingHARQAddOperationJUnitTest extends HARQAddOperationJUnitTest
   }
 
   /**
-   * Tests the take() functionality of <code>BlockingHARegionQueue<code> with conflation enabled.
+   * Tests the take() functionality of <code>BlockingHARegionQueue</code> with conflation enabled.
    *
    *
    */

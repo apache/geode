@@ -29,6 +29,7 @@ import org.apache.geode.security.ResourcePermission;
  *
  * @deprecated since Geode1.0, use {@link ResourcePermission} instead
  */
+@Deprecated
 public abstract class OperationContext {
 
   public enum OperationCode {
@@ -266,6 +267,8 @@ public abstract class OperationContext {
 
   /**
    * Return the operation code associated with the <code>OperationContext</code> object.
+   *
+   * @return the operation code associated with the <code>OperationContext</code> object
    */
   public abstract OperationCode getOperationCode();
 
@@ -277,6 +280,8 @@ public abstract class OperationContext {
    * <code>Query</code> object as well as the list of region names referenced by the query would be
    * part of the context object in the pre-processing stage. In the post-processing stage the
    * context object shall contain results of the query.
+   *
+   * @return whether the context is for post-operation
    */
   public abstract boolean isPostOperation();
 
@@ -287,6 +292,7 @@ public abstract class OperationContext {
    * <code>isRemoveAll()</code>, <code>isInvalidate()</code>, <code>isRegionCreate()</code>,
    * <code>isRegionClear()</code>, <code>isRegionDestroy()</code>. Otherwise, returns false.
    *
+   * @return whether the operation was one that performed an update
    * @since GemFire 6.6
    */
   public boolean isClientUpdate() {
@@ -308,6 +314,9 @@ public abstract class OperationContext {
 
   /**
    * True if the context is created before sending the updates to a client.
+   *
+   * @param context the context
+   * @return whether the context is created before sending the updates to a client
    */
   @Deprecated
   public boolean isClientUpdate(OperationContext context) {

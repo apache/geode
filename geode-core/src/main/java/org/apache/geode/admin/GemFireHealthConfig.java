@@ -38,17 +38,24 @@ public interface GemFireHealthConfig extends MemberHealthConfig, CacheHealthConf
    * Returns the name of the host to which this configuration applies. If this is the "default"
    * configuration, then <code>null</code> is returned.
    *
+   * @return the name of the host to which this configuration applies
+   *
    * @see GemFireHealth#getGemFireHealthConfig
    */
   String getHostName();
 
   /**
    * Sets the number of seconds between assessments of the health of the GemFire components.
+   *
+   * @param interval the number of seconds between assessments of the health of the GemFire
+   *        components
    */
   void setHealthEvaluationInterval(int interval);
 
   /**
    * Returns the number of seconds between assessments of the health of the GemFire components.
+   *
+   * @return the number of seconds between assessments of the health of the GemFire components
    */
   int getHealthEvaluationInterval();
 

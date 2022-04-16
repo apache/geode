@@ -25,15 +25,20 @@ import java.util.Map;
  *
  * @deprecated since Geode 1.3. simply use commandProcessor to process the command
  */
+@Deprecated
 public interface CommandStatement {
 
   /**
    * Returns the user specified command string.
+   *
+   * @return the user specified command string
    */
   String getCommandString();
 
   /**
    * Returns the CLI environment variables.
+   *
+   * @return the CLI environment variables
    */
   Map<String, String> getEnv();
 

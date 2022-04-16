@@ -34,7 +34,6 @@ import javax.tools.ToolProvider;
 import com.google.common.base.Charsets;
 import org.apache.commons.io.FileUtils;
 
-
 public class InMemoryJavaCompiler {
   private String classpath = System.getProperty("java.class.path");
 

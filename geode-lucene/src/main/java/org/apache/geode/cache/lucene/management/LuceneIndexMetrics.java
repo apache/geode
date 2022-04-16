@@ -55,6 +55,31 @@ public class LuceneIndexMetrics {
   /**
    * This constructor is to be used by internal JMX framework only. A user should not try to create
    * an instance of this class.
+   *
+   * @param regionPath the path for the region on which the {@link LuceneIndex} is created
+   * @param indexName the name of the {@link LuceneIndex} created
+   * @param queryExecutions the number of query executions using the {@link LuceneIndex}
+   * @param queryExecutionTime the time duration for execution of queries using the
+   *        {@link LuceneIndex}
+   * @param queryRateAverageLatency the average latency for query executions using the
+   *        {@link LuceneIndex}
+   * @param queryExecutionsInProgress the number of query executions in progress which are using the
+   *        {@link LuceneIndex}
+   * @param queryExecutionTotalHits the number of hits for the query execution using the
+   *        {@link LuceneIndex}
+   * @param updates the number of update operations on the {@link LuceneIndex}
+   * @param updateTime the time consumed for the update operations on the {@link LuceneIndex}
+   * @param updateRateAverageLatency the average latency for the update operations on the
+   *        {@link LuceneIndex}
+   * @param updatesInProgress the number of update operations in progress for the
+   *        {@link LuceneIndex}
+   * @param commits the number of commit operations executed on the {@link LuceneIndex}
+   * @param commitTime the time consumed by the commit operations on the {@link LuceneIndex}
+   * @param commitRateAverageLatency the average latency for the commit operations using the
+   *        {@link LuceneIndex}
+   * @param commitsInProgress the number of commit operations in progress for the
+   *        {@link LuceneIndex}
+   * @param documents the number of documents indexed by {@link LuceneIndex}
    */
   @ConstructorProperties({"regionPath", "indexName", "queryExecutions", "queryExecutionTime",
       "queryRateAverageLatency", "queryExecutionsInProgress", "queryExecutionTotalHits", "updates",

@@ -23,6 +23,7 @@ package com.gemstone.gemfire.cache.execute;
  * @deprecated please use the org.apache.geode version of this class
  *
  */
+@Deprecated
 public class EmtpyRegionFunctionException extends FunctionException {
 
   private static final long serialVersionUID = 1L;

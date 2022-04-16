@@ -47,7 +47,7 @@ import org.apache.geode.test.junit.runners.GeodeParamsRunner;
  * Note: See LocalRegionTest and MultiVMRegionTestCase for more expiration tests.
  *
  * <p>
- * Single-JVM tests were extracted to {@link RegionExpirationIntegrationTest}.
+ * Single-JVM tests were extracted to RegionExpirationIntegrationTest.
  *
  * @since GemFire 3.0
  */

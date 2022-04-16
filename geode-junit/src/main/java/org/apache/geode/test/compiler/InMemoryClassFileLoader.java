@@ -11,26 +11,28 @@
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
-package org.apache.geode.internal.cache.wan.offheap;
 
-import org.junit.experimental.categories.Category;
+package org.apache.geode.test.compiler;
 
-import org.apache.geode.internal.cache.wan.parallel.ParallelWANPropagationConcurrentOpsDUnitTest;
-import org.apache.geode.test.junit.categories.WanTest;
+import static java.util.stream.Collectors.toList;
 
-@SuppressWarnings("serial")
-@Category({WanTest.class})
-public class ParallelWANPropagationConcurrentOpsOffHeapDUnitTest
-    extends ParallelWANPropagationConcurrentOpsDUnitTest {
+import java.util.List;
 
-  public ParallelWANPropagationConcurrentOpsOffHeapDUnitTest() {
-    super();
+/**
+ * Loads classes described by in-memory class files.
+ */
+public class InMemoryClassFileLoader extends ClassLoader {
+  public List<Class<?>> defineClasses(List<InMemoryClassFile> classFiles) {
+    return classFiles.stream()
+        .map(this::defineClass)
+        .collect(toList());
   }
 
-  @Override
-  public boolean isOffHeap() {
-    return true;
+  public Class<?> defineClass(InMemoryClassFile classFile) {
+    String name = classFile.getName();
+    byte[] bytes = classFile.getByteContent();
+    return defineClass(name, bytes, 0, bytes.length);
   }
-
 }

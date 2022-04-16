@@ -28,7 +28,7 @@ public class TabularResultModelAssert
     super(resultModel, TabularResultModelAssert.class);
   }
 
-  /**
+  /*
    * verifies that the table has the expected number of rows
    */
   public TabularResultModelAssert hasRowSize(int expectedSize) {
@@ -36,7 +36,7 @@ public class TabularResultModelAssert
     return this;
   }
 
-  /**
+  /*
    * verifies that the table has the expected number of columns
    */
   public TabularResultModelAssert hasColumnSize(int expectedSize) {
@@ -44,21 +44,21 @@ public class TabularResultModelAssert
     return this;
   }
 
-  /**
+  /*
    * verifies that the table is empty
    */
   public void isEmpty() {
     hasRowSize(0);
   }
 
-  /**
+  /*
    * return a ListAssert-like handle to assert on the header row
    */
   public TabularResultModelRowAssert<String> hasColumns() {
     return new TabularResultModelRowAssert<>(this, actual.getHeaders());
   }
 
-  /**
+  /*
    * return a ListAssert-like handle to assert on the values of a named column
    */
   public TabularResultModelColumnAssert<String> hasColumn(String header) {
@@ -67,14 +67,14 @@ public class TabularResultModelAssert
     return new TabularResultModelColumnAssert<>(this, values);
   }
 
-  /**
+  /*
    * return a ListAssert-like handle to assert on a specific row
    */
   public TabularResultModelRowAssert<String> hasRow(int rowIndex) {
     return new TabularResultModelRowAssert<>(this, actual.getValuesInRow(rowIndex));
   }
 
-  /**
+  /*
    * return a ListAssert-like handle to assert on any row
    */
   public TabularResultModelAnyRowAssert<String> hasAnyRow() {

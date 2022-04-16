@@ -43,6 +43,7 @@ import com.gemstone.gemfire.GemFireException;
  * @see FunctionService
  * @deprecated please use the org.apache.geode version of this class
  */
+@Deprecated
 public class FunctionException extends GemFireException {
 
   private static final long serialVersionUID = 4893171227542647452L;
@@ -59,6 +60,7 @@ public class FunctionException extends GemFireException {
   /**
    * Creates new function exception with given error message.
    *
+   * @param msg the detail message
    * @since GemFire 6.0
    */
   public FunctionException(String msg) {
@@ -68,6 +70,8 @@ public class FunctionException extends GemFireException {
   /**
    * Creates new function exception with given error message and optional nested exception.
    *
+   * @param msg the detail message
+   * @param cause the cause
    * @since GemFire 6.0
    */
   public FunctionException(String msg, Throwable cause) {
@@ -77,6 +81,7 @@ public class FunctionException extends GemFireException {
   /**
    * Creates new function exception given throwable as a cause and source of error message.
    *
+   * @param cause the cause
    * @since GemFire 6.0
    */
   public FunctionException(Throwable cause) {
@@ -86,6 +91,7 @@ public class FunctionException extends GemFireException {
   /**
    * Adds exceptions thrown from different nodes to a ds
    *
+   * @param cause the cause to add
    * @since GemFire 6.5
    */
   public void addException(Throwable cause) {
@@ -96,6 +102,7 @@ public class FunctionException extends GemFireException {
   /**
    * Returns the list of exceptions thrown from different nodes
    *
+   * @return the list of exceptions thrown from different nodes
    * @since GemFire 6.5
    */
   public List<Throwable> getExceptions() {
@@ -108,6 +115,7 @@ public class FunctionException extends GemFireException {
   /**
    * Adds the list of exceptions provided
    *
+   * @param ex a collection of exceptions to add
    * @since GemFire 6.5
    */
   public void addExceptions(Collection<? extends Throwable> ex) {

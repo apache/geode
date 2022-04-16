@@ -1543,7 +1543,7 @@ public class PersistentColocatedPartitionedRegionDistributedTest implements Seri
   /**
    * Test that a rebalance will regions are in the middle of recovery doesn't cause issues.
    *
-   * This is slightly different than {@link #testRebalanceWithOfflineChildRegion(boolean)} because
+   * This is slightly different than {@link #testRebalanceWithOfflineChildRegion(String)} because
    * in this case all of the regions have been created, but they are in the middle of actually
    * recovering buckets from disk.
    */

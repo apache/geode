@@ -35,7 +35,7 @@ public abstract class ArrayUtils {
   /**
    * Gets the element at index in the array in a bound-safe manner. If index is not a valid index in
    * the given array, then the default value is returned.
-   * <p/>
+   * <p>
    *
    * @param <T> the class type of the elements in the array.
    * @param array the array from which the element at index is retrieved.
@@ -55,7 +55,7 @@ public abstract class ArrayUtils {
   /**
    * Gets the first element from the given array or null if the array reference is null or the array
    * length is 0.
-   * <p/>
+   * <p>
    *
    * @param <T> the Class type of the elements in the array.
    * @param array the array of elements from which to retrieve the first element.
@@ -68,7 +68,7 @@ public abstract class ArrayUtils {
 
   /**
    * Converts the specified Object array into a String representation.
-   * <p/>
+   * <p>
    *
    * @param array the Object array of elements to convert to a String.
    * @return a String representation of the Object array.
@@ -308,7 +308,7 @@ public abstract class ArrayUtils {
 
   /**
    * Converts the primitive int array into an Integer wrapper object array.
-   * </p>
+   * <p>
    *
    * @param array the primitive int array to convert into an Integer wrapper object array.
    * @return an Integer array containing the values from the elements in the primitive int array.

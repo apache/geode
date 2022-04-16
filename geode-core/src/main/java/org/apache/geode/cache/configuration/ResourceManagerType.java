@@ -37,16 +37,16 @@ import org.apache.geode.annotations.Experimental;
  * The following schema fragment specifies the expected content contained within this class.
  *
  * <pre>
- * &lt;complexType name="resource-manager-type">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;attribute name="critical-heap-percentage" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="eviction-heap-percentage" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="critical-off-heap-percentage" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="eviction-off-heap-percentage" type="{http://www.w3.org/2001/XMLSchema}string" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="resource-manager-type"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;attribute name="critical-heap-percentage" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="eviction-heap-percentage" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="critical-off-heap-percentage" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="eviction-off-heap-percentage" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  *
  *
@@ -71,6 +71,7 @@ public class ResourceManagerType {
    * possible object is
    * {@link String }
    *
+   * @return the value of the criticalHeapPercentage property
    */
   public String getCriticalHeapPercentage() {
     return criticalHeapPercentage;
@@ -82,6 +83,7 @@ public class ResourceManagerType {
    * allowed object is
    * {@link String }
    *
+   * @param value the value of the criticalHeapPercentage property
    */
   public void setCriticalHeapPercentage(String value) {
     criticalHeapPercentage = value;
@@ -93,6 +95,7 @@ public class ResourceManagerType {
    * possible object is
    * {@link String }
    *
+   * @return the value of the evictionHeapPercentage property
    */
   public String getEvictionHeapPercentage() {
     return evictionHeapPercentage;
@@ -104,6 +107,7 @@ public class ResourceManagerType {
    * allowed object is
    * {@link String }
    *
+   * @param value the value of the evictionHeapPercentage property
    */
   public void setEvictionHeapPercentage(String value) {
     evictionHeapPercentage = value;
@@ -115,6 +119,7 @@ public class ResourceManagerType {
    * possible object is
    * {@link String }
    *
+   * @return the value of the criticalOffHeapPercentage property
    */
   public String getCriticalOffHeapPercentage() {
     return criticalOffHeapPercentage;
@@ -126,6 +131,7 @@ public class ResourceManagerType {
    * allowed object is
    * {@link String }
    *
+   * @param value the value of the criticalOffHeapPercentage property
    */
   public void setCriticalOffHeapPercentage(String value) {
     criticalOffHeapPercentage = value;
@@ -137,6 +143,7 @@ public class ResourceManagerType {
    * possible object is
    * {@link String }
    *
+   * @return the value of the evictionOffHeapPercentage property
    */
   public String getEvictionOffHeapPercentage() {
     return evictionOffHeapPercentage;
@@ -148,6 +155,7 @@ public class ResourceManagerType {
    * allowed object is
    * {@link String }
    *
+   * @param value the value of the evictionOffHeapPercentage property
    */
   public void setEvictionOffHeapPercentage(String value) {
     evictionOffHeapPercentage = value;

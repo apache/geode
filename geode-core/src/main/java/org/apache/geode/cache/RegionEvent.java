@@ -32,6 +32,8 @@ public interface RegionEvent<K, V> extends CacheEvent<K, V> {
   /**
    * Return true if this region was destroyed but is being reinitialized, for example if a snapshot
    * was just loaded. Can only return true for an event related to region destruction.
+   *
+   * @return whether this region was destroyed but is being reinitialized
    */
   boolean isReinitializing();
 

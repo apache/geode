@@ -75,6 +75,8 @@ public final class InterestType {
 
   /**
    * Returns true if this is a key interest type.
+   *
+   * @return whether this is a key interest type
    */
   public boolean isKey() {
     return (interestType == TP_KEY);
@@ -82,6 +84,8 @@ public final class InterestType {
 
   /**
    * Returns true if this is a key list interest type.
+   *
+   * @return whether this is a key list interest type
    */
   public boolean isList() {
     return (interestType == TP_LIST);
@@ -89,6 +93,8 @@ public final class InterestType {
 
   /**
    * Returns true if this is a regular expression interest type.
+   *
+   * @return whether this is a regular expression interest type
    */
   public boolean isRegularExpression() {
     return (interestType == TP_REGEX);
@@ -96,6 +102,9 @@ public final class InterestType {
 
   /**
    * Returns the <code>InterestType</code> represented by specified ordinal.
+   *
+   * @param ordinal the ordinal of the <code>InterestType</code> to return
+   * @return the <code>InterestType</code> represented by specified ordinal
    */
   public static InterestType fromOrdinal(byte ordinal) {
     return VALUES[ordinal];

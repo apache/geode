@@ -36,7 +36,7 @@ import org.apache.geode.internal.util.ArgumentRedactor;
 
 /**
  * The LocatorStatusResponse class...
- * </p>
+ * <p>
  *
  * @see org.apache.geode.cache.client.internal.locator.ServerLocationResponse
  * @since GemFire 7.0

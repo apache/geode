@@ -71,6 +71,8 @@ public interface Agent {
 
   /**
    * Returns the configuration object for this JMX Agent.
+   *
+   * @return the configuration object for this JMX Agent
    */
   AgentConfig getConfig();
 
@@ -83,6 +85,8 @@ public interface Agent {
   /**
    * Returns the JMX <code>MBeanServer</code> with which GemFire MBeans are registered or
    * <code>null</code> if this <code>Agent</code> is not started.
+   *
+   * @return the JMX <code>MBeanServer</code> with which GemFire MBeans are registered
    */
   MBeanServer getMBeanServer();
 
@@ -95,12 +99,17 @@ public interface Agent {
   /**
    * Returns the <code>ObjectName</code> of the JMX management bean that represents this agent or
    * <code>null</code> if this <code>Agent</code> has not been started.
+   *
+   * @return the <code>ObjectName</code> of the JMX management bean that represents this agent
    */
   ObjectName getObjectName();
 
   /**
    * Returns whether or not this JMX <code>Agent</code> is currently providing information about a
    * distributed system.
+   *
+   * @return whether or not this JMX <code>Agent</code> is currently providing information about a
+   *         distributed system.
    */
   boolean isConnected();
 
@@ -108,12 +117,18 @@ public interface Agent {
    * Connects to the distributed system described by this <code>Agent</code>'s configuration.
    *
    * @return The object name of the system that the <code>Agent</code> is now connected to.
+   *
+   * @throws AdminException if an exception is encountered while connecting
+   * @throws MalformedObjectNameException if the format of an MBean name specified in the
+   *         configuration does not correspond to a valid ObjectName
    */
   ObjectName connectToSystem() throws AdminException, MalformedObjectNameException;
 
   /**
    * Returns the <code>AdminDistributedSystem</code> that underlies this JMX <code>Agent</code> or
    * <code>null</code> is this agent is not {@linkplain #isConnected connected}.
+   *
+   * @return the <code>AdminDistributedSystem</code> that underlies this JMX <code>Agent</code>
    */
   AdminDistributedSystem getDistributedSystem();
 
@@ -121,6 +136,12 @@ public interface Agent {
    * Returns the object name of the JMX MBean that represents the distributed system administered by
    * this <code>Agent</code> or <code>null</code> if this <code>Agent</code> has not
    * {@linkplain #connectToSystem connected} to the distributed system.
+   *
+   * @return the object name of the JMX MBean that represents the distributed system administered by
+   *         this <code>Agent</code>
+   *
+   * @throws MalformedObjectNameException if the format of the JMX MBean name does not correspond to
+   *         a valid ObjectName
    */
   ObjectName manageDistributedSystem() throws MalformedObjectNameException;
 
@@ -139,6 +160,8 @@ public interface Agent {
 
   /**
    * Returns the <code>LogWriter</code> used for logging information.
+   *
+   * @return the <code>LogWriter</code> used for logging information
    */
   LogWriter getLogWriter();
 

@@ -24,6 +24,7 @@ import java.util.Set;
  * @since GemFire 5.5
  * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
+@Deprecated
 public class ExecuteCQOperationContext extends QueryOperationContext {
 
   /** The name of the continuous query being registered. */
@@ -53,7 +54,11 @@ public class ExecuteCQOperationContext extends QueryOperationContext {
     return OperationCode.EXECUTE_CQ;
   }
 
-  /** Return the name of the continuous query. */
+  /**
+   * Return the name of the continuous query.
+   *
+   * @return the name of the continuous query
+   */
   public String getName() {
     return cqName;
   }

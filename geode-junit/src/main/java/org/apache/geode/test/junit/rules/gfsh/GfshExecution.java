@@ -77,7 +77,7 @@ public class GfshExecution {
     return processLogger.getOutputText();
   }
 
-  /**
+  /*
    * Note that this is the working directory of gfsh itself. If your script started a server or
    * locator, this will be the parent directory of that member's working directory.
    */

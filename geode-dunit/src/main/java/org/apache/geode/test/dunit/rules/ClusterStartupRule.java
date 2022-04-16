@@ -121,7 +121,7 @@ public class ClusterStartupRule implements SerializableTestRule {
     return clientCacheRule.getCache();
   }
 
-  /**
+  /*
    * this will allow all the logs go into log files instead of going into the console output
    */
   public ClusterStartupRule withLogFile() {
@@ -188,6 +188,8 @@ public class ClusterStartupRule implements SerializableTestRule {
    * In some weird situations you may not want to do local DS cleanup as that lifecyle is deferred
    * elsewhere - see {@code LocatorCleanupEventListener} and any test that uses {@code
    * PlainLocatorContextLoader} or {@code LocatorWithSecurityManagerContextLoader}
+   *
+   * @param skipLocalDistributedSystemCleanup whether to do local DS cleanup
    */
   public void setSkipLocalDistributedSystemCleanup(boolean skipLocalDistributedSystemCleanup) {
     this.skipLocalDistributedSystemCleanup = skipLocalDistributedSystemCleanup;
@@ -330,6 +332,9 @@ public class ClusterStartupRule implements SerializableTestRule {
 
   /**
    * Returns the {@link Member} running inside the VM with the specified {@code index}
+   *
+   * @param index the index of the {@link Member} to return
+   * @return the {@link Member}
    */
   public MemberVM getMember(int index) {
     return (MemberVM) occupiedVMs.get(index);
@@ -360,7 +365,7 @@ public class ClusterStartupRule implements SerializableTestRule {
     occupiedVMs.get(index).stop(cleanWorkingDir);
   }
 
-  /**
+  /*
    * this crashes the VM hosting the member/client.
    */
   public void crashVM(int index) {

@@ -27,7 +27,7 @@ package org.apache.geode.cache.util;
 public class Gateway {
 
   /**
-   * The order policy. This enum is applicable only when concurrency-level is > 1.
+   * The order policy. This enum is applicable only when concurrency-level is &gt; 1.
    *
    * @since GemFire 6.5.1
    */

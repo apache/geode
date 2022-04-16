@@ -56,7 +56,7 @@ public interface ComponentVersion {
    * For example:
    *
    * <pre>
-   * new HashMap<String, String>() {
+   * new HashMap$lt;String, String$gt;() {
    *   {
    *     put("Version", "1.15.0");
    *     put("Repository", "github.com/apache/geode");

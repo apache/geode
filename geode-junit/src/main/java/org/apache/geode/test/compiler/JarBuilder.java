@@ -67,7 +67,7 @@ public class JarBuilder {
     javaCompiler = new InMemoryJavaCompiler();
   }
 
-  /**
+  /*
    * Adds the given jarFile to the classpath that will be used for compilation by the buildJar
    * methods.
    */
@@ -75,7 +75,7 @@ public class JarBuilder {
     javaCompiler.addToClasspath(jarFile);
   }
 
-  /**
+  /*
    * Builds a jar file containing empty classes with the given classNames.
    */
   public void buildJarFromClassNames(File outputJarFile, String... classNames) throws IOException {

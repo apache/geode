@@ -21,7 +21,7 @@ import java.net.Socket;
 
 /**
  * The SocketUtils class is utility class for performing operations on Sockets and ServerSockets.
- * <p/>
+ * <p>
  *
  * @see java.net.ServerSocket
  * @see java.net.Socket
@@ -32,7 +32,7 @@ public abstract class SocketUtils {
   /**
    * Closes the specified Socket silently ignoring any IOException, guarding against null Object
    * references.
-   * <p/>
+   * <p>
    *
    * @param socket the Socket to close.
    * @return boolean value indicating whether the Socket was successfully closed. If the Socket
@@ -54,7 +54,7 @@ public abstract class SocketUtils {
   /**
    * Closes the specified ServerSocket silently ignoring any IOException, guarding against null
    * Object references.
-   * <p/>
+   * <p>
    *
    * @param serverSocket the ServerSocket to close.
    * @return boolean value indicating whether the ServerSocket was successfully closed. If the

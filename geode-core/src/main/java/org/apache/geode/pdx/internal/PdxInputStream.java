@@ -19,7 +19,6 @@ import java.nio.ByteBuffer;
 import java.util.Date;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.InternalGemFireException;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.tcp.ByteBufferInputStream;
 import org.apache.geode.internal.tcp.ImmutableByteBufferInputStream;
@@ -340,9 +339,6 @@ public class PdxInputStream extends ImmutableByteBufferInputStream {
       return DataSerializer.readArrayOfByteArrays(this);
     } catch (IOException e) {
       throw new PdxSerializationException("Exception deserializing a PDX field", e);
-    } catch (ClassNotFoundException ex) {
-      throw new InternalGemFireException("ClassNotFoundException should never be thrown but it was",
-          ex);
     }
   }
 

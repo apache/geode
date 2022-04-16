@@ -36,6 +36,7 @@ import org.apache.geode.internal.cache.InternalRegion;
  * @deprecated this feature is scheduled to be removed
  * @see org.apache.geode.distributed.Role
  */
+@Deprecated
 public class RequiredRoles {
 
   /**
@@ -94,6 +95,8 @@ public class RequiredRoles {
    *
    * @param region the region whose membership will be searched
    * @param role the role to check for
+   * @return whether the {@link org.apache.geode.distributed.Role Role} is currently present in the
+   *         {@link Region} membership
    */
   public static boolean isRoleInRegionMembership(Region<?, ?> region, Role role) {
     if (region instanceof DistributedRegion) {

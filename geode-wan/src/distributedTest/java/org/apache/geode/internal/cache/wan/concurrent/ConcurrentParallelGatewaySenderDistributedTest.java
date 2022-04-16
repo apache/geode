@@ -37,9 +37,9 @@ import org.apache.geode.test.junit.categories.WanTest;
  *
  */
 @Category({WanTest.class})
-public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
+public class ConcurrentParallelGatewaySenderDistributedTest extends WANTestBase {
 
-  public ConcurrentParallelGatewaySenderDUnitTest() {
+  public ConcurrentParallelGatewaySenderDistributedTest() {
     super();
   }
 
@@ -335,7 +335,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
     vm6.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
     vm7.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
 
-    vm4.invoke(() -> WANTestBase.putcolocatedPartitionedRegion(1000));
+    vm4.invoke(() -> WANTestBase.putColocatedPartitionedRegion(1000));
 
     // verify all buckets drained on all sender nodes.
     vm4.invoke(() -> WANTestBase.validateParallelSenderQueueAllBucketsDrained("ln"));

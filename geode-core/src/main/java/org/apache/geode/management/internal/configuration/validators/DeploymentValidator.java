@@ -19,6 +19,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import org.apache.geode.management.configuration.Deployment;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.utils.JarFileUtils;
@@ -28,11 +30,12 @@ public class DeploymentValidator implements ConfigurationValidator<Deployment> {
   public void validate(CacheElementOperation operation, Deployment config)
       throws IllegalArgumentException {
     switch (operation) {
+      case UPDATE:
+        throw new NotImplementedException("Not implemented");
       case CREATE:
         validateCreate(config);
         break;
       case DELETE:
-      case UPDATE:
       default:
     }
   }

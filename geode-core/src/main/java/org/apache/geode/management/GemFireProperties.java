@@ -267,6 +267,7 @@ public class GemFireProperties {
    *
    * @deprecated this feature is scheduled to be removed
    **/
+  @Deprecated
   private String roles;
   /**
    * Specifies the maximum number of milliseconds to wait for the distributed system to reconnect in
@@ -275,6 +276,7 @@ public class GemFireProperties {
    *
    * @deprecated this feature is scheduled to be removed
    **/
+  @Deprecated
   private int maxWaitTimeForReconnect;
   /**
    * Specifies the maximum number or times to attempt to reconnect to the distributed system when
@@ -291,6 +293,7 @@ public class GemFireProperties {
    *
    * @deprecated this feature is scheduled to be removed
    **/
+  @Deprecated
   private int asyncDistributionTimeout;
   /**
    * The number of milliseconds a queuing publisher may enqueue asynchronous messages without any

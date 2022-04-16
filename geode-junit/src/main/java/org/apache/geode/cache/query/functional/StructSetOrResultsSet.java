@@ -55,35 +55,36 @@ import org.apache.geode.internal.util.ArrayUtils;
 
 /**
  * Used by these tests:
- *
- * <li/>EquiJoinIntegrationTest
- * <li/>IUMRCompositeIteratorJUnitTest
- * <li/>IUMRMultiIndexesMultiRegionJUnitTest
- * <li/>IUMRShuffleIteratorsJUnitTest
- * <li/>IUMRSingleRegionJUnitTest
- * <li/>IndexCreationJUnitTest
- * <li/>IndexHintJUnitTest
- * <li/>IndexMaintainceJUnitTest
- * <li/>IndexUseJUnitTest
- * <li/>IndexedMergeEquiJoinScenariosJUnitTest
- * <li/>MultiRegionIndexUsageJUnitTest
- * <li/>NonDistinctOrderByPartitionedJUnitTest
- * <li/>NonDistinctOrderByReplicatedJUnitTest
- * <li/>NonDistinctOrderByTestImplementation
- * <li/>OrderByPartitionedJUnitTest
- * <li/>OrderByReplicatedJUnitTest
- * <li/>OrderByTestImplementation
- * <li/>QueryIndexUsingXMLDUnitTest
- * <li/>QueryREUpdateInProgressJUnitTest
- * <li/>QueryUsingFunctionContextDUnitTest
- * <li/>QueryUsingPoolDUnitTest
- * <li/>TestNewFunctionSSorRSIntegrationTest
- *
+ * <ul>
+ * <li>EquiJoinIntegrationTest</li>
+ * <li>IUMRCompositeIteratorJUnitTest</li>
+ * <li>IUMRMultiIndexesMultiRegionJUnitTest</li>
+ * <li>IUMRShuffleIteratorsJUnitTest</li>
+ * <li>IUMRSingleRegionJUnitTest</li>
+ * <li>IndexCreationJUnitTest</li>
+ * <li>IndexHintJUnitTest</li>
+ * <li>IndexMaintainceJUnitTest</li>
+ * <li>IndexUseJUnitTest</li>
+ * <li>IndexedMergeEquiJoinScenariosJUnitTest</li>
+ * <li>MultiRegionIndexUsageJUnitTest</li>
+ * <li>NonDistinctOrderByPartitionedJUnitTest</li>
+ * <li>NonDistinctOrderByReplicatedJUnitTest</li>
+ * <li>NonDistinctOrderByTestImplementation</li>
+ * <li>OrderByPartitionedJUnitTest</li>
+ * <li>OrderByReplicatedJUnitTest</li>
+ * <li>OrderByTestImplementation</li>
+ * <li>QueryIndexUsingXMLDUnitTest</li>
+ * <li>QueryREUpdateInProgressJUnitTest</li>
+ * <li>QueryUsingFunctionContextDUnitTest</li>
+ * <li>QueryUsingPoolDUnitTest</li>
+ * <li>TestNewFunctionSSorRSIntegrationTest</li>
+ * </ul>
  * Also used by:
- *
- * <li/>GroupByTestImpl
- * <li/>PdxGroupByTestImpl
- * <li/>PRQueryDUnitHelper
+ * <ul>
+ * <li>GroupByTestImpl</li>
+ * <li>PdxGroupByTestImpl</li>
+ * <li>PRQueryDUnitHelper</li>
+ * </ul>
  */
 public class StructSetOrResultsSet {
 
@@ -91,7 +92,7 @@ public class StructSetOrResultsSet {
     CompareQueryResultsWithoutAndWithIndexes(r, len, false, queries);
   }
 
-  /** Creates a new instance of StructSetOrResultsSet */
+  /* Creates a new instance of StructSetOrResultsSet */
   public void CompareQueryResultsWithoutAndWithIndexes(Object[][] r, int len, boolean checkOrder,
       String[] queries) {
 
@@ -298,7 +299,7 @@ public class StructSetOrResultsSet {
     }
   }
 
-  /** Creates a new instance of StructSetOrResultsSet */
+  /* Creates a new instance of StructSetOrResultsSet */
   public void CompareCountStarQueryResultsWithoutAndWithIndexes(Object[][] r, int len,
       boolean checkOrder, String[] queries) {
 
@@ -318,7 +319,7 @@ public class StructSetOrResultsSet {
     }
   }
 
-  /**
+  /*
    * Compares two ArrayLists containing query results with/without order.
    */
   public void CompareQueryResultsAsListWithoutAndWithIndexes(Object[][] r, int len,

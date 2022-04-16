@@ -32,6 +32,7 @@ import org.apache.geode.distributed.internal.membership.InternalRole;
  *
  * @deprecated the MembershipAttributes API is scheduled to be removed
  */
+@Deprecated
 public class RegionDistributionException extends RegionRoleException {
   private static final long serialVersionUID = -5950359426786805646L;
 
@@ -84,7 +85,7 @@ public class RegionDistributionException extends RegionRoleException {
     return failedRoles;
   }
 
-  /**
+  /*
    * Override writeObject which is used in serialization. Customize serialization of this exception
    * to avoid escape of InternalRole which is not Serializable.
    */
@@ -103,7 +104,7 @@ public class RegionDistributionException extends RegionRoleException {
     out.writeObject(roleNames);
   }
 
-  /**
+  /*
    * Override readObject which is used in serialization. Customize serialization of this exception
    * to avoid escape of InternalRole which is not Serializable.
    */

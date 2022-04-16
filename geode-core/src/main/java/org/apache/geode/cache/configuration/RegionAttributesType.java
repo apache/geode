@@ -48,290 +48,290 @@ import org.apache.geode.management.configuration.ClassName;
  * The following schema fragment specifies the expected content contained within this class.
  *
  * <pre>
- * &lt;complexType name="region-attributes-type">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="key-constraint" type="{http://www.w3.org/2001/XMLSchema}anyType" minOccurs="0"/>
- *         &lt;element name="value-constraint" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="region-time-to-live" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="expiration-attributes" type="{http://geode.apache.org/schema/cache}expiration-attributes-type"/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="region-idle-time" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="expiration-attributes" type="{http://geode.apache.org/schema/cache}expiration-attributes-type"/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="entry-time-to-live" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="expiration-attributes" type="{http://geode.apache.org/schema/cache}expiration-attributes-type"/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="entry-idle-time" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="expiration-attributes" type="{http://geode.apache.org/schema/cache}expiration-attributes-type"/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="disk-write-attributes" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;choice>
- *                   &lt;element name="asynchronous-writes">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;attribute name="bytes-threshold" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                           &lt;attribute name="time-interval" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
- *                   &lt;element name="synchronous-writes" type="{http://www.w3.org/2001/XMLSchema}anyType"/>
- *                 &lt;/choice>
- *                 &lt;attribute name="max-oplog-size" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="roll-oplogs" type="{http://www.w3.org/2001/XMLSchema}string" />
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="disk-dirs" type="{http://geode.apache.org/schema/cache}disk-dirs-type" minOccurs="0"/>
- *         &lt;element name="partition-attributes" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="partition-resolver" minOccurs="0">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;sequence>
- *                             &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
- *                             &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/>
- *                           &lt;/sequence>
- *                           &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
- *                   &lt;element name="partition-listener" maxOccurs="unbounded" minOccurs="0">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;sequence>
- *                             &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
- *                             &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/>
- *                           &lt;/sequence>
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
- *                   &lt;element name="fixed-partition-attributes" maxOccurs="unbounded" minOccurs="0">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;attribute name="partition-name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                           &lt;attribute name="is-primary" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *                           &lt;attribute name="num-buckets" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
- *                 &lt;/sequence>
- *                 &lt;attribute name="local-max-memory" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="recovery-delay" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="redundant-copies" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="startup-recovery-delay" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="total-max-memory" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="total-num-buckets" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="colocated-with" type="{http://www.w3.org/2001/XMLSchema}string" />
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="membership-attributes" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="required-role" maxOccurs="unbounded" minOccurs="0">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
- *                 &lt;/sequence>
- *                 &lt;attribute name="loss-action">
- *                   &lt;simpleType>
- *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *                       &lt;enumeration value="full-access"/>
- *                       &lt;enumeration value="limited-access"/>
- *                       &lt;enumeration value="no-access"/>
- *                       &lt;enumeration value="reconnect"/>
- *                     &lt;/restriction>
- *                   &lt;/simpleType>
- *                 &lt;/attribute>
- *                 &lt;attribute name="resumption-action">
- *                   &lt;simpleType>
- *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *                       &lt;enumeration value="none"/>
- *                       &lt;enumeration value="reinitialize"/>
- *                     &lt;/restriction>
- *                   &lt;/simpleType>
- *                 &lt;/attribute>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="subscription-attributes" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;attribute name="interest-policy">
- *                   &lt;simpleType>
- *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *                       &lt;enumeration value="all"/>
- *                       &lt;enumeration value="cache-content"/>
- *                     &lt;/restriction>
- *                   &lt;/simpleType>
- *                 &lt;/attribute>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="cache-loader" type="{http://geode.apache.org/schema/cache}cache-loader-type" minOccurs="0"/>
- *         &lt;element name="cache-writer" type="{http://geode.apache.org/schema/cache}cache-writer-type" minOccurs="0"/>
- *         &lt;element name="cache-listener" maxOccurs="unbounded" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
- *                   &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="compressor" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="eviction-attributes" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;choice>
- *                   &lt;element name="lru-entry-count">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;attribute name="action" type="{http://geode.apache.org/schema/cache}enum-action-destroy-overflow" />
- *                           &lt;attribute name="maximum" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
- *                   &lt;element name="lru-heap-percentage">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;sequence minOccurs="0">
- *                             &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
- *                             &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/>
- *                           &lt;/sequence>
- *                           &lt;attribute name="action" type="{http://geode.apache.org/schema/cache}enum-action-destroy-overflow" />
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
- *                   &lt;element name="lru-memory-size">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;sequence minOccurs="0">
- *                             &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
- *                             &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/>
- *                           &lt;/sequence>
- *                           &lt;attribute name="action" type="{http://geode.apache.org/schema/cache}enum-action-destroy-overflow" />
- *                           &lt;attribute name="maximum" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
- *                 &lt;/choice>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *       &lt;/sequence>
- *       &lt;attribute name="concurrency-level" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="data-policy" type="{http://geode.apache.org/schema/cache}region-attributesData-policy" />
- *       &lt;attribute name="early-ack" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="enable-async-conflation" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="enable-gateway" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="enable-subscription-conflation" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="gateway-sender-ids" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="async-event-queue-ids" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="hub-id" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="id" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="ignore-jta" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="index-update-type" type="{http://geode.apache.org/schema/cache}region-attributesIndex-update-type" />
- *       &lt;attribute name="initial-capacity" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="is-lock-grantor" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="load-factor" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="mirror-type" type="{http://geode.apache.org/schema/cache}region-attributesMirror-type" />
- *       &lt;attribute name="multicast-enabled" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="persist-backup" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="pool-name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="disk-store-name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="disk-synchronous" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="publisher" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="refid" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="scope" type="{http://geode.apache.org/schema/cache}region-attributesScope" />
- *       &lt;attribute name="statistics-enabled" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="cloning-enabled" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="concurrency-checks-enabled" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" />
- *       &lt;attribute name="off-heap" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="region-attributes-type"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="key-constraint" type="{http://www.w3.org/2001/XMLSchema}anyType" minOccurs="0"/&gt;
+ *         &lt;element name="value-constraint" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/&gt;
+ *         &lt;element name="region-time-to-live" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;sequence&gt;
+ *                   &lt;element name="expiration-attributes" type="{http://geode.apache.org/schema/cache}expiration-attributes-type"/&gt;
+ *                 &lt;/sequence&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *         &lt;element name="region-idle-time" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;sequence&gt;
+ *                   &lt;element name="expiration-attributes" type="{http://geode.apache.org/schema/cache}expiration-attributes-type"/&gt;
+ *                 &lt;/sequence&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *         &lt;element name="entry-time-to-live" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;sequence&gt;
+ *                   &lt;element name="expiration-attributes" type="{http://geode.apache.org/schema/cache}expiration-attributes-type"/&gt;
+ *                 &lt;/sequence&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *         &lt;element name="entry-idle-time" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;sequence&gt;
+ *                   &lt;element name="expiration-attributes" type="{http://geode.apache.org/schema/cache}expiration-attributes-type"/&gt;
+ *                 &lt;/sequence&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *         &lt;element name="disk-write-attributes" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;choice&gt;
+ *                   &lt;element name="asynchronous-writes"&gt;
+ *                     &lt;complexType&gt;
+ *                       &lt;complexContent&gt;
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                           &lt;attribute name="bytes-threshold" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                           &lt;attribute name="time-interval" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                         &lt;/restriction&gt;
+ *                       &lt;/complexContent&gt;
+ *                     &lt;/complexType&gt;
+ *                   &lt;/element&gt;
+ *                   &lt;element name="synchronous-writes" type="{http://www.w3.org/2001/XMLSchema}anytype"/&gt;
+ *                 &lt;/choice&gt;
+ *                 &lt;attribute name="max-oplog-size" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="roll-oplogs" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *         &lt;element name="disk-dirs" type="{http://geode.apache.org/schema/cache}disk-dirs-type" minOccurs="0"/&gt;
+ *         &lt;element name="partition-attributes" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;sequence&gt;
+ *                   &lt;element name="partition-resolver" minOccurs="0"&gt;
+ *                     &lt;complexType&gt;
+ *                       &lt;complexContent&gt;
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                           &lt;sequence&gt;
+ *                             &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/&gt;
+ *                             &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *                           &lt;/sequence&gt;
+ *                           &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                         &lt;/restriction&gt;
+ *                       &lt;/complexContent&gt;
+ *                     &lt;/complexType&gt;
+ *                   &lt;/element&gt;
+ *                   &lt;element name="partition-listener" maxOccurs="unbounded" minOccurs="0"&gt;
+ *                     &lt;complexType&gt;
+ *                       &lt;complexContent&gt;
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                           &lt;sequence&gt;
+ *                             &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/&gt;
+ *                             &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *                           &lt;/sequence&gt;
+ *                         &lt;/restriction&gt;
+ *                       &lt;/complexContent&gt;
+ *                     &lt;/complexType&gt;
+ *                   &lt;/element&gt;
+ *                   &lt;element name="fixed-partition-attributes" maxOccurs="unbounded" minOccurs="0"&gt;
+ *                     &lt;complexType&gt;
+ *                       &lt;complexContent&gt;
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                           &lt;attribute name="partition-name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                           &lt;attribute name="is-primary" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *                           &lt;attribute name="num-buckets" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                         &lt;/restriction&gt;
+ *                       &lt;/complexContent&gt;
+ *                     &lt;/complexType&gt;
+ *                   &lt;/element&gt;
+ *                 &lt;/sequence&gt;
+ *                 &lt;attribute name="local-max-memory" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="recovery-delay" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="redundant-copies" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="startup-recovery-delay" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="total-max-memory" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="total-num-buckets" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="colocated-with" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *         &lt;element name="membership-attributes" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;sequence&gt;
+ *                   &lt;element name="required-role" maxOccurs="unbounded" minOccurs="0"&gt;
+ *                     &lt;complexType&gt;
+ *                       &lt;complexContent&gt;
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                           &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                         &lt;/restriction&gt;
+ *                       &lt;/complexContent&gt;
+ *                     &lt;/complexType&gt;
+ *                   &lt;/element&gt;
+ *                 &lt;/sequence&gt;
+ *                 &lt;attribute name="loss-action"&gt;
+ *                   &lt;simpleType&gt;
+ *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string"&gt;
+ *                       &lt;enumeration value="full-access"/&gt;
+ *                       &lt;enumeration value="limited-access"/&gt;
+ *                       &lt;enumeration value="no-access"/&gt;
+ *                       &lt;enumeration value="reconnect"/&gt;
+ *                     &lt;/restriction&gt;
+ *                   &lt;/simpleType&gt;
+ *                 &lt;/attribute&gt;
+ *                 &lt;attribute name="resumption-action"&gt;
+ *                   &lt;simpleType&gt;
+ *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string"&gt;
+ *                       &lt;enumeration value="none"/&gt;
+ *                       &lt;enumeration value="reinitialize"/&gt;
+ *                     &lt;/restriction&gt;
+ *                   &lt;/simpleType&gt;
+ *                 &lt;/attribute&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *         &lt;element name="subscription-attributes" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;attribute name="interest-policy"&gt;
+ *                   &lt;simpleType&gt;
+ *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string"&gt;
+ *                       &lt;enumeration value="all"/&gt;
+ *                       &lt;enumeration value="cache-content"/&gt;
+ *                     &lt;/restriction&gt;
+ *                   &lt;/simpleType&gt;
+ *                 &lt;/attribute&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *         &lt;element name="cache-loader" type="{http://geode.apache.org/schema/cache}cache-loader-type" minOccurs="0"/&gt;
+ *         &lt;element name="cache-writer" type="{http://geode.apache.org/schema/cache}cache-writer-type" minOccurs="0"/&gt;
+ *         &lt;element name="cache-listener" maxOccurs="unbounded" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;sequence&gt;
+ *                   &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/&gt;
+ *                   &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *                 &lt;/sequence&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *         &lt;element name="compressor" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;sequence&gt;
+ *                   &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/&gt;
+ *                 &lt;/sequence&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *         &lt;element name="eviction-attributes" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;choice&gt;
+ *                   &lt;element name="lru-entry-count"&gt;
+ *                     &lt;complexType&gt;
+ *                       &lt;complexContent&gt;
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                           &lt;attribute name="action" type="{http://geode.apache.org/schema/cache}enum-action-destroy-overflow" /&gt;
+ *                           &lt;attribute name="maximum" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                         &lt;/restriction&gt;
+ *                       &lt;/complexContent&gt;
+ *                     &lt;/complexType&gt;
+ *                   &lt;/element&gt;
+ *                   &lt;element name="lru-heap-percentage"&gt;
+ *                     &lt;complexType&gt;
+ *                       &lt;complexContent&gt;
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                           &lt;sequence minOccurs="0"&gt;
+ *                             &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/&gt;
+ *                             &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *                           &lt;/sequence&gt;
+ *                           &lt;attribute name="action" type="{http://geode.apache.org/schema/cache}enum-action-destroy-overflow" /&gt;
+ *                         &lt;/restriction&gt;
+ *                       &lt;/complexContent&gt;
+ *                     &lt;/complexType&gt;
+ *                   &lt;/element&gt;
+ *                   &lt;element name="lru-memory-size"&gt;
+ *                     &lt;complexType&gt;
+ *                       &lt;complexContent&gt;
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                           &lt;sequence minOccurs="0"&gt;
+ *                             &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/&gt;
+ *                             &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *                           &lt;/sequence&gt;
+ *                           &lt;attribute name="action" type="{http://geode.apache.org/schema/cache}enum-action-destroy-overflow" /&gt;
+ *                           &lt;attribute name="maximum" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                         &lt;/restriction&gt;
+ *                       &lt;/complexContent&gt;
+ *                     &lt;/complexType&gt;
+ *                   &lt;/element&gt;
+ *                 &lt;/choice&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="concurrency-level" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="data-policy" type="{http://geode.apache.org/schema/cache}region-attributesData-policy" /&gt;
+ *       &lt;attribute name="early-ack" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="enable-async-conflation" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="enable-gateway" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="enable-subscription-conflation" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="gateway-sender-ids" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="async-event-queue-ids" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="hub-id" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="id" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="ignore-jta" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="index-update-type" type="{http://geode.apache.org/schema/cache}region-attributesIndex-update-type" /&gt;
+ *       &lt;attribute name="initial-capacity" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="is-lock-grantor" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="load-factor" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="mirror-type" type="{http://geode.apache.org/schema/cache}region-attributesMirror-type" /&gt;
+ *       &lt;attribute name="multicast-enabled" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="persist-backup" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="pool-name" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="disk-store-name" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="disk-synchronous" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="publisher" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="refid" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="scope" type="{http://geode.apache.org/schema/cache}region-attributesScope" /&gt;
+ *       &lt;attribute name="statistics-enabled" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="cloning-enabled" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="concurrency-checks-enabled" type="{http://www.w3.org/2001/XMLSchema}boolean" default="true" /&gt;
+ *       &lt;attribute name="off-heap" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  *
  *
@@ -440,6 +440,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link Object }
    *
+   * @return the value of the keyConstraint property
    */
   public String getKeyConstraint() {
     return keyConstraint;
@@ -451,6 +452,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link Object }
    *
+   * @param value the value of the keyConstraint property
    */
   public void setKeyConstraint(String value) {
     keyConstraint = value;
@@ -462,6 +464,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link String }
    *
+   * @return the value of the valueConstraint property
    */
   public String getValueConstraint() {
     return valueConstraint;
@@ -473,6 +476,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link String }
    *
+   * @param value the value of the valueConstraint property
    */
   public void setValueConstraint(String value) {
     valueConstraint = value;
@@ -484,6 +488,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link RegionAttributesType.ExpirationAttributesType }
    *
+   * @return the value of the regionTimeToLive property
    */
   public ExpirationAttributesType getRegionTimeToLive() {
     return regionTimeToLive;
@@ -495,6 +500,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link RegionAttributesType.ExpirationAttributesType }
    *
+   * @param value the value of the regionTimeToLive property
    */
   public void setRegionTimeToLive(ExpirationAttributesType value) {
     regionTimeToLive = value;
@@ -520,6 +526,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link RegionAttributesType.ExpirationAttributesType }
    *
+   * @return the value of the regionIdleTime property
    */
   public ExpirationAttributesType getRegionIdleTime() {
     return regionIdleTime;
@@ -531,6 +538,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link RegionAttributesType.ExpirationAttributesType }
    *
+   * @param value the value of the regionIdleTime property
    */
   public void setRegionIdleTime(ExpirationAttributesType value) {
     regionIdleTime = value;
@@ -557,6 +565,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link RegionAttributesType.ExpirationAttributesType }
    *
+   * @return the value of the entryTimeToLive property
    */
   public ExpirationAttributesType getEntryTimeToLive() {
     return entryTimeToLive;
@@ -568,6 +577,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link RegionAttributesType.ExpirationAttributesType }
    *
+   * @param value the value of the entryTimeToLive property
    */
   public void setEntryTimeToLive(ExpirationAttributesType value) {
     entryTimeToLive = value;
@@ -593,6 +603,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link RegionAttributesType.ExpirationAttributesType }
    *
+   * @return the value of the entryIdleTime property
    */
   public ExpirationAttributesType getEntryIdleTime() {
     return entryIdleTime;
@@ -604,6 +615,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link RegionAttributesType.ExpirationAttributesType }
    *
+   * @param value the value of the entryIdleTime property
    */
   public void setEntryIdleTime(ExpirationAttributesType value) {
     entryIdleTime = value;
@@ -629,6 +641,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link RegionAttributesType.DiskWriteAttributes }
    *
+   * @return the value of the diskWriteAttributes property
    */
   public RegionAttributesType.DiskWriteAttributes getDiskWriteAttributes() {
     return diskWriteAttributes;
@@ -640,6 +653,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link RegionAttributesType.DiskWriteAttributes }
    *
+   * @param value the value of the diskWriteAttributes property
    */
   public void setDiskWriteAttributes(RegionAttributesType.DiskWriteAttributes value) {
     diskWriteAttributes = value;
@@ -651,6 +665,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link DiskDirsType }
    *
+   * @return the value of the diskDirs property
    */
   public DiskDirsType getDiskDirs() {
     return diskDirs;
@@ -662,6 +677,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link DiskDirsType }
    *
+   * @param value the value of the diskDirs property
    */
   public void setDiskDirs(DiskDirsType value) {
     diskDirs = value;
@@ -673,6 +689,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link RegionAttributesType.PartitionAttributes }
    *
+   * @return the value of the partitionAttributes property
    */
   public RegionAttributesType.PartitionAttributes getPartitionAttributes() {
     return partitionAttributes;
@@ -684,6 +701,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link RegionAttributesType.PartitionAttributes }
    *
+   * @param value the value of the partitionAttributes property
    */
   public void setPartitionAttributes(RegionAttributesType.PartitionAttributes value) {
     partitionAttributes = value;
@@ -695,6 +713,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link RegionAttributesType.MembershipAttributes }
    *
+   * @return the value of the membershipAttributes property
    */
   public RegionAttributesType.MembershipAttributes getMembershipAttributes() {
     return membershipAttributes;
@@ -706,6 +725,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link RegionAttributesType.MembershipAttributes }
    *
+   * @param value the value of the membershipAttributes property
    */
   public void setMembershipAttributes(RegionAttributesType.MembershipAttributes value) {
     membershipAttributes = value;
@@ -717,6 +737,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link RegionAttributesType.SubscriptionAttributes }
    *
+   * @return the value of the subscriptionAttributes property
    */
   public RegionAttributesType.SubscriptionAttributes getSubscriptionAttributes() {
     return subscriptionAttributes;
@@ -728,6 +749,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link RegionAttributesType.SubscriptionAttributes }
    *
+   * @param value the value of the subscriptionAttributes property
    */
   public void setSubscriptionAttributes(RegionAttributesType.SubscriptionAttributes value) {
     subscriptionAttributes = value;
@@ -739,6 +761,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link DeclarableType }
    *
+   * @return the value of the cacheLoader property
    */
   public DeclarableType getCacheLoader() {
     return cacheLoader;
@@ -750,6 +773,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link DeclarableType }
    *
+   * @param value the value of the cacheLoader property
    */
   public void setCacheLoader(DeclarableType value) {
     cacheLoader = value;
@@ -761,6 +785,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link DeclarableType }
    *
+   * @return the value of the cacheWriter property
    */
   public DeclarableType getCacheWriter() {
     return cacheWriter;
@@ -772,6 +797,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link DeclarableType }
    *
+   * @param value the value of the cacheWriter property
    */
   public void setCacheWriter(DeclarableType value) {
     cacheWriter = value;
@@ -798,7 +824,7 @@ public class RegionAttributesType implements Serializable {
    * Objects of the following type(s) are allowed in the list
    * {@link DeclarableType }
    *
-   *
+   * @return the value of the cacheListener property
    */
   public List<DeclarableType> getCacheListeners() {
     if (cacheListeners == null) {
@@ -813,6 +839,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link ClassNameType }
    *
+   * @return the value of the compressor property
    */
   public ClassNameType getCompressor() {
     return compressor;
@@ -824,6 +851,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link ClassNameType }
    *
+   * @param value the value of the compressor property
    */
   public void setCompressor(ClassNameType value) {
     compressor = value;
@@ -835,6 +863,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link RegionAttributesType.EvictionAttributes }
    *
+   * @return the value of the evictionAttributes property
    */
   public RegionAttributesType.EvictionAttributes getEvictionAttributes() {
     return evictionAttributes;
@@ -846,6 +875,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link RegionAttributesType.EvictionAttributes }
    *
+   * @param value the value of the evictionAttributes property
    */
   public void setEvictionAttributes(RegionAttributesType.EvictionAttributes value) {
     evictionAttributes = value;
@@ -857,6 +887,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link String }
    *
+   * @return the value of the concurrencyLevel property
    */
   public String getConcurrencyLevel() {
     return concurrencyLevel;
@@ -868,6 +899,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link String }
    *
+   * @param value the value of the concurrencyLevel property
    */
   public void setConcurrencyLevel(String value) {
     concurrencyLevel = value;
@@ -879,6 +911,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link RegionAttributesDataPolicy }
    *
+   * @return the value of the dataPolicy property
    */
   public RegionAttributesDataPolicy getDataPolicy() {
     return dataPolicy;
@@ -890,6 +923,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link RegionAttributesDataPolicy }
    *
+   * @param value the value of the dataPolicy property
    */
   public void setDataPolicy(RegionAttributesDataPolicy value) {
     dataPolicy = value;
@@ -901,6 +935,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link Boolean }
    *
+   * @return the value of the earlyAck property
    */
   public Boolean isEarlyAck() {
     return earlyAck;
@@ -912,6 +947,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value the value of the earlyAck property
    */
   public void setEarlyAck(Boolean value) {
     earlyAck = value;
@@ -923,6 +959,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link Boolean }
    *
+   * @return the value of the enableAsyncConflation property
    */
   public Boolean isEnableAsyncConflation() {
     return enableAsyncConflation;
@@ -934,6 +971,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value the value of the enableAsyncConflation property
    */
   public void setEnableAsyncConflation(Boolean value) {
     enableAsyncConflation = value;
@@ -945,6 +983,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link Boolean }
    *
+   * @return the value of the enableGateway property
    */
   public Boolean isEnableGateway() {
     return enableGateway;
@@ -956,6 +995,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value the value of the enableGateway property
    */
   public void setEnableGateway(Boolean value) {
     enableGateway = value;
@@ -967,6 +1007,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link Boolean }
    *
+   * @return the value of the enableSubscriptionConflation property
    */
   public Boolean isEnableSubscriptionConflation() {
     return enableSubscriptionConflation;
@@ -978,6 +1019,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value the value of the enableSubscriptionConflation property
    */
   public void setEnableSubscriptionConflation(Boolean value) {
     enableSubscriptionConflation = value;
@@ -989,6 +1031,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link String }
    *
+   * @return the value of the gatewaySenderIds property
    */
   public String getGatewaySenderIds() {
     return gatewaySenderIds;
@@ -996,6 +1039,8 @@ public class RegionAttributesType implements Serializable {
 
   /**
    * turn the comma separated ids into a set of id
+   *
+   * @return a set of gatewaySenderIds
    */
   @JsonIgnore
   public Set<String> getGatewaySenderIdsAsSet() {
@@ -1013,6 +1058,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link String }
    *
+   * @param value the value of the gatewaySenderIds property
    */
   public void setGatewaySenderIds(String value) {
     gatewaySenderIds = value;
@@ -1024,6 +1070,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link String }
    *
+   * @return the value of the asyncEventQueueIds property
    */
   public String getAsyncEventQueueIds() {
     return asyncEventQueueIds;
@@ -1031,6 +1078,8 @@ public class RegionAttributesType implements Serializable {
 
   /**
    * turn the comma separated id into a set of ids
+   *
+   * @return a set of asyncEventQueueIds
    */
   @JsonIgnore
   public Set<String> getAsyncEventQueueIdsAsSet() {
@@ -1048,6 +1097,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link String }
    *
+   * @param value the value of the asyncEventQueueIds property
    */
   public void setAsyncEventQueueIds(String value) {
     asyncEventQueueIds = value;
@@ -1059,6 +1109,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link String }
    *
+   * @return the value of the hubId property
    */
   public String getHubId() {
     return hubId;
@@ -1070,6 +1121,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link String }
    *
+   * @param value the value of the hubId property
    */
   public void setHubId(String value) {
     hubId = value;
@@ -1081,6 +1133,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link String }
    *
+   * @return the value of the id property
    */
   public String getId() {
     return id;
@@ -1092,6 +1145,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link String }
    *
+   * @param value the value of the id property
    */
   public void setId(String value) {
     id = value;
@@ -1103,6 +1157,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link Boolean }
    *
+   * @return the value of the ignoreJta property
    */
   public Boolean isIgnoreJta() {
     return ignoreJta;
@@ -1114,6 +1169,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value the value of the ignoreJta property
    */
   public void setIgnoreJta(Boolean value) {
     ignoreJta = value;
@@ -1125,6 +1181,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link RegionAttributesIndexUpdateType }
    *
+   * @return the value of the indexUpdateType property
    */
   public RegionAttributesIndexUpdateType getIndexUpdateType() {
     return indexUpdateType;
@@ -1136,6 +1193,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link RegionAttributesIndexUpdateType }
    *
+   * @param value the value of the indexUpdateType property
    */
   public void setIndexUpdateType(RegionAttributesIndexUpdateType value) {
     indexUpdateType = value;
@@ -1147,6 +1205,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link String }
    *
+   * @return the value of the initialCapacity property
    */
   public String getInitialCapacity() {
     return initialCapacity;
@@ -1158,6 +1217,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link String }
    *
+   * @param value the value of the initialCapacity property
    */
   public void setInitialCapacity(String value) {
     initialCapacity = value;
@@ -1169,6 +1229,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link Boolean }
    *
+   * @return the value of the isLockGrantor property
    */
   public Boolean isIsLockGrantor() {
     return isLockGrantor;
@@ -1180,6 +1241,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value the value of the isLockGrantor property
    */
   public void setIsLockGrantor(Boolean value) {
     isLockGrantor = value;
@@ -1191,6 +1253,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link String }
    *
+   * @return the value of the loadFactor property
    */
   public String getLoadFactor() {
     return loadFactor;
@@ -1202,6 +1265,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link String }
    *
+   * @param value the value of the loadFactor property
    */
   public void setLoadFactor(String value) {
     loadFactor = value;
@@ -1213,6 +1277,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link RegionAttributesMirrorType }
    *
+   * @return the value of the mirrorType property
    */
   public RegionAttributesMirrorType getMirrorType() {
     return mirrorType;
@@ -1224,6 +1289,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link RegionAttributesMirrorType }
    *
+   * @param value the value of the mirrorType property
    */
   public void setMirrorType(RegionAttributesMirrorType value) {
     mirrorType = value;
@@ -1235,6 +1301,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link Boolean }
    *
+   * @return the value of the multicastEnabled property
    */
   public Boolean isMulticastEnabled() {
     return multicastEnabled;
@@ -1246,6 +1313,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value the value of the multicastEnabled property
    */
   public void setMulticastEnabled(Boolean value) {
     multicastEnabled = value;
@@ -1257,6 +1325,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link Boolean }
    *
+   * @return the value of the persistBackup property
    */
   public Boolean isPersistBackup() {
     return persistBackup;
@@ -1268,6 +1337,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value the value of the persistBackup property
    */
   public void setPersistBackup(Boolean value) {
     persistBackup = value;
@@ -1279,6 +1349,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link String }
    *
+   * @return the value of the poolName property
    */
   public String getPoolName() {
     return poolName;
@@ -1290,6 +1361,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link String }
    *
+   * @param value the value of the poolName property
    */
   public void setPoolName(String value) {
     poolName = value;
@@ -1301,6 +1373,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link String }
    *
+   * @return the value of the diskStoreName property
    */
   public String getDiskStoreName() {
     return diskStoreName;
@@ -1312,6 +1385,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link String }
    *
+   * @param value the value of the diskStoreName property
    */
   public void setDiskStoreName(String value) {
     diskStoreName = value;
@@ -1323,6 +1397,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link Boolean }
    *
+   * @return the value of the diskSynchronous property
    */
   public Boolean isDiskSynchronous() {
     return diskSynchronous;
@@ -1334,6 +1409,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value the value of the diskSynchronous property
    */
   public void setDiskSynchronous(Boolean value) {
     diskSynchronous = value;
@@ -1345,6 +1421,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link Boolean }
    *
+   * @return the value of the publisher property
    */
   public Boolean isPublisher() {
     return publisher;
@@ -1356,6 +1433,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value the value of the publisher property
    */
   public void setPublisher(Boolean value) {
     publisher = value;
@@ -1367,6 +1445,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link String }
    *
+   * @return the value of the refid property
    */
   public String getRefid() {
     return refid;
@@ -1378,6 +1457,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link String }
    *
+   * @param value the value of the refid property
    */
   public void setRefid(String value) {
     refid = value;
@@ -1389,6 +1469,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link RegionAttributesScope }
    *
+   * @return the value of the scope property
    */
   public RegionAttributesScope getScope() {
     return scope;
@@ -1400,6 +1481,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link RegionAttributesScope }
    *
+   * @param value the value of the scope property
    */
   public void setScope(RegionAttributesScope value) {
     scope = value;
@@ -1411,6 +1493,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link Boolean }
    *
+   * @return the value of the statisticsEnabled property
    */
   public Boolean isStatisticsEnabled() {
     return statisticsEnabled;
@@ -1422,6 +1505,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value the value of the statisticsEnabled property
    */
   public void setStatisticsEnabled(Boolean value) {
     statisticsEnabled = value;
@@ -1433,6 +1517,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link Boolean }
    *
+   * @return the value of the cloningEnabled property
    */
   public Boolean isCloningEnabled() {
     return cloningEnabled;
@@ -1444,6 +1529,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value the value of the cloningEnabled property
    */
   public void setCloningEnabled(Boolean value) {
     cloningEnabled = value;
@@ -1455,6 +1541,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link Boolean }
    *
+   * @return the value of the concurrencyChecksEnabled property
    */
   public boolean isConcurrencyChecksEnabled() {
     if (concurrencyChecksEnabled == null) {
@@ -1470,6 +1557,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value the value of the concurrencyChecksEnabled property
    */
   public void setConcurrencyChecksEnabled(Boolean value) {
     concurrencyChecksEnabled = value;
@@ -1481,6 +1569,7 @@ public class RegionAttributesType implements Serializable {
    * possible object is
    * {@link Boolean }
    *
+   * @return the value of the offHeap property
    */
   public Boolean isOffHeap() {
     return offHeap;
@@ -1492,6 +1581,7 @@ public class RegionAttributesType implements Serializable {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value the value of the offHeap property
    */
   public void setOffHeap(Boolean value) {
     offHeap = value;
@@ -1537,27 +1627,27 @@ public class RegionAttributesType implements Serializable {
    * The following schema fragment specifies the expected content contained within this class.
    *
    * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;choice>
-   *         &lt;element name="asynchronous-writes">
-   *           &lt;complexType>
-   *             &lt;complexContent>
-   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *                 &lt;attribute name="bytes-threshold" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *                 &lt;attribute name="time-interval" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *               &lt;/restriction>
-   *             &lt;/complexContent>
-   *           &lt;/complexType>
-   *         &lt;/element>
-   *         &lt;element name="synchronous-writes" type="{http://www.w3.org/2001/XMLSchema}anyType"/>
-   *       &lt;/choice>
-   *       &lt;attribute name="max-oplog-size" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="roll-oplogs" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
+   * &lt;complexType&gt;
+   *   &lt;complexContent&gt;
+   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *       &lt;choice&gt;
+   *         &lt;element name="asynchronous-writes"&gt;
+   *           &lt;complexType&gt;
+   *             &lt;complexContent&gt;
+   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *                 &lt;attribute name="bytes-threshold" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *                 &lt;attribute name="time-interval" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *               &lt;/restriction&gt;
+   *             &lt;/complexContent&gt;
+   *           &lt;/complexType&gt;
+   *         &lt;/element&gt;
+   *         &lt;element name="synchronous-writes" type="{http://www.w3.org/2001/XMLSchema}anytype"/&gt;
+   *       &lt;/choice&gt;
+   *       &lt;attribute name="max-oplog-size" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="roll-oplogs" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *     &lt;/restriction&gt;
+   *   &lt;/complexContent&gt;
+   * &lt;/complexType&gt;
    * </pre>
    *
    *
@@ -1581,6 +1671,7 @@ public class RegionAttributesType implements Serializable {
      * possible object is
      * {@link RegionAttributesType.DiskWriteAttributes.AsynchronousWrites }
      *
+     * @return the value of the asynchronousWrites property
      */
     public RegionAttributesType.DiskWriteAttributes.AsynchronousWrites getAsynchronousWrites() {
       return asynchronousWrites;
@@ -1592,6 +1683,7 @@ public class RegionAttributesType implements Serializable {
      * allowed object is
      * {@link RegionAttributesType.DiskWriteAttributes.AsynchronousWrites }
      *
+     * @param value the value of the asynchronousWrites property
      */
     public void setAsynchronousWrites(
         RegionAttributesType.DiskWriteAttributes.AsynchronousWrites value) {
@@ -1604,6 +1696,7 @@ public class RegionAttributesType implements Serializable {
      * possible object is
      * {@link Object }
      *
+     * @return the value of the synchronousWrites property
      */
     public Object getSynchronousWrites() {
       return synchronousWrites;
@@ -1615,6 +1708,7 @@ public class RegionAttributesType implements Serializable {
      * allowed object is
      * {@link Object }
      *
+     * @param value the value of the synchronousWrites property
      */
     public void setSynchronousWrites(Object value) {
       synchronousWrites = value;
@@ -1626,6 +1720,7 @@ public class RegionAttributesType implements Serializable {
      * possible object is
      * {@link String }
      *
+     * @return the value of the maxOplogSize property
      */
     public String getMaxOplogSize() {
       return maxOplogSize;
@@ -1637,6 +1732,7 @@ public class RegionAttributesType implements Serializable {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the maxOplogSize property
      */
     public void setMaxOplogSize(String value) {
       maxOplogSize = value;
@@ -1648,6 +1744,7 @@ public class RegionAttributesType implements Serializable {
      * possible object is
      * {@link String }
      *
+     * @return the value of the rollOplogs property
      */
     public String getRollOplogs() {
       return rollOplogs;
@@ -1659,6 +1756,7 @@ public class RegionAttributesType implements Serializable {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the rollOplogs property
      */
     public void setRollOplogs(String value) {
       rollOplogs = value;
@@ -1673,14 +1771,14 @@ public class RegionAttributesType implements Serializable {
      * The following schema fragment specifies the expected content contained within this class.
      *
      * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;attribute name="bytes-threshold" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *       &lt;attribute name="time-interval" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
+     * &lt;complexType&gt;
+     *   &lt;complexContent&gt;
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+     *       &lt;attribute name="bytes-threshold" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+     *       &lt;attribute name="time-interval" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+     *     &lt;/restriction&gt;
+     *   &lt;/complexContent&gt;
+     * &lt;/complexType&gt;
      * </pre>
      *
      *
@@ -1700,6 +1798,7 @@ public class RegionAttributesType implements Serializable {
        * possible object is
        * {@link String }
        *
+       * @return the value of the bytesThreshold property
        */
       public String getBytesThreshold() {
         return bytesThreshold;
@@ -1711,6 +1810,7 @@ public class RegionAttributesType implements Serializable {
        * allowed object is
        * {@link String }
        *
+       * @param value the value of the bytesThreshold property
        */
       public void setBytesThreshold(String value) {
         bytesThreshold = value;
@@ -1722,6 +1822,7 @@ public class RegionAttributesType implements Serializable {
        * possible object is
        * {@link String }
        *
+       * @return the value of the timeInterval property
        */
       public String getTimeInterval() {
         return timeInterval;
@@ -1733,6 +1834,7 @@ public class RegionAttributesType implements Serializable {
        * allowed object is
        * {@link String }
        *
+       * @param value the value of the timeInterval property
        */
       public void setTimeInterval(String value) {
         timeInterval = value;
@@ -1750,15 +1852,15 @@ public class RegionAttributesType implements Serializable {
    * The following schema fragment specifies the expected content contained within this class.
    *
    * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;sequence>
-   *         &lt;element name="expiration-attributes" type="{http://geode.apache.org/schema/cache}expiration-attributes-type"/>
-   *       &lt;/sequence>
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
+   * &lt;complexType&gt;
+   *   &lt;complexContent&gt;
+   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *       &lt;sequence&gt;
+   *         &lt;element name="expiration-attributes" type="{http://geode.apache.org/schema/cache}expiration-attributes-type"/&gt;
+   *       &lt;/sequence&gt;
+   *     &lt;/restriction&gt;
+   *   &lt;/complexContent&gt;
+   * &lt;/complexType&gt;
    * </pre>
    *
    *
@@ -1853,6 +1955,7 @@ public class RegionAttributesType implements Serializable {
      * allowed object is
      * {@link DeclarableType }
      *
+     * @param value the value of the customExpiry property
      */
     public void setCustomExpiry(DeclarableType value) {
       expirationAttributes.setCustomExpiry(value);
@@ -1864,6 +1967,7 @@ public class RegionAttributesType implements Serializable {
      * possible object is
      * {@link String }
      *
+     * @return the value of the action property
      */
     public String getAction() {
       return expirationAttributes.getAction();
@@ -1875,6 +1979,7 @@ public class RegionAttributesType implements Serializable {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the action property
      */
     public void setAction(String value) {
       expirationAttributes.setAction(value);
@@ -1886,6 +1991,7 @@ public class RegionAttributesType implements Serializable {
      * possible object is
      * {@link String }
      *
+     * @return the value of the timeout property
      */
     public String getTimeout() {
       return expirationAttributes.getTimeout();
@@ -1897,6 +2003,7 @@ public class RegionAttributesType implements Serializable {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the timeout property
      */
     public void setTimeout(String value) {
       expirationAttributes.setTimeout(value);
@@ -1926,6 +2033,7 @@ public class RegionAttributesType implements Serializable {
      * possible object is
      * {@link DeclarableType }
      *
+     * @return the value of the customExpiry property
      */
     public DeclarableType getCustomExpiry() {
       return customExpiry;
@@ -1937,6 +2045,7 @@ public class RegionAttributesType implements Serializable {
      * allowed object is
      * {@link DeclarableType }
      *
+     * @param value the value of the customExpiry property
      */
     public void setCustomExpiry(DeclarableType value) {
       customExpiry = value;
@@ -1948,6 +2057,7 @@ public class RegionAttributesType implements Serializable {
      * possible object is
      * {@link String }
      *
+     * @return the value of the action property
      */
     public String getAction() {
       return action;
@@ -1959,6 +2069,7 @@ public class RegionAttributesType implements Serializable {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the action property
      */
     public void setAction(String value) {
       if (!ALLOWED_ACTIONS.contains(value)) {
@@ -1973,6 +2084,7 @@ public class RegionAttributesType implements Serializable {
      * possible object is
      * {@link String }
      *
+     * @return the value of the timeout property
      */
     public String getTimeout() {
       return timeout;
@@ -1984,6 +2096,7 @@ public class RegionAttributesType implements Serializable {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the timeout property
      */
     public void setTimeout(String value) {
       timeout = value;
@@ -1998,51 +2111,51 @@ public class RegionAttributesType implements Serializable {
    * The following schema fragment specifies the expected content contained within this class.
    *
    * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;choice>
-   *         &lt;element name="lru-entry-count">
-   *           &lt;complexType>
-   *             &lt;complexContent>
-   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *                 &lt;attribute name="action" type="{http://geode.apache.org/schema/cache}enum-action-destroy-overflow" />
-   *                 &lt;attribute name="maximum" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *               &lt;/restriction>
-   *             &lt;/complexContent>
-   *           &lt;/complexType>
-   *         &lt;/element>
-   *         &lt;element name="lru-heap-percentage">
-   *           &lt;complexType>
-   *             &lt;complexContent>
-   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *                 &lt;sequence minOccurs="0">
-   *                   &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
-   *                   &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/>
-   *                 &lt;/sequence>
-   *                 &lt;attribute name="action" type="{http://geode.apache.org/schema/cache}enum-action-destroy-overflow" />
-   *               &lt;/restriction>
-   *             &lt;/complexContent>
-   *           &lt;/complexType>
-   *         &lt;/element>
-   *         &lt;element name="lru-memory-size">
-   *           &lt;complexType>
-   *             &lt;complexContent>
-   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *                 &lt;sequence minOccurs="0">
-   *                   &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
-   *                   &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/>
-   *                 &lt;/sequence>
-   *                 &lt;attribute name="action" type="{http://geode.apache.org/schema/cache}enum-action-destroy-overflow" />
-   *                 &lt;attribute name="maximum" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *               &lt;/restriction>
-   *             &lt;/complexContent>
-   *           &lt;/complexType>
-   *         &lt;/element>
-   *       &lt;/choice>
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
+   * &lt;complexType&gt;
+   *   &lt;complexContent&gt;
+   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *       &lt;choice&gt;
+   *         &lt;element name="lru-entry-count"&gt;
+   *           &lt;complexType&gt;
+   *             &lt;complexContent&gt;
+   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *                 &lt;attribute name="action" type="{http://geode.apache.org/schema/cache}enum-action-destroy-overflow" /&gt;
+   *                 &lt;attribute name="maximum" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *               &lt;/restriction&gt;
+   *             &lt;/complexContent&gt;
+   *           &lt;/complexType&gt;
+   *         &lt;/element&gt;
+   *         &lt;element name="lru-heap-percentage"&gt;
+   *           &lt;complexType&gt;
+   *             &lt;complexContent&gt;
+   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *                 &lt;sequence minOccurs="0"&gt;
+   *                   &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/&gt;
+   *                   &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/&gt;
+   *                 &lt;/sequence&gt;
+   *                 &lt;attribute name="action" type="{http://geode.apache.org/schema/cache}enum-action-destroy-overflow" /&gt;
+   *               &lt;/restriction&gt;
+   *             &lt;/complexContent&gt;
+   *           &lt;/complexType&gt;
+   *         &lt;/element&gt;
+   *         &lt;element name="lru-memory-size"&gt;
+   *           &lt;complexType&gt;
+   *             &lt;complexContent&gt;
+   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *                 &lt;sequence minOccurs="0"&gt;
+   *                   &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/&gt;
+   *                   &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/&gt;
+   *                 &lt;/sequence&gt;
+   *                 &lt;attribute name="action" type="{http://geode.apache.org/schema/cache}enum-action-destroy-overflow" /&gt;
+   *                 &lt;attribute name="maximum" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *               &lt;/restriction&gt;
+   *             &lt;/complexContent&gt;
+   *           &lt;/complexType&gt;
+   *         &lt;/element&gt;
+   *       &lt;/choice&gt;
+   *     &lt;/restriction&gt;
+   *   &lt;/complexContent&gt;
+   * &lt;/complexType&gt;
    * </pre>
    *
    *
@@ -2114,6 +2227,7 @@ public class RegionAttributesType implements Serializable {
      * possible object is
      * {@link RegionAttributesType.EvictionAttributes.LruEntryCount }
      *
+     * @return the value of the lruEntryCount property
      */
     public RegionAttributesType.EvictionAttributes.LruEntryCount getLruEntryCount() {
       return lruEntryCount;
@@ -2125,6 +2239,7 @@ public class RegionAttributesType implements Serializable {
      * allowed object is
      * {@link RegionAttributesType.EvictionAttributes.LruEntryCount }
      *
+     * @param value the value of the lruEntryCount property
      */
     public void setLruEntryCount(RegionAttributesType.EvictionAttributes.LruEntryCount value) {
       lruEntryCount = value;
@@ -2136,6 +2251,7 @@ public class RegionAttributesType implements Serializable {
      * possible object is
      * {@link RegionAttributesType.EvictionAttributes.LruHeapPercentage }
      *
+     * @return the value of the lruHeapPercentage property
      */
     public RegionAttributesType.EvictionAttributes.LruHeapPercentage getLruHeapPercentage() {
       return lruHeapPercentage;
@@ -2147,6 +2263,7 @@ public class RegionAttributesType implements Serializable {
      * allowed object is
      * {@link RegionAttributesType.EvictionAttributes.LruHeapPercentage }
      *
+     * @param value the value of the lruHeapPercentage property
      */
     public void setLruHeapPercentage(
         RegionAttributesType.EvictionAttributes.LruHeapPercentage value) {
@@ -2159,6 +2276,7 @@ public class RegionAttributesType implements Serializable {
      * possible object is
      * {@link RegionAttributesType.EvictionAttributes.LruMemorySize }
      *
+     * @return the value of the lruMemorySize property
      */
     public RegionAttributesType.EvictionAttributes.LruMemorySize getLruMemorySize() {
       return lruMemorySize;
@@ -2170,6 +2288,7 @@ public class RegionAttributesType implements Serializable {
      * allowed object is
      * {@link RegionAttributesType.EvictionAttributes.LruMemorySize }
      *
+     * @param value the value of the lruMemorySize property
      */
     public void setLruMemorySize(RegionAttributesType.EvictionAttributes.LruMemorySize value) {
       lruMemorySize = value;
@@ -2184,14 +2303,14 @@ public class RegionAttributesType implements Serializable {
      * The following schema fragment specifies the expected content contained within this class.
      *
      * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;attribute name="action" type="{http://geode.apache.org/schema/cache}enum-action-destroy-overflow" />
-     *       &lt;attribute name="maximum" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
+     * &lt;complexType&gt;
+     *   &lt;complexContent&gt;
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+     *       &lt;attribute name="action" type="{http://geode.apache.org/schema/cache}enum-action-destroy-overflow" /&gt;
+     *       &lt;attribute name="maximum" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+     *     &lt;/restriction&gt;
+     *   &lt;/complexContent&gt;
+     * &lt;/complexType&gt;
      * </pre>
      *
      *
@@ -2211,6 +2330,7 @@ public class RegionAttributesType implements Serializable {
        * possible object is
        * {@link EnumActionDestroyOverflow }
        *
+       * @return the value of the action property
        */
       public EnumActionDestroyOverflow getAction() {
         return action;
@@ -2222,6 +2342,7 @@ public class RegionAttributesType implements Serializable {
        * allowed object is
        * {@link EnumActionDestroyOverflow }
        *
+       * @param value the value of the action property
        */
       public void setAction(EnumActionDestroyOverflow value) {
         action = value;
@@ -2233,6 +2354,7 @@ public class RegionAttributesType implements Serializable {
        * possible object is
        * {@link String }
        *
+       * @return the value of the maximum property
        */
       public String getMaximum() {
         return maximum;
@@ -2244,6 +2366,7 @@ public class RegionAttributesType implements Serializable {
        * allowed object is
        * {@link String }
        *
+       * @param value the value of the maximum property
        */
       public void setMaximum(String value) {
         maximum = value;
@@ -2260,17 +2383,17 @@ public class RegionAttributesType implements Serializable {
      * The following schema fragment specifies the expected content contained within this class.
      *
      * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence minOccurs="0">
-     *         &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
-     *         &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/>
-     *       &lt;/sequence>
-     *       &lt;attribute name="action" type="{http://geode.apache.org/schema/cache}enum-action-destroy-overflow" />
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
+     * &lt;complexType&gt;
+     *   &lt;complexContent&gt;
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+     *       &lt;sequence minOccurs="0"&gt;
+     *         &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/&gt;
+     *         &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/&gt;
+     *       &lt;/sequence&gt;
+     *       &lt;attribute name="action" type="{http://geode.apache.org/schema/cache}enum-action-destroy-overflow" /&gt;
+     *     &lt;/restriction&gt;
+     *   &lt;/complexContent&gt;
+     * &lt;/complexType&gt;
      * </pre>
      *
      *
@@ -2286,6 +2409,7 @@ public class RegionAttributesType implements Serializable {
        * possible object is
        * {@link EnumActionDestroyOverflow }
        *
+       * @return the value of the action property
        */
       public EnumActionDestroyOverflow getAction() {
         return action;
@@ -2297,6 +2421,7 @@ public class RegionAttributesType implements Serializable {
        * allowed object is
        * {@link EnumActionDestroyOverflow }
        *
+       * @param value the value of the action property
        */
       public void setAction(EnumActionDestroyOverflow value) {
         action = value;
@@ -2313,18 +2438,18 @@ public class RegionAttributesType implements Serializable {
      * The following schema fragment specifies the expected content contained within this class.
      *
      * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;sequence minOccurs="0">
-     *         &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
-     *         &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/>
-     *       &lt;/sequence>
-     *       &lt;attribute name="action" type="{http://geode.apache.org/schema/cache}enum-action-destroy-overflow" />
-     *       &lt;attribute name="maximum" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
+     * &lt;complexType&gt;
+     *   &lt;complexContent&gt;
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+     *       &lt;sequence minOccurs="0"&gt;
+     *         &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/&gt;
+     *         &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/&gt;
+     *       &lt;/sequence&gt;
+     *       &lt;attribute name="action" type="{http://geode.apache.org/schema/cache}enum-action-destroy-overflow" /&gt;
+     *       &lt;attribute name="maximum" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+     *     &lt;/restriction&gt;
+     *   &lt;/complexContent&gt;
+     * &lt;/complexType&gt;
      * </pre>
      *
      *
@@ -2340,6 +2465,7 @@ public class RegionAttributesType implements Serializable {
        * possible object is
        * {@link String }
        *
+       * @return the value of the maximum property
        */
       public String getMaximum() {
         return maximum;
@@ -2351,6 +2477,7 @@ public class RegionAttributesType implements Serializable {
        * allowed object is
        * {@link String }
        *
+       * @param value the value of the maximum property
        */
       public void setMaximum(String value) {
         maximum = value;
@@ -2369,41 +2496,41 @@ public class RegionAttributesType implements Serializable {
    * The following schema fragment specifies the expected content contained within this class.
    *
    * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;sequence>
-   *         &lt;element name="required-role" maxOccurs="unbounded" minOccurs="0">
-   *           &lt;complexType>
-   *             &lt;complexContent>
-   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *                 &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *               &lt;/restriction>
-   *             &lt;/complexContent>
-   *           &lt;/complexType>
-   *         &lt;/element>
-   *       &lt;/sequence>
-   *       &lt;attribute name="loss-action">
-   *         &lt;simpleType>
-   *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
-   *             &lt;enumeration value="full-access"/>
-   *             &lt;enumeration value="limited-access"/>
-   *             &lt;enumeration value="no-access"/>
-   *             &lt;enumeration value="reconnect"/>
-   *           &lt;/restriction>
-   *         &lt;/simpleType>
-   *       &lt;/attribute>
-   *       &lt;attribute name="resumption-action">
-   *         &lt;simpleType>
-   *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
-   *             &lt;enumeration value="none"/>
-   *             &lt;enumeration value="reinitialize"/>
-   *           &lt;/restriction>
-   *         &lt;/simpleType>
-   *       &lt;/attribute>
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
+   * &lt;complexType&gt;
+   *   &lt;complexContent&gt;
+   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *       &lt;sequence&gt;
+   *         &lt;element name="required-role" maxOccurs="unbounded" minOccurs="0"&gt;
+   *           &lt;complexType&gt;
+   *             &lt;complexContent&gt;
+   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *                 &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *               &lt;/restriction&gt;
+   *             &lt;/complexContent&gt;
+   *           &lt;/complexType&gt;
+   *         &lt;/element&gt;
+   *       &lt;/sequence&gt;
+   *       &lt;attribute name="loss-action"&gt;
+   *         &lt;simpleType&gt;
+   *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string"&gt;
+   *             &lt;enumeration value="full-access"/&gt;
+   *             &lt;enumeration value="limited-access"/&gt;
+   *             &lt;enumeration value="no-access"/&gt;
+   *             &lt;enumeration value="reconnect"/&gt;
+   *           &lt;/restriction&gt;
+   *         &lt;/simpleType&gt;
+   *       &lt;/attribute&gt;
+   *       &lt;attribute name="resumption-action"&gt;
+   *         &lt;simpleType&gt;
+   *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string"&gt;
+   *             &lt;enumeration value="none"/&gt;
+   *             &lt;enumeration value="reinitialize"/&gt;
+   *           &lt;/restriction&gt;
+   *         &lt;/simpleType&gt;
+   *       &lt;/attribute&gt;
+   *     &lt;/restriction&gt;
+   *   &lt;/complexContent&gt;
+   * &lt;/complexType&gt;
    * </pre>
    *
    *
@@ -2440,7 +2567,7 @@ public class RegionAttributesType implements Serializable {
      * Objects of the following type(s) are allowed in the list
      * {@link RegionAttributesType.MembershipAttributes.RequiredRole }
      *
-     *
+     * @return the value of the requiredRole property
      */
     public List<RequiredRole> getRequiredRoles() {
       if (requiredRoles == null) {
@@ -2455,6 +2582,7 @@ public class RegionAttributesType implements Serializable {
      * possible object is
      * {@link String }
      *
+     * @return the value of the lossAction property
      */
     public String getLossAction() {
       return lossAction;
@@ -2466,6 +2594,7 @@ public class RegionAttributesType implements Serializable {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the lossAction property
      */
     public void setLossAction(String value) {
       lossAction = value;
@@ -2477,6 +2606,7 @@ public class RegionAttributesType implements Serializable {
      * possible object is
      * {@link String }
      *
+     * @return the value of the resumptionAction property
      */
     public String getResumptionAction() {
       return resumptionAction;
@@ -2488,6 +2618,7 @@ public class RegionAttributesType implements Serializable {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the resumptionAction property
      */
     public void setResumptionAction(String value) {
       resumptionAction = value;
@@ -2502,13 +2633,13 @@ public class RegionAttributesType implements Serializable {
      * The following schema fragment specifies the expected content contained within this class.
      *
      * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
+     * &lt;complexType&gt;
+     *   &lt;complexContent&gt;
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+     *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+     *     &lt;/restriction&gt;
+     *   &lt;/complexContent&gt;
+     * &lt;/complexType&gt;
      * </pre>
      *
      *
@@ -2526,6 +2657,7 @@ public class RegionAttributesType implements Serializable {
        * possible object is
        * {@link String }
        *
+       * @return the value of the name property
        */
       public String getName() {
         return name;
@@ -2537,6 +2669,7 @@ public class RegionAttributesType implements Serializable {
        * allowed object is
        * {@link String }
        *
+       * @param value the value of the name property
        */
       public void setName(String value) {
         name = value;
@@ -2555,57 +2688,57 @@ public class RegionAttributesType implements Serializable {
    * The following schema fragment specifies the expected content contained within this class.
    *
    * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;sequence>
-   *         &lt;element name="partition-resolver" minOccurs="0">
-   *           &lt;complexType>
-   *             &lt;complexContent>
-   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *                 &lt;sequence>
-   *                   &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
-   *                   &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/>
-   *                 &lt;/sequence>
-   *                 &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *               &lt;/restriction>
-   *             &lt;/complexContent>
-   *           &lt;/complexType>
-   *         &lt;/element>
-   *         &lt;element name="partition-listener" maxOccurs="unbounded" minOccurs="0">
-   *           &lt;complexType>
-   *             &lt;complexContent>
-   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *                 &lt;sequence>
-   *                   &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
-   *                   &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/>
-   *                 &lt;/sequence>
-   *               &lt;/restriction>
-   *             &lt;/complexContent>
-   *           &lt;/complexType>
-   *         &lt;/element>
-   *         &lt;element name="fixed-partition-attributes" maxOccurs="unbounded" minOccurs="0">
-   *           &lt;complexType>
-   *             &lt;complexContent>
-   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *                 &lt;attribute name="partition-name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *                 &lt;attribute name="is-primary" type="{http://www.w3.org/2001/XMLSchema}boolean" />
-   *                 &lt;attribute name="num-buckets" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *               &lt;/restriction>
-   *             &lt;/complexContent>
-   *           &lt;/complexType>
-   *         &lt;/element>
-   *       &lt;/sequence>
-   *       &lt;attribute name="local-max-memory" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="recovery-delay" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="redundant-copies" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="startup-recovery-delay" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="total-max-memory" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="total-num-buckets" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="colocated-with" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
+   * &lt;complexType&gt;
+   *   &lt;complexContent&gt;
+   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *       &lt;sequence&gt;
+   *         &lt;element name="partition-resolver" minOccurs="0"&gt;
+   *           &lt;complexType&gt;
+   *             &lt;complexContent&gt;
+   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *                 &lt;sequence&gt;
+   *                   &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/&gt;
+   *                   &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/&gt;
+   *                 &lt;/sequence&gt;
+   *                 &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *               &lt;/restriction&gt;
+   *             &lt;/complexContent&gt;
+   *           &lt;/complexType&gt;
+   *         &lt;/element&gt;
+   *         &lt;element name="partition-listener" maxOccurs="unbounded" minOccurs="0"&gt;
+   *           &lt;complexType&gt;
+   *             &lt;complexContent&gt;
+   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *                 &lt;sequence&gt;
+   *                   &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/&gt;
+   *                   &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/&gt;
+   *                 &lt;/sequence&gt;
+   *               &lt;/restriction&gt;
+   *             &lt;/complexContent&gt;
+   *           &lt;/complexType&gt;
+   *         &lt;/element&gt;
+   *         &lt;element name="fixed-partition-attributes" maxOccurs="unbounded" minOccurs="0"&gt;
+   *           &lt;complexType&gt;
+   *             &lt;complexContent&gt;
+   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *                 &lt;attribute name="partition-name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *                 &lt;attribute name="is-primary" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+   *                 &lt;attribute name="num-buckets" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *               &lt;/restriction&gt;
+   *             &lt;/complexContent&gt;
+   *           &lt;/complexType&gt;
+   *         &lt;/element&gt;
+   *       &lt;/sequence&gt;
+   *       &lt;attribute name="local-max-memory" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="recovery-delay" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="redundant-copies" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="startup-recovery-delay" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="total-max-memory" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="total-num-buckets" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="colocated-with" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *     &lt;/restriction&gt;
+   *   &lt;/complexContent&gt;
+   * &lt;/complexType&gt;
    * </pre>
    *
    *
@@ -2733,6 +2866,7 @@ public class RegionAttributesType implements Serializable {
      * possible object is
      * {@link DeclarableType }
      *
+     * @return the value of the partitionResolver property
      */
     public DeclarableType getPartitionResolver() {
       return partitionResolver;
@@ -2744,6 +2878,7 @@ public class RegionAttributesType implements Serializable {
      * allowed object is
      * {@link DeclarableType }
      *
+     * @param value the value of the partitionResolver property
      */
     public void setPartitionResolver(DeclarableType value) {
       partitionResolver = value;
@@ -2770,7 +2905,7 @@ public class RegionAttributesType implements Serializable {
      * Objects of the following type(s) are allowed in the list
      * {@link DeclarableType }
      *
-     *
+     * @return the value of the partitionListener property
      */
     public List<DeclarableType> getPartitionListeners() {
       if (partitionListeners == null) {
@@ -2800,7 +2935,7 @@ public class RegionAttributesType implements Serializable {
      * Objects of the following type(s) are allowed in the list
      * {@link RegionAttributesType.PartitionAttributes.FixedPartitionAttributes }
      *
-     *
+     * @return the value of the fixedPartitionAttributes property
      */
     public List<FixedPartitionAttributes> getFixedPartitionAttributes() {
       if (fixedPartitionAttributes == null) {
@@ -2816,6 +2951,7 @@ public class RegionAttributesType implements Serializable {
      * possible object is
      * {@link String }
      *
+     * @return the value of the localMaxMemory property
      */
     public String getLocalMaxMemory() {
       return localMaxMemory;
@@ -2827,6 +2963,7 @@ public class RegionAttributesType implements Serializable {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the localMaxMemory property
      */
     public void setLocalMaxMemory(String value) {
       localMaxMemory = value;
@@ -2838,6 +2975,7 @@ public class RegionAttributesType implements Serializable {
      * possible object is
      * {@link String }
      *
+     * @return the value of the recoveryDelay property
      */
     public String getRecoveryDelay() {
       return recoveryDelay;
@@ -2849,6 +2987,7 @@ public class RegionAttributesType implements Serializable {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the recoveryDelay property
      */
     public void setRecoveryDelay(String value) {
       recoveryDelay = value;
@@ -2860,6 +2999,7 @@ public class RegionAttributesType implements Serializable {
      * possible object is
      * {@link String }
      *
+     * @return the value of the redundantCopies property
      */
     public String getRedundantCopies() {
       return redundantCopies;
@@ -2871,6 +3011,7 @@ public class RegionAttributesType implements Serializable {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the redundantCopies property
      */
     public void setRedundantCopies(String value) {
       redundantCopies = value;
@@ -2882,6 +3023,7 @@ public class RegionAttributesType implements Serializable {
      * possible object is
      * {@link String }
      *
+     * @return the value of the startupRecoveryDelay property
      */
     public String getStartupRecoveryDelay() {
       return startupRecoveryDelay;
@@ -2893,6 +3035,7 @@ public class RegionAttributesType implements Serializable {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the startupRecoveryDelay property
      */
     public void setStartupRecoveryDelay(String value) {
       startupRecoveryDelay = value;
@@ -2904,6 +3047,7 @@ public class RegionAttributesType implements Serializable {
      * possible object is
      * {@link String }
      *
+     * @return the value of the totalMaxMemory property
      */
     public String getTotalMaxMemory() {
       return totalMaxMemory;
@@ -2915,6 +3059,7 @@ public class RegionAttributesType implements Serializable {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the totalMaxMemory property
      */
     public void setTotalMaxMemory(String value) {
       totalMaxMemory = value;
@@ -2926,6 +3071,7 @@ public class RegionAttributesType implements Serializable {
      * possible object is
      * {@link String }
      *
+     * @return the value of the totalNumBuckets property
      */
     public String getTotalNumBuckets() {
       return totalNumBuckets;
@@ -2937,6 +3083,7 @@ public class RegionAttributesType implements Serializable {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the totalNumBuckets property
      */
     public void setTotalNumBuckets(String value) {
       totalNumBuckets = value;
@@ -2948,6 +3095,7 @@ public class RegionAttributesType implements Serializable {
      * possible object is
      * {@link String }
      *
+     * @return the value of the colocatedWith property
      */
     public String getColocatedWith() {
       return colocatedWith;
@@ -2959,6 +3107,7 @@ public class RegionAttributesType implements Serializable {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the colocatedWith property
      */
     public void setColocatedWith(String value) {
       colocatedWith = value;
@@ -2973,15 +3122,15 @@ public class RegionAttributesType implements Serializable {
      * The following schema fragment specifies the expected content contained within this class.
      *
      * <pre>
-     * &lt;complexType>
-     *   &lt;complexContent>
-     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-     *       &lt;attribute name="partition-name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *       &lt;attribute name="is-primary" type="{http://www.w3.org/2001/XMLSchema}boolean" />
-     *       &lt;attribute name="num-buckets" type="{http://www.w3.org/2001/XMLSchema}string" />
-     *     &lt;/restriction>
-     *   &lt;/complexContent>
-     * &lt;/complexType>
+     * &lt;complexType&gt;
+     *   &lt;complexContent&gt;
+     *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+     *       &lt;attribute name="partition-name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+     *       &lt;attribute name="is-primary" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+     *       &lt;attribute name="num-buckets" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+     *     &lt;/restriction&gt;
+     *   &lt;/complexContent&gt;
+     * &lt;/complexType&gt;
      * </pre>
      *
      *
@@ -3003,6 +3152,7 @@ public class RegionAttributesType implements Serializable {
        * possible object is
        * {@link String }
        *
+       * @return the value of the partitionName property
        */
       public String getPartitionName() {
         return partitionName;
@@ -3014,6 +3164,7 @@ public class RegionAttributesType implements Serializable {
        * allowed object is
        * {@link String }
        *
+       * @param value the value of the partitionName property
        */
       public void setPartitionName(String value) {
         partitionName = value;
@@ -3025,6 +3176,7 @@ public class RegionAttributesType implements Serializable {
        * possible object is
        * {@link Boolean }
        *
+       * @return the value of the isPrimary property
        */
       public Boolean isIsPrimary() {
         return isPrimary;
@@ -3036,6 +3188,7 @@ public class RegionAttributesType implements Serializable {
        * allowed object is
        * {@link Boolean }
        *
+       * @param value the value of the isPrimary property
        */
       public void setIsPrimary(Boolean value) {
         isPrimary = value;
@@ -3047,6 +3200,7 @@ public class RegionAttributesType implements Serializable {
        * possible object is
        * {@link String }
        *
+       * @return the value of the numBuckets property
        */
       public String getNumBuckets() {
         return numBuckets;
@@ -3058,6 +3212,7 @@ public class RegionAttributesType implements Serializable {
        * allowed object is
        * {@link String }
        *
+       * @param value the value of the numBuckets property
        */
       public void setNumBuckets(String value) {
         numBuckets = value;
@@ -3074,20 +3229,20 @@ public class RegionAttributesType implements Serializable {
    * The following schema fragment specifies the expected content contained within this class.
    *
    * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;attribute name="interest-policy">
-   *         &lt;simpleType>
-   *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
-   *             &lt;enumeration value="all"/>
-   *             &lt;enumeration value="cache-content"/>
-   *           &lt;/restriction>
-   *         &lt;/simpleType>
-   *       &lt;/attribute>
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
+   * &lt;complexType&gt;
+   *   &lt;complexContent&gt;
+   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *       &lt;attribute name="interest-policy"&gt;
+   *         &lt;simpleType&gt;
+   *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string"&gt;
+   *             &lt;enumeration value="all"/&gt;
+   *             &lt;enumeration value="cache-content"/&gt;
+   *           &lt;/restriction&gt;
+   *         &lt;/simpleType&gt;
+   *       &lt;/attribute&gt;
+   *     &lt;/restriction&gt;
+   *   &lt;/complexContent&gt;
+   * &lt;/complexType&gt;
    * </pre>
    *
    *
@@ -3105,6 +3260,7 @@ public class RegionAttributesType implements Serializable {
      * possible object is
      * {@link String }
      *
+     * @return the value of the interestPolicy property
      */
     public String getInterestPolicy() {
       return interestPolicy;
@@ -3116,6 +3272,7 @@ public class RegionAttributesType implements Serializable {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the interestPolicy property
      */
     public void setInterestPolicy(String value) {
       interestPolicy = value;

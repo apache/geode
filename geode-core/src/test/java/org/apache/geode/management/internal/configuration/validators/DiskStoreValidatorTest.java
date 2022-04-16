@@ -19,10 +19,12 @@
 
 package org.apache.geode.management.internal.configuration.validators;
 
+import static org.apache.geode.management.internal.CacheElementOperation.UPDATE;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Collections;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -163,5 +165,12 @@ public class DiskStoreValidatorTest {
     assertThatThrownBy(() -> diskStoreValidator.validate(CacheElementOperation.CREATE, diskStore))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Dir size cannot be negative :");
+  }
+
+  @Test
+  public void validateUpdateThrowsNotImplementedException() {
+    assertThatThrownBy(() -> diskStoreValidator.validate(UPDATE, diskStore))
+        .isInstanceOf(NotImplementedException.class)
+        .hasMessageContaining("Not implemented");
   }
 }

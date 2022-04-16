@@ -25,7 +25,9 @@ import org.apache.geode.distributed.DistributedMember;
 public interface ClientMembershipEvent {
 
   /**
-   * Returns the the member that connected or disconnected.
+   * Returns the member that connected or disconnected.
+   *
+   * @return the member that connected or disconnected
    *
    * @see org.apache.geode.distributed.DistributedSystem#getDistributedMember
    */
@@ -34,6 +36,8 @@ public interface ClientMembershipEvent {
   /**
    * Returns the id of the member that connected or disconnected.
    *
+   * @return the id of the member that connected or disconnected
+   *
    * @see org.apache.geode.distributed.DistributedMember#getId
    */
   String getMemberId();
@@ -41,6 +45,8 @@ public interface ClientMembershipEvent {
   /**
    * Returns true if the member is a client to a CacheServer hosted by this process. Returns false
    * if the member is a peer that this process is connected to.
+   *
+   * @return whether the member is a client to a CacheServer hosted by this process
    */
   boolean isClient();
 

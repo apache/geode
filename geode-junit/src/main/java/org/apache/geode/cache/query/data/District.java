@@ -29,7 +29,7 @@ public class District implements Serializable {
   public Set cities;
   public Set villages;
 
-  /** Creates a new instance of District */
+  /* Creates a new instance of District */
   public District(String name, Set cities, Set villages) {
     this.name = name;
     this.cities = cities;

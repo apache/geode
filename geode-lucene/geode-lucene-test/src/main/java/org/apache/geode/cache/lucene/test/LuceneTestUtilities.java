@@ -254,7 +254,7 @@ public class LuceneTestUtilities {
     assertTrue(flushed);
   }
 
-  /**
+  /*
    * Verify that a query returns the expected list of keys. Ordering is ignored.
    */
   public static <K> void verifyQueryKeys(LuceneQuery<K, Object> query, K... expectedKeys)
@@ -264,7 +264,7 @@ public class LuceneTestUtilities {
     assertEquals(expectedKeySet, actualKeySet);
   }
 
-  /**
+  /*
    * Verify that a query returns the expected map of key-value. Ordering is ignored.
    */
   public static <K> void verifyQueryKeyAndValues(LuceneQuery<K, Object> query,

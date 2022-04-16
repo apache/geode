@@ -29,6 +29,8 @@ import org.apache.geode.management.api.JsonSerializable;
 public interface OperationResult extends JsonSerializable, Serializable {
   /**
    * Returns true if the operation was successful; false if it failed.
+   *
+   * @return true if the operation was successful; false if it failed
    */
   boolean getSuccess();
 
@@ -37,6 +39,8 @@ public interface OperationResult extends JsonSerializable, Serializable {
    * If the operation failed then a description of what was wrong will
    * be in this status message. If the operation was successful then
    * the status message may contain additional information.
+   *
+   * @return a message with information about the success or failure of the operation
    */
   String getStatusMessage();
 }

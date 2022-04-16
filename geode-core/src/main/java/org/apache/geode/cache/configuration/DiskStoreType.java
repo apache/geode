@@ -40,25 +40,25 @@ import org.apache.geode.annotations.Experimental;
  * The following schema fragment specifies the expected content contained within this class.
  *
  * <pre>
- * &lt;complexType name="disk-store-type">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="disk-dirs" type="{http://geode.apache.org/schema/cache}disk-dirs-type" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="auto-compact" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="compaction-threshold" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="allow-force-compaction" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="max-oplog-size" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="time-interval" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="write-buffer-size" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="queue-size" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="disk-usage-warning-percentage" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="disk-usage-critical-percentage" type="{http://www.w3.org/2001/XMLSchema}string" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="disk-store-type"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="disk-dirs" type="{http://geode.apache.org/schema/cache}disk-dirs-type" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="auto-compact" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="compaction-threshold" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="allow-force-compaction" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="max-oplog-size" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="time-interval" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="write-buffer-size" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="queue-size" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="disk-usage-warning-percentage" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="disk-usage-critical-percentage" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  *
  *
@@ -104,6 +104,7 @@ public class DiskStoreType extends CacheElement {
    * possible object is
    * {@link String }
    *
+   * @return the name.
    */
   public String getName() {
     return name;
@@ -127,6 +128,7 @@ public class DiskStoreType extends CacheElement {
    * allowed object is
    * {@link String }
    *
+   * @param value the name.
    */
   public void setName(String value) {
     name = value;
@@ -138,6 +140,7 @@ public class DiskStoreType extends CacheElement {
    * possible object is
    * {@link Boolean }
    *
+   * @return true if auto compaction is enabled, false otherwise.
    */
   public Boolean isAutoCompact() {
     return autoCompact;
@@ -149,6 +152,7 @@ public class DiskStoreType extends CacheElement {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value enables or disables auto compaction.
    */
   public void setAutoCompact(Boolean value) {
     autoCompact = value;
@@ -160,6 +164,7 @@ public class DiskStoreType extends CacheElement {
    * possible object is
    * {@link String }
    *
+   * @return the compaction threshold.
    */
   public String getCompactionThreshold() {
     return compactionThreshold;
@@ -171,6 +176,7 @@ public class DiskStoreType extends CacheElement {
    * allowed object is
    * {@link String }
    *
+   * @param value the compaction threshold.
    */
   public void setCompactionThreshold(String value) {
     compactionThreshold = value;
@@ -182,6 +188,7 @@ public class DiskStoreType extends CacheElement {
    * possible object is
    * {@link Boolean }
    *
+   * @return true is force compaction is allowed, false if not.
    */
   public Boolean isAllowForceCompaction() {
     return allowForceCompaction;
@@ -193,6 +200,7 @@ public class DiskStoreType extends CacheElement {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value allows or disallows force compaction.
    */
   public void setAllowForceCompaction(Boolean value) {
     allowForceCompaction = value;
@@ -204,6 +212,7 @@ public class DiskStoreType extends CacheElement {
    * possible object is
    * {@link String }
    *
+   * @return the maximum oplog size.
    */
   public String getMaxOplogSize() {
     return maxOplogSize;
@@ -215,6 +224,7 @@ public class DiskStoreType extends CacheElement {
    * allowed object is
    * {@link String }
    *
+   * @param value the maximum oplog size.
    */
   public void setMaxOplogSize(String value) {
     maxOplogSize = value;
@@ -226,6 +236,7 @@ public class DiskStoreType extends CacheElement {
    * possible object is
    * {@link String }
    *
+   * @return the time interval.
    */
   public String getTimeInterval() {
     return timeInterval;
@@ -237,6 +248,7 @@ public class DiskStoreType extends CacheElement {
    * allowed object is
    * {@link String }
    *
+   * @param value the time interval.
    */
   public void setTimeInterval(String value) {
     timeInterval = value;
@@ -248,6 +260,7 @@ public class DiskStoreType extends CacheElement {
    * possible object is
    * {@link String }
    *
+   * @return the write-buffer size.
    */
   public String getWriteBufferSize() {
     return writeBufferSize;
@@ -259,6 +272,7 @@ public class DiskStoreType extends CacheElement {
    * allowed object is
    * {@link String }
    *
+   * @param value the write-buffer size.
    */
   public void setWriteBufferSize(String value) {
     writeBufferSize = value;
@@ -270,6 +284,7 @@ public class DiskStoreType extends CacheElement {
    * possible object is
    * {@link String }
    *
+   * @return the queue size.
    */
   public String getQueueSize() {
     return queueSize;
@@ -281,6 +296,7 @@ public class DiskStoreType extends CacheElement {
    * allowed object is
    * {@link String }
    *
+   * @param value the queue size.
    */
   public void setQueueSize(String value) {
     queueSize = value;
@@ -292,6 +308,7 @@ public class DiskStoreType extends CacheElement {
    * possible object is
    * {@link String }
    *
+   * @return the disk usage warning percentage.
    */
   public String getDiskUsageWarningPercentage() {
     return diskUsageWarningPercentage;
@@ -303,6 +320,7 @@ public class DiskStoreType extends CacheElement {
    * allowed object is
    * {@link String }
    *
+   * @param value the disk usage warning percentage.
    */
   public void setDiskUsageWarningPercentage(String value) {
     diskUsageWarningPercentage = value;
@@ -314,6 +332,7 @@ public class DiskStoreType extends CacheElement {
    * possible object is
    * {@link String }
    *
+   * @return the disk usage critical percentage.
    */
   public String getDiskUsageCriticalPercentage() {
     return diskUsageCriticalPercentage;
@@ -325,6 +344,7 @@ public class DiskStoreType extends CacheElement {
    * allowed object is
    * {@link String }
    *
+   * @param value the disk usage critical percentage.
    */
   public void setDiskUsageCriticalPercentage(String value) {
     diskUsageCriticalPercentage = value;

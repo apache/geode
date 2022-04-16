@@ -33,6 +33,8 @@ public class UncreatedSystemException extends NoSystemException {
 
   /**
    * Creates a new <code>UncreatedSystemException</code>.
+   *
+   * @param message the detail message
    */
   public UncreatedSystemException(String message) {
     super(message);
@@ -40,6 +42,9 @@ public class UncreatedSystemException extends NoSystemException {
 
   /**
    * Creates a new <code>UncreatedSystemException</code> with the given message and cause.
+   *
+   * @param message the detail message
+   * @param cause the cause
    */
   public UncreatedSystemException(String message, Throwable cause) {
     super(message, cause);

@@ -20,7 +20,7 @@ import org.apache.geode.GemFireException;
  * A <code>ManagementException</code> is a general exception that may be thrown when any
  * administration or monitoring operation on a GemFire component fails.
  *
- * Various management and monitoring exceptions are wrapped in <code>ManagementException<code>s.
+ * Various management and monitoring exceptions are wrapped in <code>ManagementException</code>s.
  *
  * @since GemFire 7.0
  *

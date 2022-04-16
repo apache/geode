@@ -20,7 +20,7 @@ import org.apache.geode.StatisticsType;
 /**
  * An instance of a StatisticsType which describes the individual stats for each ResourceInstance.
  * The ResourceType holds an array of StatisticDescriptors for its StatisticsType.
- * <p/>
+ * <p>
  * Extracted from {@link StatArchiveWriter}.
  *
  * @since GemFire 7.0

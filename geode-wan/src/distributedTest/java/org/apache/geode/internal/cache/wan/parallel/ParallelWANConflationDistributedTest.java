@@ -15,26 +15,31 @@
 package org.apache.geode.internal.cache.wan.parallel;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.cache.execute.data.CustId;
+import org.apache.geode.internal.cache.execute.data.Customer;
+import org.apache.geode.internal.cache.execute.data.Order;
+import org.apache.geode.internal.cache.execute.data.OrderId;
+import org.apache.geode.internal.cache.execute.data.Shipment;
+import org.apache.geode.internal.cache.execute.data.ShipmentId;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
-public class ParallelWANConflationDUnitTest extends WANTestBase {
+public class ParallelWANConflationDistributedTest extends WANTestBase {
   private static final long serialVersionUID = 1L;
 
-  public ParallelWANConflationDUnitTest() {
+  public ParallelWANConflationDistributedTest() {
     super();
   }
 
@@ -44,7 +49,7 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testParallelPropagationConflationDisabled() throws Exception {
+  public void testParallelPropagationConflationDisabled() {
     initialSetUp();
 
     createSendersNoConflation();
@@ -55,11 +60,11 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
 
     createReceiverPrs();
 
-    final Map keyValues = putKeyValues();
+    final Map<Integer, Object> keyValues = putKeyValues();
 
     vm4.invoke(() -> checkQueueSize("ln", keyValues.size()));
 
-    final Map updateKeyValues = updateKeyValues();
+    final Map<Integer, Object> updateKeyValues = updateKeyValues();
 
     vm4.invoke(() -> checkQueueSize("ln", (keyValues.size() + updateKeyValues.size())));
 
@@ -83,7 +88,7 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
    *
    */
   @Test
-  public void testParallelPropagationBatchConflation() throws Exception {
+  public void testParallelPropagationBatchConflation() {
     initialSetUp();
 
     vm4.invoke(() -> createSender("ln", 2, true, 100, 50, false, false, null, true));
@@ -99,7 +104,7 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
 
     createReceiverPrs();
 
-    final Map keyValues = new HashMap();
+    final Map<Integer, Integer> keyValues = new HashMap<>();
 
     for (int i = 1; i <= 10; i++) {
       for (int j = 1; j <= 10; j++) {
@@ -115,57 +120,52 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
     vm6.invoke(() -> enableConflation("ln"));
     vm7.invoke(() -> enableConflation("ln"));
 
-    ArrayList<Integer> v4List =
-        (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", 100));
-    ArrayList<Integer> v5List =
-        (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", 100));
-    ArrayList<Integer> v6List =
-        (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStats("ln", 100));
-    ArrayList<Integer> v7List =
-        (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", 100));
-    assertTrue("Event in secondary queue should be 100",
-        (v4List.get(10) + v5List.get(10) + v6List.get(10) + v7List.get(10)) == 100);
+    await().untilAsserted(() -> {
+      List<Integer> v4List = vm4.invoke(() -> WANTestBase.getSenderStats("ln", 100));
+      List<Integer> v5List = vm5.invoke(() -> WANTestBase.getSenderStats("ln", 100));
+      List<Integer> v6List = vm6.invoke(() -> WANTestBase.getSenderStats("ln", 100));
+      List<Integer> v7List = vm7.invoke(() -> WANTestBase.getSenderStats("ln", 100));
+      assertThat(v4List.get(10) + v5List.get(10) + v6List.get(10) + v7List.get(10)).as(
+          "Event in secondary queue").isEqualTo(100);
+    });
 
     resumeSenders();
 
-    v4List = (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", 0));
-    v5List = (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
-    v6List = (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStats("ln", 0));
-    v7List = (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    await().untilAsserted(() -> {
+      List<Integer> v4List = vm4.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+      List<Integer> v5List = vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+      List<Integer> v6List = vm6.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+      List<Integer> v7List = vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
 
-    assertTrue("No events conflated in batch",
-        (v4List.get(8) + v5List.get(8) + v6List.get(8) + v7List.get(8)) > 0);
+      assertThat(v4List.get(8) + v5List.get(8) + v6List.get(8) + v7List.get(8)).as(
+          "No events conflated in batch").isGreaterThan(0);
+    });
 
-    verifySecondaryEventQueuesDrained("ln");
+    verifySecondaryEventQueuesDrained();
     vm2.invoke(() -> validateRegionSize(getTestMethodName(), 10));
     validateEventsProcessedByPQRM(100, 1);
   }
 
-  private void verifySecondaryEventQueuesDrained(final String senderId) {
+  private void verifySecondaryEventQueuesDrained() {
     await().untilAsserted(() -> {
-      int vm4SecondarySize = vm4.invoke(() -> getSecondaryQueueSizeInStats("ln"));
-      int vm5SecondarySize = vm5.invoke(() -> getSecondaryQueueSizeInStats("ln"));
-      int vm6SecondarySize = vm6.invoke(() -> getSecondaryQueueSizeInStats("ln"));
-      int vm7SecondarySize = vm7.invoke(() -> getSecondaryQueueSizeInStats("ln"));
-
-      assertEquals(
-          "Event in secondary queue should be 0 after dispatched, but actual is " + vm4SecondarySize
-              + ":" + vm5SecondarySize + ":" + vm6SecondarySize + ":" + vm7SecondarySize,
-          0, vm4SecondarySize + vm5SecondarySize + vm6SecondarySize + vm7SecondarySize);
+      assertThat(vm4.invoke(() -> getSecondaryQueueSizeInStats("ln"))).isZero();
+      assertThat(vm5.invoke(() -> getSecondaryQueueSizeInStats("ln"))).isZero();
+      assertThat(vm6.invoke(() -> getSecondaryQueueSizeInStats("ln"))).isZero();
+      assertThat(vm7.invoke(() -> getSecondaryQueueSizeInStats("ln"))).isZero();
     });
   }
 
   @Test
-  public void testParallelPropagationConflation() throws Exception {
+  public void testParallelPropagationConflation() {
     doTestParallelPropagationConflation(0);
   }
 
   @Test
-  public void testParallelPropagationConflationRedundancy2() throws Exception {
+  public void testParallelPropagationConflationRedundancy2() {
     doTestParallelPropagationConflation(2);
   }
 
-  public void doTestParallelPropagationConflation(int redundancy) throws Exception {
+  public void doTestParallelPropagationConflation(int redundancy) {
     initialSetUp();
 
     createSendersWithConflation();
@@ -176,10 +176,10 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
 
     createReceiverPrs();
 
-    final Map keyValues = putKeyValues();
+    final Map<Integer, Object> keyValues = putKeyValues();
 
     vm4.invoke(() -> checkQueueSize("ln", keyValues.size()));
-    final Map updateKeyValues = updateKeyValues();
+    final Map<Integer, Object> updateKeyValues = updateKeyValues();
 
     vm4.invoke(() -> checkQueueSize("ln", keyValues.size() + updateKeyValues.size())); // creates
                                                                                        // aren't
@@ -206,45 +206,37 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
 
     // after dispatch, both primary and secondary queues are empty
     vm4.invoke(() -> checkQueueSize("ln", 0));
-    verifySecondaryEventQueuesDrained("ln");
+    verifySecondaryEventQueuesDrained();
     validateSecondaryEventQueueSize(0, redundancy);
     validateEventsProcessedByPQRM(totalEventsProcessedByPQRM, redundancy);
   }
 
   private void validateSecondaryEventQueueSize(int expectedNum, int redundancy) {
-    ArrayList<Integer> vm4List =
-        (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", expectedNum));
-    ArrayList<Integer> vm5List =
-        (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", expectedNum));
-    ArrayList<Integer> vm6List =
-        (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStats("ln", expectedNum));
-    ArrayList<Integer> vm7List =
-        (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", expectedNum));
-    assertTrue(
-        "Event in secondary queue should be " + (expectedNum * redundancy) + ", but is "
-            + (vm4List.get(10) + vm5List.get(10) + vm6List.get(10) + vm7List.get(10)),
-        (vm4List.get(10) + vm5List.get(10) + vm6List.get(10) + vm7List.get(10)) == expectedNum
-            * redundancy);
+    await().untilAsserted(() -> {
+      List<Integer> vm4List = vm4.invoke(() -> WANTestBase.getSenderStats("ln", expectedNum));
+      List<Integer> vm5List = vm5.invoke(() -> WANTestBase.getSenderStats("ln", expectedNum));
+      List<Integer> vm6List = vm6.invoke(() -> WANTestBase.getSenderStats("ln", expectedNum));
+      List<Integer> vm7List = vm7.invoke(() -> WANTestBase.getSenderStats("ln", expectedNum));
+      assertThat(vm4List.get(10) + vm5List.get(10) + vm6List.get(10) + vm7List.get(10))
+          .as("Event in secondary queue")
+          .isEqualTo(expectedNum * redundancy);
+    });
   }
 
   private void validateEventsProcessedByPQRM(int expectedNum, int redundancy) {
-    ArrayList<Integer> vm4List =
-        (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", 0));
-    ArrayList<Integer> vm5List =
-        (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
-    ArrayList<Integer> vm6List =
-        (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStats("ln", 0));
-    ArrayList<Integer> vm7List =
-        (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
-    assertTrue(
-        "Event processed by queue removal message should be " + (expectedNum * redundancy)
-            + ", but is " + (vm4List.get(11) + vm5List.get(11) + vm6List.get(11) + vm7List.get(11)),
-        (vm4List.get(11) + vm5List.get(11) + vm6List.get(11) + vm7List.get(11)) == expectedNum
-            * redundancy);
+    await().untilAsserted(() -> {
+      List<Integer> vm4List = vm4.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+      List<Integer> vm5List = vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+      List<Integer> vm6List = vm6.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+      List<Integer> vm7List = vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+      assertThat(vm4List.get(11) + vm5List.get(11) + vm6List.get(11) + vm7List.get(11))
+          .as("Event processed by queue removal message")
+          .isEqualTo(expectedNum * redundancy);
+    });
   }
 
   @Test
-  public void testParallelPropagationConflationOfRandomKeys() throws Exception {
+  public void testParallelPropagationConflationOfRandomKeys() {
     initialSetUp();
 
     createSendersWithConflation();
@@ -255,11 +247,11 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
 
     createReceiverPrs();
 
-    final Map keyValues = putKeyValues();
+    final Map<Integer, Object> keyValues = putKeyValues();
 
     vm4.invoke(() -> checkQueueSize("ln", keyValues.size()));
 
-    final Map updateKeyValues = new HashMap();
+    final Map<Integer, Object> updateKeyValues = new HashMap<>();
     while (updateKeyValues.size() != 10) {
       int key = (new Random()).nextInt(keyValues.size());
       updateKeyValues.put(key, key + "_updated");
@@ -283,7 +275,7 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testParallelPropagationColocatedRegionConflation() throws Exception {
+  public void testParallelPropagationColocatedRegionConflation() {
     initialSetUp();
 
     createSendersWithConflation();
@@ -294,16 +286,19 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
 
     createOrderShipmentOnReceivers();
 
-    Map custKeyValues = vm4.invoke(() -> putCustomerPartitionedRegion(20));
-    Map orderKeyValues = vm4.invoke(() -> putOrderPartitionedRegion(20));
-    Map shipmentKeyValues = vm4.invoke(() -> putShipmentPartitionedRegion(20));
+    Map<CustId, Customer> custKeyValues = vm4.invoke(() -> putCustomerPartitionedRegion(20));
+    Map<OrderId, Order> orderKeyValues = vm4.invoke(() -> putOrderPartitionedRegion(20));
+    Map<ShipmentId, Shipment> shipmentKeyValues =
+        vm4.invoke(() -> putShipmentPartitionedRegion(20));
 
     vm4.invoke(() -> WANTestBase.checkQueueSize("ln",
         (custKeyValues.size() + orderKeyValues.size() + shipmentKeyValues.size())));
 
-    Map updatedCustKeyValues = vm4.invoke(() -> updateCustomerPartitionedRegion(10));
-    Map updatedOrderKeyValues = vm4.invoke(() -> updateOrderPartitionedRegion(10));
-    Map updatedShipmentKeyValues = vm4.invoke(() -> updateShipmentPartitionedRegion(10));
+    Map<CustId, Customer> updatedCustKeyValues =
+        vm4.invoke(() -> updateCustomerPartitionedRegion(10));
+    Map<OrderId, Order> updatedOrderKeyValues = vm4.invoke(() -> updateOrderPartitionedRegion(10));
+    Map<ShipmentId, Shipment> updatedShipmentKeyValues =
+        vm4.invoke(() -> updateShipmentPartitionedRegion(10));
     int sum = (custKeyValues.size() + orderKeyValues.size() + shipmentKeyValues.size())
         + updatedCustKeyValues.size() + updatedOrderKeyValues.size()
         + updatedShipmentKeyValues.size();
@@ -335,7 +330,7 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
   //
   // This is the same as the previous test, except for the UsingCustId methods
   @Test
-  public void testParallelPropagationColocatedRegionConflationSameKey() throws Exception {
+  public void testParallelPropagationColocatedRegionConflationSameKey() {
     initialSetUp();
 
     createSendersWithConflation();
@@ -346,16 +341,19 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
 
     createOrderShipmentOnReceivers();
 
-    Map custKeyValues = vm4.invoke(() -> putCustomerPartitionedRegion(20));
-    Map orderKeyValues = vm4.invoke(() -> putOrderPartitionedRegionUsingCustId(20));
-    Map shipmentKeyValues = vm4.invoke(() -> putShipmentPartitionedRegionUsingCustId(20));
+    Map<CustId, Customer> custKeyValues = vm4.invoke(() -> putCustomerPartitionedRegion(20));
+    Map<CustId, Order> orderKeyValues = vm4.invoke(() -> putOrderPartitionedRegionUsingCustId(20));
+    Map<CustId, Shipment> shipmentKeyValues =
+        vm4.invoke(() -> putShipmentPartitionedRegionUsingCustId(20));
 
     vm4.invoke(() -> checkQueueSize("ln",
         (custKeyValues.size() + orderKeyValues.size() + shipmentKeyValues.size())));
 
-    Map updatedCustKeyValues = vm4.invoke(() -> updateCustomerPartitionedRegion(10));
-    Map updatedOrderKeyValues = vm4.invoke(() -> updateOrderPartitionedRegionUsingCustId(10));
-    Map updatedShipmentKeyValues =
+    Map<CustId, Customer> updatedCustKeyValues =
+        vm4.invoke(() -> updateCustomerPartitionedRegion(10));
+    Map<CustId, Order> updatedOrderKeyValues =
+        vm4.invoke(() -> updateOrderPartitionedRegionUsingCustId(10));
+    Map<CustId, Shipment> updatedShipmentKeyValues =
         vm4.invoke(() -> updateShipmentPartitionedRegionUsingCustId(10));
     int sum = (custKeyValues.size() + orderKeyValues.size() + shipmentKeyValues.size())
         + updatedCustKeyValues.size() + updatedOrderKeyValues.size()
@@ -386,8 +384,8 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
     validateColocatedRegionContents(custKeyValues, orderKeyValues, shipmentKeyValues);
   }
 
-  protected void validateColocatedRegionContents(Map custKeyValues, Map orderKeyValues,
-      Map shipmentKeyValues) {
+  protected void validateColocatedRegionContents(Map<?, ?> custKeyValues, Map<?, ?> orderKeyValues,
+      Map<?, ?> shipmentKeyValues) {
     vm2.invoke(() -> validateRegionSize(WANTestBase.customerRegionName, custKeyValues.size()));
     vm2.invoke(() -> validateRegionSize(WANTestBase.orderRegionName, orderKeyValues.size()));
     vm2.invoke(() -> validateRegionSize(WANTestBase.shipmentRegionName, shipmentKeyValues.size()));
@@ -417,8 +415,8 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
     vm7.invoke(() -> createCustomerOrderShipmentPartitionedRegion("ln", 0, 8, isOffHeap()));
   }
 
-  protected Map updateKeyValues() {
-    final Map updateKeyValues = new HashMap();
+  protected Map<Integer, Object> updateKeyValues() {
+    final Map<Integer, Object> updateKeyValues = new HashMap<>();
     for (int i = 0; i < 10; i++) {
       updateKeyValues.put(i, i + "_updated");
     }
@@ -427,8 +425,8 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
     return updateKeyValues;
   }
 
-  protected Map putKeyValues() {
-    final Map keyValues = new HashMap();
+  protected Map<Integer, Object> putKeyValues() {
+    final Map<Integer, Object> keyValues = new HashMap<>();
     for (int i = 0; i < 20; i++) {
       keyValues.put(i, i);
     }
@@ -438,7 +436,7 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
     return keyValues;
   }
 
-  protected void validateReceiverRegionSize(final Map keyValues) {
+  protected <K, V> void validateReceiverRegionSize(final Map<K, V> keyValues) {
     vm2.invoke(() -> validateRegionSize(getTestMethodName(), keyValues.size()));
     vm3.invoke(() -> validateRegionSize(getTestMethodName(), keyValues.size()));
 

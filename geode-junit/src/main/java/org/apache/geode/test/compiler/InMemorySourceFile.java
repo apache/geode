@@ -22,6 +22,9 @@ import javax.tools.SimpleJavaFileObject;
 
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * In-memory representation of the name and source code of a Java class.
+ */
 public class InMemorySourceFile extends SimpleJavaFileObject {
   private final String name;
   private final String sourceCode;
@@ -44,7 +47,6 @@ public class InMemorySourceFile extends SimpleJavaFileObject {
 
   static InMemorySourceFile fromSourceCode(String sourceCode) {
     String className = new ClassNameExtractor().extractFromSourceCode(sourceCode);
-    System.out.println("DHE: extracted class name: " + className);
     return new InMemorySourceFile(className, sourceCode);
   }
 

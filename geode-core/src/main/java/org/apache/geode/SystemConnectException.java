@@ -27,6 +27,8 @@ public class SystemConnectException extends GemFireException {
 
   /**
    * Creates a new <code>SystemConnectException</code>.
+   *
+   * @param message the detail message
    */
   public SystemConnectException(String message) {
     super(message);

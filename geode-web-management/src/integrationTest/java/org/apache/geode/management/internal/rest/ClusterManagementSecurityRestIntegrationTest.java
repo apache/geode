@@ -20,6 +20,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -107,6 +108,10 @@ public class ClusterManagementSecurityRestIntegrationTest {
     testContexts.add(new TestContext(get("/v1/members/server1"), "CLUSTER:READ"));
 
     testContexts.add(new TestContext(post("/v1/configurations/pdx"), "CLUSTER:MANAGE")
+        .setContent(mapper.writeValueAsString(new PdxType())));
+    testContexts.add(new TestContext(put("/v1/configurations/pdx"), "CLUSTER:MANAGE")
+        .setContent(mapper.writeValueAsString(new PdxType())));
+    testContexts.add(new TestContext(delete("/v1/configurations/pdx"), "CLUSTER:MANAGE")
         .setContent(mapper.writeValueAsString(new PdxType())));
     testContexts.add(new TestContext(get("/v1/configurations/pdx"), "CLUSTER:READ"));
 

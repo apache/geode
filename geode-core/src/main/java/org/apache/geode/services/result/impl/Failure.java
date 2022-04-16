@@ -26,12 +26,10 @@ import org.apache.geode.services.result.ServiceResult;
 
 /**
  * This type of {@link ServiceResult} represents a failed operation. It contains the
- * errorMessage
- * for the failure.
+ * errorMessage for the failure.
  *
  * @param <SuccessType> the result type for a successful operation. Not used by the {@link Failure}
- *        type
- *        but required by the {@link ServiceResult}
+ *        type but required by the {@link ServiceResult}
  *
  * @since 1.14.0
  *
@@ -49,6 +47,7 @@ public class Failure<SuccessType> implements ServiceResult<SuccessType> {
   /**
    * Creates a {@link Failure} object containing the errorMessage
    *
+   * @param <T> the type of the result
    * @param errorMessage the error message describing the reason for failure.
    * @return an {@link Failure} instance containing the errorMessage
    */
@@ -62,6 +61,7 @@ public class Failure<SuccessType> implements ServiceResult<SuccessType> {
   /**
    * Creates a {@link Failure} object containing the throwable
    *
+   * @param <T> the type of the result
    * @param throwable the error message describing the reason for failure.
    * @return an {@link Failure} instance containing the throwable
    */
@@ -79,7 +79,9 @@ public class Failure<SuccessType> implements ServiceResult<SuccessType> {
   /**
    * Creates a {@link Failure} object containing the errorMessage
    *
+   * @param <T> the type of the result
    * @param errorMessage the error message describing the reason for failure.
+   * @param throwable the throwable that caused the failure
    * @return an {@link Failure} instance containing the errorMessage
    */
   public static <T> Failure<T> of(String errorMessage, Throwable throwable) {

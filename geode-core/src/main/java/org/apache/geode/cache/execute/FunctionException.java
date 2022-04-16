@@ -35,7 +35,7 @@ import org.apache.geode.internal.Assert;
  *
  * <p>
  * The exception string provides details on the cause of failure.
- * </p>
+ * <p>
  *
  * @since GemFire 6.0
  * @see FunctionService
@@ -56,6 +56,7 @@ public class FunctionException extends GemFireException {
   /**
    * Creates new function exception with given error message.
    *
+   * @param msg the detail message
    * @since GemFire 6.0
    */
   public FunctionException(String msg) {
@@ -65,6 +66,8 @@ public class FunctionException extends GemFireException {
   /**
    * Creates new function exception with given error message and optional nested exception.
    *
+   * @param msg the detail message
+   * @param cause the cause
    * @since GemFire 6.0
    */
   public FunctionException(String msg, Throwable cause) {
@@ -74,6 +77,7 @@ public class FunctionException extends GemFireException {
   /**
    * Creates new function exception given throwable as a cause and source of error message.
    *
+   * @param cause the cause
    * @since GemFire 6.0
    */
   public FunctionException(Throwable cause) {
@@ -83,6 +87,7 @@ public class FunctionException extends GemFireException {
   /**
    * Adds exceptions thrown from different nodes to a ds
    *
+   * @param cause The exception to add
    * @since GemFire 6.5
    */
   public void addException(Throwable cause) {
@@ -93,6 +98,7 @@ public class FunctionException extends GemFireException {
   /**
    * Returns the list of exceptions thrown from different nodes
    *
+   * @return a list of exceptions
    * @since GemFire 6.5
    */
   public List<Throwable> getExceptions() {
@@ -105,6 +111,7 @@ public class FunctionException extends GemFireException {
   /**
    * Adds the list of exceptions provided
    *
+   * @param ex A collection of exceptions to be added
    * @since GemFire 6.5
    */
   public void addExceptions(Collection<? extends Throwable> ex) {

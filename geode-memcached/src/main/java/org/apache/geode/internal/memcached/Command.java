@@ -433,7 +433,7 @@ public enum Command {
   };
 
   /**
-   * Returns a command processor to process the given {@link #Command}
+   * Returns a command processor to process the given {@link Command}
    *
    * @return a command processor
    */

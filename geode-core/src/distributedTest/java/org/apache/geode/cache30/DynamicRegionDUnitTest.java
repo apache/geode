@@ -76,7 +76,7 @@ public class DynamicRegionDUnitTest extends JUnit4CacheTestCase {
    * <p>
    * <H1>IMPORTANT NOTE:</H1> Never throw an exception from this method as it will mask any
    * exception thrown in a test.
-   * </p>
+   * <p>
    */
   @Override
   public final void preTearDownCacheTestCase() throws Exception {

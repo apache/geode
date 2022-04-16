@@ -33,6 +33,7 @@ public class EntryExistsException extends CacheException {
    * Constructs an instance of <code>EntryExistsException</code> with the specified detail message.
    *
    * @param msg the detail message
+   * @param oldValue the old existing value that caused this exception
    * @since GemFire 6.5
    */
   public EntryExistsException(String msg, Object oldValue) {
@@ -42,6 +43,8 @@ public class EntryExistsException extends CacheException {
 
   /**
    * Returns the old existing value that caused this exception.
+   *
+   * @return the old existing value that caused this exception
    */
   public Object getOldValue() {
     return oldValue;
@@ -49,6 +52,8 @@ public class EntryExistsException extends CacheException {
 
   /**
    * Sets the old existing value that caused this exception.
+   *
+   * @param oldValue the old existing value that caused this exception
    */
   public void setOldValue(Object oldValue) {
     this.oldValue = oldValue;

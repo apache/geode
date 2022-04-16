@@ -21,7 +21,7 @@ import org.apache.geode.GemFireException;
 /**
  * Indicates that error encountered while converting Non-Pdx type values/data into RESTful format,
  * i.e JSON
- * <p/>
+ * <p>
  *
  * @since GemFire 8.1
  */

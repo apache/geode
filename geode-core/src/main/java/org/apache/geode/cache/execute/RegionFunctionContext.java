@@ -26,11 +26,10 @@ import org.apache.geode.cache.partition.PartitionRegionHelper;
  * Applications can use the methods provided to retrieve the Region and context specific routing
  * objects. When the function is executed using {@link FunctionService#onRegion(Region)}, the
  * {@link Function#execute(FunctionContext) FunctionContext} can be typecast to this type.
- * </p>
  * <p>
  * If the region is a partitioned region, {@link PartitionRegionHelper} can be used to get local and
  * {@linkplain PartitionAttributesFactory#setColocatedWith(String) colocated} data references.
- * </p>
+ * <p>
  *
  *
  * @since GemFire 6.0
@@ -56,6 +55,8 @@ public interface RegionFunctionContext extends FunctionContext {
    *
    * @see FunctionService#onRegion(Region)
    *
+   * @param <K> the key type for the {@link Region}
+   * @param <V> the value type for the {@link Region}
    * @return returns the Region on which the function is executed
    *
    * @since GemFire 6.0

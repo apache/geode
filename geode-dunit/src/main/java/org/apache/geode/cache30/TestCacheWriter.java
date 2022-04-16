@@ -63,7 +63,7 @@ public abstract class TestCacheWriter<K, V> extends TestCacheCallback implements
     throw new UnsupportedOperationException(s);
   }
 
-  /**
+  /*
    * Causes code that uses the old API to not compile
    */
   public void beforeCreate2(EntryEvent<K, V> event, Object arg) throws CacheWriterException {

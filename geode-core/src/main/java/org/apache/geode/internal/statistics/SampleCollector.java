@@ -41,10 +41,10 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * ResourceTypes and Statistics instances to ResourceInstances, each of which contains the actual
  * stat values of the sample. The {@link #sample(long)} operation determines what stats have
  * changed, adds in new types and instances, and updates the sampled stat values.
- * <p/>
+ * <p>
  * SampleHandlers are registered with the SampleCollector. The handlers are notified of any changes
  * to statistics.
- * <p/>
+ * <p>
  * Extracted from StatArchiveWriter.
  *
  * @since GemFire 7.0
@@ -205,7 +205,7 @@ public class SampleCollector {
   /**
    * Collect a sample of all statistics. Adds new statistics resources, removes destroyed statistics
    * resources, collects the latest stat values, and notifies SamplerHandlers of the sample.
-   * <p/>
+   * <p>
    * The timeStamp is an arbitrary nanoseconds time stamp only used for archiving to stats files.
    * The initial time in system milliseconds and the first NanoTimer timeStamp are both written to
    * the archive file. Thereafter only the NanoTimer timeStamp is written to the archive file for

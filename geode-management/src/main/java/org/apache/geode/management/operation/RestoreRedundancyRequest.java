@@ -46,12 +46,14 @@ public class RestoreRedundancyRequest
   private String operator;
 
   /**
-   * by default, requests all partitioned regions to be rebalanced
+   * By default, requests all partitioned regions to have redundancy restored
    */
   public RestoreRedundancyRequest() {}
 
   /**
-   * copy constructor
+   * Copy constructor
+   *
+   * @param other the {@link RestoreRedundancyRequest} to be copied
    */
   public RestoreRedundancyRequest(
       RestoreRedundancyRequest other) {
@@ -61,32 +63,45 @@ public class RestoreRedundancyRequest
     operator = other.getOperator();
   }
 
-  /***
-   * Returns the list of regions to be rebalanced (or an empty list for all-except-excluded)
+  /**
+   * Returns the list of regions to have redundancy restored (or an empty list for
+   * all-except-excluded)
+   *
+   * @return a list of regions to have redundancy restored (or an empty list for
+   *         all-except-excluded)
    */
   public List<String> getIncludeRegions() {
     return includeRegions;
   }
 
   /**
-   * requests rebalance of the specified region(s) only. When at least one region is specified, this
-   * takes precedence over any excluded regions.
+   * Requests restore redundancy of the specified region(s) only. When at least one region is
+   * specified, this takes precedence over any excluded regions.
+   *
+   * @param includeRegions a list of region names to include in the restore redundancy operation
    */
   public void setIncludeRegions(List<String> includeRegions) {
     this.includeRegions = includeRegions;
   }
 
-  /***
-   * Returns the list of regions NOT to be rebalanced (iff {@link #getIncludeRegions()} is empty)
+  /**
+   * Returns the list of regions NOT to have redundancy restored (iff {@link #getIncludeRegions()}
+   * is empty)
+   *
+   * @return the list of regions NOT to have redundancy restored (iff {@link #getIncludeRegions()}
+   *         is empty
    */
   public List<String> getExcludeRegions() {
     return excludeRegions;
   }
 
   /**
-   * excludes specific regions from the rebalance, if {@link #getIncludeRegions()} is empty,
+   * Excludes specific regions from the restore redundancy, if {@link #getIncludeRegions()} is
+   * empty,
    * otherwise has no effect
    * default: no regions are excluded
+   *
+   * @param excludeRegions a list of region names to exclude from the restore redundancy operation
    */
   public void setExcludeRegions(List<String> excludeRegions) {
     this.excludeRegions = excludeRegions;

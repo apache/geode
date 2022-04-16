@@ -25,7 +25,7 @@ import org.apache.geode.management.cli.CliMetaData;
 /**
  * The CommandRequest class encapsulates information pertaining to the command the user entered in
  * Gfsh.
- * <p/>
+ * <p>
  *
  * @see org.apache.geode.management.internal.cli.GfshParseResult
  * @since GemFire 8.0

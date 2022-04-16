@@ -120,6 +120,8 @@ public class DiskAccessException extends CacheRuntimeException {
 
   /**
    * Returns true if this exception originated from a remote node.
+   *
+   * @return whether this exception originated from a remote node
    */
   public boolean isRemote() {
     return isRemote;

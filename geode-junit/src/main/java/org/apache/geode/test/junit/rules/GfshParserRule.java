@@ -55,8 +55,13 @@ public class GfshParserRule extends ExternalResource {
   }
 
   /**
-   * @deprecated use executeAndAssertThat instead
+   * @param <T> the type of command class
+   * @param instance an instance of the command class
+   * @param command the command to execute
+   * @return a {@link CommandResult}
+   * @deprecated use {@link #executeAndAssertThat(Object, String)} instead
    */
+  @Deprecated
   public <T> CommandResult executeCommandWithInstance(T instance, String command) {
     GfshParseResult parseResult = parse(command);
 

@@ -20,7 +20,7 @@ import org.apache.geode.annotations.Immutable;
 /**
  * The ClassUtils class is an abstract utility class for working with and invoking methods on Class
  * objects.
- * <p/>
+ * <p>
  *
  * @see java.lang.Class
  * @see java.lang.Object
@@ -35,7 +35,7 @@ public abstract class ClassUtils {
    * Attempts to load the specified class by fully qualified name. If the class could not be found,
    * then this method handles the ClassNotFoundException and throws the specified RuntimeException
    * instead.
-   * </p>
+   * <p>
    *
    * @param className a String indicating the fully qualified name of the class to load.
    * @param e the RuntimeException to throw in place of the ClassNotFoundException if the class
@@ -56,7 +56,7 @@ public abstract class ClassUtils {
 
   /**
    * Gets the Class type for the specified Object, or returns null if the Object reference is null.
-   * <p/>
+   * <p>
    *
    * @param obj the Object who's class type is determined.
    * @return the Class type of the Object parameter, or null if the Object reference is null.
@@ -68,7 +68,7 @@ public abstract class ClassUtils {
 
   /**
    * Gets the name of the Object's Class type or null if the Object reference is null.
-   * <p/>
+   * <p>
    *
    * @param obj the Object's who's class name is returned or null if the Object reference is null.
    * @return a String value specifying the name of the Object's class type.
@@ -82,7 +82,7 @@ public abstract class ClassUtils {
 
   /**
    * Determine whether the specified class is on the classpath. <
-   * <p/>
+   * <p>
    *
    * @param className a String value specifying the fully-qualified name of the class.
    * @return a boolean value indicating whether the specified class is on the classpath.
@@ -103,7 +103,7 @@ public abstract class ClassUtils {
    * Determines whether the specified Object parameter is an instance of, or is
    * assignment-compatible with the given Class type. Note, this method is null-safe for both Class
    * and Object value references.
-   * <p/>
+   * <p>
    *
    * @param type the Class type used in an instanceof determination with the given Object.
    * @param obj the Object being determined for assignment-compatibility with the specified Class
@@ -120,7 +120,7 @@ public abstract class ClassUtils {
    * Determines whether the specified Object is not a instance of the following Class types. The
    * Object is considered not an instance of the Class types if the condition holds for all Class
    * types.
-   * <p/>
+   * <p>
    *
    * @param obj the Object who's Class type is in question.
    * @param types an array of Class types that the Object is being tested as an instance of.

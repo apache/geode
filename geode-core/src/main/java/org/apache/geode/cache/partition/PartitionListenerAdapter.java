@@ -22,11 +22,9 @@ import org.apache.geode.cache.Region;
  * Utility class that implements all methods in <code>PartitionListener</code> with empty
  * implementations. Applications can subclass this class and only override the methods of interest.
  * <p>
- *
- * <p>
  * Subclasses declared in a Cache XML file, it must also implement
  * {@link org.apache.geode.cache.Declarable}
- * </p>
+ * <p>
  *
  * Note : Please request help on the Geode developer mailing list (dev@geode.apache.org) before
  * using these APIs.

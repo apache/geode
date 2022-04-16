@@ -32,6 +32,7 @@ public interface ClusterManagementService extends AutoCloseable {
    * This method will create the element on all the applicable members in the cluster and persist
    * the configuration in the cluster configuration if persistence is enabled.
    *
+   * @param <T> the type of {@link AbstractConfiguration} to create
    * @param config this holds the configuration attributes of the element to be created on the
    *        cluster, as well as the group this config belongs to
    * @return a {@link ClusterManagementRealizationResult} indicating the success of the creation
@@ -43,6 +44,7 @@ public interface ClusterManagementService extends AutoCloseable {
    * This method will delete the element on all the applicable members in the cluster and update the
    * configuration in the cluster configuration if persistence is enabled.
    *
+   * @param <T> the type of {@link AbstractConfiguration} to delete
    * @param config this holds the name or id of the element to be deleted on the cluster
    * @return a {@link ClusterManagementRealizationResult} indicating the success of the deletion
    * @throws ClusterManagementRealizationException if unsuccessful
@@ -53,6 +55,7 @@ public interface ClusterManagementService extends AutoCloseable {
    * This method will update the element on all the applicable members in the cluster and persist
    * the updated configuration in the cluster configuration if persistence is enabled.
    *
+   * @param <T> the type of {@link AbstractConfiguration} to update
    * @param config this holds the configuration attributes of the element to be updated on the
    *        cluster, as well as the group this config belongs to
    * @return a {@link ClusterManagementRealizationResult} indicating the success of the update
@@ -64,6 +67,8 @@ public interface ClusterManagementService extends AutoCloseable {
    * This method will list instances of the element type in the cluster configuration, along with
    * additional runtime information from cluster members
    *
+   * @param <T> the type of {@link AbstractConfiguration} to list
+   * @param <R> the type of {@link RuntimeInfo} used by the {@link AbstractConfiguration}
    * @param filter the filterable attributes are used to identify the elements to list. Any
    *        non-filterable attributes will be ignored.
    * @return a {@link ClusterManagementListResult} holding a list of matching instances in
@@ -77,6 +82,8 @@ public interface ClusterManagementService extends AutoCloseable {
    * This method will get a single instance of the element type in the cluster configuration, along
    * with additional runtime information from cluster members
    *
+   * @param <T> the type of {@link AbstractConfiguration} to get
+   * @param <R> the type of {@link RuntimeInfo} used by the {@link AbstractConfiguration}
    * @param config this holds the name or id of the element to be retrieved
    * @return a {@link ClusterManagementGetResult}
    * @throws ClusterManagementException if unsuccessful or, no matching element is found, or

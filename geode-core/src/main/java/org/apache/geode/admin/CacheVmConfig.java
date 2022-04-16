@@ -30,23 +30,34 @@ public interface CacheVmConfig extends ManagedEntityConfig {
   /**
    * Returns the <code>cache.xml</code> declarative caching initialization file used to configure
    * this cache server VM. By default, a cache server VM is started without an XML file.
+   *
+   * @return the <code>cache.xml</code> declarative caching initialization file used to configure
+   *         this cache server VM
    */
   String getCacheXMLFile();
 
   /**
    * Sets the <code>cache.xml</code> declarative caching initialization file used to configure this
    * cache server VM.
+   *
+   * @param cacheXml the <code>cache.xml</code> declarative caching initialization file used to
+   *        configure this cache server VM
    */
   void setCacheXMLFile(String cacheXml);
 
   /**
    * Returns the location(s) of user classes (such as cache loaders) required by the cache server
    * VM.
+   *
+   * @return the location(s) of user classes (such as cache loaders) required by the cache server VM
    */
   String getClassPath();
 
   /**
    * Sets the location(s) of user classes (such as cache loaders) required by the cache server VM.
+   *
+   * @param classpath the location(s) of user classes (such as cache loaders) required by the cache
+   *        server VM
    */
   void setClassPath(String classpath);
 }

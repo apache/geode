@@ -16,14 +16,14 @@ package org.apache.geode.internal.cache.wan.offheap;
 
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderOperation_2_DUnitTest;
+import org.apache.geode.internal.cache.wan.concurrent.ConcurrentParallelGatewaySenderOperation2DistributedTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @Category({WanTest.class})
-public class ParallelGatewaySenderOperation_2_OffHeapDUnitTest
-    extends ParallelGatewaySenderOperation_2_DUnitTest {
+public class ConcurrentParallelGatewaySenderOperation2OffHeapDistributedTest
+    extends ConcurrentParallelGatewaySenderOperation2DistributedTest {
 
-  public ParallelGatewaySenderOperation_2_OffHeapDUnitTest() {
+  public ConcurrentParallelGatewaySenderOperation2OffHeapDistributedTest() {
     super();
   }
 

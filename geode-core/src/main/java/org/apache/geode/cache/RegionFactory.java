@@ -70,6 +70,8 @@ public class RegionFactory<K, V> {
   /**
    * For internal use only.
    *
+   * @param cache the cache
+   *
    * @since GemFire 6.5
    */
   protected RegionFactory(InternalCache cache) {
@@ -79,6 +81,9 @@ public class RegionFactory<K, V> {
 
   /**
    * For internal use only.
+   *
+   * @param cache the cache
+   * @param pra the {@link RegionShortcut} with which to initialize the Region
    *
    * @since GemFire 6.5
    */
@@ -94,6 +99,9 @@ public class RegionFactory<K, V> {
   /**
    * For internal use only.
    *
+   * @param cache the cache
+   * @param ra the {@link RegionAttributes} with which to initialize the Region
+   *
    * @since GemFire 6.5
    */
   protected RegionFactory(InternalCache cache, RegionAttributes ra) {
@@ -104,6 +112,7 @@ public class RegionFactory<K, V> {
   /**
    * Constructs a RegionFactory that is a copy of an existing RegionFactory
    *
+   * @param regionFactory the RegionFactory to copy
    * @since Geode 1.12.0
    */
   @VisibleForTesting
@@ -115,6 +124,9 @@ public class RegionFactory<K, V> {
   /**
    * For internal use only.
    *
+   * @param cache the cache
+   * @param regionAttributesId the id of the {@link RegionAttributes} with which to initialize the
+   *        Region
    * @since GemFire 6.5
    */
   protected RegionFactory(InternalCache cache, String regionAttributesId) {
@@ -146,6 +158,7 @@ public class RegionFactory<K, V> {
    * existing DistributedSystem. The Region configuration is initialized using the provided
    * RegionAttributes.
    *
+   * @param regionAttributes the {@link RegionAttributes} with which to initialize the Region
    * @throws CacheException if unable to connect the DistributedSystem or create a Cache
    * @deprecated as of 6.5 use {@link Cache#createRegionFactory(RegionAttributes)} instead.
    */
@@ -235,9 +248,10 @@ public class RegionFactory<K, V> {
         regionAttributesId);
   }
 
-
   /**
    * Returns the cache used by this factory.
+   *
+   * @return he cache used by this factory
    */
   protected synchronized InternalCache getCache() {
     return cache;
@@ -245,6 +259,8 @@ public class RegionFactory<K, V> {
 
   /**
    * Returns the attributes used by this factory to create a region.
+   *
+   * @return the attributes used by this factory to create a region
    */
   protected RegionAttributes<K, V> getRegionAttributes() {
     return attrsFactory.create();
@@ -472,6 +488,7 @@ public class RegionFactory<K, V> {
   /**
    * Sets whether or not this region should be considered a publisher.
    *
+   * @param v whether this region should be considered a publisher
    * @since GemFire 5.0
    * @deprecated as of 6.5
    */
@@ -585,6 +602,7 @@ public class RegionFactory<K, V> {
    *
    * @since GemFire 7.0
    * @param enabled whether concurrency checks should be enabled for the region
+   * @return a reference to this RegionFactory object
    * @see AttributesFactory#setConcurrencyChecksEnabled
    */
   public RegionFactory<K, V> setConcurrencyChecksEnabled(boolean enabled) {
@@ -593,8 +611,9 @@ public class RegionFactory<K, V> {
   }
 
   /**
-   * Returns whether or not disk writes are asynchronous.
+   * Sets the {@link DiskWriteAttributes} for this factory
    *
+   * @param attrs the {@link DiskWriteAttributes} to be set for this factory
    * @return a reference to this RegionFactory object
    * @see Region#writeToDisk
    * @see AttributesFactory#setDiskWriteAttributes
@@ -637,6 +656,7 @@ public class RegionFactory<K, V> {
    * Sets the directories to which the region's data are written. If multiple directories are used,
    * GemFire will attempt to distribute the data evenly amongst them.
    *
+   * @param diskDirs the directories to which the region's data is written
    * @return a reference to this RegionFactory object
    *
    * @see AttributesFactory#setDiskDirs
@@ -652,6 +672,8 @@ public class RegionFactory<K, V> {
    * Sets the directories to which the region's data are written and also set their sizes in
    * megabytes
    *
+   * @param diskDirs the directories to which the region's data is written
+   * @param diskSizes the size in megabytes for each directory
    * @return a reference to this RegionFactory object
    * @throws IllegalArgumentException if length of the size array does not match to the length of
    *         the dir array
@@ -670,6 +692,8 @@ public class RegionFactory<K, V> {
    * Sets the {@code PartitionAttributes} that describe how the region is partitioned among members
    * of the distributed system.
    *
+   * @param partition the {@code PartitionAttributes} that describe how the region is partitioned
+   *        among members of the distributed system
    * @return a reference to this RegionFactory object
    * @see AttributesFactory#setPartitionAttributes
    */
@@ -718,6 +742,9 @@ public class RegionFactory<K, V> {
 
   /**
    * Sets whether operations on this region should be controlled by JTA transactions or not
+   *
+   * @param flag whether operations on this region should be controlled by JTA transactions
+   * @return a reference to this RegionFactory object
    *
    * @since GemFire 5.0
    */
@@ -796,6 +823,7 @@ public class RegionFactory<K, V> {
   /**
    * Sets cloning on region Note: off-heap regions always behave as if cloning is enabled.
    *
+   * @param cloningEnable whether cloning is enabled for the region
    * @return a reference to this RegionFactory object
    * @since GemFire 6.1
    * @see AttributesFactory#setCloningEnabled
@@ -808,6 +836,7 @@ public class RegionFactory<K, V> {
   /**
    * Adds a gatewaySenderId to the RegionAttributes
    *
+   * @param gatewaySenderId the gatewaySenderId to add
    * @return a reference to this RegionFactory object
    * @since GemFire 7.0
    * @see AttributesFactory#addGatewaySenderId(String)
@@ -845,6 +874,7 @@ public class RegionFactory<K, V> {
    * Enables this region's usage of off-heap memory if true.
    *
    * @param offHeap boolean flag to enable off-heap memory
+   * @return a reference to this RegionFactory instance
    * @since Geode 1.0
    */
   public RegionFactory<K, V> setOffHeap(boolean offHeap) {

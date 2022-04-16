@@ -61,7 +61,7 @@ class Jitter {
    *
    * The result is bounded by 50 ms as a minimum and 5000 ms as a maximum.
    *
-   * @param ms total amount of time to wait
+   * @param intervalMillis total amount of time to wait
    * @return randomized interval we should wait
    */
   private static int adjustIntervalIfJitterIsEnabled(final long intervalMillis) {

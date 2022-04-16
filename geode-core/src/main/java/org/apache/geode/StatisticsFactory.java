@@ -100,6 +100,9 @@ public interface StatisticsFactory extends StatisticsTypeFactory {
    * default ids.
    * <p>
    * The created instance may not be {@link Statistics#isAtomic atomic}.
+   *
+   * @param type the {@link StatisticsType type} of {@link Statistics} instance
+   * @return a newly created {@link Statistics} instance
    */
   Statistics createStatistics(StatisticsType type);
 
@@ -108,6 +111,10 @@ public interface StatisticsFactory extends StatisticsTypeFactory {
    * <code>textId</code>, and with a default numeric id.
    * <p>
    * The created instance may not be {@link Statistics#isAtomic atomic}.
+   *
+   * @param type the {@link StatisticsType type} of {@link Statistics} instance
+   * @param textId the <code>textId</code> of the {@link Statistics} instance
+   * @return a newly created {@link Statistics} instance
    */
   Statistics createStatistics(StatisticsType type, String textId);
 
@@ -116,6 +123,11 @@ public interface StatisticsFactory extends StatisticsTypeFactory {
    * <code>textId</code>, and <code>numericId</code>.
    * <p>
    * The created instance may not be {@link Statistics#isAtomic atomic}.
+   *
+   * @param type the {@link StatisticsType type} of {@link Statistics} instance
+   * @param textId the <code>textId</code> of the {@link Statistics} instance
+   * @param numericId the <code>numericId</code> of the {@link Statistics} instance
+   * @return a newly created {@link Statistics} instance
    */
   Statistics createStatistics(StatisticsType type, String textId, long numericId);
 
@@ -124,6 +136,9 @@ public interface StatisticsFactory extends StatisticsTypeFactory {
    * default ids.
    * <p>
    * The created instance will be {@link Statistics#isAtomic atomic}.
+   *
+   * @param type the {@link StatisticsType type} of {@link Statistics} instance
+   * @return a newly created {@link Statistics} instance
    */
   Statistics createAtomicStatistics(StatisticsType type);
 
@@ -132,6 +147,10 @@ public interface StatisticsFactory extends StatisticsTypeFactory {
    * <code>textId</code>, and with a default numeric id.
    * <p>
    * The created instance will be {@link Statistics#isAtomic atomic}.
+   *
+   * @param type the {@link StatisticsType type} of {@link Statistics} instance
+   * @param textId the <code>textId</code> of the {@link Statistics} instance
+   * @return a newly created {@link Statistics} instance
    */
   Statistics createAtomicStatistics(StatisticsType type, String textId);
 
@@ -140,21 +159,35 @@ public interface StatisticsFactory extends StatisticsTypeFactory {
    * <code>textId</code>, and <code>numericId</code>.
    * <p>
    * The created instance will be {@link Statistics#isAtomic atomic}.
+   *
+   * @param type the {@link StatisticsType type} of {@link Statistics} instance
+   * @param textId the <code>textId</code> of the {@link Statistics} instance
+   * @param numericId the <code>numericId</code> of the {@link Statistics} instance
+   * @return a newly created {@link Statistics} instance
    */
   Statistics createAtomicStatistics(StatisticsType type, String textId, long numericId);
 
   /**
    * Returns an array of all the existing statistics of the given type.
+   *
+   * @param type the {@link StatisticsType type} of statistics to find
+   * @return an array of all the existing statistics of the given type
    */
   Statistics[] findStatisticsByType(StatisticsType type);
 
   /**
    * Returns an array of all the existing statistics with the given textId.
+   *
+   * @param textId the textId of statistics to find
+   * @return an array of all the existing statistics with the given textId
    */
   Statistics[] findStatisticsByTextId(String textId);
 
   /**
    * Returns an array of all the existing statistics with the given numericId.
+   *
+   * @param numericId the numericId of statistics to find
+   * @return an array of all the existing statistics with the given numericId
    */
   Statistics[] findStatisticsByNumericId(long numericId);
 }

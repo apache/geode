@@ -30,11 +30,15 @@ public interface SystemMemberCache {
   // attributes
   /**
    * The name of the cache.
+   *
+   * @return the name of the cache
    */
   String getName();
 
   /**
    * Value that uniquely identifies an instance of a cache for a given member.
+   *
+   * @return the value that uniquely identifies an instance of a cache for a given member
    */
   int getId();
 
@@ -47,12 +51,18 @@ public interface SystemMemberCache {
 
   /**
    * Gets the number of seconds a cache operation will wait to obtain a distributed lock lease.
+   *
+   * @return the number of seconds a cache operation may wait to obtain a distributed lock lease
+   *         before timing out
    */
   int getLockTimeout();
 
   /**
    * Sets the number of seconds a cache operation may wait to obtain a distributed lock lease before
    * timing out.
+   *
+   * @param seconds the number of seconds a cache operation may wait to obtain a distributed lock
+   *        lease before timing out
    *
    * @throws AdminException If a problem is encountered while setting the lock timeout
    *
@@ -62,12 +72,15 @@ public interface SystemMemberCache {
 
   /**
    * Gets the length, in seconds, of distributed lock leases obtained by this cache.
+   *
+   * @return the length, in seconds, of distributed lock leases obtained by this cache
    */
   int getLockLease();
 
   /**
    * Sets the length, in seconds, of distributed lock leases obtained by this cache.
    *
+   * @param seconds the length, in seconds, of distributed lock leases obtained by this cache
    * @throws AdminException If a problem is encountered while setting the lock lease
    *
    * @see org.apache.geode.cache.Cache#setLockLease
@@ -79,12 +92,15 @@ public interface SystemMemberCache {
    * operation can spend searching for a value before it times out. The search includes any time
    * spent loading the object. When the search times out it causes the get to fail by throwing an
    * exception.
+   *
+   * @return the number of seconds a cache get operation can spend searching for a value
    */
   int getSearchTimeout();
 
   /**
    * Sets the number of seconds a cache get operation can spend searching for a value.
    *
+   * @param seconds the number of seconds a cache get operation can spend searching for a value
    * @throws AdminException If a problem is encountered while setting the search timeout
    *
    * @see org.apache.geode.cache.Cache#setSearchTimeout
@@ -94,11 +110,15 @@ public interface SystemMemberCache {
   /**
    * Returns number of seconds since this member's cache has been created. Returns <code>-1</code>
    * if this member does not have a cache or its cache has been closed.
+   *
+   * @return number of seconds since this member's cache has been created
    */
   int getUpTime();
 
   /**
    * Returns the names of all the root regions currently in this cache.
+   *
+   * @return he names of all the root regions currently in this cache
    */
   java.util.Set getRootRegionNames();
 
@@ -106,6 +126,8 @@ public interface SystemMemberCache {
 
   /**
    * Returns statistics related to this cache's performance.
+   *
+   * @return statistics related to this cache's performance
    */
   Statistic[] getStatistics();
 
@@ -117,6 +139,7 @@ public interface SystemMemberCache {
    * @param path the path to the region
    * @return the Region or null if not found
    * @throws IllegalArgumentException if path is null, the empty string, or "/"
+   * @throws AdminException If the region cannot be retrieved
    */
   SystemMemberRegion getRegion(String path) throws AdminException;
 
@@ -125,6 +148,7 @@ public interface SystemMemberCache {
    *
    * @param name The name of the region to create
    * @param attrs The attributes of the root region
+   * @return the newly created VM root <code>Region</code>
    *
    * @throws AdminException If the region cannot be created
    *
@@ -139,6 +163,7 @@ public interface SystemMemberCache {
    *
    * @param name The name of the region to create
    * @param attrs The attributes of the root region
+   * @return the newly created <code>Region</code>
    *
    * @throws AdminException If the region cannot be created
    *
@@ -155,6 +180,9 @@ public interface SystemMemberCache {
   /**
    * Adds a new, unstarted cache server that will serve the contents of this cache to clients.
    *
+   * @return the newly started cache server
+   * @throws AdminException if an exception is encountered
+   *
    * @see org.apache.geode.cache.Cache#addCacheServer
    *
    * @since GemFire 5.7
@@ -164,6 +192,9 @@ public interface SystemMemberCache {
   /**
    * Returns the cache servers that run in this member's VM. Note that this list will not be updated
    * until {@link #refresh} is called.
+   *
+   * @return the cache servers that run in this member's VM
+   * @throws AdminException if an exception is encountered
    *
    * @see org.apache.geode.cache.Cache#getCacheServers
    *
@@ -175,6 +206,9 @@ public interface SystemMemberCache {
    * Returns whether or not this cache acts as a server. This method will always return
    * <code>true</code> for the <code>SystemMemberCache</code> obtained from a {@link CacheServer}.
    * Note that this value will not be updated until {@link #refresh} is invoked.
+   *
+   * @return whether this cache acts as a server
+   * @throws AdminException if an exception is encountered
    *
    * @since GemFire 4.0
    */

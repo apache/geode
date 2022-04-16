@@ -28,6 +28,8 @@ public interface GatewayReceiverFactory {
    * Sets the start port for the <code>GatewayReceiver</code>. If set the GatewayReceiver will start
    * at one of the port between startPort and endPort. The default startPort 50505.
    *
+   * @param startPort the start port for the GatewayReceiver
+   * @return this factory
    */
   GatewayReceiverFactory setStartPort(int startPort);
 
@@ -35,6 +37,8 @@ public interface GatewayReceiverFactory {
    * Sets the end port for the GatewayReceiver. If set the GatewayReceiver will start at one of the
    * port between startPort and endPort. The default endPort 50605.
    *
+   * @param endPort the end port for the GatewayReceiver
+   * @return this factory
    */
   GatewayReceiverFactory setEndPort(int endPort);
 
@@ -43,6 +47,7 @@ public interface GatewayReceiverFactory {
    * The default is 32768 bytes.
    *
    * @param socketBufferSize The size in bytes of the socket buffer
+   * @return this factory
    */
   GatewayReceiverFactory setSocketBufferSize(int socketBufferSize);
 
@@ -51,6 +56,7 @@ public interface GatewayReceiverFactory {
    * GatewaySender Connection
    *
    * @param address String representing ip address or host name
+   * @return this factory
    */
   GatewayReceiverFactory setBindAddress(String address);
 
@@ -58,6 +64,7 @@ public interface GatewayReceiverFactory {
    * Adds a <code>GatewayTransportFilter</code>
    *
    * @param filter GatewayTransportFilter
+   * @return this factory
    */
   GatewayReceiverFactory addGatewayTransportFilter(GatewayTransportFilter filter);
 
@@ -65,6 +72,7 @@ public interface GatewayReceiverFactory {
    * Removes a <code>GatewayTransportFilter</code>
    *
    * @param filter GatewayTransportFilter
+   * @return this factory
    */
   GatewayReceiverFactory removeGatewayTransportFilter(GatewayTransportFilter filter);
 
@@ -72,6 +80,7 @@ public interface GatewayReceiverFactory {
    * Sets the maximum amount of time between client pings.The default is 60000 ms.
    *
    * @param time The maximum amount of time between client pings
+   * @return this factory
    */
   GatewayReceiverFactory setMaximumTimeBetweenPings(int time);
 
@@ -80,6 +89,7 @@ public interface GatewayReceiverFactory {
    * GatewayReceiver is listening on.
    *
    * @param address String representing ip address or host name
+   * @return this factory
    */
   GatewayReceiverFactory setHostnameForSenders(String address);
 
@@ -92,6 +102,7 @@ public interface GatewayReceiverFactory {
    *        is set to true. For next major releases, default value will be changed to false.
    *
    * @param start the manual start boolean property for this <code>GatewayReceiver</code>
+   * @return this factory
    */
   GatewayReceiverFactory setManualStart(boolean start);
 

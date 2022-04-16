@@ -23,6 +23,7 @@ package org.apache.geode.distributed;
  *
  * @deprecated this feature is scheduled to be removed
  */
+@Deprecated
 public interface Role extends Comparable<Role> {
 
   /**

@@ -69,11 +69,6 @@ public class CompressionRegionConfigDUnitTest extends JUnit4CacheTestCase {
   public static final String VALUE_1 =
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam auctor bibendum tempus. Suspendisse potenti. Ut enim neque, mattis et mattis ac, vulputate quis leo. Cras a metus metus, eget cursus ipsum. Aliquam sagittis condimentum massa aliquet rhoncus. Aliquam sed luctus neque. In hac habitasse platea dictumst.";
 
-  /**
-   * Creates a new CompressionRegionOperationsDUnitTest.
-   *
-   * @param name a test name.
-   */
   public CompressionRegionConfigDUnitTest() {
     super();
   }

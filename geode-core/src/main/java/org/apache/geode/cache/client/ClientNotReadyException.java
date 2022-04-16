@@ -29,6 +29,7 @@ import org.apache.geode.cache.OperationAbortedException;
  *             should be removed.
  *
  */
+@Deprecated
 public class ClientNotReadyException extends OperationAbortedException {
   private static final long serialVersionUID = -315765802919271588L;
 

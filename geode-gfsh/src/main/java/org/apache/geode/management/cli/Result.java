@@ -55,6 +55,8 @@ public interface Result {
 
     /**
      * Returns the code associated with this state.
+     *
+     * @return the code associated with this state
      */
     public int getCode() {
       return code;
@@ -63,6 +65,8 @@ public interface Result {
 
   /**
    * Returns the status of a processed command.
+   *
+   * @return the status of a processed command
    */
   Status getStatus();
 
@@ -81,6 +85,8 @@ public interface Result {
   /**
    * Returns the next line of information from the Result.
    *
+   * @return the next line of information from the Result
+   *
    * @throws IndexOutOfBoundsException if this method is called more times than there are lines of
    *         information.
    */
@@ -92,6 +98,7 @@ public interface Result {
    * @return True if there is a file, false otherwise.
    * @deprecated since 1.10. file transfer in plugin commands is never supported
    */
+  @Deprecated
   default boolean hasIncomingFiles() {
     return false;
   }
@@ -105,6 +112,7 @@ public interface Result {
    * @throws RuntimeException If there is no file in the Result to save.
    * @deprecated since 1.10. file transfer in plugin commands is never supported
    */
+  @Deprecated
   default void saveIncomingFiles(String directory) throws IOException {}
 
   /****
@@ -114,6 +122,7 @@ public interface Result {
    * @return True if the command has failed to persist configuration changes , false otherwise.
    * @deprecated since 1.10. This only affect the gfsh output line which is not api bound
    */
+  @Deprecated
   default boolean failedToPersist() {
     return false;
   }
@@ -126,6 +135,7 @@ public interface Result {
    *
    * @deprecated since 1.10. This only affect the gfsh output line which is not api bound
    */
+  @Deprecated
   default void setCommandPersisted(boolean commandPersisted) {}
 
   /**

@@ -36,13 +36,14 @@ import java.util.Set;
 public class MultiIndexCreationException extends Exception {
   private static final long serialVersionUID = 6312081720315894780L;
   /**
-   * Map of indexName -> Exception
+   * Map of indexName -&gt; Exception
    */
   private final Map<String, Exception> exceptionsMap;
 
   /**
    * Creates an {@link MultiIndexCreationException}
    *
+   * @param exceptionMap a map of index names and Exceptions
    */
   public MultiIndexCreationException(HashMap<String, Exception> exceptionMap) {
     super();

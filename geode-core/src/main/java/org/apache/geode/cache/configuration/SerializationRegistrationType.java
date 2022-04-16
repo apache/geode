@@ -41,37 +41,37 @@ import org.apache.geode.annotations.Experimental;
  * The following schema fragment specifies the expected content contained within this class.
  *
  * <pre>
- * &lt;complexType name="serialization-registration-type">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="serializer" maxOccurs="unbounded" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="instantiator" maxOccurs="unbounded" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
- *                 &lt;/sequence>
- *                 &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="serialization-registration-type"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="serializer" maxOccurs="unbounded" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;sequence&gt;
+ *                   &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/&gt;
+ *                 &lt;/sequence&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *         &lt;element name="instantiator" maxOccurs="unbounded" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;sequence&gt;
+ *                   &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/&gt;
+ *                 &lt;/sequence&gt;
+ *                 &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  *
  *
@@ -109,7 +109,7 @@ public class SerializationRegistrationType {
    * Objects of the following type(s) are allowed in the list
    * {@link SerializationRegistrationType.Serializer }
    *
-   *
+   * @return the value of the serializer property
    */
   public List<Serializer> getSerializers() {
     if (serializers == null) {
@@ -139,7 +139,7 @@ public class SerializationRegistrationType {
    * Objects of the following type(s) are allowed in the list
    * {@link SerializationRegistrationType.Instantiator }
    *
-   *
+   * @return the value of the instantiator property
    */
   public List<Instantiator> getInstantiators() {
     if (instantiators == null) {
@@ -157,16 +157,16 @@ public class SerializationRegistrationType {
    * The following schema fragment specifies the expected content contained within this class.
    *
    * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;sequence>
-   *         &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
-   *       &lt;/sequence>
-   *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
+   * &lt;complexType&gt;
+   *   &lt;complexContent&gt;
+   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *       &lt;sequence&gt;
+   *         &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/&gt;
+   *       &lt;/sequence&gt;
+   *       &lt;attribute name="id" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *     &lt;/restriction&gt;
+   *   &lt;/complexContent&gt;
+   * &lt;/complexType&gt;
    * </pre>
    *
    *
@@ -187,6 +187,7 @@ public class SerializationRegistrationType {
      * possible object is
      * {@link String }
      *
+     * @return the value of the className property
      */
     public String getClassName() {
       return className;
@@ -198,6 +199,7 @@ public class SerializationRegistrationType {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the className property
      */
     public void setClassName(String value) {
       className = value;
@@ -209,6 +211,7 @@ public class SerializationRegistrationType {
      * possible object is
      * {@link String }
      *
+     * @return the value of the id property
      */
     public String getId() {
       return id;
@@ -220,6 +223,7 @@ public class SerializationRegistrationType {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the id property
      */
     public void setId(String value) {
       id = value;
@@ -236,15 +240,15 @@ public class SerializationRegistrationType {
    * The following schema fragment specifies the expected content contained within this class.
    *
    * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;sequence>
-   *         &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
-   *       &lt;/sequence>
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
+   * &lt;complexType&gt;
+   *   &lt;complexContent&gt;
+   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *       &lt;sequence&gt;
+   *         &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/&gt;
+   *       &lt;/sequence&gt;
+   *     &lt;/restriction&gt;
+   *   &lt;/complexContent&gt;
+   * &lt;/complexType&gt;
    * </pre>
    *
    *
@@ -263,6 +267,7 @@ public class SerializationRegistrationType {
      * possible object is
      * {@link String }
      *
+     * @return the value of the className property
      */
     public String getClassName() {
       return className;
@@ -274,6 +279,7 @@ public class SerializationRegistrationType {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the className property
      */
     public void setClassName(String value) {
       className = value;

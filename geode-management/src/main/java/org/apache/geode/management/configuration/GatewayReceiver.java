@@ -62,6 +62,8 @@ public class GatewayReceiver extends GroupableConfiguration<GatewayReceiverInfo>
   /**
    * get the list of transport filters
    * if you modify the returned list, you will be modifying the list owned by this config object.
+   *
+   * @return a list of transport filters
    */
   public List<ClassName> getGatewayTransportFilters() {
     return gatewayTransportFilters;
@@ -69,6 +71,8 @@ public class GatewayReceiver extends GroupableConfiguration<GatewayReceiverInfo>
 
   /**
    * set the gateway transport filters
+   *
+   * @param gatewayTransportFilters a list of gateway transport filters
    */
   public void setGatewayTransportFilters(
       List<ClassName> gatewayTransportFilters) {
@@ -77,6 +81,8 @@ public class GatewayReceiver extends GroupableConfiguration<GatewayReceiverInfo>
 
   /**
    * get the starting port
+   *
+   * @return the starting port
    */
   public Integer getStartPort() {
     return startPort;
@@ -84,6 +90,8 @@ public class GatewayReceiver extends GroupableConfiguration<GatewayReceiverInfo>
 
   /**
    * set the starting port
+   *
+   * @param startPort the starting port
    */
   public void setStartPort(Integer startPort) {
     this.startPort = startPort;
@@ -91,6 +99,8 @@ public class GatewayReceiver extends GroupableConfiguration<GatewayReceiverInfo>
 
   /**
    * get the end port
+   *
+   * @return the end port
    */
   public Integer getEndPort() {
     return endPort;
@@ -98,6 +108,8 @@ public class GatewayReceiver extends GroupableConfiguration<GatewayReceiverInfo>
 
   /**
    * set the end port
+   *
+   * @param endPort the end port
    */
   public void setEndPort(Integer endPort) {
     this.endPort = endPort;
@@ -106,6 +118,8 @@ public class GatewayReceiver extends GroupableConfiguration<GatewayReceiverInfo>
   /**
    * get the maximum time between pings in milliseconds, the default is
    * CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS = 60000
+   *
+   * @return the maximum time between pings in milliseconds
    */
   public Integer getMaximumTimeBetweenPings() {
     return maximumTimeBetweenPings;
@@ -113,6 +127,8 @@ public class GatewayReceiver extends GroupableConfiguration<GatewayReceiverInfo>
 
   /**
    * set the maximum time between pings in milliseconds
+   *
+   * @param maximumTimeBetweenPings the maximum time between pings in milliseconds
    */
   public void setMaximumTimeBetweenPings(Integer maximumTimeBetweenPings) {
     this.maximumTimeBetweenPings = maximumTimeBetweenPings;
@@ -121,6 +137,8 @@ public class GatewayReceiver extends GroupableConfiguration<GatewayReceiverInfo>
   /**
    * get the socket buffer size for socket buffers from the receiver to the sender.
    * CacheServer.DEFAULT_SOCKET_BUFFER_SIZE = 32768;
+   *
+   * @return the socket buffer size for socket buffers from the receiver to the sender
    */
   public Integer getSocketBufferSize() {
     return socketBufferSize;
@@ -128,6 +146,9 @@ public class GatewayReceiver extends GroupableConfiguration<GatewayReceiverInfo>
 
   /**
    * set the socket buffer size for socket buffers from the receiver to the sender.
+   *
+   * @param socketBufferSize the socket buffer size for socket buffers from the receiver to the
+   *        sender
    */
   public void setSocketBufferSize(Integer socketBufferSize) {
     this.socketBufferSize = socketBufferSize;
@@ -135,6 +156,8 @@ public class GatewayReceiver extends GroupableConfiguration<GatewayReceiverInfo>
 
   /**
    * is this gateway receiver manually started
+   *
+   * @return true if this gateway receiver is manually started
    */
   public Boolean isManualStart() {
     return manualStart;
@@ -142,6 +165,8 @@ public class GatewayReceiver extends GroupableConfiguration<GatewayReceiverInfo>
 
   /**
    * set the manualStart
+   *
+   * @param manualStart whether this gateway receiver is manually started
    */
   public void setManualStart(Boolean manualStart) {
     this.manualStart = manualStart;

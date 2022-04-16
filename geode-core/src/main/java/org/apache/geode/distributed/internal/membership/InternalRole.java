@@ -28,25 +28,22 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
  * <p>
  * Members of the distributed system can fill one or more user defined roles. A role is metadata
  * that describes how the member relates to other members or what purpose it fills.
- * </p>
- *
  * <p>
  * This class should not be Serializable or DataSerializable. It has a private constructor and it
  * maintains a static canonical map of instances. Any serializable object which has instances of
  * InternalRole should flag those variables as transient. Objects that implement DataSerializable
  * should convert the roles to String names. For an example, please see
  * {@link org.apache.geode.cache.MembershipAttributes}.
- * </p>
- *
  * <p>
  * Serializable classes which hold references to Roles should customize serialization to transfer
  * string names for Roles. See {@link org.apache.geode.cache.RegionAccessException
  * RegionAccessException} and {@link org.apache.geode.cache.RegionDistributionException
  * RegionDistributionException} for examples on how to do this.
- * </p>
+ * <p>
  *
  * @deprecated this feature is scheduled to be removed
  */
+@Deprecated
 public class InternalRole implements Role {
 
   /** The name of this role */

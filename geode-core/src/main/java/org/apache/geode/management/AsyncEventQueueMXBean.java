@@ -30,26 +30,36 @@ public interface AsyncEventQueueMXBean {
 
   /**
    * Returns the ID of the AsyncEventQueue.
+   *
+   * @return the ID of the AsyncEventQueue
    */
   String getId();
 
   /**
    * Returns the name of the disk store that is used for persistence.
+   *
+   * @return the name of the disk store that is used for persistence
    */
   String getOverflowDiskStoreName();
 
   /**
    * Returns the maximum memory after which the data needs to be overflowed to disk.
+   *
+   * @return the maximum memory after which the data needs to be overflowed to disk
    */
   int getMaximumQueueMemory();
 
   /**
    * Returns the size of a batch that gets delivered over the AsyncEventQueue.
+   *
+   * @return the size of a batch that gets delivered over the AsyncEventQueue
    */
   int getBatchSize();
 
   /**
    * Returns the interval between transmissions by the AsyncEventQueue.
+   *
+   * @return the interval between transmissions by the AsyncEventQueue
    */
   long getBatchTimeInterval();
 
@@ -78,14 +88,17 @@ public interface AsyncEventQueueMXBean {
 
   /**
    * Returns the number of dispatcher threads working for this <code>AsyncEventQueue</code>.
+   *
+   * @return the number of dispatcher threads working for this <code>AsyncEventQueue</code>
    */
   int getDispatcherThreads();
 
   /**
    * Returns the order policy followed while dispatching the events to remote distributed system.
    * Order policy is only relevant when the number of dispatcher threads is greater than one.
+   *
+   * @return the order policy followed while dispatching the events to remote distributed system
    */
-
   String getOrderPolicy();
 
   /**
@@ -104,27 +117,36 @@ public interface AsyncEventQueueMXBean {
 
   /**
    * Returns the class name of the AsyncEventListener that is attached to the queue.
+   *
+   * @return the class name of the AsyncEventListener that is attached to the queue
    */
   String getAsyncEventListener();
 
   /**
    * Returns the Size of the event queue
    *
+   * @return the Size of the event queue
    */
   int getEventQueueSize();
 
   /**
    * Returns the rate of LRU evictions per second by this Sender.
+   *
+   * @return the rate of LRU evictions per second by this Sender
    */
   float getLRUEvictionsRate();
 
   /**
    * Returns the number of entries overflowed to disk for this Sender.
+   *
+   * @return the number of entries overflowed to disk for this Sender
    */
   long getEntriesOverflowedToDisk();
 
   /**
    * Returns the number of bytes overflowed to disk for this Sender.
+   *
+   * @return the number of bytes overflowed to disk for this Sender
    */
   long getBytesOverflowedToDisk();
 

@@ -114,7 +114,7 @@ public class DistributedDiskDirRule extends DiskDirRule implements SerializableT
     vmEventListener = new InternalVMEventListener();
   }
 
-  /**
+  /*
    * Returns the current default disk dirs value for the specified VM.
    */
   public File getDiskDirFor(VM vm) {

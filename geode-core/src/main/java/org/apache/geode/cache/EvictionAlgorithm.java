@@ -63,6 +63,7 @@ public final class EvictionAlgorithm extends EnumSyntax implements Serializable 
    *
    * @deprecated For internal use only.
    */
+  @Deprecated
   @Immutable
   public static final EvictionAlgorithm LIFO_ENTRY = new EvictionAlgorithm(4);
 
@@ -72,6 +73,7 @@ public final class EvictionAlgorithm extends EnumSyntax implements Serializable 
    *
    * @deprecated For internal use only.
    */
+  @Deprecated
   @Immutable
   public static final EvictionAlgorithm LIFO_MEMORY = new EvictionAlgorithm(5);
 
@@ -97,8 +99,11 @@ public final class EvictionAlgorithm extends EnumSyntax implements Serializable 
   }
 
   /**
-   * Returns the eviction action the corresponds to the given parameter. Returns <code>null</code>
-   * if no action corresponds.
+   * Returns the eviction algorithm that corresponds to the given parameter. Returns
+   * <code>null</code> if no algorithm corresponds.
+   *
+   * @param v the parameter representation of an eviction algorithm
+   * @return the eviction algorithm that corresponds to the given parameter
    *
    * @since GemFire 6.5
    */
@@ -137,7 +142,11 @@ public final class EvictionAlgorithm extends EnumSyntax implements Serializable 
     return this == LRU_HEAP;
   }
 
-  /** returns true if this object uses a least-recently-used algorithm */
+  /**
+   * returns true if this object uses a least-recently-used algorithm
+   *
+   * @return whether this object uses a least-recently-used algorithm
+   */
   public boolean isLRU() {
     return isLRUEntry() || isLRUMemory() || isLRUHeap();
   }
@@ -147,8 +156,10 @@ public final class EvictionAlgorithm extends EnumSyntax implements Serializable 
   }
 
   /**
+   * @return whether this object uses a last-in-first-out algorithm
    * @deprecated For internal use only.
    */
+  @Deprecated
   public boolean isLIFO() {
     return this == LIFO_ENTRY || this == LIFO_MEMORY;
   }

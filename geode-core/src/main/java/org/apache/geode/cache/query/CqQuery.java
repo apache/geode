@@ -78,11 +78,13 @@ public interface CqQuery {
    * cause a socket read timeout in the client. To allow adequate time, you may need to set a longer
    * pool read-timeout in the client.
    *
+   * @param <E> the type contained in the returned CqResults
+   * @return SelectResults resultset obtained by executing the query.
+   *
    * @throws CqClosedException if this CqQuery is closed.
    * @throws RegionNotFoundException if the specified region in the query string is not found.
    * @throws IllegalStateException if the CqQuery is in the RUNNING state already.
    * @throws CqException if failed to execute and get initial results.
-   * @return SelectResults resultset obtained by executing the query.
    */
   <E> CqResults<E> executeWithInitialResults()
       throws CqClosedException, RegionNotFoundException, CqException;
@@ -105,6 +107,7 @@ public interface CqQuery {
    *
    * @throws IllegalStateException if the CqQuery is in the STOPPED state already.
    * @throws CqClosedException if the CQ is CLOSED.
+   * @throws CqException if failed to stop.
    */
   void stop() throws CqClosedException, CqException;
 

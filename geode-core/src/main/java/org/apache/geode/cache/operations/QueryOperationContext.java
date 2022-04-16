@@ -94,7 +94,11 @@ public class QueryOperationContext extends OperationContext {
     postOperation = true;
   }
 
-  /** Return the query string of this query operation. */
+  /**
+   * Return the query string of this query operation.
+   *
+   * @return the query string of this query operation
+   */
   public String getQuery() {
     return queryString;
   }

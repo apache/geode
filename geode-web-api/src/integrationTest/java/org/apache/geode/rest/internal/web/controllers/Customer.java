@@ -24,7 +24,7 @@ import org.apache.geode.internal.lang.ObjectUtils;
 
 /**
  * The Customer class models a customer entity.
- * <p/>
+ * <p>
  *
  * @since GemFire 8.0
  */

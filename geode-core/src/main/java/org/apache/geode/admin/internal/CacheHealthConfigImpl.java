@@ -33,7 +33,7 @@ public abstract class CacheHealthConfigImpl extends MemberHealthConfigImpl
   private long maxNetSearchTime = DEFAULT_MAX_NET_SEARCH_TIME;
 
   /**
-   * The maximum mumber of milliseconds a cache <code>load</code> operation can take before the
+   * The maximum number of milliseconds a cache <code>load</code> operation can take before the
    * cache member is considered to be unhealthy.
    */
   private long maxLoadTime = DEFAULT_MAX_LOAD_TIME;

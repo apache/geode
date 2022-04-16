@@ -111,8 +111,8 @@ public interface GatewaySender {
   int DEFAULT_MAXIMUM_QUEUE_MEMORY = 100;
 
   /**
-   * Time, in seconds, that we allow before a <code>GatewaySender is considered dead and should be
-   * aborted
+   * Time, in seconds, that we allow before a <code>GatewaySender</code> is considered dead and
+   * should be aborted
    */
   long GATEWAY_SENDER_TIMEOUT = Integer
       .getInteger(GeodeGlossary.GEMFIRE_PREFIX + "GATEWAY_SENDER_TIMEOUT", 30);
@@ -182,7 +182,7 @@ public interface GatewaySender {
           SystemPropertyHelper.GET_TRANSACTION_EVENTS_FROM_QUEUE_WAIT_TIME_MS).orElse(1);
 
   /**
-   * The order policy. This enum is applicable only when concurrency-level is > 1.
+   * The order policy. This enum is applicable only when concurrency-level is &gt; 1.
    *
    * @since GemFire 6.5.1
    */
@@ -260,24 +260,29 @@ public interface GatewaySender {
 
   /**
    * Returns whether or not this GatewaySender is running.
+   *
+   * @return whether this GatewaySender is running
    */
   boolean isRunning();
 
   /**
    * Returns whether or not this GatewaySender is paused.
    *
+   * @return whether this GatewaySender is paused
    */
   boolean isPaused();
 
   /**
    * Adds the provided <code>GatewayEventFilter</code> to this GatewaySender.
    *
+   * @param filter the <code>GatewayEventFilter</code> to add
    */
   void addGatewayEventFilter(GatewayEventFilter filter);
 
   /**
    * Removes the provided <code>GatewayEventFilter</code> from this GatewaySender.
    *
+   * @param filter the <code>GatewayEventFilter</code> to remove
    */
   void removeGatewayEventFilter(GatewayEventFilter filter);
 
@@ -436,7 +441,7 @@ public interface GatewaySender {
 
   /**
    * Returns the order policy followed while dispatching the events to remote ds. Order policy is
-   * set only when dispatcher threads are > 1. Default value of order policy is KEY.
+   * set only when dispatcher threads are &gt; 1. Default value of order policy is KEY.
    *
    * @return the order policy followed while dispatching the events to remote ds.
    */

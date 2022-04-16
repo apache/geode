@@ -99,25 +99,25 @@ public abstract class AnalyzeDataSerializablesTestBase {
   @Rule
   public TestName testName = new TestName();
 
-  /**
+  /*
    * implement this to return your module's name, such as "geode-core"
    */
   protected abstract String getModuleName();
 
-  /**
+  /*
    * Implement this method to return a production class in your module that corresponds to where
    * you have put your sanctioned-modulename-serializables.txt file in the production resources
    * tree.
    */
   protected abstract Optional<Class<?>> getModuleClass();
 
-  /**
+  /*
    * Implement this to deserialize an object that was serialized with serializeObject()
    */
   protected abstract void deserializeObject(BufferDataOutputStream outputStream)
       throws IOException, ClassNotFoundException;
 
-  /**
+  /*
    * Implement this to serialize the given object to the given output stream
    */
   protected abstract void serializeObject(Object object, BufferDataOutputStream outputStream)
@@ -214,7 +214,7 @@ public abstract class AnalyzeDataSerializablesTestBase {
     }
   }
 
-  /**
+  /*
    * Override in test class to ignore any class that is purposely broken for testing purposes.
    */
   protected boolean ignoreClass(Class<?> theClass) {
@@ -369,7 +369,7 @@ public abstract class AnalyzeDataSerializablesTestBase {
     return new File(resource.getFile());
   }
 
-  /**
+  /*
    * Use this method to get a resource that might be in a JAR file
    */
   protected InputStream getResourceAsStream(Class<?> associatedClass, String resourceName)

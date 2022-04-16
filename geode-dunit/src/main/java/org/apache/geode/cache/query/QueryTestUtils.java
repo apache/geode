@@ -2539,10 +2539,12 @@ public class QueryTestUtils implements Serializable {
    *    String[] arr = {"1", "2", "3"};<br>
    *    new QueryTestUtils().executeQueries(arr);
    *    </code>
-   * </P>
+   * <p>
    *
    * @param qarr Array of keys, queries in the values mapped are executed
    * @return Object array containing SelectResults
+   *
+   * @throws Exception if an exception is encountered during query execution
    */
   public Object[] executeQueries(String[] qarr) throws Exception {
     QueryService qs = cache.getQueryService();
@@ -2556,9 +2558,8 @@ public class QueryTestUtils implements Serializable {
     return result;
   }
 
-  /**
+  /*
    * Execute queries by removing any DISTINCT clause if present
-   *
    */
   public void executeQueriesWithoutDistinct(VM vm, final String[] qarr) {
     vm.invoke(new CacheSerializableRunnable("Executing query without distinct") {
@@ -2569,9 +2570,8 @@ public class QueryTestUtils implements Serializable {
     });
   }
 
-  /**
+  /*
    * Execute queries by removing any DISTINCT clause if present
-   *
    */
   public Object[] executeQueriesWithoutDistinct(String[] qarr) {
     QueryService qs = cache.getQueryService();
@@ -2597,9 +2597,8 @@ public class QueryTestUtils implements Serializable {
     return result;
   }
 
-  /**
+  /*
    * Execute queries by adding a DISTINCT clause if not present
-   *
    */
   public void executeQueriesWithDistinct(VM vm, final String[] qarr) {
     vm.invoke(new CacheSerializableRunnable("Executing query with distinct") {
@@ -2610,9 +2609,8 @@ public class QueryTestUtils implements Serializable {
     });
   }
 
-  /**
+  /*
    * Execute queries by adding a DISTINCT clause if not present
-   *
    */
   public Object[] executeQueriesWithDistinct(String[] qarr) {
     QueryService qs = cache.getQueryService();

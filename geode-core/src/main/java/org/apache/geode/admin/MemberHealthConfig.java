@@ -37,11 +37,6 @@ package org.apache.geode.admin;
  * If any of the following criteria is true, then a member is considered to be in
  * {@link GemFireHealth#POOR_HEALTH POOR_HEALTH}.
  *
- * <UL>
- *
- * </UL>
- *
- *
  * @since GemFire 3.5
  * @deprecated as of 7.0 use the <code><a href=
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
@@ -80,12 +75,18 @@ public interface MemberHealthConfig {
    * Returns the maximum VM process size (in megabytes) of a healthy member of the distributed
    * system.
    *
+   * @return the maximum VM process size (in megabytes) of a healthy member of the distributed
+   *         system
+   *
    * @see #DEFAULT_MAX_VM_PROCESS_SIZE
    */
   long getMaxVMProcessSize();
 
   /**
    * Sets the maximum VM process size (in megabytes) of a healthy member of the distributed system.
+   *
+   * @param size the maximum VM process size (in megabytes) of a healthy member of the distributed
+   *        system
    *
    * @see #getMaxVMProcessSize
    */
@@ -95,6 +96,9 @@ public interface MemberHealthConfig {
    * Returns the maximum number of enqueued incoming or outgoing messages that a healthy member of a
    * distributed system can have.
    *
+   * @return the maximum number of enqueued incoming or outgoing messages that a healthy member of a
+   *         distributed system can have
+   *
    * @see #DEFAULT_MAX_MESSAGE_QUEUE_SIZE
    */
   long getMaxMessageQueueSize();
@@ -103,6 +107,9 @@ public interface MemberHealthConfig {
    * Sets the maximum number of enqueued incoming or outgoing messages that a healthy member of a
    * distributed system can have.
    *
+   * @param maxMessageQueueSize the maximum number of enqueued incoming or outgoing messages that a
+   *        healthy member of a distributed system can have
+   *
    * @see #getMaxMessageQueueSize
    */
   void setMaxMessageQueueSize(long maxMessageQueueSize);
@@ -110,12 +117,16 @@ public interface MemberHealthConfig {
   /**
    * Returns the maximum number message replies that can timeout in a healthy member.
    *
+   * @return the maximum number message replies that can timeout in a healthy member
+   *
    * @see #DEFAULT_MAX_REPLY_TIMEOUTS
    */
   long getMaxReplyTimeouts();
 
   /**
    * Sets the maximum number message replies that can timeout in a healthy member.
+   *
+   * @param maxReplyTimeouts the maximum number message replies that can timeout in a healthy member
    *
    * @see #getMaxReplyTimeouts
    */
@@ -129,12 +140,16 @@ public interface MemberHealthConfig {
    * A high retransmission ratio may indicate poor network conditions requiring reduced flow-control
    * settings, a udp-fragment-size setting that is too high.
    *
+   * @return the maximum ratio of multicast retransmissions / total multicast messages
+   *
    * @see #DEFAULT_MAX_RETRANSMISSION_RATIO
    */
   double getMaxRetransmissionRatio();
 
   /**
    * Sets the maximum ratio of multicast retransmissions / total multicast messages.
+   *
+   * @param ratio the maximum ratio of multicast retransmissions / total multicast messages
    *
    * @see #getMaxRetransmissionRatio
    */

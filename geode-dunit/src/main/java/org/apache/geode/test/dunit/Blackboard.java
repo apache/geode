@@ -41,38 +41,43 @@ public interface Blackboard {
    */
   void initBlackboard();
 
-  /**
+  /*
    * Signals a boolean gate.
    */
   void signalGate(String gateName);
 
   /**
    * Waits at most {@link GeodeAwaitility#getTimeout()} for a gate to be signaled.
+   *
+   * @param gateName the name of the gate
+   *
+   * @throws TimeoutException if the timeout is exceeded before the gate is signalled
+   * @throws InterruptedException if the thread is interrupted
    */
   void waitForGate(String gateName) throws TimeoutException, InterruptedException;
 
-  /**
+  /*
    * Waits at most the specified timeout for a gate to be signaled.
    */
   void waitForGate(String gateName, long timeout, TimeUnit units)
       throws TimeoutException, InterruptedException;
 
-  /**
+  /*
    * Clears a gate.
    */
   void clearGate(String gateName);
 
-  /**
+  /*
    * Checks to see if a gate has been signaled.
    */
   boolean isGateSignaled(String gateName);
 
-  /**
+  /*
    * Puts an object into a mailbox slot. The object must be java-serializable.
    */
   <T> void setMailbox(String boxName, T value);
 
-  /**
+  /*
    * Retrieves an object from a mailbox slot.
    */
   <T> T getMailbox(String boxName);

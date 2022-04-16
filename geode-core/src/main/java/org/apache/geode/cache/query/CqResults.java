@@ -28,7 +28,7 @@ package org.apache.geode.cache.query;
  * CqAttributes cqa = cqAf.create();
  *
  * String cqQueryStr = "SELECT * FROM /root/employees " +
- *   "WHERE salary > 50000";
+ *   "WHERE salary &gt; 50000";
  *
  * CqQuery cq = queryService.newCq("MyCq", cqQueryStr, cqa);
  * CqResults results = cq.executeWithInitialResults();

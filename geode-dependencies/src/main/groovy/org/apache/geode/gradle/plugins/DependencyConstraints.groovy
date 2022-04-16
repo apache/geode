@@ -135,7 +135,6 @@ class DependencyConstraints {
         api(group: 'net.java.dev.jna', name: 'jna', version: '5.11.0')
         api(group: 'net.java.dev.jna', name: 'jna-platform', version: '5.11.0')
         api(group: 'net.minidev', name: 'json-smart', version: '2.4.7')
-        api(group: 'net.openhft', name: 'compiler', version: '2.4.1')
         api(group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '5.0.4')
         api(group: 'net.sourceforge.pmd', name: 'pmd-java', version: '6.42.0')
         api(group: 'net.sourceforge.pmd', name: 'pmd-test', version: '6.42.0')

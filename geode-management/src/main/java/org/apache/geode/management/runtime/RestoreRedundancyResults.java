@@ -123,8 +123,9 @@ public interface RestoreRedundancyResults extends OperationResult {
 
   /**
    * If user specified "includedRegion" list, but some of the regions in the list are not found in
-   * any
-   * members, this list would include those regions.
+   * any members, this list would include those regions.
+   *
+   * @return a List of region names for which no hosting members were found
    */
   List<String> getIncludedRegionsWithNoMembers();
 }

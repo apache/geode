@@ -37,6 +37,7 @@ public interface LuceneSerializer<T> extends Declarable {
    *
    * @param index lucene index
    * @param value user object to be serialized into index
+   * @return a set of documents
    */
   Collection<Document> toDocuments(LuceneIndex index, T value);
 }

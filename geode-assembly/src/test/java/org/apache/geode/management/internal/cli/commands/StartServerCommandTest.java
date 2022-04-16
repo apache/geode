@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
@@ -25,6 +26,7 @@ import static org.apache.geode.distributed.ServerLauncher.Command.START;
 import static org.apache.geode.internal.lang.SystemUtils.IBM_J9_JVM_NAME;
 import static org.apache.geode.internal.lang.SystemUtils.JAVA_HOTSPOT_JVM_NAME;
 import static org.apache.geode.internal.lang.SystemUtils.ORACLE_JROCKIT_JVM_NAME;
+import static org.apache.geode.management.internal.cli.commands.MemberJvmOptions.getGcJvmOptions;
 import static org.apache.geode.management.internal.cli.commands.MemberJvmOptions.getMemberJvmOptions;
 import static org.apache.geode.management.internal.cli.commands.StartServerCommand.addJvmOptionsForOutOfMemoryErrors;
 import static org.apache.geode.management.internal.cli.commands.VerifyCommandLine.verifyCommandLine;
@@ -403,8 +405,7 @@ class StartServerCommandTest {
       final String heapSize = "1024m";
       expectedJvmOptions.add("-Xms" + heapSize);
       expectedJvmOptions.add("-Xmx" + heapSize);
-      expectedJvmOptions.add("-XX:+UseConcMarkSweepGC");
-      expectedJvmOptions.add("-XX:CMSInitiatingOccupancyFraction=60");
+      expectedJvmOptions.addAll(getGcJvmOptions(emptyList()));
 
       final String[] customJvmOptions = {
           "-verbose:gc",

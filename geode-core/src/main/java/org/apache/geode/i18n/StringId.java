@@ -81,6 +81,9 @@ public class StringId {
 
   /**
    * Gemstone internal constructor, customers have no need to create instances of this class.
+   *
+   * @param id a unique identifier
+   * @param text the English translation of text
    */
   public StringId(int id, String text) {
     this.id = id;
@@ -109,6 +112,7 @@ public class StringId {
    * Substitutes parameter Objects into the text
    *
    * @see java.text.MessageFormat
+   * @param params parameter Objects to be substituted into the text
    * @return the English translation of this StringId
    **/
   public String toString(Object... params) {
@@ -130,6 +134,7 @@ public class StringId {
    * Substitutes parameter Objects into the text
    *
    * @see java.text.MessageFormat
+   * @param params parameter Objects to be substituted into the text
    * @return the translation of this StringId based on the current {@link java.util.Locale}
    **/
   public String toLocalizedString(Object... params) {

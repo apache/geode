@@ -12,18 +12,19 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.wan.concurrent;
+package org.apache.geode.internal.cache.wan.offheap;
 
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.cache.wan.parallel.ParallelWANConflationDistributedTest;
 import org.apache.geode.test.junit.categories.WanTest;
 
 @SuppressWarnings("serial")
 @Category({WanTest.class})
-public class ConcurrentParallelGatewaySenderOffHeapDUnitTest
-    extends ConcurrentParallelGatewaySenderDUnitTest {
+public class ParallelWANConflationOffHeapDistributedTest
+    extends ParallelWANConflationDistributedTest {
 
-  public ConcurrentParallelGatewaySenderOffHeapDUnitTest() {
+  public ParallelWANConflationOffHeapDistributedTest() {
     super();
   }
 

@@ -86,7 +86,6 @@ import org.apache.geode.test.dunit.IgnoredException;
 /**
  * Integration tests for SocketCreatorFactory with SSL.
  * <p>
- * <p>
  * Renamed from {@code JSSESocketJUnitTest}.
  *
  * @see ClientSocketFactoryIntegrationTest

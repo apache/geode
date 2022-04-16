@@ -33,6 +33,7 @@ public class TxEventTestUtil {
   /**
    * Selects entry create events from a list of cache events.
    *
+   * @param cacheEvents the cache events from which to select create events
    * @return list of entry create events from the given cache events
    */
   public static List<EntryEvent<?, ?>> getCreateEvents(List<CacheEvent<?, ?>> cacheEvents) {
@@ -42,6 +43,7 @@ public class TxEventTestUtil {
   /**
    * Selects the entry update events from a list of cache events.
    *
+   * @param cacheEvents the cache events from which to select update events
    * @return list of entry update events from the given cache events
    */
   public static List<EntryEvent<?, ?>> getPutEvents(List<CacheEvent<?, ?>> cacheEvents) {
@@ -51,6 +53,7 @@ public class TxEventTestUtil {
   /**
    * Selects the entry invalidate events from a list of cache events.
    *
+   * @param cacheEvents the cache events from which to select invalidate events
    * @return list of entry invalidate events from the given cache events
    */
   public static List<EntryEvent<?, ?>> getInvalidateEvents(
@@ -61,6 +64,7 @@ public class TxEventTestUtil {
   /**
    * Selects the entry destroy events from a list of cache events.
    *
+   * @param cacheEvents the cache events from which to select destroy events
    * @return list of entry destroy events from the given cache events
    */
   public static List<EntryEvent<?, ?>> getDestroyEvents(List<CacheEvent<?, ?>> cacheEvents) {

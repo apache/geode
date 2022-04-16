@@ -16,6 +16,7 @@ package org.apache.geode.admin;
 
 import java.net.InetAddress;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
 
 /**
@@ -30,12 +31,18 @@ import org.apache.geode.distributed.DistributedMember;
 @Deprecated
 public interface SystemMember {
 
-  /** Gets the {@link AdminDistributedSystem} this member belongs to. */
+  /**
+   * Gets the {@link AdminDistributedSystem} this member belongs to.
+   *
+   * @return the {@link AdminDistributedSystem} this member belongs to
+   */
   AdminDistributedSystem getDistributedSystem();
 
   /**
    * Gets identifying name of this member. For applications this is the string form of
    * {@link #getDistributedMember}. For cache servers it is a unique cache server string.
+   *
+   * @return the identifying name of this member
    */
   String getId();
 
@@ -44,36 +51,62 @@ public interface SystemMember {
    * its connection to the distributed system, that name will be returned. Otherwise the returned
    * value will be {@link org.apache.geode.admin.SystemMember#getId}.
    *
+   * @return the display friendly name for this member
+   *
    * @see org.apache.geode.distributed.DistributedSystem#connect
    * @see org.apache.geode.distributed.DistributedSystem#getName
    */
   String getName();
 
-  /** Gets the type of {@link SystemMemberType} this member is. */
+  /**
+   * Gets the type of {@link SystemMemberType} this member is.
+   *
+   * @return the type of {@link SystemMemberType} this member is
+   */
   SystemMemberType getType();
 
-  /** Gets host name of the machine this member resides on. */
+  /**
+   * Gets host name of the machine this member resides on.
+   *
+   * @return the host name of the machine this member resides on
+   */
   String getHost();
 
-  /** Gets the host of this member as an <code>java.net.InetAddress<code>. */
+  /**
+   * Gets the host of this member as an <code>java.net.InetAddress</code>.
+   *
+   * @return the host of this member as an <code>java.net.InetAddress</code>
+   */
   InetAddress getHostAddress();
 
-  /** Retrieves the log for this member. */
+  /**
+   * Retrieves the log for this member.
+   *
+   * @return the log for this member
+   */
   String getLog();
 
   /**
    * Returns the GemFire license this member is using.
+   *
+   * @return the GemFire license this member is using
    *
    * @deprecated Removed licensing in 8.0.
    */
   @Deprecated
   java.util.Properties getLicense();
 
-  /** Returns this member's GemFire version information. */
+  /**
+   * Returns this member's GemFire version information.
+   *
+   * @return this member's GemFire version information
+   */
   String getVersion();
 
   /**
    * Gets the configuration parameters for this member.
+   *
+   * @return the configuration parameters for this member
    */
   ConfigurationParameter[] getConfiguration();
 
@@ -90,7 +123,11 @@ public interface SystemMember {
   ConfigurationParameter[] setConfiguration(ConfigurationParameter[] parms)
       throws org.apache.geode.admin.AdminException;
 
-  /** Refreshes this member's configuration from the member or it's properties */
+  /**
+   * Refreshes this member's configuration from the member or it's properties
+   *
+   * @throws AdminException if an exception is encountered
+   */
   void refreshConfig() throws org.apache.geode.admin.AdminException;
 
   /**
@@ -99,6 +136,7 @@ public interface SystemMember {
    *
    * @param statisticsTypeName String ame of the Statistics Type
    * @return array of runtime statistic resources owned by this member
+   * @throws AdminException if an exception is encountered
    * @since GemFire 5.7
    */
   StatisticResource[] getStat(String statisticsTypeName)
@@ -109,6 +147,7 @@ public interface SystemMember {
    * returned. All Stats are returned
    *
    * @return array of runtime statistic resources owned by this member
+   * @throws AdminException if an exception is encountered
    */
   StatisticResource[] getStats() throws org.apache.geode.admin.AdminException;
 
@@ -116,6 +155,8 @@ public interface SystemMember {
    * Returns whether or not this system member hosts a GemFire {@link org.apache.geode.cache.Cache
    * Cache}.
    *
+   * @return whether this system member hosts a GemFire {@link Cache Cache}
+   * @throws AdminException if an exception is encountered
    * @see #getCache
    */
   boolean hasCache() throws org.apache.geode.admin.AdminException;
@@ -123,6 +164,9 @@ public interface SystemMember {
   /**
    * Returns an object that provides admin access to this member's cache. If the member currently
    * has no cache then <code>null</code> is returned.
+   *
+   * @return an object that provides admin access to this member's cache
+   * @throws AdminException if an exception is encountered
    */
   SystemMemberCache getCache() throws org.apache.geode.admin.AdminException;
 

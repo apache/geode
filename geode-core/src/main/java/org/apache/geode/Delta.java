@@ -33,6 +33,8 @@ public interface Delta {
   /**
    * Returns true if this object has pending changes it can write out as a delta. Returns false if
    * this object must be transmitted in its entirety.
+   *
+   * @return whether this object has pending changes it can write out as a delta
    */
   boolean hasDelta();
 
@@ -43,6 +45,9 @@ public interface Delta {
    *
    * <p>
    * Any delta state should be reset in this method.
+   *
+   * @param out the {@link DataOutput} to write to
+   * @throws IOException if a problem occurs while writing to <code>out</code>
    */
   void toDelta(DataOutput out) throws IOException;
 
@@ -52,6 +57,9 @@ public interface Delta {
    * This method throws an {@link InvalidDeltaException} when the delta in the {@link DataInput}
    * cannot be applied to the object. GemFire automatically handles an {@link InvalidDeltaException}
    * by reattempting the update by sending the full application object.
+   *
+   * @param in the {@link DataInput} to read from
+   * @throws IOException if a problem occurs while reading from <code>in</code>
    */
   void fromDelta(DataInput in) throws IOException, InvalidDeltaException;
 
@@ -72,6 +80,7 @@ public interface Delta {
    * should override this method to return 'true'. This may impact performance of specific delta
    * types, but will not globally affect the performance of other Geode delta operations.
    *
+   * @return whether entry sizes should be recalculated when deltas are applied
    * @since 1.14
    */
   default boolean getForceRecalculateSize() {

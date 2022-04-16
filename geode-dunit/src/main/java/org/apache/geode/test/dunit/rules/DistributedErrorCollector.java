@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 import org.hamcrest.Matcher;
-import org.junit.rules.ErrorCollector;
 
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.rules.accessible.AccessibleErrorCollector;
@@ -46,7 +45,7 @@ import org.apache.geode.test.junit.rules.accessible.AccessibleErrorCollector;
  * {@literal @}Test
  * public void everyVmFailsAssertion() {
  *   for (VM vm : VM.getAllVMs()) {
- *     vm.invoke(() -> errorCollector.checkThat("Failure in VM-" + vm.getId(), false, is(true)));
+ *     vm.invoke(() -&gt; errorCollector.checkThat("Failure in VM-" + vm.getId(), false, is(true)));
  *   }
  * }
  * </pre>
@@ -105,29 +104,29 @@ public class DistributedErrorCollector extends AbstractDistributedRule {
     });
   }
 
-  /**
-   * @see ErrorCollector#addError(Throwable)
+  /*
+   * see ErrorCollector#addError(Throwable)
    */
   public void addError(Throwable error) {
     errorCollector.addError(error);
   }
 
-  /**
-   * @see ErrorCollector#checkThat(Object, Matcher)
+  /*
+   * see ErrorCollector#checkThat(Object, Matcher)
    */
   public <T> void checkThat(final T value, final Matcher<T> matcher) {
     errorCollector.checkThat(value, matcher);
   }
 
-  /**
-   * @see ErrorCollector#checkThat(String, Object, Matcher)
+  /*
+   * see ErrorCollector#checkThat(String, Object, Matcher)
    */
   public <T> void checkThat(final String reason, final T value, final Matcher<T> matcher) {
     errorCollector.checkThat(reason, value, matcher);
   }
 
-  /**
-   * @see ErrorCollector#checkSucceeds(Callable)
+  /*
+   * see ErrorCollector#checkSucceeds(Callable)
    */
   public <T> T checkSucceeds(Callable<T> callable) {
     return errorCollector.checkSucceeds(callable);

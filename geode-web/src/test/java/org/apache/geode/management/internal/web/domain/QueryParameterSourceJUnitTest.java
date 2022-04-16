@@ -34,7 +34,7 @@ import org.apache.geode.internal.util.IOUtils;
 /**
  * The QueryParameterSourceJUnitTest class is a test suite of test cases testing the contract and
  * functionality of the QueryParameterSource class.
- * <p/>
+ * <p>
  *
  * @see org.apache.geode.management.internal.web.domain.QueryParameterSource
  * @see org.junit.Assert

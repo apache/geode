@@ -40,15 +40,15 @@ import org.apache.geode.annotations.Experimental;
  * The following schema fragment specifies the expected content contained within this class.
  *
  * <pre>
- * &lt;complexType name="disk-dirs-type">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="disk-dir" type="{http://geode.apache.org/schema/cache}disk-dir-type" maxOccurs="unbounded"/>
- *       &lt;/sequence>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="disk-dirs-type"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="disk-dir" type="{http://geode.apache.org/schema/cache}disk-dir-type" maxOccurs="unbounded"/&gt;
+ *       &lt;/sequence&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  *
  *
@@ -84,7 +84,7 @@ public class DiskDirsType implements Serializable {
    * Objects of the following type(s) are allowed in the list
    * {@link DiskDirType }
    *
-   *
+   * @return the {@link List} of {@link DiskDirType}s.
    */
   public List<DiskDirType> getDiskDirs() {
     if (diskDirs == null) {

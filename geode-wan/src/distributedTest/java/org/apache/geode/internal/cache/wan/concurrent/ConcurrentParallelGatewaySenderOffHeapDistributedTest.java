@@ -12,32 +12,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.wan.parallel;
+package org.apache.geode.internal.cache.wan.concurrent;
 
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.cache.wan.concurrent.ConcurrentParallelGatewaySenderOperation_2_DUnitTest;
-import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.WanTest;
 
+@SuppressWarnings("serial")
 @Category({WanTest.class})
-public class ParallelGatewaySenderOperation_2_DUnitTest
-    extends ConcurrentParallelGatewaySenderOperation_2_DUnitTest {
+public class ConcurrentParallelGatewaySenderOffHeapDistributedTest
+    extends ConcurrentParallelGatewaySenderDistributedTest {
 
-  private static final long serialVersionUID = 1L;
-
-  public ParallelGatewaySenderOperation_2_DUnitTest() {
+  public ConcurrentParallelGatewaySenderOffHeapDistributedTest() {
     super();
   }
 
   @Override
-  protected void createSender(VM vm, int concurrencyLevel, boolean manualStart) {
-    vm.invoke(() -> createSender("ln", 2, true, 100, 10, false, false, null, manualStart));
+  public boolean isOffHeap() {
+    return true;
   }
 
-  @Override
-  protected void createSenders(VM vm, int concurrencyLevel) {
-    vm.invoke(() -> createSender("ln1", 2, true, 100, 10, false, false, null, true));
-    vm.invoke(() -> createSender("ln2", 3, true, 100, 10, false, false, null, true));
-  }
 }

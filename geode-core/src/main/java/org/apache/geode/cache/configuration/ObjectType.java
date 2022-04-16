@@ -31,16 +31,16 @@ import javax.xml.bind.annotation.XmlType;
  * The following schema fragment specifies the expected content contained within this class.
  *
  * <pre>
- * &lt;complexType>
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;choice>
- *         &lt;element name="string" type="{http://geode.apache.org/schema/cache}string-type"/>
- *         &lt;element name="declarable" type="{http://geode.apache.org/schema/cache}declarable-type"/>
- *       &lt;/choice>
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;choice&gt;
+ *         &lt;element name="string" type="{http://geode.apache.org/schema/cache}string-type"/&gt;
+ *         &lt;element name="declarable" type="{http://geode.apache.org/schema/cache}declarable-type"/&gt;
+ *       &lt;/choice&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  *
  * ObjectType represents either a string or an object represented by the DeclarableType
@@ -65,6 +65,8 @@ public class ObjectType implements Serializable {
 
   /**
    * Gets the value of the string property.
+   *
+   * @return the string.
    */
   public String getString() {
     return string;
@@ -72,6 +74,8 @@ public class ObjectType implements Serializable {
 
   /**
    * Sets the value of the string property.
+   *
+   * @param string the string.
    */
   public void setString(String string) {
     this.string = string;
@@ -81,6 +85,8 @@ public class ObjectType implements Serializable {
    * Gets the value of the declarable property.
    *
    * possible object is {@link DeclarableType }
+   *
+   * @return the declarable type.
    */
   public DeclarableType getDeclarable() {
     return declarable;
@@ -90,6 +96,8 @@ public class ObjectType implements Serializable {
    * Sets the value of the declarable property.
    *
    * allowed object is {@link DeclarableType }
+   *
+   * @param value the declarable type.
    */
   public void setDeclarable(DeclarableType value) {
     declarable = value;

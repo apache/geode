@@ -23,14 +23,9 @@ import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.cache.execute.data.OrderId;
 import org.apache.geode.internal.cache.execute.data.ShipmentId;
 
-public class CustomerIDPartitionResolver<K, V> implements PartitionResolver<K, V> {
+public class CustomerIDPartitionResolver implements PartitionResolver<Object, Object> {
 
-  private static final CustomerIDPartitionResolver<Object, Object> customerIDPartitionResolver =
-      null;
   private String id;
-
-
-  private String resolverName;
 
   public CustomerIDPartitionResolver() {}
 
@@ -40,11 +35,11 @@ public class CustomerIDPartitionResolver<K, V> implements PartitionResolver<K, V
 
   @Override
   public String getName() {
-    return resolverName;
+    return id;
   }
 
   @Override
-  public Serializable getRoutingObject(EntryOperation opDetails) {
+  public Serializable getRoutingObject(EntryOperation<Object, Object> opDetails) {
 
     Serializable routingbject = null;
 

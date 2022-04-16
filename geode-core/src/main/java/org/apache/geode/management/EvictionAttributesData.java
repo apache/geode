@@ -45,9 +45,13 @@ public class EvictionAttributesData {
   private final String action;
 
   /**
-   *
    * This constructor is to be used by internal JMX framework only. User should not try to create an
    * instance of this class.
+   *
+   * @param algorithm the algorithm (policy) used to determine which entries will be evicted
+   * @param maximum maximum value used by the {@link EvictionAlgorithm} which determines when the
+   *        {@link EvictionAction} is performed
+   * @param action the action that will be taken on entries that are evicted
    */
   @ConstructorProperties({"algorithm", "maximum", "action"
 
@@ -60,6 +64,8 @@ public class EvictionAttributesData {
 
   /**
    * Returns the algorithm (policy) used to determine which entries will be evicted.
+   *
+   * @return the algorithm (policy) used to determine which entries will be evicted
    */
   public String getAlgorithm() {
     return algorithm;
@@ -80,6 +86,8 @@ public class EvictionAttributesData {
 
   /**
    * Returns the action that will be taken on entries that are evicted.
+   *
+   * @return the action that will be taken on entries that are evicted
    */
   public String getAction() {
     return action;

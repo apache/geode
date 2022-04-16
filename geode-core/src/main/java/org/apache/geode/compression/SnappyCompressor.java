@@ -37,8 +37,11 @@ public class SnappyCompressor implements Compressor, Serializable {
   /**
    * Get the single, default instance of the SnappyCompressor.
    *
+   * @return the single, default instance of the SnappyCompressor
+   *
    * @deprecated As of Geode 1.0, getDefaultInstance is deprecated. Use constructor instead.
    */
+  @Deprecated
   public static SnappyCompressor getDefaultInstance() {
     return new SnappyCompressor();
   }

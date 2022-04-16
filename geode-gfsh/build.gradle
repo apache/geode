@@ -49,6 +49,7 @@ dependencies {
   integrationTestImplementation(project(':geode-dunit'))
   integrationTestImplementation('pl.pragmatists:JUnitParams')
   integrationTestRuntimeOnly('org.apache.derby:derby')
+  integrationTestImplementation('org.junit.jupiter:junit-jupiter-migrationsupport')
 
   distributedTestImplementation(project(':geode-dunit'))
   distributedTestImplementation('pl.pragmatists:JUnitParams')

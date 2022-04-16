@@ -41,6 +41,8 @@ public interface StructType extends ObjectType {
   /**
    * Returns the index of the field with the given name in this <code>StructType</code>.
    *
+   * @param fieldName the name of the field
+   * @return the index of the field with the given name in this <code>StructType</code>
    * @throws IllegalArgumentException If this <code>StructType</code> does not contain a field named
    *         <code>fieldName</code>.
    */

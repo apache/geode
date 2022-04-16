@@ -23,7 +23,7 @@ import org.junit.Test;
 /**
  * The InOutParameterJUnitTest class is a test suite with test cases to test the contract and
  * functionality of the InOutParameter class.
- * <p/>
+ * <p>
  *
  * @see org.apache.geode.internal.lang.InOutParameter
  * @see org.junit.Test

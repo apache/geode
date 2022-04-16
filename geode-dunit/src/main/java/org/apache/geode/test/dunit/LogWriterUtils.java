@@ -55,8 +55,10 @@ public class LogWriterUtils {
   /**
    * Returns a {@code LogWriter} for logging information
    *
+   * @return a {@code LogWriter} for logging information
    * @deprecated Please use a {@code Logger} from {@link LogService#getLogger()} instead.
    */
+  @Deprecated
   public static LogWriter getLogWriter() {
     return oldLogger;
   }

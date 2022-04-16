@@ -28,6 +28,7 @@ public class SuiteBlockRunner extends BlockJUnit4ClassRunner {
   /**
    * Creates a BlockJUnit4ClassRunner to run {@code testClass}
    *
+   * @param parentClass the parent class
    * @param testClass the test class
    * @throws InitializationError if the test class is malformed.
    */

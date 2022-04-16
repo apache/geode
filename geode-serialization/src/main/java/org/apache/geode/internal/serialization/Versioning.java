@@ -17,10 +17,10 @@ package org.apache.geode.internal.serialization;
 
 /**
  * This is a factory for getting {@link Version} instances. It's aware of the whole
- * {link @Version} hierarchy, so when asked for a {@link Version} that represents
+ * {@link Version} hierarchy, so when asked for a {@link Version} that represents
  * a known version ({@link KnownVersion}) it returns a reference to one of those.
  *
- * This ensures that {@link #toString()} on any {@Version}, if that object represents a
+ * This ensures that {@link #toString()} on any {@link Version}, if that object represents a
  * known version, will render itself as a such.
  */
 public class Versioning {

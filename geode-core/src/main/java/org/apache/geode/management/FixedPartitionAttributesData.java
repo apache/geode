@@ -41,9 +41,12 @@ public class FixedPartitionAttributesData {
   private final int numBucket;
 
   /**
-   *
    * This constructor is to be used by internal JMX framework only. User should not try to create an
    * instance of this class.
+   *
+   * @param name the name of the partition
+   * @param primary whether this member is the primary for the partition
+   * @param numBucket the number of buckets allowed for the partition
    */
   @ConstructorProperties({"name", "primary", "numBucket"
 
@@ -56,6 +59,8 @@ public class FixedPartitionAttributesData {
 
   /**
    * Returns the name of the partition.
+   *
+   * @return the name of the partition
    */
   public String getName() {
     return name;
@@ -72,6 +77,8 @@ public class FixedPartitionAttributesData {
 
   /**
    * Returns the number of buckets allowed for the partition.
+   *
+   * @return the number of buckets allowed for the partition
    */
   public int getNumBucket() {
     return numBucket;

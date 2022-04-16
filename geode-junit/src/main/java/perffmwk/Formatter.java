@@ -39,6 +39,9 @@ public class Formatter {
 
   /**
    * Centers the given string on the <code>PrintWriter</code>
+   *
+   * @param s the string to center
+   * @param pw the <code>PrintWriter</code> to print with
    */
   public static void center(String s, PrintWriter pw) {
     int indent = (WIDTH / 2) - (s.length() / 2);
@@ -48,7 +51,7 @@ public class Formatter {
     pw.println(s);
   }
 
-  /**
+  /*
    * Returns a collection of decimals based on the given collection but with the doubles formatted
    * according to the pattern. String values are ignored.
    */
@@ -65,7 +68,7 @@ public class Formatter {
     return v;
   }
 
-  /**
+  /*
    * Returns a collection of doubles based on the given collection but with the doubles formatted
    * according to the pattern and all entries, both doubles and string, padded on the left to the
    * length of the longest one.
@@ -74,7 +77,7 @@ public class Formatter {
     return padLeft(formatDecimal(doubles, pattern));
   }
 
-  /**
+  /*
    * Returns a collection of doubles based on the given collection but with the doubles formatted
    * according to the pattern and all entries, both doubles and string, padded on the right to the
    * length of the longest one.
@@ -83,7 +86,7 @@ public class Formatter {
     return padRight(formatDecimal(doubles, pattern));
   }
 
-  /**
+  /*
    * Returns a collection of strings based on the given collection but with all strings padded on
    * the left to the length of the longest one.
    */
@@ -97,7 +100,7 @@ public class Formatter {
     return v;
   }
 
-  /**
+  /*
    * Returns a collection of strings based on the given collection but with all strings padded on
    * the right to the length of the longest one.
    */
@@ -111,7 +114,7 @@ public class Formatter {
     return v;
   }
 
-  /**
+  /*
    * Returns a string that is the given string padded on the left to the given length.
    */
   public static String padLeft(String s, int length) {
@@ -125,7 +128,7 @@ public class Formatter {
     return t + s;
   }
 
-  /**
+  /*
    * Returns a string that is the given string padded on the right to the given length.
    */
   public static String padRight(String s, int length) {
@@ -139,7 +142,7 @@ public class Formatter {
     return t;
   }
 
-  /**
+  /*
    * Returns the length of the longest string in the collection (0 if the collection is empty).
    */
   public static int maxLength(Collection strings) {

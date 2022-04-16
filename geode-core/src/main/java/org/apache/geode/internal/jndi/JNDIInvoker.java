@@ -59,11 +59,9 @@ import org.apache.geode.util.internal.GeodeGlossary;
  * <p>
  * Utility class for binding DataSources and Transactional resources to JNDI Tree. If there is a
  * pre-existing JNDI tree in the system, the GemFire JNDI tree is not not generated.
- * </p>
  * <p>
  * Datasources are bound to jndi tree after getting initialised. The initialisation parameters are
  * read from cache.xml.
- * </p>
  * <p>
  * If there is a pre-existing TransactionManager/UserTransaction (possible in presence of
  * application server scenerio), the GemFire TransactionManager and UserTransaction will not be
@@ -71,7 +69,7 @@ import org.apache.geode.util.internal.GeodeGlossary;
  * transactional activity. But even in this case the datasource element will be bound to the
  * available JNDI tree. The transactional datasource (XADataSource) will make use of available
  * TransactionManager.
- * </p>
+ * <p>
  *
  */
 public class JNDIInvoker {
@@ -138,7 +136,7 @@ public class JNDIInvoker {
    * already bound, GemFire will make use of these resources, but if TransactionManager /
    * UserTransaction is not available, the GemFire TransactionManager / UserTransaction will be
    * bound to the JNDI tree.
-   * </p>
+   * <p>
    *
    */
   public static void mapTransactions(DistributedSystem distSystem) {

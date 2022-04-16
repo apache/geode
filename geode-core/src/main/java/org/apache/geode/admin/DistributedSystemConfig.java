@@ -275,6 +275,9 @@ public interface DistributedSystemConfig extends Cloneable {
    * <code>DistributedSystem</code>. The XML file must conform to a
    * <a href="doc-files/ds5_0.dtd">dtd</a>.
    *
+   * @return the name of the XML file that specifies the configuration of managed entities
+   *         administered by the <code>DistributedSystem</code>
+   *
    * @since GemFire 4.0
    */
   String getEntityConfigXMLFile();
@@ -282,54 +285,115 @@ public interface DistributedSystemConfig extends Cloneable {
   /**
    * Sets the name of the XML file that specifies the configuration of managed entities administered
    * by the <code>DistributedSystem</code>.
+   *
+   * @param xmlFile the name of the XML file that specifies the configuration of managed entities
+   *        administered by the <code>DistributedSystem</code>
    */
   void setEntityConfigXMLFile(String xmlFile);
 
-  /** Returns the string identity for the system */
+  /**
+   * Returns the string identity for the system
+   *
+   * @return the string identity for the system
+   */
   String getSystemId();
 
-  /** Sets the string identity for the system */
+  /**
+   * Sets the string identity for the system
+   *
+   * @param systemId the string identity for the system
+   */
   void setSystemId(String systemId);
 
-  /** Returns the optional non-unique name for the system */
+  /**
+   * Returns the optional non-unique name for the system
+   *
+   * @return the optional non-unique name for the system
+   */
   String getSystemName();
 
-  /** Sets the optional non-unique name for the system */
+  /**
+   * Sets the optional non-unique name for the system
+   *
+   * @param name the optional non-unique name for the system
+   */
   void setSystemName(final String name);
 
-  /** Returns the multicast address for the system */
+  /**
+   * Returns the multicast address for the system
+   *
+   * @return the multicast address for the system
+   */
   String getMcastAddress();
 
-  /** Sets the multicast address for the system */
+  /**
+   * Sets the multicast address for the system
+   *
+   * @param mcastAddress the multicast address for the system
+   */
   void setMcastAddress(String mcastAddress);
 
-  /** Returns the multicast port for the system */
+  /**
+   * Returns the multicast port for the system
+   *
+   * @return the multicast port for the system
+   */
   int getMcastPort();
 
-  /** Sets the multicast port for the system */
+  /**
+   * Sets the multicast port for the system
+   *
+   * @param mcastPort the multicast port for the system
+   */
   void setMcastPort(int mcastPort);
 
-  /** Returns the ack-wait-threshold for the system */
+  /**
+   * Returns the ack-wait-threshold for the system
+   *
+   * @return the ack-wait-threshold for the system
+   */
   int getAckWaitThreshold();
 
-  /** Sets the ack-wait-threshold for the system */
+  /**
+   * Sets the ack-wait-threshold for the system
+   *
+   * @param seconds the ack-wait-threshold for the system
+   */
   void setAckWaitThreshold(int seconds);
 
-  /** Returns the ack-severe-alert-threshold for the system */
+  /**
+   * Returns the ack-severe-alert-threshold for the system
+   *
+   * @return the ack-severe-alert-threshold for the system
+   */
   int getAckSevereAlertThreshold();
 
-  /** Sets the ack-severe-alert-threshold for the system */
+  /**
+   * Sets the ack-severe-alert-threshold for the system
+   *
+   * @param seconds the ack-severe-alert-threshold for the system
+   */
   void setAckSevereAlertThreshold(int seconds);
 
-  /** Returns a comma-delimited list of locators for the system */
+  /**
+   * Returns a comma-delimited list of locators for the system
+   *
+   * @return the comma-delimited list of locators for the system
+   */
   String getLocators();
 
-  /** Sets the comma-delimited list of locators for the system */
+  /**
+   * Sets the comma-delimited list of locators for the system
+   *
+   * @param locators the comma-delimited list of locators for the system
+   */
   void setLocators(String locators);
 
   /**
    * Returns the membership-port-range property of the Distributed System. This range is given as
    * two numbers separated by a minus sign.
+   *
+   * @return the membership-port-range property of the Distributed System
    *
    * @since GemFire 6.5
    */
@@ -339,6 +403,8 @@ public interface DistributedSystemConfig extends Cloneable {
    * Sets the membership-port-range property of the Distributed System. This range is given as two
    * numbers separated by a minus sign.
    *
+   * @param membershipPortRange the membership-port-range property of the Distributed System
+   *
    * @since GemFire 6.5
    */
   void setMembershipPortRange(String membershipPortRange);
@@ -347,12 +413,16 @@ public interface DistributedSystemConfig extends Cloneable {
   /**
    * Sets the primary communication port number for the Distributed System.
    *
+   * @param port the primary communication port number for the Distributed System
+   *
    * @since GemFire 6.5
    */
   void setTcpPort(int port);
 
   /**
    * Returns the primary communication port number for the Distributed System.
+   *
+   * @return the primary communication port number for the Distributed System
    *
    * @since GemFire 6.5
    */
@@ -363,6 +433,8 @@ public interface DistributedSystemConfig extends Cloneable {
    * Sets the disable-tcp property for the system. When tcp is disabled, the cache uses udp for
    * unicast messaging. This must be consistent across all members of the distributed system. The
    * default is to enable tcp.
+   *
+   * @param flag the disable-tcp property for the system
    */
   void setDisableTcp(boolean flag);
 
@@ -370,45 +442,59 @@ public interface DistributedSystemConfig extends Cloneable {
    * Returns the disable-tcp property for the system. When tcp is disabled, the cache uses udp for
    * unicast messaging. This must be consistent across all members of the distributed system. The
    * default is to enable tcp.
+   *
+   * @return the disable-tcp property for the system
    */
   boolean getDisableTcp();
 
   /**
    * Sets the disable-jmx property for the system. When JMX is disabled, Geode will not create
    * MBeans.
+   *
+   * @param flag the disable-jmx property for the process
    */
   void setDisableJmx(boolean flag);
 
   /**
    * Returns the disable-jmx property for the process. When JMX is disabled, Geode will not create
    * MBeans.
+   *
+   * @return the disable-jmx property for the process
    */
   boolean getDisableJmx();
 
   /**
    * Turns on network partition detection
+   *
+   * @param newValue whether network partition detection is enabled
    */
   void setEnableNetworkPartitionDetection(boolean newValue);
 
   /**
    * Returns true if network partition detection is enabled.
+   *
+   * @return whether network partition detection is enabled
    */
   boolean getEnableNetworkPartitionDetection();
 
   /**
    * Disables auto reconnect after being forced out of the distributed system
+   *
+   * @param newValue whether auto reconnect is disabled
    */
   void setDisableAutoReconnect(boolean newValue);
 
   /**
    * Returns true if auto reconnect is disabled
+   *
+   * @return whether auto reconnect is disabled
    */
   boolean getDisableAutoReconnect();
 
-
-
   /**
    * Returns the member-timeout millisecond value used in failure-detection protocols
+   *
+   * @return the millisecond value of the member-timeout used in failure-detection protocols
    */
   int getMemberTimeout();
 
@@ -416,18 +502,23 @@ public interface DistributedSystemConfig extends Cloneable {
    * Set the millisecond value of the member-timeout used in failure-detection protocols. This
    * timeout determines how long a member has to respond to a heartbeat request. The member is given
    * three chances before being kicked out of the distributed system with a SystemConnectException.
+   *
+   * @param value the millisecond value of the member-timeout used in failure-detection protocols
    */
   void setMemberTimeout(int value);
 
   /**
    * Returns the IP address to which the distributed system's server sockets are bound.
    *
+   * @return the IP address to which the distributed system's server sockets are bound
    * @since GemFire 4.0
    */
   String getBindAddress();
 
   /**
    * Sets the IP address to which the distributed system's server sockets are bound.
+   *
+   * @param bindAddress the IP address to which the distributed system's server sockets are bound
    *
    * @since GemFire 4.0
    */
@@ -436,64 +527,127 @@ public interface DistributedSystemConfig extends Cloneable {
 
   /**
    * Returns the IP address to which client/server server sockets are bound
+   *
+   * @return the IP address to which a server cache will bind when listening for client cache
+   *         connections
    */
   String getServerBindAddress();
 
   /**
    * Sets the IP address to which a server cache will bind when listening for client cache
    * connections.
+   *
+   * @param bindAddress the IP address to which a server cache will bind when listening for client
+   *        cache connections
    */
   void setServerBindAddress(String bindAddress);
 
 
-  /** Returns the remote command setting to use for remote administration */
+  /**
+   * Returns the remote command setting to use for remote administration
+   *
+   * @return the remote command setting to use for remote administration
+   */
   String getRemoteCommand();
 
   /**
    * Sets the remote command setting to use for remote administration. This attribute may be
    * modified after this <code>DistributedSystemConfig</code> has been used to create an
    * <codE>AdminDistributedSystem</code>.
+   *
+   * @param command the remote command setting to use for remote administration
    */
   void setRemoteCommand(String command);
 
-  /** Returns the value of the "ssl-enabled" property. */
+  /**
+   * Returns the value of the "ssl-enabled" property.
+   *
+   * @return the value of the "ssl-enabled" property
+   */
   boolean isSSLEnabled();
 
-  /** Sets the value of the "ssl-enabled" property. */
+  /**
+   * Sets the value of the "ssl-enabled" property.
+   *
+   * @param enabled the value of the "ssl-enabled" property
+   */
   void setSSLEnabled(boolean enabled);
 
-  /** Returns the value of the "ssl-protocols" property. */
+  /**
+   * Returns the value of the "ssl-protocols" property.
+   *
+   * @return the value of the "ssl-protocols" property
+   */
   String getSSLProtocols();
 
-  /** Sets the value of the "ssl-protocols" property. */
+  /**
+   * Sets the value of the "ssl-protocols" property.
+   *
+   * @param protocols the value of the "ssl-protocols" property
+   */
   void setSSLProtocols(String protocols);
 
-  /** Returns the value of the "ssl-ciphers" property. */
+  /**
+   * Returns the value of the "ssl-ciphers" property.
+   *
+   * @return the value of the "ssl-ciphers" property
+   */
   String getSSLCiphers();
 
-  /** Sets the value of the "ssl-ciphers" property. */
+  /**
+   * Sets the value of the "ssl-ciphers" property.
+   *
+   * @param ciphers the value of the "ssl-ciphers" property
+   */
   void setSSLCiphers(String ciphers);
 
-  /** Returns the value of the "ssl-require-authentication" property. */
+  /**
+   * Returns the value of the "ssl-require-authentication" property.
+   *
+   * @return the value of the "ssl-require-authentication" property
+   */
   boolean isSSLAuthenticationRequired();
 
-  /** Sets the value of the "ssl-require-authentication" property. */
+  /**
+   * Sets the value of the "ssl-require-authentication" property.
+   *
+   * @param authRequired the value of the "ssl-require-authentication" property
+   */
   void setSSLAuthenticationRequired(boolean authRequired);
 
-  /** Returns the provider-specific properties for SSL. */
+  /**
+   * Returns the provider-specific properties for SSL.
+   *
+   * @return the provider-specific properties for SSL
+   */
   Properties getSSLProperties();
 
-  /** Sets the provider-specific properties for SSL. */
+  /**
+   * Sets the provider-specific properties for SSL.
+   *
+   * @param sslProperties the provider-specific properties for SSL
+   */
   void setSSLProperties(Properties sslProperties);
 
-  /** Adds an SSL property */
+  /**
+   * Adds an SSL property
+   *
+   * @param key the name of the property to add
+   * @param value the value of the property to add
+   */
   void addSSLProperty(String key, String value);
 
-  /** Removes an SSL property */
+  /**
+   * Removes an SSL property
+   *
+   * @param key the name of the property to remove
+   */
   void removeSSLProperty(String key);
 
   /**
    * Returns the name of the log file to which informational messages are written.
+   *
+   * @return the name of the log file to which informational messages are written
    *
    * @see org.apache.geode.LogWriter
    */
@@ -502,37 +656,51 @@ public interface DistributedSystemConfig extends Cloneable {
   /**
    * Sets the name of the log file to which informational messages are written.
    *
+   * @param logFile the name of the log file to which informational messages are written
+   *
    * @see org.apache.geode.LogWriter
    */
   void setLogFile(String logFile);
 
   /**
    * Returns the level at which informational messages are logged.
+   *
+   * @return the level at which information messages are logged
    */
   String getLogLevel();
 
   /**
    * Sets the level at which information messages are logged.
+   *
+   * @param logLevel the level at which information messages are logged
    */
   void setLogLevel(String logLevel);
 
   /**
    * Returns the log disk space limit in megabytes
+   *
+   * @return the log disk space limit in megabytes
    */
   int getLogDiskSpaceLimit();
 
   /**
    * Sets the log disk space limit in megabytes
+   *
+   * @param limit the log disk space limit in megabytes
    */
   void setLogDiskSpaceLimit(int limit);
 
   /**
    * Returns the log file size limit in megabytes
+   *
+   * @return the log file size limit in megabytes
    */
   int getLogFileSizeLimit();
 
   /**
    * Sets the log file size limit in megabytes
+   *
+   * @param limit the log file size limit in megabytes
    */
   void setLogFileSizeLimit(int limit);
 
@@ -541,6 +709,8 @@ public interface DistributedSystemConfig extends Cloneable {
    * AdminDistributedSystem constituents including SystemMember, CacheServer, SystemMemberCache and
    * StatisticResource
    *
+   * @return the refreshInterval in seconds
+   *
    * @since GemFire 6.0
    */
   int getRefreshInterval();
@@ -548,12 +718,16 @@ public interface DistributedSystemConfig extends Cloneable {
   /**
    * Sets the refreshInterval in seconds
    *
+   * @param timeInSecs the refreshInterval in seconds
+   *
    * @since GemFire 6.0
    */
   void setRefreshInterval(int timeInSecs);
 
   /**
    * Returns an array of configurations for statically known <code>CacheServers</code>.
+   *
+   * @return an array of configurations for statically known <code>CacheServers</code>
    *
    * @deprecated as of 5.7 use {@link #getCacheVmConfigs} instead.
    */
@@ -563,6 +737,8 @@ public interface DistributedSystemConfig extends Cloneable {
   /**
    * Creates the configuration for a CacheServer
    *
+   * @return the newly created configuration
+   *
    * @deprecated as of 5.7 use {@link #createCacheVmConfig} instead.
    */
   @Deprecated
@@ -570,6 +746,8 @@ public interface DistributedSystemConfig extends Cloneable {
 
   /**
    * Removes the configuration for a CacheServer
+   *
+   * @param managerConfig the configuration to remove
    *
    * @deprecated as of 5.7 use {@link #removeCacheVmConfig} instead.
    */
@@ -579,12 +757,16 @@ public interface DistributedSystemConfig extends Cloneable {
   /**
    * Returns an array of configurations for statically known {@link CacheVm}s.
    *
+   * @return an array of configurations for statically known {@link CacheVm}s
+   *
    * @since GemFire 5.7
    */
   CacheVmConfig[] getCacheVmConfigs();
 
   /**
    * Creates the configuration for a {@link CacheVm}.
+   *
+   * @return the newly created configuration
    *
    * @since GemFire 5.7
    */
@@ -593,6 +775,8 @@ public interface DistributedSystemConfig extends Cloneable {
   /**
    * Removes the configuration for a {@link CacheVm}
    *
+   * @param existing the configuration to remove
+   *
    * @since GemFire 5.7
    */
   void removeCacheVmConfig(CacheVmConfig existing);
@@ -600,24 +784,39 @@ public interface DistributedSystemConfig extends Cloneable {
   /**
    * Returns configuration information about {@link DistributionLocator}s that are managed by an
    * <code>AdminDistributedSystem</code>.
+   *
+   * @return configuration information about {@link DistributionLocator}s that are managed by an
+   *         <code>AdminDistributedSystem</code>
    */
   DistributionLocatorConfig[] getDistributionLocatorConfigs();
 
   /**
    * Creates a new <code>DistributionLocatorConfig</code> for a distribution locator that is managed
    * in this distributed system. The default locator config is set to not use multicast
+   *
+   * @return the newly created <code>DistributionLocatorConfig</code>
    */
   DistributionLocatorConfig createDistributionLocatorConfig();
 
   /**
    * Removes a <code>DistributionLocatorConfig</code> from the distributed system.
+   *
+   * @param config the <code>DistributionLocatorConfig</code> to remove
    */
   void removeDistributionLocatorConfig(DistributionLocatorConfig config);
 
-  /** Registers listener for notification of changes in this config. */
+  /**
+   * Registers listener for notification of changes in this config.
+   *
+   * @param listener the listener to register
+   */
   void addListener(ConfigListener listener);
 
-  /** Removes previously registered listener of this config. */
+  /**
+   * Removes previously registered listener of this config.
+   *
+   * @param listener the listener to remove
+   */
   void removeListener(ConfigListener listener);
 
   /**
@@ -634,6 +833,11 @@ public interface DistributedSystemConfig extends Cloneable {
    * modified. Note that this {@link DistributedSystemConfig.ConfigListener ConfigListener}s that
    * are registered on this config object are not cloned.
    *
+   * @return a copy of this <code>DistributedSystemConfig</code> object whose configuration can be
+   *         modified
+   * @throws CloneNotSupportedException if the object's class does not support the Cloneable
+   *         interface
+   *
    * @since GemFire 4.0
    */
   Object clone() throws CloneNotSupportedException;
@@ -645,7 +849,11 @@ public interface DistributedSystemConfig extends Cloneable {
    */
   interface ConfigListener extends java.util.EventListener {
 
-    /** Invoked when this configurated is changed. */
+    /**
+     * Invoked when this configuration is changed.
+     *
+     * @param config the changed configuration
+     */
     void configChanged(DistributedSystemConfig config);
   }
 

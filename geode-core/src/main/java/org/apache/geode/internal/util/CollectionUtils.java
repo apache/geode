@@ -32,7 +32,7 @@ import org.apache.geode.internal.lang.Filter;
 /**
  * The CollectionUtils class is a utility class for working with the Java Collections framework of
  * classes, data structures and algorithms.
- * <p/>
+ * <p>
  *
  * @see org.apache.geode.internal.lang.Filter
  * @see java.util.Arrays
@@ -48,7 +48,7 @@ public abstract class CollectionUtils {
 
   /**
    * Returns the specified array as a List of elements.
-   * <p/>
+   * <p>
    *
    * @param <T> the class type of the elements in the array.
    * @param array the object array of elements to convert to a List.
@@ -64,7 +64,7 @@ public abstract class CollectionUtils {
 
   /**
    * Returns the specified array as a Set of elements.
-   * <p/>
+   * <p>
    *
    * @param <T> the class type of the elements in the array.
    * @param array the object array of elements to convert to a Set.
@@ -102,7 +102,7 @@ public abstract class CollectionUtils {
   /**
    * Null-safe implementation for method invocations that return a List Collection. If the returned
    * List is null, then this method will return an empty List in it's place.
-   * <p/>
+   * <p>
    *
    * @param <T> the class type of the List's elements.
    * @param list the target List to verify as not null.
@@ -115,7 +115,7 @@ public abstract class CollectionUtils {
   /**
    * Null-safe implementation for method invocations that return a Set Collection. If the returned
    * Set is null, then this method will return an empty Set in it's place.
-   * <p/>
+   * <p>
    *
    * @param <T> the class type of the Set's elements.
    * @param set the target Set to verify as not null.
@@ -127,7 +127,7 @@ public abstract class CollectionUtils {
 
   /**
    * Iterates the Collection and finds all object elements that match the Filter criteria.
-   * <p/>
+   * <p>
    *
    * @param <T> the class type of the Collection elements.
    * @param collection the Collection of elements to iterate and filter.
@@ -151,7 +151,7 @@ public abstract class CollectionUtils {
 
   /**
    * Iterates the Collection and finds all object elements that match the Filter criteria.
-   * <p/>
+   * <p>
    *
    * @param <T> the class type of the Collection elements.
    * @param collection the Collection of elements to iterate and filter.
@@ -174,7 +174,7 @@ public abstract class CollectionUtils {
 
   /**
    * Removes keys from the Map based on a Filter.
-   * <p/>
+   * <p>
    *
    * @param <K> the Class type of the key.
    * @param <V> the Class type of the value.
@@ -199,7 +199,7 @@ public abstract class CollectionUtils {
 
   /**
    * Removes keys with null values in the Map.
-   * <p/>
+   * <p>
    *
    * @param map the Map from which to remove null key-value pairs.
    * @return the Map without any null keys or values.

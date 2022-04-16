@@ -33,18 +33,18 @@ import org.apache.geode.cache.Region;
  * match the user-specified parameters, or belongs to the 'org.apache.geode' package, then the
  * decision of whether to authorize or not will be delegated to the default
  * {@link RestrictedMethodAuthorizer}.
- * <p/>
+ * <p>
  *
  * Some known dangerous methods, like {@link Object#getClass()}, are also rejected by this
  * authorizer implementation (see
  * {@link RestrictedMethodAuthorizer#isPermanentlyForbiddenMethod(Method, Object)}).
- * <p/>
+ * <p>
  *
  * When used as intended, with all region entries and OQL bind parameters following the JavaBean
  * specification 1.01, this authorizer implementation addresses all four of the known security
  * risks: {@code Java Reflection}, {@code Cache Modification}, {@code Region Modification} and
  * {@code Region Entry Modification}.
- * <p/>
+ * <p>
  *
  * It should be noted that the {@code Region Entry Modification} security risk still potentially
  * exists: users with the {@code DATA:READ:RegionName} privilege will be able to execute any
@@ -52,13 +52,12 @@ import org.apache.geode.cache.Region;
  * instances used as bind parameters of the OQL, providing they are in the specified packages.
  * If those methods do not fully follow the JavaBean 1.01 specification that accessors do not
  * modify the instance's state then entry modifications are possible.
- * <p/>
+ * <p>
  *
  * Usage of this authorizer implementation is only recommended for secured clusters on which the
  * Operator has full confidence that all objects stored in regions and used as OQL bind parameters
  * follow JavaBean specification 1.01. It might also be used on clusters on which the entries
  * stored are immutable.
- * <p/>
  *
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.query.security.MethodInvocationAuthorizer
@@ -81,7 +80,7 @@ public final class JavaBeanAccessorMethodAuthorizer implements MethodInvocationA
   /**
    * Creates a {@code JavaBeanAccessorMethodAuthorizer} object and initializes it so it can be
    * safely used in a multi-threaded environment.
-   * <p/>
+   * <p>
    *
    * Applications can use this constructor as part of the initialization for custom authorizers
    * (see {@link Declarable#initialize(Cache, Properties)}), when using a declarative approach.
@@ -101,7 +100,7 @@ public final class JavaBeanAccessorMethodAuthorizer implements MethodInvocationA
   /**
    * Creates a {@code JavaBeanAccessorMethodAuthorizer} object and initializes it so it can be
    * safely used in a multi-threaded environment.
-   * <p/>
+   * <p>
    *
    * @param restrictedMethodAuthorizer the default {@code RestrictedMethodAuthorizer} to use.
    * @param allowedPackages the packages containing classes for which 'is' and 'get' methods will
@@ -120,7 +119,7 @@ public final class JavaBeanAccessorMethodAuthorizer implements MethodInvocationA
    * executed on the {@code target} object instance.
    * If the {@code target} object is an instance of {@link Region}, this methods also ensures that
    * the user has the {@code DATA:READ} permission granted for the target {@link Region}.
-   * </p>
+   * <p>
    *
    * @param method the {@link Method} that should be authorized.
    * @param target the {@link Object} on which the {@link Method} will be executed.

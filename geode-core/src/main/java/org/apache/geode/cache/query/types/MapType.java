@@ -34,6 +34,8 @@ public interface MapType extends CollectionType {
   /**
    * Return the type of the entries in this map. In the context of the query language, the entries
    * in a map are structs with key and value fields.
+   *
+   * @return the type of the entries in this map
    */
   StructType getEntryType();
 }
