@@ -1,4 +1,3 @@
-println("ROOT IS ${rootDir}")
 
 includeBuild("${rootDir}/../buildSrc2")
 
@@ -15,5 +14,10 @@ includeBuild("${rootDir}/../buildSrc4") {
 includeBuild("${rootDir}/../geode-build-tools") {
   dependencySubstitution {
     substitute module('org.apache.geode.gradle:org.apache.geode.gradle.geode-build-tools') using project(':')
+  }
+}
+includeBuild("${rootDir}/../geode-testing-isolation") {
+  dependencySubstitution {
+    substitute module('org.apache.geode.gradle:org.apache.geode.gradle.geode-testing-isolation') using project(':')
   }
 }
