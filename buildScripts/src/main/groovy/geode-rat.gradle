@@ -16,6 +16,7 @@
  */
 
 plugins {
+  id 'base'
   id "org.nosphere.apache.rat"
 }
 

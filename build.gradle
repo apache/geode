@@ -42,7 +42,7 @@ plugins {
 //  id 'lint'
   id 'resolve-dependencies'
   id 'geode-sonar'
-//  id 'geode-rat'
+  id 'geode-rat'
 }
 
 import org.apache.geode.gradle.plugins.PasswordDialog
