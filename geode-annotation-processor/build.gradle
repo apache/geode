@@ -18,15 +18,14 @@
 
 plugins {
   id 'java'
+  id 'java-gradle-plugin'
+  id 'groovy-gradle-plugin'
+  id 'maven-publish'
+  id 'com.gradle.plugin-publish' version '0.18.0'
 }
 
 repositories {
   mavenCentral()
-  gradlePluginPortal() {
-    content {
-      includeModule('me.champeau.gradle', 'japicmp-gradle-plugin')
-    }
-  }
 }
 
 dependencies {
@@ -34,13 +33,15 @@ dependencies {
     transitive(false)
   }
   implementation(gradleApi())
-  implementation('org.apache.commons:commons-lang3:3.12.0')
-  implementation('org.apache.maven:maven-artifact:3.8.5')
-  implementation('com.google.guava:guava:31.1-jre')
-  implementation('me.champeau.gradle:japicmp-gradle-plugin:0.3.0')
-  implementation('junit:junit:4.13.2')
+
+  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 
   testAnnotationProcessor(this.project)
+}
+
+test {
+  useJUnitPlatform()
 }
 
 sourceSets {
