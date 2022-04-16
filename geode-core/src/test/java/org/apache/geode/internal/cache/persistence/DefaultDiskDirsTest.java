@@ -18,6 +18,7 @@ package org.apache.geode.internal.cache.persistence;
 
 import static org.apache.geode.internal.cache.persistence.DefaultDiskDirs.getDefaultDiskDirs;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.DEFAULT_DISK_DIRS_PROPERTY;
+import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -25,8 +26,6 @@ import java.io.File;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-
-import org.apache.geode.internal.lang.SystemProperty;
 
 
 public class DefaultDiskDirsTest {
@@ -41,8 +40,7 @@ public class DefaultDiskDirsTest {
 
   @Test
   public void getDefaultDiskDirsReturnsOverriddenValue() {
-    System.setProperty(SystemProperty.DEFAULT_PREFIX + DEFAULT_DISK_DIRS_PROPERTY,
-        "/FullyQualifiedPath");
+    System.setProperty(GEODE_PREFIX + DEFAULT_DISK_DIRS_PROPERTY, "/FullyQualifiedPath");
     assertThat(getDefaultDiskDirs()).isEqualTo(new File[] {new File("/FullyQualifiedPath")});
   }
 }
