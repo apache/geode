@@ -40,7 +40,7 @@ import org.mockito.Mockito;
 
 /**
  * Test class for testing the contract and functionality of the IOUtils class.
- * <p/>
+ * <p>
  *
  * @see org.apache.geode.internal.util.IOUtils
  * @see org.junit.Test
@@ -49,7 +49,7 @@ public class IOUtilsJUnitTest {
 
   /**
    * Gets a fully-qualified path anchored at root.
-   * <p/>
+   * <p>
    *
    * @param pathElements a String array containing the elements of the path.
    * @return a fully-qualified pathname as a String value.

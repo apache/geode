@@ -30,26 +30,27 @@ import org.apache.geode.annotations.Experimental;
 @Experimental
 public interface Result<SuccessType, FailureType> {
   /**
-   * A mapping function that maps to either <SuccessType> or <FailureType> depending on success or
+   * A mapping function that maps to either {@link SuccessType} or {@link FailureType} depending on
+   * success or
    * failure of the operation.
    *
    * @param successFunction the mapping function to map the SuccessType to the resultant type
    * @param errorFunction the mapping function to map the FailureType to the resultant error type
    * @param <T> the resultant type
-   * @return result of type <T>
+   * @return result of type {@link T}
    */
   <T> T map(Function<SuccessType, T> successFunction,
       Function<FailureType, T> errorFunction);
 
   /**
-   * The return message of a successful operation. The return type is of type <SuccessType>
+   * The return message of a successful operation. The return type is of type {@link SuccessType}
    *
    * @return the result of the operation
    */
   SuccessType getMessage();
 
   /**
-   * The return message of a failed operation. The return type is of type <FailureType>
+   * The return message of a failed operation. The return type is of type {@link FailureType}
    *
    * @return the failure message of why the operation did not succeed.
    */

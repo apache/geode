@@ -44,7 +44,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 /**
  * <p>
  * GlobalTransaction is the JTA concept of a Global Transaction.
- * </p>
+ * <p>
  *
  *
  * @since GemFire 4.0

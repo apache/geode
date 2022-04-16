@@ -21,11 +21,15 @@ public interface VMEventListenerRegistry {
 
   /**
    * Registers a {@code VMEventListener}.
+   *
+   * @param listener the {@code VMEventListener} to register
    */
   void addVMEventListener(VMEventListener listener);
 
   /**
    * Deregisters a {@code VMEventListener}.
+   *
+   * @param listener the {@code VMEventListener} to deregister
    */
   void removeVMEventListener(VMEventListener listener);
 }

@@ -46,7 +46,7 @@ import org.junit.Test;
 /**
  * The CollectionUtilsJUnitTest class is a test suite of test cases testing the contract and
  * functionality of the CollectionUtils class.
- * <p/>
+ * <p>
  *
  * @see org.apache.geode.internal.util.CollectionUtils
  * @see org.junit.Assert

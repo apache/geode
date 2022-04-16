@@ -30,13 +30,9 @@ import org.apache.geode.management.ManagementService;
  * {@link ClientMembershipListener}, providing a facade that makes both appear as a single
  * <code>MembershipListener</code> . This includes adapting <code>ClientMembershipListener</code>
  * events to appear as events for the <code>MembershipListener</code>.
- * </p>
- *
  * <p>
  * <code>UniversalMembershipListenerAdapter</code> implements <code>MembershipListener</code>,
  * exposing the callback in that interface as methods to be overridden by implementing classes.
- * </p>
- *
  * <p>
  * An internal implementation of <code>ClientMembershipListener</code> is registered when this class
  * is instantiated. This implementation creates a
@@ -45,13 +41,9 @@ import org.apache.geode.management.ManagementService;
  * <code>UniversalMembershipListenerAdapter</code>.The <code>ClientMembershipEvent</code>s are
  * wrapped to appear as <code>MembershipEvent</code>s. In this way, both types of membership events
  * appear as <code>MembershipEvent</code>s.
- * </p>
- *
  * <p>
  * Any CacheServer using the <code>UniversalMembershipListenerAdapter</code> will receive
  * notifications of peer membership changes and client membership changes through a single listener.
- * </p>
- *
  * <p>
  * Any cache client using the <code>UniversalMembershipListenerAdapter</code> would receive
  * notifications of cache server connection changes. If that cache client also creates a connection
@@ -59,21 +51,15 @@ import org.apache.geode.management.ManagementService;
  * the adapter for membership events. But it wont be an automatic process. User needs to register
  * the UniversalMembershipListenerAdapter with ManagementService to receive membership events. How
  * to register UniversalMembershipListenerAdapter with ManagementService is explained below.
- * </p>
- *
  * <p>
  * Subclasses of <code>UniversalMembershipListenerAdapter</code> may be registered as a
  * <code>MembershipListener</code> using
  * {@link org.apache.geode.management.ManagementService#addMembershipListener} .It is best, however,
  * to register the listener using {@link #registerMembershipListener} since this allows the adapter
  * to prevent duplicate events for members that are both a peer member and a client.
- * </p>
- *
  * <p>
  * Simply constructing the <code>UniversalMembershipListenerAdapter</code> results in the underlying
  * <code>ClientMembershipListener</code> also being registered.
- * </p>
- *
  * <p>
  * The following code illustrates how a CacheServer application would use
  * <code>UniversalMembershipListenerAdapter</code>. The code in this example assumes that the class
@@ -104,8 +90,6 @@ import org.apache.geode.management.ManagementService;
  * The callback on MyMembershipListenerImpl would then be invoked for all
  * <code>MembershipEvent</code>s and <code>ClientMembershipEvent</code>s. The latter will appear to
  * be <code>MembershipEvent</code>s.
- * </p>
- *
  * <p>
  * Similarly, the following code illustrates how a client application would use
  * <code>UniversalMembershipListenerAdapter</code>, where MyMembershipListenerImpl is a
@@ -120,15 +104,13 @@ import org.apache.geode.management.ManagementService;
  *
  * A client that also connects to the <code>DistributedSystem</code> could register with
  * the<code>ManagementService</code> as shown above.
- * </p>
- *
  * <p>
  * It is recommended that subclasses register with the <code>ManagementService</code> using
  * {@link #registerMembershipListener}, as this will prevent duplicate events for members that are
  * both clients and peer members.If duplicate events are acceptable, you may register subclasses
  * using {@link org.apache.geode.management.ManagementService#addMembershipListener
  * ManagementService#addMembershipListener}.
- * </p>
+ * <p>
  *
  *
  * @since GemFire 8.0
@@ -177,6 +159,8 @@ public abstract class UniversalMembershipListenerAdapter implements MembershipLi
    * connection and a peer connection. If you register with
    * {@link org.apache.geode.management.ManagementService#addMembershipListener} then duplicate
    * events may occur for members that are both client and peer.
+   *
+   * @param service the <code>ManagementService</code> with which to register this adapter
    */
   public void registerMembershipListener(ManagementService service) {
     synchronized (eventHistory) {
@@ -188,6 +172,8 @@ public abstract class UniversalMembershipListenerAdapter implements MembershipLi
    * Unregisters this adapter with the <code>ManagementService</code>. If registration is performed
    * with {@link #registerMembershipListener} then this method must be used to successfully
    * unregister the adapter.
+   *
+   * @param service the <code>ManagementService</code> with which to unregister this adapter
    */
   public void unregisterMembershipListener(ManagementService service) {
     synchronized (eventHistory) {
@@ -248,6 +234,8 @@ public abstract class UniversalMembershipListenerAdapter implements MembershipLi
     /**
      * Returns true if the member is a client to a CacheServer hosted by this process. Returns false
      * if the member is a CacheServer that this process is connected to.
+     *
+     * @return whether the member is a client to a CacheServer hosted by this process
      */
     public boolean isClient() {
       return event.isClient();

@@ -29,7 +29,6 @@ import org.apache.geode.internal.AvailablePortHelper;
 /**
  * Tests {@link org.apache.geode.admin.internal.AdminDistributedSystemImpl}.
  *
- * @created August 30, 2004
  * @since GemFire 3.5
  */
 @SuppressWarnings("deprecation")

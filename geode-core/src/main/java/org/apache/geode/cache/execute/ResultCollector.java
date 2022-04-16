@@ -28,7 +28,7 @@ import org.apache.geode.distributed.DistributedMember;
  * {@link ResultSender#sendResult(Object)} and can be used as they arrive. To indicate that all
  * results have been received {@link #endResults()} is called.
  *
- * </p>
+ * <p>
  * Example: <br>
  *
  * <pre>
@@ -89,8 +89,10 @@ public interface ResultCollector<T, S> {
    * Method used to feed result to the ResultCollector. It adds a single function execution result
    * to the ResultCollector It is invoked every time a result is sent using ResultSender.
    *
-   * @since GemFire 6.0
    * @param memberID DistributedMember ID to which result belongs
+   * @param resultOfSingleExecution the result to add
+   *
+   * @since GemFire 6.0
    */
   void addResult(DistributedMember memberID, T resultOfSingleExecution);
 

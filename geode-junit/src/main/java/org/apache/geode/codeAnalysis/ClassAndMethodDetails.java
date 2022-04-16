@@ -82,7 +82,7 @@ public class ClassAndMethodDetails implements Comparable {
     }
   }
 
-  /**
+  /*
    * convert a ClassAndMethods into a string that can then be used to instantiate a
    * ClassAndMethodDetails
    */

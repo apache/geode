@@ -102,7 +102,7 @@ public interface QueryService {
    * @param indexName the name of this index.
    * @param indexedExpression refers to the keys of the region that is referenced by the regionPath.
    *        For example, an index with indexedExpression "ID" might be used for a query with a WHERE
-   *        clause of "ID > 10", In this case the ID value is evaluated using region keys.
+   *        clause of "ID &gt; 10", In this case the ID value is evaluated using region keys.
    * @param regionPath that resolves to the region which will correspond to the FROM clause in a
    *        query. The regionPath must include exactly one region.
    *
@@ -184,7 +184,7 @@ public interface QueryService {
    *        must include exactly one region, but may include multiple expressions as required to
    *        drill down into nested region contents.
    *
-   *        Example: Query1: "Select * from /portfolio p where p.mktValue > 25.00" For index on
+   *        Example: Query1: "Select * from /portfolio p where p.mktValue &gt; 25.00" For index on
    *        mktValue field: indexExpression: "p.mktValue" regionPath: "/portfolio p"
    *
    *        Query2: "Select * from /portfolio p, p.positions.values pos where pos.secId ='VMWARE'"
@@ -211,7 +211,7 @@ public interface QueryService {
    *        separated by a semicolon), provides packages and classes used in variable typing in the
    *        Indexed and FROM expressions. The use is the same as for the FROM clause in querying.
    *
-   *        Example: Query1: "Select * from /portfolio p where p.mktValue > 25.00" For index on
+   *        Example: Query1: "Select * from /portfolio p where p.mktValue &gt; 25.00" For index on
    *        mktValue field: indexExpression: "p.mktValue" regionPath: "/portfolio p"
    *
    *        Query2: "Select * from /portfolio p, p.positions.values pos where pos.secId ='VMWARE'"
@@ -279,7 +279,7 @@ public interface QueryService {
    *        that are referenced in the fromClause. This expression is used to optimize the
    *        comparison of the same path found in a query's WHERE clause when used to compare against
    *        a constant expression. For example, an index with indexedExpression "mktValue" might be
-   *        used for a query with a WHERE clause of "mktValue > 25.00". The exact use and
+   *        used for a query with a WHERE clause of "mktValue &gt; 25.00". The exact use and
    *        specification of the indexedExpression varies depending on the indexType. Query
    *        parameters and region paths are not allowed in the indexedExpression (e.g. $1).
    * @param fromClause expression, that resolves to a collection or list of collections which will
@@ -320,7 +320,7 @@ public interface QueryService {
    *        that are referenced in the fromClause. This expression is used to optimize the
    *        comparison of the same path found in a query's WHERE clause when used to compare against
    *        a constant expression. For example, an index with indexedExpression "mktValue" might be
-   *        used for a query with a WHERE clause of "mktValue > 25.00". The exact use and
+   *        used for a query with a WHERE clause of "mktValue &gt; 25.00". The exact use and
    *        specification of the indexedExpression varies depending on the indexType. Query
    *        parameters and region paths are not allowed in the indexedExpression (e.g. $1).
    * @param fromClause expression, that resolves to a collection or list of collections which will
@@ -360,7 +360,7 @@ public interface QueryService {
    *        must include exactly one region, but may include multiple expressions as required to
    *        drill down into nested region contents.
    *
-   *        Example: Query1: "Select * from /portfolio p where p.mktValue > 25.00" For index on
+   *        Example: Query1: "Select * from /portfolio p where p.mktValue &gt; 25.00" For index on
    *        mktValue field: indexExpression: "p.mktValue" regionPath: "/portfolio p"
    *
    *        Query2: "Select * from /portfolio p, p.positions.values pos where pos.secId ='VMWARE'"
@@ -395,7 +395,7 @@ public interface QueryService {
    *        separated by a semicolon), provides packages and classes used in variable typing in the
    *        Indexed and FROM expressions. The use is the same as for the FROM clause in querying.
    *
-   *        Example: Query1: "Select * from /portfolio p where p.mktValue > 25.00" For index on
+   *        Example: Query1: "Select * from /portfolio p where p.mktValue &gt; 25.00" For index on
    *        mktValue field: indexExpression: "p.mktValue" regionPath: "/portfolio p"
    *
    *        Query2: "Select * from /portfolio p, p.positions.values pos where pos.secId ='VMWARE'"
@@ -423,7 +423,7 @@ public interface QueryService {
    * @param indexName the name of this index.
    * @param indexedExpression refers to the keys of the region that is referenced by the regionPath.
    *        For example, an index with indexedExpression "ID" might be used for a query with a WHERE
-   *        clause of "ID > 10", In this case the ID value is evaluated using region keys.
+   *        clause of "ID &gt; 10", In this case the ID value is evaluated using region keys.
    * @param regionPath that resolves to the region which will correspond to the FROM clause in a
    *        query. The regionPath must include exactly one region.
    *
@@ -448,6 +448,7 @@ public interface QueryService {
   /**
    * Creates all the indexes that were defined using {@link #defineIndex(String, String, String)}
    *
+   * @return a list of all created indexes
    * @throws MultiIndexCreationException which consists a map of failed indexNames and the
    *         Exceptions.
    */
@@ -455,6 +456,8 @@ public interface QueryService {
 
   /**
    * Clears all the indexes that were defined using {@link #defineIndex(String, String, String)}
+   *
+   * @return true if indexes were successfully cleared
    */
   boolean clearDefinedIndexes();
 
@@ -462,6 +465,7 @@ public interface QueryService {
    * Get the Index from the specified Region with the specified name.
    *
    * @param region the Region for the requested index
+   * @param indexName the name of the index to retrieve
    * @return the index of the region with this name, or null if there isn't one
    */
   Index getIndex(Region<?, ?> region, String indexName);
@@ -632,6 +636,7 @@ public interface QueryService {
    * CqQuery objects.
    *
    * @since GemFire 5.5
+   * @param regionName the name of the region on which registered CQs will be retrieved
    * @return CqQuery[] list of registered CQs on the specified region, null if there are no CQs.
    * @exception CqException if the region does not exist.
    */
@@ -664,7 +669,7 @@ public interface QueryService {
    * @see QueryService#executeCqs()
    *
    * @since GemFire 5.5
-   * @throws CqException if failure to execute CQ.
+   * @throws CqException if failure to stop CQ.
    */
   void stopCqs() throws CqException;
 
@@ -675,7 +680,8 @@ public interface QueryService {
    * @see QueryService#stopCqs()
    *
    * @since GemFire 5.5
-   * @throws CqException if failure to stop CQs.
+   * @param regionName the name of the region on which registered CQs will be executed
+   * @throws CqException if failure to execute CQs.
    */
   void executeCqs(String regionName) throws CqException;
 
@@ -687,7 +693,8 @@ public interface QueryService {
    * @see QueryService#executeCqs()
    *
    * @since GemFire 5.5
-   * @throws CqException if failure to execute CQs.
+   * @param regionName the name of the region on which registered CQs will be stopped
+   * @throws CqException if failure to stop CQs.
    */
   void stopCqs(String regionName) throws CqException;
 
@@ -696,6 +703,7 @@ public interface QueryService {
    *
    * @since GemFire 7.0
    * @return List of names of registered durable CQs, empty list if no durable cqs.
+   * @throws CqException if an exception is encountered when retrieving CQs
    */
   List<String> getAllDurableCqsFromServer() throws CqException;
 
@@ -706,10 +714,10 @@ public interface QueryService {
    * CQs stopped or suspended currently Number of CQs closed (cumulative) Number of CQs active on a
    * specified region currently
    *
+   * @return CqServiceStatistics object
    * @see CqServiceStatistics
    *
    * @since GemFire 5.5
-   *
    */
   CqServiceStatistics getCqStatistics();
 

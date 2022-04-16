@@ -60,11 +60,11 @@ import org.junit.rules.ExternalResource;
  *
  * {@literal @}Test
  * public void testName() {
- *   Callable<String> c1 = () -> {
+ *   Callable$lt;String$gt; c1 = () -&gt; {
  *     return "some Value";
  *   }; // step 2
  *
- *   concurrencyRule.add(c1).expectValue("some Value").repeatForIterations(3); // steps 3&4
+ *   concurrencyRule.add(c1).expectValue("some Value").repeatForIterations(3); // steps 3&amp;4
  *   concurrencyRule.executeInParallel(); // step 5
  *   concurrencyRule.clear(); // step 6
  *   // keep using the rule as above, or ConcurrencyRule.after() will be called for cleanup
@@ -119,6 +119,7 @@ public class ConcurrencyRule extends ExternalResource {
    * Adds a Callable to the concurrency rule to be run. Expectations for return values and thrown
    * exceptions, as well as any repetition of the thread should be added using ConcurrentOperation.
    *
+   * @param <T> the type returned by the Callable
    * @param callable a Callable to be run. If the Callable throws an exception that is not expected
    *        it will be thrown up to the test that the threads are run from.
    * @return concurrentOperation, the ConcurrentOperation that has been added to the rule
@@ -137,12 +138,10 @@ public class ConcurrencyRule extends ExternalResource {
    * thread runs until timeout has been reached. This method will not return until all
    * threads have completed or been cancelled.
    *
-   * @throws InterruptedException if interrupted before timeout
    * @throws RuntimeException with cause of MultipleFailureException with a list of failures
    *         including AssertionErrors for all threads whose expectations were not met (if there are
    *         multiple failures).
    * @throws AssertionError if a single thread's expectations are not met
-   * @throws Exception if a thread throws an unexpected exception
    */
   public void executeInParallel() {
     for (ConcurrentOperation op : toInvoke) {
@@ -164,7 +163,6 @@ public class ConcurrencyRule extends ExternalResource {
    *         including AssertionErrors for all threads whose expectations were not met (if there are
    *         multiple failures).
    * @throws AssertionError if a single thread's expectations are not met
-   * @throws Exception if a thread throws an unexpected exception
    */
   public void executeInSeries() {
     for (ConcurrentOperation op : toInvoke) {
@@ -193,7 +191,7 @@ public class ConcurrencyRule extends ExternalResource {
     threadPool.shutdownNow();
   }
 
-  /**
+  /*
    * Set the timeout for the threads. After the timeout is reached, the threads will be interrupted
    * and will throw a CancellationException
    */

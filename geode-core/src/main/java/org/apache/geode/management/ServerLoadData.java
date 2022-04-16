@@ -31,6 +31,11 @@ public class ServerLoadData {
   /**
    * This constructor is to be used by internal JMX framework only. User should not try to create an
    * instance of this class.
+   *
+   * @param connectionLoad the load on the server due to client to server connections
+   * @param subscriberLoad the load on the server due to subscription connections
+   * @param loadPerConnection how much load each new connection will add to this server
+   * @param loadPerSubscriber how much load each new subscription will add to this server
    */
   @ConstructorProperties({"connectionLoad", "subscriberLoad", "loadPerConnection",
       "loadPerSubscriber"})
@@ -45,6 +50,8 @@ public class ServerLoadData {
 
   /**
    * Returns the load on the server due to client to server connections.
+   *
+   * @return the load on the server due to client to server connections
    */
   public float getConnectionLoad() {
     return connectionLoad;
@@ -52,6 +59,8 @@ public class ServerLoadData {
 
   /**
    * Returns the load on the server due to subscription connections.
+   *
+   * @return the load on the server due to subscription connections
    */
   public float getSubscriberLoad() {
     return subscriberLoad;
@@ -60,6 +69,8 @@ public class ServerLoadData {
   /**
    * Returns an estimate of how much load each new connection will add to this server. The Locator
    * use this information to estimate the load on the server before it receives a new load snapshot.
+   *
+   * @return an estimate of how much load each new connection will add to this server
    */
   public float getLoadPerConnection() {
     return loadPerConnection;
@@ -69,6 +80,8 @@ public class ServerLoadData {
    * Returns an estimate of the much load each new subscriber will add to this server. The Locator
    * uses this information to estimate the load on the server before it receives a new load
    * snapshot.
+   *
+   * @return an estimate of the much load each new subscriber will add to this server
    */
   public float getLoadPerSubscriber() {
     return loadPerSubscriber;

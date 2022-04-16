@@ -31,7 +31,7 @@ class TabularResultModelSliceAssert<T> {
     values = valuesInSlice;
   }
 
-  /**
+  /*
    * Verifies that the selected row or column contains the given values, in any order.
    */
   @SafeVarargs
@@ -40,7 +40,7 @@ class TabularResultModelSliceAssert<T> {
     return parent;
   }
 
-  /**
+  /*
    * Verifies that the selected row or column contains only the given values and nothing else, in
    * any order and ignoring duplicates (i.e. once a value is found, its duplicates are also
    * considered found).
@@ -51,7 +51,7 @@ class TabularResultModelSliceAssert<T> {
     return parent;
   }
 
-  /**
+  /*
    * Verifies that the selected row or column contains exactly the given values and nothing else,
    * <b>in order</b>.
    */
@@ -61,7 +61,7 @@ class TabularResultModelSliceAssert<T> {
     return parent;
   }
 
-  /**
+  /*
    * Verifies that the selected row or column contains at least one of the given values.
    */
   @SafeVarargs
@@ -70,7 +70,7 @@ class TabularResultModelSliceAssert<T> {
     return parent;
   }
 
-  /**
+  /*
    * Verifies that the selected row or column does not contain the given values.
    */
   @SafeVarargs
@@ -79,7 +79,7 @@ class TabularResultModelSliceAssert<T> {
     return parent;
   }
 
-  /**
+  /*
    * Verifies that all values in the selected row or column are present in the given values.
    */
   @SafeVarargs
@@ -88,7 +88,7 @@ class TabularResultModelSliceAssert<T> {
     return parent;
   }
 
-  /**
+  /*
    * Provides the flexibility to verify the selected row or column using the full power of
    * ListAssert (with the tradeoff that you will not be able to chain verifications for other rows
    * or columns in the table after this).

@@ -370,7 +370,8 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * fields. See {@link ReflectionBasedAutoSerializer#reconfigure(String...) reconfigure} for
    * specifics.</li>
    * <li><b>check-portability</b> - if true then an exception will be thrown if an attempt to
-   * serialize data that is not portable to .NET is made.
+   * serialize data that is not portable to .NET is made.</li>
+   * </ul>
    *
    * @param props properties used to configure the auto serializer
    * @deprecated as of Geode 1.5 use initialize instead
@@ -390,7 +391,8 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * fields. See {@link ReflectionBasedAutoSerializer#reconfigure(String...) reconfigure} for
    * specifics.</li>
    * <li><b>check-portability</b> - if true then an exception will be thrown if an attempt to
-   * serialize data that is not portable to .NET is made.
+   * serialize data that is not portable to .NET is made.</li>
+   * </ul>
    *
    * @param cache the cache that owns this serializer
    * @param props properties used to configure the auto serializer
@@ -594,7 +596,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
   }
 
   /**
-   * Returns the cache that this serializer is installed on. Returns null if it is not installed.
+   * @return the cache that this serializer is installed on. Returns null if it is not installed.
    *
    * @since GemFire 6.6.2
    */
@@ -604,6 +606,8 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
 
   /**
    * For internal use only.
+   *
+   * @return the manager associated with this serializer
    *
    * @since GemFire 8.2
    */

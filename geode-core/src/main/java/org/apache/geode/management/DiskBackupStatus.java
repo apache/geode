@@ -27,12 +27,18 @@ public interface DiskBackupStatus {
   /**
    * Returns a map of member names/IDs and the {@link PersistentID} of the disk stores that were
    * backed up.
+   *
+   * @return a map of member names/IDs and the {@link PersistentID} of the disk stores that were
+   *         backed up
    */
   Map<String, String[]> getBackedUpDiskStores();
 
   /**
    * Returns a list of directories for the disk stores that were off-line at the time the backup
    * occurred.
+   *
+   * @return an array of directories for the disk stores that were off-line at the time the backup
+   *         occurred
    */
   String[] getOfflineDiskStores();
 }

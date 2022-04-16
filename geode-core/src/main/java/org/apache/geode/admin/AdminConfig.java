@@ -28,13 +28,14 @@ import java.util.Date;
 /**
  * AdminConfig loads/stores the member information list. The list contains all of the members being
  * monitored.
- *
- * Config must be of the format:
  * <p>
+ * Config must be of the format:
+ * <ul>
  * <li>Name=What you want displayed as a name for the instance
  * <li>Type=SERVER|CLIENT
  * <li>Host=A valid hostname or IP Address where the instance is running
  * <li>Port=The port you are using to open the monitor port for the instance
+ * </ul>
  *
  * @deprecated as of 7.0 use the <code><a href=
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>

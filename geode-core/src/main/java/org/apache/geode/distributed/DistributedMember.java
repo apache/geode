@@ -29,18 +29,23 @@ public interface DistributedMember extends Comparable<DistributedMember> {
    * Returns this member's name. The member name is set using the "name" gemfire property. Returns
    * "" if the member does not have a name.
    *
+   * @return this member's name
    * @since GemFire 7.0
    */
   String getName();
 
   /**
    * Returns the canonical name of the host machine for this member.
+   *
+   * @return the canonical name of the host machine for this member
    */
   String getHost();
 
   /**
    * Returns the Roles that this member performs in the system. Note that the result will contain
    * both groups and roles.
+   *
+   * @return the Roles that this member performs in the system
    *
    * @deprecated Roles is scheduled to be removed
    */
@@ -59,22 +64,30 @@ public interface DistributedMember extends Comparable<DistributedMember> {
   /**
    * Returns the process id for this member. This may return zero if the platform or configuration
    * does not allow native access to process info.
+   *
+   * @return the process id for this member
    */
   int getProcessId();
 
   /**
    * Returns a unique identifier for this member. Note that this value may change during the life
    * of the member.
+   *
+   * @return a unique identifier for this member
    */
   String getId();
 
   /**
    * Returns an immutable unique identifier for this member.
+   *
+   * @return an immutable unique identifier for this member
    */
   String getUniqueId();
 
   /**
    * Returns the durable attributes for this client.
+   *
+   * @return the durable attributes for this client
    */
   DurableClientAttributes getDurableClientAttributes();
 

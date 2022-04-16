@@ -17,7 +17,6 @@ package org.apache.geode.cache.server;
 
 /**
  * Used to configure queuing on a cache server for client subscriptions.
- * <p>
  * <UL>
  * <LI>For eviction-policy <b>none</b> client queue entries are not evicted to disk <br>
  * </LI>
@@ -26,7 +25,7 @@ package org.apache.geode.cache.server;
  * <LI>For eviction-policy <b>entry</b> HA entries are evicted to disk when limit is reached,
  * defined by <b>capacity</b></LI>
  * </UL>
- * <br/>
+ * <br>
  *
  * The capacity limits the total amount of memory or entries for all client queues on held on this
  * server. If this server hosts multiple client queues, they will all share the same capacity.
@@ -40,13 +39,11 @@ package org.apache.geode.cache.server;
  * <code>CacheServer</code> object and get {@link CacheServer#getClientSubscriptionConfig}
  * <code>ClientSubscriptionConfig</code> object and modify each desired parameter and value.
  * <p>
- * <p>
  *
  * If you are using a <code>cache.xml</code> file to create a <code>CacheServer</code>
  * declaratively, you can do the following to configure <code>ClientSubscriptionConfig</code> and to
  * have <b>none</b> eviction policy no need to specify client-subscription tag as it is a default
  * one.
- * </p>
  *
  * <pre>
  *<code>
@@ -84,6 +81,7 @@ public interface ClientSubscriptionConfig {
    * Returns the capacity of the client queue. will be in MB for eviction-policy <b>mem</b> else
    * number of entries
    *
+   * @return the capacity of the client queue
    * @see #DEFAULT_CAPACITY
    * @since GemFire 5.7
    */
@@ -93,6 +91,7 @@ public interface ClientSubscriptionConfig {
    * Sets the capacity of the client queue. will be in MB for eviction-policy <b>mem</b> else number
    * of entries
    *
+   * @param capacity the capacity of the client queue
    * @see #DEFAULT_CAPACITY
    * @since GemFire 5.7
    */
@@ -101,6 +100,7 @@ public interface ClientSubscriptionConfig {
   /**
    * Returns the eviction policy that is executed when capacity of the client queue is reached.
    *
+   * @return the eviction policy that is executed when capacity of the client queue is reached
    * @see #DEFAULT_EVICTION_POLICY
    * @since GemFire 5.7
    */
@@ -109,6 +109,7 @@ public interface ClientSubscriptionConfig {
   /**
    * Sets the eviction policy that is executed when capacity of the client queue is reached.
    *
+   * @param policy the eviction policy that is executed when capacity of the client queue is reached
    * @see #DEFAULT_EVICTION_POLICY
    * @since GemFire 5.7
    */
@@ -137,6 +138,7 @@ public interface ClientSubscriptionConfig {
   /**
    * Sets the disk store name for overflow
    *
+   * @param diskStoreName the disk store name for overflow
    * @since GemFire 6.5
    */
   void setDiskStoreName(String diskStoreName);
@@ -144,6 +146,7 @@ public interface ClientSubscriptionConfig {
   /**
    * get the diskStoreName for overflow
    *
+   * @return the diskStoreName for overflow
    * @since GemFire 6.5
    */
   String getDiskStoreName();

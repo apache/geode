@@ -21,7 +21,7 @@ import java.util.Map;
 
 /**
  * The UriUtils is a utility class for processing URIs and URLs.
- * <p/>
+ * <p>
  *
  * @see java.net.URLDecoder
  * @see java.net.URLEncoder
@@ -38,7 +38,7 @@ public abstract class UriUtils {
    * UnsupportedEncodingException by just returning the encodedValue. Since it is possible for a
    * String value to have been encoded multiple times, the String value is decoded until the value
    * stops changing (in other words, until the value is completely decoded).
-   * <p/>
+   * <p>
    *
    * @param encodedValue the encoded String value encoded to decode.
    * @return the decoded value of the String. If UTF-8 is unsupported, then the encodedValue is
@@ -56,7 +56,7 @@ public abstract class UriUtils {
    * handles UnsupportedEncodingException by just returning the encodedValue. Since it is possible
    * for a String value to have been encoded multiple times, the String value is decoded until the
    * value stops changing (in other words, until the value is completely decoded).
-   * <p/>
+   * <p>
    *
    * @param encodedValue the encoded String value to decode.
    * @param encoding a String value specifying the encoding.
@@ -86,7 +86,7 @@ public abstract class UriUtils {
    * array is decoded individually and placed back in the array at the exact same index. Each String
    * value is decoded until the value stops changing (in other words, until the value is completely
    * decoded).
-   * <p/>
+   * <p>
    *
    * @param encodedValues the array of encoded String values to decode.
    * @return the same String array with each String value decoded using the default encoding of
@@ -103,7 +103,7 @@ public abstract class UriUtils {
    * in the array is decoded individually and placed back in the array at the exact same index. Each
    * String value is decoded until the value stops changing (in other words, until the value is
    * completely decoded).
-   * <p/>
+   * <p>
    *
    * @param encodedValues the array of encoded String values to decode.
    * @return the same String array with each String value decoded using the specified encoding (e.g.
@@ -127,7 +127,7 @@ public abstract class UriUtils {
    * with String values are searched and decoded, which then get repaired with the same Key. The
    * String value is decoded until the value stops changing (in other words, until the value is
    * completely decoded).
-   * <p/>
+   * <p>
    *
    * @param form a mapping of key/value pairs containing possible encoded String values.
    * @return the original Map (form) with keys re-paired with decoded String values.
@@ -144,7 +144,7 @@ public abstract class UriUtils {
    * with String values are searched and decoded, which then get repaired with the same Key. The
    * String value is decoded until the value stops changing (in other words, until the value is
    * completely decoded).
-   * <p/>
+   * <p>
    *
    * @param form a mapping of key/value pairs containing possible encoded String values.
    * @return the original Map (form) with keys re-paired with decoded String values.
@@ -166,7 +166,7 @@ public abstract class UriUtils {
 
   /**
    * Encode the specified String value using the default encoding, UTF-8.
-   * <p/>
+   * <p>
    *
    * @param value the String value to encode.
    * @return an encoded value of the String using the default encoding, UTF-8. If UTF-8 is
@@ -180,7 +180,7 @@ public abstract class UriUtils {
 
   /**
    * Encode the String value using the specified encoding.
-   * <p/>
+   * <p>
    *
    * @param value the String value to encode.
    * @param encoding a String value indicating the encoding.
@@ -199,7 +199,7 @@ public abstract class UriUtils {
   /**
    * Encodes the array of String values using the default encoding, UTF-8. Each String value in the
    * array is encoded individually and placed back in the array at the exact same index.
-   * <p/>
+   * <p>
    *
    * @param values the array of encoded String values to encode.
    * @return the same String array with each String value encoded using the default encoding of
@@ -214,7 +214,7 @@ public abstract class UriUtils {
   /**
    * Encodes the array of String values using the specified encoding (e.g. UTF-8). Each String value
    * in the array is encoded individually and placed back in the array at the exact same index.
-   * <p/>
+   * <p>
    *
    * @param values the array of encoded String values to encode.
    * @return the same String array with each String value encoded using the default encoding of
@@ -236,7 +236,7 @@ public abstract class UriUtils {
    * Encodes the String values in the Map using the default encoding, UTF-8. The Map is structurally
    * similar to a key/value data store but with the contents from an HTML form. Keys with String
    * values are searched and encoded, which then get repaired with the same Key.
-   * <p/>
+   * <p>
    *
    * @param form a mapping of key/value pairs containing String values to encode.
    * @return the original Map (form) with keys re-paired with encoded String values.
@@ -251,7 +251,7 @@ public abstract class UriUtils {
    * Encodes the String values in the Map using the specified encoding (e.g. UTF-8). The Map is
    * structurally similar to a key/value data store but with the contents from an HTML form. Keys
    * with String values are searched and encoded, which then get repaired with the same Key.
-   * <p/>
+   * <p>
    *
    * @param form a mapping of key/value pairs containing String values to encode.
    * @return the original Map (form) with keys re-paired with encoded String values.

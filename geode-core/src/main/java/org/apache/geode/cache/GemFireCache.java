@@ -27,6 +27,7 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxSerializer;
 
 /**
@@ -53,6 +54,8 @@ public interface GemFireCache extends RegionService {
   /**
    * Returns the distributed system used by this cache. This method does not throw
    * {@code CacheClosedException} if the cache is closed.
+   *
+   * @return the distributed system used by this cache
    */
   DistributedSystem getDistributedSystem();
 
@@ -66,6 +69,8 @@ public interface GemFireCache extends RegionService {
 
   /**
    * Sets the "copy on read" feature for cache read operations.
+   *
+   * @param copyOnRead whether the "copy on read" feature should be enabled
    *
    * @since GemFire 4.0
    */
@@ -84,6 +89,10 @@ public interface GemFireCache extends RegionService {
    * Returns the {@code RegionAttributes} with the given {@code id} or {@code null} if no
    * {@code RegionAttributes} with that id exists.
    *
+   * @param <K> the type of keys in the region
+   * @param <V> the type of values in the region
+   * @param id the {@code id} of the {@code RegionAttributes}
+   * @return the {@code RegionAttributes} with the given {@code id}
    * @see #setRegionAttributes
    *
    * @since GemFire 4.1
@@ -95,6 +104,8 @@ public interface GemFireCache extends RegionService {
    * {@code name} already exists, the mapping will be overwritten with {@code attrs}. However,
    * changing the mapping will not effect existing regions.
    *
+   * @param <K> the type of keys in the region
+   * @param <V> the type of values in the region
    * @param id The id of the region attributes
    * @param attrs The attributes to associate with {@code id}. If {@code attrs} is {@code null}, any
    *        existing {@code RegionAttributes} associated with {@code id} will be removed.
@@ -108,6 +119,10 @@ public interface GemFireCache extends RegionService {
   /**
    * Returns an unmodifiable mapping of ids to region attributes. The keys of the map are
    * {@link String}s and the values of the map are {@link RegionAttributes}.
+   *
+   * @param <K> the type of keys in the region
+   * @param <V> the type of values in the region
+   * @return an unmodifiable mapping of ids to region attributes
    *
    * @since GemFire 4.1
    */
@@ -124,6 +139,8 @@ public interface GemFireCache extends RegionService {
    * Because this method may perform a {@link Region#put(Object, Object) put} on a {@code Region},
    * it declares that it throws a {@code TimeoutException}, {@code CacheWriterException},
    * {@code GatewayException}, or {@code RegionExistsException}.
+   *
+   * @param is the InputStream from which to read the XML
    *
    * @throws CacheXmlException If the XML read from {@code is} does not conform to the dtd or if an
    *         {@code IOException} occurs while reading the XML.
@@ -154,12 +171,15 @@ public interface GemFireCache extends RegionService {
    *
    * @param name the name of the disk store to find. If {@code null} then the default disk store, if
    *        it exists, is returned.
+   * @return the DiskStore by name or {@code null} if no disk store is found
    * @since GemFire 6.5
    */
   DiskStore findDiskStore(String name);
 
   /**
    * create diskstore factory
+   *
+   * @return a {@link DiskStoreFactory}
    *
    * @since GemFire 6.5
    */
@@ -168,7 +188,9 @@ public interface GemFireCache extends RegionService {
   GatewaySenderFactory createGatewaySenderFactory();
 
   /**
-   * Returns whether { @link PdxInstance} is preferred for PDX types instead of Java object.
+   * Returns whether {@link PdxInstance} is preferred for PDX types instead of Java object.
+   *
+   * @return whether {@link PdxInstance} is preferred for PDX types instead of Java object
    *
    * @see CacheFactory#setPdxReadSerialized(boolean)
    * @see ClientCacheFactory#setPdxReadSerialized(boolean)
@@ -180,6 +202,8 @@ public interface GemFireCache extends RegionService {
   /**
    * Returns the PdxSerializer used by this cache, or null if no PDX serializer is defined.
    *
+   * @return the PdxSerializer used by this cache, or null if no PDX serializer is defined
+   *
    * @since GemFire 6.6
    * @see CacheFactory#setPdxSerializer(PdxSerializer)
    * @see ClientCacheFactory#setPdxSerializer(PdxSerializer)
@@ -188,6 +212,8 @@ public interface GemFireCache extends RegionService {
 
   /**
    * Returns the disk store used for PDX meta data
+   *
+   * @return the disk store used for PDX meta data
    *
    * @since GemFire 6.6
    * @see CacheFactory#setPdxDiskStore(String)
@@ -198,6 +224,8 @@ public interface GemFireCache extends RegionService {
   /**
    * Returns true if the PDX metadata for this cache is persistent
    *
+   * @return whether the PDX metadata for this cache is persistent
+   *
    * @since GemFire 6.6
    * @see CacheFactory#setPdxPersistent(boolean)
    * @see ClientCacheFactory#setPdxPersistent(boolean)
@@ -207,6 +235,9 @@ public interface GemFireCache extends RegionService {
   /**
    * Returns true if fields that are not read during PDX deserialization should be ignored during
    * the PDX serialization.
+   *
+   * @return whether fields that are not read during PDX deserialization should be ignored during
+   *         the PDX serialization
    *
    * @since GemFire 6.6
    * @see CacheFactory#setPdxIgnoreUnreadFields(boolean)
@@ -262,6 +293,8 @@ public interface GemFireCache extends RegionService {
    * Returns the Declarable used to initialize this cache or {@code null} if it does not have an
    * initializer.
    *
+   * @return the Declarable used to initialize this cache
+   *
    * @since GemFire 6.6
    */
   Declarable getInitializer();
@@ -269,6 +302,8 @@ public interface GemFireCache extends RegionService {
   /**
    * Returns the Properties used to initialize the cache initializer or {@code null} if no
    * initializer properties exist.
+   *
+   * @return the Properties used to initialize the cache initializer
    *
    * @since GemFire 6.6
    */

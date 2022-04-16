@@ -15,7 +15,7 @@
 package org.apache.geode.internal.cache.execute;
 
 /**
- * Extracted from {@link PRPerformanceTestDUnitTest}.
+ * Extracted from PRPerformanceTestDUnitTest.
  */
 class TimeKeeper {
 

@@ -22,7 +22,7 @@ import org.apache.geode.pdx.PdxWriter;
 
 /**
  * The Item class models item entity in the real world.
- * <p/>
+ * <p>
  *
  * @since GemFire 8.0
  */

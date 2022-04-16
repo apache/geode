@@ -90,11 +90,13 @@ public abstract class ServerContainer {
    * Creates a whole new cargo configuration and cargo container for the {@link #container}
    * variable.
    *
+   * @param install the installation with which to set up the container
    * @param containerConfigHome The folder that the container configuration folder should be setup
    *        in
    * @param containerDescriptors A string of extra descriptors for the container used in the
    *        containers {@link #description}
    * @param portSupplier allocates ports for use by the container
+   * @throws IOException if an exception is encountered
    */
   public ServerContainer(ContainerInstall install, File containerConfigHome,
       String containerDescriptors, IntSupplier portSupplier) throws IOException {
@@ -153,7 +155,7 @@ public abstract class ServerContainer {
     FileUtils.copyFile(installXMLFile, cacheXMLFile);
   }
 
-  /**
+  /*
    * Generates a unique, mostly human readable, description string of the container using the
    * installation's description, extraIdentifiers, and the current system nano time
    */
@@ -278,6 +280,8 @@ public abstract class ServerContainer {
   /**
    * Copies the container configuration (found through {@link #getConfiguration()}) to the logging
    * directory specified by {@link #cargoLogDir}
+   *
+   * @throws IOException if an exception is encountered when deleting files
    */
   public void cleanUp() throws IOException {
     File configDir = new File(getConfiguration().getHome());
@@ -293,6 +297,10 @@ public abstract class ServerContainer {
    *
    * Sets the two variables {@link #locatorAddress} and {@link #locatorPort}. Also calls the
    * {@link #updateLocator()} function to write the updated locator properties to the file.
+   *
+   * @param address the host name or ip address that the locator is listening on
+   * @param port the port that the locator is listening on
+   * @throws IOException if an exception is encountered when updating the locator property file
    */
   public void setLocator(String address, int port) throws IOException {
     locatorAddress = address;
@@ -300,7 +308,7 @@ public abstract class ServerContainer {
     updateLocator();
   }
 
-  /**
+  /*
    * Sets the container's cache XML file
    */
   public void setCacheXMLFile(File cacheXMLFile) throws IOException {
@@ -308,28 +316,28 @@ public abstract class ServerContainer {
     this.cacheXMLFile = cacheXMLFile;
   }
 
-  /**
+  /*
    * Set a geode session replication property
    */
   public String setCacheProperty(String name, String value) throws IOException {
     return cacheProperties.put(name, value);
   }
 
-  /**
+  /*
    * Set geode distributed system property
    */
   public String setSystemProperty(String name, String value) throws IOException {
     return systemProperties.put(name, value);
   }
 
-  /**
+  /*
    * Sets the war file for this container to deploy and use
    */
   public void setWarFile(File warFile) {
     this.warFile = warFile;
   }
 
-  /**
+  /*
    * set the container's logging level
    */
   public void setLoggingLevel(String loggingLevel) {
@@ -375,7 +383,9 @@ public abstract class ServerContainer {
   /**
    * Get the RMI port for the container
    *
-   * Calls {@link #getPort()} with the {@link GeneralPropertySet#RMI_PORT} option.
+   * Calls {@link #getPort(String)} with the {@link GeneralPropertySet#RMI_PORT} option.
+   *
+   * @return the RMI port for the container
    */
   public String getRMIPort() {
     return getPort(GeneralPropertySet.RMI_PORT);
@@ -384,13 +394,15 @@ public abstract class ServerContainer {
   /**
    * Get the basic port for the container
    *
-   * Calls {@link #getPort()} with the {@link ServletPropertySet#PORT} option.
+   * Calls {@link #getPort(String)} with the {@link ServletPropertySet#PORT} option.
+   *
+   * @return the basic port for the container
    */
   public String getPort() {
     return getPort(ServletPropertySet.PORT);
   }
 
-  /**
+  /*
    * The container's port for the specified port type
    */
   public String getPort(String portType) {
@@ -405,7 +417,7 @@ public abstract class ServerContainer {
     return config.getPropertyValue(portType);
   }
 
-  /**
+  /*
    * Called before each container startup
    *
    * This is mainly used to write properties to whatever format they need to be in for a given

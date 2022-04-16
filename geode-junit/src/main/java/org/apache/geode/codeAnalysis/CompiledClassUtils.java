@@ -57,9 +57,11 @@ public class CompiledClassUtils {
   }
 
   /**
-   * Parse the given class files and return a map of name->Dclass. Any IO exceptions are consumed by
+   * Parse the given class files and return a map of name-&gt;Dclass. Any IO exceptions are consumed
+   * by
    * this method and written to stderr.
    *
+   * @param classFiles a list of Files
    * @return the parsed classes
    */
   public static Map<String, CompiledClass> parseClassFiles(List<File> classFiles) {
@@ -79,10 +81,11 @@ public class CompiledClassUtils {
   }
 
   /**
-   * Parse the files in the given jar file and return a map of name->CompiledClass. Any IO
+   * Parse the files in the given jar file and return a map of name-&gt;CompiledClass. Any IO
    * exceptions are consumed by this method and written to stderr.
    *
    * @param jar the jar file holding classes
+   * @return a map of name-&gt;CompiledClass
    */
   public static Map<String, CompiledClass> parseClassFilesInJar(File jar) {
     Map<String, CompiledClass> result = new HashMap<>();
@@ -108,7 +111,7 @@ public class CompiledClassUtils {
     return result;
   }
 
-  /**
+  /*
    * Parse the files in the given jar file and return a map of name->CompiledClass. Any IO
    * exceptions are consumed by this method and written to stderr.
    */
@@ -134,6 +137,7 @@ public class CompiledClassUtils {
   /**
    * returns a collection of all of the .class files in the given list of files and directories.
    *
+   * @param parentPath the path of the parent directory in which the files exist
    * @param filenames a list of the files and directories to examine
    * @param recursive whether to recurse into subdirectories
    * @return a sorted list of the .class files found

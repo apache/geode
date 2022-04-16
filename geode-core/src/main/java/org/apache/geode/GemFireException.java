@@ -39,6 +39,8 @@ public abstract class GemFireException extends RuntimeException {
 
   /**
    * Creates a new {@code GemFireException} with the given detail message.
+   *
+   * @param message the detail message
    */
   public GemFireException(String message) {
     super(message);
@@ -46,6 +48,9 @@ public abstract class GemFireException extends RuntimeException {
 
   /**
    * Creates a new {@code GemFireException} with the given detail message and cause.
+   *
+   * @param message the detail message
+   * @param cause the cause
    */
   public GemFireException(String message, Throwable cause) {
     super(message, cause);
@@ -53,6 +58,8 @@ public abstract class GemFireException extends RuntimeException {
 
   /**
    * Creates a new {@code GemFireException} with the given cause and no detail message
+   *
+   * @param cause the cause
    */
   public GemFireException(Throwable cause) {
     super(cause);
@@ -61,6 +68,9 @@ public abstract class GemFireException extends RuntimeException {
   /**
    * Returns the root cause of this {@code GemFireException} or {@code null} if the cause is
    * nonexistent or unknown.
+   *
+   * @return The root cause of this {@code GemFireException} or {@code null} if the cause is
+   *         nonexistent or unknown
    */
   public Throwable getRootCause() {
     if (getCause() == null) {

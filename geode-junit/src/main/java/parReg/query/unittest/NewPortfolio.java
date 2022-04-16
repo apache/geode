@@ -48,9 +48,8 @@ public class NewPortfolio implements Serializable {
     myVersion = "tests/parReg.query.NewPortfolio";
   }
 
-  /**
+  /*
    * Constructor to randomly populate the portfolio.
-   *
    */
   public NewPortfolio(String name, int id) {
     myVersion = "tests/parReg.query.NewPortfolio";
@@ -142,9 +141,8 @@ public class NewPortfolio implements Serializable {
     return positions;
   }
 
-  /**
+  /*
    * To provide random values to populate a position.
-   *
    */
   protected Properties getProps() {
     Properties props = new Properties();
@@ -208,7 +206,7 @@ public class NewPortfolio implements Serializable {
     return result;
   }
 
-  /**
+  /*
    * Create a map of fields and field values to use to write to the blackboard since PdxSerialiables
    * cannot be put on the blackboard since the MasterController does not have pdx objects on its
    * classpath. For PdxSerializables we put this Map on the blackboard instead.

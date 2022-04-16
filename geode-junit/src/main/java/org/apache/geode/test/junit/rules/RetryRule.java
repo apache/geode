@@ -24,7 +24,7 @@ import org.apache.geode.test.junit.Retry;
 
 /**
  * JUnit Rule that enables retrying a failed test up to a maximum number of retries.
- * </p>
+ * <p>
  * RetryRule can be used globally for all tests in a test case by specifying a retryCount when
  * instantiating it:
  *
@@ -37,9 +37,9 @@ import org.apache.geode.test.junit.Retry;
  *   ...
  * }
  * </pre>
- * </p>
+ * <p>
  * The above will result in 3 retries for every test in the test case.
- * </p>
+ * <p>
  * RetryRule can be used locally for specific tests by annotating the test method with
  * {@literal @}Rule and specifying a retryCount for that test:
  *
@@ -53,7 +53,7 @@ import org.apache.geode.test.junit.Retry;
  *   ...
  * }
  * </pre>
- * </p>
+ * <p>
  * This version of RetryRule will retry a test that fails because of any kind of Throwable.
  */
 public class RetryRule implements TestRule, Serializable {

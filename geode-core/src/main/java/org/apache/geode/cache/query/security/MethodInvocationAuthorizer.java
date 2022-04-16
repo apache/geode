@@ -25,18 +25,17 @@ import org.apache.geode.cache.Region;
  * The authorizer is responsible for determining whether a {@link java.lang.reflect.Method} is
  * allowed to be executed on a specific {@link java.lang.Object} instance. Implementations of this
  * interface should provide a no-arg constructor.
- * <p/>
+ * <p>
  *
  * There are mainly four security risks when allowing users to execute arbitrary methods in OQL,
  * which should be addressed by implementations of this interface:
- * <p>
  * <ul>
  * <li>{@code Java Reflection}: do anything through {@link Object#getClass()} or similar.
  * <li>{@code Cache Modification}: execute {@link Cache} operations (close, get regions, etc.).
  * <li>{@code Region Modification}: execute {@link Region} operations (destroy, invalidate, etc.).
  * <li>{@code Region Entry Modification}: execute in-place modifications on the region entries.
  * </ul>
- * </p>
+ * <p>
  *
  * Implementations of this interface should be thread-safe: multiple threads might be authorizing
  * several method invocations using the same instance at the same time.
@@ -46,7 +45,7 @@ public interface MethodInvocationAuthorizer {
   /**
    * Initializes the MethodInvocationAuthorizer using a {@link Cache} and a {@link Set} of
    * {@link String} parameters.
-   * <p/>
+   * <p>
    *
    * This method exists to allow user-specified method authorizers to be configured and used at
    * runtime. If this method is not overridden in a user-specified authorizer then that authorizer
@@ -61,7 +60,7 @@ public interface MethodInvocationAuthorizer {
   /**
    * Executes the authorization logic to determine whether the {@code method} is allowed to be
    * executed on the {@code target} object instance.
-   * <p/>
+   * <p>
    *
    * <b>Implementation Note</b>: the query engine will remember whether the method invocation has
    * been already authorized or not for the current query context, so this method will be called

@@ -179,7 +179,12 @@ public class ExpirationAction implements Serializable {
     return fromOrdinal(ordinal); // Canonicalize
   }
 
-  /** Return the ExpirationAction represented by specified ordinal */
+  /**
+   * Return the ExpirationAction represented by specified ordinal
+   *
+   * @param ordinal the ordinal representation of an ExpirationAction
+   * @return the ExpirationAction represented by specified ordinal
+   */
   public static ExpirationAction fromOrdinal(int ordinal) {
     return VALUES[ordinal];
   }

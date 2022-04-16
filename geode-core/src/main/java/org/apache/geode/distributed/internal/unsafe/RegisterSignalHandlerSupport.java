@@ -19,7 +19,7 @@ import org.apache.geode.unsafe.internal.sun.misc.Signal;
 
 /**
  * The RegisterSignalHandlerSupport class is an ugly hack!
- * </p>
+ * <p>
  *
  * @since GemFire 7.0
  */

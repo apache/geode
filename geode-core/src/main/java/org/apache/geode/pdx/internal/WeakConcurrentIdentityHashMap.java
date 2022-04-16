@@ -26,16 +26,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * presence of an object as a key in the map does not prevent it being garbage collected (like
  * WeakHashMap). This class does not implement the Map interface because it is difficult to ensure
  * correct semantics for iterators over the entrySet().
- * </p>
- *
  * <p>
  * Because we do not implement Map, we do not copy the questionable interface where you can call
  * get(k) or remove(k) for any type of k, which of course can only have an effect if k is of type K.
- * </p>
- *
  * <p>
  * This map does not support null keys.
- * </p>
  * <p>
  * The approach is to wrap each key in a WeakReference and use the wrapped value as a key in an
  * ordinary HashMap. The WeakReference has to be a subclass IdentityWeakReference (IWR) where two

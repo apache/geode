@@ -29,14 +29,14 @@ import org.apache.geode.logging.internal.log4j.api.LogWithToString;
 /**
  * Handles messages that consist of a format string containing '{}' to represent each replaceable
  * token, and the parameters.
- * <p/>
+ * <p>
  * This class was originally written for <a href="http://lilithapp.com/">Lilith</a> by Joern Huxhorn
  * where it is licensed under the LGPL. It has been relicensed here with his permission providing
  * that this attribution remain.
- * <p/>
+ * <p>
  * Copied into Geode from org.apache.logging.log4j.message.ParameterizedMessage
  * (http://logging.apache.org/log4j/2.x/license.html)
- * <p/>
+ * <p>
  * Geode changes include changing class name and package. Additional changes are commented with "//
  * GEODE: note"
  */
@@ -120,7 +120,7 @@ public class GemFireParameterizedMessage implements Message {
    * If the last argument is a Throwable and is NOT used up by a placeholder in the message pattern
    * it is returned in {@link #getThrowable()} and won't be contained in the created String[]. If it
    * is used up {@link #getThrowable()} will return null even if the last argument was a Throwable!
-   * </p>
+   * <p>
    *
    * @param messagePattern the message pattern that to be checked for placeholders.
    * @param arguments the argument array to be converted.
@@ -367,11 +367,10 @@ public class GemFireParameterizedMessage implements Message {
    * but not if a contained container contains the original one. Because of that,
    * Arrays.toString(Object[]) isn't safe either. Confusing? Just read the last paragraph again and
    * check the respective toString() implementation.
-   * </p>
    * <p>
    * This means, in effect, that logging would produce a usable output even if an ordinary
    * System.out.println(o) would produce a relatively hard-to-debug StackOverflowError.
-   * </p>
+   * <p>
    *
    * @param o The object.
    * @return The String representation.
@@ -395,18 +394,16 @@ public class GemFireParameterizedMessage implements Message {
    * types", i.e. Object[], Map and Collection because those could contain themselves.
    * <p>
    * dejaVu is used in case of those container types to prevent an endless recursion.
-   * </p>
    * <p>
    * It should be noted that neither AbstractMap.toString() nor AbstractCollection.toString()
    * implement such a behavior. They only check if the container is directly contained in itself,
    * but not if a contained container contains the original one. Because of that,
    * Arrays.toString(Object[]) isn't safe either. Confusing? Just read the last paragraph again and
    * check the respective toString() implementation.
-   * </p>
    * <p>
    * This means, in effect, that logging would produce a usable output even if an ordinary
    * System.out.println(o) would produce a relatively hard-to-debug StackOverflowError.
-   * </p>
+   * <p>
    *
    * @param o the Object to convert into a String
    * @param str the StringBuilder that o will be appended to
@@ -540,10 +537,9 @@ public class GemFireParameterizedMessage implements Message {
    * This method returns the same as if Object.toString() would not have been overridden in obj.
    * <p>
    * Note that this isn't 100% secure as collisions can always happen with hash codes.
-   * </p>
    * <p>
    * Copied from Object.hashCode():
-   * </p>
+   * <p>
    * <blockquote> As much as is reasonably practical, the hashCode method defined by class
    * {@code Object} does return distinct integers for distinct objects. (This is typically
    * implemented by converting the internal address of the object into an integer, but this

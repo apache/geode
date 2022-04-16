@@ -28,19 +28,14 @@ import org.apache.lucene.analysis.Analyzer;
  * the associated regions. Lucene Indexes are created using {@link LuceneService#createIndexFactory}
  * by specifying the Lucene index name, the region associated with the Lucene index and the fields
  * on which the Lucene index is to be created.
- * </p>
- *
  * <p>
  * Every Lucene index is uniquely identified by the index name and the name of the region associated
  * with it. To obtain the LuceneIndex created over a region use
  * {@link LuceneService#getIndex(String, String)}
- * </p>
- *
  * <p>
  * LuceneIndexes are created using gfsh, xml, or the Java API using LuceneService
  * {@link LuceneService#createIndexFactory}. More information about LuceneIndex can be found at
  * {@link LuceneService}
- * </p>
  */
 public interface LuceneIndex {
 
@@ -81,6 +76,8 @@ public interface LuceneIndex {
 
   /**
    * Return the {@link LuceneSerializer} associated with this index
+   *
+   * @return the {@link LuceneSerializer} associated with this index
    */
   LuceneSerializer getLuceneSerializer();
 

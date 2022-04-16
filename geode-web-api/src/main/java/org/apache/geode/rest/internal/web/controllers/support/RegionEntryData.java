@@ -28,7 +28,7 @@ import org.apache.geode.rest.internal.web.util.JsonWriter;
 
 /**
  * The RegionData class is a container for data fetched from a GemFire Cache Region.
- * <p/>
+ * <p>
  *
  * @see com.fasterxml.jackson.databind.JsonSerializable
  * @see java.lang.Iterable

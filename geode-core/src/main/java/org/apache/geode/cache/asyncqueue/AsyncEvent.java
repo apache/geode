@@ -25,6 +25,8 @@ import org.apache.geode.cache.wan.GatewayQueueEvent;
 public interface AsyncEvent<K, V> extends GatewayQueueEvent<K, V> {
   /**
    * Returns whether possibleDuplicate is set for this event.
+   *
+   * @return whether possibleDuplicate is set for this event
    */
   boolean getPossibleDuplicate();
 
@@ -33,6 +35,9 @@ public interface AsyncEvent<K, V> extends GatewayQueueEvent<K, V> {
    * uniquely identify any region operation like create, update etc. This helps in sequencing the
    * events belonging to a unique producer. e.g. The EventID can be used to track events received by
    * <code>AsyncEventListener</code> to avoid processing duplicates.
+   *
+   * @return the wrapper over the DistributedMembershipID, ThreadID, SequenceID which are used to
+   *         uniquely identify any region operation
    */
   EventSequenceID getEventSequenceID();
 }

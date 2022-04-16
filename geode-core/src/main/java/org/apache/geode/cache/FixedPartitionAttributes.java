@@ -18,14 +18,14 @@ import org.apache.geode.internal.cache.FixedPartitionAttributesImpl;
 
 /**
  * Composite date type used to distribute the attributes for a fixed partition.
- * </p>
+ * <p>
  *
  * {@link org.apache.geode.cache.PartitionAttributes#getFixedPartitionAttributes()} returns all
  * fixed partitions in Partitioned Region attributes.
- * </p>
+ * <p>
  * {@link org.apache.geode.cache.PartitionAttributesFactory#addFixedPartitionAttributes(FixedPartitionAttributes)}
  * configures <code>FixedPartitionAttributes</Code> in <code>PartitionedRegionAttributes</code>
- * </p>
+ * <p>
  *
  * @see org.apache.geode.cache.PartitionAttributes
  * @see org.apache.geode.cache.PartitionAttributesFactory
@@ -42,6 +42,7 @@ public abstract class FixedPartitionAttributes {
    * Creates an instance of <code>FixedPartitionAttributes</code>.
    *
    * @param name Name of the fixed partition.
+   * @return an instance of <code>FixedPartitionAttributes</code>
    */
   public static FixedPartitionAttributes createFixedPartition(String name) {
     return new FixedPartitionAttributesImpl().setPartitionName(name)
@@ -53,6 +54,7 @@ public abstract class FixedPartitionAttributes {
    *
    * @param name Name of the fixed partition.
    * @param isPrimary True if this member is the primary for the partition.
+   * @return an instance of <code>FixedPartitionAttributes</code>
    */
   public static FixedPartitionAttributes createFixedPartition(String name, boolean isPrimary) {
     return new FixedPartitionAttributesImpl().setPartitionName(name).isPrimary(isPrimary)
@@ -65,6 +67,7 @@ public abstract class FixedPartitionAttributes {
    * @param name Name of the fixed partition.
    * @param isPrimary True if this member is the primary for the partition.
    * @param numBuckets Number of buckets allowed for the partition.
+   * @return an instance of <code>FixedPartitionAttributes</code>
    */
   public static FixedPartitionAttributes createFixedPartition(String name, boolean isPrimary,
       int numBuckets) {
@@ -77,6 +80,7 @@ public abstract class FixedPartitionAttributes {
    *
    * @param name Name of the fixed partition.
    * @param numBuckets Number of buckets allowed for the partition.
+   * @return an instance of <code>FixedPartitionAttributes</code>
    */
   public static FixedPartitionAttributes createFixedPartition(String name, int numBuckets) {
     return new FixedPartitionAttributesImpl().setPartitionName(name)
@@ -85,6 +89,8 @@ public abstract class FixedPartitionAttributes {
 
   /**
    * Returns the name of the fixed partition.
+   *
+   * @return the name of the fixed partition
    */
   public abstract String getPartitionName();
 
@@ -97,6 +103,8 @@ public abstract class FixedPartitionAttributes {
 
   /**
    * Returns the number of buckets allowed for the partition.
+   *
+   * @return the number of buckets allowed for the partition
    */
   public abstract int getNumBuckets();
 }

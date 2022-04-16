@@ -141,12 +141,15 @@ public interface CacheServer {
 
   /**
    * Returns the port on which this cache server listens for clients.
+   *
+   * @return the port on which this cache server listens for clients
    */
   int getPort();
 
   /**
    * Sets the port on which this cache server listens for clients.
    *
+   * @param port the port on which this cache server listens for clients
    * @throws IllegalStateException If this cache server is running
    */
   void setPort(int port);
@@ -212,7 +215,7 @@ public interface CacheServer {
   void setHostnameForClients(String name);
 
   /**
-   * Sets whether or not this cache server should notify clients based on key subscription.
+   * Sets whether this cache server should notify clients based on key subscription.
    *
    * If false, then an update to any key on the cache server causes an update to be sent to all
    * clients. This update does not push the actual data to the clients. Instead, it causes the
@@ -224,6 +227,7 @@ public interface CacheServer {
    * change. In addition, the actual value is pushed to the client. The client does not need to
    * request the new value from the cache server.
    *
+   * @param b whether this cache server should notify clients based on key subscription
    * @since GemFire 4.2
    * @deprecated as of 6.0.1. This method is no longer in use, by default notifyBySubscription
    *             attribute is set to true.
@@ -232,8 +236,9 @@ public interface CacheServer {
   void setNotifyBySubscription(boolean b);
 
   /**
-   * Answers whether or not this cache server should notify clients based on key subscription.
+   * Answers whether this cache server should notify clients based on key subscription.
    *
+   * @return whether this cache server should notify clients based on key subscription
    * @since GemFire 4.2
    * @deprecated as of 6.0.1. This method is no more in use, by default notifyBySubscription
    *             attribute is set to true.
@@ -292,7 +297,9 @@ public interface CacheServer {
   void start() throws IOException;
 
   /**
-   * Returns whether or not this cache server is running
+   * Returns whether this cache server is running
+   *
+   * @return whether this cache server is running
    */
   boolean isRunning();
 
@@ -304,6 +311,8 @@ public interface CacheServer {
 
   /**
    * Returns the maximum allowed client connections
+   *
+   * @return the maximum number of client connections allowed
    */
   int getMaxConnections();
 
@@ -311,6 +320,7 @@ public interface CacheServer {
    * Sets the maximum number of client connections allowed. When the maximum is reached the cache
    * server will stop accepting connections.
    *
+   * @param maxCons the maximum number of client connections allowed
    * @see #DEFAULT_MAX_CONNECTIONS
    */
   void setMaxConnections(int maxCons);
@@ -320,6 +330,7 @@ public interface CacheServer {
    * The default of <code>0</code> causes the cache server to dedicate a thread for every client
    * connection.
    *
+   * @return the maximum number of threads allowed in this cache server to service client requests
    * @since GemFire 5.1
    */
   int getMaxThreads();
@@ -329,6 +340,8 @@ public interface CacheServer {
    * default of <code>0</code> causes the cache server to dedicate a thread for every client
    * connection.
    *
+   * @param maxThreads the maximum number of threads allowed in this cache server to service client
+   *        requests
    * @see #DEFAULT_MAX_THREADS
    * @since GemFire 5.1
    */
@@ -336,24 +349,31 @@ public interface CacheServer {
 
   /**
    * Returns the maximum number of messages that can be enqueued in a client-queue.
+   *
+   * @return the maximum number of messages that can be enqueued in a client-queue
    */
   int getMaximumMessageCount();
 
   /**
    * Sets maximum number of messages that can be enqueued in a client-queue.
    *
+   * @param maxMessageCount the maximum number of messages that can be enqueued in a client-queue
    * @see #DEFAULT_MAXIMUM_MESSAGE_COUNT
    */
   void setMaximumMessageCount(int maxMessageCount);
 
   /**
    * Returns the time (in seconds ) after which a message in the client queue will expire.
+   *
+   * @return the time (in seconds ) after which a message in the client queue will expire
    */
   int getMessageTimeToLive();
 
   /**
    * Sets the time (in seconds ) after which a message in the client queue will expire.
    *
+   * @param messageTimeToLive the time (in seconds ) after which a message in the client queue will
+   *        expire
    * @see #DEFAULT_MESSAGE_TIME_TO_LIVE
    */
   void setMessageTimeToLive(int messageTimeToLive);
@@ -437,6 +457,7 @@ public interface CacheServer {
    * Get the ClientSubscriptionConfig for this cache server. See {@link ClientSubscriptionConfig}
    * for details on the client subscription configuration.
    *
+   * @return the ClientSubscriptionConfig for this cache server
    * @since GemFire 5.7
    */
   ClientSubscriptionConfig getClientSubscriptionConfig();
@@ -444,6 +465,7 @@ public interface CacheServer {
   /**
    * Returns the <code>ClientSession</code> associated with the <code>DistributedMember</code>
    *
+   * @param member a <code>DistributedMember</code>
    * @return the <code>ClientSession</code> associated with the <code>DistributedMember</code>
    * @since GemFire 6.0
    */
@@ -452,6 +474,7 @@ public interface CacheServer {
   /**
    * Returns the <code>ClientSession</code> associated with the durable client id
    *
+   * @param durableClientId a durable client id
    * @return the <code>ClientSession</code> associated with the durable
    * @since GemFire 6.0
    */

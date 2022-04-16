@@ -36,12 +36,11 @@ public interface GatewayConflictResolver {
    * <p>
    * This method is invoked under synchronization on the cache entry in order to prevent it from
    * concurrent modification
-   * </p>
    * <p>
    * For any two events, all GatewayConflictResolvers must make the same decision on the resolution
    * of the conflict in order to maintain consistency. They must do so regardless of the order of
    * the events.
-   * </p>
+   * <p>
    *
    * @param event the event that is in conflict with the current cache state
    * @param helper an object to be used in modifying the course of action for this event

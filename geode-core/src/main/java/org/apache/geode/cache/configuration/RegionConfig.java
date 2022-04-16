@@ -55,96 +55,96 @@ import org.apache.geode.management.configuration.RegionType;
  * The following schema fragment specifies the expected content contained within this class.
  *
  * <pre>
- * &lt;complexType name="region-type">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="region-attributes" type="{http://geode.apache.org/schema/cache}region-attributes-type" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="index" maxOccurs="unbounded" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;choice minOccurs="0">
- *                   &lt;element name="functional">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;attribute name="expression" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                           &lt;attribute name="from-clause" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                           &lt;attribute name="imports" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
- *                   &lt;element name="primary-key">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;attribute name="field" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
- *                 &lt;/choice>
- *                 &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="expression" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="from-clause" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="imports" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="key-index" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *                 &lt;attribute name="type" default="range">
- *                   &lt;simpleType>
- *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *                       &lt;enumeration value="range"/>
- *                       &lt;enumeration value="hash"/>
- *                     &lt;/restriction>
- *                   &lt;/simpleType>
- *                 &lt;/attribute>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="entry" maxOccurs="unbounded" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="key">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;choice>
- *                             &lt;element name="string" type="{http://geode.apache.org/schema/cache}string-type"/>
- *                             &lt;element name="declarable" type="{http://geode.apache.org/schema/cache}declarable-type"/>
- *                           &lt;/choice>
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
- *                   &lt;element name="value">
- *                     &lt;complexType>
- *                       &lt;complexContent>
- *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                           &lt;choice>
- *                             &lt;element name="string" type="{http://geode.apache.org/schema/cache}string-type"/>
- *                             &lt;element name="declarable" type="{http://geode.apache.org/schema/cache}declarable-type"/>
- *                           &lt;/choice>
- *                         &lt;/restriction>
- *                       &lt;/complexContent>
- *                     &lt;/complexType>
- *                   &lt;/element>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;any processContents='lax' namespace='##other' maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="region" type="{http://geode.apache.org/schema/cache}region-type" maxOccurs="unbounded" minOccurs="0"/>
- *       &lt;/sequence>
- *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="refid" type="{http://www.w3.org/2001/XMLSchema}string" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="region-type"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="region-attributes" type="{http://geode.apache.org/schema/cache}region-attributes-type" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *         &lt;element name="index" maxOccurs="unbounded" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;choice minOccurs="0"&gt;
+ *                   &lt;element name="functional"&gt;
+ *                     &lt;complexType&gt;
+ *                       &lt;complexContent&gt;
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                           &lt;attribute name="expression" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                           &lt;attribute name="from-clause" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                           &lt;attribute name="imports" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                         &lt;/restriction&gt;
+ *                       &lt;/complexContent&gt;
+ *                     &lt;/complexType&gt;
+ *                   &lt;/element&gt;
+ *                   &lt;element name="primary-key"&gt;
+ *                     &lt;complexType&gt;
+ *                       &lt;complexContent&gt;
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                           &lt;attribute name="field" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                         &lt;/restriction&gt;
+ *                       &lt;/complexContent&gt;
+ *                     &lt;/complexType&gt;
+ *                   &lt;/element&gt;
+ *                 &lt;/choice&gt;
+ *                 &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="expression" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="from-clause" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="imports" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="key-index" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *                 &lt;attribute name="type" default="range"&gt;
+ *                   &lt;simpleType&gt;
+ *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string"&gt;
+ *                       &lt;enumeration value="range"/&gt;
+ *                       &lt;enumeration value="hash"/&gt;
+ *                     &lt;/restriction&gt;
+ *                   &lt;/simpleType&gt;
+ *                 &lt;/attribute&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *         &lt;element name="entry" maxOccurs="unbounded" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;sequence&gt;
+ *                   &lt;element name="key"&gt;
+ *                     &lt;complexType&gt;
+ *                       &lt;complexContent&gt;
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                           &lt;choice&gt;
+ *                             &lt;element name="string" type="{http://geode.apache.org/schema/cache}string-type"/&gt;
+ *                             &lt;element name="declarable" type="{http://geode.apache.org/schema/cache}declarable-type"/&gt;
+ *                           &lt;/choice&gt;
+ *                         &lt;/restriction&gt;
+ *                       &lt;/complexContent&gt;
+ *                     &lt;/complexType&gt;
+ *                   &lt;/element&gt;
+ *                   &lt;element name="value"&gt;
+ *                     &lt;complexType&gt;
+ *                       &lt;complexContent&gt;
+ *                         &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                           &lt;choice&gt;
+ *                             &lt;element name="string" type="{http://geode.apache.org/schema/cache}string-type"/&gt;
+ *                             &lt;element name="declarable" type="{http://geode.apache.org/schema/cache}declarable-type"/&gt;
+ *                           &lt;/choice&gt;
+ *                         &lt;/restriction&gt;
+ *                       &lt;/complexContent&gt;
+ *                     &lt;/complexType&gt;
+ *                   &lt;/element&gt;
+ *                 &lt;/sequence&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *         &lt;any processContents='lax' namespace='##other' maxOccurs="unbounded" minOccurs="0"/&gt;
+ *         &lt;element name="region" type="{http://geode.apache.org/schema/cache}region-type" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="refid" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  *
  *
@@ -211,7 +211,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
    * Objects of the following type(s) are allowed in the list
    * {@link RegionConfig.Index }
    *
-   *
+   * @return the value of the index property
    */
   public List<Index> getIndexes() {
     if (indexes == null) {
@@ -224,6 +224,8 @@ public class RegionConfig implements Identifiable<String>, Serializable {
    * Gets the value of the entry property.
    * Currently, users can not create regions with initial entries using management v2 api.
    * this entry list will be ignored when creating the region
+   *
+   * @return the value of the entry property
    */
   public List<Entry> getEntries() {
     if (entries == null) {
@@ -236,6 +238,8 @@ public class RegionConfig implements Identifiable<String>, Serializable {
    * Gets the list of custom region elements
    * Currently, users can not create regions with custom region elements using management v2 api.
    * this cache element list will be ignored when creating the region
+   *
+   * @return the list of custom region elements
    */
   public List<CacheElement> getCustomRegionElements() {
     if (regionElements == null) {
@@ -248,6 +252,8 @@ public class RegionConfig implements Identifiable<String>, Serializable {
    * Gets the list of the sub regions
    * Currently, users can not create regions with sub regions using management v2 api.
    * This sub region list will be ignored when creating the region.
+   *
+   * @return the list of the sub regions
    */
   public List<RegionConfig> getRegions() {
     if (regions == null) {
@@ -262,6 +268,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
    * possible object is
    * {@link String }
    *
+   * @return the value of the name property
    */
   public String getName() {
     return name;
@@ -273,6 +280,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
    * allowed object is
    * {@link String }
    *
+   * @param value the value of the name property
    */
   public void setName(String value) throws IllegalArgumentException {
     if (value == null) {
@@ -288,6 +296,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
    * possible object is
    * {@link String }
    *
+   * @return the value of the type property
    */
   public String getType() {
     return type;
@@ -299,6 +308,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
    * allowed object is
    * {@link String }
    *
+   * @param regionType the value of the type property
    */
   public void setType(RegionType regionType) {
     if (regionType != null) {
@@ -326,38 +336,38 @@ public class RegionConfig implements Identifiable<String>, Serializable {
    * The following schema fragment specifies the expected content contained within this class.
    *
    * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;sequence>
-   *         &lt;element name="key">
-   *           &lt;complexType>
-   *             &lt;complexContent>
-   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *                 &lt;choice>
-   *                   &lt;element name="string" type="{http://geode.apache.org/schema/cache}string-type"/>
-   *                   &lt;element name="declarable" type="{http://geode.apache.org/schema/cache}declarable-type"/>
-   *                 &lt;/choice>
-   *               &lt;/restriction>
-   *             &lt;/complexContent>
-   *           &lt;/complexType>
-   *         &lt;/element>
-   *         &lt;element name="value">
-   *           &lt;complexType>
-   *             &lt;complexContent>
-   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *                 &lt;choice>
-   *                   &lt;element name="string" type="{http://geode.apache.org/schema/cache}string-type"/>
-   *                   &lt;element name="declarable" type="{http://geode.apache.org/schema/cache}declarable-type"/>
-   *                 &lt;/choice>
-   *               &lt;/restriction>
-   *             &lt;/complexContent>
-   *           &lt;/complexType>
-   *         &lt;/element>
-   *       &lt;/sequence>
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
+   * &lt;complexType&gt;
+   *   &lt;complexContent&gt;
+   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *       &lt;sequence&gt;
+   *         &lt;element name="key"&gt;
+   *           &lt;complexType&gt;
+   *             &lt;complexContent&gt;
+   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *                 &lt;choice&gt;
+   *                   &lt;element name="string" type="{http://geode.apache.org/schema/cache}string-type"/&gt;
+   *                   &lt;element name="declarable" type="{http://geode.apache.org/schema/cache}declarable-type"/&gt;
+   *                 &lt;/choice&gt;
+   *               &lt;/restriction&gt;
+   *             &lt;/complexContent&gt;
+   *           &lt;/complexType&gt;
+   *         &lt;/element&gt;
+   *         &lt;element name="value"&gt;
+   *           &lt;complexType&gt;
+   *             &lt;complexContent&gt;
+   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *                 &lt;choice&gt;
+   *                   &lt;element name="string" type="{http://geode.apache.org/schema/cache}string-type"/&gt;
+   *                   &lt;element name="declarable" type="{http://geode.apache.org/schema/cache}declarable-type"/&gt;
+   *                 &lt;/choice&gt;
+   *               &lt;/restriction&gt;
+   *             &lt;/complexContent&gt;
+   *           &lt;/complexType&gt;
+   *         &lt;/element&gt;
+   *       &lt;/sequence&gt;
+   *     &lt;/restriction&gt;
+   *   &lt;/complexContent&gt;
+   * &lt;/complexType&gt;
    * </pre>
    *
    *
@@ -389,6 +399,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
      * possible object is
      * {@link ObjectType }
      *
+     * @return the value of the key property
      */
     public ObjectType getKey() {
       return key;
@@ -400,6 +411,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
      * allowed object is
      * {@link ObjectType }
      *
+     * @param value the value of the key property
      */
     public void setKey(ObjectType value) {
       key = value;
@@ -411,6 +423,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
      * possible object is
      * {@link ObjectType }
      *
+     * @return the value of the value property
      */
     public ObjectType getValue() {
       return value;
@@ -422,6 +435,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
      * allowed object is
      * {@link ObjectType }
      *
+     * @param value the value of the value property
      */
     public void setValue(ObjectType value) {
       this.value = value;
@@ -438,47 +452,47 @@ public class RegionConfig implements Identifiable<String>, Serializable {
    * The following schema fragment specifies the expected content contained within this class.
    *
    * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;choice minOccurs="0">
-   *         &lt;element name="functional">
-   *           &lt;complexType>
-   *             &lt;complexContent>
-   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *                 &lt;attribute name="expression" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *                 &lt;attribute name="from-clause" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *                 &lt;attribute name="imports" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *               &lt;/restriction>
-   *             &lt;/complexContent>
-   *           &lt;/complexType>
-   *         &lt;/element>
-   *         &lt;element name="primary-key">
-   *           &lt;complexType>
-   *             &lt;complexContent>
-   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *                 &lt;attribute name="field" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *               &lt;/restriction>
-   *             &lt;/complexContent>
-   *           &lt;/complexType>
-   *         &lt;/element>
-   *       &lt;/choice>
-   *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="expression" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="from-clause" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="imports" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="key-index" type="{http://www.w3.org/2001/XMLSchema}boolean" />
-   *       &lt;attribute name="type" default="range">
-   *         &lt;simpleType>
-   *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
-   *             &lt;enumeration value="range"/>
-   *             &lt;enumeration value="hash"/>
-   *           &lt;/restriction>
-   *         &lt;/simpleType>
-   *       &lt;/attribute>
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
+   * &lt;complexType&gt;
+   *   &lt;complexContent&gt;
+   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *       &lt;choice minOccurs="0"&gt;
+   *         &lt;element name="functional"&gt;
+   *           &lt;complexType&gt;
+   *             &lt;complexContent&gt;
+   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *                 &lt;attribute name="expression" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *                 &lt;attribute name="from-clause" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *                 &lt;attribute name="imports" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *               &lt;/restriction&gt;
+   *             &lt;/complexContent&gt;
+   *           &lt;/complexType&gt;
+   *         &lt;/element&gt;
+   *         &lt;element name="primary-key"&gt;
+   *           &lt;complexType&gt;
+   *             &lt;complexContent&gt;
+   *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *                 &lt;attribute name="field" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *               &lt;/restriction&gt;
+   *             &lt;/complexContent&gt;
+   *           &lt;/complexType&gt;
+   *         &lt;/element&gt;
+   *       &lt;/choice&gt;
+   *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="expression" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="from-clause" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="imports" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="key-index" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+   *       &lt;attribute name="type" default="range"&gt;
+   *         &lt;simpleType&gt;
+   *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string"&gt;
+   *             &lt;enumeration value="range"/&gt;
+   *             &lt;enumeration value="hash"/&gt;
+   *           &lt;/restriction&gt;
+   *         &lt;/simpleType&gt;
+   *       &lt;/attribute&gt;
+   *     &lt;/restriction&gt;
+   *   &lt;/complexContent&gt;
+   * &lt;/complexType&gt;
    * </pre>
    *
    *
@@ -515,6 +529,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
      * possible object is
      * {@link String }
      *
+     * @return the value of the name property
      */
     public String getName() {
       return name;
@@ -526,6 +541,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the name property
      */
     public void setName(String value) {
       name = value;
@@ -537,6 +553,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
      * possible object is
      * {@link String }
      *
+     * @return the value of the expression property
      */
     public String getExpression() {
       return expression;
@@ -548,6 +565,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the expression property
      */
     public void setExpression(String value) {
       expression = value;
@@ -559,6 +577,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
      * possible object is
      * {@link String }
      *
+     * @return the value of the fromClause property
      */
     public String getFromClause() {
       return fromClause;
@@ -570,6 +589,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the fromClause property
      */
     public void setFromClause(String value) {
       fromClause = value;
@@ -581,6 +601,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
      * possible object is
      * {@link String }
      *
+     * @return the value of the imports property
      */
     public String getImports() {
       return imports;
@@ -592,6 +613,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the imports property
      */
     public void setImports(String value) {
       imports = value;
@@ -603,6 +625,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
      * possible object is
      * {@link Boolean }
      *
+     * @return the value of the keyIndex property
      */
     public Boolean isKeyIndex() {
       return keyIndex;
@@ -614,6 +637,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
      * allowed object is
      * {@link Boolean }
      *
+     * @param value the value of the keyIndex property
      */
     public void setKeyIndex(Boolean value) {
       keyIndex = value;
@@ -625,6 +649,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
      * possible object is
      * {@link String }
      *
+     * @return the value of the type property
      */
     public String getType() {
       // this should return a "key" value because some production code relies on this method
@@ -644,6 +669,7 @@ public class RegionConfig implements Identifiable<String>, Serializable {
      * Sets the value of the type property. Also sets the keyIndex property to true if the type
      * being set is {@code "key"}.
      *
+     * @param type the value of the type property
      * @throws IllegalArgumentException if type is unknown
      */
     public void setType(String type) {

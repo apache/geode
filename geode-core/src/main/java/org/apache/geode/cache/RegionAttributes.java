@@ -124,6 +124,8 @@ public interface RegionAttributes<K, V> {
   /**
    * Gets the flag telling a region to ignore JTA transactions. Default value is set to false.
    *
+   * @return the flag telling a region to ignore JTA transactions
+   *
    * @since GemFire 5.0
    */
   boolean getIgnoreJTA();
@@ -238,6 +240,8 @@ public interface RegionAttributes<K, V> {
    * Returns whether or not a persistent backup should be made of the region (as opposed to just
    * writing the overflow data to disk).
    *
+   * @return whether a persistent backup should be made of the region
+   *
    * @since GemFire 3.2
    * @deprecated as of GemFire 5.0, use {@link DataPolicy#PERSISTENT_REPLICATE} instead
    */
@@ -246,6 +250,8 @@ public interface RegionAttributes<K, V> {
 
   /**
    * Returns the <code>DiskWriteAttributes</code> that configure how the region is written to disk.
+   *
+   * @return the <code>DiskWriteAttributes</code> that configure how the region is written to disk
    *
    * @since GemFire 3.2
    * @deprecated as of 6.5 use {@link #getDiskStoreName} instead.
@@ -256,6 +262,8 @@ public interface RegionAttributes<K, V> {
   /**
    * Returns the directories to which the region's data are written. If multiple directories are
    * used, GemFire will attempt to distribute the data evenly amongst them.
+   *
+   * @return the directories to which the region's data are written
    *
    * @since GemFire 3.2
    * @deprecated as of 6.5 use {@link DiskStore#getDiskDirs} instead.
@@ -268,12 +276,16 @@ public interface RegionAttributes<K, V> {
    * region indexes are updated synchronously when a region is modified or asynchronously in a
    * background thread. Default value is true.
    *
+   * @return the value of <code>IndexMaintenanceSynchronous</code>
+   *
    * @since GemFire 4.0
    */
   boolean getIndexMaintenanceSynchronous();
 
   /**
    * Returns the <code>PartitionAttributes</code> that configure how the region is partitioned.
+   *
+   * @return the <code>PartitionAttributes</code> that configure how the region is partitioned
    *
    * @since GemFire 5.0
    */
@@ -283,6 +295,9 @@ public interface RegionAttributes<K, V> {
    * Returns the <code>MembershipAttributes</code> that configure required roles for reliable access
    * to the region.
    *
+   * @return the <code>MembershipAttributes</code> that configure required roles for reliable access
+   *         to the region
+   *
    * @deprecated this API is scheduled to be removed
    */
   @Deprecated
@@ -291,6 +306,9 @@ public interface RegionAttributes<K, V> {
   /**
    * Returns the <code>SubscriptionAttributes</code> that configure how this region behaves as a
    * subscriber to remote caches.
+   *
+   * @return the <code>SubscriptionAttributes</code> that configure how this region behaves as a
+   *         subscriber to remote caches
    *
    * @since GemFire 5.0
    */
@@ -434,11 +452,15 @@ public interface RegionAttributes<K, V> {
 
   /**
    * Returns a set of gatewaysenderIds
+   *
+   * @return a set of gatewaysenderIds
    */
   Set<String> getGatewaySenderIds();
 
   /**
    * Returns a set of AsyncEventQueueIds added to the region
+   *
+   * @return a set of AsyncEventQueueIds added to the region
    */
   Set<String> getAsyncEventQueueIds();
 

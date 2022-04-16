@@ -53,6 +53,7 @@ public abstract class AbstractCommitSessionValve<SelfT extends AbstractCommitSes
   /**
    * Commit session only if DeltaSessionManager is in place.
    *
+   * @param <SelfT> the type of AbstractCommitSessionValve being used by the DeltaSessionManager
    * @param request to commit session from.
    */
   protected static <SelfT extends AbstractCommitSessionValve<?>> void commitSession(

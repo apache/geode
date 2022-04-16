@@ -30,7 +30,7 @@ public interface PubSub {
    * Publish a message on a channel and return a count of (local) clients that received the message.
    * This command is asynchronous and the caller may receive a response before subscribers
    * receive the message.
-   * <p/>
+   * <p>
    * The returned value is somewhat arbitrary and mimics what Redis does in a clustered environment.
    * Since subscribers and publishers can be connected to any member, the publish command is
    * distributed to all members of the cluster but remote subscribers are not counted in the

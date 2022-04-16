@@ -25,6 +25,7 @@ public interface CacheServer extends SystemMember, ManagedEntity {
   /**
    * Returns the configuration of this cache vm
    *
+   * @return the configuration of this cache vm
    * @deprecated as of 5.7 use {@link CacheVm#getVmConfig} instead.
    */
   @Deprecated

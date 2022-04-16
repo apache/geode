@@ -24,38 +24,53 @@ public interface IndexStatistics {
 
   /**
    * Return the total number of times this index has been updated
+   *
+   * @return the total number of times this index has been updated
    */
   long getNumUpdates();
 
   /**
    * Returns the total amount of time (in nanoseconds) spent updating this index.
+   *
+   * @return the total amount of time (in nanoseconds) spent updating this index
    */
   long getTotalUpdateTime();
 
   /**
    * Returns the total number of times this index has been accessed by a query.
+   *
+   * @return the total number of times this index has been accessed by a query
    */
   long getTotalUses();
 
   /**
    * Returns the number of keys in this index.
+   *
+   * @return the number of keys in this index
    */
   long getNumberOfKeys();
 
   /**
    * Returns the number of values in this index.
+   *
+   * @return the number of values in this index
    */
   long getNumberOfValues();
 
 
   /**
    * Return the number of values for the specified key in this index.
+   *
+   * @param key the key
+   * @return the number of values for the specified key in this index
    */
   long getNumberOfValues(Object key);
 
 
   /**
    * Return number of read locks taken on this index
+   *
+   * @return the number of read locks taken on this index
    *
    * @deprecated Use {@link #getReadLockCountLong()}
    */
@@ -64,17 +79,23 @@ public interface IndexStatistics {
 
   /**
    * Return number of read locks taken on this index
+   *
+   * @return the number of read locks taken on this index
    */
   long getReadLockCountLong();
 
 
   /**
    * Returns the number of keys in this index at the highest level
+   *
+   * @return the number of keys in this index at the highest level
    */
   long getNumberOfMapIndexKeys();
 
   /**
    * Returns the number of bucket indexes created in the Partitioned Region
+   *
+   * @return the number of bucket indexes created in the Partitioned Region
    *
    * @deprecated Use {@link #getNumberOfBucketIndexesLong()}
    */
@@ -83,6 +104,8 @@ public interface IndexStatistics {
 
   /**
    * Returns the number of bucket indexes created in the Partitioned Region
+   *
+   * @return the number of bucket indexes created in the Partitioned Region
    */
   long getNumberOfBucketIndexesLong();
 }

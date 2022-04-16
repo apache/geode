@@ -90,7 +90,7 @@ public abstract class GoldenComparator {
     } while (actualLine != null && goldenLine != null);
   }
 
-  /**
+  /*
    * Returns true if the line matches and is ok. Otherwise returns false.
    */
   protected abstract boolean compareLines(final String actualLine, final String goldenLine);

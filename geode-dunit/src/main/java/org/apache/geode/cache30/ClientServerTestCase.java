@@ -70,10 +70,8 @@ public abstract class ClientServerTestCase extends JUnit4CacheTestCase {
 
   protected void preTearDownClientServerTestCase() throws Exception {}
 
-  /**
+  /*
    * Starts a cache server on the given port
-   *
-   * @since GemFire 4.0
    */
   public int startBridgeServer(int port) throws IOException {
 
@@ -85,7 +83,7 @@ public abstract class ClientServerTestCase extends JUnit4CacheTestCase {
     return bridge.getPort();
   }
 
-  /**
+  /*
    * Defaults to 0 which means no selector in server. Subclasses can override setting this to a
    * value > 0 to enable selector.
    */
@@ -96,6 +94,7 @@ public abstract class ClientServerTestCase extends JUnit4CacheTestCase {
   /**
    * Stops the cache server that serves up the given cache.
    *
+   * @param cache the cache
    * @since GemFire 4.0
    */
   public void stopBridgeServers(Cache cache) {
@@ -107,7 +106,7 @@ public abstract class ClientServerTestCase extends JUnit4CacheTestCase {
     }
   }
 
-  /**
+  /*
    * Returns region attributes for a <code>LOCAL</code> region
    */
   protected <K, V> RegionAttributes<K, V> getRegionAttributes() {
@@ -166,7 +165,7 @@ public abstract class ClientServerTestCase extends JUnit4CacheTestCase {
         connectionsPerServer, serverGroup, poolName, pf, -1, -1, -2, -1);
   }
 
-  /**
+  /*
    * this method creates a client connection pool and configures it. If the ports array is not empty
    * it is used to configure the client pool. Otherwise the pool is configured to use the dunit
    * locator.

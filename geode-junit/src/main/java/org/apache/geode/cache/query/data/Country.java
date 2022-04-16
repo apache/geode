@@ -29,8 +29,7 @@ public class Country implements Serializable {
   public String continent;
   public Set states;
 
-  /** Creates a new instance of Country */
-
+  /* Creates a new instance of Country */
   public Country(String name, String continent, Set states) {
     this.name = name;
     this.continent = continent;

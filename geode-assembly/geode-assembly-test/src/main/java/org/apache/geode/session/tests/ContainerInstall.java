@@ -129,10 +129,14 @@ public abstract class ContainerInstall {
 
   /**
    * @param name used to name install directory
+   * @param downloadURL the URL from which to download the container
    * @param connType Enum representing the connection type of this installation (either client
    *        server or peer to peer)
    * @param moduleName The module name of the installation being setup (i.e. tomcat, appserver,
    *        etc.)
+   * @param geodeModuleLocation the path to the module jars
+   * @param portSupplier the port supplier
+   * @throws IOException if an exception is encountered when deleting or accessing files
    */
   public ContainerInstall(String name, String downloadURL, ConnectionType connType,
       String moduleName, String geodeModuleLocation, IntSupplier portSupplier) throws IOException {
@@ -196,7 +200,7 @@ public abstract class ContainerInstall {
     return connType.isClientServer();
   }
 
-  /**
+  /*
    * Where the installation is located
    */
   public String getHome() {
@@ -248,24 +252,24 @@ public abstract class ContainerInstall {
     return defaultLocatorPort;
   }
 
-  /**
+  /*
    * Gets the cache XML file to use by default for this installation
    */
   File getCacheXMLFile() {
     return new File(modulePath + "/conf/" + getConnectionType().getCacheXMLFileName());
   }
 
-  /**
+  /*
    * Cargo specific string to identify the container with
    */
   public abstract String getInstallId();
 
-  /**
+  /*
    * A human readable description of the installation
    */
   public abstract String getInstallDescription();
 
-  /**
+  /*
    * Get the session manager class to use
    */
   public abstract String getContextSessionManagerClass();
@@ -273,7 +277,11 @@ public abstract class ContainerInstall {
   /**
    * Generates a {@link ServerContainer} from the given {@link ContainerInstall}
    *
+   * @param containerConfigHome The folder that the container configuration folder should be setup
+   *        in
    * @param containerDescriptors Additional descriptors used to identify a container
+   * @return the newly generated {@link ServerContainer}
+   * @throws IOException if an exception is encountered
    */
   public abstract ServerContainer generateContainer(File containerConfigHome,
       String containerDescriptors) throws IOException;

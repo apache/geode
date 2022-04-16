@@ -68,6 +68,9 @@ public class CommandResultAssert
    * <code> containsKeyValuePair("Key Class", "java.lang.String"); </code>
    * </pre>
    *
+   * @param key the key to verify
+   * @param value the value associated with the key
+   * @return a reference to this CommandResultAssert
    * @deprecated use hasDataSection methods to verify the table contents
    */
   @Deprecated
@@ -81,7 +84,7 @@ public class CommandResultAssert
     return assertThat(commandOutput);
   }
 
-  /**
+  /*
    * Verifies the gfsh output contains the given output
    */
   public CommandResultAssert containsOutput(String... expectedOutputs) {
@@ -89,7 +92,7 @@ public class CommandResultAssert
     return this;
   }
 
-  /**
+  /*
    * Verifies the gfsh output does not contain the given output
    */
   public CommandResultAssert doesNotContainOutput(String... expectedOutputs) {
@@ -97,7 +100,7 @@ public class CommandResultAssert
     return this;
   }
 
-  /**
+  /*
    * Verifies that gfsh executed with status OK
    */
   public CommandResultAssert statusIsSuccess() {
@@ -107,7 +110,7 @@ public class CommandResultAssert
     return this;
   }
 
-  /**
+  /*
    * Verifies that gfsh executed with status ERROR
    */
   public CommandResultAssert statusIsError() {
@@ -137,6 +140,9 @@ public class CommandResultAssert
    * <code> tableHasColumnWithExactValuesInAnyOrder("Region Path", "/region2", "/region1"); </code>
    * </pre>
    *
+   * @param header the header of the column
+   * @param expectedValues the values to verify
+   * @return a reference to this CommandResultAssert
    * @deprecated use hasTableSection methods to verify the table contents
    */
   @Deprecated
@@ -147,6 +153,9 @@ public class CommandResultAssert
   }
 
   /**
+   * @param headersThenValues the header value of each row to check followed by the value of the
+   *        element
+   * @return a reference to this CommandResultAssert
    * @deprecated use hasTableSection methods to verify the table contents
    */
   @Deprecated
@@ -201,6 +210,9 @@ public class CommandResultAssert
    * Verifies that each of the actual values in the column with the given header contains at least
    * one of the expectedValues.
    *
+   * @param header the header of the column
+   * @param expectedValues the values to verify
+   * @return a reference to this CommandResultAssert
    * @deprecated use hasTableSection methods to verify the table contents
    */
   @Deprecated
@@ -227,6 +239,9 @@ public class CommandResultAssert
    * Verifies that each of the actual values in the column with the given header contains at least
    * one of the expectedValues.
    *
+   * @param header the header of the column
+   * @param expectedValues the values to verify
+   * @return a reference to this CommandResultAssert
    * @deprecated use hasTableSection methods to verify the table contents
    */
   @Deprecated

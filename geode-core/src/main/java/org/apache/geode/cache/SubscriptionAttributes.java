@@ -30,7 +30,7 @@ import org.apache.geode.DataSerializable;
  * <p>
  * The {@link InterestPolicy} defines what remote operation's data/event are of interest to this
  * cache's region.
- * </p>
+ * <p>
  *
  * @since GemFire 5.0
  */
@@ -59,6 +59,8 @@ public class SubscriptionAttributes implements DataSerializable, Externalizable 
 
   /**
    * Returns the interest policy of this subscriber.
+   *
+   * @return the interest policy of this subscriber
    */
   public InterestPolicy getInterestPolicy() {
     return interestPolicy;

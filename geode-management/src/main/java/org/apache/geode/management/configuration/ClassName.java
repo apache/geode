@@ -146,6 +146,7 @@ public class ClassName implements Serializable {
   /**
    * this provides a convenient method to validate if the given name is a valid classname
    *
+   * @param className the class name to be validated
    * @return false if classname is blank or has invalid classname characters
    */
   public static boolean isClassNameValid(String className) {

@@ -31,7 +31,7 @@ import org.apache.geode.internal.util.IOUtils;
 /**
  * The SerializableObjectHttpMessageConverter class is a Spring HttpMessageConverter for converting
  * bytes streams to/from Serializable Objects.
- * <p/>
+ * <p>
  *
  * @see java.io.Serializable
  * @see org.springframework.http.HttpInputMessage

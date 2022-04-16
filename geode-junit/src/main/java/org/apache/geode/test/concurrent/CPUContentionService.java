@@ -121,7 +121,7 @@ public class CPUContentionService {
     stopWatcher.getAndSet(null).cancel(true);
   }
 
-  /**
+  /*
    * Cancels current running threads and closes the thread pool.
    * This contention service can no longer be used.
    */

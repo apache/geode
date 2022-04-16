@@ -541,6 +541,8 @@ public class SessionCachingFilter implements Filter {
 
   /**
    * Retrieve the SessionManager. This is only here so that tests can get access to the cache.
+   *
+   * @return the SessionManager
    */
   public static SessionManager getSessionManager() {
     return manager;

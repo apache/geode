@@ -44,16 +44,16 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
  * The StripedExecutorService accepts Runnable/Callable objects
  * that also implement the StripedObject interface. It executes
  * all the tasks for a single "stripe" consecutively.
- * <p/>
+ * <p>
  * In this version, submitted tasks do not necessarily have to
  * implement the StripedObject interface. If they do not, then
  * they will simply be passed onto the wrapped ExecutorService
  * directly.
- * <p/>
+ * <p>
  * Idea inspired by Glenn McGregor on the Concurrency-interest
  * mailing list and using the SerialExecutor presented in the
  * Executor interface's JavaDocs.
- * <p/>
+ * <p>
  * http://cs.oswego.edu/mailman/listinfo/concurrency-interest
  *
  * @author Dr Heinz M. Kabutz

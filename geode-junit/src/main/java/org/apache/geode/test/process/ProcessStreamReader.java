@@ -22,7 +22,7 @@ import java.util.function.Consumer;
 
 /**
  * Reads the output from a process stream and stores it for test validation.
- * </p>
+ * <p>
  * Extracted from ProcessWrapper.
  */
 @SuppressWarnings("unused")

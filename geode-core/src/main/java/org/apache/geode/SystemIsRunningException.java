@@ -37,6 +37,8 @@ public class SystemIsRunningException extends GemFireException {
 
   /**
    * Creates a new <code>SystemIsRunningException</code>.
+   *
+   * @param message the detail message
    */
   public SystemIsRunningException(String message) {
     super(message);

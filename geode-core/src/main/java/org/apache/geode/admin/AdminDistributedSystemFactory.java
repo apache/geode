@@ -62,6 +62,9 @@ public class AdminDistributedSystemFactory {
    * content of <code>gemfire.properties</code>. The
    * {@linkplain DistributedSystemConfig#DEFAULT_REMOTE_COMMAND} default remote command is used.
    *
+   * @return a "default" distributed system configuration based on VM system properties and the
+   *         content of <code>gemfire.properties</code>
+   *
    * @see DistributedSystem#connect
    */
   public static DistributedSystemConfig defineDistributedSystem() {
@@ -106,6 +109,9 @@ public class AdminDistributedSystemFactory {
    * @param remoteCommand The shell command that is used to launch processes that run on remote
    *        machines. If <code>null</code>, then the
    *        {@linkplain DistributedSystemConfig#DEFAULT_REMOTE_COMMAND default} will be used.
+   * @return a distributed system configuration for administering the distributed system to which
+   *         this VM is currently connected
+   * @throws AdminException is an exception is encountered
    *
    * @since GemFire 4.0
    */

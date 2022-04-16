@@ -47,16 +47,14 @@ import org.apache.geode.logging.internal.log4j.api.LogService;
 /**
  * <P>
  * A <code>DistributionMessage</code> carries some piece of information to a distribution manager.
- * </P>
- *
- * <P>
+ * <p>
  * Messages that don't have strict ordering requirements should extend
  * {@link org.apache.geode.distributed.internal.PooledDistributionMessage}. Messages that must be
  * processed serially in the order they were received can extend
  * {@link org.apache.geode.distributed.internal.SerialDistributionMessage}. To customize the
  * sequentialness/thread requirements of a message, extend DistributionMessage and implement
  * getExecutor().
- * </P>
+ * <p>
  */
 public abstract class DistributionMessage
     implements Message<InternalDistributedMember>, Cloneable {

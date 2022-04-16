@@ -45,7 +45,9 @@ public class RebalanceOperation implements ClusterManagementOperation<RebalanceR
   public RebalanceOperation() {}
 
   /**
-   * copy constructor
+   * Copy constructor
+   *
+   * @param other The {@link RebalanceOperation} to copy
    */
   public RebalanceOperation(RebalanceOperation other) {
     setExcludeRegions(other.getExcludeRegions());
@@ -54,8 +56,10 @@ public class RebalanceOperation implements ClusterManagementOperation<RebalanceR
     operator = other.getOperator();
   }
 
-  /***
+  /**
    * Returns true if a "dry run" only is requested
+   *
+   * @return true if a "dry run" only is requested
    */
   public boolean isSimulate() {
     return simulate;
@@ -64,21 +68,27 @@ public class RebalanceOperation implements ClusterManagementOperation<RebalanceR
   /**
    * true requests a "dry run" (no actual buckets will be moved)
    * default is false
+   *
+   * @param simulate boolean specifying if the rebalance should be simulated
    */
   public void setSimulate(boolean simulate) {
     this.simulate = simulate;
   }
 
-  /***
+  /**
    * Returns the list of regions to be rebalanced (or an empty list for all-except-excluded)
+   *
+   * @return the list of regions to be rebalanced (or an empty list for all-except-excluded)
    */
   public List<String> getIncludeRegions() {
     return includeRegions;
   }
 
   /**
-   * requests rebalance of the specified region(s) only. When at least one region is specified, this
+   * Requests rebalance of the specified region(s) only. When at least one region is specified, this
    * takes precedence over any excluded regions.
+   *
+   * @param includeRegions a list of region names to include in the rebalance operation
    */
   public void setIncludeRegions(List<String> includeRegions) {
     this.includeRegions.clear();
@@ -87,17 +97,21 @@ public class RebalanceOperation implements ClusterManagementOperation<RebalanceR
     }
   }
 
-  /***
+  /**
    * Returns the list of regions NOT to be rebalanced (iff {@link #getIncludeRegions()} is empty)
+   *
+   * @return the list of regions NOT to be rebalanced (iff {@link #getIncludeRegions()} is empty
    */
   public List<String> getExcludeRegions() {
     return excludeRegions;
   }
 
   /**
-   * excludes specific regions from the rebalance, if {@link #getIncludeRegions()} is empty,
+   * Excludes specific regions from the rebalance, if {@link #getIncludeRegions()} is empty,
    * otherwise has no effect
    * default: no regions are excluded
+   *
+   * @param excludeRegions a list of region names to exclude from the rebalance operation
    */
   public void setExcludeRegions(List<String> excludeRegions) {
     this.excludeRegions.clear();

@@ -66,12 +66,12 @@ import org.apache.geode.security.SecurityManager;
  * <PRE>
   &lt;!DOCTYPE cache PUBLIC
     "-//GemStone Systems, Inc.//GemFire Declarative Caching 8.0//EN"
-    "http://www.gemstone.com/dtd/cache8_0.dtd">
-  &lt;cache>
-    &lt;region name="myRegion" refid="REPLICATE"/>
+    "http://www.gemstone.com/dtd/cache8_0.dtd"&gt;
+  &lt;cache&gt;
+    &lt;region name="myRegion" refid="REPLICATE"/&gt;
       &lt;!-- you can override or add to the REPLICATE attributes by adding
-           a region-attributes sub element here -->
-  &lt;/cache>
+           a region-attributes sub element here --&gt;
+  &lt;/cache&gt;
  * </PRE>
  *
  * Now, create the cache telling it to read your cache.xml file:
@@ -186,6 +186,7 @@ public class CacheFactory {
    * object provided this way is expected to be initialized already. We are not calling the init
    * method on this object
    *
+   * @param securityManager the securityManager for the cache
    * @return this CacheFactory
    */
   public CacheFactory setSecurityManager(SecurityManager securityManager) {
@@ -201,6 +202,7 @@ public class CacheFactory {
    * object provided this way is expected to be initialized already. We are not calling the init
    * method on this object
    *
+   * @param postProcessor the postProcessor for the cache
    * @return this CacheFactory
    */
   public CacheFactory setPostProcessor(PostProcessor postProcessor) {
@@ -387,8 +389,10 @@ public class CacheFactory {
    * TransactionWriter. Instead use EntryEvent.getRegion().getCache(),
    * RegionEvent.getRegion().getCache(), LoaderHelper.getRegion().getCache(), or
    * TransactionEvent.getCache().
-   * </p>
+   * <p>
    *
+   * @return arbitrary open instance of {@link Cache} produced by an earlier call to
+   *         {@link #create()}
    * @throws CacheClosedException if a cache has not been created or the only created one is
    *         {@link Cache#isClosed closed}
    */

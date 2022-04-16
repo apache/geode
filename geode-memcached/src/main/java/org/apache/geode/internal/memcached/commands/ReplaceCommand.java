@@ -24,10 +24,10 @@ import org.apache.geode.internal.memcached.ResponseStatus;
 import org.apache.geode.internal.memcached.ValueWrapper;
 
 /**
- * general format of the command is:<br/>
+ * general format of the command is:<br>
  * <code>
  * &lt;command name&gt; &lt;key&gt; &lt;flags&gt; &lt;exptime&gt; &lt;bytes&gt; [noreply]\r\n
- * </code><br/>
+ * </code><br>
  *
  * "replace" means "store this data, but only if the server *does* already hold data for this key".
  *

@@ -22,7 +22,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 
 /**
  * The GetAllEntries is function that will return a map as a result of its execution.
- * <p/>
+ * <p>
  *
  * @since GemFire 8.0
  */

@@ -39,6 +39,8 @@ public interface SessionManager {
   boolean isBackingCacheAvailable();
 
   /**
+   * @return whether to prefer deserialized form
+   *
    * @deprecated no replacement. Always prefer deserialized form.
    */
   @Deprecated

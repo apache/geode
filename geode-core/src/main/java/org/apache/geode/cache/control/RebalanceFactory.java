@@ -25,19 +25,21 @@ import java.util.Set;
 public interface RebalanceFactory {
 
   /**
-   * Specify which regions to include in the rebalance operation. The default, <code>null<code>,
+   * Specify which regions to include in the rebalance operation. The default, <code>null</code>,
    * means all regions should be rebalanced. Includes take precedence over excludes.
    *
    * @param regions A set containing the names of regions to include.
+   * @return this {@link RebalanceFactory}
    * @since GemFire 6.5
    */
   RebalanceFactory includeRegions(Set<String> regions);
 
   /**
-   * Exclude specific regions from the rebalancing operation. The default, <code>null<code>, means
+   * Exclude specific regions from the rebalancing operation. The default, <code>null</code>, means
    * don't exclude any regions.
    *
    * @param regions A set containing the names of regions to exclude.
+   * @return this {@link RebalanceFactory}
    * @since GemFire 6.5
    */
   RebalanceFactory excludeRegions(Set<String> regions);
@@ -46,6 +48,8 @@ public interface RebalanceFactory {
    * Asynchronously starts a new rebalance operation. Only the GemFire controlled cache resources
    * used by this member will be rebalanced. Operation may queue as needed for resources in
    * contention by other active rebalance operations.
+   *
+   * @return an in-progress {@link RebalanceOperation}
    */
   RebalanceOperation start();
 
@@ -53,6 +57,8 @@ public interface RebalanceFactory {
    * Simulates a rebalance of the GemFire controlled cache resources on this member. This operation
    * will not make any actual changes. It will only produce a report of what the results would have
    * been had this been a real rebalance operation.
+   *
+   * @return an in-progress {@link RebalanceOperation}
    */
   RebalanceOperation simulate();
 }

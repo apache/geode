@@ -23,7 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 /**
  * The MultipartFileAdapter class is an Adapter built for extension in order to implement the
  * MultipartFile interface overriding behavior applicable to the implementation.
- * <p/>
+ * <p>
  *
  * @see org.springframework.web.multipart.MultipartFile
  * @since GemFire 8.0

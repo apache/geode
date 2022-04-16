@@ -49,11 +49,6 @@ public class CompressionRegionFactoryDUnitTest extends JUnit4CacheTestCase {
    */
   protected static final int TEST_VM = 0;
 
-  /**
-   * Creates a new CompressionRegionFactoryDUnitTest.
-   *
-   * @param name test name.
-   */
   public CompressionRegionFactoryDUnitTest() {
     super();
   }

@@ -60,7 +60,7 @@ package org.apache.geode.pdx;
  *     }
  *   }
  *
- *   public Object fromData(Class<?> clazz, PdxReader in) {
+ *   public Object fromData(Class&lt;?&gt; clazz, PdxReader in) {
  *     if (User.class.isAssignableFrom(clazz)) {
  *       return new User(in.readString("name"), in.readInt("userId"));
  *     } else {

@@ -31,7 +31,7 @@ import org.openjdk.jmh.annotations.Warmup;
 
 /**
  * Run this benchmark individually with:
- * <br/>
+ * <br>
  * <code>
  *    ./gradlew -Pjmh.include=JvmSizeUtilsBenchmark geode-core:jmh
  * </code>

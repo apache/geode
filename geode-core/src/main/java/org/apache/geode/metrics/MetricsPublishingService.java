@@ -27,7 +27,6 @@ import org.apache.geode.annotations.Experimental;
  * Geode discovers {@code MetricsPublishingService}s during system creation, using the standard Java
  * {@link ServiceLoader} mechanism:
  *
- * <p>
  *
  * <pre>
  * package com.application;

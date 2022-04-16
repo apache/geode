@@ -35,38 +35,52 @@ public interface StatisticDescriptor extends Comparable<StatisticDescriptor> {
    * Returns the id of this statistic in a {@link StatisticsType statistics type}. The id is
    * initialized when its statistics type is created.
    *
+   * @return the id of this statistic
+   *
    * @throws IllegalStateException The id has not been initialized yet
    */
   int getId();
 
   /**
    * Returns the name of this statistic
+   *
+   * @return the name of this statistic
    */
   String getName();
 
   /**
    * Returns a description of this statistic
+   *
+   * @return a description of this statistic
    */
   String getDescription();
 
   /**
    * Returns the type of this statistic
+   *
+   * @return the type of this statistic
    */
   Class<?> getType();
 
   /**
    * Returns true if this statistic is a counter; false if its a gauge. Counter statistics have
    * values that always increase. Gauge statistics have unconstrained values.
+   *
+   * @return whether this statistic is a counter
    */
   boolean isCounter();
 
   /**
    * Returns true if a larger statistic value indicates better performance.
+   *
+   * @return whether a larger statistic value indicates better performance
    */
   boolean isLargerBetter();
 
   /**
    * Returns the unit in which this statistic is measured
+   *
+   * @return the unit in which this statistic is measured
    */
   String getUnit();
 }

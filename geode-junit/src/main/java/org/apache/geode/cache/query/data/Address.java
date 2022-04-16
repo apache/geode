@@ -24,7 +24,7 @@ public class Address implements Serializable {
   public Set street;
   public Set phoneNo;
 
-  /** Creates a new instance of Address */
+  /* Creates a new instance of Address */
   public Address(String zipCode, String city) {
     this.zipCode = zipCode;
     this.city = city;

@@ -30,11 +30,15 @@ public interface CommandStatement {
 
   /**
    * Returns the user specified command string.
+   *
+   * @return the user specified command string
    */
   String getCommandString();
 
   /**
    * Returns the CLI environment variables.
+   *
+   * @return the CLI environment variables
    */
   Map<String, String> getEnv();
 

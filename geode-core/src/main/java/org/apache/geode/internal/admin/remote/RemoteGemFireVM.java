@@ -100,7 +100,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
   /**
    * Creates a <code>RemoteApplicationVM</code> in a given distributed system (<code>agent</code>)
    * with the given <code>id</code>.
-   * <p/>
+   * <p>
    * You MUST invoke {@link #startStatDispatcher()} immediately after constructing an instance.
    *
    * @param alertLevel The level of {@link Alert}s that this administration console should receive

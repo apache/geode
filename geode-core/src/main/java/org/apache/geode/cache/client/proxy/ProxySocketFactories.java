@@ -22,9 +22,10 @@ public class ProxySocketFactories {
    * Create a {@link SocketFactory} that will connect a geode client through
    * the configured SNI proxy.
    *
-   *
    * @param hostname the hostname of the sni proxy
    * @param port the port of the sni proxy
+   * @return a {@link SocketFactory} that will connect a geode client through the configured SNI
+   *         proxy
    */
   public static SocketFactory sni(String hostname, int port) {
     return new SniProxySocketFactory(hostname, port);

@@ -25,6 +25,8 @@ import org.apache.geode.distributed.DistributedMember;
 public interface MembershipEvent {
   /**
    * Returns the distributed member as a String.
+   *
+   * @return the distributed member as a String
    */
   String getMemberId();
 

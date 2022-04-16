@@ -32,21 +32,29 @@ public interface GatewayReceiverMXBean {
 
   /**
    * Returns the port the receiver is listening on.
+   *
+   * @return the port the receiver is listening on
    */
   int getPort();
 
   /**
    * Returns the configured buffer size of the socket connection.
+   *
+   * @return the configured buffer size of the socket connection
    */
   int getSocketBufferSize();
 
   /**
    * Returns the bind address on the host.
+   *
+   * @return the bind address on the host
    */
   String getBindAddress();
 
   /**
    * Returns the maximum amount of time between client pings.
+   *
+   * @return the maximum amount of time between client pings
    */
   int getMaximumTimeBetweenPings();
 
@@ -59,36 +67,50 @@ public interface GatewayReceiverMXBean {
 
   /**
    * Returns the instantaneous rate of events received.
+   *
+   * @return the instantaneous rate of events received
    */
   float getEventsReceivedRate();
 
   /**
    * Returns the rate of create requests received.
+   *
+   * @return the rate of create requests received
    */
   float getCreateRequestsRate();
 
   /**
    * Returns the rate of update requests received.
+   *
+   * @return the rate of update requests received
    */
   float getUpdateRequestsRate();
 
   /**
    * Returns the rate of destroy requests received.
+   *
+   * @return the rate of destroy requests received
    */
   float getDestroyRequestsRate();
 
   /**
    * Returns the number of duplicate batches which have been received.
+   *
+   * @return the number of duplicate batches which have been received
    */
   int getDuplicateBatchesReceived();
 
   /**
    * Returns the number of batches which have been received out of order.
+   *
+   * @return the number of batches which have been received out of order
    */
   int getOutoforderBatchesReceived();
 
   /**
    * Starts the gateway receiver.
+   *
+   * @throws Exception if an exception is encountered when starting the receiver
    */
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
       target = Target.GATEWAY)
@@ -96,6 +118,8 @@ public interface GatewayReceiverMXBean {
 
   /**
    * Stops the gateway receiver.
+   *
+   * @throws Exception if an exception is encountered when stopping the receiver
    */
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
       target = Target.GATEWAY)
@@ -103,111 +127,158 @@ public interface GatewayReceiverMXBean {
 
   /**
    * Returns the configured start port.
+   *
+   * @return the configured start port
    */
   int getStartPort();
 
   /**
    * Returns the configured end port.
+   *
+   * @return the configured end port
    */
   int getEndPort();
 
   /**
    * Returns a list of names for the transport filters in use.
+   *
+   * @return a list of names for the transport filters in use
    */
   String[] getGatewayTransportFilters();
 
   /**
    * Returns the number of sockets accepted and used for client to server messaging.
+   *
+   * @return the number of sockets accepted and used for client to server messaging
    */
   int getClientConnectionCount();
 
   /**
    * Returns the number of client virtual machines connected and acting as a gateway.
+   *
+   * @return the number of client virtual machines connected and acting as a gateway
    */
   int getNumGateways();
 
   /**
    * Returns the average get request latency.
+   *
+   * @return the average get request latency
    */
   long getGetRequestAvgLatency();
 
   /**
    * Returns the average put request latency.
+   *
+   * @return the average put request latency
    */
   long getPutRequestAvgLatency();
 
   /**
    * Returns the total number of client connections that timed out and were closed.
+   *
+   * @return the total number of client connections that timed out and were closed
    */
   int getTotalConnectionsTimedOut();
 
   /**
    * Returns the total number of client connection requests that failed.
+   *
+   * @return the total number of client connection requests that failed
    */
   int getTotalFailedConnectionAttempts();
 
   /**
    * Returns the current number of connections waiting for a thread to start processing their
    * message.
+   *
+   * @return the current number of connections waiting for a thread to start processing their
+   *         message
    */
   int getThreadQueueSize();
 
   /**
    * Returns the current number of threads handling a client connection.
+   *
+   * @return the current number of threads handling a client connection
    */
   int getConnectionThreads();
 
   /**
    * Returns the load from client to server connections as reported by the load probe installed in
    * this server.
+   *
+   * @return the load from client to server connections as reported by the load probe installed in
+   *         this server
    */
   double getConnectionLoad();
 
   /**
    * Returns the estimate of how much load is added for each new connection as reported by the load
    * probe installed in this server.
+   *
+   * @return the estimate of how much load is added for each new connection as reported by the load
+   *         probe installed in this server
    */
   double getLoadPerConnection();
 
   /**
    * Returns the load from queues as reported by the load probe installed in this server.
+   *
+   * @return the load from queues as reported by the load probe installed in this server
    */
   double getQueueLoad();
 
   /**
    * Returns the estimate of how much load is added for each new queue as reported by the load probe
    * installed in this server.
+   *
+   * @return the estimate of how much load is added for each new queue as reported by the load probe
+   *         installed in this server
    */
   double getLoadPerQueue();
 
   /**
    * Returns the rate of get requests.
+   *
+   * @return the rate of get requests
    */
   float getGetRequestRate();
 
   /**
    * Returns the rate of put requests.
+   *
+   * @return the rate of put requests
    */
   float getPutRequestRate();
 
   /**
    * Returns the total number of bytes sent to clients.
+   *
+   * @return the total number of bytes sent to clients
    */
   long getTotalSentBytes();
 
   /**
    * Returns the total number of bytes received from clients.
+   *
+   * @return the total number of bytes received from clients
    */
   long getTotalReceivedBytes();
 
   /**
    * Returns a list of the host and port information for gateway senders connected to this gateway
    * receiver.
+   *
+   * @return an array of the host and port information for gateway senders connected to this gateway
+   *         receiver
    */
   String[] getConnectedGatewaySenders();
 
   /**
    * Returns the average batch processing time (in milliseconds).
+   *
+   * @return the average batch processing time (in milliseconds)
    */
   long getAverageBatchProcessingTime();
 

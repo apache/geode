@@ -90,8 +90,11 @@ public final class EvictionAction extends EnumSyntax implements Serializable {
   }
 
   /**
-   * Returns the eviction action the corresponds to the given parameter. Returns <code>null</code>
+   * Returns the eviction action that corresponds to the given parameter. Returns <code>null</code>
    * if no action corresponds.
+   *
+   * @param v the parameter representation of an eviction action
+   * @return the eviction action that corresponds to the given parameter
    *
    * @since GemFire 6.5
    */
@@ -104,7 +107,7 @@ public final class EvictionAction extends EnumSyntax implements Serializable {
   }
 
   /**
-   *
+   * @param s a String representation of an eviction action
    * @return the action parsed from the provided string. If there are problems with parsing NONE is
    *         returned.
    */

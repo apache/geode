@@ -32,30 +32,29 @@ package org.apache.geode.cache;
  * This implementation restricts you to using methods that accept a cache callback argument to
  * manage the region entries. For a full list of the methods that take a callback argument, see the
  * Region Javadocs.
- * </p>
  * <p>
  * GemFire uses the routing object's hashCode to determine where the data is being managed. Say, for
  * example, you want to colocate all Trades by month and year.The key is implemented by TradeKey
  * class which also implements the PartitionResolver interface.
- * </p>
+ * <p>
  * public class TradeKey implements PartitionResolver {<br>
- * &nbsp &nbsp private String tradeID;<br>
- * &nbsp &nbsp private Month month ;<br>
- * &nbsp &nbsp private Year year ;<br>
+ * &nbsp; &nbsp; private String tradeID;<br>
+ * &nbsp; &nbsp; private Month month ;<br>
+ * &nbsp; &nbsp; private Year year ;<br>
  *
- * &nbsp &nbsp public TradingKey(){ } <br>
- * &nbsp &nbsp public TradingKey(Month month, Year year){<br>
- * &nbsp &nbsp &nbsp &nbsp this.month = month;<br>
- * &nbsp &nbsp &nbsp &nbsp this.year = year;<br>
- * &nbsp &nbsp } <br>
- * &nbsp &nbsp public Object getRoutingObject(EntryOperation opDetails){<br>
- * &nbsp &nbsp &nbsp &nbsp return this.month + this.year;<br>
- * &nbsp &nbsp }<br>
+ * &nbsp; &nbsp; public TradingKey(){ } <br>
+ * &nbsp; &nbsp; public TradingKey(Month month, Year year){<br>
+ * &nbsp; &nbsp; &nbsp; &nbsp; this.month = month;<br>
+ * &nbsp; &nbsp; &nbsp; &nbsp; this.year = year;<br>
+ * &nbsp; &nbsp; } <br>
+ * &nbsp; &nbsp; public Object getRoutingObject(EntryOperation opDetails){<br>
+ * &nbsp; &nbsp; &nbsp; &nbsp; return this.month + this.year;<br>
+ * &nbsp; &nbsp; }<br>
  * }<br>
  *
  * In the example above, all trade entries with the same month and year are guaranteed to be
  * colocated.
- * </p>
+ * <p>
  *
  *
  * @since GemFire 6.0

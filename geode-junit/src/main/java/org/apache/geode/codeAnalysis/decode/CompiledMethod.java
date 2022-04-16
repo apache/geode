@@ -46,7 +46,7 @@ public class CompiledMethod implements Comparable {
     }
   }
 
-  /**
+  /*
    * return a string describing the access modifiers for this class
    */
   public String accessString() {
@@ -94,7 +94,7 @@ public class CompiledMethod implements Comparable {
   }
 
 
-  /**
+  /*
    * the descriptor is just the type string for the return value
    */
   public String descriptor() {

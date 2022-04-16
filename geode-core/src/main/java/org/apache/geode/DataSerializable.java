@@ -60,10 +60,10 @@ import java.io.Serializable;
  * multiple reference paths to the same object will result in multiple copies of the objects that
  * are referred to through multiple paths.
  *
- * <P>
- *
  * <CENTER>
- * <IMG src="{@docRoot}/javadoc-images/data-serialization-exceptions.gif" HEIGHT="219" WIDTH="698">
+ * <IMG src="{@docRoot}/javadoc-images/data-serialization-exceptions.gif" alt="Examples of
+ * situations in which DataSerializable behaviour differs from Java serialization" HEIGHT="219"
+ * WIDTH="698">
  * </CENTER>
  *
  * @see java.io.Serializable
@@ -81,12 +81,16 @@ public interface DataSerializable extends Serializable {
    * {@link GemFireRethrowable}. It should <em>not</em> be caught by user code. If it is it
    * <em>must</em> be rethrown.
    *
+   * @param out the {@link DataOutput} to write to
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    */
   void toData(DataOutput out) throws IOException;
 
   /**
    * Reads the state of this object as primitive data from the given <code>DataInput</code>.
+   *
+   * @param in the {@link DataInput} to read from
    *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @throws ClassNotFoundException A class could not be loaded while reading from <code>in</code>
@@ -113,6 +117,9 @@ public interface DataSerializable extends Serializable {
     /**
      * Replaces this object with another in the "output stream" written by
      * {@link DataSerializer#writeObject(Object, DataOutput)}.
+     *
+     * @return the object that will be used to replace this object
+     * @throws IOException if an exception is encountered
      */
     Object replace() throws IOException;
   }

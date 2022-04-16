@@ -27,6 +27,7 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.internal.cache.partitioned.LoadProbe;
 
 
 /**
@@ -37,57 +38,57 @@ import org.apache.geode.annotations.Experimental;
  * The following schema fragment specifies the expected content contained within this class.
  *
  * <pre>
- * &lt;complexType name="server-type">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="group" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="client-subscription" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;attribute name="eviction-policy" use="required">
- *                   &lt;simpleType>
- *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
- *                       &lt;enumeration value="entry"/>
- *                       &lt;enumeration value="mem"/>
- *                     &lt;/restriction>
- *                   &lt;/simpleType>
- *                 &lt;/attribute>
- *                 &lt;attribute name="capacity" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="disk-store-name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="overflow-directory" type="{http://www.w3.org/2001/XMLSchema}string" />
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="custom-load-probe" minOccurs="0">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;sequence>
- *                   &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/>
- *                   &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/>
- *                 &lt;/sequence>
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *       &lt;/sequence>
- *       &lt;attribute name="bind-address" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="hostname-for-clients" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="max-connections" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="maximum-message-count" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="maximum-time-between-pings" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="max-threads" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="message-time-to-live" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="notify-by-subscription" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="port" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="socket-buffer-size" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="load-poll-interval" type="{http://www.w3.org/2001/XMLSchema}string" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="server-type"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;sequence&gt;
+ *         &lt;element name="group" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *         &lt;element name="client-subscription" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;attribute name="eviction-policy" use="required"&gt;
+ *                   &lt;simpleType&gt;
+ *                     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string"&gt;
+ *                       &lt;enumeration value="entry"/&gt;
+ *                       &lt;enumeration value="mem"/&gt;
+ *                     &lt;/restriction&gt;
+ *                   &lt;/simpleType&gt;
+ *                 &lt;/attribute&gt;
+ *                 &lt;attribute name="capacity" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="disk-store-name" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="overflow-directory" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *         &lt;element name="custom-load-probe" minOccurs="0"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;sequence&gt;
+ *                   &lt;element name="class-name" type="{http://geode.apache.org/schema/cache}class-name-type"/&gt;
+ *                   &lt;element name="parameter" type="{http://geode.apache.org/schema/cache}parameter-type" maxOccurs="unbounded" minOccurs="0"/&gt;
+ *                 &lt;/sequence&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *       &lt;/sequence&gt;
+ *       &lt;attribute name="bind-address" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="hostname-for-clients" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="max-connections" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="maximum-message-count" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="maximum-time-between-pings" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="max-threads" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="message-time-to-live" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="notify-by-subscription" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="port" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="socket-buffer-size" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="load-poll-interval" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  *
  *
@@ -149,7 +150,7 @@ public class ServerType {
    * Objects of the following type(s) are allowed in the list
    * {@link String }
    *
-   *
+   * @return the {@link List} of groups.
    */
   public List<String> getGroups() {
     if (groups == null) {
@@ -164,6 +165,7 @@ public class ServerType {
    * possible object is
    * {@link ServerType.ClientSubscription }
    *
+   * @return the client subscription.
    */
   public ServerType.ClientSubscription getClientSubscription() {
     return clientSubscription;
@@ -175,6 +177,7 @@ public class ServerType {
    * allowed object is
    * {@link ServerType.ClientSubscription }
    *
+   * @param value the client subscription.
    */
   public void setClientSubscription(ServerType.ClientSubscription value) {
     clientSubscription = value;
@@ -183,6 +186,7 @@ public class ServerType {
   /**
    * Gets the value of the customLoadProbe property.
    *
+   * @return the custom {@link LoadProbe} type.
    */
   public DeclarableType getCustomLoadProbe() {
     return customLoadProbe;
@@ -191,6 +195,7 @@ public class ServerType {
   /**
    * Sets the value of the customLoadProbe property.
    *
+   * @param value the custom {@link LoadProbe} type.
    */
   public void setCustomLoadProbe(DeclarableType value) {
     customLoadProbe = value;
@@ -202,6 +207,7 @@ public class ServerType {
    * possible object is
    * {@link String }
    *
+   * @return the bind address.
    */
   public String getBindAddress() {
     return bindAddress;
@@ -213,6 +219,7 @@ public class ServerType {
    * allowed object is
    * {@link String }
    *
+   * @param value the bind address.
    */
   public void setBindAddress(String value) {
     bindAddress = value;
@@ -224,6 +231,7 @@ public class ServerType {
    * possible object is
    * {@link String }
    *
+   * @return the hostname for clients.
    */
   public String getHostnameForClients() {
     return hostnameForClients;
@@ -235,6 +243,7 @@ public class ServerType {
    * allowed object is
    * {@link String }
    *
+   * @param value the host name for clients.
    */
   public void setHostnameForClients(String value) {
     hostnameForClients = value;
@@ -246,6 +255,7 @@ public class ServerType {
    * possible object is
    * {@link String }
    *
+   * @return the maximum number of connections.
    */
   public String getMaxConnections() {
     return maxConnections;
@@ -257,6 +267,7 @@ public class ServerType {
    * allowed object is
    * {@link String }
    *
+   * @param value the maximum number of connections.
    */
   public void setMaxConnections(String value) {
     maxConnections = value;
@@ -268,6 +279,7 @@ public class ServerType {
    * possible object is
    * {@link String }
    *
+   * @return the maximum message count.
    */
   public String getMaximumMessageCount() {
     return maximumMessageCount;
@@ -279,6 +291,7 @@ public class ServerType {
    * allowed object is
    * {@link String }
    *
+   * @param value the maximum message count.
    */
   public void setMaximumMessageCount(String value) {
     maximumMessageCount = value;
@@ -290,6 +303,7 @@ public class ServerType {
    * possible object is
    * {@link String }
    *
+   * @return the maximum tim between pings.
    */
   public String getMaximumTimeBetweenPings() {
     return maximumTimeBetweenPings;
@@ -301,6 +315,7 @@ public class ServerType {
    * allowed object is
    * {@link String }
    *
+   * @param value the maximum time between pings.
    */
   public void setMaximumTimeBetweenPings(String value) {
     maximumTimeBetweenPings = value;
@@ -312,6 +327,7 @@ public class ServerType {
    * possible object is
    * {@link String }
    *
+   * @return the maximum number of threads.
    */
   public String getMaxThreads() {
     return maxThreads;
@@ -323,6 +339,7 @@ public class ServerType {
    * allowed object is
    * {@link String }
    *
+   * @param value the maximum number of threads.
    */
   public void setMaxThreads(String value) {
     maxThreads = value;
@@ -334,6 +351,7 @@ public class ServerType {
    * possible object is
    * {@link String }
    *
+   * @return the message time to live.
    */
   public String getMessageTimeToLive() {
     return messageTimeToLive;
@@ -345,6 +363,8 @@ public class ServerType {
    * allowed object is
    * {@link String }
    *
+   *
+   * @param value the message time to live.
    */
   public void setMessageTimeToLive(String value) {
     messageTimeToLive = value;
@@ -356,6 +376,7 @@ public class ServerType {
    * possible object is
    * {@link Boolean }
    *
+   * @return true is notify by subscription is enabled, false otherwise.
    */
   public Boolean isNotifyBySubscription() {
     return notifyBySubscription;
@@ -367,6 +388,7 @@ public class ServerType {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value enables or disables notify by subscription.
    */
   public void setNotifyBySubscription(Boolean value) {
     notifyBySubscription = value;
@@ -378,6 +400,7 @@ public class ServerType {
    * possible object is
    * {@link String }
    *
+   * @return the port number.
    */
   public String getPort() {
     return port;
@@ -389,6 +412,7 @@ public class ServerType {
    * allowed object is
    * {@link String }
    *
+   * @param value the port number.
    */
   public void setPort(String value) {
     port = value;
@@ -400,6 +424,7 @@ public class ServerType {
    * possible object is
    * {@link String }
    *
+   * @return the socket buffer size.
    */
   public String getSocketBufferSize() {
     return socketBufferSize;
@@ -411,6 +436,7 @@ public class ServerType {
    * allowed object is
    * {@link String }
    *
+   * @param value the socket buffer size.
    */
   public void setSocketBufferSize(String value) {
     socketBufferSize = value;
@@ -422,6 +448,7 @@ public class ServerType {
    * possible object is
    * {@link String }
    *
+   * @return the load polling interval.
    */
   public String getLoadPollInterval() {
     return loadPollInterval;
@@ -433,6 +460,7 @@ public class ServerType {
    * allowed object is
    * {@link String }
    *
+   * @param value the load polling interval.
    */
   public void setLoadPollInterval(String value) {
     loadPollInterval = value;
@@ -447,23 +475,23 @@ public class ServerType {
    * The following schema fragment specifies the expected content contained within this class.
    *
    * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;attribute name="eviction-policy" use="required">
-   *         &lt;simpleType>
-   *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string">
-   *             &lt;enumeration value="entry"/>
-   *             &lt;enumeration value="mem"/>
-   *           &lt;/restriction>
-   *         &lt;/simpleType>
-   *       &lt;/attribute>
-   *       &lt;attribute name="capacity" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="disk-store-name" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="overflow-directory" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
+   * &lt;complexType&gt;
+   *   &lt;complexContent&gt;
+   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *       &lt;attribute name="eviction-policy" use="required"&gt;
+   *         &lt;simpleType&gt;
+   *           &lt;restriction base="{http://www.w3.org/2001/XMLSchema}string"&gt;
+   *             &lt;enumeration value="entry"/&gt;
+   *             &lt;enumeration value="mem"/&gt;
+   *           &lt;/restriction&gt;
+   *         &lt;/simpleType&gt;
+   *       &lt;/attribute&gt;
+   *       &lt;attribute name="capacity" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="disk-store-name" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="overflow-directory" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *     &lt;/restriction&gt;
+   *   &lt;/complexContent&gt;
+   * &lt;/complexType&gt;
    * </pre>
    *
    *
@@ -487,6 +515,7 @@ public class ServerType {
      * possible object is
      * {@link String }
      *
+     * @return the value of the evictionPolicy property
      */
     public String getEvictionPolicy() {
       return evictionPolicy;
@@ -498,6 +527,7 @@ public class ServerType {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the evictionPolicy property
      */
     public void setEvictionPolicy(String value) {
       evictionPolicy = value;
@@ -509,6 +539,7 @@ public class ServerType {
      * possible object is
      * {@link String }
      *
+     * @return the value of the capacity property
      */
     public String getCapacity() {
       return capacity;
@@ -520,6 +551,7 @@ public class ServerType {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the capacity property
      */
     public void setCapacity(String value) {
       capacity = value;
@@ -531,6 +563,7 @@ public class ServerType {
      * possible object is
      * {@link String }
      *
+     * @return the value of the diskStoreName property
      */
     public String getDiskStoreName() {
       return diskStoreName;
@@ -542,6 +575,7 @@ public class ServerType {
      * allowed object is
      * {@link String }
      *
+     * @param value the value of the diskStoreName property
      */
     public void setDiskStoreName(String value) {
       diskStoreName = value;
@@ -553,6 +587,7 @@ public class ServerType {
      * possible object is
      * {@link String }
      *
+     * @return the value of the overflowDirectory property
      */
     public String getOverflowDirectory() {
       return overflowDirectory;
@@ -563,6 +598,8 @@ public class ServerType {
      *
      * allowed object is
      * {@link String }
+     *
+     * @param value the value of the overflowDirectory property
      *
      */
     public void setOverflowDirectory(String value) {

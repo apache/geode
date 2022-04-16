@@ -88,7 +88,7 @@ public class SerializableTemporaryFolder extends TemporaryFolder implements Seri
     super(builder);
   }
 
-  /**
+  /*
    * Specifying false will prevent deletion of the temporary folder and its contents. Default is
    * true.
    */
@@ -97,7 +97,7 @@ public class SerializableTemporaryFolder extends TemporaryFolder implements Seri
     return this;
   }
 
-  /**
+  /*
    * Specifies directory to copy artifacts to before deleting temporary folder. Default is null.
    */
   public SerializableTemporaryFolder copyTo(File directory) {
@@ -108,6 +108,9 @@ public class SerializableTemporaryFolder extends TemporaryFolder implements Seri
 
   /**
    * Specifies conditions under which {@code copyTo} is performed. Default is {@code FAIL}.
+   *
+   * @param when the conditions under which {@code copyTo} is performed
+   * @return a reference to this SerializableTemporaryFolder
    */
   public SerializableTemporaryFolder when(When when) {
     this.when.set(when);

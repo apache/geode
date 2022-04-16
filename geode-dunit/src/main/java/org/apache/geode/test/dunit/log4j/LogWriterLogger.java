@@ -1718,12 +1718,6 @@ public class LogWriterLogger extends ExtendedLoggerWrapper implements LogWriter,
   private static final int NONE_LEVEL = Integer.MAX_VALUE;
 
   /**
-   * A bit mask to remove any potential flags added to the msgLevel. Intended to be used in
-   * {@link #getRealLogLevel}.
-   */
-  private static final int LOGGING_FLAGS_MASK = 0x00FFFFFF;
-
-  /**
    * A flag to indicate the {@link SecurityLogWriter#SECURITY_PREFIX} should be appended to the log
    * level.
    */
@@ -1731,6 +1725,9 @@ public class LogWriterLogger extends ExtendedLoggerWrapper implements LogWriter,
 
   /**
    * Gets the string representation for the given {@code level} int code.
+   *
+   * @param level an int representing the {@code level}
+   * @return the String representation of that {@code level}
    */
   public static String levelToString(int level) {
     switch (level) {
@@ -1838,6 +1835,8 @@ public class LogWriterLogger extends ExtendedLoggerWrapper implements LogWriter,
     /**
      * Converts from a {@link LogWriterLevel} to a Log4J2 {@code Level}.
      *
+     * @param logWriterLevel a {@link LogWriterLevel}
+     * @return the corresponding Log4J2 {@code Level}
      * @throws IllegalArgumentException if there is no matching Log4J2 Level
      */
     public static Level toLevel(final LogWriterLevel logWriterLevel) {
@@ -1870,6 +1869,8 @@ public class LogWriterLogger extends ExtendedLoggerWrapper implements LogWriter,
     /**
      * Converts from a Log4J2 {@code Level} to a {@link LogWriterLevel}.
      *
+     * @param level a Log4J2 {@code Level}
+     * @return the corresponding {@link LogWriterLevel}
      * @throws IllegalArgumentException if there is no matching Alert
      */
     public LogWriterLevel fromLevel(final Level level) {

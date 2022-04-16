@@ -202,11 +202,10 @@ public class LocatorLoadSnapshot {
    * imbalance is greater than the loadImbalanceThreshold.
    * <p>
    * When the threshold is reached we report imbalance until proper balance is achieved.
-   * </p>
    * <p>
    * This method has the side-effect of setting the <code>rebalancing</code> instance variable
    * which, at the time of this writing, is only used by this method.
-   * </p>
+   * <p>
    */
   private synchronized boolean thresholdCheck(float bestLoad, float worstLoad,
       float largestLoadPerConnection, boolean balanced) {

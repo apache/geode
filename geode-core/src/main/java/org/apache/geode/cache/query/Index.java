@@ -47,6 +47,8 @@ public interface Index {
 
   /**
    * Returns the unique name of this index
+   *
+   * @return the unique name of this index
    */
   String getName();
 
@@ -67,6 +69,8 @@ public interface Index {
   /**
    * Get statistics information for this index.
    *
+   * @return statistics information for this index
+   *
    * @throws UnsupportedOperationException for indexes created on Maps. Example: Index on Maps with
    *         expression p['key']. <br>
    *         On Map type indexes the stats are created at individual key level that can be viewed in
@@ -76,12 +80,16 @@ public interface Index {
 
   /**
    * Get the original fromClause for this index.
+   *
+   * @return the original fromClause for this index
    */
   String getFromClause();
 
 
   /**
    * Get whether index is valid to be used in queries.
+   *
+   * @return whether index is valid to be used in queries
    */
   default boolean isValid() {
     return false;
@@ -89,16 +97,22 @@ public interface Index {
 
   /**
    * Get the canonicalized fromClause for this index.
+   *
+   * @return the canonicalized fromClause for this index
    */
   String getCanonicalizedFromClause();
 
   /**
    * Get the original indexedExpression for this index.
+   *
+   * @return the original indexedExpression for this index
    */
   String getIndexedExpression();
 
   /**
    * Get the canonicalized indexedExpression for this index.
+   *
+   * @return the canonicalized indexedExpression for this index
    */
   String getCanonicalizedIndexedExpression();
 

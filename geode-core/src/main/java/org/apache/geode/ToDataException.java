@@ -25,6 +25,8 @@ public class ToDataException extends SerializationException {
 
   /**
    * Creates a new <code>ToDataException</code> with the given message
+   *
+   * @param message the detail message
    */
   public ToDataException(String message) {
     super(message);
@@ -32,6 +34,9 @@ public class ToDataException extends SerializationException {
 
   /**
    * Creates a new <code>ToDataException</code> with the given message and cause.
+   *
+   * @param message the detail message
+   * @param cause the cause
    */
   public ToDataException(String message, Throwable cause) {
     super(message, cause);

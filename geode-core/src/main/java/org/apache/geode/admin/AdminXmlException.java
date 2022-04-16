@@ -30,6 +30,8 @@ public class AdminXmlException extends RuntimeAdminException {
 
   /**
    * Creates a new <code>AdminXmlException</code> with the given descriptive message.
+   *
+   * @param s the detail message
    */
   public AdminXmlException(String s) {
     super(s);
@@ -37,6 +39,9 @@ public class AdminXmlException extends RuntimeAdminException {
 
   /**
    * Creates a new <code>AdminXmlException</code> with the given descriptive message and cause.
+   *
+   * @param s the detail message
+   * @param cause the cause
    */
   public AdminXmlException(String s, Throwable cause) {
     super(s, cause);

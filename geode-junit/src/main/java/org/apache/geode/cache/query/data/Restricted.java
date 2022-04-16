@@ -32,7 +32,7 @@ public class Restricted implements Serializable {
   public int maxQty;
   public int incQty;
 
-  /** Creates a new instance of Restricted */
+  /* Creates a new instance of Restricted */
   public Restricted(int i) {
     cusip = 1000000000 - i;
     String[] arr1 = {"moving", "binding", "non binding", "not to exceed", "storage",

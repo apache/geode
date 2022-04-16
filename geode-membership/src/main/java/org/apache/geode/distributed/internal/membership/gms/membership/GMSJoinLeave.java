@@ -315,8 +315,6 @@ public class GMSJoinLeave<ID extends MemberIdentifier> implements JoinLeave<ID> 
    * If the response indicates there's no coordinator it will contain a set of members that have
    * recently contacted it. The "oldest" member is selected as the coordinator based on ID sort
    * order.
-   *
-   * @return true if successful, false if not
    */
   @Override
   public void join() throws MemberStartupException {

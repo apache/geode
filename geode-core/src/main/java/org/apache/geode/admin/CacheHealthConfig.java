@@ -54,10 +54,6 @@ package org.apache.geode.admin;
  *
  * </UL>
  *
- * <UL>
- *
- * </UL>
- *
  *
  * @since GemFire 3.5
  * @deprecated as of 7.0 use the <code><a href=
@@ -74,7 +70,7 @@ public interface CacheHealthConfig {
   long DEFAULT_MAX_NET_SEARCH_TIME = 60 * 1000;
 
   /**
-   * The default maximum mumber of milliseconds a cache <code>load</code> operation can take before
+   * The default maximum number of milliseconds a cache <code>load</code> operation can take before
    * the cache member is considered to be unhealthy.
    */
   long DEFAULT_MAX_LOAD_TIME = 60 * 1000;
@@ -93,6 +89,9 @@ public interface CacheHealthConfig {
    * Returns the maximum number of milliseconds a <code>netSearch</code> operation can take before
    * the cache member is considered to be unhealthy.
    *
+   * @return the maximum number of milliseconds a <code>netSearch</code> operation can take before
+   *         the cache member is considered to be unhealthy
+   *
    * @see #DEFAULT_MAX_NET_SEARCH_TIME
    */
   long getMaxNetSearchTime();
@@ -101,21 +100,30 @@ public interface CacheHealthConfig {
    * Sets the maximum number of milliseconds a <code>netSearch</code> operation can take before the
    * cache member is considered to be unhealthy.
    *
+   * @param maxNetSearchTime the maximum number of milliseconds a <code>netSearch</code> operation
+   *        can take before the cache member is considered to be unhealthy
+   *
    * @see #getMaxNetSearchTime
    */
   void setMaxNetSearchTime(long maxNetSearchTime);
 
   /**
-   * Returns the maximum mumber of milliseconds a cache <code>load</code> operation can take before
+   * Returns the maximum number of milliseconds a cache <code>load</code> operation can take before
    * the cache member is considered to be unhealthy.
+   *
+   * @return the maximum number of milliseconds a cache <code>load</code> operation can take before
+   *         the cache member is considered to be unhealthy
    *
    * @see #DEFAULT_MAX_LOAD_TIME
    */
   long getMaxLoadTime();
 
   /**
-   * Sets the maximum mumber of milliseconds a cache <code>load</code> operation can take before the
+   * Sets the maximum number of milliseconds a cache <code>load</code> operation can take before the
    * cache member is considered to be unhealthy.
+   *
+   * @param maxLoadTime the maximum number of milliseconds a cache <code>load</code> operation can
+   *        take before the cache member is considered to be unhealthy
    *
    * @see #getMaxLoadTime
    */
@@ -124,12 +132,16 @@ public interface CacheHealthConfig {
   /**
    * Returns the minimum hit ratio of a healthy cache member.
    *
+   * @return the minimum hit ratio of a healthy cache member
+   *
    * @see #DEFAULT_MIN_HIT_RATIO
    */
   double getMinHitRatio();
 
   /**
    * Sets the minimum hit ratio of a healthy cache member.
+   *
+   * @param minHitRatio the minimum hit ratio of a healthy cache member
    *
    * @see #getMinHitRatio
    */
@@ -138,12 +150,17 @@ public interface CacheHealthConfig {
   /**
    * Returns the maximum number of entries in the event delivery queue of a healthy cache member.
    *
+   * @return the maximum number of entries in the event delivery queue of a healthy cache member
+   *
    * @see #DEFAULT_MAX_EVENT_QUEUE_SIZE
    */
   long getMaxEventQueueSize();
 
   /**
    * Sets the maximum number of entries in the event delivery queue of a healthy cache member.
+   *
+   * @param maxEventQueueSize the maximum number of entries in the event delivery queue of a healthy
+   *        cache member
    *
    * @see #getMaxEventQueueSize
    */

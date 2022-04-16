@@ -45,7 +45,7 @@ import org.apache.geode.management.internal.cli.functions.ListIndexFunction;
 /**
  * The ListIndexCommandJUnitTest class is a test suite of test cases testing the contract and
  * functionality of the ListIndexCommand class.
- * </p>
+ * <p>
  *
  * @see org.apache.geode.management.internal.cli.commands.ClearDefinedIndexesCommand
  * @see org.apache.geode.management.internal.cli.commands.CreateDefinedIndexesCommand

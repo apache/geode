@@ -42,8 +42,7 @@ import org.apache.geode.security.ResourcePermission.Target;
  * <p>
  * List of notifications emitted by this MBean.
  *
- * <p>
- * <table border="1">
+ * <table border="1" summary="">
  * <tr>
  * <th>Notification Type</th>
  * <th>Notification Source</th>
@@ -52,21 +51,21 @@ import org.apache.geode.security.ResourcePermission.Target;
  * <tr>
  * <td>gemfire.distributedsystem.cache.member.joined</td>
  * <td>Name or ID of member who joined</td>
- * <td>Member Joined &ltMember Name or ID&gt</td>
+ * <td>Member Joined &lt;Member Name or ID&gt;</td>
  * </tr>
  * <tr>
  * <td>gemfire.distributedsystem.cache.member.departed</td>
  * <td>Name or ID of member who departed</td>
- * <td>Member Departed &ltMember Name or ID&gt has crashed = &lttrue/false&gt</td>
+ * <td>Member Departed &lt;Member Name or ID&gt; has crashed = &lt;true/false&gt;</td>
  * </tr>
  * <tr>
  * <td>gemfire.distributedsystem.cache.member.suspect</td>
  * <td>Name or ID of member who is suspected</td>
- * <td>Member Suspected &ltMember Name or ID&gt By &ltWho Suspected&gt</td>
+ * <td>Member Suspected &lt;Member Name or ID&gt; By &lt;Who Suspected&gt;</td>
  * </tr>
  * <tr>
  * <td>system.alert</td>
- * <td>DistributedSystem("&ltDistributedSystem ID"&gt)</td>
+ * <td>DistributedSystem("&lt;DistributedSystem ID"&gt;)</td>
  * <td>Alert Message</td>
  * </tr>
  * </table>
@@ -87,11 +86,15 @@ public interface DistributedSystemMXBean {
 
   /**
    * Returns the number of members in the distributed system.
+   *
+   * @return the number of members in the distributed system
    */
   int getMemberCount();
 
   /**
    * Returns a list of names for all members.
+   *
+   * @return an array of names for all members
    */
   String[] listMembers();
 
@@ -107,16 +110,22 @@ public interface DistributedSystemMXBean {
 
   /**
    * Returns a list of names for all groups.
+   *
+   * @return an array of names for all groups
    */
   String[] listGroups();
 
   /**
    * Returns the number of locators in the distributed system.
+   *
+   * @return the number of locators in the distributed system
    */
   int getLocatorCount();
 
   /**
    * Returns a list of IDs for all locators.
+   *
+   * @return an array of IDs for all locators.
    */
   String[] listLocators(); // TODO - Abhishek Should be renamed to
                            // listLocatorDiscoveryConfigurations? Do we need something for
@@ -124,26 +133,36 @@ public interface DistributedSystemMXBean {
 
   /**
    * Returns the number of disks stores in the distributed system.
+   *
+   * @return the number of disks stores in the distributed system
    */
   int getSystemDiskStoreCount();
 
   /**
    * Returns a map of all {@link DistributedMember}s and their {@link DiskStore}s.
+   *
+   * @return a map of all {@link DistributedMember}s and their {@link DiskStore}s
    */
   Map<String, String[]> listMemberDiskstore();
 
   /**
    * Returns a list of IDs for all gateway senders.
+   *
+   * @return a list of IDs for all gateway senders
    */
   String[] listGatewaySenders();
 
   /**
    * Returns a list of IDs for all gateway receivers.
+   *
+   * @return a list of IDs for all gateway receivers
    */
   String[] listGatewayReceivers();
 
   /**
    * Returns the minimum level set for alerts to be delivered to listeners.
+   *
+   * @return the minimum level set for alerts to be delivered to listeners
    */
   String getAlertLevel();
 
@@ -152,74 +171,102 @@ public interface DistributedSystemMXBean {
    *
    * @param alertLevel Minimum level for alerts to be delivered. Must be one of: WARNING, ERROR,
    *        SEVERE or NONE.
+   *
+   * @throws Exception if the alertLevel is invalid
    */
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.WRITE)
   void changeAlertLevel(String alertLevel) throws Exception;
 
   /**
    * Returns the total available heap (in megabytes) across all distributed members.
+   *
+   * @return the total available heap (in megabytes) across all distributed members
    */
   long getTotalHeapSize();
 
   /**
    * Returns the total number of entries in all regions.
+   *
+   * @return the total number of entries in all regions
    */
   long getTotalRegionEntryCount();
 
   /**
    * Returns the number of {@link Region}s.
+   *
+   * @return the number of {@link Region}s
    */
 
   int getTotalRegionCount();
 
   /**
    * Returns the number of times that a cache miss occurred for all regions.
+   *
+   * @return the number of times that a cache miss occurred for all regions
    */
   int getTotalMissCount();
 
   /**
    * Returns the number of times that a hit occurred for all regions.
+   *
+   * @return the number of times that a hit occurred for all regions
    */
   int getTotalHitCount();
 
   /**
    * Returns the number of connected clients.
+   *
+   * @return the number of connected clients
    */
   int getNumClients();
 
 
   /**
    * Returns the average number of disk reads per second across all distributed members.
+   *
+   * @return the average number of disk reads per second across all distributed members
    */
   float getDiskReadsRate();
 
   /**
    * Returns the average number of disk writes per second across all distributed members.
+   *
+   * @return the average number of disk writes per second across all distributed members
    */
   float getDiskWritesRate();
 
   /**
    * Returns the average disk flush latency time.
+   *
+   * @return the average disk flush latency time
    */
   long getDiskFlushAvgLatency();
 
   /**
    * Returns the number of backups currently in progress for all disk stores.
+   *
+   * @return the number of backups currently in progress for all disk stores
    */
   int getTotalBackupInProgress();
 
   /**
    * Returns the number of initial images in progress.
+   *
+   * @return the number of initial images in progress
    */
   int getNumInitialImagesInProgress();
 
   /**
    * Returns the number of active (currently executing) CQs for all cache servers.
+   *
+   * @return the number of active (currently executing) CQs for all cache servers
    */
   long getActiveCQCount();
 
   /**
    * Returns the average number of queries per second across all distributed members.
+   *
+   * @return the average number of queries per second across all distributed members
    */
   float getQueryRequestRate();
 
@@ -229,6 +276,8 @@ public interface DistributedSystemMXBean {
    * @param targetDirPath Directory to which backup files will be written
    * @param baselineDirPath path of the directory for baseline backup.
    * @return The results of the backup request.
+   *
+   * @throws Exception is an exception is encountered while backing up members
    */
   @ResourceOperation(resource = Resource.DATA, operation = Operation.READ)
   DiskBackupStatus backupAllMembers(String targetDirPath, String baselineDirPath) throws Exception;
@@ -255,6 +304,8 @@ public interface DistributedSystemMXBean {
    * Returns a list of names for all cache servers which are able to serve requests from GemFire
    * clients.
    *
+   * @return an array of names for all cache servers which are able to serve requests from GemFire
+   *         clients
    */
   String[] listCacheServers();
 
@@ -262,6 +313,8 @@ public interface DistributedSystemMXBean {
   /**
    * Returns a list of names for all servers where server means any long-running GemFire process
    * that was started with "start server" command from GFSH.
+   *
+   * @return an array of names for all servers
    */
   String[] listServers();
 
@@ -269,6 +322,8 @@ public interface DistributedSystemMXBean {
    * Returns JVM metrics for a distributed member.
    *
    * @param member Name or ID of the member.
+   * @return VM metrics for a distributed member
+   *
    * @throws Exception for an invalid member ID.
    */
   JVMMetrics showJVMMetrics(String member) throws Exception;
@@ -277,6 +332,8 @@ public interface DistributedSystemMXBean {
    * Returns operating system metrics for a distributed member.
    *
    * @param member Name or ID of the member.
+   * @return operating system metrics for a distributed member
+   *
    * @throws Exception for an invalid member ID.
    */
   OSMetrics showOSMetrics(String member) throws Exception;
@@ -285,6 +342,8 @@ public interface DistributedSystemMXBean {
    * Returns network metrics for a distributed member.
    *
    * @param member Name or ID of the member.
+   * @return network metrics for a distributed member
+   *
    * @throws Exception for an invalid member ID.
    */
   NetworkMetrics showNetworkMetric(String member) throws Exception;
@@ -293,6 +352,8 @@ public interface DistributedSystemMXBean {
    * Returns disk metrics for a distributed member.
    *
    * @param member Name or ID of the member.
+   * @return disk metrics for a distributed member
+   *
    * @throws Exception for an invalid member ID.
    */
   DiskMetrics showDiskMetrics(String member) throws Exception;
@@ -301,17 +362,23 @@ public interface DistributedSystemMXBean {
    * Shuts down all members of a distributed system except for the managing member.
    *
    * @return List of names of all distributed members that were shutdown.
+   *
+   * @throws Exception if an exception is encountered when shutting down the members
    */
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   String[] shutDownAllMembers() throws Exception;
 
   /**
    * Returns a list of names for all regions.
+   *
+   * @return an array of names for all regions
    */
   String[] listRegions();
 
   /**
    * Returns a list of full paths for all regions. Returns an empty array if no region exists
+   *
+   * @return an array of full paths for all regions
    */
   String[] listAllRegionPaths();
 
@@ -328,12 +395,17 @@ public interface DistributedSystemMXBean {
   /**
    * Returns a list of details for disk stores which have been determined to be unavailable during
    * the recovery of region.
+   *
+   * @return an array of details for disk stores which have been determined to be unavailable during
+   *         the recovery of region
    */
   PersistentMemberDetails[] listMissingDiskStores();
 
   /**
    * Returns the object name for a {@link MemberMXBean} used to access this distributed member.
    * allow anyone to access this method
+   *
+   * @return the object name for a {@link MemberMXBean} used to access this distributed member
    */
   @ResourceOperation()
   ObjectName getMemberObjectName();
@@ -341,19 +413,28 @@ public interface DistributedSystemMXBean {
   /**
    * Returns the object name for a {@link ManagerMXBean} used to access the management service
    * running on this distributed member.
+   *
+   * @return the object name for a {@link ManagerMXBean} used to access the management service
+   *         running on this distributed member
    */
   ObjectName getManagerObjectName();
 
   /**
    * Returns a list of object names for the {@link MemberMXBean}s used to access all distributed
    * members.
+   *
+   * @return an array of object names for the {@link MemberMXBean}s used to access all distributed
+   *         members
    */
   ObjectName[] listMemberObjectNames();
 
   /**
-   * Returns the object name for a {@link MemberMXBean} used to access a distributed member..
+   * Returns the object name for a {@link MemberMXBean} used to access a distributed member.
    *
    * @param member Name or ID of the member.
+   * @return the object name for a {@link MemberMXBean} used to access a distributed member
+   *
+   * @throws Exception if the member cannot be found
    */
   ObjectName fetchMemberObjectName(String member) throws Exception;
 
@@ -362,6 +443,9 @@ public interface DistributedSystemMXBean {
    * distributed member.
    *
    * @param memberMBeanName ObjectName of the member.
+   * @return An array of object names or an empty array if no regions are found.
+   *
+   * @throws Exception if the member cannot be found
    */
   ObjectName[] fetchRegionObjectNames(ObjectName memberMBeanName) throws Exception;
 
@@ -378,6 +462,10 @@ public interface DistributedSystemMXBean {
    * region.
    *
    * @param regionPath Full path of the region.
+   * @return the object name for a {@link DistributedRegionMXBean} used to access a distributed
+   *         region
+   *
+   * @throws Exception if the member cannot be found
    */
   ObjectName fetchDistributedRegionObjectName(String regionPath) throws Exception;
 
@@ -386,6 +474,9 @@ public interface DistributedSystemMXBean {
    *
    * @param member Name or ID of the member.
    * @param regionPath Full path of the region.
+   * @return the object name for a {@link GatewayReceiverMXBean} used to access a region
+   *
+   * @throws Exception if the member name is invalid or the member cannot be found
    */
   ObjectName fetchRegionObjectName(String member, String regionPath) throws Exception;
 
@@ -394,6 +485,9 @@ public interface DistributedSystemMXBean {
    *
    * @param member Name or ID of the member.
    * @param senderId ID of a gateway sender.
+   * @return the object name for a {@link GatewayReceiverMXBean} used to access a gateway sender
+   *
+   * @throws Exception if the member name is invalid or the member cannot be found
    */
   ObjectName fetchGatewaySenderObjectName(String member, String senderId) throws Exception;
 
@@ -401,6 +495,9 @@ public interface DistributedSystemMXBean {
    * Returns the object name for a {@link GatewayReceiverMXBean} used to access a gateway receiver.
    *
    * @param member Name or ID of the member.
+   * @return the object name for a {@link GatewayReceiverMXBean} used to access a gateway receiver
+   *
+   * @throws Exception if the member name is invalid or the member cannot be found
    */
   ObjectName fetchGatewayReceiverObjectName(String member) throws Exception;
 
@@ -417,6 +514,9 @@ public interface DistributedSystemMXBean {
    * senders on a member.
    *
    * @param member Name or ID of the member.
+   * @return An array of object names or an empty array if no gateway senders are found.
+   *
+   * @throws Exception if the member name is invalid or the member cannot be found
    */
   ObjectName[] listGatewaySenderObjectNames(String member) throws Exception;
 
@@ -433,6 +533,10 @@ public interface DistributedSystemMXBean {
    * lock service.
    *
    * @param lockServiceName Name of the lock service.
+   * @return the object name for a {@link DistributedLockServiceMXBean} used to access a distributed
+   *         lock service
+   *
+   * @throws Exception if the member name is invalid or the member cannot be found
    */
   ObjectName fetchDistributedLockServiceObjectName(String lockServiceName) throws Exception;
 
@@ -441,6 +545,9 @@ public interface DistributedSystemMXBean {
    *
    * @param member Name or Id of the member.
    * @param lockService Name of the lock service.
+   * @return the object name for a {@link LockServiceMXBean} used to access a lock service
+   *
+   * @throws Exception if the member name is invalid or the member cannot be found
    */
   ObjectName fetchLockServiceObjectName(String member, String lockService) throws Exception;
 
@@ -449,7 +556,9 @@ public interface DistributedSystemMXBean {
    *
    * @param member name or id of the member
    * @param diskStoreName name of the disk store
-   * @return a ObjectName
+   * @return an ObjectName
+   *
+   * @throws Exception if the member name is invalid or the member cannot be found
    */
   ObjectName fetchDiskStoreObjectName(String member, String diskStoreName) throws Exception;
 
@@ -458,66 +567,93 @@ public interface DistributedSystemMXBean {
    *
    * @param member Name or ID of the member.
    * @param port Port of the server.
+   * @return the object name for a {@link CacheServerMXBean} used to access a cache server
+   *
+   * @throws Exception if the member name is invalid or the member cannot be found
    */
   ObjectName fetchCacheServerObjectName(String member, int port) throws Exception;
 
   /**
    * Returns a list of object names for the {@link CacheServerMXBean}s used to access all cache
    * servers.
+   *
+   * @return a list of object names for the {@link CacheServerMXBean}s used to access all cache
+   *         servers
    */
   ObjectName[] listCacheServerObjectNames();
 
   /**
    * Returns the number of map-reduce jobs currently running on all members in the distributed
    * system.
+   *
+   * @return the number of map-reduce jobs currently running on all members in the distributed
+   *         system
    */
   int getNumRunningFunctions();
 
   /**
    * Returns the number of CQs registers on all members.
+   *
+   * @return the number of CQs registers on all members
    */
   long getRegisteredCQCount();
 
   /**
    * Returns the number of bytes used on all disks.
+   *
+   * @return the number of bytes used on all disks
    */
   long getTotalDiskUsage();
 
   /**
    * Returns the total heap used on all members.
+   *
+   * @return the total heap used on all members
    */
   long getUsedHeapSize();
 
   /**
    * Returns the average number of reads per second for all members.
+   *
+   * @return the average number of reads per second for all members
    */
   float getAverageReads();
 
   /**
    * Returns the average writes per second, including both put and putAll operations, for all
    * members.
+   *
+   * @return the average writes per second, including both put and putAll operations, for all
+   *         members
    */
   float getAverageWrites();
 
   /**
    * Returns the number of subscriptions for all members.
+   *
+   * @return the number of subscriptions for all members
    */
   int getNumSubscriptions();
 
-
   /**
    * Returns the number of garbage collection operations for all members.
+   *
+   * @return the number of garbage collection operations for all members
    */
   long getGarbageCollectionCount();
 
   /**
    * Returns a map of remote distributed system IDs and the current connection status for each.
+   *
+   * @return a map of remote distributed system IDs and the current connection status for each
    */
   Map<String, Boolean> viewRemoteClusterStatus();
 
   /**
    * Returns the number JVM pauses (which may or may not include full garbage collection pauses)
    * detected by GemFire.
+   *
+   * @return the number JVM pauses detected
    */
   long getJVMPauses();
 
@@ -550,12 +686,13 @@ public interface DistributedSystemMXBean {
    *        query will be for the whole cluster.
    * @param limit result set limit. If not set or 0 is passed default limit of 1000 will be set.
    * @return a JSON formatted string containing data and its type
+   *
+   * @throws Exception if an exception is encountered while executing the query
    */
   @ResourceOperation(resource = Resource.DATA, operation = Operation.READ)
   String queryData(String queryString, String members, int limit) throws Exception;
 
   /**
-   *
    * Functionality is same as queryData() method. Only difference being the resultant JSON string is
    * compressed with Java GZIP with UTF-8 encoding. Any client application can de compress the
    * byte[] using GZIP.
@@ -574,6 +711,8 @@ public interface DistributedSystemMXBean {
    *        query will be for the whole cluster.
    * @param limit result set limit. If not set or 0 is passed default limit of 1000 will be set.
    * @return a byte[] which is a compressed JSON string.
+   *
+   * @throws Exception if an exception is encountered while executing the query
    */
   @ResourceOperation(resource = Resource.DATA, operation = Operation.READ)
   byte[] queryDataForCompressedResult(String queryString, String members, int limit)
@@ -583,12 +722,16 @@ public interface DistributedSystemMXBean {
   /**
    * Returns the number of committed transactions across all members. It gives point in time value
    * i.e. Number of tx committed at the time of reading this value
+   *
+   * @return the number of committed transactions across all members
    */
   int getTransactionCommitted();
 
   /**
    * Returns the number of transactions that were rolled back across all members. It gives point in
    * time value i.e. Number of tx rolled back at the time of reading this value
+   *
+   * @return the number of transactions that were rolled back across all members
    */
   int getTransactionRolledBack();
 
@@ -596,6 +739,8 @@ public interface DistributedSystemMXBean {
    * Number of rows DistributedSystemMXBean.queryData() operation will return. By default it will be
    * 1000. User can modify this to control number of rows to be shown on Pulse, as Pulse DataBrowser
    * internally uses DistributedSystemMXBean.queryData()
+   *
+   * @return the number of rows DistributedSystemMXBean.queryData() operation will return
    */
   int getQueryResultSetLimit();
 
@@ -607,6 +752,8 @@ public interface DistributedSystemMXBean {
    * Number of elements in a collection to be shown in queryData operation if query results contain
    * collections like Map, List etc.
    *
+   * @return the number of elements in a collection to be shown in queryData operation if query
+   *         results contain collections
    */
   int getQueryCollectionsDepth();
 

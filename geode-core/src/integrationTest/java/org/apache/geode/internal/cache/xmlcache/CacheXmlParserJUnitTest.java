@@ -62,8 +62,6 @@ public class CacheXmlParserJUnitTest {
   }
 
   /**
-   * Test {@link CacheXmlParser#getDelegate(String)}.
-   *
    * Asserts that a delegate is found and that the stack and logWriter are setup correctly.
    *
    * Asserts that delegate is cached between calls and that the same instance is returned.

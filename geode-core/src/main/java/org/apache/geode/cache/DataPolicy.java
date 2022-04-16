@@ -190,7 +190,12 @@ public class DataPolicy implements java.io.Serializable {
     throw new IllegalArgumentException(name);
   }
 
-  /** Return the DataPolicy represented by specified ordinal */
+  /**
+   * Return the DataPolicy represented by specified ordinal
+   *
+   * @param ordinal the ordinal representation of a DataPolicy
+   * @return the DataPolicy represented by specified ordinal
+   */
   public static DataPolicy fromOrdinal(byte ordinal) {
     return VALUES[ordinal];
   }
@@ -349,6 +354,8 @@ public class DataPolicy implements java.io.Serializable {
   }
 
   /**
+   * @param s a String representation of a DataPolicy
+   * @return a DataPolicy
    * @deprecated use {@link #valueOf(String)}
    */
   @Deprecated

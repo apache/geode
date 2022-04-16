@@ -56,7 +56,7 @@ public class CacheHealthEvaluatorJUnitTest extends HealthEvaluatorTestCase {
    * Tests that we are in {@link GemFireHealth#OKAY_HEALTH okay} health if cache loads take too
    * long.
    *
-   * @see CacheHealthEvaluator#checkLoadTime
+   * See CacheHealthEvaluator#checkLoadTime(List)
    */
   @Test
   public void testCheckLoadTime() throws CacheException {

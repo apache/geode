@@ -36,6 +36,7 @@ public interface ClientSocketFactory {
    * @param port The port of the server
    *
    * @return a <code>Socket</code> for the input address and port
+   * @throws IOException if the socket cannot be created
    */
   Socket createSocket(InetAddress address, int port) throws IOException;
 }

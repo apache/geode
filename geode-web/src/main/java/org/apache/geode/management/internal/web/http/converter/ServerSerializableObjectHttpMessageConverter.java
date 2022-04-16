@@ -41,7 +41,7 @@ import org.apache.geode.internal.util.IOUtils;
  * {@link HttpMessageConverter}
  * from the geode-web war's classloader rather than geode-core's classloader and interoperate
  * with other classes loaded in the geode-web war's classloader.
- * <p/>
+ * <p>
  *
  * @see Serializable
  * @see HttpInputMessage

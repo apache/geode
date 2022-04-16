@@ -146,6 +146,7 @@ public final class CopyHelper {
    * <tt>Cloneable</tt> objects copied using this method, how deep a copy the returned object is
    * depends on its implementation of <tt>clone</tt>.
    *
+   * @param <T> the type of the object to be copied
    * @param o the original object that a copy is needed of
    * @return the new instance that is a copy of of the original
    * @throws CopyException if copying fails because a class could not be found or could not be
@@ -218,6 +219,7 @@ public final class CopyHelper {
    * is returned. If GemFire serialization is implemented for the object, it is used; otherwise,
    * java serialization is used.
    *
+   * @param <T> the type of the object to be copied
    * @param o the original object to be copied
    * @return the new instance that is a copy of the original
    * @throws CopyException if copying fails because a class could not be found or could not be

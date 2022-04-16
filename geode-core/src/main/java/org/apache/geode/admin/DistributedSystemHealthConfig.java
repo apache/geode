@@ -23,10 +23,6 @@ package org.apache.geode.admin;
  * If any of the following criteria is true, then the distributed system is considered to be in
  * {@link GemFireHealth#OKAY_HEALTH OKAY_HEALTH}.
  *
- * <UL>
- *
- * </UL>
- *
  * If any of the following criteria is true, then the distributed system is considered to be in
  * {@link GemFireHealth#POOR_HEALTH POOR_HEALTH}.
  *
@@ -61,6 +57,9 @@ public interface DistributedSystemHealthConfig {
    * Returns the maximum number of application members that can unexceptedly leave a healthy the
    * distributed system.
    *
+   * @return the maximum number of application members that can unexceptedly leave a healthy the
+   *         distributed system
+   *
    * @see #DEFAULT_MAX_DEPARTED_APPLICATIONS
    */
   long getMaxDepartedApplications();
@@ -68,6 +67,9 @@ public interface DistributedSystemHealthConfig {
   /**
    * Sets the maximum number of application members that can unexceptedly leave a healthy the
    * distributed system.
+   *
+   * @param maxDepartedApplications the maximum number of application members that can unexceptedly
+   *        leave a healthy the distributed system
    *
    * @see #getMaxDepartedApplications
    */

@@ -2683,8 +2683,8 @@ public interface DistributionConfig
 
   /**
    * The static String definition of the cluster ssl prefix <i>"cluster-ssl"</i> used in conjunction
-   * with other <i>cluster-ssl-*</i> properties property <a name="cluster-ssl"/a>
-   * </p>
+   * with other <i>cluster-ssl-*</i> properties property <a name="cluster-ssl"></a>
+   * <p>
    * <U>Description</U>: The cluster-ssl property prefix
    */
   @Deprecated

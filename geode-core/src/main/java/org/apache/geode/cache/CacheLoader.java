@@ -22,12 +22,10 @@ package org.apache.geode.cache;
  * operation such as a database query. The <code>load</code> may also perform a
  * {@linkplain LoaderHelper#netSearch net search} that will look for the value in a cache instance
  * hosted by another member of the distributed system.
- * </p>
- *
  * <p>
  * WARNING: To avoid risk of deadlock, do not invoke CacheFactory.getAnyInstance() from within any
  * callback methods. Instead use LoaderHelper.getRegion().getCache().
- * </p>
+ * <p>
  *
  * @see AttributesFactory#setCacheLoader
  * @see RegionAttributes#getCacheLoader
@@ -49,7 +47,7 @@ public interface CacheLoader<K, V> extends CacheCallback {
    *         will always be invoked if one exists. Otherwise one remote loader is invoked. Returning
    *         <code>null</code> causes {@link Region#get(Object, Object)} to return
    *         <code>null</code>.
-   * @throws CacheLoaderException, if an error occurs. This exception or any other exception thrown
+   * @throws CacheLoaderException if an error occurs. This exception or any other exception thrown
    *         by this method will be propagated back to the application from the get method.
    *
    * @see Region#get(Object, Object) Region.get

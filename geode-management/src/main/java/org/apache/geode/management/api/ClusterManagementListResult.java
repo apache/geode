@@ -46,6 +46,8 @@ public class ClusterManagementListResult<T extends AbstractConfiguration<R>, R e
 
   /**
    * Returns the combined payload of the list call
+   *
+   * @return a list of {@link EntityGroupInfo}
    */
   @JsonIgnore
   public List<EntityGroupInfo<T, R>> getEntityGroupInfo() {
@@ -88,6 +90,8 @@ public class ClusterManagementListResult<T extends AbstractConfiguration<R>, R e
 
   /**
    * Returns only the static config portion of the results
+   *
+   * @return only the static config portion of the results
    */
   @JsonIgnore
   public List<T> getConfigResult() {
@@ -97,6 +101,8 @@ public class ClusterManagementListResult<T extends AbstractConfiguration<R>, R e
 
   /**
    * Returns only the runtime information portion of the results
+   *
+   * @return only the runtime information portion of the results
    */
   @JsonIgnore
   public List<R> getRuntimeResult() {

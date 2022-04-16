@@ -68,6 +68,7 @@ public abstract class SerializableRunnable implements SerializableRunnableIF {
    * });
    * </pre>
    *
+   * @param name the name of the {@code Runnable}, which will be logged in DUnit output
    * @deprecated Please pass name as the first argument to {@link VM} invoke or asyncInvoke.
    */
   @Deprecated
@@ -85,6 +86,7 @@ public abstract class SerializableRunnable implements SerializableRunnableIF {
   }
 
   /**
+   * @return the name of the {@code Runnable}, which will be logged in DUnit output
    * @deprecated Please pass name as the first argument to {@link VM} invoke or asyncInvoke.
    */
   @Deprecated

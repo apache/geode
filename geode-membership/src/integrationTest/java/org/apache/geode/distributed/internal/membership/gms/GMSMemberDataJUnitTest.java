@@ -190,10 +190,9 @@ public class GMSMemberDataJUnitTest {
   /**
    * <p>
    * GEODE-2875 - adds vmKind to on-wire form of GMSMemberData.writeEssentialData
-   * </p>
    * <p>
    * This must be backward-compatible with Geode 1.0 (Version.GFE_90)
-   * </p>
+   * <p>
    *
    */
   @Test

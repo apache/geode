@@ -30,7 +30,7 @@ import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 /**
  * <code>
  * incr &lt;key&gt; &lt;value&gt; [noreply]\r\n
- * </code><br/>
+ * </code><br>
  * value is the amount by which the client wants to increase/decrease the item. It is a decimal
  * representation of a 64-bit unsigned integer.
  *

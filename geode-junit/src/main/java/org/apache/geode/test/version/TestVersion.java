@@ -41,7 +41,7 @@ public class TestVersion implements Comparable<TestVersion>, Serializable {
     release = Integer.parseInt(split[2]);
   }
 
-  /**
+  /*
    * Perform a comparison of the major, minor and patch versions of the two version strings.
    * The version strings should be in dot notation.
    */

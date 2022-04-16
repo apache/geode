@@ -252,7 +252,7 @@ public interface Query {
    *
    * @throws TypeMismatchException If the compile-time type of a name, parameter, or expression is
    *         not the expected type
-   * @throws QueryInvalidException The syntax of the query string is not correct
+   * @throws NameResolutionException If a name in the query cannot be resolved.
    * @deprecated as of 6.5
    */
   @Deprecated
@@ -270,6 +270,8 @@ public interface Query {
 
   /**
    * Get statistics information for this query.
+   *
+   * @return statistics information for this query
    */
   QueryStatistics getStatistics();
 }

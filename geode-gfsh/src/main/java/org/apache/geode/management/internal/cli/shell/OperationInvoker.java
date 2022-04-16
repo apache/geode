@@ -26,10 +26,10 @@ import org.apache.geode.management.internal.cli.CommandRequest;
  * The OperationInvoker interface defines a contract for invoking operations on MBeans, accessing an
  * MBean's attributes and remotely executing/processing commands issued in Gfsh on the GemFire
  * Manager.
- * <p/>
+ * <p>
  * There could be many different implementations of OperationInvoker based on different protocols
  * like JMX, HTTP and so on.
- * <p/>
+ * <p>
  *
  * @since GemFire 7.0
  */
@@ -39,7 +39,7 @@ public interface OperationInvoker {
 
   /**
    * Determines whether there is an active, current connection.
-   * <p/>
+   * <p>
    *
    * @return true if there is an active connection, false otherwise.
    * @see #isReady()
@@ -48,7 +48,7 @@ public interface OperationInvoker {
 
   /**
    * Determines whether there is an active, current active connection ready for use.
-   * <p/>
+   * <p>
    *
    * @return true if this {@linkplain OperationInvoker} is ready for operation, false otherwise.
    * @see #isConnected()
@@ -57,7 +57,7 @@ public interface OperationInvoker {
 
   /**
    * Read the attribute identified by name from a remote resource identified by name.
-   * <p/>
+   * <p>
    *
    * @param resourceName name/url of the remote resource from which to fetch the attribute.
    * @param attributeName name of the attribute to be fetched.
@@ -67,7 +67,7 @@ public interface OperationInvoker {
 
   /**
    * Gets the identifier of the GemFire cluster.
-   * <p/>
+   * <p>
    *
    * @return an integer value indicating the identifier of the GemFire cluster.
    */
@@ -78,7 +78,7 @@ public interface OperationInvoker {
   /**
    * Gets a proxy to the remote DistributedSystem MXBean to access attributes and invoke operations
    * on the distributed system, or the GemFire cluster.
-   * <p/>
+   * <p>
    *
    * @return a proxy instance of the GemFire Manager's DistributedSystem MXBean.
    * @see org.apache.geode.management.DistributedSystemMXBean
@@ -87,7 +87,7 @@ public interface OperationInvoker {
 
   /**
    * Gets a proxy to an MXBean on a remote MBeanServer.
-   * <p/>
+   * <p>
    *
    * @param <T> the class type of the remote MXBean.
    * @param objectName the JMX ObjectName uniquely identifying the remote MXBean.
@@ -101,7 +101,7 @@ public interface OperationInvoker {
   /**
    * Invoke an operation identified by name on a remote resource identified by name with the given
    * arguments.
-   * <p/>
+   * <p>
    *
    * @param resourceName name/url (object name) of the remote resource (MBea) on which operation is
    *        to be invoked.
@@ -116,7 +116,7 @@ public interface OperationInvoker {
    * This method searches the MBean server, based on the OperationsInvoker's JMX-based or other
    * remoting capable MBean server connection, for MBeans matching a specific ObjectName or matching
    * an object name pattern along with satisfying criteria of the query.
-   * <p/>
+   * <p>
    *
    * @param objectName the ObjectName or pattern for which matching MBeans in the target MBean
    *        server will be returned.
@@ -135,7 +135,7 @@ public interface OperationInvoker {
   /**
    * Processes the requested command. Sends the command to the GemFire Manager for remote processing
    * (execution). NOTE refactoring return type in favor of covariant return types.
-   * <p/>
+   * <p>
    *
    * @param command the Command entered and invoked by the user to be processed.
    * @return the result of the command execution.

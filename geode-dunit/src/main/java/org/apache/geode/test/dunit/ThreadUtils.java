@@ -73,6 +73,8 @@ public class ThreadUtils {
   /**
    * Print stack dumps for all vms on the given host.
    *
+   * @param host the Host for which to print stack dumps
+   *
    * @since GemFire 5.0
    */
   public static void dumpStack(final Host host) {
@@ -84,6 +86,7 @@ public class ThreadUtils {
   /**
    * Print a stack dump for the given vm.
    *
+   * @param vm the VM for which to print a stack dump
    * @since GemFire 5.0
    */
   public static void dumpStack(final VM vm) {

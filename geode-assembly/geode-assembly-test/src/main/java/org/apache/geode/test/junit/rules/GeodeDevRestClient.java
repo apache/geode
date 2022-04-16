@@ -130,7 +130,7 @@ public class GeodeDevRestClient {
     return new HttpResponseAssert("Delete " + uri, doDelete(uri, null, null));
   }
 
-  /**
+  /*
    * this handles rest calls. each request creates a different httpClient object
    */
   public HttpResponse doRequest(HttpRequestBase request, String username, String password) {

@@ -101,7 +101,7 @@ public class DriverJarUtils {
    * loader. Since driver classes may be added to the clusters class path after startup and may not
    * be available in the system class loader
    * we use this wrapper to allow the DriverManager to load these drivers.
-   * </p>
+   * <p>
    */
   class DriverWrapper implements Driver {
 

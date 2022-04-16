@@ -34,6 +34,8 @@ public interface BackupStatus {
   /**
    * Returns a map of disk stores that were successfully backed up. The key is an online distributed
    * member. The value is the set of disk stores on that distributed member.
+   *
+   * @return a map of disk stores that were successfully backed up
    */
   Map<DistributedMember, Set<PersistentID>> getBackedUpDiskStores();
 
@@ -41,6 +43,8 @@ public interface BackupStatus {
    * Returns the set of disk stores that were known to be offline at the time of the backup. These
    * members were not backed up. If this set is not empty the backup may not contain a complete
    * snapshot of any partitioned regions in the distributed system.
+   *
+   * @return the set of disk stores that were known to be offline at the time of the backup
    */
   Set<PersistentID> getOfflineDiskStores();
 }

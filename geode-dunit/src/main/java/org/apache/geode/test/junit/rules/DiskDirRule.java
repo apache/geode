@@ -70,7 +70,7 @@ public class DiskDirRule extends DescribedExternalResource {
     this.testName = testName;
   }
 
-  /**
+  /*
    * Returns the current default disk dirs value.
    */
   public File getDiskDir() {

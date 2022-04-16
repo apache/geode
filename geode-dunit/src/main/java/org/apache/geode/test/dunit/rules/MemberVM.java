@@ -97,7 +97,7 @@ public class MemberVM extends VMProvider implements Member {
    * For example, if forceDisconnect is called like this:
    * member1.forceDisconnect(300, "reconnectReady");
    * Then the reconnect should be triggered like this:
-   * member1.invoke(() -> getBlackboard().setMailbox("reconnectReady", true));
+   * member1.invoke(() -&gt; getBlackboard().setMailbox("reconnectReady", true));
    *
    * Setting this mailbox from within the test JVM will not cause the member to begin reconnecting.
    *
@@ -135,7 +135,7 @@ public class MemberVM extends VMProvider implements Member {
     });
   }
 
-  /**
+  /*
    * this should called on a locatorVM or a serverVM with jmxManager enabled
    */
   public void waitUntilRegionIsReadyOnExactlyThisManyServers(String regionPath, int serverCount) {
@@ -144,7 +144,7 @@ public class MemberVM extends VMProvider implements Member {
   }
 
 
-  /**
+  /*
    * this can only be called on a locator (or a vm that is not that serverName)
    */
   public void waitTillClientsAreReadyOnServers(String serverName, int serverPort, int clientCount) {

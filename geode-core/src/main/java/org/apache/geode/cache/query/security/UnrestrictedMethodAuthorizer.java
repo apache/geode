@@ -26,27 +26,26 @@ import org.apache.geode.cache.Region;
  * An immutable and thread-safe {@link MethodInvocationAuthorizer} that allows any method execution
  * as long as the target object does not belong to a Geode package, or does belong but it's marked
  * as safe (see {@link RestrictedMethodAuthorizer#isAllowedGeodeMethod(Method, Object)}).
- * <p/>
+ * <p>
  *
  * Some known dangerous methods, like {@link Object#getClass()}, are also rejected by this
  * authorizer implementation, no matter whether the target object belongs to Geode or not
  * (see {@link RestrictedMethodAuthorizer#isPermanentlyForbiddenMethod(Method, Object)}).
- * <p/>
+ * <p>
  *
  * This authorizer implementation addresses only three of the four known security risks:
  * {@code Java Reflection}, {@code Cache Modification} and {@code Region Modification}.
- * <p/>
+ * <p>
  *
  * The {@code Region Entry Modification} security risk still exists: users with the
  * {@code DATA:READ:RegionName} privilege will be able to execute ANY method (even mutators) on the
  * objects stored within the region and on instances used as bind parameters of the OQL, so this
  * authorizer implementation must be used with extreme care.
- * <p/>
+ * <p>
  *
  * Usage of this authorizer implementation is only recommended for secured clusters on which only
  * trusted users and applications have access to the OQL engine. It might also be used on clusters
  * on which the entries stored are immutable.
- * <p/>
  *
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.query.security.MethodInvocationAuthorizer
@@ -62,7 +61,7 @@ public final class UnrestrictedMethodAuthorizer implements MethodInvocationAutho
   /**
    * Creates a {@code UnrestrictedMethodAuthorizer} object and initializes it so it can be safely
    * used in a multi-threaded environment.
-   * <p/>
+   * <p>
    *
    * Applications can use this constructor as part of the initialization for custom authorizers
    * (see {@link Declarable#initialize(Cache, Properties)}), when using a declarative approach.
@@ -78,7 +77,7 @@ public final class UnrestrictedMethodAuthorizer implements MethodInvocationAutho
   /**
    * Creates a {@code UnrestrictedMethodAuthorizer} object and initializes it so it can be safely
    * used in a multi-threaded environment.
-   * <p/>
+   * <p>
    *
    * @param restrictedMethodAuthorizer the default {@code RestrictedMethodAuthorizer} to use.
    */
@@ -92,7 +91,7 @@ public final class UnrestrictedMethodAuthorizer implements MethodInvocationAutho
    * executed on the {@code target} object instance.
    * If the {@code target} object is an instance of {@link Region}, this methods also ensures that
    * the user has the {@code DATA:READ} permission granted for the target {@link Region}.
-   * <p/>
+   * <p>
    *
    * @param method the {@link Method} that should be authorized.
    * @param target the {@link Object} on which the {@link Method} will be executed.

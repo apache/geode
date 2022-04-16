@@ -36,10 +36,11 @@ public class DiskBackupResult {
   /**
    * This constructor is to be used by internal JMX framework only. User should not try to create an
    * instance of this class.
+   *
+   * @param diskDirectory the name of the directory where the files for this backup were written
+   * @param offline whether the backup was successful
    */
-  @ConstructorProperties({"diskDirectory", "offilne"
-
-  })
+  @ConstructorProperties({"diskDirectory", "offilne"})
   public DiskBackupResult(String diskDirectory, boolean offline) {
     this.diskDirectory = diskDirectory;
     offilne = offline;
@@ -47,6 +48,8 @@ public class DiskBackupResult {
 
   /**
    * Returns the name of the directory where the files for this backup were written.
+   *
+   * @return the name of the directory where the files for this backup were written
    */
   public String getDiskDirectory() {
     return diskDirectory;

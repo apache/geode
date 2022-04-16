@@ -35,8 +35,6 @@ import org.apache.geode.internal.cache.PartitionAttributesImpl;
  *     .setKeyConstraint(String.class).setValueConstraint(ArrayList.class).create("myRegion");
  * </pre>
  *
- * </p>
- *
  * <p>
  * {@link PartitionAttributes} can also be defined in a declarative fashion using a
  * <a href="package-summary.html#declarative">cache.xml</a> file. Here is an example of how to
@@ -54,7 +52,7 @@ import org.apache.geode.internal.cache.PartitionAttributesImpl;
  *      &lt;/region-attributes&gt;
  *    &lt;/root-region&gt;
  * </pre>
- * </p>
+ * <p>
  *
  * @see org.apache.geode.cache.PartitionAttributes
  * @see org.apache.geode.cache.AttributesFactory#setPartitionAttributes(PartitionAttributes)
@@ -164,7 +162,7 @@ public class PartitionAttributesFactory<K, V> {
    * redundant copies is 0.
    *
    * @param redundantCopies the number of redundant bucket copies, limited to values 0, 1, 2 and 3.
-   *
+   * @return PartitionAttributeFactory.
    */
   public PartitionAttributesFactory<K, V> setRedundantCopies(int redundantCopies) {
     partitionAttributes.setRedundantCopies(redundantCopies);
@@ -174,6 +172,9 @@ public class PartitionAttributesFactory<K, V> {
   /**
    * Sets the maximum amount of memory, in megabytes, to be used by the region in this process. If
    * not set, a default of 90% of available heap is used.
+   *
+   * @param mb the maximum amount of memory, in megabytes, to be used by the region in this process
+   * @return PartitionAttributeFactory.
    */
   public PartitionAttributesFactory<K, V> setLocalMaxMemory(int mb) {
     partitionAttributes.setLocalMaxMemory(mb);
@@ -185,6 +186,9 @@ public class PartitionAttributesFactory<K, V> {
    * <p>
    * <em>This setting must be the same in all processes using the Region.</em> The default value is
    * Integer.MAX_VALUE.
+   *
+   * @param mb the maximum amount of memory, in megabytes, to be used by the region in all processes
+   * @return PartitionAttributeFactory.
    *
    * @deprecated since Geode 1.3.0
    */
@@ -204,13 +208,15 @@ public class PartitionAttributesFactory<K, V> {
    * from one VM to another. Buckets may also have copies, depending on
    * {@link #setRedundantCopies(int) redundancy} to provide high availability in the face of VM
    * failure.
-   * </p>
    * <p>
    * The number of buckets should be prime and as a rough guide at the least four times the number
    * of partition VMs. However, there is significant overhead to managing a bucket, particularly for
    * higher values of {@link #setRedundantCopies(int) redundancy}.
-   * </p>
+   * <p>
    * The default number of buckets for a PartitionedRegion is 113.
+   *
+   * @param numBuckets the total number of hash buckets to be used by the region in all processes
+   * @return PartitionAttributeFactory.
    */
   public PartitionAttributesFactory<K, V> setTotalNumBuckets(int numBuckets) {
     partitionAttributes.setTotalNumBuckets(numBuckets);
@@ -219,6 +225,9 @@ public class PartitionAttributesFactory<K, V> {
 
   /**
    * Sets the <code>PartitionResolver</code> for the PartitionRegion.
+   *
+   * @param resolver the <code>PartitionResolver</code> for the PartitionRegion
+   * @return PartitionAttributeFactory.
    */
   public PartitionAttributesFactory<K, V> setPartitionResolver(PartitionResolver<K, V> resolver) {
     partitionAttributes.setPartitionResolver(resolver);
@@ -228,6 +237,10 @@ public class PartitionAttributesFactory<K, V> {
   /**
    * Sets the name of the PartitionRegion with which this newly created partitioned region is
    * colocated
+   *
+   * @param colocatedRegionFullPath the name of the PartitionRegion with which this newly created
+   *        partitioned region is colocated
+   * @return PartitionAttributeFactory.
    */
   public PartitionAttributesFactory<K, V> setColocatedWith(String colocatedRegionFullPath) {
     partitionAttributes.setColocatedWith(colocatedRegionFullPath);
@@ -239,6 +252,9 @@ public class PartitionAttributesFactory<K, V> {
    * after another member crashes. Default value is set to -1 which indicates that redundancy will
    * not be recovered after a failure.
    *
+   * @param recoveryDelay the delay in milliseconds that existing members will wait before
+   *        satisfying redundancy after another member crashes
+   * @return PartitionAttributeFactory.
    * @since GemFire 6.0
    */
   public PartitionAttributesFactory<K, V> setRecoveryDelay(long recoveryDelay) {
@@ -251,6 +267,9 @@ public class PartitionAttributesFactory<K, V> {
    * indicates that adding new members will not trigger redundancy recovery. The default (set to 0)
    * is to recover redundancy immediately when a new member is added.
    *
+   * @param startupRecoveryDelay the delay in milliseconds that new members will wait before
+   *        satisfying redundancy
+   * @return PartitionAttributeFactory.
    * @since GemFire 6.0
    */
   public PartitionAttributesFactory<K, V> setStartupRecoveryDelay(long startupRecoveryDelay) {
@@ -261,6 +280,8 @@ public class PartitionAttributesFactory<K, V> {
   /**
    * adds a PartitionListener for the partitioned region.
    *
+   * @param listener the PartitionListener to add
+   * @return PartitionAttributeFactory.
    * @since GemFire 6.5
    */
   public PartitionAttributesFactory<K, V> addPartitionListener(PartitionListener listener) {
@@ -280,8 +301,8 @@ public class PartitionAttributesFactory<K, V> {
    * provide, behaves. There are currently no non-deprecated local properties.
    *
    * @deprecated use {@link #setLocalMaxMemory(int)} in GemFire 5.1 and later releases
+   * @param localProps the <code>Properties</code> for the local instance the partitioned Region
    * @return PartitionAttributeFactory.
-   *
    */
   @Deprecated
   public PartitionAttributesFactory<K, V> setLocalProperties(Properties localProps) {
@@ -301,6 +322,8 @@ public class PartitionAttributesFactory<K, V> {
    *
    * @deprecated use {@link #setTotalMaxMemory(long)} and {@link #setTotalNumBuckets(int)} in
    *             GemFire 5.1 and later releases
+   * @param globalProps the global <code>Properties</code> for the next
+   *        <code>PartitionAttributes</code> created
    * @return PartitionAttributeFactory.
    *
    * @see #GLOBAL_MAX_MEMORY_PROPERTY
@@ -314,6 +337,8 @@ public class PartitionAttributesFactory<K, V> {
   /**
    * FixedPartitionAttributes defined for this partitioned region is added to PR attributes.
    *
+   * @param fpa the FixedPartitionAttributes to add
+   * @return PartitionAttributeFactory.
    * @since GemFire 6.6
    */
   public PartitionAttributesFactory<K, V> addFixedPartitionAttributes(

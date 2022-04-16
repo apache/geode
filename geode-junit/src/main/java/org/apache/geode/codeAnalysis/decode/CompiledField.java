@@ -47,7 +47,7 @@ public class CompiledField implements Comparable {
     }
   }
 
-  /**
+  /*
    * return a string describing the access modifiers for this class
    */
   public String accessString() {
@@ -91,7 +91,7 @@ public class CompiledField implements Comparable {
     return (access_flags & 0x80) != 0;
   }
 
-  /**
+  /*
    * the descriptor is just the type string for the field
    */
   public String descriptor() {

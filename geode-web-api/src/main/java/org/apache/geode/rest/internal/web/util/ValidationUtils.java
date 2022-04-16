@@ -17,7 +17,7 @@ package org.apache.geode.rest.internal.web.util;
 
 /**
  * The ValidationUtils class is a utility class for performing validations.
- * <p/>
+ * <p>
  *
  * @since GemFire 8.0
  */

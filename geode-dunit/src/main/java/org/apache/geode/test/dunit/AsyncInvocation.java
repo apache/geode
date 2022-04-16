@@ -41,8 +41,8 @@ import org.apache.geode.test.dunit.internal.StackTrace;
  * {@code AsyncInvocation} can be used as follows:
  *
  * <pre>
- *   AsyncInvocation doPutsInVM0 = vm0.invokeAsync(() -> doPuts());
- *   AsyncInvocation doDestroysInVM1 = vm1.invokeAsync(() -> doDestroys());
+ *   AsyncInvocation doPutsInVM0 = vm0.invokeAsync(() -&gt; doPuts());
+ *   AsyncInvocation doDestroysInVM1 = vm1.invokeAsync(() -&gt; doDestroys());
  *
  *   doPutsInVM0.await();
  *   doDestroysInVM1.await();
@@ -226,6 +226,7 @@ public class AsyncInvocation<V> implements Future<V> {
   /**
    * Returns the target of this async method invocation.
    *
+   * @return the target of this async method invocation.
    * @deprecated This method is not required for anything.
    */
   @Deprecated
@@ -236,6 +237,7 @@ public class AsyncInvocation<V> implements Future<V> {
   /**
    * Returns the name of the method being invoked remotely.
    *
+   * @return the name of the method being invoked remotely.
    * @deprecated This method is not required for anything.
    */
   @Deprecated
@@ -246,6 +248,7 @@ public class AsyncInvocation<V> implements Future<V> {
   /**
    * Returns whether or not an exception occurred during this async method invocation.
    *
+   * @return whether an exception occurred during this async method invocation.
    * @throws AssertionError if this {@code AsyncInvocation} is not done.
    *
    * @deprecated Please use {@link #await()} or {@link #get()} which will throw any underlying
@@ -259,6 +262,7 @@ public class AsyncInvocation<V> implements Future<V> {
   /**
    * Returns the exception that was thrown during this async method invocation.
    *
+   * @return he exception that was thrown during this async method invocation.
    * @throws AssertionError if this {@code AsyncInvocation} is not done.
    *
    * @deprecated Please use {@link #await()} or {@link #get()} which will throw any underlying

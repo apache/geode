@@ -31,6 +31,8 @@ public class AgentFactory {
 
   /**
    * Defines a "default" GemFire JMX administration agent configuration.
+   *
+   * @return a "default" GemFire JMX administration agent configuration
    */
   public static AgentConfig defineAgent() {
     return new AgentConfigImpl();
@@ -39,6 +41,10 @@ public class AgentFactory {
   /**
    * Creates an unstarted GemFire JMX administration agent with the given configuration.
    *
+   * @param config the configuration with which to create the GemFire JMX administration agent
+   * @return an unstarted GemFire JMX administration agent
+   *
+   * @throws AdminException if the agent cannot be created
    * @see Agent#start
    */
   public static Agent getAgent(AgentConfig config) throws AdminException {

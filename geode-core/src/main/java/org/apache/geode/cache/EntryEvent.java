@@ -111,6 +111,8 @@ public interface EntryEvent<K, V> extends CacheEvent<K, V> {
    * value existed but it could not be obtained or it was deemed too expensive to obtain. Note that
    * {@link #getOldValue} will return <code>null</code> when this method returns <code>false</code>.
    *
+   * @return whether the old value is "available"
+   *
    * @since GemFire 6.0
    */
   boolean isOldValueAvailable();

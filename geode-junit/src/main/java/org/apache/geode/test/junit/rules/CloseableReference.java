@@ -121,7 +121,7 @@ public class CloseableReference<V> extends SerializableExternalResource {
 
   private final AtomicBoolean autoClose = new AtomicBoolean(true);
 
-  /**
+  /*
    * Set false to disable autoClose during tearDown. Default is true.
    */
   public CloseableReference<V> autoClose(boolean value) {
@@ -142,6 +142,7 @@ public class CloseableReference<V> extends SerializableExternalResource {
    * Sets to the given value.
    *
    * @param newValue the new value
+   * @return a reference to this CloseableReference
    */
   public CloseableReference<V> set(V newValue) {
     reference.set(newValue);

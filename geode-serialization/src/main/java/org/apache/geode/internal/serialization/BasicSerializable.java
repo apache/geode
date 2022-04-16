@@ -28,7 +28,7 @@ import java.io.IOException;
  * support built-in</li>
  * <li>DataSerializable is less efficient</li>
  * <li>DataSerializable is dependent on the (large) geode-core module</li>
- * </p>
+ * <p>
  *
  * Geode Releases before 1.12 violated this rule: a number of internal messages implemented
  * DataSerializable. To correct that situation, this interface (BasicSerializable) was created. By

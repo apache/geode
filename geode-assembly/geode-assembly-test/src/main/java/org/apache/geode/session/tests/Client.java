@@ -77,14 +77,14 @@ public class Client {
     this.port = port;
   }
 
-  /**
+  /*
    * Get the value of a session attribute on the server
    */
   public Response get(String key) throws IOException, URISyntaxException {
     return get(key, true);
   }
 
-  /**
+  /*
    * Get the value of a session attribute on the server
    */
   public Response get(String key, boolean storeRespCookie) throws IOException, URISyntaxException {
@@ -95,14 +95,14 @@ public class Client {
     return doRequest(new HttpGet(reqURIBuild.build()), storeRespCookie);
   }
 
-  /**
+  /*
    * Set the value of a session attribute on the server
    */
   public Response set(String key, String value) throws IOException, URISyntaxException {
     return set(key, value, true);
   }
 
-  /**
+  /*
    * Set the value of a session attribute on the server
    */
   public Response set(String key, String value, boolean storeRespCookie)
@@ -115,7 +115,7 @@ public class Client {
     return doRequest(new HttpGet(reqURIBuild.build()), storeRespCookie);
   }
 
-  /**
+  /*
    * Instantiate and execute a function in the server. Note that this function must be present in
    * the sesssion testing war.
    */
@@ -133,6 +133,9 @@ public class Client {
    * Remove the session attribute on the server
    *
    * @param key - the session attribute to remove
+   * @return the response to the request
+   * @throws IOException if an exception is encountered while sending the request
+   * @throws URISyntaxException if the generated string could not be parsed as a URI reference
    */
   public Response remove(String key) throws IOException, URISyntaxException {
     return remove(key, true);
@@ -143,6 +146,9 @@ public class Client {
    *
    * @param key - the session attribute to remove
    * @param storeRespCookie - whether or not to store the session cookie of this request
+   * @return the response to the request
+   * @throws IOException if an exception is encountered while sending the request
+   * @throws URISyntaxException if the generated string could not be parsed as a URI reference
    */
   public Response remove(String key, boolean storeRespCookie)
       throws URISyntaxException, IOException {
@@ -153,14 +159,14 @@ public class Client {
     return doRequest(new HttpGet(reqURIBuild.build()), storeRespCookie);
   }
 
-  /**
+  /*
    * Invalidate this clients session on the server
    */
   public Response invalidate() throws IOException, URISyntaxException {
     return invalidate(true);
   }
 
-  /**
+  /*
    * Invalidate this clients session on the server
    */
   public Response invalidate(boolean storeRespCookie) throws IOException, URISyntaxException {
@@ -177,6 +183,9 @@ public class Client {
    * If this time interval elapses without activity on the session, the session will expire.
    *
    * @param time - Time in seconds until the session should expire
+   * @return the response to the request
+   * @throws IOException if an exception is encountered while sending the request
+   * @throws URISyntaxException if the generated string could not be parsed as a URI reference
    */
   public Response setMaxInactive(int time) throws IOException, URISyntaxException {
     return setMaxInactive(time, true);
@@ -188,6 +197,11 @@ public class Client {
    * If this time interval elapses without activity on the session, the session will expire.
    *
    * @param time - Time in seconds until the session should expire
+   * @param storeRespCookie whether to retain the value of a "Set-Cookie" header returned in the
+   *        response
+   * @return the response to the request
+   * @throws IOException if an exception is encountered while sending the request
+   * @throws URISyntaxException if the generated string could not be parsed as a URI reference
    */
   public Response setMaxInactive(int time, boolean storeRespCookie)
       throws IOException, URISyntaxException {
@@ -273,15 +287,14 @@ public class Client {
       this.isNew = isNew;
     }
 
-    /**
+    /*
      * The session cookie associated with this client.
      */
     public String getSessionCookie() {
       return sessionCookie;
     }
 
-    /**
-     *
+    /*
      * The String value of the response body.
      */
     public String getResponse() {

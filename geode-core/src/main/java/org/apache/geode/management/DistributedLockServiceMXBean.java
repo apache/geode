@@ -34,32 +34,45 @@ public interface DistributedLockServiceMXBean {
 
   /**
    * Returns the name of the LockService.
+   *
+   * @return the name of the LockService
    */
   String getName();
 
   /**
    * Returns the number of members using this LockService.
+   *
+   * @return the number of members using this LockService
    */
   int getMemberCount();
 
   /**
-   * Returns of the name of the member which grants the lock.
+   * Returns the name of the member which grants the lock.
+   *
+   * @return the name of the member which grants the lock
    */
   String fetchGrantorMember();
 
   /**
    * Returns a list of names of the members using this LockService.
+   *
+   * @return an array of names of the members using this LockService
    */
   String[] getMemberNames();
 
   /**
    * Returns a map of the names of the objects being locked on and the names of the threads holding
    * the locks.
+   *
+   * @return a map of the names of the objects being locked on and the names of the threads holding
+   *         the locks
    */
   Map<String, String> listThreadsHoldingLock();
 
   /**
    * Returns a list of names of the locks held by this member's threads.
+   *
+   * @return an array of names of the locks held by this member's threads
    */
   String[] listHeldLocks();
 

@@ -36,6 +36,8 @@ public class InternalGemFireException extends GemFireException {
 
   /**
    * Creates a new <code>InternalGemFireException</code>.
+   *
+   * @param message the detail message
    */
   public InternalGemFireException(String message) {
     super(message);
@@ -43,6 +45,9 @@ public class InternalGemFireException extends GemFireException {
 
   /**
    * Creates a new <code>InternalGemFireException</code> that was caused by a given exception
+   *
+   * @param message the detail message
+   * @param thr the cause
    */
   public InternalGemFireException(String message, Throwable thr) {
     super(message, thr);

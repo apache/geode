@@ -83,6 +83,7 @@ public abstract class TestCacheListener<K, V> extends TestCacheCallback
    * Returns a copy of the list of events collected in this listener's history. Also clears the
    * current history.
    *
+   * @return a copy of the list of events collected in this listener's history
    * @since GemFire 5.0
    */
   public List<CacheEvent<K, V>> getEventHistory() {

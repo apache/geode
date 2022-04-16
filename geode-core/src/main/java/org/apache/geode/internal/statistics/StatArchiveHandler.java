@@ -34,7 +34,7 @@ import org.apache.geode.logging.internal.spi.LogFile;
 
 /**
  * Extracted from {@link HostStatSampler} and {@link GemFireStatSampler}.
- * <p/>
+ * <p>
  * The StatArchiveHandler handles statistics samples by archiving them to a file. This handler
  * provides archive file rolling (file size limit) and removal (disk space limit). This handler
  * creates and uses an instance of {@link StatArchiveWriter} for the currently open archive file
@@ -247,7 +247,7 @@ public class StatArchiveHandler implements SampleHandler {
   /**
    * Changes the archive file to the new file or disables archiving if an empty string is specified.
    * This may be invoked by any thread other than the stat sampler.
-   * <p/>
+   * <p>
    * If the file name matches any archive file(s) already in {@link #archiveDir} then this may
    * trigger rolling and/or removal if appropriate based on
    * {@link StatArchiveHandlerConfig#getArchiveFileSizeLimit() file size limit} and
@@ -265,12 +265,12 @@ public class StatArchiveHandler implements SampleHandler {
 
   /**
    * Changes the archive file using the same configured archive file name.
-   * <p/>
+   * <p>
    * If the file name matches any archive file(s) already in {@link #archiveDir} then this may
    * trigger rolling and/or removal if appropriate based on
    * {@link StatArchiveHandlerConfig#getArchiveFileSizeLimit() file size limit} and
    * {@link StatArchiveHandlerConfig#getArchiveDiskSpaceLimit() disk space limit}.
-   * <p/>
+   * <p>
    * If resetHandler is true, then this handler will reset itself with the SampleCollector by
    * removing and re-adding itself in order to receive allocation notifications about all resource
    * types and instances.
@@ -285,12 +285,12 @@ public class StatArchiveHandler implements SampleHandler {
 
   /**
    * Changes the archive file to the new file or disables archiving if an empty string is specified.
-   * <p/>
+   * <p>
    * If the file name matches any archive file(s) already in {@link #archiveDir} then this may
    * trigger rolling and/or removal if appropriate based on
    * {@link StatArchiveHandlerConfig#getArchiveFileSizeLimit() file size limit} and
    * {@link StatArchiveHandlerConfig#getArchiveDiskSpaceLimit() disk space limit}.
-   * <p/>
+   * <p>
    * If resetHandler is true, then this handler will reset itself with the SampleCollector by
    * removing and re-adding itself in order to receive allocation notifications about all resource
    * types and instances.

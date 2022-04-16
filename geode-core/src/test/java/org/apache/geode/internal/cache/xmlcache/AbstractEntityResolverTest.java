@@ -82,7 +82,7 @@ public abstract class AbstractEntityResolverTest {
 
   /**
    * Test {@link PivotalEntityResolver#resolveEntity(String, String)} with <code>null</code>
-   * <code>systemId</code>. Asserts that returns to <code>null<code>.
+   * <code>systemId</code>. Asserts that returns to <code>null</code>.
    *
    * @since GemFire 8.1
    */
@@ -96,7 +96,7 @@ public abstract class AbstractEntityResolverTest {
   /**
    * Test {@link PivotalEntityResolver#resolveEntity(String, String)} with
    * <code>"--not-a-valid-system-id--"</code> <code>systemId</code>, which is not in the Pivotal
-   * namespace.. Asserts that returns to <code>null<code>.
+   * namespace.. Asserts that returns to <code>null</code>.
    *
    * @since GemFire 8.1
    */
@@ -110,7 +110,7 @@ public abstract class AbstractEntityResolverTest {
   /**
    * Test {@link PivotalEntityResolver#resolveEntity(String, String)} with
    * <code>"http://schema.pivotal.io/this/should/be/not/found.xsd"</code> <code>systemId</code>,
-   * which should not be found. Asserts that returns to <code>null<code>.
+   * which should not be found. Asserts that returns to <code>null</code>.
    *
    * @since GemFire 8.1
    */

@@ -31,9 +31,9 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 /**
  * The ServerLocatorJUnitTest class is a test suite of test cases testing the contract and
  * functionality of the ServerLocator class.
- * </p>
+ * <p>
  * TODO: write more unit tests for this class...
- * </p>
+ * <p>
  *
  * @see org.apache.geode.distributed.internal.ServerLocator
  * @see org.junit.Assert

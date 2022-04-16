@@ -126,7 +126,7 @@ public abstract class CredentialGenerator {
    */
   public abstract String getAuthenticator();
 
-  /**
+  /*
    * Get a set of valid credentials generated using the given index.
    */
   public abstract Properties getValidCredentials(final int index);
@@ -134,11 +134,12 @@ public abstract class CredentialGenerator {
   /**
    * Get a set of valid credentials for the given {@link Principal}.
    *
+   * @param principal the {@link Principal} for which to get credentials
    * @return credentials for the given {@code Principal} or null if none possible.
    */
   public abstract Properties getValidCredentials(final Principal principal);
 
-  /**
+  /*
    * Get a set of invalid credentials generated using the given index.
    */
   public abstract Properties getInvalidCredentials(final int index);
@@ -242,21 +243,21 @@ public abstract class CredentialGenerator {
       return classType == ID_SSL;
     }
 
-    /**
-     * Returns the {@code ClassCode} represented by specified ordinal.
+    /*
+     * Returns the ClassCode represented by specified ordinal.
      */
     public static ClassCode fromOrdinal(final byte ordinal) {
       return VALUES[ordinal];
     }
 
-    /**
-     * Returns the {@code ClassCode} represented by specified string.
+    /*
+     * Returns the ClassCode represented by specified string.
      */
     public static ClassCode parse(final String operationName) {
       return (ClassCode) CODE_NAME_MAP.get(operationName);
     }
 
-    /**
+    /*
      * Returns all the possible values.
      */
     public static List getAll() {
@@ -306,6 +307,7 @@ public abstract class CredentialGenerator {
     /**
      * Indicates whether other {@code ClassCode} is same as this one.
      *
+     * @param opCode the {@code ClassCode} to check
      * @return true if other {@code ClassCode} is same as this one.
      */
     public boolean equals(final ClassCode opCode) {

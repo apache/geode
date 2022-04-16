@@ -200,6 +200,9 @@ public abstract class DataSerializer {
    * Writes an instance of <code>Class</code> to a <code>DataOutput</code>. This method will handle
    * a <code>null</code> value and not throw a <code>NullPointerException</code>.
    *
+   * @param c the <code>Class</code> to write
+   * @param out the {@link DataInput} to write to
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
    * @see #readClass
@@ -230,6 +233,9 @@ public abstract class DataSerializer {
    * Writes class name to a <code>DataOutput</code>. This method will handle a <code>null</code>
    * value and not throw a <code>NullPointerException</code>.
    *
+   * @param className the class name to write
+   * @param out the {@link DataInput} to write to
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
    * @see #readNonPrimitiveClassName(DataInput)
@@ -250,6 +256,9 @@ public abstract class DataSerializer {
    * Reads an instance of <code>Class</code> from a <code>DataInput</code>. The class will be loaded
    * using the {@linkplain Thread#getContextClassLoader current content class loader}. The return
    * value may be <code>null</code>.
+   *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized <code>Class</code>
    *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @throws ClassNotFoundException The class cannot be loaded
@@ -272,6 +281,9 @@ public abstract class DataSerializer {
    *
    * The return value may be <code>null</code>.
    *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized Class name
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @see #writeNonPrimitiveClassName(String, DataOutput)
    */
@@ -287,6 +299,11 @@ public abstract class DataSerializer {
    * It will be recreated on the other end by calling {@link CacheFactory#getAnyInstance} and then
    * calling <code>getRegion</code> on it. This method will handle a <code>null</code> value and not
    * throw a <code>NullPointerException</code>.
+   *
+   * @param rgn the Region to write
+   * @param out the {@link DataInput} to write to
+   *
+   * @throws IOException if a problem occurs while reading from <code>in</code>
    */
   public static void writeRegion(Region<?, ?> rgn, DataOutput out) throws IOException {
     writeString((rgn != null) ? rgn.getFullPath() : null, out);
@@ -297,11 +314,15 @@ public abstract class DataSerializer {
    * recreated on the other end by calling {@link CacheFactory#getAnyInstance} and then calling
    * <code>getRegion</code> on it. The return value may be <code>null</code>.
    *
+   * @param <K> the type of keys in the region
+   * @param <V> the type of values in the region
    * @param in the input stream
    * @return the Region instance
    * @throws org.apache.geode.cache.CacheClosedException if a cache has not been created or the only
    *         created one is closed.
    * @throws RegionNotFoundException if there is no region by this name in the Cache
+   * @throws IOException if a problem occurs while reading from <code>in</code>
+   * @throws ClassNotFoundException if the class of one of the Region's elements cannot be found.
    */
   public static <K, V> Region<K, V> readRegion(DataInput in)
       throws IOException, ClassNotFoundException {
@@ -328,6 +349,9 @@ public abstract class DataSerializer {
    * preserve the class type of <code>date</code>,\ {@link #writeObject(Object, DataOutput)} should
    * be used for data serialization. This method will handle a <code>null</code> value and not throw
    * a <code>NullPointerException</code>.
+   *
+   * @param date the <code>Date</code> to write
+   * @param out the {@link DataInput} to write to
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
@@ -358,6 +382,9 @@ public abstract class DataSerializer {
    * Reads an instance of <code>Date</code> from a <code>DataInput</code>. The return value may be
    * <code>null</code>.
    *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized <code>Date</code>
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    */
   public static Date readDate(DataInput in) throws IOException {
@@ -384,6 +411,9 @@ public abstract class DataSerializer {
    * be used for data serialization. This method will handle a <code>null</code> value and not throw
    * a <code>NullPointerException</code>.
    *
+   * @param file the <code>File</code> to write
+   * @param out the {@link DataInput} to write to
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
    * @see #readFile
@@ -403,6 +433,9 @@ public abstract class DataSerializer {
   /**
    * Reads an instance of <code>File</code> from a <code>DataInput</code>. The return value may be
    * <code>null</code>.
+   *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized <code>File</code>
    *
    * @throws IOException A problem occurs while reading from <code>in</code>
    */
@@ -433,6 +466,9 @@ public abstract class DataSerializer {
    * {@link #writeObject(Object, DataOutput)} should be used. This method will handle a
    * <code>null</code> value and not throw a <code>NullPointerException</code>.
    *
+   * @param address the <code>InetAddress</code> to write
+   * @param out the {@link DataInput} to write to
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
    * @see #readInetAddress
@@ -451,6 +487,9 @@ public abstract class DataSerializer {
   /**
    * Reads an instance of <code>InetAddress</code> from a <code>DataInput</code>. The return value
    * may be <code>null</code>.
+   *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized <code>InetAddress</code>
    *
    * @throws IOException A problem occurs while reading from <code>in</code> or the address read
    *         from <code>in</code> is unknown
@@ -475,6 +514,9 @@ public abstract class DataSerializer {
    * <p>
    * As of 5.7 strings longer than 0xFFFF can be serialized.
    *
+   * @param value the <code>String</code> to write
+   * @param out the {@link DataInput} to write to
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
    * @see #readString
@@ -495,6 +537,9 @@ public abstract class DataSerializer {
    * Reads an instance of <code>String</code> from a <code>DataInput</code>. The return value may be
    * <code>null</code>.
    *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized <code>String</code>
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    *
    * @see #writeString
@@ -505,6 +550,9 @@ public abstract class DataSerializer {
 
   /**
    * Writes an instance of <code>Boolean</code> to a <code>DataOutput</code>.
+   *
+   * @param value the <code>Boolean</code> to write
+   * @param out the {@link DataInput} to write to
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    * @throws NullPointerException if value is null.
@@ -525,6 +573,9 @@ public abstract class DataSerializer {
   /**
    * Reads an instance of <code>Boolean</code> from a <code>DataInput</code>.
    *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized <code>Boolean</code>
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    */
   public static Boolean readBoolean(DataInput in) throws IOException {
@@ -539,6 +590,9 @@ public abstract class DataSerializer {
 
   /**
    * Writes an instance of <code>Character</code> to a <code>DataOutput</code>.
+   *
+   * @param value the <code>Character</code> to write
+   * @param out the {@link DataInput} to write to
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    * @throws NullPointerException if value is null.
@@ -559,6 +613,9 @@ public abstract class DataSerializer {
   /**
    * Reads an instance of <code>Character</code> from a <code>DataInput</code>.
    *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized <code>Character</code>
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    */
   public static Character readCharacter(DataInput in) throws IOException {
@@ -574,6 +631,9 @@ public abstract class DataSerializer {
 
   /**
    * Writes an instance of <code>Byte</code> to a <code>DataOutput</code>.
+   *
+   * @param value the <code>Byte</code> to write
+   * @param out the {@link DataInput} to write to
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    * @throws NullPointerException if value is null.
@@ -594,6 +654,9 @@ public abstract class DataSerializer {
   /**
    * Reads an instance of <code>Byte</code> from a <code>DataInput</code>.
    *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized <code>Byte</code>
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    */
   public static Byte readByte(DataInput in) throws IOException {
@@ -608,6 +671,9 @@ public abstract class DataSerializer {
 
   /**
    * Writes an instance of <code>Short</code> to a <code>DataOutput</code>.
+   *
+   * @param value the <code>Short</code> to write
+   * @param out the {@link DataInput} to write to
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    * @throws NullPointerException if value is null.
@@ -628,6 +694,9 @@ public abstract class DataSerializer {
   /**
    * Reads an instance of <code>Short</code> from a <code>DataInput</code>.
    *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized <code>Short</code>
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    */
   public static Short readShort(DataInput in) throws IOException {
@@ -642,6 +711,9 @@ public abstract class DataSerializer {
 
   /**
    * Writes an instance of <code>Integer</code> to a <code>DataOutput</code>.
+   *
+   * @param value the <code>Integer</code> to write
+   * @param out the {@link DataInput} to write to
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    * @throws NullPointerException if value is null.
@@ -662,6 +734,9 @@ public abstract class DataSerializer {
   /**
    * Reads an instance of <code>Integer</code> from a <code>DataInput</code>.
    *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized <code>Integer</code>
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    */
   public static Integer readInteger(DataInput in) throws IOException {
@@ -676,6 +751,9 @@ public abstract class DataSerializer {
 
   /**
    * Writes an instance of <code>Long</code> to a <code>DataOutput</code>.
+   *
+   * @param value the <code>Long</code> to write
+   * @param out the {@link DataInput} to write to
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    * @throws NullPointerException if value is null.
@@ -696,6 +774,9 @@ public abstract class DataSerializer {
   /**
    * Reads an instance of <code>Long</code> from a <code>DataInput</code>.
    *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized <code>Long</code>
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    */
   public static Long readLong(DataInput in) throws IOException {
@@ -710,6 +791,9 @@ public abstract class DataSerializer {
 
   /**
    * Writes an instance of <code>Float</code> to a <code>DataOutput</code>.
+   *
+   * @param value the <code>Float</code> to write
+   * @param out the {@link DataInput} to write to
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    * @throws NullPointerException if value is null.
@@ -730,6 +814,9 @@ public abstract class DataSerializer {
   /**
    * Reads an instance of <code>Float</code> from a <code>DataInput</code>.
    *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized <code>Float</code>
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    */
   public static Float readFloat(DataInput in) throws IOException {
@@ -744,6 +831,9 @@ public abstract class DataSerializer {
 
   /**
    * Writes an instance of <code>Double</code> to a <code>DataOutput</code>.
+   *
+   * @param value the <code>Double</code> to write
+   * @param out the {@link DataInput} to write to
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    * @throws NullPointerException if value is null.
@@ -764,6 +854,9 @@ public abstract class DataSerializer {
   /**
    * Reads an instance of <code>Double</code> from a <code>DataInput</code>.
    *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized <code>Double</code>
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    */
   public static Double readDouble(DataInput in) throws IOException {
@@ -778,6 +871,9 @@ public abstract class DataSerializer {
 
   /**
    * Writes a primitive <code>boolean</code> to a <code>DataOutput</code>.
+   *
+   * @param value the primitive <code>boolean</code> to write
+   * @param out the {@link DataInput} to write to
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
@@ -798,6 +894,9 @@ public abstract class DataSerializer {
   /**
    * Reads a primitive <code>boolean</code> from a <code>DataInput</code>.
    *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized primitive <code>boolean</code>
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @see DataInput#readBoolean
    * @since GemFire 5.1
@@ -814,6 +913,9 @@ public abstract class DataSerializer {
 
   /**
    * Writes a primitive <code>byte</code> to a <code>DataOutput</code>.
+   *
+   * @param value the primitive <code>byte</code> to write
+   * @param out the {@link DataInput} to write to
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
@@ -834,6 +936,9 @@ public abstract class DataSerializer {
   /**
    * Reads a primitive <code>byte</code> from a <code>DataInput</code>.
    *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized primitive <code>byte</code>
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @see DataInput#readByte
    * @since GemFire 5.1
@@ -850,6 +955,9 @@ public abstract class DataSerializer {
 
   /**
    * Writes a primitive <code>char</code> to a <code>DataOutput</code>.
+   *
+   * @param value the primitive <code>char</code> to write
+   * @param out the {@link DataInput} to write to
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
@@ -870,6 +978,9 @@ public abstract class DataSerializer {
   /**
    * Reads a primitive <code>char</code> from a <code>DataInput</code>.
    *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized primitive <code>char</code>
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @see DataInput#readChar
    * @since GemFire 5.1
@@ -886,6 +997,9 @@ public abstract class DataSerializer {
 
   /**
    * Writes a primitive <code>short</code> to a <code>DataOutput</code>.
+   *
+   * @param value the primitive <code>short</code> to write
+   * @param out the {@link DataInput} to write to
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
@@ -906,6 +1020,9 @@ public abstract class DataSerializer {
   /**
    * Reads a primitive <code>short</code> from a <code>DataInput</code>.
    *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized primitive <code>short</code>
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @see DataInput#readShort
    * @since GemFire 5.1
@@ -922,6 +1039,9 @@ public abstract class DataSerializer {
 
   /**
    * Writes a primitive <code>int</code> as an unsigned byte to a <code>DataOutput</code>.
+   *
+   * @param value the primitive <code>int</code> as an unsigned byte to write
+   * @param out the {@link DataInput} to write to
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
@@ -944,6 +1064,9 @@ public abstract class DataSerializer {
    * Reads a primitive <code>int</code> as an unsigned byte from a <code>DataInput</code> using
    * {@link DataInput#readUnsignedByte}.
    *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized primitive <code>int</code> as an unsigned byte
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @since GemFire 5.1
    */
@@ -959,6 +1082,9 @@ public abstract class DataSerializer {
 
   /**
    * Writes a primitive <code>int</code> as an unsigned short to a <code>DataOutput</code>.
+   *
+   * @param value the primitive <code>int</code> as an unsigned short to write
+   * @param out the {@link DataInput} to write to
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
@@ -981,6 +1107,9 @@ public abstract class DataSerializer {
    * Reads a primitive <code>int</code> as an unsigned short from a <code>DataInput</code> using
    * {@link DataInput#readUnsignedShort}.
    *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized primitive <code>int</code> as an unsigned short
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @since GemFire 5.1
    */
@@ -996,6 +1125,9 @@ public abstract class DataSerializer {
 
   /**
    * Writes a primitive <code>int</code> to a <code>DataOutput</code>.
+   *
+   * @param value the primitive {@code int} to write
+   * @param out the {@link DataOutput} to write to
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
@@ -1015,6 +1147,9 @@ public abstract class DataSerializer {
   /**
    * Reads a primitive <code>int</code> from a <code>DataInput</code>.
    *
+   * @param in the {@link DataInput} to read from
+   * @return a primitive {@code int}
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @see DataInput#readInt
    * @since GemFire 5.1
@@ -1031,6 +1166,9 @@ public abstract class DataSerializer {
 
   /**
    * Writes a primitive <code>long</code> to a <code>DataOutput</code>.
+   *
+   * @param value the primitive {@code long} to write
+   * @param out the {@link DataOutput} to write to
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
@@ -1051,6 +1189,9 @@ public abstract class DataSerializer {
   /**
    * Reads a primitive <code>long</code> from a <code>DataInput</code>.
    *
+   * @param in the {@link DataInput} to read from
+   * @return a primitive {@code long}
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @see DataInput#readLong
    * @since GemFire 5.1
@@ -1067,6 +1208,9 @@ public abstract class DataSerializer {
 
   /**
    * Writes a primitive <code>float</code> to a <code>DataOutput</code>.
+   *
+   * @param value the primitive {@code float} to write
+   * @param out the {@link DataOutput} to write to
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
@@ -1087,6 +1231,9 @@ public abstract class DataSerializer {
   /**
    * Reads a primitive <code>float</code> from a <code>DataInput</code>.
    *
+   * @param in the {@link DataInput} to read from
+   * @return a primitive {@code float}
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @see DataInput#readFloat
    * @since GemFire 5.1
@@ -1103,6 +1250,9 @@ public abstract class DataSerializer {
 
   /**
    * Writes a primtive <code>double</code> to a <code>DataOutput</code>.
+   *
+   * @param value the primitive {@code double} to write
+   * @param out the {@link DataOutput} to write to
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
@@ -1123,6 +1273,9 @@ public abstract class DataSerializer {
   /**
    * Reads a primitive <code>double</code> from a <code>DataInput</code>.
    *
+   * @param in the {@link DataInput} to read from
+   * @return a primitive {@code double}
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @see DataInput#readDouble
    * @since GemFire 5.1
@@ -1141,6 +1294,9 @@ public abstract class DataSerializer {
    * Writes an array of <code>byte</code>s to a <code>DataOutput</code>. This method will serialize
    * a <code>null</code> array and not throw a <code>NullPointerException</code>.
    *
+   * @param array the array of {@code byte}s to write
+   * @param out the {@link DataOutput} to write to
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
    * @see #readByteArray
@@ -1158,7 +1314,9 @@ public abstract class DataSerializer {
    * <code>DataOutput</code>. This method will serialize a <code>null</code> array and not throw a
    * <code>NullPointerException</code>.
    *
+   * @param array the array of {@code byte}s to write
    * @param len the actual number of entries to write. If len is greater than then length of the
+   * @param out the {@link DataOutput} to write to
    *        array then the entire array is written.
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
@@ -1254,6 +1412,9 @@ public abstract class DataSerializer {
   /**
    * Reads an array of <code>byte</code>s from a <code>DataInput</code>.
    *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized array of <code>byte</code>s
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    *
    * @see #writeByteArray(byte[], DataOutput)
@@ -1275,6 +1436,9 @@ public abstract class DataSerializer {
   /**
    * Writes an array of <code>String</code>s to a <code>DataOutput</code>. This method will
    * serialize a <code>null</code> array and not throw a <code>NullPointerException</code>.
+   *
+   * @param array the array of <code>String</code>s to write
+   * @param out the {@link DataInput} to write to
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
@@ -1303,6 +1467,9 @@ public abstract class DataSerializer {
   /**
    * Reads an array of <code>String</code>s from a <code>DataInput</code>.
    *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized array of <code>String</code>s
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    *
    * @see #writeStringArray
@@ -1324,6 +1491,9 @@ public abstract class DataSerializer {
   /**
    * Writes an array of <code>short</code>s to a <code>DataOutput</code>. This method will serialize
    * a <code>null</code> array and not throw a <code>NullPointerException</code>.
+   *
+   * @param array the array of <code>short</code>s to write
+   * @param out the {@link DataInput} to write to
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
@@ -1353,6 +1523,9 @@ public abstract class DataSerializer {
   /**
    * Reads an array of <code>short</code>s from a <code>DataInput</code>.
    *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized array of <code>short</code>s
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    *
    * @see #writeShortArray
@@ -1381,6 +1554,9 @@ public abstract class DataSerializer {
   /**
    * Writes an array of <code>char</code>s to a <code>DataOutput</code>.
    *
+   * @param array the array of <code>char</code>s to write
+   * @param out the {@link DataInput} to write to
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
    * @see #readCharArray
@@ -1392,6 +1568,9 @@ public abstract class DataSerializer {
 
   /**
    * Reads an array of <code>char</code>s from a <code>DataInput</code>.
+   *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized array of <code>char</code>s
    *
    * @throws IOException A problem occurs while reading from <code>in</code>
    *
@@ -1422,6 +1601,9 @@ public abstract class DataSerializer {
   /**
    * Writes an array of <code>boolean</code>s to a <code>DataOutput</code>.
    *
+   * @param array the array of <code>boolean</code>s to write
+   * @param out the {@link DataInput} to write to
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
    * @see #readBooleanArray
@@ -1450,6 +1632,9 @@ public abstract class DataSerializer {
 
   /**
    * Reads an array of <code>boolean</code>s from a <code>DataInput</code>.
+   *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized array of <code>boolean</code>s
    *
    * @throws IOException A problem occurs while reading from <code>in</code>
    *
@@ -1481,6 +1666,9 @@ public abstract class DataSerializer {
    * Writes an <code>int</code> array to a <code>DataOutput</code>. This method will serialize a
    * <code>null</code> array and not throw a <code>NullPointerException</code>.
    *
+   * @param array the array of <code>int</code>s to write
+   * @param out the {@link DataInput} to write to
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
    * @see #readIntArray
@@ -1499,6 +1687,9 @@ public abstract class DataSerializer {
 
   /**
    * Reads an <code>int</code> array from a <code>DataInput</code>.
+   *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized array of <code>int</code>s
    *
    * @throws IOException A problem occurs while reading from <code>in</code>
    *
@@ -1521,6 +1712,9 @@ public abstract class DataSerializer {
   /**
    * Writes an array of <code>long</code>s to a <code>DataOutput</code>. This method will serialize
    * a <code>null</code> array and not throw a <code>NullPointerException</code>.
+   *
+   * @param array the array of <code>long</code>s to write
+   * @param out the {@link DataInput} to write to
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
@@ -1549,6 +1743,9 @@ public abstract class DataSerializer {
 
   /**
    * Reads an array of <code>long</code>s from a <code>DataInput</code>.
+   *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized array of <code>long</code>s
    *
    * @throws IOException A problem occurs while reading from <code>in</code>
    *
@@ -1579,6 +1776,9 @@ public abstract class DataSerializer {
    * Writes an array of <code>float</code>s to a <code>DataOutput</code>. This method will serialize
    * a <code>null</code> array and not throw a <code>NullPointerException</code>.
    *
+   * @param array the array of <code>float</code>s to write
+   * @param out the {@link DataInput} to write to
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
    * @see #readFloatArray
@@ -1606,6 +1806,9 @@ public abstract class DataSerializer {
 
   /**
    * Reads an array of <code>float</code>s from a <code>DataInput</code>.
+   *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized array of <code>float</code>s
    *
    * @throws IOException A problem occurs while reading from <code>in</code>
    *
@@ -1636,6 +1839,9 @@ public abstract class DataSerializer {
    * Writes an array of <code>double</code>s to a <code>DataOutput</code>. This method will
    * serialize a <code>null</code> array and not throw a <code>NullPointerException</code>.
    *
+   * @param array the array of <code>double</code>s to write
+   * @param out the {@link DataInput} to write to
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
    * @see #readDoubleArray
@@ -1663,6 +1869,9 @@ public abstract class DataSerializer {
 
   /**
    * Reads an array of <code>double</code>s from a <code>DataInput</code>.
+   *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized array of <code>double</code>s
    *
    * @throws IOException A problem occurs while reading from <code>in</code>
    *
@@ -1693,6 +1902,9 @@ public abstract class DataSerializer {
    * Writes an array of <code>Object</code>s to a <code>DataOutput</code>. This method will
    * serialize a <code>null</code> array and not throw a <code>NullPointerException</code>.
    *
+   * @param array the array of <code>Object</code>s to write
+   * @param out the {@link DataInput} to write to
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
    * @see #readObjectArray
@@ -1705,7 +1917,11 @@ public abstract class DataSerializer {
   /**
    * Reads an array of <code>Object</code>s from a <code>DataInput</code>.
    *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized array of <code>Object</code>s
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
+   * @throws ClassNotFoundException if the class of one of the array's elements cannot be found.
    *
    * @see #writeObjectArray
    * @see #readObject
@@ -1789,6 +2005,9 @@ public abstract class DataSerializer {
   /**
    * Writes an array of <tt>byte[]</tt> to a <tt>DataOutput</tt>.
    *
+   * @param array the array of <code>byte[]</code>s to write
+   * @param out the {@link DataInput} to write to
+   *
    * @throws IOException A problem occurs while writing to <tt>out</tt>.
    *
    */
@@ -1815,10 +2034,13 @@ public abstract class DataSerializer {
   /**
    * Reads an array of <code>byte[]</code>s from a <code>DataInput</code>.
    *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized array of <code>byte[]</code>s
+   *
    * @throws IOException A problem occurs while reading from <code>in</code>
    */
   public static byte[][] readArrayOfByteArrays(DataInput in)
-      throws IOException, ClassNotFoundException {
+      throws IOException {
 
     InternalDataSerializer.checkIn(in);
 
@@ -1847,6 +2069,9 @@ public abstract class DataSerializer {
    * an instance of the subclass. To preserve the class type of <code>list</code>,
    * {@link #writeObject(Object, DataOutput)} should be used for data serialization. This method
    * will serialize a <code>null</code> list and not throw a <code>NullPointerException</code>.
+   *
+   * @param list the <code>ArrayList</code> to write
+   * @param out the {@link DataInput} to write to
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
@@ -1878,6 +2103,10 @@ public abstract class DataSerializer {
 
   /**
    * Reads an <code>ArrayList</code> from a <code>DataInput</code>.
+   *
+   * @param <E> – the type of elements in the list
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized <code>ArrayList</code>
    *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @throws ClassNotFoundException The class of one of the <Code>ArrayList</code>'s elements cannot
@@ -1916,6 +2145,9 @@ public abstract class DataSerializer {
    * instance of the subclass. To preserve the class type of <code>list</code>,
    * {@link #writeObject(Object, DataOutput)} should be used for data serialization.
    *
+   * @param list the <code>Vector</code> to write
+   * @param out the {@link DataInput} to write to
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
    * @see #readVector
@@ -1944,6 +2176,10 @@ public abstract class DataSerializer {
 
   /**
    * Reads an <code>Vector</code> from a <code>DataInput</code>.
+   *
+   * @param <E> – the type of elements in the vector
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized <code>Vector</code>
    *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @throws ClassNotFoundException The class of one of the <Code>Vector</code>'s elements cannot be
@@ -1981,6 +2217,9 @@ public abstract class DataSerializer {
    * instance of the subclass. To preserve the class type of <code>list</code>,
    * {@link #writeObject(Object, DataOutput)} should be used for data serialization.
    *
+   * @param list the <code>Stack</code> to write
+   * @param out the {@link DataInput} to write to
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
    * @see #readStack
@@ -2009,6 +2248,10 @@ public abstract class DataSerializer {
 
   /**
    * Reads an <code>Stack</code> from a <code>DataInput</code>.
+   *
+   * @param <E> – the type of elements in the stack
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized <code>Stack</code>
    *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @throws ClassNotFoundException The class of one of the <Code>Stack</code>'s elements cannot be
@@ -2047,6 +2290,9 @@ public abstract class DataSerializer {
    * {@link #writeObject(Object, DataOutput)} should be used for data serialization. This method
    * will serialize a <code>null</code> list and not throw a <code>NullPointerException</code>.
    *
+   * @param list the <code>LinkedList</code> to write
+   * @param out the {@link DataInput} to write to
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
    * @see #readLinkedList
@@ -2075,6 +2321,10 @@ public abstract class DataSerializer {
 
   /**
    * Reads an <code>LinkedList</code> from a <code>DataInput</code>.
+   *
+   * @param <E> – the type of elements in the list
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized <code>LinkedList</code>
    *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @throws ClassNotFoundException The class of one of the <Code>LinkedList</code>'s elements
@@ -2114,6 +2364,9 @@ public abstract class DataSerializer {
    * {@link #writeObject(Object, DataOutput)} should be used for data serialization. This method
    * will serialize a <code>null</code> set and not throw a <code>NullPointerException</code>.
    *
+   * @param set the <code>HashSet</code> to write
+   * @param out the {@link DataInput} to write to
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
    * @see #readHashSet
@@ -2124,6 +2377,10 @@ public abstract class DataSerializer {
 
   /**
    * Reads a <code>HashSet</code> from a <code>DataInput</code>.
+   *
+   * @param <E> – the type of elements in the set
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized <code>HashSet</code>
    *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @throws ClassNotFoundException The class of one of the <Code>HashSet</code>'s elements cannot
@@ -2161,6 +2418,9 @@ public abstract class DataSerializer {
    * <B>not</B> an instance of the subclass. To preserve the class type of <code>set</code>,
    * {@link #writeObject(Object, DataOutput)} should be used for data serialization.
    *
+   * @param set the <code>LinkedHashSet</code> to write
+   * @param out the {@link DataInput} to write to
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
    * @see #readLinkedHashSet
@@ -2172,6 +2432,10 @@ public abstract class DataSerializer {
 
   /**
    * Reads a <code>LinkedHashSet</code> from a <code>DataInput</code>.
+   *
+   * @param <E> – the type of elements in the set
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized <code>LinkedHashSet</code>
    *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @throws ClassNotFoundException The class of one of the <Code>LinkedHashSet</code>'s elements
@@ -2212,6 +2476,9 @@ public abstract class DataSerializer {
    * {@link #writeObject(Object, DataOutput)} should be used for data serialization. This method
    * will serialize a <code>null</code> map and not throw a <code>NullPointerException</code>.
    *
+   * @param map the <code>HashMap</code> to write
+   * @param out the {@link DataInput} to write to
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
    * @see #readHashMap
@@ -2240,6 +2507,11 @@ public abstract class DataSerializer {
 
   /**
    * Reads a <code>HashMap</code> from a <code>DataInput</code>.
+   *
+   * @param <K> – the type of keys in the map
+   * @param <V> – the type of mapped values
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized <code>HashMap</code>
    *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @throws ClassNotFoundException The class of one of the <Code>HashMap</code>'s elements cannot
@@ -2279,6 +2551,9 @@ public abstract class DataSerializer {
    * type of <code>map</code>, {@link #writeObject(Object, DataOutput)} should be used for data
    * serialization.
    *
+   * @param map the <code>IdentityHashMap</code> to write
+   * @param out the {@link DataInput} to write to
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
    * @see #readIdentityHashMap
@@ -2310,6 +2585,11 @@ public abstract class DataSerializer {
   /**
    * Reads a <code>IdentityHashMap</code> from a <code>DataInput</code>. Note that key identity is
    * not preserved unless the keys belong to a class whose serialization preserves identity.
+   *
+   * @param <K> – the type of keys in the map
+   * @param <V> – the type of mapped values
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized <code>IdentityHashMap</code>
    *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @throws ClassNotFoundException The class of one of the <Code>IdentityHashMap</code>'s elements
@@ -2355,6 +2635,9 @@ public abstract class DataSerializer {
    * the keys and values of a ConcurrentHashMap to take advantage of GemFire serialization it must
    * be serialized with this method.
    *
+   * @param map the <code>ConcurrentHashMap</code> to write
+   * @param out the {@link DataInput} to write to
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
    * @see #readConcurrentHashMap
@@ -2388,6 +2671,11 @@ public abstract class DataSerializer {
 
   /**
    * Reads a <code>ConcurrentHashMap</code> from a <code>DataInput</code>.
+   *
+   * @param <K> – the type of keys in the map
+   * @param <V> – the type of mapped values
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized <code>ConcurrentHashMap</code>
    *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @throws ClassNotFoundException The class of one of the <Code>ConcurrentHashMap</code>'s
@@ -2428,6 +2716,9 @@ public abstract class DataSerializer {
    * an instance of the subclass. To preserve the class type of <code>map</code>,
    * {@link #writeObject(Object, DataOutput)} should be used for data serialization.
    *
+   * @param map the <code>Hashtable</code> to write
+   * @param out the {@link DataInput} to write to
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
    * @see #readHashtable
@@ -2458,6 +2749,11 @@ public abstract class DataSerializer {
 
   /**
    * Reads a <code>Hashtable</code> from a <code>DataInput</code>.
+   *
+   * @param <K> – the type of keys in the hashtable
+   * @param <V> – the type of values in the hashtable
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized <code>Hashtable</code>
    *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @throws ClassNotFoundException The class of one of the <Code>Hashtable</code>'s elements cannot
@@ -2500,6 +2796,9 @@ public abstract class DataSerializer {
    * <p>
    * If the map has a comparator then it must also be serializable.
    *
+   * @param map the <code>TreeMap</code> to write
+   * @param out the {@link DataInput} to write to
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
    * @see #readTreeMap
@@ -2530,6 +2829,11 @@ public abstract class DataSerializer {
 
   /**
    * Reads a <code>TreeMap</code> from a <code>DataInput</code>.
+   *
+   * @param <K> – the type of keys in the map
+   * @param <V> – the type of mapped values
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized <code>TreeMap</code>
    *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @throws ClassNotFoundException The class of one of the <Code>TreeMap</code>'s elements cannot
@@ -2572,6 +2876,9 @@ public abstract class DataSerializer {
    * {@link #writeObject(Object, DataOutput)} should be used for data serialization. This method
    * will serialize a <code>null</code> map and not throw a <code>NullPointerException</code>.
    *
+   * @param map the <code>LinkedHashMap</code> to write
+   * @param out the {@link DataInput} to write to
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    * @see #readLinkedHashMap
    */
@@ -2600,6 +2907,11 @@ public abstract class DataSerializer {
 
   /**
    * Reads a <code>LinkedHashMap</code> from a <code>DataInput</code>.
+   *
+   * @param <K> – the type of keys in the map
+   * @param <V> – the type of mapped values
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized <code>LinkedHashMap</code>
    *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @throws ClassNotFoundException The class of one of the <Code>HashMap</code>'s elements cannot
@@ -2642,6 +2954,9 @@ public abstract class DataSerializer {
    * <p>
    * If the set has a comparator then it must also be serializable.
    *
+   * @param set the <code>TreeSet</code> to write
+   * @param out the {@link DataInput} to write to
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
    * @see #readTreeSet
@@ -2670,6 +2985,10 @@ public abstract class DataSerializer {
 
   /**
    * Reads a <code>TreeSet</code> from a <code>DataInput</code>.
+   *
+   * @param <E> the type contained in the <code>TreeSet</code>
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized <code>TreeSet</code>
    *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @throws ClassNotFoundException The class of one of the <Code>TreeSet</code>'s elements cannot
@@ -2713,6 +3032,9 @@ public abstract class DataSerializer {
    * <code>props</code>, {@link #writeObject(Object, DataOutput)} should be used for data
    * serialization.
    *
+   * @param props the Properties to write
+   * @param out the {@link DataInput} to write to
+   *
    * @throws IOException A problem occurs while writing to <code>out</code>
    *
    * @see #readProperties
@@ -2752,8 +3074,11 @@ public abstract class DataSerializer {
    * <P>
    * NOTE: the <code>defaults</code> are always empty in the returned <code>Properties</code>.
    *
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized Properties
    *
-   * @throws IOException A problem occurs while reading from <code>in</code>
+   * @throws IOException If this serializer cannot read an object from <code>in</code>.
+   * @throws ClassNotFoundException If the class cannot be loaded
    *
    * @see #writeProperties
    */
@@ -2791,6 +3116,8 @@ public abstract class DataSerializer {
    * <code>out</code> using standard Java {@linkplain java.io.Serializable serialization}. This
    * method will serialize a <code>null</code> o and not throw a <code>NullPointerException</code>.
    *
+   * @param o the object to write
+   * @param out the {@link DataOutput} to write to
    * @param allowJavaSerialization If false, then a NotSerializableException is thrown in the case
    *        where standard Java serialization would otherwise be used for object <code>o</code> or
    *        for any nested subobject of <code>o</code>. This is used to prevent Java serialization
@@ -2829,6 +3156,9 @@ public abstract class DataSerializer {
    * {@linkplain java.io.Serializable serialization}. This method will serialize a <code>null</code>
    * o and not throw a <code>NullPointerException</code>.
    *
+   * @param o the object to write
+   * @param out the {@link DataOutput} to write to
+   *
    * @throws IOException A problem occurs while writing <code>o</code> to <code>out</code>
    *
    * @see #readObject(DataInput)
@@ -2851,13 +3181,17 @@ public abstract class DataSerializer {
    * loaded using the current thread's {@link Thread#getContextClassLoader context class loader}
    * before the one normally used by Java serialization is consulted.
    *
+   * @param <T> the type of the Object to read
+   * @param in the {@link DataInput} to read from
+   * @return an arbitrary deserialized object
+   *
    * @throws IOException A problem occurred while reading from <code>in</code> (may wrap another
    *         exception)
    * @throws ClassNotFoundException The class of an object read from <code>in</code> could not be
    *         found
    *
    * @see #writeObject(Object, DataOutput)
-   * @see ObjectInputStream#readObject
+   * @see ObjectInputStream#readObject()
    */
   @SuppressWarnings("unchecked")
   public static <T> T readObject(final DataInput in) throws IOException, ClassNotFoundException {
@@ -2947,6 +3281,9 @@ public abstract class DataSerializer {
    * <li>{@link java.util.Vector}
    * <li><code>any array class</code>
    * </ul>
+   *
+   * @return the <code>Class</code>es whose instances are data serialized by this
+   *         <code>DataSerializer</code>
    */
   public abstract Class<?>[] getSupportedClasses();
 
@@ -2957,9 +3294,11 @@ public abstract class DataSerializer {
    * stream.
    *
    * @param o The object to data serialize. It will never be <code>null</code>.
-   *
+   * @param out the {@link DataInput} to write to
    * @return <code>false</code> if this <code>DataSerializer</code> does not know how to data
    *         serialize <code>o</code>.
+   *
+   * @throws IOException If this serializer cannot write an object to <code>out</code>.
    */
   public abstract boolean toData(Object o, DataOutput out) throws IOException;
 
@@ -2967,7 +3306,11 @@ public abstract class DataSerializer {
    * Reads an object from a <code>DataInput</code>. This implementation must support deserializing
    * everything serialized by the matching {@link #toData}.
    *
+   * @param in the {@link DataInput} to write to
+   * @return the deserialized Object
+   *
    * @throws IOException If this serializer cannot read an object from <code>in</code>.
+   * @throws ClassNotFoundException If the class cannot be loaded
    *
    * @see #toData
    */
@@ -2976,7 +3319,11 @@ public abstract class DataSerializer {
   /**
    * Returns the id of this <code>DataSerializer</code>.
    * <p>
-   * Returns an int instead of a byte since 5.7.
+   * Returns an int instead of a byte
+   *
+   * @return the id of this <code>DataSerializer</code>
+   *
+   * @since 5.7.
    */
   public abstract int getId();
 
@@ -3003,6 +3350,8 @@ public abstract class DataSerializer {
    * For internal use only. Sets the unique <code>eventId</code> of this
    * <code>DataSerializer</code>.
    *
+   * @param eventId the unique <code>eventId</code> of this <code>DataSerializer</code>
+   *
    * @since GemFire 6.5
    */
   public void setEventId(Object/* EventID */ eventId) {
@@ -3013,6 +3362,8 @@ public abstract class DataSerializer {
    * For internal use only. Returns the unique <code>eventId</code> of this
    * <code>DataSerializer</code>.
    *
+   * @return the unique <code>eventId</code> of this <code>DataSerializer</code>
+   *
    * @since GemFire 6.5
    */
   public Object/* EventID */ getEventId() {
@@ -3022,6 +3373,8 @@ public abstract class DataSerializer {
   /**
    * For internal use only. Sets the context of this <code>DataSerializer</code>.
    *
+   * @param context the context of this <code>DataSerializer</code>
+   *
    * @since GemFire 6.5
    */
   public void setContext(Object/* ClientProxyMembershipID */ context) {
@@ -3030,6 +3383,8 @@ public abstract class DataSerializer {
 
   /**
    * For internal use only. Returns the context of this <code>DataSerializer</code>.
+   *
+   * @return the context of this <code>DataSerializer</code>
    *
    * @since GemFire 6.5
    */
@@ -3064,11 +3419,15 @@ public abstract class DataSerializer {
    * Writes the <code>Enum constant</code> to <code>DataOutput</code>. Unlike standard java
    * serialization which serializes both the enum name String and the ordinal, GemFire only
    * serializes the ordinal byte, so for backward compatibility new enum constants should only be
-   * added to the end of the enum type.<br />
+   * added to the end of the enum type.<br>
    * Example: <code>DataSerializer.writeEnum(DAY_OF_WEEK.SUN, out);</code>
+   *
+   * @param e the Enum to serialize
+   * @param out the {@link DataInput} to write to
    *
    * @see #readEnum(Class, DataInput)
    * @since GemFire 6.5
+   * @throws IOException if a problem occurs while writing to <code>out</code>
    */
   public static void writeEnum(Enum e, DataOutput out) throws IOException {
 
@@ -3090,12 +3449,17 @@ public abstract class DataSerializer {
    * serialization which serializes both the enum name String and the ordinal, GemFire only
    * serializes the ordinal byte, so be careful about using the correct enum class. Also, for
    * backward compatibility new enum constants should only be added to the end of the enum
-   * type.<br />
+   * type.<br>
    * Example: <code>DAY_OF_WEEK d = DataSerializer.readEnum(DAY_OF_WEEK.class, in);</code>
+   *
+   * @param <E> the type of Enum
+   * @param clazz the Enum class to deserialize to
+   * @param in the {@link DataInput} to read from
+   * @return the deserialized Enum
    *
    * @since GemFire 6.5
    * @see #writeEnum(Enum, DataOutput)
-   * @throws IOException A problem occurs while writing to <code>out</code>
+   * @throws IOException if a problem occurs while reading from <code>in</code>
    * @throws ArrayIndexOutOfBoundsException if the wrong enum class/enum class with a different
    *         version and less enum constants is used
    */

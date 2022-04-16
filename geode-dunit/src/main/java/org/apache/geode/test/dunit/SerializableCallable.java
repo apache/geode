@@ -55,6 +55,7 @@ public abstract class SerializableCallable<T> implements SerializableCallableIF<
   }
 
   /**
+   * @param name the name of the {@code Runnable}, which will be logged in DUnit output
    * @deprecated Please pass name as the first argument to {@link VM} invoke or asyncInvoke.
    */
   @Deprecated
@@ -72,6 +73,7 @@ public abstract class SerializableCallable<T> implements SerializableCallableIF<
   }
 
   /**
+   * @return the name of the {@code Runnable}, which will be logged in DUnit output
    * @deprecated Please pass name as the first argument to {@link VM} invoke or asyncInvoke.
    */
   @Deprecated

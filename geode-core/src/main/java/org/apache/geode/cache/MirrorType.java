@@ -96,7 +96,12 @@ public class MirrorType implements java.io.Serializable {
     this.ordinal = ordinal;
   }
 
-  /** Return the MirrorType represented by specified ordinal */
+  /**
+   * Return the MirrorType represented by specified ordinal
+   *
+   * @param ordinal the ordinal representation of a MirrorType
+   * @return the MirrorType represented by specified ordinal
+   */
   public static MirrorType fromOrdinal(int ordinal) {
     return VALUES[ordinal];
   }
@@ -105,23 +110,37 @@ public class MirrorType implements java.io.Serializable {
   /**
    * Returns the {@link DataPolicy} that corresponds to this mirror type.
    *
+   * @return the {@link DataPolicy} that corresponds to this mirror type
+   *
    * @since GemFire 5.0
    */
   public DataPolicy getDataPolicy() {
     return dataPolicy;
   }
 
-  /** Return whether this is <code>KEYS</code>. */
+  /**
+   * Return whether this is <code>KEYS</code>.
+   *
+   * @return whether this is <code>KEYS</code>
+   */
   public boolean isKeys() {
     return this == KEYS;
   }
 
-  /** Return whether this is <code>KEYS_VALUES</code>. */
+  /**
+   * Return whether this is <code>KEYS_VALUES</code>.
+   *
+   * @return whether this is <code>KEYS_VALUES</code>
+   */
   public boolean isKeysValues() {
     return this == KEYS_VALUES;
   }
 
-  /** Return whether this is <code>NONE</code>. */
+  /**
+   * Return whether this is <code>NONE</code>.
+   *
+   * @return whether this is <code>NONE</code>
+   */
   public boolean isNone() {
     return this == NONE;
   }

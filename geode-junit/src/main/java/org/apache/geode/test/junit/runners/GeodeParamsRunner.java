@@ -94,7 +94,7 @@ public class GeodeParamsRunner extends JUnitParamsRunner {
     return createTestDescription(getTestClass().getJavaClass(), method.getName()).getDisplayName();
   }
 
-  /**
+  /*
    * Adapts a filter to exclude all of a parameterized test method's tests if the filter would
    * exclude any of the method's tests.
    */

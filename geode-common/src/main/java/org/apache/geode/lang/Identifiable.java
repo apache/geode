@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * The Identifiable interface defines a contract for classes whose Object instances can be uniquely
  * identified relative to other Object instances within the same class type hierarchy.
- * <p/>
+ * <p>
  *
  * @param <T> the class type of the identifier.
  * @see java.lang.Comparable
@@ -31,7 +31,7 @@ public interface Identifiable<T extends Comparable<T>> extends Serializable {
 
   /**
    * Gets the identifier uniquely identifying this Object instance.
-   * <p/>
+   * <p>
    *
    * @return an identifier uniquely identifying this Object.
    */

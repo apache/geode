@@ -28,7 +28,7 @@ import org.junit.Test;
 /**
  * The ClassUtilsJUnitTest class is a test suite with test cases to test the contract and
  * functionality of the ClassUtils class.
- * <p/>
+ * <p>
  *
  * @see ClassUtils
  * @see org.junit.Assert

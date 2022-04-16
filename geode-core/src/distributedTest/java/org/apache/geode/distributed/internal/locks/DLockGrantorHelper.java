@@ -25,7 +25,8 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 public class DLockGrantorHelper {
 
   /**
-   * Forces DLockGrantor to <code>handleDepartureOf<code> specified member, which causes the grantor
+   * Forces DLockGrantor to <code>handleDepartureOf</code> specified member, which causes the
+   * grantor
    * release all locks held by that member.
    * <p>
    * If the specified service instance is not the grantor, this method will return without

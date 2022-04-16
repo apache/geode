@@ -47,7 +47,7 @@ public class MemberGatewayHubServiceTest extends BaseServiceTest {
 
   /**
    *
-   * @throws java.lang.Exception
+   * @throws java.lang.Exception if login fails
    */
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
@@ -57,7 +57,7 @@ public class MemberGatewayHubServiceTest extends BaseServiceTest {
 
   /**
    *
-   * @throws java.lang.Exception
+   * @throws java.lang.Exception if logout fails
    */
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
@@ -65,21 +65,13 @@ public class MemberGatewayHubServiceTest extends BaseServiceTest {
     System.out.println("MemberGatewayHubServiceTest :: Teardown done");
   }
 
-  /**
-   *
-   * @throws java.lang.Exception
-   */
   @Override
   @Before
-  public void setUp() throws Exception {}
+  public void setUp() {}
 
-  /**
-   *
-   * @throws java.lang.Exception
-   */
   @Override
   @After
-  public void tearDown() throws Exception {}
+  public void tearDown() {}
 
   /**
    * Tests that service returns json object

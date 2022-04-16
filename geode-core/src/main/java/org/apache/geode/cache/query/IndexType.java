@@ -29,7 +29,8 @@ public enum IndexType {
    * function of a region value with a constant, using a relational operator. The indexedExpression
    * yields a value that is a Comparable. The "constant" that it is to be compared to is any
    * expression that is not dependent on a value in the region. A simple example is an index on the
-   * indexedExpression "age". This would be used for a query that has the where clause "age < 55".
+   * indexedExpression "age". This would be used for a query that has the where clause "age &lt;
+   * 55".
    * <p>
    * The indexedExpression for a functional index can be any Comparable or any of the following
    * primitive types:<br>

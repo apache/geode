@@ -39,56 +39,56 @@ import org.apache.geode.annotations.Experimental;
  * The following schema fragment specifies the expected content contained within this class.
  *
  * <pre>
- * &lt;complexType name="pool-type">
- *   &lt;complexContent>
- *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;choice>
- *         &lt;element name="locator" maxOccurs="unbounded">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;attribute name="host" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="port" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *         &lt;element name="server" maxOccurs="unbounded">
- *           &lt;complexType>
- *             &lt;complexContent>
- *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *                 &lt;attribute name="host" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *                 &lt;attribute name="port" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *               &lt;/restriction>
- *             &lt;/complexContent>
- *           &lt;/complexType>
- *         &lt;/element>
- *       &lt;/choice>
- *       &lt;attribute name="subscription-timeout-multiplier" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="socket-connect-timeout" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="free-connection-timeout" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="server-connection-timeout" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="load-conditioning-interval" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="min-connections" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="max-connections" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="retry-attempts" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="idle-timeout" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="ping-interval" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="read-timeout" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="server-group" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="socket-buffer-size" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="subscription-enabled" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="subscription-message-tracking-timeout" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="subscription-ack-interval" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="subscription-redundancy" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="statistic-interval" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="thread-local-connections" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="pr-single-hop-enabled" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *       &lt;attribute name="multiuser-authentication" type="{http://www.w3.org/2001/XMLSchema}boolean" />
- *     &lt;/restriction>
- *   &lt;/complexContent>
- * &lt;/complexType>
+ * &lt;complexType name="pool-type"&gt;
+ *   &lt;complexContent&gt;
+ *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *       &lt;choice&gt;
+ *         &lt;element name="locator" maxOccurs="unbounded"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;attribute name="host" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="port" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *         &lt;element name="server" maxOccurs="unbounded"&gt;
+ *           &lt;complexType&gt;
+ *             &lt;complexContent&gt;
+ *               &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+ *                 &lt;attribute name="host" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *                 &lt;attribute name="port" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *               &lt;/restriction&gt;
+ *             &lt;/complexContent&gt;
+ *           &lt;/complexType&gt;
+ *         &lt;/element&gt;
+ *       &lt;/choice&gt;
+ *       &lt;attribute name="subscription-timeout-multiplier" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="socket-connect-timeout" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="free-connection-timeout" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="server-connection-timeout" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="load-conditioning-interval" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="min-connections" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="max-connections" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="retry-attempts" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="idle-timeout" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="ping-interval" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="name" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="read-timeout" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="server-group" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="socket-buffer-size" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="subscription-enabled" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="subscription-message-tracking-timeout" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="subscription-ack-interval" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="subscription-redundancy" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="statistic-interval" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+ *       &lt;attribute name="thread-local-connections" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="pr-single-hop-enabled" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *       &lt;attribute name="multiuser-authentication" type="{http://www.w3.org/2001/XMLSchema}boolean" /&gt;
+ *     &lt;/restriction&gt;
+ *   &lt;/complexContent&gt;
+ * &lt;/complexType&gt;
  * </pre>
  *
  *
@@ -170,7 +170,7 @@ public class PoolType {
    * Objects of the following type(s) are allowed in the list
    * {@link PoolType.Locator }
    *
-   *
+   * @return the {@link List} of {@link Locator}s representing the locators property.
    */
   public List<Locator> getLocators() {
     if (locators == null) {
@@ -200,7 +200,7 @@ public class PoolType {
    * Objects of the following type(s) are allowed in the list
    * {@link PoolType.Server }
    *
-   *
+   * @return a {@link List} of {@link Server}s representing the server property.
    */
   public List<Server> getServers() {
     if (servers == null) {
@@ -215,6 +215,7 @@ public class PoolType {
    * possible object is
    * {@link String }
    *
+   * @return the subscription timeout multiplier.
    */
   public String getSubscriptionTimeoutMultiplier() {
     return subscriptionTimeoutMultiplier;
@@ -226,6 +227,7 @@ public class PoolType {
    * allowed object is
    * {@link String }
    *
+   * @param value the subscription timeout multiplier.
    */
   public void setSubscriptionTimeoutMultiplier(String value) {
     subscriptionTimeoutMultiplier = value;
@@ -237,6 +239,7 @@ public class PoolType {
    * possible object is
    * {@link String }
    *
+   * @return the socket connection timeout.
    */
   public String getSocketConnectTimeout() {
     return socketConnectTimeout;
@@ -248,6 +251,7 @@ public class PoolType {
    * allowed object is
    * {@link String }
    *
+   * @param value the socket connection timeout.
    */
   public void setSocketConnectTimeout(String value) {
     socketConnectTimeout = value;
@@ -259,6 +263,7 @@ public class PoolType {
    * possible object is
    * {@link String }
    *
+   * @return the free connection timeout.
    */
   public String getFreeConnectionTimeout() {
     return freeConnectionTimeout;
@@ -270,6 +275,7 @@ public class PoolType {
    * allowed object is
    * {@link String }
    *
+   * @param value the free connection timeout.
    */
   public void setFreeConnectionTimeout(String value) {
     freeConnectionTimeout = value;
@@ -281,6 +287,7 @@ public class PoolType {
    * possible object is
    * {@link String }
    *
+   * @return the server connection timeout.
    */
   public String getServerConnectionTimeout() {
     return serverConnectionTimeout;
@@ -292,6 +299,7 @@ public class PoolType {
    * allowed object is
    * {@link String }
    *
+   * @param value the server connection timeout.
    */
   public void setServerConnectionTimeout(String value) {
     serverConnectionTimeout = value;
@@ -303,6 +311,7 @@ public class PoolType {
    * possible object is
    * {@link String }
    *
+   * @return the load conditioning interval.
    */
   public String getLoadConditioningInterval() {
     return loadConditioningInterval;
@@ -314,6 +323,7 @@ public class PoolType {
    * allowed object is
    * {@link String }
    *
+   * @param value the load conditioning interval.
    */
   public void setLoadConditioningInterval(String value) {
     loadConditioningInterval = value;
@@ -325,6 +335,7 @@ public class PoolType {
    * possible object is
    * {@link String }
    *
+   * @return the minimum value of connections.
    */
   public String getMinConnections() {
     return minConnections;
@@ -336,6 +347,7 @@ public class PoolType {
    * allowed object is
    * {@link String }
    *
+   * @param value the minimum value of connections.
    */
   public void setMinConnections(String value) {
     minConnections = value;
@@ -347,6 +359,7 @@ public class PoolType {
    * possible object is
    * {@link String }
    *
+   * @return the maximum number of connections.
    */
   public String getMaxConnections() {
     return maxConnections;
@@ -358,6 +371,7 @@ public class PoolType {
    * allowed object is
    * {@link String }
    *
+   * @param value the maximum number of connections.
    */
   public void setMaxConnections(String value) {
     maxConnections = value;
@@ -369,6 +383,7 @@ public class PoolType {
    * possible object is
    * {@link String }
    *
+   * @return the number or allowed retry attempts.
    */
   public String getRetryAttempts() {
     return retryAttempts;
@@ -380,6 +395,7 @@ public class PoolType {
    * allowed object is
    * {@link String }
    *
+   * @param value the number of times to retry.
    */
   public void setRetryAttempts(String value) {
     retryAttempts = value;
@@ -391,6 +407,7 @@ public class PoolType {
    * possible object is
    * {@link String }
    *
+   * @return the idle timeout.
    */
   public String getIdleTimeout() {
     return idleTimeout;
@@ -402,6 +419,7 @@ public class PoolType {
    * allowed object is
    * {@link String }
    *
+   * @param value the idle timeout.
    */
   public void setIdleTimeout(String value) {
     idleTimeout = value;
@@ -413,6 +431,7 @@ public class PoolType {
    * possible object is
    * {@link String }
    *
+   * @return the ping interval.
    */
   public String getPingInterval() {
     return pingInterval;
@@ -424,6 +443,7 @@ public class PoolType {
    * allowed object is
    * {@link String }
    *
+   * @param value the ping interval.
    */
   public void setPingInterval(String value) {
     pingInterval = value;
@@ -435,6 +455,7 @@ public class PoolType {
    * possible object is
    * {@link String }
    *
+   * @return the name.
    */
   public String getName() {
     return name;
@@ -446,6 +467,7 @@ public class PoolType {
    * allowed object is
    * {@link String }
    *
+   * @param value the name.
    */
   public void setName(String value) {
     name = value;
@@ -457,6 +479,7 @@ public class PoolType {
    * possible object is
    * {@link String }
    *
+   * @return the read timeout.
    */
   public String getReadTimeout() {
     return readTimeout;
@@ -468,6 +491,7 @@ public class PoolType {
    * allowed object is
    * {@link String }
    *
+   * @param value the read timeout.
    */
   public void setReadTimeout(String value) {
     readTimeout = value;
@@ -479,6 +503,7 @@ public class PoolType {
    * possible object is
    * {@link String }
    *
+   * @return the name of the server group.
    */
   public String getServerGroup() {
     return serverGroup;
@@ -490,6 +515,7 @@ public class PoolType {
    * allowed object is
    * {@link String }
    *
+   * @param value name of the server group.
    */
   public void setServerGroup(String value) {
     serverGroup = value;
@@ -501,6 +527,7 @@ public class PoolType {
    * possible object is
    * {@link String }
    *
+   * @return the size of the socket buffer.
    */
   public String getSocketBufferSize() {
     return socketBufferSize;
@@ -512,6 +539,7 @@ public class PoolType {
    * allowed object is
    * {@link String }
    *
+   * @param value the size to use for the socket buffer.
    */
   public void setSocketBufferSize(String value) {
     socketBufferSize = value;
@@ -523,6 +551,7 @@ public class PoolType {
    * possible object is
    * {@link Boolean }
    *
+   * @return true if subscriptions are enabled.
    */
   public Boolean isSubscriptionEnabled() {
     return subscriptionEnabled;
@@ -534,6 +563,7 @@ public class PoolType {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value enables or disables subscriptions.
    */
   public void setSubscriptionEnabled(Boolean value) {
     subscriptionEnabled = value;
@@ -545,6 +575,7 @@ public class PoolType {
    * possible object is
    * {@link String }
    *
+   * @return the subscription message tracking timeout.
    */
   public String getSubscriptionMessageTrackingTimeout() {
     return subscriptionMessageTrackingTimeout;
@@ -556,6 +587,7 @@ public class PoolType {
    * allowed object is
    * {@link String }
    *
+   * @param value the subscription message tracking timeout.
    */
   public void setSubscriptionMessageTrackingTimeout(String value) {
     subscriptionMessageTrackingTimeout = value;
@@ -567,6 +599,7 @@ public class PoolType {
    * possible object is
    * {@link String }
    *
+   * @return the subscription ack interval.
    */
   public String getSubscriptionAckInterval() {
     return subscriptionAckInterval;
@@ -578,6 +611,7 @@ public class PoolType {
    * allowed object is
    * {@link String }
    *
+   * @param value the subscription ack interval.
    */
   public void setSubscriptionAckInterval(String value) {
     subscriptionAckInterval = value;
@@ -589,6 +623,7 @@ public class PoolType {
    * possible object is
    * {@link String }
    *
+   * @return the number of servers being used as backups.
    */
   public String getSubscriptionRedundancy() {
     return subscriptionRedundancy;
@@ -600,6 +635,8 @@ public class PoolType {
    * allowed object is
    * {@link String }
    *
+   * @param value the number of servers to use as backups. Set to -1 to use all non-primaries as
+   *        backups.
    */
   public void setSubscriptionRedundancy(String value) {
     subscriptionRedundancy = value;
@@ -611,6 +648,7 @@ public class PoolType {
    * possible object is
    * {@link String }
    *
+   * @return the statistics interval.
    */
   public String getStatisticInterval() {
     return statisticInterval;
@@ -622,6 +660,7 @@ public class PoolType {
    * allowed object is
    * {@link String }
    *
+   * @param value the statistics interval.
    */
   public void setStatisticInterval(String value) {
     statisticInterval = value;
@@ -632,6 +671,8 @@ public class PoolType {
    *
    * possible object is
    * {@link Boolean }
+   *
+   * @return true is using thread local connections, false otherwise.
    *
    * @deprecated Since Geode 1.10.0. Thread local connections are ignored. Will be removed in future
    *             major release.
@@ -647,6 +688,8 @@ public class PoolType {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value enables or disables thread local connections.
+   *
    * @deprecated Since Geode 1.10.0. Thread local connections are ignored. Will be removed in future
    *             major release.
    */
@@ -661,6 +704,7 @@ public class PoolType {
    * possible object is
    * {@link Boolean }
    *
+   * @return true if partitioned region single hop is enabled, false otherwise.
    */
   public Boolean isPrSingleHopEnabled() {
     return prSingleHopEnabled;
@@ -672,6 +716,7 @@ public class PoolType {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value enables or disables partitioned region single hop
    */
   public void setPrSingleHopEnabled(Boolean value) {
     prSingleHopEnabled = value;
@@ -683,6 +728,7 @@ public class PoolType {
    * possible object is
    * {@link Boolean }
    *
+   * @return true is using multiuser authentication, false otherwise.
    */
   public Boolean isMultiuserAuthentication() {
     return multiuserAuthentication;
@@ -694,6 +740,7 @@ public class PoolType {
    * allowed object is
    * {@link Boolean }
    *
+   * @param value enables or disables multiuser authentication.
    */
   public void setMultiuserAuthentication(Boolean value) {
     multiuserAuthentication = value;
@@ -708,14 +755,14 @@ public class PoolType {
    * The following schema fragment specifies the expected content contained within this class.
    *
    * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;attribute name="host" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="port" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
+   * &lt;complexType&gt;
+   *   &lt;complexContent&gt;
+   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *       &lt;attribute name="host" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="port" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *     &lt;/restriction&gt;
+   *   &lt;/complexContent&gt;
+   * &lt;/complexType&gt;
    * </pre>
    *
    *
@@ -735,6 +782,7 @@ public class PoolType {
      * possible object is
      * {@link String }
      *
+     * @return the host name.
      */
     public String getHost() {
       return host;
@@ -746,6 +794,7 @@ public class PoolType {
      * allowed object is
      * {@link String }
      *
+     * @param value the host name.
      */
     public void setHost(String value) {
       host = value;
@@ -757,6 +806,7 @@ public class PoolType {
      * possible object is
      * {@link String }
      *
+     * @return the value of the port property
      */
     public String getPort() {
       return port;
@@ -768,6 +818,7 @@ public class PoolType {
      * allowed object is
      * {@link String }
      *
+     * @param value the port number.
      */
     public void setPort(String value) {
       port = value;
@@ -784,14 +835,14 @@ public class PoolType {
    * The following schema fragment specifies the expected content contained within this class.
    *
    * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;attribute name="host" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="port" use="required" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
+   * &lt;complexType&gt;
+   *   &lt;complexContent&gt;
+   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
+   *       &lt;attribute name="host" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *       &lt;attribute name="port" use="required" type="{http://www.w3.org/2001/XMLSchema}string" /&gt;
+   *     &lt;/restriction&gt;
+   *   &lt;/complexContent&gt;
+   * &lt;/complexType&gt;
    * </pre>
    *
    *
@@ -811,6 +862,7 @@ public class PoolType {
      * possible object is
      * {@link String }
      *
+     * @return the host name
      */
     public String getHost() {
       return host;
@@ -821,6 +873,8 @@ public class PoolType {
      *
      * allowed object is
      * {@link String }
+     *
+     * @param value the host name.
      *
      */
     public void setHost(String value) {
@@ -833,6 +887,7 @@ public class PoolType {
      * possible object is
      * {@link String }
      *
+     * @return the port number.
      */
     public String getPort() {
       return port;
@@ -844,6 +899,7 @@ public class PoolType {
      * allowed object is
      * {@link String }
      *
+     * @param value the port number.
      */
     public void setPort(String value) {
       port = value;

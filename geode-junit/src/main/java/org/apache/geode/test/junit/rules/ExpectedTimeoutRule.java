@@ -63,6 +63,8 @@ public class ExpectedTimeoutRule implements TestRule {
 
   /**
    * Adds {@code matcher} to the list of requirements for any thrown exception.
+   *
+   * @param matcher the matcher to add
    */
   public void expect(final Matcher<?> matcher) {
     delegate.expect(matcher);
@@ -71,6 +73,8 @@ public class ExpectedTimeoutRule implements TestRule {
   /**
    * Adds to the list of requirements for any thrown exception that it should be an instance of
    * {@code type}.
+   *
+   * @param type the class type to add
    */
   public void expect(final Class<? extends Throwable> type) {
     delegate.expect(type);
@@ -80,6 +84,8 @@ public class ExpectedTimeoutRule implements TestRule {
   /**
    * Adds to the list of requirements for any thrown exception that it should <em>contain</em>
    * string {@code substring}
+   *
+   * @param substring the message substring to add to the list of expected messages
    */
   public void expectMessage(final String substring) {
     delegate.expectMessage(substring);
@@ -88,6 +94,8 @@ public class ExpectedTimeoutRule implements TestRule {
   /**
    * Adds {@code matcher} to the list of requirements for the message returned from any thrown
    * exception.
+   *
+   * @param matcher the message to add to the list of expected messages
    */
   public void expectMessage(final Matcher<String> matcher) {
     delegate.expectMessage(matcher);
@@ -95,19 +103,21 @@ public class ExpectedTimeoutRule implements TestRule {
 
   /**
    * Adds {@code matcher} to the list of requirements for the cause of any thrown exception.
+   *
+   * @param expectedCause the throwable to add to the list of expected causes
    */
   public void expectCause(final Matcher<? extends Throwable> expectedCause) {
     delegate.expectCause(expectedCause);
   }
 
-  /**
+  /*
    * Returns true if a timeout is expected.
    */
   protected boolean expectsTimeout() {
     return minDuration > 0 || maxDuration > 0;
   }
 
-  /**
+  /*
    * Returns true if a Throwable is expected.
    */
   protected boolean expectsThrowable() {

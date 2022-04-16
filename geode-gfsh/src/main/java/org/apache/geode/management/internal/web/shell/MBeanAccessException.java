@@ -17,7 +17,7 @@ package org.apache.geode.management.internal.web.shell;
 /**
  * The MBeanAccessException class is a RuntimeException indicating that an attempt to access an
  * MBean attribute or invocation of an MBean operation failed.
- * <p/>
+ * <p>
  *
  * @see java.lang.RuntimeException
  * @since GemFire 8.0

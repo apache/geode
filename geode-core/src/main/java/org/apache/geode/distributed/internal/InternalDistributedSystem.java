@@ -461,7 +461,6 @@ public class InternalDistributedSystem extends DistributedSystem
    * Returns a connected distributed system for this VM, or null if there is no connected
    * distributed system in this VM. This method synchronizes on the existingSystems collection.
    * <p>
-   * <p>
    * author bruce
    *
    * @since GemFire 5.0
@@ -1983,7 +1982,6 @@ public class InternalDistributedSystem extends DistributedSystem
    * Makes note of a <code>ReconnectListener</code> whose <code>onReconnect</code> method will be
    * invoked when a connection is recreated to a distributed system during auto-reconnect.
    * <p>
-   * <p>
    * The ReconnectListener set is cleared after a disconnect.
    */
   public static void addReconnectListener(ReconnectListener listener) {
@@ -2955,7 +2953,7 @@ public class InternalDistributedSystem extends DistributedSystem
    * Provides hook for dunit to generate and store a detailed creation stack trace that includes the
    * keys/values of DistributionConfig including security related attributes without introducing
    * Privacy Violations that Fortify will complain about.
-   * </p>
+   * <p>
    */
   public interface CreationStackGenerator {
 

@@ -114,7 +114,7 @@ public abstract class ManagementTestBase extends CacheTestCase {
     // override if needed
   }
 
-  /**
+  /*
    * managingNodeFirst variable tests for two different test cases where Managing & Managed Node
    * creation time lines are reversed.
    */
@@ -215,7 +215,7 @@ public abstract class ManagementTestBase extends CacheTestCase {
     });
   }
 
-  /**
+  /*
    * Marks a VM as Managing
    */
   protected void startManagingNode(final VM vm) {
@@ -228,7 +228,7 @@ public abstract class ManagementTestBase extends CacheTestCase {
     });
   }
 
-  /**
+  /*
    * Stops a VM as a Managing node
    */
   protected void stopManagingNode(final VM vm) {
@@ -254,7 +254,7 @@ public abstract class ManagementTestBase extends CacheTestCase {
     return managementService;
   }
 
-  /**
+  /*
    * Creates a Local region
    */
   protected void createLocalRegion(final VM vm, final String localRegionName) {
@@ -266,7 +266,7 @@ public abstract class ManagementTestBase extends CacheTestCase {
     });
   }
 
-  /**
+  /*
    * Creates a partition Region
    */
   protected void createPartitionRegion(final VM vm, final String partitionRegionName) {

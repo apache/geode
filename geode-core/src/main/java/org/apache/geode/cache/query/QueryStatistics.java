@@ -23,11 +23,15 @@ public interface QueryStatistics {
 
   /**
    * Returns the total number of times the query has been executed.
+   *
+   * @return the total number of times the query has been executed
    */
   long getNumExecutions();
 
   /**
    * Returns the total amount of time (in nanoseconds) spent executing the query.
+   *
+   * @return the total amount of time (in nanoseconds) spent executing the query
    */
   long getTotalExecutionTime();
 

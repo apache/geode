@@ -31,21 +31,29 @@ public interface CqState {
 
   /**
    * Returns true if the CQ is in Running state.
+   *
+   * @return whether the CQ is in Running state.
    */
   boolean isRunning();
 
   /**
    * Returns true if the CQ is in Stopped state.
+   *
+   * @return whether the CQ is in Stopped state.
    */
   boolean isStopped();
 
   /**
    * Returns true if the CQ is in Closed state.
+   *
+   * @return whether the CQ is in Closed state.
    */
   boolean isClosed();
 
   /**
    * Returns true if the CQ is in Closing state.
+   *
+   * @return whether the CQ is in Closing state.
    */
   boolean isClosing();
 

@@ -40,6 +40,8 @@ public class RealizationResult implements Serializable {
 
   /**
    * returns optional information to supplement {@link #isSuccess()}
+   *
+   * @return optional information to supplement {@link #isSuccess()}
    */
   public String getMessage() {
     return message;
@@ -47,6 +49,9 @@ public class RealizationResult implements Serializable {
 
   /**
    * for internal use only
+   *
+   * @param message the message to set
+   * @return this {@link RealizationResult}
    */
   public RealizationResult setMessage(String message) {
     this.message = message;
@@ -55,6 +60,8 @@ public class RealizationResult implements Serializable {
 
   /**
    * returns the member name this realization result applies to
+   *
+   * @return the member name this realization result applies to
    */
   public String getMemberName() {
     return memberName;
@@ -62,6 +69,9 @@ public class RealizationResult implements Serializable {
 
   /**
    * for internal use only
+   *
+   * @param memberName the member name to set
+   * @return this {@link RealizationResult}
    */
   public RealizationResult setMemberName(String memberName) {
     this.memberName = memberName;
@@ -70,6 +80,8 @@ public class RealizationResult implements Serializable {
 
   /**
    * returns true if realization succeeded on this member
+   *
+   * @return true if realization succeeded on this member
    */
   public boolean isSuccess() {
     return success;
@@ -77,6 +89,9 @@ public class RealizationResult implements Serializable {
 
   /**
    * for internal use only
+   *
+   * @param success true if realization succeeded on this member
+   * @return this {@link RealizationResult}
    */
   public RealizationResult setSuccess(boolean success) {
     this.success = success;

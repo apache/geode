@@ -175,6 +175,7 @@ public interface CacheTransactionManager {
    * This method can be used to determine if a transaction with the given transaction identifier is
    * currently suspended locally. This method does not check other members for transaction status.
    *
+   * @param transactionId a transaction identifier
    * @return true if the transaction is in suspended state, false otherwise
    * @since GemFire 6.6.2
    * @see #exists(TransactionId)
@@ -316,6 +317,7 @@ public interface CacheTransactionManager {
   /**
    * Set the TransactionWriter for the cache
    *
+   * @param writer the TransactionWriter for the cache
    * @see TransactionWriter
    * @since GemFire 6.5
    */
@@ -334,6 +336,8 @@ public interface CacheTransactionManager {
    * Sets whether transactions should be executed in distributed or non-distributed mode. Once set
    * this mode should not be changed during the course of transactions.
    *
+   * @param distributed whether transactions should be executed in distributed or non-distributed
+   *        mode
    * @throws IllegalStateException if a transaction is already in progress and this method sets the
    *         distributed mode to a different value.
    * @since Geode 1.0

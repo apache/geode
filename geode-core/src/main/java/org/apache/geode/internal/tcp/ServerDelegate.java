@@ -25,7 +25,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
  * ServerDelegate is a conduit plugin that receives
  * {@link DistributionMessage} objects received from other
  * conduits.
- * </p>
+ * <p>
  *
  * @see org.apache.geode.distributed.internal.direct.DirectChannel
  *

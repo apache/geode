@@ -51,6 +51,15 @@ public class ClusterManagementOperationResult<A extends ClusterManagementOperati
 
   /**
    * normally called by {@link ClusterManagementService#start(ClusterManagementOperation)}
+   *
+   * @param statusCode the {@link StatusCode} of the result
+   * @param message the status message to set
+   * @param operationStart a {@link Date} representing the time the operation started
+   * @param operationEnd a {@link Date} representing the time the operation ended
+   * @param operation the operation
+   * @param operationId the ID of the operation
+   * @param operationResult the operation's result
+   * @param throwable an exception that occurred as a result of the operation, if any
    */
   public ClusterManagementOperationResult(StatusCode statusCode, String message,
       Date operationStart, Date operationEnd,
@@ -67,6 +76,8 @@ public class ClusterManagementOperationResult<A extends ClusterManagementOperati
 
   /**
    * Returns the async operation.
+   *
+   * @return the operation that this {@link ClusterManagementOperationResult} describes
    */
   public A getOperation() {
     return operation;
@@ -74,6 +85,9 @@ public class ClusterManagementOperationResult<A extends ClusterManagementOperati
 
   /**
    * returns the operation id started by this operation.
+   *
+   * @return the operation ID of the operation that this {@link ClusterManagementOperationResult}
+   *         describes
    */
   public String getOperationId() {
     return operationId;
@@ -81,6 +95,8 @@ public class ClusterManagementOperationResult<A extends ClusterManagementOperati
 
   /**
    * Returns the time the operation was started
+   *
+   * @return the time the operation was started
    */
   public Date getOperationStart() {
     return operationStart;
@@ -89,6 +105,8 @@ public class ClusterManagementOperationResult<A extends ClusterManagementOperati
   /**
    * Returns the time the operation was completed. This value is null while the operation is in
    * process.
+   *
+   * @return the time at which the operation completed, or null if the operation has not completed
    */
   public Date getOperationEnd() {
     return operationEnd;
@@ -96,6 +114,8 @@ public class ClusterManagementOperationResult<A extends ClusterManagementOperati
 
   /**
    * Returns the operation result as an extension of {@link OperationResult}
+   *
+   * @return the result of the operation
    */
   public V getOperationResult() {
     return operationResult;
@@ -104,6 +124,8 @@ public class ClusterManagementOperationResult<A extends ClusterManagementOperati
   /**
    * Returns any exceptions that might be returned as a result of the operation. Null in case
    * no exceptions occurred.
+   *
+   * @return any exceptions that might be returned as a result of the operation
    */
   public Throwable getThrowable() {
     return throwable;

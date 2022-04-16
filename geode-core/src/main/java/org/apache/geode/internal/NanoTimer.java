@@ -117,7 +117,7 @@ public class NanoTimer {
 
   /**
    * Return the last reset time in naonseconds since some arbitrary time in the past.
-   * <p/>
+   * <p>
    * The time rolls over to zero every 2^64 nanosecs (approx 584 years). Interval computations
    * spanning periods longer than this will be wrong. If the timer has not yet been reset then the
    * construction time is returned.

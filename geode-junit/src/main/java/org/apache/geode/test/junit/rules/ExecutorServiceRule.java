@@ -48,7 +48,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
  *
  * {@literal @}Test
  * public void doTest() throws Exception {
- *   Future&lt;Void&gt; result = executorServiceRule.runAsync(() -> {
+ *   Future&lt;Void&gt; result = executorServiceRule.runAsync(() -&gt; {
  *     try {
  *       hangLatch.await();
  *     } catch (InterruptedException e) {
@@ -56,7 +56,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
  *     }
  *   });
  *
- *   assertThatThrownBy(() -> result.get(1, MILLISECONDS)).isInstanceOf(TimeoutException.class);
+ *   assertThatThrownBy(() -&gt; result.get(1, MILLISECONDS)).isInstanceOf(TimeoutException.class);
  * }
  * </pre>
  *
@@ -78,8 +78,8 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
  *
  * {@literal @}Test
  * public void doTest() throws Exception {
- *   for (int i = 0; i < 10; i++) {
- *     executorServiceRule.runAsync(() -> {
+ *   for (int i = 0; i &lt; 10; i++) {
+ *     executorServiceRule.runAsync(() -&gt; {
  *       hangLatch.await();
  *     });
  *   }
@@ -107,6 +107,8 @@ public class ExecutorServiceRule extends SerializableExternalResource {
 
   /**
    * Returns a {@code Builder} to configure a new {@code ExecutorServiceRule}.
+   *
+   * @return a {@code Builder} to configure a new {@code ExecutorServiceRule}.
    */
   public static Builder builder() {
     return new Builder();
@@ -134,15 +136,15 @@ public class ExecutorServiceRule extends SerializableExternalResource {
    * Constructs a {@code ExecutorServiceRule} which invokes {@code ExecutorService.shutdownNow()}
    * during {@code tearDown}.
    *
-   * @param threadCount The number of threads in the pool. Creates fixed thread pool if > 0; else
+   * @param threadCount The number of threads in the pool. Creates fixed thread pool if &gt;; else
    *        creates cached thread pool.
    */
   public ExecutorServiceRule(int threadCount) {
     this(false, 0, TimeUnit.NANOSECONDS, false, false, true, threadCount);
   }
 
-  /**
-   * For invocation by {@code DistributedExecutorServiceRule} which needs to subclass another class.
+  /*
+   * For invocation by DistributedExecutorServiceRule which needs to subclass another class.
    */
   public ExecutorServiceRule(boolean enableAwaitTermination,
       long awaitTerminationTimeout,
@@ -211,6 +213,8 @@ public class ExecutorServiceRule extends SerializableExternalResource {
 
   /**
    * Returns a direct reference to the underlying {@code ExecutorService}.
+   *
+   * @return a direct reference to the underlying {@code ExecutorService}.
    */
   public ExecutorService getExecutorService() {
     return executor;
@@ -314,6 +318,9 @@ public class ExecutorServiceRule extends SerializableExternalResource {
   /**
    * Returns the {@code Thread}s that are directly in the {@code ExecutorService}'s
    * {@code ThreadGroup} excluding subgroups.
+   *
+   * @return the {@code Thread}s that are directly in the {@code ExecutorService}'s
+   *         {@code ThreadGroup} excluding subgroups
    */
   public Set<Thread> getThreads() {
     return threadFactory.getThreads();
@@ -323,6 +330,9 @@ public class ExecutorServiceRule extends SerializableExternalResource {
    * Returns an array of {@code Thread Ids} that are directly in the {@code ExecutorService}'s
    * {@code ThreadGroup} excluding subgroups. {@code long[]} is returned to facilitate using JDK
    * APIs such as {@code ThreadMXBean#getThreadInfo(long[], int)}.
+   *
+   * @return an array of {@code Thread Ids} that are directly in the {@code ExecutorService}'s
+   *         {@code ThreadGroup} excluding subgroups
    */
   public long[] getThreadIds() {
     Set<Thread> threads = getThreads();
@@ -339,6 +349,9 @@ public class ExecutorServiceRule extends SerializableExternalResource {
   /**
    * Returns thread dumps for the {@code Thread}s that are in the {@code ExecutorService}'s
    * {@code ThreadGroup} excluding subgroups.
+   *
+   * @return thread dumps for the {@code Thread}s that are in the {@code ExecutorService}'s
+   *         {@code ThreadGroup} excluding subgroups
    */
   public String dumpThreads() {
     StringBuilder dumpWriter = new StringBuilder();
@@ -440,6 +453,7 @@ public class ExecutorServiceRule extends SerializableExternalResource {
      *
      * @param timeout the maximum time to wait
      * @param unit the time unit of the timeout argument
+     * @return a reference to this builder
      */
     public Builder awaitTermination(long timeout, TimeUnit unit) {
       enableAwaitTermination = true;
@@ -450,6 +464,8 @@ public class ExecutorServiceRule extends SerializableExternalResource {
 
     /**
      * Enables invocation of {@code shutdown} during {@code tearDown}. Default is disabled.
+     *
+     * @return a reference to this builder
      */
     public Builder useShutdown() {
       useShutdown = true;
@@ -459,6 +475,8 @@ public class ExecutorServiceRule extends SerializableExternalResource {
 
     /**
      * Enables invocation of {@code shutdownNow} during {@code tearDown}. Default is enabled.
+     *
+     * @return a reference to this builder
      */
     public Builder useShutdownNow() {
       useShutdown = false;
@@ -469,6 +487,8 @@ public class ExecutorServiceRule extends SerializableExternalResource {
     /**
      * Specifies invocation of {@code awaitTermination} before {@code shutdown} or
      * {@code shutdownNow}.
+     *
+     * @return a reference to this builder
      */
     public Builder awaitTerminationBeforeShutdown() {
       awaitTerminationBeforeShutdown = true;
@@ -478,6 +498,8 @@ public class ExecutorServiceRule extends SerializableExternalResource {
     /**
      * Specifies invocation of {@code awaitTermination} after {@code shutdown} or
      * {@code shutdownNow}.
+     *
+     * @return a reference to this builder
      */
     public Builder awaitTerminationAfterShutdown() {
       awaitTerminationBeforeShutdown = false;
@@ -485,10 +507,11 @@ public class ExecutorServiceRule extends SerializableExternalResource {
     }
 
     /**
-     * Specifies the number of threads in the pool. Creates fixed thread pool if > 0. Default is 0
+     * Specifies the number of threads in the pool. Creates fixed thread pool if &gt;. Default is 0
      * which means (non-fixed) cached thread pool.
      *
      * @param threadCount the number of threads in the pool
+     * @return a reference to this builder
      */
     public Builder threadCount(int threadCount) {
       this.threadCount = threadCount;
@@ -497,6 +520,8 @@ public class ExecutorServiceRule extends SerializableExternalResource {
 
     /**
      * Builds the instance of {@code ExecutorServiceRule}.
+     *
+     * @return an instance of {@code ExecutorServiceRule}.
      */
     public ExecutorServiceRule build() {
       return new ExecutorServiceRule(this);

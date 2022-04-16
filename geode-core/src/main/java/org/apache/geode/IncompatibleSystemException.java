@@ -28,6 +28,8 @@ public class IncompatibleSystemException extends GemFireException {
 
   /**
    * Creates a new <code>IncompatibleSystemException</code>.
+   *
+   * @param message the detail message
    */
   public IncompatibleSystemException(String message) {
     super(message);

@@ -65,7 +65,7 @@ public abstract class IOUtils {
    * Invokes the close method on any class instance implementing the Closeable interface, such as
    * InputStreams and OutputStreams. Note, this method silently ignores the possible IOException
    * resulting from the close invocation.
-   * <p/>
+   * <p>
    *
    * @param obj an Object implementing the Closeable interface who's close method will be invoked.
    */
@@ -80,7 +80,7 @@ public abstract class IOUtils {
 
   /**
    * Creates a path with the given path elements delimited with File.separator.
-   * </p>
+   * <p>
    *
    * @param pathElements an array of Strings constituting elements of the path.
    * @return a fully constructed pathname containing the elements from the given array as path
@@ -93,7 +93,7 @@ public abstract class IOUtils {
 
   /**
    * Creates a path with the given path elements delimited with separator.
-   * </p>
+   * <p>
    *
    * @param pathElements an array of Strings constituting elements of the path.
    * @param separator a String specifying the separator of the path. If the given String is null,
@@ -117,7 +117,7 @@ public abstract class IOUtils {
 
   /**
    * Convenience method to de-serialize a byte array back into Object form.
-   * <p/>
+   * <p>
    *
    * @param objBytes an array of bytes constituting the serialized form of the Object.
    * @return a Serializable Object from the array of bytes.
@@ -144,7 +144,7 @@ public abstract class IOUtils {
   /**
    * Convenience method to de-serialize a byte array back into an Object who's Class type is
    * resolved by the specific ClassLoader.
-   * <p/>
+   * <p>
    *
    * @param objBytes an array of bytes constituting the serialized form of the Object.
    * @param loader the ClassLoader used to resolve the Class type of the serialized Object.
@@ -175,7 +175,7 @@ public abstract class IOUtils {
 
   /**
    * Extracts the filename from the pathname of a file system resource (file).
-   * <p/>
+   * <p>
    *
    * @param pathname a String indicating the path, or location of the file system resource.
    * @return a String value containing only the filename of the file system resource (file).
@@ -193,7 +193,7 @@ public abstract class IOUtils {
 
   /**
    * Determines whether the path represented by name exists in the file system of the localhost.
-   * <p/>
+   * <p>
    *
    * @param pathname a String indicating the name of the path.
    * @return a boolean indicating whether the path represented by name (pathname) actually exists in
@@ -207,7 +207,7 @@ public abstract class IOUtils {
 
   /**
    * Convenience method to serialize a Serializable Object into a byte array.
-   * <p/>
+   * <p>
    *
    * @param obj the Serializable Object to serialize into an array of bytes.
    * @return a byte array of the serialized Object.
@@ -235,7 +235,7 @@ public abstract class IOUtils {
 
   /**
    * Reads the contents of the specified InputStream into a byte array.
-   * <p/>
+   * <p>
    *
    * @param in the InputStream to read content from.
    * @return a byte array containing the content of the specified InputStream.
@@ -266,7 +266,7 @@ public abstract class IOUtils {
   /**
    * This method attempts to get the canonical form of the specified file otherwise returns it's
    * absolute form.
-   * <p/>
+   * <p>
    *
    * @param file the java.io.File object who's canonical representation is attempted to be returned.
    * @return the canonical form of the specified File or the absolute form if an IOException occurs
@@ -285,7 +285,7 @@ public abstract class IOUtils {
   /**
    * This method attempts to get the canonical path of the specified file otherwise returns it's
    * absolute path.
-   * <p/>
+   * <p>
    *
    * @param file the java.io.File object who's canonical path is attempted to be returned.
    * @return the canonical path of the specified File or the absolute path if an IOException occurs
@@ -305,7 +305,7 @@ public abstract class IOUtils {
    * Verifies that the specified pathname is valid and actually exists in the file system in
    * localhost. The pathname is considered valid if it is not null, empty or blank and exists in the
    * file system as a file path (which could represent a file or a directory).
-   * </p>
+   * <p>
    *
    * @param pathname a String indicating the file path in the file system on localhost.
    * @return the pathname if valid and it exits.
@@ -324,7 +324,7 @@ public abstract class IOUtils {
   /**
    * The ClassLoaderObjectInputStream class is a ObjectInputStream implementation that resolves the
    * Class type of the Object being de-serialized with the specified ClassLoader.
-   * <p/>
+   * <p>
    *
    * @see java.io.ObjectInputStream
    * @see java.lang.ClassLoader

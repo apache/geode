@@ -26,7 +26,7 @@ import org.apache.geode.internal.cache.Token;
 /**
  * The StringUtils is an abstract utility class for working with and invoking operations on String
  * literals.
- * <p/>
+ * <p>
  *
  * @see java.lang.String
  * @since GemFire 7.0
@@ -49,7 +49,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
 
   /**
    * Returns only the digits (0..9) from the specified String value.
-   * </p>
+   * <p>
    *
    * @param value the String value from which to extract digits.
    * @return only the digits from the specified String value. If the String is null or contains no
@@ -75,7 +75,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * non-null String value from the array of default String value is returned. If the array of
    * String values is null or all the elements in the default String values array are null, then the
    * value of String.valueOf(value) is returned.
-   * </p>
+   * <p>
    *
    * @param value the Object who's String representation is being evaluated.
    * @param defaultValue an array of default String values to assess if the specified Object value
@@ -98,7 +98,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
    * Wraps a line of text to no longer than the specified width, measured by the number of
    * characters in each line, indenting all subsequent lines with the indent. If the indent is null,
    * then an empty String is used.
-   * </p>
+   * <p>
    *
    * @param line a String containing the line of text to wrap.
    * @param widthInCharacters an integer value indicating the width of each line measured by the

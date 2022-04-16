@@ -50,21 +50,21 @@ public class Position implements Declarable, Serializable, Comparable {
     mktValue = Double.parseDouble(props.getProperty("mktValue"));
   }
 
-  /**
+  /*
    * Returns the id of the security held in this position.
    */
   public String getSecId() {
     return secId;
   }
 
-  /**
+  /*
    * Returns the number of shares held in this position.
    */
   public double getQty() {
     return qty;
   }
 
-  /**
+  /*
    * Returns the value of this position.
    */
   public double getMktValue() {
@@ -123,7 +123,7 @@ public class Position implements Declarable, Serializable, Comparable {
     return result;
   }
 
-  /**
+  /*
    * to configure position using index, set quantity equal to the index
    */
   public void init(int i) {

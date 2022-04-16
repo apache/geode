@@ -26,6 +26,8 @@ public class GemFireConfigException extends GemFireException {
 
   /**
    * Creates a new <code>GemFireConfigException</code>.
+   *
+   * @param message the detail message
    */
   public GemFireConfigException(String message) {
     super(message);
@@ -33,6 +35,9 @@ public class GemFireConfigException extends GemFireException {
 
   /**
    * Creates a new <code>GemFireConfigException</code>.
+   *
+   * @param message the detail message
+   * @param cause the cause
    */
   public GemFireConfigException(String message, Throwable cause) {
     super(message, cause);

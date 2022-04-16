@@ -63,7 +63,12 @@ public class AlertLevel implements java.io.Serializable {
     this.ordinal = ordinal;
   }
 
-  /** Return the AlertLevel represented by specified ordinal */
+  /**
+   * Return the AlertLevel represented by specified ordinal
+   *
+   * @param ordinal the ordinal of the <code>AlertLevel</code> to return
+   * @return the <code>AlertLevel</code> with the given ordinal
+   */
   public static AlertLevel fromOrdinal(int ordinal) {
     return VALUES[ordinal];
   }
@@ -71,6 +76,8 @@ public class AlertLevel implements java.io.Serializable {
   /**
    * Returns the <code>AlertLevel</code> for the given severity
    *
+   * @param severity the severity of the <code>AlertLevel</code> to return
+   * @return the <code>AlertLevel</code> with the given severity
    * @throws IllegalArgumentException If there is no alert level with the given
    *         <code>severity</code>
    */
@@ -92,6 +99,9 @@ public class AlertLevel implements java.io.Serializable {
 
   /**
    * Returns the <code>AlertLevel</code> with the given name
+   *
+   * @param name the name of the <code>AlertLevel</code> to return
+   * @return the <code>AlertLevel</code> with the given name
    *
    * @throws IllegalArgumentException If there is no alert level named <code>name</code>
    */

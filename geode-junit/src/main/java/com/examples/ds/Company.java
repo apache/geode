@@ -22,7 +22,7 @@ public class Company {
   /** The address of this company */
   private final Address address;
 
-  /**
+  /*
    * Creates a new company
    */
   public Company(String name, Address address) {

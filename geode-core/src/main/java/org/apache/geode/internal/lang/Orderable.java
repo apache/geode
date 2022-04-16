@@ -18,7 +18,7 @@ package org.apache.geode.internal.lang;
 /**
  * The Orderable interface defines a contract for classes whose Objects can be sorted, or ordered
  * according to the order property of a Comparable type.
- * <p/>
+ * <p>
  *
  * @see java.lang.Comparable
  * @since GemFire 6.8
@@ -30,7 +30,7 @@ public interface Orderable<T extends Comparable<T>> {
    * relative to other type compatible Object instances. The order property value can also be used
    * in sorting operations, or in maintaining Orderable objects in ordered data structures like
    * arrays or Lists, or even for defining a precedence not directly related order.
-   * <p/>
+   * <p>
    *
    * @return a value that is Comparable to other value of the same type and defines the relative
    *         order of this Object instance to it's peers.
