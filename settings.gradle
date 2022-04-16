@@ -18,13 +18,13 @@
 import org.gradle.util.GradleVersion
 
 pluginManagement {
-  includeBuild("buildSrc2")
-//  includeBuild("buildSrc3") {
+  includeBuild("geode-dependencies")
+//  includeBuild("geode-japicmp") {
 //    dependencySubstitution {
 //      substitute module('org.apache.geode.gradle:org.apache.geode.gradle.geode-japicmp') using project(':')
 //    }
 //  }
-  includeBuild("buildSrc4") {
+  includeBuild("geode-repeat-test") {
     dependencySubstitution {
       substitute module('org.apache.geode.gradle:org.apache.geode.gradle.geode-repeat-test') using project(':')
     }

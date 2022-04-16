@@ -1,12 +1,12 @@
 
-includeBuild("${rootDir}/../buildSrc2")
+includeBuild("${rootDir}/../geode-dependencies")
 
-includeBuild("${rootDir}/../buildSrc3") {
+includeBuild("${rootDir}/../geode-japicmp") {
   dependencySubstitution {
     substitute module('org.apache.geode.gradle:geode-japicmp') using project(':')
   }
 }
-includeBuild("${rootDir}/../buildSrc4") {
+includeBuild("${rootDir}/../geode-repeat-test") {
   dependencySubstitution {
     substitute module('org.apache.geode.gradle:org.apache.geode.gradle.geode-repeat-test') using project(':')
   }
