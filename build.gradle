@@ -31,10 +31,7 @@ plugins {
   id "org.sonarqube" version "3.3" apply false
   id 'me.champeau.gradle.jmh' version '0.5.3' apply false
   id "de.undercouch.download" version "5.0.1" apply false
-
   id 'org.apache.geode.gradle.geode-dependency-constraints' apply false
-
-
   id 'geode-publish-artifacts' apply false
   id 'geode-publish-common' apply false
   id 'geode-publish-java' apply false

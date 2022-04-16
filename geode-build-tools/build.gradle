@@ -40,17 +40,6 @@ test {
   useJUnitPlatform()
 }
 
-//sourceSets {
-//  main {
-//    java {
-//      srcDirs = []
-//    }
-//    groovy {
-//      srcDirs += ['src/main/java']
-//    }
-//  }
-//}
-
 group = 'org.apache.geode.gradle'
 version = 1.0
 

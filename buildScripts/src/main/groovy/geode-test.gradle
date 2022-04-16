@@ -100,31 +100,31 @@ if (project.hasProperty("forceTest")) {
   }
 }
 
-task repeatDistributedTest(type: RepeatTest) {
+tasks.register('repeatDistributedTest', RepeatTest) {
   dependsOn { distributedTest.taskDependencies }
   classpath = project.sourceSets.distributedTest.runtimeClasspath
   testClassesDirs = project.sourceSets.distributedTest.output.classesDirs
 }
 
-task repeatIntegrationTest(type: RepeatTest) {
+tasks.register('repeatIntegrationTest', RepeatTest) {
   dependsOn { integrationTest.taskDependencies }
   classpath = project.sourceSets.integrationTest.runtimeClasspath
   testClassesDirs = project.sourceSets.integrationTest.output.classesDirs
 }
 
-task repeatAcceptanceTest(type: RepeatTest) {
+tasks.register('repeatAcceptanceTest', RepeatTest) {
   dependsOn { acceptanceTest.taskDependencies }
   classpath = project.sourceSets.acceptanceTest.runtimeClasspath
   testClassesDirs = project.sourceSets.acceptanceTest.output.classesDirs
 }
 
-task repeatUpgradeTest(type: RepeatTest) {
+tasks.register('repeatUpgradeTest', RepeatTest) {
   dependsOn { upgradeTest.taskDependencies }
   classpath = project.sourceSets.upgradeTest.runtimeClasspath
   testClassesDirs = project.sourceSets.upgradeTest.output.classesDirs
 }
 
-task repeatUnitTest(type: RepeatTest) {
+tasks.register('repeatUnitTest', RepeatTest) {
   dependsOn { test.taskDependencies }
   // default classpath works for this one.
 }
