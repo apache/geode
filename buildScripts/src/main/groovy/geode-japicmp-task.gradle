@@ -15,18 +15,19 @@
  * limitations under the License.
  */
 
-plugins {
-  id 'geode-japicmp'
-}
-//import japicmp.model.JApiChangeStatus
+import japicmp.model.JApiChangeStatus
 import org.apache.maven.artifact.versioning.ComparableVersion
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
-
+import me.champeau.gradle.japicmp.JapicmpTask
+import org.apache.geode.gradle.japicmp.ParentIsExperimental
+import org.apache.geode.gradle.japicmp.GeodeApiRegressionRule
+import org.apache.geode.gradle.japicmp.GeodeSpiRegressionRule
+import org.apache.geode.gradle.japicmp.AllowMajorBreakingChanges
 
 def mostRecentReleaseProj = project(':geode-old-versions').subprojects.max(){ v -> new ComparableVersion(v.name)}
 def newest = mostRecentReleaseProj.name
 
-tasks.register('japicmp', me.champeau.gradle.japicmp.JapicmpTask) {
+tasks.register('japicmp', JapicmpTask) {
   inputs.files { configurations.runtimeClasspath}
   def ourUnpackTaskProvider = project(":geode-old-versions:${newest}").tasks.named('downloadAndUnzipFile')
   inputs.files { ourUnpackTaskProvider }
@@ -81,12 +82,12 @@ tasks.register('japicmp', me.champeau.gradle.japicmp.JapicmpTask) {
     }
 
     if (allowMajorBreaking) {
-      addRule(AllowMajorBreakingChanges.get())
+      addRule(AllowMajorBreakingChanges)
     } else {
-      addRule(JApiChangeStatus.REMOVED, ParentIsExperimental.get())
-      addRule(JApiChangeStatus.MODIFIED, ParentIsExperimental.get())
-      addRule(GeodeApiRegressionRule.get())
-      addRule(GeodeSpiRegressionRule.get())
+      addRule(JApiChangeStatus.REMOVED, ParentIsExperimental)
+      addRule(JApiChangeStatus.MODIFIED, ParentIsExperimental)
+      addRule(GeodeApiRegressionRule)
+      addRule(GeodeSpiRegressionRule)
     }
     addDefaultRules = true
   }

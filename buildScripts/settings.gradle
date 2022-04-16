@@ -3,7 +3,7 @@ includeBuild("${rootDir}/../buildSrc2")
 
 includeBuild("${rootDir}/../buildSrc3") {
   dependencySubstitution {
-    substitute module('org.apache.geode.gradle:org.apache.geode.gradle.geode-japicmp') using project(':')
+    substitute module('org.apache.geode.gradle:geode-japicmp') using project(':')
   }
 }
 includeBuild("${rootDir}/../buildSrc4") {

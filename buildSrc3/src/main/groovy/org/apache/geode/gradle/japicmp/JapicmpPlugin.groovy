@@ -22,24 +22,8 @@ class JapicmpPlugin implements Plugin<Project> {
 
   @Override
   void apply(Project project) {
-    project.extensions.create("AllowMajorBreakingChanges", AllowMajorBreakingChangesLoader)
-    project.extensions.create("GeodeApiRegressionRule", GeodeApiRegressionRuleLoader)
-    project.extensions.create("GeodeSpiRegressionRule", GeodeSpiRegressionRuleLoader)
-    project.extensions.create("ParentIsExperimental", ParentIsExperimentalLoader)
+    // Plugin loads no tasks. Only provided to load API comparison rule classes from this package.
   }
 }
-abstract class AllowMajorBreakingChangesLoader {
-  def get() {return AllowMajorBreakingChanges.class}
-}
 
-abstract class GeodeApiRegressionRuleLoader {
-  def get() {return GeodeApiRegressionRule.class}
-}
 
-abstract class GeodeSpiRegressionRuleLoader {
-  def get() {return GeodeSpiRegressionRule.class}
-}
-
-abstract class ParentIsExperimentalLoader {
-  def get() {return ParentIsExperimental.class}
-}
