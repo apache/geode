@@ -51,8 +51,8 @@ compact disk-store --name=value [--groups=value(,value)*]
 
 | Name                                          | Description                                                                                                                  |
 |-----------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
-| <span class="keyword parmname">\\-\\-name</span>  | *Required.* Name of the disk store to be compacted.                                                                          |
-| <span class="keyword parmname">\\-\\-groups</span> | Group(s) of members that perform disk compaction. If no group is specified, then the disk store is compacted by all members. |
+| <span class="keyword parmname">&#8209;&#8209;name</span>  | *Required.* Name of the disk store to be compacted.                                                                          |
+| <span class="keyword parmname">&#8209;&#8209;groups</span> | Group(s) of members that perform disk compaction. If no group is specified, then the disk store is compacted by all members. |
 
 **Example Commands:**
 
@@ -95,16 +95,16 @@ compact offline-disk-store --name=value --disk-dirs=value(,value)*
 
 | Name                                                   | Description                                                                                                                   | Default Value |
 |--------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------|---------------|
-| <span class="keyword parmname">\\-\\-name</span>           | *Required.* Name of the offline disk store to be compacted.                                                                   |               |
-| <span class="keyword parmname">\\-\\-disk-dirs</span>      | *Required.* One or more directories where data for the disk store was previously written. Separate directories with commas.   |               |
-| <span class="keyword parmname">\\-\\-max-oplog-size</span> | Maximum size (in megabytes) of the oplogs created by compaction.                                                              | -1            |
-| <span class="keyword parmname">\\-\\-J</span>              | Arguments passed to the Java Virtual Machine performing the compact operation on the disk store. For example: `-J=-Xmx1024m`. |               |
+| <span class="keyword parmname">&#8209;&#8209;name</span>           | *Required.* Name of the offline disk store to be compacted.                                                                   |               |
+| <span class="keyword parmname">&#8209;&#8209;disk-dirs</span>      | *Required.* One or more directories where data for the disk store was previously written. Separate directories with commas.   |               |
+| <span class="keyword parmname">&#8209;&#8209;max-oplog-size</span> | Maximum size (in megabytes) of the oplogs created by compaction.                                                              | -1            |
+| <span class="keyword parmname">&#8209;&#8209;J</span>              | Arguments passed to the Java Virtual Machine performing the compact operation on the disk store. For example: `--J=-Xmx1024m`. |               |
 
 **Example Commands:**
 
 ``` pre
 compact offline-disk-store --name=Disk2 --disk-dirs=/Disks/Disk2
-compact offline-disk-store --name=Disk2 --disk-dirs=/Disks/Disk2 --max-oplog-size=512 -J=-Xmx1024m
+compact offline-disk-store --name=Disk2 --disk-dirs=/Disks/Disk2 --max-oplog-size=512 --J=-Xmx1024m
 ```
 
 
