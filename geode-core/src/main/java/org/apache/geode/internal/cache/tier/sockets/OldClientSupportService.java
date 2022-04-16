@@ -32,7 +32,8 @@ public interface OldClientSupportService extends CacheService {
    * @param clientVersion the version of the client
    * @return the exception to give the client
    */
-  Throwable getThrowable(Throwable theThrowable, KnownVersion clientVersion);
+  Throwable getThrowable(Throwable theThrowable, KnownVersion clientVersion,
+      ClientProxyMembershipID clientId);
 
   /**
    * Process a class name read from a serialized object of unknown origin

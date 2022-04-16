@@ -172,7 +172,8 @@ public class ExecuteFunction70Test {
 
   @Test
   public void nonSecureShouldSucceed() throws Exception {
-    when(oldClientSupportService.getThrowable(any(), any())).thenReturn(mock(Throwable.class));
+    when(oldClientSupportService.getThrowable(any(), any(), null))
+        .thenReturn(mock(Throwable.class));
     when(securityService.isClientSecurityRequired()).thenReturn(false);
 
     executeFunction.cmdExecute(message, serverConnection, securityService, 0);
@@ -183,7 +184,8 @@ public class ExecuteFunction70Test {
 
   @Test
   public void withIntegratedSecurityShouldSucceedIfAuthorized() throws Exception {
-    when(oldClientSupportService.getThrowable(any(), any())).thenReturn(mock(Throwable.class));
+    when(oldClientSupportService.getThrowable(any(), any(), null))
+        .thenReturn(mock(Throwable.class));
     when(securityService.isClientSecurityRequired()).thenReturn(true);
     when(securityService.isIntegratedSecurity()).thenReturn(true);
 
@@ -211,7 +213,8 @@ public class ExecuteFunction70Test {
 
   @Test
   public void withOldSecurityShouldSucceedIfAuthorized() throws Exception {
-    when(oldClientSupportService.getThrowable(any(), any())).thenReturn(mock(Throwable.class));
+    when(oldClientSupportService.getThrowable(any(), any(), null))
+        .thenReturn(mock(Throwable.class));
     when(securityService.isClientSecurityRequired()).thenReturn(true);
     when(securityService.isIntegratedSecurity()).thenReturn(false);
 

@@ -14,6 +14,8 @@
  */
 package com.gemstone.gemfire;
 
+import static org.apache.geode.internal.cache.tier.sockets.ClientReAuthenticateMessage.OLD_CLIENT_AUTHENTICATION_EXPIRED;
+import static org.apache.geode.internal.cache.tier.sockets.ClientReAuthenticateMessage.RE_AUTHENTICATION_START_VERSION;
 import static org.apache.geode.internal.cache.tier.sockets.ServerConnection.USER_NOT_FOUND;
 
 import java.io.DataInput;
@@ -25,7 +27,8 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.tier.sockets.ClientReAuthenticateMessage;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
 import org.apache.geode.internal.serialization.KnownVersion;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
@@ -121,19 +124,23 @@ public class OldClientSupportProvider implements OldClientSupportService {
   }
 
   @Override
-  public Throwable getThrowable(Throwable theThrowable, KnownVersion clientVersion) {
+  public Throwable getThrowable(Throwable theThrowable, KnownVersion clientVersion,
+      ClientProxyMembershipID clientId) {
 
     if (theThrowable == null) {
       return theThrowable;
     }
 
     // backward compatibility for authentication expiration
-    if (clientVersion.isOlderThan(ClientReAuthenticateMessage.RE_AUTHENTICATION_START_VERSION)) {
-      if (theThrowable instanceof AuthenticationExpiredException) {
-        return new AuthenticationRequiredException(USER_NOT_FOUND);
-      }
-      Throwable cause = theThrowable.getCause();
-      if (cause instanceof AuthenticationExpiredException) {
+    if (clientVersion.isOlderThan(RE_AUTHENTICATION_START_VERSION)) {
+      if (theThrowable instanceof AuthenticationExpiredException
+          || theThrowable.getCause() instanceof AuthenticationExpiredException) {
+        if (CacheClientNotifier.getInstance().getClientProxy(clientId) != null) {
+          // Re-authentication with Server->Client queues is not supported
+          return new IllegalStateException(OLD_CLIENT_AUTHENTICATION_EXPIRED);
+        }
+        // For other use cases, return an exception that will trigger re-authentication on the
+        // client
         return new AuthenticationRequiredException(USER_NOT_FOUND);
       }
     }

@@ -567,7 +567,8 @@ public abstract class BaseCommand implements Command {
     if (cache != null) {
       OldClientSupportService svc = cache.getService(OldClientSupportService.class);
       if (svc != null) {
-        return svc.getThrowable(e, serverConnection.getClientVersion());
+        return svc.getThrowable(e, serverConnection.getClientVersion(),
+            serverConnection.getProxyID());
       }
     }
     return e;

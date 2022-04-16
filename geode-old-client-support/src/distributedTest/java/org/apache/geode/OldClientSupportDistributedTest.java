@@ -161,7 +161,8 @@ public class OldClientSupportDistributedTest implements Serializable {
     Object geodeObject = instantiate(geodeClass);
     if (geodeObject instanceof Throwable) {
       Throwable geodeThrowable = (Throwable) instantiate(geodeClass);
-      Throwable gemfireThrowable = oldClientSupport.getThrowable(geodeThrowable, oldClientVersion);
+      Throwable gemfireThrowable = oldClientSupport.getThrowable(geodeThrowable, oldClientVersion,
+          null);
       assertThat(comGemstoneGemFire)
           .withFailMessage("Failed to convert " + geodeClassName + ". Throwable class is "
               + gemfireThrowable.getClass().getName())

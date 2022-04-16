@@ -28,6 +28,11 @@ import org.apache.geode.internal.serialization.SerializationContext;
 public class ClientReAuthenticateMessage implements ClientMessage {
   @Immutable
   public static final KnownVersion RE_AUTHENTICATION_START_VERSION = KnownVersion.GEODE_1_15_0;
+
+  public static final String OLD_CLIENT_AUTHENTICATION_EXPIRED =
+      "Authorization expired for a client with a version less than Geode 1.15. Cannot re-authenticate an older client "
+          + " that has a server to client queue for CQs or interest registrations. "
+          + "Please upgrade your client to Geode 1.15 or greater to allow re-authentication.";
   /**
    * This {@code ClientMessage}'s {@code EventID}
    */
