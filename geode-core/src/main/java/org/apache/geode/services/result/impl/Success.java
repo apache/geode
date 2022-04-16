@@ -23,7 +23,7 @@ import org.apache.geode.services.result.ServiceResult;
 
 /**
  * This type of {@link ServiceResult} represents a successful operation. It contains the
- * return value of type {@link SuccessType}
+ * return value of type {@code SuccessType}
  *
  * @param <SuccessType> the result type for a successful operation.
  *
