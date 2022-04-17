@@ -54,6 +54,58 @@ public class RegionVersionHolderJUnitTest {
   }
 
   @Test
+  public void fillSpecialExceptionForRVHWithBitSet() {
+    fillSpecialExceptionForRVH(true);
+  }
+
+  @Test
+  public void fillSpecialExceptionForRVHWithoutBitSet() {
+    fillSpecialExceptionForRVH(false);
+  }
+
+  private void fillSpecialExceptionForRVH(boolean useBitSet) {
+    RegionVersionHolder vh1 = null;
+    RegionVersionHolder vh2 = null;
+    if (useBitSet) {
+      vh1 = new RegionVersionHolder(member);
+      vh2 = new RegionVersionHolder(member);
+    } else {
+      vh1 = new RegionVersionHolder(0);
+      vh2 = new RegionVersionHolder(0);
+    }
+    for (int i = 1; i <= 3; i++) {
+      vh1.recordVersion(i);
+    }
+
+    for (int i = 1; i <= 5; i++) {
+      vh2.recordVersion(i);
+    }
+
+    // create special exception 5(n=6,p=3)
+    vh2.initializeFrom(vh1);
+    System.out.println("vh2=" + vh2);
+    List<RVVException> exceptionList = vh2.getExceptionForTest();
+    assertEquals(1, exceptionList.size());
+    RVVException exception = exceptionList.get(0);
+    assertEquals(3, exception.previousVersion);
+    assertEquals(6, exception.nextVersion);
+    System.out.println("vh2=" + vh2);
+
+    vh2.recordVersion(5);
+    exceptionList = vh2.getExceptionForTest();
+    assertEquals(1, exceptionList.size());
+    exception = exceptionList.get(0);
+    assertEquals(3, exception.previousVersion);
+    assertEquals(5, exception.nextVersion);
+    System.out.println("vh2=" + vh2);
+
+    vh2.recordVersion(4);
+    exceptionList = vh2.getExceptionForTest();
+    assertEquals(0, exceptionList.size());
+    System.out.println("vh2=" + vh2);
+  }
+
+  @Test
   public void test48066_1() {
     RegionVersionHolder vh1 = new RegionVersionHolder(member);
     for (int i = 1; i <= 3; i++) {

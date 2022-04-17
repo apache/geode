@@ -980,8 +980,8 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     AsyncInvocation async3 = createDistributedRegionAsync(R);
     waitForCallbackStarted(R, GIITestHookType.BeforeSavedReceivedRVV);
 
-    doOneDestroy(P, 4, "key2");
-    doOnePut(P, 5, "key1");
+    doOnePut(P, 4, "key1");
+    doOneDestroy(P, 5, "key2");
     R.invoke(
         () -> InitialImageOperation.resetGIITestHook(GIITestHookType.BeforeSavedReceivedRVV, true));
     waitForCallbackStarted(R, GIITestHookType.AfterSavedReceivedRVV);
@@ -992,6 +992,12 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     changeForceFullGII(R, true, true);
     changeForceFullGII(P, false, true);
     verifyDeltaSizeFromStats(R, 2, 0);
+
+    // Now restart R again to re-do GII
+    closeCache(R);
+    createDistributedRegion(R);
+    waitForToVerifyRVV(R, memberP, 5, null, 0); // P's rvv=r5, gc=0
+    verifyTombstoneExist(R, "key2", true, false);
   }
 
   /**
@@ -1038,8 +1044,8 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     AsyncInvocation async3 = createDistributedRegionAsync(R);
     waitForCallbackStarted(R, GIITestHookType.AfterCalculatedUnfinishedOps);
 
-    doOneDestroy(P, 4, "key2");
-    doOnePut(P, 5, "key1");
+    doOnePut(P, 4, "key1");
+    doOneDestroy(P, 5, "key2");
     R.invoke(() -> InitialImageOperation
         .resetGIITestHook(GIITestHookType.AfterCalculatedUnfinishedOps, true));
     waitForCallbackStarted(R, GIITestHookType.AfterSavedReceivedRVV);
@@ -1050,6 +1056,11 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     verifyDeltaSizeFromStats(R, 2, 1);
     changeForceFullGII(R, false, true);
     changeForceFullGII(P, false, true);
+    // Now restart R again to re-do GII
+    closeCache(R);
+    createDistributedRegion(R);
+    waitForToVerifyRVV(R, memberP, 5, null, 0); // P's rvv=r5, gc=0
+    verifyTombstoneExist(R, "key2", true, false);
   }
 
   /*

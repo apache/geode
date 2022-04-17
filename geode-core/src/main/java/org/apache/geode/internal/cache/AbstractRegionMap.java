@@ -791,6 +791,13 @@ public abstract class AbstractRegionMap extends BaseRegionMap
                   boolean isSameTombstone = oldRe.isTombstone() && isTombstone
                       && oldRe.getVersionStamp().asVersionTag().equals(entryVersion);
                   if (isSameTombstone) {
+                    if (owner.getDiskRegion() != null
+                        && owner.getDiskRegion().getRegionVersionVector() != null) {
+                      // it's possible the region without persistence has RVV
+                      RegionVersionVector drRVV = owner.getDiskRegion().getRegionVersionVector();
+                      drRVV.recordVersion(entryVersion.getMemberID(),
+                          entryVersion.getRegionVersion());
+                    }
                     return true;
                   }
                   processVersionTagForGII(oldRe, owner, entryVersion, isTombstone, sender,
