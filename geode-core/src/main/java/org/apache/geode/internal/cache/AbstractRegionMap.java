@@ -787,18 +787,6 @@ public abstract class AbstractRegionMap extends BaseRegionMap
                   Assert.assertTrue(entryVersion.getMemberID() != null,
                       "GII entry versions must have identifiers");
                   boolean isTombstone = (newValue == Token.TOMBSTONE);
-                  // don't reschedule the tombstone if it hasn't changed
-                  boolean isSameTombstone = oldRe.isTombstone() && isTombstone
-                      && oldRe.getVersionStamp().asVersionTag().equals(entryVersion);
-                  if (isSameTombstone) {
-                    if (owner.getDiskRegion() != null
-                        && owner.getDiskRegion().getRegionVersionVector() != null) {
-                      // it's possible the region without persistence has RVV
-                      RegionVersionVector drRVV = owner.getDiskRegion().getRegionVersionVector();
-                      drRVV.recordVersion(entryVersion.getMemberID(), entryVersion);
-                    }
-                    return true;
-                  }
                   processVersionTagForGII(oldRe, owner, entryVersion, isTombstone, sender,
                       !wasRecovered || isSynchronizing);
 
