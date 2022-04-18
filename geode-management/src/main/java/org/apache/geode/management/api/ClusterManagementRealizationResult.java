@@ -35,7 +35,7 @@ public class ClusterManagementRealizationResult extends ClusterManagementResult 
   /**
    * for internal use only
    *
-   * @param statusCode the {@link StatusCode} to set
+   * @param statusCode the {@code StatusCode} to set
    * @param message the status message to set
    */
   public ClusterManagementRealizationResult(StatusCode statusCode, String message) {
