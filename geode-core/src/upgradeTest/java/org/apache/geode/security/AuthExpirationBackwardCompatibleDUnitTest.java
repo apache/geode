@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
@@ -366,6 +367,7 @@ public class AuthExpirationBackwardCompatibleDUnitTest {
     assertThat(unAuthorizedOps.get("user1")).asList().contains("DATA:READ:region:11");
   }
 
+  @Ignore("does not support this use case")
   @Test
   public void cqOlderClientWithClientInteractionWillDeliverEventEventually() throws Exception {
     // this test should only test the older client

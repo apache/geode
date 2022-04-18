@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.internal.cache.EntryEventImpl.deserialize;
+import static org.apache.geode.internal.cache.tier.sockets.ClientReAuthenticateMessage.OLD_CLIENT_AUTHENTICATION_EXPIRED;
 import static org.apache.geode.internal.cache.tier.sockets.ClientReAuthenticateMessage.RE_AUTHENTICATION_START_VERSION;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.RE_AUTHENTICATE_WAIT_TIME;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
@@ -533,21 +534,24 @@ public class MessageDispatcher extends LoggingThread {
       throws InterruptedException {
     long reAuthenticateWaitTime =
         getSystemProperty(RE_AUTHENTICATE_WAIT_TIME, DEFAULT_RE_AUTHENTICATE_WAIT_TIME);
+    // for old client, don't wait for re-auth but unregister this proxy completely.
+    if (getProxy().getVersion().isOlderThan(RE_AUTHENTICATION_START_VERSION)) {
+      synchronized (_stopDispatchingLock) {
+        logger.warn(OLD_CLIENT_AUTHENTICATION_EXPIRED);
+        pauseOrUnregisterProxy(expired);
+      }
+      return true;
+    }
+
     synchronized (reAuthenticationLock) {
       // turn on the "isWaitingForReAuthentication" flag before we send the re-auth message
       // if we do it the other way around, the re-auth might be finished before we turn on the
       // flag for the notification to happen.
       waitForReAuthenticationStartTime = System.currentTimeMillis();
       subjectUpdated = false;
-      // only send the message to clients who can handle the message
-      if (getProxy().getVersion().isNewerThanOrEqualTo(RE_AUTHENTICATION_START_VERSION)) {
-        EventID eventId = createEventId();
-        sendMessageDirectly(new ClientReAuthenticateMessage(eventId));
-      }
+      EventID eventId = createEventId();
+      sendMessageDirectly(new ClientReAuthenticateMessage(eventId));
 
-      // We wait for all versions of clients to re-authenticate. For older clients we still
-      // wait, just in case client will perform some operations to
-      // trigger credential refresh on its own.
       long waitFinishTime = waitForReAuthenticationStartTime + reAuthenticateWaitTime;
       long remainingWaitTime = waitFinishTime - System.currentTimeMillis();
       while (!subjectUpdated && remainingWaitTime > 0) {
@@ -565,8 +569,8 @@ public class MessageDispatcher extends LoggingThread {
             "Client did not re-authenticate back successfully in {} ms. Unregister this client proxy.",
             elapsedTime);
         pauseOrUnregisterProxy(expired);
-        return true;
       }
+      return true;
     }
     return false;
   }

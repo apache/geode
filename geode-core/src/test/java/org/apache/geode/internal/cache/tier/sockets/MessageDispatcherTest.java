@@ -37,6 +37,7 @@ import java.io.IOException;
 
 import org.apache.shiro.subject.Subject;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import org.apache.geode.CancelCriterion;
@@ -175,7 +176,9 @@ public class MessageDispatcherTest {
   }
 
 
+
   @Test
+  @Disabled("does not support this use case")
   public void oldClientWillContinueToDeliverMessageIfNotified() throws Exception {
     doReturn(false, false, true).when(dispatcher).isStopped();
     // make sure wait time is short
