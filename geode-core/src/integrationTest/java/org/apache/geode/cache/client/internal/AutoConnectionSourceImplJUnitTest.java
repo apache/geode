@@ -202,7 +202,7 @@ public class AutoConnectionSourceImplJUnitTest {
   }
 
   /**
-   * This test validates the AutoConnectionSourceImpl.addbadLocators method. That method adds
+   * This test validates the AutoConnectionSourceImpl.addBadLocators method. That method adds
    * badLocator from badLocator list to new Locator list. And it make sure that new locator list
    * doesn't have similar entry. For that it checks hostname and port only.
    */
@@ -228,7 +228,7 @@ public class AutoConnectionSourceImplJUnitTest {
     bla.add(new LocatorAddress(b2, b2.getHostName()));
 
 
-    src.addbadLocators(la, bla);
+    src.addBadLocators(la, bla);
 
     System.out.println("new locatores " + la);
     Assert.assertEquals(3, la.size());

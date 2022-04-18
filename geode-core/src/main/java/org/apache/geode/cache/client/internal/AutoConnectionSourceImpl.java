@@ -306,7 +306,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
       badLocators.remove(hostAddress);
     }
 
-    addbadLocators(newLocatorAddresses, badLocators);
+    addBadLocators(newLocatorAddresses, badLocators);
 
     LocatorList newLocatorList = new LocatorList(newLocatorAddresses);
 
@@ -335,25 +335,27 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
 
   }
 
-  /**
+  /*
    * This method will add bad locator only when locator with hostname and port is not already in
    * list.
    */
-  protected void addbadLocators(List<LocatorAddress> newLocators, Set<LocatorAddress> badLocators) {
-    for (LocatorAddress badloc : badLocators) {
+  protected void addBadLocators(List<LocatorAddress> newLocators, Set<LocatorAddress> badLocators) {
+    for (LocatorAddress badLocator : badLocators) {
       boolean addIt = true;
-      for (LocatorAddress goodloc : newLocators) {
-        boolean isSameHost = badloc.getHostName().equals(goodloc.getHostName());
-        if (isSameHost && badloc.getPort() == goodloc.getPort()) {
-          // ip has been changed so don't add this in current
+      for (LocatorAddress goodLocator : newLocators) {
+        boolean isSameIP = badLocator.getSocketInetAddressNoLookup().getAddress()
+            .equals(goodLocator.getSocketInetAddressNoLookup().getAddress());
+        boolean isSameHost = badLocator.getHostName().equals(goodLocator.getHostName());
+        boolean isSamePort = badLocator.getPort() == goodLocator.getPort();
+        if ((isSameHost || isSameIP) && isSamePort) {
+          // ip has been changed, or we were comparing host to an IP so don't add this in current
           // list
           addIt = false;
           break;
-
         }
       }
       if (addIt) {
-        newLocators.add(badloc);
+        newLocators.add(badLocator);
       }
     }
   }
