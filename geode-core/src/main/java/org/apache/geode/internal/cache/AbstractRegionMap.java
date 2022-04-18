@@ -795,8 +795,7 @@ public abstract class AbstractRegionMap extends BaseRegionMap
                         && owner.getDiskRegion().getRegionVersionVector() != null) {
                       // it's possible the region without persistence has RVV
                       RegionVersionVector drRVV = owner.getDiskRegion().getRegionVersionVector();
-                      drRVV.recordVersion(entryVersion.getMemberID(),
-                          entryVersion.getRegionVersion());
+                      drRVV.recordVersion(entryVersion.getMemberID(), entryVersion);
                     }
                     return true;
                   }
