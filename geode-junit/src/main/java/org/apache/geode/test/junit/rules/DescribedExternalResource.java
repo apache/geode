@@ -14,8 +14,12 @@
  */
 package org.apache.geode.test.junit.rules;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
+import org.junit.runners.model.MultipleFailureException;
 import org.junit.runners.model.Statement;
 
 /**
@@ -36,11 +40,19 @@ public abstract class DescribedExternalResource implements TestRule {
       @Override
       public void evaluate() throws Throwable {
         before(description);
+        List<Throwable> errors = new ArrayList<Throwable>();
         try {
           base.evaluate();
+        } catch(Throwable e) {
+          errors.add(e);
         } finally {
-          after(description);
+          try {
+            after(description);
+          } catch(Throwable e) {
+            errors.add(e);
+          }
         }
+        MultipleFailureException.assertEmpty(errors);
       }
     };
   }
