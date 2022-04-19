@@ -938,6 +938,15 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
+  private void verifyDiskRegionRVV() {
+    DiskStoreID P_ID = getMemberID(P);
+    R.invoke(() -> {
+      LocalRegion lr = (LocalRegion) getCache().getRegion(REGION_NAME);
+      RegionVersionVector drRVV = lr.getDiskRegion().getRegionVersionVector();
+      assertEquals(0, drRVV.getExceptionCount(P_ID));
+    });
+  }
+
   /**
    * P1, P2, P3 R does GII but wait at BeforeSavedReceivedRVV, so R's RVV=P3R0 P4, P5 R goes on to
    * save received RVV. R's new RVV=P5(3-6)R0
@@ -992,6 +1001,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     changeForceFullGII(R, true, true);
     changeForceFullGII(P, false, true);
     verifyDeltaSizeFromStats(R, 2, 0);
+    verifyDiskRegionRVV();
 
     // Now restart R again to re-do GII
     closeCache(R);
@@ -1056,6 +1066,8 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     verifyDeltaSizeFromStats(R, 2, 1);
     changeForceFullGII(R, false, true);
     changeForceFullGII(P, false, true);
+    verifyDiskRegionRVV();
+
     // Now restart R again to re-do GII
     closeCache(R);
     createDistributedRegion(R);
