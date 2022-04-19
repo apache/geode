@@ -3006,10 +3006,10 @@ public class PartitionedRegion extends LocalRegion
 
       try {
         final boolean isLocal = (localMaxMemory > 0) && currentTarget.equals(getMyId());
-        if (logger.isDebugEnabled()) {
-          logger.debug("putInBucket: currentTarget = {}; ifNew = {}; ifOld = {}; isLocal = {}",
-              currentTarget, ifNew, ifOld, isLocal);
-        }
+//        if (logger.isDebugEnabled()) {
+          logger.info("JC debug: putInBucket: currentTarget = {}; ifNew = {}; ifOld = {}; isLocal = {}",
+              currentTarget, ifNew, ifOld, isLocal, new Throwable());
+//        }
         checkIfAboveThreshold(event);
         if (isLocal) {
           event.setInvokePRCallbacks(true);

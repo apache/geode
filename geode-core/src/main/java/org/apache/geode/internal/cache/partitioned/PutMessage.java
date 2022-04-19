@@ -201,6 +201,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
   /** cloning constructor for relaying to listeners */
   PutMessage(PutMessage original, EntryEventImpl event, Set members) {
     super(original, event);
+    logger.info("JC debug: PutMessage(): event: {}", event, new Throwable());
     key = original.key;
     if (original.valBytes != null) {
       valBytes = original.valBytes;
@@ -245,6 +246,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
    */
   PutMessage(PutMessage original) {
     super(original, null);
+    logger.info("JC debug: PutMessage(): event: {}", event, new Throwable());
     bridgeContext = original.bridgeContext;
     cbArg = original.cbArg;
     deserializationPolicy = original.deserializationPolicy;
@@ -313,6 +315,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
       EntryEventImpl event, final long lastModified, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue) {
     super(recipients, regionId, processor, event);
+    logger.info("JC debug: PutMessage(): event: {}", event, new Throwable());
     this.processor = processor;
     notificationOnly = notifyOnly;
     this.requireOldValue = requireOldValue;

@@ -20,31 +20,34 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryNotFoundException;
-import org.apache.geode.cache.EvictionAction;
-import org.apache.geode.cache.EvictionAttributes;
-import org.apache.geode.cache.ExpirationAction;
-import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.util.ObjectSizer;
+import org.apache.geode.internal.cache.backup.BackupOperation;
+import org.apache.geode.management.BackupStatus;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 public class PersistentPartitionedRegionJUnitTest {
 
   private File dir;
   private Cache cache;
+  private File backupBaseDir;
+  @Rule
+  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
   @Before
   public void setUp() throws Exception {
@@ -71,22 +74,33 @@ public class PersistentPartitionedRegionJUnitTest {
 
   @Test
   public void testStatsPersistAttributesChangeNoRecovery() throws InterruptedException {
-    System.setProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, "false");
+    // System.setProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, "false");
     try {
       PartitionedRegion region = (PartitionedRegion) createRegion(-1);
       region.put("A", "B");
-      cache.close();
-      region = (PartitionedRegion) createRegion(60000);
+      region.destroy("A");
+      doOnlineBackup();
+      // cache.close();
+      // region = (PartitionedRegion) createRegion(60000);
 
-      BucketRegion bucket = region.getBucketRegion("A");
-      assertEquals(1, bucket.getDiskRegion().getStats().getNumOverflowOnDisk());
-      assertEquals(0, bucket.getDiskRegion().getStats().getNumEntriesInVM());
-      assertEquals("B", region.get("A"));
-      assertEquals(0, bucket.getDiskRegion().getStats().getNumOverflowOnDisk());
-      assertEquals(1, bucket.getDiskRegion().getStats().getNumEntriesInVM());
+      // BucketRegion bucket = region.getBucketRegion("A");
+      // assertEquals(0, bucket.getDiskRegion().getStats().getNumOverflowOnDisk());
+      // assertEquals(1, bucket.getDiskRegion().getStats().getNumEntriesInVM());
+      // assertEquals("B", region.get("A"));
+      // assertEquals(0, bucket.getDiskRegion().getStats().getNumOverflowOnDisk());
+      // assertEquals(1, bucket.getDiskRegion().getStats().getNumEntriesInVM());
+    } catch (IOException e) {
+      e.printStackTrace();
     } finally {
-      System.setProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, "true");
+      // System.setProperty(DiskStoreImpl.RECOVER_VALUE_PROPERTY_NAME, "true");
     }
+  }
+
+  private BackupStatus doOnlineBackup() throws IOException {
+    backupBaseDir = temporaryFolder.newFolder("backupDir");
+    return new BackupOperation(((InternalCache) cache).getDistributionManager(),
+        (InternalCache) cache)
+            .backupAllMembers(backupBaseDir.toString(), null);
   }
 
   @Test
@@ -336,23 +350,25 @@ public class PersistentPartitionedRegionJUnitTest {
     props.setProperty(LOG_LEVEL, "info");
     // props.setProperty("log-file", "junit.log");
     cache = new CacheFactory(props).create();
-    cache.createDiskStoreFactory().setMaxOplogSize(1).setDiskDirs(new File[] {dir}).create("disk");
+    cache.createDiskStoreFactory().setMaxOplogSize(1).setDiskDirs(new File[] {dir})
+        .create("diskStore1");
 
 
     RegionFactory<Object, Object> rf = cache.createRegionFactory()
-        .setDataPolicy(DataPolicy.PERSISTENT_PARTITION).setDiskStoreName("disk");
-    rf.setPartitionAttributes(new PartitionAttributesFactory().setTotalNumBuckets(1).create());
-    if (ttl > 0) {
-      rf.setEntryTimeToLive(new ExpirationAttributes(ttl, ExpirationAction.DESTROY));
-    }
+        .setDataPolicy(DataPolicy.PERSISTENT_PARTITION).setDiskSynchronous(true)
+        .setDiskStoreName("diskStore1");
+    rf.setPartitionAttributes(new PartitionAttributesFactory().setRedundantCopies(1).setTotalNumBuckets(1).create());
+    // if (ttl > 0) {
+    // rf.setEntryTimeToLive(new ExpirationAttributes(ttl, ExpirationAction.DESTROY));
+    // }
 
-    if (isEntryEviction) {
-      rf.setEvictionAttributes(
-          EvictionAttributes.createLRUEntryAttributes(10, EvictionAction.OVERFLOW_TO_DISK));
-    } else if (isHeapEviction) {
-      rf.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes(ObjectSizer.DEFAULT,
-          EvictionAction.OVERFLOW_TO_DISK));
-    }
+    // if (isEntryEviction) {
+    // rf.setEvictionAttributes(
+    // EvictionAttributes.createLRUEntryAttributes(10, EvictionAction.OVERFLOW_TO_DISK));
+    // } else if (isHeapEviction) {
+    // rf.setEvictionAttributes(EvictionAttributes.createLRUHeapAttributes(ObjectSizer.DEFAULT,
+    // EvictionAction.OVERFLOW_TO_DISK));
+    // }
 
     Region region = rf.create("region");
     return region;

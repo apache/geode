@@ -88,6 +88,7 @@ public class BackupOperation {
     Set<PersistentID> missingMembers =
         missingPersistentMembersProvider.getMissingPersistentMembers(dm);
     Set<InternalDistributedMember> recipients = dm.getOtherDistributionManagerIds();
+    System.out.println("JC debug: recipients:" + recipients);
 
     BackupDataStoreResult result = performBackupSteps(dm.getId(), recipients, properties);
 
