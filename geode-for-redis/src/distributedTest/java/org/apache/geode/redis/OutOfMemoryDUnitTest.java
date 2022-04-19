@@ -148,6 +148,9 @@ public class OutOfMemoryDUnitTest {
         .addOption(START_SERVER__CLASSPATH, redisHome.getGeodeForRedisHome() + "/lib/*");
     if (isJavaVersionAtMost(JAVA_13)) {
       startServerCommand.addOption(START_SERVER__J, "-XX:CMSInitiatingOccupancyFraction=45");
+    } else {
+      startServerCommand.addOption(START_SERVER__J, "-XX:+UseZGC");
+      startServerCommand.addOption(START_SERVER__J, "-XX:SoftMaxHeapSize=62m");
     }
     gfsh.executeAndAssertThat(startServerCommand.getCommandString()).statusIsSuccess();
   }
