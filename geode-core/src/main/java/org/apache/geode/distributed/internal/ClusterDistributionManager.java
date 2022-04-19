@@ -1917,8 +1917,6 @@ public class ClusterDistributionManager implements DistributionManager {
     removeHostedLocators(theId);
     redundancyZones.remove(theId);
 
-    stats.setNodes(getNonLocatorViewMembers());
-
     String msg;
     if (memberCrashed && !shouldInhibitMembershipWarnings()) {
       msg =
@@ -1931,6 +1929,7 @@ public class ClusterDistributionManager implements DistributionManager {
     }
     logger.info(msg, new Object[] {theId, prettifyReason(reason)});
     executors.handleManagerDeparture(theId);
+    stats.setNodes(getNonLocatorViewMembers());
   }
 
   private void handleManagerSuspect(InternalDistributedMember suspect,

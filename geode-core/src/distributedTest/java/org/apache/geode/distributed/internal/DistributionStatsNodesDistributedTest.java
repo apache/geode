@@ -17,7 +17,6 @@ package org.apache.geode.distributed.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
 import java.io.Serializable;
 
 import org.junit.Rule;
@@ -62,7 +61,8 @@ public class DistributionStatsNodesDistributedTest implements Serializable {
     DistributionStats distributionStats = (DistributionStats) distributionManager.getStats();
     assertThat(distributionStats.getNodes()).isEqualTo(2);
 
-    server.invoke(() -> ClusterStartupRule.getCache().close());
+    server.invoke(() -> ClusterStartupRule.getCache().getDistributionManager().getDistribution()
+        .disconnect(false));
 
     assertThat(distributionStats.getNodes()).isEqualTo(1);
   }
