@@ -182,7 +182,7 @@ public class OutOfMemoryDUnitTest {
 
   @After
   public void tearDown() throws Exception {
-    removeAllKeysAndForceGC();
+    // removeAllKeysAndForceGC();
   }
 
   @Test
