@@ -150,7 +150,6 @@ public class OutOfMemoryDUnitTest {
       startServerCommand.addOption(START_SERVER__J, "-XX:CMSInitiatingOccupancyFraction=45");
     } else {
       startServerCommand.addOption(START_SERVER__J, "-XX:+UseZGC");
-      // startServerCommand.addOption(START_SERVER__J, "-XX:SoftMaxHeapSize=65m");
     }
     gfsh.executeAndAssertThat(startServerCommand.getCommandString()).statusIsSuccess();
   }
