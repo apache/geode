@@ -104,7 +104,9 @@ signing {
   sign publishing.publications.maven
 }
 
-task install(dependsOn: publishToMavenLocal) {}
+tasks.register('install') {
+  dependsOn tasks.named('publishToMavenLocal')
+}
 
 
 tasks.withType(GenerateModuleMetadata) {

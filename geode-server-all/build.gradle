@@ -62,8 +62,10 @@ dependencies {
 
 // Override some things from java.gradle
 jar {
-  manifest {
-    attributes.put("Class-Path", configurations.runtimeClasspath.files.collect {it.name}.join(' '))
+  doFirst {
+    manifest {
+      attributes.put("Class-Path", configurations.runtimeClasspath.files.collect { it.name }.join(' '))
+    }
   }
 }
 

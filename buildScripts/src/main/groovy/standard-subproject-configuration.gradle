@@ -19,7 +19,7 @@ plugins {
   id 'geode-java'
   id 'dependency-resolution'
   id 'geode-test'
-//  id 'code-analysis'
+  id 'code-analysis'
   id 'multi-process-test'
   id 'spotless'
   id 'ide'

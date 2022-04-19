@@ -170,7 +170,8 @@ tasks.all { task ->
   }
 }
 
-task jarTest(type: Jar, dependsOn: testClasses) {
+tasks.register('jarTest', Jar) {
+  dependsOn testClasses
   description 'Assembles a jar archive of test classes.'
   from sourceSets.test.output
   classifier 'test'

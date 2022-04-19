@@ -19,7 +19,7 @@ plugins {
   id 'standard-subproject-configuration'
   id 'antlr'
   id 'geode-publish-java'
-  id 'pmd'
+  id 'geode-pmd'
   id 'jmh'
   id 'javaVersions'
 }
@@ -63,7 +63,8 @@ sourceSets {
 
 
 // Creates the version properties file and writes it to the classes dir
-task createVersionPropertiesFile(dependsOn: ':writeBuildInfo') {
+tasks.register('createVersionPropertiesFile') {
+  dependsOn rootProject.tasks.named('writeBuildInfo')
 
   def propertiesFile = file(generatedResources + "/org/apache/geode/internal/GemFireVersion.properties")
   def scmInfoFile = rootProject.tasks.writeBuildInfo.outputs.files
@@ -119,14 +120,16 @@ jar {
 
 jar.dependsOn(createVersionPropertiesFile)
 
-task raJar(type: Jar, dependsOn: classes) {
+tasks.register('raJar', Jar) {
+  dependsOn tasks.named('classes')
   description 'Assembles the jar archive that contains the JCA classes'
   from sourceSets.jca.output
   exclude 'org/apache/geode/ra/**'
   archiveFileName='ra.jar'
 }
 
-task jcaJar(type: Jar, dependsOn: raJar) {
+tasks.register('jcaJar', Jar) {
+  dependsOn tasks.named('raJar')
   description 'Assembles the jar archive that contains the JCA bundle'
   archiveBaseName='geode-jca'
   archiveExtension='rar'

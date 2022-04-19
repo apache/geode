@@ -16,19 +16,11 @@
  */
 
 plugins {
-  id 'checkstyle'
 //  id 'com.github.spotbugs'
-  id 'jacoco'
+  id 'jacoco' apply false
 }
 
 if (project.hasProperty("staticAnalysis")) {
-
-  //Checkstyle configuration
-  configurations.checkstyle {
-    dependencies.all { dep ->
-      dep.transitive = true
-    }
-  }
 
 //  //Findbugs configuration
 //
