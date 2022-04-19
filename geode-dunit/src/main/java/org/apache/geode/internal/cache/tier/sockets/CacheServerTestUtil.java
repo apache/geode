@@ -583,6 +583,16 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
         CONTROL_LOCK.notifyAll();
       }
     }
+
+    @Override
+    public void close() {
+      synchronized (CONTROL_LOCK) {
+        destroyEvents.clear();
+        createEvents.clear();
+        updateEvents.clear();
+        events.clear();
+      }
+    }
   }
 
   public static class ControlCqListener extends CqListenerAdapter {

@@ -493,7 +493,6 @@ public class DurableClientTestCase extends DurableClientTestBase {
       }
     });
 
-
     // Re-start server2
     server2VM.invoke(() -> createCacheServer(regionName, Boolean.TRUE,
         server2Port));
@@ -508,7 +507,6 @@ public class DurableClientTestCase extends DurableClientTestBase {
 
     // Verify the durable client received the updates
     checkListenerEvents(1, 1, -1, durableClientVM);
-
     // Stop the durable client, which discards the known entry
     disconnectDurableClient(true);
 
@@ -528,7 +526,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
     checkListenerEvents(2, 1, -1, durableClientVM);
 
     durableClientVM.invoke("Get", () -> {
-      await().untilAsserted(() -> {
+      await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
         Region<Object, Object> region = getCache().getRegion(regionName);
         assertThat(region).isNotNull();
 
@@ -566,7 +564,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
       @Override
       public void run2() throws CacheException {
 
-        await().until(() -> {
+        await().atMost(30, TimeUnit.SECONDS).until(() -> {
           CacheClientProxy proxy = getClientProxy();
           if (proxy == null) {
             return false;
@@ -624,10 +622,11 @@ public class DurableClientTestCase extends DurableClientTestBase {
     checkListenerEvents(1, 1, -1, durableClientVM);
 
     verifyDurableClientPresent(VERY_LONG_DURABLE_TIMEOUT_SECONDS, durableClientId, server1VM);
-    verifyDurableClientPresent(VERY_LONG_DURABLE_TIMEOUT_SECONDS, durableClientId, server2VM);
-
     waitUntilHARegionQueueSizeIsZero(server1VM);
-    waitUntilHARegionQueueSizeIsZero(server2VM);
+    if (redundancyLevel == 1) {
+      verifyDurableClientPresent(VERY_LONG_DURABLE_TIMEOUT_SECONDS, durableClientId, server2VM);
+      waitUntilHARegionQueueSizeIsZero(server2VM);
+    }
 
     // Stop the durable client
     disconnectDurableClient(true);
@@ -656,7 +655,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
     }
 
     durableClientVM.invoke("Get", () -> {
-      await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+      await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
         Region<Object, Object> region = getCache().getRegion(regionName);
         assertThat(region).isNotNull();
         // Register interest in all keys

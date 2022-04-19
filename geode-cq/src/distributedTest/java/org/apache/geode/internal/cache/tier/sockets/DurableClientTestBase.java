@@ -486,15 +486,11 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
   }
 
   static void checkNumberOfClientProxies(final int expected) {
-    await()
-        .until(() -> {
-          return expected == getNumberOfClientProxies();
-        });
+    await().atMost(30, SECONDS).until(() -> expected == getNumberOfClientProxies());
   }
 
   static void checkProxyIsAlive(final CacheClientProxy proxy) {
-    await()
-        .until(proxy::isAlive);
+    await().until(proxy::isAlive);
   }
 
   private static int getNumberOfClientProxies() {
