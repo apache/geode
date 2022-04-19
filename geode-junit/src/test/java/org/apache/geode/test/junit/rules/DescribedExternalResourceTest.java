@@ -26,7 +26,7 @@ import org.junit.runners.model.Statement;
 
 public class DescribedExternalResourceTest {
   @Test
-  void foo() {
+  void reportsErrorsFromBaseAndAfter() {
     Throwable thrownByBase = new RuntimeException("thrown by base");
     Throwable thrownByAfter = new RuntimeException("thrown by after");
 
