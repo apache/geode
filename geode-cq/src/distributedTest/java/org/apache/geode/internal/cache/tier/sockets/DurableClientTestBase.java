@@ -232,10 +232,9 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
     });
   }
 
-
   void waitUntilHARegionQueueSizeIsZero(VM serverVM) {
     serverVM.invoke(() -> {
-      await().until(() -> getClientProxy().getHARegionQueue().size() == 0);
+      await().atMost(60, SECONDS).until(() -> getClientProxy().getHARegionQueue().size() == 0);
     });
   }
 
@@ -244,11 +243,11 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
   }
 
   public void disconnectDurableClient(boolean keepAlive) {
-    printClientProxyState("Before");
+    // printClientProxyState("Before");
     durableClientVM.invoke("close durable client cache",
         () -> CacheServerTestUtil.closeCache(keepAlive));
     await().until(CacheServerTestUtil::getCache, nullValue());
-    printClientProxyState("after");
+    // printClientProxyState("after");
   }
 
   private void printClientProxyState(String st) {
@@ -711,14 +710,13 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
     });
   }
 
-  void checkCqListenerEvents(final String cqName, final int numEvents,
-      final int secondsToWait) {
+  void checkCqListenerEvents(final String cqName, final int numEvents, final int secondsToWait) {
     QueryService qs = getCache().getQueryService();
     CqQuery cq = qs.getCq(cqName);
     // Get the listener and wait for the appropriate number of events
     ControlCqListener listener =
         (ControlCqListener) cq.getCqAttributes().getCqListener();
-    listener.waitWhileNotEnoughEvents(secondsToWait * 1000, numEvents);
+    listener.waitWhileNotEnoughEvents(secondsToWait * 1000L, numEvents);
     assertThat(numEvents).isEqualTo(listener.events.size());
   }
 
@@ -732,7 +730,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
       // Get the listener and wait for the appropriate number of events
       ControlListener controlListener =
           (ControlListener) region.getAttributes().getCacheListeners()[0];
-      controlListener.waitWhileNotEnoughEvents(sleepMinutes * 60 * 1000, numberOfEntries,
+      controlListener.waitWhileNotEnoughEvents((long) sleepMinutes * 60 * 1000, numberOfEntries,
           controlListener.getEvents(eventType));
     });
   }
@@ -775,10 +773,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
     vm.invoke("Verify durable client", new CacheSerializableRunnable() {
       @Override
       public void run2() throws CacheException {
-
-        await()
-            .until(() -> getPool().isPrimaryUpdaterAlive());
-
+        await().until(() -> getPool().isPrimaryUpdaterAlive());
         assertThat(getPool().isPrimaryUpdaterAlive()).isTrue();
       }
     });
@@ -787,6 +782,4 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
   protected void closeCache(VM vm) {
     vm.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
   }
-
-
 }
