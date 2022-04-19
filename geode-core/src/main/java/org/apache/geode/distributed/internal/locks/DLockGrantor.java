@@ -544,6 +544,12 @@ public class DLockGrantor {
     }
   }
 
+  protected boolean hasMemberDeparted(InternalDistributedMember owner) {
+    synchronized (membersDepartedTime) {
+      return membersDepartedTime.containsKey(owner);
+    }
+  }
+
   /**
    * Returns transaction optimized lock batches that were created by the specified owner.
    * <p>
@@ -572,15 +578,17 @@ public class DLockGrantor {
   void recordMemberDepartedTime(InternalDistributedMember owner) {
     // Already held batchLocks; hold membersDepartedTime lock just for clarity
     synchronized (membersDepartedTime) {
-      long currentTime = getCurrentTime();
-      for (Iterator iterator = membersDepartedTime.values().iterator(); iterator.hasNext();) {
-        if ((long) iterator.next() < currentTime - departedMemberKeptInMapMilliSeconds) {
-          iterator.remove();
-        } else {
-          break;
+      if (!membersDepartedTime.containsKey(owner)) {
+        long currentTime = getCurrentTime();
+        for (Iterator iterator = membersDepartedTime.values().iterator(); iterator.hasNext();) {
+          if ((long) iterator.next() < currentTime - departedMemberKeptInMapMilliSeconds) {
+            iterator.remove();
+          } else {
+            break;
+          }
         }
+        membersDepartedTime.put(owner, currentTime);
       }
-      membersDepartedTime.put(owner, currentTime);
     }
   }
 
@@ -777,6 +785,10 @@ public class DLockGrantor {
     Assert.assertTrue(request.getRemoteThread() != null);
     if (request.getObjectName() instanceof DLockBatch) {
       handleLockBatch(request);
+      return;
+    }
+
+    if (hasMemberDeparted(request.getSender())) {
       return;
     }
 
@@ -1130,6 +1142,7 @@ public class DLockGrantor {
           }
           return;
         }
+        recordMemberDepartedTime(owner);
         try {
           DLockLessorDepartureHandler handler = dlock.getDLockLessorDepartureHandler();
           if (isDebugEnabled_DLS) {
