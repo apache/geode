@@ -1304,9 +1304,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   public boolean markAsDuplicateInTempQueueEvents(Object tailKey) {
     synchronized (queuedEventsSync) {
       final boolean isDebugEnabled = logger.isDebugEnabled();
-      Iterator<TmpQueueEvent> itr = tmpQueuedEvents.iterator();
-      while (itr.hasNext()) {
-        TmpQueueEvent event = itr.next();
+
+      for (TmpQueueEvent event : tmpQueuedEvents) {
         if (tailKey.equals(event.getEvent().getTailKey())) {
           if (isDebugEnabled) {
             logger.debug(
@@ -1317,6 +1316,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
           return true;
         }
       }
+
       return false;
     }
   }

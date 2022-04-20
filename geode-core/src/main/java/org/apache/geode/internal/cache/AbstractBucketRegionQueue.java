@@ -227,9 +227,8 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     if (queues != null) {
       ConcurrentParallelGatewaySenderQueue prq =
           (ConcurrentParallelGatewaySenderQueue) queues.toArray()[0];
-      // synchronized (prq.getBucketToTempQueueMap()) {
+
       BlockingQueue<GatewaySenderEventImpl> tempQueue = prq.getBucketTmpQueue(getId());
-      // .getBucketToTempQueueMap().get(getId());
       if (tempQueue != null && !tempQueue.isEmpty()) {
         synchronized (tempQueue) {
           Map<String, Map<Integer, List<Object>>> regionToDuplicateEventsMap =
