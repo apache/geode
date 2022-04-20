@@ -144,7 +144,7 @@ public class RequestDistributedLockWhileClosingCacheDistributedTest implements S
     assertThat(dLockService.isLockGrantor()).isTrue();
     DLockGrantor dLockGrantor = dLockService.getGrantor();
     DLockGrantor.DLockGrantToken grantToken = dLockGrantor.getGrantToken(lockName);
-//    assertThat(grantToken).isNull();
+    // assertThat(grantToken).isNull();
   }
 
   class TestDistributionMessageObserver extends DistributionMessageObserver implements

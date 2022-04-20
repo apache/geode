@@ -788,9 +788,9 @@ public class DLockGrantor {
       return;
     }
 
-//    if (hasMemberDeparted(request.getSender())) {
-//      return;
-//    }
+    // if (hasMemberDeparted(request.getSender())) {
+    // return;
+    // }
 
     waitWhileInitializing(); // calcWaitMillisFromNow
 
