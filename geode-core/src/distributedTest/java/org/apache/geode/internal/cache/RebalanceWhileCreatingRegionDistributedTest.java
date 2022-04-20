@@ -87,7 +87,7 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
 
   @Rule
   public DistributedExecutorServiceRule distributedExecutorServiceRule =
-      new DistributedExecutorServiceRule(50, 5);
+      new DistributedExecutorServiceRule(50, 2);
 
   private static final Logger logger = LogService.getLogger();
 
@@ -99,6 +99,7 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
 
   @Test
   public void testOnlineBackup() throws InterruptedException, IOException {
+    blackboard.initBlackboard();
     // Start Locator
     MemberVM locator = cluster.startLocatorVM(0);
 
@@ -111,8 +112,8 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
 
     String regionName = testName.getMethodName();
 
-    server1.invoke(() -> addDistributionMessageObserver(regionName));
-    server2.invoke(() -> addDistributionMessageObserver(regionName));
+//    server1.invoke(() -> addDistributionMessageObserver(regionName));
+//    server2.invoke(() -> addDistributionMessageObserver(regionName));
 
     // Create regions in each server
     server1.invoke(() -> createRegion(regionName, RegionShortcut.PARTITION_REDUNDANT_PERSISTENT));
@@ -124,10 +125,13 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
 //    server1.invoke(() -> {
       Region region = getCache().getRegion(regionName);
       region.put("ABC", "def");
+      blackboard.signalGate("RegionOps");
+      doConcurrentEntryOperations();
     });
 
     AsyncInvocation asyncInvocation2 = server1.invokeAsync(() -> {
 //    server2.invoke(() -> {
+      blackboard.waitForGate("RegionOps");
       doOnlineBackup();
     });
 
@@ -160,8 +164,9 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
 //    FileUtils.copyFileToDirectory(new File("/Users/jchen/workspace/geode/geode-core/build/distributedTest/"), server1.getWorkingDir());
 
     server1.invoke(() -> {
+      Thread.sleep(1000);
       PartitionedRegion partitionedRegion = (PartitionedRegion) getCache().getRegion(regionName);
-      List listOfMaps = partitionedRegion.getAllBucketEntries(0);
+      List<BucketDump> listOfMaps = partitionedRegion.getAllBucketEntries(0);
       Iterator iterator = listOfMaps.iterator();
       while (iterator.hasNext()) {
         BucketDump bucketDump = (BucketDump) iterator.next();
@@ -169,6 +174,9 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
         System.out.println("JC debug: bucketDump.getValues(): " + bucketDump.getValues());
         System.out.println("JC debug: bucketDump.getVersions(): " + bucketDump.getVersions());
       }
+      String result = compareBucketMaps(listOfMaps.get(0), listOfMaps.get(1));
+      System.out.println("JC debug: compareBucketMaps result:" + result);
+//      compareRVVs(new StringBuilder(), listOfMaps.get(0), listOfMaps.get(1));
     });
 
 //    asyncInvocation3.get();
@@ -195,7 +203,7 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
 //    });
   }
 
-  public static void deleteExistingDiskDirs(String dirPath) {
+  public void deleteExistingDiskDirs(String dirPath) {
     File currDir = new File(dirPath);
     File[] contents = currDir.listFiles();
     for (File aDir : contents) {
@@ -376,7 +384,7 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
     return true;
   }
 
-  protected static String compareBucketMaps(Object dump1, Object dump2) {
+  protected String compareBucketMaps(Object dump1, Object dump2) {
     BucketDump dump11 = (BucketDump) dump1;
     BucketDump dump21 = (BucketDump) dump2;
 
@@ -434,8 +442,7 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
     return aStr.toString();
   }
 
-
-  private static void compareRVVs(StringBuilder aStr, BucketDump dump1, BucketDump dump2) {
+  private void compareRVVs(StringBuilder aStr, BucketDump dump1, BucketDump dump2) {
     RegionVersionVector rvv1 = dump1.getRvv();
     RegionVersionVector rvv2 = dump2.getRvv();
     if (rvv1 == null) {
@@ -476,7 +483,7 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
     }
   }
 
-  private static String getBucketMapStr(Map<Object, Object> bucketMap) {
+  private String getBucketMapStr(Map<Object, Object> bucketMap) {
     String bucketMapStr = bucketMap.toString();
     StringBuilder reducedStr = new StringBuilder();
     int index = bucketMapStr.indexOf("{");
@@ -492,7 +499,7 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
     return reducedStr.toString();
   }
 
-  protected static void verifyValue(Object key, Object obj1, Object obj2) throws Exception {
+  protected void verifyValue(Object key, Object obj1, Object obj2) throws Exception {
     if (obj1 != null && obj2 != null) {
       verifyMyValue(key, obj1, obj2);
     } else if (obj1 == null) {
@@ -508,7 +515,7 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
     }
   }
 
-  public static void verifyMyValue(Object key, Object expectedValue, Object valueToCheck)
+  public void verifyMyValue(Object key, Object expectedValue, Object valueToCheck)
       throws Exception {
     if (valueToCheck == null) {
       if (expectedValue != null) {
@@ -520,13 +527,10 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
       throw new Exception("For key " + key + ", expected value to be "
           + expectedValue + ", but it is "
           + valueToCheck);
-    } else {
-      throw new Exception("Expected value for key " + key
-          + " to be " + expectedValue + ", but it is " + valueToCheck);
     }
   }
 
-  private static void verifyVersionTags(VersionTag version, VersionTag version2) throws Exception {
+  private void verifyVersionTags(VersionTag version, VersionTag version2) throws Exception {
     boolean equal = version == null && version2 == null
         || version != null & version2 != null && version.equals(version2);
     if (!equal) {
@@ -696,7 +700,7 @@ public class RebalanceWhileCreatingRegionDistributedTest implements Serializable
     partitionAttributesFactory.setRedundantCopies(1).setTotalNumBuckets(1);
     RegionFactory<Integer, Integer> regionFactory =
         getCache().createRegionFactory(shortcut);
-    regionFactory.setDiskStoreName(DISK_STORE_NAME).setDiskSynchronous(true)
+    regionFactory.setDiskStoreName(DISK_STORE_NAME).setDiskSynchronous(false)
         .setPartitionAttributes(partitionAttributesFactory.create());
     regionFactory.create(regionName);
   }
