@@ -477,8 +477,8 @@ public class InitialImageOperation {
               m.unfinishedKeys = keysOfUnfinishedOps;
               if (isDebugEnabled) {
                 logger.debug(
-                    "Region {} recovered with EndGII flag, rvv is {}. recovered rvv is {}. Do delta GII",
-                    this.region.getFullPath(), m.versionVector, recoveredRVV);
+                    "Region {} recovered with EndGII flag, rvv is {}. Received rvv is {}. Do delta GII",
+                    region.getFullPath(), m.versionVector, received_rvv);
               }
             }
           }
@@ -509,8 +509,8 @@ public class InitialImageOperation {
         }
 
         // do not remove the following log statement
-        logger.info("Region {} requesting initial image from {}",
-            new Object[] {this.region.getName(), recipient});
+        logger.info("Region {} requesting initial image from {}, recovered RVV is {}",
+            new Object[] {region.getName(), recipient, recoveredRVV});
 
         dm.putOutgoing(m);
         this.region.cache.getCancelCriterion().checkCancelInProgress(null);
