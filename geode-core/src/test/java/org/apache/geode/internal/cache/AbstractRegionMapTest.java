@@ -886,7 +886,7 @@ public class AbstractRegionMapTest {
   }
 
   @Test
-  public void initialImagePut_givenPutIfAbsentReturningRegionEntryAndSameTombstoneWillAttemptToRemoveREAndInvokeNothingElse()
+  public void initialImagePut_givenPutIfAbsentReturningRegionEntryAndSameTombstoneWillReprocessTheTombstone()
       throws RegionClearedException {
     ConcurrentMapWithReusableEntries map = mock(ConcurrentMapWithReusableEntries.class);
     RegionEntry entry = mock(RegionEntry.class);
@@ -911,8 +911,8 @@ public class AbstractRegionMapTest {
 
     arm.initialImagePut(KEY, 0, Token.TOMBSTONE, false, false, versionTag, null, false);
 
-    verify(map, times(1)).remove(eq(KEY), eq(createdEntry));
-    verify(entry, never()).initialImagePut(any(), anyLong(), any(), anyBoolean(), anyBoolean());
+    verify(map, times(0)).remove(eq(KEY), eq(createdEntry));
+    verify(entry, times(1)).initialImagePut(any(), anyLong(), any(), anyBoolean(), anyBoolean());
   }
 
   @Test

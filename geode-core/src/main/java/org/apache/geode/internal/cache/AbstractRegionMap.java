@@ -810,12 +810,6 @@ public abstract class AbstractRegionMap extends BaseRegionMap
                   Assert.assertTrue(entryVersion.getMemberID() != null,
                       "GII entry versions must have identifiers");
                   boolean isTombstone = (newValue == Token.TOMBSTONE);
-                  // don't reschedule the tombstone if it hasn't changed
-                  boolean isSameTombstone = oldRe.isTombstone() && isTombstone
-                      && oldRe.getVersionStamp().asVersionTag().equals(entryVersion);
-                  if (isSameTombstone) {
-                    return true;
-                  }
                   processVersionTagForGII(oldRe, owner, entryVersion, isTombstone, sender,
                       !wasRecovered || isSynchronizing);
 
