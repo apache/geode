@@ -83,7 +83,7 @@ public class MessageDispatcher extends LoggingThread {
   /**
    * Default value in milliseconds for waiting for re-authentication
    */
-  private static final long DEFAULT_RE_AUTHENTICATE_WAIT_TIME = 5000;
+  private static final long DEFAULT_RE_AUTHENTICATE_WAIT_TIME = 60 * 1000;
 
   /**
    * The queue of messages to be sent to the client
