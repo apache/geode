@@ -175,6 +175,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
         || name.equals("Tenured Gen") // Hitachi 1.5 GC
         || name.equals("Java heap") // IBM 1.5, 1.6 GC
         || name.equals("GenPauseless Old Gen") // azul C4/GPGC collector
+        || name.equals("ZHeap") // ZGC
 
         // Allow an unknown pool name to monitor
         || (HEAP_POOL != null && name.equals(HEAP_POOL));
