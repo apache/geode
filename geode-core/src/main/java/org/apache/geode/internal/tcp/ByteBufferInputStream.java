@@ -551,10 +551,9 @@ public class ByteBufferInputStream extends InputStream
     }
 
     /**
-     * Return true if the hardware supported unaligned reads from memory.
+     * Return true if the hardware supports unaligned reads from memory.
      */
-    private static boolean determineUnaligned() {
-      String arch = System.getProperty("os.arch");
+    static boolean determineUnaligned(final String arch) {
       if (arch == null) {
         return false;
       }
@@ -564,7 +563,7 @@ public class ByteBufferInputStream extends InputStream
           || arch.equals("ppc64") || arch.equals("ppc64le");
     }
 
-    private static final boolean unaligned = determineUnaligned();
+    private static final boolean unaligned = determineUnaligned(System.getProperty("os.arch"));
 
     @Override
     public short getShort() {
