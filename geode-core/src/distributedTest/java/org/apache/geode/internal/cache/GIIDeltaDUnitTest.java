@@ -1003,10 +1003,14 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     verifyDeltaSizeFromStats(R, 2, 0);
     verifyDiskRegionRVV();
 
-    // Now restart R again to re-do GII
+    // Close cache P then restart R to make sure R will recover from its own
+    // then restart P to re-do GII
+    closeCache(P);
     closeCache(R);
     createDistributedRegion(R);
-    waitForToVerifyRVV(R, memberP, 5, null, 0); // P's rvv=r5, gc=0
+    createDistributedRegion(P);
+    waitForToVerifyRVV(P, memberP, 5, null, 0); // P's rvv=r5, gc=0
+    verifyTombstoneExist(P, "key2", true, false);
     verifyTombstoneExist(R, "key2", true, false);
   }
 
@@ -1068,10 +1072,14 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
     changeForceFullGII(P, false, true);
     verifyDiskRegionRVV();
 
-    // Now restart R again to re-do GII
+    // Close cache P then restart R to make sure R will recover from its own
+    // then restart P to re-do GII
+    closeCache(P);
     closeCache(R);
     createDistributedRegion(R);
-    waitForToVerifyRVV(R, memberP, 5, null, 0); // P's rvv=r5, gc=0
+    createDistributedRegion(P);
+    waitForToVerifyRVV(P, memberP, 5, null, 0); // P's rvv=r5, gc=0
+    verifyTombstoneExist(P, "key2", true, false);
     verifyTombstoneExist(R, "key2", true, false);
   }
 
