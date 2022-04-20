@@ -43,12 +43,12 @@ public abstract class DescribedExternalResource implements TestRule {
         List<Throwable> errors = new ArrayList<Throwable>();
         try {
           base.evaluate();
-        } catch(Throwable e) {
+        } catch (Throwable e) {
           errors.add(e);
         } finally {
           try {
             after(description);
-          } catch(Throwable e) {
+          } catch (Throwable e) {
             errors.add(e);
           }
         }
