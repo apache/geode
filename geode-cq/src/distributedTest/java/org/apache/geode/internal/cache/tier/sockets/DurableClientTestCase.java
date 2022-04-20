@@ -77,7 +77,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
    * not
    */
   @Test
-  public void testSpecialDurableProperty() throws InterruptedException {
+  public void testSpecialDurableProperty() {
     final Properties jp = new Properties();
     jp.setProperty(GeodeGlossary.GEMFIRE_PREFIX + "SPECIAL_DURABLE", "true");
 
@@ -96,7 +96,7 @@ public class DurableClientTestCase extends DurableClientTestBase {
           true, jp));
 
       durableClientVM.invoke(() -> {
-        await().atMost(1 * HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, MINUTES)
+        await().atMost(HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, MINUTES)
             .pollInterval(100, MILLISECONDS)
             .until(CacheServerTestUtil::getCache, notNullValue());
       });
@@ -540,15 +540,13 @@ public class DurableClientTestCase extends DurableClientTestBase {
     checkListenerEvents(2, 1, -1, durableClientVM);
 
     // Verify that the 0 entry is not present, but that 2 is.
-    durableClientVM.invoke("Get", () -> {
-      await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
-        Region<Object, Object> region = getCache().getRegion(regionName);
-        assertThat(region).isNotNull();
+    durableClientVM.invoke("Get", () -> await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+      Region<Object, Object> region = getCache().getRegion(regionName);
+      assertThat(region).isNotNull();
 
-        assertThat(region.getEntry("0")).isNull();
-        assertThat(region.getEntry("2")).isNotNull();
-      });
-    });
+      assertThat(region.getEntry("0")).isNull();
+      assertThat(region.getEntry("2")).isNotNull();
+    }));
 
     // Stop server 1
     server1VM.invoke((SerializableRunnableIF) CacheServerTestUtil::closeCache);
@@ -685,14 +683,12 @@ public class DurableClientTestCase extends DurableClientTestBase {
     }
 
     // Verify that key 0 is not present
-    durableClientVM.invoke("Get", () -> {
-      await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
-        Region<Object, Object> region = getCache().getRegion(regionName);
-        assertThat(region).isNotNull();
+    durableClientVM.invoke("Get", () -> await().atMost(30, TimeUnit.SECONDS).untilAsserted(() -> {
+      Region<Object, Object> region = getCache().getRegion(regionName);
+      assertThat(region).isNotNull();
 
-        assertThat(region.getEntry("0")).isNull();
-      });
-    });
+      assertThat(region.getEntry("0")).isNull();
+    }));
 
     // put key 4
     publishEntries(publisherClientVM, 4, 1);

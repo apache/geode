@@ -40,8 +40,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;
@@ -65,18 +63,15 @@ import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
-import org.apache.geode.logging.internal.log4j.api.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 
 public class DurableClientTestBase extends JUnit4DistributedTestCase {
 
-  protected static final Logger logger = LogService.getLogger();
   private static final Duration VERY_LONG_DURABLE_CLIENT_TIMEOUT = Duration.ofMinutes(10);
   static final int VERY_LONG_DURABLE_TIMEOUT_SECONDS =
       (int) VERY_LONG_DURABLE_CLIENT_TIMEOUT.getSeconds();
@@ -92,7 +87,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
   String durableClientId;
 
   @Override
-  public final void postSetUp() throws Exception {
+  public final void postSetUp() {
     server1VM = VM.getVM(0);
     server2VM = VM.getVM(1);
     durableClientVM = VM.getVM(2);
@@ -132,7 +127,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
         Boolean.TRUE));
 
     durableClientVM.invoke(() -> {
-      await().atMost(1 * HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, MINUTES)
+      await().atMost(HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, MINUTES)
           .pollInterval(100, MILLISECONDS)
           .until(CacheServerTestUtil::getCache, notNullValue());
     });
@@ -151,7 +146,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
         addControlListener));
 
     durableClientVM.invoke(() -> {
-      await().atMost(1 * HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, MINUTES)
+      await().atMost(HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, MINUTES)
           .pollInterval(100, MILLISECONDS)
           .until(CacheServerTestUtil::getCache, notNullValue());
     });
@@ -165,19 +160,13 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
         addControlListener));
 
     durableClientVM.invoke(() -> {
-      await().atMost(1 * HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, MINUTES)
+      await().atMost(HEAVY_TEST_LOAD_DELAY_SUPPORT_MULTIPLIER, MINUTES)
           .pollInterval(100, MILLISECONDS)
           .until(CacheServerTestUtil::getCache, notNullValue());
     });
 
     // Send clientReady message
     sendClientReady(durableClientVM);
-  }
-
-
-  void verifySimpleDurableClient() {
-    verifyDurableClientNotPresent(DistributionConfig.DEFAULT_DURABLE_CLIENT_TIMEOUT,
-        durableClientId, durableClientVM);
   }
 
   void verifyDurableClientPresent(int durableClientTimeout, String durableClientId,
@@ -193,22 +182,11 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
   void waitForDurableClientPresence(String durableClientId, VM serverVM, final int count) {
     serverVM.invoke(() -> {
       if (count > 0) {
-
-        WaitCriterion ev = new WaitCriterion() {
-          @Override
-          public boolean done() {
-            checkNumberOfClientProxies(count);
-            CacheClientProxy proxy = getClientProxy();
-
-            return proxy != null && durableClientId.equals(proxy.getDurableId());
-          }
-
-          @Override
-          public String description() {
-            return null;
-          }
-        };
-        GeodeAwaitility.await().untilAsserted(ev);
+        GeodeAwaitility.await().until(() -> {
+          checkNumberOfClientProxies(count);
+          CacheClientProxy proxy = getClientProxy();
+          return proxy != null && durableClientId.equals(proxy.getDurableId());
+        });
       }
     });
   }
@@ -220,9 +198,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
 
       if (count > 0) {
         CacheClientProxy proxy = getClientProxy();
-
         assertThat(proxy).isNotNull();
-        // checkProxyIsAlive(proxy);
 
         // Verify that it is durable and its properties are correct
         assertThat(proxy.isDurable()).isTrue();
@@ -233,9 +209,8 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
   }
 
   void waitUntilHARegionQueueSizeIsZero(VM serverVM) {
-    serverVM.invoke(() -> {
-      await().atMost(60, SECONDS).until(() -> getClientProxy().getHARegionQueue().size() == 0);
-    });
+    serverVM.invoke(() -> await().atMost(60, SECONDS)
+        .until(() -> getClientProxy().getHARegionQueue().size() == 0));
   }
 
   public void closeDurableClient() {
@@ -251,19 +226,17 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
   }
 
   private void printClientProxyState(String st) {
-    CacheSerializableRunnable s =
-        new CacheSerializableRunnable("Logging CCCP and ServerConnection state") {
-          @Override
-          public void run2() throws CacheException {
-            // TODO Auto-generated method stub
-            getCache().getLogger()
-                .info(st + " CCP states: " + getAllClientProxyState());
-            getCache().getLogger().info(st + " CHM states: "
-                + printMap(
-                    ClientHealthMonitor.getInstance().getConnectedClients(null)));
-          }
-        };
-    server1VM.invoke(s);
+    server1VM.invoke("Logging CCCP and ServerConnection state", new CacheSerializableRunnable() {
+      @Override
+      public void run2() throws CacheException {
+        // TODO Auto-generated method stub
+        getCache().getLogger()
+            .info(st + " CCP states: " + getAllClientProxyState());
+        getCache().getLogger().info(st + " CHM states: "
+            + printMap(
+                ClientHealthMonitor.getInstance().getConnectedClients(null)));
+      }
+    });
   }
 
   private static String printMap(Map<String, Object[]> m) {
@@ -333,7 +306,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
   // The client will then be able to continue, and get rejected
   // Then we proceed to drain and release all locks
   // The client will then reconnect
-  public class RejectClientReconnectTestHook implements CacheClientProxy.TestHook {
+  public static class RejectClientReconnectTestHook implements CacheClientProxy.TestHook {
     final CountDownLatch reconnectLatch = new CountDownLatch(1);
     final CountDownLatch continueDrain = new CountDownLatch(1);
     volatile boolean clientWasRejected = false;
@@ -379,7 +352,8 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
    * wait to continue server will be unblocked, and rejected client will the be unlocked after
    * server is rejected and continue
    */
-  public class CqExceptionDueToActivatingClientTestHook implements CacheClientProxy.TestHook {
+  public static class CqExceptionDueToActivatingClientTestHook
+      implements CacheClientProxy.TestHook {
     final CountDownLatch unblockDrain = new CountDownLatch(1);
     final CountDownLatch unblockClient = new CountDownLatch(1);
     final CountDownLatch finish = new CountDownLatch(1);
@@ -486,10 +460,6 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
 
   static void checkNumberOfClientProxies(final int expected) {
     await().atMost(30, SECONDS).until(() -> expected == getNumberOfClientProxies());
-  }
-
-  static void checkProxyIsAlive(final CacheClientProxy proxy) {
-    await().until(proxy::isAlive);
   }
 
   private static int getNumberOfClientProxies() {
@@ -705,9 +675,7 @@ public class DurableClientTestBase extends JUnit4DistributedTestCase {
    */
   void checkCqListenerEvents(VM vm, final String cqName, final int numEvents,
       final int secondsToWait) {
-    vm.invoke(() -> {
-      checkCqListenerEvents(cqName, numEvents, secondsToWait);
-    });
+    vm.invoke(() -> checkCqListenerEvents(cqName, numEvents, secondsToWait));
   }
 
   void checkCqListenerEvents(final String cqName, final int numEvents, final int secondsToWait) {
