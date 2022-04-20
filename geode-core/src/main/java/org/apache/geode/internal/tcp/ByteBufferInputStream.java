@@ -21,8 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -556,16 +554,14 @@ public class ByteBufferInputStream extends InputStream
      * Return true if the hardware supported unaligned reads from memory.
      */
     private static boolean determineUnaligned() {
-      try {
-        Class c = Class.forName("java.nio.Bits");
-        Method m = c.getDeclaredMethod("unaligned");
-        m.setAccessible(true);
-        return (boolean) m.invoke(null);
-      } catch (ClassNotFoundException | NoSuchMethodException | SecurityException
-          | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+      String arch = System.getProperty("os.arch");
+      if (arch == null) {
         return false;
-        // throw new IllegalStateException("Could not invoke java.nio.Bits.unaligned()", e);
       }
+      // the following list is what JDK 1.8 uses in java.nio.Bits.unaligned
+      return arch.equals("i386") || arch.equals("x86")
+          || arch.equals("amd64") || arch.equals("x86_64")
+          || arch.equals("ppc64") || arch.equals("ppc64le");
     }
 
     private static final boolean unaligned = determineUnaligned();
