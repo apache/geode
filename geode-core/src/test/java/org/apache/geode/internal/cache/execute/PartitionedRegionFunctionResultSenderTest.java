@@ -17,12 +17,13 @@
 package org.apache.geode.internal.cache.execute;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.Test;
 
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -43,122 +44,104 @@ public class PartitionedRegionFunctionResultSenderTest {
 
   @Test
   public void whenResponseToClientInLastResultFailsEndResultsIsCalled_OnlyLocal_NotOnlyRemote() {
-    // arrange
-    Mockito.doThrow(new FunctionException()).when(serverToClientFunctionResultSender)
-        .lastResult(Mockito.any(), Mockito.any());
+    doThrow(new FunctionException()).when(serverToClientFunctionResultSender)
+        .lastResult(any(), any());
     PartitionedRegionFunctionResultSender sender =
         new PartitionedRegionFunctionResultSender(dm,
             region, 1, rc, serverToClientFunctionResultSender, true, false, true,
             new TestFunction(), new int[2]);
 
-    // act
     try {
       sender.lastResult(new FunctionException());
     } catch (FunctionException expected) {
     }
 
-    // assert
     assertThat(rc.isEndResultsCalled()).isEqualTo(true);
   }
 
   @Test
   public void whenResponseToClientInLastResultFailsEndResultsIsCalled_NotOnlyLocal_OnlyRemote() {
-    // arrange
-    Mockito.doThrow(new FunctionException()).when(serverToClientFunctionResultSender)
-        .lastResult(Mockito.any(), Mockito.any());
+    doThrow(new FunctionException()).when(serverToClientFunctionResultSender)
+        .lastResult(any(), any());
     PartitionedRegionFunctionResultSender sender =
         new PartitionedRegionFunctionResultSender(dm,
             region, 1, rc, serverToClientFunctionResultSender, false, true, true,
             new TestFunction(), new int[2], (x, y) -> functionStats);
 
-    // act
     try {
       sender.lastResult(new FunctionException(), true, rc, null);
     } catch (FunctionException expected) {
     }
 
-    // assert
     assertThat(rc.isEndResultsCalled()).isEqualTo(true);
   }
 
   @Test
   public void whenResponseToClientInLastResultFailsEndResultsIsCalled_NotOnlyLocal_NotOnlyRemote() {
-    // arrange
-    Mockito.doThrow(new FunctionException()).when(serverToClientFunctionResultSender)
-        .lastResult(Mockito.any(), Mockito.any());
+    doThrow(new FunctionException()).when(serverToClientFunctionResultSender)
+        .lastResult(any(), any());
     PartitionedRegionFunctionResultSender sender =
         new PartitionedRegionFunctionResultSender(dm,
             region, 1, rc, serverToClientFunctionResultSender, false, false, true,
             new TestFunction(), new int[2], (x, y) -> functionStats);
 
-    // act
     sender.sendException(new FunctionException());
     try {
       sender.lastResult(new FunctionException(), true, rc, null);
     } catch (FunctionException expected) {
     }
 
-    // assert
     assertThat(rc.isEndResultsCalled()).isEqualTo(true);
   }
 
   @Test
   public void whenResponseToClientInSendResultFailsEndResultsIsCalled_OnlyLocal_NotOnlyRemote() {
-    // arrange
-    Mockito.doThrow(new FunctionException()).when(serverToClientFunctionResultSender)
-        .sendResult(Mockito.any(), Mockito.any());
+    doThrow(new FunctionException()).when(serverToClientFunctionResultSender)
+        .sendResult(any(), any());
     PartitionedRegionFunctionResultSender sender =
         new PartitionedRegionFunctionResultSender(dm,
             region, 1, rc, serverToClientFunctionResultSender, true, false, true,
             new TestFunction(), new int[2]);
 
-    // act
     try {
       sender.sendResult(new FunctionException());
     } catch (FunctionException expected) {
     }
 
-    // assert
     assertThat(rc.isEndResultsCalled()).isEqualTo(true);
   }
 
   @Test
   public void whenResponseToClientInSendResultFailsEndResultsIsCalled_NotOnlyLocal_OnlyRemote() {
-    // arrange
-    Mockito.doThrow(new FunctionException()).when(serverToClientFunctionResultSender)
-        .sendResult(Mockito.any(), Mockito.any());
+    doThrow(new FunctionException()).when(serverToClientFunctionResultSender)
+        .sendResult(any(), any());
     PartitionedRegionFunctionResultSender sender =
         new PartitionedRegionFunctionResultSender(dm,
             region, 1, rc, serverToClientFunctionResultSender, false, true, true,
             new TestFunction(), new int[2], (x, y) -> functionStats);
 
-    // act
     try {
       sender.sendResult(new FunctionException());
     } catch (FunctionException expected) {
     }
 
-    // assert
     assertThat(rc.isEndResultsCalled()).isEqualTo(true);
   }
 
   @Test
   public void whenResponseToClientInSendResultFailsEndResultsIsCalled_NotOnlyLocal_NotOnlyRemote() {
-    // arrange
-    Mockito.doThrow(new FunctionException()).when(serverToClientFunctionResultSender)
-        .sendResult(Mockito.any(), Mockito.any());
+    doThrow(new FunctionException()).when(serverToClientFunctionResultSender)
+        .sendResult(any(), any());
     PartitionedRegionFunctionResultSender sender =
         new PartitionedRegionFunctionResultSender(dm,
             region, 1, rc, serverToClientFunctionResultSender, false, false, true,
             new TestFunction(), new int[2], (x, y) -> functionStats);
 
-    // act
     try {
       sender.sendResult(new FunctionException());
     } catch (FunctionException expected) {
     }
 
-    // assert
     assertThat(rc.isEndResultsCalled()).isEqualTo(true);
   }
 
