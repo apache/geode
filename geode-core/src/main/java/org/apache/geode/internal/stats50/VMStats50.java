@@ -143,6 +143,7 @@ public class VMStats50 implements VMStatsContract {
   private static final int thread_cpuTimeId;
   private static final int thread_userTimeId;
 
+  @Immutable
   private static final BufferPoolStats bufferPoolStats;
 
   static {
