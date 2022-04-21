@@ -21,6 +21,8 @@ import static org.apache.geode.cache.query.dunit.SecurityTestUtils.createAndExec
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_LOG_LEVEL;
+import static org.apache.geode.internal.lang.SystemProperty.DEFAULT_PREFIX;
+import static org.apache.geode.internal.lang.SystemPropertyHelper.RE_AUTHENTICATE_WAIT_TIME;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -61,8 +63,8 @@ public class AuthExpirationDistributedTest {
   public ServerStarterRule server = new ServerStarterRule()
       .withSecurityManager(ExpirableSecurityManager.class)
       .withProperty(SECURITY_LOG_LEVEL, "debug")
+      .withSystemProperty(DEFAULT_PREFIX + RE_AUTHENTICATE_WAIT_TIME, "5000")
       .withRegion(RegionShortcut.REPLICATE, "region");
-
 
   private ClientVM clientVM;
 
