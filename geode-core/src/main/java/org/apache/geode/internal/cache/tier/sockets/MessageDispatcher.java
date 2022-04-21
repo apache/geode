@@ -577,12 +577,11 @@ public class MessageDispatcher extends LoggingThread {
       return false;
     }
 
+    logger.warn(
+        "Authentication expired for a client with a version less than Geode 1.15. Cannot re-authenticate an older client "
+            + "that has a server to client queue for CQs or interest registrations. "
+            + "Please upgrade your client to Geode 1.15 or greater to allow re-authentication.");
     synchronized (_stopDispatchingLock) {
-      String message =
-          "Authentication expired for a client with a version less than Geode 1.15. Cannot re-authenticate an older client "
-              + "that has a server to client queue for CQs or interest registrations. "
-              + "Please upgrade your client to Geode 1.15 or greater to allow re-authentication.";
-      logger.warn(message);
       pauseOrUnregisterProxy(expired);
     }
     return true;
