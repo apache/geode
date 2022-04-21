@@ -74,8 +74,6 @@ public class DurableClientBug39997DUnitTest extends JUnit4CacheTestCase {
       } catch (NoSubscriptionServersAvailableException expected) {
         // this is expected
       }
-      cache.readyForEvents();
-
     });
 
     vm1.invoke(() -> {
