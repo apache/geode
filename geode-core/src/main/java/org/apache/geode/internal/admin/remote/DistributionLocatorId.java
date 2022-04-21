@@ -304,7 +304,7 @@ public class DistributionLocatorId implements java.io.Serializable {
   /**
    * @since GemFire 5.7
    */
-  public @NotNull String getHostnameForClients() {
+  public @Nullable String getHostnameForClients() {
     return hostnameForClients;
   }
 

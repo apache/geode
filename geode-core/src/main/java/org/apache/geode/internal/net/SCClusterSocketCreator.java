@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.net;
 
+import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -50,6 +52,9 @@ class SCClusterSocketCreator extends ClusterSocketCreatorImpl {
   @Override
   protected ServerSocket createServerSocket(int nport, int backlog, InetAddress bindAddr,
       int socketBufferSize, boolean sslConnection) throws IOException {
+    System.out.printf("BGB HERE sslConnection: %s, binding socket at: %s%n", sslConnection,
+        getStackTrace(new Throwable()));
+
     coreSocketCreator.printConfig();
     if (!sslConnection) {
       return super.createServerSocket(nport, backlog, bindAddr, socketBufferSize, sslConnection);
@@ -67,6 +72,10 @@ class SCClusterSocketCreator extends ClusterSocketCreatorImpl {
     if (socketBufferSize != -1) {
       serverSocket.setReceiveBufferSize(socketBufferSize);
     }
+    System.out.printf("BGB HERE sslConnection: %s, binding socket at: %s%n", sslConnection,
+        getStackTrace(new Throwable()));
+    System.out.printf("BGB binding bindAddr: %s, nport: %d%n",
+        bindAddr, nport);
     serverSocket.bind(new InetSocketAddress(bindAddr, nport), backlog);
     finishServerSocket(serverSocket);
     return serverSocket;

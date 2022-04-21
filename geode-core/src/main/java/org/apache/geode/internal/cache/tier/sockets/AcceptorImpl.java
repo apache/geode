@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
 import static org.apache.geode.internal.cache.tier.CommunicationMode.ClientToServerForQueue;
 import static org.apache.geode.internal.cache.tier.sockets.Handshake.REPLY_REFUSED;
@@ -576,6 +577,8 @@ public class AcceptorImpl implements Acceptor, Runnable {
           } catch (SocketException e) {
             if (System.currentTimeMillis() > tilt) {
               throw e;
+            } else {
+              System.out.printf("BGB caught: %s%n", getStackTrace(e));
             }
           }
 
@@ -1610,6 +1613,11 @@ public class AcceptorImpl implements Acceptor, Runnable {
           thread.interrupt();
         }
         try {
+          System.out.printf(
+              "BGB in AcceptorImpl.close() closing server socket bound to port: %s, %s%n",
+              serverSock.getLocalPort(),
+              getStackTrace(new Throwable()));
+
           serverSock.close();
         } catch (IOException ignore) {
         }

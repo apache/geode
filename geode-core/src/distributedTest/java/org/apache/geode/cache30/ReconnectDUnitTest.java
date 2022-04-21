@@ -44,10 +44,10 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.ThreadUtils.join;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
@@ -62,6 +62,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -98,7 +99,6 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -106,12 +106,15 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableCallable;
+import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.IdentifiableCallable;
+import org.apache.geode.test.dunit.rules.DistributedExecutorServiceRule;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @SuppressWarnings("serial")
@@ -126,6 +129,10 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
 
   static Properties dsProperties;
   static String fileSeparator = File.separator;
+
+  @ClassRule
+  public static final DistributedExecutorServiceRule executorServiceRule =
+      new DistributedExecutorServiceRule(1, 3);
 
   public ReconnectDUnitTest() {
     super();
@@ -310,9 +317,9 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
 
     IgnoredException.addIgnoredException("killing member's ds");
 
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+    final Host host = Host.getHost(0);
+    final VM puttingVM = host.getVM(0);
+    final VM reconnectingVM = host.getVM(1);
 
     final int locPort = locatorPort;
     final int secondLocPort = AvailablePortHelper.getRandomAvailableTCPPort();
@@ -320,151 +327,128 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     Invoke
         .invokeInEveryVM(() -> DistributedTestUtils.deleteLocatorStateFile(locPort, secondLocPort));
 
-
     final String xmlFileLoc = (new File(".")).getAbsolutePath();
 
-    SerializableCallable create1 =
-        new SerializableCallable("Create Cache and Regions from cache.xml") {
-          @Override
-          public Object call() throws CacheException {
-            locatorPort = locPort;
-            Properties props = getDistributedSystemProperties();
-            props.put(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
-            props.put(MAX_WAIT_TIME_RECONNECT, "1000");
-            cache = (InternalCache) new CacheFactory(props).create();
-            Region myRegion = cache.getRegion("root" + SEPARATOR + "myRegion");
-            ReconnectDUnitTest.savedSystem = cache.getDistributedSystem();
-            myRegion.put("MyKey1", "MyValue1");
-            return savedSystem.getDistributedMember();
-          }
-        };
+    final SerializableCallableIF<DistributedMember> createRegionsAndPutSynchronously =
+        new IdentifiableCallable<>(
+            "Create Cache and Regions from cache.xml",
+            () -> {
+              locatorPort = locPort;
+              final Properties props = getDistributedSystemProperties();
+              props.put(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
+              props.put(MAX_WAIT_TIME_RECONNECT, "1000");
+              cache = (InternalCache) new CacheFactory(props).create();
+              final Region<Object, Object> myRegion =
+                  cache.getRegion("root" + SEPARATOR + "myRegion");
+              ReconnectDUnitTest.savedSystem = cache.getDistributedSystem();
+              myRegion.put("MyKey1", "MyValue1");
+              return savedSystem.getDistributedMember();
+            });
 
-    SerializableCallable create2 =
-        new SerializableCallable("Create Cache and Regions from cache.xml") {
-          @Override
-          public Object call() throws CacheException {
-            locatorPort = locPort;
-            final Properties props = getDistributedSystemProperties();
-            props.put(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
-            props.put(MAX_WAIT_TIME_RECONNECT, "5000");
-            props.put(START_LOCATOR, "localhost[" + secondLocPort + "]");
-            props.put(LOCATORS, props.get(LOCATORS) + ",localhost[" + secondLocPort + "]");
-            getSystem(props);
-            cache = getCache();
-            ReconnectDUnitTest.savedSystem = cache.getDistributedSystem();
-            Region myRegion = cache.getRegion("root" + SEPARATOR + "myRegion");
-            myRegion.put("Mykey2", "MyValue2");
-            assertNotNull(myRegion.get("MyKey1"));
-            if (createInAppToo) {
-              Thread recreateCacheThread = new Thread("ReconnectDUnitTest.createInAppThread") {
-                @Override
-                public void run() {
-                  while (!cache.isClosed()) {
-                    Wait.pause(100);
-                  }
-                  try {
-                    cache = (InternalCache) new CacheFactory(props).create();
-                    System.err.println(
-                        "testReconnectCollidesWithApplication failed - application thread was able to create a cache");
-                  } catch (IllegalStateException cacheExists) {
-                    // expected
-                  }
-                }
-              };
-              recreateCacheThread.setDaemon(true);
-              recreateCacheThread.start();
-            }
-            return cache.getDistributedSystem().getDistributedMember();
-          }
-        };
+    puttingVM.invoke("Create Cache and Regions from cache.xml", createRegionsAndPutSynchronously);
 
-    vm0.invoke(create1);
-    final InternalDistributedMember dm = (InternalDistributedMember) vm1.invoke(create2);
-
-    IgnoredException.addIgnoredException("ForcedDisconnectException");
-    forceDisconnect(vm1);
-
-    DistributedMember newdm =
-        (DistributedMember) vm1.invoke(new SerializableCallable("wait for reconnect(1)") {
-          @Override
-          public Object call() {
-            final DistributedSystem ds = savedSystem;
-            savedSystem = null;
-            GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
-              @Override
-              public boolean done() {
-                return ds.isReconnecting();
+    // synchronous invocation
+    final InternalDistributedMember dm = reconnectingVM.invoke(
+        "Create Cache and Regions from cache.xml and start locator and get MyKey1",
+        () -> {
+          locatorPort = locPort;
+          final Properties props = getDistributedSystemProperties();
+          props.put(CACHE_XML_FILE, xmlFileLoc + fileSeparator + "MyDisconnect-cache.xml");
+          props.put(MAX_WAIT_TIME_RECONNECT, "5000");
+          props.put(START_LOCATOR, "localhost[" + secondLocPort + "]");
+          props.put(LOCATORS, props.get(LOCATORS) + ",localhost[" + secondLocPort + "]");
+          getSystem(props);
+          cache = getCache();
+          ReconnectDUnitTest.savedSystem = cache.getDistributedSystem();
+          final Region<Object, Object> myRegion = cache.getRegion("root" + SEPARATOR + "myRegion");
+          myRegion.put("Mykey2", "MyValue2");
+          assertThat(myRegion.get("MyKey1")).isNotNull();
+          if (createInAppToo) {
+            executorServiceRule.submit(() -> {
+              while (!cache.isClosed()) {
+                Wait.pause(100);
               }
-
-              @Override
-              public String description() {
-                return "waiting for ds to begin reconnecting";
+              try {
+                cache = (InternalCache) new CacheFactory(props).create();
+                System.err.println(
+                    "testReconnectCollidesWithApplication failed - application thread was able to create a cache");
+              } catch (IllegalStateException cacheExists) {
+                // expected
               }
             });
-            System.out.println("entering reconnect wait for " + ds);
-            System.out.println("ds.isReconnecting() = " + ds.isReconnecting());
-            boolean failure = true;
-            try {
-              ds.waitUntilReconnected(getTimeout().toMillis(), MILLISECONDS);
-              savedSystem = ds.getReconnectedSystem();
-              locator = getLocator();
-              assertTrue("Expected system to be restarted", ds.getReconnectedSystem() != null);
-              assertTrue("Expected system to be running", ds.getReconnectedSystem().isConnected());
-              assertTrue("Expected there to be a locator", locator != null);
-              assertTrue("Expected locator to be restarted",
-                  !((InternalLocator) locator).isStopped());
-              failure = false;
-              cache = ((InternalLocator) locator).getCache();
-              system = cache.getInternalDistributedSystem();
-              return ds.getReconnectedSystem().getDistributedMember();
-            } catch (InterruptedException e) {
-              System.err.println("interrupted while waiting for reconnect");
-              return null;
-            } finally {
-              if (failure) {
-                ds.disconnect();
-              }
+          }
+          return (InternalDistributedMember) cache.getDistributedSystem().getDistributedMember();
+        });
+
+    IgnoredException.addIgnoredException("ForcedDisconnectException");
+    forceDisconnect(reconnectingVM);
+
+    // synchronous invocation
+    final DistributedMember newdm = reconnectingVM.invoke(
+        "wait for reconnect(1)",
+        () -> {
+          final DistributedSystem ds = savedSystem;
+          savedSystem = null;
+          await().alias("waiting for ds to begin reconnecting")
+              .untilAsserted(() -> assertThat(ds.isReconnecting()).isTrue());
+          System.out.println("entering reconnect wait for " + ds);
+          System.out.println("ds.isReconnecting() = " + ds.isReconnecting());
+          boolean failure = true;
+          try {
+            ds.waitUntilReconnected(getTimeout().toMillis(), MILLISECONDS);
+            savedSystem = ds.getReconnectedSystem();
+            locator = getLocator();
+            assertThat(ds.getReconnectedSystem()).as("Expected system to be restarted").isNotNull();
+            assertThat(ds.getReconnectedSystem().isConnected()).as("Expected system to be running")
+                .isTrue();
+            assertThat(locator).as("Expected there to be a locator").isNotNull();
+            assertThat(((InternalLocator) locator).isStopped())
+                .as("Expected locator to be restarted").isFalse();
+            failure = false;
+            cache = ((InternalLocator) locator).getCache();
+            system = cache.getInternalDistributedSystem();
+            return ds.getReconnectedSystem().getDistributedMember();
+          } catch (InterruptedException e) {
+            System.err.println("interrupted while waiting for reconnect");
+            return null;
+          } finally {
+            if (failure) {
+              ds.disconnect();
             }
           }
         });
-    assertNotSame(dm, newdm);
+
+    assertThat(newdm).as("expected a reconnect to occur in member").isNotSameAs(dm);
     // force another reconnect and show that stopReconnecting works
-    forceDisconnect(vm1);
-    boolean stopped = (Boolean) vm1.invoke(new SerializableCallable("wait for reconnect and stop") {
-      @Override
-      public Object call() {
-        final DistributedSystem ds = savedSystem;
-        savedSystem = null;
-        GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
-          @Override
-          public boolean done() {
-            return ds.isReconnecting() || ds.getReconnectedSystem() != null;
-          }
+    forceDisconnect(reconnectingVM);
 
-          @Override
-          public String description() {
-            return "waiting for reconnect to commence in " + ds;
+    // synchronous invocation
+    final boolean stopped = reconnectingVM.invoke(
+        "wait for reconnect and stop",
+        () -> {
+          final DistributedSystem ds = savedSystem;
+          savedSystem = null;
+          waitToStartReconnecting(ds,
+              "waiting for reconnect to commence in " + ds);
+          ds.stopReconnecting();
+          assertThat(ds.isReconnecting()).isFalse();
+          final DistributedSystem newDs = ds.getReconnectedSystem();
+          if (newDs != null) {
+            System.err.println("expected distributed system to be disconnected: " + newDs);
+            newDs.disconnect();
+            return false;
           }
-
+          return true;
         });
-        ds.stopReconnecting();
-        assertFalse(ds.isReconnecting());
-        DistributedSystem newDs = ds.getReconnectedSystem();
-        if (newDs != null) {
-          System.err.println("expected distributed system to be disconnected: " + newDs);
-          newDs.disconnect();
-          return false;
-        }
-        return true;
-      }
-    });
-    assertTrue("expected DistributedSystem to disconnect", stopped);
+    assertThat(stopped).as("expected DistributedSystem to disconnect").isTrue();
 
-    // recreate the system in vm1 without a locator and crash it
-    DistributedMember evenNewerdm = (DistributedMember) vm1.invoke(create1);
-    forceDisconnect(vm1);
-    newdm = waitForReconnect(vm1);
-    assertNotSame("expected a reconnect to occur in member", evenNewerdm, newdm);
+    final DistributedMember newerDm =
+        reconnectingVM.invoke(
+            "recreate the system in vm1 without a locator and crash it",
+            createRegionsAndPutSynchronously);
+    forceDisconnect(reconnectingVM);
+    final DistributedMember newestDm = waitForReconnect(reconnectingVM);
+    assertThat(newerDm == newestDm).as("expected a reconnect to occur in member").isFalse();
     Invoke
         .invokeInEveryVM(() -> DistributedTestUtils.deleteLocatorStateFile(locPort, secondLocPort));
   }
@@ -493,44 +477,32 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
   }
 
   private DistributedMember waitForReconnect(VM vm) {
-    return (DistributedMember) vm
-        .invoke(new SerializableCallable("wait for Reconnect and return ID") {
-          @Override
-          public Object call() {
-            out.println("waitForReconnect invoked");
-            final DistributedSystem ds = savedSystem;
-            savedSystem = null;
-            GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
-              @Override
-              public boolean done() {
-                return ds.isReconnecting();
-              }
-
-              @Override
-              public String description() {
-                return "waiting for ds to begin reconnecting";
-              }
-            });
-            long waitTime = 600;
-            System.out.println("VM" + VM.getCurrentVMNum() + " waiting up to "
-                + waitTime + " seconds for reconnect to complete");
-            try {
-              ds.waitUntilReconnected(waitTime, SECONDS);
-            } catch (InterruptedException e) {
-              fail("interrupted while waiting for reconnect");
-            }
-            assertTrue("expected system to be reconnected", ds.getReconnectedSystem() != null);
-            int oldViewId =
-                getDistribution(ds).getLocalMember().getVmViewId();
-            int newViewId =
-                ((InternalDistributedMember) ds.getReconnectedSystem().getDistributedMember())
-                    .getVmViewId();
-            if (!(newViewId > oldViewId)) {
-              fail("expected a new ID to be assigned.  oldViewId=" + oldViewId + "; newViewId="
-                  + newViewId);
-            }
-            return ds.getReconnectedSystem().getDistributedMember();
+    return vm
+        .invoke("wait for Reconnect and return ID", () -> {
+          out.println("waitForReconnect invoked");
+          final DistributedSystem ds = savedSystem;
+          savedSystem = null;
+          await().alias("waiting for ds to begin reconnecting")
+              .untilAsserted(() -> assertThat(ds.isReconnecting()).isTrue());
+          long waitTime = 600;
+          System.out.println("VM" + VM.getCurrentVMNum() + " waiting up to "
+              + waitTime + " seconds for reconnect to complete");
+          try {
+            ds.waitUntilReconnected(waitTime, SECONDS);
+          } catch (InterruptedException e) {
+            fail("interrupted while waiting for reconnect");
           }
+          assertThat(ds.getReconnectedSystem())
+              .as("expected system to be reconnected").isNotNull();
+          int oldViewId =
+              getDistribution(ds).getLocalMember().getVmViewId();
+          int newViewId =
+              ((InternalDistributedMember) ds.getReconnectedSystem().getDistributedMember())
+                  .getVmViewId();
+          assertThat(newViewId)
+              .as("expected a new ID to be assigned")
+              .isGreaterThan(oldViewId);
+          return ds.getReconnectedSystem().getDistributedMember();
         });
   }
 
@@ -882,7 +854,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         return "waiting for event";
       }
     };
-    GeodeAwaitility.await().untilAsserted(ev);
+    await().untilAsserted(ev);
 
     VM vm2 = host.getVM(2);
     if (roleLossAsync.isAlive()) {
@@ -1068,7 +1040,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run() {
         final GemFireCacheImpl cache = savedCache;
-        GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
+        await().untilAsserted(new WaitCriterion() {
           @Override
           public boolean done() {
             return cache.isReconnecting();
@@ -1129,7 +1101,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     forceDisconnect(null);
 
     final GemFireCacheImpl cache = savedCache;
-    GeodeAwaitility.await().untilAsserted(new WaitCriterion() {
+    await().untilAsserted(new WaitCriterion() {
       @Override
       public boolean done() {
         return cache.isReconnecting()
@@ -1261,38 +1233,38 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
   }
 
   public boolean forceDisconnect(VM vm) throws Exception {
-    SerializableCallable fd = new SerializableCallable("crash distributed system") {
-      @Override
-      public Object call() throws Exception {
-        // since the system will disconnect and attempt to reconnect
-        // a new system the old reference to DTC.system can cause
-        // trouble, so we first null it out.
-        nullSystem();
-        final Locator oldLocator = Locator.getLocator();
-        final DistributedSystem msys = cache.getDistributedSystem();
-        MembershipManagerHelper.crashDistributedSystem(msys);
-        if (oldLocator != null) {
-          WaitCriterion wc = new WaitCriterion() {
-            @Override
-            public boolean done() {
-              return msys.isReconnecting() || msys.getReconnectedSystem() != null;
-            }
-
-            @Override
-            public String description() {
-              return "waiting for locator to start reconnecting: " + oldLocator;
-            }
-          };
-          GeodeAwaitility.await().untilAsserted(wc);
-        }
-        return true;
-      }
-    };
+    final SerializableCallableIF<Boolean> fd =
+        new IdentifiableCallable<>(
+            "crash distributed system",
+            () -> {
+              // since the system will disconnect and attempt to reconnect
+              // a new system the old reference to DTC.system can cause
+              // trouble, so we first null it out.
+              nullSystem();
+              final Locator oldLocator = getLocator();
+              final DistributedSystem msys = cache.getDistributedSystem();
+              MembershipManagerHelper.crashDistributedSystem(msys);
+              if (oldLocator != null) {
+                waitToStartReconnecting(msys,
+                    "waiting for locator to start reconnecting: " + oldLocator);
+              }
+              return true;
+            });
     if (vm != null) {
-      return (Boolean) vm.invoke(fd);
+      return vm.invoke(fd);
     } else {
-      return (Boolean) fd.call();
+      return fd.call();
     }
+  }
+
+  private void waitToStartReconnecting(
+      final DistributedSystem distributedSystem,
+      final String description) {
+    await()
+        .alias(description)
+        .untilAsserted(() -> assertThat(distributedSystem).satisfiesAnyOf(
+            msysArg -> assertTrue(msysArg.isReconnecting()),
+            msysArg -> assertNotNull(msysArg.getReconnectedSystem())));
   }
 
   /**
