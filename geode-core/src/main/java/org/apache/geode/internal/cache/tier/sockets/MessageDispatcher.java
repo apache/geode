@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static java.time.temporal.ChronoUnit.MINUTES;
 import static org.apache.geode.internal.cache.tier.sockets.ClientReAuthenticateMessage.RE_AUTHENTICATION_START_VERSION;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.RE_AUTHENTICATE_WAIT_TIME;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
@@ -84,7 +83,7 @@ public class MessageDispatcher extends LoggingThread {
   /**
    * Default value in milliseconds for waiting for re-authentication
    */
-  private static final long DEFAULT_RE_AUTHENTICATE_WAIT_TIME = Duration.of(1, MINUTES).toMillis();
+  private static final long DEFAULT_RE_AUTHENTICATE_WAIT_TIME = Duration.ofMinutes(1).toMillis();
 
   /**
    * The queue of messages to be sent to the client
@@ -581,7 +580,7 @@ public class MessageDispatcher extends LoggingThread {
     synchronized (_stopDispatchingLock) {
       String message =
           "Authentication expired for a client with a version less than Geode 1.15. Cannot re-authenticate an older client "
-              + " that has a server to client queue for CQs or interest registrations. "
+              + "that has a server to client queue for CQs or interest registrations. "
               + "Please upgrade your client to Geode 1.15 or greater to allow re-authentication.";
       logger.warn(message);
       pauseOrUnregisterProxy(expired);
