@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static java.time.temporal.ChronoUnit.SECONDS;
+import static java.time.temporal.ChronoUnit.MINUTES;
 import static org.apache.geode.internal.cache.tier.sockets.ClientReAuthenticateMessage.RE_AUTHENTICATION_START_VERSION;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.RE_AUTHENTICATE_WAIT_TIME;
 import static org.apache.geode.util.internal.UncheckedUtils.uncheckedCast;
@@ -84,7 +84,7 @@ public class MessageDispatcher extends LoggingThread {
   /**
    * Default value in milliseconds for waiting for re-authentication
    */
-  private static final long DEFAULT_RE_AUTHENTICATE_WAIT_TIME = Duration.of(60, SECONDS).toMillis();
+  private static final long DEFAULT_RE_AUTHENTICATE_WAIT_TIME = Duration.of(1, MINUTES).toMillis();
 
   /**
    * The queue of messages to be sent to the client
@@ -532,7 +532,7 @@ public class MessageDispatcher extends LoggingThread {
 
   private boolean handleAuthenticationExpiredException(AuthenticationExpiredException expired)
       throws InterruptedException {
-    if (unRegisterUnsupportedClient(expired)) {
+    if (unregisterUnsupportedClient(expired)) {
       return true;
     }
 
@@ -570,12 +570,14 @@ public class MessageDispatcher extends LoggingThread {
     return false;
   }
 
-  private boolean unRegisterUnsupportedClient(AuthenticationExpiredException expired) {
+  /**
+   * for old client, don't wait for re-auth but unregister this proxy completely.
+   */
+  private boolean unregisterUnsupportedClient(AuthenticationExpiredException expired) {
     if (getProxy().getVersion().isNewerThanOrEqualTo(RE_AUTHENTICATION_START_VERSION)) {
       return false;
     }
 
-    // for old client, don't wait for re-auth but unregister this proxy completely.
     synchronized (_stopDispatchingLock) {
       String message =
           "Authentication expired for a client with a version less than Geode 1.15. Cannot re-authenticate an older client "
